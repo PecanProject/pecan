@@ -5,12 +5,12 @@
 \title{Gets trait data from the database}
 \usage{
 get.trait.data.pft(pft, modeltype, dbfiles, dbcon, forceupdate = FALSE,
-  trait.names = traitdictionary$id)
+  trait.names = PEcAn.utils::trait.dictionary$id)
 }
 \arguments{
-\item{pft}{the pft whos traits to retrieve}
+\item{pft}{list of settings for the pft whos traits to retrieve. See details}
 
-\item{modeltype}{type of model that is used, this is is used to distinguis between different pfts with the same name.}
+\item{modeltype}{type of model that is used, this is used to distinguish between different pfts with the same name.}
 
 \item{dbfiles}{location where previous results are found}
 
@@ -25,6 +25,9 @@ updated pft with posteriorid
 }
 \description{
 Get trait data from the database for a single pft
+}
+\details{
+\code{pft} should be a list containing at least `name` and `outdir`, and optionally `posteriorid` and `constants`. BEWARE: All existing files in \code{outir} will be deleted!
 }
 \author{
 David LeBauer, Shawn Serbin, Rob Kooper

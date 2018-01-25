@@ -39,8 +39,9 @@ check.lists <- function(x, y, filename = "species.csv") {
 ##'
 ##' @name get.trait.data.pft
 ##' @title Gets trait data from the database
-##' @param pft the pft whos traits to retrieve
-##' @param modeltype type of model that is used, this is is used to distinguis between different pfts with the same name.
+##' @details \code{pft} should be a list containing at least `name` and `outdir`, and optionally `posteriorid` and `constants`. BEWARE: All existing files in \code{outir} will be deleted!
+##' @param pft list of settings for the pft whos traits to retrieve. See details
+##' @param modeltype type of model that is used, this is used to distinguish between different pfts with the same name.
 ##' @param dbfiles location where previous results are found
 ##' @param dbcon database connection
 ##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
@@ -51,7 +52,7 @@ check.lists <- function(x, y, filename = "species.csv") {
 ##'
 get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
                                forceupdate = FALSE,
-                               trait.names = traitdictionary$id) {
+                               trait.names = PEcAn.utils::trait.dictionary$id) {
 
   # Create directory if necessary
   if (!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive = TRUE)) {
@@ -84,7 +85,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   }
 
   if (is.null(pftid)) {
-    PEcAn.logger::logger.severe("Could not find pft, could not store file", filename)
+    PEcAn.logger::logger.severe("Could not find pft", pft$name)
     return(NA)
   }
 
@@ -292,8 +293,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trai
   ##---------------- Load trait dictionary --------------#
   if (is.logical(trait.names)) {
     if (trait.names) {
-      utils::data(trait.dictionary, package = "PEcAn.utils")
-      trait.names <- trait.dictionary$id
+      trait.names <- PEcAn.utils::trait.dictionary$id
     }
   }
 
