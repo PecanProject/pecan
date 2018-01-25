@@ -1,32 +1,35 @@
 # Formats records in BETY {#NewFormat}
 
-The PEcAn database keep track of all the input files passed to models, as well as any data used in model validation or data assimilation. Before we start to register these files with PEcAn we need to define the format these files will be in.
+The PEcAn database keeps track of all the input files passed to models, as well as any data used in model validation or data assimilation. Before we start to register these files with PEcAn we need to define the format these files will be in.
 
 The main goal is to take all the meta-data we have about a data file and create a record of it that pecan can use as a guide when parsing the data file. 
 
-This information is stored in a format record in the bety database. Make sure to read through the current formats before deciding to make a new one. 
+This information is stored in a Format record in the bety database. Make sure to read through the current Formats before deciding to make a new one. 
 
-# Creating a new format record in BETY
+# Creating a new Format record in BETY
 
-If the format you are looking for is not available, you will need to create a new record. Before entering information into the database, you need to be able to answer the following questions about your data:
+If the Format you are looking for is not available, you will need to create a new record. Before entering information into the database, you need to be able to answer the following questions about your data:
 
-- What is the file type? We have a suit of functions for loading in data in open formats such as CSV, txt, netCDF, etc. 
-  - If your file type is less common or a proprietary type, can you convert it into one of the previous types? If not, you will need to contact us about writing a data specific load function.
+- What is the file MIME type? We have a suit of functions for loading in data in open formats such as CSV, txt, netCDF, etc. 
+     - PEcAn has partnered with the [NCSA BrownDog project](http://browndog.ncsa.illinois.edu/) to create a service that can read and convert as many data formats as possible. 
+     - If your file type is less common or a proprietary type, you can use the [BrownDog DAP](http://dap.ncsa.illinois.edu/) to convert? 
+     - If BrownDog cannot convert your data, you will need to contact us about writing a data specific load function.
+  
 - What variables does the file contain?
-  - What are the variables named?
-  - What are the variable units?
+     - What are the variables named?
+     - What are the variable units?
 - Is there a timestamp on the data? 
-  - What are the units of time?
+     - What are the units of time?
 
 Here is an example using a fake dataset:
 
-![Screen Shot 2017-06-26 at 4.49.36 PM](images/Screen Shot 2017-06-26 at 4.49.36 PM.png)
+![example_data](images/example_data.png)
 
 
 
 This data started out as an excel document, but was saved as a CSV file. 
 
-To create a formats record for this data, in the web interface of BETY, select Runs > Formats and click _New Format_. 
+To create a Formats record for this data, in the web interface of BETY, select Runs > Formats and click _New Format_. 
 
 You will need to fill out the following fields:
 
@@ -36,10 +39,9 @@ You will need to fill out the following fields:
 - Skip: The number of lines above the data that should be skipped. For example, metadata that should not be included when reading in the data or blank spaces. 
 - Notes: Any additional information about the data such as sources and citations.  
 
-Here is the formats record for the example data:
+Here is the Formats record for the example data:
 
-![Screen Shot 2017-06-26 at 4.53.55 PM](images/Screen Shot 2017-06-26 at 4.53.55 PM.png)
-
+![format_record_1](images/format_record_1.png)
 When you have finished this section, hit Create. The final record will be displayed on the screen. 
 
 ## Formats -> Variables
@@ -48,9 +50,9 @@ After a Format entry has been created, you are encouraged to edit the entry to a
 
 To enter this data, select Edit Record and on the edit screen select View Related Variable. 
 
-Here is the record for my data after I added related variables:
+Here is the record for my data after adding related variables:
 
-![Screen Shot 2017-06-26 at 4.00.50 PM](images/Screen Shot 2017-06-26 at 4.00.50 PM.png)
+![format_record_2](images/format_record_2.png)
 
 ### Name and Unit
 
@@ -60,9 +62,9 @@ Make sure to search for your variables under Data > Variables before suggesting 
 
 For example bety contains a record for Net Primary Productivity: 
 
-![Screen Shot 2017-06-26 at 5.08.37 PM](images/Screen Shot 2017-06-26 at 5.08.37 PM.png)
+![var_record](images/var_record.png)
 
-This record does not have the same variable name or the same units as NPP in my data. However, I know that they are the same variable. I can account for their differences in the formats record. 
+This record does not have the same variable name or the same units as NPP in my data. However, I know that they are the same variable. I can account for their differences in the Formats record. 
 
 - Under Variable, select the variable as it is recorded in bety.
 - Under Name, write the name the variable has in your data file.
