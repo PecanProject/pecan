@@ -3,6 +3,9 @@ context("Checking PFT lookup")
 
 con <- db.open(
   params = list(user = "bety", password = "bety", host = "localhost"))
+teardown(
+  db.close(con)
+)
 
 test_that("query.pft_species finds species for a PFT", {
   one_sp <- query.pft_species(pft = "salix-miyabeana", modeltype = NULL, con)
@@ -36,17 +39,15 @@ test_that("query.pft_cultivars finds cultivars for a PFT", {
   one_cv <- query.pft_cultivars(pft = "Pavi_9005438", modeltype = NULL, con)
   expect_is(one_cv, "data.frame")
   expect_equal(nrow(one_cv), 1)
-  expect_equal(one_cv$cultivar_id, 1)
+  expect_equal(one_cv$id, 1)
   expect_equal(one_cv$specie_id, 938)
   expect_equal(one_cv$species_name, "Panicum virgatum")
 
   multi_cv <- query.pft_cultivars(pft = "Pavi_all", modeltype = NULL, con)
   expect_is(multi_cv, "data.frame")
   expect_gt(nrow(multi_cv), 90) # 92 spp today, but allow some change
-  expect_equal(
-    length(multi_cv$cultivar_id),
-    length(unique(multi_cv$cultivar_id)))
-  expect_true(one_cv$cultivar_id %in% multi_cv$cultivar_id)
+  expect_equal(length(multi_cv$id), length(unique(multi_cv$id)))
+  expect_true(one_cv$id %in% multi_cv$id)
 })
 
 test_that("query.pft_species and query.pft_cultivars do not find each other's PFTs", {
