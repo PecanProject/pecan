@@ -3,9 +3,8 @@
 
 language: r
 
-# use containers
 dist: trusty
-sudo: false
+sudo: required
 
 cache: 
   - directories:
@@ -14,6 +13,35 @@ cache:
     - .test
     - .doc
   - packages
+
+r_binary_packages:
+  - mime
+  - curl
+  - openssl
+  - digest
+  - jsonlite
+  - git2r
+  - backports
+  - stringi
+  - Rcpp
+  - commonmark
+  - xml2
+  - roxygen2
+  - tidyverse
+  - data.table
+  - utf8
+  - rngWELL
+  - sp
+  - raster
+  - RCurl
+  - XML
+  - maps
+  - mapproj
+  - httpuv
+  - MCMCpack
+  - ape
+  - lme4
+  - igraph
 
 addons:
   postgresql: 9.6
