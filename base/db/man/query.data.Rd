@@ -11,6 +11,10 @@ query.data(trait, spstr,
 \arguments{
 \item{trait}{trait to query from the database}
 
+\item{spstr}{IDs of species to query from, as a single comma-separated string}
+
+\item{extra.columns}{other query terms to pass in. If unspecified, retrieves latitude and longitude}
+
 \item{con}{database connection}
 
 \item{...}{extra arguments}
