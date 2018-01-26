@@ -25,7 +25,11 @@ get.parameter.samples <- function(settings,
     }
     
     ### Get output directory info
-    outdirs[i.pft] <- settings$pfts[[i.pft]]$outdir
+    if(!is.null(settings$pfts[[i.pft]]$outdir)){
+      outdirs[i.pft] <- settings$pfts[[i.pft]]$outdir
+    } else { 
+      outdirs[i.pft] <- unique(dbfile.check(type = "Posterior",container.id = settings$pfts[[i.pft]]$posteriorid,con=con)$file_path)
+    }
     
   }  ### End of for loop to extract pft names
   
@@ -71,24 +75,24 @@ get.parameter.samples <- function(settings,
     
     if (exists("trait.mcmc")) {
       ma.traits <- names(trait.mcmc)
-
+      
       samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
       
       ## report which traits use MA results, which use priors
       if (length(ma.traits) > 0) {
         PEcAn.logger::logger.info("PFT", pft.names[i], "has MCMC samples for:\n",
-                    paste0(ma.traits, collapse = "\n "))
+                                  paste0(ma.traits, collapse = "\n "))
       }
       if (!all(priors %in% ma.traits)) {
         PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for:\n", 
-                    paste0(priors[!priors %in% ma.traits], collapse = "\n "))
+                                  paste0(priors[!priors %in% ma.traits], collapse = "\n "))
       }
     } else {
       ma.traits <- NULL
       samples.num <- 20000
       PEcAn.logger::logger.info("No MCMC results for PFT", pft.names[i])
       PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for", 
-                  priors)
+                                priors)
     }
     
     PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
