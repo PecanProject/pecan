@@ -4,7 +4,7 @@
 language: r
 
 dist: trusty
-sudo: required
+sudo: false
 
 cache: 
   - directories:
@@ -13,35 +13,6 @@ cache:
     - .test
     - .doc
   - packages
-
-r_binary_packages:
-  - mime
-  - curl
-  - openssl
-  - digest
-  - jsonlite
-  - git2r
-  - backports
-  - stringi
-  - Rcpp
-  - commonmark
-  - xml2
-  - roxygen2
-  - tidyverse
-  - data.table
-  - utf8
-  - rngWELL
-  - sp
-  - raster
-  - RCurl
-  - XML
-  - maps
-  - mapproj
-  - httpuv
-  - MCMCpack
-  - ape
-  - lme4
-  - igraph
 
 addons:
   postgresql: 9.6
@@ -64,6 +35,34 @@ addons:
       - pandoc
       - tcl
       - tcl-dev
+      ## R binary packages
+      - mime
+      - curl
+      - openssl
+      - digest
+      - jsonlite
+      - git2r
+      - backports
+      - stringi
+      - rcpp
+      - commonmark
+      - xml2
+      - roxygen2
+      - tidyverse
+      - data.table
+      - utf8
+      - rngWELL
+      - sp
+      - raster
+      - RCurl
+      - XML
+      - maps
+      - mapproj
+      - httpuv
+      - MCMCpack
+      - ape
+      - lme4
+      - igraph
       # - libhdf5-dev   ## Uncomment this when Travis updates to next Ubuntu image
       # need to compile documentation
       # BROKEN MISSING FONT
