@@ -9,7 +9,7 @@
 ##' 
 ##' @author Betsy Cowdery 
 ##' @importFrom dplyr tbl filter rename collect select  
-calc_benchmark <- function(settings, bety) {
+calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
   
   # run.score <- run.success.check(settings)
   
@@ -75,6 +75,7 @@ calc_benchmark <- function(settings, bety) {
     
     results <- list()
     
+    # input.id = unique(bms$input_id) # For testing
     for (input.id in unique(bms$input_id)) {
       
       # Create directory that will hold benchmarking results
@@ -91,8 +92,8 @@ calc_benchmark <- function(settings, bety) {
       time.row <- format$time.row
       vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
       
-      start_year <- lubridate::year(settings$run$start.date)
-      end_year <- lubridate::year(settings$run$end.date)
+      if(is.na(start_year)) start_year <- lubridate::year(settings$run$start.date)
+      if(is.na(end_year))   end_year <- lubridate::year(settings$run$end.date)
       
       obvs <- load_data(data.path, format, start_year = start_year, end_year = end_year, site, vars.used.index, time.row)
       dat_vars <- format$vars$pecan_name  # IF : is this line redundant?
@@ -110,14 +111,6 @@ calc_benchmark <- function(settings, bety) {
                                 start.year = start_year, 
                                 end.year = end_year,
                                 c("time", model_vars), dataframe = TRUE)
-      # This is not a good hack. I still don't know what I'm looking at and I should probably just do a point level run instead of grid?
-      if(settings$model$type == "JULES"){ 
-        for(name in setdiff(names(read.model), "time")){
-          if(length(dim(read.model[[name]]))==2){
-            read.model[[name]] <- colMeans(read.model[[name]])
-          } 
-        }
-      }
       
       model <- read.model
       vars.used.index <- which(format$vars$pecan_name %in% names(model)[!names(model) == "time"])
@@ -131,6 +124,7 @@ calc_benchmark <- function(settings, bety) {
       
       
       # Loop over benchmark ids
+      # i = 1 # for testing
       for (i in seq_along(bm.ids)) {
         bm <- db.query(paste("SELECT * from benchmarks where id =", bm.ids[i]), bety$con)
         metrics <- db.query(paste("SELECT m.name, m.id from metrics as m", 
