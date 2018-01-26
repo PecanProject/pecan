@@ -7,5 +7,5 @@ wget "$HDF5_RELEASE_URL/hdf5-${HDF5_VERSION%.*}/hdf5-$HDF5_VERSION/src/hdf5-$HDF
 tar -xzf "hdf5-$HDF5_VERSION.tar.gz"
 pushd "hdf5-$HDF5_VERSION"
 ./configure --prefix=/usr
-make install
+sudo make install
 popd
