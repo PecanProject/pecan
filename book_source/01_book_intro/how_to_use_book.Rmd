@@ -51,7 +51,6 @@ This book is organized around these main topics:
 **User Appendix** - Supplementary materials for the user section.
 
 **PEcAn Workflow** - High Level explanation of the PEcAn workflow. 
->>>>>>> edec39eb36cc2d87d8be4a2020ec7721ba2d5be7
 
 **Development Guide** - Explains what you need to know in order to contibute code to PEcAn.
 	
