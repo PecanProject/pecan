@@ -10,6 +10,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixes
 - Fixed status page, should now be run from cronjob, creates static page
+- Fixed bug that overwrote remote  met file paths with local file paths
 
 ### Added
 - new base package `PEcAn.workflow`, for functions used to perform the each major step of the analysis. These were previously scattered in other base packages.
