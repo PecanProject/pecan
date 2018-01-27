@@ -99,8 +99,17 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   ## write configuration file
   traits <- convert.samples.BIOCRO(trait.samples = trait.values[[settings$pfts$pft$name]])
   
-  species <- utils::read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
-  genus <- unique(species$genus)
+  pft_member_file <- file.path(settings$pfts$pft$outdir, "species.csv")
+  if(!file.exists(pft_member_file)){
+    pft_member_file <- file.path(settings$pfts$pft$outdir, "cultivars.csv")
+  }
+  if(!file.exists(pft_member_file)){
+    PEcAn.logger::logger.severe("Can't find PFT info: No species.csv nor cultivars.csv in",
+                                settings$pfts$pft$outdir)
+  }
+
+  pft_members <- utils::read.csv(pft_member_file)
+  genus <- unique(pft_members$genus)
   if (length(genus) > 1) {
     PEcAn.logger::logger.severe("BioCro can not combine multiple genera")
   }

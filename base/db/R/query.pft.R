@@ -92,8 +92,10 @@ query.pft_cultivars <- function(pft, modeltype=NULL, con) {
     %>% dplyr::select(
       id = cultivar_id,
       specie_id,
-      species_name = scientificname,
-      cultivar_name = name.cv)
+      genus,
+      species,
+      scientificname,
+      cultivar = name.cv)
     %>% dplyr::collect())
 }
 
