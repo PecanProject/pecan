@@ -80,10 +80,14 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
 ##' @param spstr species to query for yield data
 ##' @param extra.columns other query terms to pass in. Optional
 ##' @param con database connection
+##' @param ids_are_cultivars if TRUE, spstr contains cultivar IDs, otherwise they are species IDs
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
-query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...){
+query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL,
+                         ids_are_cultivars = FALSE, ...){
+
+  member_column <- if (ids_are_cultivars) {"cultivar_id"} else {"specie_id"}
   query <- paste("select
             yields.id, yields.citation_id, yields.site_id, treatments.name,
             yields.date, yields.time, yields.cultivar_id, yields.specie_id,
@@ -96,7 +100,7 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
             left join treatments on  (yields.treatment_id = treatments.id)
             left join sites on (yields.site_id = sites.id)
             left join variables on (yields.variable_id = variables.id)
-          where specie_id in (", spstr,");", sep = "")
+          where ", member_column, " in (", spstr,");", sep = "")
   if(!trait == 'yield'){
     query <- gsub(");", paste(" and variables.name in ('", trait,"');", sep = ""), query)
   }
