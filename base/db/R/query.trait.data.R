@@ -410,8 +410,7 @@ derive.traits <- function(FUN, ..., input = list(...),
 
 ##--------------------------------------------------------------------------------------------------#
 ##' Extract trait data from database
-##' @name query.trait.data
-##' @title Extract trait data from database
+##'
 ##' Extracts data from database for a given trait and set of species,
 ##' converts all statistics to summary statistics, and prepares a dataframe for use in meta-analysis.
 ##' For Vcmax and SLA data, only data collected between  April and July are queried, and only data collected from the top of the canopy (canopy height > 0.66).
