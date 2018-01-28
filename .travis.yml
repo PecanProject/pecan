@@ -1,8 +1,12 @@
 # Follow instructions on:
 # https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
 
+# A few blocks in here can be removed when Travis updates its Ubuntu image past 
+# trusty. They are marked with TRUSTY for easy grepping.
+
 language: r
 
+# TRUSTY: Change version when 16.04 image is available.
 dist: trusty
 sudo: false
 
@@ -13,6 +17,11 @@ cache:
     - .test
     - .doc
   - packages
+
+# TRUSTY: This adds the HDF5 pre-compiled binaries to the library path.
+# This block can be removed after update.
+env:
+  - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$TRAVIS_BUILD_DIR/hdf5_bin_trusty/lib
 
 addons:
   postgresql: 9.6
@@ -35,35 +44,7 @@ addons:
       - pandoc
       - tcl
       - tcl-dev
-      ## R binary packages
-      - mime
-      - curl
-      - openssl
-      - digest
-      - jsonlite
-      - git2r
-      - backports
-      - stringi
-      - rcpp
-      - commonmark
-      - xml2
-      - roxygen2
-      - tidyverse
-      - data.table
-      - utf8
-      - rngWELL
-      - sp
-      - raster
-      - RCurl
-      - XML
-      - maps
-      - mapproj
-      - httpuv
-      - MCMCpack
-      - ape
-      - lme4
-      - igraph
-      # - libhdf5-dev   ## Uncomment this when Travis updates to next Ubuntu image
+      # - libhdf5-dev   ## TRUSTY: Uncomment this after update
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
@@ -90,10 +71,11 @@ notifications:
 services:
   - postgresql
 
-## Remove this block when Travis updates to next Ubuntu image
+# TRUSTY: This repo contains pre-compiled HDF5 1.10 binaries for Trusty.
+# Downloading them is much faster than compiling from source.
+# Remove this block when Travis updates to next Ubuntu image.
 before_install:
-  - chmod +x install_hdf5.sh
-  - ./install_hdf5.sh
+  - git clone https://github.com/ashiklom/hdf5_bin_trusty
    
 install:
   - pushd $HOME
