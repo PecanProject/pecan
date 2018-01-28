@@ -53,7 +53,15 @@ addons:
       - r-cran-testthat
       - r-cran-raster
       - r-cran-tidyverse
-      - r-cran-data.table
+      - r-cran-mcmcpack
+      - r-cran-shiny
+      - r-cran-xml
+      - r-cran-lme4
+      - r-cran-rcurl
+      - r-cran-igraph
+      - r-cran-xml2
+      - r-cran-rncl
+      - r-cran-matrixstats
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
