@@ -18,10 +18,12 @@ cache:
 addons:
   postgresql: 9.6
   apt:
+    sources:
+      - sourceline: 'ppa:marutter/c2d4u'
     packages:
       - libnetcdf-dev
       - liblapack-dev
-      - libcurl4-gnutls-dev
+      - libcurl4-openssl-dev
       - jags
       - libudunits2-dev
       - python-dev 
@@ -36,6 +38,30 @@ addons:
       - pandoc
       - tcl
       - tcl-dev
+      # R package binaries from c2d4u
+      - r-bioc-biocinstaller
+      - r-bioc-rhdf5
+      - r-cran-ape
+      - r-cran-curl
+      - r-cran-devtools
+      - r-cran-dplyr
+      - r-cran-ggplot2
+      - r-cran-httr
+      - r-cran-igraph
+      - r-cran-lme4
+      - r-cran-matrixstats
+      - r-cran-mcmcpack
+      - r-cran-mcmcpack
+      - r-cran-raster
+      - r-cran-rcpp
+      - r-cran-rcurl
+      - r-cran-rncl
+      - r-cran-roxygen2
+      - r-cran-shiny
+      - r-cran-testthat
+      - r-cran-tidyverse
+      - r-cran-xml
+      - r-cran-xml2
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
