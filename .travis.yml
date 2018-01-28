@@ -51,6 +51,9 @@ addons:
       - r-bioc-rhdf5
       - r-cran-roxygen2
       - r-cran-testthat
+      - r-cran-raster
+      - r-cran-tidyverse
+      - r-cran-data.table
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
