@@ -23,6 +23,7 @@ addons:
   apt:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
+      - sourceline: 'ppa:nschloe/hdf5-backports'
     packages:
       - libnetcdf-dev
       - liblapack-dev
@@ -41,7 +42,7 @@ addons:
       - pandoc
       - tcl
       - tcl-dev
-      # - libhdf5-dev   ## TRUSTY: Uncomment this after update
+      - libhdf5-dev
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
       - r-cran-ape
@@ -91,13 +92,6 @@ notifications:
 services:
   - postgresql
 
-# TRUSTY: This repo contains pre-compiled HDF5 1.10 binaries for Trusty.
-# Downloading them is much faster than compiling from source.
-# Remove this block when Travis updates to next Ubuntu image.
-before_install:
-  - git clone https://github.com/ashiklom/hdf5_bin_trusty
-  - git clone https://github.com/hhoeflin/hdf5r
-   
 install:
   - pushd $HOME
   - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
@@ -115,7 +109,6 @@ before_script:
   - ./scripts/add.models.sh
   - chmod +x book_source/deploy.sh
   - chmod +x documentation/tutorials/deploy.sh
-  - Rscript scripts/install_hdf5r.R   # TRUSTY: Custom install script for hdf5r. Can be removed once Travis updates.
 
 script:
   - set -e
