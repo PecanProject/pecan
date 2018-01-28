@@ -6,7 +6,6 @@
 install.packages(
   "hdf5r",
   configure.args = c(
-    "--hdf5-libraries=hdf5_bin_trusty/lib",
-    "--hdf5-includes=hdf5_bin_trusty/include"
+    "--with-hdf5=hdf5_bin_trusty"
   )
 )
