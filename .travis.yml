@@ -76,6 +76,7 @@ services:
 # Remove this block when Travis updates to next Ubuntu image.
 before_install:
   - git clone https://github.com/ashiklom/hdf5_bin_trusty
+  - git clone https://github.com/hhoeflin/hdf5r
    
 install:
   - pushd $HOME
@@ -94,6 +95,7 @@ before_script:
   - ./scripts/add.models.sh
   - chmod +x book_source/deploy.sh
   - chmod +x documentation/tutorials/deploy.sh
+  - Rscript scripts/install_hdf5r.R   # TRUSTY: Custom install script for hdf5r. Can be removed once Travis updates.
 
 script:
   - set -e
