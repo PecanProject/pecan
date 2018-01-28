@@ -17,4 +17,4 @@ Sys.setenv("HDF5_DIR" = hdf5_full_dir)
 
 hdf_full_path <- file.path(hdf5_full_dir, "bin", "h5cc")
 hdf_config_arg <- paste0("--with-hdf5=", hdf_full_path)
-install.packages("hdf5r", lib = "test_library", configure.args = hdf_config_arg)
+install.packages("hdf5r", configure.args = hdf_config_arg)

@@ -18,11 +18,6 @@ cache:
     - .doc
   - packages
 
-# TRUSTY: This adds the HDF5 pre-compiled binaries to the library path.
-# This block can be removed after update.
-env:
-  - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$TRAVIS_BUILD_DIR/hdf5_bin_trusty/lib
-
 addons:
   postgresql: 9.6
   apt:
@@ -49,7 +44,6 @@ addons:
       # - libhdf5-dev   ## TRUSTY: Uncomment this after update
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
-      - r-bioc-rhdf5
       - r-cran-ape
       - r-cran-curl
       - r-cran-devtools
