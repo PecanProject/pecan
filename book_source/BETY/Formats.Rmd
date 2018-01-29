@@ -18,6 +18,7 @@ If the Format you are looking for is not available, you will need to create a ne
 - What variables does the file contain?
      - What are the variables named?
      - What are the variable units?
+     - How do the variable names and units map to PEcAn variables?
 - Is there a timestamp on the data? 
      - What are the units of time?
 
@@ -33,7 +34,7 @@ To create a Formats record for this data, in the web interface of BETY, select R
 
 You will need to fill out the following fields:
 
-- Mime type: File type (you can search for other formats in the text field)
+- MIME type: File type (you can search for other formats in the text field)
 - Name: The name of your format (this can be whatever you want)
 - Header: Boolean that denotes whether or not your data contains a header as the first line of the data. (1 = TRUE, 0 = FALSE)
 - Skip: The number of lines above the data that should be skipped. For example, metadata that should not be included when reading in the data or blank spaces. 
@@ -46,11 +47,11 @@ When you have finished this section, hit Create. The final record will be displa
 
 ## Formats -> Variables
 
-After a Format entry has been created, you are encouraged to edit the entry to add relationships between the file's variables and the Variables table in PEcAn. Not only do these relationships provide meta-data describing the file format, but they also allow PEcAn to search and (for some mime types) read files.
+After a Format entry has been created, you are encouraged to edit the entry to add relationships between the file's variables and the Variables table in PEcAn. Not only do these relationships provide meta-data describing the file format, but they also allow PEcAn to search and (for some MIME types) read files.
 
 To enter this data, select Edit Record and on the edit screen select View Related Variable. 
 
-Here is the record for my data after adding related variables:
+Here is the record for the example data after adding related variables:
 
 ![format_record_2](images/format_record_2.png)
 
@@ -64,7 +65,13 @@ For example bety contains a record for Net Primary Productivity:
 
 ![var_record](images/var_record.png)
 
-This record does not have the same variable name or the same units as NPP in my data. However, I know that they are the same variable. I can account for their differences in the Formats record. 
+This record does not have the same variable name or the same units as NPP in the example data. 
+You may have to do some reading to confirm that they are the same variable. 
+In this case
+- Both the data and the record are for Net Primary Productivity (the notes section provides additional resources for interpreting the variable.)
+- The units of the data can be converted to those of the vairiable record (this can be checked by running `udunits2::ud.are.convertible("g C m-2 yr-1", "Mg C ha-1 yr-1")`)
+
+Differences between the data and the variable record can be accounted for in the data Formats record. 
 
 - Under Variable, select the variable as it is recorded in bety.
 - Under Name, write the name the variable has in your data file.
@@ -72,7 +79,7 @@ This record does not have the same variable name or the same units as NPP in my 
 
 NOTE: All units must be written in a udunits compliant format. To check that your units can be read by udunits, in R, load the udunits2 package and run `udunits2::is.parseable("g C m-2 yr-1")`
 
-**If the name or the units are the same**, you can leave the Name and Unit fields blank. This is what I did for the variable LAI. 
+**If the name or the units are the same**, you can leave the Name and Unit fields blank. This is can be seen with the variable LAI. 
 
 ### Storage Type
 
@@ -80,11 +87,11 @@ _Storage Type_ only needs to be specified if the variable is stored in a format 
 
 One such example is *time variables*.
 
-PEcAn converts all dates into POSIX format using functions such as `strptime`. These functions require that the user specify the format in which the date is written. 
+PEcAn converts all dates into POSIX format using R functions such as `strptime`. These functions require that the user specify the format in which the date is written. 
 
 The default is `"%Y-%m-%d %H:%M:%S"` which would look like `"2017-01-01 00:00:00"`
 
-A list of date formats can be found in the R documentation for the function `strptime`	
+A list of date formats can be found in the [R documentation for the function `strptime`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/strptime.html)
 
 Below are some commonly used codes:
 
@@ -102,5 +109,5 @@ Below are some commonly used codes:
 
 ### Column Number
 
-If your data is in text format with variables in a standard order then you can specify the Column Number for the variable. This is particularly important for text files that lack headers.
+If your data is in text format with variables in a standard order then you can specify the Column Number for the variable. This is required for text files that lack headers.
 
