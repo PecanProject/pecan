@@ -89,7 +89,6 @@ bugs2r.distributions <- function(..., direction = "bugs2r") {
 ##' @author David LeBauer
 bugs.rdist <- function(prior = data.frame(distn = "norm", parama = 0, paramb = 1), 
                        n.iter = 1e+05, n = NULL) {
-  library(rjags)
   if (!grepl("chisq", prior$distn)) {
     model.string <- paste0("model{Y ~ d", prior$distn, "(", prior$parama, ", ", prior$paramb, ")\n a <- x}")
   } else if (grepl("chisq", prior$distn)) {
@@ -99,8 +98,8 @@ bugs.rdist <- function(prior = data.frame(distn = "norm", parama = 0, paramb = 1
   }
   
   writeLines(model.string, con = "test.bug")
-  j.model <- jags.model(file = "test.bug", data = list(x = 1))
-  mcmc.object <- window(coda.samples(model = j.model, 
+  j.model <- rjags::jags.model(file = "test.bug", data = list(x = 1))
+  mcmc.object <- stats::window(rjags::coda.samples(model = j.model,
                                      variable.names = c("Y"), 
                                      n.iter = n.iter, thin = 2), 
                         start = n.iter / 2)

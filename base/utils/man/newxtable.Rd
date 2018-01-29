@@ -11,6 +11,8 @@ newxtable(x, environment = "table", table.placement = "ht", label = NULL,
 \item{x}{data.frame to be converted to latex table}
 
 \item{environment}{can be 'table'; 'sidewaystable' if using latex rotating package}
+
+\item{table.placement, label, caption, caption.placement, align}{passed to \code{\link[xtable]{xtable}}}
 }
 \value{
 Latex version of table, with percentages properly formatted

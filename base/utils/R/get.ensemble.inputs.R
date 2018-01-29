@@ -3,7 +3,7 @@
 ##' @name  get.ensemble.inputs
 ##' @author Mike Dietze and Ann Raiho
 ##' 
-##' @param settings
+##' @param settings PEcAn settings list
 ##' @param ens ensemble number. default = 1
 ##' @description Splits climate met for SIPNET
 ##' 

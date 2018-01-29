@@ -4,10 +4,10 @@
 \alias{metric_PPMC}
 \title{Pearson Product Moment Correlation}
 \usage{
-metric_PPMC(dat, ...)
+metric_PPMC(metric_dat, ...)
 }
 \arguments{
-\item{dat}{dataframe}
+\item{metric_dat}{dataframe}
 }
 \author{
 Betsy Cowdery

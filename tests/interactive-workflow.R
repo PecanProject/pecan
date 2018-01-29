@@ -23,7 +23,7 @@ settings <- read.settings(settings.file)
 
 # get traits of pfts
 settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$database$dbfiles, settings$database$bety, settings$meta.analysis$update)
-saveXML(PEcAn.utils::listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+saveXML(PEcAn.settings::listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 
 
 # run meta-analysis
@@ -69,7 +69,7 @@ for(i in 1:length(settings$run$inputs)) {
 
   # narr download
 }
-saveXML(PEcAn.utils::listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+saveXML(PEcAn.settings::listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 
 
 # write configurations
@@ -111,7 +111,7 @@ status.start("FINISHED")
 if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
   sendmail(settings$email$from, settings$email$to,
            paste0("Workflow has finished executing at ", date()),
-           paste0("You can find the results on ", PEcAn.utils::fqdn(), " in ", normalizePath(settings$outdir)))
+           paste0("You can find the results on ", PEcAn.remote::fqdn(), " in ", normalizePath(settings$outdir)))
 }
 
 # write end time in database

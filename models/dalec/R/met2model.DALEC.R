@@ -62,7 +62,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = c(out.file.full),
-                        host = c(PEcAn.utils::fqdn()),
+                        host = c(PEcAn.remote::fqdn()),
                         mimetype = c("text/plain"),
                         formatname = c("DALEC meteorology"),
                         startdate = c(start_date),

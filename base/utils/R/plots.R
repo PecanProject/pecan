@@ -27,14 +27,14 @@
 ##' @return list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars. 
 ##' @author Lorraine Denby, Colin Mallows
 ##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002.
-dhist <- function(x, a = 5 * iqr(x), nbins = nclass.Sturges(x), rx = range(x, na.rm = TRUE), 
+dhist <- function(x, a = 5 * iqr(x), nbins = grDevices::nclass.Sturges(x), rx = range(x, na.rm = TRUE),
                   eps = 0.15, xlab = "x", plot = TRUE, lab.spikes = TRUE) {
   
   if (is.character(nbins)) {
     nbins <- switch(casefold(nbins), 
-                    sturges = nclass.Sturges(x),
-                    fd = nclass.FD(x), 
-                    scott = nclass.scott(x), 
+                    sturges = grDevices::nclass.Sturges(x),
+                    fd = grDevices::nclass.FD(x),
+                    scott = grDevices::nclass.scott(x),
                     stop("Nclass method not recognized"))
   } else {
     if (is.function(nbins)) {
@@ -115,14 +115,14 @@ dhist <- function(x, a = 5 * iqr(x), nbins = nclass.Sturges(x), rx = range(x, na
   }
   bin.size <- length(x) / nbins
   cut.pt <- unique(c(min(x) - abs(min(x)) / 1000, 
-                     approx(seq(length(x)), x, seq_len(nbins - 1) * bin.size, rule = 2)$y, max(x)))
-  aa <- hist(x, breaks = cut.pt, plot = FALSE, probability = TRUE)
+                     stats::approx(seq(length(x)), x, seq_len(nbins - 1) * bin.size, rule = 2)$y, max(x)))
+  aa <- graphics::hist(x, breaks = cut.pt, plot = FALSE, probability = TRUE)
   if (a == Inf) {
     heights <- aa$counts
     xbr <- aa$breaks
   }
   amt.height <- 3
-  q75 <- quantile(heights, 0.75)
+  q75 <- stats::quantile(heights, 0.75)
   if (sum(flag.vec) != 0) {
     amt              <- max(heights[!flag.vec])
     ylim.height      <- amt * amt.height
@@ -133,15 +133,15 @@ dhist <- function(x, a = 5 * iqr(x), nbins = nclass.Sturges(x), rx = range(x, na
   amt.txt <- 0
   end.y <- (-10000)
   if (plot) {
-    barplot(heights, abs(diff(xbr)), 
+    graphics::barplot(heights, abs(diff(xbr)),
             space = 0, density = -1, 
             xlab = xlab, plot = TRUE, 
             xaxt = "n", yaxt = "n")
     at <- pretty(xbr)
-    axis(1, at = at - xbr[1], labels = as.character(at))
+    graphics::axis(1, at = at - xbr[1], labels = as.character(at))
     if (lab.spikes) {
       if (sum(flag.vec) >= 1) {
-        usr <- par("usr")
+        usr <- graphics::par("usr")
         for (i in seq(length(xbr) - 1)) {
           if (!flag.vec[i]) {
             amt.txt <- 0
@@ -150,13 +150,13 @@ dhist <- function(x, a = 5 * iqr(x), nbins = nclass.Sturges(x), rx = range(x, na
             }
           } else {
             amt.txt <- amt.txt + 1
-            end.y <- xbr[i] - xbr[1] + 3 * par("cxy")[1]
+            end.y <- xbr[i] - xbr[1] + 3 * graphics::par("cxy")[1]
           }
           if (flag.vec[i]) {
             txt <- paste0(" ", format(round(counts[i]/sum(counts) * 100)), "%")
-            par(xpd = TRUE)
-            text(xbr[i + 1] - xbr[1], 
-                 ylim.height - par("cxy")[2] * (amt.txt -1), txt, adj = 0)
+            graphics::par(xpd = TRUE)
+            graphics::text(xbr[i + 1] - xbr[1],
+                 ylim.height - graphics::par("cxy")[2] * (amt.txt -1), txt, adj = 0)
           }
         }
       } else print("no spikes or more than one spike")
@@ -177,7 +177,7 @@ dhist <- function(x, a = 5 * iqr(x), nbins = nclass.Sturges(x), rx = range(x, na
 ##' @param x vector
 ##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x. 
 iqr <- function(x) {
-  return(diff(quantile(x, c(0.25, 0.75), na.rm = TRUE)))
+  return(diff(stats::quantile(x, c(0.25, 0.75), na.rm = TRUE)))
 } # iqr
 
 
@@ -192,7 +192,7 @@ iqr <- function(x) {
 ##' @export
 ##' @author David LeBauer
 create.base.plot <- function() {
-  base.plot <- ggplot()
+  base.plot <- ggplot2::ggplot()
   return(base.plot)
 } # create.base.plot
 
@@ -241,19 +241,22 @@ plot_data <- function(trait.data, base.plot = NULL, ymax, color = "black") {
                           se = trait.data$se, 
                           control = !trait.data$trt == 1 & trait.data$ghs == 1)
   new.plot <- base.plot + 
-    geom_point(data = plot.data, aes(x = x, y = y, color = control)) + 
-    geom_segment(data = plot.data, 
-                 aes(x = x - se, y = y, xend = x + se, yend = y, color = control)) + 
-    scale_color_manual(values = c("black", "grey")) + 
-    theme(legend.position = "none")
+    ggplot2::geom_point(data = plot.data, ggplot2::aes(x = x, y = y, color = control)) +
+    ggplot2::geom_segment(data = plot.data,
+                 ggplot2::aes(x = x - se, y = y, xend = x + se, yend = y, color = control)) +
+    ggplot2::scale_color_manual(values = c("black", "grey")) +
+    ggplot2::theme(legend.position = "none")
   return(new.plot)
 } # plot_data
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Add borders to .. content for \description{} (no empty lines) ..
+##' Add borders to plot
 ##'
-##' Has ggplot2 display only specified borders, e.g. ('L'-shaped) borders, rather than a rectangle or no border. Note that the order can be significant; for example, if you specify the L border option and then a theme, the theme settings will override the border option, so you need to specify the theme (if any) before the border option, as above.
+##' Has ggplot2 display only specified borders, e.g. ('L'-shaped) borders,
+##' rather than a rectangle or no border. Note that the order can be significant;
+##' for example, if you specify the L border option and then a theme, the theme settings
+##' will override the border option, so you need to specify the theme (if any) before the border option, as above.
 ##' @name theme_border
 ##' @title Theme border for plot
 ##' @param type 
@@ -302,10 +305,10 @@ theme_border <- function(type = c("left", "right", "bottom", "top", "none"),
       ylist <- append(ylist, c(y, y + height))
       idlist <- append(idlist, c(4, 4))
     }
-    polylineGrob(x = xlist, y = ylist, 
+    grid::polylineGrob(x = xlist, y = ylist,
                  id = idlist, ..., 
                  default.units = "npc", 
-                 gp = gpar(lwd = size, 
+                 gp = grid::gpar(lwd = size,
                            col = colour,
                            lty = linetype), )
   }, class = "theme", type = "box", call = match.call())

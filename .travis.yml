@@ -1,9 +1,12 @@
 # Follow instructions on:
 # https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
 
+# A few blocks in here can be removed when Travis updates its Ubuntu image past 
+# trusty. They are marked with TRUSTY for easy grepping.
+
 language: r
 
-# use containers
+# TRUSTY: Change version when 16.04 image is available.
 dist: trusty
 sudo: false
 
@@ -18,10 +21,13 @@ cache:
 addons:
   postgresql: 9.6
   apt:
+    sources:
+      - sourceline: 'ppa:marutter/c2d4u'
+      - sourceline: 'ppa:nschloe/hdf5-backports'
     packages:
       - libnetcdf-dev
       - liblapack-dev
-      - libcurl4-gnutls-dev
+      - libcurl4-openssl-dev
       - jags
       - libudunits2-dev
       - python-dev 
@@ -36,6 +42,30 @@ addons:
       - pandoc
       - tcl
       - tcl-dev
+      - libhdf5-dev
+      # R package binaries from c2d4u
+      - r-bioc-biocinstaller
+      - r-cran-ape
+      - r-cran-curl
+      - r-cran-devtools
+      - r-cran-dplyr
+      - r-cran-ggplot2
+      - r-cran-httr
+      - r-cran-igraph
+      - r-cran-lme4
+      - r-cran-matrixstats
+      - r-cran-mcmcpack
+      - r-cran-mcmcpack
+      - r-cran-raster
+      - r-cran-rcpp
+      - r-cran-rcurl
+      - r-cran-rncl
+      - r-cran-roxygen2
+      - r-cran-shiny
+      - r-cran-testthat
+      - r-cran-tidyverse
+      - r-cran-xml
+      - r-cran-xml2
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
@@ -62,7 +92,6 @@ notifications:
 services:
   - postgresql
 
-## install sipnet and clim file
 install:
   - pushd $HOME
   - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz

@@ -12,13 +12,33 @@ read_web_config = function(php.config = "../../web/config.php") {
   ## Read PHP config file for webserver
   config <- scan(php.config, what = "character", sep = "\n")
   config <- config[grep("^\\$", config)]  ## find lines that begin with $ (variables)
-  config <- sub("$", "", config, fixed = TRUE)  ## remove $
-  config <- sub(";", "", config, fixed = TRUE)  ## remove ;
+  
+  ## replacements
+  config <- gsub("^\\$", "", config)  ## remove leading $
+  config <- gsub(";.*$", "", config)  ## remove ; and everything afterwards
   config <- sub("false", "FALSE", config, fixed = TRUE)  ##  Boolean capitalization
   config <- sub("true", "TRUE", config, fixed = TRUE)  ##  Boolean capitalization
-  config <- config[-grep("$", config, fixed = TRUE)]  ## lines with variable references fail
+  config <- gsub(pattern = "DIRECTORY_SEPARATOR",replacement = "/",config)
+  
+  ## subsetting
   config <- config[-grep("exec", config, fixed = TRUE)]  ## lines 'exec' fail
-  config.list <- eval(parse(text = paste("list(", paste0(config[1:14], collapse = ","), ")")))
+  config <- config[-grep("dirname", config, fixed = TRUE)]  ## lines 'dirname' fail
+  config <- config[-grep("array", config, fixed = TRUE)]  ## lines 'array' fail
+  
+  ##references
+  ref <- grep("$", config, fixed = TRUE)
+  if(length(ref) > 0){
+    refsplit = strsplit(config[ref],split = " . ",fixed=TRUE)[[1]]
+    refsplit = sub(pattern = '\"',replacement = "",x = refsplit)
+    refsplit = sub(pattern = '$',replacement = '\"',refsplit,fixed=TRUE)
+    config[ref] <- paste0(refsplit,collapse = "")  ## lines with variable references fail
+  }
+  
+  ## convert to list
+  config.list <- eval(parse(text = paste("list(", paste0(config, collapse = ","), ")")))
+  
+  ## replacements
+  config.list <- lapply(X = config.list,FUN = sub,pattern="output_folder",replacement=config.list$output_folder,fixed=TRUE)
   
   return(config.list)
 }

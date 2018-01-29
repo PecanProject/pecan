@@ -1,4 +1,4 @@
-#' Open an SSH tunnel
+#' Open an SSH tunnel, prompting for passwords as needed
 #'
 #' @param remote_host name of remote server to connect to (e.g. geo.bu.edu)
 #' @param tunnel_dir  directory to store tunnel file in, typically from settings$host
@@ -7,7 +7,7 @@
 #' @param wait.time   how long to give system to connect before deleting password (seconds)
 #' @param tunnel_script Path to sshtunnel.sh script file for opening tunnel
 #'
-#' @return `TRUE` if successful, or `FALSE` otherwise
+#' @return numeric giving ssh PID if configured, otherwise logical with TRUE = success
 #' @export
 open_tunnel <- function(remote_host, user = NULL, password = NULL, tunnel_dir = "~/.pecan/tunnel/",
                         wait.time = 15, tunnel_script = '~/pecan/web/sshtunnel.sh'){

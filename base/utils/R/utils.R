@@ -27,13 +27,11 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  data(mstmip_vars, package = "PEcAn.utils")
-  var <- mstmip_vars[mstmip_vars$Variable.Name == name, ]
+  var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
   dims <- list()
 
   if (nrow(var) == 0) {
-    data(mstmip_local, package = "PEcAn.utils")
-    var <- mstmip_local[mstmip_local$Variable.Name == name, ]
+    var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
     if (nrow(var) == 0) {
       if (!silent) {
         PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
@@ -115,7 +113,6 @@ zero.truncate <- function(y) {
 ##' @export
 ##' @author David LeBauer
 ##' @author Shawn Serbin
-#--------------------------------------------------------------------------------------------------#
 rsync <- function(args, from, to, pattern = "") {
   PEcAn.logger::logger.warn("NEED TO USE TUNNEL")
   system(paste0("rsync", " ", args, " ", from, pattern, " ", to), intern = TRUE)
@@ -126,11 +123,10 @@ rsync <- function(args, from, to, pattern = "") {
 ##' R implementation of SSH
 ##'
 ##' @title SSH
-##' @param host
-##' @param ...
-##' @param args
+##' @param host (character) machine to connect to
+##' @param ... Commands to execute. Will be passed as a single quoted string
+##' @param args futher arguments
 ##' @export
-#--------------------------------------------------------------------------------------------------#
 ssh <- function(host, ..., args = "") {
   PEcAn.logger::logger.warn("NEED TO USE TUNNEL")
   if (host == "localhost") {
@@ -169,82 +165,27 @@ vecpaste <- function(x) paste(paste0("'", x, "'"), collapse = ",")
 ##' get.run.id('ENS', left.pad.zeros(1, 5))
 ##' get.run.id('SA', round(qnorm(-3),3), trait = 'Vcmax')
 ##' @author Carl Davidson, David LeBauer
-#--------------------------------------------------------------------------------------------------#
 get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL) {
   result <- paste(c(run.type, pft.name, trait, index), collapse = "-")
   return(result)
 } # get.run.id
 
-
-##' @export
-listToXml <- function(x, ...) {
-  UseMethod("listToXml")
-} # listToXml
-
-
-#--------------------------------------------------------------------------------------------------#
-##' Convert List to XML
-##'
-##' Can convert list or other object to an xml object using xmlNode
-##' @title List to XML
-##' @param item
-##' @param tag xml tag
-##' @return xmlNode
-##' @export
-##' @author David LeBauer, Carl Davidson, Rob Kooper
-#--------------------------------------------------------------------------------------------------#
-listToXml.default <- function(item, tag) {
-
-  # just a textnode, or empty node with attributes
-  if (typeof(item) != "list") {
-    if (length(item) > 1) {
-      xml <- XML::xmlNode(tag)
-      for (name in names(item)) {
-        XML::xmlAttrs(xml)[[name]] <- item[[name]]
-      }
-      return(xml)
-    } else {
-      return(XML::xmlNode(tag, item))
-    }
-  }
-
-  # create the node
-  if (identical(names(item), c("text", ".attrs"))) {
-    # special case a node with text and attributes
-    xml <- XML::xmlNode(tag, item[["text"]])
-  } else {
-    # node with child nodes
-    xml <- XML::xmlNode(tag)
-    for (i in seq_along(item)) {
-      if (is.null(names(item)) || names(item)[i] != ".attrs") {
-        xml <- XML::append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
-      }
-    }
-  }
-
-  # add attributes to node
-  attrs <- item[[".attrs"]]
-  for (name in names(attrs)) {
-    XML::xmlAttrs(xml)[[name]] <- attrs[[name]]
-  }
-  return(xml)
-} # listToXml.default
-
-
 #--------------------------------------------------------------------------------------------------#
 ##' Zero bounded density using log density transform
 ##'
 ##' Provides a zero bounded density estimate of a parameter.
-##' Kernel Density Estimation used by the \code{\link{stats::density}} function will cause problems at the left hand end because it will put some weight on negative values. One useful approach is to transform to logs, estimate the density using KDE, and then transform back.
+##' Kernel Density Estimation used by the \code{\link[stats]{density}} function will cause problems
+##' at the left hand end because it will put some weight on negative values.
+##' One useful approach is to transform to logs, estimate the density using KDE, and then transform back.
 ##' @title Zero Bounded Density
-##' @param x
+##' @param x data, as a numeric vector
 ##' @param bw The smoothing bandwidth to be used. See 'bw.nrd'
 ##' @return data frame with back-transformed log density estimate
 ##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
 zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
   y     <- log(x)
-  g     <- density(y, bw = bw, n = n)
+  g     <- stats::density(y, bw = bw, n = n)
   xgrid <- exp(g$x)
   g$y   <- c(0, g$y / xgrid)
   g$x   <- c(0, xgrid)
@@ -267,7 +208,7 @@ summarize.result <- function(result) {
                 plyr::summarise, n = length(n),
                 mean = mean(mean),
                 statname = ifelse(length(n) == 1, "none", "SE"),
-                stat = sd(mean) / sqrt(length(n)))
+                stat = stats::sd(mean) / sqrt(length(n)))
   ans2 <- result[result$n != 1, colnames(ans1)]
   return(rbind(ans1, ans2))
 } # summarize.result
@@ -277,8 +218,8 @@ summarize.result <- function(result) {
 ##' Further summarizes output from summary.mcmc
 ##'
 ##' @title Get stats for parameters in MCMC output
-##' @param mcmc.summary
-##' @param sample.size
+##' @param mcmc.summary probably produced by \code{\link[coda]{summary.mcmc}}
+##' @param sample.size passed as 'n' in returned list
 ##' @return list with summary statistics for parameters in an MCMC chain
 ##' @author David LeBauer
 get.stats.mcmc <- function(mcmc.summary, sample.size) {
@@ -301,14 +242,16 @@ get.stats.mcmc <- function(mcmc.summary, sample.size) {
 ##' Used by \code{\link{get.parameter.stat}}.
 ##' @title Paste Stats
 ##' @name paste.stats
-##' @param mcmc.summary
-##' @param median
-##' @param lcl
-##' @param ucl
-##' @param n
+##' @param median 50-percent quantile
+##' @param lcl lower confidence limit
+##' @param ucl upper confidence limit
+##' @param n significant digits for printing. Passed to \code{\link{tabnum}}
 ##' @export
 ##' @author David LeBauer
-paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
+##' @examples
+##' paste.stats(3.333333, 5.00001, 6.22222, n = 3)
+##' # [1] "$3.33(5,6.22)$"
+paste.stats <- function(median, lcl, ucl, n = 2) {
   paste0("$", tabnum(median, n),
          "(", tabnum(lcl, n), ",", tabnum(ucl, n), ")",
          "$")
@@ -319,8 +262,8 @@ paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
 ##' Gets statistics for LaTeX - formatted table
 ##'
 ##' @title Get Parameter Statistics
-##' @param mcmc.summary
-##' @param parameter
+##' @param mcmc.summary probably produced by \code{\link[coda]{summary.mcmc}}
+##' @param parameter name of parameter to extract, as character
 ##' @return table with parameter statistics
 ##' @author David LeBauer
 ##' @export
@@ -347,17 +290,25 @@ get.parameter.stat <- function(mcmc.summary, parameter) {
 ## in future, perhaps create S3 functions: get.stats.pdf <- pdf.stats
 pdf.stats <- function(distn, A, B) {
   distn <- as.character(distn)
-  mean <- switch(distn, gamma = A/B, lnorm = exp(A + 1/2 * B^2), beta = A/(A +
-                                                                             B), weibull = B * gamma(1 + 1/A), norm = A, f = ifelse(B > 2, B/(B - 2),
-                                                                                                                                    mean(rf(10000, A, B))))
-  var <- switch(distn, gamma = A/B^2,
-                lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
-                beta = A * B/((A + B) ^ 2 * (A + B + 1)),
-                weibull = B ^ 2 * (gamma(1 + 2 / A) -
-                                     gamma(1 + 1 / A) ^ 2),
-                norm = B ^ 2, f = ifelse(B > 4,
-                                         2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
-                                         var(rf(1e+05, A, B))))
+  mean <- switch(distn,
+    gamma = A/B,
+    lnorm = exp(A + 1/2 * B^2),
+    beta = A/(A + B),
+    weibull = B * gamma(1 + 1/A),
+    norm = A,
+    f = ifelse(B > 2,
+               B/(B - 2),
+               mean(stats::rf(10000, A, B))))
+  var <- switch(distn,
+    gamma = A/B^2,
+    lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
+    beta = A * B/((A + B) ^ 2 * (A + B + 1)),
+    weibull = B ^ 2 * (gamma(1 + 2 / A) -
+                        gamma(1 + 1 / A) ^ 2),
+    norm = B ^ 2,
+    f = ifelse(B > 4,
+               2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
+               var(stats::rf(1e+05, A, B))))
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
@@ -387,17 +338,10 @@ pdf.stats <- function(distn, A, B) {
 ##' trait.lookup()[,c('figid', 'units')]
 ##' }
 trait.lookup <- function(traits = NULL) {
-  # HACK: shameless hack Ultimately we'll want this to be read once at the start of
-  # run time This could also be represented in the database, but because it is used
-  # to determine which parameters to feed to the model, it could be argued that
-  # it's conceptually model specific
-  data(trait.dictionary)
   if (is.null(traits)) {
-    trait.defs <- trait.dictionary
-  } else {
-    trait.defs <- trait.dictionary[match(traits, trait.dictionary$id), ]
+    return(PEcAn.utils::trait.dictionary)
   }
-  return(trait.defs)
+  PEcAn.utils::trait.dictionary[match(traits, PEcAn.utils::trait.dictionary$id), ]
 } # trait.lookup
 
 
@@ -463,16 +407,12 @@ isFALSE <- function(x) !isTRUE(x)
 ##' @title newxtable
 ##' @param x data.frame to be converted to latex table
 ##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
-##' @param table.placement
-##' @param label
-##' @param caption
-##' @param caption.placement
-##' @param align
+##' @param table.placement,label,caption,caption.placement,align passed to \code{\link[xtable]{xtable}}
 ##' @return Latex version of table, with percentages properly formatted
 ##' @author David LeBauer
 newxtable <- function(x, environment = "table", table.placement = "ht", label = NULL,
                       caption = NULL, caption.placement = NULL, align = NULL) {
-  print(xtable(x, label = label, caption = caption, align = align),
+  print(xtable::xtable(x, label = label, caption = caption, align = align),
         floating.environment = environment,
         table.placement = table.placement,
         caption.placement = caption.placement,
@@ -530,7 +470,7 @@ as.sequence <- function(x, na.rm = TRUE) {
 ##' Useful for testing functions that depend on settings file
 ##' Reference: http://stackoverflow.com/a/12940705/199217
 ##' @title temp.settings
-##' @param settings.txt
+##' @param settings.txt character vector to be written
 ##' @return character vector written to and read from a temporary file
 ##' @export
 ##' @author David LeBauer
@@ -577,8 +517,8 @@ tryl <- function(FUN) {
 ##' @author David LeBauer
 load.modelpkg <- function(model) {
   pecan.modelpkg <- paste0("PEcAn.", model)
-  if (!pecan.modelpkg %in% names(sessionInfo()$otherPkgs)) {
-    if (pecan.modelpkg %in% rownames(installed.packages())) {
+  if (!pecan.modelpkg %in% names(utils::sessionInfo()$otherPkgs)) {
+    if (pecan.modelpkg %in% rownames(utils::installed.packages())) {
       do.call(require, args = list(pecan.modelpkg))
     } else {
       PEcAn.logger::logger.error("I can't find a package for the ", model,
@@ -701,7 +641,9 @@ convert.expr <- function(expression) {
 ##'
 ##' @examples
 ##' \dontrun{
-##' download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
+##' download.file("
+##'   ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc",
+##'   "~/pres.sfc.2000.nc")
 ##' }
 ##'
 ##' @export
@@ -739,25 +681,26 @@ download.file <- function(url, filename, method) {
 ##' 
 ##' @examples
 ##' \dontrun{
-##' dap <- retry.func(ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
-##' maxErrors=10, sleep=2)
+##' dap <- retry.func(
+##'   ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
+##'   maxErrors=10,
+##'   sleep=2)
 ##' }
 ##' 
 ##' @export
 ##' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
-
 retry.func <- function(expr, isError=function(x) "try-error" %in% class(x), maxErrors=5, sleep=0) {
   attempts = 0
   retval = try(eval(expr))
   while (isError(retval)) {
     attempts = attempts + 1
     if (attempts >= maxErrors) {
-      msg = sprintf("retry: too many retries [[%s]]", capture.output(str(retval)))
+      msg = sprintf("retry: too many retries [[%s]]", utils::capture.output(utils::str(retval)))
       PEcAn.logger::logger.warn(msg)
       stop(msg)
     } else {
       msg = sprintf("retry: error in attempt %i/%i [[%s]]", attempts, maxErrors, 
-                    capture.output(str(retval)))
+                    utils::capture.output(utils::str(retval)))
       PEcAn.logger::logger.warn(msg)
       #warning(msg)
     }

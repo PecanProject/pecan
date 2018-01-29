@@ -5,18 +5,22 @@
 \title{Insert file into tables}
 \usage{
 dbfile.insert(in.path, in.prefix, type, id, con, reuse = TRUE,
-  hostname = PEcAn.utils::fqdn())
+  hostname = PEcAn.remote::fqdn())
 }
 \arguments{
 \item{in.path}{Path to file directory}
 
 \item{in.prefix}{Filename prefix (not including directory)}
 
+\item{type}{One of "Model", "Posterior", "Input"}
+
+\item{id}{container_id of the input to be modified}
+
 \item{con}{database connection object}
 
-\item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
+\item{reuse}{logical: If a record already exists, use it or create a new one?}
 
-\item{params}{database connection information}
+\item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
 }
 \value{
 id of the file that is written

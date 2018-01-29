@@ -3,6 +3,10 @@
 ##' @name do_conversions
 ##' @title do_conversions
 ##' @description Input conversion workflow
+##'
+##' @param settings PEcAn settings list
+##' @param overwrite.met,overwrite.fia,overwrite.ic logical
+##'
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
@@ -86,7 +90,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     }
   }
   if (needsave) {
-    XML::saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
+    XML::saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
   } else if (file.exists(file.path(settings$outdir, "pecan.METProcess.xml"))) {
     settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.METProcess.xml"))
   }

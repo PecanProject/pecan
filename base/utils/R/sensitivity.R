@@ -92,11 +92,11 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   my.write.config <- paste("write.config.", model, sep = "")
   
   if (write.to.db) {
-    con <- try(db.open(settings$database$bety), silent = TRUE)
-    if (is(con, "try-error")) {
+    con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+    if (inherits(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(db.close(con))
+      on.exit(PEcAn.DB::db.close(con))
     }
   } else {
     con <- NULL
@@ -124,14 +124,14 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   names(median.samples) <- names(quantile.samples)
 
   if (!is.null(con)) {
-    ensemble.id <- db.query(paste0(
+    ensemble.id <- PEcAn.DB::db.query(paste0(
       "INSERT INTO ensembles (runtype, workflow_id) ",
       "VALUES ('sensitivity analysis', ", format(workflow.id, scientific = FALSE), ") ",
       "RETURNING id"), con = con)[['id']]
       
     paramlist <- paste0("quantile=MEDIAN,trait=all,pft=",
                         paste(lapply(settings$pfts, function(x) x[["name"]]), sep = ","))
-    run.id <- db.query(paste0("INSERT INTO runs ",
+    run.id <- PEcAn.DB::db.query(paste0("INSERT INTO runs ",
       "(model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
       "values ('", 
         settings$model$id, "', '", 
@@ -145,7 +145,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     
     # associate posteriors with ensembles
     for (pft in defaults) {
-      db.query(paste0(
+      PEcAn.DB::db.query(paste0(
         "INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) ",
         "values (", pft$posteriorid, ", ", ensemble.id, ")"), con = con)
     }
@@ -153,7 +153,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     # associate inputs with runs
     if (!is.null(inputs)) {
       for (x in inputs) {
-        db.query(paste0(
+        PEcAn.DB::db.query(paste0(
           "INSERT INTO inputs_runs (input_id, run_id) ", 
           "values (", settings$run$inputs[[x]], ", ", run.id, ")"), con = con)
       }
@@ -225,7 +225,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
           if (!is.null(con)) {
             now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
             paramlist <- paste0("quantile=", quantile.str, ",trait=", trait, ",pft=", pftname)
-            db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", 
+            PEcAn.DB::db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('",
                             settings$model$id, "', '", 
                             settings$run$site$id, "', '", 
                             settings$run$start.date, "', '",
@@ -234,12 +234,12 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
                             now, "', ", 
                             ensemble.id, ", '", 
                             paramlist, "')"), con = con)
-            run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", 
+            run.id <- PEcAn.DB::db.query(paste0("SELECT id FROM runs WHERE created_at='",
                                       now, "' AND parameter_list='", paramlist, "'"), con = con)[["id"]]
             
             # associate posteriors with ensembles
             for (pft in defaults) {
-              db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (", 
+              PEcAn.DB::db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
                               pft$posteriorid, ", ", 
                               ensemble.id, ", '", 
                               now, "', '", now, 
@@ -249,7 +249,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
             # associate inputs with runs
             if (!is.null(inputs)) {
               for (x in inputs) {
-                db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ", 
+                PEcAn.DB::db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ",
                                 "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), 
                          con = con)
               }

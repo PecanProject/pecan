@@ -44,7 +44,7 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
       
       result.i <- try(fn(settings[[i]], ...), silent = TRUE)
       
-      if (!is(result.i, "try-error")) {
+      if (!inherits(result.i, "try-error")) {
         ind <- length(result) + 1
         if (!is.null(result.i)) {
           result[[ind]] <- result.i

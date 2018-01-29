@@ -13,16 +13,16 @@
 ##' data to store the file
 ##' @name dbfile.input.insert
 ##' @title Insert file into tables
-##' @param filename the name of the file to be inserted
+##' @param in.path path to the directory containing the file to be inserted
+##' @param in.prefix initial portion of the filename that does not vary by date. Does not include directory; specify that as part of in.path
 ##' @param siteid the id of the site that this data is applicable to
 ##' @param startdate the start date of the data stored in the file
 ##' @param enddate the end date of the data stored in the file
 ##' @param mimetype the mime-type of the file
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
-##' @param parent the id of the parent of the input
+##' @param parentid the id of the parent of the input
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @param allow.conflicting.dates Whether to allow a new input record with same siteid, name, and format but different start/end dates
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
@@ -32,7 +32,7 @@
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname,
-                                parentid=NA, con, hostname=PEcAn.utils::fqdn(), allow.conflicting.dates=FALSE) {
+                                parentid=NA, con, hostname=PEcAn.remote::fqdn(), allow.conflicting.dates=FALSE) {
   name <- basename(in.path)
   hostname <- default_hostname(hostname)
 
@@ -163,10 +163,9 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param enddate the end date of the data stored in the file
 ##' @param mimetype the mime-type of the file
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
-##' @param parent the id of the parent of the input
+##' @param parentid the id of the parent of the input
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @param exact.dates setting to include start and end date in input query
 ##' @param pattern text to seach for in the file name (default NULL = no check). NOT YET IMPLEMENTED
 ##' @return data.frame with the id, filename and pathname of the input that is requested
@@ -177,7 +176,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA,
-                               con, hostname=PEcAn.utils::fqdn(), exact.dates=FALSE, pattern=NULL) {
+                               con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL) {
   hostname <- default_hostname(hostname)
 
   mimetypeid <- get.id(table = 'mimetypes', colnames = 'type_string', values = mimetype, con = con)
@@ -294,7 +293,6 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the posterior that is requested
 ##' @author Rob Kooper
 ##' @export
@@ -302,7 +300,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
 ##' \dontrun{
 ##'   dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=PEcAn.utils::fqdn()) {
+dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   # find appropriate pft
@@ -354,7 +352,6 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the posterior that is requested
 ##' @author Rob Kooper
 ##' @export
@@ -362,7 +359,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##' \dontrun{
 ##'   dbfile.posterior.check(pft, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcAn.utils::fqdn()) {
+dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   # find appropriate pft
@@ -404,9 +401,11 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcA
 ##' @title Insert file into tables
 ##' @param in.path Path to file directory
 ##' @param in.prefix Filename prefix (not including directory)
+##' @param type One of "Model", "Posterior", "Input"
+##' @param id container_id of the input to be modified
+##' @param reuse logical: If a record already exists, use it or create a new one?
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @return id of the file that is written
 ##' @author Rob Kooper, Ryan Kelly
 ##' @export
@@ -414,7 +413,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcA
 ##' \dontrun{
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
-dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostname=PEcAn.utils::fqdn()) {
+dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   if (substr(in.path, 1, 1) != '/') {
@@ -496,7 +495,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
 
-dbfile.check <- function(type, container.id, con, hostname = PEcAn.utils::fqdn(), machine.check = TRUE, return.all = FALSE) {
+dbfile.check <- function(type, container.id, con, hostname = PEcAn.remote::fqdn(), machine.check = TRUE, return.all = FALSE) {
 
   hostname <- default_hostname(hostname)
 
@@ -551,14 +550,14 @@ dbfile.check <- function(type, container.id, con, hostname = PEcAn.utils::fqdn()
 
 
 
-##' Function to return full path to a file using dbfiles table
+##' Convert between file paths and ids
 ##'
-##' This will check the dbfiles and machines to see if the file exists,
-##' and return the full filename with path to the first one found. If
-##' none is found it will return NA.
+##' These functions check the dbfiles and machines tables to see if the file
+##' exists, and return the container_id (\code{dbfile.id}) or full filename
+##' with path (\code{dbfile.file}) to the first one found.
+##' If none is found, both will return NA.
 ##'
-##' @name dbfile.file
-##' @title Return file from the dbfiles tables
+##' @describeIn dbfile.file Return full path to file from the dbfiles table
 ##' @param type the type of dbfile (Input, Posterior)
 ##' @param id the id of container type
 ##' @param con database connection object
@@ -570,7 +569,7 @@ dbfile.check <- function(type, container.id, con, hostname = PEcAn.utils::fqdn()
 ##' \dontrun{
 ##'   dbfile.file('Input', 7, dbcon)
 ##' }
-dbfile.file <- function(type, id, con, hostname=PEcAn.utils::fqdn()) {
+dbfile.file <- function(type, id, con, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   files <- dbfile.check(type = type, container.id = id, con = con, hostname = hostname)
@@ -586,26 +585,15 @@ dbfile.file <- function(type, id, con, hostname=PEcAn.utils::fqdn()) {
   }
 }
 
-##' Function to return id to containter type given a filename.
-##'
-##' This will check the dbfiles and machines to see if the file exists,
-##' and return the id of the container type of the first one found. If
-##' none is found it will return NA.
-##'
-##' @name dbfile.file
-##' @title Return id from the dbfiles tables
-##' @param type the type of dbfile (Input, Posterior)
+##' @describeIn dbfile.file Return id to container type given a filename
 ##' @param file the full pathname to the file
-##' @param con database connection object
-##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @return filename on host, or NA if none found
 ##' @author Rob Kooper
 ##' @export
 ##' @examples
 ##' \dontrun{
 ##'   dbfile.id('Model', '/usr/local/bin/sipnet', dbcon)
 ##' }
-dbfile.id <- function(type, file, con, hostname=PEcAn.utils::fqdn()) {
+dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   # find appropriate host

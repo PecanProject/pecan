@@ -13,18 +13,23 @@ library(scales)
 library(lubridate)
 library(dplyr)
 library(reshape2)
+library(purrr)
 # Maximum size of file allowed to be uploaded: 100MB 
 options(shiny.maxRequestSize=100*1024^2) 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
+  source("workflowPlot_fcns.R", local = TRUE) # Load all functions that need to be defined for this script
+  
+  
   # Update all workflow ids
   observe({
     # get_workflow_ids function (line 137) in db/R/query.dplyr.R takes a flag to check
     # if we want to load all workflow ids.
     # get_workflow_id function from query.dplyr.R
-    all_ids <- get_workflow_ids(bety, session,all.ids=TRUE)
-    updateSelectizeInput(session, "all_workflow_id", choices=all_ids)
+    query <- isolate(shiny::parseQueryString(session$clientData$url_search))
+    all_ids <- get_workflow_ids(bety, query, all.ids=TRUE)
+    updateSelectizeInput(session, "all_workflow_id", choices = all_ids)
   })
   # Update all run ids
   all_run_ids <- reactive({
@@ -40,88 +45,40 @@ server <- shinyServer(function(input, output, session) {
       for(r_id in r_ids){
         # Each workflow id can have more than one run ids
         # ',' as a separator between workflow id and run id
-        list_item <- paste0('workflow ',w_id,', run ',r_id)
-        run_id_list <- c(run_id_list,list_item)
+        list_item <- paste0('workflow ', w_id,', run ', r_id)
+        run_id_list <- c(run_id_list, list_item)
       }
     }
     return(run_id_list)
   })
   # Update all run_ids ('workflow ',w_id,', run ',r_id)
   observe({
-    updateSelectizeInput(session, "all_run_id", choices=all_run_ids())
+    updateSelectizeInput(session, "all_run_id", choices = all_run_ids())
   })
-  return_DF_from_run_ID <- function(diff_ids){
-    # Called by function parse_ids_from_input_runID
-    # which is a wrapper of this function
-    # Returns a DF for a particular run_id
-    split_string <- strsplit(diff_ids,',')[[1]]
-    # Workflow id is the first element. Trim leading and ending white spaces. Split by space now
-    wID <- as.numeric(strsplit(trimws(split_string[1],which = c("both")),' ')[[1]][2])
-    # Run id is the second element
-    runID <- as.numeric(strsplit(trimws(split_string[2],which = c("both")),' ')[[1]][2])
-    return(data.frame(wID,runID))
-  }
-  # Wrapper over return_DF_from_run_ID
-  # @param list of multiple run ids
-  # run_id_string: ('workflow' workflow_ID, 'run' run_id)
-  # @return Data Frame of workflow and run ids
-  parse_ids_from_input_runID <- function(run_id_list){
-    globalDF <- data.frame()
-    for(w_run_id in run_id_list){
-      globalDF <- rbind(globalDF,return_DF_from_run_ID(w_run_id))
-    }
-    return(globalDF)
-  }  
+    
   # Update variable names observeEvent on input$load 
-  observeEvent(input$load,{
+  observeEvent(input$load, {
     req(input$all_run_id)
     # All information about a model is contained in 'all_run_id' string
     ids_DF <- parse_ids_from_input_runID(input$all_run_id)
     var_name_list <- c()
     for(row_num in 1:nrow(ids_DF)){
-      var_name_list <- c(var_name_list,var_names_all(bety,ids_DF$wID[row_num],ids_DF$runID[row_num]))
+      var_name_list <- c(var_name_list, var_names_all(bety, ids_DF$wID[row_num], ids_DF$runID[row_num]))
     }
-    updateSelectizeInput(session, "variable_name", choices=var_name_list)
+    updateSelectizeInput(session, "variable_name", choices = var_name_list)
   })
   # Loads data for all workflow and run ids after the load button is pressed.
   # All information about a model is contained in 'all_run_id' string
   # Wrapper over 'load_data_single_run' in PEcAn.db::query.dplyr
   # Model data different from observations data 
-  loadNewData <-eventReactive(input$load,{
+  loadNewData <- eventReactive(input$load,{
     req(input$all_run_id)
     # Get IDs DF from 'all_run_id' string
     ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-    globalDF <- data.frame()
-    for(row_num in 1:nrow(ids_DF)){
-      globalDF <- rbind(globalDF, load_data_single_run(bety,ids_DF$wID[row_num],ids_DF$runID[row_num]))
-    }
+    globalDF <- map2_df(ids_DF$wID, ids_DF$runID, ~load_data_single_run(bety, .x, .y))
     return(globalDF)
   })
-  # Allows to load actual data (different from model output) following the tutorial
-  # https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd
-  # @params: bety,settings,File_path,File_format
-  # loadObservationData <- function(bety,settings,File_path,File_format){
-  loadObservationData <- function(bety,inputs_df){
-    input_id <- inputs_df$input_id
-    # File_format <- getFileFormat(bety,input_id)
-    File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_id)
-    start.year <- as.numeric(lubridate::year(inputs_df$start_date))
-    end.year <- as.numeric(lubridate::year(inputs_df$end_date))
-    File_path <- inputs_df$filePath
-    # TODO There is an issue with the db where file names are not saved properly. 
-    # To make it work with the VM, uncomment the line below
-    # File_path <- paste0(inputs_df$filePath,'.csv')
-    site.id <- inputs_df$site_id
-    site<-PEcAn.DB::query.site(site.id,bety$con)
-    observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
-    return(observations)
-  }
-  getSettingsFromWorkflowId <- function(bety,workflowID){
-    basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% workflowID) %>% dplyr::pull(folder)
-    configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
-    settings<-PEcAn.settings::read.settings(configPath)
-    return(settings)
-  }
+  
   observeEvent(input$load,{
     # Retrieves all site ids from multiple seleted run ids when load button is pressed
     req(input$all_run_id)
@@ -134,33 +91,23 @@ server <- shinyServer(function(input, output, session) {
     }
     updateSelectizeInput(session, "all_site_id", choices=site_id_list)
   })
-  # Get input id from selected site id. Returns inputs_df which is used to load observation data
-  getInputs <- function(bety,site_Id){
-    # Subsetting the input id list based on the current (VM) machine
-    my_hostname <- PEcAn.utils::fqdn()
-    my_machine_id <- dplyr::tbl(bety, 'machines') %>% dplyr::filter(hostname == my_hostname) %>% dplyr::pull(id)
-    # Inner join 'inputs' table with 'dbfiles' table
-    # inputs_df would contain all the information about the site and input id required for
-    # the tutorial mentioned above to compare model run with actual observations
-    inputs_df <- dplyr::tbl(bety, 'dbfiles') %>% 
-      dplyr::filter(container_type == 'Input', machine_id == my_machine_id) %>%
-      dplyr::inner_join(tbl(bety, 'inputs')  %>% dplyr::filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
-      dplyr::collect()
-    # Order by container id (==input id)
-    inputs_df <- inputs_df[order(inputs_df$container_id),]
-    # Mutate column as (input id, name) to be shown to the user
-    inputs_df <- inputs_df %>% 
-      dplyr::mutate(input_selection_list = paste(inputs_df$container_id, inputs_df$name),
-             filePath = paste0(inputs_df$file_path,'/', inputs_df$file_name)) %>%
-      dplyr::select(input_id = container_id,filePath,input_selection_list,start_date,end_date,site_id,name,
-             machine_id,file_name,file_path)
-    return(inputs_df)
-  }
+
   # Update input id list as (input id, name)
   observe({
     req(input$all_site_id)
-    inputs_df <- getInputs(bety,c(input$all_site_id))
-    updateSelectizeInput(session, "all_input_id", choices=inputs_df$input_selection_list)
+    inputs_df <- getInputs(bety, c(input$all_site_id))
+    formats_1 <- dplyr::tbl(bety, 'formats_variables') %>%
+      dplyr::filter(format_id %in% inputs_df$format_id)
+    if (dplyr.count(formats_1) == 0) {
+      logger.warn("No inputs found. Returning NULL.")
+      return(NULL)
+    } else {
+      formats_sub <- formats_1 %>%
+        dplyr::pull(format_id) %>%
+        unique()
+      inputs_df <- inputs_df %>% dplyr::filter(format_id %in% formats_sub) # Only data sets with formats with associated variables will show up
+      updateSelectizeInput(session, "all_input_id", choices=inputs_df$input_selection_list)
+    }
   })
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
@@ -216,10 +163,13 @@ server <- shinyServer(function(input, output, session) {
         # No need for subsetting though as align data returns for now only the provided variable name
         # externalData <- externalData %>% dplyr::select(posix,dplyr::one_of(input$variable_name))
         var = input$variable_name
-        df = df %>% select(posix = dates, var = vals)
-        colnames(df)[2]<-paste0(var) # Required for align data to work
-        aligned_data = PEcAn.benchmark::align_data(model.calc = df, obvs.calc = externalData, var =var, align_method = "match_timestep")
-        colnames(aligned_data) <- c("model","observations","Date") # Order returned by align_data
+        df = df %>% select(posix = dates, vals) 
+        colnames(df)[which(colnames(df) == "vals")] <- var 
+        aligned_data = PEcAn.benchmark::align_data(model.calc = df, obvs.calc = externalData, var =var, align_method = "mean_over_larger_timestep")
+        colnames(aligned_data)[grep("[.]m", colnames(aligned_data))] <- "model"
+        colnames(aligned_data)[grep("[.]o", colnames(aligned_data))] <- "observations"
+        colnames(aligned_data)[which(colnames(aligned_data) == "posix")] <- "Date"
+        
         # Melt dataframe to plot two types of columns together
         aligned_data <- reshape2::melt(aligned_data, "Date")
         data_geom <- switch(input$data_geom, point = geom_point, line = geom_line)
@@ -242,10 +192,20 @@ server <- shinyServer(function(input, output, session) {
     # scale_y_continuous(labels=fancy_scientific) +
     # scale_color_manual(name = "", values = "black") +
     # scale_fill_manual(name = "", values = "grey50")
-    plt<-ggplotly(plt)
+    if(input$plotview){
+      plt<-ggplotly(plt)
+    }else{
+      plt<-ggplot(data.frame(x = 0, y = 0), aes(x,y)) + annotate("text", x = 0, y = 0, label = "You chose to skip plotting
+proceed to benchmarking", size = 10, color = "grey")
+    }
     # Not able to add icon over ggplotly
     # add_icon()
   })
+  
+  
+  # Source the server code for all the benchmarking tabs in the app
+  source("bm.R", local = TRUE)
+  
 }) # Shiny server closes here  
 # To run the shiny app locally
 # runApp(port=6480, launch.browser=FALSE)

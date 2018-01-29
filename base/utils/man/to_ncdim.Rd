@@ -2,7 +2,7 @@
 % Please edit documentation in R/to_nc.R
 \name{to_ncdim}
 \alias{to_ncdim}
-\title{to_ncdim}
+\title{Make some values into an NCDF dimension variable}
 \usage{
 to_ncdim(dimname, vals)
 }
@@ -13,6 +13,9 @@ to_ncdim(dimname, vals)
 }
 \value{
 ncdim defined according to standard_vars
+}
+\description{
+Units and longnames are looked up from the \code{\link{standard_vars}} table
 }
 \author{
 Anne Thomas

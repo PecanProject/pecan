@@ -138,7 +138,8 @@ logger.message <- function(level, msg, ...) {
   if (logger.getLevelNumber(level) >= .utils.logger$level) {
     dump.frames(dumpto = "dump.log")
     calls <- names(dump.log)
-    func <- sub("\\(.*", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
+    calls <- calls[!grepl("^(#[0-9]+: )?(PEcAn\\.logger::)?logger", calls)]
+    func <- sub("\\(.*", "", tail(calls, 1))
     if (length(func) == 0) {
       func <- "console"
     }

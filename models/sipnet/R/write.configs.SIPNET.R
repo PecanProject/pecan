@@ -236,6 +236,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("leaf_turnover_rate" %in% pft.names) {
       param[which(param[, 1] == "leafTurnoverRate"), 2] <- pft.traits[which(pft.names == "leaf_turnover_rate")]
     }
+    
+    if ("wueConst" %in% pft.names) {
+      param[which(param[, 1] == "wueConst"), 2] <- pft.traits[which(pft.names == "wueConst")]
+    }
 
     # vegetation respiration Q10.
     if ("veg_respiration_Q10" %in% pft.names) {
@@ -283,6 +287,43 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("coarse_root_respiration_Q10" %in% pft.names) {
       param[which(param[, 1] == "coarseRootQ10"), 2] <- pft.traits[which(pft.names == "coarse_root_respiration_Q10")]
     }
+    
+    # WARNING: fineRootAllocation + woodAllocation + leafAllocation isn't supposed to exceed 1
+    # see sipnet.c code L2005 :
+    # fluxes.coarseRootCreation=(1-params.leafAllocation-params.fineRootAllocation-params.woodAllocation)*npp;
+    # priors can be chosen accordingly, and SIPNET doesn't really crash when sum>1 but better keep an eye
+    alloc_params <- c("root_allocation_fraction", "wood_allocation_fraction", "leaf_allocation_fraction")
+    if (all(alloc_params %in% pft.names)) {
+      sum_alloc <- pft.traits[which(pft.names == "root_allocation_fraction")] +
+        pft.traits[which(pft.names == "wood_allocation_fraction")] +
+        pft.traits[which(pft.names == "leaf_allocation_fraction")]
+      if(sum_alloc > 1){
+        # I want this to be a severe for now, lateer can be changed back to warning
+        PEcAn.logger::logger.warn("Sum of allocation parameters exceeds 1 for runid = ", run.id,
+                                  "- This won't break anything since SIPNET has internal check, but notice that such combinations might not take effect in the outputs.")
+      }
+    }
+    
+    
+    # fineRootAllocation
+    if ("root_allocation_fraction" %in% pft.names) {
+      param[which(param[, 1] == "fineRootAllocation"), 2] <- pft.traits[which(pft.names == "root_allocation_fraction")]
+    }
+    
+    # woodAllocation
+    if ("wood_allocation_fraction" %in% pft.names) {
+      param[which(param[, 1] == "woodAllocation"), 2] <- pft.traits[which(pft.names == "wood_allocation_fraction")]
+    }
+    
+    # leafAllocation
+    if ("leaf_allocation_fraction" %in% pft.names) {
+      param[which(param[, 1] == "leafAllocation"), 2] <- pft.traits[which(pft.names == "leaf_allocation_fraction")]
+    }
+    
+    # wood_turnover_rate
+    if ("wood_turnover_rate" %in% pft.names) {
+      param[which(param[, 1] == "woodTurnoverRate"), 2] <- pft.traits[which(pft.names == "wood_turnover_rate")]
+    }
 
     ### ----- Soil parameters soil respiration Q10.
     if ("soil_respiration_Q10" %in% pft.names) {
@@ -292,6 +333,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("som_respiration_rate" %in% pft.names) {
       param[which(param[, 1] == "baseSoilResp"), 2] <- pft.traits[which(pft.names == "som_respiration_rate")]
     }
+    
     # litterBreakdownRate
     if ("turn_over_time" %in% pft.names) {
       id <- which(param[, 1] == "litterBreakdownRate")
@@ -306,6 +348,17 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "soilWHC"), 2] <- pft.traits[which(pft.names == "soilWHC")]
     }
 
+    # 10/31/2017 IF: these were the two assumptions used in the emulator paper in order to reduce dimensionality
+    # These results in improved winter soil respiration values
+    # they don't affect anything when the seasonal soil respiration functionality in SIPNET is turned-off
+    if(FALSE){
+      # assume soil resp Q10 cold == soil resp Q10
+      param[which(param[, 1] == "soilRespQ10Cold"), 2] <- param[which(param[, 1] == "soilRespQ10"), 2]
+      # default SIPNET prior of baseSoilRespCold was 1/4th of baseSoilResp
+      # assuming they will scale accordingly
+      param[which(param[, 1] == "baseSoilRespCold"), 2] <- param[which(param[, 1] == "baseSoilResp"), 2] * 0.25
+    }
+    
     ### ----- Phenology parameters GDD leaf on
     if ("GDD" %in% pft.names) {
       param[which(param[, 1] == "gddLeafOn"), 2] <- pft.traits[which(pft.names == "GDD")]
@@ -327,8 +380,13 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(IC)) {
     ic.names <- names(IC)
     ## plantWoodInit gC/m2
-    if ("plantWood" %in% ic.names) {
-      param[which(param[, 1] == "plantWoodInit"), 2] <- IC$plantWood
+    plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
+    if (all(plant_wood_vars %in% ic.names)) {
+      # reconstruct total wood C
+      wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
+      param[which(param[, 1] == "plantWoodInit"),  2] <- wood_total_C
+      param[which(param[, 1] == "coarseRootFrac"), 2] <- IC$coarseRootFrac
+      param[which(param[, 1] == "fineRootFrac"),   2] <- IC$fineRootFrac
     }
     ## laiInit m2/m2
     if ("lai" %in% ic.names) {
@@ -367,7 +425,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
       ## plantWoodInit gC/m2
       if ("wood" %in% names(IC.pools)) {
-        param[which(param[, 1] == "plantWoodInit"), 2] <- udunits2:ud.convert(IC.pools$wood, "kg m-2", "g m-2")
+        param[which(param[, 1] == "plantWoodInit"), 2] <- udunits2::ud.convert(IC.pools$wood, "kg m-2", "g m-2")
       }
       ## laiInit m2/m2
       lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)

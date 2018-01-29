@@ -18,7 +18,7 @@ read.ensemble.output(ensemble.size, pecandir, outdir, start.year, end.year,
 
 \item{end.year}{last year to include in ensemble analysis}
 
-\item{variables}{targe variables for ensemble analysis}
+\item{variables}{target variables for ensemble analysis}
 }
 \value{
 a list of ensemble model output

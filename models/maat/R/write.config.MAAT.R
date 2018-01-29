@@ -99,14 +99,14 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
             file.path(settings$model$binary, "src")))
   
   ### Parse config options to XML
-  xml <- PEcAn.utils::listToXml(settings$model$config, "default")
+  xml <- PEcAn.settings::listToXml(settings$model$config, "default")
   
   ### Run rename and conversion function on PEcAn trait values
   traits <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
   
   ### Convert traits to list
   traits.list <- as.list(traits)
-  traits.xml <- PEcAn.utils::listToXml(traits.list, "pars")
+  traits.xml <- PEcAn.settings::listToXml(traits.list, "pars")
   
   ### Finalize XML
   xml[[1]] <- addChildren(xml[[1]], traits.xml)

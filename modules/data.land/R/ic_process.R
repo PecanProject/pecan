@@ -69,7 +69,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   
   # set up host information
-  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.utils::fqdn(), host$name)
+  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
   # retrieve model type info
