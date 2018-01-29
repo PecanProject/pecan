@@ -53,22 +53,22 @@ query.traits <- function(ids, priors, con = NULL,
       (rlang::UQ(id_type) %in% ids),
       (name %in% priors)) # TODO: use .data$name when filter supports it
     %>% dplyr::distinct(name) # TODO: use .data$name when distinct supports it
-    %>% dplyr::pull(.data$name))
+    %>% dplyr::collect())
 
-  if (length(traits) == 0) {
+  if (nrow(traits) == 0) {
     return(list())
   }
 
     ### Grab trait data
-    trait.data <- lapply(traits, function(trait)
+    trait.data <- lapply(traits$name, function(trait){
       query.trait.data(
         trait = trait,
         spstr = PEcAn.utils::vecpaste(ids),
         con = con,
         update.check.only = update.check.only,
         ids_are_cultivars = ids_are_cultivars
-      ))
-    names(trait.data) <- traits
+      )})
+    names(trait.data) <- traits$name
 
   return(trait.data)
 }
