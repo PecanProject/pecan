@@ -59,16 +59,16 @@ query.traits <- function(ids, priors, con = NULL,
     return(list())
   }
 
-    ### Grab trait data
-    trait.data <- lapply(traits$name, function(trait){
-      query.trait.data(
-        trait = trait,
-        spstr = PEcAn.utils::vecpaste(ids),
-        con = con,
-        update.check.only = update.check.only,
-        ids_are_cultivars = ids_are_cultivars
-      )})
-    names(trait.data) <- traits$name
+  ### Grab trait data
+  trait.data <- lapply(traits$name, function(trait){
+    query.trait.data(
+      trait = trait,
+      spstr = PEcAn.utils::vecpaste(ids),
+      con = con,
+      update.check.only = update.check.only,
+      ids_are_cultivars = ids_are_cultivars)
+  })
+  names(trait.data) <- traits$name
 
   return(trait.data)
 }
