@@ -6,10 +6,13 @@ con <- db.open(
 
 dbdir <- file.path(tempdir(), "dbfiles")
 outdir <- file.path(tempdir(), "outfiles")
+loglevel <- PEcAn.logger::logger.getLevel()
+PEcAn.logger::logger.setLevel("OFF")
 
 teardown({
   db.close(con)
   unlink(c(dbdir, outdir), recursive=TRUE)
+  PEcAn.logger::logger.setLevel(loglevel)
 })
 
 get_pft <- function(pftname) {
@@ -38,7 +41,7 @@ test_that("reference species and cultivar PFTs write traits properly",{
   cv_trt = file.path(dbdir, "posterior", pavi_cv$posteriorid, "trait.data.csv")
   expect_true(file.exists(cv_csv))
   expect_true(file.exists(cv_trt))
-  expect_gt(file.info(cv_csv)$size, 48) # yes, cultivar.csv headers are longer
+  expect_gt(file.info(cv_csv)$size, 63) # cultivar.csv headers are longer
   expect_gt(file.info(cv_trt)$size, 215)
 
   pavi_allcv <- get_pft("Pavi_all")
@@ -47,7 +50,7 @@ test_that("reference species and cultivar PFTs write traits properly",{
   allcv_trt = file.path(dbdir, "posterior", pavi_allcv$posteriorid, "trait.data.csv")
   expect_true(file.exists(allcv_csv))
   expect_true(file.exists(allcv_trt))
-  expect_gt(file.info(allcv_csv)$size, 48)
+  expect_gt(file.info(allcv_csv)$size, 63)
   expect_gt(file.info(allcv_trt)$size, 215)
 
 

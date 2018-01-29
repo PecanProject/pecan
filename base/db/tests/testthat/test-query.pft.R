@@ -41,7 +41,7 @@ test_that("query.pft_cultivars finds cultivars for a PFT", {
   expect_equal(nrow(one_cv), 1)
   expect_equal(one_cv$id, 3)
   expect_equal(one_cv$specie_id, 938)
-  expect_equal(one_cv$species_name, "Panicum virgatum")
+  expect_equal(one_cv$scientificname, "Panicum virgatum")
 
   multi_cv <- query.pft_cultivars(pft = "Pavi_all", modeltype = NULL, con)
   expect_is(multi_cv, "data.frame")
@@ -51,6 +51,6 @@ test_that("query.pft_cultivars finds cultivars for a PFT", {
 })
 
 test_that("query.pft_species and query.pft_cultivars do not find each other's PFTs", {
-  expect_equal(nrow(query.pft_species("Pavi_9005438", NULL, con)), 0)
+  expect_equal(nrow(query.pft_species("Pavi_alamo", NULL, con)), 0)
   expect_equal(nrow(query.pft_cultivars("soil", NULL, con)), 0)
 })
