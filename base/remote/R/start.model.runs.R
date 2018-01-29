@@ -187,7 +187,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         if (!is_modellauncher) {
           pbi <- pbi + 1
         }
-        setTxtProgressBar(pb, pb1)
+        setTxtProgressBar(pb, pbi)
       } # End check if job finished
     }  # end loop over runs
   }  # end while loop checking runs

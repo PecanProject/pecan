@@ -95,7 +95,7 @@ download.Geostreams <- function(outfolder, sitename,
   }
 
   return(data.frame(file = result_files,
-                    host = PEcAn.utils::fqdn(),
+                    host = PEcAn.remote::fqdn(),
                     mimetype = "application/json",
                     formatname = "Geostreams met",
                     startdate = start_date,

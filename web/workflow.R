@@ -43,7 +43,7 @@ if (is.na(args[1])){
 # Check for additional modules that will require adding settings
 if("benchmarking" %in% names(settings)){
   library(PEcAn.benchmark)
-  settings <- papply(settings, read_settings_RR)
+  settings <- papply(settings, read_settings_BRR)
 }
 
 if("sitegroup" %in% names(settings)){
@@ -73,7 +73,7 @@ settings <- PEcAn.utils::do_conversions(settings)
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0){
   PEcAn.utils::status.start("TRAIT")
-  settings <- PEcAn.DB::runModule.get.trait.data(settings)
+  settings <- PEcAn.workflow::runModule.get.trait.data(settings)
   PEcAn.settings::write.settings(settings, outputfile='pecan.TRAIT.xml')
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
@@ -152,7 +152,7 @@ if ('state.data.assimilation' %in% names(settings)) {
 }
 
 # Run benchmarking
-if("benchmarking" %in% names(settings)){
+if("benchmarking" %in% names(settings) & "benchmark" %in% names(settings$benchmarking)){
   PEcAn.utils::status.start("BENCHMARKING")
   results <- papply(settings, function(x) calc_benchmark(x, bety))
   PEcAn.utils::status.end()

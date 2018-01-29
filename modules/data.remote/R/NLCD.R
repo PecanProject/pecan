@@ -28,9 +28,9 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
         if (nrow(chk) > 0) {
             machines <- db.query(paste("SELECT * from machines where id in (", 
                                        paste(chk$machine_id, sep = ","), ")"), con)
-            if (PEcAn.utils::fqdn() %in% machines$hostname) {
+            if (PEcAn.remote::fqdn() %in% machines$hostname) {
                 ## record already exists on this host
-                return(chk$id[PEcAn.utils::fqdn() == machines$hostname])
+                return(chk$id[PEcAn.remote::fqdn() == machines$hostname])
             }
         }
     }
@@ -84,13 +84,13 @@ extract_NLCD <- function(buffer, coords, data_dir = NULL, con = NULL, year = 201
         if (nrow(chk) > 0) {
             machines <- db.query(paste("SELECT * from machines where id in (",
                                        paste(chk$machine_id, sep = ","), ")"), con)
-            if (PEcAn.utils::fqdn() %in% machines$hostname) {
+            if (PEcAn.remote::fqdn() %in% machines$hostname) {
                 ## record already exists on this host
-                data_dir <- chk$file_path[PEcAn.utils::fqdn() == machines$hostname]
+                data_dir <- chk$file_path[PEcAn.remote::fqdn() == machines$hostname]
             } else {
                 print(paste0("File not found on localhost, please check database input.id ", 
                   input.id, ". You may need to run download.NLCD"))
-                return(list(chk = chk, machines = machines, localhost = PEcAn.utils::fqdn()))
+                return(list(chk = chk, machines = machines, localhost = PEcAn.remote::fqdn()))
             }
         } else {
             print(paste("No files found for input.id", input.id))

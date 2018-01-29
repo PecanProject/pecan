@@ -26,8 +26,10 @@ pda.define.llik.fn <- function(settings) {
       
       llik.fn[[i]] <- function(pda.errors, llik.par) {
         # lnL = (n/2) * log(tau) - (tau/2) * SS
-        LL <- (llik.par$n/2) * log(llik.par$par) - (llik.par$par/2) * pda.errors
-        return(LL)
+  
+          LL <- (llik.par$n/2) * log(llik.par$par) - (llik.par$par/2) * pda.errors
+          return(LL)
+
       }
       
     } # if-block
@@ -183,13 +185,14 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
 ##' @title pda.calc.llik.par
 ##' 
 ##' @param settings list
-##' @param n named vector
-##' @param error.stats list
+##' @param n named vector, sample sizes of inputs
+##' @param error.stats list, Sufficient Statistics 
+##' @param hyper.pars list, hyperparameters
 ##' 
 ##' @author Istem Fer
 ##' @export
 
-pda.calc.llik.par <-function(settings, n, error.stats){
+pda.calc.llik.par <-function(settings, n, error.stats, hyper.pars){
   
   llik.par <- list()
   
@@ -200,9 +203,10 @@ pda.calc.llik.par <-function(settings, n, error.stats){
     if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
         settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
-      llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + error.stats[k]/2)
-      names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
-      
+        llik.par[[k]]$par <- rgamma(1, hyper.pars[[k]]$parama + n[k]/2, 
+                                    hyper.pars[[k]]$paramb + error.stats[k]/2)
+        names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
+
     }
     llik.par[[k]]$n     <- n[k]
     

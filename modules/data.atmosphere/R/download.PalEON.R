@@ -72,7 +72,7 @@ download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite
           row <- (which(vlist == v) - 1) * Y * M + (which(ylist == y) - 1) * M + m
           # print(row)
           results$file[row] <- dirname(file)
-          results$host[row] <- PEcAn.utils::fqdn()
+          results$host[row] <- PEcAn.remote::fqdn()
           results$startdate[row] <- paste0(y, "-01-01 00:00:00")
           results$enddate[row] <- paste0(y, "-12-31 23:59:59")
           results$mimetype[row] <- "application/x-netcdf"

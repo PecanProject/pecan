@@ -1,13 +1,12 @@
 Package: PEcAn.remote
 Type: Package
 Title: PEcAn model execution utilities
-Version: 0.1.0
+Version: 1.5.2
 Author: Alexey Shiklomanov, Rob Kooper, Shawn Serbin, David LeBauer
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains utilities for communicating with and executing code on local and remote hosts.
     In particular, it has PEcAn-specific utilities for starting ecosystem model runs.
 Imports:
-    PEcAn.utils,
     PEcAn.logger
 Suggests:
     tools,

@@ -23,7 +23,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     outfolder <- paste0(outfolder, "/")
   }
   
-  outname <- tail(unlist(strsplit(outfolder, "/")), n = 1)
+  outname <- utils::tail(unlist(strsplit(outfolder, "/")), n = 1)
   
   PEcAn.logger::logger.info(paste("start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, 
                     formatname, mimetype, site.id, start_date, end_date))
@@ -35,7 +35,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     # Find Existing input with exact dates.
     
-    existing.dbfile <- dbfile.input.check(siteid = site.id,
+    existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                           mimetype = mimetype, 
                                           formatname = formatname, 
                                           parentid = input.id, 
@@ -59,7 +59,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     if (nrow(existing.dbfile) > 0) {
       
-      existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+      existing.input <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
       
       # Convert dates to Date objects and strip all time zones
       # (DB values are timezone-free)
@@ -103,12 +103,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       
       #Grab machine info of file that exists
-      existing.machine <- db.query(paste0("SELECT * from machines where id  = '", 
+      existing.machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where id  = '",
                                           existing.dbfile$machine_id, "'"), con)
       
       #Grab machine info of host machine
-      machine.host <- ifelse(host$name == "localhost", PEcAn.utils::fqdn(), host$name)
-      machine <- db.query(paste0("SELECT * from machines where hostname = '", 
+      machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
+      machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
                                  machine.host, "'"), con)
       
       if (existing.machine$id != machine$id) {
@@ -134,7 +134,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
   } else {
     
-    existing.dbfile <- dbfile.input.check(siteid = site.id,
+    existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                           mimetype = mimetype, 
                                           formatname = formatname,
                                           parentid = input.id,
@@ -155,7 +155,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     if (nrow(existing.dbfile) > 0) {
       
-      existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+      existing.input <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
       
       
       # Convert dates to Date objects and strip all time zones
@@ -201,12 +201,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                  (end_date <= existing.input$end_date)) {
         
         #Grab machine info of file that exists
-        existing.machine <- db.query(paste0("SELECT * from machines where id  = '", 
+        existing.machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where id  = '",
                                             existing.dbfile$machine_id, "'"), con)
         
         #Grab machine info of 
-        machine.host <- ifelse(host$name == "localhost", PEcAn.utils::fqdn(), host$name)
-        machine <- db.query(paste0("SELECT * from machines where hostname = '", 
+        machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
+        machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
                                    machine.host, "'"), con)
         
         if(existing.machine$id != machine$id){
@@ -250,8 +250,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   #---------------------------------------------------------------------------------------------------------------#
   # Get machine information
   
-  machine.host <- ifelse(host$name == "localhost", PEcAn.utils::fqdn(), host$name)
-  machine <- db.query(paste0("SELECT * from machines where hostname = '", 
+  machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
+  machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
                              machine.host, "'"), con)
   
   if (nrow(machine) == 0) {
@@ -262,13 +262,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   if (missing(input.id) || is.na(input.id) || is.null(input.id)) {
     input <- dbfile <- NULL
   } else {
-    input <- db.query(paste("SELECT * from inputs where id =", input.id), con)
+    input <- PEcAn.DB::db.query(paste("SELECT * from inputs where id =", input.id), con)
     if (nrow(input) == 0) {
       PEcAn.logger::logger.error("input not found", input.id)
       return(NULL)
     }
     
-    dbfile <- db.query(paste("SELECT * from dbfiles where container_id =", input.id, 
+    dbfile <- PEcAn.DB::db.query(paste("SELECT * from dbfiles where container_id =", input.id,
                              " and container_type = 'Input' and machine_id =", machine$id), con)
     if (nrow(dbfile) == 0) {
       PEcAn.logger::logger.error("dbfile not found", input.id)
@@ -286,7 +286,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   if (!is.null(browndog) && host$name == "localhost") {
     # perform conversions with Brown Dog - only works locally right now
-    library(RCurl)
     
     # Determine outputtype using formatname and mimetype of output file Add issue to
     # github that extension of formats table to include outputtype Convert to netcdf
@@ -317,7 +316,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     curloptions <- c(curloptions, followlocation = TRUE)
     
     # check if we can do conversion
-    out.html <- getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/", 
+    out.html <- RCurl::getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",
                               browndog$inputtype), .opts = curloptions)
     if (outputtype %in% unlist(strsplit(out.html, "\n"))) {
       PEcAn.logger::logger.info(paste("Conversion from", browndog$inputtype, "to", outputtype, 
@@ -342,8 +341,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     }
     
     # post zipped file to Brown Dog
-    html <- postForm(url, fileData = fileUpload(zipfile), .opts = curloptions)
-    link <- getHTMLLinks(html)
+    html <- RCurl::postForm(url, fileData = RCurl::fileUpload(zipfile), .opts = curloptions)
+    link <- XML::getHTMLLinks(html)
     file.remove(zipfile)
     
     # download converted file
@@ -352,9 +351,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     # unzip downloaded file if necessary
     if (file.exists(outfile)) {
-      if (tail(unlist(strsplit(outfile, "[.]")), 1) == "zip") {
-        fname <- unzip(outfile, list = TRUE)$Name
-        unzip(outfile, files = fname, exdir = outfolder, overwrite = TRUE)
+      if (utils::tail(unlist(strsplit(outfile, "[.]")), 1) == "zip") {
+        fname <- utils::unzip(outfile, list = TRUE)$Name
+        utils::unzip(outfile, files = fname, exdir = outfolder, overwrite = TRUE)
         file.remove(outfile)
       } else {
         fname <- list.files(outfolder)
@@ -377,7 +376,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       # create array with results
       result$file[i]       <- new.file
-      result$host[i]       <- PEcAn.utils::fqdn()
+      result$host[i]       <- PEcAn.remote::fqdn()
       result$startdate[i]  <- paste(input$start_date, "00:00:00")
       result$enddate[i]    <- paste(input$end_date, "23:59:59")
       result$mimetype[i]   <- mimetype
@@ -425,7 +424,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     if (exists("existing.input") && nrow(existing.input) > 0 && 
         (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
       # Updating record with new dates
-      db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='", 
+      PEcAn.DB::db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='",
                       end_date, "'  WHERE id=", existing.input$id), 
                con)
       #Record has been updated and file downloaded so just return existing dbfile and input pair
@@ -436,11 +435,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # A bit hacky, but need to make sure that all fields are updated to expected
       # values (i.e., what they'd be if convert.input was creating a new record)
       if (exists("existing.input") && nrow(existing.input) > 0) {
-        db.query(paste0("UPDATE inputs SET name='", basename(dirname(result$file[1])), 
+        PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result$file[1])),
                         "' WHERE id=", existing.input$id), con)
       }
       if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
-        db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result$file[1]), 
+        PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result$file[1]),
                         "', ", "file_name='", result$dbfile.name[1], 
                         "' WHERE id=", existing.dbfile$id), con)
       }
@@ -453,7 +452,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     }
     
     if (insert.new.file) {
-      dbfile.id <- dbfile.insert(in.path = dirname(result$file[1]), 
+      dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result$file[1]),
                                  in.prefix = result$dbfile.name[1], 
                                  'Input', existing.input$id, 
                                  con, reuse=TRUE, hostname = machine$hostname)
@@ -461,7 +460,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       newinput$input.id  <- existing.input$id
       newinput$dbfile.id <- dbfile.id 
     } else {
-      newinput <- dbfile.input.insert(in.path = dirname(result$file[1]), 
+      newinput <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result$file[1]),
                                       in.prefix = result$dbfile.name[1], 
                                       siteid = site.id, 
                                       startdate = start_date,

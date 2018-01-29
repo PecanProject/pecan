@@ -53,7 +53,7 @@ status.check <- function(name) {
   if (!file.exists(status.file)) {
     return(0)
   }
-  status.data <- read.table(status.file, row.names = 1, header = FALSE, sep = "\t", 
+  status.data <- utils::read.table(status.file, row.names = 1, header = FALSE, sep = "\t",
                             quote = "", fill = TRUE)
   if (!name %in% row.names(status.data)) {
     return(0)

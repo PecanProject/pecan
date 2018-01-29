@@ -6,6 +6,11 @@
 \usage{
 get.parameter.stat(mcmc.summary, parameter)
 }
+\arguments{
+\item{mcmc.summary}{probably produced by \code{\link[coda]{summary.mcmc}}}
+
+\item{parameter}{name of parameter to extract, as character}
+}
 \value{
 table with parameter statistics
 }

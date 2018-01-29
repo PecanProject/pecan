@@ -104,7 +104,7 @@ upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FAL
   ncdf4::nc_close(loc)
   
   results$file <- loc.file
-  results$host <- PEcAn.utils::fqdn()
+  results$host <- PEcAn.remote::fqdn()
   results$startdate <- time_base + udunits2::ud.convert(upscaled_time[[1]], "days", "sec")
   results$enddate <- time_base + udunits2::ud.convert(upscaled_time[[nrow(upscale_data)]], "days", "sec")
   results$mimetype <- "application/x-netcdf"

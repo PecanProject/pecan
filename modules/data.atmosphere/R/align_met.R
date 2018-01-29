@@ -25,7 +25,8 @@
 ##'             the SOURCE data family (i.e. GCM) as a string and then the ensemble member ID as a number 
 ##'             (e.g. 001).  For example, the file path for a single daily ensemble member for PalEON is:
 ##'             "~/Desktop/Research/met_ensembles/data/met_ensembles/HARVARD/day/ensembles/bcc-csm1-1_004"
-##'             with each year in a separate netcdf file inside of it.
+##'             with each year in a separate netcdf file inside of it.  "bcc-csm1-1_004" is an example of
+##'             an ensemnle member ID that might be used if you are specifying mems.train.
 ##' @return 2-layered list (stored in memory) containing the training and source data that are now matched
 ##'         in temporal resolution have the specified number of ensemble members
 ##'          - dat.train (training dataset) and dat.source (source data to be downscaled or bias-corrected)
@@ -47,6 +48,11 @@
 ##' @param n.ens  - number of ensemble members to generate and save
 ##' @param pair.mems - logical stating whether ensemble members should be paired in 
 ##'                    the case where ensembles are being read in in both the training and source data
+##' @param mems.train - (optional) string of ensemble identifiers that ensure the training data is read 
+##'                     in a specific order to ensure consistent time series & proper error propagation.
+##'                     If null, members of the training data ensemble will be randomly selected and 
+##'                     ordered.  Specifying the ensemble members IDs (e.g. CCSM_001, CCSM_002) will 
+##'                     ensure ensemble members are properly identified and combined.
 ##' @param seed - specify seed so that random draws can be reproduced
 ##' @param print.progress - if TRUE, prints progress bar
 ##' @export
@@ -71,7 +77,7 @@
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, seed=Sys.Date(), print.progress = FALSE) {
+align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, mems.train=NULL, seed=Sys.Date(), print.progress = FALSE) {
   # Load required libraries
   library(ncdf4)
   library(lubridate)
@@ -123,7 +129,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       # Extract the met info, making matrices with the appropriate number of ensemble members
       for(v in names(ncT$var)){
         df.tem <- matrix(rep(ncdf4::ncvar_get(ncT, v), n.trn), ncol=n.trn, byrow=F)
-        
+
         met.out$dat.train[[v]] <- rbind(met.out$dat.train[[v]], df.tem)
       }
       
@@ -136,11 +142,14 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
     ens.train <- dir(train.path)
     
     if(is.null(n.ens)) n.ens <- length(ens.train)
-    if(length(ens.train)>n.ens) {
+    if(length(ens.train)>n.ens & is.null(mems.train)) {
       train.use <- sample(1:length(ens.train), n.ens)
       ens.train <- ens.train[train.use]
     }
-    
+    if(!is.null(mems.train)){
+      ens.train <- mems.train
+    }
+
     # getting an estimate of how many files we need to process
     yrs.file <- strsplit(dir(file.path(train.path, ens.train[1])), "[.]")
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
@@ -256,7 +265,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       yr.now <- yrs.file[i]
       
       ncT <- ncdf4::nc_open(file.path(source.path, files.source[i]))
-      
+
       # Set up the time data frame to help index
       nday <- ifelse(leap_year(yr.now), 366, 365)
       ntime <- length(ncT$dim$time$vals)

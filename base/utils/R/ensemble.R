@@ -18,7 +18,7 @@
 ##' @param outdir directory with model output to use in ensemble analysis
 ##' @param start.year first year to include in ensemble analysis
 ##' @param end.year last year to include in ensemble analysis
-##' @param variables targe variables for ensemble analysis
+##' @param variables target variables for ensemble analysis
 ##' @export
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
@@ -72,7 +72,6 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
-##' @import randtoolbox
 ##' @author David LeBauer
 get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
                                  method = "uniform", ...) {
@@ -101,32 +100,32 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
     
     if (method == "halton") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
-      random.samples <- halton(n = ensemble.size, dim = total.sample.num, ...)
+      random.samples <- randtoolbox::halton(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "sobol") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
-      random.samples <- sobol(n = ensemble.size, dim = total.sample.num, ...)
+      random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "torus") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
-      random.samples <- torus(n = ensemble.size, dim = total.sample.num, ...)
+      random.samples <- randtoolbox::torus(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "lhc") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
-      random.samples <- lhc(t(matrix(0:1, ncol = total.sample.num, nrow = 2)), ensemble.size)
+      random.samples <- PEcAn.emulator::lhc(t(matrix(0:1, ncol = total.sample.num, nrow = 2)), ensemble.size)
     } else if (method == "uniform") {
       PEcAn.logger::logger.info("Using ", method, "random sampling")
       # uniform random
-      random.samples <- matrix(runif(ensemble.size * total.sample.num),
+      random.samples <- matrix(stats::runif(ensemble.size * total.sample.num),
                                ensemble.size, 
                                total.sample.num)
     } else {
       PEcAn.logger::logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
       # uniform random
-      random.samples <- matrix(runif(ensemble.size * total.sample.num), 
+      random.samples <- matrix(stats::runif(ensemble.size * total.sample.num),
                                ensemble.size, 
                                total.sample.num)
     }
@@ -138,7 +137,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
       for (trait.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
-        ensemble.samples[[pft.i]][, trait.i] <- quantile(pft.samples[[pft.i]][[trait.i]], 
+        ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],
                                                          random.samples[, col.i])
       }  # end trait
       ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
@@ -176,11 +175,11 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   
   # Open connection to database so we can store all run/ensemble information
   if (write.to.db) {
-    con <- try(db.open(settings$database$bety), silent = TRUE)
-    if (is(con, "try-error")) {
+    con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+    if (inherits(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(db.close(con))
+      on.exit(PEcAn.DB::db.close(con))
     }
   } else {
     con <- NULL
@@ -196,13 +195,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   # create an ensemble id
   if (!is.null(con)) {
     # write ensemble first
-    ensemble.id <- db.query(paste0(
+    ensemble.id <- PEcAn.DB::db.query(paste0(
       "INSERT INTO ensembles (runtype, workflow_id) ",
       "VALUES ('ensemble', ", format(workflow.id, scientific = FALSE), ")",
       "RETURNING id"), con = con)[['id']]
 
     for (pft in defaults) {
-      db.query(paste0(
+      PEcAn.DB::db.query(paste0(
         "INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) ",
         "values (", pft$posteriorid, ", ", ensemble.id, ")"), con = con)
     }
@@ -219,7 +218,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   for (counter in seq_len(settings$ensemble$size)) {
     if (!is.null(con)) {
       paramlist <- paste("ensemble=", counter, sep = "")
-      run.id <- db.query(paste0(
+      run.id <- PEcAn.DB::db.query(paste0(
         "INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
         "values ('", 
           settings$model$id, "', '", 
@@ -234,7 +233,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       # associate inputs with runs
       if (!is.null(inputs)) {
         for (x in inputs) {
-          db.query(paste0("INSERT INTO inputs_runs (input_id, run_id) ", 
+          PEcAn.DB::db.query(paste0("INSERT INTO inputs_runs (input_id, run_id) ",
                           "values (", settings$run$inputs[[x]], ", ", run.id, ")"), 
                    con = con)
         }

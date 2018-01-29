@@ -52,7 +52,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = out.file.full,
-                        host = PEcAn.utils::fqdn(),
+                        host = PEcAn.remote::fqdn(),
                         mimetype = "text/csv",
                         formatname = "MAAT meteorology",
                         startdate = start_date,
@@ -215,7 +215,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
     # TODO: make this dynamic with names above!
     # TODO: add the additional met variables, make dynamic
     leaf_user_met_list <- list(leaf = list(env = list(time = "'Time'", temp = "'Tair_degC'", par = "'PAR_umols_m2_s'")))
-    leaf_user_met_xml <- PEcAn.utils::listToXml(leaf_user_met_list, "met_data_translator")
+    leaf_user_met_xml <- PEcAn.settings::listToXml(leaf_user_met_list, "met_data_translator")
 
     # output XML file
     saveXML(leaf_user_met_xml,

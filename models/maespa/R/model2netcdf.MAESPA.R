@@ -22,11 +22,9 @@
 ##' @export
 ##'
 ##' @author Tony Gardella
-##' @importFrom ncdf4 ncvar_def
 model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, stem_density) {
   
-  library(Maeswrap)
-  
+
   ### Read in model output using Maeswrap. Dayflx.dat, watbalday.dat
   dayflx.dataframe    <- Maeswrap::readdayflux(filename = "Dayflx.dat")
   watbalday.dataframe <- Maeswrap::readwatbal(filename = "watbalday.dat")

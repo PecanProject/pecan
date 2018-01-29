@@ -9,10 +9,6 @@
 
 ## R Code to convert from NACP intercomparison NETCDF met files into ED2 ascii met files
 
-## It requires the rhdf5 library, which is not available on CRAN, but by can be installed locally:
-## >source('http://bioconductor.org/biocLite.R')
-## >biocLite('rhdf5')
-
 ## If files already exist in 'Outfolder', the default function is NOT to overwrite them and only
 ## gives user the notice that file already exists. If user wants to overwrite the existing files,
 ## just change overwrite statement below to TRUE.
@@ -42,7 +38,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   met_header <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
 
   results <- data.frame(file = c(met_header),
-                        host = c(PEcAn.utils::fqdn()),
+                        host = c(PEcAn.remote::fqdn()),
                         mimetype = c("text/plain"),
                         formatname = c("ed.met_driver_header files format"),
                         startdate = c(start_date),
@@ -232,16 +228,15 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         selm <- sely[which(mo[sely] == m)]
         mout <- paste(met_folder, "/", y, month[m], ".h5", sep = "")
         if (file.exists(mout)) {
-          if (overwrite == TRUE) {
+          if (overwrite) {
             file.remove(mout)
-            rhdf5::h5createFile(mout)
-          }
-          if (overwrite == FALSE) {
+            ed_met_h5 <- hdf5r::H5File$new(mout)
+          } else {
             PEcAn.logger::logger.warn("The file already exists! Moving to next month!")
             next
           }
         } else {
-          rhdf5::h5createFile(mout)
+          ed_met_h5 <- hdf5r::H5File$new(mout)
         }
         dims  <- c(length(selm), 1, 1)
         nbdsf <- array(nbdsfA[selm], dim = dims)
@@ -259,21 +254,22 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         if (useCO2) {
           co2 <- array(co2A[selm], dim = dims)
         }
-        rhdf5::h5write(nbdsf, mout, "nbdsf")
-        rhdf5::h5write(nddsf, mout, "nddsf")
-        rhdf5::h5write(vbdsf, mout, "vbdsf")
-        rhdf5::h5write(vddsf, mout, "vddsf")
-        rhdf5::h5write(prate, mout, "prate")
-        rhdf5::h5write(dlwrf, mout, "dlwrf")
-        rhdf5::h5write(pres, mout, "pres")
-        rhdf5::h5write(hgt, mout, "hgt")
-        rhdf5::h5write(ugrd, mout, "ugrd")
-        rhdf5::h5write(vgrd, mout, "vgrd")
-        rhdf5::h5write(sh, mout, "sh")
-        rhdf5::h5write(tmp, mout, "tmp")
+        ed_met_h5[["nbdsf"]] <- nbdsf
+        ed_met_h5[["nddsf"]] <- nddsf
+        ed_met_h5[["vbdsf"]] <- vbdsf
+        ed_met_h5[["vddsf"]] <- vddsf
+        ed_met_h5[["prate"]] <- prate
+        ed_met_h5[["dlwrf"]] <- dlwrf
+        ed_met_h5[["pres"]] <- pres
+        ed_met_h5[["hgt"]] <- hgt
+        ed_met_h5[["ugrd"]] <- ugrd
+        ed_met_h5[["vgrd"]] <- vgrd
+        ed_met_h5[["sh"]] <- sh
+        ed_met_h5[["tmp"]] <- tmp
         if (useCO2) {
-          rhdf5::h5write(co2, mout, "co2")
+          ed_met_h5[["co2"]] <- co2
         }
+        ed_met_h5$close_all()
       }
     }
 

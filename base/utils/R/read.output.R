@@ -7,67 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' Convert output for a single model run to NetCDF
-##'
-##' DEPRECATED this function will be removed in future versions, please update
-##' your workflow.
-##'
-##' This function is a wrapper for model-specific conversion functions,
-##' e.g. \code{model2netcdf.ED2}, \code{model2netcdf.BIOCRO}.
-##' @title Convert model output to NetCDF 
-##' @param runid 
-##' @param outdir
-##' @param model name of simulation model currently accepts ('ED2', 'SIPNET', 'BIOCRO')
-##' @param lat Latitude of the site
-##' @param lon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
-##' @return vector of filenames created, converts model output to netcdf as a side effect
-##' @author Mike Dietze, David LeBauer
-model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date) {
-  ## load model-specific PEcAn module
-  do.call(require, list(paste0("PEcAn.", model)))
-  
-  model2nc <- paste("model2netcdf", model, sep = ".")
-  if (!exists(model2nc)) {
-    PEcAn.logger::logger.warn("File conversion function model2netcdf does not exist for", model)
-    return(NA)
-  }
-  
-  do.call(model2nc, list(outdir, lat, lon, start_date, end_date))
-  
-  print(paste("Output from run", runid, "has been converted to netCDF"))
-  ncfiles <- list.files(path = outdir, pattern = "\\.nc$", full.names = TRUE)
-  if (length(ncfiles) == 0) {
-    PEcAn.logger::logger.severe("Conversion of model files to netCDF unsuccessful")
-  }
-  return(ncfiles)
-} # model2netcdfdep
-
-
-##' Convert output for a single model run to NetCDF
-##'
-##' DEPRECATED this function will be removed in future versions, please update
-##' your workflow.
-##'
-##' This function is a wrapper for model-specific conversion functions,
-##' e.g. \code{model2netcdf.ED2}, \code{model2netcdf.BIOCRO}.
-##' @title Convert model output to NetCDF 
-##' @param runid 
-##' @param outdir
-##' @param model name of simulation model currently accepts ('ED2', 'SIPNET', 'BIOCRO')
-##' @param lat Latitude of the site
-##' @param lon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
-##' @export
-##' @return vector of filenames created, converts model output to netcdf as a side effect
-##' @author Mike Dietze, David LeBauer
-model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date) {
-  PEcAn.logger::logger.severe("model2netcdf will be removed in future versions, plase update your worklow")
-} # model2netcdf
-
-
 ##' Reads the output of a single model run
 ##'
 ##' Generic function to convert model output from model-specific format to 
@@ -104,7 +43,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   
   if(!is.na(start.year) && !is.na(end.year)){
     # select only those *.nc years requested by user
-    keep <- which(nc.years >= as.numeric(start.year) & nc.years <= as.numeric(end.year))
+    keep <- which(as.numeric(nc.years) >= as.numeric(start.year) & as.numeric(nc.years) <= as.numeric(end.year))
     ncfiles <- ncfiles[keep]
   } else if(length(nc.years) != 0){
       PEcAn.logger::logger.info("No start or end year provided; reading output for all years")
@@ -124,14 +63,14 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   } else {
     PEcAn.logger::logger.info("Reading output for Years: ", start.year, " - ", end.year, 
                 "in directory:", outdir,
-                "including files", dir(outdir, pattern = "\\.nc$"))
+                "including files", basename(ncfiles))
   }
   
   if(dataframe==TRUE){ #ensure that there is a time component when asking for a dataframe + posix code
-  if(length(variables[variables=="time"])==0){
-    variables<-c(variables, "time")
-    PEcAn.logger::logger.info("No time variable requested, adding automatically")
-  }
+    if(length(variables[variables=="time"])==0){
+      variables<-c(variables, "time")
+      PEcAn.logger::logger.info("No time variable requested, adding automatically")
+    }
   }
   result <- list()
 
@@ -166,13 +105,30 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     result <- lapply(variables, function(x) NA)
   }
   
-  PEcAn.logger::logger.info(variables, "Mean:", 
-              lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)), "Median:", 
-              lapply(result, function(x) signif(median(x, na.rm = TRUE), 3)))
+  PEcAn.logger::logger.info(
+    variables,
+    "Mean:", lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)),
+    "Median:", lapply(result, function(x) signif(stats::median(x, na.rm = TRUE), 3)))
   
   if(dataframe==FALSE){
   return(result)
   }else if (dataframe==TRUE){
+    
+    # Check if there are variables that have multiple dimensions 
+    # for example soil moisture at multiple levels.
+    # Currently we don't have a consensus how to convert these to dataframe format
+    # so they should be omitted. 
+    
+    for(var in names(result)){
+      c <- dim(result[[var]])[2]
+      r <- dim(result[[var]])[1]
+      if(!is.na(c) & r > 1){
+        PEcAn.logger::logger.warn("Variable", var, "has", r, "dimensions,
+      it cannot be loaded and will be omitted.")
+        result[[var]] <- NULL 
+      }
+    }
+    
     model <- as.data.frame(result) # put into a data.frame
     ########## add in posix column ###########
     
@@ -194,7 +150,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     
     if(length(time_breaks) == 0 & length(years)>1){
       model$posix <- as.POSIXct(model$time*86400,origin= origin,tz="UTC")
-      model$year <- year(model$posix)
+      model$year <- lubridate::year(model$posix)
       return(model)
     } else {
       N <- c(0,time_breaks, length(model$time))
