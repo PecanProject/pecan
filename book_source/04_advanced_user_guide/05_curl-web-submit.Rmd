@@ -1,4 +1,4 @@
-## Submitting Workflow from Command Line
+# Submitting Workflow from Command Line
 
 This is how you can submit a workflow from the command line through the pecan web interface. This will use curl to submit all the requireed parameters to the web interface and trigger a run.
 
