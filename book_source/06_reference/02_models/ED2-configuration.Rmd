@@ -1,4 +1,4 @@
-### ED Configuration
+## ED2 Configuration
 
 ED2 is configured using 2 files which are placed in the run folder.
 
@@ -7,7 +7,7 @@ ED2 is configured using 2 files which are placed in the run folder.
 
 An example of the template can be found in [ED2IN.r82](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/ED2IN.r82)
 
-## ED2IN configuration variables
+### ED2IN configuration variables
 
 **@ENSNAME@** : run id of the simulation, used in template for NL%EXPNME
 
@@ -41,7 +41,7 @@ An example of the template can be found in [ED2IN.r82](https://github.com/PecanP
 **@CONFIGFILE@** : XML file containing additional parameter settings, this is always "config.xml", used in template for NL%IEDCNFGF  
 
 **@OUTDIR@** :  location where output files are written (**without the runid**), from \<run\>\<host\>\<outdir\>, should not be used.  
-**@SCRATCH@** : local scratch space for outputs, generated /scratch/\<username\>/run$scratch, should not be used right now since it only works on ebi-cluster  
+**@SCRATCH@** : local scratch space for outputs, generated `/scratch/\<username\>/run$scratch`, should not be used right now since it only works on ebi-cluster  
 
 **ED Computation HPC**
 
