@@ -1,6 +1,6 @@
-# Parameter Data Assimilation 
+## Parameter Data Assimilation 
 
-## All functions pertaining to Parameter Data Assimilation are housed within: **pecan/modules/assim.batch**
+All functions pertaining to Parameter Data Assimilation are housed within: **pecan/modules/assim.batch**
 
 ### **pda.mcmc.R**
 This is the main PDA code. It performs Bayesian MCMC on model parameters by proposing parameter values, running the model, calculating a likelihood (between model output and supplied observations), and accepting or rejecting the proposed parameters (Metropolis algorithm). Additional notes:
@@ -61,9 +61,7 @@ This file contains most of the individual functions used by the main PDA functio
    * *pda.define.llik.r* A simple helper function that defines likelihood functions for different datasets. Probably in the future this should be queried from the database or something. For now, it is extremely limited. The original test case of NEE assimilation uses a heteroskedastic Laplacian distribution. 
    * *pda.get.model.output.R* Another function that will eventually grow to handle many more cases, or perhaps be replaced by a better system altogether. For now though, it again just handles Ameriflux NEE.
 
-### **get.da.data.*.R, plot.da.R**
+### **get.da.data.\*.R, plot.da.R**
 Old codes written by Carl Davidson. Defunct now, but may contain good ideas so currently left in. 
 
 ## For a detailed usage of the module, please see the vignette under  **/modules/assim.batch/vignettes**
-
-

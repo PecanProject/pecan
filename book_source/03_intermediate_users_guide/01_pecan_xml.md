@@ -1,5 +1,6 @@
-# PEcAn XML Configuration
-The PEcAn system is configured using a xml file, often called settings.xml. The configuration file can be split in X seperate pieces:
+# The PEcAn XML
+
+The PEcAn system is configured using a xml file, often called settings.xml. The configuration file contains the following sections:
 
 1. [PEcAn Folders](#pecan-folders)
 2. [Database Access](#database-access)
@@ -12,6 +13,8 @@ The PEcAn system is configured using a xml file, often called settings.xml. The 
 9. [Model Setup](#model_setup)
 10. [Run Setup](#run-setup)
 11. [State Data Assimilation](#state-data-assimilation-tags)
+12. [Parameter Data Assimilation]
+13. [Benchmarking]
 
 
 ## PEcAn folders
@@ -273,7 +276,7 @@ Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includ
 * **veg** : **OBSOLETE** [required] location of VEG database, now part of `<run><inputs>
 * **soil** : **OBSOLETE** [required] location of soild database, now part of `<run><inputs>
 * **psscss** : **OBSOLETE** [required] location of site inforation, now part of `<run><inputs>`. Should be specified as `<pss>`, `<css>` and `<site>`.
-* **inputs** : **OBSOLETE** [required] location of additional input files (e.g. data assimilation data), now part of `<run><inputs>`. Should be specified as `<lu>' and `<thsums>`.
+* **inputs** : **OBSOLETE** [required] location of additional input files (e.g. data assimilation data), now part of `<run><inputs>`. Should be specified as `<lu>` and `<thsums>`.
 
 
 ## Run Setup
@@ -319,7 +322,7 @@ Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includ
 * **jobtemplate** : [optional] the template used when creating a job.sh file which is used to launch the actual model. Each model has it's own [template](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/template.job) in the inst folder of the module. The following variables can e used: @SITE_LAT@, @SITE_LON@, @SITE_MET@, @START_DATE@, @END_DATE@, @OUTDIR@, @RUNDIR@ which all come variables in the pecan.xml file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : @SCRATCH_COPY@, @SCRATCH_CLEAR@ .
 * **start.date** : [required] the first day of the simulation  
 * **end.date** : [required] the last day of the simulation
-* **dbfiles** : [optional] location where pecan should write files that will be stored in the database. The default is store them in ${HOME}/.pecan/dbfiles
+* **dbfiles** : [optional] location where pecan should write files that will be stored in the database. The default is store them in `${HOME}/.pecan/dbfiles`
 
 Site specific information is specified in the `<site>` subsection. Either `<id>` or `<name>`, `<lat>` and `<lon>` should be specified. If id and any of the others are specified the values will be compared with those from BETYdb.
  
