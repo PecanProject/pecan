@@ -1,7 +1,7 @@
-# State Data Assimilation 
+## State Data Assimilation 
 
-## sda.enkf.R is housed within: **/pecan/modules/assim.sequential/R**
-## The tree ring tutorial is housed within: **/pecan/documentation/tutorials/StateAssimilation**
+`sda.enkf.R` is housed within: **/pecan/modules/assim.sequential/R**
+The tree ring tutorial is housed within: **/pecan/documentation/tutorials/StateAssimilation**
 
 ### **sda.enkf.R Description**
 This is the main ensemble Kalman filter and generalized filter code. Originally, this was just ensemble Kalman filter code. Mike Dietze and Ann Raiho added a generalized ensemble filter to avoid filter divergence. The output of this function will be all the of run outputs, a PDF of diagnostics, and an Rdata object that includes three lists:
@@ -196,5 +196,3 @@ $\boldsymbol{V}_{t+1}	=	n_{t}\bar{\boldsymbol{Q}}_{t}$
 $n_{t+1}	=	\frac{\sum_{i=1}^{I}\sum_{j=1}^{J}\frac{v_{ijt}^{2}+v_{iit}v_{jjt}}{Var(\boldsymbol{\bar{Q}}_{t})}}{I\times J}$
 
 where we calculate the mean of the process covariance matrix $\left(\bar{\boldsymbol{Q}_{t}}\right)$ from the posterior samples at time t. Degrees of freedom for the Wishart are typically calculated element by element where $v_{ij}$ are the elements of $\boldsymbol{V}_{t}$. $I$ and $J$ index rows and columns of $\boldsymbol{V}$. Here, we calculate a mean number of degrees of freedom for $t+1$ by summing over all the elements of the scale matrix $\left(\boldsymbol{V}\right)$ and dividing by the count of those elements $\left(I\times J\right)$. We fit this model sequentially through time in the R computing environment using R package 'rjags.'
- 
- 

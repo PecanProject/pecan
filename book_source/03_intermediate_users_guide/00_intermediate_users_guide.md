@@ -19,4 +19,3 @@ This section will provide information to those wanting to take advantage of PEcA
 * [Parameter data assimilation](pda.documentation.md)
 * [State data assimilation](sda.documentation.md)
 * Benchmarking
-
