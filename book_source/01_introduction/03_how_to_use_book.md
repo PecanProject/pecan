@@ -1,12 +1,12 @@
-## About the PEcAn Book
+# About the PEcAn Book
 
 This book serves as documentation for the PEcAn Project. It contains descriptions of topics necessary to inform a beginner and advanced user as well as requisite materials for developers. It does not contain low-level descriptions of functions within PEcAn. Our aim for this documentation is to educate you about the PEcAn software, the possibilities of its usage, and the standards,expectations, and core workflows for developers.
 
 
-### How to Contribute
+## How to Contribute
 If you wish to contribute to this book, we greatly welcome it! The same general steps to contributing PEcAn code to the main line can be used to contribute to this book.
 
-#### Editing the book yourself
+### Editing the book yourself
 
 1. Navigate to the main [ PEcAn github repository: https://github.com/PecanProject/pecan](https://github.com/PecanProject/pecan) and fork the repository to your github account.
 
@@ -23,7 +23,7 @@ If you wish to contribute to this book, we greatly welcome it! The same general 
 
 
 
-#### Feedback/Comments/Suggestions
+### Feedback/Comments/Suggestions
 We want your ideas, thoughts, comments, and suggestions! This is an open-sourced project so please feel free to reach out
 to us in the following ways:
 
@@ -58,7 +58,7 @@ This book is organized around these main topics:
 **Appendix** - Supplementary materials for the developer section.
 	
 
-### Using PEcAn
+## Using PEcAn
 
 We have developed a number of demos and vignettes to guide your use of PEcAn's many capabilities:
 
