@@ -379,21 +379,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ## add process error
     X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
     
-    #agb linear
-    #y_star[1:YN,1:YN] <- X[1:YN,1:YN] #[choose]
-    
-    #f.comp non linear
+    #observation operator
     y_star[1:YN] <- y_star_create(X[1:YN])
-    
-    #truncation sum of positive numbers
-    
-    #for (i in 1:YN) {
-    #  X.ind[i] ~ dinterval(X[i], 0)
-    #}
-    #data_constraint ~ dconstraint(max(X[1:YN]) > 0)
-    
-    #not good - causes positive bias
-    #data_constraint ~ dconstraint(sum(X[1:YN]) > 0)
     
     ## Analysis
     y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
@@ -441,7 +428,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------### 
   
-  for(t in 5:nt) {
+  for(t in seq_len(nt)) {
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
     ###-------------------------------------------------------------------###  
@@ -462,6 +449,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       new.params[[i]] <- X_tmp[[i]]$params
     }
     
+    ## Trying to find a way to flag incomplete runs and drop them.
     for(i in seq_len(length(run.id))){
       if(is.na(X[[i]][1])) {
         print(i)
@@ -568,7 +556,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         H <- matrix(0, length(Y), ncol(X)) #H maps true state to observed state
         #linear
         for (i in choose) {
-          H[i, i] <- 1/length(Y) 
+          H[i, i] <- 1
         }
         #non-linear fcomp
         # for (i in choose) {
@@ -662,11 +650,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }else{
           Cmodel_tobit2space$y.ind <- x.ind
           Cmodel_tobit2space$y.censored <- x.censored
-          #Cmodel_tobit2space$lambda_0 <- diag(10,length(mu.f)) #enkf.params[[t-1]]$Pa
-          #Cmodel_tobit2space$mu_0 <- rep(0,length(mu.f)) #enkf.params[[t-1]]$mu.a
           
           inits.tobit2space = list(pf = Pf, muf = colMeans(X))
-          
           Cmodel_tobit2space$setInits(inits.tobit2space)
           
           for(i in seq_along(X)) {
@@ -679,15 +664,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }
         
         set.seed(0)
-        dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 10000, progressBar=TRUE)
+        dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 50000, progressBar=TRUE)
         
         pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
         
-        assessParams(dat = dat.tobit2space[200:1000,], Xt = X)
+        assessParams(dat = dat.tobit2space[1000:5000,], Xt = X)
         dev.off()
         
         ## update parameters
-        dat.tobit2space  <- dat.tobit2space[200:1000, ]
+        dat.tobit2space  <- dat.tobit2space[1000:5000, ]
         imuf   <- grep("muf", colnames(dat.tobit2space))
         mu.f <- colMeans(dat.tobit2space[, imuf])
         iPf   <- grep("pf", colnames(dat.tobit2space))
@@ -697,9 +682,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         
         X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
         
-        #plot(dat.tobit2space[,16])
-        
-        #if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
+        if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
         
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
@@ -714,12 +697,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
             print('error: X has changed dimensions')
           }
         }
-        aqq[1, , ] <- diag(length(mu.f)) * bqq[1] #Q #Informative #uninformative #
+        aqq[1, , ] <- diag(length(mu.f)) * bqq[1] #Q
         
         ### create matrix the describes the support for each observed state variable at time t
         interval <- matrix(NA, length(obs.mean[[t]]), 2)
         rownames(interval) <- names(obs.mean[[t]])
-        ### TO DO: not working
         for(i in 1:length(var.names)){
           interval[which(startsWith(rownames(interval),
                                     var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
@@ -732,14 +714,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
-        if(t == 1){ #TO need to make something that works to pick weather to compile or not
-          #y.obs = Y.dat[1,]
+        if(t == 1){ #TO DO need to make something that works to pick weather to compile or not
           constants.tobit = list(N = ncol(X), YN = length(y.ind))
           dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
                                   Q = c(length(mu.f),length(mu.f)))
           
-          data.tobit = list(#data_constraint = 1,
-            muf = as.vector(mu.f),
+          data.tobit = list(muf = as.vector(mu.f),
             pf = solve(Pf), 
             aq = aqq[t,,], bq = bqq[t],
             y.ind = y.ind,
@@ -747,8 +727,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
             r = solve(R))
           inits.pred = list(q = diag(length(mu.f)), X.mod = as.vector(mu.f),
                             X = rnorm(length(mu.f),0,1)) #
-          #set.seed(0)
-          #ptm <- proc.time()
+          
           model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
                                     constants = constants.tobit, inits = inits.pred,
                                     name = 'base')
@@ -808,32 +787,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         
         set.seed(0)
         dat <- runMCMC(Cmcmc, niter = 50000)
-        
-        # #### JAGS update list
-        # update <- list(interval = interval,
-        #                N = length(y.ind),
-        #                y.ind = y.ind,
-        #                y.censored = y.censored, 
-        #                r = solve(R),
-        #                muf = mu.f, 
-        #                pf =  Pf, #check
-        #                aq = aqq[t,,], 
-        #                bq = bqq[t],
-        #                choose = choose)
-        # 
-        # #### Run JAGS Tobit Model
-        # mod <- jags.model(file = textConnection(tobit.model),
-        #                   data = update,
-        #                   n.adapt = 1000, 
-        #                   n.chains = 3)  #inits for q?
-        # 
-        # jdat <- coda.samples(mod, variable.names = c("X", "q"), 
-        #                      n.iter = 10000)
-        # 
-        # #gelman.diag(jdat[,1:10])
-        # #is it reasonable to expect convergence every year of every parameter?
-        # #should we put a stop in if params don't converge?
-        
+      
         ## update parameters
         dat  <- dat[10000:50000, ]
         iq   <- grep("q", colnames(dat))
@@ -867,11 +821,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, 
                                  Pa = Pa, q.bar = q.bar, n = n)
         
-        #var.df1 <- data.frame(diag(Pa),diag(Pf),diag(R),diag(solve(q.bar)))
-        #var.df1[order(var.df1$diag.Pa.),]
-        
-        #mu.df <- cbind(mu.a/sum(mu.a),mu.f/sum(mu.f),Y)
-        #mu.df[order(mu.df[,3]),]
       }
       
     } else {
@@ -930,8 +879,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
 #        wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,], mu.a, solve(Pa), log = TRUE)
 #      }
       
-      
-      
       if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
       if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
       
@@ -941,26 +888,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     }
     
     colnames(analysis) <- colnames(X)
-    
-    par(mfrow=c(1,1))
-    boxplot(prop.table(as.matrix(analysis[,1:9]),1),col='pink',ylim=c(0,1))
-    points(Y,col='green',pch=19)
-    points(mu.f[1:9]/sum(mu.f[1:9]),col='blue',pch=19)
-    
-    hist(X[,10],freq=FALSE)
-    lines(density(analysis[,10]),col='pink',lwd=4)
-    
-    #hist(rnorm(1000,colMeans(X)[9],sd = sqrt(cov(X)[9,9])),freq=F,xlim=c(-.05,5))
-    #lines(density(rnorm(1000,Y[9],sd = sqrt(R[9,9]))),col='green',lwd=2)
-    #lines(density(rnorm(1000,mu.a[9],sd = sqrt(Pa[9,9]))),col='pink',lwd=2)
-    
+
     ##### Mapping analysis vectors to be in bounds of state variables
     if(processvar==TRUE){
       for(i in 1:ncol(analysis)){
         int.save <- state.interval[which(startsWith(colnames(analysis)[i],
                                                     var.names)),]
         analysis[analysis[,i] < int.save[1],i] <- int.save[1]
-        #analysis[analysis[,i] > int.save[2],i] <- int.save[2]
+        analysis[analysis[,i] > int.save[2],i] <- int.save[2]
       }
     }
     
@@ -968,7 +903,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     new.state  <- analysis
     
     ANALYSIS[[t]] <- analysis
-    #pdf('ts-tree.rings-sda.pdf')
     if (interactive() & t > 1) { #
       t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -999,7 +933,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       }
       
       par(mfrow = c(2, 1))
-      for (i in 1:9) { #ncol(FORECAST[[t]])
+      for (i in 1:ncol(FORECAST[[t]])) { #
         
         Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i]/rowSums(x[,1:9]), na.rm = TRUE) })
         Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i]/rowSums(x[,1:9]), c(0.025, 0.975), na.rm = TRUE) })
@@ -1037,34 +971,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
                ylab = ylab.names[grep(colnames(X)[i], var.names)], 
                main = colnames(X)[i])
         }
-        
-        # forecast
-        ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue')
-        lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2)
-        
-        # analysis
-        ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
-        lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
-        #legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
-      }
-      for (i in 1:10){ #ncol(FORECAST[[t]])
-        
-        Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-        Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
-        
-        Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-        XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
-        
-        ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                                    function(x) { x })[2, ], use.names = FALSE)
-        
-        plot(as.Date(obs.times[t1:t]), 
-             Xbar, 
-             ylim = range(c(XaCI, Xci), na.rm = TRUE), 
-             type = "n", 
-             xlab = "Year", 
-             ylab = ylab.names[grep(colnames(X)[i], var.names)], 
-             main = colnames(X)[i])
         
         # forecast
         ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue')

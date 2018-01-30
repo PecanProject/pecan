@@ -41,30 +41,15 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   new.state[new.state < 0] <- 0
   
   names.keep <- names(new.state)
-  
   new.state <- as.matrix(new.state)
-  
   names(new.state) <- names.keep
   
-  if(sum(new.state[1:length(settings$pfts)]) > 15) {
-    prop.stop <- new.state[1:length(settings$pfts)]/sum(new.state[1:length(settings$pfts)])
-    new.state[1:length(settings$pfts)] <- 10 * prop.stop
-  }
-  
-  if(sum(new.state[1:length(settings$pfts)]) < 10 & sum(new.state[1:length(settings$pfts)]) > 0) {
-    prop.stop <- new.state[1:length(settings$pfts)]/sum(new.state[1:length(settings$pfts)])
-    new.state[1:length(settings$pfts)] <- 10 * prop.stop
-  }
-  
-  if(sum(new.state[1:length(settings$pfts)]) <= 0){
-    new.state[1:length(settings$pfts)] <- rnorm(length(settings$pfts),2,.1)
-  }
-  
-  #new.state[new.state==0] <- .1
-  
   new.state.save <- new.state
-  new.state <- new.state.save[grep("Fcomp", names(new.state.save))]
-  new.state.other <- new.state.save[grep("Fcomp", names(new.state.save), invert = TRUE)]
+  
+  if(grep('Fcomp',names.keep)){
+    new.state <- new.state.save[grep("Fcomp", names(new.state.save))]
+    new.state.other <- new.state.save[grep("Fcomp", names(new.state.save), invert = TRUE)]
+  }
   
   variables <- names(new.state)
   ### Going to need to change this... ### Get some expert opinion
@@ -317,7 +302,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   iage <- iage.temp
   nogro <- nogro.temp  # numeric(200)#hack
   
-  nogro[nogro < 1] <- 2 #this is not the best assumption
+  #nogro[nogro < 1] <- 1
   
   ntrees <- new.ntrees
   

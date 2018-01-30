@@ -55,7 +55,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   
   iplot <- 1
   nyear <- length(year)
-  max.ind <- 15000
+  max.ind <- 1500
   plat <- abs(as.numeric(settings$run$site$lat))
   
   bgs <- 120
@@ -97,8 +97,6 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   
   climate_file <- settings$run$inputs$met$path
   load(climate_file)
-  #temp.mat <- temp.mat[start.year:end.year - 850, ] #MAJOR HACK
-  #precip.mat <- precip.mat[start.year:end.year - 850, ] #MAJOR HACK
   
   temp.mat <- temp.mat[which(rownames(temp.mat)%in%start.year:end.year),]
   precip.mat <- precip.mat[which(rownames(precip.mat)%in%start.year:end.year),]
@@ -176,9 +174,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("D3" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
           }
-          # if ("FROST" %in% names(vals)) {
-          #   spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
-          # }
+          if ("FROST" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
+          }
           if ("CM1" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1
           }
