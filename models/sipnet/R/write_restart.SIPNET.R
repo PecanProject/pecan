@@ -32,6 +32,9 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
 
+  # values that will be used for updating other states deterministically depending on the SDA states
+  IC_extra <- data.frame(t(new.params$restart))
+  
   if (RENAME) {
     file.rename(file.path(outdir, runid, "sipnet.out"),
                 file.path(outdir, runid, paste0("sipnet.", as.Date(start.time), ".out")))
@@ -44,57 +47,63 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   settings$run$end.date <- stop.time
 
   ## Converting to sipnet units
-  prior.sla <- new.params[[which(names(new.params) != "soil")[1]]]$SLA[1]
+  prior.sla <- new.params[[which(!names(new.params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   unit.conv <- 2 * (10000 / 1) * (1 / 1000) * (3.154 * 10^7)  # kgC/m2/s -> Mg/ha/yr
 
   analysis.save <- list()
 
   if ("NPP" %in% variables) {
-    analysis.save[[1]] <- udunits2::ud.convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  #*unit.conv -> Mg/ha/yr
-    names(analysis.save[[1]]) <- c("NPP")
+    analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  #*unit.conv -> Mg/ha/yr
+    names(analysis.save[[length(analysis.save)]]) <- c("NPP")
   }
-
+  
   if ("AbvGrndWood" %in% variables) {
-    analysis.save[[2]] <- udunits2::ud.convert(new.state$AbvGrndWood, "kg/m^2", "g/m^2")#no (1-.2-.2) because that's on sipnet side
-    names(analysis.save[[2]]) <- c("plantWood")
+    AbvGrndWood <- udunits2::ud.convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
+    analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 
+    names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
+    
+    analysis.save[[length(analysis.save) + 1]] <- IC_extra$abvGrndWoodFrac
+    names(analysis.save[[length(analysis.save)]]) <- c("abvGrndWoodFrac")
+    
+    analysis.save[[length(analysis.save) + 1]] <- IC_extra$coarseRootFrac 
+    names(analysis.save[[length(analysis.save)]]) <- c("coarseRootFrac")
+    
+    analysis.save[[length(analysis.save) + 1]] <- IC_extra$fineRootFrac 
+    names(analysis.save[[length(analysis.save)]]) <- c("fineRootFrac")
   }
 
   if ("LeafC" %in% variables) {
-    analysis.save[[3]] <- new.state$LeafC * prior.sla * 2  ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
-    if (new.state$LeafC < 0)
-      analysis.save[[3]] <- 0
-    names(analysis.save[[3]]) <- c("lai")
+    analysis.save[[length(analysis.save) + 1]] <- new.state$LeafC * prior.sla * 2  ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
+    if (new.state$LeafC < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("lai")
   }
 
   if ("Litter" %in% variables) {
-    analysis.save[[4]] <- udunits2::ud.convert(new.state$Litter, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
-    if (new.state$Litter < 0)
-      analysis.save[[4]] <- 0
-    names(analysis.save[[4]]) <- c("litter")
+    analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$Litter, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    if (new.state$Litter < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("litter")
   }
 
   if ("TotSoilCarb" %in% variables) {
-    analysis.save[[5]] <- udunits2::ud.convert(new.state$TotSoilCarb, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
-    names(analysis.save[[5]]) <- c("soil")
+    analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$TotSoilCarb, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    if (new.state$TotSoilCarb < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("soil")
   }
 
   if ("SoilMoistFrac" %in% variables) {
-    analysis.save[[6]] <- new.state$SoilMoistFrac  ## unitless
-    if (new.state$SoilMoistFrac < 0 | new.state$SoilMoistFrac > 1)
-      analysis.save[[6]] <- 0.5
-    names(analysis.save[[6]]) <- c("litterWFrac")
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac  ## unitless
+    if (new.state$SoilMoistFrac < 0 | new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
+    names(analysis.save[[length(analysis.save)]]) <- c("litterWFrac")
 
-    analysis.save[[7]] <- new.state$SoilMoistFrac  ## unitless
-    if (new.state$SoilMoistFrac < 0 | new.state$SoilMoistFrac > 1)
-      analysis.save[[7]] <- 0.5
-    names(analysis.save[[7]]) <- c("soilWFrac")
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac  ## unitless
+    if (new.state$SoilMoistFrac < 0 | new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
+    names(analysis.save[[length(analysis.save)]]) <- c("soilWFrac")
   }
 
   if ("SWE" %in% variables) {
-    analysis.save[[8]] <- new.state$SWE  ## unitless
-    if (new.state$SWE < 0)
-      new.state$SWE <- 0
-    names(analysis.save[[8]]) <- c("snow")
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SWE/10  
+    if (new.state$SWE < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("snow")
   }
 
   analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))

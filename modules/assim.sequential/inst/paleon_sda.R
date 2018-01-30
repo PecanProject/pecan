@@ -6,6 +6,7 @@ library(PEcAn.visualization)
 library(PEcAn.assim.sequential)
 library(nimble)
 library(lubridate)
+library(PEcAn.visualization)
 
 #LINKAGES #AGB.pft #Harvard Forest
 #setwd('/fs/data2/output//PEcAn_1000003314/')
@@ -55,9 +56,18 @@ IC <- NULL
 status.start("IC")
 ne <- as.numeric(settings$state.data.assimilation$n.ensemble)
 state <- as.data.frame(rmvnorm(ne,as.numeric(obs.list$obs.mean[[1]]),(obs.list$obs.cov[[1]]), method = "svd"))
-colnames(state)<-c('AGB','NPP')
+colnames(state)<-c('AbvGrndWood','GWBI')
 IC <- sample.IC.SIPNET(ne, state = state)
 status.end()
+
+#develop/debug
+if(FALSE){
+  obs.mean = obs.list$obs.mean
+  obs.cov = obs.list$obs.cov
+  Q = NULL
+  adjustment = TRUE
+}
+
 
 PEcAn.assim.sequential::sda.enkf(settings, obs.mean = obs.list$obs.mean, obs.cov = obs.list$obs.cov, IC = IC)
 
