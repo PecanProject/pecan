@@ -1,28 +1,11 @@
-### Input Conversions
+## Input Conversions
 
-#### Input Data
+### Input Data
 
 Models require input data as drivers, parameters, and boundary conditions. In order to make a variety of data sources that have unique formats compatible with models, conversion scripts are written to convert them into a PEcAn standard format. That format is a netcdf file with variables names and specified to our standard variable table.
 
 Within the PEcAn repository, code pertaining to input conversion is in the MODULES directory under the data.atmosphere and data.land directories. 
 
-## Meteorological Data
-To convert meterological data into the PEcAn Standard and then into model formats we follow four main steps:
-  
-  1. Downloading raw data
-    - [Currently supported products]()
-    - Example Code
-  2. Converting raw data into a CF standard 
-    - Example Code 
-  3. Downscaling and gapfilling
-    - Example Code 
-  4. Coverting to Model Specific format
-    - Example Code 
+### Initial Conditions
 
-Common Questions regarding Met Data: 
-
-How do I add my Meterological data product to PEcAn?
-How do I use PEcAn to convert Met data outide the workflow?
-
-#### Initial Conditions
-
+Initial Conditions
