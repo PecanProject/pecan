@@ -1,12 +1,12 @@
-## Selecting PFTs
+### Selecting PFTs
 
-### Using existing PFTs
+#### Using existing PFTs
 
 PEcAn does not automatically know what vegetations types are present at your study site so you need to select the PFT.
 
 Some models, such as ED2 and LINKAGES, support competition among multiple PFTs and thus you are encouraged to highlight multiple choices. Other models, such as SIPNET and DALEC, only support one PFT at a site.
 
-### Creating new PFTs
+#### Creating new PFTs
 
 To modify or add a new Plant Functional Type (PFT), or to change a PFT's priors, navigate 
 on the grey menu bar to Data > PFTs 
@@ -37,5 +37,3 @@ unnecessarily (e.g. changes of variable name or units to what your model uses is
 internally, so you want to find the trait with the correct MEANING).
 
 Additional information on adding PFTs, Species, and Priors can be found [here](../../developers_guide/Adding-an-Ecosystem-Model.md#pfts-plant-functional-types)
-
-

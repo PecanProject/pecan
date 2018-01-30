@@ -1,5 +1,3 @@
-# (PART) Basic User Guide {-}
-
 # Getting Started
 
 ## How PEcAn Works in a nutshell
@@ -47,7 +45,7 @@ Login to [Amazon Web Services (AWS)](http://console.aws.amazon.com/) and select 
     +	Click on the toggle button on the left next to PEcAn1.4.6
     +	Click on the “Launch” button at the top
 2.	Choose an Instance Type
-    +	Select what type of machine you want to run. For this demo the default, t2.micro, will be adequate. Be aware that different machine types incur very different costs, from 1.3 cents/hour to over $5/hr https://aws.amazon.com/ec2/pricing/   
+    +	Select what type of machine you want to run. For this demo the default, t2.micro, will be adequate. Be aware that different machine types incur very different costs, from 1.3 cents/hour to over \$5/hr https://aws.amazon.com/ec2/pricing/   
     + Select t2.micro, then click “Next: Configure Instance Details”
 3.	Configure Instance Details
     +	The defaults are OK. Click “Next: Add Storage”
@@ -111,7 +109,4 @@ Once you have installed A VM or have a version of PEcAn you'll want to run throu
 
 [Demo 01](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html)
 [Demo 02](https://pecanproject.github.io/pecan-documentation/tutorials/Demo02.html)
-
-
-For Additional Tools and Vignettes - Check out 
 
