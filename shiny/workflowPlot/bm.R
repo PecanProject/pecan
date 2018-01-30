@@ -151,6 +151,16 @@ observeEvent({
           # actionButton("selectall.plot","Select/Deselect all plot metrics"),
           label=h3("Label")
         ))
+        # column(4, wellPanel(
+        #   textInput("start_year", label = "Benchmarking Start Year",
+        #             value = "don't use this"),          
+        #   label=h3("Label")
+        # )),
+        # column(4, wellPanel(
+        #   textInput("end_year", label = "Benchmarking End Year",
+        #             value = "don't use this"),          
+        #   label=h3("Label")
+        # ))
       )
     }
   })
@@ -243,9 +253,21 @@ observeEvent(input$calc_bm,{
 
   settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
   settings <- PEcAn.benchmark::read_settings_BRR(settings)
+  
+  # This is a hack to get old runs that don't have the right pecan.CHECKED.xml data working
+  if(is.null(settings$settings.info)){
+    settings$settings.info <- list(
+      deprecated.settings.fixed = TRUE,
+      settings.updated = TRUE,
+      checked = TRUE
+    )
+  }
+  
   settings <- PEcAn.settings::prepare.settings(settings)
   settings$host$name <- "localhost" # This may not be the best place to set this, but it isn't set by any of the other functions. Another option is to have it set by the default_hostname function (if input is NULL, set to localhost)
-  results <- PEcAn.settings::papply(settings, function(x) calc_benchmark(x, bety))
+  # results <- PEcAn.settings::papply(settings, function(x) calc_benchmark(x, bety, start_year = input$start_year, end_year = input$end_year))
+  results <- PEcAn.settings::papply(settings, function(x) 
+    calc_benchmark(settings = x, bety = bety))
   bm$load_results <- bm$load_results + 1
   
 })
