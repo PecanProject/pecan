@@ -111,3 +111,17 @@ Below are some commonly used codes:
 
 If your data is in text format with variables in a standard order then you can specify the Column Number for the variable. This is required for text files that lack headers.
 
+## Retrieving Format Information 
+
+To acquire Format information from a Format record, use the R function `query.format.vars`
+
+### Inputs
+
+- `bety`: connection to BETY
+- `input.id=NA` and/or `format.id=NA`: Input or Format record ID from BETY
+  - At least one must be specified. Defaults to `format.id` if both provided.
+- `var.ids=NA`: optional vector of variable IDs. If provided, limits results to these variables.
+
+### Output 
+
+- R list object containing many things. Fill this in. 
