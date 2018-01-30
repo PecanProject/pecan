@@ -1,0 +1,34 @@
+# Advanced user guide
+
+For those wanting to take full advantage of PEcAn and its tools, this section will provide you with the necessary information to do so. In this section we hope to answer the question: How can I use PEcAn to its fullest?
+
+- PEcAn workflow (web/workflow.R)
+  - How the workflow works
+  - How each module is called
+  - How to do outside of web interface
+  - Link to "folder structure" section below for detailed descriptions
+- Adding to PEcAn
+  - Case studies
+    - Adding a model
+    - Adding new species, PFTs, and traits from a new site
+      - Add a site
+      - Add some species
+      - Add PFT
+      - Add trait data
+    - Adding a benchmark
+    - Adding a met driver
+  - Reference (How to change tables)
+    - Models
+    - Species
+    - PFTs
+    - Traits
+    - Inputs
+    - DB files
+    - Variables
+    - Formats
+    - (Link each section to relevant Bety tables)
+- Modules -- additional tools
+  - RTM
+  - Photosynthesis
+  - Allometry
+  - `benchmark::load_data`
