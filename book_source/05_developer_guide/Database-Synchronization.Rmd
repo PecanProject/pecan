@@ -1,14 +1,16 @@
+## Database synchronization
+
 The database synchronization consists of 2 parts:
 - Getting the data from the remote servers to your server
 - Sharing your data with everybody else
 
-## How does it work?
+### How does it work?
 
 Each server that runs the BETY database will have a unique machine_id and a sequence of ID's associated. Whenever the user creates a new row in BETY it will receive an ID in the sequence. This allows us to uniquely identify where a row came from. This is information is crucial for the code that works with the synchronization since we can now copy those rows that have an ID in the sequence specified. If you have not asked for a unique ID your ID will be 99.
 
 The synchronization code itself is split into two parts, loading data with the `load.bety.sh` script and exporting data using `dump.bety.sh`. If you do not plan to share data, you only need to use `load.bety.sh` to update your database.
 
-## Set up
+### Set up
 
 Requests for new machine ID's is currently handled manually. To request a machine ID contact Rob Kooper <kooper@illinois.edu>. In the examples below this ID is referred to as MYSITE.
 
@@ -19,7 +21,7 @@ sudo -u postgres {$PECAN}/scripts/load.bety.sh -c -u -m X
 ```
 WARNING: At the momment running CREATE deletes all current records in the database. If you are running from the VM this includes both all runs you have done and all information that the database is prepopulated with (e.g. input and model records). Remote records can be fetched (see below), but local records will be lost (we're working on improving this!)
 
-## Fetch latest data
+### Fetch latest data
 
 When logged into the machine you can fetch the latest data using the load.bety.sh script. The script will check what site you want to get the data for and will remove all data in the database associated with that id. It will then reinsert all the data from the remote database.
 
@@ -60,7 +62,7 @@ dump.bety.sh -h
  -u should unchecked data be dumped, default is NO
 ```
 
-## Sharing data
+### Sharing data
 
 Sharing your data requires a few steps. First, before entering any data, you will need to request an ID from the PEcAn developers. Simply open an issue at github and we will generate an ID for you.  If possible, add the URL of your data host.
 
@@ -90,7 +92,7 @@ NOTE: If you want your dumps to be accessible to other PEcAn servers you need to
 
 Plans to simplify this process are in the works
 
-## Automation
+### Automation
 
 Below is an example of a script to synchronize PEcAn database instances across the network.
 
@@ -111,7 +113,7 @@ MYSITE=1 REMOTESITE=0 /home/dietze/pecan/scripts/load.bety.sh
 echo $(date +%c) >> /home/dietze/db.sync.log
 ```
 
-Typically such a script is set up to run as a cron job. Make sure to schedule this job (```crontab -e```) as the user that has database privledges (typically postgres). The example below is a cron table that runs the sync every hour at 12 min after the hour.
+Typically such a script is set up to run as a cron job. Make sure to schedule this job (`crontab -e`) as the user that has database privledges (typically postgres). The example below is a cron table that runs the sync every hour at 12 min after the hour.
 
 ```
 MAILTO=user@yourUniversity.edu

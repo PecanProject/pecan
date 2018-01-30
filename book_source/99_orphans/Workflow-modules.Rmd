@@ -1,5 +1,6 @@
-Module Definitions as of PEcAn 1.2.6
-------------------------------------
+# Workflow modules
+
+NOTE: As of PEcAn 1.2.6 -- needs to be updated significantly
 
 <!--NEEDS TO BE UPDATED SIGNIFICANTLY-->
 ## Overview
