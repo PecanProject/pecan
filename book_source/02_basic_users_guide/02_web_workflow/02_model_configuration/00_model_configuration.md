@@ -1,3 +1,4 @@
-# Basic model configuration
+## Model configuration
 
 This page is used for basic model configuration, including when your model will run and what input data it will use.
+
