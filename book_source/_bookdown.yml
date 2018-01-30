@@ -4,7 +4,6 @@ rmd_files: [
   "01_introduction/01_project_overview.md",
   "01_introduction/02_code_of_conduct.md",
   "01_introduction/03_how_to_use_book.md",
-  '../documentation/tutorials/01_Demo_Basic_Run/Demo01.Rmd',
   "02_basic_users_guide/00_basic_users_guide.md",
   "02_basic_users_guide/01_getting_started.md",
   "02_basic_users_guide/02_web_workflow/00_web_workflow.md",
