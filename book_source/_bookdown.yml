@@ -1,8 +1,9 @@
 rmd_files: [
   "index.Rmd",
-  "01_book_intro/project_overview.Rmd",
-  "01_book_intro/Code-of-Conduct.Rmd",
-  "01_book_intro/how_to_use_book.Rmd",
+  "01_introduction/00_introduction.md",
+  "01_introduction/01_project_overview.md",
+  "01_introduction/02_code_of_conduct.md",
+  "01_introduction/03_how_to_use_book.md",
   "02_basic_users_guide/Getting-started.Rmd",
   "02_basic_users_guide/Model-site-page.Rmd",
   "02_basic_users_guide/Choose-a-model.Rmd",

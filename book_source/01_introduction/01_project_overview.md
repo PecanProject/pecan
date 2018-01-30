@@ -1,4 +1,4 @@
-# Project Overview{-}
+## Project Overview
 
 The Predictive Ecosystem Analyzer (PEcAn) is an integrated informatics toolbox for ecosystem modeling (Dietze et al. 2013, LeBauer et al. 2013). PEcAn consists of: 
 
