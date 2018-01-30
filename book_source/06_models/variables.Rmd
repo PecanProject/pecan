@@ -2,11 +2,7 @@
 
 Note: initial table derived from [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) 
 
-```{r,echo=FALSE}
-var.file <- system.file("data","mstmip_vars.csv",package = "PEcAn.utils")
-
-mstmipvars = read.csv(var.file, header = TRUE, row.names = NULL, sep = ";")
-
-knitr::kable(mstmipvars, align = "c" , booktabs = TRUE)
-
+```{r, echo=FALSE}
+data("mstmip_vars", package = "PEcAn.utils")
+knitr::kable(mstmip_vars, align = "c" , booktabs = TRUE)
 ```
