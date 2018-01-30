@@ -2,6 +2,8 @@
 
 Three Types of data conversions are discussed below: Meteorological data, Vegetation data, and Soil data. Each section provides instructions on how to convert data from their raw formats into a PEcAn standard format, whether it be from a database or if you have raw data in hand.
 
+Also, see [PEcAn standard formats].
+
 ## Meterological Data conversion
 
 ### Adding a function to PEcAn to convert a met data source

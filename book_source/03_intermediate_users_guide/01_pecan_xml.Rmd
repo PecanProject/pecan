@@ -410,3 +410,11 @@ Coming soon...
 ## Benchmarking
 
 Coming soon...
+
+## Model-specific configuration
+
+See the following:
+
+* [ED2][ED2 Configuration]
+* [SIPNET][SIPNET Configuration]
+* [BIOCRO][BioCro Configuration]
