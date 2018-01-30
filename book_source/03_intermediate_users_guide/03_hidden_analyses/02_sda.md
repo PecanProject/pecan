@@ -1,4 +1,4 @@
-## State Data Assimilation 
+## State data assimilation (SDA)
 
 `sda.enkf.R` is housed within: **/pecan/modules/assim.sequential/R**
 The tree ring tutorial is housed within: **/pecan/documentation/tutorials/StateAssimilation**

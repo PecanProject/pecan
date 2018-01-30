@@ -1,3 +1,3 @@
-# Specific Model Configurations
+# Editing model configurations
 
 (TODO: Under construction...)

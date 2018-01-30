@@ -1,4 +1,4 @@
-# PEcAn and Remote Machines
+# Remote execution with PEcAn
 
 Remote execution allows the user to leverage the power and storage of high performance computing clusters, AWS instances, or specially configured virtual machines, but without leaving their local working environment.
 PEcAn uses remote execution primarily to run ecosystem models.

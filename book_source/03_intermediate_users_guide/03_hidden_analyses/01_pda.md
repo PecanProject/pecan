@@ -1,4 +1,4 @@
-## Parameter Data Assimilation 
+## Parameter data assimilation (PDA)
 
 All functions pertaining to Parameter Data Assimilation are housed within: **pecan/modules/assim.batch**
 
