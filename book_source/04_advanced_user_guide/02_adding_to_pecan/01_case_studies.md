@@ -1,4 +1,4 @@
-### Case studies
+## Case studies
 
 - Adding a model
 - Adding new species, PFTs, and traits from a new site
