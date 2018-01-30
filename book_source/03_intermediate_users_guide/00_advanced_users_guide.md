@@ -1,6 +1,6 @@
-# (PART) Advanced User Guide - Web {-}
+# (PART) Intermediate user guide {-}
 
-# Advanced Web Interface Guide
+# Introduction
 
 This section will provide information to those wanting to take advantage of PEcAn's customizations from the web interface.
 
@@ -19,7 +19,4 @@ This section will provide information to those wanting to take advantage of PEcA
 * [Parameter data assimilation](pda.documentation.md)
 * [State data assimilation](sda.documentation.md)
 * Benchmarking
-
-
-
 
