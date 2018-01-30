@@ -1,4 +1,22 @@
-### Meteorological Data
+## Meteorological Data
+
+To convert meterological data into the PEcAn Standard and then into model formats we follow four main steps:
+  
+  1. Downloading raw data
+    - [Currently supported products]()
+    - Example Code
+  2. Converting raw data into a CF standard 
+    - Example Code 
+  3. Downscaling and gapfilling
+    - Example Code 
+  4. Coverting to Model Specific format
+    - Example Code 
+
+Common Questions regarding Met Data: 
+
+How do I add my Meterological data product to PEcAn?
+How do I use PEcAn to convert Met data outide the workflow?
+
 
 The main script that handles Met Processing, is [`met.process`](https://github.com/PecanProject/pecan/blob/develop/modules/data.atmosphere/R/met.process.R). It acts as a wrapper function that calls individual modules to facilitate the processing of meteorological data from it's original form to a pecan standard, and then from that standard to model specific formats. It also handles recording these processes in the BETY database.
 
@@ -13,7 +31,7 @@ The main script that handles Met Processing, is [`met.process`](https://github.c
     - Example Code to [convert Standard into Sipnet format](https://github.com/PecanProject/pecan/blob/develop/models/sipnet/R/met2model.SIPNET.R)
     
 
-## Downloading Raw data (Description of Process)
+### Downloading Raw data (Description of Process)
   
   Given the information passed from the pecan.xml met.process will call the `download.raw.met.module` to facilitate the execution of the necessary functions to download raw data.
 ```

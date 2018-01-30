@@ -1,4 +1,4 @@
-## Adding to PEcAn
+# Adding to PEcAn
 
 - Case studies
     - Adding a model
