@@ -69,7 +69,7 @@ Essentially, an SSH socket is a read- and write-protectected file that contains 
 
 To create an SSH tunnel, use a command like the following:
 
-```
+```sh
 ssh -n -N -f -o ControlMaster=yes -S /path/to/socket/file <username>@<hostname>
 ```
 
@@ -78,7 +78,7 @@ It will also create the file `/path/to/socket/file`.
 
 To use this socket with another command, use the `-S /path/to/file` flag, pointing to the same tunnel file you just created.
 
-```
+```sh
 ssh -S /path/to/socket/file <hostname> <optional command>
 ```
 
@@ -87,14 +87,14 @@ As before, if `<optional command>` is blank, you will be dropped into an interac
 
 To close a socket, use the following:
 
-```
+```sh
 ssh -S /path/to/socket/file <hostname> -O exit
 ```
 
 This will delete the socket file and close the connection.
 Alternatively, a scorched earth approach to closing the SSH tunnel if you don't remember where you put the socket file is something like the following:
 
-```
+```sh
 pgrep ssh   # See which processes will be killed
 pkill ssh   # Kill those processes
 ```
@@ -104,7 +104,7 @@ pkill ssh   # Kill those processes
 To automatically create tunnels following a specific pattern, you can add the following to your
 `~/.ssh/config`
 
-```
+```sh
 Host <hostname goes here>
  ControlMaster auto
  ControlPath /tmp/%r@%h:%p
@@ -120,13 +120,13 @@ The best way to do this is to create the tunnel first, outside of R, as describe
 (In the following examples, I'll use my username `ashiklom` connecting to the `test-pecan` server with a socket stored in `/tmp/testpecan`.
 To follow along, replace these with your own username and designated server, respectively).
 
-```{sh}
+```sh
 ssh -nNf -o ControlMaster=yes -S /tmp/testpecan ashiklom@test-pecan.bu.edu
 ```
 
 Then, in R, create a `host` object, which is just a list containing the elements `name` (hostname) and `tunnel` (path to tunnel file).
 
-```{r}
+```r
 my_host <- list(name = "test-pecan.bu.edu", tunnel = "/tmp/testpecan")
 ```
 
@@ -137,7 +137,7 @@ This host object can then be used in any of the remote execution functions.
 
 The `PEcAn.remote::remote.execute.cmd` function runs a system command on a remote server (or on the local server, if `host$name == "localhost"`).
 
-```{r}
+```
 x <- PEcAn.remote::remote.execute.cmd(host = my_host, cmd = "echo", args = "Hello world")
 x
 ```
@@ -147,7 +147,7 @@ Note also that the output of the remote command is returned as a character.
 
 For R code, there is a special wrapper around `remote.execute.cmd` -- `PEcAn.remote::remote.execute.R`, which runs R code (passed as a string) on a remote and returns the output.
 
-```{r}
+```
 code <- "
     x <- 2:4
     y <- 3:1
@@ -250,14 +250,14 @@ that jobs on the local machine should use qsub to run the models.
 Currently it support the following options (see also
 [PEcAn-Configuration](PEcAn-Configuration.md#run_setup))
 
- ```
+```
 array("geo.bu.edu" =>
     array("qsub"   => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
           "jobid"  => "Your job ([0-9]+) .*",
           "qstat"  => "qstat -j @JOBID@ || echo DONE",
           "job.sh" => "module load udunits R/R-3.0.0_gnu-4.4.6",
           "models" => array("ED2"    => "module load hdf5"))
- ```
+```
 
 In this list `qsub` is the actual command line for qsub, `jobid`
 is the text returned from qsub, `qstat` is the command to check
