@@ -1,12 +1,12 @@
-# Input Conversion
+### Input Conversion
 
 Three Types of data conversions are discussed below: Meteorological data, Vegetation data, and Soil data. Each section provides instructions on how to convert data from their raw formats into a PEcAn standard format, whether it be from a database or if you have raw data in hand.
 
 Also, see [PEcAn standard formats].
 
-## Meterological Data conversion
+#### Meterological Data conversion
 
-### Adding a function to PEcAn to convert a met data source
+##### Adding a function to PEcAn to convert a met data source
 In general, you will need to write a function to download the raw met data and one to convert it to the PEcAn standard.
 
 Downloading raw data function are named `download.<source>.R`. These functions are stored within the PEcAn directory: [`/modules/data.atmosphere/R`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere/R). 
@@ -17,7 +17,7 @@ Current Meteorological products that are coupled to PEcAn can be found in our [A
 
 Note: Unless you are also adding a new model, you will not need to write a script to convert from PEcAn standard to PEcAn models. Those conversion scripts are written when a model is added and can be found within each model's PEcAn directory.
 
-### Dimensions:
+##### Dimensions:
 
 
 |CF standard-name | units |
@@ -29,7 +29,7 @@ Note: Unless you are also adding a new model, you will not need to write a scrip
 General Note: dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
 
 
-### The variable names should be `standard_name`
+##### The variable names should be `standard_name`
 
 | CF standard-name                          | units | bety         | isimip       | cruncep | narr  | ameriflux |
 |:------------------------------------------|:------|:-------------|:-------------|:--------|:------|:----------|
@@ -65,17 +65,17 @@ We want to standardize the units as well as part of the `met2CF.<product>` step.
 
 The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
 
-### Adding Single-Site Specific Meteorological Data
+##### Adding Single-Site Specific Meteorological Data
 
 Perhaps you have meteorological data specific to one site, with a unique format that you would like to add to PEcAn. Your steps would be to:
   1. write a script or function to convert your files into the netcdf PEcAn standard
   2. insert that file as an input record for your site following these [instructions](How to Insert new Input Data)
   
-### Processing Met data outside of the workflow using PEcAn functions
+##### Processing Met data outside of the workflow using PEcAn functions
 
 Perhaps you would like to obtain data from one of the sources coupled to PEcAn on its own. To do so you can run PEcAn functions on their own. 
 
-#### Example 1: Processing data from a database 
+###### Example 1: Processing data from a database 
 
 Download Amerifluxlbl from Niwot Ridge for the year 2004:
 
@@ -129,7 +129,7 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
 
 
 
-#### Example 2: Processing data from data already in hand 
+###### Example 2: Processing data from data already in hand 
 
 If you have Met data already in hand and you would like to convert into the PEcAn standard follow these instructions.
 
@@ -176,13 +176,13 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
 ```
 
 
-## Vegetation Data
+#### Vegetation Data
 
 Vegetation data will be required to parameterize your model. In these examples we will go over how to produce a standard initial condition file.
 
 The main function to process cohort data is the `ic.process.R` function. As of now however, if you require pool data you will run a separate function, `pool_ic_list2netcdf.R`.
 
-#### Example 1: Processing Veg data from data in hand.
+###### Example 1: Processing Veg data from data in hand.
 
 In the following example we will process vegetation data that you have in hand using PEcAn.
 
@@ -256,7 +256,7 @@ Note that the argument `dir` is set to the current directory. You will find the 
 
 
 
-#### Example 3 Pool Initial Condition files
+###### Example 3 Pool Initial Condition files
 If you have pool vegetation data, you'll need the [`pool_ic_list2netcdf.R`](https://github.com/PecanProject/pecan/blob/develop/modules/data.land/R/pool_ic_list2netcdf.R) function to convert the pool data into PEcAn
 standard.
 
@@ -281,9 +281,9 @@ pool_ic_list2netcdf(input = input, outdir = outdir, siteid = siteid)
 
 You should now have a netcdf file with initial conditions.
 
-## Soil Data
+#### Soil Data
 
-#### Example 1: Converting Data in hand 
+###### Example 1: Converting Data in hand 
 
 Local data that has the correct names and units can easily be written out in PEcAn standard using the function soil2netcdf.
 
@@ -298,7 +298,7 @@ soil2netcdf(soil.data,"soil.nc")
 At the moment this file would need to be inserted into Inputs manually. By default, this function also calls soil_params, which will estimate a number of hydraulic and thermal parameters from texture. Be aware that at the moment not all model couplers are yet set up to read this file and/or convert it to model-specific formats.
 
 
-#### Example 2: Converting PalEON data
+###### Example 2: Converting PalEON data
 
 In addition to location-specific soil data, PEcAn can extract soil texture information from the PalEON regional soil product, which itself is a subset of the MsTMIP Unified North American Soil Map. If this product is installed on your machine, the appropriate step in the do_conversions workflow is enabled by adding the following tag under ```<inputs>``` in your pecan.xml
 

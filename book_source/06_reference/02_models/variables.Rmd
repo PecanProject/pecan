@@ -1,4 +1,4 @@
-# Model Output Variables
+## Model Output Variables
 
 Note: initial table derived from [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) 
 
