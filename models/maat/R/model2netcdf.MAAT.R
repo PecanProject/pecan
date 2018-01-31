@@ -7,6 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+
 ##-------------------------------------------------------------------------------------------------#
 ##' Convert MAAT output to netCDF
 ##'
@@ -115,21 +116,18 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
                                               "kg H2O m-2 s-1"))  # stomatal_conductance in kg H2O m2 s1
 
     ### Put output into netCDF format
-    dims <- list(lon = lon, lat = lat, time = t) # set dims for netCDF file
-    
+    dims <- list(lon = lon, lat = lat, time = t) # set dims for netCDF file - REDUNDANT. can be deprecated
     nc_var       <- list()
-    #nc_var[[1]]  <- PEcAn.utils::to_ncvar("Year", dims)
-    #nc_var[[2]]  <- PEcAn.utils::to_ncvar("FracJulianDay", dims)
-    #nc_var[[3]]  <- PEcAn.utils::to_ncvar("GPP", dims)
-    #nc_var[[4]]  <- PEcAn.utils::to_ncvar("leaf_respiration", dims)
-    #nc_var[[5]]  <- PEcAn.utils::to_ncvar("stomatal_conductance", dims)
-    
-    # temporarily reverting back to this before overhauling to use newer to_ncvar. Currently does not allow for all these vars
-    nc_var[[1]]  <- PEcAn.utils::mstmipvar("Year", lat, lon, t, NA)
-    nc_var[[2]]  <- PEcAn.utils::mstmipvar("FracJulianDay", lat, lon, t, NA)
-    nc_var[[3]]  <- PEcAn.utils::mstmipvar("GPP", lat, lon, t, NA)
-    nc_var[[4]]  <- PEcAn.utils::mstmipvar("leaf_respiration", lat, lon, t, NA)
-    nc_var[[5]]  <- PEcAn.utils::mstmipvar("stomatal_conductance", lat, lon, t, NA)
+    nc_var[[1]]  <- ncdf4::ncvar_def("Year", units = "YYYY", dim=list(lat, lon, t), missval = -999, 
+                                     longname = "Simulation Year")
+    nc_var[[2]]  <- ncdf4::ncvar_def("FracJulianDay", units = "Frac DOY", dim=list(lat, lon, t), missval = -999, 
+                                     longname = "Fraction of Julian Date")
+    nc_var[[3]]  <- ncdf4::ncvar_def("GPP", units = "kg C m-2 s-1", dim=list(lat, lon, t), missval = -999, 
+                                     longname = "Gross Primary Productivity")
+    nc_var[[4]]  <- ncdf4::ncvar_def("leaf_respiration", units = "kg C m-2 s-1", dim=list(lat, lon, t), missval = -999, 
+                                     longname = "Leaf Respiration Rate")
+    nc_var[[5]]  <- ncdf4::ncvar_def("stomatal_conductance", units = "kg H2O m-2 s-1", dim=list(lat, lon, t), missval = -999, 
+                                     longname = "Leaf Stomatal Conductance")
     
     ### Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
