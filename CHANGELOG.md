@@ -21,6 +21,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed an remote code execution discovered by NCSA security team.
 - Added documentation how to submit a run from the command line
 - PEcAn.DB function `rename.jags.columns` renamed to `rename_jags_columns` to avoid conflict with S3 method naming conventions
+- Replaced `rhdf5` library with `hdf5r`, a more modern alternative that is available on CRAN.
 - PEcAn.DB function `runModule.get.trait.data` has been moved to the new PEcAn.workflow package to avoid a circular package dependency between PEcAn.DB and PEcAn.settings.
 
 ## [1.5.2] - 2017-12-07
