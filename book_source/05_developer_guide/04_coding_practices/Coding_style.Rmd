@@ -1,4 +1,4 @@
-# Coding Style
+## Coding Style
 
 
 Consistent coding style improves readability and reduces errors in
@@ -9,7 +9,7 @@ thought out and widely adopted. [Advanced R: Coding Style](http://r-pkgs.had.co.
 
 Both the Wickham text and this page are derived from [Google's R Style Guide](https://google.github.io/styleguide/Rguide.xml).
 
-## Use Roxygen2 documentation
+### Use Roxygen2 documentation
 
 This is the standard method of documentation used in PEcAn development,
 it provides inline documentation similar to doxygen. Even trivial
@@ -17,12 +17,12 @@ functions should be documented.
 
 See [Roxygen2](Roxygen2.md) Wiki page
 
-## Write your name at the top
+### Write your name at the top
 
 Any function that you create or make a meaningful contribution to should
 have your name listed after the author tag in the function documentation.
 
-## Use testthat testing package
+### Use testthat testing package
 
 See [Unit_Testing](Testing.md) wiki for instructions, and [Advanced R: Tests](http://r-pkgs.had.co.nz/tests.html).
 
@@ -31,35 +31,35 @@ See [Unit_Testing](Testing.md) wiki for instructions, and [Advanced R: Tests](ht
 * all bugs should have a test that reproduces the bug, and the test should pass before bug is closed
 
 
-## Don't use shortcuts
+### Don't use shortcuts
 
 R provides many shortcuts that are useful when coding interactively, or for writing scripts. However, these can make code more difficult to read and can cause problems when written into packages.
 
-### Function Names (`verb.noun`)
+#### Function Names (`verb.noun`)
 
 Following convention established in PEcAn 0.1, we use the all lowercase with periods to separate words. They should generally have a `verb.noun` format, such as `query.traits`, `get.samples`, etc.
 
-### File Names
+#### File Names
 
 File names should end in `.R`, `.Rdata`, `.Rscript` and should be meaningful, e.g. named after the primary functions that they contain. There should be a separate file for each major high-level function to aid in identifying the contents of files in a directory.
 
-### Use "<-" as an assignment operator
+#### Use "<-" as an assignment operator
 
 * Because most R code uses <- (except where = is required), we will use <-
 * "=" is used for function arguments
 
-### Use Spaces
+#### Use Spaces
 
 * around all binary operators (=, +, -, <-, etc.). 
 * after but not before a comma
 
-### Use curly braces
+#### Use curly braces
 
 The option to omit curly braces is another shortcut that makes code easier to write but harder to read and more prone to error.
 
-## Package Dependencies: 
+### Package Dependencies: 
 
-### library vs require 
+#### library vs require 
 
 When another package is required by a function or script, it can be called in the following ways:
 
@@ -71,7 +71,7 @@ When another package is required by a function or script, it can be called in th
 
 Reference: Stack Overflow ["What is the difference between require and library?"](http://stackoverflow.com/questions/5595512/what-is-the-difference-between-require-and-library)
 
-### DEPENDS, SUGGESTS, IMPORTS
+#### DEPENDS, SUGGESTS, IMPORTS
 
 It is considered best practice to use DEPENDS and SUGGESTS in DESCRIPTION; SUGGESTS should be used for packages that are called infrequently, or only in examples and vignettes; suggested packages are called by require inside a function.
 

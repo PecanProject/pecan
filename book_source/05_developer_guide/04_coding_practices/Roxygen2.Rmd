@@ -1,8 +1,8 @@
-# Roxygen2
+## Roxygen2
 
 This is the standard method of documentation used in PEcAn development, it provides inline documentation similar to doxygen.
 
-## Canonical references:
+### Canonical references:
 
 * Must Read: R package development by Hadley Wickham:
  * [**Object Documentation**](http://r-pkgs.had.co.nz/man.html)  
@@ -11,11 +11,11 @@ This is the standard method of documentation used in PEcAn development, it provi
  * [Roxygen2 Package Documentation](http://cran.r-project.org/web/packages/roxygen2/roxygen2.pdf)
  * [GitHub](https://github.com/klutometis/roxygen)
 
-## Basic Roxygen2 instructions:
+### Basic Roxygen2 instructions:
 
 Section headers link to "Writing R extensions" which provides in-depth documentation. This is provided as an overview and quick reference.
 
-### [Tags](http://cran.r-project.org/doc/manuals/R-exts.html#Documenting-functions)
+#### [Tags](http://cran.r-project.org/doc/manuals/R-exts.html#Documenting-functions)
 
 * tags are preceeded by `##'`
 * tags required by R:
@@ -30,28 +30,28 @@ Section headers link to "Writing R extensions" which provides in-depth documenta
 ** `import` can import a required function from another package (if package is not loaded or other function is not exported)
 ** `seealso` suggests related functions. These can be linked using `\code{link{}}`  
 
-### Text markup
+#### Text markup
 
-#### [Formatting](http://cran.r-project.org/doc/manuals/R-exts.html#Marking-text)
+##### [Formatting](http://cran.r-project.org/doc/manuals/R-exts.html#Marking-text)
 
 * `\bold{}`
 * `\emph{}` italics
 
 
-#### [Links](http://cran.r-project.org/doc/manuals/R-exts.html#Marking-text)
+##### [Links](http://cran.r-project.org/doc/manuals/R-exts.html#Marking-text)
 
 * `\url{www.url.com}` or `\href{url}{text}` for links
 * `\code{\link{thisfn}}` links to function "thisfn" in the same package
 * `\code{\link{foo::thatfn}}` links to function "thatfn" in package "foo"
 * `\pkg{package_name}`
 
-#### [Math](http://cran.r-project.org/doc/manuals/R-exts.html#Mathematics)
+##### [Math](http://cran.r-project.org/doc/manuals/R-exts.html#Mathematics)
 
 * `\eqn{a+b=c}` uses LaTex to format an inline equation
 * `\deqn{a+b=c}` uses LaTex to format displayed equation
 * `\deqn{latex}{ascii}` and `\eqn{latex}{ascii}` can be used to provide different versions in latex and ascii. 
 
-#### [Lists](http://cran.r-project.org/doc/manuals/R-exts.html#Lists-and-tables)
+##### [Lists](http://cran.r-project.org/doc/manuals/R-exts.html#Lists-and-tables)
 
 ```
 \enumerate{
@@ -63,7 +63,7 @@ more named fields.
 \itemize and \enumerate commands may be nested.
 ```
 
-#### "Tables":http://cran.r-project.org/doc/manuals/R-exts.html#Lists-and-tables
+##### "Tables":http://cran.r-project.org/doc/manuals/R-exts.html#Lists-and-tables
 
 ```
 \tabular{rlll}{
@@ -76,7 +76,7 @@ more named fields.
 }
 ```
 
-## Example
+### Example
 
 Here is an example documented function, myfun
 
@@ -102,7 +102,7 @@ myfun <- function(a, b, c){
 In emacs, with the cursor inside the function, the keybinding C-x O will generate an outline or update the Roxygen2 documentation. 
 
 
-## Updating documentation
+### Updating documentation
 
 * After adding documentation run the following command (replacing common with the name of the folder you want to update):
 ** In R using devtools to call roxygenize:
