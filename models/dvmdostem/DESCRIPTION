@@ -9,8 +9,7 @@ Description: This module provides functions to link the dvmdostem model to
     PEcAn.
 Imports:
     PEcAn.utils (>= 1.4.8),
-    rjson,
-    ncdf4.helpers
+    rjson
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: dvmdostem
