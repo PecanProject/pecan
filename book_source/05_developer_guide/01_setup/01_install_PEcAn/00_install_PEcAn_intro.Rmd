@@ -1,0 +1,13 @@
+## Installing PEcAn by hand
+
+These instructions are provided to document how to install PEcAn on different Operating Systems.
+
+- Prerequisites
+- OS installation
+- insall models
+
+- set lib user
+- Clone and Compile PEcAn source code
+- Install BETY
+- Test Run 
+
