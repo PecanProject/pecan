@@ -14,17 +14,22 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Added
 - RTM: Exposed PROSPECT absorption coefficients and `gpm()` function ("generalized plate model"), facilitating experimentation with different absorption coefficients
 - RTM: Added `spectra` S3 class and methods for subsetting (e.g. `myspec[[400:700]]`), plotting (`plot()` and `matplot()`), and combining spectra by wavelength.
+- Added new model package (PEcAn.dvmdostem) and initial wrappers for integration of the DVM-DOS-TEM model and tested.
 - new base package `PEcAn.workflow`, for functions used to perform the each major step of the analysis. These were previously scattered in other base packages.
 - added PR review time estimate to PR template 
+
 ### Removed
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
 
 ### Changed
+- Updated model2netcdf.MAAT to use ncdf4::ncvar_def to define netCDF variables
 - Fixed an remote code execution discovered by NCSA security team.
 - Added documentation how to submit a run from the command line
+- Updated models/maat to provide support for latest model code updates
 - PEcAn.DB function `rename.jags.columns` renamed to `rename_jags_columns` to avoid conflict with S3 method naming conventions
 - Replaced `rhdf5` library with `hdf5r`, a more modern alternative that is available on CRAN.
 - PEcAn.DB function `runModule.get.trait.data` has been moved to the new PEcAn.workflow package to avoid a circular package dependency between PEcAn.DB and PEcAn.settings.
+- Major documentation refactoring. The documentation names are now directly tied to the order in which they are rendered, and all `Rmd` files in all subdirectories of the documentation source are rendered by default. The overall structure of the documentation has been revised for clarity and cohesiveness.
 
 ## [1.5.2] - 2017-12-07
 

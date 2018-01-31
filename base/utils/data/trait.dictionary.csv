@@ -92,3 +92,5 @@
 "DMAX";"DMAX";"degree days";""
 "DMIN";"DMIN";"degree days";""
 "leaf_longevity";"leaf longevity";"year";""
+"frprod_perc_10";"fine root allocation percentage vertically in soils (every 10 cm)";"0-100";"frprod_perc_10"
+"gcmax";"Maximum canopy conductance";"m s-1";"gcmax"
