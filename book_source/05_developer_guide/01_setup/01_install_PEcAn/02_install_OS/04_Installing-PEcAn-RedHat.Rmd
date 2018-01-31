@@ -1,12 +1,12 @@
-# CentOS / RHEL
+#### CentOS / RHEL
 
 These are specific notes for installing PEcAn on RedHat/CentOS and will be referenced from the main [installing PEcAn](Installing-PEcAn) page. You will at least need to install the build environment and Postgres sections. If you want to access the database/PEcAn using a web browser you will need to install Apache. To access the database using the BETY interface, you will need to have Ruby installed.
 
 This document also contains information on how to install the Rstudio server edition as well as any other packages that can be helpful.
 
-## Install build environment
+#####  Install build environment
 
-#### Install and configure PostgreSQL, udunits2, NetCDF
+###### Install and configure PostgreSQL, udunits2, NetCDF
 
 [Reference: centoshelp.org](http://www.postgresql.org/download/linux/redhat/)
 
@@ -19,7 +19,7 @@ systemctl enable postgresql-9.4
 systemctl start postgresql-9.4
 ```
 
-#### Install and start Apache
+###### Install and start Apache
 
 ```bash
 yum -y install httpd
@@ -27,13 +27,13 @@ systemctl enable httpd
 systemctl start httpd
 ```
 
-#### Install PHP
+###### Install PHP
 
 ```bash
 sudo yum -y install php php-pgsql
 ```
 
-#### Install ruby-netcdf gem 
+###### Install ruby-netcdf gem 
 
 ```bash
 cd $RUBY_APPLICATION_HOME
@@ -55,9 +55,9 @@ cd $RUBY_APPLICATION
 bundle install --without development
 ```
 
-## Apache Configuration
+##### Apache Configuration
 
-## Install and configure Rstudio-server
+##### Install and configure Rstudio-server
 
 based on [Rstudio Server documentation](http://www.rstudio.com/ide/docs/server/getting_started)
 
@@ -78,6 +78,6 @@ based on [Rstudio Server documentation](http://www.rstudio.com/ide/docs/server/g
 * restart server `sudo httpd restart`
 * now you should be able to access `http://<server>/rstudio`
 
-## Install Postgres
+##### Install Postgres
 
 See [documentation under the BETYdb Wiki](https://github.com/PecanProject/bety/wiki/Installing-Postgresql)

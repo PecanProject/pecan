@@ -1,0 +1,77 @@
+#### ED2
+
+##### ED2.2 r46 (used in PEcAn manuscript)
+
+```bash
+# ----------------------------------------------------------------------
+# Get version r46 with a few patches for ubuntu
+cd
+curl -o ED.r46.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/ED.r46.tgz
+tar zxf ED.r46.tgz
+rm ED.r46.tgz
+# ----------------------------------------------------------------------
+# configure and compile ed
+cd ~/ED.r46/ED/build/bin
+curl -o include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
+make OPT=VM
+sudo cp ../ed_2.1-VM /usr/local/bin/ed2.r46
+```
+
+Perform a test run using pre configured ED settings for ED2.2 r46
+
+```bash
+# ----------------------------------------------------------------------
+# Create sample run
+cd
+mkdir testrun.ed.r46
+cd testrun.ed.r46
+curl -o ED2IN http://isda.ncsa.illinois.edu/~kooper/EBI/ED2IN.r46
+sed -i -e "s#\$HOME#$HOME#" ED2IN
+curl -o config.xml  http://isda.ncsa.illinois.edu/~kooper/EBI/config.r46.xml
+# execute test run
+time ed2.r46
+```
+
+##### ED 2.2 r82
+
+```bash
+cd
+curl -o ED.r82.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/ED.r82.tgz
+tar zxf ED.r82.tgz
+rm ED.r82.tgz
+
+cd ED.r82
+curl -o ED.r82.patch http://isda.ncsa.illinois.edu/~kooper/EBI/ED.r82.patch
+patch -p1 < ED.r82.patch
+cd ED/build/bin
+curl -o include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
+make OPT=VM
+sudo cp ../ed_2.1-VM /usr/local/bin/ed2.r82
+```
+
+Perform a test run using pre configured ED settings for ED2.2 r82
+
+```bash
+cd
+mkdir testrun.ed.r82
+cd testrun.ed.r82
+curl -o ED2IN http://isda.ncsa.illinois.edu/~kooper/EBI/ED2IN.r82
+sed -i -e "s#\$HOME#$HOME#" ED2IN
+curl -o config.xml  http://isda.ncsa.illinois.edu/~kooper/EBI/config.r82.xml
+# execute test run
+time ed2.r82
+```
+
+##### ED 2.2 bleeding edge
+
+```bash
+cd
+git clone https://github.com/EDmodel/ED2.git
+
+cd ED2/ED/build/bin
+curl -o include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
+./generate_deps.sh
+make OPT=VM
+sudo cp ../ed_2.1-VM /usr/local/bin/ed2.git
+```
+

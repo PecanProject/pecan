@@ -1,14 +1,16 @@
-# Installing and configuring Thredds for PEcAn
+## Thredds Setup 
+
+Installing and configuring Thredds for PEcAn
 authors - Rob Kooper
 
 **NOTE: Instructions are only tested for Ubuntu 16.04 on the VM, if you have instructions for CENTOS/RedHat please update this documentation**
 **NOTE: Pretty much every step here requires root access.**
 
-## Install the Tomcat 8 and Thredds webapp
+### Install the Tomcat 8 and Thredds webapp
 
 The Tomcat 8 server can be installed from the default Ubuntu repositories. The thredds webapp will be downloaded and installed from unidata.
 
-## Ubuntu
+### Ubuntu
 
 First step is to install Tomcat 8 and configure it. The flag `-Dtds.content.root.path` should point to the location of where the thredds folder is located. This needs to be writeable by the user for tomcat. `-Djava.security.egd` is a special flag to use a different random number generator for tomcat. The default would take to long to generate a random number.
 
@@ -42,7 +44,7 @@ a2enconf thredds
 service apache2 reload
 ```
 
-## Customize the Thredds server
+### Customize the Thredds server
 
 To customize the thredds server for your installation edit the file in /home/carya/thredds/threddsConfig.xml. For example the following file is included in the VM.
 
@@ -322,7 +324,7 @@ To customize the thredds server for your installation edit the file in /home/car
 </threddsConfig>
 ```
 
-## Update the catalog
+### Update the catalog
 
 For example to update the catalog with the latest data, run the following command from the root crontab. This cronjob will also synchronize the database with remote servers and dump your database (by default in /home/carya/dump)
 
@@ -330,12 +332,12 @@ For example to update the catalog with the latest data, run the following comman
 0 * * * * /home/carya/pecan/scripts/cron.sh -o /home/carya/dump
 ```
 
-## Troubleshooting
+### Troubleshooting
 
 Refer to the log files for Tomcat (`/var/log/tomcat8/*`) and Thredds (`/home/carya/thredds/logs`).
 
 
-## Further reading
+### Further reading
 
 * [Thredds reference](http://www.unidata.ucar.edu/software/thredds/current/tds/)
 
