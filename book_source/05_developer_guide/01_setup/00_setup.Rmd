@@ -1,4 +1,4 @@
-# Setting up PEcAn
+# PEcAn Setup
 
 ## Installing the PEcAn VM 
 

@@ -1,4 +1,4 @@
-## Maintaining PEcAn
+# Maintaining PEcAn
 
 This section will cover topics to keep your PEcAn instance up to date with the latest code and database. It will hopefully answer the question: How to do I keep my PEcAN up to date?
 

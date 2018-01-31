@@ -1,17 +1,19 @@
-# Installing and configuring Shiny for PEcAn
+## Shiny Setup
+
+Installing and configuring Shiny for PEcAn
 authors - Alexey Shiklomanov
         - Rob Kooper
 
 **NOTE: Instructions are only tested for CentOS 6.5 and Ubuntu 16.04**
 **NOTE: Pretty much every step here requires root access.**
 
-## Install the Shiny R package and Shiny server
+### Install the Shiny R package and Shiny server
 
 Follow the instructions on the [Shiny download page][shiny-download] for the operating system you are using.
 
 [shiny-download]: https://www.rstudio.com/products/shiny/download-server/
 
-## Modify the shiny configuration file
+### Modify the shiny configuration file
 
 The Shiny configuration file is located in `/etc/shiny-server/shiny-server.conf`. Comment out the entire file and add the following, replacing `<username>` with your user name and `<location>` with the URL location you want for your app. This will allow you to run Shiny apps from your web browser at https://your.server.edu/shiny/your-location
 
@@ -74,7 +76,7 @@ sudo systemctl stop shiny-server.service
 sudo systemctl start shiny-server.service
 ```
 
-## Set the Apache proxy
+### Set the Apache proxy
 
 Create a file with the following name, based on the version of the operating system you are using:
 
@@ -89,7 +91,7 @@ ProxyPassReverse    /shiny/ http://localhost:3838/
 RedirectMatch permanent ^/shiny$ /shiny/
 ```
 
-### **Ubuntu only:** Enable the new shiny configuration
+#### **Ubuntu only:** Enable the new shiny configuration
 
 ```
 sudo a2enconf shiny
@@ -98,9 +100,9 @@ sudo a2enconf shiny
 This will create a symbolic link to the newly created `shiny.conf` file inside the `/etc/apache2/conf-enabled` directory.
 You can do `ls -l /etc/apache2/conf-enabled` to confirm that this worked.
 
-## Enable and start the shiny server, and restart apache
+### Enable and start the shiny server, and restart apache
 
-### On CentOS
+#### On CentOS
 
 ```
 sudo ln -s /opt/shiny-server/config/init.d/redhat/shiny-server /etc/init.d
@@ -111,7 +113,7 @@ sudo service httpd restart
 
 You can check that Shiny is running with `service shiny-server status`.
 
-### On Ubuntu
+#### On Ubuntu
 
 Enable the Shiny server service.
 This will make sure Shiny runs automatically on startup.
@@ -141,13 +143,13 @@ sudo systemctl stop shiny-server.service
 ...and then use `start` again to restart it.
 
 
-## Troubleshooting
+### Troubleshooting
 
 Refer to the log files for shiny (`/var/log/shiny-server.log`) and httpd (on CentOS, `/var/log/httpd/error-log`; on Ubuntu, `/var/log/apache2/error-log`).
 
 
 
-## Further reading
+### Further reading
 
 * [Shiny server configuration reference](http://docs.rstudio.com/shiny-server/)
 
