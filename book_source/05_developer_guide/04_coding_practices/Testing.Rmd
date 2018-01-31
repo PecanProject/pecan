@@ -1,10 +1,10 @@
-# Testing
+## Testing
 
 PEcAn uses the testthat package developed by Hadley Wickham. Hadley has
 written instructions for using this pakcage in his
 [Testing](http://adv-r.had.co.nz/Testing.html) chapter.
 
-## Rationale
+### Rationale
 
 *  makes development easier
 *  provides working documentation of expected functionality
@@ -14,7 +14,7 @@ written instructions for using this pakcage in his
 *  Further reading: [Aruliah et al 2012 Best Practices for Scientific
     Computing](http://arxiv.org/pdf/1210.0530v3.pdf)
 
-## Tests makes development easier and less error prone
+### Tests makes development easier and less error prone
 
 Testing makes it easier to develop by organizing everything you are
 already doing anyway - but integrating it into the testing and
@@ -29,7 +29,7 @@ started. You have to figure out
 *  what packages are affected
 *  where is a logical place to put files used in testing
 
-## Quick Start:
+### Quick Start:
 
 * decide what you want to do today
 * identify the issue in redmine or github (if none exists, create one)
@@ -74,7 +74,7 @@ that we are done by the color and taste.
       git push
       ```
 
-## Test files
+### Test files
 
 
 Many of PEcAn’s functions require inputs that are provided as data.
@@ -84,7 +84,7 @@ PEcAn.utils files.
 
 Some useful conventions:
 
-### Settings
+#### Settings
 
 * A generic settings can be found in the PEcAn.all package
 ```r
@@ -145,14 +145,14 @@ settings <- read.settings(settings.text)
 settings$outdir <- "/tmp" ## or any other settings
 ```
 
-### Helper functions created to make testing easier
+#### Helper functions created to make testing easier
 
 *  **tryl** returns FALSE if function gives error
 *  **temp.settings** creates temporary settings file
 *  **test.remote** returns TRUE if remote connection is available
 *  **db.exists** returns TRUE if connection to database is available
 
-### When should I test?
+#### When should I test?
 
 A test *should* be written for each of the following situations:
 
@@ -172,17 +172,17 @@ A test *should* be written for each of the following situations:
   * example: `expect_error(sum("foo")`
   * better : `expect_error(sum("foo"), "invalid 'type' (character)")`
 
-### What types of testing are important to understand?
+#### What types of testing are important to understand?
 
 
-### Unit Testing / Test Driven Development
+#### Unit Testing / Test Driven Development
 
 Tests are only as good as the test
 
 1.  write test
 2.  write code
 
-### Regression Testing
+#### Regression Testing
 
 When a bug is found,
 
@@ -191,7 +191,7 @@ When a bug is found,
 2.  fix the bug
 3.  bug is fixed when test passes
 
-### How should I test in R? The testthat package.
+#### How should I test in R? The testthat package.
 
 
 tests are found in `~/pecan/<packagename>/inst/tests`, for example
@@ -201,7 +201,7 @@ See attached file and
 [https://github.com/hadley/devtools/wiki/Testing](https://github.com/hadley/devtools/wiki/Testing)
 for details on how to use the testthat package.
 
-#### List of Expectations
+##### List of Expectations
 
 |Full	|Abbreviation|
 |---|----|
@@ -217,7 +217,7 @@ for details on how to use the testthat package.
 |expect_that(x, gives_warning(y))	|expect_warning(x, y)|
 |expect_that(x, throws_error(y))	|expect_error(x, y)|
 
-#### How to run tests
+##### How to run tests
 
 add the following to “pecan/tests/run.all.R”
 
@@ -228,7 +228,7 @@ library(mypackage)
 test_package("mypackage")
 ```
 
-### basic use of the testthat package
+#### basic use of the testthat package
 
 Here is an example of tests (these should be placed in
 `<packagename>/inst/tests/test_<sourcefilename>.R`:
@@ -255,7 +255,7 @@ test_that("different testing functions work, giving excuse to demonstrate",{
 ```
 
 
-#### Script testing
+##### Script testing
 
 It is useful to add tests to a script during development. This allows
 you to test that the code is doing what you expect it to do.
@@ -285,7 +285,7 @@ test_that("changes to Iris code occurred as expected",{
 ```
 
 
-#### Function testing
+##### Function testing
 
 Testing of a new function, `as.sequence`. The function and documentation
 are in source:R/utils.R and the tests are in source:tests/test.utils.R.
@@ -326,7 +326,7 @@ test_that(“as.sequence works”;{
 })
 ```
 
-## Testing the Shiny Server
+### Testing the Shiny Server
 
 Shiny can be difficult to debug because, when run as a web service, the R output is hidden in system log files that are hard to find and read.
 One useful approach to debugging is to use port forwarding, as follows.
