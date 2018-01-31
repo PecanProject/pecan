@@ -238,9 +238,9 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        var <- names(pft)[v]
 
        ## THESE NEED SOME FOLLOW UP       
-       if(var == "Vcmax"){                    ## fnitr is currently a HACK; *** need to know units ***
-         ncvar_put(nc=fates.param.nc, varid='fates_fnitr', start = ipft, count = 1,
-                   vals=pft[v])  ## (umol CO2 m-2 s-1) -> ?? -- Apparently this is Vcmax???
+       if(var == "Vcmax"){
+         ncvar_put(nc=fates.param.nc, varid='fates_vcmax25top', start = ipft, count = 1,
+                   vals=pft[v])  ## (umol CO2 m-2 s-1)
        }
        
        
@@ -261,7 +261,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        }
        
        ## PFT-level variables
-       if(var == "seed_rain_kgC"){                    ## Seed rain input from outside the patch.[kgC/m2/year]
+       if(var == "seed_rain_kgC"){                    ## External seed rain from outside site (non-mass conserving) ;
          ncvar_put(nc=fates.param.nc, varid='fates_seed_rain', start = ipft, count = 1,
                    vals=pft[v])  
        }
@@ -275,20 +275,19 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=fates.param.nc, varid='fates_max_dbh', start = ipft, count = 1,
                    vals=pft[v])  ## [cm]
        }
-       if(var == "growth_resp_factor"){                    ## r_growth = grperc * (gpp+r_maint)
+       if(var == "growth_resp_factor"){                    ## r_growth = grperc * (gpp+r_maint)  fates_grperc:long_name = "Growth respiration factor" ;
          ncvar_put(nc=fates.param.nc, varid='fates_grperc', start = ipft, count = 1,
                    vals=pft[v])  
        }
-       if(var == "SLA"){
-         ncvar_put(nc=fates.param.nc, varid='fates_slatop', start = ipft, count = 1,
+       if(var == "SLA"){                                  ## default 0.012
+         ncvar_put(nc=fates.param.nc, varid='fates_slatop', start = ipft, count = 1,  
                    vals=udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)
-         #PEcAn.logger::logger.debug(paste0("SLA: ",udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)) # temp debugging
        }
-       if(var == "leaf_turnover_rate"){
+       if(var == "leaf_turnover_rate"){                   ## fates_leaf_long:long_name = "Leaf longevity (ie turnover timescale)" ;
          ncvar_put(nc=fates.param.nc, varid='fates_leaf_long', start = ipft, count = 1,
                    vals=1/pft[v]) ## leaf_long = 1/leaf_turnover_rate, 1/years -> years
        }
-       if(var == "root_turnover_rate"){
+       if(var == "root_turnover_rate"){                   ## fates_root_long:long_name = "root longevity (alternatively, turnover time)" ;
          ncvar_put(nc=fates.param.nc, varid='fates_root_long', start = ipft, count = 1,
                    vals=1/pft[v]) ## root_long = 1/root_turnover_rate, 1/years -> years
        }
@@ -300,8 +299,24 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=fates.param.nc, varid='fates_froot_leaf', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "sapwood_ratio"){         # leaf to sapwood area ratio. IS THIS NOW fates_sapwood_ratio(fates_pft)??
-         ncvar_put(nc=fates.param.nc, varid='latosa', start = ipft, count = 1,
+       
+       # if(var == "sapwood_ratio"){         # leaf to sapwood area ratio. IS THIS NOW fates_sapwood_ratio(fates_pft)??
+       #   ncvar_put(nc=fates.param.nc, varid='latosa', start = ipft, count = 1,
+       #             vals=udunits2::ud.convert(pft[v],"m2 m-2","m2 cm-2"))
+       # }
+       
+       # leaf to sapwood area ratio. This is the INTERCEPT parameter in FATES
+       # [sserbin@modex paramdata]$ ncdump fates_params_2troppftclones.c171018.nc | grep latosa
+       # double fates_allom_latosa_int(fates_pft) ;
+       # fates_allom_latosa_int:long_name = "Leaf area to sap area ratio, intercept [m2/cm2]" ;
+       #fates_allom_latosa_int:units = "ratio" ;
+       # double fates_allom_latosa_slp(fates_pft) ;
+       # fates_allom_latosa_slp:long_name = "Leaf area to sap area ratio, slope (optional)" ;
+       # fates_allom_latosa_slp:units = "unitless" ;
+       # fates_allom_latosa_int = 0.001, 0.001 ;
+       # fates_allom_latosa_slp = 0, 0 ;
+       if(var == "sapwood_ratio"){         
+         ncvar_put(nc=fates.param.nc, varid='fates_allom_latosa_int', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"m2 m-2","m2 cm-2"))
        }
        if(var == "leaf_width"){            # Characteristic leaf dimension use for aerodynamic resistance
@@ -314,7 +329,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        #         ncvar_put(nc=param.nc, varid='seed_dispersal_x', start = ipft, count = 1,
        #                   vals=pft[v])
        #       }
-       if(var == "hgt_min"){               # The height of a new recruit
+       if(var == "hgt_min"){               # the minimum height (ie starting height) of a newly recruited plant" ;
          ncvar_put(nc=fates.param.nc, varid='fates_hgt_min', start = ipft, count = 1,
                    vals=pft[v])
        }
@@ -355,7 +370,8 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=fates.param.nc, varid='fates_xl', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "wood_density"){         # Wood Specific Gravity (ie density of wood relative to density of water)
+       if(var == "wood_density"){         # Wood Specific Gravity (ie density of wood relative to density of water),
+                                          #fates_wood_density:long_name = "mean density of woody tissue in plant" ;
          ncvar_put(nc=fates.param.nc, varid='fates_wood_density', start = ipft, count = 1,
                    vals=pft[v])
        }
