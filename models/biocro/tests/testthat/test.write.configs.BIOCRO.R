@@ -19,6 +19,10 @@ test_that("convert.samples.BIOCRO works for BioCro 0.9", {
   expect_equal(biocro.parms$SLA, samples$biocro.saof$SLA)
   expect_equal(biocro.parms$Rd, samples$biocro.saof$leaf_respiration_rate_m2)
   expect_equal(biocro.parms$b1, samples$biocro.saof$stomatal_slope.BB)
+
+  ## re-create bug #1491
+  test.list <- list(vmax = 1, b0 = 2)
+  convert.samples.BIOCRO(test.list, 0.9)  ## this should work
 })
 
 test_that("convert.samples.BIOCRO works for BioCro 1.0", {
@@ -30,11 +34,6 @@ test_that("convert.samples.BIOCRO works for BioCro 1.0", {
   expect_equal(biocro.parms$iSp, samples$biocro.saof$SLA)
   expect_equal(biocro.parms$Rd, samples$biocro.saof$leaf_respiration_rate_m2)
   expect_equal(biocro.parms$b1, samples$biocro.saof$stomatal_slope.BB)
-
-  
-  ## re-create bug #1491
-  test.list <- list(vmax = 1, b0 = 2)
-  convert.samples.BIOCRO(test.list, 0.9)  ## this should work
 })
 
 test_that("write.config.BIOCRO produces expected output", {
