@@ -20,7 +20,7 @@
   </pfts>
 
   <ensemble>
-    <variable>StemBiom</variable>
+    <variable>AbvGrndWood</variable>
   </ensemble>
 
   <meta.analysis>
@@ -35,7 +35,7 @@
       <sigma>-1</sigma>
       <sigma>1</sigma>
     </quantiles>
-    <variable>StemBiom</variable>
+    <variable>AbvGrndWood</variable>
   </sensitivity.analysis>
 
   <model>
