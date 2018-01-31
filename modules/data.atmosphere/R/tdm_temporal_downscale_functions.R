@@ -221,7 +221,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
 
             } # End day loop
         } # End if else case
-        
+
         if(print.progress==TRUE){
           pb.index <- pb.index + 1
           setTxtProgressBar(pb, pb.index)
