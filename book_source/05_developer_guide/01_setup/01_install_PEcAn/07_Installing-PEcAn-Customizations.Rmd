@@ -1,4 +1,6 @@
-## PalEON version of PEcAn
+### PEcAn Customizations 
+
+#### PalEON version of PEcAn
 
 Install the following packages: gnome2, xfce4, firefox
 
