@@ -37,7 +37,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed incorrect `PEcAn.BIOCRO` daily and yearly results: Was calculating every row from whole simulation instead of that day (#1738)
 
 ### Added
-- New Dockerfile to create PEcAN specific container for SIPNET.
+- New Dockerfile to create PEcAn specific container for SIPNET.
 
 ### Removed
 - Removed `PEcAn.utils::model2netcdf`, which has been deprecated since PEcAn 1.3.7. Use `model2netcdf.<YOURMODEL>` in the appropriate model package instead.
