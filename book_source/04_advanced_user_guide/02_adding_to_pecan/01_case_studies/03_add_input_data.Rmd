@@ -1,4 +1,4 @@
-# How to Insert new Input Data
+### How to Insert new Input Data
 
 To upload model input data or data used for model calibration/validation...
 
@@ -28,7 +28,7 @@ From your BETY interface:
 
 
 
-## Create a Format Record 
+#### Create a Format Record 
   
 Creating a Format Record allows PEcAn to levereage Meta-data about your data in order to properly handle it. It allows you to define what type of file it is by defining it's mimetype (i.e. text, netcdf,rds, etc.), define what information is hel in the header of your file, and how many lines need to be skipped within the file to get to ge to the header. To create a format record 
 
