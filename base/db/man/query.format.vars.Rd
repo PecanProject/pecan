@@ -10,5 +10,5 @@ query.format.vars(bety, input.id = NA, format.id = NA, var.ids = NA)
 \item{con}{: database connection}
 }
 \author{
-Betsy Cowdery , Ankur Desai, Istem Fer
+Betsy Cowdery, Ankur Desai, Istem Fer
 }
