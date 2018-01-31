@@ -21,8 +21,7 @@
 ##' @return matrix or dataframe with values transformed
 ##' @export
 ##' @author Shawn Serbin, Tobey Carman
-##' @importFrom udunits2 ud.convert
-
+##' 
 convert.samples.dvmdostem <- function(trait_values) {
 
   if("SLA" %in% names(trait_values)) {
@@ -406,10 +405,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   }
 
   writeLines(config_template, con=file.path(settings$rundir, run.id,"config/config.js"))
-
-
-  ## Update job template file below
-
 
   ### create launch script (which will create symlink) - needs to be created
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
