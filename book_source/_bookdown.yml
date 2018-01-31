@@ -14,6 +14,7 @@ rmd_files: [
   "basic_users_guide/Vm-desktop-conversion.Rmd",
   '../documentation/tutorials/01_Demo_Basic_Run',
   "adv_user_guide_web/Advanced_Users_Guide.Rmd",
+  "adv_user_guide_web/curl-web-submit.Rmd",
   "adv_user_guide_web/using_browndog.Rmd",
   "adv_user_guide_web/PEcAn-Configuration.Rmd",
   "adv_user_guide_web/pda.documentation.Rmd",
