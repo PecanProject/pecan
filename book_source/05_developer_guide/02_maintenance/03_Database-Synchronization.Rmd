@@ -120,7 +120,7 @@ MAILTO=user@yourUniversity.edu
 12 * * * * /home/dietze/db.sync.sh
 ```
 
-## Network Status Map
+### Network Status Map
 
 https://pecan2.bu.edu/pecan/status.php
 
@@ -129,7 +129,7 @@ Nodes: red = down, yellow = out-of-date schema, green = good
 Edges: red = fail, yellow = out-of-date sync, green = good
 
 
-## Tasks
+### Tasks
 
 Following is a list of tasks we plan on working on to improve these scripts:
 - [pecanproject/bety#368](https://github.com/PecanProject/bety/issues/368) allow site-specific customization of information and UI elements including title, contacts, logo, color scheme.

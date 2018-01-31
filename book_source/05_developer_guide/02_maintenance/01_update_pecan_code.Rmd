@@ -1,4 +1,4 @@
-# Updating PEcAn Code and Bety Database
+## Updating PEcAn Code and Bety Database
 
 Release notes for all releases can be found [here](https://github.com/PecanProject/pecan/releases).
 
