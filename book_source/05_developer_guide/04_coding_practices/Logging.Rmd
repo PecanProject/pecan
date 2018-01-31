@@ -1,12 +1,12 @@
-# Logging
+## Logging
 
 During development we often add many print statements to check to see how the code is doing, what is happening, what intermediate results there are etc. When done with the development it would be nice to turn this additional code off, but have the ability to quickly turn it back on if we discover a problem. This is where logging comes into play. Logging allows us to use "rules" to say what information should be shown. For example when I am working on the code to create graphs, I do not have to see any debugging information about the SQL command being sent, however trying to figure out what goes wrong during a SQL statement it would be nice to show the SQL statements without adding any additional code.
 
-## PEcAn logging functions
+### PEcAn logging functions
 
 These `logger` family of functions are more sophisticated, and can be used in place of `stop`, `warn`, `print`, and similar functions. The `logger` functions make it easier to print to a system log file. 
 
-### Examples
+#### Examples
 
 * The file [test.logger.R](../blob/master/utils/inst/tests/test.logger.R) provides descriptive examples
 * This query provides an current overview of [functions that use logging](https://github.com/PecanProject/pecan/search?q=logger&ref=cmdform)
@@ -22,13 +22,13 @@ These `logger` family of functions are more sophisticated, and can be used in pl
  * `logger.setLevel("OFF")` suppresses all logger messages
 * To print all messages to console, use `logger.setUseConsole(TRUE)`
 
-### Related Issues (requires Redmine developer account)
+#### Related Issues (requires Redmine developer account)
 
 * [#1071 How to handle errors?](https://ebi-forecast.igb.illinois.edu/redmine/issues/1071)
 * [#1222 Ignore warnings](https://ebi-forecast.igb.illinois.edu/redmine/issues/1222)
   You can use @logger.setLevel("ERROR")@ to only show error messages. All the code that does not use logger will not be filtered.
 
-## Other R logging packages 
+### Other R logging packages 
 
 * **This section is for reference - these functions should not be used in PEcAn, as they are redundant with the `logger.*` functions described above**
 
@@ -36,7 +36,7 @@ R does provide a basic logging capability using stop, warning and message. These
 
 Both of the following packages use a hierarchic loggers, meaning that if you change the level of displayed level of logging at one level all levels below it will update their logging.
 
-### logging
+#### logging
 
 The logging development is done at http://logging.r-forge.r-project.org/ and more information is located at http://cran.r-project.org/web/packages/logging/index.html . To install use the following command:
 <pre>
@@ -44,11 +44,11 @@ install.packages("logging", repos="http://R-Forge.R-project.org")
 </pre>
 This has my preference pure based on documentation.
 
-### futile
+#### futile
 
 The second logging package is http://cran.r-project.org/web/packages/futile.logger/ and is eerily similar to logging (as a matter of fact logging is based on futile).
 
-## Example Usage
+### Example Usage
 
 To be able to use the loggers there needs to be some initialization done. Neither package allows to read it from a configuration file, so we might want to use the pecan.xml file to set it up. The setup will always be somewhat the same:
 
