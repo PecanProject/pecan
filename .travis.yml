@@ -129,6 +129,7 @@ script:
   - set +e
 
 after_script:
+  - set -e
   - echo 'Building Book'
   - pushd book_source
   - make
@@ -137,3 +138,4 @@ after_script:
   - pushd documentation/tutorials
   - make build deploy
   - popd
+  - set +e
