@@ -8,7 +8,7 @@ try2sqlite(try_files, sqlite_file = "try.sqlite")
 }
 \arguments{
 \item{try_files}{Character vector of file names containing TRY data.
-Multiple files will be `rbind`-ed together.}
+Multiple files are combined with `data.table::rbindlist`.}
 
 \item{sqlite_file}{Target SQLite database file name, as character.}
 }
@@ -20,7 +20,7 @@ read much faster thanks to lazy evaluation.
 \details{
 The resulting TRY SQLite database contains the following tables:
  - `values` -- The actual TRY data. Links to all other tables through ID columns.
- - `traits` -- 
- - `datasets`
- - `species`
+ - `traits` -- Description of trait and data names. Links to `values` through `DataID`. Similar to BETY `variables` table.
+ - `datasets` -- Description of datasets and references/citations. Links to `values` through `DatasetID` and `ReferenceID`.
+ - `species` -- Species. Links to `values` through `AccSpeciesID`.
 }

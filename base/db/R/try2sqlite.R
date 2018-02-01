@@ -6,12 +6,12 @@
 #'
 #' The resulting TRY SQLite database contains the following tables:
 #'  - `values` -- The actual TRY data. Links to all other tables through ID columns.
-#'  - `traits` -- 
-#'  - `datasets`
-#'  - `species`
+#'  - `traits` -- Description of trait and data names. Links to `values` through `DataID`. Similar to BETY `variables` table.
+#'  - `datasets` -- Description of datasets and references/citations. Links to `values` through `DatasetID` and `ReferenceID`.
+#'  - `species` -- Species. Links to `values` through `AccSpeciesID`.
 #'
 #' @param try_files Character vector of file names containing TRY data.  
-#' Multiple files will be `rbind`-ed together.
+#' Multiple files are combined with `data.table::rbindlist`.
 #' @param sqlite_file Target SQLite database file name, as character.
 #' @export
 try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
@@ -20,7 +20,11 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
     data.table::rbindlist()
 
   # Create integer reference ID for compact storage
-  raw_data[, ReferenceID := as.integer(factor(Reference))]
+  data.table::set(
+    raw_data,
+    j = "ReferenceID",
+    value = as.integer(factor(raw_data[["Reference"]]))
+  )
 
   # Create tables
   data_cols <- c(
@@ -41,7 +45,6 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
     "OrigUncertaintyStr"    # Original uncertainty, as character string (before QA/QC)
   )
   data_values <- unique(raw_data[, data_cols, with = FALSE])
-  data_values[, ]
 
   datasets_cols <- c(
     "DatasetID",
@@ -51,7 +54,8 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
     "Reference"
   )
   datasets_values <- unique(raw_data[, datasets_cols, with = FALSE])
-  datasets_values[, doi := character()]   # Add DOI column, to be filled later
+  # Add DOI column, to be filled later
+  datasets_values[["doi"]] <- NA_character_
 
   traits_cols <- c(
     "DataID",
@@ -67,7 +71,6 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
     "SpeciesName"
   )
   species_values <- unique(raw_data[, species_cols, with = FALSE])
-  species_values[, BetySpeciesID := integer()]   # Add BETY ID column, to populate later
 
   con <- DBI::dbConnect(RSQLite::SQLite(), sqlite_file)
   on.exit(DBI::dbDisconnect(con))
