@@ -15,6 +15,9 @@ db_merge_into(values, table, con, by = NULL)
 
 \item{by}{Character vector of columns by which to perform merge. Defaults to all columns in `values`}
 }
+\value{
+Data frame: Inner join of SQL table and input data frame (as unevaluated "lazy query" table)
+}
 \description{
 Merge local data frame into SQL table
 }
