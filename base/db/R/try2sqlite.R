@@ -20,11 +20,7 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
     data.table::rbindlist()
 
   # Create integer reference ID for compact storage
-  data.table::set(
-    raw_data,
-    j = "ReferenceID",
-    value = as.integer(factor(raw_data[["Reference"]]))
-  )
+  raw_data[["ReferenceID"]] <- as.integer(factor(raw_data[["Reference"]]))
 
   # Create tables
   data_cols <- c(
@@ -51,11 +47,10 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
     "Dataset",
     "LastName",
     "FirstName",
-    "Reference"
+    "Reference",
+    "ReferenceID"
   )
   datasets_values <- unique(raw_data[, datasets_cols, with = FALSE])
-  # Add DOI column, to be filled later
-  datasets_values[["doi"]] <- NA_character_
 
   traits_cols <- c(
     "DataID",
