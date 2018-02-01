@@ -1,0 +1,23 @@
+#### SIPNET
+
+```bash
+cd
+curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
+tar zxf sipnet_unk.tar.gz
+rm sipnet_unk.tar.gz
+
+cd sipnet_unk
+make
+sudo cp sipnet /usr/local/bin/sipnet.runk
+```
+
+##### SIPNET testrun
+
+```bash
+cd
+curl -o testrun.sipnet.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.sipnet.tar.gz
+tar zxf testrun.sipnet.tar.gz
+rm testrun.sipnet.tar.gz
+cd testrun.sipnet
+sipnet.runk
+```

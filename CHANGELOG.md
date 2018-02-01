@@ -12,18 +12,23 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed status page, should now be run from cronjob, creates static page
 
 ### Added
+- Added new model package (PEcAn.dvmdostem) and initial wrappers for integration of the DVM-DOS-TEM model and tested.
 - PEcAn now supports PFTs whose members are cultivars rather than species, and will automatically restrict the meta-analysis to matching records, e.g. runs with a PFT containing only Panicum virgatum 'Cave-In-Rock' will not use observations from Panicum virgatum 'Alamo', but a PFT containing the whole species will use observations from both. However, there is not yet any BETYdb interface to *create* cultivar-PFTs other than manual SQL.
 - New base package `PEcAn.workflow`, for functions used to perform the each major step of the analysis. These were previously scattered in other base packages.
 - Added PR review time estimate to PR template 
+
 ### Removed
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
 
 ### Changed
+- Updated model2netcdf.MAAT to use ncdf4::ncvar_def to define netCDF variables
 - Fixed an remote code execution discovered by NCSA security team.
 - Added documentation how to submit a run from the command line
+- Updated models/maat to provide support for latest model code updates
 - PEcAn.DB function `rename.jags.columns` renamed to `rename_jags_columns` to avoid conflict with S3 method naming conventions
 - Replaced `rhdf5` library with `hdf5r`, a more modern alternative that is available on CRAN.
 - PEcAn.DB function `runModule.get.trait.data` has been moved to the new PEcAn.workflow package to avoid a circular package dependency between PEcAn.DB and PEcAn.settings.
+- Major documentation refactoring. The documentation names are now directly tied to the order in which they are rendered, and all `Rmd` files in all subdirectories of the documentation source are rendered by default. The overall structure of the documentation has been revised for clarity and cohesiveness.
 
 ## [1.5.2] - 2017-12-07
 
