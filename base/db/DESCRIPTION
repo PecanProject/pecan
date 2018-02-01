@@ -27,7 +27,9 @@ Suggests:
     RPostgreSQL,
     RSQLite,
     testthat (>= 1.0.2),
-    data.table
+    tidyverse,
+    data.table,
+    rcrossref
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
