@@ -1,10 +1,14 @@
 #' Insert R data frame into SQL database
 #'
-#' First, subset to matching columns. Then, build an SQL string for the insert 
-#' statement. Finally, insert into the database.
+#' First, subset to matching columns. Then, make sure the local and SQL column 
+#' classes match, coercing local to SQL as necessary (or throwing an error). 
+#' Then, build an SQL string for the insert statement. Finally, insert into the 
+#' database.
 #'
 #' @param values `data.frame` of values to write to SQL database
 #' @param table Name of target SQL table, as character
+#' @param coerce_col_class logical, whether or not to coerce local data columns 
+#' to SQL classes. Default = `TRUE.`
 #' @inheritParams db.query
 #' @inherit db.query return
 #' @export
@@ -15,7 +19,7 @@
 #' copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
 #' insert_table(iris[-1,], "iris", irisdb$con)
 #' tbl(irisdb, "iris")
-insert_table <- function(values, table, con) {
+insert_table <- function(values, table, con, coerce_col_class = TRUE) {
   use_cols <- match_dbcols(values, table, con)
   if (length(use_cols) < 1) {
     PEcAn.logger::logger.severe(
@@ -27,7 +31,34 @@ insert_table <- function(values, table, con) {
     paste(use_cols, collapse = ", ")
   )
   values_sub <- values[, use_cols]
-  insert_query <- build_insert_query(values_sub, table, con = con)
+  # Load one row to get column types
+  sql_row <- dplyr::tbl(con, table) %>% head(1) %>% collect()
+  sql_types <- purrr::map(sql_row, class) %>%
+    purrr::map_chr(1) %>%
+    .[use_cols]
+  values_types <- purrr::map(values_sub, class) %>% purrr::map_chr(1)
+  type_mismatch <- sql_types != values_types
+  if (sum(type_mismatch) > 0) {
+    mismatch_string <- sprintf(
+      "%s: local is %s, SQL is %s",
+      names(values_types),
+      values_types,
+      sql_types
+    )[type_mismatch]
+    PEcAn.logger::logger.info(
+      "Found type mismatches in the following columns: ",
+      paste0(mismatch_string, collapse = "; ")
+    )
+    if (!coerce_col_class) {
+      PEcAn.logger::logger.severe(
+        "Type mismatch detected, and `coerce_col_class` is `FALSE`. ",
+        "Fix column class mismatches manually."
+      )
+    }
+  }
+  # Coerce values data frame to these types
+  values_fixed <- purrr::map2_dfc(values_sub, sql_types, as)
+  insert_query <- build_insert_query(values_fixed, table, con = con)
   db.query(insert_query, con)
 }
 

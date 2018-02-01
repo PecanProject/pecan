@@ -4,7 +4,7 @@
 \alias{insert_table}
 \title{Insert R data frame into SQL database}
 \usage{
-insert_table(values, table, con)
+insert_table(values, table, con, coerce_col_class = TRUE)
 }
 \arguments{
 \item{values}{`data.frame` of values to write to SQL database}
@@ -12,13 +12,18 @@ insert_table(values, table, con)
 \item{table}{Name of target SQL table, as character}
 
 \item{con}{database connection object}
+
+\item{coerce_col_class}{logical, whether or not to coerce local data columns 
+to SQL classes. Default = `TRUE.`}
 }
 \value{
 data frame with query results
 }
 \description{
-First, subset to matching columns. Then, build an SQL string for the insert 
-statement. Finally, insert into the database.
+First, subset to matching columns. Then, make sure the local and SQL column 
+classes match, coercing local to SQL as necessary (or throwing an error). 
+Then, build an SQL string for the insert statement. Finally, insert into the 
+database.
 }
 \examples{
 library(dplyr)
