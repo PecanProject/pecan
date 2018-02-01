@@ -254,11 +254,11 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=fates.param.nc, varid='fates_seed_alloc', start = ipft, count = 1,
                    vals=pft[v])  
        }
-       # ## This one is currently allpft level but should be pft level  - no longer in FATES params, what was this changed to?
-       # if(var == "agf_bs"){                    ## The fraction of sapwood and structural biomass that is above ground [0-1]
-       #   ncvar_put(nc=fates.param.nc, varid='fates_ag_biomass', start = 1, count = 1,
-       #             vals=pft[v])  
-       # }
+       ## This one is currently allpft level but should be pft level  - no longer in FATES params, what was this changed to?
+        if(var == "agf_bs"){                    ## The fraction of sapwood and structural biomass that is above ground [0-1]
+          ncvar_put(nc=fates.param.nc, varid='fates_allom_agb_frac', start = 1, count = 1,
+                    vals=pft[v])  
+       }
        
        ## PFT-level variables
        if(var == "seed_rain_kgC"){                    ## External seed rain from outside site (non-mass conserving) ;
@@ -272,7 +272,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 #                   vals=pft[v]*gH2O_per_mol*1e-12)   ### umol H2O m-2 s-1 ->  [m s-1]
 #       }
        if(var == "DBH_at_HTMAX"){                    ## note in FATES parameter list about switching to HTMAX
-         ncvar_put(nc=fates.param.nc, varid='fates_max_dbh', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_allom_dbh_maxheight', start = ipft, count = 1,
                    vals=pft[v])  ## [cm]
        }
        if(var == "growth_resp_factor"){                    ## r_growth = grperc * (gpp+r_maint)  fates_grperc:long_name = "Growth respiration factor" ;
