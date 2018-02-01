@@ -1,0 +1,94 @@
+### Installing BETY
+
+#### Install Postgres
+
+See OS-specific instructions for installing Postgres + PostGIS
+* [Ubuntu](Installing-PEcAn-Ubuntu.md#install-postgres)
+* [OSX](Installing-PEcAn-OSX#install-postgres)
+* [RedHat / CentOS](https://github.com/PecanProject/bety/wiki/Installing-Postgresql)
+
+#### Install Database + Data
+
+* _note_ To install BETYdb without PEcAn, first download the [`load.bety.sh` script](https://raw.githubusercontent.com/PecanProject/pecan/master/scripts/load.bety.sh)
+
+```sh
+# install database (code assumes password is bety)
+sudo -u postgres createuser -d -l -P -R -S bety
+sudo -u postgres createdb -O bety bety
+sudo -u postgres ./scripts/load.bety.sh -c YES -u YES -r 0
+sudo -u postgres ./scripts/load.bety.sh -r 1
+sudo -u postgres ./scripts/load.bety.sh -r 2
+
+# configure for PEcAn web app (change password if needed)
+cp web/config.example.php web/config.php 
+
+# add models to database (VM only)
+./scripts/add.models.sh
+
+# add data to database
+./scripts/add.data.sh
+
+# create outputs folder
+mkdir ~/output
+chmod 777 ~/output
+```
+
+#### Installing BETYdb Web Application
+
+There are two flavors of BETY, PHP and RUBY. The PHP version allows for a minimal interaction with the database while the RUBY version allows for full interaction with the database.
+
+##### PHP version
+
+The php version comes with PEcAn and is already configured.
+
+##### RUBY version
+
+The RUBY version requires a few extra packages to be installed first.
+
+Next we install the web app.
+
+```bash
+# install bety
+cd
+git clone https://github.com/PecanProject/bety.git
+
+# install gems
+cd bety
+sudo gem2.0 install bundler
+bundle install --without development:test:javascript_testing:debug
+```
+
+and configure BETY
+
+```bash
+# create folders for upload folders
+mkdir paperclip/files paperclip/file_names
+chmod 777 paperclip/files paperclip/file_names
+
+# create folder for log files
+mkdir log
+touch log/production.log
+chmod 0666 log/production.log
+
+# fix configuration for vm
+cp config/additional_environment_vm.rb config/additional_environment.rb
+chmod go+w public/javascripts/cache/
+
+# setup bety database configuration
+cat > config/database.yml << EOF
+production:
+  adapter: postgis
+  encoding: utf-8
+  reconnect: false
+  database: bety
+  pool: 5
+  username: bety
+  password: bety
+EOF
+
+# setup login tokens
+cat > config/initializers/site_keys.rb << EOF
+REST_AUTH_SITE_KEY         = 'thisisnotasecret'
+REST_AUTH_DIGEST_STRETCHES = 10
+EOF
+```

@@ -1,8 +1,0 @@
-# The model-site page
-
-This page is used to select the model to run and the site at which you would like to run that model.
-
-**NOTE:** If this page does not load for you, it may be related to a known Google Maps API key issue. See [issue #1269][issue-1269] for a possible solution.
-
-
-[issue-1269]: https://github.com/PecanProject/pecan/issues/1269

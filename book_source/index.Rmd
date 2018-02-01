@@ -1,10 +1,10 @@
 --- 
 title: "The Predictive Ecosystem Analyzer"
 date: "`r Sys.Date()`"
-site: "bookdown::bookdown_site"
+site: bookdown::bookdown_site
 documentclass: book
 biblio-style: apalike
-link-citations: yesmake 
+link-citations: yes
 ---
 
 # Welcome {-}
