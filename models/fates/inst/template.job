@@ -5,6 +5,9 @@ exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
 # host specific setup
+host=$(hostname)
+ip=$(hostname -i)
+echo "Running on: " $host -- $ip
 @HOST_SETUP@
 
 # create output folder
@@ -135,7 +138,8 @@ EOF
   echo "*** Run case.build ***"
   sleep 10
   ./case.build # ! Long run, we should not be building the model.  But current BUILD_COMPLETE doesn't seem to be working !
-  
+  sleep 10
+
   ## RUN
   echo "*** Run ***"
   now=`date`
