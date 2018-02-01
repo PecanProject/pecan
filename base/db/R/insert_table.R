@@ -13,7 +13,7 @@
 #' irisfile <- tempfile(fileext = ".sqlite")
 #' irisdb <- src_sqlite(irisfile, create = TRUE)
 #' copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
-#' insert_table(iris[-1,], "iris", irisdb)
+#' insert_table(iris[-1,], "iris", irisdb$con)
 #' tbl(irisdb, "iris")
 insert_table <- function(values, table, con) {
   use_cols <- match_dbcols(values, table, con)
@@ -28,7 +28,7 @@ insert_table <- function(values, table, con) {
   )
   values_sub <- values[, use_cols]
   insert_query <- build_insert_query(values, table, con = con)
-  db.query(con, insert_query)
+  db.query(insert_query, con)
 }
 
 #' Match names of local data frame to SQL table

@@ -25,6 +25,6 @@ library(dplyr)
 irisfile <- tempfile(fileext = ".sqlite")
 irisdb <- src_sqlite(irisfile, create = TRUE)
 copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
-insert_table(iris[-1,], "iris", irisdb)
+insert_table(iris[-1,], "iris", irisdb$con)
 tbl(irisdb, "iris")
 }
