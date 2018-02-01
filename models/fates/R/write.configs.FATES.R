@@ -190,7 +190,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    clm.param.nc <- ncdf4::nc_open(clm.param.file,write=TRUE)
    
    # FATES
-   fates.param.default <- system.file("tropical_params_ckmod_01May2017.nc",package="PEcAn.FATES")
+   fates.param.default <- system.file("fates_params_2troppftclones.c171018.nc",package="PEcAn.FATES")
    fates.param.file <- file.path(local.rundir,paste0("fates_params.",run.id,".nc"))
    file.copy(fates.param.default,fates.param.file)
    fates.param.nc <- ncdf4::nc_open(fates.param.file,write=TRUE)
@@ -254,11 +254,11 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=fates.param.nc, varid='fates_seed_alloc', start = ipft, count = 1,
                    vals=pft[v])  
        }
-       ## This one is currently allpft level but should be pft level
-       if(var == "agf_bs"){                    ## The fraction of sapwood and structural biomass that is above ground [0-1]
-         ncvar_put(nc=fates.param.nc, varid='fates_ag_biomass', start = 1, count = 1,
-                   vals=pft[v])  
-       }
+       # ## This one is currently allpft level but should be pft level  - no longer in FATES params, what was this changed to?
+       # if(var == "agf_bs"){                    ## The fraction of sapwood and structural biomass that is above ground [0-1]
+       #   ncvar_put(nc=fates.param.nc, varid='fates_ag_biomass', start = 1, count = 1,
+       #             vals=pft[v])  
+       # }
        
        ## PFT-level variables
        if(var == "seed_rain_kgC"){                    ## External seed rain from outside site (non-mass conserving) ;
