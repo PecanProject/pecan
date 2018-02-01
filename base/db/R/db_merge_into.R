@@ -20,11 +20,11 @@ db_merge_into <- function(values, table, con, by = NULL) {
   values_merge <- dplyr::anti_join(values, sql_tbl, by = by, copy = TRUE)
   if (nrow(values_merge) < 1 || ncol(values_merge) < 1) {
     PEcAn.logger::logger.warn(
-      "Input table for merge is empty. Skipping operation and returning NULL."
+      "Input table for merge is empty."
     )
-    return(NULL)
+  } else {
+    insert <- insert_table(values_merge, table, con)
   }
-  insert <- insert_table(values_merge, table, con)
   dplyr::tbl(con, table) %>%
     dplyr::inner_join(values, copy = TRUE)
 }

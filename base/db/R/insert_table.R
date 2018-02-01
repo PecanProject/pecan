@@ -27,7 +27,7 @@ insert_table <- function(values, table, con) {
     paste(use_cols, collapse = ", ")
   )
   values_sub <- values[, use_cols]
-  insert_query <- build_insert_query(values, table, con = con)
+  insert_query <- build_insert_query(values_sub, table, con = con)
   db.query(insert_query, con)
 }
 
