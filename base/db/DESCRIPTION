@@ -25,7 +25,9 @@ Imports:
     udunits2
 Suggests:
     RPostgreSQL,
-    testthat (>= 1.0.2)
+    RSQLite,
+    testthat (>= 1.0.2),
+    data.table
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
