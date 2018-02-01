@@ -51,7 +51,7 @@ search_reference_single <- function(query, limit = 1, min_score = 85) {
     "score",
     "query"
   )
-  proc_search <- crsearch %>%
+  proc_search <- crdata %>%
     dplyr::mutate(
       author = purrr::map_chr(
         author,
