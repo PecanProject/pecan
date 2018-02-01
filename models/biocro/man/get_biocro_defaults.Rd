@@ -10,7 +10,7 @@ get_biocro_defaults(genus)
 \item{genus}{Name of the genus (or really any string BioCro uses as a *_parameters prefix)}
 }
 \value{
-a list in the format expected by \code{\link[BioCro][=Gro]{BioCro::Gro}},
+a list in the format expected by \code{BioCro::\link[BioCro:Gro]{Gro}},
   containing four lists named `type`, `initial_values`, `parameters`, and `modules`,
   or NULL if genus not found
 }
