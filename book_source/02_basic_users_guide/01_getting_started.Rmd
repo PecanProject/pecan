@@ -4,11 +4,9 @@
 
 PEcAn provides an interface to a variety of ecosystem models and attempts to standardize and automate the processes of model parameterization, execution, and analysis. First, you choose an ecosystem model, then the time and location of interest (a site), the plant community (or crop) that you are interested in simulating, and a source of atmospheric data from the BETY database (LeBauer et al, 2010). These are set in a "settings" file, commonly named `pecan.xml` which can be edited manually if desired. From here, PEcAn will take over and set up and execute the selected model using your settings. The key is that PEcAn uses models as-is, and all of the translation steps are done within PEcAn so no modifications are required of the model itself. Once the model is finished it will allow you to create graphs with the results of the simulation as well as download the results. It is also possible to see all past experiments and simulations.
 
-## Quick Start
-
 There are two ways of using PEcAn, via the web interface and directly within R. Even for users familiar with R, using the web interface is a good place to start because it provides a high level overview of the PEcAn workflow.The quickest way to get started is to download the virtual machine or use an AWS instance.
 
-### Working with the PEcAn VM
+## Download the PEcAn VM
 
 1. PEcAn consists of a set of scripts and code that is compiled within a Linux operating system and saved in a “virtual machine (VM)”. Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
 
@@ -33,7 +31,7 @@ There are two ways of using PEcAn, via the web interface and directly within R. 
 8. To launch the PEcAn web interface, make sure that the VM is running somewhere in the background on your machine. Then, open any web browser on the same machine and navigate to `localhost:6480/pecan` to start the PEcAn workflow.
 
 
-### Using AmazonWeb Services (AWS)
+## Using AmazonWeb Services (AWS) {#awsvm}
 
 Login to [Amazon Web Services (AWS)](http://console.aws.amazon.com/) and select the EC2 Dashboard. If this is your first time using AWS you will need to set up an account before you are able to access the EC2 Dashboard. Important: You will need a credit card number and access to a phone to be able to verify AWS account registration. AWS is free for one year.
 
@@ -85,7 +83,7 @@ Select the default drive volume type and click Next
     +	To TERMINATE the instance (which will DELETE your PEcAn machine), select your instance and click Actions > Instance state > Terminate. Terminated instances will not incur costs. In most cases you will also want to go to the Volumes menu and delete the storage associated with your PEcAn VM.Remember, AWS is free for one year, but will automatically charge a fee in second year if account is not cancelled.
 
 
-### Working with the PEcAn Containers (Docker) [Experimental]
+## Working with the PEcAn Containers (Docker) [Experimental] {#dockervm}
 
 Following are the steps to setup a Docker instance of the PEcAn. This is experimental and can have a lot of bugs, If you find any bug please report it. 
 
@@ -105,7 +103,7 @@ Only SIPNET model is included as the default model in it.
 
 ## PEcAN Demos
 
-Once you have installed A VM or have a version of PEcAn you'll want to run through Demo 1 and Demo 2:
+Once you have installed A VM or have a version of PEcAn you'll want to run through Demo 1 in the next section and Demo 2:
 
 [Demo 01](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html)
 [Demo 02](https://pecanproject.github.io/pecan-documentation/tutorials/Demo02.html)
