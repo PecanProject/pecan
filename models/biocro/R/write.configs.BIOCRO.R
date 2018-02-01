@@ -131,31 +131,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
 
   if (is.null(defaults.file) && settings$model$revision >= 1.0 && utils::packageVersion("BioCro") >= 1.0) {
     # Look for defaults provided as datasets in the BioCro model package
-    # When available, these come in sets of three:
-    # *_initial_values, *_parameters, *_modules
-    default_names <- grep(
-      pattern = genus,
-      x = utils::data(package = "BioCro")$results[,"Item"],
-      ignore.case = TRUE,
-      value = TRUE)
-    if (length(default_names) == 3) {
-      genus_init_name = grep("_initial_state$", default_names, value = TRUE)
-      genus_param_name = grep("_parameters$", default_names, value = TRUE)
-      genus_module_name = grep("_modules$", default_names, value = TRUE)
-      genus_photosynth = sub(
-        pattern = "^c([34]).*",
-        replacement = "C\\1",
-        x = do.call("::", list("BioCro", genus_module_name))$canopy_module_name)
-
-      defaults = list(
-        type = list(photosynthesis = genus_photosynth, genus = genus),
-        # The next three lines expand to datasets in the BiCro namespace, e.g.
-        # `BioCro::willow_modules`. The do.call wrapper is needed because
-        # `::`(pkg, variable) treats its 2nd argument as a literal.
-        initial_values = do.call("::", list("BioCro", genus_init_name)),
-        parameters = do.call("::", list("BioCro", genus_param_name)),
-        modules = do.call("::", list("BioCro", genus_module_name)))
-    }
+     defaults = get_biocro_defaults(genus)
   }
 
  if (is.null(defaults) && is.null(defaults.file)) {
