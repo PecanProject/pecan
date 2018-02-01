@@ -1,4 +1,6 @@
 
+context("checking write.configs.BIOCRO")
+
 settings.xml <- file.path("data", "pecan.biocro.xml")
 settings <- PEcAn.settings::read.settings(settings.xml)
 settings <- PEcAn.settings::prepare.settings(settings)
@@ -73,4 +75,72 @@ test_that("write.config.BIOCRO produces expected output", {
     expect_equal(biocro.trait.values[["Rd"]], as.numeric(config.list$pft$photoParms[["Rd"]]))
   }
   
+})
+
+
+test_that("get_biocro_defaults returns a list and warns if no match", {
+
+  # Mock up the relevant bits of a result from data("packagename"),
+  # containing all combinations of genus and param list:
+  # "sorghum_initial_state", "sorghum_parameters", ..., "Zea_mays_modules"
+  data_result <- list(
+    results = matrix(
+      data = as.vector(sapply(
+        c("sorghum", "Zea_diploperennis", "Zea_mays"),
+        paste0,
+        c("_initial_state",   "_parameters", "_modules"))),
+      ncol = 1,
+      dimnames = list(NULL, "Item")))
+  mockery::stub(get_biocro_defaults, "utils::data", function(...)data_result)
+
+  # Mock up results from from_bc, which always returns a list but the contents
+  # depend which dataset was requested.
+  # It's called four times per invocation of get_biocro_results, so we provide
+  # four appropriate mock responses and cycle over them
+  mock_default_list <- mockery::mock(
+    list(canopy_module_name="c4_canopy"), # <genus>_modules
+    list(Stem=1, Leaf=0.02), # <genus>_initial_state
+    list(Rd=1.1, jmax=180), #<genus>_parameters
+    list(canopy_module_name="c4_canopy", # <genus>_modules again
+      soil_module_name="one_layer_soil_profile"),
+    cycle=TRUE)
+  mockery::stub(get_biocro_defaults, "from_bc", mock_default_list)
+
+  sorg <- get_biocro_defaults("Sorghum")
+  mockery::expect_called(mock_default_list, 4)
+  mockery::expect_args(mock_default_list, 1, "sorghum_modules")
+  mockery::expect_args(mock_default_list, 2, "sorghum_initial_state")
+  mockery::expect_args(mock_default_list, 3, "sorghum_parameters")
+  mockery::expect_args(mock_default_list, 4, "sorghum_modules")
+  expect_type(sorg, "list")
+  expect_length(sorg, 4)
+  expect_equal(sorg$parameters$jmax, 180)
+  expect_equal(sorg$type$photosynthesis, "C4")
+  expect_equal(sorg$type$genus, "sorghum")
+
+  zea_msg <- capture.output(
+    {zea_res <- get_biocro_defaults("Zea")},
+    type = "message")
+  expect_match(
+    zea_msg,
+    "Multiple possible default parameter sets for Zea",
+    all = FALSE)
+  mockery::expect_called(mock_default_list, 8)
+  mockery::expect_args(mock_default_list, 7, "Zea_diploperennis_parameters")
+  expect_is(zea_res, "list")
+  expect_length(zea_res, 4)
+  expect_equal(zea_res$initial_values$Stem, 1)
+  expect_equal(zea_res$type$genus, "Zea_diploperennis")
+    # ^ Correct behavior, but maybe not what our hypothetical user wanted!
+
+  null_msg <- capture.output(
+    {null_res <- get_biocro_defaults("Not_a_genus")},
+    type = "message")
+  expect_match(
+    null_msg,
+    "No default parameter sets for Not_a_genus found in BioCro",
+    all=FALSE)
+  expect_null(null_res)
+  # expect get_biocro_defaults to exit w/o calling from_bc => # calls unchanged
+  mockery::expect_called(mock_default_list, 8)
 })
