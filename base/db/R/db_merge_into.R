@@ -2,6 +2,8 @@
 #'
 #' @inheritParams insert_table
 #' @param by Character vector of columns by which to perform merge. Defaults to all columns in `values`
+#' @return Data frame: Inner join of SQL table and input data frame (as unevaluated "lazy query" table)
+#' @export
 #' @examples
 #' library(dplyr)
 #' library(RSQLite)
@@ -22,5 +24,7 @@ db_merge_into <- function(values, table, con, by = NULL) {
     )
     return(NULL)
   }
-  insert_table(values_merge, table, con)
+  insert <- insert_table(values_merge, table, con)
+  dplyr::tbl(con, table) %>%
+    dplyr::inner_join(values, copy = TRUE)
 }
