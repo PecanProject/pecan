@@ -4,8 +4,7 @@
 # Needs to be a function because `::`(pkg, name) treats its arguments as
 # literals, so need to fully substitute before calling
 from_bc <- function(dfname){
-  dquo <- rlang::quo(`::`("BioCro", rlang::UQ(dfname)))
-  rlang::eval_tidy(dquo)
+  do.call(`::`, list("BioCro", dfname))
 }
 
 #' Look for defaults provided as datasets in the BioCro model package
