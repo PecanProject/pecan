@@ -5,7 +5,7 @@
 \title{align.met}
 \usage{
 align.met(train.path, source.path, yrs.train = NULL, yrs.source = NULL,
-  n.ens = NULL, pair.mems = FALSE, seed = Sys.Date(),
+  n.ens = NULL, pair.mems = FALSE, mems.train = NULL, seed = Sys.Date(),
   print.progress = FALSE)
 }
 \arguments{
@@ -27,6 +27,12 @@ problematic years)}
 
 \item{pair.mems}{- logical stating whether ensemble members should be paired in 
 the case where ensembles are being read in in both the training and source data}
+
+\item{mems.train}{- (optional) string of ensemble identifiers that ensure the training data is read 
+in a specific order to ensure consistent time series & proper error propagation.
+If null, members of the training data ensemble will be randomly selected and 
+ordered.  Specifying the ensemble members IDs (e.g. CCSM_001, CCSM_002) will 
+ensure ensemble members are properly identified and combined.}
 
 \item{seed}{- specify seed so that random draws can be reproduced}
 
@@ -60,7 +66,8 @@ Align meteorology datasets for debiasing
             the SOURCE data family (i.e. GCM) as a string and then the ensemble member ID as a number 
             (e.g. 001).  For example, the file path for a single daily ensemble member for PalEON is:
             "~/Desktop/Research/met_ensembles/data/met_ensembles/HARVARD/day/ensembles/bcc-csm1-1_004"
-            with each year in a separate netcdf file inside of it.
+            with each year in a separate netcdf file inside of it.  "bcc-csm1-1_004" is an example of
+            an ensemnle member ID that might be used if you are specifying mems.train.
 }
 \seealso{
 Other debias - Debias & Align Meteorology Datasets into continuous time series: \code{\link{debias.met.regression}}
