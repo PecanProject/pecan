@@ -4,6 +4,9 @@ library(DBI)
 library(RSQLite)
 library(rcrossref)
 library(PEcAn.logger)
+library(PEcAn.DB)
+
+logger.setLevel("DEBUG")
 
 sqlite_file <- "try.sqlite"
 
@@ -13,7 +16,8 @@ references <- trydb %>%
   distinct(Reference) %>%
   pull(Reference)
 
-references <- readLines("references")[1:15]
+try_refs <- search_references(references, min_score = 1)
 
-logger.setLevel("DEBUG")
-tidy_refs <- search_references(references)
+source("inst/import-try/bety_connect.R")
+
+# TODO: Use object `bety`, table `citations`
