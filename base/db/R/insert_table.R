@@ -20,7 +20,19 @@
 #' insert_table(iris[-1,], "iris", irisdb$con)
 #' tbl(irisdb, "iris")
 insert_table <- function(values, table, con, coerce_col_class = TRUE) {
-  use_cols <- match_dbcols(values, table, con)
+  values_fixed <- match_dbcols(values, table, con, coerce_col_class)
+  insert_query <- build_insert_query(values_fixed, table, con = con)
+  print(insert_query)
+  db.query(insert_query, con)
+}
+
+#' Match column names and classes between local and SQL table
+#'
+#' @inheritParams insert_table
+#' @return `values` `data.frame` with column names and classes matched to SQL
+#' @export
+match_dbcols <- function(values, table, con, coerce_col_class = TRUE) {
+  use_cols <- match_colnames(values, table, con)
   if (length(use_cols) < 1) {
     PEcAn.logger::logger.severe(
       "No columns match between input and target table."
@@ -54,18 +66,23 @@ insert_table <- function(values, table, con, coerce_col_class = TRUE) {
         "Type mismatch detected, and `coerce_col_class` is `FALSE`. ",
         "Fix column class mismatches manually."
       )
+    } else {
+      PEcAn.logger::logger.info(
+        "Coercing local column types to match SQL."
+      )
+      # Coerce values data frame to these types
+      values_fixed <- purrr::map2_dfc(values_sub, sql_types, as)
     }
+  } else {
+    values_fixed <- values_sub
   }
-  # Coerce values data frame to these types
-  values_fixed <- purrr::map2_dfc(values_sub, sql_types, as)
-  insert_query <- build_insert_query(values_fixed, table, con = con)
-  db.query(insert_query, con)
+  values_fixed
 }
 
 #' Match names of local data frame to SQL table
 #'
 #' @inheritParams insert_table
-match_dbcols <- function(values, table, con) {
+match_colnames <- function(values, table, con) {
   tbl_db <- dplyr::tbl(con, table)
   table_cols <- dplyr::tbl_vars(tbl_db)
   values_cols <- colnames(values)
@@ -89,7 +106,7 @@ build_insert_query <- function(values, table, ...) {
     dbplyr::sql(" "),
     dbplyr::ident(table),
     dbplyr::sql(" "),
-    dbplyr::sql_vector(dbplyr::escape(colnames(values))),
+    dbplyr::sql_vector(ident(colnames(values)), collapse = ", "),
     dbplyr::sql(" "),
     dbplyr::sql("VALUES"),
     dbplyr::sql(" "),
