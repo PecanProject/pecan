@@ -2,9 +2,9 @@
 % Please edit documentation in R/insert_table.R
 \name{match_dbcols}
 \alias{match_dbcols}
-\title{Match names of local data frame to SQL table}
+\title{Match column names and classes between local and SQL table}
 \usage{
-match_dbcols(values, table, con)
+match_dbcols(values, table, con, coerce_col_class = TRUE)
 }
 \arguments{
 \item{values}{`data.frame` of values to write to SQL database}
@@ -12,7 +12,13 @@ match_dbcols(values, table, con)
 \item{table}{Name of target SQL table, as character}
 
 \item{con}{database connection object}
+
+\item{coerce_col_class}{logical, whether or not to coerce local data columns 
+to SQL classes. Default = `TRUE.`}
+}
+\value{
+`values` `data.frame` with column names and classes matched to SQL
 }
 \description{
-Match names of local data frame to SQL table
+Match column names and classes between local and SQL table
 }
