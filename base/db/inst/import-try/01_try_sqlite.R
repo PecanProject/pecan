@@ -1,10 +1,10 @@
 # Create the TRY SQLite database
 library(PEcAn.DB)
 library(PEcAn.logger)
+library(here)
 
-# Create the TRY SQLite database
-try_files <- "~/try-data/1829.txt"
-sqlite_file <- "try.sqlite"
+configfile <- here("inst", "import-try", "config.R")
+source(configfile)
 
 if (!exists("overwrite")) {
   overwrite <- FALSE
