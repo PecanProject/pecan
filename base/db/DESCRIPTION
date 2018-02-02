@@ -29,7 +29,8 @@ Suggests:
     testthat (>= 1.0.2),
     tidyverse,
     data.table,
-    rcrossref
+    rcrossref,
+    here
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
