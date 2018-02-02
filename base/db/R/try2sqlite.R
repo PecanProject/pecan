@@ -16,13 +16,16 @@
 #' @export
 try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
   # Read files
+  PEcAn.logger::logger.info("Reading in TRY data...")
   raw_data <- Map(data.table::fread, try_files) %>%
     data.table::rbindlist()
 
   # Create integer reference ID for compact storage
+  PEcAn.logger::logger.info("Adding ReferenceID column")
   raw_data[["ReferenceID"]] <- as.integer(factor(raw_data[["Reference"]]))
 
   # Create tables
+  PEcAn.logger::logger.info("Extracting data values table.")
   data_cols <- c(
     "ObsDataID",        # TRY row ID -- unique to each observation of a given trait
     "ObservationID",    # TRY "entity" ID -- identifies a set of trait measurements (e.g. leaf)
@@ -42,6 +45,7 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
   )
   data_values <- unique(raw_data[, data_cols, with = FALSE])
 
+  PEcAn.logger::logger.info("Extrating datasets table...")
   datasets_cols <- c(
     "DatasetID",
     "Dataset",
@@ -52,6 +56,7 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
   )
   datasets_values <- unique(raw_data[, datasets_cols, with = FALSE])
 
+  PEcAn.logger::logger.info("Extracting traits table...")
   traits_cols <- c(
     "DataID",
     "DataName",
@@ -60,6 +65,7 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
   )
   traits_values <- unique(raw_data[, traits_cols, with = FALSE])
 
+  PEcAn.logger::logger.info("Extracting species table...")
   species_cols <- c(
     "AccSpeciesID",
     "AccSpeciesName",
@@ -67,12 +73,19 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
   )
   species_values <- unique(raw_data[, species_cols, with = FALSE])
 
+  PEcAn.logger::logger.info("Writing tables to SQLite database...")
   con <- DBI::dbConnect(RSQLite::SQLite(), sqlite_file)
   on.exit(DBI::dbDisconnect(con))
+  PEcAn.logger::logger.info("Writing values table...")
   DBI::dbWriteTable(con, "values", data_values)
+  PEcAn.logger::logger.info("Writing traits table...")
   DBI::dbWriteTable(con, "traits", data_values)
+  PEcAn.logger::logger.info("Writing datasets table...")
   DBI::dbWriteTable(con, "datasets", datasets_values)
+  PEcAn.logger::logger.info("Writing species table...")
   DBI::dbWriteTable(con, "species", species_values)
+
+  PEcAn.logger::logger.info("Done creating TRY SQLite database!")
 
   NULL
 }
