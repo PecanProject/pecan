@@ -22,7 +22,7 @@ Imports:
     XML
 Suggests:
     BioCro,
-    testthat (>= 1.0.2),
+    testthat (>= 2.0.0),
     mockery (>= 0.3.0),
     RPostgreSQL
 Remotes:
