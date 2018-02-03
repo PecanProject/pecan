@@ -6,7 +6,7 @@
 #' e.g. `/dir/met` if the files to be used are `/dir/met.2004.csv` and `dir/met.2005.csv'
 #' @param soil.nc full path and name of a netCDF file with soil data
 #' @param config full path and name of a config.xml file containing parameter values and configuration information for BioCro
-#' @param coppice.interval numeric, number of years between cuttings for coppice plant or perinneal grass (default 1)
+#' @param coppice.interval numeric, number of years between cuttings for coppice plant or perennial grass. Only used with BioCro 0.9; ignored when using later versions.
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
 #' @author David LeBauer
