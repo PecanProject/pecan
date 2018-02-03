@@ -45,7 +45,10 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
   }
 
   if (genus == "Saccharum") {
-    tmp.result <- BioCro::caneGro(WetDat = WetDat, lat = lat, soilControl = l2n(config$pft$soilControl))
+    tmp.result <- BioCro::caneGro(
+      WetDat = WetDat,
+      lat = lat,
+      soilControl = l2n(config$pft$soilControl))
     # Addin Rhizome an Grain to avoid error in subsequent script processing results
     tmp.result$Rhizome <- 0
     tmp.result$Grain <- 0
@@ -71,7 +74,8 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
       iRhizome = as.numeric(iplant$iRhizome),
       iRoot = as.numeric(iplant$iRoot),
       iStem = as.numeric(iplant$iStem),
-      day1 = day1, dayn = dayn,
+      day1 = day1,
+      dayn = dayn,
       soilControl = l2n(config$pft$soilControl),
       canopyControl = l2n(config$pft$canopyControl),
       willowphenoControl = l2n(config$pft$phenoParms),
@@ -89,7 +93,8 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
     tmp.result <- BioCro::BioGro(
       WetDat = WetDat,
       day1 = day1,
-      dayn = dayn, soilControl = l2n(config$pft$soilControl),
+      dayn = dayn,
+      soilControl = l2n(config$pft$soilControl),
       canopyControl = l2n(config$pft$canopyControl),
       phenoControl = l2n(config$pft$phenoParms),
       seneControl = l2n(config$pft$seneControl),
@@ -108,6 +113,10 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
       seneControl = l2n(config$pft$seneControl),
       photoControl = l2n(config$pft$photoParms))
 
+  } else {
+    PEcAn.logger::logger.severe(
+      "Genus '", genus, "' is not supported by PEcAn.BIOCRO when using BioCro 0.9x.",
+      "Supported genera: Saccharum, Salix, Sorghum, Miscanthus")
   }
   names(tmp.result) <- sub("DayofYear", "doy", names(tmp.result))
   names(tmp.result) <- sub("Hour", "hour", names(tmp.result))
