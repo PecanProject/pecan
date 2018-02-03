@@ -50,7 +50,7 @@ test_that("call_biocro_0.9 passes expected arguments to every supported genus", 
   for (i in c("Saccharum", "Salix", "Miscanthus", "Sorghum")) {
     res <- call_biocro_0.9(
       WetDat = WetDat, genus = i, year_in_run = 1, config = config,
-      lat = 40, lon = -88, coppice.interval = 1, tmp.result = list(),
+      lat = 40, lon = -88, tmp.result = list(),
       HarvestedYield = 0)
     expect_length(res, 2)
     expect_equal(names(res), c("tmp.result", "HarvestedYield"))
@@ -94,8 +94,7 @@ test_that("call_biocro_0.9 passes expected arguments to every supported genus", 
   expect_error(
     call_biocro_0.9(WetDat = WetDat, genus = "not_a_genus", year_in_run = 1,
                     config = config, lat = 40, lon = -88,
-                    coppice.interval = 1, tmp.result = list(),
-                    HarvestedYield = 0),
+                    tmp.result = list(), HarvestedYield = 0),
     "not supported by PEcAn.BIOCRO when using BioCro 0.9x")
 })
 
@@ -120,15 +119,14 @@ test_that("call_biocro_0.9 adjusts day1 and dayn when weather is not a whole yea
   # whole file: day numbers unchanged
   res_whole <- call_biocro_0.9(
     WetDat = WetDat, genus = "Miscanthus", year_in_run = 1, config = config,
-    lat = 40, lon = -88, coppice.interval = 1, tmp.result = list(),
-    HarvestedYield = 0)
+    lat = 40, lon = -88, tmp.result = list(), HarvestedYield = 0)
   expect_equal(mockery::mock_args(biomock)[[1]]$day1, min(WetDat$doy))
   expect_equal(mockery::mock_args(biomock)[[1]]$dayn, max(WetDat$doy))
 
   # subset starting DOY 1: day numbers unchanged
   res_start <- call_biocro_0.9(
     WetDat = WetDat[WetDat$doy <= 3,], genus = "Miscanthus", year_in_run = 1,
-    config = config, lat = 40, lon = -88, coppice.interval = 1,
+    config = config, lat = 40, lon = -88,
     tmp.result = list(), HarvestedYield = 0)
   expect_equal(mockery::mock_args(biomock)[[2]]$day1, 1)
   expect_equal(mockery::mock_args(biomock)[[2]]$dayn, 3)
@@ -138,7 +136,7 @@ test_that("call_biocro_0.9 adjusts day1 and dayn when weather is not a whole yea
   res_jan <- call_biocro_0.9(
       WetDat = WetDat[WetDat$doy >= 3 & WetDat$doy <= 6,],
       genus = "Miscanthus", year_in_run = 1, config = config, lat = 40,
-      lon = -88, coppice.interval = 1, tmp.result = list(), HarvestedYield = 0)
+      lon = -88, tmp.result = list(), HarvestedYield = 0)
   expect_equal(round(mockery::mock_args(biomock)[[3]]$day1), 1)
   expect_equal(round(mockery::mock_args(biomock)[[3]]$dayn), 4)
 })
@@ -152,7 +150,7 @@ test_that("call_biocro_1 passes expected arguments", {
   for (i in c("Salix", "Miscanthus", "NovelGenus")) {
     res <- call_biocro_1(
       WetDat = WetDat, genus = i, year_in_run = 1, config = config,
-      lat = 40, lon = -88, coppice.interval = 1, tmp.result = list(),
+      lat = 40, lon = -88, tmp.result = list(),
       HarvestedYield = 0)
     expect_length(res, 2)
     expect_equal(names(res), c("tmp.result", "HarvestedYield"))
@@ -187,7 +185,7 @@ test_that("call_biocro_1 updates initial values after year 1", {
 
     res1 <- call_biocro_1(
       WetDat = WetDat, genus = "Salix", year_in_run = 1, config = config,
-      lat = 40, lon = -88, coppice.interval = 1, tmp.result = list(),
+      lat = 40, lon = -88, tmp.result = list(),
       HarvestedYield = 0)
     expect_equal(
       mockery::mock_args(b1mock)[[1]]$initial_values,
@@ -195,7 +193,7 @@ test_that("call_biocro_1 updates initial values after year 1", {
 
     res2 <- call_biocro_1(
       WetDat = WetDat, genus = "Salix", year_in_run = 2, config = config,
-      lat = 40, lon = -88, coppice.interval = 1, tmp.result = res1$tmp.result,
+      lat = 40, lon = -88, tmp.result = res1$tmp.result,
       HarvestedYield = res1$HarvestedYield)
     for (var in names(config$pft$initial_values)) {
       expect_equal(

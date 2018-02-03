@@ -4,7 +4,7 @@ l2n <- function(x) lapply(x, as.numeric)
 # wrapper to encapsulate version-specific logic for BioCro 0.9x
 # not exported
 call_biocro_0.9 <- function(WetDat, genus, year_in_run,
-                            config, lat, lon, coppice.interval,
+                            config, lat, lon,
                             tmp.result, HarvestedYield) {
 
   # Check that all variables are present in the expected order --
@@ -42,6 +42,11 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
       indesn <- Position(function(x)x==dayn, WetDat[,"doy"], right = TRUE)
       dayn <- indesn/24
     }
+  }
+
+  coppice.interval = config$pft$coppice.interval
+  if(is.null(coppice.interval)) {
+     coppice.interval = 1 # i.e. harvest every year
   }
 
   if (genus == "Saccharum") {
@@ -130,7 +135,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
 # wrapper to encapsulate version-specific logic for BioCro 1.x
 # not exported
 call_biocro_1 <- function(WetDat, genus, year_in_run,
-                          config, lat, lon, coppice.interval,
+                          config, lat, lon,
                           tmp.result, HarvestedYield) {
 
   if (year_in_run == 1) {
@@ -140,16 +145,6 @@ call_biocro_1 <- function(WetDat, genus, year_in_run,
     # TODO: Some pools should NOT start at 100% of previous season --
     # need to account for harvest, decomposition, etc
     initial_values <- tmp.result[nrow(tmp.result), colnames(tmp.result) %in% names(config$pft$initial_values)]
-  }
-
-  if (year_in_run > 1) { # TODO HarvestedYield is never used and coppice not applicable to all crops. Rethink?
-    if ((year_in_run - 1) %% coppice.interval == 0) {
-      # coppice when remainder = 0
-      HarvestedYield <- round(data.table::last(tmp.result$Stem) * 0.95, 2)
-    } else if ((year_in_run - 1) %% coppice.interval == 1) {
-      # year after coppice
-      initial_values$Stem <- initial_values$Stem * 0.05
-    }  # else { # do nothing if neither coppice year nor year following
   }
 
   tmp.result <- BioCro::Gro(
@@ -166,5 +161,5 @@ call_biocro_1 <- function(WetDat, genus, year_in_run,
   tmp.result$AboveLitter <- tmp.result$LeafLitter + tmp.result$StemLitter
   tmp.result$BelowLitter <- tmp.result$RootLitter + tmp.result$RhizomeLitter
 
-  list(tmp.result = tmp.result, HarvestedYield = HarvestedYield)
+  list(tmp.result = tmp.result, HarvestedYield = round(data.table::last(tmp.result$Stem) * 0.95, 2))
 } # call_biocro_1
