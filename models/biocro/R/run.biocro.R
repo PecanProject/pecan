@@ -25,6 +25,10 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     config$pft$soilControl$soilDepth <- soil$ref_depth
   }
 
+  if (coppice.interval > 1) {
+    config$pft$coppice.interval = coppice.interval
+  }
+
   if (utils::packageVersion('BioCro') >= 1.0) {
     caller_fn <- call_biocro_1
   } else {
@@ -67,7 +71,6 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       year_in_run = i,
       config = config,
       lat = lat, lon = lon,
-      coppice.interval = coppice.interval,
       tmp.result = tmp.result,
       HarvestedYield = HarvestedYield)
 
