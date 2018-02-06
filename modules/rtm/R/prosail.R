@@ -18,11 +18,12 @@
 #'      * tto: Observer zenith angle
 #'      * psi: Sun-sensor azimuth angle
 #'      * psoil: Fraction of soil moisture
-#' @return Matrix (2101 x 4) of reflectance factors:
-#'      * rddt: bi-hemispherical reflectance
-#'      * rsdt: hemispherical directional
-#'      * rdot: directional hemispherical
-#'      * rsot: bi-directional
+#' @return Spectra matrix (see [spectra()]) (2101 x 4) of reflectance factors 
+#' for wavelengths 400 to 2500nm:
+#'      * bi-hemispherical reflectance (rddt)
+#'      * hemispherical directional (rsdt)
+#'      * directional hemispherical (rdot)
+#'      * bi-directional (rsot)
 #' @export
 pro4sail <- function(param) {
     plist <- as.list(param)
@@ -35,5 +36,8 @@ pro4sail <- function(param) {
     outlist <- do.call(.Fortran, inlist)
     lo      <- length(outlist)
     refl    <- do.call(cbind, outlist[(lo - 3):lo])
-    return(refl)
+    reflspec <- spectra(refl, 400:2500)
+    colnames(reflspec) <- c("bi-hemispherical", "hemispherical_directional",
+                            "directional_hemispherical", "bi-directional")
+    reflspec
 } # pro4sail
