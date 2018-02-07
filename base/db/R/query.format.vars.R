@@ -1,7 +1,8 @@
-##' @name query.format.vars
-##' @title Given input_id, return formats table and table of variables and units
-##' @param input_id
-##' @param con : database connection
+##' Given input_id, return formats table and table of variables and units
+##'
+##' @param input_id,format.id numeric. Defaults to format.id if both provided
+##' @param bety database connection
+##' @param var.ids optional vector of variable IDs. If provided, limits results to these variables
 ##' @export query.format.vars
 ##'
 ##' @author Betsy Cowdery, Ankur Desai, Istem Fer
@@ -48,7 +49,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
   }
 
   mimetype <- PEcAn.DB::db.query(query = paste("SELECT * from  mimetypes where id = ", f$mimetype_id), con = con)[["type_string"]]
-  f$mimetype <- tail(unlist(strsplit(mimetype, "/")),1)
+  f$mimetype <- utils::tail(unlist(strsplit(mimetype, "/")),1)
 
   # get variable names and units of input data
   fv <- PEcAn.DB::db.query(
@@ -168,8 +169,8 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
   return(format)
 }
 ################################################################################
-##' @name bety2pecan
-##' @title Convert BETY variable names to MsTMIP and subsequently PEcAn standard names
+##' Convert BETY variable names to MsTMIP and subsequently PEcAn standard names
+##'
 ##' @param vars_bety data frame with variable names and units
 ##' @export 
 ##'
@@ -178,7 +179,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 bety2pecan <- function(vars_bety){
   
   # This needs to be moved to lazy load 
-  bety_mstmip <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), 
+  bety_mstmip <- utils::read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), 
                           header = T, stringsAsFactors = FALSE)
   
   vars_full <- merge(vars_bety, bety_mstmip, by = "bety_name", all.x = TRUE)

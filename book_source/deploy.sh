@@ -4,13 +4,19 @@
 set -e
 
 #check for environment variable
-[ -z "${GITHUB_PAT}" ] && exit 0
+if [ -z "${GITHUB_PAT}" ]; then
+    echo "GITHUB_PAT is not set. Not deploying."
+    exit 0
+fi
 
 #Print who made GITHUB_PAT variable
 echo "GITHUB_PAT variable made by Tony Gardella"
 
 # don't run on pull requests
-[ "$TRAVIS_PULL_REQUEST" != "false" ]  && exit 0
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    echo "TRAVIS_PULL_REQUEST is 'true'. Not building documentation."
+    exit 0
+fi
 
 # find version if we are develop/latest/release and if should be pushed
 if [ "$TRAVIS_BRANCH" = "master" ]; then
@@ -31,7 +37,13 @@ USER=${TRAVIS_REPO_SLUG%/*}
 git config --global user.email "pecanproj@gmail.com"
 git config --global user.name "TRAVIS-DOC-BUILD"
 
-# clone documentation git repo
+# Don't deploy if documentation git repo does not exist
+if ! ( git ls-remote -h git@github.com:${USER}/pecan-documentation >/dev/null 2>&1); then
+  echo "Can't find a repository at https://github.com/${USER}/pecan-documentation"
+  echo "Will not render Book."
+  exit 0
+fi
+
 git clone https://${GITHUB_PAT}@github.com/${USER}/pecan-documentation.git book_hosted
 cd book_hosted
 

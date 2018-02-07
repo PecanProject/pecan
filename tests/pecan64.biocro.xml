@@ -20,7 +20,7 @@
   </pfts>
 
   <ensemble>
-    <variable>StemBiom</variable>
+    <variable>AbvGrndWood</variable>
   </ensemble>
 
   <meta.analysis>
@@ -35,12 +35,13 @@
       <sigma>-1</sigma>
       <sigma>1</sigma>
     </quantiles>
-    <variable>StemBiom</variable>
+    <variable>AbvGrndWood</variable>
   </sensitivity.analysis>
 
   <model>
     <type>BIOCRO</type>
     <binary>/home/carya/pecan/models/biocro/inst/biocro.Rscript</binary>
+    <revision>0.95</revision>
   </model>
 
   <run>
