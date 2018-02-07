@@ -32,9 +32,8 @@ started. You have to figure out
 ### Quick Start:
 
 * decide what you want to do today
-* identify the issue in redmine or github (if none exists, create one)
-* to work on issue 99, create a new branch called “redmine99”,
-“github99” or some descriptive name… Today we will add enable an
+* identify the issue in github (if none exists, create one)
+* to work on issue 99, create a new branch called “github99” or some descriptive name… Today we will enable an
 existing function, `make.cheas` to make `goat.cheddar`. We will know
 that we are done by the color and taste.
   ```
