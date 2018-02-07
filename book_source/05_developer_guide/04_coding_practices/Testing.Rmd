@@ -89,6 +89,7 @@ Some useful conventions:
 settings.xml <- system.file("pecan.biocro.xml", package = "PEcAn.BIOCRO")
 settings <- read.settings(settings.xml)
 ```
+
 *  database settings can be specified, and tests run only if a connection is available
 
 We currently use the following database to run tests against; tests that require access to a database should check `db.exists()` and be skipped if it returns FALSE to avoid failed tests on systems that do not have the database installed.
