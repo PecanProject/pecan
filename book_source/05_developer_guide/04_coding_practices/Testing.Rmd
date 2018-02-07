@@ -37,42 +37,41 @@ started. You have to figure out
 “github99” or some descriptive name… Today we will add enable an
 existing function, `make.cheas` to make `goat.cheddar`. We will know
 that we are done by the color and taste.
-
-```
-    git branch goat-cheddar
-    git checkout goat-cheddar
-```
-    * open existing (or create new) file in `inst/tests/`. If working on code in "myfunction" or a set of functions in "R/myfile.R", the file should be named accordingly, e.g. "inst/tests/test.myfile.R"
-    * if you are lucky, the function has already been tested and has some examples.
-    * if not, you may need to create a minimal example, often requiring a settings file. The default settings file can be obtained in this way:
-```r
+  ```
+  git branch goat-cheddar
+  git checkout goat-cheddar
+  ```
+* open existing (or create new) file in `inst/tests/`. If working on code in "myfunction" or a set of functions in "R/myfile.R", the file should be named accordingly, e.g. "inst/tests/test.myfile.R"
+* if you are lucky, the function has already been tested and has some examples.
+* if not, you may need to create a minimal example, often requiring a settings file. The default settings file can be obtained in this way:
+  ```r
   settings <- read.settings(system.file("extdata/test.settings.xml", package = "PEcAn.utils"))
-```
-    * write what you want to do
-```
-      test_that("make.cheas can make cheese",{
-        goat.cheddar <- make.cheas(source = 'goat', style = 'cheddar')
-        expect_equal(color(goat.cheddar), "orange")
-        expect_is(object = goat.cheddar, class = "cheese")
-        expect_true(all(c("sharp", "creamy") %in% taste(goat.cheddar)))
-      } 
-```
-    * now edit the goat.cheddar function until it makes savory, creamy, orange cheese.
-    * commit often
-    * update documentation and test
-      ```{r, eval = FALSE}
-      library(devtools)
-      document("mypkg")
-      test("mypkg")  
-      ```
-    * commit again
-    * when complete, merge, and push
-      ```{bash, eval = FALSE}
-      git commit -m "make.cheas makes goat.cheddar now"
-      git checkout master
-      git merge goat-cheddar
-      git push
-      ```
+  ```
+* write what you want to do
+  ```
+  test_that("make.cheas can make cheese",{
+    goat.cheddar <- make.cheas(source = 'goat', style = 'cheddar')
+    expect_equal(color(goat.cheddar), "orange")
+    expect_is(object = goat.cheddar, class = "cheese")
+    expect_true(all(c("sharp", "creamy") %in% taste(goat.cheddar)))
+  }
+  ```
+* now edit the goat.cheddar function until it makes savory, creamy, orange cheese.
+* commit often
+* update documentation and test
+  ```{r, eval = FALSE}
+  library(devtools)
+  document("mypkg")
+  test("mypkg")
+  ```
+* commit again
+* when complete, merge, and push
+  ```{bash, eval = FALSE}
+  git commit -m "make.cheas makes goat.cheddar now"
+  git checkout master
+  git merge goat-cheddar
+  git push
+  ```
 
 ### Test files
 
@@ -105,6 +104,7 @@ if(db.exists()){
   test_that(... ## write tests here
 }
 ```
+
 *  instructions for installing this are available on the [VM creation
     wiki](VM-Creation.md)
 *  examples can be found in the PEcAn.DB package (`db/inst/tests/`).
@@ -117,33 +117,32 @@ settings.xml <- system.file("pecan.biocro.xml", package = "PEcAn.BIOCRO")
 settings <- read.settings(settings.xml)
 ```
 * test-specific settings:
- * settings text can be specified inline:
- 
-```
-  settings.text <- "
-  <pecan>
-  <nocheck>nope</nocheck> ## allows bypass of checks in the read.settings functions 
-  <pfts>
-    <pft>
-      <name>ebifarm.pavi</name>
-      <outdir>test/</outdir>
-    </pft>
-  </pfts>
-  <outdir>test/</outdir>
-  <database>
-    <userid>bety</userid>
-    <passwd>bety</passwd>
-    <location>localhost</location>
-    <name>bety</name>
-  </database>
-</pecan>"
-settings <- read.settings(settings.text)
-```
- * values in settings can be updated:
-```r
-settings <- read.settings(settings.text)
-settings$outdir <- "/tmp" ## or any other settings
-```
+  - settings text can be specified inline:
+    ```
+    settings.text <- "
+      <pecan>
+        <nocheck>nope</nocheck> ## allows bypass of checks in the read.settings functions
+        <pfts>
+          <pft>
+            <name>ebifarm.pavi</name>
+            <outdir>test/</outdir>
+          </pft>
+        </pfts>
+        <outdir>test/</outdir>
+        <database>
+          <userid>bety</userid>
+          <passwd>bety</passwd>
+          <location>localhost</location>
+          <name>bety</name>
+        </database>
+      </pecan>"
+    settings <- read.settings(settings.text)
+    ```
+  - values in settings can be updated:
+    ```r
+    settings <- read.settings(settings.text)
+    settings$outdir <- "/tmp" ## or any other settings
+    ```
 
 #### Helper functions created to make testing easier
 
