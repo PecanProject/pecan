@@ -14,6 +14,8 @@ ui <- shinyUI(fluidPage(
         selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(),multiple=TRUE),
         p("Please select the run IDs. You can select multiple IDs"),
         selectizeInput("all_run_id", "Mutliple Run IDs", c(),multiple=TRUE),
+        radioButtons("plotview", "Load initial plots?", choiceNames = c("Yes", "No"),
+                     choiceValues = c(TRUE, FALSE)),
         actionButton("load", "Load Model outputs")
       ),
       

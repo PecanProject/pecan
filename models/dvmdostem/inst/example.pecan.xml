@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>/home/carya/scratch/run-1/</outdir>
+  <database>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>FALSE</write>
+    </bety>
+  </database>
+  <pfts>
+    <pft>
+      <name>CMT04-Salix</name>
+      <constants>
+        <num>1</num>
+      </constants>
+    </pft>
+  </pfts>
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>TRUE</update>
+    <force.update>TRUE</force.update>
+  </meta.analysis>
+
+  <ensemble>
+    <size>1</size>
+    <variable>NPP</variable>
+    <variable>GPP</variable>
+    <start.year>1901</start.year>
+    <end.year>2006</end.year>
+  </ensemble>
+  <!--
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>0</sigma>
+    </quantiles>
+    <variable>NPP</variable>
+  </sensitivity.analysis>
+  -->
+  <model>
+    <type>dvmdostem</type>
+    <binary>/home/carya/dvm-dos-tem/dvmdostem</binary>
+
+    <dvmdostem_site>DATA/SewardPen_10x10</dvmdostem_site>
+    <dvmdostem_pixel_y>1</dvmdostem_pixel_y>
+    <dvmdostem_pixel_x>1</dvmdostem_pixel_x>
+
+    <dvmdostem_prerun>2</dvmdostem_prerun>
+    <dvmdostem_equil>4</dvmdostem_equil>
+    <dvmdostem_spinup>6</dvmdostem_spinup>
+    <dvmdostem_transient>109</dvmdostem_transient>
+    <dvmdostem_scenerio>91</dvmdostem_scenerio>
+    <dvmdostem_loglevel>err</dvmdostem_loglevel>
+
+  </model>
+</pecan>
+
