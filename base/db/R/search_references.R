@@ -53,14 +53,15 @@ search_reference_single <- function(query, limit = 1, min_score = 85) {
   )
   proc_search <- crdata %>%
     dplyr::mutate(
-      author = purrr::map_chr(
-        author,
-        ~paste(.[["given"]], .[["family"]], sep = " ", collapse = ", ")),
+      # Get the first author only -- this is the BETY format
+      author_family = purrr::map(author, list("family", 1)),
+      author_given = purrr::map(author, list("given", 1)),
+      author = paste(author_family, author_given, sep = ", "),
       year = gsub("([[:digit:]]{4}).*", "\\1", issued) %>% as.numeric(),
       query = query,
       score = as.numeric(score)
     )
   use_cols <- keep_cols[keep_cols %in% colnames(proc_search)]
-  select(proc_search, !!!use_cols)
+  dplyr::select(proc_search, !!!use_cols)
 }
 
