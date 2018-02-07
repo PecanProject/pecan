@@ -79,7 +79,7 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
   PEcAn.logger::logger.info("Writing values table...")
   DBI::dbWriteTable(con, "values", data_values)
   PEcAn.logger::logger.info("Writing traits table...")
-  DBI::dbWriteTable(con, "traits", data_values)
+  DBI::dbWriteTable(con, "traits", traits_values)
   PEcAn.logger::logger.info("Writing datasets table...")
   DBI::dbWriteTable(con, "datasets", datasets_values)
   PEcAn.logger::logger.info("Writing species table...")
