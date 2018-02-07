@@ -27,35 +27,37 @@ We want your ideas, thoughts, comments, and suggestions! This is an open-sourced
 to us in the following ways:
 
 **Github:** [https://github.com/PecanProject/pecan](https://github.com/PecanProject/pecan)
-	Serving as the main hub of communication surrounding PEcAn development, check out the issues section to see what
-is coming down the pipeline. If there is anything you feel you can contribute to, leave a comment.
-	
-**Gitter:** [http://pecanproject.github.io](http://pecanproject.github.io/)
-	Gitter serves as our day to day mode of communication. Go to our homepage, linked above, and open the "OPEN CHAT"
-tab at the bottom to see what we are up to. All you need is a github account and you can chat with us about anything project related.
+Serving as the main hub of communication surrounding PEcAn development, check out the issues section to see what is coming down the pipeline. If there is anything you feel you can contribute to, leave a comment.
+​	
+**Slack:** [https://pecanproject.slack.com/](https://pecanproject.slack.com/)
+Slack serves as our day to day mode of communication. To join us in slack you will need to create an account first. This is done in 3 steps:
+
+1. Request an [inivitation](https://publicslack.com/slacks/pecanproject/invites/new) to join slack, this will be send by email to address you provided.
+2. <a id="slackreturn"></a>Check your inbox for an email from Slack with subject "Rob Kooper has invited you to join a Slack workspace". This email should have a link that you can click to join slack.
+3. When you click a webpage will open up that asks you to create an account, once that is done you can login into the slack chatrooms.
+
 
 **Email:** pecanproj[at]gmail.com
-	If you do not wish your communication with the team to be public, send us an email at the 
-address above and we will get back to you as soon as possible.
+If you do not wish your communication with the team to be public, send us an email at the  address above and we will get back to you as soon as possible.
 
 # Main Topics
 
 This book is organized around these main topics:
 
 **Basic User Guide** - Explains a simple setup of PEcAn and how to execute a basic run 
- 
+
 **Advanced User Guide- Web** - Explains the advanced features offered on our web interface
-	
+​	
 **Advanced User Guide - Cmd Line** - Explains more advanced customization of PEcAn that can be run from the command line.
-	
+​	
 **User Appendix** - Supplementary materials for the user section.
 
 **PEcAn Workflow** - High Level explanation of the PEcAn workflow. 
 
 **Development Guide** - Explains what you need to know in order to contibute code to PEcAn.
-	
+​	
 **Appendix** - Supplementary materials for the developer section.
-	
+​	
 
 ### Using PEcAn
 
