@@ -21,3 +21,38 @@ Host pecan-vm
 ```
 
 This will allow you to SSH into the VM with the simplified command, `ssh pecan-vm`.
+
+## Connecting to bety on the VM via SSh
+
+Sometimes, you may want to develop code locally but connect to an instance of Bety on the VM.
+To do this, first open a new terminal and connect to the VM while enabling port forwarding (with the `-L` flag) and setting XXXX to any available port (more or less any 4 digit number -- a reasonable choice is 3333).
+
+```
+ssh -L XXXX:localhost:5432 carya@localhost:6422
+```
+
+This makes port XXXX on the local machine match port 5432 on the VM.
+This means that connecting to `localhost:XXXX` will give you access to Bety on the VM.
+
+To test this on the command line, try the following command, which, if successful, will drop you into the `psql` console.
+
+```
+psql -d bety -U bety -h localhost -p XXXX
+```
+
+To test this in R, open a Postgres using the analogous parameters:
+
+```
+library(RPostgres)
+con <- dbConnect(
+  Postgres(),
+  user = "bety",
+  password = "bety",
+  dbname = "bety",
+  host = "localhost",
+  port = XXXX
+  )
+dbListTables(con)   # This should return a vector of bety tables
+```
+
+Note that the same general approach will work on any Bety server where port forwarding is enabled.
