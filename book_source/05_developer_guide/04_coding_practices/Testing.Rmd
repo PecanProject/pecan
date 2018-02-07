@@ -1,7 +1,7 @@
 ## Testing
 
 PEcAn uses the testthat package developed by Hadley Wickham. Hadley has
-written instructions for using this pakcage in his
+written instructions for using this package in his
 [Testing](http://adv-r.had.co.nz/Testing.html) chapter.
 
 ### Rationale
@@ -24,7 +24,7 @@ started. You have to figure out
 *  what was I doing yesterday?
 *  what do I want to do today?
 *  what existing functions do I need to edit?
-*  what are the arguements to these functions (and what are examples of
+*  what are the arguments to these functions (and what are examples of
     valid arguments)
 *  what packages are affected
 *  where is a logical place to put files used in testing
@@ -169,7 +169,7 @@ A test *should* be written for each of the following situations:
 
  * Write tests for cases under which the function should throw an
         error
-  * example: `expect_error(sum("foo")`
+  * example: `expect_error(sum("foo"))`
   * better : `expect_error(sum("foo"), "invalid 'type' (character)")`
 
 #### What types of testing are important to understand?
