@@ -19,7 +19,7 @@ e.g. `/dir/met` if the files to be used are `/dir/met.2004.csv` and `dir/met.200
 
 \item{config}{full path and name of a config.xml file containing parameter values and configuration information for BioCro}
 
-\item{coppice.interval}{numeric, number of years between cuttings for coppice plant or perinneal grass (default 1)}
+\item{coppice.interval}{numeric, number of years between cuttings for coppice plant or perennial grass. Only used with BioCro 0.9; ignored when using later versions.}
 }
 \value{
 output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
