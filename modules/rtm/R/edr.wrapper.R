@@ -15,10 +15,12 @@
 #'  * `wood_reflect` -- Path to wood reflectance. If NULL or unset, use 
 #'  reflectance in package. If NA, skip (assume data already in directory).
 #' @param spectra_list List of spectral data matrices. Names must exactly match 
-#' the PFTs given in `trait.values`. Each item must be a matrix of wavelengths, 
-#' reflectance, and transmittance values. Matrix must have column names 'wl' 
-#' (wavelength), 'R' (reflectance), and 'T' (transmittance). Such a matrix is 
-#' returned by default by all versions of PROSPECT in this package.
+#' the PFTs given in `trait.values`. Each item must be a matrix of
+#' reflectance (labeled 'R' or 'reflectance') and transmittance (labeled 'T' or 
+#' 'transmittance') values. If the matrix is not of class `spectra` (see 
+#' [spectra()]), it must also have a column of wavelength values (labeled 
+#' 'wl'). Such a matrix is returned by default by all versions of PROSPECT in 
+#' this package.
 #' @param par.wl Vector of wavelengths defining PAR region
 #' @param nir.wl Vector of wavelengths defining NIR region
 #' @param datetime POSIXlt object defining the date and at which the run will 
@@ -112,9 +114,13 @@ EDR <- function(paths,
   par.nir.lengths <- c(length(par.wl), length(nir.wl))
   write_dat(par.nir.lengths, files_list['lengths'])
 
-  wavelengths <- spectra_list[[1]][,'wl']
-  par.ind <- which(wavelengths %in% par.wl)
-  nir.ind <- which(wavelengths %in% nir.wl)
+  if (is_spectra(spectra_list[[1]])) {
+    wl <- wavelengths(spectra_list[[1]])
+  } else {
+    wl <- spectra_list[[1]][,'wl']
+  }
+  par.ind <- which(wl %in% par.wl)
+  nir.ind <- which(wl %in% nir.wl)
 
   # Set up soil and wood reflectance files
   soil_fname <- "soil_reflect_par.dat"
@@ -160,10 +166,12 @@ EDR <- function(paths,
       pft_numbers[i] <- pftmapping[pftmapping$PEcAn == pft_names[i], 'ED']
       write_dat(pft_numbers[i], files_list['lengths'])
       spectra_list_pft <- spectra_list[[pft_names[i]]]
-      write_dat(spectra_list_pft[par.ind, 'R'], files_list['reflect_par'])
-      write_dat(spectra_list_pft[nir.ind, 'R'], files_list['reflect_nir'])
-      write_dat(spectra_list_pft[par.ind, 'T'], files_list['trans_par'])
-      write_dat(spectra_list_pft[nir.ind, 'T'], files_list['trans_nir'])
+      rind <- which(colnames(spectra_list_pft) %in% c('R', 'reflectance'))
+      tind <- which(colnames(spectra_list_pft) %in% c('T', 'transmittance'))
+      write_dat(spectra_list_pft[par.ind, rind], files_list['reflect_par'])
+      write_dat(spectra_list_pft[nir.ind, rind], files_list['reflect_nir'])
+      write_dat(spectra_list_pft[par.ind, tind], files_list['trans_par'])
+      write_dat(spectra_list_pft[nir.ind, tind], files_list['trans_nir'])
     }
   }
   
@@ -220,7 +228,7 @@ EDR <- function(paths,
 #' @export
 EDR.prospect <- function(prospect.param, prospect.version = 5, paths, par.wl, nir.wl, datetime, ...) {
   stop('This function is currently deprecated. Use `EDR(...)` instead.')
-  RT.matrix <- prospect(prospect.param, prospect.version, include.wl = TRUE)
+  RT.matrix <- prospect(prospect.param, prospect.version)
   albedo <- EDR(paths, RT.matrix, par.wl, nir.wl, datetime, ...)
   return(albedo)
 }  # EDR.prospect
