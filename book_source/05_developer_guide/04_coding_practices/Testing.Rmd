@@ -107,13 +107,13 @@ test_that(..., {
 
 *  instructions for installing this are available on the [VM creation
     wiki](VM-Creation.md)
-*  examples can be found in the PEcAn.DB package (`db/inst/tests/`).
+*  examples can be found in the PEcAn.DB package (`base/db/tests/testthat/`).
 
 * Model specific settings can go in the model-specific module, for
 example:
 
 ```r
-settings.xml <- system.file("pecan.biocro.xml", package = "PEcAn.BIOCRO")
+settings.xml <- system.file("extdata/pecan.biocro.xml", package = "PEcAn.BIOCRO")
 settings <- read.settings(settings.xml)
 ```
 * test-specific settings:
@@ -197,7 +197,7 @@ tests are found in `~/pecan/<packagename>/inst/tests`, for example
 `utils/inst/tests/`
 
 See attached file and
-[https://github.com/hadley/devtools/wiki/Testing](https://github.com/hadley/devtools/wiki/Testing)
+[http://r-pkgs.had.co.nz/tests.html](http://r-pkgs.had.co.nz/tests.html)
 for details on how to use the testthat package.
 
 ##### List of Expectations
