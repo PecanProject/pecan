@@ -218,19 +218,19 @@ for details on how to use the testthat package.
 
 ##### How to run tests
 
-add the following to “pecan/tests/run.all.R”
+add the following to “pecan/tests/testthat.R”
 
 ```r
 library(testthat)
 library(mypackage)
 
-test_package("mypackage")
+test_check("mypackage")
 ```
 
 #### basic use of the testthat package
 
 Here is an example of tests (these should be placed in
-`<packagename>/inst/tests/test_<sourcefilename>.R`:
+`<packagename>/tests/testthat/test-<sourcefilename>.R`:
 
 ```r
 test_that("mathematical operators plus and minus work as expected",{
