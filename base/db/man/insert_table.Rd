@@ -4,7 +4,7 @@
 \alias{insert_table}
 \title{Insert R data frame into SQL database}
 \usage{
-insert_table(values, table, con, coerce_col_class = TRUE)
+insert_table(values, table, con, coerce_col_class = TRUE, drop = TRUE)
 }
 \arguments{
 \item{values}{`data.frame` of values to write to SQL database}
@@ -15,6 +15,8 @@ insert_table(values, table, con, coerce_col_class = TRUE)
 
 \item{coerce_col_class}{logical, whether or not to coerce local data columns 
 to SQL classes. Default = `TRUE.`}
+
+\item{drop}{logical. If `TRUE` (default), drop columns not found in SQL table.}
 }
 \value{
 data frame with query results
@@ -26,10 +28,8 @@ Then, build an SQL string for the insert statement. Finally, insert into the
 database.
 }
 \examples{
-library(dplyr)
-irisfile <- tempfile(fileext = ".sqlite")
-irisdb <- src_sqlite(irisfile, create = TRUE)
-copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
+irisdb <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+dplyr::copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
 insert_table(iris[-1,], "iris", irisdb$con)
-tbl(irisdb, "iris")
+dplyr::tbl(irisdb, "iris")
 }
