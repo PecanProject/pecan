@@ -1,4 +1,9 @@
 #' Imports from other packages
 #'
-#' @importFrom magrittr `%>%`
-#' @importFrom rlang `!!` `!!!`
+#' @name otherimports
+#' @importFrom magrittr %>%
+#' @export
+magrittr::`%>%`
+
+#' @rdname otherimports
+#' @importFrom rlang !! !!!

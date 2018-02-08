@@ -4,7 +4,7 @@
 \alias{match_dbcols}
 \title{Match column names and classes between local and SQL table}
 \usage{
-match_dbcols(values, table, con, coerce_col_class = TRUE)
+match_dbcols(values, table, con, coerce_col_class = TRUE, drop = TRUE)
 }
 \arguments{
 \item{values}{`data.frame` of values to write to SQL database}
@@ -15,6 +15,8 @@ match_dbcols(values, table, con, coerce_col_class = TRUE)
 
 \item{coerce_col_class}{logical, whether or not to coerce local data columns 
 to SQL classes. Default = `TRUE.`}
+
+\item{drop}{logical. If `TRUE` (default), drop columns not found in SQL table.}
 }
 \value{
 `values` `data.frame` with column names and classes matched to SQL

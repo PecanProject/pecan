@@ -9,20 +9,18 @@
 #' @param table Name of target SQL table, as character
 #' @param coerce_col_class logical, whether or not to coerce local data columns 
 #' to SQL classes. Default = `TRUE.`
+#' @param drop logical. If `TRUE` (default), drop columns not found in SQL table.
 #' @inheritParams db.query
 #' @inherit db.query return
 #' @export
 #' @examples
-#' library(dplyr)
-#' irisfile <- tempfile(fileext = ".sqlite")
-#' irisdb <- src_sqlite(irisfile, create = TRUE)
-#' copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
+#' irisdb <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' dplyr::copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
 #' insert_table(iris[-1,], "iris", irisdb$con)
-#' tbl(irisdb, "iris")
-insert_table <- function(values, table, con, coerce_col_class = TRUE) {
-  values_fixed <- match_dbcols(values, table, con, coerce_col_class)
-  insert_query <- build_insert_query(values_fixed, table, con = con)
-  print(insert_query)
+#' dplyr::tbl(irisdb, "iris")
+insert_table <- function(values, table, con, coerce_col_class = TRUE, drop = TRUE) {
+  values_fixed <- match_dbcols(values, table, con, coerce_col_class, drop = TRUE)
+  insert_query <- build_insert_query(values_fixed, table, .con = con)
   db.query(insert_query, con)
 }
 
@@ -31,7 +29,7 @@ insert_table <- function(values, table, con, coerce_col_class = TRUE) {
 #' @inheritParams insert_table
 #' @return `values` `data.frame` with column names and classes matched to SQL
 #' @export
-match_dbcols <- function(values, table, con, coerce_col_class = TRUE) {
+match_dbcols <- function(values, table, con, coerce_col_class = TRUE, drop = TRUE) {
   use_cols <- match_colnames(values, table, con)
   if (length(use_cols) < 1) {
     PEcAn.logger::logger.severe(
@@ -44,7 +42,7 @@ match_dbcols <- function(values, table, con, coerce_col_class = TRUE) {
   )
   values_sub <- values[, use_cols]
   # Load one row to get column types
-  sql_row <- dplyr::tbl(con, table) %>% head(1) %>% collect()
+  sql_row <- dplyr::tbl(con, table) %>% head(1) %>% dplyr::collect()
   sql_types <- purrr::map(sql_row, class) %>%
     purrr::map_chr(1) %>%
     .[use_cols]
@@ -76,7 +74,12 @@ match_dbcols <- function(values, table, con, coerce_col_class = TRUE) {
   } else {
     values_fixed <- values_sub
   }
-  values_fixed
+  if (drop) {
+    values_fixed
+  } else {
+    drop_cols <- colnames(values)[!colnames(values) %in% use_cols]
+    dplyr::bind_cols(values_fixed, values[, drop_cols])
+  }
 }
 
 #' Match names of local data frame to SQL table
@@ -92,8 +95,8 @@ match_colnames <- function(values, table, con) {
 #' Build query to insert R data frame into SQL table
 #'
 #' @inheritParams insert_table
-#' @param ... Additional arguments to [dbplyr::build_sql]
-build_insert_query <- function(values, table, ...) {
+#' @inheritParams glue::glue_sql
+build_insert_query <- function(values, table, .con) {
   value_list <- purrr::map(seq_len(nrow(values)), ~as.list(values[.x, ]))
 
   insert_list <- value_list %>%
@@ -101,15 +104,9 @@ build_insert_query <- function(values, table, ...) {
     purrr::map(dbplyr::escape) %>%
     purrr::map(dbplyr::sql_vector)
 
-  dbplyr::build_sql(
-    dbplyr::sql("INSERT INTO"),
-    dbplyr::sql(" "),
-    dbplyr::ident(table),
-    dbplyr::sql(" "),
-    dbplyr::sql_vector(ident(colnames(values)), collapse = ", "),
-    dbplyr::sql(" "),
-    dbplyr::sql("VALUES"),
-    dbplyr::sql(" "),
-    dbplyr::sql_vector(insert_list, parens = FALSE, collapse = ", "), ...
+  glue::glue_sql(
+    "INSERT INTO {`table`} ({`colnames(values)`*}) ",
+    "VALUES {insert_list*}",
+    .con = .con
   )
 }
