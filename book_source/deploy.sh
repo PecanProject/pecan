@@ -38,7 +38,7 @@ git config --global user.email "pecanproj@gmail.com"
 git config --global user.name "TRAVIS-DOC-BUILD"
 
 # Don't deploy if documentation git repo does not exist
-if ! ( git ls-remote -h git@github.com:${USER}/pecan-documentation >/dev/null 2>&1); then
+if ! ( git ls-remote -h git@github.com:${USER}/pecan-documentation); then
   echo "Can't find a repository at https://github.com/${USER}/pecan-documentation"
   echo "Will not render Book."
   exit 0

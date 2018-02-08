@@ -15,7 +15,7 @@ if [ ! -d book_hosted ]; then
     USER=${TRAVIS_REPO_SLUG%/*}
 
 	# Don't deploy if documentation git repo does not exist
-	if ! ( git ls-remote -h git@github.com:${USER}/pecan-documentation >/dev/null 2>&1); then
+	if ! ( git ls-remote -h git@github.com:${USER}/pecan-documentation); then
 	  echo "Can't find a repository at https://github.com/${USER}/pecan-documentation"
 	  echo "Will not render tutorials."
 	  exit 0
