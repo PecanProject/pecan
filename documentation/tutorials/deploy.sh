@@ -12,11 +12,12 @@ fi
 # Clone book_hosted directory if it doesn't exist
 if [ ! -d book_hosted ]; then
     # Set GitHub user
-    USER=${TRAVIS_REPO_SLUG%/*}
+    GH_USER=${TRAVIS_REPO_SLUG%/*}
 
 	# Don't deploy if documentation git repo does not exist
-	if ! ( git ls-remote -h git@github.com:${USER}/pecan-documentation >/dev/null 2>&1); then
-	  echo "Can't find a repository at https://github.com/${USER}/pecan-documentation"
+	GH_STATUS=$(curl -s -w %{http_code} -I https://github.com/${GH_USER}/pecan-documentation -o /dev/null)
+    if [[ $GH_STATUS != 200 ]]; then
+	  echo "Can't find a repository at https://github.com/${GH_USER}/pecan-documentation"
 	  echo "Will not render tutorials."
 	  exit 0
 	fi
@@ -25,7 +26,7 @@ if [ ! -d book_hosted ]; then
     git config --global user.email "pecanproj@gmail.com"
     git config --global user.name "TRAVIS-DOC-BUILD"
 
-    git clone https://${GITHUB_PAT}@github.com/${USER}/pecan-documentation.git book_hosted
+    git clone https://${GITHUB_PAT}@github.com/${GH_USER}/pecan-documentation.git book_hosted
 fi
 
 # Create tutorial directory
