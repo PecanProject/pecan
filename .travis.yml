@@ -104,7 +104,7 @@ before_script:
   - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
   - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
-  - psql -q -o /dev/null-U postgres < bety.sql
+  - psql -q -o /dev/null -U postgres < bety.sql
   - rm bety.sql
   - ./scripts/add.models.sh
   - chmod +x book_source/deploy.sh
