@@ -10,7 +10,7 @@ The PEcAn system is configured using a xml file, often called settings.xml. The 
 6. [Meta Analysis](#meta-analysis)
 7. [Ensemble Runs](#ensemble-runs)
 8. [Sensitivity Runs](#sensitivity-runs)
-9. [Model Setup](#model_setup)
+9. [Model Setup](#model-setup)
 10. [Run Setup](#run-setup)
 11. [State Data Assimilation](#state-data-assimilation-tags)
 12. [Parameter Data Assimilation]
