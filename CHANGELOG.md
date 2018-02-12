@@ -12,6 +12,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed status page, should now be run from cronjob, creates static page
 
 ### Added
+- Ability to allow for insecure sync using -k flag
 - Added information on how to join slack
 - PEcAn.BIOCRO now supports BioCro version 1.0. BioCro 0.9x models should still work as before, but note parameter and weather format changes in the `Changed` section below.  
 - RTM: Exposed PROSPECT absorption coefficients and `gpm()` function ("generalized plate model"), facilitating experimentation with different absorption coefficients
