@@ -8,13 +8,17 @@
 ##' @param IC          initial conditions
 ##' @param Q           process covariance matrix given if there is no data to estimate it
 ##' @param adjustment  flag for using ensemble adjustment filter or not
+##' @param restart      Used for iterative updating previous forecasts. This is a list that includes ens.inputs, the list of inputs by ensemble member, params, the parameters, and old_outdir, the output directory from the previous workflow. These three things are needed to ensure that if a new workflow is started that ensemble members keep there run-specific met and params. See Details
+##'
+##’ @details
+##’ Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast), a new workflow folder is created and the previous forecast for the start_time is copied over. During restart the initial run before the loop is skipped, with the info being populated from the previous run. The function then dives right into the first Analysis, then continues on like normal.
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
 ##' @export
 ##' 
-sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE) {
+sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
   
   library(nimble)
   
@@ -43,6 +47,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
                              USE.NAMES = FALSE), 
                       use.names = FALSE)
   names(var.names) <- NULL
+  dir.create(rundir,recursive=TRUE)
   
   ###-------------------------------------------------------------------###
   ### get model specific functions                                      ###
@@ -75,18 +80,25 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
   }
   
-  ens.inputs <- list()
+ 
+  if(is.null(restart) & is.null(restart$ens.inputs)){
+    ens.inputs <- sample_met(settings,nens)
+  } else {
+    ens.inputs <- restart$ens.inputs
+  }
+  #ens.inputs <- list()
   inputs <- list()
   for(i in seq_len(nens)){
-    ### get only nessecary ensemble inputs. Do not change in anaylysis
-    ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
-    
+
+    ### get only necessary ensemble inputs. Do not change in analysis
+    #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
     ### model specific split inputs
     inputs[[i]] <- do.call(my.split_inputs, 
                            args = list(settings = settings, 
                                        start.time = settings$run$start.date, 
-                                       stop.time = settings$run$end.date,
-                                       inputs = ens.inputs[[i]]))
+                                       stop.time = as.Date(names(obs.mean)[1]),#settings$run$end.date,
+                                       inputs = ens.inputs[[i]]))#,
+#                                       outpath = file.path(rundir,paste0("met",i))))
   }
   
   ###-------------------------------------------------------------------###
@@ -109,7 +121,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   if ("workflow" %in% names(settings)) {
     workflow.id <- settings$workflow$id
   } else {
-    workflow.id <- -1
+#    workflow.id <- -1
+    settings <- check.workflow.settings(settings,con)
+    workflow.id <- settings$workflow$id
+    PEcAn.logger::logger.info("new workflow ID - ",workflow.id)
   }
   
   ###-------------------------------------------------------------------###
@@ -133,28 +148,71 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   X <- IC
   
   ## Load Parameters
-  if (sample_parameters == TRUE) {
-    settings$ensemble$size <- settings$state.data.assimilation$n.ensemble
-  } else {
-    settings$ensemble$size <- 1
-  }
-  get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
-  load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-  
-  if ("env" %in% names(ensemble.samples)) {
-    ensemble.samples$env <- NULL
-  }
-  
-  params <- list()
-  for (i in seq_len(nens)) {
+  if(is.null(restart) & is.null(restart$params)){
     if (sample_parameters == TRUE) {
-      params[[i]] <- lapply(ensemble.samples, function(x, n) {
-        x[i, ]
-      }, n = i)
+      settings$ensemble$size <- settings$state.data.assimilation$n.ensemble
     } else {
-      params[[i]] <- ensemble.samples
+      settings$ensemble$size <- 1
     }
+    
+    ######################################################################################################################
+    #                                                                                                                    #     
+    #   NOTE: It's easiest to try to define priors such that sum of SIPNET allocation params "root_allocation_fraction", #
+    #   "wood_allocation_fraction" and "leaf_allocation_fraction" doesnt' exceed 1,                                      #
+    #   if it exceeds runs will finish but you'll get 0 for AbvGrndWood which would affect your forecast ensemble        #
+    #   write.configs.SIPNET also gives a warning, if you want stricter control you can change it to error               #
+    #   the commented out code below was to force their sum to be <1 leaving as a reminder until refactoring             #
+    #                                                                                                                    #
+    ######################################################################################################################
+    
+    
+    
+    # cumulative_ensemble_samples <- numeric(0)
+    # 
+    # repeat{ # temporary SIPNET hack, I want to make sure sum <1 for SIPNET
+      get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
+      load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+    #   cumulative_ensemble_samples <- rbind(cumulative_ensemble_samples,ensemble.samples$temperate.deciduous_SDA)
+    #   tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(20, 25,27)],1,sum) < 1
+    #   cumulative_ensemble_samples <- cumulative_ensemble_samples[tot_check,]
+    #   if(nrow(cumulative_ensemble_samples)>=nens){
+    #     ensemble.samples$temperate.deciduous_SDA <- cumulative_ensemble_samples[seq_len(nens),]
+    #     break
+    #   } 
+    # }
+    
+    
+    if ("env" %in% names(ensemble.samples)) {
+      ensemble.samples$env <- NULL
+    }
+    
+    params <- list()
+    for (i in seq_len(nens)) {
+      if (sample_parameters == TRUE) {
+        params[[i]] <- lapply(ensemble.samples, function(x, n) {
+          x[i, ]
+        }, n = i)
+      } else {
+        params[[i]] <- ensemble.samples
+      }
+    } 
+  } else {
+    ## params exist from restart
+    params <- restart$params
   }
+  
+  ## if a restart, get the old run folders
+  if(!is.null(restart)){
+    if(is.null(restart$old_outdir)){
+      old_outdir = settings$outdir ## if old_outdir not specified, restart in place
+    } else {
+      old_outdir = restart$old_outdir
+    }
+    old_runs <- list.dirs(file.path(old_outdir,"out"),recursive=FALSE)
+    ## select the _last_ nens
+    old_runs <- tail(old_runs,nens)
+  }
+  
   
   for (i in seq_len(nens)) {
     
@@ -173,12 +231,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive = TRUE)
     
     ## Write Configs
-    do.call(what = my.write.config, args = list(defaults = NULL, 
+    if(is.null(restart)){
+      do.call(what = my.write.config, args = list(defaults = NULL, 
                                          trait.values = params[[i]], 
                                          settings = settings, 
                                          run.id = run.id[[i]], 
                                          inputs = inputs[[i]], 
                                          IC = IC[i, ]))
+    } else {
+      ## copy over old run's forecast
+      old_file <- file.path(old_runs[i],paste0(year(settings$run$start.date),".nc"))
+      file.copy(old_file,file.path(settings$modeloutdir, run.id[[i]]))
+        ## should swap this out for a symbolic link -- no need for duplication
+    }
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -208,7 +273,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       append = FALSE)
   
   ## start model runs
-  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+  if(is.null(restart)){
+    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+  }
   save(list = ls(envir = environment(), all.names = TRUE), 
        file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
 
@@ -224,7 +291,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   
   obs.times <- names(obs.mean)
   obs.times.POSIX <- ymd_hms(obs.times)
-  
+
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
       if (is.na(lubridate::ymd(obs.times[i]))) {
@@ -342,6 +409,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   brown       <- col2rgb("brown")
   alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
   
+  # weight matrix
+  wt.mat <- matrix(NA, nrow = nens, ncol = nt)
+  
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
@@ -350,24 +420,33 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
     ###-------------------------------------------------------------------###  
+    X_tmp <- vector("list", 2) 
     X <- list()
+    new.params <- params
+    
     for (i in seq_len(nens)) {
-      X[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
+      X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
                                                      runid = run.id[[i]], 
                                                      stop.time = obs.times[t], 
                                                      settings = settings, 
                                                      var.names = var.names, 
                                                      params = params[[i]]))
+      # states will be in X, but we also want to carry some deterministic relationships to write_restart
+      # these will be stored in params
+      X[[i]]      <- X_tmp[[i]]$X
+      new.params[[i]] <- X_tmp[[i]]$params
     }
     
     X <- do.call(rbind, X)
-    
+
     FORECAST[[t]] <- X
     
     obs <- which(!is.na(obs.mean[[t]]))
     
     mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
     Pf <- cov(X)
+    pmiss <- which(diag(Pf) == 0)
+    diag(Pf)[pmiss] <- 0.1 ## hack for zero variance
     
     ###-------------------------------------------------------------------###
     ### analysis                                                          ###
@@ -397,6 +476,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       }
       
       ### TO DO: plotting not going to work because of observation operator i.e. y and x are on different scales
+      
       
       #### Plot Data and Forecast
       if (FALSE) {#interactive() & t > 1
@@ -780,6 +860,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
       }
       
+      # # calculate likelihoods
+#      for(i in seq_len(nens)){
+#        wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,], mu.a, solve(Pa), log = TRUE)
+#      }
+      
+      
+      
       if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
       if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
       
@@ -802,7 +889,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     
     ## in the future will have to be separated from analysis
     new.state  <- analysis
-    new.params <- params
     
     ANALYSIS[[t]] <- analysis
     
@@ -818,20 +904,20 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       }))
       
       if(any(obs)){
-      Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
-      Ybar <- Ybar[,Y.order]
-      Ybar[is.na(Ybar)] <- 0
-      YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
-        if (length(x)<2) {
-          rep(NA, length(names.y))
-        }
-        sqrt(diag(x))
-      })))
-      
-      YCI <- YCI[,Y.order]
-      YCI[is.na(YCI)] <- 0
+        Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
+        Ybar <- Ybar[,Y.order]
+        Ybar[is.na(Ybar)] <- 0
+        YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
+          if (length(x)<2) {
+            rep(NA, length(names.y))
+          }
+          sqrt(diag(x))
+        })))
+        
+        YCI <- YCI[,Y.order]
+        YCI[is.na(YCI)] <- 0
       }else{
-        YCI <- matrix(NA,nrow=length(t1:t), ncol=length(names.y))
+        YCI <- matrix(NA,nrow=length(t1:t), ncol=max(length(names.y),1))
       }
       
       par(mfrow = c(2, 1))
@@ -846,7 +932,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
                                     function(x) { x })[2, ], use.names = FALSE)
         
         # observation / data
-        if (i <= ncol(Ybar)) {
+        if (i <= ncol(Ybar) & any(obs)) {
           plot(as.Date(obs.times[t1:t]), 
                Xbar, 
                ylim = range(c(XaCI, Xci, Ybar[,i]), na.rm = TRUE), 
@@ -889,6 +975,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ###-------------------------------------------------------------------### 
     if (t < nt) {
       
+      
       ###-------------------------------------------------------------------###
       ### split model specific inputs for current runs                      ###
       ###-------------------------------------------------------------------### 
@@ -906,6 +993,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ###-------------------------------------------------------------------###
       ### write restart by ensemble                                         ###
       ###-------------------------------------------------------------------### 
+      
+      
       
       for (i in seq_len(nens)) {
         do.call(my.write_restart, 
@@ -930,6 +1019,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------### 
     save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir, "sda.output.Rdata"))
+
     
   }  ## end loop over time
   ###-------------------------------------------
@@ -1117,3 +1207,4 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   #      ylab="Update",main=colnames(Ybar)[i])
   
 } # sda.enkf
+

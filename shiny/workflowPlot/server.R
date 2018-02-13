@@ -163,10 +163,13 @@ server <- shinyServer(function(input, output, session) {
         # No need for subsetting though as align data returns for now only the provided variable name
         # externalData <- externalData %>% dplyr::select(posix,dplyr::one_of(input$variable_name))
         var = input$variable_name
-        df = df %>% select(posix = dates, var = vals)
-        colnames(df)[2]<-paste0(var) # Required for align data to work
-        aligned_data = PEcAn.benchmark::align_data(model.calc = df, obvs.calc = externalData, var =var, align_method = "match_timestep")
-        colnames(aligned_data) <- c("model","observations","Date") # Order returned by align_data
+        df = df %>% select(posix = dates, vals) 
+        colnames(df)[which(colnames(df) == "vals")] <- var 
+        aligned_data = PEcAn.benchmark::align_data(model.calc = df, obvs.calc = externalData, var =var, align_method = "mean_over_larger_timestep")
+        colnames(aligned_data)[grep("[.]m", colnames(aligned_data))] <- "model"
+        colnames(aligned_data)[grep("[.]o", colnames(aligned_data))] <- "observations"
+        colnames(aligned_data)[which(colnames(aligned_data) == "posix")] <- "Date"
+        
         # Melt dataframe to plot two types of columns together
         aligned_data <- reshape2::melt(aligned_data, "Date")
         data_geom <- switch(input$data_geom, point = geom_point, line = geom_line)
@@ -189,7 +192,12 @@ server <- shinyServer(function(input, output, session) {
     # scale_y_continuous(labels=fancy_scientific) +
     # scale_color_manual(name = "", values = "black") +
     # scale_fill_manual(name = "", values = "grey50")
-    plt<-ggplotly(plt)
+    if(input$plotview){
+      plt<-ggplotly(plt)
+    }else{
+      plt<-ggplot(data.frame(x = 0, y = 0), aes(x,y)) + annotate("text", x = 0, y = 0, label = "You chose to skip plotting
+proceed to benchmarking", size = 10, color = "grey")
+    }
     # Not able to add icon over ggplotly
     # add_icon()
   })
