@@ -11,7 +11,7 @@
 ##'
 ##' @title Query species given pft name
 ##' @name query.pft_species
-##' @param modeltype type of model that is used, this is is used to distinguis between different pfts with the same name.
+##' @param modeltype type of model that is used, this is used to distinguish between different pfts with the same name.
 ##' @param pft string pft name
 ##' @param con database connection
 ##' @return string of species.id for species associated with pft
