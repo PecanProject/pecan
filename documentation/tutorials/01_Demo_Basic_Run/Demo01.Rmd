@@ -6,13 +6,11 @@ opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
                fig.align = 'center', out.width = '100%')
 ```
 
-### Introduction
-
-#### Objective
+## Objective
 
 We will begin by exploring a set of web-based tools that are designed to run single-site model runs. A lot of the detail about what’s going on under the hood, and all the outputs that PEcAn produces, are left to Demo 2. This demo will also demonstrate how to use PEcAn outputs in additional analyses outside of PEcAn.
 
-#### PEcAn URL
+### PEcAn URL
 
 In the following demo, **URL** is the web address of a PEcAn server and will refer to one of the following:
 
@@ -24,7 +22,7 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 
 ### Demo 01: Basic Run
 
-#### Start PEcAn:  
+### Start PEcAn:  
 
 1. **Enter URL in your web browser**
 2. **Click “Run Models”**
@@ -34,33 +32,33 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 knitr::include_graphics('startpecan.jpg')
 ```
 
-#### Site Selection
+### Site Selection
 
 ```{r mapmodel}
 knitr::include_graphics('mapmodel.png')
 ```
 
-##### Host
+### Host
 
 **Select the local machine “pecan”**. Other options exist if you’ve read and followed instructions found in [Remote execution with PEcAn].
 
 
-##### Mode
+### Mode
 
 Select **SIPNET** (r136) from the available models because it is quick & simple. Reference material can be found in [Models in PEcAn]
 
 
-##### Site Group
+### Site Group
 
 To filter sites, you can **select a specific group of sites**. For this tutorial we will use **Ameriflux**.
 
 
-##### Conversion: 
+### Conversion: 
 
 **Select the conversion check box**, to show all sites that PEcAn is capable of generating model drivers for automatically. By default (unchecked), PEcAn only displays sites where model drivers already exist in the system database
 
 
-##### Site:
+### Site:
 
 **For this tutorial, type _US-NR1_ in the search box to display the Niwot Ridge Ameriflux site (US-NR1), and then click on the pin icon**. When you click on a site’s flag on the map, it will give you the name and location of the site and put that site in the “Site:” box on the left hand site, indicating your current selection. 
 
@@ -76,21 +74,21 @@ knitr::include_graphics('runspec.png')
 Next we will specify settings required to run the model. Be aware that the inputs required for any particular model may vary somewhat so there may be addition optional or required input selections available for other models.
 
 
-##### PFT (Plant Functional Type):
+#### PFT (Plant Functional Type):
 
 **Niwot Ridge is temperate coniferous**.  Available PFTs will vary by model and some models allow multiple competing PFTs to be selected. Also select **soil** to control the soil parameters
 
 
-##### Start/End Date:
+#### Start/End Date:
 
 Select **2003/01/01** to **2006/12/31**. In general, be careful to select dates for which there is available driver data.
 
 
-##### Weather Data: 
+#### Weather Data: 
 
 **Select “Use AmerifluxLBL”** from the [Available Meteorological Drivers].
 
-##### Optional Settings:
+#### Optional Settings:
 
 **Leave all blank for demo run**
 
@@ -103,47 +101,47 @@ Select **2003/01/01** to **2006/12/31**. In general, be careful to select dates 
 Finally, **click "Next"** to start the model run.
 
 
-##### Data Use Policies
+#### Data Use Policies
 
 You will see a data policy statement if you selected a data source with a policy. Agreeing to the policy is required prior to starting the run.
 
 
-##### If you get an error in your run 
+#### If you get an error in your run 
 
 If you get an error in your run as part of a live demo or class activity, it is probably simplest to start over and try changing options and re-running (e.g. with a different site or PFT), as time does not permit detailed debugging. If the source of the error is not immediately obvious, you may want to take a look at the workflow.Rout to see the log of the PEcAn workflow or the logfile.txt to see the model execution output log and then refer to the [Documentation](http://pecanproject.github.io/documentation.html) or the [Chat Room](https://gitter.im/PecanProject/pecan) for help.
 
-#### Model Run Workflow
+### Model Run Workflow
 
 ```{r execstatus}
 knitr::include_graphics('execstatus.jpg')
 ```
 
-##### MET Process:
+#### MET Process:
 
 First, PEcAn will download meteorological data based on the type of the Weather Data you chose, and process it into the specific format for the chosen model
 
 
-##### TRAIT / META:
+#### TRAIT / META:
 
 PEcAn then estimates model parameters by performing a meta-analysis of the available trait data for a PFT. TRAIT will extract relevant trait data from the database. META performs a hierarchical Bayes meta-analysis of available trait data. The output of this analysis is a probability distribution for each model parameter. PEcAn selects the median value of this parameter as the default, but in Demo 2 we will see how PEcAn can use this parameter uncertainty to make probabilistic forecasts and assess model sensitivity and uncertainty. Errors at this stage usually indicate errors in the trait database or incorrectly specified PFTs (e.g. defining a variable twice).
 
 
-##### CONFIG:
+#### CONFIG:
 
 writes model-specific settings and parameter files
 
 
-##### MODEL: 
+#### MODEL: 
 
 runs model. 
 
 
-##### OUTPUT:
+#### OUTPUT:
 
 All model outputs are converted to [standard netCDF format](http://nacp.ornl.gov/MsTMIP_variables.shtml)
 
 
-##### ENSEMBLE & SENSITIVITY: 
+#### ENSEMBLE & SENSITIVITY: 
 
 If enabled post-process output for these analyses
 
@@ -165,7 +163,7 @@ FYI, [adding a new model](https://pecanproject.github.io/pecan-documentation/mas
 **For now focus on graphs, we will explore all of PEcAn’s outputs in more detail in Demo 02.**
 
 
-##### Graphs
+#### Graphs
 
 1. **Select a Year and Y-axis Variable, and then click 'Plot run/year/variable'.** Initially leave the X-axis as time.
 2. Within this figure the **points indicate the daily mean** for the variable while the **envelope encompasses the diurnal variability (max and min)**.
@@ -174,7 +172,7 @@ FYI, [adding a new model](https://pecanproject.github.io/pecan-documentation/mas
 5. Try **changing the X-axis** to look at bivariate plots of how different output variables are related to one another. Be aware that PEcAn currently runs a moving min/mean/max through bivariate plots, just as it does with time series plots. In some cases this makes more sense than others.
 
 
-##### Alternative Visualization: R Shiny
+#### Alternative Visualization: R Shiny
 
 1. **Click on Open SHINY**, which will open a new browser window. The shiny app will automatically access your run’s output files and allow you to visualize all output variables as a function of time. 
 
@@ -194,8 +192,8 @@ knitr::include_graphics('workflowshiny.png')
 
 ##### Analyzing model output
 
-Follow [this tutorial](https://github.com/PecanProject/pecan/tree/master/documentation/tutorials/AnalyzeOutput) to learn how to **open model output in R and compare to observed data**
+Follow this tutorial, [Analyze Output] to learn how to **open model output in R and compare to observed data**
 
 
 #### DEMO 02
-[This tutorial](https://github.com/PecanProject/pecan/tree/master/documentation/tutorials/02_Demo_Uncertainty_Analysis) will show how to perform **Ensemble & Sensitivity Analyses** through the web interface and explore the PEcAn outputs in greater detail, including the **trait meta-analysis**
+[Demo 02: Sensitivity and Uncertainty Analysis] will show how to perform **Ensemble & Sensitivity Analyses** through the web interface and explore the PEcAn outputs in greater detail, including the **trait meta-analysis**

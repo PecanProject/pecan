@@ -1,8 +1,5 @@
----
-title: "Data Assimilation Concepts"
-author: "Mike Dietze"
-output: html_document
----
+# Data Assimilation Concepts"
+
 
 The goal of this tutorial is to help you gain some hands-on familiarity with some of the concepts, tools, and techniques involved in Bayesian Calibration. As a warm-up to more advanced approaches to model-data fusion involving full ecosystem models, this example will focus on fitting the Farquhar, von Caemmerer, and Berry (1980) photosynthesis model [FvCB model] to leaf-level photosynthetic data. This is a simple, nonlinear model consisting of 3 equations that models net carbon assimilation, $A^{(m)}$, at the scale of an individual leaf as a function of light and CO2.
 
@@ -93,7 +90,7 @@ Bayesian numerical methods for model calibration are based on sampling parameter
 
 The following plots follow the trajectory of two correlated parameters, Jmax and alpha. In the first figure, arrows show the first 10 iterations. Internally JAGS is choosing between a variety of different Bayesian sampling methods (e.g. Metropolis-Hasting, Gibbs sampling, slice sampling, rejection sampling, etc) to draw a new value for each parameter conditional on the current value. After just 10 steps we don't have a good picture of the overall posterior, but it should still be clear that the sampling is not a complete random walk.
 
-```{r}
+```{r, eval=FALSE}
 params <- as.matrix(fit$params)
 xrng = range(fit$params[,"alpha0"])
 yrng = range(fit$params[,"Jmax0"])
@@ -106,14 +103,14 @@ arrows(params[n[-10],"alpha0"],params[n[-10],"Jmax0"],params[n[-1],"alpha0"],par
 
 After 100 steps, we can see a cloud start to form, with occassional wanderings around the periphery.
 
-```{r}
+```{r,eval=FALSE}
 n = 1:100
 plot(params[n,"alpha0"],params[n,"Jmax0"],type='l',xlim=xrng,ylim=yrng)
 ```
 
 After $nrow(params)$ steps what we see is a point cloud of samples from the joint posterior distribution. When viewed sequentially, points are not independent, but we are interested in working with the overall distribution, where the order of samples is not important.
 
-```{r}
+```{r, eval=FALSE}
 n = 1:nrow(params)
 plot(params[n,"alpha0"],params[n,"Jmax0"],type='p',pch="+",cex=0.5,xlim=xrng,ylim=yrng)
 ```
@@ -137,21 +134,21 @@ The 'density' figures represent smoothed versions of the _marginal_ distribution
 
 Finally, the summary table reports, for each parameter, a mean, standard deviation, two variants of standard error, and standard quantile estimates (95% CI, interquartile, and median). The standard deviation of the posterior is a good summary statistic about **how uncertain we are about a parameter**. The Naive SE is the traditonal $\frac{SD}{\sqrt{n}}$, which is an estimate of the **NUMERICAL accuracy in our estimate of the mean**. As we run the MCMC longer (i.e. take more samples), we get an answer that is numerically more precise (SE converges to 0) but the uncertainty in the parameter (i.e. SD) stays the same because that's determined by the sample size of the DATA not the length of the MCMC.  Finally, the Time-series SE is a variant of the SE calculation that accounts for the autocorrelation in the MCMC samples. In practice is is therefore more appropriate to use this term to assess numerical accuracy.
 
-```{r}
+```{r, eval=FALSE}
 plot(fit$params,auto.layout = FALSE)    ## MCMC diagnostic plots
 summary(fit$params) ## parameter estimates  
 ```
 
 Assessing the convergence of the MCMC is first done visually, but more generally the use of statistical diagnostics to assess convergence is highly encouraged. There are a number of metrics in the literature, but the most common is the Gelman-Brooks-Rubin statistic, which compare the variance within each chain to the variance across chains. If the chains have converged then this quantity should be 1. Values less than 1.05 are typically considered sufficient by most statisticians, but these are just rules-of-thumb.
 
-```{r}
+```{r, eval=FALSE}
 gelman.plot(fit$params,auto.layout = FALSE)
 gelman.diag(fit$params)
 ```
 
 As with any modeling, whether statistical or process-based, another common diagnostic is a predicted vs observed plot. In a perfect model the data would fall along the 1:1 line. The deviations away from this line are the model residuals. If observations lie along a line other than the 1:1 this indicates that the model is biased in some way. This bias is often assessed by fitting a linear regression to the points, though two important things are noteworthy about this practice. First, the $R^2$ and residual error of this regression are not the appropriate statistics to use to assess model performance (though you will frequently find them reported incorrectly in the literature). The correct $R^2$ and residual error (a.k.a Root Mean Square Error, RMSE) are based on deviations from the 1:1 line, not the regression. The code below shows these two terms calculated by hand. The second thing to note about the regression line is that the standard regression F-test, which assesses deviations from 0, is not the test you are actually interested in, which is whether the line differs from 1:1. Therefore, while the test on the intercept is correct, as this value should be 0 in an unbiased model, the test statistic on the slope is typically of less interest (unless your question really is about whether the model is doing better than random). However, this form of bias can easily be assessed by looking to see if the CI for the slope overlaps with 1.
 
-```{r}
+```{r, eval=FALSE}
 ## predicted vs observed plot
 par(mfrow=c(1,1))
 mstats = summary(fit$predict)
@@ -171,7 +168,7 @@ confint(bias.fit)
   
 In the final set of plots we look at the actual A-Ci and A-Q curves themselves. Here we've added two interval estimates around the curves. The CI captures the uncertainty in the _parameters_ and will asympotically shrink with more and more data. The PI (predictive interval) includes the parameter and residual error. If our fit is good then 95% PI should thus encompass at least 95% of the observations. That said, as with any statistical model we want to look for systematic deviations in the residuals from either the mean or the range of the PI.
 
-```{r}
+```{r,  eval=FALSE}
 ## Response curve
 plot_photo(dat,fit)
 ```

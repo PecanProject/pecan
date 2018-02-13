@@ -1,12 +1,6 @@
----
-title: "Simple Model-Data Comparisons"
-author: "Istem Fer, Tess McCabe"
-date: "4/26/2017"
-output:
-  html_document: default
-  pdf_document: default
----
-
+# Simple Model-Data Comparisons
+ 
+### Author: Istem Fer, Tess McCabe
 
 In this tutorial we will compare model outputs to data outside of the PEcAn web interface. The goal of this is to demonstrate how to perform additional analyses using PEcAn’s outputs. To do this you can download each of the Output files, and then perform the analyses using whatever software you prefer, or you can perform analyses directly on the PEcAn server itself. Here we’ll be analyzing model outputs in R using a browser-based version of RStudio that’s installed on the server
 
@@ -40,7 +34,7 @@ Within both the run and out folders there will be one folder for each unique mod
 ## Read in settings From an XML file
 
 
-```{r}
+```{r,eval=FALSE}
 ## Read in the xml
 
 settings<-PEcAn.settings::read.settings("~/output/PEcAn_99000000001/pecan.CONFIGS.xml")
@@ -60,7 +54,7 @@ bety <-dplyr::src_postgres(host = settings$database$bety$host, user = settings$d
 ```
 
 ## Read in model output from specific variables
-```{r}
+```{r, eval=FALSE}
 model_vars<-c("time", "NEE") #varibles being read
 model <- PEcAn.utils::read.output(runid,outdir,start.year, end.year, model_vars,dataframe=TRUE)
 ```
@@ -71,7 +65,7 @@ The arguments to read.output are the run ID, the folder where the run is located
 
 **First** _load up the observations_ and take a look at the contents of the file
 
-```{r}
+```{r,  eval=FALSE}
 File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
 site<-PEcAn.DB::query.site(site.id,bety$con) #This tells PEcAn where the data comes from
@@ -87,13 +81,13 @@ You could query for diffent kinds of formats that exist in bety or [make your ow
 Here 772 is the database site ID for Niwot Ridge Forest, which tells pecan where the data is from and what time zone to assign any time data read in. 
 
 **Second** _apply a conservative u* filter to observations_
-```{r}
+```{r,eval=FALSE}
 observations$NEE[observations$UST<0.2]<-NA
 ```
 
 **Third** _align model output and observations_
 
-```{r}
+```{r, eval=FALSE}
 aligned_dat = PEcAn.benchmark::align_data(model.calc = model, obvs.calc = observations, var ="NEE", align_method = "match_timestep")
 
 ```
@@ -109,14 +103,14 @@ abline(0,1,col="red")  ## intercept=0, slope=1
 
 **Fifth**, _calculate the Root Mean Square Error (RMSE)_ between the model and the data
 
-```{r}
+```{r, eval=FALSE}
 rmse = sqrt(mean((aligned_dat$NEE.m-aligned_dat$NEE.o)^2,na.rm = TRUE))
 ```
 *na.rm* makes sure we don’t include missing or screened values in either time series.
 
 **Finally**, _plot time-series_ of both the model and data together
 
-```{r}
+```{r, eval=FALSE}
 ## plot aligned data
 plot(aligned_dat$posix, aligned_dat$NEE.o, type="l")
 lines(aligned_dat$posix,aligned_dat$NEE.m, col = "red")
