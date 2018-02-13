@@ -12,9 +12,14 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed status page, should now be run from cronjob, creates static page
 
 ### Added
+- Ability to allow for insecure sync using -k flag
+- Added information on how to join slack
+- PEcAn.BIOCRO now supports BioCro version 1.0. BioCro 0.9x models should still work as before, but note parameter and weather format changes in the `Changed` section below.  
+- RTM: Exposed PROSPECT absorption coefficients and `gpm()` function ("generalized plate model"), facilitating experimentation with different absorption coefficients
+- RTM: Added `spectra` S3 class and methods for subsetting (e.g. `myspec[[400:700]]`), plotting (`plot()` and `matplot()`), and combining spectra by wavelength.
 - Added new model package (PEcAn.dvmdostem) and initial wrappers for integration of the DVM-DOS-TEM model and tested.
-- new base package `PEcAn.workflow`, for functions used to perform the each major step of the analysis. These were previously scattered in other base packages.
-- added PR review time estimate to PR template 
+- New base package `PEcAn.workflow`, for functions used to perform the each major step of the analysis. These were previously scattered in other base packages.
+- Added PR review time estimate to PR template 
 
 ### Removed
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
@@ -22,6 +27,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Changed
 - Updated model2netcdf.MAAT to use ncdf4::ncvar_def to define netCDF variables
 - Fixed an remote code execution discovered by NCSA security team.
+- Column name changes for newly generated biocromet csvs: `SolarR` is now `solar` and `WS` is now `windspeed`. Previously generated met files with the old names will still work for BioCro 0.9 runs, but will need to be renamed before using them with BioCro 1.0.
+- write.configs.BIOCRO now requires a model version specification so that it can format parameters to match your version of BioCro. Set it in your Bety model record or in the model$revision field of your pecan.xml.
+- When using BioCro 1.0 and no parameter file is given, PEcAn will make an attempt to find default parameters for your genus in the datasets provided by the BioCro package. Note that the default parameter files provided in `models/biocro/inst/extdata/defaults` will *not* work when using BioCro 1.0.
 - Added documentation how to submit a run from the command line
 - Updated models/maat to provide support for latest model code updates
 - PEcAn.DB function `rename.jags.columns` renamed to `rename_jags_columns` to avoid conflict with S3 method naming conventions
