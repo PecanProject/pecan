@@ -11,9 +11,9 @@
 #' days_in_year(2010)  # Not a leap year -- returns 365
 #' days_in_year(2012)  # Leap year -- returns 366
 #' days_in_year(2000:2008)  # Function is vectorized over years
-days_in_year <- function(year) {
+days_in_year <- function(year, leap_year = TRUE) {
   if (any(year %% 1 != 0)) {
     PEcAn.logger::logger.severe("Year must be integer. Given ", year, '.')
   }
-  ifelse(lubridate::leap_year(year), yes = 366, no = 365)
+  ifelse( leap_year & lubridate::leap_year(year), yes = 366, no = 365)
 }
