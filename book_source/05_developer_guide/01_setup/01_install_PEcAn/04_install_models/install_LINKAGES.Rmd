@@ -1,0 +1,19 @@
+#### LINKAGES
+
+##### R Installation 
+```r
+# Public
+echo 'devtools::install_github("araiho/linkages_package")' | R --vanilla
+```
+
+##### FORTRAN VERSION
+
+```r
+#FORTRAN VERSION
+cd
+git clone https://github.com/araiho/Linkages.git
+cd Linkages
+gfortran -o linkages linkages.f
+sudo cp linkages /usr/local/bin/linkages.git
+```
+

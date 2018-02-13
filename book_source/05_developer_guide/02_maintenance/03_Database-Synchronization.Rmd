@@ -1,0 +1,135 @@
+## Database synchronization
+
+The database synchronization consists of 2 parts:
+- Getting the data from the remote servers to your server
+- Sharing your data with everybody else
+
+### How does it work?
+
+Each server that runs the BETY database will have a unique machine_id and a sequence of ID's associated. Whenever the user creates a new row in BETY it will receive an ID in the sequence. This allows us to uniquely identify where a row came from. This is information is crucial for the code that works with the synchronization since we can now copy those rows that have an ID in the sequence specified. If you have not asked for a unique ID your ID will be 99.
+
+The synchronization code itself is split into two parts, loading data with the `load.bety.sh` script and exporting data using `dump.bety.sh`. If you do not plan to share data, you only need to use `load.bety.sh` to update your database.
+
+### Set up
+
+Requests for new machine ID's is currently handled manually. To request a machine ID contact Rob Kooper <kooper@illinois.edu>. In the examples below this ID is referred to as MYSITE.
+
+To setup the database to use this ID you need to call load.bety in 'CREATE' mode
+
+```
+sudo -u postgres {$PECAN}/scripts/load.bety.sh -c -u -m X 
+```
+WARNING: At the momment running CREATE deletes all current records in the database. If you are running from the VM this includes both all runs you have done and all information that the database is prepopulated with (e.g. input and model records). Remote records can be fetched (see below), but local records will be lost (we're working on improving this!)
+
+### Fetch latest data
+
+When logged into the machine you can fetch the latest data using the load.bety.sh script. The script will check what site you want to get the data for and will remove all data in the database associated with that id. It will then reinsert all the data from the remote database.
+
+The script is configured using environment variables.  The following variables are recognized:
+- DATABASE: the database where the script should write the results.  The default is `bety`.
+- OWNER: the owner of the database (if it is to be created).  The default is `bety`.
+- PG_OPT: additional options to be added to psql (default is nothing).
+- MYSITE: the (numerical) ID of your site.  If you have not requested an ID, use 99; this is used for all sites that do not want to share their data (i.e. VM). 99 is in fact the default.
+- REMOTESITE: the ID of the site you want to fetch the data from.  The default is 0 (EBI).
+- CREATE: If 'YES', this indicates that the existing database (`bety`, or the one specified by DATABASE) should be removed. Set to YES (in caps) to remove the database.  **THIS WILL REMOVE ALL DATA** in DATABASE.  The default is NO.
+- KEEPTMP: indicates whether the downloaded file should be preserved.  Set to YES (in caps) to keep downloaded files; the default is NO.
+- USERS: determines if default users should be created.  Set to YES (in caps) to create default users with default passwords.  The default is NO.
+
+All of these variables can be specified as command line arguments, to see the options use -h.
+
+```
+load.bety.sh -h
+./scripts/load.bety.sh [-c YES|NO] [-d database] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]
+ -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO
+ -d database, default is bety
+ -h this help page
+ -m site id, default is 99 (VM)
+ -o owner of the database, default is bety
+ -p additional psql command line options, default is empty
+ -r remote site id, default is 0 (EBI)
+ -t keep temp folder, default is NO
+ -u create carya users, this will create some default users
+
+dump.bety.sh -h
+./scripts/dump.bety.sh [-a YES|NO] [-d database] [-h] [-l 0,1,2,3,4] [-m my siteid] [-o folder] [-p psql options] [-u YES|NO]
+ -a use anonymous user, default is YES
+ -d database, default is bety
+ -h this help page
+ -l level of data that can be dumped, default is 3
+ -m site id, default is 99 (VM)
+ -o output folder where dumped data is written, default is dump
+ -p additional psql command line options, default is -U bety
+ -u should unchecked data be dumped, default is NO
+```
+
+### Sharing data
+
+Sharing your data requires a few steps. First, before entering any data, you will need to request an ID from the PEcAn developers. Simply open an issue at github and we will generate an ID for you.  If possible, add the URL of your data host.
+
+You will now need to synchronize the database again and use your ID.  For example if you are given ID=42 you can use the following command: `MYID=42 REMOTEID=0 ./scripts/load.bety.sh`. This will load the EBI database and set the ID's such that any data you insert will have the right ID.
+
+To share your data you can now run the dump.bey.sh. The script is configured using environment variables, the following variables are recognized:
+- DATABASE: the database where the script should write the results.  The default is `bety`.
+- PG_OPT: additional options to be added to psql (default is nothing).
+- MYSITE: the ID of your site.  If you have not requested an ID, use 99, which is used for all sites that do not want to share their data (i.e. VM).  99 is the default.
+- LEVEL: the minimum access-protection level of the data to be dumped (0=private, 1=restricted, 2=internal collaborators, 3=external collaborators, 4=public).  The default level for exported data is level 3.
+   - note that currently only the traits and yields tables have restrictions on sharing. If you share data, records from other (meta-data) tables will be shared. If you wish to extend the access_level to other tables please [submit a feature request](https://github.com/pecanproject/bety/issues/new).
+- UNCHECKED: specifies whether unchecked traits and yields be dumped.  Set to YES (all caps) to dump unchecked data.  The default is NO.
+- ANONYMOUS: specifies whether all users be anonymized.  Set to YES (all caps) to keep the original users (**INCLUDING PASSWORD**) in the dump file.  The default is NO.
+- OUTPUT: the location of where on disk to write the result file.  The default is `${PWD}/dump`.
+
+NOTE: If you want your dumps to be accessible to other PEcAn servers you need to perform the following additional steps
+
+1. Open pecan/scripts/load.bety.sh
+2. In the DUMPURL section of the code add a new record indicating where you are dumping your data. Below is the example for SITE number 1 (Boston University)
+```
+ elif [ "${REMOTESITE}" == "1" ]; then
+ DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
+```
+3. Check your Apache settings to make sure this location is public
+4. Commit this code and submit a Pull Request
+5. From the URL in the Pull Request, PEcAn administrators will update the machines table, the status map, and notify other users to update their cron jobs (see Automation below)
+
+Plans to simplify this process are in the works
+
+### Automation
+
+Below is an example of a script to synchronize PEcAn database instances across the network.
+
+db.sync.sh
+```
+#!/bin/bash 
+## make sure psql is in PATH
+export PATH=/usr/pgsql-9.3/bin/:$PATH 
+## move to export directory
+cd /fs/data3/sync 
+## Dump Data
+MYSITE=1 /home/dietze/pecan/scripts/dump.bety.sh 
+## Load Data from other sites
+MYSITE=1 REMOTESITE=2 /home/dietze/pecan/scripts/load.bety.sh 
+MYSITE=1 REMOTESITE=5 /home/dietze/pecan/scripts/load.bety.sh 
+MYSITE=1 REMOTESITE=0 /home/dietze/pecan/scripts/load.bety.sh 
+## Timestamp sync log
+echo $(date +%c) >> /home/dietze/db.sync.log
+```
+
+Typically such a script is set up to run as a cron job. Make sure to schedule this job (`crontab -e`) as the user that has database privledges (typically postgres). The example below is a cron table that runs the sync every hour at 12 min after the hour.
+
+```
+MAILTO=user@yourUniversity.edu
+12 * * * * /home/dietze/db.sync.sh
+```
+
+### Network Status Map
+
+https://pecan2.bu.edu/pecan/status.php
+
+Nodes: red = down, yellow = out-of-date schema, green = good
+
+Edges: red = fail, yellow = out-of-date sync, green = good
+
+
+### Tasks
+
+Following is a list of tasks we plan on working on to improve these scripts:
+- [pecanproject/bety#368](https://github.com/PecanProject/bety/issues/368) allow site-specific customization of information and UI elements including title, contacts, logo, color scheme.
