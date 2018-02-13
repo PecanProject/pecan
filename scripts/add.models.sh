@@ -25,6 +25,8 @@ addModelFile "${FQDN}" "Preles"   "PRELES"   ""          "true"           "/bin"
 
 # special case for R models
 addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "git"       "biocro.Rscript" "${R_LIBS_USER}/PEcAn.BIOCRO"
+addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "0.95"      "biocro.Rscript" "${R_LIBS_USER}/PEcAn.BIOCRO"
+addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "1.0"       "biocro.Rscript" "${R_LIBS_USER}/PEcAn.BIOCRO"
 addModelFile "${FQDN}" "LINKAGES" "LINKAGES" "R_version" ""               "${R_LIBS_USER}/linkages"
 
 # to add remote files
