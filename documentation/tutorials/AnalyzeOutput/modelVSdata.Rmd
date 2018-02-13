@@ -95,7 +95,7 @@ When we aligned the data, we got a dataframe with the variables we requested in 
 
 **Fourth**, _plot model predictions vs. observations_ and compare this to a 1:1 line 
 
-```{r}
+```{r,eval=FALSE}
 ## predicted vs observed plot
 plot(aligned_dat$NEE.m, aligned_dat$NEE.o)
 abline(0,1,col="red")  ## intercept=0, slope=1
