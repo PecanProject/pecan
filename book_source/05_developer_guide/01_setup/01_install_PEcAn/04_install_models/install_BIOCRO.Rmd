@@ -1,0 +1,10 @@
+#### BioCro
+
+```r
+# Public
+echo 'devtools::install_github("ebimodeling/biocro")' | R --vanilla
+# Development:
+echo 'devtools::install_github("ebimodeling/biocro-dev")' | R --vanilla
+```
+
+_BioCro Developers:_ request from [@dlebauer on GitHub](https://github.com/dlebauer)

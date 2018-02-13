@@ -1,6 +1,6 @@
-##' @name query.site
-##' @title Given site_id, return site table
-##' @param site_id
+##' Given site_id, return site table
+##'
+##' @param site_id numeric
 ##' @param con : database connection
 ##' @export query.site
 ##'
@@ -15,7 +15,7 @@ query.site <- function(site.id,con){
     con = con
   )
   if (nrow(site)==0) {
-    logger.error("Site not found"); return(NULL)
+    PEcAn.logger::logger.error("Site not found"); return(NULL)
   }
   if (!(is.na(site$lon)) && !(is.na(site$lat))) {
     return(site)

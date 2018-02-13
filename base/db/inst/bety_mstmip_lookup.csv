@@ -71,6 +71,8 @@ time_bnds,days since 1700-01-01 00:00:00 UTC,
 TotalResp,kg C m-2 s-1,TotalResp
 TotalResp,kg C m-2 s-1,Reco_cum
 TotalResp,kg C m-2 s-1,Reco_annual
+TotalResp,kg C m-2 s-1,RECO
+TotalResp,kg C m-2 s-1,RECO_PI
 TotLivBiom,kg C m-2,TotLivBiom
 TotLivBiom,kg C m-2,Biomass_total
 TotSoilCarb,kg C m-2,TotSoilCarb
