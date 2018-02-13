@@ -1,13 +1,12 @@
----
-title: "PEcAn: Testing the Sensitivity Analysis Against Observations"
-author: "Ankur Desai"
-date: "July 21, 2015"
-output: html_document
----
+# PEcAn: Testing the Sensitivity Analysis Against Observations"
+
+### Author: "Ankur Desai"
+
+
 ##Flux Measurements and Modeling Course, *Tutorial Part 2*
 This tutorial assumes you have successfully completed the Demo01, Demo02 and the modelVSdata tutorial.
 
-###Introduction
+## Introduction
 Now that you have successfully run PEcAn through the web interface and have learned how to do a simple comparison of flux tower observations to model output, let’s start looking at how data assimilation and parameter estimation would work with an ecosystem model.
 
 Before we start a full data assimilation exercise, let’s try something simple – single parameter selection by hand.
@@ -18,7 +17,7 @@ In Demo02, you have ran a sensitivity analysis of SIPNET model runs at Niwot Rid
 
 Let’s try to compare Ameriflux NEE to SIPNET NEE across all these runs to make a plot of parameter vs. goodness-of-fit. We’ll start with root mean square error (**RMSE**), but then discuss some other tests, too.
 
-####A. Read in settings object from a run xml
+#### A. Read in settings object from a run xml
 
 Open up a connection to the bety database and create a settings object from your xml, just like in the modelVSdata tutorial. 
 ```{r, eval = FALSE}
