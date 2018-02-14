@@ -1,7 +1,4 @@
----
-title: 'Demo 02: Sensitivity and Uncertainty Analysis'
-output: html_document
----
+# Demo 02: Sensitivity and Uncertainty Analysis
 
 In Demo 2 we will be looking at how PEcAn can use information about parameter uncertainty to perform three automated analyses:
 
@@ -9,7 +6,7 @@ In Demo 2 we will be looking at how PEcAn can use information about parameter un
 *	**Sensitivity Analysis**: Repeats numerous model runs to assess how changes in model parameters will affect model outputs. **Allows us to identify which parameters the model is most sensitive to.**
 *	**Uncertainty Analysis**: Combines information about model sensitivity with information about parameter uncertainty to determine the contribution of each model parameter to the uncertainty in model outputs. **Allow us to identify which parameters are driving model uncertainty.**
 
-# Run Specification
+## Run Specification
 
 1. Return to the main menu for the PEcAn web interface: **URL > Run Models**
 
@@ -25,7 +22,7 @@ In Demo 2 we will be looking at how PEcAn can use information about parameter un
 
 **Click Next**
 
-# Additional Outputs:
+### Additional Outputs:
 
 The PEcAn workflow will take considerably longer to complete since we have just asked for over a hundred model runs. Once the runs are complete you will return to the output visualization page were there will be a few new outputs to explore, as well as outputs that were present earlier that we’ll explore in greater details:
 
@@ -67,7 +64,7 @@ This menu shows the contents of /pft. There is a wide array of outputs available
  + A parameter can be important because it is highly sensitive, because it is highly uncertain, or both.  **Identify parameters in your output that meet each of these criteria.** Additionally, **identify parameters that are highly uncertain but unimportant (due to low sensitivity) and those that are highly sensitive but unimportant (due to low uncertainty)**.
  + Parameter constraints could come from further literature synthesis, from direct measurement of the trait, or from data assimilation. **Choose the parameter that you think provides the most efficient means of reducing model uncertainty and propose how you might best reduce uncertainty in this process**. In making this choice remember that not all processes in models can be directly observed, and that the cost-per-sample for different measurements can vary tremendously (and thus the parameter you measure next is not always the one contributing the most to model variability). Also consider the role of parameter uncertainty versus model sensitivity in justifying your choice of what parameters to constrain.
 
-## PEcAn Files:
+### PEcAn Files:
 
 This menu shows the contents of the root workflow folder that are not in one of the folders indicated above. It mostly contains log files from the PEcAn workflow that are useful if the workflow generates an error, and as metadata & provenance (a detailed record of how data was generated).
 
@@ -82,7 +79,7 @@ This menu shows the contents of the root workflow folder that are not in one of 
  + ```ensemble.analysis.[RunID].[Variable].[StarYear].[EndYear].pdf``` contains the ensemble prediction as both a histogram and a boxplot.
  + ```ensemble.ts.[RunID].[Variable].[StartYear].[EndYear].pdf``` contains a time-series plot of the ensemble mean, median, and 95% CI
 
-#	Global Sensitivity: Shiny
+##	Global Sensitivity: Shiny
 
 **Navigate to URL/shiny/global-sensitivity.**
  
@@ -94,7 +91,7 @@ This app uses the output from the ENSEMBLE runs to perform a global Monte Carlo 
 
 In all of these analyses, the app also fits a linear regression to these scatterplots and reports a number of summary statistics. Among these, the slope is an indicator of **global sensitivity** and the R2 is an indicator of the contribution to **global uncertainty**
 
-# Next Steps
+### Next Steps
 
 The next set of tutorials will focus on the process of data assimilation and parameter estimation. The next two steps are in “.Rmd” files which can be viewed online. 
 
