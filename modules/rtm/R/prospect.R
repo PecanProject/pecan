@@ -10,16 +10,12 @@
 #'     * Cw: Leaf water content (cm) (>0)
 #'     * Cm: Leaf dry matter content (ug/cm2) (>0)
 #' @param version PROSPECT version: 4, 5, or '5B'
-#' @param include.wl Whether or not to append wavelengths to output matrix.  
-#' Included to provide some backward compatibility and benchmarking, but will 
-#' soon be deprecated.
-#' @return Matrix (2101 x 3) of simulated reflectance (column 1, 'R'), 
-#'      transmittance (column 2, 'T'), and wavelength (column 3, 'wl') values 
-#'      from 400:2500 nm
+#' @return Object of class `spectra` (see [spectra()]) with simulated 
+#' reflectance (column 1) and transmittance (column 2) from 400 to 2500 nm
 #' @export
 #' @useDynLib PEcAnRTM
 
-prospect <- function(param, version, include.wl = FALSE) {
+prospect <- function(param, version) {
   version  <- toupper(as.character(version))
   plist    <- as.list(param)
   plist$RT <- matrix(0, 2101, 2)
@@ -48,13 +44,9 @@ prospect <- function(param, version, include.wl = FALSE) {
   }
   
   outlist <- do.call(.Fortran, inlist)
-  if (include.wl) {
-    RTL <- cbind(outlist[[length(outlist)]], 400:2500)
-    colnames(RTL) <- c("R", "T", "wl")
-    return(RTL)
-  } else {
-    return(outlist[[length(outlist)]])
-  }
+  out <- spectra(outlist[[length(outlist)]], 400:2500)
+  colnames(out) <- c("reflectance", "transmittance")
+  out
 } # prospect
 
 #' Shortcut lists for PROSPECT parameter names
