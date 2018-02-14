@@ -65,7 +65,7 @@ pi        | $C_i$      | CO2 concentration
 
 To begin with we'll load up an example A-Ci and A-Q curve that was collected during the 2012 edition of the [Flux Course](http://www.fluxcourse.org/) at Niwot Ridge. The exact syntax below may be a bit confusing to those unaccustomed to R, but the essence is that the `filenames` line is looking up where the example data is stored in the PEcAn.photosynthesis package and the `dat` line is loading up two files (once A-Ci, the other A-Q) and concatanating them together.
 
-```{r}
+```{r,eval=FALSE}
 library(PEcAn.photosynthesis)
 
 ### Load built in data
@@ -80,7 +80,7 @@ plot(dat$PARi[!aci],dat$Photo[!aci],main="AQ")
 
 In PEcAn we've written a wrapper function, $fitA$, around the statistical model discussed above, which has a number of other bells and whistles discussed in the [PEcAn Photosynthesis Vignette](https://github.com/PecanProject/pecan/blob/master/modules/photosynthesis/vignettes/ResponseCurves.Rmd). For today we'll just use the most basic version, which takes as arguments the data and the number of MCMC iterations we want to run.
 
-```{r}
+```{r,eval=FALSE}
 fit <- fitA(dat,model=list(n.iter=10000))
 ```
 
@@ -122,7 +122,7 @@ A really important aspect of Bayesian inference is that the output is the **join
 
 The model we're fitting has six free parameters, and therefore the output matrix has 6 columns, of which we've only looked at two. Unfortunately it is impossible to visualize a 6 dimensional parameter space on a two dimensional screen, so a very common practice (for models with a small to medium number of parameters) is to look at all pairwise scatterplots. If parameters are uncorrelated we will typically see oval shaped clouds that are oriented in the same directions as the axes. For parameters with linear correlations those clouds will be along a diagonal. For parameters with nonlinear trade-offs the shapes of the parameter clouds can be more complex, such as the banana-shaped or triangular. For the FvCB model we see very few parameters that are uncorrelated or have simple linear correlations, a fact that we should keep in mind when interpreting individual parameters.
 
-```{r}
+```{r,eval=FALSE}
 pairs(params,pch=".")
 ```
 
