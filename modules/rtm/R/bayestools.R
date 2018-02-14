@@ -25,8 +25,6 @@ rtm_loglike <- function(nparams, model, observed, lag.max = NULL, verbose = TRUE
                 message("Mean error: ", mean(err))
                 message("Sum of squares: ", ss)
                 message("Sigma2 = ", sigma2)
-                message("n_eff = ", n_eff)
-                message("sigma2eff = ", sigma2eff)
                 message("LL = ", ll)
             }
             return(fail_ll)
