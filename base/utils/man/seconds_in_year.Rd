@@ -4,7 +4,7 @@
 \alias{seconds_in_year}
 \title{Number of seconds in a given year}
 \usage{
-seconds_in_year(year, leap_year = TRUE)
+seconds_in_year(year, ...)
 }
 \arguments{
 \item{year}{Numeric year (can be a vector)}
