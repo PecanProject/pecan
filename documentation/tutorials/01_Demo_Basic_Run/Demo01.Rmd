@@ -1,4 +1,4 @@
-## PEcAn Hands-On Demo 01: Basic Run
+# PEcAn Hands-On Demo 01: Basic Run
 
 ```{r setup, echo = FALSE}
 library(knitr)
@@ -6,7 +6,7 @@ opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
                fig.align = 'center', out.width = '100%')
 ```
 
-## Objective
+### Objective
 
 We will begin by exploring a set of web-based tools that are designed to run single-site model runs. A lot of the detail about what’s going on under the hood, and all the outputs that PEcAn produces, are left to Demo 2. This demo will also demonstrate how to use PEcAn outputs in additional analyses outside of PEcAn.
 
