@@ -26,6 +26,7 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 265 days. Default = TRUE.
 ##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA,
                           lon = NA, overwrite = FALSE, verbose = FALSE, leap_year = TRUE, ...) {
@@ -55,14 +56,13 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   dl <- c(0, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367)
   month <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
   mon_num <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
-  day2mo <- function(year, day, leap_year_agnostic) {
-    if(leap_year == FALSE){
-      mo        <- rep(NA, length(day))
+  day2mo <- function(year, day, leap_year) {
+    mo        <- rep(NA, length(day))
+    if ( !leap_year) {
       mo <- findInterval(day, dm)
       return(mo)
-    }else{
+    } else {
       leap      <- lubridate::leap_year(year)
-      mo        <- rep(NA, length(day))
       mo[leap]  <- findInterval(day[leap], dl)
       mo[!leap] <- findInterval(day[!leap], dm)
       return(mo)

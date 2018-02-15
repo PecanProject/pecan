@@ -3,6 +3,7 @@
 #' Calculate number of days in a year based on whether it is a leap year or not.
 #'
 #' @param year Numeric year (can be a vector)
+#' @param leap_year Default = TRUE. If set to FALSE will always return 365
 #'
 #' @author Alexey Shiklomanov
 #' @return integer vector, all either 365 or 366
