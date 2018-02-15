@@ -174,7 +174,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       asec[rng] <- asec[rng] - asec[rng[1]]
       hr[rng]   <- (asec[rng] - (dtmp - 1) * day_secs) / day_secs * 24
     }
-    mo <- day2mo(yr, doy)
+    mo <- day2mo(yr, doy, leap_year)
     if (length(yr) < length(sec)) {
       rng <- (length(yr) + 1):length(sec)
       if (!all(rng >= 0)) {
