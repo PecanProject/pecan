@@ -153,6 +153,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
 
 ##' @export
 runModule.run.write.configs <- function(settings, overwrite = TRUE) {
+  .Deprecated("PEcAn.workflow::runModule.run.write.configs")
   if (PEcAn.settings::is.MultiSettings(settings)) {
     if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
       PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
