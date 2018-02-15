@@ -3,7 +3,7 @@ context("checking call_biocro wrappers")
 
 loglevel <- PEcAn.logger::logger.getLevel()
 PEcAn.logger::logger.setLevel("OFF")
-teardown(PEcAn.logger::logger.setLevel(loglevel))
+testthat::teardown(PEcAn.logger::logger.setLevel(loglevel))
 
 WetDat <- read.csv("data/US-Bo1.2004.csv", nrows=7*24)
 config <- list(pft = list(
