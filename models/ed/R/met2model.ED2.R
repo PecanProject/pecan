@@ -147,7 +147,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     ## build time variables (year, month, day of year)
     skip <- FALSE
-    nyr <- floor(udunits2::ud.convert(length(sec) * dt, "seconds", "years"))
+    nyr <- floor(length(sec) * dt / 86400 / 365)
     yr   <- NULL
     doy  <- NULL
     hr   <- NULL
