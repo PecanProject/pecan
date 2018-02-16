@@ -54,7 +54,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   model <- settings$model$type
   scipen <- getOption("scipen")
   options(scipen = 12)
-  get.parameter.samples(settings, posterior.files, ens.sample.method)
+  PEcAn.utils::get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
   
   ## remove previous runs.txt
@@ -63,7 +63,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     unlink(file.path(settings$rundir, "runs.txt"))
   }
   
-  load.modelpkg(model)
+  PEcAn.utils::load.modelpkg(model)
   
   ## Check for model-specific write configs
   
@@ -97,7 +97,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
       assign("cnt", cnt, .GlobalEnv)
     }
     PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
-    sa.runs <- write.sa.configs(defaults = settings$pfts, 
+    sa.runs <- PEcAn.utils::write.sa.configs(defaults = settings$pfts,
                                 quantile.samples = sa.samples, 
                                 settings = settings, 
                                 model = model,
@@ -108,7 +108,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
     
     # Save sensitivity analysis info
-    fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata", 
+    fname <- PEcAn.utils::sensitivity.filename(settings, "sensitivity.samples", "Rdata",
                                   all.var.yr = TRUE, pft = NULL)
     save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file = fname)
     
@@ -116,7 +116,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   
   ### Write ENSEMBLE
   if ("ensemble" %in% names(settings)) {
-    ens.runs <- write.ensemble.configs(defaults = settings$pfts, 
+    ens.runs <- PEcAn.utils::write.ensemble.configs(defaults = settings$pfts,
                                        ensemble.samples = ensemble.samples, 
                                        settings = settings,
                                        model = model, 
@@ -128,7 +128,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     ens.samples <- ensemble.samples  # rename just for consistency
     
     # Save ensemble analysis info
-    fname <- ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr = TRUE)
+    fname <- PEcAn.utils::ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr = TRUE)
     save(ens.run.ids, ens.ensemble.id, ens.samples, pft.names, trait.names, file = fname)
   } else {
     PEcAn.logger::logger.info("not writing config files for ensemble, settings are NULL")
