@@ -1,0 +1,39 @@
+### Selecting PFTs
+
+#### Using existing PFTs
+
+PEcAn does not automatically know what vegetations types are present at your study site so you need to select the PFT.
+
+Some models, such as ED2 and LINKAGES, support competition among multiple PFTs and thus you are encouraged to highlight multiple choices. Other models, such as SIPNET and DALEC, only support one PFT at a site.
+
+#### Creating new PFTs
+
+To modify or add a new Plant Functional Type (PFT), or to change a PFT's priors, navigate 
+on the grey menu bar to Data > PFTs 
+
+1. To add a new pft, click “new PFT” at the top and enter a name and description. (hint: 
+we're trying to name PFTs based on model.biome.pft, ED2 is the default model if one 
+isn't specified) 
+
+2. To add new species to a PFT click on [+] View Related Species and type the species, 
+genus, or family you are looking for into the Search box. Click on the + to add. 
+
+3. To remove a species from a PFT, click on [+] View Related Species and click on the X 
+of the species you want to remove from the PFT. 
+
+4. To remove a prior, click [-] View Related Prior and click on the X of the variable who's 
+prior you want to remove. This will cause the parameter to be excluded from all 
+analyses (meta-analysis, sensitivity analysis, etc) and revert to its default value. 
+
+5. To add a prior, choose one from the white box of priors on the right to choose. 
+
+6. To view the specification of a prior, or to add a new prior, click BETY-DB > Priors and 
+enter the information on the variable, distribution name, distribution parameters, etc. N 
+is the sample size underlying the prior specification (0 is ok for uninformative priors). 
+
+7. You can also got to Data > Variables in order to use the search function to find an 
+existing variable (or create a new one). Please try not to create new variables 
+unnecessarily (e.g. changes of variable name or units to what your model uses is handled 
+internally, so you want to find the trait with the correct MEANING).
+
+Additional information on adding PFTs, Species, and Priors can be found [here](../../developers_guide/Adding-an-Ecosystem-Model.md#pfts-plant-functional-types)
