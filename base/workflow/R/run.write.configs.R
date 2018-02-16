@@ -1,21 +1,27 @@
-##' Main driver function to call the ecosystem model specific (e.g. ED, SiPNET) 
-##' run and configuration file scripts 
-##' 
-##' @name run.write.configs
-##' @title Run model specific write configuration functions
-##' @param model the ecosystem model to generate the configuration files for
-##' @param write should the runs be written to the database
-##' @param ens.sample.method how to sample the ensemble members('halton' sequence or 'uniform' random)
-##' @param posterior.files Filenames for posteriors for drawing samples for ensemble and sensitivity
-##'    analysis (e.g. post.distns.Rdata, or prior.distns.Rdata). Defaults to NA, in which case the 
-##'    most recent posterior or prior (in that order) for the workflow is used. Should be a vector, 
-##'    with one entry for each PFT. File name only; PFT outdirs will be appended (this forces use of only
-##'    files within this workflow, to avoid confusion).
-##'
-##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
-##' @export
-##'
-##' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
+#' Write model-specific run scripts and configuration files
+#'
+#' Generates run scripts and configuration files for all analyses specified
+#' in the provided settings. Most of the heavy lifting is done by the
+#' \code{write.config.*} function for your specific ecosystem model
+#' (e.g. write.config.ED2, write.config.SIPNET).
+#'
+#' @param settings a PEcAn settings list
+#' @param write should the runs be written to the database?
+#' @param ens.sample.method how to sample the ensemble members('halton' sequence or 'uniform' random)
+#' @param posterior.files Filenames for posteriors for drawing samples for ensemble and sensitivity
+#'    analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)
+#' @param overwrite logical: Replace output files that already exist?
+#'
+#' @details The default value for \code{posterior.files} is NA, in which case the
+#'    most recent posterior or prior (in that order) for the workflow is used.
+#'    When specified, \code{posterior.files} should be a vector of filenames with one entry for each PFT.
+#'    Specify filenames with no path; PFT outdirs will be appended. This forces use of only
+#'    files within this workflow, to avoid confusion.
+#'
+#' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
+#' @export
+#'
+#' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
 run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
