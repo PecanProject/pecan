@@ -31,14 +31,21 @@ else
 fi
 
 #set USER 
-USER=${TRAVIS_REPO_SLUG%/*}
+GH_USER=${TRAVIS_REPO_SLUG%/*}
 
 # configure your name and email if you have not done so
 git config --global user.email "pecanproj@gmail.com"
 git config --global user.name "TRAVIS-DOC-BUILD"
 
-# clone documentation git repo
-git clone https://${GITHUB_PAT}@github.com/${USER}/pecan-documentation.git book_hosted
+# Don't deploy if documentation git repo does not exist
+GH_STATUS=$(curl -s -w %{http_code} -I https://github.com/${GH_USER}/pecan-documentation -o /dev/null)
+if [[ $GH_STATUS != 200 ]]; then
+  echo "Can't find a repository at https://github.com/${GH_USER}/pecan-documentation"
+  echo "Will not render Book."
+  exit 0
+fi
+
+git clone https://${GITHUB_PAT}@github.com/${GH_USER}/pecan-documentation.git book_hosted
 cd book_hosted
 
 ## Check if branch named directory exists 

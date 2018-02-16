@@ -6,5 +6,8 @@
 #' @docType package
 #' @name PEcAn.DB
 #' @importFrom magrittr %>%
-#' @importFrom rlang .data
+#' @importFrom rlang .data !! !!!
 NULL
+
+#' export
+magrittr::`%>%`
