@@ -9,5 +9,5 @@
 #' @importFrom rlang .data !! !!!
 NULL
 
-#' export
+#' @export
 magrittr::`%>%`
