@@ -4,7 +4,8 @@
 \name{PEcAn.DB}
 \alias{PEcAn.DB}
 \alias{PEcAn.DB-package}
-\title{Database functions for PEcAn, the Predictive Ecosyten Analyzer}
+\title{Database functions for PEcAn, the Predictive Ecosystem Analyzer}
 \description{
-longer message here
+This package provides an interface between PEcAn and the BETY database.
+For usage examples, please see \code{vignette("betydb_access")}
 }
