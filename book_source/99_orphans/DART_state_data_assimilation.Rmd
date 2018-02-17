@@ -1,0 +1,118 @@
+## Data assimilation with DART
+
+In addition to the state assimilation routines found in the assim.sequential module, another approach for state data assimilation in PEcAn is through the DART workflow created by the DARES group in NCAR.
+
+This section gives a straight-forward explanation how to implement DART, focused on the technical aspects of the implementation. If there are any questions, feel free to send \@Viskari an email (`tt.viskari@gmail.com`) or contacting DART support as they are quite awesome in helping people with problems. Also, if there are any suggestions on how to improve the wiki, please let me know.
+
+**Running with current folders in PEcAn**
+
+Currently the DART folders in PEcAn are that you can simply copy the structure there over a downloaded DART workflow and it should replace/add relevant files and folders. The most important step after that is to check and change the run paths in the following files:
+Path_name files in the work folders
+T_ED2IN file, as it indicates where the run results be written.
+advance_model.csh, as it indicates where to copy files from/to.
+
+Second thing is setting the state vector size. This is explained in more detail below, but essentially this is governed by the variable model_size in model_mod.f90. In addition to this, it should be changed in utils/F2R.f90 and R2F.f90 programs, which are responsible for reading and writing state variable information for the different ensembles. This also will be expanded below. Finally, the new state vector size should be updated for any other executable that runs it.
+
+Third thing needed are the initial condition and observation sequence files. They will always follow the same format and are explained in more detail below.
+
+Finally the ensemble size, which is the easiest to change. In the work subfolder, there is a file named input.nml. Simply changing the ensemble size there will set it for the run itself. Also remember that initial conditions file should have the equal amount of state vectors as there are ensemble members.
+
+**Adjusting the workflow**
+
+The central file for the actual workflow is advance_model.csh. It is a script DART calls to determine how the state vector changes between the two observation times and is essentially the only file one needs to change when changing state models or observations operators. The file itself should be commented to give a good idea of the flow, but beneath is a crude order of events.
+1. Create a temporary folder to run the model in and copy/link required files in to it.
+2. Read in the state vector values and times from DART. Here it is important to note that the values will be in binary format, which need to be read in by a Fortran program. In my system, there is a program called F2R which reads in the binary values and writes out in ascii form the state vector values as well as which ED2 history files it needs to copy based on the time stamps.
+3. Run the observation operator, which writes the state vector state in to the history files and adjusts them if necessary.
+4. Run the program.
+5. Read the new state vector values from output files.
+6. Convert the state vector values to the binary. In my system, this is done by the program R2F.
+
+**Initial conditions file**
+
+The initial conditions file, commonly named filter_ics although you can set it to something else in input.nml, is relatively simple in structure. It has one sequence repeating over the number of ensemble members.
+First line contains two times: Seconds and days. Just use one of them in this situation, but it has to match the starting time given in input.nml.
+After that each line should contain a value from the state vector in the order you want to treat them.
+R functions filter_ics.R and B_filter_ics.R in the R folder give good examples of how to create these.
+
+**Observations files**
+
+The file which contains the observations is commonly known as obs_seq.out, although again the name of the file can be changed in input.nml. The structure of the file is relatively straight-forward and the R function ObsSeq.R in the R subfolder has the write structure for this. Instead of writing it out here, I want to focus on a few really important details in this file.
+Each observations will have a time, a value, an uncertainty, a location and a kind. The first four are self-explanatory, but the kind is really important, but also unfortunately really easy to misunderstand. In this file, the kind does not refer to a unit or a type of observation, but which member of the state vector is this observation of. So if the kind was, for example, 5, it would mean that it was of the fifth member of the state vector. However, if the kind value is positive, the system assumes that there is some sort of an operator change in comparing the observation and state vector value which is specified in a subprogram in model_mod.f90.
+
+So for an direct identity comparison between the observation and the state vector value, the kind needs to be negative number of the state vector component. Thus, again if the observation is of the fifth state vector value, the kind should be set as -5. Thus it is recommendable that the state vector values have already been altered to be comparable with the observations.
+
+As for location, there are many ways to set in DART and the method needs to be chosen when compiling the code by giving the program which of the location mods it is to use. In our examples we used a 1-dimensional location vector with scaled values between 0 and 1. For future it makes sense to switch to a 2 dimensional long- and lat-scale, but for the time being the location does not impact the system a lot. The main impact will be if the covariances will be localized, as that will be decided on their locations.
+
+
+**State variable vector in DART**
+
+Creating/adjusting a state variable vector in DART is relatively straight-forward. Below are listed the steps to specify a state variable vector in DART.
+
+I. For each specific model, there should be an own folder within the DART root models folder. In this folder there is a model_mod.f90, which contains the model specific subroutines necessary for a DART run. 
+
+At the beginning of this file there should be the following line:
+
+integer, parameter :: model_size = [number]
+
+The number here should be the number of variables in the vector. So for example if there were three state variables, then the line should look like this:
+
+integer, parameter :: model_size = 3
+
+This number should also be changed to match with any of the other executables called during the run as indicated by the list above.
+
+
+II. In the DART root, there should be a folder named obs_kind, which contains a file called DEFAULT_obs_kind_mod.F90. It is important to note that all changes should be done to this file instead of obs_kind_mod.f90, as during compilation DART creates obs_kind_mod.f90 from DEFAULT_obs_kind_mod.F90.
+This program file contains all the defined observation types used by DART and numbers them for easier reference later. Different types are classified according to observation instrument or relevant observation phenomenon. Adding a new type only requires finding an unused number and starting a new identifying line with the following:
+
+integer, parameter, public :: &
+	KIND_...
+
+Note that the observation kind should always be easy to understand, so avoid using unnecessary acronyms.  For example, when adding an observation type for Leaf Area Index, it would look like below:
+
+integer, parameter, public :: &
+	KIND_LEAF_AREA_INDEX = [number]
+
+
+III. In the DART root, there should be a folder named obs_def, which contains several files starting with obs_def_. There files contain the different available observation kinds classified either according to observation instrument or observable system. Each file starts with the line
+
+! BEGIN DART PREPROCESS KIND LIST
+
+And end with line
+
+! END DART PREPROCESS KIND LIST
+
+The lines between these two should contain
+
+! The desired observation reference, the observation type, COMMON_CODE.
+
+For example, for observations relating to phenology, I have created a file called obs_def_phen_mod.f90. In this file I define the Leaf Area Index observations in the following way.
+
+! BEGIN DART PREPROCESS KIND LIST
+! LAI, TYPE_LEAF_AREA_INDEX, COMMON_CODE
+! END DART PREPROCESS KIND LIST
+
+Note that the exclamation marks are necessary for the file.
+
+
+IV. In the model specific folder, in the work subfolder there is a namelist file input.nml. This contains all the run specific information for DART. In it, there is a subtitle &preprocess, under which there is a line
+
+input_files = ‘….’
+
+This input_files sections must be set to refer to the obs_def file created in step III. The input files can contain references to multiple obs_def files if necessary.
+
+As an example, the reference to the obs_def_phen_mod.f90 would look like 
+input_files = ‘../../../obs_def/obs_def_phen_mod.f90’
+
+V. Finally, as an optional step, the different values in state vector can be typed. In model_mod, referred to in step I, there is a subroutine get_state_meta_data. In it, there is an input variable index_in, which refers to the vector component. So for instance for the second component of the vector index_in would be 2. If this is done, the variable kind has to be also included at the beginning of the model_mod.f90 file, at the section which begins 
+
+use obs_kind_mod, only ::
+
+The location of the variable can be set, but for a 0-dimensional model we are discussing here, this is not necessary.
+
+Here, though, it is possible to set the variable types by including the following line
+
+if(index_in .eq. [number]) var_type = [One of the variable kinds set in step II]
+
+VI. If the length of the state vector is changed, it is important that the script ran with DART produces a vector of that length. Change appropriately if necessary.
+
+After these steps, DART should be able to run with the state vector of interest.

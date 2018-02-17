@@ -4,9 +4,12 @@
 \alias{split_inputs.SIPNET}
 \title{split_inputs.SIPNET}
 \usage{
-split_inputs.SIPNET(settings, start.time, stop.time, inputs)
+split_inputs.SIPNET(settings, start.time, stop.time, inputs,
+  overwrite = FALSE, outpath = NULL)
 }
 \arguments{
+\item{outpath}{if specified, write output to a new directory. Default NULL writes back to the directory being read}
+
 \item{ens}{ensemble number. default = 1}
 }
 \value{
