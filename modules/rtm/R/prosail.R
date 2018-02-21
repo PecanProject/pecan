@@ -26,18 +26,18 @@
 #'      * bi-directional (rsot)
 #' @export
 pro4sail <- function(param) {
-    plist <- as.list(param)
-    nw    <- 2101
-    plist$rddt <- numeric(nw)
-    plist$rsdt <- numeric(nw)
-    plist$rdot <- numeric(nw)
-    plist$rsot <- numeric(nw)
-    inlist     <- c("pro4sail", plist)
-    outlist <- do.call(.Fortran, inlist)
-    lo      <- length(outlist)
-    refl    <- do.call(cbind, outlist[(lo - 3):lo])
-    reflspec <- spectra(refl, 400:2500)
-    colnames(reflspec) <- c("bi-hemispherical", "hemispherical_directional",
-                            "directional_hemispherical", "bi-directional")
-    reflspec
+  plist <- as.list(param)
+  nw    <- 2101
+  plist$rddt <- numeric(nw)
+  plist$rsdt <- numeric(nw)
+  plist$rdot <- numeric(nw)
+  plist$rsot <- numeric(nw)
+  inlist     <- c("pro4sail", plist)
+  outlist <- do.call(.Fortran, inlist)
+  lo      <- length(outlist)
+  refl    <- do.call(cbind, outlist[(lo - 3):lo])
+  reflspec <- spectra(refl, 400:2500)
+  colnames(reflspec) <- c("bi-hemispherical", "hemispherical_directional",
+                          "directional_hemispherical", "bi-directional")
+  reflspec
 } # pro4sail
