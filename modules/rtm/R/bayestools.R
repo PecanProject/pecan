@@ -25,8 +25,6 @@ rtm_loglike <- function(nparams, model, observed, lag.max = NULL, verbose = TRUE
                 message("Mean error: ", mean(err))
                 message("Sum of squares: ", ss)
                 message("Sigma2 = ", sigma2)
-                message("n_eff = ", n_eff)
-                message("sigma2eff = ", sigma2eff)
                 message("LL = ", ll)
             }
             return(fail_ll)
@@ -68,14 +66,16 @@ bt_check_convergence <- function(samples, threshold = 1.1, use_CI = TRUE, use_mp
 #' @export
 prospect_bt_prior <- function(version, custom_prior = list()) {
     col_names <- c('param_name', 'distn', 'parama', 'paramb', 'lower')
-    prior_default_list <- list(N = list('N', 'norm', 1.4, 0.8, 1),
-                               Cab = list('Cab', 'lnorm', log(40), 0.9, 0),
-                               Car = list('Car', 'lnorm', log(10), 1.1, 0),
-                               Cbrown = list('Cbrown', 'lnorm', log(1), 1.1, 0),
-                               Cw = list('Cw', 'lnorm', log(0.01), 1, 0),
-                               Cm = list('Cm', 'lnorm', log(0.009), 1, 0),
-                               residual = list('residual', 'lnorm', log(0.001), 2.5, 0)
-                               )
+    prior_default_list <- list(
+        N = list('N', 'norm', 1.4, 0.8, 1),
+        Cab = list('Cab', 'lnorm', log(40), 0.9, 0),
+        Car = list('Car', 'lnorm', log(10), 1.1, 0),
+        Canth = list('Canth', 'lnorm', log(10), 1.1, 0),
+        Cbrown = list('Cbrown', 'lnorm', log(1), 1.1, 0),
+        Cw = list('Cw', 'lnorm', log(0.01), 1, 0),
+        Cm = list('Cm', 'lnorm', log(0.009), 1, 0),
+        residual = list('residual', 'lnorm', log(0.001), 2.5, 0)
+    )
     prior_list <- modifyList(prior_default_list, custom_prior)
     prior_df_all <- do.call(rbind.data.frame, prior_list)
     colnames(prior_df_all) <- col_names

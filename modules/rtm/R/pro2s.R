@@ -1,7 +1,15 @@
 #' Coupled PROSPECT-Two-stream model
 #' 
-#' @param param Model parameters, in the following order: N, Cab, (Car, Cbrown), Cw, Cm, solar zenith angle, LAI, soil_moisture
+#' @param param Model parameters, in the following order: N, Cab, (Car, 
+#' Cbrown), Cw, Cm, solar zenith angle, LAI, soil_moisture
 #' @param prospect.version Version of PROSPECT to use (4, 5, or '5B'; default=5)
+#' @return Spectra matrix (see [spectra()]) for wavelengths 400 to 2500nm containing the following columns:
+#'    * `alpha.c` -- Direct ("collimated") reflectance
+#'    * `alpha.i` -- Diffuse ("isotropic") reflectance
+#'    * `Tc` -- Direct transmittance to background
+#'    * `Ti` -- Diffuse reflectance to background
+#'    * `Ac` -- Direct absorbance by canopy
+#'    * `Ai` -- Diffuse absorbance by canopy
 #' @export
 pro2s <- function(param, prospect.version = 5) {
   prospect.version <- toupper(as.character(prospect.version))
@@ -35,5 +43,5 @@ pro2s <- function(param, prospect.version = 5) {
   inlist   <- c(modname, plist)
   outlist  <- do.call(.Fortran, inlist)
   out.mat  <- do.call(cbind, outlist[out.names])
-  return(out.mat)
+  spectra(out.mat, 400:2500)
 } # pro2s
