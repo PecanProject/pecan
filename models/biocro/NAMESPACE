@@ -3,6 +3,7 @@
 export(cf2biocro)
 export(convert.samples.BIOCRO)
 export(get.model.output.BIOCRO)
+export(get_biocro_defaults)
 export(met2model.BIOCRO)
 export(model2netcdf.BIOCRO)
 export(read.biocro.config)
