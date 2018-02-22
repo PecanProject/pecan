@@ -7,19 +7,22 @@
 \alias{resample.spectra}
 \title{Resample vector, matrix, or spectra}
 \usage{
-resample(...)
+resample(values, ...)
 
-\method{resample}{default}(values, from, to, ...)
+\method{resample}{default}(values, from, to, method = "fmm", ...)
 
 \method{resample}{matrix}(values, from, to, ...)
 
-\method{resample}{spectra}(spectra, to, ...)
+\method{resample}{spectra}(values, to, ...)
 }
 \arguments{
-\item{...}{Additional arguments to \code{\link[stats:splinefun]{stats::splinefun()}}}
+\item{values}{Vector or matrix of values, or object of class \code{\link[=spectra]{spectra()}}.
+Length of vector, or \code{nrow} of matrix must match length of \code{from}. For
+\code{spectra}, \code{from} argument is omitted because it is taken from
+\code{wavelengths}.}
 
-\item{values}{Vector or matrix of values. Length of vector, or \code{nrow} of
-matrix must match length of \code{from}.}
+\item{...}{Additional arguments to \code{\link[stats:splinefun]{stats::splinefun()}} or
+\code{\link[stats:approxfun]{stats::approxfun()}}}
 
 \item{from}{X values for interpolation (for \code{spectra} objects, this is
 assumed to be the \code{wavelengths} attribute.)}
@@ -27,14 +30,15 @@ assumed to be the \code{wavelengths} attribute.)}
 \item{to}{Y values onto which to interpolate. For \code{spectra} objects, this
 should be new wavelengths.}
 
-\item{spectra}{An object of class \code{spectra}. See \code{\link[=spectra]{spectra()}} for more
-details.}
+\item{method}{One of the methods for \code{\link[stats:splinefun]{stats::splinefun()}} (for polynomial
+and periodic splines) or \code{\link[stats:approxfun]{stats::approxfun()}} (for constant or linear).
+Default is \code{"fmm"} (same as splinefun).}
 }
 \value{
 Object of the same class as \code{values}, resampled to the \code{to} values.
 }
 \description{
-Conveinent wrapper around base R's \code{splinefun}. See \code{\link[stats:splinefun]{stats::splinefun()}}
-documentation for information on different spline methods and additional
-arguments.
+Convenient wrapper around base R's \code{splinefun} and \code{approxfun}. See
+\code{\link[stats:splinefun]{stats::splinefun()}} and \code{\link[stats:approxfun]{stats::approxfun()}} documentation for information
+on different spline methods and additional arguments.
 }

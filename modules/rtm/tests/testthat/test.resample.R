@@ -25,14 +25,26 @@ test_that(
 )
 
 data(testspec)
+
 test_that(
-  "Spectra resampling works",
+  "Spectra down-sampling works",
   {
     spec <- spectra(testspec_ACRU[, 1:5], 400:2500)
     new_wl <- seq(400, 1300, 10)
     true_spec <- spec[[new_wl, ]]
-    resample_spec <- resample(spec, new_wl)
+    resample_spec <- resample(spec, new_wl, method = "linear")
     expect_equal(true_spec, resample_spec)
+  }
+)
+
+test_that(
+  "Spectra up-sampling works",
+  {
+    true_spec <- spectra(testspec_ACRU[, 1:5], 400:2500)
+    new_wl <- seq(400, 2500, 10)
+    lowres_spec <- true_spec[[new_wl, ]]
+    resample_spec <- resample(lowres_spec, 400:2500)
+    expect_equal(true_spec, resample_spec, tolerance = 0.005)
   }
 )
 
