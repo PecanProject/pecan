@@ -63,6 +63,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
   out_list <- vector("list", length(ed.res.flag)) 
   names(out_list) <- ed.res.flag
 
+  # if run failed there might be less years, no output case is handled above
+  year.check <- unique(unlist(ylist))
+  end_year <- ifelse(max(year.check) < end_year, max(year.check), end_year)
+  
   # ----- start loop over years
   for(y in start_year:end_year){
     
