@@ -1,5 +1,6 @@
 #' Tests of radiative transfer models
 library(PEcAnRTM)
+library(testthat)
 context("PROSPECT models")
 
 p4 <- c("N"=1.4, "Cab"=30, "Cw"=0.004, "Cm"=0.003)
@@ -16,6 +17,7 @@ test.dim <- c(2101,2)
 
 test_model <- function(x) {
     test_that("Return matrix", expect_is(x, 'matrix'))
+    test_that("Return spectra", expect_is(x, 'spectra'))
     test_that("Correct dimenions", expect_equal(dim(x), test.dim))
     test_that("Don't return 0", expect_true(sum(x) > 0))
 }

@@ -1,0 +1,15 @@
+#### GDAY
+
+Navigate to a directory you would like to store GDAY and run the following:
+
+```bash
+git clone https://github.com/mdekauwe/GDAY.git
+
+cd GDAY
+
+cd src
+
+make
+```
+
+```gday``` is your executable.
