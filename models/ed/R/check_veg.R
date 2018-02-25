@@ -9,76 +9,59 @@
 #' @return `NULL` (invisibly)
 #' @export
 check_css <- function(css, pss = NULL) {
-  conditions <- expression(
-    # Only these columns are present, exactly in this order
-    identical(
-      colnames(css),
-      c("time", "patch", "cohort", "dbh", "hite", "pft", "n", "bdead", "balive", "lai")
-    ),
-    is.data.frame(css),
-    nrow(css) >= 1
+  testthat::test_that(
+    "css file is formatted correctly",
+    {
+      testthat::expect_is(css, "data.frame")
+      testthat::expect_gte(nrow(css), 1)
+      testthat::expect_equal(
+        colnames(css),
+        c("time", "patch", "cohort", "dbh", "hite", "pft",
+          "n", "bdead", "balive", "lai")
+      )
+    }
   )
-
   if (!is.null(pss)) {
-    pss_conditions <- expression(
-      # All cohort patches are defined in patch file
-      all(unique(css$patch) %in% unique(pss$patch))
+    testthat::test_that(
+      "css file and pss file are compatible",
+      {
+        # All cohort patches are defined in patch file
+        testthat::expect_true(all(unique(css$patch) %in% unique(pss$patch)))
+      }
     )
-  } else {
-    pss_conditions <- NULL
   }
-
-  test_conditions(c(conditions, pss_conditions))
 }
 
 #' @rdname check_css
 #' @export
 check_pss <- function(pss, site = NULL) {
-  conditions <- expression(
-    is.data.frame(pss),
-    nrow(pss) >= 1
+  testthat::test_that(
+    "pss file is formatted correctly",
+    {
+      testthat::expect_is(pss, "data.frame")
+      testthat::expect_gte(nrow(pss), 1)
+    }
   )
-
   if (!is.null(site)) {
-    site_conditions <- expression(
-      all(unique(pss$site) %in% unique(site$site))
+    testthat::test_that(
+      "pss and site files are compatible",
+      {
+        testthat::expect_true(all(unique(pss$site) %in% unique(site$site)))
+      }
     )
-  } else {
-    site_conditions <- NULL
   }
-  
-  test_conditions(c(conditions, site_conditions))
 }
 
 #' @rdname check_css
 #' @export
 check_site <- function(site) {
-  conditions <- expression(
-    nrow(site) >= 1,
-    !is.null(attributes(site)),
-    is.numeric(attr(site, "nsite")),
-    attr(site, "file_format") %in% c(1, 2, 3)
+  testthat::test_that(
+    "site file is formatted correctly",
+    {
+      testthat::expect_gte(nrow(site), 1)
+      testthat::expect_true(!is.null(attributes(site)))
+      testthat::expect_is(attr(site, "nsite"), "numeric")
+      testthat::expect_true(attr(site, "file_format") %in% c(1, 2, 3))
+    }
   )
-  
-  test_conditions(conditions)
 }
-
-#' Test list of conditions
-#'
-#' Evaluate a list of logical conditions, and throw an informative error if any 
-#' are `FALSE`.
-#' @param conditions Vector of [expressions][base::expression].
-#' @return `NULL` (invisibly)
-test_conditions <- function(conditions) {
-  results <- Reduce(c, Map(eval, conditions))
-  if (any(!results)) {
-    errors <- lapply(conditions[!results], deparse, width.cutoff = 100L)
-    error_string <- paste(errors, collapse = "; ")
-    PEcAn.logger::logger.severe(
-      "The following conditions were not met: ",
-      error_string
-    )
-  }
-  invisible(NULL)
-}
-
