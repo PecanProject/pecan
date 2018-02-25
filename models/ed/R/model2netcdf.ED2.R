@@ -64,9 +64,29 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
   names(out_list) <- ed.res.flag
 
   # if run failed there might be less years, no output case is handled above
-  year.check <- unique(unlist(ylist))
-  end_year <- ifelse(max(year.check) < end_year, max(year.check), end_year)
-  
+  # we can process whatever is there
+  # but of course this upsets ensemble.ts because the outputs are not of same length now
+  # two options:
+  # (i)  don't process anything
+  #      return(NULL)
+  # (ii) check whether this is an ensemble run, then return null, otherwise process whatever there is
+  #      for now I'm going with this, do failed runs also provide information on parameters?
+       year.check <- unique(unlist(ylist))
+       if(max(year.check) < end_year){
+          PEcAn.logger::logger.info("Run failed with some outputs.")
+          rundir <- gsub("/out/", "/run/", outdir)
+          readme <- file(paste0(rundir,"/README.txt"))
+          runtype <- readLines(readme, n=1)
+          close(readme)
+          if(grepl("ensemble", runtype)){
+             PEcAn.logger::logger.info("This is an ensemble run. Not processing anything.")
+             return(NULL)
+          }else{
+            PEcAn.logger::logger.info("This is not an ensemble run. Processing existing outputs.")
+             end_year <- max(year.check)
+          }
+       }
+
   # ----- start loop over years
   for(y in start_year:end_year){
     
