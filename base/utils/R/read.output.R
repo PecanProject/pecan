@@ -86,7 +86,14 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
             pft.string <- ncdf4::ncatt_get(nc, "PFT")
             pft.ind <- strsplit(pft.string$long_name, ",")[[1]] == pft.name
             if(any(pft.ind)){
-              newresult <- newresult[pft.ind,] 
+              # dimensions can differ from model to model or run to run
+              # there might be other cases that are not covered here
+              dim.check <- length(dim(newresult))
+              if(dim.check == 1){
+                newresult <- newresult[pft.ind] 
+              }else{
+                newresult <- newresult[pft.ind,] 
+              }
             }else{
               newresult <- apply(newresult,2,mean)
             }
