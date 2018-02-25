@@ -85,17 +85,21 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
             # parse pft names and match the requested
             pft.string <- ncdf4::ncatt_get(nc, "PFT")
             pft.ind <- strsplit(pft.string$long_name, ",")[[1]] == pft.name
+            # dimensions can differ from model to model or run to run
+            # there might be other cases that are not covered here
+            dim.check <- length(dim(newresult))
             if(any(pft.ind)){
-              # dimensions can differ from model to model or run to run
-              # there might be other cases that are not covered here
-              dim.check <- length(dim(newresult))
               if(dim.check == 1){
                 newresult <- newresult[pft.ind] 
               }else{
                 newresult <- newresult[pft.ind,] 
               }
             }else{
-              newresult <- apply(newresult,2,mean)
+              if(dim.check == 1){
+                newresult <- mean(newresult)
+              }else{
+                newresult <- apply(newresult,2,mean)
+              }
             }
           }
           # Dropping attempt to provide more sensible units because of graph unit errors,
