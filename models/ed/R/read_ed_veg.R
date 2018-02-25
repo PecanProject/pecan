@@ -84,59 +84,44 @@ get_latlon <- function(filepath, latlon) {
   out
 }
 
-#' Write ED inputs to directory
+#' Read individual css, pss, and site files
 #'
-#' Write a complete [ED inputs object][read_ed_veg] to disk. `css`, `pss`, and 
-#' `site` files are automatically named and correctly formatted.
-#'
-#' @param ed_veg ED vegetation inputs object (see [read_ed_veg]).
-#' @param path_prefix Desired full path and prefix
-#' @return Full prefix for input files, suitable for `SFILIN` slot in ED2IN file.
+#' Read files into objects usable by other PEcAn.ED2 utilities, and optionally check for errors.
+#' @param filepath Full path to css, pss, or site file
+#' @param check Logical. If `TRUE` (default), [check][check_css] that file is valid.
+#' @param ... Additional arguments to [check functions][check_css].
+#' @return `data.frame` containing
 #' @export
-write_ed_veg <- function(ed_veg, path_prefix) {
-  stop("Not functional yet")
-  path_prefix_full <- paste0(
-    path_prefix, ".",
-    "lat", as.character(ed_veg$latitude),
-    "lon", as.character(ed_veg$longitude)
-  )
-  base_name <- basename(path_prefix_full)
-  dir_name <- dirname(path_prefix_full)
-  dir.create(dir_name, showWarnings = FALSE)
-  
-  css_fname <- file.path(dir_name, paste0(base_name, ".css"))
-  write.table(css, css_fname, quote = FALSE, row.names = FALSE)
-
-  pss_fname <- file.path(dir_name, paste0(base_name, ".pss"))
-  write.table(pss, pss_fname, quote = FALSE, row.names = FALSE)
-
-  # TODO: Refactor
-  site_fname <- file.path(dir_name, paste0(base_name, ".site"))
-  #writelines(...)
-  #write.table(...)
+read_css <- function(filepath, check = TRUE, ...) {
+  css <- read.table(filepath, header = TRUE)
+  if (check) {
+    check_css(css, ...)
+  }
+  css
 }
 
-#' Match a file
-#'
-#' Return a list of files given a full prefix and optional suffix. Optionally, 
-#' confirm that the right number of files are returned. If the wrong number of 
-#' files is returned, throw an error.
-#' @param path_prefix Full path and file prefix
-#' @param suffix File suffix, as character (default = `NULL`)
-#' @param expect Number of files expected to be returned (default = `NULL`)
-#' @return Character vector of matched file names, as full paths.
-match_file <- function(path_prefix, suffix = NULL, expect = NULL) {
-  path <- dirname(path_prefix)
-  prefix <- basename(path_prefix)
-  file_matches <- list.files(path, prefix, full.names = TRUE)
-  if (!is.null(suffix)) {
-    file_matches <- grep(paste0(suffix, "$"), file_matches, value = TRUE)
+#' @rdname read_css
+#' @export
+read_pss <- function(filepath, check = TRUE) {
+  pss <- read.table(filepath, header = TRUE)
+  if (check) {
+    check_pss(pss, ...)
   }
-  if (!is.null(expect) && length(file_matches) != expect) {
-    PEcAn.logger::logger.severe(
-      "Expected ", expect, " files but found ", length(file_matches), ". ",
-      "The following regular expression was used: ", file_rxp
-    )
-  }
-  file_matches
+  pss
 }
+
+#' @rdname read_css
+#' @export
+read_site <- function(filepath, check = TRUE, ...) {
+  top_line <- readLines(filepath, n = 1)
+  nsite <- as.numeric(gsub(".*nsite +([[:digit:]]+).*", "\\1", top_line))
+  file_format <- as.numeric(gsub(".*file_format +([[:digit:]]+).*", "\\1", top_line))
+  site <- read.table(filepath, header = TRUE, skip = 1)
+  attr(site, "nsite") <- nsite
+  attr(site, "file_format") <- file_format
+  if (check) {
+    check_site(site, ...)
+  }
+  site
+}
+
