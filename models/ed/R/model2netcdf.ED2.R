@@ -737,7 +737,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   out <- checkTemp(38)
   nc_var[[s+38]] <- ncdf4::ncvar_def("SoilTemp", units = "K", dim = list(lon, lat, zg, t), missval = -999, 
                                      longname = "Average Layer Soil Temperature")
-  nc_var[[s+39]] <- ncdf4::ncvar_def("SoilWet", units = "", dim = list(lon, lat, zg, t), missval = -999, 
+  nc_var[[s+39]] <- ncdf4::ncvar_def("SoilWet", units = "", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Total Soil Wetness")
   nc_var[[s+40]] <- PEcAn.utils::mstmipvar("Albedo", lat, lon, t, zg)      # not standard
   out <- checkTemp(41)
