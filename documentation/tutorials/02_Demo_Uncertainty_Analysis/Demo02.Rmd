@@ -14,7 +14,7 @@ In Demo 2 we will be looking at how PEcAn can use information about parameter un
 
 3. By clicking Advanced setup, PEcAn will first show an Analysis Menu, where we are going to specify new settings.
 
- + For an ensemble analysis, increase the number of runs in the ensemble, in this case set **Runs to 50**. In practice you would want to use a larger ensemble size (100-5000) than we are using in the demo. The ensemble analysis samples parameters from thyou'd neir posterior distributions to propagate this uncertainty into the model output.
+ + For an ensemble analysis, increase the number of runs in the ensemble, in this case set **Runs to 50**. In practice you would want to use a larger ensemble size (100-5000) than we are using in the demo. The ensemble analysis samples parameters from their posterior distributions to propagate this uncertainty into the model output.
 
  + PEcAn's sensitivity analysis holds all parameters at their median value and then varies each parameter one-at-a-time based on the quantiles of the posterior distribution. PEcAn also includes a handy shortcut, which is the default behavior for the web interface, that converts a specified standard deviation into its Normal quantile equivalent (e.g. 1 and -1 are converted to 0.157 and 0.841). In this example **set Sensitivity to -2,-1,1,2** (the median value, 0, occurs by default).
 
