@@ -260,7 +260,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     
   } else {
     PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
-    model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
+    model.id  <- dbfile.check("Input", ready.id, con, hostname=machine.host)
     if(is.null(model.id)|length(model.id)==0){
       model.file <- input_met$path
     }else{
