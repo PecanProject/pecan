@@ -42,9 +42,11 @@
 #' character
 #' @param check Logical, whether or not to check file for correctness (default 
 #' = `TRUE`)
-#' @return
+#' @param check_files Logical. If `TRUE`, perform basic diagnostics on met 
+#' files as well.
+#' @return List of ED met input parameters. See Details.
 #' @export
-read_ed_metheader <- function(filename, check = TRUE) {
+read_ed_metheader <- function(filename, check = TRUE, check_files = TRUE) {
   if (!file.exists(filename)) {
     PEcAn.logger::logger.severe("File", filename, "not found")
   }
@@ -65,7 +67,7 @@ read_ed_metheader <- function(filename, check = TRUE) {
       "Unable to parse ED met driver header file: ", filename
     )
   }
-  ed_met <- vector("list", nvars)
+  ed_metheader <- vector("list", nvars)
   var_lines <- 6
   for (i in seq_len(nvars)) {
     block <- seq(2 + length(comment_line) + (i-1) * var_lines, length.out = var_lines)
@@ -90,7 +92,7 @@ read_ed_metheader <- function(filename, check = TRUE) {
       tidyr::spread("value_type", "value") %>%
       dplyr::left_join(met_variable_description, by = "variable") %>%
       dplyr::left_join(met_flag_description, by = "flag")
-    ed_met[[i]] <- list(
+    ed_metheader[[i]] <- list(
       path_prefix = path_prefix,
       nlon = metadata["nlon"],
       nlat = metadata["nlat"],
@@ -104,21 +106,7 @@ read_ed_metheader <- function(filename, check = TRUE) {
   if (check) {
     check_ed_metheader(ed_metheader)
   }
-  ed_met
-}
-
-#' Check ED met header object
-#'
-#' Check that the object has all components, and throw an error if anything is 
-#' wrong. Optionally, do some basic checks of actualy meteorology files as 
-#' well.
-#'
-#' @param ed_metheader ED meteorology header object (see [read_ed_metheader])
-#' @param check_files Logical. If `TRUE`, perform basic diagnostics on met 
-#' files as well.
-check_ed_metheader <- function(ed_metheader, check_files = TRUE) {
-  warning("Not yet functional...")
-  invisible(TRUE)
+  ed_metheader
 }
 
 #' Description of meteorology variables

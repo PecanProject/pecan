@@ -4,7 +4,7 @@
 \alias{read_ed_metheader}
 \title{Read ED meteorology header file}
 \usage{
-read_ed_metheader(filename, check = TRUE)
+read_ed_metheader(filename, check = TRUE, check_files = TRUE)
 }
 \arguments{
 \item{filename}{File name (including path) of met driver header file, as 
@@ -12,6 +12,12 @@ character}
 
 \item{check}{Logical, whether or not to check file for correctness (default 
 = `TRUE`)}
+
+\item{check_files}{Logical. If `TRUE`, perform basic diagnostics on met 
+files as well.}
+}
+\value{
+List of ED met input parameters. See Details.
 }
 \description{
 Read a ED_MET_DRIVER_HEADER file into a list-like object that can be 
