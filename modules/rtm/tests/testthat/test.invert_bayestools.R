@@ -14,8 +14,8 @@ if (Sys.getenv('CI') == 'true') {
     noise <- rnorm(length(true_model), 0, true_params['residual'])
     observed <- true_model + noise
     if (interactive()) {
-        plot(observed, type = 'l')
-        lines(true_model, col = 'red')
+        plot(400:2500, observed, type = 'l')
+        lines(400:2500, true_model, col = 'red')
         legend("topright", c('observation', 'pseudo-data'), col = c('black', 'red'), lty = 'solid')
     }
     # Alternate test, using observed spectra
