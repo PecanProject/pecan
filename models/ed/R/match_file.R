@@ -7,6 +7,7 @@
 #' @param suffix File suffix, as character (default = `NULL`)
 #' @param expect Number of files expected to be returned (default = `NULL`)
 #' @return Character vector of matched file names, as full paths.
+#' @export
 match_file <- function(path_prefix, suffix = NULL, expect = NULL) {
   path <- dirname(path_prefix)
   prefix <- basename(path_prefix)
@@ -17,7 +18,12 @@ match_file <- function(path_prefix, suffix = NULL, expect = NULL) {
   if (!is.null(expect) && length(file_matches) != expect) {
     PEcAn.logger::logger.severe(
       "Expected ", expect, " files but found ", length(file_matches), ". ",
-      "The following regular expression was used: ", file_rxp
+      "The following prefix was used: ", path_prefix
+    )
+  }
+  if (!length(file_matches) > 0 && (is.null(expect) || expect != 0)) {
+    PEcAn.logger::logger.warn(
+      "No files found. The following prefix was used: ", path_prefix
     )
   }
   file_matches

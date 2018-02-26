@@ -24,7 +24,10 @@ Imports:
     stringr(>= 1.1.0),
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
-    hdf5r
+    hdf5r,
+    tidyr,
+    dplyr,
+    tibble
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
