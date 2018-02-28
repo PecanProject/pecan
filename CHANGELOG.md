@@ -10,16 +10,19 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixes
 - Fixed status page, should now be run from cronjob, creates static page
+- Fixed bug that overwrote remote  met file paths with local file paths
 
 ### Added
 - Ability to allow for insecure sync using -k flag
 - Added information on how to join slack
 - PEcAn.BIOCRO now supports BioCro version 1.0. BioCro 0.9x models should still work as before, but note parameter and weather format changes in the `Changed` section below.  
-- RTM: Exposed PROSPECT absorption coefficients and `gpm()` function ("generalized plate model"), facilitating experimentation with different absorption coefficients
-- RTM: Added `spectra` S3 class and methods for subsetting (e.g. `myspec[[400:700]]`), plotting (`plot()` and `matplot()`), and combining spectra by wavelength.
 - Added new model package (PEcAn.dvmdostem) and initial wrappers for integration of the DVM-DOS-TEM model and tested.
 - New base package `PEcAn.workflow`, for functions used to perform the each major step of the analysis. These were previously scattered in other base packages.
 - Added PR review time estimate to PR template 
+- PEcAnRTM:
+    - Exposed PROSPECT absorption coefficients and `gpm()` function ("generalized plate model"), facilitating experimentation with different absorption coefficients
+    - Added `spectra` S3 class and methods for subsetting (e.g. `myspec[[400:700]]`), plotting (`plot()` and `matplot()`), and combining spectra by wavelength.
+    - Added `resample` functions for quickly resampling spectra (and, more generally, vectors and functions) to different dimensions. 
 
 ### Removed
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
@@ -37,6 +40,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - PEcAn.DB function `runModule.get.trait.data` has been moved to the new PEcAn.workflow package to avoid a circular package dependency between PEcAn.DB and PEcAn.settings.
 - Major documentation refactoring. The documentation names are now directly tied to the order in which they are rendered, and all `Rmd` files in all subdirectories of the documentation source are rendered by default. The overall structure of the documentation has been revised for clarity and cohesiveness.
 - Edited met2model.ED2 to not enforce leap years. 
+- Integrate demo 1 into basic user guide
 
 ## [1.5.2] - 2017-12-07
 
