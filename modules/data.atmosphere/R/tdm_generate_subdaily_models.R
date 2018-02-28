@@ -50,6 +50,9 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     # pb.index <- 1
     # pb <- txtProgressBar(min = 1, max = 8, style = 3)
     
+    # Just in case we have a capitalization or singular/plural issue 
+    if(direction.filter %in% toupper( c("backward", "backwards"))) direction.filter="backward"
+  
     # ----- 1.0 Read data & Make time stamps ---------- Load the data
     
     vars.info <- data.frame(CF.name = c("air_temperature", "precipitation_flux", "air_temperature_max", 
@@ -61,7 +64,7 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     
     # Getting a list of all the available files and then subsetting to just the ones we 
     # actually want to use
-    files.train <- dir(path.train)
+    files.train <- dir(path.train, ".nc")
     yrs.file <- strsplit(files.train, "[.]")
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
     yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension

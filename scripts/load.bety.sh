@@ -73,6 +73,9 @@ USERS=${USERS:-"NO"}
 # Set this to YES to create guestuser used with BETY.
 GUESTUSER=${GUESTUSER:-"NO"}
 
+# additional options for curl
+CURL_OPTS=${CURL_OPTS:-""}
+
 # Log file
 LOG=${LOG:-"$PWD/dump/sync.log"}
 
@@ -81,7 +84,7 @@ LOG=${LOG:-"$PWD/dump/sync.log"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts a:cd:efghl:m:o:p:qr:tuw: opt; do
+while getopts a:cd:efghkl:m:o:p:qr:tuw: opt; do
   case $opt in
   a)
     PG_USER="$OPTARG"
@@ -110,6 +113,7 @@ while getopts a:cd:efghl:m:o:p:qr:tuw: opt; do
     echo " -f fix sequence numbers, this should not be needed, default is NO"
     echo " -g add guestuser for BETY webpage"
     echo " -h this help page"
+    echo " -k allow for insecure connections when downloading data"
     echo " -l location of log file (place this with the dump files)"
     echo " -m site id, default is 99 (VM)"
     echo " -o owner of the database, default is bety"
@@ -120,6 +124,9 @@ while getopts a:cd:efghl:m:o:p:qr:tuw: opt; do
     echo " -u create carya users, this will create some default users"
     echo " -w use url to fetch data from instead of hardcoded url"
     exit 0
+    ;;
+  k)
+    CURL_OPTS="${CURL_OPTS} --insecure"
     ;;
   l)
     LOG="$OPTARG"
@@ -185,9 +192,9 @@ EMPTY_TABLES="formats machines mimetypes users"
 # will be imported during creaton. Order is semi important.
 CLEAN_TABLES="benchmark_sets benchmarks"
 CLEAN_TABLES="${CLEAN_TABLES} citations covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} ensembles entities experiments formats inputs"
-CLEAN_TABLES="${CLEAN_TABLES} likelihoods machines managements metrics"
-CLEAN_TABLES="${CLEAN_TABLES} methods mimetypes models modeltypes"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities experiments inputs"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods managements metrics"
+CLEAN_TABLES="${CLEAN_TABLES} methods models modeltypes"
 CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors reference_runs"
 CLEAN_TABLES="${CLEAN_TABLES} runs sites species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
@@ -251,7 +258,7 @@ mkdir "${DUMPDIR}"
 
 # download dump file and unpack
 if [ "${DUMPURL}" != "" ]; then
-  curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
+  curl ${CURL_OPTS} -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
   if [ ! -s ${DUMPDIR}/dump.tar.gz ]; then
     echo "File downloaded is 0 bytes"
     exit 1

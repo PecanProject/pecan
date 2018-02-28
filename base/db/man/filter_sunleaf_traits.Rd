@@ -12,6 +12,9 @@ filter_sunleaf_traits(data, covariates)
 
 \item{covariates}{covariate data}
 }
+\description{
+Function to filter out upper canopy leaves
+}
 \author{
 <unknown>
 }

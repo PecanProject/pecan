@@ -1,0 +1,14 @@
+#### DALEC
+
+```bash
+cd
+curl -o dalec_EnKF_pub.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/dalec_EnKF_pub.tgz
+tar zxf dalec_EnKF_pub.tgz
+rm dalec_EnKF_pub.tgz
+
+cd dalec_EnKF_pub
+make dalec_EnKF
+make dalec_seqMH
+sudo cp dalec_EnKF dalec_seqMH /usr/local/bin
+```
+
