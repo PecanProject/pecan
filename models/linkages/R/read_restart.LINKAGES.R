@@ -42,30 +42,30 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   forecast <- list()
 
   if ("Fcomp" %in% var.names) {
-    forecast[[1]] <- ens$AGB.pft #already has C  #* unit.conv 
-    names(forecast[[1]]) <- paste0('Fcomp.',pft.names)
+    forecast[[length(forecast)+1]] <- ens$AGB.pft #already has C  #* unit.conv 
+    names(forecast[[length(forecast)+1]]) <- paste0('Fcomp.',pft.names)
   }
   
   if ("AGB.pft" %in% var.names) {
-    forecast[[1]] <- ens$AGB.pft #already has C  #* unit.conv 
-    names(forecast[[1]]) <- paste0('AGB.pft.',pft.names)
+    forecast[[length(forecast)+1]] <- ens$AGB.pft #already has C  #* unit.conv 
+    names(forecast[[length(forecast)+1]]) <- paste0('AGB.pft.',pft.names)
   }
     
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[2]] <- ens$TotSoilCarb #udunits2::ud.convert(ens$TotSoilCarb, "kg/m^2", "Mg/ha") #* unit.conv 
-    names(forecast[[2]]) <- c("TotSoilCarb")
+    forecast[[length(forecast)+1]] <- ens$TotSoilCarb #udunits2::ud.convert(ens$TotSoilCarb, "kg/m^2", "Mg/ha") #* unit.conv 
+    names(forecast[[length(forecast)+1]]) <- c("TotSoilCarb")
   }
   
   }else{
     forecast <- list()
     if ("AGB.pft" %in% var.names) {
-      forecast[[1]] <- rep(NA,length(settings$pfts))
+      forecast[[length(forecast)+1]] <- rep(NA,length(settings$pfts))
     }
     if ("Fcomp" %in% var.names) {
-      forecast[[1]] <- NA #rep(NA,length(settings$pfts)) #already has C  #* unit.conv
+      forecast[[length(forecast)+1]] <- rep(NA,length(settings$pfts)) #already has C  #* unit.conv
     }
     if ("TotSoilCarb" %in% var.names) {
-      forecast[[2]] <- NA
+      forecast[[length(forecast)+1]] <- NA
     }
   }
   # Put forecast into vector

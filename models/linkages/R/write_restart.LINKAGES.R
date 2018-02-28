@@ -224,9 +224,11 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     new.n.index <- c(new.n.index, rep(i, new.ntrees[i]))
   }
   
-  dbh.temp <- numeric(100)
-  iage.temp <- numeric(100)
-  nogro.temp <- numeric(100)
+  n.ind <- 100
+  
+  dbh.temp <- numeric(n.ind)
+  iage.temp <- numeric(n.ind)
+  nogro.temp <- numeric(n.ind)
   
   # sample from individuals to construct new states
   for (s in seq_len(nspec)) {
@@ -288,8 +290,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     
     b_obs[nl:nu] <- biomass_function(dbh.temp[nl:nu], 
                                      spp.biomass.params = spp.biomass.params) * as.numeric(bcorr[s])
+    bMax <- 200
     for (j in nl:nu) {
-      dbh.temp[j] <- optimize(merit, c(1, 200), b_obs = b_obs[j], 
+      dbh.temp[j] <- optimize(merit, c(1, bMax), b_obs = b_obs[j], 
                               spp.biomass.params = spp.biomass.params)$minimum
     }
     
