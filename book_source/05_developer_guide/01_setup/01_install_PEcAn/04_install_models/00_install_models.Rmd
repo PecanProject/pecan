@@ -1,0 +1,17 @@
+### Install Models
+
+This page contains instructions on how to download and install ecosystem models that have been or are being coupled to PEcAn.
+These instructions have been tested on the PEcAn unbuntu VM. Commands may vary on other operating systems.
+Also, some model downloads require permissions before downloading, making them unavailable to the general public. Please contact the PEcAn team if you would like access to a model that is not already installed on the default PEcAn VM.
+
+- [BioCro][BioCro]
+- [CLM 4.5][CLM 4.5]
+- [DALEC][DALEC]
+- [ED2][ED2]
+- [FATES][CLM-FATES]
+- [GDAY][GDAY]
+- [JULES][JULES]
+- [LINKAGES][LINKAGES]
+- [LPJ-GUESS][LPJ-GUESS]
+- [MAESPA][MAESPA]
+- [SIPNET][SIPNET]

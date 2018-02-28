@@ -1,13 +1,13 @@
-##' @name query.file.path
-##' @title Get file path given id and machine
-##' @param input_id
-##' @param host_name
+##' Get file path given id and machine
+##'
+##' @param input_id numeric: BETY id of the file ("container") to find
+##' @param host_name character: machine where the file lives
 ##' @param con : database connection
 ##' @export query.file.path
 ##'
 ##' @author Betsy Cowdery
 query.file.path <- function(input.id, host_name, con){
-  machine.host <- default_hostname(host_name)
+  machine.host <- PEcAn.DB::default_hostname(host_name)
   machine <- db.query(query = paste0("SELECT * from machines where hostname = '",machine.host,"'"), con = con)
   dbfile <- db.query(
     query = paste(

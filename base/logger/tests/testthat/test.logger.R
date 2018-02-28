@@ -69,3 +69,10 @@ test_that("logger prints right messages, responds correctly to logger.setLevel",
   expect_silent(logger.warn("message"))
   expect_silent(logger.error("message"))
 })
+
+test_that("logger message labels match enclosing function", {
+  logger.setUseConsole(console = TRUE, stderr = FALSE)
+
+  expect_output(identity(logger.info("message")), "[identity] : message", fixed = TRUE)
+  expect_output(identity(PEcAn.logger::logger.info("message")), "[identity] : message", fixed = TRUE)
+})
