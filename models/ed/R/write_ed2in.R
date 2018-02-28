@@ -37,7 +37,7 @@ write_ed2in.ed2in <- function(ed2in, filename, custom_header = character(), bare
     paste0("!   ", custom_header),
     "!---------------------------------------"
   )
-  output_lines <- c(header, tags_values_vec)
+  output_lines <- c(header, file_body)
   writeLines(output_lines, filename)
 }
 
@@ -65,8 +65,10 @@ write_ed2in.default <- function(ed2in, filename, custom_header = character(), ba
 #' @inheritParams write_ed2in
 tags2char <- function(ed2in) {
   char_values <- vapply(ed2in, is.character, logical(1))
+  na_values <- vapply(ed2in, function(x) all(is.na(x)), logical(1))
   quoted_vals <- ed2in
   quoted_vals[char_values] <- lapply(quoted_vals[char_values], shQuote)
+  quoted_vals[na_values] <- lapply(quoted_vals[na_values], function(x) "")
   values_vec <- vapply(quoted_vals, paste, character(1), collapse = ",")
   tags_values_vec <- sprintf("   NL%%%s = %s", names(values_vec), values_vec)
   tags_values_vec

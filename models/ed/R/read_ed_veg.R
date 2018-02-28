@@ -78,8 +78,8 @@ get_latlon <- function(filepath, latlon) {
   fname <- basename(filepath)
   latlon_rxp <- "-?[[:digit:]]{1,3}(\\.[[:digit:]]*)?"
   rxp <- paste0(".*", latlon, "(", latlon_rxp, ").*")
-  stopifnot(grepl(lat_rxp, fname))
-  out <- as.numeric(gsub(lat_rxp, "\\1", fname))
+  stopifnot(grepl(latlon_rxp, fname))
+  out <- as.numeric(gsub(latlon_rxp, "\\1", fname))
   stopifnot(!is.na(out), length(out) != 1)
   out
 }

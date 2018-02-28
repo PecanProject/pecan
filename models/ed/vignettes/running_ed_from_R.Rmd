@@ -1,0 +1,130 @@
+---
+title: "Running ED from R"
+author: "Alexey Shiklomanov"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+# Introduction
+
+The `PEcAn.ED2` package features a number of utilities to facilitate running the ED model from inside R, including
+working with input files,
+running the ED executable,
+and processing the outputs.
+This tutorial describes these utilites and provides examples of common use cases.
+
+# Setup
+
+## Installing the R package
+
+The `PEcAn.ED2` package and its PEcAn dependencies can be installed from GitHub as follows (all CRAN package dependencies should be installed automatically):
+
+```{r install}
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/logger")
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/utils")
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/settings")
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "models/ed")
+
+library(PEcAn.ED2)
+```
+
+## Installing the ED2 model
+
+The source code for the ED2 model is available [on GitHub](https://github.com/edmodel/ed2).
+
+Alternatively, if you have [Singularity](https://singularity.lbl.gov) container software installed, you can use a pre-built Singularity container available on [Singularity Hub](https://www.singularity-hub.org/collections/642):
+
+```
+singularity pull shub://ashiklom/ED2
+```
+
+## Common ED inputs
+
+ED requires a global land use database to determine its land-sea mask, as well as a vegetation "thermal sums" database.
+These can be customized to some extent, but this package provides a version of the most common inputs.
+These inputs, stored in an "EDI" directory, can be downloaded via the `download_edi` function:
+
+```{r get_edi}
+library(here)
+rundir <- here("vignettes", "ed_run_data")
+dir.create(rundir, showWarnings = FALSE)
+
+edi_dir <- file.path(rundir, "EDI")
+if (!file.exists(edi_dir)) {
+  download_edi(edi_dir)
+} else {
+  message("EDI directory already exists. Skipping download.")
+}
+```
+
+# Basic ED run
+
+The two main components for a basic ED run are as follows:
+
+- Meteorological driver data (in HDF5 format), and a driver header file (typically called `ED_MET_DRIVER_HEADER`)
+- Three vegetation initial condition data files (unless you are doing a bare ground run), which consists of three interrelated files:
+  * `css` -- Cohort file, which describes all plant cohorts located within a patch, including its PFT, DBH, and stand density
+  * `pss` -- Patch file, which describes each patch within a site (single, plot-scale runs will often have only one patch)
+  * `site` -- Site file, which describes each site (single, plot-scale runs will often have only one site)
+
+Both of these inputs are site- and/or run-specific, so you will have to provide (or create) your own.
+However, `PEcAn.ED2` provides templates and utility functions to facilitate creating and modifying both files.
+
+Assuming you already have properly formatted inputs, doing an ED run requires creating an ED configuration (typically, an `ED2IN` file) and pointing the ED executable at it.
+
+First, read the `ED2IN` template file:
+
+```{r read_ed2in}
+ed2in_template <- system.file("ED2IN.rgit", package = "PEcAn.ED2")
+ed2in_raw <- read_ed2in(ed2in_template)
+```
+
+Then, set up the `ED2IN` with the required components.
+
+```{r modify_ed2in}
+met_driver_raw <- "~/Projects/nasa-rtm/edr-da/ed-inputs/met3/US-Syv/ED_MET_DRIVER_HEADER.template"
+met_driver_obj <- read_ed_metheader(met_driver_raw, check = FALSE)
+met_driver_obj[[1]]$path_prefix <- "~/Projects/nasa-rtm/edr-da/ed-inputs/met3/US-Syv/US-Syv_"
+met_driver_obj[[1]]$xmin <- -89.5
+met_driver_obj[[1]]$ymin <- 43
+
+veg_prefix <- "~/Projects/nasa-rtm/edr-da/ed-inputs/sites/BH02_site_1-25665/FFT.2008"
+latitude <- 43.3724
+longitude <- -89.9071
+
+met_driver <- file.path(rundir, "ED_MET_DRIVER_HEADER")
+write_ed_metheader(met_driver_obj, met_driver)
+
+ed2in <- modify_ed2in(
+  ed2in_raw,
+  veg_prefix = veg_prefix,
+  latitude = latitude,
+  longitude = longitude,
+  met_driver = met_driver,
+  EDI_path = file.path(rundir, "EDI"),
+  start_date = "2001-06-01",
+  end_date = "2001-08-01",
+  run_dir = file.path(rundir, "run"),
+  output_dir = file.path(rundir, "out"),
+  runtype = "INITIAL",
+  IOPTINPT = NULL
+)
+ed2in_path <- file.path(rundir, "ED2IN")
+write_ed2in(ed2in, ed2in_path)
+```
+
+TODO:
+
+- Name formats in met driver header
+- `check_ed2in`
+    - Check that all met header dates exist
+    - Check that latitude and longitude are in ED_MET_DRIVER_HEADER
+
+Finally, execute ED!
+
+```{r run_ed}
+ed2_path <- "~/Projects/ED2/ED/build/ed_2.1-dbg"
+system2(normalizePath(ed2_path), c("-f", normalizePath(ed2in_path)))
+```

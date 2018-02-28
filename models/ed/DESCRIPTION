@@ -27,7 +27,8 @@ Imports:
     hdf5r,
     tidyr,
     dplyr,
-    tibble
+    tibble,
+    lubridate
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
