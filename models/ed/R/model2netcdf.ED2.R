@@ -945,11 +945,19 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft_names, dbh_breaks, .
   d <- ncdf4::ncdim_def(name = "dbh_breaks", units ="bins", vals = dbh_breaks)
   p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts, longname = "Plant Functional Type")
   
-  nc_var[[s+1]]<- ncdf4::ncvar_def("DBH", units = "cm", dim = list(d,p,t), missval = -999, 
+  # NOTE : the order of dimensions is going to be important for read.output
+  # this was the fist case of reading pft-specific outputs at the time
+  # but checking base/utils/data/standard_vars.csv "pft" should come after "time" as a dimension
+  # e.g. when NEE is pft-specific for some model output it will be the 4th dimension
+  # lon / lat / time / pft 
+  # from read.output's perspective, dimension of pft will be the same for NEE there and DBH here
+
+  
+  nc_var[[s+1]]<- ncdf4::ncvar_def("DBH", units = "cm", dim = list(d,t,p), missval = -999, 
                                    longname = "Diameter at breast height")
-  nc_var[[s+2]]<- ncdf4::ncvar_def("DDBH_DT", units = "cm yr-1", dim = list(d,p,t), missval = -999, 
+  nc_var[[s+2]]<- ncdf4::ncvar_def("DDBH_DT", units = "cm yr-1", dim = list(d,t,p), missval = -999, 
                                    longname = "Rate of change in dbh")
-  nc_var[[s+3]]<- ncdf4::ncvar_def("NPLANT", units = "plant m-2", dim = list(d,p,t), missval = -999, 
+  nc_var[[s+3]]<- ncdf4::ncvar_def("NPLANT", units = "plant m-2", dim = list(d,t,p), missval = -999, 
                                    longname = "Plant density")
   # longname of this variable will be parsed by read.output
   # so that read.output has a way of accessing PFT names
