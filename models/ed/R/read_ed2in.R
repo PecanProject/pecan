@@ -11,10 +11,19 @@ read_ed2in <- function(filename) {
 
   # Extract tag-value pairs
   ed2in_tag_rxp <- paste0(
-    "^[[:blank:]]*NL%([[:graph:]]+)[[:blank:]]+=",
-    "[[:blank:]]*([[:digit:].-]+(,[[:blank:]]*[[:digit:].-]+)*",
-    "|'[[:graph:][:blank:]]*')[[:blank:]]*!?.*"
+    "^[[:blank:]]*",              # Initial whitespace (does not start with a `!` comment)
+    "NL%([[:graph:]]+)",          # Capture namelist tag (1)
+    "[[:blank:]]+=[[:blank:]]*",  # Equals, with optional surrounding whitespace
+    "(",                          # Begin value capture (2)
+    "[[:digit:].-]+(,[[:blank:]]*[[:digit:].-]+)*",   # Number, or number list
+    "|",                          # ...or...
+    "@.*?@",                      # Old substitution tag (e.g. @MYVALUE@)
+    "|",                          # ...or...
+    "'[[:graph:][:blank:]]*'",    # Quoted string, or list of strings
+    ")",                          # End value capture
+    "[[:blank:]]*!?.*$"           # Trailing whitespace and possible comments
   )
+
   tag_lines <- grep(ed2in_tag_rxp, raw_file, perl = TRUE)
   sub_file <- raw_file[tag_lines]
   tags <- gsub(ed2in_tag_rxp, "\\1", sub_file, perl = TRUE)
@@ -28,8 +37,10 @@ read_ed2in <- function(filename) {
   # Convert to a list to allow storing of multiple data types
   values_list <- as.list(values)
 
-  numeric_values <- !is.na(suppressWarnings(as.numeric(values)))
+  numeric_values <- !is.na(suppressWarnings(as.numeric(values))) |
+    grepl("^@.*?@$", values)    # Unquoted old substitutions are numeric
   values_list[numeric_values] <- lapply(values_list[numeric_values], as.numeric)
+  # NOTE: This should throw a warning if any old substitution tags are present
 
   # Convert values that are a list of numbers to a numeric vector
   numlist_values <- grep(

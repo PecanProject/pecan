@@ -11,7 +11,7 @@ write_ed_metheader <- function(ed_metheader, filename) {
   for (i in seq_len(nformats)) {
     metformat <- ed_metheader[[i]]
     block_lines <- character(6)
-    block_lines[1] <- metformat$path_prefix
+    block_lines[1] <- normalizePath(metformat$path_prefix, mustWork = FALSE)
     block_lines[2] <- paste(
       metformat$nlon,
       metformat$nlat,
@@ -26,6 +26,10 @@ write_ed_metheader <- function(ed_metheader, filename) {
     block_lines[6] <- paste(metformat$variables$flag, collapse = " ")
     blocks[[i]] <- block_lines
   }
-  file_lines <- c(as.character(nformats), Reduce(c, blocks))
+  format_names <- paste("format", seq_len(nformats), sep = "", collapse = ", ")
+  file_lines <- c(format_names, as.character(nformats), Reduce(c, blocks))
   writeLines(file_lines, filename)
 }
+
+# TODO: First line does actually matter -- maybe a list of format names?
+# Regardless, need to set it to something
