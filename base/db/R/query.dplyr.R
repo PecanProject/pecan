@@ -10,7 +10,7 @@ betyConnect <- function(php.config = "../../web/config.php") {
   ## Database connection
   # TODO: The latest version of dplyr/dbplyr works with standard DBI-based
   # objects, so we should replace this with a standard `db.open` call.
-  src_postgres(dbname = config.list$db_bety_database,
+  dplyr::src_postgres(dbname = config.list$db_bety_database,
                host = config.list$db_bety_hostname,
                user = config.list$db_bety_username,
                password = config.list$db_bety_password)
@@ -53,10 +53,11 @@ ncdays2date <- function(time, unit) {
 }  # ncdays2date
 
 
-#' @name dbHostInfo
-#' @title Database host information
+#' Database host information
+#'
 #' @param bety BETYdb connection, as opened by `betyConnect()`
 #' @export
+#' @importFrom magrittr %>%
 dbHostInfo <- function(bety) {
   # get host id
   result <- db.query(query = "select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", con = bety$con)
@@ -117,7 +118,7 @@ runs <- function(bety, workflow_id) {
     dplyr::select(workflow_id, folder)
   Ensembles <- dplyr::tbl(bety, "ensembles") %>%
     dplyr::select(ensemble_id = id, workflow_id) %>%
-    inner_join(Workflows, by = "workflow_id")
+    dplyr::inner_join(Workflows, by = "workflow_id")
   Runs <- dplyr::tbl(bety, "runs") %>%
     dplyr::select(run_id = id, ensemble_id) %>%
     dplyr::inner_join(Ensembles, by = "ensemble_id")
@@ -128,34 +129,27 @@ runs <- function(bety, workflow_id) {
 
 #' Get vector of workflow IDs
 #' @inheritParams dbHostInfo
-#' @param session Session object passed through Shiny
+#' @param query Named vector or list of workflow IDs
 #' @export
-get_workflow_ids <- function(bety, session, all.ids=FALSE) {
-  query <- isolate(shiny::parseQueryString(session$clientData$url_search))
+get_workflow_ids <- function(bety, query, all.ids = FALSE) {
   # If we dont want all workflow ids but only workflow id from the user url query
-  if (!all.ids & "workflow_id" %in% names(query)) {
+  if (!all.ids && "workflow_id" %in% names(query)) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
-
-    ids <- workflows(bety, ensemble = FALSE) %>% distinct(workflow_id) %>% collect %>% 
-      .[["workflow_id"]] %>% sort(decreasing = TRUE)
-    # pull(.,workflow_id) %>% sort(decreasing = TRUE)
-
-#    ids <- workflows(bety, ensemble = TRUE) %>%
-#      dplyr::distinct(workflow_id) %>%
-#      dplyr::pull() %>%
-#      sort(decreasing = TRUE)
-
+    ids <- workflows(bety, ensemble = FALSE) %>%
+      dplyr::distinct(workflow_id) %>%
+      dplyr::collect() %>%
+      dplyr::pull(workflow_id) %>%
+      sort(decreasing = TRUE)
   }
   return(ids)
 }  # get_workflow_ids
 
 #' Get data frame of users and IDs
 #' @inheritParams dbHostInfo
-#' @param session Session object passed through Shiny
 #' @export
-get_users <- function(bety, session) {
+get_users <- function(bety) {
   hostinfo <- dbHostInfo(bety)
   query <- "SELECT id, login FROM users"
   out <- dplyr::tbl(bety, dbplyr::sql(query)) %>%
@@ -184,23 +178,24 @@ get_run_ids <- function(bety, workflow_id) {
 #' @inheritParams dbHostInfo
 #' @inheritParams workflow
 #' @param run_id Run ID
+#' @param remove_pool logical: ignore variables with 'pools' in their names?
 #' @export
 get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
   var_names <- character(0)
   if (workflow_id != "" && run_id != "") {
-    workflow <- collect(workflow(bety, workflow_id))
+    workflow <- dplyr::collect(workflow(bety, workflow_id))
     if (nrow(workflow) > 0) {
       outputfolder <- file.path(workflow$folder, "out", run_id)
-      if (file_test("-d", outputfolder)) {
+      if (utils::file_test("-d", outputfolder)) {
         files <- list.files(outputfolder, "*.nc$", full.names = TRUE)
         for (file in files) {
-          nc <- nc_open(file)
+          nc <- ncdf4::nc_open(file)
           lapply(nc$var, function(x) {
             if (x$name != "") {
               var_names[[x$longname]] <<- x$name
             }
           })
-          nc_close(nc)
+          ncdf4::nc_close(nc)
         }
       }
     }
@@ -235,6 +230,7 @@ var_names_all <- function(bety, workflow_id, run_id) {
 #' @param run_id Run ID
 #' @param workflow_id Workflow ID
 #' @export
+
 load_data_single_run <- function(bety, workflow_id, run_id) {
   # For a particular combination of workflow and run id, loads
   # all variables from all files.
@@ -244,56 +240,30 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
   workflow <- dplyr::collect(workflow(bety, workflow_id))
   # Use the function 'var_names_all' to get all variables
   var_names <- var_names_all(bety, workflow_id, run_id)
-  # TODO: This looks a lot like `read.output`. Should probably just use that here.
-  # Using earlier code, refactored
-  if (nrow(workflow) > 0) {
-    outputfolder <- file.path(workflow$folder, 'out', run_id)
-    files <- list.files(outputfolder, "*.nc$", full.names = TRUE)
-    for (file in files) {
-      nc <- nc_open(file)
-      for (var_name in var_names) {
-        dates <- NA
-        vals <- NA
-        title <- var_name
-        ylab <- ""
-        var <- ncdf4::ncatt_get(nc, var_name)
-        #sw <- if ('Swdown' %in% names(nc$var)) ncdf4::ncvar_get(nc, 'Swdown') else TRUE
-        # Snow water
-        sw <- TRUE
-        # Check required bcoz many files don't contain title
-        if (!is.null(var$long_name)) {
-          title <- var$long_name
-        }
-        # Check required bcoz many files don't contain units
-        if (!is.null(var$units)) {
-          ylab <- var$units
-        }
-        x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
-        y <- ncdf4::ncvar_get(nc, var_name)
-        b <- !is.na(x) & !is.na(y) & sw != 0
-        
-        dates <- if(is.na(dates)) x[b] else c(dates, x[b])
-        dates <- as.POSIXct(dates)
-        vals <- if(is.na(vals)) y[b] else c(vals, y[b])
-
-        xlab <- "Time"
-        # Values of the data which we will plot
-        valuesDF <- data.frame(dates,vals)
-        # Meta information about the data.
-        metaDF <- data.frame(workflow_id,run_id,title,xlab,ylab,var_name)
-        # Meta and Values DF created differently because they would of different
-        # number of rows. cbind would repeat metaDF(1X6) to the size of valuesDF
-        currentDF <- cbind(valuesDF,metaDF)
-        globalDF <- rbind(globalDF,currentDF)
-      }
-      ncdf4::nc_close(nc)
+  # lat/lon often cause trouble (like with JULES) but aren't needed for this basic plotting
+  var_names <- setdiff(var_names, c("lat", "latitude", "lon", "longitude")) 
+  outputfolder <- file.path(workflow$folder, 'out', run_id)
+  out <- read.output(runid = run_id, outdir = outputfolder, variables = var_names, dataframe = TRUE)
+  ncfile <- list.files(path = outputfolder, pattern = "\\.nc$", full.names = TRUE)[1]
+  nc <- ncdf4::nc_open(ncfile)
+  
+  globalDF <- tidyr::gather(out, key = var_name, value = vals, names(out)[names(out) != "posix"]) %>%
+    dplyr::rename(dates = posix)
+  globalDF$workflow_id <- workflow_id
+  globalDF$run_id <- run_id
+  globalDF$xlab <- "Time"
+  globalDF$ylab <- unlist(sapply(globalDF$var_name, function(x){
+    if(!is.null(nc$var[[x]]$units)){
+      return(nc$var[[x]]$units)
+    }else{
+      return("")
     }
+  } ))
+  globalDF$title <- unlist(lapply(globalDF$var_name, function(x){
+    long_name <- names(which(var_names == x))
+    ifelse(length(long_name) > 0, long_name, x)
   }
-  # Required to convert from factors to characters
-  # Otherwise error by ggplotly
-  globalDF$title <- as.character(globalDF$title)
-  globalDF$xlab <- as.character(globalDF$xlab)
-  globalDF$ylab <- as.character(globalDF$ylab)
-  globalDF$var_name <- as.character(globalDF$var_name)
+  ))
+
   return(globalDF)
 } #load_data_single_run

@@ -9,7 +9,7 @@ query.pft_species(pft, modeltype, con)
 \arguments{
 \item{pft}{string pft name}
 
-\item{modeltype}{type of model that is used, this is is used to distinguis between different pfts with the same name.}
+\item{modeltype}{type of model that is used, this is used to distinguish between different pfts with the same name.}
 
 \item{con}{database connection}
 }

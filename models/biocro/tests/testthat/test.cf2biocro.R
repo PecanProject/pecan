@@ -9,7 +9,7 @@ biocro.met <- cf2biocro(cfmet.hourly)
 test_that("cf2biocro creates BioCro compatible met from CF compliant file", {
   
   
-  expect_true(all(c("year", "doy", "hour", "SolarR", "Temp", "RH", "WS", "precip") %in% 
+  expect_true(all(c("year", "doy", "hour", "solar", "Temp", "RH", "windspeed", "precip") %in%
     colnames(biocro.met)))
   
 })
