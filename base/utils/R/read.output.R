@@ -80,6 +80,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
       for (v in variables) {
         if (v %in% c(names(nc$var), names(nc$dim))) {
           newresult <- ncdf4::ncvar_get(nc, v)
+          # begin per-pft read
           if("pft" %in% sapply(nc$var[[v]]$dim, `[[`, "name")){
             # means there are PFT specific outputs we want
             # parse pft names and match the requested
@@ -88,20 +89,23 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
             # dimensions can differ from model to model or run to run
             # there might be other cases that are not covered here
             dim.check <- length(dim(newresult))
-            if(any(pft.ind)){
+            if(any(pft.ind)){ # means pft.name passed, we want to read pft-specific outputs
               if(dim.check == 1){
                 newresult <- newresult[pft.ind] 
               }else{
                 newresult <- newresult[pft.ind,] 
               }
-            }else{
+            }else{ 
+              # means this variable is available as per-pft, so written as such to standard ncdf files
+              # but we still want to read as total
               if(dim.check == 1){
-                newresult <- mean(newresult)
+                newresult <- sum(newresult)
               }else{
-                newresult <- apply(newresult,2,mean)
+                newresult <- apply(newresult,2,sum)
               }
             }
-          }
+          } # end of per-pft read
+          
           # Dropping attempt to provide more sensible units because of graph unit errors,
           # issue #792 if(v %in% c(cflux, wflux)){ newresult <- udunits2::ud.convert(newresult, 'kg
           # m-2 s-1', 'kg ha-1 yr-1') }

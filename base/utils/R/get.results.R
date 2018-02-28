@@ -103,14 +103,18 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
       quantiles <- rownames(sa.samples[[pft.name]])    
       traits <- trait.names[[pft.name]]
       
+      # when there is variable-per pft in the outputs, check for the tag for deciding SA per pft
+      per.pft <- ifelse(!is.null(settings$sensitivity.analysis$perpft), settings$sensitivity.analysis$perpft, FALSE)
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits, 
                                                        quantiles = quantiles, 
                                                        pecandir = outdir, 
-                                                       outdir = settings$modeloutdir, pft.name = pft.name, 
+                                                       outdir = settings$modeloutdir, 
+                                                       pft.name = pft.name, 
                                                        start.year = start.year.sa, 
                                                        end.year = end.year.sa, 
                                                        variable = variable.sa, 
-                                                       sa.run.ids = sa.run.ids)
+                                                       sa.run.ids = sa.run.ids,
+                                                       per.pft = per.pft)
     }
     
     # Save sensitivity output
