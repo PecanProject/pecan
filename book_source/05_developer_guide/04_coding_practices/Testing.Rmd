@@ -1,7 +1,7 @@
 ## Testing
 
 PEcAn uses the testthat package developed by Hadley Wickham. Hadley has
-written instructions for using this pakcage in his
+written instructions for using this package in his
 [Testing](http://adv-r.had.co.nz/Testing.html) chapter.
 
 ### Rationale
@@ -24,7 +24,7 @@ started. You have to figure out
 *  what was I doing yesterday?
 *  what do I want to do today?
 *  what existing functions do I need to edit?
-*  what are the arguements to these functions (and what are examples of
+*  what are the arguments to these functions (and what are examples of
     valid arguments)
 *  what packages are affected
 *  where is a logical place to put files used in testing
@@ -32,47 +32,45 @@ started. You have to figure out
 ### Quick Start:
 
 * decide what you want to do today
-* identify the issue in redmine or github (if none exists, create one)
-* to work on issue 99, create a new branch called “redmine99”,
-“github99” or some descriptive name… Today we will add enable an
+* identify the issue in github (if none exists, create one)
+* to work on issue 99, create a new branch called “github99” or some descriptive name… Today we will enable an
 existing function, `make.cheas` to make `goat.cheddar`. We will know
 that we are done by the color and taste.
-
-```
-    git branch goat-cheddar
-    git checkout goat-cheddar
-```
-    * open existing (or create new) file in `inst/tests/`. If working on code in "myfunction" or a set of functions in "R/myfile.R", the file should be named accordingly, e.g. "inst/tests/test.myfile.R"
-    * if you are lucky, the function has already been tested and has some examples.
-    * if not, you may need to create a minimal example, often requiring a settings file. The default settings file can be obtained in this way:
-```r
+  ```
+  git branch goat-cheddar
+  git checkout goat-cheddar
+  ```
+* open existing (or create new) file in `inst/tests/`. If working on code in "myfunction" or a set of functions in "R/myfile.R", the file should be named accordingly, e.g. "inst/tests/test.myfile.R"
+* if you are lucky, the function has already been tested and has some examples.
+* if not, you may need to create a minimal example, often requiring a settings file. The default settings file can be obtained in this way:
+  ```r
   settings <- read.settings(system.file("extdata/test.settings.xml", package = "PEcAn.utils"))
-```
-    * write what you want to do
-```
-      test_that("make.cheas can make cheese",{
-        goat.cheddar <- make.cheas(source = 'goat', style = 'cheddar')
-        expect_equal(color(goat.cheddar), "orange")
-        expect_is(object = goat.cheddar, class = "cheese")
-        expect_true(all(c("sharp", "creamy") %in% taste(goat.cheddar)))
-      } 
-```
-    * now edit the goat.cheddar function until it makes savory, creamy, orange cheese.
-    * commit often
-    * update documentation and test
-      ```{r, eval = FALSE}
-      library(devtools)
-      document("mypkg")
-      test("mypkg")  
-      ```
-    * commit again
-    * when complete, merge, and push
-      ```{bash, eval = FALSE}
-      git commit -m "make.cheas makes goat.cheddar now"
-      git checkout master
-      git merge goat-cheddar
-      git push
-      ```
+  ```
+* write what you want to do
+  ```
+  test_that("make.cheas can make cheese",{
+    goat.cheddar <- make.cheas(source = 'goat', style = 'cheddar')
+    expect_equal(color(goat.cheddar), "orange")
+    expect_is(object = goat.cheddar, class = "cheese")
+    expect_true(all(c("sharp", "creamy") %in% taste(goat.cheddar)))
+  }
+  ```
+* now edit the goat.cheddar function until it makes savory, creamy, orange cheese.
+* commit often
+* update documentation and test
+  ```{r, eval = FALSE}
+  library(devtools)
+  document("mypkg")
+  test("mypkg")
+  ```
+* commit again
+* when complete, merge, and push
+  ```{bash, eval = FALSE}
+  git commit -m "make.cheas makes goat.cheddar now"
+  git checkout master
+  git merge goat-cheddar
+  git push
+  ```
 
 ### Test files
 
@@ -91,59 +89,60 @@ Some useful conventions:
 settings.xml <- system.file("pecan.biocro.xml", package = "PEcAn.BIOCRO")
 settings <- read.settings(settings.xml)
 ```
+
 *  database settings can be specified, and tests run only if a connection is available
 
-We currently use the following database to run tests against; tests that require access to a database should be enclosed by `if(db.exists())` to avoid failed tests on systems that do not have the database installed.
-
+We currently use the following database to run tests against; tests that require access to a database should check `db.exists()` and be skipped if it returns FALSE to avoid failed tests on systems that do not have the database installed.
 
 ```r
 settings$database <- list(userid = "bety", 
                           passwd = "bety", 
                           name = "bety",     # database name 
                           host = "localhost" # server name)
-if(db.exists()){
-  test_that(... ## write tests here
-}
+test_that(..., {
+  skip_if_not(db.exists(settings$database))
+  ## write tests here
+})
 ```
+
 *  instructions for installing this are available on the [VM creation
     wiki](VM-Creation.md)
-*  examples can be found in the PEcAn.DB package (`db/inst/tests/`).
+*  examples can be found in the PEcAn.DB package (`base/db/tests/testthat/`).
 
 * Model specific settings can go in the model-specific module, for
 example:
 
 ```r
-settings.xml <- system.file("pecan.biocro.xml", package = "PEcAn.BIOCRO")
+settings.xml <- system.file("extdata/pecan.biocro.xml", package = "PEcAn.BIOCRO")
 settings <- read.settings(settings.xml)
 ```
 * test-specific settings:
- * settings text can be specified inline:
- 
-```
-  settings.text <- "
-  <pecan>
-  <nocheck>nope</nocheck> ## allows bypass of checks in the read.settings functions 
-  <pfts>
-    <pft>
-      <name>ebifarm.pavi</name>
-      <outdir>test/</outdir>
-    </pft>
-  </pfts>
-  <outdir>test/</outdir>
-  <database>
-    <userid>bety</userid>
-    <passwd>bety</passwd>
-    <location>localhost</location>
-    <name>bety</name>
-  </database>
-</pecan>"
-settings <- read.settings(settings.text)
-```
- * values in settings can be updated:
-```r
-settings <- read.settings(settings.text)
-settings$outdir <- "/tmp" ## or any other settings
-```
+  - settings text can be specified inline:
+    ```
+    settings.text <- "
+      <pecan>
+        <nocheck>nope</nocheck> ## allows bypass of checks in the read.settings functions
+        <pfts>
+          <pft>
+            <name>ebifarm.pavi</name>
+            <outdir>test/</outdir>
+          </pft>
+        </pfts>
+        <outdir>test/</outdir>
+        <database>
+          <userid>bety</userid>
+          <passwd>bety</passwd>
+          <location>localhost</location>
+          <name>bety</name>
+        </database>
+      </pecan>"
+    settings <- read.settings(settings.text)
+    ```
+  - values in settings can be updated:
+    ```r
+    settings <- read.settings(settings.text)
+    settings$outdir <- "/tmp" ## or any other settings
+    ```
 
 #### Helper functions created to make testing easier
 
@@ -169,7 +168,7 @@ A test *should* be written for each of the following situations:
 
  * Write tests for cases under which the function should throw an
         error
-  * example: `expect_error(sum("foo")`
+  * example: `expect_error(sum("foo"))`
   * better : `expect_error(sum("foo"), "invalid 'type' (character)")`
 
 #### What types of testing are important to understand?
@@ -198,7 +197,7 @@ tests are found in `~/pecan/<packagename>/inst/tests`, for example
 `utils/inst/tests/`
 
 See attached file and
-[https://github.com/hadley/devtools/wiki/Testing](https://github.com/hadley/devtools/wiki/Testing)
+[http://r-pkgs.had.co.nz/tests.html](http://r-pkgs.had.co.nz/tests.html)
 for details on how to use the testthat package.
 
 ##### List of Expectations
@@ -219,19 +218,19 @@ for details on how to use the testthat package.
 
 ##### How to run tests
 
-add the following to “pecan/tests/run.all.R”
+add the following to “pecan/tests/testthat.R”
 
 ```r
 library(testthat)
 library(mypackage)
 
-test_package("mypackage")
+test_check("mypackage")
 ```
 
 #### basic use of the testthat package
 
 Here is an example of tests (these should be placed in
-`<packagename>/inst/tests/test_<sourcefilename>.R`:
+`<packagename>/tests/testthat/test-<sourcefilename>.R`:
 
 ```r
 test_that("mathematical operators plus and minus work as expected",{
