@@ -25,10 +25,12 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##'   write.config.JULES(defaults, trait.values, settings, run.id)
+##'   write.config.JULES(defaults, trait.samples, settings, run.id)
 ##' }
 ##-------------------------------------------------------------------------------------------------#
-write.config.JULES <- function(defaults, trait.values, settings, run.id) {
+
+write.config.JULES <- function(defaults, trait.samples, settings, run.id){
+  
   # constants
   molH2O_to_grams <- 18.01528
   leafC <- 0.48
@@ -554,37 +556,88 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
 
   ## set npft to the value needed for surface type definition
   npft <- max(c(npft, 5))
-
-  ## --------------------------- END PFTS ------------------------------------------
-
+  
   ## Edit jules_surface_types.nml to set correct number of PFTS
 
+  ## --------------------------- END PFTS ------------------------------------------
+  
+  ## For JULES and, Enter defaults for IC.DAT
+
   ## Edit INITIAL_CONDITIONS.NML soil carbon LAI
+  
+  
   if(useTRIFFID){
-    ic.file <- file.path(local.rundir, "initial_conditions.nml")
-    ic.text <- readLines(con = ic.file, n = -1)
+    
+    if (!is.null(settings$run$inputs$poolinitcond$path)){
+      #Read in path to standard initial conditions file
+      IC.path <- settings$run$inputs$poolinitcond$path
+      
+      ## LAI m2/m2
+      if(!is.null(IC.path)){
+        # Read in netcdf file
+        IC.nc <- ncdf4::nc_open(IC.path)
+        #Get LAI value
+        lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"))
+        #Read in default initial conditions dat file
+        ic.dat  <- file.path(local.rundir, "initial_conditions.dat")
+        ic.dat.text <- readLines(con = ic.dat, n = -1)
+        #For now if number of LAI values does not match number of pfts set them set them across
+        if (npfts!= length(lai)) {
+          ic.dat.text <- gsub("@LAI_DAT@", paste0(rep(lai,npfts), collapse = " "), ic.dat.text)
+          writeLines(ic.dat.text, con = ic.dat)
+        }
+    
+      
+    }else{
+      
+      PEcAn.logger::logger.warning("No Initial Conditions, using defaults")
+      ic.file <- file.path(local.rundir, "initial_conditions.nml")
+      ic.text <- readLines(con = ic.file, n = -1)
+      
+      ## update number of variables
+      ic_nvar_i   <- grep("nvars",ic.text)
+      ic_nvar     <- as.numeric(sub(",","",strsplit(ic.text[ic_nvar_i],"=")[[1]][2]))
+      ic.text[ic_nvar_i] <- paste0("nvars = ",ic_nvar+2,",")
+      
+      ## update use_file
+      use_file <- grep("use_file",ic.text)
+      ic.text[use_file] <- paste0(ic.text[use_file],".true.,.true.,")
+      
+      ## update var
+      ic_var <- grep("^var=",ic.text)
+      ic.text[ic_var] <- paste0(ic.text[ic_var],",'canht','frac',")
+      
+      ## write namelist
+      writeLines(ic.text, con = ic.file)
+      
+      if (is.null(settings$run$inputs$poolinitcond$path)){
+        ## also load and parse IC dat file
+        ## also load and parse IC dat file
+        ic.dat <- file.path(local.rundir, "initial_conditions.dat")
+        ic.text <- readLines(con = ic.dat, n = -1)
+        ic.text[2] <- paste(ic.text[2]," 5.0 5.0 0.5 0.5 0.5 0.2 0.2 0.2 0.2 0.2 0.0 0.0 0.0 0.0")
+        writeLines(ic.text, con = ic.dat)
+    }
+    
 
-    ## update number of variables
-    ic_nvar_i   <- grep("nvars",ic.text)
-    ic_nvar     <- as.numeric(sub(",","",strsplit(ic.text[ic_nvar_i],"=")[[1]][2]))
-    ic.text[ic_nvar_i] <- paste0("nvars = ",ic_nvar+2,",")
-
-    ## update use_file
-    use_file <- grep("use_file",ic.text)
-    ic.text[use_file] <- paste0(ic.text[use_file],".true.,.true.,")
-
-    ## update var
-    ic_var <- grep("^var=",ic.text)
-    ic.text[ic_var] <- paste0(ic.text[ic_var],",'canht','frac',")
-
-    ## write namelist
-    writeLines(ic.text, con = ic.file)
-
-    ## also load and parse IC dat file
-    ic.dat <- file.path(local.rundir, "initial_conditions.dat")
-    ic.text <- readLines(con = ic.dat, n = -1)
-    ic.text[2] <- paste(ic.text[2]," 5.0 5.0 0.5 0.5 0.5 0.2 0.2 0.2 0.2 0.2 0.0 0.0 0.0 0.0")
-    writeLines(ic.text, con = ic.dat)
+        }
+        
+        
+      }else{
+        PEcAn.logger::logger.error("Bad initial conditions filepath")
+      }
+      
+    }
+  }else{ 
+  # If not TRIFFID
+  ic.dat <- file.path(local.rundir, "initial_conditions.dat")
+  ic.dat <- file.path(".", "initial_conditions.dat")
+  ic.text <- readLines(con = ic.dat, n = -1)
+  ic.dat.text <- gsub("@sthuf_dat@", paste0("0.749  0.743  0.754  0.759", collapse = " "), ic.dat.text)
+  ic.dat.text <- gsub("@t_soil@", paste0("276.78  277.46  278.99  282.48", collapse = " "), ic.dat.text)
+  ic.dat.text <- gsub("@snow_tile@", paste0("0.0  0.46  0.0  0.0  0.0  0.0  0.0  0.0  0.0", collapse = " "), ic.dat.text)
+  ic.dat.text <- gsub("@lai_dat@", paste0("5.0  4.0  2.0  4.0  1.0", collapse = " "), ic.dat.text)
+  writeLines(ic.text, con = ic.dat)
   }
 } # write.config.JULES
 

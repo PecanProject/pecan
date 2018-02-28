@@ -4,16 +4,16 @@
 \alias{write.config.JULES}
 \title{Write JULES configuration files}
 \usage{
-write.config.JULES(defaults, trait.values, settings, run.id)
+write.config.JULES(defaults, trait.samples, settings, run.id)
 }
 \arguments{
 \item{defaults}{list of defaults to process}
 
+\item{trait.samples}{vector of samples for a given trait}
+
 \item{settings}{list of settings from pecan settings file}
 
 \item{run.id}{id of run}
-
-\item{trait.samples}{vector of samples for a given trait}
 }
 \value{
 configuration file for JULES for given run
@@ -27,7 +27,7 @@ and the name of the file to create
 }
 \examples{
 \dontrun{
-  write.config.JULES(defaults, trait.values, settings, run.id)
+  write.config.JULES(defaults, trait.samples, settings, run.id)
 }
 }
 \author{

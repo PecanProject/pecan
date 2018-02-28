@@ -53,6 +53,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed incorrect `PEcAn.BIOCRO` daily and yearly results: Was calculating every row from whole simulation instead of that day (#1738)
 
 ### Added
+- Initial conditions for JULES
 - New Dockerfile to create PEcAN specific container for SIPNET.
 
 ### Removed
