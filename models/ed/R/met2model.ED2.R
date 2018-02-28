@@ -26,7 +26,7 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-##' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 265 days. Default = TRUE.
+##' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 365 days. Default = TRUE.
 ##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA,
                           lon = NA, overwrite = FALSE, verbose = FALSE, leap_year = TRUE, ...) {
@@ -147,7 +147,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     ## build time variables (year, month, day of year)
     skip <- FALSE
-    nyr <- floor(udunits2::ud.convert(length(sec) * dt, "seconds", "years"))
+    nyr <- floor(length(sec) * dt / 86400 / 365)
     yr   <- NULL
     doy  <- NULL
     hr   <- NULL
