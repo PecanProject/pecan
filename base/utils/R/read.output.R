@@ -93,7 +93,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
               if(dim.check == 1){
                 newresult <- newresult[pft.ind] 
               }else{
-                newresult <- newresult[pft.ind,] 
+                newresult <- newresult[,pft.ind] 
               }
             }else{ 
               # means this variable is available as per-pft, so written as such to standard ncdf files
@@ -101,7 +101,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
               if(dim.check == 1){
                 newresult <- sum(newresult)
               }else{
-                newresult <- apply(newresult,2,sum)
+                newresult <- apply(newresult,1,sum)
               }
             }
           } # end of per-pft read
