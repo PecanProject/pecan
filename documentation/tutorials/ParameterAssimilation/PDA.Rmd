@@ -1,7 +1,5 @@
----
-title: "Parameter Data Assimilation"
-output: html_document
----
+# Parameter Data Assimilation
+
 
 ## Objectives
 * Gain hands-on experience in using Bayesian MCMC techniques to calibrate a simple ecosystem model using parameter data assimilation (PDA)
@@ -48,7 +46,7 @@ This tutorial assumes you have successfully completed an ensemble and a sensitiv
 ## Defining variables
 
 The following variables need to be set specific to the site being run and the workflow being run
-```{r}
+```{r, eval=FALSE}
 workflow_id <- 99000000002  ## comes from the History table, your successful ensemble run's workflow ID
 
 ## from URL/bety/inputs.  
