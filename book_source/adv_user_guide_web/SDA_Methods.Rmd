@@ -18,7 +18,7 @@ Our goal is build a fully generalizable state data assimilation (SDA) workflow t
 During workflow development, we have been working with tree ring estimated NPP and AGB and pollen derived fractional composition data products. Both of these data products have been estimated with a full accounting of uncertainty, which provides us with state variable observation mean vector and covariance matrix at each time step. These data products are discussed in more detail below. Even though we have been working with specific data products during development, our workflow is generalizable to alternative data products as long as we can calculate a state variable observation mean vector and covariance for a time point. 
 
 ### Tree Rings
-We have been primarily been working with the tree ring data product created by Andria Dawson and Chris Paciorek and the PEcAn tree ring allometry module. They have developed a Bayesian model that estimates annual aboveground biomass increment and aboveground biomass for each tree in a dataset. We obtain this data and aggregate to the level appropriate for the ecosystem model. In SIPNET, we are assimilating annual gross woody increment and total aboveground biomass. In LINKAGES, we are assimilating annual species biomass. More information on deriving these tree ring data products can be found in Dawson et al 201?.
+We have been primarily been working with the tree ring data product created by Andria Dawson and Chris Paciorek and the PEcAn tree ring allometry module. They have developed a Bayesian model that estimates annual aboveground biomass increment (Mg/ha/yr) and aboveground biomass (Mg/ha) for each tree in a dataset. We obtain this data and aggregate to the level appropriate for the ecosystem model. In SIPNET, we are assimilating annual gross woody increment (Mg/ha/yr) and above ground woody biomass (Mg/ha). In LINKAGES, we are assimilating annual species biomass. More information on deriving these tree ring data products can be found in Dawson et al 201?.
 
 We have been working mostly with tree data collected at Harvard Forest. Tree rings and census data were collected at Lyford Plot between 1960 and 2010 in three separate plots. Other tree ring data will be added to this analysis in the future from past PEON courses (UNDERC), Kelly Heilman (Billy's Lake and Bigwoods), and Alex Dye (Huron Mt. Club).
 
@@ -119,7 +119,7 @@ tobit2space.model <- nimbleCode({
 
 
 #### Generalized Ensemble Filter Model Description
-Below is the BUGS code for the analysis full analysis model. The forecast mean an covariance are calculated from the tobit2space model above. We use a tobit likelihood in this model because there are instances when the data may be left or right censored. Process variance is included by adding a latent model state (X) with a process precision matrix (q). We update our prior on q at each time step using our estimate of q from the previous time step. 
+Below is the BUGS code for the full analysis model. The forecast mean an covariance are calculated from the tobit2space model above. We use a tobit likelihood in this model because there are instances when the data may be left or right censored. Process variance is included by adding a latent model state (X) with a process precision matrix (q). We update our prior on q at each time step using our estimate of q from the previous time step. 
 
 ```{tobitBase, include = TRUE}
   tobit.model <- nimbleCode({ 
