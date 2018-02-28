@@ -413,7 +413,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
     ## out <- add(getHdf5Data(ncT, 'AVG_SENSIBLE_TOT'),27,row, yr) ## Qh
     out <- add(getHdf5Data(ncT, "FMEAN_SENSIBLE_AC_PY"), 27, row, yr)  ## Qh
     out <- add(getHdf5Data(ncT, "FMEAN_VAPOR_LC_PY") + getHdf5Data(ncT, "FMEAN_VAPOR_WC_PY") + 
-                 getHdf5Data(ncT, "FMEAN_VAPOR_GC_PY"), 28, row, yr)  ## Qle
+                 getHdf5Data(ncT, "FMEAN_VAPOR_GC_PY") + getHdf5Data(ncT, "FMEAN_TRANSP_PY"), 28, row, yr)  ## Qle
     out <- add(-999, 29, row, yr)  ## Swnet
     out <- add(-999, 30, row, yr)  ## RootMoist
     out <- add(getHdf5Data(ncT, "FMEAN_TRANSP_PY"), 31, row, yr)  ## Tveg
