@@ -84,7 +84,7 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
   load(fname)
 
   my.dat = unlist(ensemble.output)
-  if(is.null(my.dat) | is.na(my.dat)){
+  if(is.null(my.dat) | all(is.na(my.dat))){
     PEcAn.logger::logger.warn("no data in ensemble.output")
     return()
   }
