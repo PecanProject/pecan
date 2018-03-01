@@ -25,7 +25,7 @@ met2model.ED2(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
 
 \item{verbose}{should the function be very verbose}
 
-\item{leap_year}{Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 265 days. Default = TRUE.}
+\item{leap_year}{Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 365 days. Default = TRUE.}
 }
 \description{
 met2model wrapper for ED2
