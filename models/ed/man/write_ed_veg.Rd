@@ -7,14 +7,14 @@
 write_ed_veg(ed_veg, path_prefix)
 }
 \arguments{
-\item{ed_veg}{ED vegetation inputs object (see [read_ed_veg]).}
+\item{ed_veg}{ED vegetation inputs object (see \link{read_ed_veg}).}
 
 \item{path_prefix}{Desired path and prefix (without latitude and longitude)}
 }
 \value{
-Named list (`css`, `pss`, `site`) of full file paths, invisibly
+Named list (\code{css}, \code{pss}, \code{site}) of full file paths, invisibly
 }
 \description{
-Write a complete [ED inputs object][read_ed_veg] to disk. `css`, `pss`, and 
-`site` files are automatically named and correctly formatted.
+Write a complete \link[=read_ed_veg]{ED inputs object} to disk. \code{css}, \code{pss}, and
+\code{site} files are automatically named and correctly formatted.
 }

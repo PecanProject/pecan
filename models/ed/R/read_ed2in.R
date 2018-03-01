@@ -1,10 +1,9 @@
 #' Read ED2IN file to named list
 #'
-#' Parse an ED2IN file to a named list, such that `NL%MYTAG = 'value'` gets 
-#' converted to `list(MYTAG = 'value')`.
+#' Parse an ED2IN file to a named list.
 #'
 #' @param filename Full path to ED2IN file
-#' @return Named list of the 
+#' @return Named list of `tag = value`
 #' @export
 read_ed2in <- function(filename) {
   raw_file <- readLines(filename)

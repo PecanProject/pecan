@@ -40,15 +40,16 @@ check_ed_metheader_format <- function(ed_metheader_format, check_files = TRUE) {
     }
   )
 
+  number <- c("numeric", "integer")
   testthat::test_that(
     "Met header metadata fields are valid",
     {
-      testthat::expect_is(ed_metheader_format$nlon, "numeric")
-      testthat::expect_is(ed_metheader_format$nlat, "numeric")
-      testthat::expect_is(ed_metheader_format$dx, "numeric")
-      testthat::expect_is(ed_metheader_format$dy, "numeric")
-      testthat::expect_is(ed_metheader_format$xmin, "numeric")
-      testthat::expect_is(ed_metheader_format$ymin, "numeric")
+      testthat::expect_true(is.numeric(ed_metheader_format$nlon), "numeric")
+      testthat::expect_true(is.numeric(ed_metheader_format$nlat), "numeric")
+      testthat::expect_true(is.numeric(ed_metheader_format$dx), "numeric")
+      testthat::expect_true(is.numeric(ed_metheader_format$dy), "numeric")
+      testthat::expect_true(is.numeric(ed_metheader_format$xmin), "numeric")
+      testthat::expect_true(is.numeric(ed_metheader_format$ymin), "numeric")
       testthat::expect_is(ed_metheader_format$variables, "data.frame")
     }
   )

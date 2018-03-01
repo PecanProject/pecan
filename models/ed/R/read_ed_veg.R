@@ -24,7 +24,7 @@ read_ed_veg <- function(path_prefix, latitude = NULL, longitude = NULL,
   } else {
     lon_prefix <- paste0("lon", latlon_rxp)
   }
-  path_prefix_full <- paste0(path_prefix, ".", lat_prefix, lon_prefix)
+  path_prefix_full <- paste0(path_prefix, lat_prefix, lon_prefix)
 
   file_matches <- match_file(path_prefix_full, expect = 3)
   css_file <- match_file(path_prefix_full, suffix = "css", expect = 1)
@@ -78,9 +78,9 @@ get_latlon <- function(filepath, latlon) {
   fname <- basename(filepath)
   latlon_rxp <- "-?[[:digit:]]{1,3}(\\.[[:digit:]]*)?"
   rxp <- paste0(".*", latlon, "(", latlon_rxp, ").*")
-  stopifnot(grepl(latlon_rxp, fname))
-  out <- as.numeric(gsub(latlon_rxp, "\\1", fname))
-  stopifnot(!is.na(out), length(out) != 1)
+  stopifnot(grepl(rxp, fname))
+  out <- as.numeric(gsub(rxp, "\\1", fname))
+  stopifnot(!is.na(out), length(out) == 1)
   out
 }
 

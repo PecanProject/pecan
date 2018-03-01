@@ -7,20 +7,20 @@
 check_ed_metheader(ed_metheader, check_files = TRUE)
 }
 \arguments{
-\item{ed_metheader}{ED meteorology header object (see [read_ed_metheader])}
+\item{ed_metheader}{ED meteorology header object (see \link{read_ed_metheader})}
 
-\item{check_files}{Logical. If `TRUE`, perform basic diagnostics on met 
+\item{check_files}{Logical. If \code{TRUE}, perform basic diagnostics on met
 files as well.}
 
 \item{ed_metheader_format}{A single format inside the met header object}
 }
 \description{
-Check that the object has all components, and throw an error if anything is 
-wrong. Optionally, do some basic checks of actualy meteorology files as 
+Check that the object has all components, and throw an error if anything is
+wrong. Optionally, do some basic checks of actualy meteorology files as
 well.
 }
 \details{
-`check_ed_metheader_format` checks an individual format (one item in the 
-`ed_metheader` list). `check_ed_metheader` applies these checks to each item 
+\code{check_ed_metheader_format} checks an individual format (one item in the
+\code{ed_metheader} list). \code{check_ed_metheader} applies these checks to each item
 in the format list.
 }

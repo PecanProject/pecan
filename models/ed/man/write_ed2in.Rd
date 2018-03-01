@@ -15,18 +15,18 @@ write_ed2in(ed2in, filename, custom_header = character(), barebones = FALSE)
   barebones = FALSE)
 }
 \arguments{
-\item{ed2in}{Named list of ED2IN tag-value pairs. See [read_ed2in].}
+\item{ed2in}{Named list of ED2IN tag-value pairs. See \link{read_ed2in}.}
 
 \item{filename}{Target file name}
 
-\item{custom_header}{Character vector for additional header comments. Each 
+\item{custom_header}{Character vector for additional header comments. Each
 item gets its own line.}
 
-\item{barebones}{Logical. If `TRUE`, omit comments and only write tag-value pairs.}
+\item{barebones}{Logical. If \code{TRUE}, omit comments and only write tag-value pairs.}
 }
 \description{
-This writes a ED2IN file from an `ed2in` list. Default method writes a 
-barebones file without comments. S3 method for `ed2in` objects extracts 
-comments and their locations from the object attributes (if `barebones` is 
-`FALSE`).
+This writes a ED2IN file from an \code{ed2in} list. Default method writes a
+barebones file without comments. S3 method for \code{ed2in} objects extracts
+comments and their locations from the object attributes (if \code{barebones} is
+\code{FALSE}).
 }

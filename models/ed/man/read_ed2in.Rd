@@ -10,9 +10,8 @@ read_ed2in(filename)
 \item{filename}{Full path to ED2IN file}
 }
 \value{
-Named list of the
+Named list of \code{tag = value}
 }
 \description{
-Parse an ED2IN file to a named list, such that `NL%MYTAG = 'value'` gets 
-converted to `list(MYTAG = 'value')`.
+Parse an ED2IN file to a named list.
 }

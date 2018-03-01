@@ -12,16 +12,16 @@ prepare_ed_veg_filename(path_prefix, suffix, latitude = NULL,
 
 \item{suffix}{Character string of filename suffix.}
 
-\item{latitude}{Site latitude coordinate (default = `NULL`)}
+\item{latitude}{Site latitude coordinate (default = \code{NULL})}
 
-\item{longitude}{Site longitude coordinate (default = `NULL`)}
+\item{longitude}{Site longitude coordinate (default = \code{NULL})}
 }
 \value{
 Character string of full formatted file path
 }
 \description{
-Adds the latitude and longitude, or checks if they are formatted correctly. 
-Then, splits the prefix into the directory and base name, appends the suffix 
-to the base name (adding a starting dot, if necessary), and returns the 
+Adds the latitude and longitude, or checks if they are formatted correctly.
+Then, splits the prefix into the directory and base name, appends the suffix
+to the base name (adding a starting dot, if necessary), and returns the
 filename as a character.
 }

@@ -13,16 +13,16 @@ check_pss(pss, site = NULL)
 check_site(site)
 }
 \arguments{
-\item{css}{css data object (see [read_css])}
+\item{css}{css data object (see \link{read_css})}
 
-\item{pss}{pss data object (see [read_pss])}
+\item{pss}{pss data object (see \link{read_pss})}
 
-\item{site}{site data object (see [read_site])}
+\item{site}{site data object (see \link{read_site})}
 }
 \value{
-`NULL` (invisibly)
+\code{NULL} (invisibly)
 }
 \description{
-Check internal file formatting, and optionally check for compatibility 
+Check internal file formatting, and optionally check for compatibility
 against related files.
 }

@@ -15,12 +15,12 @@ read_site(filepath, check = TRUE, ...)
 \arguments{
 \item{filepath}{Full path to css, pss, or site file}
 
-\item{check}{Logical. If `TRUE` (default), [check][check_css] that file is valid.}
+\item{check}{Logical. If \code{TRUE} (default), \link[=check_css]{check} that file is valid.}
 
-\item{...}{Additional arguments to [check functions][check_css].}
+\item{...}{Additional arguments to \link[=check_css]{check functions}.}
 }
 \value{
-`data.frame` containing
+\code{data.frame} containing
 }
 \description{
 Read files into objects usable by other PEcAn.ED2 utilities, and optionally check for errors.

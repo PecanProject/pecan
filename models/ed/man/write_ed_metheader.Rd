@@ -7,7 +7,7 @@
 write_ed_metheader(ed_metheader, filename)
 }
 \arguments{
-\item{ed_metheader}{ED meteorlogy header object (see [read_ed_metheader])}
+\item{ed_metheader}{ED meteorlogy header object (see \link{read_ed_metheader})}
 
 \item{filename}{Full file name (including path) of ED met header}
 }

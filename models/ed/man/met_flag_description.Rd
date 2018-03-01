@@ -12,8 +12,10 @@ met_flag_description
 Descriptions of ED met header variable flags.
 }
 \details{
-`data.frame` with the following columns:
- - `flag` -- Numeric flag (in header file)
- - `flag_description` -- Description of flag
+\code{data.frame} with the following columns:
+\itemize{
+\item \code{flag} -- Numeric flag (in header file)
+\item \code{flag_description} -- Description of flag
+}
 }
 \keyword{datasets}

@@ -13,17 +13,17 @@ write_pss(pss, path_prefix, latitude = NULL, longitude = NULL)
 write_site(site, path_prefix, latitude = NULL, longitude = NULL)
 }
 \arguments{
-\item{css}{css object (see [read_css])}
+\item{css}{css object (see \link{read_css})}
 
 \item{path_prefix}{Desired path and prefix (without latitude and longitude)}
 
-\item{latitude}{Site latitude coordinate (default = `NULL`)}
+\item{latitude}{Site latitude coordinate (default = \code{NULL})}
 
-\item{longitude}{Site longitude coordinate (default = `NULL`)}
+\item{longitude}{Site longitude coordinate (default = \code{NULL})}
 
-\item{pss}{pss object (see [read_pss])}
+\item{pss}{pss object (see \link{read_pss})}
 
-\item{site}{site object (see [read_site])}
+\item{site}{site object (see \link{read_site})}
 }
 \value{
 Full file path as character, invisibly
@@ -32,8 +32,8 @@ Full file path as character, invisibly
 Functions for writing css, pss, and site files from their respective objects.
 }
 \details{
-Latitude and longitude coordinates will be converted directly to character, 
-without any changes to their precision. If they are `NULL` (default), the 
-function assumes that `lat` and `lon` are already in the `path_prefix`, and 
+Latitude and longitude coordinates will be converted directly to character,
+without any changes to their precision. If they are \code{NULL} (default), the
+function assumes that \code{lat} and \code{lon} are already in the \code{path_prefix}, and
 if they are absent, the function will throw an error.
 }

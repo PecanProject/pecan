@@ -7,56 +7,56 @@
 read_ed_metheader(filename, check = TRUE, check_files = TRUE)
 }
 \arguments{
-\item{filename}{File name (including path) of met driver header file, as 
+\item{filename}{File name (including path) of met driver header file, as
 character}
 
-\item{check}{Logical, whether or not to check file for correctness (default 
-= `TRUE`)}
+\item{check}{Logical, whether or not to check file for correctness (default
+= \code{TRUE})}
 
-\item{check_files}{Logical. If `TRUE`, perform basic diagnostics on met 
+\item{check_files}{Logical. If \code{TRUE}, perform basic diagnostics on met
 files as well.}
 }
 \value{
 List of ED met input parameters. See Details.
 }
 \description{
-Read a ED_MET_DRIVER_HEADER file into a list-like object that can be 
+Read a ED_MET_DRIVER_HEADER file into a list-like object that can be
 manipulated within R. Returns a list of file formats.
 }
 \details{
-The output is an unnamed list with each element corresponding to a single 
+The output is an unnamed list with each element corresponding to a single
 file format. Each file format contains the following elements:
+\itemize{
+\item \code{path_prefix} -- Path and prefix of files
+\item \code{nlon} -- Number of longitude grid cells
+\item \code{nlat} -- Number of latitude grid cells
+\item \code{dx} -- Size of longitude grid cell
+\item \code{dy} -- Size of latitude grid cell
+\item \code{xmin} -- Minimum longitude
+\item \code{ymin} -- Minimum latitude
+\item \code{variables} -- Data frame of variables, with the columns described below.
+Starred columns are required for writing. This table is left joined with
+\link{met_variable_description} and \link{met_flag_description}.
+\itemize{
+\item \code{variable} -- Variable name
+\item \code{description} -- Variable description
+\item \code{unit} -- Variable unit
+\item \code{update_frequency} -- Update frequency (seconds) or scalar values if
+\code{flag=4}
+\item \code{flag} -- Variable flags.
+\item \code{flag_description} -- Description of variable flag
+}
+}
 
-- `path_prefix` -- Path and prefix of files
-- `nlon` -- Number of longitude grid cells
-- `nlat` -- Number of latitude grid cells
-- `dx` -- Size of longitude grid cell
-- `dy` -- Size of latitude grid cell
-- `xmin` -- Minimum longitude
-- `ymin` -- Minimum latitude
-- `variables` -- Data frame of variables, with the columns described below.  
-Starred columns are required for writing. This table is left joined with 
-[met_variable_description] and [met_flag_description].
-   - `variable` -- Variable name
-   - `description` -- Variable description
-   - `unit` -- Variable unit
-   - `update_frequency` -- Update frequency (seconds) or scalar values if 
-   `flag=4`
-   - `flag` -- Variable flags.
-   - `flag_description` -- Description of variable flag
-
-The formatting of a meteorlogy header file is as follows (from the [ED 
-GitHub Wiki][https://github.com/EDmodel/ED2/wiki/Drivers]):
-
-```
-<number of file formats>    # Repeat lines below this number of times
+The formatting of a meteorlogy header file is as follows (from the \link[=https://github.com/EDmodel/ED2/wiki/Drivers]{ED
+GitHub Wiki}):\preformatted{<number of file formats>    # Repeat lines below this number of times
 <path and prefix of files>
 <nlon>, <nlat>, <dx>, <dy>, <xmin>, <ymin>
 <number of variables>
 <list of variable names>
 <list of update frequencies (seconds) or scalar values if flag=4>
 <list of variable flags>
-```
+}
 
 The variables in the third row are defined as follows:
 }
