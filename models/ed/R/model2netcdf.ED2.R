@@ -777,8 +777,8 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 #               "analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
 #               "analysis-E-2000-04-00-000000-g01.h5"
 #
-# dbh_breaks : determines the bins braks, vector, 0 will represent a single DBH bin from 0 - Infinity cm
-# ! NOTE : now read.output would work only for dbh_breaks = 0 
+# dbh_breaks : determines the bins breaks, vector, 0 will represent a single DBH bin from 0 - Infinity cm
+# ! NOTE : currently read.output would work only for dbh_breaks = 0 
 # pft_names  : character vector with names of PFTs
 # pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
 
@@ -911,7 +911,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
     }
   }
   
-  out <- lapply(out, function(o) aperm(o, c(2,3,1)))
+  out <- lapply(out, function(o) aperm(o, c(2,1,3)))
   out$PFT <- pfts # will write this to the .nc file
   
   return(out)
@@ -938,12 +938,12 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft_names, dbh_breaks, .
   # ----- fill list
   
   t <- ncdf4::ncdim_def(name = "dtime", units = paste0("days since ", yr, "-01-01 00:00:00"), 
-                        vals = seq(begins, ends, length.out = dim(out[[1]])[3]), 
+                        vals = seq(begins, ends, length.out = dim(out[[1]])[2]), 
                         calendar = "standard", unlim = TRUE)
   
   
   d <- ncdf4::ncdim_def(name = "dbh_breaks", units ="bins", vals = dbh_breaks)
-  p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts, longname = "Plant Functional Type")
+  p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts, longname = "Plant Functional Type", unlim = TRUE)
   
   # NOTE : the order of dimensions is going to be important for read.output
   # this was the fist case of reading pft-specific outputs at the time
