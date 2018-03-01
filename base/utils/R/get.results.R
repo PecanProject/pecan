@@ -104,7 +104,8 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
       traits <- trait.names[[pft.name]]
       
       # when there is variable-per pft in the outputs, check for the tag for deciding SA per pft
-      per.pft <- ifelse(!is.null(settings$sensitivity.analysis$perpft), settings$sensitivity.analysis$perpft, FALSE)
+      per.pft <- ifelse(!is.null(settings$sensitivity.analysis$perpft), 
+                        as.logical(settings$sensitivity.analysis$perpft), FALSE)
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits, 
                                                        quantiles = quantiles, 
                                                        pecandir = outdir, 
