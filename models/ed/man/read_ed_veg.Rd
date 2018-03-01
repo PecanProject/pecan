@@ -9,17 +9,17 @@ read_ed_veg(path_prefix, latitude = NULL, longitude = NULL, check = TRUE)
 \arguments{
 \item{path_prefix}{Full path and prefix to initial condition files.}
 
-\item{latitude}{Run latitude (default = `NULL`). If `NULL`, deduced from file name.}
+\item{latitude}{Run latitude (default = \code{NULL}). If \code{NULL}, deduced from file name.}
 
-\item{longitude}{Run longitude (default = `NULL`). If `NULL`, deduced from file name.}
+\item{longitude}{Run longitude (default = \code{NULL}). If \code{NULL}, deduced from file name.}
 
 \item{check}{Whether or not to check css, pss, and site files for validity.
-Default = `TRUE`.}
+Default = \code{TRUE}.}
 }
 \value{
-List containing `css`, `pss`, and `site` objects, `latitude` and 
-`longitude`, and `orig_paths`, a list of paths to the original `css`, `pss`, 
-and `site` files.
+List containing \code{css}, \code{pss}, and \code{site} objects, \code{latitude} and
+\code{longitude}, and \code{orig_paths}, a list of paths to the original \code{css}, \code{pss},
+and \code{site} files.
 }
 \description{
 Read ED2 css, pss, and site files into a single ED input object.

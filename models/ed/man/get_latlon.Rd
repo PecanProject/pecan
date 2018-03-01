@@ -9,14 +9,14 @@ get_latlon(filepath, latlon)
 \arguments{
 \item{filepath}{Path to a css, pss, or site file}
 
-\item{latlon}{Which value to retrieve, either "lat" for latitude or "lon" 
+\item{latlon}{Which value to retrieve, either "lat" for latitude or "lon"
 for longitude}
 }
 \value{
 Numeric value of latitude or longitude
 }
 \description{
-Automatically determine latitude or longitude from an ED input filepath. If 
-the latitude/longitude regular expression isn't matched, this will throw an 
+Automatically determine latitude or longitude from an ED input filepath. If
+the latitude/longitude regular expression isn't matched, this will throw an
 error.
 }

@@ -28,7 +28,8 @@ Imports:
     tidyr,
     dplyr,
     tibble,
-    lubridate
+    lubridate,
+    purrr
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
@@ -36,3 +37,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 RoxygenNote: 6.0.1
+Roxygen: list(markdown = TRUE)

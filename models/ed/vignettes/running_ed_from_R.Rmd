@@ -37,7 +37,7 @@ The source code for the ED2 model is available [on GitHub](https://github.com/ed
 Alternatively, if you have [Singularity](https://singularity.lbl.gov) container software installed, you can use a pre-built Singularity container available on [Singularity Hub](https://www.singularity-hub.org/collections/642):
 
 ```
-singularity pull shub://ashiklom/ED2
+singularity pull --name ed2.simg shub://ashiklom/ED2
 ```
 
 ## Common ED inputs
@@ -74,57 +74,70 @@ However, `PEcAn.ED2` provides templates and utility functions to facilitate crea
 
 Assuming you already have properly formatted inputs, doing an ED run requires creating an ED configuration (typically, an `ED2IN` file) and pointing the ED executable at it.
 
-First, read the `ED2IN` template file:
+First, read a `ED2IN` template file:
 
 ```{r read_ed2in}
-ed2in_template <- system.file("ED2IN.rgit", package = "PEcAn.ED2")
-ed2in_raw <- read_ed2in(ed2in_template)
+ed2in_raw <- read_ed2in(system.file("ED2IN.rgit", package = "PEcAn.ED2"))
 ```
 
 Then, set up the `ED2IN` with the required components.
 
 ```{r modify_ed2in}
-met_driver_raw <- "~/Projects/nasa-rtm/edr-da/ed-inputs/met3/US-Syv/ED_MET_DRIVER_HEADER.template"
-met_driver_obj <- read_ed_metheader(met_driver_raw, check = FALSE)
-met_driver_obj[[1]]$path_prefix <- "~/Projects/nasa-rtm/edr-da/ed-inputs/met3/US-Syv/US-Syv_"
-met_driver_obj[[1]]$xmin <- -89.5
-met_driver_obj[[1]]$ymin <- 43
-
-veg_prefix <- "~/Projects/nasa-rtm/edr-da/ed-inputs/sites/BH02_site_1-25665/FFT.2008"
-latitude <- 43.3724
-longitude <- -89.9071
-
-met_driver <- file.path(rundir, "ED_MET_DRIVER_HEADER")
-write_ed_metheader(met_driver_obj, met_driver)
-
 ed2in <- modify_ed2in(
   ed2in_raw,
-  veg_prefix = veg_prefix,
-  latitude = latitude,
-  longitude = longitude,
-  met_driver = met_driver,
+  veg_prefix = "/path/to/vegetation_prefix_",   # Contains vegetation_prefix_lat*lon*.css
+  latitude = 43.37,
+  longitude = -89.91,
+  met_driver = "/path/to/ED_MET_DRIVER_HEADER",
   EDI_path = file.path(rundir, "EDI"),
-  start_date = "2001-06-01",
-  end_date = "2001-08-01",
+  start_date = "2001-07-01",
+  end_date = "2001-07-10",
   run_dir = file.path(rundir, "run"),
   output_dir = file.path(rundir, "out"),
   runtype = "INITIAL",
-  IOPTINPT = NULL
+  EXPNME = "ED test run"
 )
+```
+
+It is also a good idea to check the `ED2IN` file for internal consistency.
+
+```{r check_ed2in}
+check_ed2in(ed2in)
+```
+
+Assuming the `ed2in` object is valid, you then write it to a file to a desired directory.
+This doesn't have to be the run directory (nor does the file have to be named `ED2IN`), but it's a good idea to keep the `ED2IN` file close to the run outputs, as it provides useful metadata for the run.
+
+```{r write_ed2in}
 ed2in_path <- file.path(rundir, "ED2IN")
 write_ed2in(ed2in, ed2in_path)
 ```
 
-TODO:
+Finally, start the ED run!
 
-- Name formats in met driver header
-- `check_ed2in`
-    - Check that all met header dates exist
-    - Check that latitude and longitude are in ED_MET_DRIVER_HEADER
+```{r start_ed_run}
+run_ed_singularity("/path/to/ed2.simg", ed2in_path)
+```
 
-Finally, execute ED!
+# Utilities for working with ED files
 
-```{r run_ed}
-ed2_path <- "~/Projects/ED2/ED/build/ed_2.1-dbg"
-system2(normalizePath(ed2_path), c("-f", normalizePath(ed2in_path)))
+## Meteorological inputs
+
+```{r met_driver}
+met_driver_raw <- "~/Projects/nasa-rtm/edr-da/ed-inputs/met3/US-Syv/ED_MET_DRIVER_HEADER.template"
+met_driver_obj <- read_ed_metheader(met_driver_raw, check = FALSE)
+met_driver_obj[[1]]$path_prefix <- "~/Projects/nasa-rtm/edr-da/ed-inputs/met3/US-Syv/US-Syv_"
+met_driver_obj[[1]]$xmin <- -90
+met_driver_obj[[1]]$ymin <- 43
+
+met_driver_path <- file.path(rundir, "ED_MET_DRIVER_HEADER")
+write_ed_metheader(met_driver_obj, met_driver_path)
+```
+
+
+```{r veg_input}
+veg_prefix <- "~/Projects/nasa-rtm/edr-da/ed-inputs/sites/BH02_site_1-25665/FFT.2008"
+latitude <- 43.3724
+longitude <- -89.9071
+veg_input <- read_ed_veg(veg_prefix, latitude = latitude, longitude = longitude)
 ```

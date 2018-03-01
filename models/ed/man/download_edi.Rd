@@ -7,16 +7,16 @@
 download_edi(directory)
 }
 \arguments{
-\item{directory}{Target directory for unzipping files. Will be created if it 
+\item{directory}{Target directory for unzipping files. Will be created if it
 doesn't exist.}
 }
 \value{
-`TRUE`, invisibly
+\code{TRUE}, invisibly
 }
 \description{
-Download and unzip common ED inputs from a public Open Science Framework 
-(OSF) repository (https://osf.io/b6umf). Inputs include the Olson Global 
-Ecosystems (OGE) database (`oge2OLD`) and the `chd` and `dgd` databases.
+Download and unzip common ED inputs from a public Open Science Framework
+(OSF) repository (https://osf.io/b6umf). Inputs include the Olson Global
+Ecosystems (OGE) database (\code{oge2OLD}) and the \code{chd} and \code{dgd} databases.
 }
 \details{
 The total download size around 28 MB.

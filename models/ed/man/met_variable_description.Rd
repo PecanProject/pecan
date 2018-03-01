@@ -12,9 +12,11 @@ met_variable_description
 Helpful information about ED_MET_DRIVER files.
 }
 \details{
-`data.frame` with the following columns:
-- `variable` -- Variable name
-- `description` -- Variable description
-- `unit` -- Variable unit (character, parse-able by `udunints2`)
+\code{data.frame} with the following columns:
+\itemize{
+\item \code{variable} -- Variable name
+\item \code{description} -- Variable description
+\item \code{unit} -- Variable unit (character, parse-able by \code{udunints2})
+}
 }
 \keyword{datasets}

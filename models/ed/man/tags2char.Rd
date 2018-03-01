@@ -7,8 +7,8 @@
 tags2char(ed2in)
 }
 \arguments{
-\item{ed2in}{Named list of ED2IN tag-value pairs. See [read_ed2in].}
+\item{ed2in}{Named list of ED2IN tag-value pairs. See \link{read_ed2in}.}
 }
 \description{
-Converts an `ed2in`-like list to an ED2IN-formatted character vector.
+Converts an \code{ed2in}-like list to an ED2IN-formatted character vector.
 }

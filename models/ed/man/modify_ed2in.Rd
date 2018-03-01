@@ -7,82 +7,84 @@
 modify_ed2in(ed2in, ..., veg_prefix = NULL, latitude = NULL,
   longitude = NULL, met_driver = NULL, start_date = NULL,
   end_date = NULL, EDI_path = NULL, output_types = NULL,
-  output_dir = NULL, run_dir = NULL, runtype = NULL,
+  output_dir = NULL, run_dir = NULL, runtype = NULL, run_name = NULL,
   pecan_defaults = TRUE, add_if_missing = FALSE, check_paths = TRUE,
   .dots = list())
 }
 \arguments{
 \item{...}{Namelist arguments (see Description and Details)}
 
-\item{veg_prefix}{Vegetation file prefix (`SFILIN`). If `lat` and `lon` are part of the prefix,}
+\item{veg_prefix}{Vegetation file prefix (\code{SFILIN}). If \code{lat} and \code{lon} are part of the prefix,}
 
-\item{latitude}{Run latitude coordinate. If `veg_prefix` is also provided, 
-pass to [read_ed_veg], otherwise set in ED2IN directly. Should be omitted if 
-`lat` and `lon` are already part of `veg_prefix`.}
+\item{latitude}{Run latitude coordinate. If \code{veg_prefix} is also provided,
+pass to \link{read_ed_veg}, otherwise set in ED2IN directly. Should be omitted if
+\code{lat} and \code{lon} are already part of \code{veg_prefix}.}
 
-\item{longitude}{Run longitude coordinate. If `veg_prefix` is also provided, 
-pass to [read_ed_veg], otherwise set in ED2IN directly. Should be omitted if 
-`lat` and `lon` are already part of `veg_prefix`.}
+\item{longitude}{Run longitude coordinate. If \code{veg_prefix} is also provided,
+pass to \link{read_ed_veg}, otherwise set in ED2IN directly. Should be omitted if
+\code{lat} and \code{lon} are already part of \code{veg_prefix}.}
 
-\item{met_driver}{Path and filename of met driver header 
-(`ED_MET_DRIVER_DB`)}
+\item{met_driver}{Path and filename of met driver header
+(\code{ED_MET_DRIVER_DB})}
 
-\item{start_date}{Run start date (`IMONTHA`, `IDATEA`, `IYEARA`, `ITIMEA`)}
+\item{start_date}{Run start date (\code{IMONTHA}, \code{IDATEA}, \code{IYEARA}, \code{ITIMEA})}
 
-\item{end_date}{Run end date (`IMONTHZ`, `IDATEZ`, `IYEARZ` `ITIMEZ`)}
+\item{end_date}{Run end date (\code{IMONTHZ}, \code{IDATEZ}, \code{IYEARZ} \code{ITIMEZ})}
 
-\item{EDI_path}{Path to `EDI` directory, which often has the `VEG_DATABASE` 
-and `THSUMS_DATABASE` files.}
+\item{EDI_path}{Path to \code{EDI} directory, which often has the \code{VEG_DATABASE}
+and \code{THSUMS_DATABASE} files.}
 
 \item{output_types}{Character vector of output types (see Details)}
 
-\item{output_dir}{Output directory, for `FFILOUT` (analysis) and `SFILOUT` 
+\item{output_dir}{Output directory, for \code{FFILOUT} (analysis) and \code{SFILOUT}
 (history) files}
 
-\item{run_dir}{Directory in which to store run-related config files (e.g. `config.xml`).}
+\item{run_dir}{Directory in which to store run-related config files (e.g. \code{config.xml}).}
 
 \item{runtype}{ED initialization mode; either "INITIAL" or "HISTORY"}
 
-\item{pecan_defaults}{Logical. If `TRUE` (default), set common `ED2IN` defaults.}
+\item{pecan_defaults}{Logical. If \code{TRUE} (default), set common \code{ED2IN} defaults.}
 
-\item{add_if_missing}{Logical. If `TRUE`, all-caps arguments not found in 
-existing `ed2in` list will be added to the end.  Default = `FALSE`.}
+\item{add_if_missing}{Logical. If \code{TRUE}, all-caps arguments not found in
+existing \code{ed2in} list will be added to the end.  Default = \code{FALSE}.}
 
-\item{check_paths}{Logical. If `TRUE` (default), for any parameters that 
+\item{check_paths}{Logical. If \code{TRUE} (default), for any parameters that
 expect files, check that files exist and throw an error if they don't.}
 
-\item{.dots}{A list of `...` arguments.}
+\item{.dots}{A list of \code{...} arguments.}
 }
 \value{
-Modified `ed2in` list object. See [read_ed2in].
+Modified \code{ed2in} list object. See \link{read_ed2in}.
 }
 \description{
-This is a convenience function for modifying an `ed2in` list object.  
-Arguments passed in all caps are assumed to be ED2IN namelist parameters and 
-are inserted directly into the `ed2in` list objects. Lowercase arguments are 
-defined explicitly (see "Parameters"), and those that do not match explicit 
-arguments will be ignored with a warning. Because the lowercase arguments 
-come with additional validity checks, they are recommended over modifying 
+This is a convenience function for modifying an \code{ed2in} list object.
+Arguments passed in all caps are assumed to be ED2IN namelist parameters and
+are inserted directly into the \code{ed2in} list objects. Lowercase arguments are
+defined explicitly (see "Parameters"), and those that do not match explicit
+arguments will be ignored with a warning. Because the lowercase arguments
+come with additional validity checks, they are recommended over modifying
 the ED2IN file directly via uppercase arguments.
 }
 \details{
-Namelist arguments are applied last, and will silently overwrite any 
+Namelist arguments are applied last, and will silently overwrite any
 arguments set by special case arguments.
 
-Namelist arguments can be stored in a list and passed in via the `.dots` 
-argument (e.g. `.dots = list(SFILIN = "/path/prefix_", ...)`), or using the 
-`rlang::!!!` splicing operator. If both are provided, they will be spliced 
-together, with the `...` taking precedence.
+Namelist arguments can be stored in a list and passed in via the \code{.dots}
+argument (e.g. \code{.dots = list(SFILIN = "/path/prefix_", ...)}), or using the
+\code{rlang::!!!} splicing operator. If both are provided, they will be spliced
+together, with the \code{...} taking precedence.
 
-For `output_types`, select one or more of the following:
- - "fast" -- Fast analysis; mostly polygon-level averages (`IFOUTPUT`)
- - "daily -- Daily means (one file per day) (`IDOUTPUT`)
- - "monthly" -- Monthly means (one file per month) (`IMOUTPUT`)
- - "monthly_diurnal" -- Monthly means of the diurnal cycle (one file per 
- month) (`IQOUTPUT`)
- - "annual" -- Annual (one file per year) (`IYOUTPUT`)
- - "instant" -- Instantaneous fluxes, mostly polygon-level variables, one 
- file per year (`ITOUTPUT`)
- - "restart" -- Restart file for HISTORY runs. (`ISOUTPUT`)
- - "all" -- All output types
+For \code{output_types}, select one or more of the following:
+\itemize{
+\item "fast" -- Fast analysis; mostly polygon-level averages (\code{IFOUTPUT})
+\item "daily -- Daily means (one file per day) (\code{IDOUTPUT})
+\item "monthly" -- Monthly means (one file per month) (\code{IMOUTPUT})
+\item "monthly_diurnal" -- Monthly means of the diurnal cycle (one file per
+month) (\code{IQOUTPUT})
+\item "annual" -- Annual (one file per year) (\code{IYOUTPUT})
+\item "instant" -- Instantaneous fluxes, mostly polygon-level variables, one
+file per year (\code{ITOUTPUT})
+\item "restart" -- Restart file for HISTORY runs. (\code{ISOUTPUT})
+\item "all" -- All output types
+}
 }

@@ -9,15 +9,15 @@ match_file(path_prefix, suffix = NULL, expect = NULL)
 \arguments{
 \item{path_prefix}{Full path and file prefix}
 
-\item{suffix}{File suffix, as character (default = `NULL`)}
+\item{suffix}{File suffix, as character (default = \code{NULL})}
 
-\item{expect}{Number of files expected to be returned (default = `NULL`)}
+\item{expect}{Number of files expected to be returned (default = \code{NULL})}
 }
 \value{
 Character vector of matched file names, as full paths.
 }
 \description{
-Return a list of files given a full prefix and optional suffix. Optionally, 
-confirm that the right number of files are returned. If the wrong number of 
+Return a list of files given a full prefix and optional suffix. Optionally,
+confirm that the right number of files are returned. If the wrong number of
 files is returned, throw an error.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_ed2in.R
 \name{is.ed2in}
 \alias{is.ed2in}
-\title{Check if object is `ed2in`}
+\title{Check if object is \code{ed2in}}
 \usage{
 is.ed2in(x)
 }
@@ -10,5 +10,5 @@ is.ed2in(x)
 \item{x}{Object to be tested}
 }
 \description{
-Simple test if object inheirts from class `"ed2in"`.
+Simple test if object inheirts from class \code{"ed2in"}.
 }

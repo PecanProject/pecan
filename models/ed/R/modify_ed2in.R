@@ -68,6 +68,7 @@ modify_ed2in <- function(ed2in, ...,
                          output_dir = NULL,
                          run_dir = NULL,
                          runtype = NULL,
+                         run_name = NULL,
                          pecan_defaults = TRUE,
                          add_if_missing = FALSE,
                          check_paths = TRUE,
@@ -102,6 +103,10 @@ modify_ed2in <- function(ed2in, ...,
       )
     }
     ed2in[["RUNTYPE"]] <- runtype
+  }
+
+  if (!is.null(run_name)) {
+    ed2in[["EXPNME"]] <- run_name
   }
 
   if (!is.null(veg_prefix)) {
@@ -147,28 +152,18 @@ modify_ed2in <- function(ed2in, ...,
   }
 
   if (!is.null(start_date)) {
-    if (lubridate::is.POSIXct(start_date)) {
-      start_dt <- start_date
-    } else {
-      start_dt <- lubridate::as_datetime(start_date)
-    }
-    ed2in[["IYEARA"]] <- lubridate::year(start_dt)
-    ed2in[["IMONTHA"]] <- lubridate::month(start_dt)
-    ed2in[["IDATEA"]] <- lubridate::day(start_dt)
-    ed2in[["ITIMEA"]] <- as.numeric(strftime(start_dt, "%H%M", tz = "UTC"))
+    ed2in[["IYEARA"]] <- lubridate::year(start_date)
+    ed2in[["IMONTHA"]] <- lubridate::month(start_date)
+    ed2in[["IDATEA"]] <- lubridate::day(start_date)
+    ed2in[["ITIMEA"]] <- as.numeric(strftime(start_date, "%H%M"))
     ed2in[["METCYC1"]] <- ed2in[["IYEARA"]]
   }
 
   if (!is.null(end_date)) {
-    if (lubridate::is.POSIXct(end_date)) {
-      end_dt <- end_date
-    } else {
-      end_dt <- lubridate::as_datetime(end_date)
-    }
-    ed2in[["IYEARZ"]] <- lubridate::year(end_dt)
-    ed2in[["IMONTHZ"]] <- lubridate::month(end_dt)
-    ed2in[["IDATEZ"]] <- lubridate::day(end_dt)
-    ed2in[["ITIMEZ"]] <- as.numeric(strftime(end_dt, "%H%M", tz = "UTC"))
+    ed2in[["IYEARZ"]] <- lubridate::year(end_date)
+    ed2in[["IMONTHZ"]] <- lubridate::month(end_date)
+    ed2in[["IDATEZ"]] <- lubridate::day(end_date)
+    ed2in[["ITIMEZ"]] <- as.numeric(strftime(end_date, "%H%M"))
     ed2in[["METCYCF"]] <- ed2in[["IYEARZ"]]
   }
 

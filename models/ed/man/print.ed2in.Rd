@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_ed2in.R
 \name{print.ed2in}
 \alias{print.ed2in}
-\title{Print method for `ed2in`}
+\title{Print method for \code{ed2in}}
 \usage{
 \method{print}{ed2in}(x, ...)
 }
@@ -12,5 +12,5 @@
 \item{...}{further arguments passed to or from other methods.}
 }
 \description{
-Sets attributes to `NULL` before printing, so the output isn't as messy.
+Sets attributes to \code{NULL} before printing, so the output isn't as messy.
 }

@@ -9,10 +9,10 @@ check_ed_metfile(metfile, variables)
 \arguments{
 \item{metfile}{Path to meteorology file}
 
-\item{variables}{Variables table from [ed_metheader][read_ed_metheader] object}
+\item{variables}{Variables table from \link[=read_ed_metheader]{ed_metheader} object}
 }
 \value{
-`NULL`, invisibly, if successful or throw an error
+\code{NULL}, invisibly, if successful or throw an error
 }
 \description{
 Check individual ED metfile
