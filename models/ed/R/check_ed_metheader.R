@@ -11,6 +11,7 @@
 #' @param ed_metheader ED meteorology header object (see [read_ed_metheader])
 #' @param ed_metheader_format A single format inside the met header object
 #' @inheritParams read_ed_metheader
+#' @export
 check_ed_metheader <- function(ed_metheader, check_files = TRUE) {
   testthat::test_that(
     "ED met header object is a nested list",
