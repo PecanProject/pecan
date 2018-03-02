@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Multi-Site Hierarchical PDA
 
-This vignette documents the steps and settings of Hierarchical Bayesian Parameter Data Assimilation (HB-PDA) analysis on multiple sites. 
+This vignette documents the steps and settings of Hierarchical Bayesian Parameter Data Assimilation (HB-PDA) analysis on multiple sites. If you haven't done the standard PDA check that vignette first modules/assim.batch/vignettes/AssimBatchVignette.Rmd
 
 ## Start with multi-settings
 
@@ -319,4 +319,195 @@ If requested, your `<ensemble>` and `<sensitivity.analysis>` sections would look
    <end.year>2010</end.year>
   </settings.8>
  </sensitivity.analysis>
+```
+
+## Tags for HB-PDA
+
+Similar to PDA settings, we will contain HB-PDA settings under the `<assim.batch>` section. Likewise standard PDA, if you have chosen the parameters you want to target in the calibration, open the `pecan.CONFIGS.xml` file, insert the tag below, and save as `pecan.HBPDA.xml`:
+
+```
+<assim.batch>
+  <method>emulator.ms</method>
+  <mode>hierarchical</mode>
+  <n.knot>60</n.knot>
+  <iter>10000</iter>
+  <chain>3</chain>
+  <param.names>
+   <soil>
+    <param>som_respiration_rate</param>
+    <param>soil_respiration_Q10</param>
+    <param>soilWHC</param>
+   </soil>
+   <temperate.deciduous>
+    <param>half_saturation_PAR</param>
+    <param>dVPDSlope</param>
+    <param>psnTOpt</param>
+   </temperate.deciduous>
+  </param.names>
+  <jump>
+   <adapt>100</adapt>
+   <adj.min>0.1</adj.min>
+   <ar.target>0.3</ar.target>
+  </jump>
+</assim.batch>
+```
+
+Different from the PDA settings, this time the main function will be the `emulator.ms`. This function can be run in three modes, which will be defined under the `<mode>` tag above: local, global and hierarchical.
+
+Now we will extend the settings above to include information about data to assimilate and likelihoods, similar to the standard-PDA setup, except for multiple sites:
+
+
+```
+ <assim.batch>
+  <method>emulator.ms</method>
+  <mode>hierarchical</mode>
+  <n.knot>60</n.knot>
+  <iter>10000</iter>
+  <chain>3</chain>
+  <param.names>
+   <soil>
+    <param>som_respiration_rate</param>
+    <param>soil_respiration_Q10</param>
+    <param>soilWHC</param>
+   </soil>
+   <temperate.deciduous>
+    <param>half_saturation_PAR</param>
+    <param>dVPDSlope</param>
+    <param>leafGrowth</param>
+   </temperate.deciduous>
+  </param.names>
+  <jump>
+   <adapt>100</adapt>
+   <adj.min>0.1</adj.min>
+   <ar.target>0.3</ar.target>
+  </jump>
+  <settings.1>
+    <inputs>
+      <file>
+        <input.id>1000013322</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-796/AMF_US-Bar_BASE_HH_4-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.1>
+  <settings.2>
+    <inputs>
+      <file>
+        <input.id>2000000128</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-758/AMF_US-Ha1_BASE_HR_10-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.2>
+  <settings.3>
+    <inputs>
+      <file>
+        <input.id>1000013317</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-767/AMF_US-MMS_BASE_HR_8-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.3>
+  <settings.4>
+    <inputs>
+      <file>
+        <input.id>1000013316</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-768/AMF_US-MOz_BASE_HH_7-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.4>
+  <settings.5>
+    <inputs>
+      <file>
+        <input.id>1000013832</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-776/AMF_US-UMB_BASE_HH_10-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.5>
+  <settings.6>
+    <inputs>
+      <file>
+        <input.id>1000012965</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-676/AMF_US-WCr_BASE_HH_11-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.6>
+  <settings.7>
+    <inputs>
+      <file>
+        <input.id>1000013836</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_1-109/AMF_CA-TPD_BASE_HH_1-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.7>
+  <settings.8>
+    <inputs>
+      <file>
+        <input.id>1000013838</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-740/AMF_CA-Oas_BASE_HH_1-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.8>
+  </assim.batch>
 ```
