@@ -1,0 +1,322 @@
+---
+title: "HB-PDA vignette"
+author: "Istem Fer"
+date: "3/2/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Multi-Site Hierarchical PDA
+
+This vignette documents the steps and settings of Hierarchical Bayesian Parameter Data Assimilation (HB-PDA) analysis on multiple sites. 
+
+## Start with multi-settings
+
+Add the `<sitegroup>` tag in your `pecan.xml` for the groups of sites you are interested in. In this vignette, we will use HB-PDA site group in BETYdb which consists of the temperate decidious broadleaf forest (DBF) sites of Ameriflux network.
+
+```
+<sitegroup>
+   <id>1000000022</id>
+</sitegroup>
+```
+
+In the meantime, your `<run>` section should specify `<inputs>`, `<start.date>` and `<end.date>` information accordingly. E.g.:
+
+
+```
+ <run>
+  <settings.1>
+   <site>
+    <id>796</id>
+    <met.start>2005/01/01</met.start>
+    <met.end>2011/12/31</met.end>
+    <name>Bartlett Experimental Forest (US-Bar)</name>
+    <lat>44.06464</lat>
+    <lon>-71.288077</lon>
+   </site>
+   <start.date>2005/01/01</start.date>
+   <end.date>2011/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-796/AMF_US-Bar_BASE_HH_4-1.2005-01-01.2011-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.1>
+  <settings.2>
+   <site>
+    <id>758</id>
+    <met.start>2010/01/01</met.start>
+    <met.end>2015/12/31</met.end>
+    <name>Harvard Forest EMS Tower/HFR1 (US-Ha1)</name>
+    <lat>42.5378</lat>
+    <lon>-72.1715</lon>
+   </site>
+   <start.date>2010/01/01</start.date>
+   <end.date>2015/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-758/AMF_US-Ha1_BASE_HR_10-1.2010-01-01.2015-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.2>
+  <settings.3>
+   <site>
+    <id>767</id>
+    <met.start>2001/01/01</met.start>
+    <met.end>2014/12/31</met.end>
+    <name>Morgan Monroe State Forest (US-MMS)</name>
+    <lat>39.3231</lat>
+    <lon>-86.4131</lon>
+   </site>
+   <start.date>2001/01/01</start.date>
+   <end.date>2014/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-767/AMF_US-MMS_BASE_HR_8-1.2001-01-01.2014-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.3>
+  <settings.4>
+   <site>
+    <id>768</id>
+    <met.start>2005/01/01</met.start>
+    <met.end>2015/12/31</met.end>
+    <name>Missouri Ozark Site/BREA (US-MOz)</name>
+    <lat>38.7441</lat>
+    <lon>-92.2</lon>
+   </site>
+   <start.date>2005/01/01</start.date>
+   <end.date>2015/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-768/AMF_US-MOz_BASE_HH_7-1.2005-01-01.2015-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.4>
+  <settings.5>
+   <site>
+    <id>776</id>
+    <met.start>2007/01/01</met.start>
+    <met.end>2014/12/31</met.end>
+    <name>Univiversity of Michigan Biological Station (US-UMB)</name>
+    <lat>45.5598</lat>
+    <lon>-84.7138</lon>
+   </site>
+   <start.date>2007/01/01</start.date>
+   <end.date>2014/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-776/AMF_US-UMB_BASE_HH_10-1.2007-01-01.2014-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.5>
+  <settings.6>
+   <site>
+    <id>676</id>
+    <met.start>1999/01/01</met.start>
+    <met.end>2006/12/31</met.end>
+    <name>Willow Creek (US-WCr)</name>
+    <lat>45.805925</lat>
+    <lon>-90.07961</lon>
+   </site>
+   <start.date>1999/01/01</start.date>
+   <end.date>2006/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-676/AMF_US-WCr_BASE_HH_11-1.1999-01-01.2006-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.6>
+  <settings.7>
+   <site>
+    <id>1000000109</id>
+    <met.start>2013/01/01</met.start>
+    <met.end>2015/12/31</met.end>
+    <name>Ontario - Turkey Point Mature Deciduous (CA-TPD)</name>
+    <lat>42.6353</lat>
+    <lon>-80.5577</lon>
+   </site>
+   <start.date>2013/01/01</start.date>
+   <end.date>2015/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-109/AMF_CA-TPD_BASE_HH_1-1.2013-01-01.2015-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.7>
+  <settings.8>
+   <site>
+    <id>740</id>
+    <met.start>1997/01/01</met.start>
+    <met.end>2010/12/31</met.end>
+    <name>BOREAS SSA Old Aspen (CA-Oas)</name>
+    <lat>53.6289</lat>
+    <lon>-106.198</lon>
+   </site>
+   <start.date>1997/01/01</start.date>
+   <end.date>2010/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-740/AMF_CA-Oas_BASE_HH_1-1.1997-01-01.2010-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.8>
+ </run>
+```
+
+If requested, your `<ensemble>` and `<sensitivity.analysis>` sections would look similar to this in your `pecan.CONFIGS.xml`:
+
+
+```
+ <ensemble>
+  <settings.1>
+   <size>100</size>
+   <variable>NEE</variable>
+   <ensemble.id>1000017326</ensemble.id>
+   <start.year>2005</start.year>
+   <end.year>2011</end.year>
+  </settings.1>
+  <settings.2>
+   <size>100</size>
+   <variable>NEE</variable>
+   <ensemble.id>1000017326</ensemble.id>
+   <start.year>2010</start.year>
+   <end.year>2015</end.year>
+  </settings.2>
+  <settings.3>
+   <size>100</size>
+   <variable>NEE</variable>
+   <ensemble.id>1000017326</ensemble.id>
+   <start.year>2001</start.year>
+   <end.year>2014</end.year>
+  </settings.3>
+  <settings.4>
+   <size>100</size>
+   <variable>NEE</variable>
+   <ensemble.id>1000017326</ensemble.id>
+   <start.year>2005</start.year>
+   <end.year>2015</end.year>
+  </settings.4>
+  <settings.5>
+   <size>100</size>
+   <variable>NEE</variable>
+   <ensemble.id>1000017326</ensemble.id>
+   <start.year>2007</start.year>
+   <end.year>2014</end.year>
+  </settings.5>
+  <settings.6>
+   <size>100</size>
+   <variable>NEE</variable>
+   <ensemble.id>1000017326</ensemble.id>
+   <start.year>1999</start.year>
+   <end.year>2006</end.year>
+  </settings.6>
+  <settings.7>
+   <size>100</size>
+   <variable>NEE</variable>
+   <ensemble.id>1000017326</ensemble.id>
+   <start.year>2013</start.year>
+   <end.year>2015</end.year>
+  </settings.7>
+  <settings.8>
+   <size>100</size>
+   <variable>NEE</variable>
+   <ensemble.id>1000017326</ensemble.id>
+   <start.year>1997</start.year>
+   <end.year>2010</end.year>
+  </settings.8>
+ </ensemble>
+ <sensitivity.analysis>
+  <settings.1>
+   <quantiles>
+    <sigma>-1</sigma>
+    <sigma>0</sigma>
+    <sigma>1</sigma>
+   </quantiles>
+   <variable>NEE</variable>
+   <ensemble.id>1000017325</ensemble.id>
+   <start.year>2005</start.year>
+   <end.year>2011</end.year>
+  </settings.1>
+  <settings.2>
+   <quantiles>
+    <sigma>-1</sigma>
+    <sigma>0</sigma>
+    <sigma>1</sigma>
+   </quantiles>
+   <variable>NEE</variable>
+   <ensemble.id>1000017325</ensemble.id>
+   <start.year>2010</start.year>
+   <end.year>2015</end.year>
+  </settings.2>
+  <settings.3>
+   <quantiles>
+    <sigma>-1</sigma>
+    <sigma>0</sigma>
+    <sigma>1</sigma>
+   </quantiles>
+   <variable>NEE</variable>
+   <ensemble.id>1000017325</ensemble.id>
+   <start.year>2001</start.year>
+   <end.year>2014</end.year>
+  </settings.3>
+  <settings.4>
+   <quantiles>
+    <sigma>-1</sigma>
+    <sigma>0</sigma>
+    <sigma>1</sigma>
+   </quantiles>
+   <variable>NEE</variable>
+   <ensemble.id>1000017325</ensemble.id>
+   <start.year>2005</start.year>
+   <end.year>2015</end.year>
+  </settings.4>
+  <settings.5>
+   <quantiles>
+    <sigma>-1</sigma>
+    <sigma>0</sigma>
+    <sigma>1</sigma>
+   </quantiles>
+   <variable>NEE</variable>
+   <ensemble.id>1000017325</ensemble.id>
+   <start.year>2007</start.year>
+   <end.year>2014</end.year>
+  </settings.5>
+  <settings.6>
+   <quantiles>
+    <sigma>-1</sigma>
+    <sigma>0</sigma>
+    <sigma>1</sigma>
+   </quantiles>
+   <variable>NEE</variable>
+   <ensemble.id>1000017325</ensemble.id>
+   <start.year>1999</start.year>
+   <end.year>2006</end.year>
+  </settings.6>
+  <settings.7>
+   <quantiles>
+    <sigma>-1</sigma>
+    <sigma>0</sigma>
+    <sigma>1</sigma>
+   </quantiles>
+   <variable>NEE</variable>
+   <ensemble.id>1000017325</ensemble.id>
+   <start.year>2013</start.year>
+   <end.year>2015</end.year>
+  </settings.7>
+  <settings.8>
+   <quantiles>
+    <sigma>-1</sigma>
+    <sigma>0</sigma>
+    <sigma>1</sigma>
+   </quantiles>
+   <variable>NEE</variable>
+   <ensemble.id>1000017325</ensemble.id>
+   <start.year>1997</start.year>
+   <end.year>2010</end.year>
+  </settings.8>
+ </sensitivity.analysis>
+```
