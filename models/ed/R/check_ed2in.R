@@ -61,7 +61,7 @@ check_ed2in <- function(ed2in) {
   met_dlat <- purrr::map_dbl(met_object, "dy") / 2
   met_lon <- purrr::map_dbl(met_object, "xmin")
   met_dlon <- purrr::map_dbl(met_object, "dx") / 2
-  if (!any(between(ed2in_lat, met_lat - mat_dlat, met_lat + met_dlat))) {
+  if (!any(between(ed2in_lat, met_lat - met_dlat, met_lat + met_dlat))) {
     PEcAn.logger::logger.severe(
       "ED2IN latitude ",
       ed2in_lat,
@@ -74,7 +74,7 @@ check_ed2in <- function(ed2in) {
       "ED2IN latitude ",
       ed2in_lon,
       " does not match meteorology longitudes ",
-      paste(met_lon, met_lon + met_dlon, sep = " to ", collapse = ", ")
+      paste(met_lon - met_dlon, met_lon + met_dlon, sep = " to ", collapse = ", ")
     )
   }
 
