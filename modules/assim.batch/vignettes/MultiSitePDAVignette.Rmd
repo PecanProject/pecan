@@ -328,7 +328,7 @@ Similar to PDA settings, we will contain HB-PDA settings under the `<assim.batch
 ```
 <assim.batch>
   <method>emulator.ms</method>
-  <mode>hierarchical</mode>
+  <mode>local</mode>
   <n.knot>60</n.knot>
   <iter>10000</iter>
   <chain>3</chain>
@@ -352,7 +352,7 @@ Similar to PDA settings, we will contain HB-PDA settings under the `<assim.batch
 </assim.batch>
 ```
 
-Different from the PDA settings, this time the main function will be the `emulator.ms`. This function can be run in three modes, which will be defined under the `<mode>` tag above: local, global and hierarchical.
+Different from the PDA settings, this time the main function will be the `emulator.ms`. This function can be run in three modes, which will be selected under the `<mode>` tag above: local, global and hierarchical. We will start with local mode, i.e. site-level calibration.
 
 Now we will extend the settings above to include information about data to assimilate and likelihoods, similar to the standard-PDA setup, except for multiple sites:
 
@@ -360,7 +360,7 @@ Now we will extend the settings above to include information about data to assim
 ```
  <assim.batch>
   <method>emulator.ms</method>
-  <mode>hierarchical</mode>
+  <mode>local</mode>
   <n.knot>60</n.knot>
   <iter>10000</iter>
   <chain>3</chain>

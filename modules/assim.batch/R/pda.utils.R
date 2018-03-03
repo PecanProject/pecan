@@ -23,6 +23,8 @@ assim.batch <- function(settings) {
     settings <- pda.mcmc.bs(settings)
   } else if (settings$assim.batch$method == "emulator") {
     settings <- pda.emulator(settings)
+  } else if (settings$assim.batch$method == "emulator.ms") {
+    settings <- pda.emulator.ms(settings)
   } else if (settings$assim.batch$method == "bayesian.tools") {
     settings <- pda.bayesian.tools(settings)
   } else {
