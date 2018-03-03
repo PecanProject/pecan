@@ -15,15 +15,15 @@ download.GFDL(outfolder, start_date, end_date, site_id, lat.in, lon.in,
 
 \item{end_date}{End date for met (will be converted via [base::as.POSIXlt])}
 
+\item{lat.in}{Latitude coordinate for met}
+
+\item{lon.in}{Longitude coordinate for met}
+
 \item{model}{Which GFDL model to run (options are CM3, ESM2M, ESM2G)}
 
 \item{scenario}{Which scenario to run (options are rcp26, rcp45, rcp60, rcp85)}
 
 \item{ensemble_member}{Which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)}
-
-\item{lat}{Latitude coordinate for met}
-
-\item{lon}{Longitude coordinate for met}
 }
 \description{
 Download GFDL CMIP5 outputs for a single grid point using OPeNDAP and convert to CF
