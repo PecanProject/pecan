@@ -345,7 +345,8 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
         settings$assim.batch$method == "bruteforce.bs" | 
         settings$assim.batch$method == "bayesian.tools") {
       ensemble.type <- "pda.MCMC"
-    } else if (settings$assim.batch$method == "emulator") {
+    } else if (settings$assim.batch$method == "emulator"|
+               settings$assim.batch$method == "emulator.ms") {
       ensemble.type <- "pda.emulator"
     }
     
