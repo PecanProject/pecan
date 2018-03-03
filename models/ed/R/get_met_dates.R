@@ -1,3 +1,10 @@
+#' Get meteorology dates
+#'
+#' Figure out the dates for which a given meteorology is available by parsing 
+#' the matching file names.
+#' @inheritParams write_ed_metheader
+#' @return Vector of dates for a run
+#' @export
 get_met_dates <- function(ed_metheader) {
   met_paths <- purrr::map(ed_metheader, "path_prefix")
   met_file_list <- purrr::map(met_paths, match_file)
@@ -12,6 +19,10 @@ get_met_dates <- function(ed_metheader) {
   sort(Reduce(c, date_list))
 }
 
+#' Get all the dates in a month
+#'
+#' For a given date, figure out its month and return all of the dates for that 
+#' month.
 dates_in_month <- function(date) {
   stopifnot(lubridate::mday(date) == 1)
   end_date <- date +
