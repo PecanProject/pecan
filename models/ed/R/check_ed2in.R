@@ -58,18 +58,18 @@ check_ed2in <- function(ed2in) {
 
   # Run coordinates match meteorology drivers
   met_lat <- purrr::map_dbl(met_object, "ymin")
-  met_dlat <- purrr::map_dbl(met_object, "dy")
+  met_dlat <- purrr::map_dbl(met_object, "dy") / 2
   met_lon <- purrr::map_dbl(met_object, "xmin")
-  met_dlon <- purrr::map_dbl(met_object, "dx")
-  if (!any(between(ed2in_lat, met_lat, met_lat + met_dlat))) {
+  met_dlon <- purrr::map_dbl(met_object, "dx") / 2
+  if (!any(between(ed2in_lat, met_lat - mat_dlat, met_lat + met_dlat))) {
     PEcAn.logger::logger.severe(
       "ED2IN latitude ",
       ed2in_lat,
       " does not match meteorology latitudes ",
-      paste(met_lat, met_lat + met_dlat, sep = " to ", collapse = ", ")
+      paste(met_lat - met_dlat, met_lat + met_dlat, sep = " to ", collapse = ", ")
     )
   }
-  if (!any(between(ed2in_lon, met_lon, met_lon + met_dlon))) {
+  if (!any(between(ed2in_lon, met_lon - met_dlon, met_lon + met_dlon))) {
     PEcAn.logger::logger.severe(
       "ED2IN latitude ",
       ed2in_lon,
