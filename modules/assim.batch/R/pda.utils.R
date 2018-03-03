@@ -23,8 +23,6 @@ assim.batch <- function(settings) {
     settings <- pda.mcmc.bs(settings)
   } else if (settings$assim.batch$method == "emulator") {
     settings <- pda.emulator(settings)
-  } else if (settings$assim.batch$method == "emulator.ms") {
-    settings <- pda.emulator.ms(settings)
   } else if (settings$assim.batch$method == "bayesian.tools") {
     settings <- pda.bayesian.tools(settings)
   } else {
@@ -37,8 +35,13 @@ assim.batch <- function(settings) {
 
 ##' @export
 runModule.assim.batch <- function(settings) {
-  if (is.MultiSettings(settings) && settings$assim.batch$method != "emulator.ms") {
-    return(papply(settings, runModule.assim.batch))
+  if (is.MultiSettings(settings)) {
+    pda.method <- unique(sapply(settings$assim.batch,`[[`, "method"))
+    if(pda.method == "emulator.ms"){
+      return(pda.emulator.ms(settings))
+    }else{
+      return(papply(settings, runModule.assim.batch))
+    }
   } else if (is.Settings(settings) || settings$assim.batch$method == "emulator.ms") {
     return(assim.batch(settings))
   } else {
