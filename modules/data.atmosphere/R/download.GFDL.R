@@ -1,15 +1,14 @@
 ##' Download GFDL CMIP5 outputs for a single grid point using OPeNDAP and convert to CF 
-##' @name download.GFDL
-##' @title download.GFDL
+##'
 ##' @export
-##' @param outfolder
-##' @param start_date
-##' @param end_date
-##' @param lat
-##' @param lon
-##' @param model , select which GFDL model to run (options are CM3, ESM2M, ESM2G)
-##' @param scenario , select which scenario to run (options are rcp26, rcp45, rcp60, rcp85)
-##' @param ensemble_member , select which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)
+##' @param outfolder Directory for storing output
+##' @param start_date Start date for met (will be converted via [base::as.POSIXlt])
+##' @param end_date End date for met (will be converted via [base::as.POSIXlt])
+##' @param lat Latitude coordinate for met
+##' @param lon Longitude coordinate for met
+##' @param model Which GFDL model to run (options are CM3, ESM2M, ESM2G)
+##' @param scenario Which scenario to run (options are rcp26, rcp45, rcp60, rcp85)
+##' @param ensemble_member Which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)
 ##' @author James Simkins
 download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, 
                           overwrite = FALSE, verbose = FALSE, 
@@ -23,7 +22,6 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-  site_id    <- as.numeric(site_id)
   model      <- paste0(model)
   scenario   <- paste0(scenario)
   ensemble_member <- paste0(ensemble_member)
@@ -61,7 +59,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                         formatname = character(rows), 
                         startdate = character(rows), 
                         enddate = character(rows), 
-                        dbfile.name = paste("GFDL", model, scenario, ensemble_member, sep = "."),   #'GFDL',
+                        dbfile.name = paste("GFDL", model, scenario, ensemble_member, sep = "."),   # 'GFDL',
                         stringsAsFactors = FALSE)
   var <- data.frame(DAP.name = c("tas", "rlds", "ps", "rsds", "uas", "vas", "huss", "pr"), 
                     CF.name = c("air_temperature", "surface_downwelling_longwave_flux_in_air",
