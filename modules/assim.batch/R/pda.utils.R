@@ -37,9 +37,9 @@ assim.batch <- function(settings) {
 
 ##' @export
 runModule.assim.batch <- function(settings) {
-  if (is.MultiSettings(settings)) {
+  if (is.MultiSettings(settings) && settings$assim.batch$method != "emulator.ms") {
     return(papply(settings, runModule.assim.batch))
-  } else if (is.Settings(settings)) {
+  } else if (is.Settings(settings) || settings$assim.batch$method == "emulator.ms") {
     return(assim.batch(settings))
   } else {
     stop("runModule.assim.batch only works with Settings or MultiSettings")
