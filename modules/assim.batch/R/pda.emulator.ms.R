@@ -2,29 +2,18 @@
 ##' First draft, not complete yet
 ##'
 ##' @title Paramater Data Assimilation using emulator on multiple sites
-##' @param settings = a pecan settings list
+##' @param multi.settings = a pecan multi-settings list
 ##'
 ##' @return settings
 ##'
 ##' @author Istem Fer
 ##' @export
-pda.emulator.ms <- function(settings, external.priors = NULL, params.id = NULL, param.names = NULL, prior.id = NULL, 
-                            chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
-                            ar.target = NULL, jvar = NULL, n.knot = NULL) {
+pda.emulator.ms <- function(multi.settings) {
   
-  ## this bit of code is useful for defining the variables passed to this function if you are
-  ## debugging
-  if (FALSE) {
-    params.id <- param.names <- prior.id <- chain <- iter <- NULL
-    n.knot <- adapt <- adj.min <- ar.target <- jvar <- external.priors <- NULL
-  }
-  
-  
+  ## -------------------------------------- Initialization --------------------------------------------------- 
+ 
   # check mode 
-  pda.mode <- settings$assim.batch$mode
-  
-  # how many sites
-  nsites <- length(settings)
+  pda.mode <- unique(sapply(multi.settings$assim.batch,`[[`, "mode"))
   
   if(pda.mode == "local"){
     local <- TRUE
@@ -39,11 +28,22 @@ pda.emulator.ms <- function(settings, external.priors = NULL, params.id = NULL, 
     local <- global <- hierarchical <- TRUE
   }
   
+  # how many sites
+  nsites <- length(multi.settings)
+
   
+  # lists to collect emulators and run MCMC per site later
+  SS.stack      <- vector("list", nsites) 
+  gp.stack      <- vector("list", nsites) 
+  prior.stack   <- vector("list", nsites) 
+  nstack        <- vector("list", nsites) 
   
+  ## -------------------------------------- Runs and build emulator ------------------------------------------
   
-  
-  
-  
+  for(s in seq_along(multi.settings)){ # site runs - loop begin
+    
+    settings <- multi.settings[[s]]
+    
+  } # site runs - loop end
   
 }

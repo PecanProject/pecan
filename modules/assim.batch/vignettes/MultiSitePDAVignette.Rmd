@@ -344,44 +344,44 @@ Similar to PDA settings, we will contain HB-PDA settings under the `<assim.batch
     <param>psnTOpt</param>
    </temperate.deciduous>
   </param.names>
-  <jump>
-   <adapt>100</adapt>
-   <adj.min>0.1</adj.min>
-   <ar.target>0.3</ar.target>
-  </jump>
 </assim.batch>
 ```
 
-Different from the PDA settings, this time the main function will be the `emulator.ms`. This function can be run in three modes, which will be selected under the `<mode>` tag above: local, global and hierarchical. We will start with local mode, i.e. site-level calibration.
+Different from the PDA settings, this time the main function will be the `emulator.ms`. This function can be run in three modes, which will be selected under the `<mode>` tag above: local, global and hierarchical. If left empty, the function will go through all three modes. But note that, for both global and hierarhical calibration, we need site-level runs. We will start with local mode, i.e. site-level calibration. 
 
-Now we will extend the settings above to include information about data to assimilate and likelihoods, similar to the standard-PDA setup, except for multiple sites:
-
+Now we will extend the settings above to include information about data to assimilate and likelihoods, similar to the standard-PDA setup, except for multiple sites. First, add `<assim.batch>` tag to the multisettings in the bottom of your `pecan.HBPDA.xml`:
 
 ```
- <assim.batch>
-  <method>emulator.ms</method>
-  <mode>local</mode>
-  <n.knot>60</n.knot>
-  <iter>10000</iter>
-  <chain>3</chain>
-  <param.names>
-   <soil>
-    <param>som_respiration_rate</param>
-    <param>soil_respiration_Q10</param>
-    <param>soilWHC</param>
-   </soil>
-   <temperate.deciduous>
-    <param>half_saturation_PAR</param>
-    <param>dVPDSlope</param>
-    <param>leafGrowth</param>
-   </temperate.deciduous>
-  </param.names>
-  <jump>
-   <adapt>100</adapt>
-   <adj.min>0.1</adj.min>
-   <ar.target>0.3</ar.target>
-  </jump>
+ <multisettings>
+  <multisettings>assim.batch</multisettings>
+  <multisettings>ensemble</multisettings>
+  <multisettings>sensitivity.analysis</multisettings>
+  <multisettings>run</multisettings>
+ </multisettings>
+```
+
+Now we can insert multi-site settings in the `<assim.batch>` section accordingly (note that now the chunk above where we defined `method`, `mode`, `param.names` etc. will go under each `setting.*`):
+
+```
+  <assim.batch>
   <settings.1>
+    <method>emulator.ms</method>
+    <mode>local</mode>
+    <n.knot>60</n.knot>
+    <iter>10000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+      <param>soilWHC</param>
+     </soil>
+     <temperate.deciduous>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+     </temperate.deciduous>
+    </param.names>
     <inputs>
       <file>
         <input.id>1000013322</input.id>
@@ -398,6 +398,23 @@ Now we will extend the settings above to include information about data to assim
     </inputs>
   </settings.1>
   <settings.2>
+    <method>emulator.ms</method>
+    <mode>local</mode>
+    <n.knot>60</n.knot>
+    <iter>10000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+      <param>soilWHC</param>
+     </soil>
+     <temperate.deciduous>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+     </temperate.deciduous>
+    </param.names>
     <inputs>
       <file>
         <input.id>2000000128</input.id>
@@ -414,6 +431,23 @@ Now we will extend the settings above to include information about data to assim
     </inputs>
   </settings.2>
   <settings.3>
+    <method>emulator.ms</method>
+    <mode>local</mode>
+    <n.knot>60</n.knot>
+    <iter>10000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+      <param>soilWHC</param>
+     </soil>
+     <temperate.deciduous>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+     </temperate.deciduous>
+    </param.names>
     <inputs>
       <file>
         <input.id>1000013317</input.id>
@@ -430,6 +464,23 @@ Now we will extend the settings above to include information about data to assim
     </inputs>
   </settings.3>
   <settings.4>
+    <method>emulator.ms</method>
+    <mode>local</mode>
+    <n.knot>60</n.knot>
+    <iter>10000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+      <param>soilWHC</param>
+     </soil>
+     <temperate.deciduous>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+     </temperate.deciduous>
+    </param.names>
     <inputs>
       <file>
         <input.id>1000013316</input.id>
@@ -446,6 +497,23 @@ Now we will extend the settings above to include information about data to assim
     </inputs>
   </settings.4>
   <settings.5>
+    <method>emulator.ms</method>
+    <mode>local</mode>
+    <n.knot>60</n.knot>
+    <iter>10000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+      <param>soilWHC</param>
+     </soil>
+     <temperate.deciduous>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+     </temperate.deciduous>
+    </param.names>
     <inputs>
       <file>
         <input.id>1000013832</input.id>
@@ -462,6 +530,23 @@ Now we will extend the settings above to include information about data to assim
     </inputs>
   </settings.5>
   <settings.6>
+    <method>emulator.ms</method>
+    <mode>local</mode>
+    <n.knot>60</n.knot>
+    <iter>10000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+      <param>soilWHC</param>
+     </soil>
+     <temperate.deciduous>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+     </temperate.deciduous>
+    </param.names>
     <inputs>
       <file>
         <input.id>1000012965</input.id>
@@ -478,6 +563,23 @@ Now we will extend the settings above to include information about data to assim
     </inputs>
   </settings.6>
   <settings.7>
+    <method>emulator.ms</method>
+    <mode>local</mode>
+    <n.knot>60</n.knot>
+    <iter>10000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+      <param>soilWHC</param>
+     </soil>
+     <temperate.deciduous>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+     </temperate.deciduous>
+    </param.names>
     <inputs>
       <file>
         <input.id>1000013836</input.id>
@@ -494,6 +596,23 @@ Now we will extend the settings above to include information about data to assim
     </inputs>
   </settings.7>
   <settings.8>
+    <method>emulator.ms</method>
+    <mode>local</mode>
+    <n.knot>60</n.knot>
+    <iter>10000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+      <param>soilWHC</param>
+     </soil>
+     <temperate.deciduous>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+     </temperate.deciduous>
+    </param.names>
     <inputs>
       <file>
         <input.id>1000013838</input.id>
