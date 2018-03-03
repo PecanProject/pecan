@@ -321,7 +321,7 @@ If requested, your `<ensemble>` and `<sensitivity.analysis>` sections would look
  </sensitivity.analysis>
 ```
 
-## Tags for HB-PDA
+## Settings for HB-PDA
 
 Similar to PDA settings, we will contain HB-PDA settings under the `<assim.batch>` section. Likewise standard PDA, if you have chosen the parameters you want to target in the calibration, open the `pecan.CONFIGS.xml` file, insert the tag below, and save as `pecan.HBPDA.xml`:
 
@@ -630,3 +630,11 @@ Now we can insert multi-site settings in the `<assim.batch>` section accordingly
   </settings.8>
   </assim.batch>
 ```
+
+Following section briefly explains what happens after:
+```
+multi.settings <- read.settings("pecan.HBPDA.xml")
+pda.emulator.ms(multi.settings)
+```
+
+## The workflow for HB-PDA

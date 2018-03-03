@@ -14,7 +14,7 @@
 pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                          params.id = NULL, param.names = NULL, prior.id = NULL, 
                          chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
-                         ar.target = NULL, jvar = NULL, n.knot = NULL) {
+                         ar.target = NULL, jvar = NULL, n.knot = NULL, local = TRUE) {
   
   ## this bit of code is useful for defining the variables passed to this function if you are
   ## debugging
@@ -22,6 +22,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     external.data <- external.priors <- NULL
     params.id <- param.names <- prior.id <- chain <- iter <- NULL
     n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
+    local <- TRUE
   }
   
   # handle extention flags
@@ -98,6 +99,10 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     inputs <- load.pda.data(settings, bety)
   }else{
     inputs <- external.data
+  }
+  
+  if(TRUE){ # until FC read is fixed
+    
   }
   
   n.input     <- length(inputs)
