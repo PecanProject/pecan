@@ -43,7 +43,12 @@ pda.emulator.ms <- function(multi.settings) {
   for(s in seq_along(multi.settings)){ # site runs - loop begin
     
     settings <- multi.settings[[s]]
-    
+    # NOTE: local flag is not used currently, prepearation for future use
+    # if this flag is TRUE, pda.emulator will not fit GP and run MCMC, 
+    # but will run LHC ensembles, calculate SS and return settings list with saved SS paths etc.
+    # this requires some re-arrangement in pda.emulator, 
+    # for now we will always run site-level calibration
+    settings <- pda.emulator(settings, local = local)
   } # site runs - loop end
   
 }

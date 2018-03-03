@@ -101,10 +101,6 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     inputs <- external.data
   }
   
-  if(TRUE){ # until FC read is fixed
-    
-  }
-  
   n.input     <- length(inputs)
   
   
