@@ -53,10 +53,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
     adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, run.round)
   
-  ## history restart
-  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
-                                                       settings$assim.batch$ensemble.id, ".Rdata"))
-  current.step <- "START" 
+
   
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
@@ -139,6 +136,10 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   ## Create an ensemble id
   settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
   
+  ## history restart
+  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
+                                                       settings$assim.batch$ensemble.id, ".Rdata"))
+  current.step <- "START" 
   
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
