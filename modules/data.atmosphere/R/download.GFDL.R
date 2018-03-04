@@ -9,7 +9,7 @@
 #' @param model Which GFDL model to run (options are CM3, ESM2M, ESM2G)
 #' @param scenario Which scenario to run (options are rcp26, rcp45, rcp60, rcp85)
 #' @param ensemble_member Which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)
-#' @author James Simkins
+#' @author James Simkins, Alexey Shiklomanov
 download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
                           overwrite = FALSE, verbose = FALSE,
                           model = "CM3", scenario = "rcp45", ensemble_member = "r1i1p1", ...) {
@@ -71,6 +71,13 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     year <- ylist[i]
     ntime <- 14600
 
+    PEcAn.logger::logger.debug(
+      sprintf(
+        "Downloading GFDL year %d (%d of %d)",
+        year, i, length(rows)
+      )
+    )
+
     loc.file <- file.path(
       outfolder,
       paste("GFDL", model, scenario, ensemble_member, year, "nc", sep = ".")
@@ -99,6 +106,12 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
 
     ## get data off OpenDAP
     for (j in seq_len(nrow(var))) {
+      PEcAn.logger::logger.debug(
+        sprintf(
+          "Downloading GFDL var %s (%d of %d)",
+          var$DAP.name[j], j, nrow(var)
+        )
+      )
       dap_end <- paste0(
         "-", model, "/",
         scenario, "/3hr/atmos/3hr/",
@@ -122,6 +135,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                                  verbose = verbose)
       ncdf4::nc_close(dap)
     }
+    close(pb)
 
     dat.list <- as.data.frame(dat.list)
     if (year %% 5 == 1) {
