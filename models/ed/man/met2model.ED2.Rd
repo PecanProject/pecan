@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2model.ED2.R
 \name{met2model.ED2}
 \alias{met2model.ED2}
-\title{met2model for ED2}
+\title{met2model wrapper for ED2}
 \usage{
 met2model.ED2(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
   lat = NA, lon = NA, overwrite = FALSE, verbose = FALSE, ...)
@@ -25,5 +25,8 @@ met2model.ED2(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
 \item{verbose}{should the function be very verbose}
 }
 \description{
-met2model wrapper for ED2
+If files already exist in 'Outfolder', the default function is NOT to
+overwrite them and only gives user the notice that file already exists. If
+user wants to overwrite the existing files, just change overwrite statement
+below to TRUE.
 }
