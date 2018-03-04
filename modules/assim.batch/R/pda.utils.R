@@ -784,3 +784,15 @@ return_hyperpars <- function(assim.settings, inputs){
   
   return(hyper.pars)
 } # return_hyperpars
+
+
+
+##' Helper function that loads history from previous PDA run, but returns only requested objects
+##' @author Istem Fer
+##' @export
+load_pda_history <- function(workdir, ensemble.id, objects){
+  load(paste0(workdir, "/history.pda", ensemble.id,".Rdata"))
+  alist <- lapply(objects, function(x) assign(x, get(x)))
+  names(alist) <- objects
+  return(alist)
+}

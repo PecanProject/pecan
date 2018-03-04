@@ -53,6 +53,28 @@ pda.emulator.ms <- function(multi.settings) {
   
   #PEcAn.settings::write.settings(multi.settings, outputfile='pecan.PDAMS.xml')
   
+  ## -------------------------------- Prepare for Global and Hierarchical ----------------------------------------- 
+  
+  
+  # we need some objects that are common to all calibrations
+  need_obj <- load_pda_history(workdir = multi.settings$outdir,  
+                   ensemble.id = multi.settings[[8]]$assim.batch$ensemble.id, 
+                   objects = c("init.list", "rng", "jmp.list", "prior.fn.all", "prior.ind.all", "llik.fn", "settings"))
+  
+  init.list     <- need_obj$init.list
+  rng           <- need_obj$rng
+  jmp.list      <- need_obj$jmp.list
+  prior.fn.all  <- need_obj$prior.fn.all
+  prior.ind.all <- need_obj$prior.ind.all
+  llik.fn       <- need_obj$llik.fn
+  tmp.settings  <- need_obj$settings
+  
+  
+  resume.list <- vector("list", multi.settings[[1]]$assim.batch$chain)
+
+  
+  
+  
   ## -------------------------------------- Global calibration -------------------------------------------------- 
   if(global){ # global - if begin
     
@@ -97,32 +119,31 @@ pda.emulator.ms <- function(multi.settings) {
     
     gp <- GPmodel
     
-    
     # start the clock
     ptm.start <- proc.time()
     
     # prepare for parallelization
     dcores <- parallel::detectCores() - 1
-    ncores <- min(max(dcores, 1), settings$assim.batch$chain)
+    ncores <- min(max(dcores, 1), multi.settings[[1]]$assim.batch$chain)
     # 
-    logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+    logger.setOutputFile(file.path(multi.settings$outdir, "pda.log"))
     # 
-    cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
+    cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(multi.settings$outdir, "pda.log"))
     
     ## Sample posterior from emulator
-    mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
+    mcmc.out <- parallel::parLapply(cl, 1:multi.settings[[1]]$assim.batch$chain, function(chain) {
       mcmc.GP(gp          = gp, ## Emulator(s)
               x0          = init.list[[chain]],     ## Initial conditions
-              nmcmc       = settings$assim.batch$iter,       ## Number of reps
+              nmcmc       = 100000,       ## Number of reps
               rng         = rng,       ## range
               format      = "lin",      ## "lin"ear vs "log" of LogLikelihood 
-              mix         = mix,     ## Jump "each" dimension independently or update them "joint"ly
+              mix         = "joint",     ## Jump "each" dimension independently or update them "joint"ly
               jmp0        = jmp.list[[chain]],  ## Initial jump size
-              ar.target   = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
+              ar.target   = 0.3,   ## Target acceptance rate
               priors      = prior.fn.all$dprior[prior.ind.all], ## priors
-              settings    = multi.settings[[s]], # this is just for checking llik functions downstream
+              settings    = tmp.settings, # this is just for checking llik functions downstream
               run.block   = TRUE,  
-              n.of.obs    = unlist(nstack),
+              n.of.obs    = NULL, # need this for Gaussian likelihoods, keep it NULL for now
               llik.fn     = llik.fn,
               resume.list = resume.list[[chain]]
       )
