@@ -81,6 +81,15 @@ pda.emulator.ms <- function(multi.settings) {
   hyper.pars       <- need_obj$hyper.pars
   
   resume.list <- vector("list", multi.settings[[1]]$assim.batch$chain)
+  
+  # collect GPs
+  for(s in seq_along(multi.settings)){
+    
+    load(multi.settings[[s]]$assim.batch$emulator.path)
+    gp.stack[[s]] <- gp
+    remove(gp)
+    
+  }
 
   ## Open database connection
   if (settings$database$bety$write) {
@@ -108,18 +117,7 @@ pda.emulator.ms <- function(multi.settings) {
     ## Get an ensemble id for global calibration
     tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
     
-    
-    # collect GPs
-    for(s in seq_along(multi.settings)){
-
-      load(multi.settings[[s]]$assim.batch$emulator.path)
-      gp.stack[[s]] <- gp
-      remove(gp)
-      
-    }
-    
     gp <- unlist(gp.stack, recursive = FALSE)
-
 
     # start the clock
     ptm.start <- proc.time()
@@ -236,4 +234,217 @@ pda.emulator.ms <- function(multi.settings) {
     
   } # global - if end
   
+  ## -------------------------------------- Hierarchical MCMC ------------------------------------------ 
+  if(hierarchical){ # hierarchical - if begin
+    
+    ## Get an ensemble id for hierarchical calibration
+    tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
+    
+
+    ########### hierarchical MCMC function with Gibbs ##############
+    
+    
+    hier.mcmc <- function(settings, gp.stack, nstack, nmcmc, rng, 
+                          global.prior.fn.all, mu0, jmp0, prior.ind.all, nsites){
+      
+      nparam   <- length(prior.ind.all)
+      
+      pos.check <- sapply(settings$assim.batch$inputs, `[[`, "ss.positive")
+      
+      if(length(unlist(pos.check)) == 0){
+        # if not passed from settings assume none
+        pos.check <- rep(FALSE, length(settings$assim.batch$inputs))
+      }else if(length(unlist(pos.check)) != length(settings$assim.batch$inputs)){
+        # maybe one provided, but others are forgotten
+        # check which ones are provided in settings
+        from.settings <- sapply(seq_along(pos.check), function(x) !is.null(pos.check[[x]]))
+        tmp.check <- rep(FALSE, length(settings$assim.batch$inputs))
+        # replace those with the values provided in the settings
+        tmp.check[from.settings] <- as.logical(unlist(pos.check))
+        pos.check <- tmp.check
+      }else{
+        pos.check <- as.logical(pos.check)
+      }
+      
+      ################################################################
+      #
+      #      mu_site    : site level parameters (nsite x nparam)
+      #      tau_site   : site level precision (nsite x nsite)
+      #      mu_global  : global parameters (nparam)
+      #      tau_global : global precision matrix (nparam x nparam)
+      #
+      ################################################################
+      
+      
+      # mu_f 
+      mu_f <- unlist(mu0)
+      
+      
+      # initialize jcov.arr (jump variances per site)
+      jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
+      for(j in seq_len(nsites)) jcov.arr[,,j] <- diag(jmp0)
+      
+      # initialize mu_global (nparam)
+      mu_global <- mvtnorm::rmvnorm(1, mu_f, diag(jmp0))
+      
+      
+      # initialize tau_global (nparam x nparam)
+      tau_global   <- diag(1, nparam)
+      
+      # initialize mu_site (nsite x nparam)
+      mu_site_curr <- matrix(NA_real_, nrow = nsites, ncol= nparam)
+      mu_site_new  <- matrix(NA_real_, nrow = nsites, ncol= n.param)
+      for(ns in 1:nsites){
+        repeat{
+          mu_site_curr[ns,] <- mvtnorm::rmvnorm(1, mu_global, jcov.arr[,,ns]) # site mean
+          check.that <- sapply(seq_len(nparam), function(x) {
+            chk <- (mu_site_curr[ns,x] > rng[x, 1] & mu_site_curr[ns,x] < rng[x, 2]) 
+            return(chk)})
+          
+          if(all(check.that)) break
+        }
+      }
+      
+      # values for each site will be accepted/rejected in themselves
+      currSS    <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
+      # force it to be nvar x nsites matrix
+      currSS <- matrix(currSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
+      currllp   <- lapply(seq_len(nsites), function(v) PEcAn.assim.batch::pda.calc.llik.par(settings, nstack[[v]], currSS[,v]))
+      
+      # storage
+      mu_site_samp <-  array(NA_real_, c(nmcmc, nparam, nsites))
+      # tau_site_samp <- array(NA_real_, c(nmcmc, nsites, nsites))
+      mu_global_samp  <-  matrix(NA_real_, nrow = nmcmc, ncol= nparam)
+      tau_global_samp <-  array(NA_real_, c(nmcmc, nparam, nparam))
+      
+      musite.accept.count    <- rep(0, nsites)
+      muglobal.accept.count  <- 0
+      tauglobal.accept.count <- 0
+      
+      for(g in seq_len(nmcmc)){
+        
+        # adapt
+        if ((g > 2) && ((g - 1) %% settings$assim.batch$jump$adapt == 0)) {
+          
+          # update site level jvars
+          params.recent <- mu_site_samp[(g - settings$assim.batch$jump$adapt):(g - 1), , ]
+          #colnames(params.recent) <- names(x0)
+          jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], accept.count[v], params.recent[,,v]))
+          jcov.arr  <- abind(jcov.list, along=3)
+          musite.accept.count <- rep(0, nsites)  # Reset counter
+          
+          # update global jvars
+          params.recent <- mu_global_samp[(g - settings$assim.batch$jump$adapt):(g - 1), , ]
+          #colnames(params.recent) <- names(x0)
+          jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], accept.count[v], params.recent[,,v]))
+          jcov.arr  <- abind(jcov.list, along=3)
+          musite.accept.count <- rep(0, nsites)  # Reset counter
+          
+        }
+        
+        
+        
+        ########################################
+        # update tau_global | mu_global, mu_site
+        #
+        # tau_global ~ W(tau_df, tau_sigma)
+        # 
+        # tau_global   : error precision matrix
+        
+        # sum of pairwise deviation products
+        sum_term <- matrix(0, ncol = nparam, nrow = nparam)
+        for(i in seq_len(nsites)){
+          pairwise_deviation <- as.matrix(mu_site_curr[i,] - mu_global)
+          sum_term <- sum_term + t(pairwise_deviation) %*% pairwise_deviation
+        }
+        
+        tau_sigma <- solve(V_inv + sum_term)
+        
+        # update tau
+        tau_global <- rWishart(1, df = tau_df, Sigma = tau_sigma)[,,1] # site precision
+        sigma_global <- solve(tau_global) # site covariance, new prior sigma to be used below for prior prob. calc.
+        
+        
+        ########################################
+        # update mu_global | mu_site, tau_global
+        #
+        # mu_global ~ MVN(global_mu, global_Sigma)
+        #
+        # mu_global     : global parameters
+        # global_mu     : precision weighted average between the data (mu_site) and prior mean (mu_f)
+        # global_Sigma  : sum of mu_site and mu_f precision
+        
+        
+        global_Sigma <- solve(P_f_inv + (nsites * tau_global))
+        
+        global_mu <- global_Sigma %*% ((nsites * tau_global %*% colMeans(mu_site_curr)) + (P_f_inv %*% mu_f))
+        
+        mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma) # new prior mu to be used below for prior prob. calc.
+        
+        
+        # site level M-H
+        ########################################
+        
+        # propose mu_site 
+        
+        for(ns in seq_len(nsites)){
+          repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
+            mu_site_new[ns,] <- mvtnorm::rmvnorm(1, mu_site_curr[ns,], jcov.arr[,,s])
+            check.that <- sapply(seq_len(sum(n.param)), function(x) {
+              chk <- (mu_site_new[ns,x] > rng[x, 1] & mu_site_new[ns,x] < rng[x, 2]) 
+              return(chk)})
+            
+            if(all(check.that)) break
+          }
+        }
+        
+        
+        # re-predict current SS
+        currSS    <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_curr[v,]))
+        
+        # calculate posterior
+        currLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(currSS[,v], llik.fn, currllp[[v]]))
+        # use new priors for calculating prior probability
+        currPrior <- mvtnorm::dmvnorm(mu_site_curr, mu_global, sigma_global, log = TRUE)
+        currPost  <- currLL + currPrior
+        
+        
+        # predict new SS
+        newSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_new[v,]))
+        
+        # calculate posterior
+        newllp   <- lapply(seq_len(nsites), function(v) pda.calc.llik.par(settings, nstack[[v]], newSS[,v]))
+        newLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(newSS[,v], llik.fn, newllp[[v]]))
+        # use new priors for calculating prior probability
+        newPrior <- dmvnorm(mu_site_new, mu_global, sigma_global, log = TRUE)
+        newPost  <- newLL + newPrior
+        
+        ar <- is.accepted(currPost, newPost)
+        mu_site_curr[ar, ] <- mu_site_new[ar, ]
+        accept.count <- accept.count + ar
+        
+        
+        mu_site_samp[g, , seq_len(nsites)] <- t(mu_site_curr)[,seq_len(nsites)]
+        # tau_site_samp <-
+        mu_global_samp[g,]   <- mu_global  # 100% acceptance for gibbs
+        tau_global_samp[g,,] <- tau_global # 100% acceptance for gibbs
+        
+      }
+      
+      return(list(mu_site_samp = mu_site_samp, mu_global_samp = mu_global_samp, tau_global_samp = tau_global_samp))
+    } # hier.mcmc
+    
+    
+    ## Sample posterior from emulator
+    mcmc.out <- parallel::parLapply(cl, seq_len(settings$assim.batch$chain), function(chain) {
+      hier.mcmc(settings = tmp.settings, gp.stack = gp.stack, nstack = NULL, 
+                nmcmc = tmp.settings$assim.batch$iter, rng = rng,
+                global.prior.fn.all = global.prior.fn.all, 
+                mu0 = init.list[[chain]], jmp0 = jmp.list[[chain]], 
+                prior.ind.all = prior.ind.all, nsites = nsites)
+    })
+    
+  } # hierarchical - if end
+  
 }
+

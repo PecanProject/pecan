@@ -642,3 +642,5 @@ pda.emulator.ms(multi.settings)
 HB-PDA workflow for multiple sites starts with fitting models locally. This is done by looping over the PEcAn multi-settings list using the `pda.emulator` function. During this step, site-level runs, GP fitting and MCMC are done. Components of these runs are saved and will be used in global and hierarhical fitting. 
 
 In global calibration, we estimate posterior using all site-level GPs at once at each iteration. Proposed values are plugged-in all GPs, and accepted/rejected according to all estimated likelihoods.
+
+Hierarhical calibration, uses a similar function to `mcmc.GP` but modified for hierarchihcal fitting, called `hier.mcmc`.
