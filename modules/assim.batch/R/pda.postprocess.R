@@ -251,3 +251,76 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.filename){
   return(sf.post.distns)
   
 } # write_sf_posterior
+
+
+##' Function to sort Hierarchical MCMC samples
+##' @export
+pda.sort.params <- function(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, 
+                            sf = NULL, n.param.orig, prior.list, prior.fn.all){
+  
+  mcmc.samp.list <- list()
+  
+  for (c in seq_len(settings$assim.batch$chain)) {
+    
+    if(sub.sample == "mu_global_samp"){
+      m <- matrix(NA, nrow =  nrow(mcmc.out[[c]][[sub.sample]]), ncol = length(prior.ind.all.ns))
+    }else if(sub.sample == "mu_site_samp"){
+      m <- matrix(NA, nrow =  nrow(mcmc.out[[c]][[sub.sample]][,,ns]), ncol = length(prior.ind.all.ns))
+    }
+    
+    # TODO: make this sf compatible for multi site
+    if(!is.null(sf)){
+      sfm <- matrix(NA, nrow =  nrow(mcmc.out[[c]][[sub.sample]]), ncol = length(sf))
+    }
+    
+    # TODO: get back to this when scaling factor is used
+    # # retrieve rownames separately to get rid of var_name* structures
+    prior.all.rownames <- unlist(sapply(prior.list, rownames))
+    
+    sc <- 1
+    for (i in seq_along(prior.ind.all.ns)) {
+      sf.check <- prior.all.rownames[prior.ind.all.ns][i]
+      idx <- grep(sf.check, rownames(prior.all)[prior.ind.all])
+      if(any(grepl(sf.check, sf))){
+        
+        m[, i] <- eval(prior.fn.all$qprior[prior.ind.all.ns][[i]],
+                       list(p = mcmc.out[[c]][[sub.sample]][, idx]))
+        
+        
+        if(sc <= length(sf)){
+          sfm[, sc] <- mcmc.out[[c]][[sub.sample]][, idx]
+          sc <- sc + 1
+        }
+        
+      }else{
+        
+        if(sub.sample == "mu_global_samp"){
+          m[, i] <- mcmc.out[[c]][[sub.sample]][, idx]
+        }else if(sub.sample == "mu_site_samp"){
+          m[, i] <- mcmc.out[[c]][[sub.sample]][, idx, ns]
+        }
+        
+        
+      }
+    }
+    
+    colnames(m) <- prior.all.rownames[prior.ind.all.ns]
+    mcmc.samp.list[[c]] <- m
+    
+    if(!is.null(sf)){
+      colnames(sfm) <- paste0(sf, "_SF")
+      sf.samp.list[[c]] <- sfm
+    }
+    
+  }
+  
+  # Separate each PFT's parameter samples (and bias term) to their own list
+  mcmc.param.list <- list()
+  ind <- 0
+  for (i in seq_along(n.param.orig)) {
+    mcmc.param.list[[i]] <- lapply(mcmc.samp.list, function(x) x[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE])
+    ind <- ind + n.param.orig[i]
+  }
+  
+  return(mcmc.param.list)
+} # pda.sort.params

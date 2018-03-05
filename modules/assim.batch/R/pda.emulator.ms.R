@@ -92,8 +92,8 @@ pda.emulator.ms <- function(multi.settings) {
   }
 
   ## Open database connection
-  if (settings$database$bety$write) {
-    con <- try(db.open(settings$database$bety), silent = TRUE)
+  if (multi.settings$database$bety$write) {
+    con <- try(db.open(multi.settings$database$bety), silent = TRUE)
     if (is(con, "try-error")) {
       con <- NULL
     } else {
@@ -287,8 +287,12 @@ pda.emulator.ms <- function(multi.settings) {
       P_f     <- diag(jmp0)
       P_f_inv <- solve(P_f) 
       
-      # initialize mu_global (nparam)
-      mu_global <- mvtnorm::rmvnorm(1, mu_f, P_f)
+      # # initialize mu_global (nparam)
+      repeat{
+        mu_global <- mvtnorm::rmvnorm(1, mu_f, P_f)
+        check.that <- (mu_global > rng[, 1] & mu_global < rng[, 2])
+        if(all(check.that)) break
+      }
       
       ###### priors cont'd
       #      tau_df    : Wishart degrees of freedom
@@ -317,10 +321,7 @@ pda.emulator.ms <- function(multi.settings) {
       for(ns in 1:nsites){
         repeat{
           mu_site_curr[ns,] <- mvtnorm::rmvnorm(1, mu_global, jcov.arr[,,ns]) # site mean
-          check.that <- sapply(seq_len(nparam), function(x) {
-            chk <- (mu_site_curr[ns,x] > rng[x, 1] & mu_site_curr[ns,x] < rng[x, 2]) 
-            return(chk)})
-          
+          check.that <- (mu_site_curr[ns,] > rng[, 1] & mu_site_curr[ns,] < rng[, 2]) 
           if(all(check.that)) break
         }
       }
@@ -389,12 +390,16 @@ pda.emulator.ms <- function(multi.settings) {
         # global_Sigma  : sum of mu_site and mu_f precision
         
         
-        global_Sigma <- solve(P_f_inv + (nsites * tau_global))
+        global_Sigma <- P_f_inv + (nsites * tau_global)
         
-        global_mu <- global_Sigma %*% ((nsites * tau_global %*% colMeans(mu_site_curr)) + (P_f_inv %*% mu_f))
+        global_mu <- solve(global_Sigma) %*% ((P_f_inv %*% mu_f) + tau_global %*% colSums(mu_site_curr) ) 
         
-        mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma) # new prior mu to be used below for prior prob. calc.
-        
+        #mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma) # new prior mu to be used below for prior prob. calc.
+        repeat{
+          mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma)
+          check.that <- (mu_global > rng[, 1] & mu_global < rng[, 2])
+          if(all(check.that)) break
+        }
         
         # site level M-H
         ########################################
@@ -403,11 +408,8 @@ pda.emulator.ms <- function(multi.settings) {
         
         for(ns in seq_len(nsites)){
           repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
-            mu_site_new[ns,] <- mvtnorm::rmvnorm(1, mu_site_curr[ns,], jcov.arr[,,s])
-            check.that <- sapply(seq_len(sum(n.param)), function(x) {
-              chk <- (mu_site_new[ns,x] > rng[x, 1] & mu_site_new[ns,x] < rng[x, 2]) 
-              return(chk)})
-            
+            mu_site_new[ns,] <- mvtnorm::rmvnorm(1, mu_site_curr[ns,], jcov.arr[,,ns])
+            check.that <- (mu_site_new[ns,] > rng[, 1] & mu_site_new[ns,] < rng[, 2]) 
             if(all(check.that)) break
           }
         }
@@ -450,12 +452,15 @@ pda.emulator.ms <- function(multi.settings) {
       return(list(mu_site_samp = mu_site_samp, mu_global_samp = mu_global_samp, tau_global_samp = tau_global_samp))
     } # hier.mcmc
     
+    # start the clock
+    ptm.start <- proc.time()
+    
     # prepare for parallelization
     dcores <- parallel::detectCores() - 1
     ncores <- min(max(dcores, 1), settings$assim.batch$chain)
-    # 
+     
     logger.setOutputFile(file.path(settings$outdir, "pda.log"))
-    # 
+    
     cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
     
     
@@ -472,6 +477,11 @@ pda.emulator.ms <- function(multi.settings) {
     # Stop the clock
     ptm.finish <- proc.time() - ptm.start
     logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
+    
+    
+    # Collect global params in their own list and postprocess
+    mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+    tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical")
     
   } # hierarchical - if end
   
