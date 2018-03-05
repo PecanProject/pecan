@@ -101,12 +101,13 @@ pda.emulator.ms <- function(multi.settings) {
     workflow.id <- -1
   }
   
-  ## Create an ensemble id
-  tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
-  
-  
+
   ## -------------------------------------- Global calibration -------------------------------------------------- 
   if(global){ # global - if begin
+    
+    ## Get an ensemble id for global calibration
+    tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
+    
     
     # collect GPs
     for(s in seq_along(multi.settings)){
@@ -231,7 +232,7 @@ pda.emulator.ms <- function(multi.settings) {
       }
     }
     
-    tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig)
+    tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_global")
     
   } # global - if end
   

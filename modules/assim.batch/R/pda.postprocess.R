@@ -7,7 +7,7 @@
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.ind) {
+pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.ind, sffx = NULL) {
   
   # prepare for non-model params
   if(length(mcmc.param.list) > length(settings$pfts)){  
@@ -28,7 +28,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
     par.file.name <- NULL
   }
 
-  params.subset <- pda.plot.params(settings, mcmc.param.list, prior.ind, par.file.name)
+  params.subset <- pda.plot.params(settings, mcmc.param.list, prior.ind, par.file.name, sffx)
   
   for (i in seq_along(settings$pfts)) {
     
@@ -38,7 +38,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
                                       settings$pfts[[i]]$name, 
                                       "_", 
                                       settings$assim.batch$ensemble.id, 
-                                      ".Rdata"))
+                                      sffx, ".Rdata"))
 
     params.pft <- params.subset[[i]]
     save(params.pft, file = filename.mcmc)
@@ -64,9 +64,11 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
     post.distns <- PEcAn.MA::approx.posterior(trait.mcmc = params.subset[[i]], 
                                     priors = prior[[i]], 
                                     outdir = settings$pfts[[i]]$outdir, 
-                                    filename.flag = paste0(".pda.", settings$pfts[[i]]$name, "_", settings$assim.batch$ensemble.id))
+                                    filename.flag = paste0(".pda.", settings$pfts[[i]]$name, "_", 
+                                                           settings$assim.batch$ensemble.id, sffx))
     filename <- file.path(settings$pfts[[i]]$outdir, 
-                          paste0("post.distns.pda.", settings$pfts[[i]]$name, "_", settings$assim.batch$ensemble.id, ".Rdata"))
+                          paste0("post.distns.pda.", settings$pfts[[i]]$name, "_", 
+                                 settings$assim.batch$ensemble.id, sffx, ".Rdata"))
     save(post.distns, file = filename)
     dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
     
@@ -97,7 +99,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
                           paste0("trait.mcmc.pda.", 
                                  settings$pfts[[i]]$name, 
                                  "_", settings$assim.batch$ensemble.id, 
-                                 ".Rdata"))
+                                 sffx, ".Rdata"))
     save(trait.mcmc, file = filename)
     dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
   }  #end of loop over PFTs
@@ -119,7 +121,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name = NULL) {
+pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name = NULL, sffx) {
   
   params.subset <- list()
   
@@ -150,12 +152,12 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
                     paste0("mcmc.diagnostics.pda.", 
                            settings$pfts[[i]]$name, 
                            "_", settings$assim.batch$ensemble.id,
-                           ".pdf")))
+                           sffx, ".pdf")))
     } else {
       pdf(file.path(par.file.name, 
                     paste0("mcmc.diagnostics.pda.par_", 
                            settings$assim.batch$ensemble.id,
-                           ".pdf")))
+                           sffx, ".pdf")))
     }
 
     layout(matrix(c(1, 2, 3, 4, 5, 6), ncol = 2, byrow = TRUE))
@@ -181,11 +183,11 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
                                       paste0("mcmc.diagnostics.pda.", 
                                              settings$pfts[[i]]$name, "_", 
                                              settings$assim.batch$ensemble.id, 
-                                             ".txt"))
+                                             sffx, ".txt"))
     } else {
       filename.mcmc.temp <- file.path(par.file.name, 
                                       paste0("mcmc.diagnostics.pda.par_", 
-                                             settings$assim.batch$ensemble.id,".txt"))
+                                             settings$assim.batch$ensemble.id, sffx, ".txt"))
     }
 
     
