@@ -245,10 +245,8 @@ pda.emulator.ms <- function(multi.settings) {
     
     
     hier.mcmc <- function(settings, gp.stack, nstack, nmcmc, rng, 
-                          global.prior.fn.all, mu0, jmp0, prior.ind.all, nsites){
-      
-      nparam   <- length(prior.ind.all)
-      
+                          mu0, jmp0, nparam, nsites){
+
       pos.check <- sapply(settings$assim.batch$inputs, `[[`, "ss.positive")
       
       if(length(unlist(pos.check)) == 0){
@@ -276,20 +274,42 @@ pda.emulator.ms <- function(multi.settings) {
       ################################################################
       
       
-      # mu_f 
-      mu_f <- unlist(mu0)
+      
+      ###### priors
+      #      mu_f    : prior mean vector
+      #      P_f     : prior covariance matrix
+      #      P_f_inv : prior precision matrix
+      #
+      #      mu_global ~ MVN (mu_f, P_f)
+      #
+
+      mu_f    <- unlist(mu0)
+      P_f     <- diag(jmp0)
+      P_f_inv <- solve(P_f) 
+      
+      # initialize mu_global (nparam)
+      mu_global <- mvtnorm::rmvnorm(1, mu_f, P_f)
+      
+      ###### priors cont'd
+      #      tau_df    : Wishart degrees of freedom
+      #      tau_V     : Wishart scale matrix
+      #      tau_global ~ W (tau_df, tau_scale)
+      #      sigma_global <- solve(tau_global)
+      #
+      
+      # initialize tau_global
+      tau_df <- nsites + nparam + 1
+      tau_V  <- diag(1, nparam)
+      V_inv  <- solve(tau_V)  # will be used in gibbs updating
+      
+      # initialize tau_global (nparam x nparam)
+      tau_global   <- rWishart(1, tau_df, tau_V)[,,1]
       
       
       # initialize jcov.arr (jump variances per site)
       jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
       for(j in seq_len(nsites)) jcov.arr[,,j] <- diag(jmp0)
       
-      # initialize mu_global (nparam)
-      mu_global <- mvtnorm::rmvnorm(1, mu_f, diag(jmp0))
-      
-      
-      # initialize tau_global (nparam x nparam)
-      tau_global   <- diag(1, nparam)
       
       # initialize mu_site (nsite x nparam)
       mu_site_curr <- matrix(NA_real_, nrow = nsites, ncol= nparam)
@@ -318,28 +338,21 @@ pda.emulator.ms <- function(multi.settings) {
       tau_global_samp <-  array(NA_real_, c(nmcmc, nparam, nparam))
       
       musite.accept.count    <- rep(0, nsites)
-      muglobal.accept.count  <- 0
-      tauglobal.accept.count <- 0
+
+      ########################## Start MCMC ########################
       
       for(g in seq_len(nmcmc)){
         
-        # adapt
+        # jump adaptation step
         if ((g > 2) && ((g - 1) %% settings$assim.batch$jump$adapt == 0)) {
           
           # update site level jvars
           params.recent <- mu_site_samp[(g - settings$assim.batch$jump$adapt):(g - 1), , ]
           #colnames(params.recent) <- names(x0)
           jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], accept.count[v], params.recent[,,v]))
-          jcov.arr  <- abind(jcov.list, along=3)
+          jcov.arr  <- abind::abind(jcov.list, along=3)
           musite.accept.count <- rep(0, nsites)  # Reset counter
-          
-          # update global jvars
-          params.recent <- mu_global_samp[(g - settings$assim.batch$jump$adapt):(g - 1), , ]
-          #colnames(params.recent) <- names(x0)
-          jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], accept.count[v], params.recent[,,v]))
-          jcov.arr  <- abind(jcov.list, along=3)
-          musite.accept.count <- rep(0, nsites)  # Reset counter
-          
+
         }
         
         
@@ -364,6 +377,7 @@ pda.emulator.ms <- function(multi.settings) {
         tau_global <- rWishart(1, df = tau_df, Sigma = tau_sigma)[,,1] # site precision
         sigma_global <- solve(tau_global) # site covariance, new prior sigma to be used below for prior prob. calc.
         
+
         
         ########################################
         # update mu_global | mu_site, tau_global
@@ -400,7 +414,8 @@ pda.emulator.ms <- function(multi.settings) {
         
         
         # re-predict current SS
-        currSS    <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_curr[v,]))
+        currSS    <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
+        currSS <- matrix(currSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
         
         # calculate posterior
         currLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(currSS[,v], llik.fn, currllp[[v]]))
@@ -410,7 +425,8 @@ pda.emulator.ms <- function(multi.settings) {
         
         
         # predict new SS
-        newSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_new[v,]))
+        newSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_new[v,], pos.check))
+        newSS <- matrix(newSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
         
         # calculate posterior
         newllp   <- lapply(seq_len(nsites), function(v) pda.calc.llik.par(settings, nstack[[v]], newSS[,v]))
@@ -421,7 +437,7 @@ pda.emulator.ms <- function(multi.settings) {
         
         ar <- is.accepted(currPost, newPost)
         mu_site_curr[ar, ] <- mu_site_new[ar, ]
-        accept.count <- accept.count + ar
+        musite.accept.count <- musite.accept.count + ar
         
         
         mu_site_samp[g, , seq_len(nsites)] <- t(mu_site_curr)[,seq_len(nsites)]
@@ -434,15 +450,28 @@ pda.emulator.ms <- function(multi.settings) {
       return(list(mu_site_samp = mu_site_samp, mu_global_samp = mu_global_samp, tau_global_samp = tau_global_samp))
     } # hier.mcmc
     
+    # prepare for parallelization
+    dcores <- parallel::detectCores() - 1
+    ncores <- min(max(dcores, 1), settings$assim.batch$chain)
+    # 
+    logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+    # 
+    cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
+    
     
     ## Sample posterior from emulator
     mcmc.out <- parallel::parLapply(cl, seq_len(settings$assim.batch$chain), function(chain) {
       hier.mcmc(settings = tmp.settings, gp.stack = gp.stack, nstack = NULL, 
                 nmcmc = tmp.settings$assim.batch$iter, rng = rng,
-                global.prior.fn.all = global.prior.fn.all, 
                 mu0 = init.list[[chain]], jmp0 = jmp.list[[chain]], 
-                prior.ind.all = prior.ind.all, nsites = nsites)
+                nparam = length(prior.ind.all), nsites = nsites)
     })
+    
+    parallel::stopCluster(cl)
+    
+    # Stop the clock
+    ptm.finish <- proc.time() - ptm.start
+    logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
     
   } # hierarchical - if end
   
