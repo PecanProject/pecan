@@ -11,6 +11,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Fixes
 - Fixed status page, should now be run from cronjob, creates static page
 - Fixed bug that overwrote remote  met file paths with local file paths
+- PEcAnRTM:
+    - Remove non-portable extensions from `src/Makevars`. This should make the package Windows-compatible.
 
 ### Added
 - Ability to allow for insecure sync using -k flag
