@@ -28,5 +28,5 @@ dates_in_month <- function(date) {
   end_date <- date +
     lubridate::days(lubridate::days_in_month(date)) -
     lubridate::days(1)
-  seq(date, end_date, by = "1 day")
+  lubridate::as_date(seq(date, end_date, by = "1 day"))
 }

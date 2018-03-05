@@ -39,21 +39,32 @@ check_ed2in <- function(ed2in) {
     )
   }
 
-  # Run coordinates match vegetation prefix
   ed2in_lat <- ed2in[["POI_LAT"]]
   ed2in_lon <- ed2in[["POI_LON"]]
-  veg_input <- read_ed_veg(ed2in[["SFILIN"]])
-  if (veg_input$latitude != ed2in_lat) {
-    PEcAn.logger::logger.severe(
-      "ED2IN latitude ", ed2in_lat,
-      " does not match vegetation input latitude ", veg_input$latitude
-    )
-  }
-  if (veg_input$longitude != ed2in_lon) {
-    PEcAn.logger::logger.severe(
-      "ED2IN latitude ", ed2in_lon,
-      " does not match vegetation input latitude ", veg_input$longitude
-    )
+
+  if (ed2in[["RUNTYPE"]] != "HISTORY") {
+    # Run coordinates match vegetation prefix
+    veg_input <- read_ed_veg(ed2in[["SFILIN"]])
+    if (veg_input$latitude != ed2in_lat) {
+      PEcAn.logger::logger.severe(
+        "ED2IN latitude ", ed2in_lat,
+        " does not match vegetation input latitude ", veg_input$latitude
+      )
+    }
+    if (veg_input$longitude != ed2in_lon) {
+      PEcAn.logger::logger.severe(
+        "ED2IN latitude ", ed2in_lon,
+        " does not match vegetation input latitude ", veg_input$longitude
+      )
+    }
+  } else {
+    # Check that at least one history file exists
+    history_files <- match_file(ed2in[["SFILIN"]])
+    if (!length(history_files) > 0) {
+      PEcAn.logger::logger.severe(
+        "No history files matched for prefix ", ed2in[["SFILIN"]]
+      )
+    }
   }
 
   # Run coordinates match meteorology drivers
