@@ -171,7 +171,10 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
   LL.vec <- numeric(n.var)
   
   for (k in seq_len(n.var)) {
-    LL.vec[k] <- llik.fn[[k]](pda.errors[k], llik.par[[k]])
+    
+    j <- (k-1) %% length(llik.fn) + 1
+    
+    LL.vec[k] <- llik.fn[[j]](pda.errors[k], llik.par[[k]])
   }
   
   LL.total <- sum(LL.vec)
@@ -198,13 +201,15 @@ pda.calc.llik.par <-function(settings, n, error.stats, hyper.pars){
   
   for(k in seq_along(error.stats)){
     
+    j <- (k-1) %% length(settings$assim.batch$inputs) + 1
+    
     llik.par[[k]] <- list()
     
-    if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
-        settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
+    if (settings$assim.batch$inputs[[j]]$likelihood == "Gaussian" |
+        settings$assim.batch$inputs[[j]]$likelihood == "multipGauss") {
       
-        llik.par[[k]]$par <- rgamma(1, hyper.pars[[k]]$parama + n[k]/2, 
-                                    hyper.pars[[k]]$paramb + error.stats[k]/2)
+        llik.par[[k]]$par <- rgamma(1, hyper.pars[[j]]$parama + n[k]/2, 
+                                    hyper.pars[[j]]$paramb + error.stats[k]/2)
         names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
 
     }

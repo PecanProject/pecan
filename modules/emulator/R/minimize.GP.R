@@ -125,8 +125,9 @@ get_ss <- function(gp, xnew, pos.check) {
   for(igp in seq_along(gp)){
     Y <- mlegp::predict.gp(gp[[igp]], newData = X[, 1:ncol(gp[[igp]]$X), drop=FALSE], se.fit = TRUE) 
     
+    j <- (igp %% length(pos.check)) + 1
     
-    if(pos.check[igp]){
+    if(pos.check[j]){
       if(Y$fit < 0){
         return(-Inf)
       }
