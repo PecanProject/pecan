@@ -26,10 +26,10 @@ read_ed_veg <- function(path_prefix, latitude = NULL, longitude = NULL,
   }
   path_prefix_full <- paste0(path_prefix, lat_prefix, lon_prefix)
 
-  file_matches <- match_file(path_prefix_full, expect = 3)
-  css_file <- match_file(path_prefix_full, suffix = "css", expect = 1)
-  pss_file <- match_file(path_prefix_full, suffix = "pss", expect = 1)
-  site_file <- match_file(path_prefix_full, suffix = "site", expect = 1)
+  file_matches <- PEcAn.utils::match_file(path_prefix_full, expect = 3)
+  css_file <- PEcAn.utils::match_file(path_prefix_full, suffix = "css", expect = 1)
+  pss_file <- PEcAn.utils::match_file(path_prefix_full, suffix = "pss", expect = 1)
+  site_file <- PEcAn.utils::match_file(path_prefix_full, suffix = "site", expect = 1)
 
   if (is.null(latitude)) {
     latitude <- get_latlon(css_file, "lat")

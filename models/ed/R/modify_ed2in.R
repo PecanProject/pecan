@@ -111,9 +111,9 @@ modify_ed2in <- function(ed2in, ...,
 
   if (!is.null(veg_prefix)) {
     if (check_paths) {
-      .z <- match_file(veg_prefix, suffix = "css", expect = 1)
-      .z <- match_file(veg_prefix, suffix = "pss", expect = 1)
-      .z <- match_file(veg_prefix, suffix = "site", expect = 1)
+      .z <- PEcAn.utils::match_file(veg_prefix, suffix = "css", expect = 1)
+      .z <- PEcAn.utils::match_file(veg_prefix, suffix = "pss", expect = 1)
+      .z <- PEcAn.utils::match_file(veg_prefix, suffix = "site", expect = 1)
     }
     ed2in[["SFILIN"]] <- normalizePath(veg_prefix, mustWork = FALSE)
     ed2in[["IED_INIT_MODE"]] <- 3
@@ -155,7 +155,7 @@ modify_ed2in <- function(ed2in, ...,
     ed2in[["IYEARA"]] <- lubridate::year(start_date)
     ed2in[["IMONTHA"]] <- lubridate::month(start_date)
     ed2in[["IDATEA"]] <- lubridate::day(start_date)
-    ed2in[["ITIMEA"]] <- as.numeric(strftime(start_date, "%H%M"))
+    ed2in[["ITIMEA"]] <- as.numeric(strftime(start_date, "%H%M", tz = "UTC"))
     ed2in[["METCYC1"]] <- ed2in[["IYEARA"]]
   }
 
@@ -163,7 +163,7 @@ modify_ed2in <- function(ed2in, ...,
     ed2in[["IYEARZ"]] <- lubridate::year(end_date)
     ed2in[["IMONTHZ"]] <- lubridate::month(end_date)
     ed2in[["IDATEZ"]] <- lubridate::day(end_date)
-    ed2in[["ITIMEZ"]] <- as.numeric(strftime(end_date, "%H%M"))
+    ed2in[["ITIMEZ"]] <- as.numeric(strftime(end_date, "%H%M", tz = "UTC"))
     ed2in[["METCYCF"]] <- ed2in[["IYEARZ"]]
   }
 
