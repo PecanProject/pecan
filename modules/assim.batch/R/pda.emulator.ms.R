@@ -390,9 +390,9 @@ pda.emulator.ms <- function(multi.settings) {
         # global_Sigma  : sum of mu_site and mu_f precision
         
         
-        global_Sigma <- P_f_inv + (nsites * tau_global)
+        global_Sigma <- solve(P_f_inv + (nsites * tau_global))
         
-        global_mu <- solve(global_Sigma) %*% ((P_f_inv %*% mu_f) + tau_global %*% colSums(mu_site_curr) ) 
+        global_mu <- global_Sigma %*% ((P_f_inv %*% mu_f) + tau_global %*% colSums(mu_site_curr) ) 
         
         #mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma) # new prior mu to be used below for prior prob. calc.
         repeat{
@@ -449,7 +449,8 @@ pda.emulator.ms <- function(multi.settings) {
         
       }
       
-      return(list(mu_site_samp = mu_site_samp, mu_global_samp = mu_global_samp, tau_global_samp = tau_global_samp))
+      return(list(mu_site_samp = mu_site_samp, mu_global_samp = mu_global_samp, tau_global_samp = tau_global_samp,
+                  musite.accept.count = musite.accept.count))
     } # hier.mcmc
     
     # start the clock

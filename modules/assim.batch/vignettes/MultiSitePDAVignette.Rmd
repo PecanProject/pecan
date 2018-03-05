@@ -643,4 +643,4 @@ HB-PDA workflow for multiple sites starts with fitting models locally. This is d
 
 In global calibration, we estimate posterior using all site-level GPs at once at each iteration. Proposed values are plugged-in all GPs, and accepted/rejected according to all estimated likelihoods.
 
-Hierarhical calibration, uses a similar function to `mcmc.GP` but modified for hierarchihcal fitting, called `hier.mcmc`.
+Hierarhical calibration, uses a similar function to `mcmc.GP` but modified for hierarchihcal fitting, called `hier.mcmc`. Within this function, both site-level and (hierarchically modeled) global parameters are fitted.
