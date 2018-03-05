@@ -16,7 +16,7 @@ get_ed2in_dates <- function(ed2in) {
     ed2in_end_time$hour,
     ed2in_end_time$minute
   )
-  seq(start_date, end_date, by = "1 day")
+  lubridate::as_date(seq(start_date, end_date, by = "1 day"))
 }
 
 ed2in2time <- function(itimea) {
