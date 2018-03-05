@@ -37,7 +37,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
   if (!any(file.check)) {
     
     # no output files
-    print(paste("*** WARNING: No output files found for :", outdir))
+    PEcAn.logger::logger.warn("WARNING: No output files found for :", outdir)
     return(NULL)
     
   }else{ 
@@ -135,7 +135,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     
     # ----- write ncdf files
     
-    PEcAn.logger::logger.info(paste0("*** Writing netCDF file ***"))
+    PEcAn.logger::logger.info("*** Writing netCDF file ***")
     
     out <- unlist(out_list, recursive = FALSE)
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
@@ -261,12 +261,12 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   ysel <- which(yr == yfiles)
   
   if (yr < strftime(start_date, "%Y")) {
-    print(paste0(yr, "<", strftime(start_date, "%Y")))
+    PEcAn.logger::logger.info(yr, "<", strftime(start_date, "%Y"))
     next
   }
   
   if (yr > strftime(end_date, "%Y")) {
-    print(paste0(yr, ">", strftime(end_date, "%Y")))
+    PEcAn.logger::logger.info(yr, ">", strftime(end_date, "%Y"))
     next
   }
   
