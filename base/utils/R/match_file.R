@@ -3,14 +3,22 @@
 #' Return a list of files given a full prefix and optional suffix. Optionally, 
 #' confirm that the right number of files are returned. If the wrong number of 
 #' files is returned, throw an error.
+#'
+#' If `path_prefix` points to a directory, then all files inside that directory 
+#' that match the suffix (if provided) are returned.
 #' @param path_prefix Full path and file prefix
 #' @param suffix File suffix, as character (default = `NULL`)
 #' @param expect Number of files expected to be returned (default = `NULL`)
 #' @return Character vector of matched file names, as full paths.
 #' @export
 match_file <- function(path_prefix, suffix = NULL, expect = NULL) {
-  path <- dirname(path_prefix)
-  prefix <- basename(path_prefix)
+  if (file.exists(path_prefix) && file.info(path_prefix)$isdir) {
+    path <- path_prefix
+    prefix <- ""
+  } else {
+    path <- dirname(path_prefix)
+    prefix <- basename(path_prefix)
+  }
   file_matches <- list.files(path, prefix, full.names = TRUE)
   if (!is.null(suffix)) {
     file_matches <- grep(paste0(suffix, "$"), file_matches, value = TRUE)
