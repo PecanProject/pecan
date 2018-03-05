@@ -34,7 +34,7 @@ check_ed_metheader_format <- function(ed_metheader_format, check_files = TRUE) {
   testthat::test_that(
     "ED met header files exist and are not empty",
     {
-      met_files <- match_file(ed_metheader_format$path_prefix)
+      met_files <- PEcAn.utils::match_file(ed_metheader_format$path_prefix)
       testthat::expect_gte(length(met_files), 1)
       testthat::expect_true(all(file.exists(met_files)))
       testthat::expect_true(all(file.size(met_files) > 0))
@@ -56,7 +56,7 @@ check_ed_metheader_format <- function(ed_metheader_format, check_files = TRUE) {
   )
 
   if (check_files) {
-    met_files <- match_file(ed_metheader_format$path_prefix)
+    met_files <- PEcAn.utils::match_file(ed_metheader_format$path_prefix, suffix = "h5")
     .z <- lapply(met_files, check_ed_metfile, variables = ed_metheader_format$variables)
   }
 }
@@ -68,6 +68,8 @@ check_ed_metheader_format <- function(ed_metheader_format, check_files = TRUE) {
 #' @return `NULL`, invisibly, if successful or throw an error
 check_ed_metfile <- function(metfile, variables) {
   hfile <- hdf5r::H5File$new(metfile, mode = "r")
+  # Remove variables that are not constants
+  variables <- variables[variables$flag != 4, ]
   testthat::test_that(
     "All variables present in metfile",
     {

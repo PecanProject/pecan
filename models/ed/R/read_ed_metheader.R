@@ -73,7 +73,7 @@ read_ed_metheader <- function(filename, check = TRUE, check_files = TRUE) {
     block <- seq(2 + length(comment_line) + (i-1) * var_lines, length.out = var_lines)
     sub_file <- full_file[block]
     path_prefix <- sub_file[1]
-    met_files <- match_file(path_prefix)
+    met_files <- PEcAn.utils::match_file(path_prefix)
     if (!length(met_files) >= 0) {
       msg <- paste("No files matched for prefix", path_prefix)
       if (check) {

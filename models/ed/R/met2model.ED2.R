@@ -289,9 +289,11 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       metflag[metvar == "co2"] <- 4
       metfrq[metvar == "co2"] <- 380
     }
+    # TODO: ANS Hack -- ED2IN doesn't automatically add the '/'
+    met_folder_prefix <- paste0(met_folder, "/")
     write.table("header", met_header, row.names = FALSE, col.names = FALSE)
     write.table(sites, met_header, row.names = FALSE, col.names = FALSE, append = TRUE)
-    write.table(met_folder, met_header, row.names = FALSE, col.names = FALSE, append = TRUE,
+    write.table(met_folder_prefix, met_header, row.names = FALSE, col.names = FALSE, append = TRUE,
                 quote = FALSE)
     write.table(matrix(metgrid, nrow = 1), met_header, row.names = FALSE, col.names = FALSE,
                 append = TRUE, quote = FALSE)
@@ -303,6 +305,6 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
                 append = TRUE, quote = FALSE)
   }  ### end loop over met files
 
-  print("Done with met2model.ED2")
+  PEcAn.logger::logger.info("Done with met2model.ED2")
   return(invisible(results))
 } # met2model.ED2

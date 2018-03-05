@@ -7,7 +7,7 @@
 #' @export
 get_met_dates <- function(ed_metheader) {
   met_paths <- purrr::map(ed_metheader, "path_prefix")
-  met_file_list <- purrr::map(met_paths, match_file)
+  met_file_list <- purrr::map(met_paths, PEcAn.utils::match_file, suffix = "h5")
   month_list <- purrr::map2(
     met_paths,
     met_file_list,
