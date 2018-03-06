@@ -18,10 +18,13 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
+##' @param pft_names Names of PFTs used in the run
+##' @param dbh_breaks Number of DBH size class breaks, default is 0 which represents a single DBH bin from 0 - Infinity cm
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
+## refactored by Istem Fer on 03/2018
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft_names = NULL, dbh_breaks = 0) {
 
   start_year <- lubridate::year(start_date)
@@ -777,7 +780,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 #               "analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
 #               "analysis-E-2000-04-00-000000-g01.h5"
 #
-# dbh_breaks : determines the bins breaks, vector, 0 will represent a single DBH bin from 0 - Infinity cm
+# dbh_breaks : determines the bins breaks, vector
 # ! NOTE : currently read.output would work only for dbh_breaks = 0 
 # pft_names  : character vector with names of PFTs
 # pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")

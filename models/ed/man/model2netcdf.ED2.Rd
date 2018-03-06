@@ -17,6 +17,10 @@ model2netcdf.ED2(outdir, sitelat, sitelon, start_date, end_date,
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
+
+\item{pft_names}{Names of PFTs used in the run}
+
+\item{dbh_breaks}{Number of DBH size class breaks, default is 0 which represents a single DBH bin from 0 - Infinity cm}
 }
 \description{
 Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
