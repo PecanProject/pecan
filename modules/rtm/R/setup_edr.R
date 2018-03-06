@@ -14,10 +14,10 @@ setup_edr <- function(ed2in, output_dir,
                       datetime = ISOdatetime(ed2in[["IYEARA"]],
                                              ed2in[["IMONTHA"]],
                                              ed2in[["IDATEA"]],
-                                             12),
+                                             12, 00, 00, tz = "UTC"),
                       ...) {
 
-  hour <- as.numeric(strftime(datetime, "%H"))
+  hour <- as.numeric(strftime(datetime, "%H", tz = "UTC"))
   if (hour < 8 | hour > 17) {
     PEcAn.logger::logger.warn(
       "Starting hour ", hour,

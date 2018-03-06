@@ -32,6 +32,8 @@
 #' @param stderr Logical. If `TRUE` (default), internalize `system2` results as 
 #' R character vector. `TRUE` is recommended because it allows EDR to check its 
 #' execution and to run more quietly.
+#' @param verbose_error Logical. If `TRUE` (default), spit out the full ED 
+#' if EDR execution fails.
 #' @param ... Additional arguments to `system2`
 #' 
 #' @author Alexey Shiklomanov
@@ -50,6 +52,7 @@ EDR <- function(img_path,
                 singularity_args = list(),
                 clean = FALSE,
                 stderr = TRUE,
+                verbose_error = TRUE,
                 ...) {
 
   ed2in_path <- normalizePath(ed2in_path, mustWork = TRUE)
@@ -95,43 +98,47 @@ EDR <- function(img_path,
 
   # Set up soil and wood reflectance files
   if (!is.na(soil_reflect_path)) {
-    file.copy(soil_reflect_path, file.path(output.path, soil_fname),
-              overwrite = TRUE)
+    file.copy(
+      soil_reflect_path,
+      file.path(output.path, "soil_reflect_par.dat"),
+      overwrite = TRUE
+    )
   }
 
   if (!is.na(wood_reflect_path)) {
-    file.copy(wood_reflect_path, file.path(output.path, wood_fname),
-              overwrite = TRUE)
+    file.copy(
+      wood_reflect_path,
+      file.path(output.path, "wood_reflect_par.dat"),
+      overwrite = TRUE
+    )
   }
 
   # Multi-PFT settings
-  if (length(trait.values) > 0) {
-    if (length(spectra_list) != length(trait.values)) {
-      stop("Spectral data and trait.values do not have same length. ",
-           "Spectral data length: ", length(spectra_list),
-           "trait.values length: ", length(trait.values))
-    }
-    pft_names <- names(trait.values)
-    if (any(!names(spectra_list) %in% pft_names)) {
-      stop("Spectral data and trait.values do not have same PFT names. ",
-           "Spectral data names: ", names(spectra_list),
-           "trait.values names: ", pft_names)
-    }
-    data(pftmapping, package = "PEcAn.ED2")
-    npft <- length(pft_names)
-    write_dat(npft, files_list["lengths"])
-    pft_numbers <- numeric(npft)
-    for (i in seq_len(npft)) {
-      pft_numbers[i] <- pftmapping[pftmapping$PEcAn == pft_names[i], "ED"]
-      write_dat(pft_numbers[i], files_list["lengths"])
-      spectra_list_pft <- spectra_list[[pft_names[i]]]
-      rind <- which(colnames(spectra_list_pft) %in% c("R", "reflectance"))
-      tind <- which(colnames(spectra_list_pft) %in% c("T", "transmittance"))
-      write_dat(spectra_list_pft[par.ind, rind], files_list["reflect_par"])
-      write_dat(spectra_list_pft[nir.ind, rind], files_list["reflect_nir"])
-      write_dat(spectra_list_pft[par.ind, tind], files_list["trans_par"])
-      write_dat(spectra_list_pft[nir.ind, tind], files_list["trans_nir"])
-    }
+  if (length(spectra_list) != length(trait.values)) {
+    stop("Spectral data and trait.values do not have same length. ",
+         "Spectral data length: ", length(spectra_list),
+         "trait.values length: ", length(trait.values))
+  }
+  pft_names <- names(trait.values)
+  if (any(!names(spectra_list) %in% pft_names)) {
+    stop("Spectral data and trait.values do not have same PFT names. ",
+         "Spectral data names: ", names(spectra_list),
+         "trait.values names: ", pft_names)
+  }
+  data(pftmapping, package = "PEcAn.ED2")
+  npft <- length(pft_names)
+  write_dat(npft, files_list["lengths"])
+  pft_numbers <- numeric(npft)
+  for (i in seq_len(npft)) {
+    pft_numbers[i] <- pftmapping[pftmapping$PEcAn == pft_names[i], "ED"]
+    write_dat(pft_numbers[i], files_list["lengths"])
+    spectra_list_pft <- spectra_list[[pft_names[i]]]
+    rind <- which(colnames(spectra_list_pft) %in% c("R", "reflectance"))
+    tind <- which(colnames(spectra_list_pft) %in% c("T", "transmittance"))
+    write_dat(spectra_list_pft[par.ind, rind], files_list["reflect_par"])
+    write_dat(spectra_list_pft[nir.ind, rind], files_list["reflect_nir"])
+    write_dat(spectra_list_pft[par.ind, tind], files_list["trans_par"])
+    write_dat(spectra_list_pft[nir.ind, tind], files_list["trans_nir"])
   }
 
   oldwd <- getwd()
@@ -158,9 +165,11 @@ EDR <- function(img_path,
   }
 
   # Call EDR -- NOTE that this requires that the ED2IN
-  if (stderr && any(grepl("fatal error", ex, ignore.case = TRUE))) {
-    print(ex)
-    stop("Error executing EDR")
+  if (stderr && any(grepl("fatal error|fortran runtime error", ex, ignore.case = TRUE))) {
+    if (verbose_error) {
+      print(ex)
+    }
+    stop("Error executing EDR.")
   }
 
   # Analyze output
@@ -198,14 +207,16 @@ get.EDR.output <- function(path = getwd()) {
 #' @export
 EDR.preprocess.history <- function(history.path, output.path, datetime, history.prefix = "history") {
   # Check inputs
-  stopifnot(is.character(history.path))
-  stopifnot(is.character(history.prefix))
+  stopifnot(
+    is.character(history.path),
+    is.character(history.prefix)
+  )
 
   # Extract date and time
-  day          <- strftime(datetime, "%d")
-  month        <- strftime(datetime, "%m")
-  year         <- strftime(datetime, "%Y")
-  time.history <- strftime(datetime, "%H%M%S")
+  day          <- strftime(datetime, "%d", tz = "UTC")
+  month        <- strftime(datetime, "%m", tz = "UTC")
+  year         <- strftime(datetime, "%Y", tz = "UTC")
+  time.history <- strftime(datetime, "%H%M%S", tz = "UTC")
   # Locate history file
   history.search <- sprintf("%1$s-S-%2$s-%3$s-%4$s",
                             history.prefix, year, month, day)

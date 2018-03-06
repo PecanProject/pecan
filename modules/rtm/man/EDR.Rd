@@ -11,7 +11,8 @@ EDR(img_path, ed2in_path, spectra_list, trait.values,
   nir.wl = 2500, edr_exe_path = NULL,
   output.path = dirname(normalizePath(ed2in_path, mustWork = TRUE)),
   settings = list(model = list(revision = "git", config.header = NULL)),
-  singularity_args = list(), clean = FALSE, stderr = TRUE, ...)
+  singularity_args = list(), clean = FALSE, stderr = TRUE,
+  verbose_error = TRUE, ...)
 }
 \arguments{
 \item{img_path}{Path to Singularity container (usually a \code{.simg} file)}
@@ -56,6 +57,9 @@ executable. Ignored otherwise.}
 \item{stderr}{Logical. If \code{TRUE} (default), internalize \code{system2} results as
 R character vector. \code{TRUE} is recommended because it allows EDR to check its
 execution and to run more quietly.}
+
+\item{verbose_error}{Logical. If \code{TRUE} (default), spit out the full ED
+if EDR execution fails.}
 
 \item{...}{Additional arguments to \code{system2}}
 }
