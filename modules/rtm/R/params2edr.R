@@ -37,6 +37,7 @@ params2edr <- function(params, sep = ".", prospect = TRUE, version = 5) {
     !is.null(names(params)),
     all(grepl(sep, names(params)))
   )
+  params <- params[names(params) != "residual"]
   split_regex <- paste0("(.*)[", sep, "](.*)")
   pfts <- gsub(split_regex, "\\1", names(params))
   traits <- gsub(split_regex, "\\2", names(params))
@@ -52,7 +53,7 @@ params2edr <- function(params, sep = ".", prospect = TRUE, version = 5) {
     pft_traits <- params[pft_ind]
     names(pft_traits) <- traits[pft_ind]
     if (prospect) {
-      prospect_traits <- grepl("prospect_", pft_traits)
+      prospect_traits <- grepl("prospect_", names(pft_traits))
       result$spectra_list[[pft]] <- prospect(pft_traits[prospect_traits], version)
     }
     result$trait.values[[pft]] <- pft_traits
