@@ -218,7 +218,7 @@ Only if this section is defined a sensitivity analysis is done. This section wil
 * **end.date** : [required?] end date of the sensitivity analysis (in YYYY/MM/DD format)
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
 * ** variable** : [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
-* ** perpft** : [optional] if `TRUE` a sensitivity analysis on PFT-specific outputs will be run. This is only possible if your model provides PFT-specific outputs for the `variable` requested. 
+* ** perpft** : [optional] if `TRUE` a sensitivity analysis on PFT-specific outputs will be run. This is only possible if your model provides PFT-specific outputs for the `variable` requested. This tag only affects the output processing, not the number of samples proposed for the analysis nor the model execution.
 
 ## Model Setup
 
