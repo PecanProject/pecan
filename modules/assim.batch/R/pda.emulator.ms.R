@@ -32,10 +32,8 @@ pda.emulator.ms <- function(multi.settings) {
 
   
   # lists to collect emulators and run MCMC per site later
-  SS.stack      <- vector("list", nsites) 
   gp.stack      <- vector("list", nsites) 
-  prior.stack   <- vector("list", nsites) 
-  nstack        <- vector("list", nsites) 
+  #nstack        <- vector("list", nsites) 
   
   ## -------------------------------------- Local runs and calibration ------------------------------------------
   
@@ -62,7 +60,7 @@ pda.emulator.ms <- function(multi.settings) {
     "hyper.pars")
   
   need_obj <- load_pda_history(workdir = multi.settings$outdir,  
-                   ensemble.id = multi.settings[[8]]$assim.batch$ensemble.id, 
+                   ensemble.id = multi.settings[[1]]$assim.batch$ensemble.id, 
                    objects = obj_names)
   
   init.list        <- need_obj$init.list
@@ -275,7 +273,8 @@ pda.emulator.ms <- function(multi.settings) {
       
       
       
-      ###### priors
+      ###### (hierarchical) global mu priors
+      #
       #      mu_f    : prior mean vector
       #      P_f     : prior covariance matrix
       #      P_f_inv : prior precision matrix
@@ -294,14 +293,15 @@ pda.emulator.ms <- function(multi.settings) {
         if(all(check.that)) break
       }
       
-      ###### priors cont'd
+      ######  (hierarchical) global tau priors
+      #
       #      tau_df    : Wishart degrees of freedom
       #      tau_V     : Wishart scale matrix
+      #
       #      tau_global ~ W (tau_df, tau_scale)
       #      sigma_global <- solve(tau_global)
       #
       
-      # initialize tau_global
       tau_df <- nsites + nparam + 1
       tau_V  <- diag(1, nparam)
       V_inv  <- solve(tau_V)  # will be used in gibbs updating
@@ -366,11 +366,8 @@ pda.emulator.ms <- function(multi.settings) {
         # tau_global   : error precision matrix
         
         # sum of pairwise deviation products
-        sum_term <- matrix(0, ncol = nparam, nrow = nparam)
-        for(i in seq_len(nsites)){
-          pairwise_deviation <- as.matrix(mu_site_curr[i,] - mu_global)
-          sum_term <- sum_term + t(pairwise_deviation) %*% pairwise_deviation
-        }
+        pairwise_deviation <- apply(mu_site_curr, 1, function(r) r - mu_global)
+        sum_term <- pairwise_deviation %*% t(pairwise_deviation)
         
         tau_sigma <- solve(V_inv + sum_term)
         
@@ -390,16 +387,16 @@ pda.emulator.ms <- function(multi.settings) {
         # global_Sigma  : sum of mu_site and mu_f precision
         
         
-        global_Sigma <- solve(P_f_inv + (nsites * tau_global))
+        global_Sigma <- solve(P_f + (nsites * sigma_global))
         
-        global_mu <- global_Sigma %*% ((P_f_inv %*% mu_f) + tau_global %*% colSums(mu_site_curr) ) 
-        
-        #mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma) # new prior mu to be used below for prior prob. calc.
-        repeat{
-          mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma)
-          check.that <- (mu_global > rng[, 1] & mu_global < rng[, 2])
-          if(all(check.that)) break
-        }
+        global_mu <- global_Sigma %*% ((sigma_global %*% colSums(mu_site_curr)) + (P_f %*% mu_f))
+ 
+        mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma) # new prior mu to be used below for prior prob. calc.
+        # repeat{
+        #   mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma)
+        #   check.that <- (mu_global > rng[, 1] & mu_global < rng[, 2])
+        #   if(all(check.that)) break
+        # }
         
         # site level M-H
         ########################################
@@ -447,6 +444,7 @@ pda.emulator.ms <- function(multi.settings) {
         mu_global_samp[g,]   <- mu_global  # 100% acceptance for gibbs
         tau_global_samp[g,,] <- tau_global # 100% acceptance for gibbs
         
+        if(g %% 500 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
       }
       
       return(list(mu_site_samp = mu_site_samp, mu_global_samp = mu_global_samp, tau_global_samp = tau_global_samp,
@@ -466,7 +464,7 @@ pda.emulator.ms <- function(multi.settings) {
     
     
     ## Sample posterior from emulator
-    mcmc.out <- parallel::parLapply(cl, seq_len(settings$assim.batch$chain), function(chain) {
+    mcmc.out <- parallel::parLapply(cl, seq_len(tmp.settings$assim.batch$chain), function(chain) {
       hier.mcmc(settings = tmp.settings, gp.stack = gp.stack, nstack = NULL, 
                 nmcmc = tmp.settings$assim.batch$iter, rng = rng,
                 mu0 = init.list[[chain]], jmp0 = jmp.list[[chain]], 
@@ -484,6 +482,11 @@ pda.emulator.ms <- function(multi.settings) {
     mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
     tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical")
     
+    # Collect site-level params in their own list and postprocess
+    for(ns in seq_len(nsites)){
+      mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_site_samp", ns = ns, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+      settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = paste0("_hierarchical_SL",ns))
+    }
   } # hierarchical - if end
   
 }
