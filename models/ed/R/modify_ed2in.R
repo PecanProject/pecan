@@ -152,10 +152,14 @@ modify_ed2in <- function(ed2in, ...,
   }
 
   if (!is.null(start_date)) {
-    ed2in[["IYEARA"]] <- lubridate::year(start_date)
-    ed2in[["IMONTHA"]] <- lubridate::month(start_date)
-    ed2in[["IDATEA"]] <- lubridate::day(start_date)
-    ed2in[["ITIMEA"]] <- as.numeric(strftime(start_date, "%H%M", tz = "UTC"))
+    # Change dates for both initial and history
+    # This should be OK because initial (I...A) are ignored if runtype = HISTORY,
+    # and history (I...H) are ignored if runtype = INITIAL
+    ed2in[["IYEARA"]] <- ed2in[["IYEARH"]] <- lubridate::year(start_date)
+    ed2in[["IMONTHA"]] <- ed2in[["IMONTHH"]] <- lubridate::month(start_date)
+    ed2in[["IDATEA"]] <- ed2in[["IDATEH"]] <- lubridate::day(start_date)
+    ed2in[["ITIMEA"]] <- ed2in[["ITIMEH"]] <-
+      as.numeric(strftime(start_date, "%H%M", tz = "UTC"))
     ed2in[["METCYC1"]] <- ed2in[["IYEARA"]]
   }
 
