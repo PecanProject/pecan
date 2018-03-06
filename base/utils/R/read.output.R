@@ -81,8 +81,11 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
         if (v %in% c(names(nc$var), names(nc$dim))) {
           newresult <- ncdf4::ncvar_get(nc, v)
           # begin per-pft read
+          # check if the variable has 'pft' as a dimension
           if("pft" %in% sapply(nc$var[[v]]$dim, `[[`, "name")){
             # means there are PFT specific outputs we want
+            # the variable *PFT* in standard netcdfs has *pft* dimension, 
+            # numbers as values, and full pft names as an attribute
             # parse pft names and match the requested
             pft.string <- ncdf4::ncatt_get(nc, "PFT")
             pft.ind <- strsplit(pft.string$long_name, ",")[[1]] == pft.name
