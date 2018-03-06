@@ -28,10 +28,12 @@ reflectance in package. If NA, skip (assume data already in directory).
 }}
 
 \item{spectra_list}{List of spectral data matrices. Names must exactly match
-the PFTs given in \code{trait.values}. Each item must be a matrix of wavelengths,
-reflectance, and transmittance values. Matrix must have column names 'wl'
-(wavelength), 'R' (reflectance), and 'T' (transmittance). Such a matrix is
-returned by default by all versions of PROSPECT in this package.}
+the PFTs given in \code{trait.values}. Each item must be a matrix of
+reflectance (labeled 'R' or 'reflectance') and transmittance (labeled 'T' or
+'transmittance') values. If the matrix is not of class \code{spectra} (see
+\code{\link[=spectra]{spectra()}}), it must also have a column of wavelength values (labeled
+'wl'). Such a matrix is returned by default by all versions of PROSPECT in
+this package.}
 
 \item{par.wl}{Vector of wavelengths defining PAR region}
 

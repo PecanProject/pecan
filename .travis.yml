@@ -84,6 +84,9 @@ notifications:
     on_success: always
     on_failure: always
     on_start: always
+  slack:
+    # Slack token created by Chris Black, 2018-02-17
+    secure: "DHHSNmiCf71SLa/FFSqx9oOnJjJt2GHYk7NsFIBb9ZY10RvQtIPfaoNxkPjqu9HLyZWJSFtg/uNKKplEHc6W80NoXyqoTvwOxTPjMaViXaCNqsmzjjR/JaCWT/oWGXyAw0VX3S8cwuIexlKQGgZwJpIzoVOZqUrDrHI/O17kZoM="
   email:
     on_success: always
     on_failure: always
@@ -101,10 +104,10 @@ install:
   - popd
 
 before_script:
-  - psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
-  - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
+  - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
+  - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
-  - psql -U postgres < bety.sql
+  - psql -q -o /dev/null -U postgres < bety.sql
   - rm bety.sql
   - ./scripts/add.models.sh
   - chmod +x book_source/deploy.sh
@@ -129,6 +132,7 @@ script:
   - set +e
 
 after_script:
+  - set -e
   - echo 'Building Book'
   - pushd book_source
   - make
@@ -137,3 +141,4 @@ after_script:
   - pushd documentation/tutorials
   - make build deploy
   - popd
+  - set +e
