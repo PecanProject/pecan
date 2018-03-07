@@ -4,28 +4,92 @@
 
 PKG_LIBS = $(FLIBS)
 
-SOURCES_F = $(wildcard RTM/*/*.f90 RTM/*/*/*.f90)
-SOURCES_C = $(wildcard *.cpp)
-OBJECTS = $(SOURCES_F:.f90=.o) $(SOURCES_C:.cpp=.o)
+SOURCES = \
+    RTM/pro2s/pro52s.f90 \
+    RTM/pro2s/pro5B2s.f90 \
+    RTM/pro2s/pro42s.f90 \
+    RTM/twostream/mod_biggamma.f90 \
+    RTM/twostream/meador.f90 \
+    RTM/twostream/mod_hapke_soil.f90 \
+    RTM/twostream/gamma.functions.f90 \
+    RTM/twostream/two.stream.f90 \
+    RTM/prosail/prosail.main.f90 \
+    RTM/sail/sail.refltrans.f90 \
+    RTM/sail/sail.volscatt.f90 \
+    RTM/sail/sail.lidf.f90 \
+    RTM/sail/sail.sail.f90 \
+    RTM/sail/sail.sensgeom.f90 \
+    RTM/sail/sail.hotspot.f90 \
+    RTM/sail/sail.brdf.f90 \
+    RTM/sail/sail.suits.f90 \
+    RTM/prospect/prospect.5.f90 \
+    RTM/prospect/prospect.4.f90 \
+    RTM/prospect/prospect.D.f90 \
+    RTM/prospect/prospect.5B.f90 \
+    RTM/prospect/prospect.tav.f90 \
+    RTM/prospect/prospect.expint.f90 \
+    RTM/prospect/prospect.gpm.f90 \
+    RTM/modules/mod_types.f90 \
+    RTM/modules/dataSpec/dataSpec_prospect5b.f90 \
+    RTM/modules/dataSpec/dataSpec_soil.f90 \
+    RTM/modules/dataSpec/dataSpec_refractive.f90 \
+    RTM/modules/dataSpec/dataSpec_prospectd.f90 \
+    RTM/modules/dataSpec/dataSpec_wavelength.f90 \
+    RTM/modules/dataSpec/dataSpec_sun.f90 \
+    RTM/modules/dataSpec/dataSpec_prospect4.f90
+
+OBJECTS = \
+    RTM/pro2s/pro52s.o \
+    RTM/pro2s/pro5B2s.o \
+    RTM/pro2s/pro42s.o \
+    RTM/twostream/mod_biggamma.o \
+    RTM/twostream/meador.o \
+    RTM/twostream/mod_hapke_soil.o \
+    RTM/twostream/gamma.functions.o \
+    RTM/twostream/two.stream.o \
+    RTM/prosail/prosail.main.o \
+    RTM/sail/sail.refltrans.o \
+    RTM/sail/sail.volscatt.o \
+    RTM/sail/sail.lidf.o \
+    RTM/sail/sail.sail.o \
+    RTM/sail/sail.sensgeom.o \
+    RTM/sail/sail.hotspot.o \
+    RTM/sail/sail.brdf.o \
+    RTM/sail/sail.suits.o \
+    RTM/prospect/prospect.5.o \
+    RTM/prospect/prospect.4.o \
+    RTM/prospect/prospect.D.o \
+    RTM/prospect/prospect.5B.o \
+    RTM/prospect/prospect.tav.o \
+    RTM/prospect/prospect.expint.o \
+    RTM/prospect/prospect.gpm.o \
+    RTM/modules/mod_types.o \
+    RTM/modules/dataSpec/dataSpec_prospect5b.o \
+    RTM/modules/dataSpec/dataSpec_soil.o \
+    RTM/modules/dataSpec/dataSpec_refractive.o \
+    RTM/modules/dataSpec/dataSpec_prospectd.o \
+    RTM/modules/dataSpec/dataSpec_wavelength.o \
+    RTM/modules/dataSpec/dataSpec_sun.o \
+    RTM/modules/dataSpec/dataSpec_prospect4.o
 
 all : modules $(SHLIB)
 
 clean :
 	rm -f $(OBJECTS) *.mod RTM/*.mod *.so *.o symbols.rds
 
-md = RTM/modules/
+md = RTM/modules
 
-m1 : $(md)mod_types.o
+m1 : $(md)/mod_types.o
 
 m2 : m1 \
-    $(md)dataSpec/dataSpec_wavelength.o
+    $(md)/dataSpec/dataSpec_wavelength.o
 
 modules : m2 \
-    $(md)dataSpec/dataSpec_sun.o \
-    $(md)dataSpec/dataSpec_refractive.o \
-    $(md)dataSpec/dataSpec_prospectd.o \
-    $(md)dataSpec/dataSpec_prospect5b.o \
-    $(md)dataSpec/dataSpec_prospect4.o \
-    $(md)dataSpec/dataSpec_soil.o \
+    $(md)/dataSpec/dataSpec_sun.o \
+    $(md)/dataSpec/dataSpec_refractive.o \
+    $(md)/dataSpec/dataSpec_prospectd.o \
+    $(md)/dataSpec/dataSpec_prospect5b.o \
+    $(md)/dataSpec/dataSpec_prospect4.o \
+    $(md)/dataSpec/dataSpec_soil.o \
     RTM/twostream/mod_hapke_soil.o \
     RTM/twostream/mod_biggamma.o
