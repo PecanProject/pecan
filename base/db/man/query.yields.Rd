@@ -4,7 +4,8 @@
 \alias{query.yields}
 \title{Query yield data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
 \usage{
-query.yields(trait = "yield", spstr, extra.columns = "", con = NULL, ...)
+query.yields(trait = "yield", spstr, extra.columns = "", con = NULL,
+  ids_are_cultivars = FALSE, ...)
 }
 \arguments{
 \item{trait}{yield trait to query}
@@ -14,6 +15,8 @@ query.yields(trait = "yield", spstr, extra.columns = "", con = NULL, ...)
 \item{extra.columns}{other query terms to pass in. Optional}
 
 \item{con}{database connection}
+
+\item{ids_are_cultivars}{if TRUE, spstr contains cultivar IDs, otherwise they are species IDs}
 
 \item{...}{extra arguments}
 }
