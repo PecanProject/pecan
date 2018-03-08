@@ -18,7 +18,7 @@ SETUP_VM=""
 SETUP_PALEON=""
 REBUILD=""
 
-RSTUDIO_SERVER="1.0.143"
+RSTUDIO_SERVER="1.1.423"
 SHINY_SERVER="1.5.3.838"
 
 if [ -e $(dirname $0)/install_pecan.config ]; then
