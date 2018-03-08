@@ -22,7 +22,7 @@
 ##' query.pft_species('ebifarm.pavi')
 ##' query.pft_species(settings = read.settings("pecan.xml"))
 ##' }
-query.pft_species <- function(pft, modeltype=NULL, con) {
+query.pft_species <- function(pft, modeltype = NULL, con) {
   # create pft subquery
   if (is.null(modeltype)) {
     query <- paste0("select species.id, species.genus, species.species, species.scientificname",
@@ -62,7 +62,7 @@ query.pft_species <- function(pft, modeltype=NULL, con) {
 ##' @return tibble containing names and ids for each cultivar
 ##'   and the species it comes from
 ##' @export
-query.pft_cultivars <- function(pft, modeltype=NULL, con) {
+query.pft_cultivars <- function(pft, modeltype = NULL, con) {
 
   pft_tbl <- (dplyr::tbl(con, "pfts")
     %>% dplyr::filter(name == pft, pft_type == "cultivar"))
@@ -87,7 +87,7 @@ query.pft_cultivars <- function(pft, modeltype=NULL, con) {
       suffix = c("", ".cv"))
     %>% dplyr::inner_join(
       dplyr::tbl(con, "species"),
-      by=c("specie_id"="id"),
+      by=c("specie_id" = "id"),
       suffix=c("", ".sp"))
     %>% dplyr::select(
       id = cultivar_id,
