@@ -69,7 +69,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    
    ## SURF
    #surf.default <- system.file("surfdata_ref.nc",package = "PEcAn.FATES")
-   surf.default <- system.file("surfdata_1x1_brazil_16pfts_simyr2000_c160127.nc",package = "PEcAn.FATES")
+   surf.default <- system.file("surfdata_1x1_brazil_16pfts_Irrig_CMIP6_simyr2000_c171214.nc",package = "PEcAn.FATES")
    surf.file    <- file.path(local.rundir,paste0("surfdata_",site_name,"_simyr2000.nc"))
    file.copy(surf.default,surf.file)
    Sys.chmod(surf.file)
@@ -91,6 +91,8 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      ## DATM STREAM MET
      met <- readLines(con=system.file("datm.streams.txt.PEcAn_met.template",package = "PEcAn.FATES"),n=-1)
      met <- gsub('@INDIR@',indir, met)
+     #domain.file.name <- paste0("domain.lnd.",site_name,".nc")
+     #met <- gsub('@DOMAIN@',domain.file.name, met)  # attempting to provide correct domain file name
      met <- gsub('@MET_PATH@',settings$run$inputs$met$path, met)
      met.files <- dir(settings$run$inputs$met$path,"*.nc")
      met <- gsub('@MET_FILES@',paste(met.files,collapse = "\n            "), met)
@@ -150,6 +152,18 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      compiler <- "gnu"
    }
    jobsh <- gsub('@COMPILER@', compiler, jobsh)
+   if (!is.null(settings$model$resolution)) {
+     resolution <- paste(settings$model$resolution, collapse="\n")
+   } else {
+     resolution <- "1x1_brazil"
+   }
+   jobsh <- gsub('@RES@', resolution, jobsh)
+   if (!is.null(settings$model$compset)) {
+     compset <- paste(settings$model$compset, collapse="\n")
+   } else {
+     compset <- "I2000Clm50FatesGs"
+   }
+   jobsh <- gsub('@COMPSET@', compset, jobsh)
    if (!is.null(settings$model$project)) {
      project <- paste(settings$model$project, collapse="\n")
    } else {
@@ -183,14 +197,17 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 #   ## Write PARAMETER file
    
    ## COPY AND OPEN DEFAULT PARAMETER FILES
+   # TODO: update this to read param files (CLM and FATES) out of the refcase directory, not the PEcAn package
+   # TODO: update to allow it to pick between CLM4.5 and CLM5 parameter set based on refcase, user selection
    # CLM
-   clm.param.default <- system.file("clm_params.c170317.nc",package="PEcAn.FATES")
+   clm.param.default <- system.file("clm5_params.c171117.nc",package="PEcAn.FATES")
    clm.param.file <- file.path(local.rundir,paste0("clm_params.",run.id,".nc"))
    file.copy(clm.param.default,clm.param.file)
    clm.param.nc <- ncdf4::nc_open(clm.param.file,write=TRUE)
    
    # FATES
-   fates.param.default <- system.file("fates_params_2troppftclones.c171018.nc",package="PEcAn.FATES")
+   fates.param.default <- system.file("fates_params_2troppftclones.c171018_sps.nc",package="PEcAn.FATES")
+   # above is a temporary param file corrected for the tropics by lowering freezing tolerace parameters
    fates.param.file <- file.path(local.rundir,paste0("fates_params.",run.id,".nc"))
    file.copy(fates.param.default,fates.param.file)
    fates.param.nc <- ncdf4::nc_open(fates.param.file,write=TRUE)
@@ -202,6 +219,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    PEcAn.logger::logger.debug(names(trait.values))
    #pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname"))) 
    pftnames <- stringr::str_trim(tolower(ncvar_get(clm.param.nc,"pftname")))
+   PEcAn.logger::logger.debug(paste0("CLM PFT names: "),pftnames)
    for (i in seq_len(npft)) {
      pft <- trait.values[[i]]
      print(c("PFT",i))
