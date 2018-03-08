@@ -19,13 +19,12 @@
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
 ##' @param pft_names Names of PFTs used in the run, vector
-##' @param dbh_breaks Number of DBH size class breaks, default is 0 which represents a single DBH bin from 0 - Infinity cm, vector
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 ## refactored by Istem Fer on 03/2018
-model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft_names = NULL, dbh_breaks = 0) {
+model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft_names = NULL) {
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date) 
@@ -102,7 +101,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
       fcn   <- match.fun(fcnx)
       out_list[[rflag]] <- fcn(yr = y, ylist[[rflag]], flist[[rflag]], 
                                outdir, start_date, end_date, 
-                               pft_names, dbh_breaks)
+                               pft_names)
     }
     
     
@@ -128,7 +127,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
       fcnx  <- paste0("put_", gsub("-", "", rflag), "_values")
       fcn   <- match.fun(fcnx)
       nc_var <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], lat = lat, lon = lon, 
-                    begins = begins, ends = ends, pft_names, dbh_breaks)
+                    begins = begins, ends = ends, pft_names)
     }
     
     # SLZ specific hack until I figure that out
@@ -780,12 +779,10 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##'               "analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
 ##'               "analysis-E-2000-04-00-000000-g01.h5"
 ##'
-##' dbh_breaks : determines the bins breaks, vector
-##' ! NOTE : currently read.output would work only for dbh_breaks = 0 
 ##' pft_names  : character vector with names of PFTs
 ##' pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
 ##' @export
-read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, dbh_breaks, ...){
+read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
   
@@ -858,18 +855,16 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
     pft_names <- pft_names[-(which(pft_names == "soil"))]
   }
   
-  ndbh <- length(dbh_breaks)
   npft <- length(pft_names)
   data(pftmapping, package = "PEcAn.ED2")
   pfts <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
   
   out <- list()
   for(varname in varnames) {
-    out[[varname]] <- array(NA, c(length(ysel), ndbh, npft))
+    out[[varname]] <- array(NA, c(length(ysel), npft))
   }
   
   # Aggregate over PFT and DBH bins  
-  # testing i=j=1; k=2 
   for(i in seq_along(ysel)) {
     # Get additional cohort-level variables required
     pft        <- ed.dat$PFT[[i]]
@@ -884,37 +879,34 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
     # Now can get number of plants per cohort, which will be used for weighting. Note that area may have been (often/always is?) a proportion of total site area, rather than an absolute measure. In which case this nplant is a tiny and meaningless number in terms of actual number of plants. But that doesn't matter for weighting purposes. 
     nplant <- plant.dens * patch.area
     
-    # Get index of DBH bin each cohort belongs to      
-    dbh.bin <- sapply(dbh, function(x) which.min(x>c(dbh_breaks,Inf))) - 1
-    
-    
-    # For each PFT x DBH bin, average variables of interest, weighting by # of plants. Not all ED cohort variables are in per-plant units. This code would not be applicable to them without modification.
-    # However, it does handle two special cases. For NPLANT, it performs no weighting, but simply sums over cohorts in the PFT x DBH bin. For MMEAN_MORT_RATE_CO, it first sums over columns representing different mortality types first, then proceeds with weighting. 
-    for(j in 1:ndbh) {
+
+    # Not all ED cohort variables are in per-plant units. This code would not be applicable to them without modification.
+    # However, it does handle two special cases. For NPLANT, it performs no weighting, but simply sums over cohorts in the PFT. 
+    # For MMEAN_MORT_RATE_CO, it first sums over columns representing different mortality types first, then proceeds with weighting. 
+
       for(k in 1:npft) {
-        ind <- (dbh.bin==j) & (pft == pfts[k])
+        ind <- (pft == pfts[k])
         
         if(any(ind)) {
           for(varname in varnames) {
             if(varname == "NPLANT") {
               # Return the total number of plants in the bin
-              out$NPLANT[i,j,k] <- sum(nplant[ind])
+              out$NPLANT[i,k] <- sum(nplant[ind])
             } else if(varname == "MMEAN_MORT_RATE_CO") {
               # Sum over all columns 
               mort = apply(ed.dat$MMEAN_MORT_RATE_CO[[i]][ind,, drop=F], 1, sum, na.rm=T)
-              out$MMEAN_MORT_RATE_CO[i,j,k] <- sum(mort * nplant[ind]) / sum(nplant[ind])
+              out$MMEAN_MORT_RATE_CO[i,k] <- sum(mort * nplant[ind]) / sum(nplant[ind])
             } else {
               # For all others, just get mean weighted by nplant
-              out[[varname]][i,j,k] <- sum(ed.dat[[varname]][[i]][ind] * nplant[ind]) / sum(nplant[ind])
+              out[[varname]][i,k] <- sum(ed.dat[[varname]][[i]][ind] * nplant[ind]) / sum(nplant[ind])
             }
-            dimnames(out[[varname]]) <- list(months = times[ysel], dbhLowBound=dbh_breaks, pft=pft_names)
+            dimnames(out[[varname]]) <- list(months = times[ysel], pft=pft_names)
           }
         }
       }
-    }
+    
   }
   
-  out <- lapply(out, function(o) aperm(o, c(2,1,3)))
   out$PFT <- pfts # will write this to the .nc file
   
   return(out)
@@ -925,7 +917,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
 
 ##' Function for put -E- values to nc_var list
 ##' @export
-put_E_values <- function(yr, nc_var, out, begins, ends, pft_names, dbh_breaks, ...){
+put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...){
   
   s <- length(nc_var)
   
@@ -941,11 +933,9 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft_names, dbh_breaks, .
   # ----- fill list
   
   t <- ncdf4::ncdim_def(name = "dtime", units = paste0("days since ", yr, "-01-01 00:00:00"), 
-                        vals = seq(begins, ends, length.out = dim(out[[1]])[2]), 
+                        vals = seq(begins, ends, length.out = dim(out[[1]])[1]), 
                         calendar = "standard", unlim = TRUE)
   
-  
-  d <- ncdf4::ncdim_def(name = "dbhsize", units ="bins", vals = dbh_breaks)
   p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts, longname = "Plant Functional Type", unlim = TRUE)
   
   # NOTE : the order of dimensions is going to be important for read.output
@@ -956,11 +946,11 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft_names, dbh_breaks, .
   # from read.output's perspective, dimension of pft will be the same for NEE there and DBH here
 
   
-  nc_var[[s+1]]<- ncdf4::ncvar_def("DBH", units = "cm", dim = list(d,t,p), missval = -999, 
+  nc_var[[s+1]]<- ncdf4::ncvar_def("DBH", units = "cm", dim = list(lon, lat, t, p), missval = -999, 
                                    longname = "Diameter at breast height")
-  nc_var[[s+2]]<- ncdf4::ncvar_def("DDBH_DT", units = "cm yr-1", dim = list(d,t,p), missval = -999, 
+  nc_var[[s+2]]<- ncdf4::ncvar_def("DDBH_DT", units = "cm yr-1", dim = list(lon, lat, t, p), missval = -999, 
                                    longname = "Rate of change in dbh")
-  nc_var[[s+3]]<- ncdf4::ncvar_def("NPLANT", units = "plant m-2", dim = list(d,t,p), missval = -999, 
+  nc_var[[s+3]]<- ncdf4::ncvar_def("NPLANT", units = "plant m-2", dim = list(lon, lat, t, p), missval = -999, 
                                    longname = "Plant density")
   # longname of this variable will be parsed by read.output
   # so that read.output has a way of accessing PFT names

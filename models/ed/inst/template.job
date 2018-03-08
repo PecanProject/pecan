@@ -45,7 +45,7 @@ if [ ! -e "@OUTDIR@/history.xml" ]; then
 
   # convert to MsTMIP
   echo "require (PEcAn.ED2)
-model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @PFT_NAMES@, @DBH_BREAKS@)
+model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @PFT_NAMES@)
 " | R --vanilla
 fi
 
