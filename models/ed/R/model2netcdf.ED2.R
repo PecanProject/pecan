@@ -18,8 +18,8 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param pft_names Names of PFTs used in the run
-##' @param dbh_breaks Number of DBH size class breaks, default is 0 which represents a single DBH bin from 0 - Infinity cm
+##' @param pft_names Names of PFTs used in the run, vector
+##' @param dbh_breaks Number of DBH size class breaks, default is 0 which represents a single DBH bin from 0 - Infinity cm, vector
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
@@ -160,15 +160,15 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
 
 ##-------------------------------------------------------------------------------------------------#
 
-# Function for reading -T- files
-#
-# y      : the year being processed
-# yfiles : the years on the filenames, will be used to matched tfiles for that year
-#
-#  e.g.     y = 1999
-#      yfiles = 1999 2000
-#      tfiles = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
-
+##' Function for reading -T- files
+##'
+##' yr     : the year being processed
+##' yfiles : the years on the filenames, will be used to matched tfiles for that year
+##'
+##'  e.g.    yr = 1999
+##'      yfiles = 1999 2000
+##'      tfiles = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
+##' @export
 read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -T- file ***"))
@@ -615,8 +615,8 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
 
 ##-------------------------------------------------------------------------------------------------#
 
-# Function for put -T- values to nc_var list
-
+##' Function for put -T- values to nc_var list
+##' @export
 put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   
   s <- length(nc_var)
@@ -766,25 +766,25 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 
 ##-------------------------------------------------------------------------------------------------#
 
-# Function for reading -E- files
-#
-# y      : the year being processed
-# yfiles : the years on the filenames, will be used to matched efiles for that year
-#
-#  e.g.     y = 1999
-#      yfiles = 1999 1999 1999 1999 1999 1999 1999 2000 2000 2000 2000
-#      efiles = "analysis-E-1999-06-00-000000-g01.h5" "analysis-E-1999-07-00-000000-g01.h5"
-#               "analysis-E-1999-08-00-000000-g01.h5" "analysis-E-1999-09-00-000000-g01.h5"
-#               "analysis-E-1999-10-00-000000-g01.h5" "analysis-E-1999-11-00-000000-g01.h5"
-#               "analysis-E-1999-12-00-000000-g01.h5" "analysis-E-2000-01-00-000000-g01.h5"
-#               "analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
-#               "analysis-E-2000-04-00-000000-g01.h5"
-#
-# dbh_breaks : determines the bins breaks, vector
-# ! NOTE : currently read.output would work only for dbh_breaks = 0 
-# pft_names  : character vector with names of PFTs
-# pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
-
+##' Function for reading -E- files
+##'
+##' yr      : the year being processed
+##' yfiles  : the years on the filenames, will be used to matched efiles for that year
+##'
+##'  e.g.     yr = 1999
+##'      yfiles = 1999 1999 1999 1999 1999 1999 1999 2000 2000 2000 2000
+##'      efiles = "analysis-E-1999-06-00-000000-g01.h5" "analysis-E-1999-07-00-000000-g01.h5"
+##'               "analysis-E-1999-08-00-000000-g01.h5" "analysis-E-1999-09-00-000000-g01.h5"
+##'               "analysis-E-1999-10-00-000000-g01.h5" "analysis-E-1999-11-00-000000-g01.h5"
+##'               "analysis-E-1999-12-00-000000-g01.h5" "analysis-E-2000-01-00-000000-g01.h5"
+##'               "analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
+##'               "analysis-E-2000-04-00-000000-g01.h5"
+##'
+##' dbh_breaks : determines the bins breaks, vector
+##' ! NOTE : currently read.output would work only for dbh_breaks = 0 
+##' pft_names  : character vector with names of PFTs
+##' pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
+##' @export
 read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, dbh_breaks, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
@@ -923,8 +923,8 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
 
 ##-------------------------------------------------------------------------------------------------#
 
-# Function for put -E- values to nc_var list
-
+##' Function for put -E- values to nc_var list
+##' @export
 put_E_values <- function(yr, nc_var, out, begins, ends, pft_names, dbh_breaks, ...){
   
   s <- length(nc_var)
@@ -945,7 +945,7 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft_names, dbh_breaks, .
                         calendar = "standard", unlim = TRUE)
   
   
-  d <- ncdf4::ncdim_def(name = "dbh_breaks", units ="bins", vals = dbh_breaks)
+  d <- ncdf4::ncdim_def(name = "dbhsize", units ="bins", vals = dbh_breaks)
   p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts, longname = "Plant Functional Type", unlim = TRUE)
   
   # NOTE : the order of dimensions is going to be important for read.output
