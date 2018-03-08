@@ -38,7 +38,7 @@ fetch.stats2se <- function(connection, query){
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author David LeBauer, Carl Davidson
-query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ', con=NULL, store.unconverted=FALSE, ids_are_cultivars=FALSE, ...) {
+query.data <- function(trait, spstr, extra.columns = 'ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ', con=NULL, store.unconverted=FALSE, ids_are_cultivars=FALSE, ...) {
   if (is.null(con)) {
     PEcAn.logger::logger.error("No open database connection passed in.")
     con <- db.open(settings$database$bety)
@@ -84,7 +84,7 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
-query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL,
+query.yields <- function(trait = 'yield', spstr, extra.columns = '', con = NULL,
                          ids_are_cultivars = FALSE, ...){
 
   member_column <- if (ids_are_cultivars) {"cultivar_id"} else {"specie_id"}
@@ -129,7 +129,7 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL,
 ##' @author Carl Davidson, Ryan Kelly
 ##' @export
 ##--------------------------------------------------------------------------------------------------#
-append.covariate<-function(data, column.name, covariates.data){
+append.covariate <- function(data, column.name, covariates.data){
   # Keep only the highest-priority covariate for each trait
   covariates.data <- covariates.data[!duplicated(covariates.data$trait_id), ]
 
@@ -151,8 +151,8 @@ append.covariate<-function(data, column.name, covariates.data){
 ##' @param con database connection
 ##' @param ... extra arguments
 ##'
-##' @author <unknown>
-query.covariates<-function(trait.ids, con = NULL, ...){
+##' @author David LeBauer
+query.covariates <- function(trait.ids, con = NULL, ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
                            "from covariates left join variables on variables.id = covariates.variable_id",
                            "where trait_id in (", PEcAn.utils::vecpaste(trait.ids), ")")
@@ -173,7 +173,7 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 ##' @param new.temp the reference temperature for the scaled traits. Curerntly 25 degC
 ##' @param missing.temp the temperature assumed for traits with no covariate found. Curerntly 25 degC
 ##' @author Carl Davidson, David LeBauer, Ryan Kelly
-arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25, missing.temp=25){
+arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp = 25, missing.temp = 25){
   # Select covariates that match temp.covariates
   covariates <- covariates[covariates$name %in% temp.covariates,]
 
@@ -210,7 +210,7 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 ##' @param data input data
 ##' @param covariates covariate data
 ##'
-##' @author <unknown>
+##' @author David LeBauer
 filter_sunleaf_traits <- function(data, covariates){
   if(length(covariates)>0) {
     data <- append.covariate(data = data, column.name = 'canopy_layer',
@@ -234,9 +234,10 @@ filter_sunleaf_traits <- function(data, covariates){
 ##'
 ##' @seealso used with \code{\link[PEcAn.MA]{jagify}};
 ##' @export
+##' @author David LeBauer
 rename_jags_columns <- function(data) {
 
-                                        # Change variable names and calculate obs.prec within data frame
+  # Change variable names and calculate obs.prec within data frame
   transformed <-  transform(data,
                             Y        = mean,
                             se       = stat,
@@ -343,17 +344,17 @@ take.samples <- function(summary, sample.size = 10^6){
 ##' @examples
 ##' input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 ##' derive.trait(FUN = identity, input = input, var.name = 'x')
-derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10^6){
+derive.trait <- function(FUN, ..., input = list(...), var.name = NA, sample.size = 10^6){
   if(any(lapply(input, nrow) > 1)){
     return(NULL)
   }
-  input.samples <- lapply(input, take.samples, sample.size=sample.size)
+  input.samples  <- lapply(input, take.samples, sample.size=sample.size)
   output.samples <- do.call(FUN, input.samples)
-  output<-input[[1]]
-  output$mean<-mean(output.samples)
-  output$stat<-ifelse(length(output.samples) > 1, stats::sd(output.samples), NA)
-  output$n <- min(sapply(input, function(trait){trait$n}))
-  output$vname <- ifelse(is.na(var.name), output$vname, var.name)
+  output         <- input[[1]]
+  output$mean    <- mean(output.samples)
+  output$stat    <- ifelse(length(output.samples) > 1, stats::sd(output.samples), NA)
+  output$n       <- min(sapply(input, function(trait){trait$n}))
+  output$vname   <- ifelse(is.na(var.name), output$vname, var.name)
   return(output)
 }
 ##==================================================================================================#
@@ -406,7 +407,7 @@ derive.traits <- function(FUN, ..., input = list(...),
     derived.traits <- do.call(rbind, derived.traits)
     return(derived.traits)
   } else {
-    return(derive.trait(FUN, input=input, var.name=var.name, sample.size=sample.size))
+    return(derive.trait(FUN, input = input, var.name = var.name, sample.size = sample.size))
   }
 }
 ##==================================================================================================#
@@ -433,7 +434,7 @@ derive.traits <- function(FUN, ..., input = list(...),
 ##' query.trait.data("Vcmax", "938", con = con)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, ids_are_cultivars=FALSE, ...){
+query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE, ids_are_cultivars = FALSE, ...){
 
   if(is.list(con)){
     PEcAn.logger::logger.warn("WEB QUERY OF DATABASE NOT IMPLEMENTED")
@@ -447,7 +448,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
   }
 
 ### Query the data from the database for trait X.
-  data <- query.data(trait = trait, spstr = spstr, con = con, store.unconverted = TRUE, ids_are_cultivars=ids_are_cultivars)
+  data <- query.data(trait = trait, spstr = spstr, con = con, store.unconverted = TRUE, ids_are_cultivars = ids_are_cultivars)
 
 ### Query associated covariates from database for trait X.
   covariates <- query.covariates(trait.ids = data$id, con = con)
@@ -496,10 +497,10 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
 #########################    LEAF TURNOVER    ############################
     ## convert Longevity to Turnover
     data <- rbind(data,
-                  derive.traits(function(leaf.longevity){1/leaf.longevity},
-                                query.data('Leaf Longevity', spstr, con=con, store.unconverted=TRUE,
-                                  ids_are_cultivars=ids_are_cultivars),
-                                sample.size=sample.size))
+                  derive.traits(function(leaf.longevity){ 1 / leaf.longevity },
+                                query.data('Leaf Longevity', spstr, con = con, store.unconverted = TRUE,
+                                  ids_are_cultivars = ids_are_cultivars),
+                                sample.size = sample.size))
 
   } else if (trait == 'root_respiration_rate') {
 #########################  ROOT RESPIRATION   ############################
@@ -523,21 +524,21 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
 #########################  LEAF C:N   ############################
 
     data <- rbind(data,
-                  derive.traits(function(leafN){48/leafN},
+                  derive.traits(function(leafN){ 48 / leafN },
                                 query.data('leafN', spstr, con = con, store.unconverted = TRUE,
-                                  ids_are_cultivars=ids_are_cultivars),
+                                  ids_are_cultivars = ids_are_cultivars),
                                 sample.size = sample.size))
 
   } else if (trait == 'fineroot2leaf') {
 #########################  FINE ROOT ALLOCATION  ############################
     ## FRC_LC is the ratio of fine root carbon to leaf carbon
-    data <- rbind(data, query.data(trait = 'FRC_LC', spstr = spstr, con = con, store.unconverted = TRUE, ids_are_cultivars=ids_are_cultivars))
+    data <- rbind(data, query.data(trait = 'FRC_LC', spstr = spstr, con = con, store.unconverted = TRUE, ids_are_cultivars = ids_are_cultivars))
   }
   result <- data
 
   ## if result is empty, stop run
 
-  if (nrow(result)==0) {
+  if (nrow(result) == 0) {
     return(NA)
     warning(paste("there is no data for", trait))
   } else {
@@ -546,7 +547,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
     ## info to send to console.  Maybe just print summary stats?
     ## print(result)
     if (!update.check.only) {
-      PEcAn.logger::logger.info(paste("Median ",trait," : ",round(stats::median(result$mean,na.rm=TRUE),digits=3),sep=""))
+      PEcAn.logger::logger.info(paste("Median ", trait, " : ", round(stats::median(result$mean, na.rm = TRUE), digits = 3), sep = ""))
       PEcAn.logger::logger.info("---------------------------------------------------------")
     }
     # print list of traits queried and number by outdoor/glasshouse
