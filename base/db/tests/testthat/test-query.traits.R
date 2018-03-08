@@ -7,7 +7,7 @@ teardown({
   db.close(con)
 })
 
-round3 = function(x){ round(stats::median(x, na.rm = TRUE), digits = 3) }
+round3 <- function(x){ round(stats::median(x, na.rm = TRUE), digits = 3) }
 
 
 test_that("prints medians and returns a list", {
