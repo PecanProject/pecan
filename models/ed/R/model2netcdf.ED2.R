@@ -849,10 +849,11 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
     ncdf4::nc_close(nc)
   } # end ysel-loop
   
-  if("soil" %in% pft_names){
+  # for now this function does not read any ED variable that has soil as a dimension
+  soil.check <- grepl("soil", pft_names)
+  if(any(soil.check)){
     # for now keep soil out
-    # TODO : also read soil
-    pft_names <- pft_names[-(which(pft_names == "soil"))]
+    pft_names <- pft_names[!(soil.check)]
   }
   
   npft <- length(pft_names)
@@ -921,10 +922,12 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
   
   s <- length(nc_var)
   
-  if("soil" %in% pft_names){
+  # even if this is a SA run for soil, currently we are not reading any variable that has a soil dimension
+  # "soil" will be passed to read.output as pft.name from upstream, when it's not part of the attribute it will read the sum
+  soil.check <- grepl("soil", pft_names)
+  if(any(soil.check)){
     # for now keep soil out
-    # TODO : also read soil
-    pft_names <- pft_names[-(which(pft_names == "soil"))]
+    pft_names <- pft_names[!(soil.check)]
   }
   
   data(pftmapping, package = "PEcAn.ED2")
