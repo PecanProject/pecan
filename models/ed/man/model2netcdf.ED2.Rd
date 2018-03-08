@@ -5,7 +5,7 @@
 \title{Code to convert ED2's -T- HDF5 output into netCDF format}
 \usage{
 model2netcdf.ED2(outdir, sitelat, sitelon, start_date, end_date,
-  pft_names = NULL, dbh_breaks = 0)
+  pft_names = NULL)
 }
 \arguments{
 \item{outdir}{Location of ED model output}
@@ -18,9 +18,7 @@ model2netcdf.ED2(outdir, sitelat, sitelon, start_date, end_date,
 
 \item{end_date}{End time of the simulation}
 
-\item{pft_names}{Names of PFTs used in the run}
-
-\item{dbh_breaks}{Number of DBH size class breaks, default is 0 which represents a single DBH bin from 0 - Infinity cm}
+\item{pft_names}{Names of PFTs used in the run, vector}
 }
 \description{
 Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)

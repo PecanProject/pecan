@@ -520,14 +520,5 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   pft_names <- paste0("c('", paste(pft_names, collapse = "','"), "')")
   jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   
-  if(!is.null(settings$pfts$dbh.breaks)){
-    dbh.breaks <- paste0("c(",toString(unlist(settings$pfts$dbh.breaks)),")")
-  }else{
-    dbh.breaks <- 0
-  }
-  jobsh <- gsub("@DBH_BREAKS@", dbh.breaks, jobsh)
-
-
-
   return(jobsh)
 } # write.config.jobsh.ED2
