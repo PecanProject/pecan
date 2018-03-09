@@ -4,12 +4,14 @@
 \alias{check.lists}
 \title{Compares two lists}
 \usage{
-check.lists(x, y)
+check.lists(x, y, filename = "species.csv")
 }
 \arguments{
 \item{x}{first list}
 
 \item{y}{second list}
+
+\item{filename}{one of "species.csv" or "cultivars.csv"}
 }
 \value{
 true if two list are the same
