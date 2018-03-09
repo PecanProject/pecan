@@ -288,7 +288,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        }
        ## This one is currently allpft level but should be pft level  - no longer in FATES params, what was this changed to?
         if(var == "agf_bs"){                    ## The fraction of sapwood and structural biomass that is above ground [0-1]
-          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_allom_agb_frac', start = 1, count = 1,
+          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_allom_agb_frac', start = ipft, count = 1,
                     vals=pft[v])  
        }
        
@@ -415,11 +415,12 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncdf4::ncvar_put(nc=fates.param.nc, varid='rootb_par', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "gsmax"){         # Maximum stomatal conductance [m s-1]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='gsmax', start = ipft, count = 1,
-                   vals=pft[v])
-       }
+       #if(var == "gsmax"){         # Maximum stomatal conductance [m s-1]  -- removed??
+       #  ncdf4::ncvar_put(nc=fates.param.nc, varid='gsmax', start = ipft, count = 1,
+       #            vals=pft[v])
+       #}
        if(var == "psi_stomata_closure"){         # Soil water potential at full stomatal closure	[mm]
+                                                 # fates_smpsc:long_name = "Soil water potential at full stomatal closure" ;
          ncdf4::ncvar_put(nc=fates.param.nc, varid='smpsc', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"m","mm"))
        }
