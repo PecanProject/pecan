@@ -257,15 +257,27 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      for (v in seq_along(pft)) {
        var <- names(pft)[v]
 
-       ## THESE NEED SOME FOLLOW UP       
+       ## THESE NEED SOME FOLLOW UP
+       
+       ### Leaf physiological parameters
+       # Vcmax
        if(var == "Vcmax"){
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_vcmax25top', start = ipft, count = 1,
                    vals=pft[v])  ## (umol CO2 m-2 s-1)
        }
+       # Ball-Berry slope
+       if(var == "stomatal_slope.BB"){
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_BB_slope', start = ipft, count = 1,
+                          vals=pft[v])
+       }
        
+       # T response params - modified Arrhenius params for Vcmax, Jmax, and TPU
+       # -- NOT YET IMPLEMENTED IN BETYdb. FATES params:
+       # fates_vcmaxha, fates_jmaxha, fates_tpuha, fates_vcmaxhd, fates_jmaxhd, fates_tpuhd,
+       # fates_vcmaxse, fates_jmaxse, fates_tpuse
        
        ### These variable names (from ED2) should updated in BETY to be more generic
-## missing from params.nc       
+       ## missing from params.nc       
 #       if(var == "mort3"){
 #         ncvar_put(nc=param.nc, varid='background_mort_rate', start = ipft, count = 1,
 #                   vals=pft[v])  
