@@ -11,7 +11,13 @@ write_ed_metheader <- function(ed_metheader, filename) {
   for (i in seq_len(nformats)) {
     metformat <- ed_metheader[[i]]
     block_lines <- character(6)
-    block_lines[1] <- normalizePath(metformat$path_prefix, mustWork = FALSE)
+    prefix <- normalizePath(metformat$path_prefix, mustWork = FALSE)
+    if (file.exists(prefix) && file.info(prefix)$isdir) {
+      # ED doesn't treat directories specially.
+      # Need to add trailing slash.
+      prefix <- paste0(prefix, "/")
+    }
+    block_lines[1] <- prefix
     block_lines[2] <- paste(
       metformat$nlon,
       metformat$nlat,
