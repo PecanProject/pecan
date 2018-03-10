@@ -24,7 +24,12 @@ read_ed_veg <- function(path_prefix, latitude = NULL, longitude = NULL,
   } else {
     lon_prefix <- paste0("lon", latlon_rxp)
   }
-  path_prefix_full <- paste0(path_prefix, lat_prefix, lon_prefix)
+  if (grepl("\\.$", path_prefix)) {
+    dot <- ""
+  } else {
+    dot <- "."
+  }
+  path_prefix_full <- paste0(path_prefix, dot, lat_prefix, lon_prefix)
 
   file_matches <- PEcAn.utils::match_file(path_prefix_full, expect = 3)
   css_file <- PEcAn.utils::match_file(path_prefix_full, suffix = "css", expect = 1)
@@ -43,18 +48,13 @@ read_ed_veg <- function(path_prefix, latitude = NULL, longitude = NULL,
   pss <- read_pss(pss_file, check = FALSE)
   site <- read_site(site_file, check = FALSE)
 
-  if (check) {
-    check_css(css, pss)
-    check_pss(pss, site)
-    check_site(site)
-  }
-
-  list(
+  create_ed_veg(
     css = css,
     pss = pss,
     site = site,
     latitude = latitude,
     longitude = longitude,
+    check = TRUE,
     orig_paths = list(
       css = css_file,
       pss = pss_file,

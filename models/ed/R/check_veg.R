@@ -46,7 +46,7 @@ check_pss <- function(pss, site = NULL) {
     testthat::test_that(
       "pss and site files are compatible",
       {
-        testthat::expect_true(all(unique(pss$site) %in% unique(site$site)))
+        testthat::expect_true(all(unique(pss$site) %in% unique(site$sitenum)))
       }
     )
   }
