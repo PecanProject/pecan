@@ -159,7 +159,7 @@ EDR <- function(img_path,
       edr_exe_path,
       args = c("-f", ed2in_path),
       stderr = stderr,
-      stderr = stderr,
+      stdout = stderr,
       ...
     )
   }
