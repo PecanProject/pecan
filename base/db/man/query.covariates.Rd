@@ -17,5 +17,5 @@ query.covariates(trait.ids, con = NULL, ...)
 Queries covariates from database for a given vector of trait id's
 }
 \author{
-<unknown>
+David LeBauer
 }
