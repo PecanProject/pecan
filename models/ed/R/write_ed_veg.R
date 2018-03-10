@@ -79,8 +79,8 @@ prepare_ed_veg_filename <- function(path_prefix, suffix, latitude = NULL, longit
   if (!is.null(latitude) && !is.null(longitude)) {
     path_prefix_full <- paste0(
       path_prefix, ".",
-      "lat", as.character(ed_veg$latitude),
-      "lon", as.character(ed_veg$longitude)
+      "lat", as.character(latitude),
+      "lon", as.character(longitude)
     )
   } else {
     testthat::test_that(
