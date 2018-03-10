@@ -23,6 +23,8 @@ get_met_dates <- function(ed_metheader) {
 #'
 #' For a given date, figure out its month and return all of the dates for that 
 #' month.
+#' @param date Date as string or date object
+#' @return Sequence of dates from the first to the last day of the month.
 dates_in_month <- function(date) {
   stopifnot(lubridate::mday(date) == 1)
   end_date <- date +
