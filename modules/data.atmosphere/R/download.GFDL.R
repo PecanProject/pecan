@@ -135,7 +135,6 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                                  verbose = verbose)
       ncdf4::nc_close(dap)
     }
-    close(pb)
 
     dat.list <- as.data.frame(dat.list)
     if (year %% 5 == 1) {
