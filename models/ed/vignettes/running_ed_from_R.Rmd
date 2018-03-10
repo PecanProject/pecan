@@ -3,10 +3,6 @@ title: "Running ED from R"
 author: "Alexey Shiklomanov"
 ---
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(eval = FALSE)
-```
-
 # Introduction
 
 The `PEcAn.ED2` package features a number of utilities to facilitate running the ED model from inside R, including
@@ -15,16 +11,17 @@ running the ED executable,
 and processing the outputs.
 This tutorial describes these utilites and provides examples of common use cases.
 
-# Setup
+# Basic ED run
 
 ## Installing the R package
 
 The `PEcAn.ED2` package and its PEcAn dependencies can be installed from GitHub as follows (all CRAN package dependencies should be installed automatically):
 
-```{r install}
+```{r install, eval = -(1:5)}
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/logger")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/utils")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/settings")
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "modules/data.atmosphere")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "models/ed")
 
 library(PEcAn.ED2)
@@ -40,7 +37,9 @@ Alternatively, if you have [Singularity](https://singularity.lbl.gov) container 
 singularity pull --name ed2.simg shub://ashiklom/ED2
 ```
 
-## Common ED inputs
+## ED inputs
+
+### EDI
 
 ED requires a global land use database to determine its land-sea mask, as well as a vegetation "thermal sums" database.
 These can be customized to some extent, but this package provides a version of the most common inputs.
@@ -59,20 +58,91 @@ if (!file.exists(edi_dir)) {
 }
 ```
 
-# Basic ED run
+### Meteorological data
 
-The two main components for a basic ED run are as follows:
+To do the ED run described here, we'll need some meteorological data.
+ED meteorological data are typically stored in HDF5 format and are described by a plain text header file (typically called `ED_MET_DRIVER_HEADER`).
 
-- Meteorological driver data (in HDF5 format), and a driver header file (typically called `ED_MET_DRIVER_HEADER`)
-- Three vegetation initial condition data files (unless you are doing a bare ground run), which consists of three interrelated files:
-  * `css` -- Cohort file, which describes all plant cohorts located within a patch, including its PFT, DBH, and stand density
-  * `pss` -- Patch file, which describes each patch within a site (single, plot-scale runs will often have only one patch)
-  * `site` -- Site file, which describes each site (single, plot-scale runs will often have only one site)
+To download the meteorological data, we'll use the `PEcAn.data.atmosphere` package.
+Here, we grab the data for the first week of July 2005 and Harvard Forest, for which we'll be running the simulation.
 
-Both of these inputs are site- and/or run-specific, so you will have to provide (or create) your own.
-However, `PEcAn.ED2` provides templates and utility functions to facilitate creating and modifying both files.
+```{r, download_met}
+start_date <- "2006-07-01"
+end_date <- "2006-07-08"
+latitude <- 42.53
+longitude <- -72.19
 
-Assuming you already have properly formatted inputs, doing an ED run requires creating an ED configuration (typically, an `ED2IN` file) and pointing the ED executable at it.
+raw_met <- PEcAn.data.atmosphere::download.CRUNCEP(
+  outfolder = file.path(rundir, "raw_met"),
+  start_date = start_date,
+  end_date = start_date,
+  site_id = NULL,
+  lat.in = latitude,
+  lon.in = longitude
+)
+```
+
+Next, we convert this raw data to the ED-specific format.
+
+```{r, met2model}
+ed_met <- met2model.ED2(
+  in.path = dirname(raw_met$file),
+  in.prefix = "CRUNCEP",
+  outfolder = file.path(rundir, "ed_met"),
+  start_date = start_date,
+  end_date = start_date,
+  lat = latitude,
+  lon = longitude,
+  overwrite = TRUE
+)
+```
+
+If you already have ED-specific meteorology available, `PEcAn.ED2` provides utilities to interact with that file directly:
+
+```{r met_driver, eval = FALSE}
+met_driver_raw <- "/path/to/ED_MET_DRIVER_HEADER"
+met_driver_obj <- read_ed_metheader(met_driver_raw, check = FALSE)
+met_driver_obj[[1]]$path_prefix <- "/path/to/new/location"
+met_driver_obj[[1]]$xmin <- -90
+met_driver_obj[[1]]$ymin <- 43
+
+met_driver_path <- file.path(rundir, "ED_MET_DRIVER_HEADER")
+write_ed_metheader(met_driver_obj, met_driver_path)
+```
+
+### Vegetation inputs
+
+A common way to initialize ED is through three interrelated vegetation initial condition files:
+
+* `css` -- Cohort file, which describes all plant cohorts located within a patch, including its PFT, DBH, and stand density
+* `pss` -- Patch file, which describes each patch within a site (single, plot-scale runs will often have only one patch)
+* `site` -- Site file, which describes each site (single, plot-scale runs will often have only one site)
+
+The package ships with simple functional examples of these objects (`example_css/pss/site`) and functions for quickly creating custom objects based on these examples (`create_css/pss/site`).
+Below, we create a `css` file with a single PFT with a specific DBH, but stick to the unmodified example `pss` and `site` files.
+
+```{r, veg_inputs}
+css <- create_css(list(pft = 11, dbh = 18.00))
+pss <- example_pss
+site <- example_site
+veg_input <- create_ed_veg(css, pss, site, latitude, longitude, check = TRUE)
+
+veg_prefix <- file.path(rundir, "veg_input", "test_veg")
+write_ed_veg(veg_input, veg_prefix)
+```
+
+As with meteorology, `PEcAn.ED2` also provides utilities for working with existing vegetation inputs.
+
+```{r veg_input, eval = FALSE}
+veg_prefix <- "/path/to/site/files/prefix"
+latitude <- 43.3724
+longitude <- -89.9071
+veg_input <- read_ed_veg(veg_prefix, latitude = latitude, longitude = longitude)
+```
+
+### ED configuration file
+
+Now that all inputs are taken care of, the final step is to create the ED configuration file (typically called `ED2IN`).
 
 First, read a `ED2IN` template file:
 
@@ -85,13 +155,13 @@ Then, set up the `ED2IN` with the required components.
 ```{r modify_ed2in}
 ed2in <- modify_ed2in(
   ed2in_raw,
-  veg_prefix = "/path/to/vegetation_prefix_",   # Contains vegetation_prefix_lat*lon*.css
-  latitude = 43.37,
-  longitude = -89.91,
-  met_driver = "/path/to/ED_MET_DRIVER_HEADER",
+  veg_prefix = veg_prefix,
+  latitude = latitude,
+  longitude = longitude,
+  met_driver = ed_met$file,
   EDI_path = file.path(rundir, "EDI"),
-  start_date = "2001-07-01",
-  end_date = "2001-07-10",
+  start_date = start_date,
+  end_date = end_date,
   run_dir = file.path(rundir, "run"),
   output_dir = file.path(rundir, "out"),
   runtype = "INITIAL",
@@ -113,31 +183,11 @@ ed2in_path <- file.path(rundir, "ED2IN")
 write_ed2in(ed2in, ed2in_path)
 ```
 
-Finally, start the ED run!
+### Running ED
 
-```{r start_ed_run}
-run_ed_singularity("/path/to/ed2.simg", ed2in_path)
-```
+Assuming all of the inputs are correct, running ED is as simple as calling the `run_ed_singularity` function, which requires paths to the Singularity image and ED2IN file.
 
-# Utilities for working with ED files
-
-## Meteorological inputs
-
-```{r met_driver}
-met_driver_raw <- "~/Projects/nasa-rtm/edr-da/ed-inputs/met3/US-Syv/ED_MET_DRIVER_HEADER.template"
-met_driver_obj <- read_ed_metheader(met_driver_raw, check = FALSE)
-met_driver_obj[[1]]$path_prefix <- "~/Projects/nasa-rtm/edr-da/ed-inputs/met3/US-Syv/US-Syv_"
-met_driver_obj[[1]]$xmin <- -90
-met_driver_obj[[1]]$ymin <- 43
-
-met_driver_path <- file.path(rundir, "ED_MET_DRIVER_HEADER")
-write_ed_metheader(met_driver_obj, met_driver_path)
-```
-
-
-```{r veg_input}
-veg_prefix <- "~/Projects/nasa-rtm/edr-da/ed-inputs/sites/BH02_site_1-25665/FFT.2008"
-latitude <- 43.3724
-longitude <- -89.9071
-veg_input <- read_ed_veg(veg_prefix, latitude = latitude, longitude = longitude)
+```{r start_ed_run, eval = FALSE}
+img_path <- "~/Projects/ED2/ed2.simg"
+run_ed_singularity(img_path, ed2in_path)
 ```
