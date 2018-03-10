@@ -33,7 +33,8 @@ pda.emulator.ms <- function(multi.settings) {
   
   # lists to collect emulators and run MCMC per site later
   gp.stack      <- vector("list", nsites) 
-  #nstack        <- vector("list", nsites) 
+  SS.stack      <- vector("list", nsites) 
+  #nstack       <- vector("list", nsites) 
   
   ## -------------------------------------- Local runs and calibration ------------------------------------------
   
@@ -80,12 +81,14 @@ pda.emulator.ms <- function(multi.settings) {
   
   resume.list <- vector("list", multi.settings[[1]]$assim.batch$chain)
   
-  # collect GPs
+  # collect GPs and SSs
   for(s in seq_along(multi.settings)){
     
     load(multi.settings[[s]]$assim.batch$emulator.path)
+    load(multi.settings[[s]]$assim.batch$ss.path)
     gp.stack[[s]] <- gp
-    remove(gp)
+    SS.stack[[s]] <- SS
+    remove(gp, SS)
     
   }
 
@@ -238,6 +241,29 @@ pda.emulator.ms <- function(multi.settings) {
     ## Get an ensemble id for hierarchical calibration
     tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
     
+    ## Transform values from non-normal distributions to standard Normal
+    ## it won't do anything if all priors are already normal
+    norm_transform <- norm_transform_priors(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list, rng)
+    if(!norm_transform$normF){ # means SS values are transformed
+      ## get new SS.stack with transformed values
+      SS.stack <- norm_transform$normSS
+      
+      ## re-fit GP on new param space
+      for(i in seq_along(SS.stack)){
+        GPmodel       <- lapply(SS.stack[[i]], function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
+        gp.stack[[i]] <- GPmodel
+      }
+      
+      ## re-define rng
+      rng <- norm_transform$rng
+      
+      ## get new init.list and jmp.list
+      init.list <- norm_transform$init
+      jmp.list  <- norm_transform$jmp
+
+      
+    }
+    
 
     ########### hierarchical MCMC function with Gibbs ##############
     
@@ -319,9 +345,10 @@ pda.emulator.ms <- function(multi.settings) {
       mu_site_curr <- matrix(NA_real_, nrow = nsites, ncol= nparam)
       mu_site_new  <- matrix(NA_real_, nrow = nsites, ncol= n.param)
       for(ns in 1:nsites){
+        mu_site_curr[ns,] <- mvtnorm::rmvnorm(1, mu_global, jcov.arr[,,ns]) # site mean
         repeat{
           mu_site_curr[ns,] <- mvtnorm::rmvnorm(1, mu_global, jcov.arr[,,ns]) # site mean
-          check.that <- (mu_site_curr[ns,] > rng[, 1] & mu_site_curr[ns,] < rng[, 2]) 
+          check.that <- (mu_site_curr[ns,] > rng[, 1] & mu_site_curr[ns,] < rng[, 2])
           if(all(check.that)) break
         }
       }
@@ -374,7 +401,7 @@ pda.emulator.ms <- function(multi.settings) {
         # update tau
         tau_global <- rWishart(1, df = tau_df, Sigma = tau_sigma)[,,1] # site precision
         sigma_global <- solve(tau_global) # site covariance, new prior sigma to be used below for prior prob. calc.
-        
+         
 
         
         ########################################
@@ -386,17 +413,14 @@ pda.emulator.ms <- function(multi.settings) {
         # global_mu     : precision weighted average between the data (mu_site) and prior mean (mu_f)
         # global_Sigma  : sum of mu_site and mu_f precision
         
-        
+
         global_Sigma <- solve(P_f + (nsites * sigma_global))
         
         global_mu <- global_Sigma %*% ((sigma_global %*% colSums(mu_site_curr)) + (P_f %*% mu_f))
- 
+
         mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma) # new prior mu to be used below for prior prob. calc.
-        # repeat{
-        #   mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma)
-        #   check.that <- (mu_global > rng[, 1] & mu_global < rng[, 2])
-        #   if(all(check.that)) break
-        # }
+
+          
         
         # site level M-H
         ########################################
@@ -404,9 +428,10 @@ pda.emulator.ms <- function(multi.settings) {
         # propose mu_site 
         
         for(ns in seq_len(nsites)){
+          mu_site_new[ns,] <- mvtnorm::rmvnorm(1, mu_site_curr[ns,], jcov.arr[,,ns])
           repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
             mu_site_new[ns,] <- mvtnorm::rmvnorm(1, mu_site_curr[ns,], jcov.arr[,,ns])
-            check.that <- (mu_site_new[ns,] > rng[, 1] & mu_site_new[ns,] < rng[, 2]) 
+            check.that <- (mu_site_new[ns,] > rng[, 1] & mu_site_new[ns,] < rng[, 2])
             if(all(check.that)) break
           }
         }

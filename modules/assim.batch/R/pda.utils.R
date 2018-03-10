@@ -796,3 +796,62 @@ load_pda_history <- function(workdir, ensemble.id, objects){
   names(alist) <- objects
   return(alist)
 }
+
+##' Helper function that transforms the values of each parameter into N(0,1) equivalent
+##' @author Istem Fer
+##' @export
+norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list, rng){
+  
+  # check for non-normals
+  prior.all  <- do.call("rbind", prior.list)
+  psel       <- prior.all[prior.ind.all, 1] != "norm"
+  norm.check <- all(!psel) # if all are norm do nothing
+
+  
+  if(!norm.check){
+    
+    rng[psel,1] <- qnorm(1e-05)
+    rng[psel,2] <- qnorm(0.99999)
+ 
+    # need to modify init.list and jmp.list as well
+    parnames <- names(init.list[[1]])
+    
+    for(c in seq_along(init.list)){
+      init.list[[c]] <- lapply(seq_along(init.list[[c]]), function(x){
+        if(psel[c]) init.list[[c]][[x]] <- rnorm(1)
+      })
+      names(init.list[[c]]) <- parnames
+      jmp.list[[c]][psel] <- 0.1 * diff(qnorm(c(0.05, 0.95)))
+    } 
+    
+    psel <- c(psel, FALSE) # the last column is SS, always FALSE
+    
+    for(i in seq_along(SS.stack)){
+      # NOTE: there might be differences in dimensions, 
+      # some SS-matrices might have likelihood params such as bias 
+      # check for that later 
+      SS.tmp <- lapply(SS.stack[[i]], function(ss){
+        for(p in seq_along(psel)){
+          if(psel[p]){
+            prior.quantiles <- eval(prior.fn.all$pprior[[prior.ind.all[p]]], list(q = ss[,p]))
+            stdnorm.vals    <- qnorm(prior.quantiles)
+            ss[,p] <- stdnorm.vals
+          }
+        }
+        return(ss)
+      })   
+      SS.stack[[i]] <- SS.tmp
+    }
+  }
+  
+  return(list(normSS = SS.stack, normF = norm.check, init = init.list, jmp = jmp.list, rng = rng))
+  
+} # norm_transform_priors
+
+
+##' Helper function that transforms the samples back to their original prior distribution equivalents
+##' @author Istem Fer
+##' @export
+back_transform_posteriors <- function(){
+  
+}
