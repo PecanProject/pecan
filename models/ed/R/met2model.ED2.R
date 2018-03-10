@@ -278,31 +278,40 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     ## write DRIVER file
     # TODO: Create ed_metheader object, check it, and write_ed_metheader
-    sites <- 1
-    metgrid <- c(1, 1, 1, 1, lon, lat)
+    #sites <- 1
+    #metgrid <- c(1, 1, 1, 1, lon, lat)
     metvar <- c("nbdsf", "nddsf", "vbdsf", "vddsf", "prate", "dlwrf",
                 "pres", "hgt", "ugrd", "vgrd", "sh", "tmp", "co2")
-    nmet <- length(metvar)
-    metfrq <- rep(dt, nmet)
-    metflag <- rep(1, nmet)
+    #nmet <- length(metvar)
+    #metfrq <- rep(dt, nmet)
+    #metflag <- rep(1, nmet)
+    metvar_table <- data.frame(
+      variable = metvar,
+      update_frequency = dt,
+      flag = 1
+    )
     if (!useCO2) {
-      metflag[metvar == "co2"] <- 4
-      metfrq[metvar == "co2"] <- 380
+      metvar_table <- tibble::add_row(
+        metvar_table,
+        variable = "co2",
+        flag = 4,
+        update_frequency = 380
+      )
     }
-    # TODO: ANS Hack -- ED2IN doesn't automatically add the '/'
-    met_folder_prefix <- paste0(met_folder, "/")
-    write.table("header", met_header, row.names = FALSE, col.names = FALSE)
-    write.table(sites, met_header, row.names = FALSE, col.names = FALSE, append = TRUE)
-    write.table(met_folder_prefix, met_header, row.names = FALSE, col.names = FALSE, append = TRUE,
-                quote = FALSE)
-    write.table(matrix(metgrid, nrow = 1), met_header, row.names = FALSE, col.names = FALSE,
-                append = TRUE, quote = FALSE)
-    write.table(nmet, met_header, row.names = FALSE, col.names = FALSE, append = TRUE, quote = FALSE)
-    write.table(matrix(metvar, nrow = 1), met_header, row.names = FALSE, col.names = FALSE, append = TRUE)
-    write.table(matrix(metfrq, nrow = 1), met_header, row.names = FALSE, col.names = FALSE, append = TRUE,
-                quote = FALSE)
-    write.table(matrix(metflag, nrow = 1), met_header, row.names = FALSE, col.names = FALSE,
-                append = TRUE, quote = FALSE)
+
+    ed_metheader <- list(list(
+      path_prefix = paste0(met_folder, "/"),    # ED2IN doesn't automatically add trailing '/'
+      nlon = 1,
+      nlat = 1,
+      dx = 1,
+      dy = 1,
+      xmin = lon,
+      ymin = lat,
+      variables = ...,
+    ))
+
+    check_ed_metheader(ed_metheader)
+    write_ed_metheader(ed_metheader, met_header)
   }  ### end loop over met files
 
   PEcAn.logger::logger.info("Done with met2model.ED2")
