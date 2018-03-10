@@ -23,6 +23,8 @@ check_ed_metheader <- function(ed_metheader, check_files = TRUE) {
   invisible(TRUE)
 }
 
+#' @rdname check_ed_metheader
+#' @export
 check_ed_metheader_format <- function(ed_metheader_format, check_files = TRUE) {
   testthat::test_that(
     "Format has the correct names",
@@ -41,16 +43,15 @@ check_ed_metheader_format <- function(ed_metheader_format, check_files = TRUE) {
     }
   )
 
-  number <- c("numeric", "integer")
   testthat::test_that(
     "Met header metadata fields are valid",
     {
-      testthat::expect_true(is.numeric(ed_metheader_format$nlon), "numeric")
-      testthat::expect_true(is.numeric(ed_metheader_format$nlat), "numeric")
-      testthat::expect_true(is.numeric(ed_metheader_format$dx), "numeric")
-      testthat::expect_true(is.numeric(ed_metheader_format$dy), "numeric")
-      testthat::expect_true(is.numeric(ed_metheader_format$xmin), "numeric")
-      testthat::expect_true(is.numeric(ed_metheader_format$ymin), "numeric")
+      testthat::expect_true(is.numeric(ed_metheader_format$nlon))
+      testthat::expect_true(is.numeric(ed_metheader_format$nlat))
+      testthat::expect_true(is.numeric(ed_metheader_format$dx))
+      testthat::expect_true(is.numeric(ed_metheader_format$dy))
+      testthat::expect_true(is.numeric(ed_metheader_format$xmin))
+      testthat::expect_true(is.numeric(ed_metheader_format$ymin))
       testthat::expect_is(ed_metheader_format$variables, "data.frame")
     }
   )

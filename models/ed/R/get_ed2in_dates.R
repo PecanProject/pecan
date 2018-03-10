@@ -1,3 +1,8 @@
+#' Extract sequence of dates from ED2IN file
+#'
+#' @inheritParams write_ed2in
+#' @return Vector of dates from start date to end date by 1 day
+#' @export
 get_ed2in_dates <- function(ed2in) {
   ed2in_start_time <- ed2in2time(ed2in[["ITIMEA"]])
   start_date <- lubridate::make_datetime(
@@ -19,6 +24,10 @@ get_ed2in_dates <- function(ed2in) {
   lubridate::as_date(seq(start_date, end_date, by = "1 day"))
 }
 
+#' Convert ED2IN `ITIMEA/Z` string to hour and minute
+#'
+#' @param itimea ED2IN time string, e.g. "1200"
+#' @return List containing numeric values of hour and minute
 ed2in2time <- function(itimea) {
   timechar <- sprintf("%04d", itimea)
   list(

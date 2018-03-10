@@ -17,8 +17,7 @@ check_ed2in <- function(ed2in) {
     "IPHENYFF"
   )
   unset <- !names(ed2in) %in% can_be_unset &
-    (vapply(ed2in, function(x) all(is.na(x)), logical(1)) |
-     grepl("@.*?@", ed2in))
+    (purrr::map_lgl(ed2in, ~all(is.na(.))) | grepl("@.*?@", ed2in))
   if (sum(unset) > 0) {
     PEcAn.logger::logger.severe(
       "The following required ED2IN tags are unset: ",
@@ -92,6 +91,11 @@ check_ed2in <- function(ed2in) {
   invisible(TRUE)
 }
 
-between <- function(x, a, b) {
-  x >= a & x <= b
+#' Check if value is between (inclusive) a range
+#'
+#' @param x Value to check
+#' @param lower Lower limit
+#' @param upper Upper limit
+between <- function(x, lower, upper) {
+  x >= lower & x <= upper
 }

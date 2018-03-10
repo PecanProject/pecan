@@ -2,9 +2,12 @@
 % Please edit documentation in R/check_ed_metheader.R
 \name{check_ed_metheader}
 \alias{check_ed_metheader}
+\alias{check_ed_metheader_format}
 \title{Check ED met header object}
 \usage{
 check_ed_metheader(ed_metheader, check_files = TRUE)
+
+check_ed_metheader_format(ed_metheader_format, check_files = TRUE)
 }
 \arguments{
 \item{ed_metheader}{ED meteorology header object (see \link{read_ed_metheader})}

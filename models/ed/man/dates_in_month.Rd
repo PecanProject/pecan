@@ -6,6 +6,12 @@
 \usage{
 dates_in_month(date)
 }
+\arguments{
+\item{date}{Date as string or date object}
+}
+\value{
+Sequence of dates from the first to the last day of the month.
+}
 \description{
 For a given date, figure out its month and return all of the dates for that
 month.
