@@ -800,7 +800,7 @@ load_pda_history <- function(workdir, ensemble.id, objects){
 ##' Helper function that transforms the values of each parameter into N(0,1) equivalent
 ##' @author Istem Fer
 ##' @export
-norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list, rng){
+norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list){
   
   # check for non-normals
   prior.all  <- do.call("rbind", prior.list)
@@ -810,15 +810,18 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
   
   if(!norm.check){
     
-    rng[psel,1] <- qnorm(1e-05)
-    rng[psel,2] <- qnorm(0.99999)
- 
+    rng <- array(NA, dim = c(length(prior.ind.all),2,length(SS.stack)))
+    
     # need to modify init.list and jmp.list as well
     parnames <- names(init.list[[1]])
     
     for(c in seq_along(init.list)){
       init.list[[c]] <- lapply(seq_along(init.list[[c]]), function(x){
-        if(psel[c]) init.list[[c]][[x]] <- rnorm(1)
+        if(psel[x]){
+          init.list[[c]][[x]] <- rnorm(1)
+        }else{
+          init.list[[c]][[x]] <- init.list[[c]][[x]]
+        }
       })
       names(init.list[[c]]) <- parnames
       jmp.list[[c]][psel] <- 0.1 * diff(qnorm(c(0.05, 0.95)))
@@ -841,6 +844,8 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
         return(ss)
       })   
       SS.stack[[i]] <- SS.tmp
+      rng.tmp <- apply(SS.tmp[[1]],2,range)
+      rng[,,i] <- t(rng.tmp[,-ncol(rng.tmp)])
     }
   }
   
@@ -852,6 +857,39 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
 ##' Helper function that transforms the samples back to their original prior distribution equivalents
 ##' @author Istem Fer
 ##' @export
-back_transform_posteriors <- function(){
+back_transform_posteriors <- function(prior.list, prior.fn.all, prior.ind.all, mcmc.out){
+  
+  # check for non-normals
+  prior.all  <- do.call("rbind", prior.list)
+  psel       <- prior.all[prior.ind.all, 1] != "norm"
+  norm.check <- all(!psel) # if all are norm do nothing
+  
+  if(!norm.check){
+    for(i in seq_along(mcmc.out)){
+      mu_global_samp <- mcmc.out[[i]]$mu_global_samp
+      mu_site_samp   <- mcmc.out[[i]]$mu_site_samp
+      
+      mu_sample_tmp <- abind::abind(array(mu_global_samp, dim = c(dim(mu_global_samp), 1)), mu_site_samp, along = 3)
+      for(ms in seq_len(dim(mu_sample_tmp)[3])){
+        mcmc.vals         <- mu_sample_tmp[,,ms]
+        stdnorm.quantiles <- pnorm(mcmc.vals[, psel])
+        pc <- 1 # counter, because all cols might not need transforming back
+        for(ps in seq_along(psel)){
+          if(psel[ps]){
+            prior.quantiles <- eval(prior.fn.all$qprior[[prior.ind.all[ps]]], list(p = stdnorm.quantiles[,pc]))
+            mcmc.vals[,ps] <- prior.quantiles
+            pc <- pc + 1
+          }
+        }
+        mu_sample_tmp[,,ms] <- mcmc.vals
+      }
+
+
+      mcmc.out[[i]]$mu_global_samp <- mu_sample_tmp[,,1]
+      mcmc.out[[i]]$mu_site_samp   <- mu_sample_tmp[,,-1]
+    }
+  }
+  
+  return(mcmc.out)
   
 }

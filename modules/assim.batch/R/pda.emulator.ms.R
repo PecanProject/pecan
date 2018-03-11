@@ -243,14 +243,14 @@ pda.emulator.ms <- function(multi.settings) {
     
     ## Transform values from non-normal distributions to standard Normal
     ## it won't do anything if all priors are already normal
-    norm_transform <- norm_transform_priors(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list, rng)
+    norm_transform <- norm_transform_priors(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list)
     if(!norm_transform$normF){ # means SS values are transformed
       ## get new SS.stack with transformed values
       SS.stack <- norm_transform$normSS
       
       ## re-fit GP on new param space
       for(i in seq_along(SS.stack)){
-        GPmodel       <- lapply(SS.stack[[i]], function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
+        GPmodel <- lapply(SS.stack[[i]], function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
         gp.stack[[i]] <- GPmodel
       }
       
@@ -315,7 +315,7 @@ pda.emulator.ms <- function(multi.settings) {
       # # initialize mu_global (nparam)
       repeat{
         mu_global <- mvtnorm::rmvnorm(1, mu_f, P_f)
-        check.that <- (mu_global > rng[, 1] & mu_global < rng[, 2])
+        check.that <- (mu_global > apply(rng,1:2,max)[, 1] & mu_global < apply(rng,1:2,min)[, 2])
         if(all(check.that)) break
       }
       
@@ -345,10 +345,9 @@ pda.emulator.ms <- function(multi.settings) {
       mu_site_curr <- matrix(NA_real_, nrow = nsites, ncol= nparam)
       mu_site_new  <- matrix(NA_real_, nrow = nsites, ncol= n.param)
       for(ns in 1:nsites){
-        mu_site_curr[ns,] <- mvtnorm::rmvnorm(1, mu_global, jcov.arr[,,ns]) # site mean
         repeat{
           mu_site_curr[ns,] <- mvtnorm::rmvnorm(1, mu_global, jcov.arr[,,ns]) # site mean
-          check.that <- (mu_site_curr[ns,] > rng[, 1] & mu_site_curr[ns,] < rng[, 2])
+          check.that <- (mu_site_curr[ns,] > rng[, 1, ns] & mu_site_curr[ns,] < rng[, 2, ns])
           if(all(check.that)) break
         }
       }
@@ -428,10 +427,9 @@ pda.emulator.ms <- function(multi.settings) {
         # propose mu_site 
         
         for(ns in seq_len(nsites)){
-          mu_site_new[ns,] <- mvtnorm::rmvnorm(1, mu_site_curr[ns,], jcov.arr[,,ns])
           repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
             mu_site_new[ns,] <- mvtnorm::rmvnorm(1, mu_site_curr[ns,], jcov.arr[,,ns])
-            check.that <- (mu_site_new[ns,] > rng[, 1] & mu_site_new[ns,] < rng[, 2])
+            check.that <- (mu_site_new[ns,] > rng[, 1, ns] & mu_site_new[ns,] < rng[, 2, ns])
             if(all(check.that)) break
           }
         }
@@ -502,15 +500,17 @@ pda.emulator.ms <- function(multi.settings) {
     ptm.finish <- proc.time() - ptm.start
     logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
     
+    # transform samples from std normal to prior quantiles
+    mcmc.out2 <- back_transform_posteriors(prior.list, prior.fn.all, prior.ind.all, mcmc.out)
     
     # Collect global params in their own list and postprocess
-    mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+    mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
     tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical")
     
     # Collect site-level params in their own list and postprocess
     for(ns in seq_len(nsites)){
-      mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_site_samp", ns = ns, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
-      settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = paste0("_hierarchical_SL",ns))
+      mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "mu_site_samp", ns = ns, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+      settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = paste0("_hierarchical_SL",ns))
     }
   } # hierarchical - if end
   
