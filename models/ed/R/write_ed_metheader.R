@@ -4,8 +4,11 @@
 #'
 #' @param ed_metheader ED meteorlogy header object (see [read_ed_metheader])
 #' @param filename Full file name (including path) of ED met header
+#' @param header_line Character string for top line of output file. Default is 
+#' `'header'`.
 #' @export
-write_ed_metheader <- function(ed_metheader, filename) {
+write_ed_metheader <- function(ed_metheader, filename,
+                               header_line = shQuote("header")) {
   nformats <- length(ed_metheader)
   blocks <- vector("list", nformats)
   for (i in seq_len(nformats)) {
@@ -32,8 +35,7 @@ write_ed_metheader <- function(ed_metheader, filename) {
     block_lines[6] <- paste(metformat$variables$flag, collapse = " ")
     blocks[[i]] <- block_lines
   }
-  format_names <- paste("format", seq_len(nformats), sep = "", collapse = ", ")
-  file_lines <- c(format_names, as.character(nformats), Reduce(c, blocks))
+  file_lines <- c(header_line, as.character(nformats), Reduce(c, blocks))
   writeLines(file_lines, filename)
 }
 

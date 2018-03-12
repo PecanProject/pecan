@@ -4,12 +4,15 @@
 \alias{write_ed_metheader}
 \title{Write ED meteorlogy header}
 \usage{
-write_ed_metheader(ed_metheader, filename)
+write_ed_metheader(ed_metheader, filename, header_line = shQuote("header"))
 }
 \arguments{
 \item{ed_metheader}{ED meteorlogy header object (see \link{read_ed_metheader})}
 
 \item{filename}{Full file name (including path) of ED met header}
+
+\item{header_line}{Character string for top line of output file. Default is
+\code{'header'}.}
 }
 \description{
 Write ED met driver header from R met driver list object
