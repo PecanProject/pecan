@@ -253,13 +253,17 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      leafC <- NA
      if(is.na(leafC)) leafC <- 0.48
      
+     # determine photo pathway
+     photo_flag <- ncdf4::ncvar_get(fates.param.nc,varid="fates_c3psn", start = ipft, count = 1)
+     PEcAn.logger::logger.debug(paste0("Photosynthesis pathway flag value: ", photo_flag))
+     
      ## Loop over VARIABLES
      for (v in seq_along(pft)) {
        var <- names(pft)[v]
 
        ## THESE NEED SOME FOLLOW UP
        
-       ### Leaf physiological parameters
+       ### ----- Leaf physiological parameters
        # Vcmax
        if(var == "Vcmax"){
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_vcmax25top', start = ipft, count = 1,
@@ -271,10 +275,60 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
                           vals=pft[v])
        }
        
+       # Ball-Berry intercept - c3.  We need to figure out how to set either C3 or C4 values? Based on the PFT?
+       # TODO: allow setting this for C3 and/or C4 PFTs
+       # right now, each are just one dimension, will need to revist this if this changes.
+       if(var == "cuticular_cond"){
+         if (photo_flag==0) {
+           PEcAn.logger::logger.debug("** Setting C4 cuticular conductance value")
+           ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_bbopt_c4', start = 1, count = 1,
+                            vals=pft[v])
+         } else if (photo_flag==1) {
+           PEcAn.logger::logger.debug("** Setting C3 cuticular conductance value")
+           ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_bbopt_c3', start = 1, count = 1,
+                            vals=pft[v])
+         } else {
+           PEcAn.logger::logger.warn(" ** FATES photosynthesis pathway flag not set. cuticular conductance not set **")
+         }
+       }
+       
+       ## missing from params.nc 
+       #       if(var == "cuticular_cond"){
+       #         gH2O_per_mol <- 18.01528
+       #         ncvar_put(nc=param.nc, varid='gsmin', start = ipft, count = 1,
+       #                   vals=pft[v]*gH2O_per_mol*1e-12)   ### umol H2O m-2 s-1 ->  [m s-1]
+       #       }
+       
        # T response params - modified Arrhenius params for Vcmax, Jmax, and TPU
        # -- NOT YET IMPLEMENTED IN BETYdb. FATES params:
        # fates_vcmaxha, fates_jmaxha, fates_tpuha, fates_vcmaxhd, fates_jmaxhd, fates_tpuhd,
        # fates_vcmaxse, fates_jmaxse, fates_tpuse
+      
+       # Ha activation energy for vcmax - FATES units: J/mol
+       if(var == "Ha_Modified_Arrhenius_Vcmax"){
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_vcmaxha', start = ipft, count = 1,
+                          vals=pft[v]*1000)  ## convert from kj/mol to J/mol (FATES units)
+       }
+       
+       # Hd deactivation energy for vcmax - FATES units: J/mol
+       if(var == "Hd_Modified_Arrhenius_Vcmax"){
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_vcmaxhd', start = ipft, count = 1,
+                          vals=pft[v]*1000)  ## convert from kj/mol to J/mol (FATES units)
+       }
+       
+       # Ha activation energy for Jmax - FATES units: J/mol
+       if(var == "Ha_Modified_Arrhenius_Jmax"){
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_jmaxha', start = ipft, count = 1,
+                          vals=pft[v]*1000)  ## convert from kj/mol to J/mol (FATES units)
+       }
+       
+       # Hd deactivation energy for Jmax - FATES units: J/mol
+       if(var == "Hd_Modified_Arrhenius_Jmax"){
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_jmaxhd', start = ipft, count = 1,
+                          vals=pft[v]*1000)  ## convert from kj/mol to J/mol (FATES units)
+       }
+       ### ----- Leaf physiological parameters
+       
        
        ### These variable names (from ED2) should updated in BETY to be more generic
        ## missing from params.nc       
