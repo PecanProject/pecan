@@ -13,17 +13,17 @@
 ##' Requires a pft xml object, a list of trait values for a single model run,
 ##' and the name of the file to create
 ##'
-##' @name write.config.MODEL
-##' @title Write MODEL configuration files
+##' @name write.config.SIBCASA
+##' @title Write SIBCASA configuration files
 ##' @param defaults list of defaults to process
 ##' @param trait.samples vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
-##' @return configuration file for MODEL for given run
+##' @return configuration file for SIBCASA for given run
 ##' @export
-##' @author Rob Kooper
+##' @author Anthony Gardella, Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
-write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
+write.config.SIBCASA <- function(defaults, trait.values, settings, run.id) {
 
   
   # find out where to write run/ouput
