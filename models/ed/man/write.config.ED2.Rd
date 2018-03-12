@@ -5,7 +5,7 @@
 \title{Write ED configuration files}
 \usage{
 write.config.ED2(trait.values, settings, run.id,
-  defaults = settings$constants)
+  defaults = settings$constants, check = FALSE)
 }
 \arguments{
 \item{trait.values}{Named list of trait values, with names corresponding to PFT}
@@ -15,6 +15,9 @@ write.config.ED2(trait.values, settings, run.id,
 \item{run.id}{id of run}
 
 \item{defaults}{list of defaults to process. Default=settings$constants}
+
+\item{check}{Logical. If \code{TRUE}, check ED2IN validity before running and
+throw an error if anything is wrong (default = \code{FALSE})}
 }
 \value{
 configuration file and ED2IN namelist for given run
