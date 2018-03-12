@@ -100,11 +100,13 @@ convert.samples.ED <- function(trait.samples) {
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
 ##' @param defaults list of defaults to process. Default=settings$constants
+##' @param check Logical. If `TRUE`, check ED2IN validity before running and 
+##' throw an error if anything is wrong (default = `FALSE`)
 ##' @return configuration file and ED2IN namelist for given run
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 ##-------------------------------------------------------------------------------------------------#
-write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants) {
+write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE) {
   
   
   jobsh <- write.config.jobsh.ED2(settings = settings, run.id = run.id)
@@ -284,7 +286,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ed2in.text <- modify_ed2in(ed2in.text, .dots = settings$model$ed2in)
   
   ##----------------------------------------------------------------------
-  check_ed2in(ed2in.text)
+  if (check) {
+    check_ed2in(ed2in.text)
+  }
   write_ed2in(ed2in.text, file.path(settings$rundir, run.id, "ED2IN"))
 } # write.config.ED2
 # ==================================================================================================#
