@@ -301,7 +301,8 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ))
 
     check_ed_metheader(ed_metheader)
-    write_ed_metheader(ed_metheader, met_header_file)
+    write_ed_metheader(ed_metheader, met_header_file,
+                       header_line = shQuote("Made_by_PEcAn_met2model.ED2"))
   }  ### end loop over met files
 
   PEcAn.logger::logger.info("Done with met2model.ED2")
