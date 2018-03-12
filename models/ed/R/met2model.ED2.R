@@ -31,10 +31,10 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   met_folder <- outfolder
-  met_header <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
+  met_header_file <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
 
   results <- data.frame(
-    file = met_header,
+    file = met_header_file,
     host = PEcAn.remote::fqdn(),
     mimetype = "text/plain",
     formatname = "ed.met_driver_header files format",
@@ -301,7 +301,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ))
 
     check_ed_metheader(ed_metheader)
-    write_ed_metheader(ed_metheader, met_header)
+    write_ed_metheader(ed_metheader, met_header_file)
   }  ### end loop over met files
 
   PEcAn.logger::logger.info("Done with met2model.ED2")
