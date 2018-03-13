@@ -327,6 +327,17 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_jmaxhd', start = ipft, count = 1,
                           vals=pft[v]*1000)  ## convert from kj/mol to J/mol (FATES units)
        }
+       
+       # deltaS Vcmax - BETY units:J/mol/K;  FATES units: J/mol/K
+       if(var == "deltaS_Vcmax"){
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_vcmaxse', start = ipft, count = 1,
+                          vals=pft[v]*1000)  ## convert from kj/mol to J/mol (FATES units)
+       }
+       # deltaS Jmax - BETY units:J/mol/K;  FATES units: J/mol/K
+       if(var == "deltaS_Jmax"){
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_jmaxse', start = ipft, count = 1,
+                          vals=pft[v]*1000)  ## convert from kj/mol to J/mol (FATES units)
+       }
        ### ----- Leaf physiological parameters
        
        
