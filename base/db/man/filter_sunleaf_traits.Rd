@@ -16,5 +16,5 @@ filter_sunleaf_traits(data, covariates)
 Function to filter out upper canopy leaves
 }
 \author{
-<unknown>
+David LeBauer
 }
