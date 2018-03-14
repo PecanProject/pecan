@@ -15,7 +15,7 @@ export MODEL_SOURCE=/data/software/CTSM/ctsm                   	# CTSM/CLM/ELM s
 export PROJECT=PEcAn_simulations                               	# project or run tag
 export COMPSET=I2000Clm50FatesGs				# define compset for run
 export RES=1x1_brazil						# set grid resolution
-export MAC=modex                                             	# Name your machine - USER UPDATE
+export MAC=eddi                                             	# Name your machine - USER UPDATE
 export COMPILER=gnu                                          	# Name your compiler - USER UPDATE
 export CASEROOT=/data/software/FATES/FATES_refrun               # Where the build is generated. The ref case location - USER UPDATE
 
