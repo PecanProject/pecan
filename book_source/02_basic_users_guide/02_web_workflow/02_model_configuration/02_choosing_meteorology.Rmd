@@ -8,7 +8,17 @@ Once a Machine, Model, and Site have been selected, PEcAn will take you to the I
 
 The first two cases will appear automatically in the the pull down menu. For meteorological files that already exist you will see the date range that's available. By contrast, met that can be generated will appear as "Use <source>", where <source> is the origin of the data (e.g. "Use Ameriflux" will use the micromet from an Ameriflux eddy covariance tower, if one is present at the site).
 
-If you want to upload your own met data this can be done in three ways. The standard way is to upload data in PEcAn's standard meteorological format (netCDF files, CF metadata). See [here](../../developers_guide/Adding-an-Input-Converter.md#met-data) for details about variables and units. From this standard, PEcAn can then convert the file to the model-specific format required by the model you have chosen. This approach is preferred because PEcAn will also be able to convert the file into the format required by any other model as well. The second option for adding met data is to add it in a model-specific format, which is often easiest if you've already been running your model at a site and are just switching to using PEcAn. The final way to add met data is to incorporate it into the overall meteorological processing workflow. This is preferred if you are working with a common meteorological data product that is not yet in PEcAn's workflow. Details are [here](../../developers_guide/Adding-an-Input-Converter.md#met-data), though at this stage you would also be strongly encouraged to contact the PEcAn development team.
+If you want to upload your own met data this can be done in three ways. 
+
+1. The default way to add met data is to incorporate it into the overall meteorological processing workflow. This is preferred if you are working with a common meteorological data product that is not yet in PEcAn's workflow. This case can be divided into two special cases:
+
+    i) Data is in a common MIME-type that PEcAn already has a converter for (e.g. CSV). In this case you'll want to create a new Format record for the meta-data so that the existing converter can process this data. See [Adding to PEcAn](../../04_advanced_user_guide/adding-to-pecan.html) for more details.
+    
+    ii) Data is in a more complicated format or interactive database, but large/useful enough to warrent a custom conversion function. Details on creating custom met conversions is [here](../../developers_guide/Adding-an-Input-Converter.md#met-data), though at this stage you would also be strongly encouraged to contact the PEcAn development team.
+
+2. The second-best way is to upload data in PEcAn's standard meteorological format (netCDF files, CF metadata). See [here](../../developers_guide/Adding-an-Input-Converter.md#met-data) for details about variables and units. From this standard, PEcAn can then convert the file to the model-specific format required by the model you have chosen. This approach is preferred for a rare or one-off meterological file format, because PEcAn will also be able to convert the file into the format required by any other model as well. 
+
+3. The last option for adding met data is to add it in a model-specific format, which is often easiest if you've already been running your model at a site and are just switching to using PEcAn. 
 
 
 #### Met workflow
@@ -23,7 +33,7 @@ More detailed information on how PEcAn processes inputs can be found on our [Inp
 
 #### Troubleshooting meteorological conversions
 
-At the current moment (PEcAn 1.4.0), most of the issues below address possible errors that the Ameriflux meteorology workflow might report
+At the current moment, most of the issues below address possible errors that the Ameriflux meteorology workflow might report
 
 ##### Could not do gapfill ... The following variables have NA's
 
