@@ -486,34 +486,36 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        #}
        if(var == "psi_stomata_closure"){         # Soil water potential at full stomatal closure	[mm]
                                                  # fates_smpsc:long_name = "Soil water potential at full stomatal closure" ;
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='smpsc', start = ipft, count = 1,
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_smpsc', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"m","mm"))
        }
        if(var == "psi_stomata_open"){            # Soil water potential at full stomatal opening	pft	[mm]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='smpso', start = ipft, count = 1,
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_smpso', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"m","mm"))
        }
-       if(var == "root_bulk_modulus"){         # coarse root bulk elastic modulus (εroot)	[MPa]
+       
+       ## --- update these to match new FATES hydro code when that code-base is added to FATES master -- ##
+       if(var == "root_bulk_modulus"){         # coarse root bulk elastic modulus (εroot)	[MPa] - NOT IN FATES ANYMORE??
          ncdf4::ncvar_put(nc=fates.param.nc, varid='epsil_root', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "sapwood_bulk_modulus"){         # sapwood bulk elastic modulus (εstem)	[MPa]
+       if(var == "sapwood_bulk_modulus"){         # sapwood bulk elastic modulus (εstem)	[MPa] - NOT IN FATES ANYMORE??
          ncdf4::ncvar_put(nc=fates.param.nc, varid='epsil_stem', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "leaf_bulk_modulus"){         # leaf bulk elastic modulus (εleaf) [MPa]
+       if(var == "leaf_bulk_modulus"){         # leaf bulk elastic modulus (εleaf) [MPa] - NOT IN FATES ANYMORE??
          ncdf4::ncvar_put(nc=fates.param.nc, varid='epsil_leaf', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "root_osmotic_potential"){         # coarse root osmotic potential at full turgor (πoroot)	[MPa]
+       if(var == "root_osmotic_potential"){         # coarse root osmotic potential at full turgor (πoroot)	[MPa] - NOT IN FATES ANYMORE??
          ncdf4::ncvar_put(nc=fates.param.nc, varid='pinot_root', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "sapwood_osmotic_potential"){         # sapwood osmotic potential at full turgor (πostem) [MPa]
+       if(var == "sapwood_osmotic_potential"){         # sapwood osmotic potential at full turgor (πostem) [MPa]  - NOT IN FATES ANYMORE??
          ncdf4::ncvar_put(nc=fates.param.nc, varid='pinot_stem', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "leaf_osmotic_potential"){         # leaf osmotic potential at full turgor (πoleaf) [MPa]
+       if(var == "leaf_osmotic_potential"){         # leaf osmotic potential at full turgor (πoleaf) [MPa]  - NOT IN FATES ANYMORE??
          ncdf4::ncvar_put(nc=fates.param.nc, varid='pinot_leaf', start = ipft, count = 1,
                    vals=pft[v])
        }
@@ -561,65 +563,80 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncdf4::ncvar_put(nc=fates.param.nc, varid='leafp_min', start = ipft, count = 1,
                    vals=pft[v])
        }
+       ## --- update these to match new FATES hydro code when that code-base is added to FATES master -- ##
+       
        if(var == "clone_alloc"){         # A carbon allocation that is added on to seed_alloc for trees larger than dbh_max.	[0-1]
-         ncvar_put(nc=fates.param.nc, varid='clone_alloc', start = ipft, count = 1,
+                                         # fates_clone_alloc:long_name = "fraction of available carbon balance allocated to clonal reproduction"
+         ncvar_put(nc=fates.param.nc, varid='fates_clone_alloc', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "storage_target_ratio"){         # The target fraction of storage carbon over leaf carbon	[0-1]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='cushion', start = ipft, count = 1,
+                                                  # fates_cushion:long_name = "maximum size of storage C pool, relative to maximum size of leaf C pool" ;
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_cushion', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "crown_depth_fraction"){         # Crown depth fraction of a cohort relative to its total height [0-1]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='crown', start = ipft, count = 1,
+                                                  # fates_crown_depth_frac:long_name = "the depth of a cohorts crown as a fraction of its height"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_crown_depth_frac', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "hydraulic_stress_mortality"){         # The mortality rate imposed on plants meeting hydraulic stress failure condition [1/yr]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='stress_mort', start = ipft, count = 1,
+                                                        # fates_stress_mort:long_name = "mortality rate associated with hydraulic stress exceedence"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_stress_mort', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "PPA_comp_exclusion"){         # Competetive exclusion parameter for weighting demotions from the upper canopy classification in PPA
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='comp_excln', start = ipft, count = 1,
+                                                #fates_comp_excln:long_name = "weighting factor (exponent on dbh) for canopy layer exclusion and promotion"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_comp_excln', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "grass_spread"){         # Controls the area footprint of a grass pft, as a function of number density and dbh
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='grass_spread', start = ipft, count = 1,
+       #if(var == "grass_spread"){         # Controls the area footprint of a grass pft, as a function of number density and dbh
+       #  ncdf4::ncvar_put(nc=fates.param.nc, varid='grass_spread', start = ipft, count = 1,
+       #            vals=pft[v])
+       #}
+       if(var == "leaf_stor_priority"){         # Leaf turnover vs labile carbon use prioritisation. This is the fraction of maintenance demand that 
+                                                # will be replenished at all costs and before storage is filled.	pft	[0-1]
+                                                # fates_leaf_stor_priority:long_name = "factor governing priority of replacing storage with NPP"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_leaf_stor_priority', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "leaf_stor_priority"){         # Leaf turnover vs labile carbon use prioritisation. This is the fraction of maintenance demand that will be replenished at all costs and before storage is filled.	pft	[0-1]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='leaf_stor_priority', start = ipft, count = 1,
+       if(var == "understory_treefall_mortality"){         # The fraction of trees in understory that die from impacts of large treefalls. 
+                                                           # In the model this is not a rate 1/year, so we need to convert it
+                                                           # fates_understorey_death:long_name = "fraction of plants in understorey cohort impacted by overstorey tree-fall"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_understorey_death', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "understory_treefall_mortality"){         # The fraction of trees in understory that die from impacts of large treefalls. In the model this is not a rate 1/year, so we need to convert it
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='understorey_death', start = ipft, count = 1,
+       if(var == "displar"){                              # fates_displar:long_name = "Ratio of displacement height to canopy top height"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_displar', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "displar"){         # 
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='displar', start = ipft, count = 1,
-                   vals=pft[v])
-       }
-       if(var == "z0mr"){         # Ratio of momentum roughness length to canopy top height
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='z0mr', start = ipft, count = 1,
+       if(var == "z0mr"){                                 # Ratio of momentum roughness length to canopy top height
+                                                          # fates_z0mr:long_name = "Ratio of momentum roughness length to canopy top height"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_z0mr', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "inital_stem_density"){         # Stem density of different PFTs during a bare ground initialization.	[/m2]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='initd', start = ipft, count = 1,
+                                                 # fates_initd:long_name = "initial seedling density for a cold-start near-bare-ground simulation"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_initd', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "bark_scaler"){         # Fraction of tree diameter that is bark. Used in fire.	[0-1]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='bark_scaler', start = ipft, count = 1,
+                                         # fates_bark_scaler:long_name = "the thickness of a cohorts bark as a fraction of its dbh"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_bark_scaler', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "crown_kill"){                    ## SPITFIRE: Mortality from fire scorching susceptibility parameter
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='crown_kill', start = ipft, count = 1,
+                                                   # fates_crown_kill:long_name = "fire parameter, see equation 22 in Thonicke et al 2010"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_crown_kill', start = ipft, count = 1,
                    vals=pft[v])  
        }
        
 
        ## BINARY FLAGS: These should be set-able by PEcAn but not sampled
-       if(var == "photosynthetic_pathway"){         # 
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='c3psn', start = ipft, count = 1,
-                   vals=as.numeric(pft[v] == 3))
-       }
+       #if(var == "photosynthetic_pathway"){         # 
+       #  ncdf4::ncvar_put(nc=fates.param.nc, varid='c3psn', start = ipft, count = 1,
+       #            vals=as.numeric(pft[v] == 3))
+       #}
        if(var == "crop"){         # Binary crop flag: 0. = not crop, 1. = crop
          ncdf4::ncvar_put(nc=fates.param.nc, varid='', start = ipft, count = 1,
                    vals=pft[v])
@@ -629,27 +646,28 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
                    vals=pft[v])
        }
        if(var == "cold_deciduous"){         # Binary flag for seasonal-deciduous leaf habit (0-not,1-it is)
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='season_decid', start = ipft, count = 1,
+                                            # fates_season_decid:flag_meanings = "NOT seasonal-deciduous"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_season_decid', start = ipft, count = 1,
                    vals=pft[v])
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='evergreen', start = ipft, count = 1,
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_evergreen', start = ipft, count = 1,
                    vals=0)
        }
        if(var == "stress_deciduous"){         # Binary flag for stress-deciduous leaf habit (0-not,1-it is)
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='stress_decid', start = ipft, count = 1,
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_stress_decid', start = ipft, count = 1,
                    vals=pft[v])
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='evergreen', start = ipft, count = 1,
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_evergreen', start = ipft, count = 1,
                    vals=0)
        }
        if(var == "woody"){         # Binary woody lifeform flag (0-is not woody, 1-it is woody)
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='woody', start = ipft, count = 1,
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_woody', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "evergreen"){         # Binary flag for evergreen leaf habit
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='evergreen', start = ipft, count = 1,
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_evergreen', start = ipft, count = 1,
                    vals=pft[v])
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='stress_decid', start = ipft, count = 1,
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_stress_decid', start = ipft, count = 1,
                    vals=0)
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='season_decid', start = ipft, count = 1,
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_season_decid', start = ipft, count = 1,
                    vals=0)
        }
        
@@ -691,39 +709,39 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=clm.param.nc, varid='k_frag', start = 1, count = 1,
                    vals=pft[v])
        }
-       if(var == "rf_cwdl2_bgc"){            ## respiration fraction from CWD to litter 2
+       if(var == "rf_cwdl2_bgc"){            ## respiration fraction from CWD to litter 2 - REMOVED FROM FATES PARAMS?
          ncdf4::ncvar_put(nc=fates.param.nc, varid='rf_cwdl2_bgc', start = 1, count = 1,
                    vals=pft[v])
        }
-       if(var == "rf_cwdl3_bgc"){            ## respiration fraction from CWD to litter 3
+       if(var == "rf_cwdl3_bgc"){            ## respiration fraction from CWD to litter 3 - REMOVED FROM FATES PARAMS?
          ncdf4::ncvar_put(nc=fates.param.nc, varid='rf_cwdl3_bgc', start = 1, count = 1,
                    vals=pft[v])
        }
-       if(var == "rf_l1s1_bgc"){            ## Respiration fraction for litter 1 -> SOM 1
+       if(var == "rf_l1s1_bgc"){            ## Respiration fraction for litter 1 -> SOM 1 - REMOVED FROM FATES PARAMS?
          ncdf4::ncvar_put(nc=fates.param.nc, varid='rf_l1s1_bgc', start = 1, count = 1,
                    vals=pft[v])
        }
-       if(var == "rf_l2s1_bgc"){            ## respiration fraction litter 2 to SOM 1
+       if(var == "rf_l2s1_bgc"){            ## respiration fraction litter 2 to SOM 1 - REMOVED FROM FATES PARAMS?
          ncdf4::ncvar_put(nc=fates.param.nc, varid='rf_l2s1_bgc', start = 1, count = 1,
                    vals=pft[v])
        }
-       if(var == "rf_l3s2_bgc"){            ## respiration fraction from litter 3 to SOM 2
+       if(var == "rf_l3s2_bgc"){            ## respiration fraction from litter 3 to SOM 2 - REMOVED FROM FATES PARAMS?
          ncdf4::ncvar_put(nc=fates.param.nc, varid='rf_l3s2_bgc', start = 1, count = 1,
                    vals=pft[v])
        }
-       if(var == "rf_s2s1_bgc"){            ## respiration fraction SOM 2 to SOM 1
+       if(var == "rf_s2s1_bgc"){            ## respiration fraction SOM 2 to SOM 1 - REMOVED FROM FATES PARAMS?
          ncdf4::ncvar_put(nc=fates.param.nc, varid='rf_s2s1_bgc', start = 1, count = 1,
                    vals=pft[v])
        }
-       if(var == "rf_s2s3_bgc"){            ## Respiration fraction for SOM 2 -> SOM 3
+       if(var == "rf_s2s3_bgc"){            ## Respiration fraction for SOM 2 -> SOM 3 - REMOVED FROM FATES PARAMS?
          ncdf4::ncvar_put(nc=fates.param.nc, varid='rf_s2s3_bgc', start = 1, count = 1,
                    vals=pft[v])
        }
-       if(var == "rf_s3s1_bgc"){            ## respiration fraction SOM 3 to SOM 1
+       if(var == "rf_s3s1_bgc"){            ## respiration fraction SOM 3 to SOM 1 - REMOVED FROM FATES PARAMS?
          ncdf4::ncvar_put(nc=fates.param.nc, varid='rf_s3s1_bgc', start = 1, count = 1,
                    vals=pft[v])
        }
-       if(var == "Q10_frozen_soil"){            ## Separate q10 for frozen soil respiration rates
+       if(var == "Q10_frozen_soil"){            ## Separate q10 for frozen soil respiration rates - REMOVED FROM FATES PARAMS?
          ncdf4::ncvar_put(nc=fates.param.nc, varid='froz_q10', start = 1, count = 1,
                    vals=pft[v])
        }
@@ -731,47 +749,57 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        ## NONE indexed
        ##   -- FIRE
        if(var == "max_fire_duration"){            ## maximum duration of fire	none	hours
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='max_durat',vals=pft[v])
+                                                  # fates_max_durat:long_name = "spitfire parameter, fire maximum duration, Equation 14 Thonicke et al 2010"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_max_durat',vals=pft[v])
        }
        if(var == "nfires"){            ## The number of fires initiated per m2 per year, from lightning and humans
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='nfires',vals=pft[v])
+                                       # fates_nignitions:long_name = "number of daily ignitions (nfires = nignitions*FDI*area_scaling)"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_nignitions',vals=pft[v])
        }
        if(var == "fuel_energy"){            ## energy content of fuel [kj kg-1]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='fuel_energy',vals=pft[v])
+                                            # fates_fuel_energy:long_name = "pitfire parameter, heat content of fuel"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_fuel_energy',vals=pft[v])
        }
        if(var == "fuel_particle_density"){            ## particle density of fuel [kg m-3]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='part_dens',vals=pft[v])
+                                                      # fates_part_dens:long_name = "spitfire parameter, oven dry particle density, Table A1 Thonicke et al 2010"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_part_dens',vals=pft[v])
        }
        if(var == "durat_slope"){            ## SPITFIRE: change in fire duration with fire danger index. from Canadian Forest Service	
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='durat_slope',vals=pft[v])
+                                            # fates_durat_slope:long_name = "spitfire parameter, fire max duration slope, Equation 14 Thonicke et al 2010"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_durat_slope',vals=pft[v])
        }
        if(var == "miner_damp"){            ## SPITFIRE mineral dampening coefficient
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='miner_damp',vals=pft[v])
+                                           # fates_miner_damp:long_name = "spitfire parameter, mineral-dampening coefficient EQ A1 Thonicke et al 2010 "
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_miner_damp',vals=pft[v])
        }
        if(var == "fuel_minerals"){            ## mineral content of fuel
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='miner_total',vals=pft[v])
+                                              # fates_miner_total:long_name = "spitfire parameter, total mineral content, Table A1 Thonicke et al 2010"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_miner_total',vals=pft[v])
        }
        if(var == "alpha_scorch_height"){            ## SPITFIRE scorch height parameter
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='alpha_SH',vals=pft[v])
+                                                    # fates_alpha_SH:long_name = "spitfire parameter, alpha scorch height, Equation 16 Thonicke et al 2010"
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_alpha_SH',vals=pft[v])
        }
        if(var == "fdi_a"){            ## SPITFIRE Constant in calculation of dewpoint for Fire Danger Index (FDI)
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='fdi_a',vals=pft[v])
+                                      # fates_fdi_a:long_name = "spitfire parameter (unknown) "
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_fdi_a',vals=pft[v])
+       }
+       if(var == "fdi_alpha"){            ## SPITFIRE Constant in calculation of dewpoint for Fire Danger Index (FDI)
+                                          # fates_fdi_alpha:long_name = "spitfire parameter, EQ 7 Venevsky et al. GCB 2002,(modified EQ 8 Thonicke et al. 2010) "
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_fdi_alpha',vals=pft[v])
        }
        if(var == "fdi_b"){            ## SPITFIRE Constant in calculation of dewpoint for Fire Danger Index (FDI)
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='fdi_b',vals=pft[v])
-       }
-       # fdi_alpha	SPITFIRE fire danger index (FDI) coefficient	
-       if(var == ""){            ## 
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='',vals=pft[v])
+                                      # fates_fdi_b:long_name = "spitfire parameter (unknown) "
+         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_fdi_b',vals=pft[v])
        }
        ##   -- CANOPY
-       if(var == "canopy_max_spread"){            ## Maximum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='maxspread',vals=pft[v])
-       }
+       #if(var == "canopy_max_spread"){            ## Maximum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
+       #  ncdf4::ncvar_put(nc=fates.param.nc, varid='maxspread',vals=pft[v])
+       #}
        # 	
-       if(var == "canopy_min_spread"){            ## Minimum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
-         ncdf4::ncvar_put(nc=fates.param.nc, varid='minspread',vals=pft[v])
-       }
+       #if(var == "canopy_min_spread"){            ## Minimum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
+       #  ncdf4::ncvar_put(nc=fates.param.nc, varid='minspread',vals=pft[v])
+       #}
 
        ## LITTERCLASS indexed (Size:6)
        ## MCD: skipping for now until there's demonstrated demand because it requires expanding every variable out into VARNAME_[1..n]
