@@ -198,6 +198,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ## COPY AND OPEN DEFAULT PARAMETER FILES
    # TODO: update this to read param files (CLM and FATES) out of the refcase directory, not the PEcAn package
    # TODO: update to allow it to pick between CLM4.5 and CLM5 parameter set based on refcase, user selection
+   ## See issue https://github.com/PecanProject/pecan/issues/1008
    # CLM
    #clm.param.default <- system.file("clm5_params.c171117.nc",package="PEcAn.FATES")
    #clm.param.file <- file.path(local.rundir,paste0("clm_params.",run.id,".nc"))
