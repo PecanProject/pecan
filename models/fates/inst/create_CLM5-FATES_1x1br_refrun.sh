@@ -20,6 +20,8 @@ export COMPILER=gnu                                          	# Name your compil
 export CASEROOT=/data/software/FATES/FATES_refrun               # Where the build is generated. The ref case location - USER UPDATE
 
 # Set CLM & FATES parameter path and param files here:
+# USER needs to define the name and location of the FATES parameter file to use for PEcAn simulations here
+# This file is then copied to the refcase location and used for all PEcAn runs based on that refcase
 export FATES_PARAM_FILE_PATH=/data/software/CTSM/fates_parameter_files 			# - USER UPDATE
 export FATES_PARAM_FILE=fates_params_2troppftclones.c171018_sps.nc			# - USER UPDATE
 export CLM_PARAM_FILE_PATH=/data/Model_Data/cesm_input_datasets/lnd/clm2/paramdata	# - USER UPDATE
