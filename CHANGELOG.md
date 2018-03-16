@@ -15,6 +15,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - Remove non-portable extensions from `src/Makevars`. This should make the package Windows-compatible.
 
 ### Added
+- Functionality to read pft-specific outputs and to run sensitivity analysis on pft-specific outputs.
 - Ability to allow for insecure sync using -k flag
 - Added information on how to join slack
 - PEcAn.BIOCRO now supports BioCro version 1.0. BioCro 0.9x models should still work as before, but note parameter and weather format changes in the `Changed` section below.  

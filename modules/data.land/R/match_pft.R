@@ -25,7 +25,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
         query <- paste0(query, " OR bp.name = '", pft$name, "'")
       }
     }
-    translation <- db.query(query, con = con)
+    translation <- PEcAn.DB::db.query(query, con = con)
     
     
   }else{ # use traits package
@@ -69,7 +69,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
       # Coerce id back into species names. Makes a more readable warning.
       if(!is.na(ubad[i])){
         if(!is.null(con)){
-          latin <- db.query(paste("SELECT scientificname FROM species where id =", ubad[i]), con = con)
+          latin <- PEcAn.DB::db.query(paste("SELECT scientificname FROM species where id =", ubad[i]), con = con)
         }else{ # use traits package
           bety_latin <- traits::betydb_query(id = ubad[i], table = 'species', user = 'bety', pwd = 'bety')
           latin      <- bety_latin$scientificname
