@@ -27,6 +27,7 @@
 ##' @param end.year last year of output to read
 ##' @param variables variables to be read from model output
 ##' @param dataframe A boolean that will return output in a data.frame format with a posix column. Useful for align.data and plotting. 
+##' @param pft.name character string, name of the pft to read pft-specific output. If NULL no pft-specific output will be read even the variable has pft as a dimension.
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze, David LeBauer
