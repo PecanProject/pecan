@@ -1,4 +1,4 @@
-# Loading Data in PEcAn
+## Loading Data in PEcAn
 
 If you are loading data in to PEcAn for benchmarking, using the Benchmarking shiny app [provide link?] is recommended. 
 
@@ -6,9 +6,9 @@ Data can be loaded manually using the `load_data` function which in turn require
 
 Below is a description of the `load_data` function an a simple example of loading data manually. 
 
-## Function `load_data`
+### Function `load_data`
 
-### Inputs
+#### Inputs
 
 Required
 
@@ -22,11 +22,11 @@ Optional
 - `site = NA`
 - `vars.used.index=NULL`
 
-### Output 
+#### Output 
 
 - R data frame containing the requested variables converted in to PEcAn standard name and units and time steps in `POSIX` format. 
 
-## Example
+### Example
 
 The data for this example has already been entered in to the database. To add new data go to [this useful site].
 
