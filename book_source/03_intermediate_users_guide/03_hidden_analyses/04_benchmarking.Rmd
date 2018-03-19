@@ -62,6 +62,8 @@ When the model run has completed, navigate to the workflow visualization Shiny a
 
 ### Benchmarking in pecan.xml
 
+Before reading this section, it is recommended that you [familiarize yourself with basics of the pecan.xml file.](#pecanXML) 
+
 The `pecan.xml` has an _optional_ benchmarking section. Below are all the tags in the benchmarking section explained. Many of these field are filled in automatically during the benchmarking process when using the benchmarking shiny app. 
 
 The only time one should edit the benchmarking section by hand is for performing clone runs. See [clone run documentation.](#CloneRun)
