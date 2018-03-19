@@ -2,7 +2,7 @@
 
 Many models have requirements for soils information, which may include: site-specific soil texture and depth information; soil biogeochemical initial conditions (e.g. soil carbon and nitrogen pools); soil moisture initial conditions; and soil thermal initial conditions.
 
-As with [Choosing initial vegetation], we eventually hope to develop data standards, soils workflows, and spin-up tools, but at the moment this workflow is in the early stages of development. Model requirements need to be met by [inserting Input data](../developers_guide/How-to-insert-new-Input-data.html) into the database or using files that have already been uploaded. Similar to met, we recommend that this file be in the PEcAn-standard netCDF described below, but model-specific files can also be registered.
+As with [Choosing initial vegetation], we eventually hope to develop data standards, soils workflows, and spin-up tools, but at the moment this workflow is in the early stages of development. Model requirements need to be met by [inserting Input data](#NewInput) into the database or using files that have already been uploaded. Similar to met, we recommend that this file be in the PEcAn-standard netCDF described below, but model-specific files can also be registered.
 
 #### Soil texture, depth, and physical parameters
 
@@ -16,4 +16,4 @@ A table of standard names and units can be listed using `PEcAn.data.land::soil.u
 knitr::kable(PEcAn.data.land::soil.units())
 ```
 
-More detailed information on how PEcAn processes inputs can be found on our [Input Conversion] page.
+More detailed information on how PEcAn processes inputs can be found on our [Input Conversion](#InputConversions) page.
