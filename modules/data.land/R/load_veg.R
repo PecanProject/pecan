@@ -14,18 +14,23 @@ load_veg <- function(new_site, start_date, end_date,
   #--------------------------------------------------------------------------------------------------#
   # Load data : this step requires DB connections 
   
+  # get machine id
+  machine_id <- get.id(table = "machines", colnames = "hostname", 
+                       values = machine_host, con = bety$con)
+  
   # query data.path from source id [input id in BETY]
-  query      <- paste0("SELECT * FROM dbfiles where container_id = ", source_id)
-  input_file <- PEcAn.DB::db.query(query, con = bety$con) #finds file on both machines
-  #specfic hack
-  input_file <- input_file[2,]
-  data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]]) 
+  query      <- paste0("SELECT * FROM dbfiles where container_id =  ", source_id,
+                       "AND machine_id=", machine_id)
+  
+  input_file <- PEcAn.DB::db.query(query, con = bety$con)
+  data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]])
+
   
   # query format info
-  format <- PEcAn.DB::query.format.vars(bety = bety, input.id = source_id)
+  format     <- PEcAn.DB::query.format.vars(bety = bety, input.id = source_id)
   
   # load_data{benchmark}
-  obs <- PEcAn.benchmark::load_data(data.path = data_path, format, site = new_site)
+  obs        <- PEcAn.benchmark::load_data(data.path = data_path, format, site = new_site)
   
   #--------------------------------------------------------------------------------------------------#
   # Match species : this step requires DB connections 

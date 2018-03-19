@@ -60,23 +60,3 @@ This book is organized around these main topics:
 **Appendix** - Supplementary materials for the developer section.
 ​	
 
-## Using PEcAn
-
-We have developed a number of demos and vignettes to guide your use of PEcAn's many capabilities:
-
-|Type|Title|Web Link| Source Rmd|
-|:--:|:---:|:------:|:---------:|
-|Demo| Basic Run| [html](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html) | [Rmd](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/01_Demo_Basic_Run/Demo01.Rmd)|
-|Demo| Uncertainty Analysis| [html](https://pecanproject.github.io/pecan-documentation/tutorials/Demo02.html)| [Rmd](https://github.com/PecanProject/pecan/tree/master/documentation/tutorials/02_Demo_Uncertainty_Analysis)|
-|Demo| Output Analysis|html |[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/AnalyzeOutput)|
-|Demo| MCMC |html|[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/MCMC)|
-|Demo|Parameter Assimilation |html |[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/ParameterAssimilation)|
-|Demo|State Assimilation|html|[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/StateAssimilation)|
-|Demo| Sensitivity|html|[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/sensitivity)|
-|Vignette|Allometries|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/allometry/vignettes/AllomVignette.Rmd)|
-|Vignette|MCMC|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/assim.batch/vignettes/AssimBatchVignette.Rmd)|
-|Vignette|Meteorological Data|html|[Rmd](https://github.com/PecanProject/pecan/tree/master/modules/data.atmosphere/vignettes)|
-|Vignette|Meta-Analysis|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/meta.analysis/vignettes/single.MA_demo.Rmd)|
-|Vignette|Photosynthetic Response Curves|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/photosynthesis/vignettes/ResponseCurves.Rmd)|
-|Vignette|Priors|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/priors/vignettes/priors_demo.Rmd)|
-|Vignette|Leaf Spectra:PROSPECT inversion|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/rtm/vignettes/pecanrtm.vignette.Rmd)|
