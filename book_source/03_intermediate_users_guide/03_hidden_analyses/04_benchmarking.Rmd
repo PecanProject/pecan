@@ -48,7 +48,7 @@ When the model run has completed, navigate to the workflow visualization Shiny a
 
 ##### Benchmarking Output
 
-- All benchmarking results are stored in the benchmarking directory which created  in the same folder as the original model run. 
+- All benchmarking results are stored in the benchmarking directory which is created in the same folder as the original model run. 
 - The benchmaking directory contains subdirectories for each of the datasets compared with the model output. The names of these directories are the same as the corresponding data set's input id in BETY. 
 - Each input directory contains `benchmarking.output.Rdata`, an Rdata file contianing all the results of the benchmarking workflow. `load(benchmarking.output.Rdata) ` loads a list  called `result.out`  which contains the following:
   - `bench.results`: a data frame of all numeric benchmarking scores
