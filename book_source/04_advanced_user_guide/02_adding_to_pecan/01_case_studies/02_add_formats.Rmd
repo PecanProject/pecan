@@ -10,17 +10,19 @@ This information is stored in a Format record in the bety database. Make sure to
 
 If the Format you are looking for is not available, you will need to create a new record. Before entering information into the database, you need to be able to answer the following questions about your data:
 
-- What is the file MIME type? We have a suit of functions for loading in data in open formats such as CSV, txt, netCDF, etc. 
-     - PEcAn has partnered with the [NCSA BrownDog project](http://browndog.ncsa.illinois.edu/) to create a service that can read and convert as many data formats as possible. 
-     - If your file type is less common or a proprietary type, you can use the [BrownDog DAP](http://dap.ncsa.illinois.edu/) to convert? 
+- What is the file MIME type? 
+     - We have a suit of functions for loading in data in open formats such as CSV, txt, netCDF, etc. 
+     - PEcAn has partnered with the [NCSA BrownDog project](http://browndog.ncsa.illinois.edu/) to create a service that can read and convert as many data formats as possible. If your file type is less common or a proprietary type, you can use the [BrownDog DAP](http://dap.ncsa.illinois.edu/) to convert it to a format that can be used with PEcAn. 
      - If BrownDog cannot convert your data, you will need to contact us about writing a data specific load function.
   
 - What variables does the file contain?
      - What are the variables named?
      - What are the variable units?
-     - How do the variable names and units map to PEcAn variables?
+     - How do the variable names and units in the data map to PEcAn variables in the BETY database?  See [below](### Name and Unit) for an example. It is most likely that you will NOT need to add variables to BETY. However, identifying the appropriate variables matches in the database may require some work. We are always available to help answer your questions. 
+
 - Is there a timestamp on the data? 
      - What are the units of time?
+     
 
 Here is an example using a fake dataset:
 
