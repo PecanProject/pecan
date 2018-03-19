@@ -4,14 +4,17 @@
 ##' @title do_conversions
 ##' @description Input conversion workflow
 ##'
+##'
 ##' @param settings PEcAn settings list
 ##' @param overwrite.met,overwrite.fia,overwrite.ic logical
 ##'
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
+settings <- read.settings("/fs/data2/output//PEcAn_1000009055/pecan.xml")
 do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do_conversions))
   }
+  
   
   needsave <- FALSE
   if (is.character(settings$run$inputs)) {
@@ -32,6 +35,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     PEcAn.logger::logger.info("PROCESSING: ",input.tag)
     
     ic.flag <- fia.flag <- FALSE
+    
     
     if ((input.tag %in% c("css", "pss", "site")) && 
         is.null(input$path) && !is.null(input$source)) {
@@ -96,3 +100,4 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   }
   return(settings)
 }
+

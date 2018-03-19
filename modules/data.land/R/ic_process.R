@@ -29,6 +29,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     } else {
       overwrite <- list(getveg = FALSE, putveg = FALSE)
     }
+  
   } else {
     if (is.null(overwrite$getveg)) {
       overwrite$getveg <- FALSE
@@ -61,13 +62,15 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   }else{
     
     query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
-    input_file <- db.query(query, con = con)
-    start_date <- input_file$start_date
-    end_date   <- input_file$end_date
+   # input_file <- db.query(query, con = con) #error message here
+   # start_date <- input_file$start_date
+   # end_date   <- input_file$end_date
     
   }
   
-  
+  start_date <- "2004/01/01"
+  end_date <- "2004/12/31"
+  source.id = 1000011170 #take this out later
   # set up host information
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
@@ -80,15 +83,17 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   # setup site database number, lat, lon and name and copy for format.vars if new input
   new.site <- data.frame(id = as.numeric(site$id), 
-                         lat = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lat, 
-                         lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
+                        lat = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lat, 
+                        lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
   new.site$name <- settings$run$site$name
-  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
+  
+
+str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
 
   # veg or some other IC? Need to update later for other models
-  vegIC <- c("css", "pss", "site")
+  vegIC <- c("css", "pss", "site") #don't need this for DALEC?
   getveg.id <- putveg.id <- NULL
   
   
@@ -97,7 +102,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   if (is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) {
 
-    getveg.id <- .get.veg.module(input_veg = input, 
+    getveg.id <- PEcAn.data.land:::.get.veg.module(input_veg = input, 
                               outfolder = outfolder, 
                               start_date = start_date, end_date = end_date,
                               dbparms = dbparms,
@@ -114,7 +119,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   if (!is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) { # probably need a more sophisticated check here
     
-    putveg.id <- .put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
+    putveg.id <-  PEcAn.data.land:::.put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
                                 input_veg = input, pfts = settings$pfts,
                                 outfolder = outfolder, 
                                 dir = dir, machine = machine, model = model,
