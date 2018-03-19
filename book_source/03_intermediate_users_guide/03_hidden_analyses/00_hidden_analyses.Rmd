@@ -1,6 +1,6 @@
-# Hidden analyses
+# Settings-configured analyses
 
-These analyses are currently only accessible from the XML file. Eventually, they will be integreated into the web user interface.
+These analyses can be run through the web interface, but lack graphical interfaces and  currently can only be configured throughthe XML settings. To run these analyses use the **Edit pecan.xml** checkbox on the Input configuration page. Eventually, these modules will be integrated into the web user interface.
 
 - Parameter Data Assimilation (PDA)
 - State Data Assimilation (SDA)

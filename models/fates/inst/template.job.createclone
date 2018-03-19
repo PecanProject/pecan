@@ -5,6 +5,9 @@ exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
 # host specific setup
+host=$(hostname)
+ip=$(hostname -i)
+echo "Running on: " $host -- $ip
 @HOST_SETUP@
 
 # create output folder
@@ -18,7 +21,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 
   ## Figure out where CIME SCRIPTS are installed
   cd @REFCASE@
-  IFS=' ' read -ra SCRIPTROOT <<< `./xmlquery SCRIPTSROOT -value`
+  IFS=' ' read -ra SCRIPTROOT <<< `./xmlquery SCRIPTSROOT --value`
   echo "CIME script root: "
   echo ${SCRIPTROOT}
 
@@ -48,47 +51,46 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## THINGS THAT ARE IN REFCASE
   # Modifying : env_mach_pes.xml
   echo "*** Modify XMLs ***"
-./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
-./xmlchange -file env_mach_pes.xml -id NTASKS_LND -val 1
-./xmlchange -file env_mach_pes.xml -id NTASKS_ICE -val 1
-./xmlchange -file env_mach_pes.xml -id NTASKS_OCN -val 1
-./xmlchange -file env_mach_pes.xml -id NTASKS_CPL -val 1
-./xmlchange -file env_mach_pes.xml -id NTASKS_GLC -val 1
-./xmlchange -file env_mach_pes.xml -id NTASKS_ROF -val 1
-./xmlchange -file env_mach_pes.xml -id NTASKS_WAV -val 1
-./xmlchange -file env_mach_pes.xml -id MAX_TASKS_PER_NODE -val 1
-./xmlchange -file env_mach_pes.xml -id TOTALPES -val 1
+#./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
+#./xmlchange -file env_mach_pes.xml -id NTASKS_LND -val 1
+#./xmlchange -file env_mach_pes.xml -id NTASKS_ICE -val 1
+#./xmlchange -file env_mach_pes.xml -id NTASKS_OCN -val 1
+#./xmlchange -file env_mach_pes.xml -id NTASKS_CPL -val 1
+#./xmlchange -file env_mach_pes.xml -id NTASKS_GLC -val 1
+#./xmlchange -file env_mach_pes.xml -id NTASKS_ROF -val 1
+#./xmlchange -file env_mach_pes.xml -id NTASKS_WAV -val 1
+#./xmlchange -file env_mach_pes.xml -id MAX_TASKS_PER_NODE -val 1
+#./xmlchange -file env_mach_pes.xml -id TOTALPES -val 1
   # Modifying : env_build.xml
-./xmlchange -file env_build.xml -id GMAKE -val make
-./xmlchange -file env_build.xml -id DEBUG -val FALSE
+./xmlchange --file env_build.xml --id GMAKE --val make
+./xmlchange --file env_build.xml --id DEBUG --val FALSE
   # Modifying : env_run.xml
-./xmlchange -file env_run.xml -id REST_N -val 1
-./xmlchange -file env_run.xml -id REST_OPTION -val nyears
-./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_START -val 1974
-./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_END -val 2004
-./xmlchange -file env_run.xml -id DIN_LOC_ROOT -val @INDIR@
-./xmlchange -file env_run.xml -id DIN_LOC_ROOT_CLMFORC -val '@INDIR@'
-./xmlchange -file env_run.xml -id DOUT_S -val TRUE
-./xmlchange -file env_run.xml -id DOUT_S_ROOT -val '@CASEDIR@/run'
-./xmlchange -file env_run.xml -id PIO_DEBUG_LEVEL -val 0
-./xmlchange -file env_run.xml -id ATM_DOMAIN_FILE -val 'domain.lnd.@SITE_NAME@.nc'
-./xmlchange -file env_run.xml -id ATM_DOMAIN_PATH -val '@INDIR@/share/domains/domain.clm/'
-./xmlchange -file env_run.xml -id LND_DOMAIN_FILE -val 'domain.lnd.@SITE_NAME@.nc'
-./xmlchange -file env_run.xml -id LND_DOMAIN_PATH -val '@INDIR@/share/domains/domain.clm/'
-./xmlchange -file env_run.xml -id CLM_USRDAT_NAME -val '@SITE_NAME@'
+./xmlchange --file env_run.xml --id REST_N --val 1
+./xmlchange --file env_run.xml --id REST_OPTION --val nyears
+./xmlchange --file env_run.xml --id DATM_CLMNCEP_YR_START --val 1974
+./xmlchange --file env_run.xml --id DATM_CLMNCEP_YR_END --val 2004
+./xmlchange --file env_run.xml --id DIN_LOC_ROOT --val @INDIR@
+./xmlchange --file env_run.xml --id DIN_LOC_ROOT_CLMFORC --val '@INDIR@'
+./xmlchange --file env_run.xml --id DOUT_S --val TRUE
+./xmlchange --file env_run.xml --id DOUT_S_ROOT --val '@CASEDIR@/run'
+./xmlchange --file env_run.xml --id PIO_DEBUG_LEVEL --val 0
+./xmlchange --file env_run.xml --id ATM_DOMAIN_FILE --val 'domain.lnd.@SITE_NAME@.nc'
+./xmlchange --file env_run.xml --id ATM_DOMAIN_PATH --val '@INDIR@/share/domains/domain.clm/'
+./xmlchange --file env_run.xml --id LND_DOMAIN_FILE --val 'domain.lnd.@SITE_NAME@.nc'
+./xmlchange --file env_run.xml --id LND_DOMAIN_PATH --val '@INDIR@/share/domains/domain.clm/'
+./xmlchange --file env_run.xml --id CLM_USRDAT_NAME --val '@SITE_NAME@'
 ## END REFCASE  
   
   ## ENV_BUILD update configurations
-  ./xmlchange -file env_build.xml -id CIME_OUTPUT_ROOT -val @CASEDIR@
-  ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@  # this is the way it should be set, long term
-  #./xmlchange -file env_build.xml -id EXEROOT -val @CASEDIR@/bld # temporary fix
-  ./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE  # TEMPORARY!  This eventually needs to be uncommented so we don't build the model each time !
+  ./xmlchange --file env_build.xml --id CIME_OUTPUT_ROOT --val @CASEDIR@
+  ./xmlchange --file env_build.xml --id EXEROOT --val @BLD@  # this is the way it should be set, long term
+  ./xmlchange --file env_build.xml --id BUILD_COMPLETE --val TRUE
   
   ## DATES -> ENV_RUN
-  ./xmlchange -file env_run.xml -id RUNDIR -val @CASEDIR@/run
-  ./xmlchange -file env_run.xml -id RUN_STARTDATE -val @START_DATE@
-  ./xmlchange -file env_run.xml -id STOP_OPTION -val ndays
-  ./xmlchange -file env_run.xml -id STOP_N -val @STOP_N@
+  ./xmlchange --file env_run.xml --id RUNDIR --val @CASEDIR@/run
+  ./xmlchange --file env_run.xml --id RUN_STARTDATE --val @START_DATE@
+  ./xmlchange --file env_run.xml --id STOP_OPTION --val ndays
+  ./xmlchange --file env_run.xml --id STOP_N --val @STOP_N@
   
   ## SITE INFO --> DOMAIN FILE 
   rm @INDIR@/share/domains/domain.clm/*
@@ -98,6 +100,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   rm @INDIR@/lnd/clm2/surfdata_map/surfdata*
   ln -s @RUNDIR@/surfdata_@SITE_NAME@_simyr2000.nc @INDIR@/lnd/clm2/surfdata_map/
   SURFMAP=@INDIR@/lnd/clm2/surfdata_map/surfdata_@SITE_NAME@_simyr2000.nc
+
 cat >> user_nl_clm << EOF
 fsurdat = '@INDIR@/lnd/clm2/surfdata_map/surfdata_@SITE_NAME@_simyr2000.nc'
 finidat = ' '
@@ -105,7 +108,6 @@ EOF
     
   ## PARAMETERS
   rm @INDIR@/lnd/clm2/paramdata/*
-  #ln -s @RUNDIR@/clm_params_ed.@RUN_ID@.nc @INDIR@/lnd/clm2/paramdata/
   ln -s @RUNDIR@/clm_params.@RUN_ID@.nc @INDIR@/lnd/clm2/paramdata/
   ln -s @RUNDIR@/fates_params.@RUN_ID@.nc @INDIR@/lnd/clm2/paramdata/
 #cat >> user_nl_clm << EOF
