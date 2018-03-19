@@ -1,4 +1,4 @@
-# The PEcAn XML
+# The PEcAn XML {#pecanXML}
 
 The PEcAn system is configured using a xml file, often called settings.xml. The configuration file contains the following sections:
 
