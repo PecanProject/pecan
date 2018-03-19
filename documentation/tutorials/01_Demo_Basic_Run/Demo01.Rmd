@@ -1,6 +1,8 @@
-## PEcAn Hands-On Demo 01: Basic Run
+# (Part) Demos and Vignettes {-}
 
-```{r setup, echo = FALSE}
+# PEcAn Hands-On Demo 01: Basic Run
+
+```{r setup, echo = FALSE,warning=FALSE}
 library(knitr)
 opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
                fig.align = 'center', out.width = '100%')
@@ -20,7 +22,7 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 *	If you followed instructions found in [Install PEcAn by hand], **URL is your server’s IP**
 
 
-### Demo 01: Basic Run
+## Basic Run
 
 ### Start PEcAn:  
 
@@ -188,7 +190,7 @@ knitr::include_graphics('workflowshiny.png')
 **Return to the output window and Click on the HISTORY button. Click on any previous run in the “ID” column** to go to the current state of that run's execution -- you can always return to old runs and runs in-progress this way. The run you just did should be the more recent entry in the table. **For the next analysis, make note of the ID number from your run.** 
 
 
-#### Next steps
+## Next steps
 
 ##### Analyzing model output
 

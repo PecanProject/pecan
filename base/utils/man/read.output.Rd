@@ -5,7 +5,7 @@
 \title{Read model output}
 \usage{
 read.output(runid, outdir, start.year = NA, end.year = NA,
-  variables = "GPP", dataframe = FALSE)
+  variables = "GPP", dataframe = FALSE, pft.name = NULL)
 }
 \arguments{
 \item{runid}{the id distiguishing the model run.}
@@ -19,6 +19,8 @@ read.output(runid, outdir, start.year = NA, end.year = NA,
 \item{variables}{variables to be read from model output}
 
 \item{dataframe}{A boolean that will return output in a data.frame format with a posix column. Useful for align.data and plotting.}
+
+\item{pft.name}{character string, name of the pft to read pft-specific output. If NULL no pft-specific output will be read even the variable has pft as a dimension.}
 }
 \value{
 vector of output variable
