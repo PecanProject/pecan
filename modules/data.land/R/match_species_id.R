@@ -41,16 +41,19 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                       'fia' = 'spcd',
                       'latin_name' = 'scientificname',
                       'custom' = 'custom')
-    if (!format_name %in% names(formats_dict)) {
+   
+     if (!format_name %in% names(formats_dict)) {
         PEcAn.logger::logger.severe('format_name "', format_name, '" not found. ',
                                    'Please use one of the following: ',
                                    paste(names(formats_dict), collapse = ', '))
     }
     if (!is.null(translation_table)) {
+      
         msg2 <- c('Found the following columns: ',
                   paste(colnames(translation_table), collapse = ', '))
-        if (!'input_code' %in% colnames(translation_table)) {
-            PEcAn.logger::logger.severe('Custom translation table must have column "input_code". ', msg2)
+        
+        if (!'input_codes' %in% colnames(translation_table)) {
+            PEcAn.logger::logger.severe('Custom translation table must have column "input_codes". ', msg2)
         } else if (!'bety_species_id' %in% colnames(translation_table)) {
             PEcAn.logger::logger.severe('Custom translation table must have column "bety_species_id". ', msg2)
         } else {
@@ -72,15 +75,21 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
       column <- formats_dict[format_name]
       if(!is.null(bety)){
         # query BETY
+        library(dplyr) #added in order to make 'input_codes' upper case
+        library(R.utils) #added in order to make 'input_codes' upper case
         filter_cri <- lazyeval::interp(~ col %in% codes,
                                        col = as.name(column),
                                        codes = input_codes)
         translation <- dplyr::tbl(bety, 'species') %>%
-          dplyr::filter_(filter_cri) %>%
+          #dplyr::filter_(filter_cri) %>% #filtering done on lines 88-89
           dplyr::select_('bety_species_id' = 'id', 'genus', 'species',
-                         'input_code' = column) %>%
-          dplyr::collect()
-
+                        'input_codes' = column) %>%
+          dplyr::collect() 
+        translation <- translation %>% mutate(input_codes = toupper(input_codes))
+        #Check input_codes in translation with latin_names in obs, and keep rows in translation table that have input_codes found in latin_names within obs
+       colnames(translation) <- c('bety_species_id', 'genus', 'species',"latin_name") #changed the column name of input_codes to latin_names to enable matching
+       translation <- semi_join(translation, obs, by = "latin_name" ) 
+      
       }else{
         # use traits package
 
@@ -100,18 +109,17 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
           translation$species[i]         <- foo$species
         }
 
-      }
-
-    }
+    
     input_table <- data.frame(input_code = input_codes, stringsAsFactors = FALSE)
     # preserving the order is important for downstream
-    merge_table <- dplyr::left_join(input_table, translation)
+    colnames(translation) <- c('bety_species_id', 'genus', 'species',"input_code") #changed the column name of latin_names back to input_codes to enable matching since input_table's column is called input_codes, also change 'id' back to 'bety_species_id' so lines 116-119 run 
+    merge_table <- dplyr::left_join(input_table, translation, by = "input_code")
 
     if(sum(is.na(merge_table$bety_species_id)) > 0){
       bad <- unique(merge_table$input_code[is.na(merge_table$bety_species_id)])
       PEcAn.logger::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
     }
 
-    return(merge_table)
+   { return(merge_table)
 } # match_species_id
 

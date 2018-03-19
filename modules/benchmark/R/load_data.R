@@ -62,6 +62,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     PEcAn.logger::logger.warn("Brown Dog is currently unable to perform conversion from ",mimetype," to a PEcAn usable format")
   }
   
+  
   vars =  format$vars$input_name[c(vars.used.index, time.row)]
   out <- fcn(data.path, format, site, vars)
   
