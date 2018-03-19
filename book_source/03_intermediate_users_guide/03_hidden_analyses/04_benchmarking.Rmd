@@ -18,14 +18,14 @@ The data must have three records:
 ### Model Runs
 
 Model runs can be setup and executed 
-- Using the PEcAn web interface (LINK) 
-- By hand using the `pecan.xml` (LINK)
+- Using the PEcAn web interface online or with a VM ([see setup](#GettingStarted))
+- By hand using the [pecan.xml](#pecanXML) 
 
 ### The Benchmarking Shiny App
 
 The entire benchmarking process can be done through the Benchmarking R Shiny app. 
 
-When the model run has completed, navigate to the workflow visualization Shiny app. (LINK)
+When the model run has completed, navigate to the workflow visualization Shiny app. 
 
 - Load model data
     - Select the workflow and run id
@@ -56,18 +56,15 @@ When the model run has completed, navigate to the workflow visualization Shiny a
   - `aligned.dat`: a data frame of the final aligned model and input values. 
 - All plots are saved as pdf files with names with "benchmark_plot-type_variable_input-id.pdf"
   
-- To view interactive results, naviage to the 
-
+- To view interactive results, naviage to the Benchmarking Plots tab in the shiny app.
 
 
 
 ### Benchmarking in pecan.xml
 
-The `pecan.xml` has an _optional_ benchmarking section. 
+The `pecan.xml` has an _optional_ benchmarking section. Below are all the tags in the benchmarking section explained. Many of these field are filled in automatically during the benchmarking process when using the benchmarking shiny app. 
 
-Below are all the tags in the benchmarking section explained. Many of these field are filled in automatically during the benchmarking process when using the benchmarking shiny app. 
-
-The only time one should edit the benchmarking section by hand for performing clone runs. See documentation [below](#CloneRun)
+The only time one should edit the benchmarking section by hand is for performing clone runs. See [clone run documentation.](#CloneRun)
 
 `<benchmarking>` settings:
 
@@ -111,14 +108,3 @@ In this example,
   </benchmark>
 </benchmarking>
 ```
-
-### 1. New Run
-
-
-
-### 2. Clone Run
-
-It may be the case that you want to exactly recreate a run that was done on a different server. Or that you want to take the settings that were used to set up a run of ED2 at Harvard Forrest and use them to set up a run at the same site but using SIPNET instead. For both of these cases, instead of recreating the runs by hand every time, we are developing a way to "clone" runs. 
-
-The cloning workflow takes in the reference run id and imports all the saved settings from the database. This populates the entire pecan.xml file with the information necessary to do a run. Thus the benchmarking section of the pecan.xml only requires the reference run id and the input id. An ensemble id cannot be put in because the run hasn't happened yet. 
-
