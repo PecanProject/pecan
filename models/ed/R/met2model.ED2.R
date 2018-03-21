@@ -26,9 +26,11 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 365 days. Default = TRUE.
 ##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA,
-                          lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
+                          lon = NA, overwrite = FALSE, verbose = FALSE, leap_year = TRUE, ...) {
+  
   overwrite <- as.logical(overwrite)
 
   # results are stored in folder prefix.start.end
@@ -54,12 +56,17 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   dl <- c(0, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367)
   month <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
   mon_num <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
-  day2mo <- function(year, day) {
-    leap      <- lubridate::leap_year(year)
+  day2mo <- function(year, day, leap_year) {
     mo        <- rep(NA, length(day))
-    mo[leap]  <- findInterval(day[leap], dl)
-    mo[!leap] <- findInterval(day[!leap], dm)
-    return(mo)
+    if ( !leap_year) {
+      mo <- findInterval(day, dm)
+      return(mo)
+    } else {
+      leap      <- lubridate::leap_year(year)
+      mo[leap]  <- findInterval(day[leap], dl)
+      mo[!leap] <- findInterval(day[!leap], dm)
+      return(mo)
+    }
   }
 
   # get start/end year since inputs are specified on year basis
@@ -120,7 +127,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     ncdf4::nc_close(nc)
 
-    dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
+    dt <- PEcAn.utils::seconds_in_year(year, leap_year) / length(sec)
 
     toff <- -as.numeric(lst) * 3600 / dt
 
@@ -140,13 +147,13 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     ## build time variables (year, month, day of year)
     skip <- FALSE
-    nyr <- floor(udunits2::ud.convert(length(sec) * dt, "seconds", "years"))
+    nyr <- floor(length(sec) * dt / 86400 / 365)
     yr   <- NULL
     doy  <- NULL
     hr   <- NULL
     asec <- sec
     for (y in seq(year, year + nyr - 1)) {
-      diy <- PEcAn.utils::days_in_year(y)
+      diy <- PEcAn.utils::days_in_year(y, leap_year)
       ytmp <- rep(y, udunits2::ud.convert(diy / dt, "days", "seconds"))
       dtmp <- rep(seq_len(diy), each = day_secs / dt)
       if (is.null(yr)) {
@@ -167,7 +174,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       asec[rng] <- asec[rng] - asec[rng[1]]
       hr[rng]   <- (asec[rng] - (dtmp - 1) * day_secs) / day_secs * 24
     }
-    mo <- day2mo(yr, doy)
+    mo <- day2mo(yr, doy, leap_year)
     if (length(yr) < length(sec)) {
       rng <- (length(yr) + 1):length(sec)
       if (!all(rng >= 0)) {
