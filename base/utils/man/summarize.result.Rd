@@ -4,7 +4,7 @@
 \alias{summarize.result}
 \title{Summarize Results}
 \usage{
-summarize.result(result)
+\method{summarize}{result}(result)
 }
 \arguments{
 \item{result}{dataframe with results of trait data query}
