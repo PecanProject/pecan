@@ -57,7 +57,6 @@ ncdays2date <- function(time, unit) {
 #'
 #' @param bety BETYdb connection, as opened by `betyConnect()`
 #' @export
-#' @importFrom magrittr %>%
 dbHostInfo <- function(bety) {
   # get host id
   result <- db.query(query = "select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", con = bety$con)
