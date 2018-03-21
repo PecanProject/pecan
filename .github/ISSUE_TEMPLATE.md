@@ -1,5 +1,6 @@
 <!--- Provide a general summary of the issue in the Title above -->
-
+<!--- Please select appropriate Priority, Status,and Type labels-->
+<!--- If you do not have permission to select labels please state which labels you would like -->
 ## Description
 <!--- What change or feature do you propose? -->
 

@@ -526,11 +526,15 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
 
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
-
+  
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
-
+  
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
-
+  
+  pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
+  pft_names <- paste0("c('", paste(pft_names, collapse = "','"), "')")
+  jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
+  
   return(jobsh)
 } # write.config.jobsh.ED2
