@@ -90,12 +90,12 @@ convert.samples.ED <- function(trait.samples) {
 
 
 ##-------------------------------------------------------------------------------------------------#
-##' Writes an xml and ED2IN config files for use with the Ecological Demography model.
+##' Write ED configuration files
 ##'
-##' Requires a pft xml object, a list of trait values for a single model run,
-##' and the name of the file to create
-##' @name write.config.ED2
-##' @title Write ED configuration files
+##' Writes an xml and ED2IN config files for use with the Ecological Demography 
+##' model. Requires a pft xml object, a list of trait values for a single model 
+##' run, and the name of the file to create
+#'
 ##' @param trait.values Named list of trait values, with names corresponding to PFT
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
@@ -124,18 +124,19 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   
   ##----------------------------------------------------------------------
   ## Edit ED2IN file for runs
+  revision <- settings$model$revision
+  if (is.null(revision)) {
+    model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
+    revision <- model$revision
+  }
+  revision <- gsub("^r", "", revision)
+
   if (!is.null(settings$model$edin) && file.exists(settings$model$edin)) {
     ed2in.text <- read_ed2in(settings$model$edin)
   } else {
     filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
     if (filename == "") {
-      if (!is.null(settings$model$revision)) {
-        rev <- gsub("^r", "", settings$model$revision)
-      } else {
-        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
-        rev <- gsub("^r", "", model$revision)
-      }
-      filename <- system.file(paste0("ED2IN.r", rev), package = "PEcAn.ED2")
+      filename <- system.file(paste0("ED2IN.r", revision), package = "PEcAn.ED2")
     }
     if (filename == "") {
       PEcAn.logger::logger.severe("Could not find ED template")
@@ -158,7 +159,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     end_date = enddate,
     MET_START = metstart,
     MET_END = metend,
-    IMETAVG = -1    # See below
+    IMETAVG = -1,   # See below,
+    add_if_missing = TRUE
   )
 
   # The flag for IMETAVG tells ED what to do given how input radiation was 
@@ -181,7 +183,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       PHENOL_SCHEME = settings$model$phenol.scheme,
       PHENOL = settings$model$phenol,
       PHENOL_START = settings$model$phenol.start,
-      PHENOL_END = settings$model$phenol.end
+      PHENOL_END = settings$model$phenol.end,
+      add_if_missing = TRUE
     )
   } else {
     ## If not prescribed set alternative phenology scheme.
@@ -190,7 +193,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       PHENOL_SCHEME = settings$model$phenol.scheme,
       PHENOL = "",
       PHENOL_START = "",
-      PHENOL_END = ""
+      PHENOL_END = "",
+      add_if_missing = TRUE
     )
   }
 
@@ -205,9 +209,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       FRQSTATE = 1      # Write history file every 1 day
     )
 
-    # Overwrite defaults with values from settings$model$ed2in list
-    sda_tags <- modifyList(sda_tags, settings$model$ed2in[names(sda_tags)])
-    ed2in.text <- modify_ed2in(ed2in.text, .dots = sda_tags)
+    # Overwrite defaults with values from settings$model$ed2in_tags list
+    sda_tags <- modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
+    ed2in.text <- modify_ed2in(ed2in.text, .dots = sda_tags, add_if_missing = TRUE)
   }
 
   ##----------------------------------------------------------------------
@@ -220,7 +224,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- modify_ed2in(
       ed2in.text,
       IED_INIT_MODE = 0,
-      SFILIN = ""
+      SFILIN = "",
+      add_if_missing = TRUE
     )
   } else {
     lat_rxp <- "\\.lat.*lon.*\\.(css|pss|site)"
@@ -251,12 +256,13 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- modify_ed2in(
       ed2in.text,
       IED_INIT_MODE = value,
-      SFILIN = paste0(prefix.pss, ".")
+      SFILIN = paste0(prefix.pss, "."),
+      add_if_missing = TRUE
     )
   }
 
   thsum <- settings$run$inputs$thsum$path
-  if (!grepl("/$", settings$un$inputs$thsum$path)) {
+  if (!grepl("/$", thsum)) {
     thsum <- paste0(thsum, "/")
   }
 
@@ -265,7 +271,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     VEG_DATABASE = settings$run$inputs$veg$path,
     SOIL_DATABASE = settings$run$inputs$soil$path,
     LU_DATABASE = settings$run$inputs$lu$path,
-    THSUMS_DATABASE = thsum
+    THSUMS_DATABASE = thsum,
+    add_if_missing = TRUE
   )
   
   ##----------------------------------------------------------------------
@@ -278,12 +285,13 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text,
     run_name = paste0("ED2 v", revision, " PEcAn ", run.id),
     run_dir = file.path(settings$host$rundir, run.id),    # For `config.xml`
-    output_dir = modeloutdir    # Sets analysis and history paths
+    output_dir = modeloutdir,   # Sets analysis and history paths
+    add_if_missing = TRUE
   )
   
   ##---------------------------------------------------------------------
-  # Modify any additional tags provided in settings$model$ed2in
-  ed2in.text <- modify_ed2in(ed2in.text, .dots = settings$model$ed2in)
+  # Modify any additional tags provided in settings$model$ed2in_tags
+  ed2in.text <- modify_ed2in(ed2in.text, .dots = settings$model$ed2in_tags, add_if_missing = TRUE)
   
   ##----------------------------------------------------------------------
   if (check) {

@@ -74,6 +74,9 @@ modify_ed2in <- function(ed2in, ...,
                          check_paths = TRUE,
                          .dots = list()) {
 
+  if (is.null(.dots)) {
+    .dots <- list()
+  }
   dots <- modifyList(.dots, list(...))
   is_upper <- names(dots) == toupper(names(dots))
   lower_args <- names(dots)[!is_upper]
