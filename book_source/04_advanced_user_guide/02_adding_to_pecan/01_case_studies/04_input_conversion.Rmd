@@ -1,4 +1,4 @@
-### Input Conversion
+### Input Conversion {#InputConversions}
 
 Three Types of data conversions are discussed below: Meteorological data, Vegetation data, and Soil data. Each section provides instructions on how to convert data from their raw formats into a PEcAn standard format, whether it be from a database or if you have raw data in hand.
 
@@ -69,7 +69,7 @@ The key is to process each type of met data (site, reanalysis, forecast, climate
 
 Perhaps you have meteorological data specific to one site, with a unique format that you would like to add to PEcAn. Your steps would be to:
   1. write a script or function to convert your files into the netcdf PEcAn standard
-  2. insert that file as an input record for your site following these [instructions](How to Insert new Input Data)
+  2. insert that file as an input record for your site following these [instructions](#NewInput)
   
 ##### Processing Met data outside of the workflow using PEcAn functions
 
@@ -133,7 +133,7 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
 
 If you have Met data already in hand and you would like to convert into the PEcAn standard follow these instructions.
 
-Update BETY with file record, format record and input record according to this page [How to Insert new Input Data]
+Update BETY with file record, format record and input record according to this page [How to Insert new Input Data](#NewInput)
  
 If your data is in a csv format you can use the `met2CF.csv`function to convert your data into a PEcAn standard file.
 
@@ -186,7 +186,7 @@ The main function to process cohort data is the `ic.process.R` function. As of n
 
 In the following example we will process vegetation data that you have in hand using PEcAn.
 
-First, you'll need to create a input record in BETY that will have a file record and format record reflecting the location and format of your file. Instructions can be found in our [How to Insert new Input Data] page.
+First, you'll need to create a input record in BETY that will have a file record and format record reflecting the location and format of your file. Instructions can be found in our [How to Insert new Input Data](#NewInput) page.
 
 Once you have created an input record you must take note of the input id of your record. An easy way to take note of this is in the URL of the BETY webpage that shows your input record. In this example we use an input record with the id `1000013064` which can be found at this url: https://psql-pecan.bu.edu/bety/inputs/1000013064# . Note that this is the Boston University BETY database. If you are on a different machine, your url will be different.
 
