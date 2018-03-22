@@ -161,12 +161,13 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
 
 ##' Function for reading -T- files
 ##'
-##' yr     : the year being processed
-##' yfiles : the years on the filenames, will be used to matched tfiles for that year
-##'
+##' @details
 ##'  e.g.    yr = 1999
 ##'      yfiles = 1999 2000
 ##'      tfiles = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
+##'
+##' @param yr the year being processed
+##' @param yfiles the years on the filenames, will be used to matched tfiles for that year
 ##' @export
 read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   
@@ -767,9 +768,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 
 ##' Function for reading -E- files
 ##'
-##' yr      : the year being processed
-##' yfiles  : the years on the filenames, will be used to matched efiles for that year
-##'
+##' @details
 ##'  e.g.     yr = 1999
 ##'      yfiles = 1999 1999 1999 1999 1999 1999 1999 2000 2000 2000 2000
 ##'      efiles = "analysis-E-1999-06-00-000000-g01.h5" "analysis-E-1999-07-00-000000-g01.h5"
@@ -781,6 +780,10 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##'
 ##' pft_names  : character vector with names of PFTs
 ##' pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
+##'
+##' @param yr the year being processed
+##' @param yfiles the years on the filenames, will be used to matched efiles for that year
+##'
 ##' @export
 read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, ...){
   

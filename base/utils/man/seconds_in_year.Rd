@@ -4,10 +4,12 @@
 \alias{seconds_in_year}
 \title{Number of seconds in a given year}
 \usage{
-seconds_in_year(year)
+seconds_in_year(year, ...)
 }
 \arguments{
 \item{year}{Numeric year (can be a vector)}
+
+\item{leap_year}{Default = TRUE. If set to FALSE will always return 31536000}
 }
 \description{
 Number of seconds in a given year
