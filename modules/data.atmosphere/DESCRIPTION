@@ -23,6 +23,7 @@ Imports:
     data.table,
     REddyProc,
     dplyr,
+    tibble,
     dbplyr,
     geonames,
     abind (>= 1.4.5),
