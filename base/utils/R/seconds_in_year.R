@@ -9,7 +9,7 @@
 #' seconds_in_year(2000:2005)  # Vectorized over year
 #' @inheritParams days_in_year
 #' @export
-seconds_in_year <- function(year, ...) {
+seconds_in_year <- function(year, leap_year = TRUE, ...) {
     diy <- days_in_year(year, leap_year)
     siy <- udunits2::ud.convert(diy, 'days', 'seconds')
     return(siy)
