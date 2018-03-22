@@ -7,27 +7,23 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-## R Code to convert from NACP intercomparison NETCDF met files into ED2 ascii met files
-
-## If files already exist in 'Outfolder', the default function is NOT to overwrite them and only
-## gives user the notice that file already exists. If user wants to overwrite the existing files,
-## just change overwrite statement below to TRUE.
-
-
-##' met2model wrapper for ED2
-##'
-##' @title met2model for ED2
-##' @export
-##' @param in.path location on disk where inputs are stored
-##' @param in.prefix prefix of input and output files
-##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
-##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
-##' @param lst timezone offset to GMT in hours
-##' @param overwrite should existing files be overwritten
-##' @param verbose should the function be very verbose
-##' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 365 days. Default = TRUE.
-##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add
+#' met2model wrapper for ED2
+#'
+#' If files already exist in 'Outfolder', the default function is NOT to 
+#' overwrite them and only gives user the notice that file already exists. If 
+#' user wants to overwrite the existing files, just change overwrite statement 
+#' below to TRUE.
+#'
+#' @export
+#' @param in.path location on disk where inputs are stored
+#' @param in.prefix prefix of input and output files
+#' @param outfolder location on disk where outputs will be stored
+#' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+#' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+#' @param lst timezone offset to GMT in hours
+#' @param overwrite should existing files be overwritten
+#' @param verbose should the function be very verbose
+#' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 365 days. Default = TRUE.
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA,
                           lon = NA, overwrite = FALSE, verbose = FALSE, leap_year = TRUE, ...) {
   
@@ -37,21 +33,22 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   met_folder <- outfolder
-  met_header <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
+  met_header_file <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
 
-  results <- data.frame(file = c(met_header),
-                        host = c(PEcAn.remote::fqdn()),
-                        mimetype = c("text/plain"),
-                        formatname = c("ed.met_driver_header files format"),
-                        startdate = c(start_date),
-                        enddate = c(end_date),
-                        dbfile.name = "ED_MET_DRIVER_HEADER",
-                        stringsAsFactors = FALSE)
+  results <- data.frame(
+    file = met_header_file,
+    host = PEcAn.remote::fqdn(),
+    mimetype = "text/plain",
+    formatname = "ed.met_driver_header files format",
+    startdate = start_date,
+    enddate = end_date,
+    dbfile.name = "ED_MET_DRIVER_HEADER",
+    stringsAsFactors = FALSE
+  )
 
   ## check to see if the outfolder is defined, if not create directory for output
   dir.create(met_folder, recursive = TRUE, showWarnings = FALSE)
 
-  ### FUNCTIONS
   dm <- c(0, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366)
   dl <- c(0, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367)
   month <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
@@ -77,6 +74,11 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   ## loop over files
   for (year in start_year:end_year) {
     ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
+    if (!file.exists(ncfile)) {
+      PEcAn.logger::logger.severe(
+        "Input file ", ncfile, "(year ", year, ") ", "not found."
+      )
+    }
 
     ## extract file root name froot <- substr(files[i],1,28) print(c(i,froot))
 
@@ -132,17 +134,17 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     toff <- -as.numeric(lst) * 3600 / dt
 
     ## buffer to get to GMT
-    slen <- length(SW)
-    Tair <- c(rep(Tair[1], toff), Tair)[1:slen]
-    Qair <- c(rep(Qair[1], toff), Qair)[1:slen]
-    U    <- c(rep(U[1], toff), U)[1:slen]
-    V    <- c(rep(V[1], toff), V)[1:slen]
-    Rain <- c(rep(Rain[1], toff), Rain)[1:slen]
-    pres <- c(rep(pres[1], toff), pres)[1:slen]
-    SW   <- c(rep(SW[1], toff), SW)[1:slen]
-    LW   <- c(rep(LW[1], toff), LW)[1:slen]
+    slen <- seq_along(SW)
+    Tair <- c(rep(Tair[1], toff), Tair)[slen]
+    Qair <- c(rep(Qair[1], toff), Qair)[slen]
+    U    <- c(rep(U[1], toff), U)[slen]
+    V    <- c(rep(V[1], toff), V)[slen]
+    Rain <- c(rep(Rain[1], toff), Rain)[slen]
+    pres <- c(rep(pres[1], toff), pres)[slen]
+    SW   <- c(rep(SW[1], toff), SW)[slen]
+    LW   <- c(rep(LW[1], toff), LW)[slen]
     if (useCO2) {
-      CO2 <- c(rep(CO2[1], toff), CO2)[1:slen]
+      CO2 <- c(rep(CO2[1], toff), CO2)[slen]
     }
 
     ## build time variables (year, month, day of year)
@@ -168,7 +170,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       rng <- length(doy) - length(ytmp):1 + 1
       if (!all(rng >= 0)) {
         skip <- TRUE
-        PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
+        PEcAn.logger::logger.warn(year, " is not a complete year and will not be included")
         break
       }
       asec[rng] <- asec[rng] - asec[rng[1]]
@@ -281,31 +283,34 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     }
 
     ## write DRIVER file
-    sites <- 1
-    metgrid <- c(1, 1, 1, 1, lon, lat)
     metvar <- c("nbdsf", "nddsf", "vbdsf", "vddsf", "prate", "dlwrf",
                 "pres", "hgt", "ugrd", "vgrd", "sh", "tmp", "co2")
-    nmet <- length(metvar)
-    metfrq <- rep(dt, nmet)
-    metflag <- rep(1, nmet)
+    metvar_table <- data.frame(
+      variable = metvar,
+      update_frequency = dt,
+      flag = 1
+    )
     if (!useCO2) {
-      metflag[metvar == "co2"] <- 4
-      metfrq[metvar == "co2"] <- 380
+      metvar_table[metvar_table$variable == "co2",
+                   c("update_frequency", "flag")] <- list(380, 4)
     }
-    write.table("header", met_header, row.names = FALSE, col.names = FALSE)
-    write.table(sites, met_header, row.names = FALSE, col.names = FALSE, append = TRUE)
-    write.table(met_folder, met_header, row.names = FALSE, col.names = FALSE, append = TRUE,
-                quote = FALSE)
-    write.table(matrix(metgrid, nrow = 1), met_header, row.names = FALSE, col.names = FALSE,
-                append = TRUE, quote = FALSE)
-    write.table(nmet, met_header, row.names = FALSE, col.names = FALSE, append = TRUE, quote = FALSE)
-    write.table(matrix(metvar, nrow = 1), met_header, row.names = FALSE, col.names = FALSE, append = TRUE)
-    write.table(matrix(metfrq, nrow = 1), met_header, row.names = FALSE, col.names = FALSE, append = TRUE,
-                quote = FALSE)
-    write.table(matrix(metflag, nrow = 1), met_header, row.names = FALSE, col.names = FALSE,
-                append = TRUE, quote = FALSE)
+
+    ed_metheader <- list(list(
+      path_prefix = met_folder,
+      nlon = 1,
+      nlat = 1,
+      dx = 1,
+      dy = 1,
+      xmin = lon,
+      ymin = lat,
+      variables = metvar_table
+    ))
+
+    check_ed_metheader(ed_metheader)
+    write_ed_metheader(ed_metheader, met_header_file,
+                       header_line = shQuote("Made_by_PEcAn_met2model.ED2"))
   }  ### end loop over met files
 
-  print("Done with met2model.ED2")
+  PEcAn.logger::logger.info("Done with met2model.ED2")
   return(invisible(results))
 } # met2model.ED2
