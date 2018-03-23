@@ -281,6 +281,10 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     jobsh <- gsub("@RESTARTFILE@", restartfile, jobsh)
   }
   
+  pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
+  pft_names <- paste0("c('", paste(pft_names, collapse = "','"), "')")
+  jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
+  
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 } # write.config.LINKAGES
