@@ -657,7 +657,6 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   # ----- fill list
   
   out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
-  nc_var[[s+1]] <- PEcAn.utils::to_ncvar("AbvGrndWood", dims)
   nc_var[[s+1]] <- ncdf4::ncvar_def("AbvGrndWood", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Above ground woody biomass")
   out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
