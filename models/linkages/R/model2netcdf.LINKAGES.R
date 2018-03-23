@@ -23,7 +23,9 @@
 ##'
 ##' @author Ann Raiho, Betsy Cowdery
 ##' @importFrom ncdf4 ncdim_def ncvar_def
-model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, end_date = NULL, force = FALSE, overwrite = FALSE) {
+model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
+                                  end_date = NULL, force = FALSE, overwrite = FALSE,
+                                  pft_names = NULL) {
   # , PFTs) { logger.severe('NOT IMPLEMENTED')
   
   library(PEcAn.utils)
@@ -69,6 +71,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     output[[13]] <- area[y, ]  #LAI
     output[[14]] <- water[y, ]  #soil moisture
     output[[15]] <- abvgroundwood.biomass[y,] #AbvGroundWood just wood no leaves
+    output[[16]] <- pft_names 
     
     # ******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time", 
@@ -104,7 +107,9 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     var[[12]] <- ncvar_def("Fcomp", "kgC/kgC", list(dim.pfts, dim.lat, dim.lon, dim.t), -999)
     var[[13]] <- ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[14]] <- ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[15]]  <- ncvar_def("AbvGrndWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[15]] <- ncvar_def("AbvGrndWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[16]] <- ncvar_def("PFT", units = "", dim = list(dim.pfts),  
+                     longname = paste(pft_names, collapse=","))
     
     # ******************** Declare netCDF variables ********************#
     
