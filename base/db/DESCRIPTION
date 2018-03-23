@@ -26,11 +26,12 @@ Imports:
     magrittr,
     ncdf4,
     plyr (>= 1.8.4),
+    rlang,
     udunits2
 Suggests:
     RPostgreSQL,
     RSQLite,
-    testthat (>= 1.0.2),
+    testthat (>= 2.0.0),
     tidyverse,
     data.table,
     rcrossref,

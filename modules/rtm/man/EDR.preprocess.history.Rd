@@ -16,6 +16,6 @@ EDR.preprocess.history(history.path, output.path, datetime,
 \code{history.path}. Default = 'history'}
 }
 \description{
-Locate history file based on path and prefix, copy to specified
-output directory, and rename to correct time.
+Locate history file based on path and prefix, copy to specified output
+directory, and rename to correct time.
 }

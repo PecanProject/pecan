@@ -1,4 +1,6 @@
 <!--- Provide a general summary of your changes in the Title above -->
+<!--- Please select appropriate Priority, Status,and Type labels-->
+<!--- If you do not have permission to select labels please state which labels you would like -->
 
 ## Description
 <!--- Describe your changes in detail -->
