@@ -282,7 +282,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   }
   
   pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
-  pft_names <- paste0("c('", paste(pft_names, collapse = "','"), "')")
+  pft_names <- paste0("pft_names = c('", paste(pft_names, collapse = "','"), "')")
   jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
