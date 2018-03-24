@@ -40,6 +40,10 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
   end_year <- as.numeric(strftime(end_date, "%Y"))
   years <- start_year:end_year
   
+  if(is.null(pft_names)){
+    pft_names <- as.character(1:length(agb.pft[, 1, 1]))
+  }
+  
   ### Loop over years in linkages output to create separate netCDF outputs
   for (y in seq_along(years)) {
     if (file.exists(file.path(outdir, paste(years[y], "nc", sep = "."))) & overwrite==FALSE) {
