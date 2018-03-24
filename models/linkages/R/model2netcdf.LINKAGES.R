@@ -41,7 +41,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
   years <- start_year:end_year
   
   if(is.null(pft_names)){
-    pft_names <- as.character(1:length(agb.pft[, 1, 1]))
+    pft_names <- LETTERS[1:length(agb.pft[, 1, 1])]#as.character(1:length(agb.pft[, 1, 1]))
   }
   
   ### Loop over years in linkages output to create separate netCDF outputs
@@ -87,7 +87,9 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     dim.string <- ncdim_def("names", "", 1:24, create_dimvar = FALSE)
     dim.cpools <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools")
     dim.cpools1 <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools", create_dimvar = FALSE)
-    dim.pfts <- ncdim_def("pfts", "", vals = 1:nrow(agb.pft), longname = "PFTs", create_dimvar = FALSE)
+    #dim.pfts <- ncdim_def("pfts", "", vals = 1:nrow(agb.pft), longname = "PFTs", create_dimvar = FALSE)
+    dim.pfts <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = as.numeric(pft_names), longname = "Plant Functional Type", unlim = TRUE)
+    
     
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0) 
@@ -107,8 +109,8 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     var[[8]]  <- ncvar_def("NPP", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
     var[[9]]  <- ncvar_def("NEE", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
     var[[10]] <- ncvar_def("Evap", "kg/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[11]] <- ncvar_def("AGB.pft", "kgC/m2", list(dim.pfts, dim.lat, dim.lon, dim.t), -999)
-    var[[12]] <- ncvar_def("Fcomp", "kgC/kgC", list(dim.pfts, dim.lat, dim.lon, dim.t), -999)
+    var[[11]] <- ncvar_def("AGB.pft", "kgC/m2", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
+    var[[12]] <- ncvar_def("Fcomp", "kgC/kgC", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
     var[[13]] <- ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[14]] <- ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[15]] <- ncvar_def("AbvGrndWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
