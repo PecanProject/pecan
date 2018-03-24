@@ -123,7 +123,15 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
       } else {
         ## copy values
         if (!is.null(trait.values[[group]])) {
-          vals <- as.data.frame(trait.values[[group]])
+          
+          # IF: not sure what's going on here but I had to have this hack to overwrite params below
+          # should come back to this
+          if(is.null(dim(trait.values[[group]]))){
+            vals <- as.data.frame(t(trait.values[[group]]))
+          }else{
+            vals <- as.data.frame(trait.values[[group]])
+          }
+          
           
           
           # replace defaults with traits
@@ -282,7 +290,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   }
   
   pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
-  pft_names <- paste0("c('", paste(pft_names, collapse = "','"), "')")
+  pft_names <- paste0("pft_names = c('", paste(pft_names, collapse = "','"), "')")
   jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))

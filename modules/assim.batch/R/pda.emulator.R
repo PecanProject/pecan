@@ -62,7 +62,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   isbias <- which(unlist(any.mgauss) == "multipGauss")
   
   ## check if scaling factors are gonna be used
-  any.scaling <- sapply(settings$assim.batch$param.names, `[[`, "scaling")
+  any.scaling <- lapply(settings$assim.batch$param.names, `[[`, "scaling")
   sf <- unique(unlist(any.scaling))
   
   ## Open database connection
