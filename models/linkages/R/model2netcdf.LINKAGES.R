@@ -41,7 +41,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
   years <- start_year:end_year
   
   if(is.null(pft_names)){
-    pft_names <- LETTERS[1:length(agb.pft[, 1, 1])]#as.character(1:length(agb.pft[, 1, 1]))
+    pft_names <- as.character(1:length(agb.pft[, 1, 1]))
   }
   
   ### Loop over years in linkages output to create separate netCDF outputs
@@ -88,7 +88,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     dim.cpools <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools")
     dim.cpools1 <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools", create_dimvar = FALSE)
     #dim.pfts <- ncdim_def("pfts", "", vals = 1:nrow(agb.pft), longname = "PFTs", create_dimvar = FALSE)
-    dim.pfts <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = as.numeric(pft_names), longname = "Plant Functional Type", unlim = TRUE)
+    dim.pfts <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = 1:length(agb.pft[, 1, 1]), longname = "Plant Functional Type", unlim = TRUE)
     
     
     for (i in seq_along(output)) {
