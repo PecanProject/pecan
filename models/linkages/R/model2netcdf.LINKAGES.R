@@ -40,9 +40,10 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
   end_year <- as.numeric(strftime(end_date, "%Y"))
   years <- start_year:end_year
   
-  if(is.null(pft_names)){
-    pft_names <- as.character(1:length(agb.pft[, 1, 1]))
-  }
+  # IF : no need this, write.configs --> job.sh --> will pass model2netcsf.LINKAGES pft_names
+  # if(is.null(pft_names)){
+  #   pft_names <- as.character(1:length(agb.pft[, 1, 1]))
+  # }
   
   ### Loop over years in linkages output to create separate netCDF outputs
   for (y in seq_along(years)) {
@@ -75,18 +76,18 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     output[[13]] <- area[y, ]  #LAI
     output[[14]] <- water[y, ]  #soil moisture
     output[[15]] <- abvgroundwood.biomass[y,] #AbvGroundWood just wood no leaves
-    output[[16]] <- pft_names 
+    output[[16]] <- seq_along(pft_names) 
     
     # ******************** Declare netCDF variables ********************#
-    dim.t <- ncdim_def(name = "time", 
+    dim.t <- ncdf4::ncdim_def(name = "time", 
                        units = paste0("days since ", years[y], "-01-01 00:00:00"), 
                        vals = 0, calendar = "standard", 
                        unlim = TRUE)
-    dim.lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
-    dim.lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
-    dim.string <- ncdim_def("names", "", 1:24, create_dimvar = FALSE)
-    dim.cpools <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools")
-    dim.cpools1 <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools", create_dimvar = FALSE)
+    dim.lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    dim.lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    dim.string <- ncdf4::ncdim_def("names", "", 1:24, create_dimvar = FALSE)
+    dim.cpools <- ncdf4::ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools")
+    dim.cpools1 <- ncdf4::ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools", create_dimvar = FALSE)
     #dim.pfts <- ncdim_def("pfts", "", vals = 1:nrow(agb.pft), longname = "PFTs", create_dimvar = FALSE)
     dim.pfts <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = 1:length(agb.pft[, 1, 1]), longname = "Plant Functional Type", unlim = TRUE)
     
@@ -104,17 +105,17 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     var[[3]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     var[[4]]  <- ncdf4::ncvar_def("CarbPools", "kgC/m2", list(dim.cpools, dim.lat, dim.lon, dim.t), -999)
     var[[5]]  <- ncdf4::ncvar_def("poolnames", units = "", dim = list(dim.string, dim.cpools1), longname = "Carbon Pool Names", prec = "char")
-    var[[6]]  <- ncvar_def("GWBI", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[7]]  <- ncvar_def("HeteroResp", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[8]]  <- ncvar_def("NPP", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[9]]  <- ncvar_def("NEE", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[10]] <- ncvar_def("Evap", "kg/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[11]] <- ncvar_def("AGB.pft", "kgC/m2", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
-    var[[12]] <- ncvar_def("Fcomp", "kgC/kgC", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
-    var[[13]] <- ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[14]] <- ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[15]] <- ncvar_def("AbvGrndWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[16]] <- ncvar_def("PFT", units = "", dim = list(dim.pfts),  
+    var[[6]]  <- ncdf4::ncvar_def("GWBI", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[7]]  <- ncdf4::ncvar_def("HeteroResp", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    var[[8]]  <- ncdf4::ncvar_def("NPP", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    var[[9]]  <- ncdf4::ncvar_def("NEE", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    var[[10]] <- ncdf4::ncvar_def("Evap", "kg/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    var[[11]] <- ncdf4::ncvar_def("AGB.pft", "kgC/m2", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
+    var[[12]] <- ncdf4::ncvar_def("Fcomp", "kgC/kgC", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
+    var[[13]] <- ncdf4::ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[14]] <- ncdf4::ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[15]] <- ncdf4::ncvar_def("AbvGrndWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[16]] <- ncdf4::ncvar_def("PFT", units = "", dim = list(dim.pfts),  
                      longname = paste(pft_names, collapse=","))
     
     # ******************** Declare netCDF variables ********************#
