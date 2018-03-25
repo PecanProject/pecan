@@ -506,14 +506,17 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     resume.list <- list()
     
+    # start from knots where model was run
+    init.list <- apply(SS[[1]][sample(nrow(SS[[1]]), settings$assim.batch$chain), -ncol(SS[[1]])], 1, as.list)
+
     for (c in seq_len(settings$assim.batch$chain)) {
       jmp.list[[c]] <- sapply(prior.fn.all$qprior, 
                               function(x) 0.1 * diff(eval(x, list(p = c(0.05, 0.95)))))[prior.ind.all]
       jmp.list[[c]] <- sqrt(jmp.list[[c]])
       
-      init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n = 1)))
-      names(init.x) <- rownames(prior.all)[prior.ind.all]
-      init.list[[c]] <- init.x
+      # init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n = 1)))
+      # names(init.x) <- rownames(prior.all)[prior.ind.all]
+      # init.list[[c]] <- init.x
       resume.list[[c]] <- NA
     }
   }
