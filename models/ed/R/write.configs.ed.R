@@ -152,8 +152,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
 
   ed2in.text <- modify_ed2in(
     ed2in.text,
-    latitude = settings$run$site$lat,
-    longitude = settings$run$site$lon,
+    latitude = as.numeric(settings$run$site$lat),
+    longitude = as.numeric(settings$run$site$lon),
     met_driver = settings$run$inputs$met$path,
     start_date = startdate,
     end_date = enddate,
