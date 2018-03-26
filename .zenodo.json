@@ -32,6 +32,7 @@
 		{
 			"affiliation": "Boston Univeristy",
 			"name": "Anthony Gardella"
+      "orcid": "0000-0003-4380-3412"
 		},
 		{
 			"affiliation": "Pacific Northwest National Laboratory / University of Maryland",
@@ -135,7 +136,7 @@
 		"Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. (2016) Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion. Remote Sensing of the Environment 183: 226-238",
 		"LeBauer, David S, Rob Kooper, Patrick Mulrooney, Scott Rohde, Dan Wang, Stephen P Long, & Michael C Dietze (2018). BETYdb: a yield, trait, and ecosystem service database applied to second generation bioenergy feedstock production. GCB Bioenergy, 10(1), 61-71. doi: 10.1111/gcbb.12420"
 	],
-	"notes": "The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA Terrestrial Ecosystems, the Department of Energy (ARPA-E awards #DE-AR0000594 and DE-AR0000598), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.",
+	"notes": "The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891, EF #1501873, EF #1638577, EF #1702996), NASA Terrestrial Ecosystems #NNX14AH65G, NASA CMS #80NSSC17KO711, NASA NESSF #NNX16AO13H, the Department of Energy (ARPA-E awards #DE-AR0000594, #DE-AR0000598, and #SERDP RC-2636), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.",
 	"resource_type": {
 		"title": "Software",
 		"type": "software"
@@ -144,4 +145,5 @@
 		"id": "NCSA"
 	},
 	"access_right": "open"
+
 }

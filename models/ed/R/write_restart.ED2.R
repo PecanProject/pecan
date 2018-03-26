@@ -128,26 +128,19 @@ write_restart.ED2 <- function(outdir,
 
   ##### Modify ED2IN
   ed2in_path <- file.path(rundir, runid, "ED2IN")
-  ed2in_orig <- readLines(ed2in_path)
-  ed2in_new <- ed2in_orig
+  ed2in_orig <- read_ed2in(ed2in_path, check = FALSE)
 
-  ## IED_INIT_MODE = 5 --> Run from history.h5 file
-  tag_val_list <- list("RUNTYPE" = "history",
-                       "IED_INIT_MODE" = 5,
-                       "SFILIN" = file.path(mod_outdir, runid, "history"),
-                       "IMONTHA" = strftime(start.time, "%m"), 
-                       "IDATEA" = strftime(start.time, "%d"),
-                       "IYEARA" = strftime(start.time, "%Y"),
-                       "ITIMEA" = strftime(start.time, "%H%M"),
-                       "IMONTHZ" = strftime(stop.time, "%m"),
-                       "IDATEZ" = strftime(stop.time, "%d"),
-                       "IYEARZ" = strftime(stop.time, "%Y"),
-                       "ITIMEZ" = strftime(stop.time, "%H%M"))
+  ed2in_new <- modify_ed2in(
+    ed2in_orig,
+    start_date = start.time,
+    end_date = stop.time,
+    RUNTYPE = "HISTORY",
+    IED_INIT_MODE = 5,
+    SFILIN = file.path(mod_outdir, runid, "history")
+  )
 
-  modstr <- 'Modified by write.restart.ED2'
-  ed2in_new <- ed2in_set_value_list(tag_val_list, ed2in_orig, modstr)
-
-  writeLines(ed2in_new, file.path(ed2in_path))
+  check_ed2in(ed2in_new)
+  write_ed2in(ed2in_new, ed2in_path)
 
   # Remove old history.xml file, which job.sh looks for
   file.remove(file.path(mod_outdir, runid, "history.xml"))
