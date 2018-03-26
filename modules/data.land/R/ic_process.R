@@ -93,7 +93,7 @@ str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
-  if (is.null(getveg.id) & is.null(putveg.id) {
+  if (is.null(getveg.id) & is.null(putveg.id)) {
 
     getveg.id <- PEcAn.data.land:::.get.veg.module(input_veg = input, 
                               outfolder = outfolder, 
