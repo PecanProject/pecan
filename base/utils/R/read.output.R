@@ -24,7 +24,7 @@
 ##' @param runid the id distiguishing the model run. 
 ##' @param outdir the directory that the model's output was sent to
 ##' @param start.year first year of output to read (should be greater than ) 
-##' @param end.year last year of output to read
+##' @param end.year last year of output to read. Year is a four character string. (Ex: "2006"or "1875") 
 ##' @param variables variables to be read from model output
 ##' @param dataframe A boolean that will return output in a data.frame format with a posix column. Useful for align.data and plotting. 
 ##' @param pft.name character string, name of the pft to read pft-specific output. If NULL no pft-specific output will be read even the variable has pft as a dimension.
