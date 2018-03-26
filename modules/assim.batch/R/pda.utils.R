@@ -815,31 +815,17 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
     # need to modify init.list and jmp.list as well
     parnames <- names(init.list[[1]])
     
-    for(c in seq_along(init.list)){
-      init.list[[c]] <- lapply(seq_along(init.list[[c]]), function(x){
-        if(psel[x]){
-          init.list[[c]][[x]] <- rnorm(1)
-        }else{
-          init.list[[c]][[x]] <- init.list[[c]][[x]]
-        }
-      })
-      names(init.list[[c]]) <- parnames
-      jmp.list[[c]][psel] <- 0.1 * diff(qnorm(c(0.05, 0.95)))
-    } 
-    
-    psel <- c(psel, FALSE) # the last column is SS, always FALSE
-    
     for(i in seq_along(SS.stack)){
       # NOTE: there might be differences in dimensions, 
       # some SS-matrices might have likelihood params such as bias 
       # check for that later 
       SS.tmp <- lapply(SS.stack[[i]], function(ss){
         for(p in seq_along(psel)){
-          if(psel[p]){
-            prior.quantiles <- eval(prior.fn.all$pprior[[prior.ind.all[p]]], list(q = ss[,p]))
-            stdnorm.vals    <- qnorm(prior.quantiles)
-            ss[,p] <- stdnorm.vals
-          }
+          #we transform all
+          prior.quantiles <- eval(prior.fn.all$pprior[[prior.ind.all[p]]], list(q = ss[,p]))
+          stdnorm.vals    <- qnorm(prior.quantiles)
+          ss[,p] <- stdnorm.vals
+          
         }
         return(ss)
       })   
@@ -847,6 +833,15 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
       rng.tmp <- apply(SS.tmp[[1]],2,range)
       rng[,,i] <- t(rng.tmp[,-ncol(rng.tmp)])
     }
+    
+    for(c in seq_along(init.list)){
+      init.list[[c]] <- lapply(seq_along(init.list[[c]]), function(x){
+          init.list[[c]][[x]] <- rnorm(1)
+      })
+      names(init.list[[c]]) <- parnames
+      jmp.list[[c]][psel] <- 0.1 * diff(qnorm(c(0.05, 0.95)))
+    } 
+    
   }
   
   return(list(normSS = SS.stack, normF = norm.check, init = init.list, jmp = jmp.list, rng = rng))
@@ -872,14 +867,11 @@ back_transform_posteriors <- function(prior.list, prior.fn.all, prior.ind.all, m
       mu_sample_tmp <- abind::abind(array(mu_global_samp, dim = c(dim(mu_global_samp), 1)), mu_site_samp, along = 3)
       for(ms in seq_len(dim(mu_sample_tmp)[3])){
         mcmc.vals         <- mu_sample_tmp[,,ms]
-        stdnorm.quantiles <- pnorm(mcmc.vals[, psel])
-        pc <- 1 # counter, because all cols might not need transforming back
+        stdnorm.quantiles <- pnorm(mcmc.vals)
+        # counter, because all cols need transforming back
         for(ps in seq_along(psel)){
-          if(psel[ps]){
-            prior.quantiles <- eval(prior.fn.all$qprior[[prior.ind.all[ps]]], list(p = stdnorm.quantiles[,pc]))
-            mcmc.vals[,ps] <- prior.quantiles
-            pc <- pc + 1
-          }
+          prior.quantiles <- eval(prior.fn.all$qprior[[prior.ind.all[ps]]], list(p = stdnorm.quantiles[,ps]))
+          mcmc.vals[,ps] <- prior.quantiles
         }
         mu_sample_tmp[,,ms] <- mcmc.vals
       }
