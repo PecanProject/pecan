@@ -29,7 +29,6 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     } else {
       overwrite <- list(getveg = FALSE, putveg = FALSE)
     }
-  
   } else {
     if (is.null(overwrite$getveg)) {
       overwrite$getveg <- FALSE
@@ -62,15 +61,11 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   }else{
     
     query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
-   # input_file <- db.query(query, con = con) #error message here
-   # start_date <- input_file$start_date
-   # end_date   <- input_file$end_date
+   input_file <- db.query(query, con = con) 
+   start_date <- input_file$start_date
+   end_date   <- input_file$end_date
     
   }
-  
-  start_date <- "2004/01/01"
-  end_date <- "2004/12/31"
-  source.id = 1000011170 #take this out later
   # set up host information
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
@@ -92,15 +87,13 @@ str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
 
-  # veg or some other IC? Need to update later for other models
-  vegIC <- c("css", "pss", "site") #don't need this for DALEC?
-  getveg.id <- putveg.id <- NULL
+   getveg.id <- putveg.id <- NULL
   
   
   #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
-  if (is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) {
+  if (is.null(getveg.id) & is.null(putveg.id) {
 
     getveg.id <- PEcAn.data.land:::.get.veg.module(input_veg = input, 
                               outfolder = outfolder, 
@@ -117,7 +110,7 @@ str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   #--------------------------------------------------------------------------------------------------#
   # Match species to PFTs + veg2model module
   
-  if (!is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) { # probably need a more sophisticated check here
+  if (!is.null(getveg.id) & is.null(putveg.id)) { # probably need a more sophisticated check here
     
     putveg.id <-  PEcAn.data.land:::.put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
                                 input_veg = input, pfts = settings$pfts,
@@ -131,7 +124,7 @@ str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
 
   #--------------------------------------------------------------------------------------------------#
   # Fill settings
-  if (!is.null(putveg.id) & input$output %in% vegIC) {
+  if (!is.null(putveg.id)) {
     
     
     model_file <- db.query(paste("SELECT * from dbfiles where container_id =", putveg.id), con)
@@ -143,7 +136,7 @@ str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
     
     # NOTE : THIS BIT IS SENSITIVE TO THE ORDER OF TAGS IN PECAN.XML
     # this took care of "css" only, others have the same prefix
-    if(input$output == "css"){
+    if(input$output == "css"){  
       settings$run$inputs[["pss"]][['path']]  <- gsub("css","pss", path_to_settings)
       settings$run$inputs[["site"]][['path']] <- gsub("css","site", path_to_settings)
       

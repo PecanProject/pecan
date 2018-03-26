@@ -6,6 +6,7 @@
 load_veg <- function(new_site, start_date, end_date, 
                      source_id, source, icmeta = NULL, format_name = NULL, 
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){
+  
    bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
                               host     = dbparms$bety$host, 
                               user     = dbparms$bety$user, 
@@ -23,7 +24,7 @@ load_veg <- function(new_site, start_date, end_date,
                        "AND machine_id=", machine_id)
   
   input_file <- PEcAn.DB::db.query(query, con = bety$con)
-  data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]])
+  data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]]) #File path and file name of source file from bety 
 
   
   # query format info
@@ -41,7 +42,7 @@ load_veg <- function(new_site, start_date, end_date,
   }else if("latin_name" %in% format$vars$bety_name){
     # not encountered an actual case yet, put here as a reminder
     code.col <- "latin_name"
-    format_name <- "latin_name"
+    format_name <- "latin_name" 
     # might indicate a custom format, should be passed to function
     if(is.null(format_name)){
       PEcAn.logger::logger.severe("Can't match code to species. Please provide 'match.format' via settings.")

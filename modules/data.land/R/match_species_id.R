@@ -23,16 +23,6 @@
 #' }
 #' @author Alexey Shiklomanov <ashiklom@bu.edu>, Istem Fer
 #' @examples
-#' bety <- dplyr::src_postgres(dbname = 'bety',
-#'                        user = 'bety',
-#'                        password = 'bety',
-#'                        host = 'localhost')
-#' input_codes <- c('ACRU', 'PIMA', 'TSCA')
-#' format_name <- 'usda'
-#' match_species_id(input_codes = input_codes,
-#'                  format_name = format_name,
-#'                  bety = bety)
-#'
 #' @importFrom magrittr %>%
 #' @export
 match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, translation_table = NULL, ...) {
@@ -75,8 +65,8 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
       column <- formats_dict[format_name]
       if(!is.null(bety)){
         # query BETY
-        library(dplyr) #added in order to make 'input_codes' upper case
-        library(R.utils) #added in order to make 'input_codes' upper case
+        library(dplyr) #added package in order to make 'input_codes' upper case
+        library(R.utils) #added package in order to make 'input_codes' upper case
         filter_cri <- lazyeval::interp(~ col %in% codes,
                                        col = as.name(column),
                                        codes = input_codes)
@@ -85,14 +75,12 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
           dplyr::select_('bety_species_id' = 'id', 'genus', 'species',
                         'input_codes' = column) %>%
           dplyr::collect() 
-        translation <- translation %>% mutate(input_codes = toupper(input_codes))
-        #Check input_codes in translation with latin_names in obs, and keep rows in translation table that have input_codes found in latin_names within obs
-       colnames(translation) <- c('bety_species_id', 'genus', 'species',"latin_name") #changed the column name of input_codes to latin_names to enable matching
-       translation <- semi_join(translation, obs, by = "latin_name" ) 
+        translation <- translation %>% mutate(input_codes = toupper(input_codes)) #match_species_id is case-sensitive, to match species names in obs to translation, 'input_codes' needs to be upper-case since 'latin_names' in obs are upper-case
+       colnames(translation) <- c('bety_species_id', 'genus', 'species',"latin_name") #semi_join requires that the column name within the tables being matched have the same name
+       translation <- semi_join(translation, obs, by = "latin_name" )  #Keep rows in translation table that have the same 'latin_name' within obs
       
       }else{
         # use traits package
-
         # can call traits::betydb_query one at a time?
         # reduce the number of calls
         translation <- data.frame(input_code = unique(input_codes),
@@ -109,10 +97,9 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
           translation$species[i]         <- foo$species
         }
 
-    
     input_table <- data.frame(input_code = input_codes, stringsAsFactors = FALSE)
     # preserving the order is important for downstream
-    colnames(translation) <- c('bety_species_id', 'genus', 'species',"input_code") #changed the column name of latin_names back to input_codes to enable matching since input_table's column is called input_codes, also change 'id' back to 'bety_species_id' so lines 116-119 run 
+    colnames(translation) <- c('bety_species_id', 'genus', 'species',"input_code") #changed 'latin_name' back to 'input_codes' to enable 'left_join' since columns being matched must have same name, also changed 'id' back to 'bety_species_id' so species id can be checked in bety database  
     merge_table <- dplyr::left_join(input_table, translation, by = "input_code")
 
     if(sum(is.na(merge_table$bety_species_id)) > 0){

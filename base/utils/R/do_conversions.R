@@ -9,12 +9,10 @@
 ##' @param overwrite.met,overwrite.fia,overwrite.ic logical
 ##'
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
-settings <- read.settings("/fs/data2/output//PEcAn_1000009055/pecan.xml")
 do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do_conversions))
   }
-  
   
   needsave <- FALSE
   if (is.character(settings$run$inputs)) {
@@ -36,8 +34,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     
     ic.flag <- fia.flag <- FALSE
     
-    
-    if ((input.tag %in% c("css", "pss", "site")) && 
+     if ((input.tag %in% c("css", "pss", "site")) && 
         is.null(input$path) && !is.null(input$source)) {
       if(!is.null(input$useic)){ # set <useic>TRUE</useic> if IC Workflow, leave empty if not
         ic.flag  <- TRUE
@@ -100,4 +97,3 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   }
   return(settings)
 }
-
