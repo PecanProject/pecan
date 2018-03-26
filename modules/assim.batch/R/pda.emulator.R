@@ -611,6 +611,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
         }
         
       }else{
+        #this should be compatible for most cases but might not work for all
+        idx <- ifelse(length(idx)>1, idx[idx==i], idx)
         m[, i] <- mcmc.out[[c]]$mcmc.samp[, idx]
       }
     }
