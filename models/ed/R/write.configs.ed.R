@@ -181,10 +181,10 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ## Set prescribed phenology switch in ED2IN
     ed2in.text <- modify_ed2in(
       ed2in.text,
-      PHENOL_SCHEME = settings$model$phenol.scheme,
-      PHENOL = settings$model$phenol,
-      PHENOL_START = settings$model$phenol.start,
-      PHENOL_END = settings$model$phenol.end,
+      IPHEN_SCHEME = settings$model$phenol.scheme,
+      PHENPATH = settings$model$phenol,
+      IPHENYS1 = settings$model$phenol.start,
+      PIPHENYSF = settings$model$phenol.end,
       add_if_missing = TRUE,
       check_paths = check
     )
@@ -192,10 +192,10 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ## If not prescribed set alternative phenology scheme.
     ed2in.text <- modify_ed2in(
       ed2in.text,
-      PHENOL_SCHEME = settings$model$phenol.scheme,
-      PHENOL = "",
-      PHENOL_START = "",
-      PHENOL_END = "",
+      IPHEN_SCHEME = as.numeric(settings$model$phenol.scheme),
+      PHENPATH = "",
+      IPHENYS1 = ssettings$model$phenol.start,
+      PIPHENYSF= settings$model$phenol.end,
       add_if_missing = TRUE,
       check_paths = check
     )
