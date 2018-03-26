@@ -8,7 +8,7 @@ modify_ed2in(ed2in, ..., veg_prefix = NULL, latitude = NULL,
   longitude = NULL, met_driver = NULL, start_date = NULL,
   end_date = NULL, EDI_path = NULL, output_types = NULL,
   output_dir = NULL, run_dir = NULL, runtype = NULL, run_name = NULL,
-  pecan_defaults = TRUE, add_if_missing = FALSE, check_paths = FALSE,
+  pecan_defaults = TRUE, add_if_missing = FALSE, check_paths = TRUE,
   .dots = list())
 }
 \arguments{
@@ -48,7 +48,7 @@ and \code{THSUMS_DATABASE} files.}
 \item{add_if_missing}{Logical. If \code{TRUE}, all-caps arguments not found in
 existing \code{ed2in} list will be added to the end.  Default = \code{FALSE}.}
 
-\item{check_paths}{Logical. If \code{TRUE}, for any parameters that
+\item{check_paths}{Logical. If \code{TRUE} (default), for any parameters that
 expect files, check that files exist and throw an error if they don't.}
 
 \item{.dots}{A list of \code{...} arguments.}
