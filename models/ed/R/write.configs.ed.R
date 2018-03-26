@@ -160,7 +160,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     MET_START = metstart,
     MET_END = metend,
     IMETAVG = -1,   # See below,
-    add_if_missing = TRUE
+    add_if_missing = TRUE,
+    check_paths = check
   )
 
   # The flag for IMETAVG tells ED what to do given how input radiation was 
@@ -184,7 +185,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       PHENOL = settings$model$phenol,
       PHENOL_START = settings$model$phenol.start,
       PHENOL_END = settings$model$phenol.end,
-      add_if_missing = TRUE
+      add_if_missing = TRUE,
+      check_paths = check
     )
   } else {
     ## If not prescribed set alternative phenology scheme.
@@ -194,7 +196,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       PHENOL = "",
       PHENOL_START = "",
       PHENOL_END = "",
-      add_if_missing = TRUE
+      add_if_missing = TRUE,
+      check_paths = check
     )
   }
 
@@ -211,7 +214,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
 
     # Overwrite defaults with values from settings$model$ed2in_tags list
     sda_tags <- modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
-    ed2in.text <- modify_ed2in(ed2in.text, .dots = sda_tags, add_if_missing = TRUE)
+    ed2in.text <- modify_ed2in(ed2in.text, .dots = sda_tags, add_if_missing = TRUE, check_paths = check)
   }
 
   ##----------------------------------------------------------------------
@@ -225,7 +228,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       ed2in.text,
       IED_INIT_MODE = 0,
       SFILIN = "",
-      add_if_missing = TRUE
+      add_if_missing = TRUE,
+      check_paths = check
     )
   } else {
     lat_rxp <- "\\.lat.*lon.*\\.(css|pss|site)"
@@ -257,7 +261,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       ed2in.text,
       IED_INIT_MODE = value,
       SFILIN = paste0(prefix.pss, "."),
-      add_if_missing = TRUE
+      add_if_missing = TRUE,
+      check_paths = check
     )
   }
 
@@ -272,7 +277,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     SOIL_DATABASE = settings$run$inputs$soil$path,
     LU_DATABASE = settings$run$inputs$lu$path,
     THSUMS_DATABASE = thsum,
-    add_if_missing = TRUE
+    add_if_missing = TRUE,
+    check_paths = check
   )
   
   ##----------------------------------------------------------------------
@@ -286,12 +292,13 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     run_name = paste0("ED2 v", revision, " PEcAn ", run.id),
     run_dir = file.path(settings$host$rundir, run.id),    # For `config.xml`
     output_dir = modeloutdir,   # Sets analysis and history paths
-    add_if_missing = TRUE
+    add_if_missing = TRUE,
+    check_paths = check
   )
   
   ##---------------------------------------------------------------------
   # Modify any additional tags provided in settings$model$ed2in_tags
-  ed2in.text <- modify_ed2in(ed2in.text, .dots = settings$model$ed2in_tags, add_if_missing = TRUE)
+  ed2in.text <- modify_ed2in(ed2in.text, .dots = settings$model$ed2in_tags, add_if_missing = TRUE, check_paths = check)
   
   ##----------------------------------------------------------------------
   if (check) {
