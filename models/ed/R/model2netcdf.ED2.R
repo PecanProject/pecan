@@ -123,11 +123,14 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     # ----- put values to nc_var list   
     nc_var <- list()
     for(i in seq_along(out_list)){
-      rflag <- ed.res.flag[i]
-      fcnx  <- paste0("put_", gsub("-", "", rflag), "_values")
-      fcn   <- match.fun(fcnx)
-      nc_var <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], lat = lat, lon = lon, 
+      rflag   <- ed.res.flag[i]
+      fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
+      fcn     <- match.fun(fcnx)
+      put_out <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], lat = lat, lon = lon, 
                     begins = begins, ends = ends, pft_names)
+      
+      nc_var            <- put_out$nc_var
+      out_list[[rflag]] <- put_out$out
     }
     
     # SLZ specific hack until I figure that out
@@ -657,7 +660,6 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   # ----- fill list
   
   out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
-  nc_var[[s+1]] <- PEcAn.utils::to_ncvar("AbvGrndWood", dims)
   nc_var[[s+1]] <- ncdf4::ncvar_def("AbvGrndWood", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Above ground woody biomass")
   out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
@@ -758,7 +760,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   nc_var[[s+47]]<- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Soil Respiration")
   
-  return(nc_var)
+  return(list(nc_var = nc_var, out = out))
   
 } # put_T_values
 
@@ -960,7 +962,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
   nc_var[[s+4]]<- ncdf4::ncvar_def("PFT", units = "", dim = list(p),  
                                    longname = paste(pft_names, collapse=",")) 
   
-  return(nc_var)
+  return(list(nc_var = nc_var, out = out))
   
 } # put_E_values
 
