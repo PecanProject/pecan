@@ -199,7 +199,7 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @title Summarize Results
 ##' @param result dataframe with results of trait data query
 ##' @return result with replicate observations summarized
-##' @export
+##' @export summarize.result
 ##' @author David LeBauer
 summarize.result <- function(result) {
   ans1 <- plyr::ddply(result[result$n == 1, ],

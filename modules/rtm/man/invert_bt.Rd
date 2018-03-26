@@ -4,17 +4,21 @@
 \alias{invert_bt}
 \title{Perform Bayesian inversion using BayesianTools package}
 \usage{
-invert_bt(observed, model, prior, custom_settings = list())
+invert_bt(observed, model, prior, custom_settings = list(), loglike = NULL)
 }
 \arguments{
-\item{observed}{Vector of observations}
+\item{observed}{Vector of observations. Ignored if \code{loglike} is not \code{NULL}.}
 
 \item{model}{Function called by log-likelihood. Must be \code{function(params)}
-and return a vector equal to \code{length(observed)} or \code{nrow(observed)}.}
+and return a vector equal to \code{length(observed)} or \code{nrow(observed)}. Ignored
+if \code{loglike} is not \code{NULL}.}
 
 \item{prior}{BayesianTools prior object.}
 
 \item{custom_settings}{Nested settings list. See Details.}
+
+\item{loglike}{Custom log likelihood function. If \code{NULL}, use \link{rtm_loglike}
+with provided \code{observed} and \code{model}.}
 }
 \description{
 Use samplers from the BayesianTools package to fit models to data. Like
