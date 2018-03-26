@@ -37,18 +37,6 @@ Parses species codes in input data and matches them with the BETY species ID.
  \item{\code{custom}}{A data frame matching BETY IDs (column name \code{bety_species_id}) to input codes (column name \code{input_code}). This data frame must be passed via the \code{translation_table} argument.}
 }
 }
-\examples{
-bety <- dplyr::src_postgres(dbname = 'bety',
-                       user = 'bety',
-                       password = 'bety',
-                       host = 'localhost')
-input_codes <- c('ACRU', 'PIMA', 'TSCA')
-format_name <- 'usda'
-match_species_id(input_codes = input_codes,
-                 format_name = format_name,
-                 bety = bety)
-
-}
 \author{
 Alexey Shiklomanov <ashiklom@bu.edu>, Istem Fer
 }

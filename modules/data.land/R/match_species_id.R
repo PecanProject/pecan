@@ -79,7 +79,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
        colnames(translation) <- c('bety_species_id', 'genus', 'species',"latin_name") #semi_join requires that the column name within the tables being matched have the same name
        translation <- semi_join(translation, obs, by = "latin_name" )  #Keep rows in translation table that have the same 'latin_name' within obs
       
-      }else{
+      }else
         # use traits package
         # can call traits::betydb_query one at a time?
         # reduce the number of calls
@@ -99,7 +99,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
 
     input_table <- data.frame(input_code = input_codes, stringsAsFactors = FALSE)
     # preserving the order is important for downstream
-    colnames(translation) <- c('bety_species_id', 'genus', 'species',"input_code") #changed 'latin_name' back to 'input_codes' to enable 'left_join' since columns being matched must have same name, also changed 'id' back to 'bety_species_id' so species id can be checked in bety database  
+    colnames(translation)<- c('bety_species_id', 'genus', 'species',"input_code") #changed 'latin_name' back to 'input_codes' to enable 'left_join' since columns being matched must have same name, also changed 'id' back to 'bety_species_id' so species id can be checked in bety database  
     merge_table <- dplyr::left_join(input_table, translation, by = "input_code")
 
     if(sum(is.na(merge_table$bety_species_id)) > 0){
@@ -107,6 +107,6 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
       PEcAn.logger::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
     }
 
-   { return(merge_table)
-} # match_species_id
-
+    return(merge_table)
+    } 
+}

@@ -53,6 +53,6 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   
   ### return for convert.inputs
   return(invisible(results))
-  
+
   
 } # write_ic
