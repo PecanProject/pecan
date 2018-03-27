@@ -18,14 +18,12 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param overwrite Flag for overwriting nc files or not
 ##' @export
 ##'
 ##' @author Ann Raiho, Betsy Cowdery
 ##' @importFrom ncdf4 ncdim_def ncvar_def
 model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
-                                  end_date = NULL, force = FALSE, overwrite = FALSE,
-                                  pft_names = NULL) {
+                                  end_date = NULL, pft_names = NULL) {
   # , PFTs) { logger.severe('NOT IMPLEMENTED')
   
   library(PEcAn.utils)
@@ -47,7 +45,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
   
   ### Loop over years in linkages output to create separate netCDF outputs
   for (y in seq_along(years)) {
-    if (file.exists(file.path(outdir, paste(years[y], "nc", sep = "."))) & overwrite==FALSE) {
+    if (file.exists(file.path(outdir, paste(years[y], "nc", sep = ".")))) {
       next
     }
     print(paste("---- Processing year: ", years[y]))  # turn on for debugging
@@ -94,7 +92,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0) 
-        output[[i]] <- rep(-999, length(t$vals))
+        output[[i]] <- rep(-999, length(dim.t$vals))
     }
     
     dims <- list(lon = dim.lon, lat = dim.lat, time = dim.t)
@@ -123,7 +121,8 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     ### Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
+   
+     for (i in seq_along(var)) {
       print(i)
       ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
