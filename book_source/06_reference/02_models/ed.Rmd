@@ -1,26 +1,46 @@
 ## ED
 
-| Model Information ||
-| -- | -- |
-| Home Page | http://moorcroftlab.oeb.harvard.edu/ |
-| Source Code | https://github.com/EDmodel/ED2 |
-| License |  |
-| Authors | Paul Moorcroft, ... |
-| PEcAn Integration | Michael Dietze, Rob Kooper |
+| Model Information |                                      |
+| --                | --                                   |
+| Home Page         | http://moorcroftlab.oeb.harvard.edu/ |
+| Source Code       | https://github.com/EDmodel/ED2       |
+| License           |                                      |
+| Authors           | Paul Moorcroft, ...                  |
+| PEcAn Integration | Michael Dietze, Rob Kooper           |
 
-**Introduction**
+### Introduction
 
 Introduction about ED model
 
-**PEcAn configuration file additions**
+### PEcAn configuration file additions
 
-Should list the model specific additions to the PEcAn file here
+The following sections of the PEcAn XML are relevant to the ED model:
 
-**Model specific input files**
+- `model`
+  - `id` -- BETY model ID. Each ID corresponds to a different revision of ED (see below)
+  - `revision` -- The revision (a.k.a. release) number of ED (e.g. "r82"). "rgit" indicates the latest code on the ED repository
+  - `ed2in` -- Path and filename of the ED2IN configuration file
+  - `start.date` -- Run start date
+  - `end.date` -- Run end date
+  - `phenol.scheme`
+  - `phenol`
+  - `phenol.start`
+  - `phenol.end`
+  - `ed2in_tags` -- Named list of additional tags in the ED2IN to be modified. These modifications override any of those set by the standard PEcAn workflow.
+  - `jobtemplate`
+  - `prerun`
+  - `postrun`
+  - `binary`
+- `run/site`
+  - `lat` -- Latitude coordinate of site
+  - `lon` -- Longitude coordinate of site
+- `inputs/met/path` -- Path to ED_MET_DRIVER_HEADER file
+
+### Model specific input files
 
 List of inputs required by model, such as met, etc.
 
-**Model configuration files**
+### Model configuration files
 
 ED2 is configured using 2 files which are placed in the run folder.
 
@@ -63,17 +83,17 @@ The ED2IN template can contain the following variables. These will be replaced w
 * **@CONFIGFILE@** : XML file containing additional parameter settings, this is always "config.xml", used in template for NL%IEDCNFGF  
 
 * **@OUTDIR@** :  location where output files are written (**without the runid**), from \<run\>\<host\>\<outdir\>, should not be used.  
-* **@SCRATCH@** : local scratch space for outputs, generated /scratch/\<username\>/run$scratch, should not be used right now since it only works on ebi-cluster  
+* **@SCRATCH@** : local scratch space for outputs, generated /scratch/\<username\>/run\$scratch, should not be used right now since it only works on ebi-cluster  
 
-**Installation notes**
+### Installation notes
 
 This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
 
-**VM**
+#### VM
 
-** BU geo**
+#### BU geo
 
-**TACC lonestar**
+#### TACC lonestar
 
 ```bash
 module load hdf5
@@ -85,7 +105,7 @@ curl -o include.mk.lonestar http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk
 make OPT=lonestar
 ```
 
-**TACC stampede**
+#### TACC stampede
 
 ```bash
 module load hdf5
