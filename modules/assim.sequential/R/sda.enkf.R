@@ -33,7 +33,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   model      <- settings$model$type
   write      <- settings$database$bety$write
   defaults   <- settings$pfts
-  outdir     <- settings$host$outdir
+  outdir     <- settings$modeloutdir # currently model runs locally, this will change if remote is enabled
   rundir     <- settings$host$rundir
   host       <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing

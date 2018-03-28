@@ -21,8 +21,9 @@ read_restart.ED2 <- function(outdir,
 
     name_separator <- "."
 
-    rundir <- settings$host$rundir
-    mod_outdir <- settings$host$outdir
+    # depends on code run on local or remote, currently runs locally
+    rundir <- settings$rundir
+    mod_outdir <- settings$modeloutdir # is there a case this is different than outdir?
 
     confxml <- get_configxml.ED2(rundir, runid)
 
@@ -30,19 +31,24 @@ read_restart.ED2 <- function(outdir,
     if (is.null(histfile)) {
       PEcAn.logger::logger.severe("Failed to find ED2 history restart file.")
     }
-
-    nc <- ncdf4::nc_open(histfile)
-    on.exit(ncdf4::nc_close(nc))
-
+    
     # Identify PFTs
     # This assumes that PFT order is the same between pecan.xml and ED's 
     # config.xml.
     # A better solution would set the PFT numbers in the pecan.xml, or names in 
     # config.xml.
-    pftnums <- sapply(confxml, '[[', 'num')
+    #pftnums could become a list because of the radiation and ed_misc tags, unlist doesn't effect even if it's a vector already
+    pftnums <- unlist(sapply(confxml, '[[', 'num')) 
     pftnames <- sapply(settings$pfts, '[[', 'name')
     names(pftnames) <- pftnums
+    
+    read_S_files(sfiles = basename(histfile), outdir = dirname(histfile), pft_names = pftnames, var.names)
 
+    nc <- ncdf4::nc_open(histfile)
+    on.exit(ncdf4::nc_close(nc))
+
+
+    
     #### Common variables ####
 
     # PFT by cohort
@@ -53,6 +59,8 @@ read_restart.ED2 <- function(outdir,
 
     # Create a patch index indicator vector
     patch_index <- patch_cohort_index(nc)
+    
+  
 
     forecast <- list()
 
