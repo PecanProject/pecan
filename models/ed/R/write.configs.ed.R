@@ -212,12 +212,14 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     # Default values
     sda_tags <- list(
       ISOUTPUT = 3,     # Save history state file
-      UNITSTATE = 1,    # History state frequency is days
-      FRQSTATE = 1      # Write history file every 1 day
+      UNITSTATE = 3,    # History state frequency is years
+      FRQSTATE = 1      # Write history file every 1 year
     )
-
+    
     # Overwrite defaults with values from settings$model$ed2in_tags list
-    sda_tags <- modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
+    if(!is.null(settings$model$ed2in_tags)){
+      sda_tags <- modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
+    }
     ed2in.text <- modify_ed2in(ed2in.text, .dots = sda_tags, add_if_missing = TRUE, check_paths = check)
   }
 
