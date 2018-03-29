@@ -9,6 +9,11 @@
   #--------------------------------------------------------------------------------------------------#
   # Extract/load data : this step requires DB connections 
   # can be passed to convert.inputs now because process IC locally
+  
+  lat       <-new_site$lat
+  lon       <- new_site$lon
+  site_id   <- new_site$id
+  site_name <- new_site$name
   ## Prepare to call convert.inputs
   pkg  <- "PEcAn.data.land"
   bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
