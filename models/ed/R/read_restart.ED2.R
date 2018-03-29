@@ -20,6 +20,8 @@ read_restart.ED2 <- function(outdir,
                              params) {
 
     name_separator <- "."
+    
+    hyear <- lubridate::year(stop.time)
 
     # depends on code run on local or remote, currently runs locally
     rundir <- settings$rundir
@@ -32,35 +34,17 @@ read_restart.ED2 <- function(outdir,
       PEcAn.logger::logger.severe("Failed to find ED2 history restart file.")
     }
     
-    # Identify PFTs
-    # This assumes that PFT order is the same between pecan.xml and ED's 
-    # config.xml.
-    # A better solution would set the PFT numbers in the pecan.xml, or names in 
-    # config.xml.
-    #pftnums could become a list because of the radiation and ed_misc tags, unlist doesn't effect even if it's a vector already
-    pftnums <- unlist(sapply(confxml, '[[', 'num')) 
-    pftnames <- sapply(settings$pfts, '[[', 'name')
-    names(pftnames) <- pftnums
-    
-    read_S_files(sfiles = basename(histfile), outdir = dirname(histfile), pft_names = pftnames, var.names)
 
-    nc <- ncdf4::nc_open(histfile)
-    on.exit(ncdf4::nc_close(nc))
-
+    pft_names <- sapply(settings$pfts, '[[', 'name')
 
     
-    #### Common variables ####
+    histout <- read_S_files(yr = hyear, yfiles = hyear,
+                            sfiles = basename(histfile), 
+                            outdir = dirname(histfile), 
+                            pft_names = pft_names, 
+                            var.names)
 
-    # PFT by cohort
-    pft_co <- ncdf4::ncvar_get(nc, "PFT")
 
-    # Patch area
-    patch_area <- ncdf4::ncvar_get(nc, "AREA")
-
-    # Create a patch index indicator vector
-    patch_index <- patch_cohort_index(nc)
-    
-  
 
     forecast <- list()
 

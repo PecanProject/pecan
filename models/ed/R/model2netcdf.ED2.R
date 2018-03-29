@@ -977,28 +977,36 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
 ## although this function has some redundant arguments, I'm still making it compatible with other read_*_files above for some future use maybe?
 ##
 ##' @export
-read_S_files <- function(yr = NULL, yfiles = NULL, sfiles, outdir, start_date = NULL, end_date = NULL, pft_names, ...){
+read_S_files <- function(yr = NULL, yfiles = NULL, sfiles, outdir, start_date = NULL, end_date = NULL, pft_names, var.names = NULL){
   
   PEcAn.logger::logger.info(paste0("*** Reading -S- file ***"))
   
-  # there are multiple -E- files per year
+  # commonly used vars
+  if(is.null(var.names)) var.names <- c("AGB", "DBH")
+  
+  
+  # translate pecan vars to ED vars
+  trans.out <- translate_vars_ed(var.names)
+  var.names <- trans_out$vars
+  drv.exprs <- trans_out$expr
+  
+  
+  # List of vars to extract includes the requested one, plus others needed below 
+  vars <- c(var.names, 'PFT', 'AREA', 'PACO_N')
+  
+  # there are multiple -S- files per year (not in sda though)
   ysel <- which(yr == yfiles)
   
-  # grab year-month info from file names, e.g. "199906"
+  # grab year-month info from file names, e.g. "199906" -might wanna read \\3 too depending on sfile-frequency
+  # for SDA always length(times)==1 
   times <- gsub(
     "(.*)\\-(.*)\\-(.*)\\-(.*)\\-(.*)", "\\1\\2",
     sapply(
-      strsplit(efiles, "-E-"), 
+      strsplit(sfiles, "-S-"), 
       function(x) x[2] # Select only the part of each name after res.flag
     )
   )
   
-  # lets make it work for a subset of vars fist
-  # TODO :  read all (or more) variables, functionality exists, see below
-  varnames <- c("DBH", "DDBH_DT", "NPLANT")
-  
-  # List of vars to extract includes the requested one, plus others needed below 
-  vars <- c(varnames, 'PFT', 'AREA', 'PACO_N')
   
   # list to collect outputs
   ed.dat <- list()
@@ -1006,7 +1014,7 @@ read_S_files <- function(yr = NULL, yfiles = NULL, sfiles, outdir, start_date = 
   # loop over the files for that year
   for(i in ysel){
     
-    nc <- ncdf4::nc_open(file.path(outdir, efiles[i]))
+    nc <- ncdf4::nc_open(file.path(outdir, sfiles[i]))
     allvars <- names(nc$var)
     if(!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
     
@@ -1056,54 +1064,7 @@ read_S_files <- function(yr = NULL, yfiles = NULL, sfiles, outdir, start_date = 
   pfts <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
   
   out <- list()
-  for(varname in varnames) {
-    out[[varname]] <- array(NA, c(length(ysel), npft))
-  }
-  
-  # Aggregate over PFT and DBH bins  
-  for(i in seq_along(ysel)) {
-    # Get additional cohort-level variables required
-    pft        <- ed.dat$PFT[[i]]
-    dbh        <- ed.dat$DBH[[i]]      # cm / plant
-    plant.dens <- ed.dat$NPLANT[[i]]   # plant / m2
-    
-    # Get patch areas. In general patches aren't the same area, so this is needed to area-weight when averaging up to site level. Requires minor finnagling to convert patch-level AREA to a cohort-length variable. 
-    patch.area <- ed.dat$AREA[[i]]    # m2  -- one entry per patch
-    pacoN      <- ed.dat$PACO_N[[i]]  # number of cohorts per patch
-    patch.area <- rep(patch.area, pacoN)  # patch areas, repped out to one entry per cohort
-    
-    # Now can get number of plants per cohort, which will be used for weighting. Note that area may have been (often/always is?) a proportion of total site area, rather than an absolute measure. In which case this nplant is a tiny and meaningless number in terms of actual number of plants. But that doesn't matter for weighting purposes. 
-    nplant <- plant.dens * patch.area
-    
-    
-    # Not all ED cohort variables are in per-plant units. This code would not be applicable to them without modification.
-    # However, it does handle two special cases. For NPLANT, it performs no weighting, but simply sums over cohorts in the PFT. 
-    # For MMEAN_MORT_RATE_CO, it first sums over columns representing different mortality types first, then proceeds with weighting. 
-    
-    for(k in 1:npft) {
-      ind <- (pft == pfts[k])
-      
-      if(any(ind)) {
-        for(varname in varnames) {
-          if(varname == "NPLANT") {
-            # Return the total number of plants in the bin
-            out$NPLANT[i,k] <- sum(nplant[ind])
-          } else if(varname == "MMEAN_MORT_RATE_CO") {
-            # Sum over all columns 
-            mort = apply(ed.dat$MMEAN_MORT_RATE_CO[[i]][ind,, drop=F], 1, sum, na.rm=T)
-            out$MMEAN_MORT_RATE_CO[i,k] <- sum(mort * nplant[ind]) / sum(nplant[ind])
-          } else {
-            # For all others, just get mean weighted by nplant
-            out[[varname]][i,k] <- sum(ed.dat[[varname]][[i]][ind] * nplant[ind]) / sum(nplant[ind])
-          }
-          dimnames(out[[varname]]) <- list(months = times[ysel], pft=pft_names)
-        }
-      }
-    }
-    
-  }
-  
-  out$PFT <- pfts # will write this to the .nc file
+
   
   return(out)
   
