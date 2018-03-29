@@ -41,6 +41,7 @@ get_restartfile.ED2 <- function(mod_outdir, runid, file.time) {
     }else{
       # unfortunately ED2 writes monthly files as YYYY-MM-00 
       # need to double check these while working with time steps other than annual
+      # this might change if I make changes to the ED2 output code
       file_day <- ifelse(monthly_check, 0, 1)
     }
     
