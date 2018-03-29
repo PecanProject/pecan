@@ -972,86 +972,48 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
 
 
 
-## S-file contents are not written to standard netcdfs currently but are used by read_restart
-## from SDA's perspective it doesn't make sense to write and read to ncdfs because ED restarts from history files
-## although this function has some redundant arguments, I'm still making it compatible with other read_*_files above for some future use maybe?
-##
-##' @export
-read_S_files <- function(yr = NULL, yfiles = NULL, sfiles, outdir, start_date = NULL, end_date = NULL, pft_names, var.names = NULL){
+#' S-file contents are not written to standard netcdfs but are used by read_restart
+#' from SDA's perspective it doesn't make sense to write and read to ncdfs because ED restarts from history files
+#'
+#' @export
+read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   
   PEcAn.logger::logger.info(paste0("*** Reading -S- file ***"))
   
   # commonly used vars
-  if(is.null(var.names)) var.names <- c("AGB", "DBH")
+  if(is.null(pecan_names)) pecan_names <- c("AGB", "DBH", "AbvGrndWood")
+
+  ed_varnames <- pecan_names
   
   
   # translate pecan vars to ED vars
-  trans.out <- translate_vars_ed(var.names)
-  var.names <- trans_out$vars
-  drv.exprs <- trans_out$expr
+  trans_out    <- translate_vars_ed(ed_varnames)
+  ed_varnames  <- trans_out$vars # variables to read from history files
+  ed_derivs    <- trans_out$expr # derivations to obtain pecan standard variables
   
   
   # List of vars to extract includes the requested one, plus others needed below 
-  vars <- c(var.names, 'PFT', 'AREA', 'PACO_N')
+  vars <- c(ed_varnames, "PFT", "AREA", "PACO_N", "NPLANT")
   
-  # there are multiple -S- files per year (not in sda though)
-  ysel <- which(yr == yfiles)
-  
-  # grab year-month info from file names, e.g. "199906" -might wanna read \\3 too depending on sfile-frequency
-  # for SDA always length(times)==1 
-  times <- gsub(
-    "(.*)\\-(.*)\\-(.*)\\-(.*)\\-(.*)", "\\1\\2",
-    sapply(
-      strsplit(sfiles, "-S-"), 
-      function(x) x[2] # Select only the part of each name after res.flag
-    )
-  )
-  
-  
+
   # list to collect outputs
   ed.dat <- list()
   
-  # loop over the files for that year
-  for(i in ysel){
+  nc <- ncdf4::nc_open(file.path(outdir, sfile))
+  allvars <- names(nc$var)
+  if(!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
     
-    nc <- ncdf4::nc_open(file.path(outdir, sfiles[i]))
-    allvars <- names(nc$var)
-    if(!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
-    
-    if(length(ed.dat) == 0){
+
+  for(j in seq_along(allvars)){
+    ed.dat[[j]] <- list()
+    ed.dat[[j]] <- ncdf4::ncvar_get(nc, allvars[j])
+  }
+  names(ed.dat) <- allvars
       
-      for(j in 1:length(allvars)){
-        ed.dat[[j]] <- list()
-        ed.dat[[j]][[1]] <- ncdf4::ncvar_get(nc, allvars[j])
-      }
-      names(ed.dat) <- allvars
-      
-    } else {
-      
-      # 2nd and more months
-      t <- length(ed.dat[[1]]) + 1
-      
-      for(j in 1:length(allvars)){
-        
-        k <- which(names(ed.dat) == allvars[j])
-        
-        if(length(k)>0){
-          
-          ed.dat[[k]][[t]] <- ncdf4::ncvar_get(nc, allvars[j])
-          
-        } else { ## add a new ed.datiable. ***Not checked (shouldn't come up?)
-          
-          ed.dat[[length(ed.dat)+1]] <- list()    # Add space for new ed.datiable
-          ed.dat[[length(ed.dat)]][1:(t-1)] <- NA # Give NA for all previous time points
-          ed.dat[[length(ed.dat)]][t] <- ncdf4::ncvar_get(nc, allvars[j]) # Assign the value of the new ed.datiable at this time point
-          names(ed.dat)[length(ed.dat)] <- allvars[j]
-          
-        }
-      }      
-    }
-    ncdf4::nc_close(nc)
-  } # end ysel-loop
   
+  ncdf4::nc_close(nc)
+
+
   # for now this function does not read any ED variable that has soil as a dimension
   soil.check <- grepl("soil", pft_names)
   if(any(soil.check)){
@@ -1061,10 +1023,51 @@ read_S_files <- function(yr = NULL, yfiles = NULL, sfiles, outdir, start_date = 
   
   npft <- length(pft_names)
   data(pftmapping, package = "PEcAn.ED2")
-  pfts <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
+  pft_nums <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
   
   out <- list()
+  for(varname in pecan_names) {
+    out[[varname]] <- array(NA, npft)
+  }
+  
 
+  # Get cohort-level variables 
+  pft        <- ed.dat$PFT
+  dbh        <- ed.dat$DBH     # cm / plant
+  plant_dens <- ed.dat$NPLANT  # plant / m2
+    
+  # Get patch areas. In general patches aren't the same area, so this is needed to area-weight when averaging up to site level. Requires minor finnagling to convert patch-level AREA to a cohort-length variable. 
+  patch_area  <- ed.dat$AREA    # m2  -- one entry per patch
+  paco_n      <- ed.dat$PACO_N  # number of cohorts per patch
+    
+  patch_area <- rep(patch_area, paco_n)  # patch areas, repped out to one entry per cohort
+  
+  # Now can get number of plants per cohort, which will be used for weighting. Note that area may have been (often/always is?) a proportion of total site area, rather than an absolute measure. In which case this nplant is a tiny and meaningless number in terms of actual number of plants. But that doesn't matter for weighting purposes. 
+  nplant <- plant_dens * patch_area
+
+  # Aggregate AGB by patch and PFT
+
+  for(k in seq_len(npft)) {
+    ind <- (pft == pft_nums[k])
+      
+    if(any(ind)) {
+      for(l in seq_along(pecan_names)) {
+        variable <- convert.expr(ed_derivs[l])  # convert
+        expr <- variable$variable.eqn$expression
+        
+        sapply(variable$variable.eqn$variables, function(x) assign(x, ed.dat[[x]], envir = .GlobalEnv))
+        tmp.var <- eval(parse(text = expr)) # parse
+        
+        # For all others, just get mean weighted by nplant
+        out[[pecan_names[l]]][k] <- sum(tmp.var[ind] * nplant[ind]) / sum(nplant[ind])
+          
+        #dimnames(out[[varname]]) <- list(pft=pft_names)
+        }
+      }
+    }
+    
+  # check units
+  # do we wanna sum over pfts or not?
   
   return(out)
   

@@ -38,11 +38,10 @@ read_restart.ED2 <- function(outdir,
     pft_names <- sapply(settings$pfts, '[[', 'name')
 
     
-    histout <- read_S_files(yr = hyear, yfiles = hyear,
-                            sfiles = basename(histfile), 
-                            outdir = dirname(histfile), 
-                            pft_names = pft_names, 
-                            var.names)
+    histout <- read_S_files(sfile       = basename(histfile), 
+                            outdir      = dirname(histfile), 
+                            pft_names   = pft_names, 
+                            pecan_names = var.names)
 
 
 
