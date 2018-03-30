@@ -35,7 +35,7 @@ write.config.SIBCASA <- function(defaults, trait.values, settings, run.id) {
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
     jobsh <- readLines(con = settings$model$jobtemplate, n = -1)
   } else {
-    jobsh <- readLines(con = system.file("template.job", package = "PEcAn.MODEL"), n = -1)
+    jobsh <- readLines(con = system.file("template.job", package = "PEcAn.SIBCASA"), n = -1)
   }
   
   # create host specific setttings
@@ -95,20 +95,16 @@ write.config.SIBCASA <- function(defaults, trait.values, settings, run.id) {
     config.text <- readLines(con = filename, n = -1)
   }
   
-  config.text <- gsub("@SITE_LAT@", settings$run$site$lat, config.text)
-  config.text <- gsub("@SITE_LON@", settings$run$site$lon, config.text)
-  config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
-  config.text <- gsub("@MET_START@", settings$run$site$met.start, config.text)
-  config.text <- gsub("@MET_END@", settings$run$site$met.end, config.text)
-  config.text <- gsub("@START_MONTH@", format(startdate, "%m"), config.text)
-  config.text <- gsub("@START_DAY@", format(startdate, "%d"), config.text)
-  config.text <- gsub("@START_YEAR@", format(startdate, "%Y"), config.text)
-  config.text <- gsub("@END_MONTH@", format(enddate, "%m"), config.text)
-  config.text <- gsub("@END_DAY@", format(enddate, "%d"), config.text)
-  config.text <- gsub("@END_YEAR@", format(enddate, "%Y"), config.text)
-  config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
-  config.text <- gsub("@ENSNAME@", run.id, config.text)
-  config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
+  /projectnb/dietzelab/tonygard/sibcasa/gimmsg_0.5x0.5_CRUNCEP_30d/sib_param_RCP85/sib_param
+  
+  namel_sibdrv<- gsub("@SITE_LAT@", settings$run$site$lat, config.text)
+  namel_sibdrv <- gsub("@SITE_LON@", settings$run$site$lon, config.text)
+  namel_sibdrv <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
+  namel_sibdrv <- gsub("@START_DAY@", format(startdate, "%d"), config.text)
+  namel_sibdrv <- gsub("@START_YEAR@", format(startdate, "%Y"), config.text)
+  namel_sibdrv <- gsub("@END_YEAR@", format(enddate, "%Y"), config.text)
+  namel_sibdrv <- gsub("@OUTDIR@", settings$host$outdir, config.text)
+  namel_sibdrv <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
   
   #-----------------------------------------------------------------------
   config.file.name <- paste0("CONFIG.", run.id, ".txt")

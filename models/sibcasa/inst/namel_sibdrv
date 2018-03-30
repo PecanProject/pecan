@@ -1,0 +1,96 @@
+$INLIST_SIBDRV
+     nsib           = 59167,
+     ztemp          = 100.0,
+     zwind          = 100.0,
+/
+
+$IOLIST_SIBDRV
+      param_path    = @PARAM_FILE_PATH@
+      ic_path       = @INITIAL_CONDITIONS_PATH@
+      dr_format     = "(""@SITE_MET@"",i4.4,i2.2,"".nc"")"
+      out_path      = @OUTDIR@
+      qp_path       = "/projectnb/dietzelab/tonygard/sibcasa/PEcAn/SiB/sibcasa_arctic4/sib_qpopts"
+      pbp_path      = "/projectnb/dietzelab/tonygard/sibcasa/PEcAn/SiB/sibcasa_arctic4/sib_pbpopts"
+      co2_path      = "/projectnb/dietzelab/tonygard/sibcasa/gimmsg_0.5x0.5_CRUNCEP_30d/sib_param_RCP85/sib_param"
+      grid_path     = "/gpfs/summit/datasets/SibCasa/drivers/mask/mask_perm_0.5x0.5.nc"
+      drvr_type     = 'std'
+      casa_config_path= "/projectnb/dietzelab/tonygard/sibcasa/PEcAn/SiB/input/config_biome"
+/
+
+$SUBGRID_SIBDRV
+    minlon = @SITE_LON@,
+    maxlon = @SITE_LON@,
+    minlat = @SITE_LAT@,
+    maxlat = @SITE_LAT@
+/
+
+$PBPLIST_SIBDRV
+     IJTLENsib = 1
+/
+-72.1715, 42.5378
+
+
+$SIBDRV_CONTROL_LIST
+     starttime      = -1,
+     startyear      = @START_YEAR@,
+     endtime        = -365,
+     endyear        = @END_YEAR@
+     dtsib          = 600,
+     dtsibmetin     = 21600,
+     dtsibout       = -1,
+     dtsibres       = -1,
+     ndtsibpbp      = 0,
+     dtsibbcin      = -1,
+     roll_respf     = .false.
+     zero_sum       = .true.
+     nproc          = 972
+     proc_num       = 806
+/
+
+  ntinitial :   -greater than zero implies units of seconds for
+                 start of integration
+                -less than zero implies units of days for
+                 start of integration
+
+    ntfinal :   -greater than zero implies time in days to end of
+                 integration
+                -less than zero implies number of days to integrate
+
+      dtsib :   -always in seconds - SiB2 prognostic time step
+
+ dtsibmetin :   -always in seconds - driver data time interval
+
+  dtsibout  :   -greater than zero implies units of seconds - output interval
+                -less than zero implies units of months - output interval
+
+  dtsibres  :   -greater than zero implies units of seconds - restart interval
+                -less than zero implies units of months - restart interval
+
+  ndtsibpbp :   -multiplies dtsib to determine pbp write interval,
+                 zero implies no write
+
+  dtsibbcin :   -boundary condition input interval (not currently used,
+                 interval for time-dependent boundary conditions are
+                 all 1 month at present)
+
+  nyear0    :   -Jan 1 of nyear0 corresponds to nsecond=0
+
+  ijtlensib :   -number of pbp's to be pulled off. following ijtlensib
+                 are the lon/lat pairs (think x,y) for each pbp, in degrees
+
+=============================
+Julian Days (not leap year )
+  January    1 = 1
+  February   1 = 32
+  March      1 = 60
+  April      1 = 91
+  May        1 = 121
+  June       1 = 152
+  July       1 = 182
+  August     1 = 213
+  September  1 = 244
+  October    1 = 274
+  November   1 = 305
+  December   1 = 335
+=============================
+/projects/yael1066/RunOutput/sib_r190012.nc
