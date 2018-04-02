@@ -1,15 +1,11 @@
 #' @title Write ED2 restart file from SDA results
 #' 
-#' @author Alexey Shiklomanov
+#' @author Alexey Shiklomanov, Istem Fer
 #' @inheritParams PEcAn.ModelName::write_restart.ModelName
 #' @return TRUE if successful
 #' @export
-write_restart.ED2 <- function(outdir,
-                              runid,
-                              start.time,
-                              stop.time,
-                              settings,
-                              new.state) {
+write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
+                              settings, new.state, new.params, inputs, RENAME = TRUE) {
 
   rundir <- settings$host$rundir
   mod_outdir <- settings$host$outdir
