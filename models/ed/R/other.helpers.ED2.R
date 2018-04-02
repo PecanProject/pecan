@@ -15,16 +15,19 @@ list.files.nodir <- function(path, ...) {
 #' @export 
 translate_vars_ed <- function(varnames) {
   
-  var.list <- list()
-  ed_derivations <- rep(NA, length(varnames))
+  var.list <- add.list <- list()
+  ed_vars <- ed_derivations <- ed_units <- rep(NA, length(varnames))
  
   for(n in seq_along(varnames)){
     edvarout          <- ed.var(varnames[n])
     var.list[[n]]     <- edvarout$readvar
     ed_derivations[n] <- edvarout$expr
+    add.list[[n]]     <- edvarout$drelated
+    ed_units[n]       <- edvarout$units
   }
   
-  varnames <- unique(unlist(var.list))
-  return(list(vars = varnames, expr = ed_derivations))
+  varnames    <- unique(unlist(var.list))
+  addvarnames <- unique(unlist(add.list))
+  return(list(vars = varnames, addvars = addvarnames, expr = ed_derivations, units = ed_units))
 }
 
