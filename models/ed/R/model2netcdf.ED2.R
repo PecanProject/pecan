@@ -1078,13 +1078,9 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
       } #any(ind)-if
     } #k-loop
   
-  out$restart <- list()
-  for(addvar in add_vars) {
-    out$restart[[addvar]] <- ed.dat[[addvar]]
-  }
+  # pass everything, unaggregated
+  out$restart <- ed.dat
     
-  # check units
-  # do we wanna sum over pfts or not?
   
   return(out)
   
