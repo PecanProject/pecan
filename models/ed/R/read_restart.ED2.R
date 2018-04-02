@@ -1,6 +1,6 @@
 #' @title State data assimilation read-restart for ED2
 #'
-#' @author Alexey Shiklomanov
+#' @author Alexey Shiklomanov, Istem Fer
 #' @inheritParams PEcAn.ModelName::read_restart.ModelName
 #' @examples
 #' \dontrun{
