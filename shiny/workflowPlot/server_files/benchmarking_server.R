@@ -291,10 +291,11 @@ observeEvent(bm$load_results,{
       plot_list <- apply(
         result.out$bench.results[plots_used,c("variable", "metric")],
         1, paste, collapse = " ")
+      selection <- as.list(as.numeric(names(plot_list)))
+      names(selection) <- as.vector(plot_list)
       output$bm_plots <-  renderUI({
-        radioButtons("bench_plot", "Benchmark Plot",
-                     choiceNames = as.vector(plot_list), 
-                     choiceValues = as.numeric(names(plot_list)))
+        selectInput("bench_plot", "Benchmark Plot", multiple = FALSE,
+                     choices = selection)
       })
     }
   }
@@ -314,7 +315,6 @@ observeEvent(input$bench_plot,{
     filename = NA,
     draw.plot = TRUE
   )
-  output$blarg_message <- renderText({paste(input$bench_plot, var)})
   p <- do.call(fcn, args)
   output$bmPlot <- renderPlotly({
     plotly::ggplotly(p)
