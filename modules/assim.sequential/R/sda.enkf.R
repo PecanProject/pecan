@@ -57,17 +57,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   my.read_restart  <- paste0("read_restart.", model)
   my.write_restart <- paste0("write_restart.", model)
   my.split_inputs  <- paste0("split_inputs.", model)
+  # models that don't need split_inputs OR some flag passed via settings
+  nosi <- c("ED2")
+  no_split <- model %in% nosi
   
   if (!exists(my.write.config)) {
-    print(paste(my.write.config, "does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for", model))
-    stop()
+    PEcAn.logger::logger.warn(my.write.config, "does not exist")
+    PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
   }
   
-  if (!exists(my.split_inputs)) {
-    print(paste(my.split_inputs, "does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for", model))
-    stop()
+  if (!exists(my.split_inputs)  &  !no_split) {
+    PEcAn.logger::logger.warn(my.split_inputs, "does not exist")
+    PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
   }
   
   ###-------------------------------------------------------------------###
@@ -89,16 +90,22 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   #ens.inputs <- list()
   inputs <- list()
   for(i in seq_len(nens)){
+    
+    if(no_split){
+      inputs[[i]] <- settings$run$inputs$met$path #?
+    }else{
+      ### get only necessary ensemble inputs. Do not change in analysis
+      #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
+      ### model specific split inputs
+      inputs[[i]] <- do.call(my.split_inputs, 
+                             args = list(settings = settings, 
+                                         start.time = settings$run$start.date, 
+                                         stop.time = as.Date(names(obs.mean)[1]),#settings$run$end.date,
+                                         inputs = ens.inputs[[i]]))#,
+      #                                       outpath = file.path(rundir,paste0("met",i))))
+    }
 
-    ### get only necessary ensemble inputs. Do not change in analysis
-    #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
-    ### model specific split inputs
-    inputs[[i]] <- do.call(my.split_inputs, 
-                           args = list(settings = settings, 
-                                       start.time = settings$run$start.date, 
-                                       stop.time = as.Date(names(obs.mean)[1]),#settings$run$end.date,
-                                       inputs = ens.inputs[[i]]))#,
-#                                       outpath = file.path(rundir,paste0("met",i))))
+
   }
   
   ###-------------------------------------------------------------------###
@@ -424,6 +431,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     X <- list()
     new.params <- params
     
+    # var.names <- c("AbvGrndWood", "GWBI", "TotLivBiom", "leaf_carbon_content") 
     for (i in seq_len(nens)) {
       X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
                                                      runid = run.id[[i]], 
@@ -982,11 +990,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       inputs <- list()
       for(i in seq_len(nens)){
-        inputs[[i]] <- do.call(my.split_inputs, 
-                               args = list(settings = settings, 
-                                           start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
-                                           stop.time = obs.times[t + 1],
-                                           inputs = ens.inputs[[i]])) 
+        if(no_split){
+          inputs[[i]] <- settings$run$inputs$met$path
+        }else{
+          inputs[[i]] <- do.call(my.split_inputs, 
+                                 args = list(settings = settings, 
+                                             start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
+                                             stop.time = obs.times[t + 1],
+                                             inputs = ens.inputs[[i]])) 
+        }
+
       }
       
       
