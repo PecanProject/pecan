@@ -11,6 +11,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [1.5.3] - not yet
 
 ### Fixes
+- Fixed xss issue in setup folder, now require users to login before accessing the setup folder scripts.
 - Fixed issue where in website not all sites are shown #1884
 - Fixed status page, should now be run from cronjob, creates static page
 - Fixed bug that overwrote remote  met file paths with local file paths
