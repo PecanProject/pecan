@@ -7,7 +7,7 @@ bm <- reactiveValues()
 ## Observe when the model run is loaded and check to see if it is registered 
 ## as a reference run. If not, create the record upon button click
 
-observeEvent(input$load,{
+observeEvent(input$load_model,{
   req(input$all_run_id)
   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
   button <- FALSE

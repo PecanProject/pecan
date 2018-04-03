@@ -1,5 +1,5 @@
-observeEvent(input$load,{
-  masterDF <- loadNewData()
+observeEvent(input$load_model,{
+  masterDF <- load.model()
   output$results_table <- DT::renderDataTable(DT::datatable(head(masterDF)))
   output$date_message <- renderText({sprintf("Date range: %s to %s", range(masterDF$dates)[1], range(masterDF$dates)[2])})
   diff.m <- diff(masterDF$dates)
