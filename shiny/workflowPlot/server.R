@@ -24,7 +24,7 @@ options(shiny.maxRequestSize=100*1024^2)
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
-  
+
   # Source Extra Funtions 
   source("workflowPlot_fcns.R", local = TRUE) # Load all functions that need to be defined for this script
   
