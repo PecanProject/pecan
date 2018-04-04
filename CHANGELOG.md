@@ -11,6 +11,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [1.5.3] - not yet
 
 ### Fixes
+- read.output now accepts date-times for start.year and end.year argument (#1887)
+- read.output no longer assumes timestamps are in days since the beginning of the year
 - Fixed xss issue in setup folder, now require users to login before accessing the setup folder scripts.
 - Fixed issue where in website not all sites are shown #1884
 - Fixed status page, should now be run from cronjob, creates static page
