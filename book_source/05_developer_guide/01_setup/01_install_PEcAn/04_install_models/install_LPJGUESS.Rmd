@@ -2,4 +2,4 @@
 
 Instructions to download source code
 
-Go to [LPJ-GUESS website](http://stormbringerii.nateko.lu.se/public/guess_download/) for instructions to access code. 
+Go to [LPJ-GUESS website](http://web.nateko.lu.se/lpj-guess/download.html) for instructions to access code. 
