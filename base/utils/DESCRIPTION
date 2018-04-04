@@ -43,7 +43,7 @@ Suggests:
     PEcAn.settings,
     PEcAn.DB,
     MASS,
-    testthat
+    testthat (>= 2.0.0)
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyData: true
