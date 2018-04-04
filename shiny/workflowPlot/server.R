@@ -39,6 +39,19 @@ server <- shinyServer(function(input, output, session) {
   source("server_files/model_data_plots_server.R", local = TRUE)
   
   # Page 3: Benchmarking
-  source("server_files/benchmarking_server.R", local = TRUE)
+  observeEvent(input$load_model,{
+    req(input$all_run_id)
+    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+    button <- FALSE
+    print(nrow(ids_DF))
+    if(nrow(ids_DF) == 1){
+      source("server_files/benchmarking_server.R", local = TRUE)
+    }else if(nrow(ids_DF) > 1){
+      brr_message <- "Benchmarking currently only works when one run is selected."
+    }else{
+      brr_message <- "Cannot do benchmarking"
+    }
+  })
+    
+  }) # Shiny server closes here  
   
-}) # Shiny server closes here  
