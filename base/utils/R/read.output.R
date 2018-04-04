@@ -7,6 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+##' Read model output
+##'
 ##' Reads the output of a single model run
 ##'
 ##' Generic function to convert model output from model-specific format to 
@@ -19,16 +21,13 @@
 ##' For more details, see the
 ##' \href{http://nacp.ornl.gov/MsTMIP_variables.shtml}{MsTMIP variables}
 ##' documentation 
-##' @title Read model output
-##' @name read.output
 ##' @param runid the id distiguishing the model run. 
 ##' @param outdir the directory that the model's output was sent to
-##' @param start.year first year of output to read (should be greater than ) 
-##' @param end.year last year of output to read
+##' @param start.year,end.year first and last year of output to read. Specify as a date-time (only the year portion is used) or as a four-digit number or string. If NA, reads all years found in \code{outdir}.
 ##' @param variables variables to be read from model output
-##' @param dataframe A boolean that will return output in a data.frame format with a posix column. Useful for align.data and plotting. 
+##' @param dataframe Logical: if TRUE, will return output in a data.frame format with a posix column. Useful for align.data and plotting.
 ##' @param pft.name character string, name of the pft to read pft-specific output. If NULL no pft-specific output will be read even the variable has pft as a dimension.
-##' @return vector of output variable
+##' @return If \code{dataframe=FALSE}, a vector of output variables. If \code{dataframe=TRUE}, a data.frame of output variables with POSIXct timestamps added.
 ##' @export
 ##' @author Michael Dietze, David LeBauer
 read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables = "GPP", dataframe= FALSE, pft.name = NULL) {
@@ -39,24 +38,43 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   
   # create list of *.nc years
   nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern = "\\.nc$", 
-                                                   full.names = FALSE), ".nc")))
+                                                   full.names = FALSE), ".nc")),
+                        mode = "numeric") # N.B. coercing from character
   ncfiles <- list.files(path = outdir, pattern = "\\.nc$", full.names = TRUE)
   
   if(!is.na(start.year) && !is.na(end.year)){
+    if (lubridate::is.instant(start.year)) { # true if a Date, POSIXct, or POSIXlt
+      start.year = lubridate::year(start.year)
+    } else if (is.character(start.year)) {
+      start.year = as.numeric(start.year)
+    } else {
+      PEcAn.logger::logger.error("start.year must be of type numeric, character, Date, or POSIXt")
+    }
+    if (lubridate::is.instant(end.year)) {
+      end.year = lubridate::year(end.year)
+    } else if (is.character(end.year)) {
+      end.year = as.numeric(end.year)
+    } else {
+      PEcAn.logger::logger.error("end.year must be of type numeric, character, Date, or POSIXt")
+    }
+
     # select only those *.nc years requested by user
-    keep <- which(as.numeric(nc.years) >= as.numeric(start.year) & as.numeric(nc.years) <= as.numeric(end.year))
+    keep <- which(nc.years >= start.year & nc.years <= end.year)
     ncfiles <- ncfiles[keep]
   } else if(length(nc.years) != 0){
       PEcAn.logger::logger.info("No start or end year provided; reading output for all years")
       start.year <- min(nc.years)
       end.year <- max(nc.years)
   }
-  
+
+  years <- start.year:end.year
+  run_origin <- paste0(start.year, "-01-01")
+
   # throw error if no *.nc files selected/availible
   nofiles <- FALSE
   if (length(ncfiles) == 0) {
     PEcAn.logger::logger.warn("read.output: no netCDF files of model output present for runid = ", 
-                runid, " in ", outdir, " for years requested; will return NA")
+                runid, " in ", outdir, " for years ", start.year, ":", end.year, ". will return NA")
     if (length(nc.years) > 0) {
       PEcAn.logger::logger.info("netCDF files for other years present", nc.years)
     }
@@ -67,17 +85,15 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
                 "including files", basename(ncfiles))
   }
   
-  if(dataframe==TRUE){ #ensure that there is a time component when asking for a dataframe + posix code
-    if(length(variables[variables=="time"])==0){
-      variables<-c(variables, "time")
-      PEcAn.logger::logger.info("No time variable requested, adding automatically")
-    }
-  }
   result <- list()
 
   if (!nofiles) {
     for (ncfile in ncfiles) {
       nc <- ncdf4::nc_open(ncfile)
+      if(dataframe==TRUE){
+        seconds <- udunits2::ud.convert(nc$dim$time$vals, nc$dim$time$units, paste("seconds since", run_origin))
+        result[["posix"]] <- abind::abind(result[["posix"]], seconds)
+      }
       for (v in variables) {
         if (v %in% c(names(nc$var), names(nc$dim))) {
           newresult <- ncdf4::ncvar_get(nc, v)
@@ -130,7 +146,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     "Median:", lapply(result, function(x) signif(stats::median(x, na.rm = TRUE), 3)))
   
   if(dataframe==FALSE){
-  return(result)
+    return(result)
   }else if (dataframe==TRUE){
     
     # Check if there are variables that have multiple dimensions 
@@ -149,41 +165,10 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     }
     
     model <- as.data.frame(result) # put into a data.frame
-    ########## add in posix column ###########
-    
-    if(assertthat::is.date(start.year)==TRUE){
-      start_year<-start.year
-      end_year<-end.year
-      
-    }else if(assertthat::is.date(start.year)==FALSE){
-      origin<-paste0(as.character(start.year),"-01-01")
-      start_year = start.year
-      end_year = end.year 
-    }else{
-      PEcAn.logger::logger.error("Start and End year must be of type numeric, character or Date")
-    }
-    years <- start_year:end_year
-    seconds <- udunits2::ud.convert(model$time,"years","seconds")
-    Diff <- diff(model$time)
-    time_breaks = which(Diff < 0)
-    
-    if(length(time_breaks) == 0 & length(years)>1){
-      model$posix <- as.POSIXct(model$time*86400,origin= origin,tz="UTC")
-      model$year <- lubridate::year(model$posix)
-      return(model)
-    } else {
-      N <- c(0,time_breaks, length(model$time))
-      n <- diff(N)
-      y <- c()
-      for (i in seq_along(n)) {
-        y <- c(y, rep(years[i], n[i]))
-      }
-      
-      model$year <- y
-      makeDate <- function(x){as.POSIXct(model$time[x]*86400,origin=paste0(model$year[x],"-01-01"),tz="UTC")}
-      model$posix <- makeDate(seq_along(model$time))
-      return(model)
-    }
+    model$posix <- as.POSIXct(model$posix, origin = run_origin, tz="UTC")
+    model$year <- lubridate::year(model$posix)
+
+    return(model)
   }else{
     PEcAn.logger::logger.error("Error in dataframe variable. Dataframe boolean must be set to TRUE or FALSE")
   }
