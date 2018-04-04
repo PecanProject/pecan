@@ -564,8 +564,8 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       if (("Tair_f" %in% colnames(Extracted))) {
         Tair_f_degC <- udunits2::ud.convert(Tair_f, "K", "degC")
         es <- get.es(Tair_f_degC) * 100
-        badVPD_f <- which(VPD_f > es)
-        VPD_f[badVPD_f] <- es[badVPD_f]
+        badVPD_f <- which(VPD_f > es) 
+        VPD_f[badVPD_f] <- es[badVPD_f] 
       }
     }
     if (length(which(is.na(VPD_f))) > 0) {
