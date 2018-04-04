@@ -1,8 +1,6 @@
 # Select_Data
 
-tabPanel(h4("Select Data"),
-         # DT::dataTableOutput("results_table"),
-         verbatimTextOutput("date_message"),
-         verbatimTextOutput("diff_message"),
-         verbatimTextOutput("dim_message")
+tagList(
+  column(6, htmlOutput("README")),
+  column(6, verbatimTextOutput("dim_message"))
 )
