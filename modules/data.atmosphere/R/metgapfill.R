@@ -306,7 +306,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     rH[rH > 100] <- 100
     VPD[VPD < 0] <- 0
     badVPD_es <- which(VPD > es)
-    VPD[badVPD_es] <- es[badVPD_es]
+    VPD[badVPD_es] <- es[badVPD_es] 
     sHum[sHum < 0] <- 0
     
     ## one set of these must exist (either wind_speed or east+north wind)
