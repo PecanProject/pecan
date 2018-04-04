@@ -15,7 +15,6 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Imports:
-    assertthat,
     data.table,
     getPass,
     ggplot2,
