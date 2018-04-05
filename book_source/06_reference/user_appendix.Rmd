@@ -1,13 +1,5 @@
-# (PART) User Appendix {-}
-
-<br>
-
-# User Appendix
-
-<br>
-
-### File download: Alternative options when behind a firewall
-#### Using the PEcAn download.file() function
+## File download: Alternative options when behind a firewall
+### Using the PEcAn download.file() function
 download.file(url, destination_file, method) <br>
 <br>
 
