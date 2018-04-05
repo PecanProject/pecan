@@ -78,6 +78,19 @@
     <dvmdostem_transient>109</dvmdostem_transient>
     <dvmdostem_scenerio>91</dvmdostem_scenerio>
     <dvmdostem_loglevel>err</dvmdostem_loglevel>
+    <!--
+    If the forcecmtnum tag is present, then PEcAn will force
+    dvmdostem to use community number (CMT) that is deduced from the
+    PFT name as stored in the bety database (or speficied in this file).
+    For the purposes of pecan, it is assumed that PFTs are named using 
+    a hyphen separated pattern like this: CMT04-Salix.
+    If the forecmtnum tag is not present, then dvmdostem will use the 
+    input vegetation map (typically vegetation.nc) that is specified in the
+    config file. If the CMT number specified in the veg map (for the enabled
+    pixel) does not match the CMT number of the chosen PFTs, then the program
+    will likely crash.
+    -->
+    <dvmdostem_dvmdostem_forcecmtnum></dvmdostem_dvmdostem_forcecmtnum>
 
     <!-- S. Serbin uses these for running on modex
     <prerun>module purge; module load python/2.7.13 gcc/4.8.4 boost/1.64.0 netcdf/4.3.3.1; module list</prerun>

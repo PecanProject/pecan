@@ -25,6 +25,7 @@ else
   --tr-yrs @TRANSIENT@ \
   --sc-yrs @SCENERIO@ \
   --log-level @LOGLEVEL@ \
+  @FORCE_CMTNUM@ \
   --no-output-cleanup
 
   STATUS=$?

@@ -376,6 +376,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   ncdf4::ncvar_put(ncMaskFile, ncMaskFile$var$run, new_data, verbose=TRUE)
   ncdf4::nc_close(ncMaskFile)
 
+  PEcAn.logger::logger.error(paste0("Set run mask pixel (y,x)=("),pixel_Y,",",pixel_X,")" )
 
   # Open the input veg file, check that the pixel that is enabled in the
   # run mask is the right veg type to match the cmt/pft that is selected
@@ -479,6 +480,15 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     jobsh <- gsub("@LOGLEVEL@", "err", jobsh)
   } else {
     jobsh <- gsub("@LOGLEVEL@", settings$model$dvmdostem_loglevel, jobsh)
+  }
+
+  if (is.null(settings$model$dvmdostem_forcecmtnum)){
+    PEcAn.logger::logger.info("Using vegetation.nc input file to determine community type of pixel...")
+    PEcAn.logger::logger.warn("The CMT type of your selected PFT must match the CMT type in the input veg file for the selected pixel!")
+    jobsh <- gsub("@FORCE_CMTNUM@", "", jobsh)
+  } else {
+    PEcAn.logger::logger.info("FORCING cmt type to match selected PFT. IGNORING vegetation.nc map!")
+    jobsh <- gsub("@FORCE_CMTNUM@", paste0("--force-cmt ", cmtnum), jobsh)
   }
 
   # Really no idea what the defaults should be for these if the user
