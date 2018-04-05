@@ -988,18 +988,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ### split model specific inputs for current runs                      ###
       ###-------------------------------------------------------------------### 
       
-      inputs <- list()
-      for(i in seq_len(nens)){
-        if(no_split){
-          inputs[[i]] <- settings$run$inputs$met$path
-        }else{
+      if(!no_split){
+        
+        inputs <- list()
+        for(i in seq_len(nens)){
           inputs[[i]] <- do.call(my.split_inputs, 
                                  args = list(settings = settings, 
                                              start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
                                              stop.time = obs.times[t + 1],
                                              inputs = ens.inputs[[i]])) 
+          
         }
-
       }
       
       
