@@ -58,6 +58,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   my.write_restart <- paste0("write_restart.", model)
   my.split_inputs  <- paste0("split_inputs.", model)
   # models that don't need split_inputs OR some flag passed via settings
+  # or should there be a split_inputs.ED2 doing nothing?
   nosi <- c("ED2")
   no_split <- model %in% nosi
   
