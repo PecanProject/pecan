@@ -88,22 +88,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   PEcAn.logger::logger.info(paste0("local_rundir: ", local_rundir))
   PEcAn.logger::logger.info(paste0("rundir: ", rundir))
 
-  # Subset the trait.values list to get only the traits for the PFT we are
-  # interested in. The trait.values list should be something like this:
-  # $`CMT04-Salix`
-  #      SW_albedo    gcmax    cuticular_cond       SLA
-  #            1.0     3.4               2.5       11.0
-  # $`CMT04-Betula`
-  #      SW_albedo    gcmax    cuticular_cond       SLA
-  #            1.0      3.4               2.5      11.0
-  #
-  # Where there is a sub-list for each PFT. We want to reduce this to just
-  # the PFT we are interested in, and with all the unit conversions taken
-  # care of. So result will be something like this:
-  # SW_albedo    gcmax    cuticular_cond       SLA
-  #      1.0       3.4               2.5      11.0
-  traits <- convert.samples.dvmdostem(trait.values[[settings$pfts$pft$name]])
-
   # Copy the base set of dvmdostem parameters and configurations into the
   # run directory. Some of the values in these files will be overwritten in
   # subsequent steps, but copying everything up makes sure that all the
@@ -135,6 +119,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # Pull out the community name/number for use below in extracting
   # the correct block of data from the dvmdostem parameter files.
   # The settings$pfts$pft$name variable will be something like this: "CMT04-Salix"
+  # TODO: Should check that all selected PFTs (from pecan.xml) have the same CMT number!
   cmtname <- unlist(strsplit(settings$pfts$pft$name, "-", fixed=TRUE))[1]
   cmtnum <- as.numeric(unlist(strsplit(cmtname, "CMT"))[2]) #
 
@@ -189,7 +174,26 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   
   # (2)
   # Overwrite parameter values with (ma-posterior) trait data from pecan
-  PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname))
+  PEcAn.logger::logger.info(paste0("CMT Name: ", cmtname))
+  for (singlepft in settings$pfts) {
+  PEcAn.logger::logger.info(paste0("PFT Name: ", singlepft$name))
+  # Subset the trait.values list to get only the traits for the PFT we are
+  # interested in. The trait.values list should be something like this:
+  # $`CMT04-Salix`
+  #      SW_albedo    gcmax    cuticular_cond       SLA
+  #            1.0     3.4               2.5       11.0
+  # $`CMT04-Betula`
+  #      SW_albedo    gcmax    cuticular_cond       SLA
+  #            1.0      3.4               2.5      11.0
+  #
+  # Where there is a sub-list for each PFT. We want to reduce this to just
+  # the PFT we are interested in, and with all the unit conversions taken
+  # care of. So result will be something like this:
+  # SW_albedo    gcmax    cuticular_cond       SLA
+  #      1.0       3.4               2.5      11.0
+
+  traits <- convert.samples.dvmdostem(trait.values[[singlepft$name]])
+
   for (curr_trait in names(traits)) {
     for (jd in list(bgcveg_jsondata, envcanopy_jsondata, dimveg_jsondata)) {
       for (i in names(jd)) {
@@ -201,7 +205,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           # files. So here we extract the "common name" from the betydb PFT
           # name to make sure we are updating the correct spot in the json
           # data structure.
-          pft_common_name <- unlist(strsplit(settings$pfts$pft$name, "-"))[2]
+          pft_common_name <- unlist(strsplit(singlepft$name, "-"))[2]
           #PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname)) # too verbose
           if (identical(jd[[i]]$name, pft_common_name)) {
             if (curr_trait == "SLA") {
@@ -266,9 +270,10 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
             }
           }
         }
-      }
-    }
-  }
+      } # end loop over names in json
+    } # end loop over different json structures
+  } # end loop over traits
+  } # end loop over pfts
 
   # Write it back out to disk (overwriting ok??)
   dimveg_exportJson <- toJSON(dimveg_jsondata)
