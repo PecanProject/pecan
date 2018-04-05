@@ -6,19 +6,24 @@
 #' @export
 write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
                               settings, new.state, new.params, inputs, RENAME = TRUE) {
-
-  rundir <- settings$host$rundir
-  mod_outdir <- settings$host$outdir
-
-  sda_datestr <- strftime(start.time, "%Y-%m-%d-%H%M%S")
+  
+  restart <- new.params$restart
+  
+  old.state <- restart$oldstate # hack: this will probably change in the near future, it's currently just AbvGrndWood 
+  histfile  <- restart$histfile # Get history restart file path
+  restart   <- restart$restart
+  
+  # remote or not remote?
+  # rundir <- settings$host$rundir
+  # mod_outdir <- settings$host$outdir 
+  rundir <- settings$rundir
+  mod_outdir <- settings$modeloutdir # same as outdir?
+  
+  sda_datestr <- strftime(start.time, "%Y-%m-%d-%H%M%S", tz = "UTC")
   sda_suffix <- paste0("SDA.", sda_datestr)
 
-  # Get history restart file path
-  histfile <- get_restartfile.ED2(mod_outdir, runid, start.time)
-  if (is.null(histfile)) {
-    PEcAn.logger::logger.severe("Failed to find ED2 history restart file.")
-  }
 
+  # check these dirs for local vs remote: ARE WE GONNA NEED THIS?
   #### Backup old run files to date directory
   runfiles <- list.files.nodir(file.path(rundir, runid))
   modoutfiles <- list.files.nodir(file.path(mod_outdir, runid))
@@ -34,63 +39,68 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
             file.path(mod_outdir, runid, sda_suffix, copy_files),
             overwrite = TRUE)
 
-  confxml <- get_configxml.ED2(rundir, runid)
-
-  #### Identify PFTs
-  # This assumes that PFT order is the same between pecan.xml and ED's 
-  # config.xml.  A better solution would set the PFT numbers in the 
-  # pecan.xml, or names in config.xml.
-  pftnums <- sapply(confxml, '[[', 'num')
-  pftnames <- sapply(settings$pfts, '[[', 'name')
-  names(pftnames) <- pftnums
-  names(pftnums) <- pftnames
 
 
-  nc <- ncdf4::nc_open(histfile)
-
-  #### Read common variables
+  # #### Identify PFTs
+  # # This assumes that PFT order is the same between pecan.xml and ED's 
+  # # config.xml.  A better solution would set the PFT numbers in the 
+  # # pecan.xml, or names in config.xml.
+  # pftnums <- sapply(confxml, '[[', 'num')
+  # pftnames <- sapply(settings$pfts, '[[', 'name')
+  # names(pftnames) <- pftnums
+  # names(pftnums) <- pftnames
+  # 
+  # 
+  # nc <- ncdf4::nc_open(histfile)
+  # 
+  #### Get common variables
   # PFT by cohort
-  pft_co <- ncdf4::ncvar_get(nc, 'PFT')
-
+  pft_co <- restart$PFT 
+   
   # Patch area
-  patch_area <- ncdf4::ncvar_get(nc, 'AREA')
-
+  patch_area <- restart$AREA 
+   
   #### Create a patch index indicator vector
-  patch_index <- patch_cohort_index(nc)
+  paco_n      <- restart$PACO_N  # number of cohorts per patch
+  patch_index <- rep(1:length(paco_n), times = paco_n)
 
-  ncdf4::nc_close(nc)
-
-  varname_regex <- '(^[^.]*)\\.([^.]*)\\.(.*)$'
-  var.names <- unique(gsub(varname_regex, "\\1", names(new.state)))
-
-  old.state <- read.restart.ED2(outdir = outdir,
-                                runid = runid,
-                                stop.time = start.time,
-                                settings = settings,
-                                var.names = var.names,
-                                params = NULL) ## TODO: new.params???
+  # 
+  # ncdf4::nc_close(nc)
+  # 
+  # varname_regex <- '(^[^.]*)\\.([^.]*)\\.(.*)$'
+  # var.names <- unique(gsub(varname_regex, "\\1", names(new.state)))
+  # 
+  # old.state <- read.restart.ED2(outdir = outdir,
+  #                               runid = runid,
+  #                               stop.time = start.time,
+  #                               settings = settings,
+  #                               var.names = var.names,
+  #                               params = NULL) ## TODO: new.params???
 
   for (var_name in var.names) {
-    if (var_name == "AGB") {
+    # var_name <- "AbvGrndWood"
+    if (var_name == "AbvGrndWood") {
 
-      #### Disaggregate AGB down to cohort vector
+      #### Disaggregate AbvGrndWood down to cohort vector
       # NOTE: This is currently naive -- it just calculates the 
-      # AGB ratio between the old and new states and applies it to each 
+      # AbvGrndWood ratio between the old and new states and applies it to each 
       # cohort based on its PFT. No patch information is involved because 
       # none is provided in `new.state`.
 
-      new.agb_pft <- new.state[grep(var_name, names(new.state))]
-      old.agb_pft <- old.state[grep(var_name, names(old.state))]
-      new2old.agb_pft <- new.agb_pft / old.agb_pft
-      new2old_pftnames <- gsub(paste0(var_name, ".pft."), '', 
-                               names(new2old.agb_pft))
-      names(new2old.agb_pft) <- as.character(pftnums[new2old_pftnames])
+      new.tmp <- new.state[grep(var_name, names(new.state))]
+      old.tmp <- old.state
+      agb_co_ratios <- new.tmp / old.tmp # not ideal, just trying to get the workflow to run
 
-      agb_co_ratios <- new2old.agb_pft[as.character(pft_co)]
+      # AbvGrndWood in state matrix is not per PFT but total
+      # but leaving this bit as a reminder
+      #
+      # new2old.agb_pft <- new.agb_pft / old.agb_pft
+      # new2old_pftnames <- gsub(paste0(var_name, ".pft."), '', 
+      #                          names(new2old.agb_pft))
+      # names(new2old.agb_pft) <- as.character(pftnums[new2old_pftnames])
+      # agb_co_ratios <- new2old.agb_pft[as.character(pft_co)]
 
-      nc <- ncdf4::nc_open(histfile)
-      nplant_co_plant <- ncdf4::ncvar_get(nc, "NPLANT")
-      ncdf4::nc_close(nc)
+      nplant_co_plant <- restart$NPLANT
 
       # The only AGB-related state variables read by ED's history restart 
       # subroutine are BDEAD, DBH, and NPLANT. The remaining states 
@@ -99,7 +109,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       #
       # Here, we adjust cohort-level AGB by adjusting the stand density 
       # (NPLANT) proportional to the change in biomass computed above.
-      new.nplant_co_plant <- nplant_co_plant * agb_co_ratios
+      new.nplant_co_plant <- nplant_co_plant * agb_co_ratios[1,1]
       # An alternative is to modify DBH and BDEAD, which requires solving 
       # the following allometric equation for DBH and then using ED 
       # allometric equations to recalculate BDEAD.
@@ -124,23 +134,29 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
 
   ##### Modify ED2IN
   ed2in_path <- file.path(rundir, runid, "ED2IN")
-  ed2in_orig <- read_ed2in(ed2in_path, check = FALSE)
+  ed2in_orig <- read_ed2in(ed2in_path)
 
   ed2in_new <- modify_ed2in(
     ed2in_orig,
     start_date = start.time,
     end_date = stop.time,
     RUNTYPE = "HISTORY",
-    IED_INIT_MODE = 5,
+    IED_INIT_MODE = 4,
     SFILIN = file.path(mod_outdir, runid, "history")
   )
 
-  check_ed2in(ed2in_new)
+  if(settings$host$name == "localhost") check_ed2in(ed2in_new)
   write_ed2in(ed2in_new, ed2in_path)
 
   # Remove old history.xml file, which job.sh looks for
-  file.remove(file.path(mod_outdir, runid, "history.xml"))
+  # file.remove(file.path(mod_outdir, runid, "history.xml"))  # this is local
+  # have job.sh delete the old history.xml: this is temporary, this script will eventually run on remote
+  jobsh <- readLines(file.path(rundir, runid, "job.sh"),-1)
+  jobsh[17] <- paste0("rm -f ", file.path(settings$host$outdir, runid, "history.xml"))
+  writeLines(jobsh, file.path(rundir, runid, "job.sh"))
 
+  PEcAn.logger::logger.info("Finished --", runid)
+  
   return(TRUE)
 } # write_restart.ED2
 
