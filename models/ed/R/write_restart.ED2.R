@@ -136,15 +136,25 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   ed2in_path <- file.path(rundir, runid, "ED2IN")
   ed2in_orig <- read_ed2in(ed2in_path)
 
+
   ed2in_new <- modify_ed2in(
     ed2in_orig,
     start_date = start.time,
     end_date = stop.time,
     RUNTYPE = "HISTORY",
     IED_INIT_MODE = 4,
-    SFILIN = file.path(mod_outdir, runid, "history")
+    SFILIN = file.path(settings$host$outdir, runid, "history")
   )
-
+  
+  # rename hisoty file (IF: At this point in order not to swamp directories I decided to write annual historu files
+  # but this causes mismatches in start-date because ED2 writes them as 1961-01-01 not 1961-12-31
+  # then if timeh starts from 1962 it can't find the 1961 files, if you give dates accordingly it starts the simulation early
+  # my solution is to copy-rename the history file. Other solutions are to change ED2's naming, or writing daily/monthly history files
+  index    <- gregexpr("-S-", histfile)[[1]]
+  tstamp   <- substr(histfile, index[1] + 3, index[1] + 6)
+  from_histfile <- file.path(settings$host$outdir, runid, basename(histfile))
+  to_histfile   <- file.path(settings$host$outdir, runid, gsub(tstamp, lubridate::year(start.time), basename(histfile)))
+  
   if(settings$host$name == "localhost") check_ed2in(ed2in_new)
   write_ed2in(ed2in_new, ed2in_path)
 
@@ -153,6 +163,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   # have job.sh delete the old history.xml: this is temporary, this script will eventually run on remote
   jobsh <- readLines(file.path(rundir, runid, "job.sh"),-1)
   jobsh[17] <- paste0("rm -f ", file.path(settings$host$outdir, runid, "history.xml"))
+  jobsh[18] <- paste("cp", from_histfile, to_histfile)
   writeLines(jobsh, file.path(rundir, runid, "job.sh"))
 
   PEcAn.logger::logger.info("Finished --", runid)
