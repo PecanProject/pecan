@@ -176,103 +176,103 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # Overwrite parameter values with (ma-posterior) trait data from pecan
   PEcAn.logger::logger.info(paste0("CMT Name: ", cmtname))
   for (singlepft in settings$pfts) {
-  PEcAn.logger::logger.info(paste0("PFT Name: ", singlepft$name))
-  # Subset the trait.values list to get only the traits for the PFT we are
-  # interested in. The trait.values list should be something like this:
-  # $`CMT04-Salix`
-  #      SW_albedo    gcmax    cuticular_cond       SLA
-  #            1.0     3.4               2.5       11.0
-  # $`CMT04-Betula`
-  #      SW_albedo    gcmax    cuticular_cond       SLA
-  #            1.0      3.4               2.5      11.0
-  #
-  # Where there is a sub-list for each PFT. We want to reduce this to just
-  # the PFT we are interested in, and with all the unit conversions taken
-  # care of. So result will be something like this:
-  # SW_albedo    gcmax    cuticular_cond       SLA
-  #      1.0       3.4               2.5      11.0
+    PEcAn.logger::logger.info(paste0("PFT Name: ", singlepft$name))
+    # Subset the trait.values list to get only the traits for the PFT we are
+    # interested in. The trait.values list should be something like this:
+    # $`CMT04-Salix`
+    #      SW_albedo    gcmax    cuticular_cond       SLA
+    #            1.0     3.4               2.5       11.0
+    # $`CMT04-Betula`
+    #      SW_albedo    gcmax    cuticular_cond       SLA
+    #            1.0      3.4               2.5      11.0
+    #
+    # Where there is a sub-list for each PFT. We want to reduce this to just
+    # the PFT we are interested in, and with all the unit conversions taken
+    # care of. So result will be something like this:
+    # SW_albedo    gcmax    cuticular_cond       SLA
+    #      1.0       3.4               2.5      11.0
 
-  traits <- convert.samples.dvmdostem(trait.values[[singlepft$name]])
+    traits <- convert.samples.dvmdostem(trait.values[[singlepft$name]])
 
-  for (curr_trait in names(traits)) {
-    for (jd in list(bgcveg_jsondata, envcanopy_jsondata, dimveg_jsondata)) {
-      for (i in names(jd)) {
-        if (grepl("pft", i)) {
-          # The PFT name stored w/in betydb is a combo of the community name
-          # and the "common" pft name, always separated by a hyphen. Something
-          # like this: "CMT04-Salix". The pft name in the json datastructure
-          # will be simply the common name, as stored in the dvmdostem parameter
-          # files. So here we extract the "common name" from the betydb PFT
-          # name to make sure we are updating the correct spot in the json
-          # data structure.
-          pft_common_name <- unlist(strsplit(singlepft$name, "-"))[2]
-          #PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname)) # too verbose
-          if (identical(jd[[i]]$name, pft_common_name)) {
-            if (curr_trait == "SLA") {
-              dimveg_jsondata[[i]]$sla = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_10") {
-              dimveg_jsondata[[i]]$`frprod[0]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_20") {
-              dimveg_jsondata[[i]]$`frprod[1]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_30") {
-              dimveg_jsondata[[i]]$`frprod[2]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_40") {
-              dimveg_jsondata[[i]]$`frprod[3]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_50") {
-              dimveg_jsondata[[i]]$`frprod[4]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "klai") {
-              dimveg_jsondata[[i]]$klai = traits[[curr_trait]]
-            }
-            if (curr_trait == "ilai") {
-              dimveg_jsondata[[i]]$lai = traits[[curr_trait]]
-            }
-            if (curr_trait == "extinction_coefficient_diffuse") {
-              envcanopy_jsondata[[i]]$er = traits[[curr_trait]]
-            }
-            if (curr_trait == "SW_albedo") {
-              envcanopy_jsondata[[i]]$albvisnir = traits[[curr_trait]]
-            }
-            if (curr_trait == "cuticular_cond") {
-              envcanopy_jsondata[[i]]$gl_c = traits[[curr_trait]]
-            }
-            if (curr_trait == "gcmax") {
-              envcanopy_jsondata[[i]]$glmax = traits[[curr_trait]]
-            }
-            if (curr_trait == "ppfd50") {
-              envcanopy_jsondata[[i]]$ppfd50 = traits[[curr_trait]]
-            }
-            if (curr_trait == "vpd_open") {
-              envcanopy_jsondata[[i]]$vpd_open = traits[[curr_trait]]
-            }
-            if (curr_trait == "vpd_close") {
-              envcanopy_jsondata[[i]]$vpd_close = traits[[curr_trait]]
-            }
-            if (curr_trait == "pstemp_min") {
-              bgcveg_jsondata[[i]]$tmin = traits[[curr_trait]]
-            }
-            if (curr_trait == "pstemp_low") {
-              bgcveg_jsondata[[i]]$toptmin = traits[[curr_trait]]
-            }
-            if (curr_trait == "pstemp_high") {
-              bgcveg_jsondata[[i]]$toptmax = traits[[curr_trait]]
-            }
-            if (curr_trait == "pstemp_max") {
-              bgcveg_jsondata[[i]]$tmax = traits[[curr_trait]]
-            }
-            if (curr_trait == "labncon") {
-              bgcveg_jsondata[[i]]$labncon = traits[[curr_trait]]
+    for (curr_trait in names(traits)) {
+      for (jd in list(bgcveg_jsondata, envcanopy_jsondata, dimveg_jsondata)) {
+        for (i in names(jd)) {
+          if (grepl("pft", i)) {
+            # The PFT name stored w/in betydb is a combo of the community name
+            # and the "common" pft name, always separated by a hyphen. Something
+            # like this: "CMT04-Salix". The pft name in the json datastructure
+            # will be simply the common name, as stored in the dvmdostem parameter
+            # files. So here we extract the "common name" from the betydb PFT
+            # name to make sure we are updating the correct spot in the json
+            # data structure.
+            pft_common_name <- unlist(strsplit(singlepft$name, "-"))[2]
+            #PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname)) # too verbose
+            if (identical(jd[[i]]$name, pft_common_name)) {
+              if (curr_trait == "SLA") {
+                dimveg_jsondata[[i]]$sla = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_10") {
+                dimveg_jsondata[[i]]$`frprod[0]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_20") {
+                dimveg_jsondata[[i]]$`frprod[1]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_30") {
+                dimveg_jsondata[[i]]$`frprod[2]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_40") {
+                dimveg_jsondata[[i]]$`frprod[3]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_50") {
+                dimveg_jsondata[[i]]$`frprod[4]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "klai") {
+                dimveg_jsondata[[i]]$klai = traits[[curr_trait]]
+              }
+              if (curr_trait == "ilai") {
+                dimveg_jsondata[[i]]$lai = traits[[curr_trait]]
+              }
+              if (curr_trait == "extinction_coefficient_diffuse") {
+                envcanopy_jsondata[[i]]$er = traits[[curr_trait]]
+              }
+              if (curr_trait == "SW_albedo") {
+                envcanopy_jsondata[[i]]$albvisnir = traits[[curr_trait]]
+              }
+              if (curr_trait == "cuticular_cond") {
+                envcanopy_jsondata[[i]]$gl_c = traits[[curr_trait]]
+              }
+              if (curr_trait == "gcmax") {
+                envcanopy_jsondata[[i]]$glmax = traits[[curr_trait]]
+              }
+              if (curr_trait == "ppfd50") {
+                envcanopy_jsondata[[i]]$ppfd50 = traits[[curr_trait]]
+              }
+              if (curr_trait == "vpd_open") {
+                envcanopy_jsondata[[i]]$vpd_open = traits[[curr_trait]]
+              }
+              if (curr_trait == "vpd_close") {
+                envcanopy_jsondata[[i]]$vpd_close = traits[[curr_trait]]
+              }
+              if (curr_trait == "pstemp_min") {
+                bgcveg_jsondata[[i]]$tmin = traits[[curr_trait]]
+              }
+              if (curr_trait == "pstemp_low") {
+                bgcveg_jsondata[[i]]$toptmin = traits[[curr_trait]]
+              }
+              if (curr_trait == "pstemp_high") {
+                bgcveg_jsondata[[i]]$toptmax = traits[[curr_trait]]
+              }
+              if (curr_trait == "pstemp_max") {
+                bgcveg_jsondata[[i]]$tmax = traits[[curr_trait]]
+              }
+              if (curr_trait == "labncon") {
+                bgcveg_jsondata[[i]]$labncon = traits[[curr_trait]]
+              }
             }
           }
-        }
-      } # end loop over names in json
-    } # end loop over different json structures
-  } # end loop over traits
+        } # end loop over names in json
+      } # end loop over different json structures
+    } # end loop over traits
   } # end loop over pfts
 
   # Write it back out to disk (overwriting ok??)
