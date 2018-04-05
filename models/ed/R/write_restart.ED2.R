@@ -149,7 +149,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   write_ed2in(ed2in_new, ed2in_path)
 
   # Remove old history.xml file, which job.sh looks for
-  # file.remove(file.path(mod_outdir, runid, "history.xml"))  # this is local
+  file.remove(file.path(mod_outdir, runid, "history.xml"))  # this is local
   # have job.sh delete the old history.xml: this is temporary, this script will eventually run on remote
   jobsh <- readLines(file.path(rundir, runid, "job.sh"),-1)
   jobsh[17] <- paste0("rm -f ", file.path(settings$host$outdir, runid, "history.xml"))
