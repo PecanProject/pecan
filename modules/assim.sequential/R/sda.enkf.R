@@ -88,6 +88,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     if(settings$host$name != "localhost"){ # temporary HACK..temporary HACK..temporary HACK
       # skip met ensemble sampling for now
       ens.inputs <- vector("list", nens)
+      for(i in seq_len(nens)){
+        ens.inputs[[i]]$path <- settings$run$inputs$met$path
+      }
+      names(ens.inputs) <- rep("met", length = nens)
     }else{
       ens.inputs <- sample_met(settings,nens)
     }
@@ -100,7 +104,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   for(i in seq_len(nens)){
     
     if(no_split){
-      inputs[[i]] <- settings$run$inputs$met$path #?
+      inputs[[i]] <- ens.inputs[[i]] # passing settings$run$inputs$met$path is the same thing, just following the logic despite the hack above
     }else{
       ### get only necessary ensemble inputs. Do not change in analysis
       #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
