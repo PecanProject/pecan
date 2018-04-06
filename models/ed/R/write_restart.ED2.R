@@ -19,11 +19,10 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   rundir <- settings$rundir
   mod_outdir <- settings$modeloutdir # same as outdir?
   
-  sda_datestr <- strftime(start.time, "%Y-%m-%d-%H%M%S", tz = "UTC")
-  sda_suffix <- paste0("SDA.", sda_datestr)
-
-
-  # check these dirs for local vs remote: ARE WE GONNA NEED THIS?
+  sda_datestr  <- gregexpr("-S-", histfile)[[1]]
+  sda_suffix   <- paste0("SDA.", substr(histfile, sda_datestr[1] + 3, sda_datestr[1] + 19))
+  
+  # check these dirs for local vs remote
   #### Backup old run files to date directory
   runfiles <- list.files.nodir(file.path(rundir, runid))
   modoutfiles <- list.files.nodir(file.path(mod_outdir, runid))
@@ -40,19 +39,16 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
             overwrite = TRUE)
 
 
-
-  # #### Identify PFTs
-  # # This assumes that PFT order is the same between pecan.xml and ED's 
-  # # config.xml.  A better solution would set the PFT numbers in the 
-  # # pecan.xml, or names in config.xml.
-  # pftnums <- sapply(confxml, '[[', 'num')
-  # pftnames <- sapply(settings$pfts, '[[', 'name')
-  # names(pftnames) <- pftnums
-  # names(pftnums) <- pftnames
-  # 
-  # 
-  # nc <- ncdf4::nc_open(histfile)
-  # 
+  # rename history file 
+  # (IF: At this point in order not to swamp directories I decided to write annual historu files
+  # but this causes mismatches in start-date because ED2 writes them as 1961-01-01 not 1961-12-31
+  # then if timeh starts from 1962 it can't find the 1961 files, if you give dates accordingly it starts the simulation early
+  # my solution is to copy-rename the history file. Other solutions are to change ED2's naming, or writing daily/monthly history files
+  hyear   <- substr(histfile, sda_datestr[1] + 3, sda_datestr[1] + 6)
+  new_basename <- gsub(hyear, lubridate::year(start.time), basename(histfile))
+  new_local_histfile   <- file.path(dirname(histfile), new_basename)
+  new_remote_histfile  <- file.path(settings$host$outdir, runid, new_basename)
+  
   #### Get common variables
   # PFT by cohort
   pft_co <- restart$PFT 
@@ -64,18 +60,6 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   paco_n      <- restart$PACO_N  # number of cohorts per patch
   patch_index <- rep(1:length(paco_n), times = paco_n)
 
-  # 
-  # ncdf4::nc_close(nc)
-  # 
-  # varname_regex <- '(^[^.]*)\\.([^.]*)\\.(.*)$'
-  # var.names <- unique(gsub(varname_regex, "\\1", names(new.state)))
-  # 
-  # old.state <- read.restart.ED2(outdir = outdir,
-  #                               runid = runid,
-  #                               stop.time = start.time,
-  #                               settings = settings,
-  #                               var.names = var.names,
-  #                               params = NULL) ## TODO: new.params???
 
   for (var_name in var.names) {
     # var_name <- "AbvGrndWood"
@@ -93,7 +77,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
 
       # AbvGrndWood in state matrix is not per PFT but total
       # but leaving this bit as a reminder
-      #
+      
       # new2old.agb_pft <- new.agb_pft / old.agb_pft
       # new2old_pftnames <- gsub(paste0(var_name, ".pft."), '', 
       #                          names(new2old.agb_pft))
@@ -119,7 +103,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
 
       #### Write new state to file
       # Default mode of H5File$new is "a", which is read + write and create file if it doesn't exist
-      histfile_h5 <- hdf5r::H5File$new(histfile)
+      histfile_h5 <- hdf5r::H5File$new(new_local_histfile)
       # The empty brackets (`[]`) indicate the whole vector is replaced.
       # This is necessary to overwrite an existing dataset
       histfile_h5[["NPLANT"]][] <- new.nplant_co_plant
@@ -131,6 +115,10 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
                                 " by write.restart.ED2")
     }
   }
+  
+  # copy the history file with new states and new timestamp to remote 
+  # it's OK, because ED2 doesn't overwrite the history files and produces history-Z- files anyway
+  PEcAn.remote::remote.copy.to(settings$host, new_local_histfile, new_remote_histfile)
 
   ##### Modify ED2IN
   ed2in_path <- file.path(rundir, runid, "ED2IN")
@@ -146,15 +134,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
     SFILIN = file.path(settings$host$outdir, runid, "history")
   )
   
-  # rename hisoty file (IF: At this point in order not to swamp directories I decided to write annual historu files
-  # but this causes mismatches in start-date because ED2 writes them as 1961-01-01 not 1961-12-31
-  # then if timeh starts from 1962 it can't find the 1961 files, if you give dates accordingly it starts the simulation early
-  # my solution is to copy-rename the history file. Other solutions are to change ED2's naming, or writing daily/monthly history files
-  index    <- gregexpr("-S-", histfile)[[1]]
-  tstamp   <- substr(histfile, index[1] + 3, index[1] + 6)
-  from_histfile <- file.path(settings$host$outdir, runid, basename(histfile))
-  to_histfile   <- file.path(settings$host$outdir, runid, gsub(tstamp, lubridate::year(start.time), basename(histfile)))
-  
+
   if(settings$host$name == "localhost") check_ed2in(ed2in_new)
   write_ed2in(ed2in_new, ed2in_path)
 
@@ -163,7 +143,15 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   # have job.sh delete the old history.xml: this is temporary, this script will eventually run on remote
   jobsh <- readLines(file.path(rundir, runid, "job.sh"),-1)
   jobsh[17] <- paste0("rm -f ", file.path(settings$host$outdir, runid, "history.xml"))
-  jobsh[18] <- paste("cp", from_histfile, to_histfile)
+
+  # also update mode2netcdf.ED2 call
+  mod2cf_string   <- jobsh[49]
+  from_start_date <- settings$run$start.date   
+  from_end_date   <- settings$run$end.date
+  mod2cf_string   <- gsub(from_start_date, strptime(start.time, format="%Y-%m-%d"), mod2cf_string)
+  mod2cf_string   <- gsub(from_end_date,   strptime(stop.time,  format="%Y-%m-%d"), mod2cf_string)
+  jobsh[49]       <- mod2cf_string
+  
   writeLines(jobsh, file.path(rundir, runid, "job.sh"))
 
   PEcAn.logger::logger.info("Finished --", runid)
