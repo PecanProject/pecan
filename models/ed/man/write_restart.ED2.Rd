@@ -4,7 +4,8 @@
 \alias{write_restart.ED2}
 \title{Write ED2 restart file from SDA results}
 \usage{
-write_restart.ED2(outdir, runid, start.time, stop.time, settings, new.state)
+write_restart.ED2(outdir, runid, start.time, stop.time, settings, new.state,
+  new.params, inputs, RENAME = TRUE)
 }
 \arguments{
 \item{start.time}{Time of current assimilation step}
@@ -17,5 +18,5 @@ write_restart.ED2(outdir, runid, start.time, stop.time, settings, new.state)
 TRUE if successful
 }
 \author{
-Alexey Shiklomanov
+Alexey Shiklomanov, Istem Fer
 }

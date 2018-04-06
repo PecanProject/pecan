@@ -106,7 +106,7 @@ convert.samples.ED <- function(trait.samples) {
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 ##-------------------------------------------------------------------------------------------------#
-write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE) {
+write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE, ...) {
   
   
   jobsh <- write.config.jobsh.ED2(settings = settings, run.id = run.id)
