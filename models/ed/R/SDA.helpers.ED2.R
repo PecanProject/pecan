@@ -5,6 +5,7 @@
 #' \code{<workflowID>/out}
 #' @param runid PEcAn run ID
 #' @param file.time Start or end time from SDA analysis
+#' @export
 get_restartfile.ED2 <- function(mod_outdir, runid, file.time) {
     runid <- as.character(runid)
     histfile_path <- file.path(mod_outdir, runid)
