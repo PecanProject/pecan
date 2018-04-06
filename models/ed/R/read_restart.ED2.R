@@ -19,8 +19,6 @@ read_restart.ED2 <- function(outdir,
                              var.names, 
                              params) {
 
-    name_separator <- "."
-    
     # depends on code run on local or remote, currently runs locally
     rundir <- settings$rundir
     mod_outdir <- settings$modeloutdir # is there a case this is different than outdir?
