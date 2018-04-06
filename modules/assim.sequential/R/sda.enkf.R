@@ -47,7 +47,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
                              USE.NAMES = FALSE), 
                       use.names = FALSE)
   names(var.names) <- NULL
-  dir.create(rundir,recursive=TRUE)
+  dir.create(rundir,recursive=TRUE) # remote will give warning
   
   ###-------------------------------------------------------------------###
   ### get model specific functions                                      ###
@@ -82,10 +82,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
   }
   
- 
+  # currently not focusing on met ensembles for ED-SDA coupling, and recycling same met if not localhost
+  # sample_met is a temporary function anyway 
   if(is.null(restart) & is.null(restart$ens.inputs)){
-    ens.inputs <- sample_met(settings,nens)
-  } else {
+    if(settings$host$name != "localhost"){ # temporary HACK..temporary HACK..temporary HACK
+      # skip met ensemble sampling for now
+      ens.inputs <- vector("list", nens)
+    }else{
+      ens.inputs <- sample_met(settings,nens)
+    }
+    
+  }else {
     ens.inputs <- restart$ens.inputs
   }
   #ens.inputs <- list()
