@@ -49,6 +49,8 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   new_local_histfile   <- file.path(dirname(histfile), new_basename)
   new_remote_histfile  <- file.path(settings$host$outdir, runid, new_basename)
   
+  file.copy(histfile, new_local_histfile, overwrite = TRUE)
+  
   #### Get common variables
   # PFT by cohort
   pft_co <- restart$PFT 

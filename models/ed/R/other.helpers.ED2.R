@@ -2,6 +2,7 @@
 #' 
 #' @author Alexey Shiklomanov
 #' @inheritParams base::list.files
+#' @export
 list.files.nodir <- function(path, ...) {
     allfiles <- list.files(path, ...)
     dirs <- list.dirs(path, ...)
