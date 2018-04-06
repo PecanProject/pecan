@@ -140,7 +140,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   ed2in_new <- modify_ed2in(
     ed2in_orig,
     start_date = start.time,
-    end_date = stop.time,
+    end_date = strptime(stop.time, format="%Y-%m-%d %H"), # floor down to the last hour so that ED2 doesn't write to next year's file
     RUNTYPE = "HISTORY",
     IED_INIT_MODE = 4,
     SFILIN = file.path(settings$host$outdir, runid, "history")
