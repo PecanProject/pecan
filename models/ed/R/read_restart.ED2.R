@@ -21,8 +21,6 @@ read_restart.ED2 <- function(outdir,
 
     name_separator <- "."
     
-    hyear <- lubridate::year(stop.time)
-
     # depends on code run on local or remote, currently runs locally
     rundir <- settings$rundir
     mod_outdir <- settings$modeloutdir # is there a case this is different than outdir?
@@ -55,7 +53,7 @@ read_restart.ED2 <- function(outdir,
         
         forecast_tmp                        <- switch(perpft+1, sum(histout$AGB), histout$AGB) # kgC/m2
         forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2", "Mg/ha") # conv to MgC/ha 
-        names(forecast)[length(forecast)] <- switch(perpft+1, "AGB", paste0("AGB.", pft_names))
+        names(forecast)[length(forecast)]   <- switch(perpft+1, "AGB", paste0("AGB.", pft_names))
           
       }
       
@@ -63,7 +61,7 @@ read_restart.ED2 <- function(outdir,
         
         forecast_tmp                        <- switch(perpft+1, sum(histout$TotLivBiom), histout$TotLivBiom) # kgC/m2
         forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2", "Mg/ha") # conv to MgC/ha 
-        names(forecast)[length(forecast)] <- switch(perpft+1, "TotLivBiom", paste0("TotLivBiom.", pft_names))
+        names(forecast)[length(forecast)]   <- switch(perpft+1, "TotLivBiom", paste0("TotLivBiom.", pft_names))
         
       }
       
@@ -71,7 +69,7 @@ read_restart.ED2 <- function(outdir,
         
         forecast_tmp                        <- switch(perpft+1, sum(histout$AbvGrndWood), histout$AbvGrndWood) # kgC/m2
         forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2", "Mg/ha") # conv to MgC/ha 
-        names(forecast)[length(forecast)] <- switch(perpft+1, "AbvGrndWood", paste0("AbvGrndWood.", pft_names))
+        names(forecast)[length(forecast)]   <- switch(perpft+1, "AbvGrndWood", paste0("AbvGrndWood.", pft_names))
         
       }
       
@@ -79,7 +77,7 @@ read_restart.ED2 <- function(outdir,
         
         forecast_tmp                        <- switch(perpft+1, sum(histout$leaf_carbon_content), histout$leaf_carbon_content) # kgC/m2
         forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2", "Mg/ha") # conv to MgC/ha 
-        names(forecast)[length(forecast)] <- switch(perpft+1, "leaf_carbon_content", paste0("leaf_carbon_content.", pft_names))
+        names(forecast)[length(forecast)]   <- switch(perpft+1, "leaf_carbon_content", paste0("leaf_carbon_content.", pft_names))
         
       }
       
@@ -88,7 +86,7 @@ read_restart.ED2 <- function(outdir,
         
         forecast_tmp                        <- switch(perpft+1, sum(histout$GWBI), histout$GWBI) # kgC/m2/yr
         forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2/yr", "Mg/ha/yr") # conv to MgC/ha/yr 
-        names(forecast)[length(forecast)] <- switch(perpft+1, "GWBI", paste0("GWBI.", pft_names))
+        names(forecast)[length(forecast)]   <- switch(perpft+1, "GWBI", paste0("GWBI.", pft_names))
         
       }
       
