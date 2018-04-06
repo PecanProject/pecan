@@ -1,8 +1,9 @@
-## Model Output Variables
+## Model Variables
 
-Note: initial table derived from [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) 
-
+We originally used the [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) conventions. Since, We've added the PaLEON variable conventions to our standard as well. If a variable isn't in one of those two, we stick to the CF conventions.
 ```{r, echo=FALSE}
-data("mstmip_vars", package = "PEcAn.utils")
-knitr::kable(mstmip_vars, align = "c" , booktabs = TRUE)
+data("standard_vars", package = "PEcAn.utils")
+
+library(DT)
+datatable(standard_vars)
 ```
