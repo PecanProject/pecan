@@ -1,4 +1,4 @@
-## Choosing initial vegetation
+### Choosing initial vegetation
 
 On the Input Selection webpage, in addition to selecting PFTs, start & end dates, and meteorology, many models also require some way of specifying the initial conditions for the vegetation, which may range from setting the aboveground biomass and LAI up to detailed inventory-like data on species composition and stand structure.
 
@@ -6,7 +6,7 @@ At the moment, PEcAn has three cases for initial conditions:
 
 1. If files already exist in the database, they can simply be selected from the menu. For ED2, there are 3 different veg files (site, pss, css) and it is important that you select a complete set, not mix and match.
 
-2. If files don't exist they can be uploaded following the instructions on [How to insert new Input data](#NewInput). 
+2. If files don't exist they can be uploaded following the instructions in [ Create a database file record for the input data]. 
 
 3. Automated vegetation initial condition workflow
 
@@ -18,11 +18,11 @@ At the moment, what is functional is a prototype workflow that works for invento
 
 This tool works with an internal copy of the FIA that is uploaded to a postGRES database along side BETY, however for space reasons this database does not ship with the PEcAn VM. To turn this feature on:
 
-1. [Download and Install the FIA database](../../developers_guide/Installing-PEcAn-Data.Rmd)
+1. Download and Install the FIA database. Instructions in [Installing data for PEcAn]
 2. For web-base runs, specify the database settings in the [config.php](https://github.com/PecanProject/pecan/blob/master/web/config.example.php)
-3. For R-based runs, specify the database settings in the [pecan.xml](../advanced_users_guide/PEcAn-Configuration.md#database-access)
+3. For R-based runs, specify the database settings in the [THE PEcAn XML]
 
-More detailed information on how PEcAn processes inputs can be found on our [Input Conversion](#InputConversions) page.
+More detailed information on how PEcAn processes inputs can be found on our [Input Conversion]page.
 
 
 ### Spin up
