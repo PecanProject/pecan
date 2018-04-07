@@ -148,10 +148,9 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
 
   # also update mode2netcdf.ED2 call
   mod2cf_string   <- jobsh[49]
-  from_start_date <- settings$run$start.date   
-  from_end_date   <- settings$run$end.date
-  mod2cf_string   <- gsub(from_start_date, strptime(start.time, format="%Y-%m-%d"), mod2cf_string)
-  mod2cf_string   <- gsub(from_end_date,   strptime(stop.time,  format="%Y-%m-%d"), mod2cf_string)
+  from_year <- paste0("'", hyear,"-")  # trying to make sure year is not somewhere else in the path
+  to_year   <- paste0("'", lubridate::year(start.time), "-")
+  mod2cf_string   <- gsub(from_year, to_year, mod2cf_string)
   jobsh[49]       <- mod2cf_string
   
   writeLines(jobsh, file.path(rundir, runid, "job.sh"))
