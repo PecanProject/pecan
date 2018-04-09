@@ -11,10 +11,12 @@
 ##'
 ##' @name query.traits
 ##' @title Query trait data
-##' @param spstr string of species id's from trait database
+##' @param ids vector of species or cultivar id's from trait database
 ##' @param priors vector of parameters for which priors have been specified
-##' @param con
-##' @return dataframe with trait data
+##' @param con database connection object
+##' @param update.check.only if TRUE, returns results but does not print summaries
+##' @param ids_are_cultivars if TRUE, ids is a vector of cultivar IDs, otherwise they are species IDs
+##' @return list of dataframes, each with data for one trait
 ##' @seealso \code{\link{query.trait.data}}
 ##' @export query.traits
 ##' @examples
@@ -25,7 +27,9 @@
 ##' trait.data <- query.traits(spstr, trvec)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.traits <- function(spstr, priors, con = NULL, update.check.only=FALSE){
+query.traits <- function(ids, priors, con = NULL,
+                         update.check.only=FALSE,
+                         ids_are_cultivars=FALSE){
 
   if(is.null(con)){
     con <- db.open(settings$database$bety)
@@ -37,24 +41,34 @@ query.traits <- function(spstr, priors, con = NULL, update.check.only=FALSE){
     return(NULL)
   }
 
-  if(!spstr == "''"){
-    query <- paste("select distinct variables.name from traits join variables
-                 on (traits.variable_id = variables.id) where specie_id in (", spstr,");", sep = "")
-    traits <- db.query(query = query, con = con)[['name']]
-    traits <- unique(traits[traits %in% priors])
-
-    ### Grab trait data
-    trait.data <- lapply(traits, function(trait)
-      query.trait.data(
-        trait = trait,
-        spstr = spstr,
-        con = con,
-        update.check.only = update.check.only
-      ))
-    names(trait.data) <- traits
-  } else {
-    trait.data <- list()
+  if (length(ids) == 0 || length(priors) == 0) {
+    return(list())
   }
+
+  id_type = rlang::sym(if (ids_are_cultivars) {"cultivar_id"} else {"specie_id"})
+
+  traits <- (dplyr::tbl(con, "traits")
+    %>% dplyr::inner_join(dplyr::tbl(con, "variables"), by = c("variable_id" = "id"))
+    %>% dplyr::filter(
+      (rlang::UQ(id_type) %in% ids),
+      (name %in% priors)) # TODO: use .data$name when filter supports it
+    %>% dplyr::distinct(name) # TODO: use .data$name when distinct supports it
+    %>% dplyr::collect())
+
+  if (nrow(traits) == 0) {
+    return(list())
+  }
+
+  ### Grab trait data
+  trait.data <- lapply(traits$name, function(trait){
+    query.trait.data(
+      trait = trait,
+      spstr = PEcAn.utils::vecpaste(ids),
+      con = con,
+      update.check.only = update.check.only,
+      ids_are_cultivars = ids_are_cultivars)
+  })
+  names(trait.data) <- traits$name
 
   return(trait.data)
 }

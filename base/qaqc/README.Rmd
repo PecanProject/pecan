@@ -1,0 +1,33 @@
+## PEcAn functions for cleaning up a version of the bety database
+
+This package includes several wrapper functions for common database queries for entries that cause problems, or take up space. Please refer to the `Pre-release-clean-up` script located in the `vignettes` folder for best-practices in using these functions. See "Intended use" for more information. 
+
+
+Many queries and checks are net yet implemented. If you'd like to contribute to this package, look at issue [#1630](https://github.com/PecanProject/pecan/issues/1630) and [this list of bety issues] (https://github.com/PecanProject/bety/issues?utf8=%E2%9C%93&q=is%3Aopen%20%22needed%20cleanup%22%20) to see what functions still need to be made. Add these functions to the `Pre-release-clean-up` vignette. See "Structure of functions" for more information. 
+
+
+## Intended use
+
+These functions are intended to be used interactively. The `find*` functions return a table of all of the entries that fit the terms provided. The `write_table` function then exports that table to a specific file. That file can then be *manually edited* in any text-editor. *This is the most important step, as there will likely be entries with utility that only a person familiar with ongoing/recent projects would know.*
+
+After the editing process, the file can be fed into the `cull_database_entries` function. This will parse the file, and *delete all the entried that are listed on the file*. It will also provide a log of what was deleted.  
+
+
+## Structure of functions
+
+**find functions**
+
+  - All find functions should have descriptive names of the form "find_TABLE_ relationship _TABLE2". All functions will return entries from the first named table ie: `find_inputs_without_formats` will return input table entries. 
+  
+  - All find functions need to return and object with a column "table_name" with the name of the table it's returning entries from. 
+  
+  - All find functions must return an object where there is an "id" column with "id" entries that are associated with the entries from the first table in the function
+  
+  
+**check functions**
+
+  - Not yet implemented. 
+
+
+
+

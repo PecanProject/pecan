@@ -1,13 +1,14 @@
 ##' @name metric_RAE
 ##' @title Relative Absolute Error
 ##' @export
-##' @param dat dataframe
+##' @param metric_dat dataframe
 ##' 
 ##' @author Betsy Cowdery
 
-metric_RAE <- function(dat, ...) {
+metric_RAE <- function(metric_dat, ...) {
   PEcAn.logger::logger.info("Metric: Relative Absolute Error")
-  numer <- mean(abs(dat$obvs - dat$model))
-  denom <- mean(abs(dat$obvs - mean(dat$obvs)))
+  metric_dat <- na.omit(metric_dat)
+  numer <- mean(abs(metric_dat$obvs - metric_dat$model))
+  denom <- mean(abs(metric_dat$obvs - mean(metric_dat$obvs)))
   return(numer/denom)
 } # metric_RAE

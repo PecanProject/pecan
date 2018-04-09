@@ -1,4 +1,6 @@
 <!--- Provide a general summary of your changes in the Title above -->
+<!--- Please select appropriate Priority, Status,and Type labels-->
+<!--- If you do not have permission to select labels please state which labels you would like -->
 
 ## Description
 <!--- Describe your changes in detail -->
@@ -7,6 +9,11 @@
 <!--- Why is this change required? What problem does it solve? -->
 <!--- If it fixes an open issue, please link to the issue here. -->
 
+## Review Time Estimate
+<!---When do you want your code reviewed by?-->
+- [ ] Immediately
+- [ ] Within one week
+- [ ] When possible
 ## Types of changes
 <!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
 - [ ] Bug fix (non-breaking change which fixes an issue) <!-- please add issue number -->

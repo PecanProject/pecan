@@ -93,7 +93,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
 
   # special case Brown Dog
   if (!is.null(browndog)) {
-    result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username)
+    result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username, con)
     
     if (is.data.frame(result)) {
       dbfile.input.insert(in.path = dirname(result$file), 
@@ -260,7 +260,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     
   } else {
     PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
-    model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
+    model.id  <- dbfile.check("Input", ready.id, con, hostname=machine.host)
     if(is.null(model.id)|length(model.id)==0){
       model.file <- input_met$path
     }else{
@@ -315,9 +315,10 @@ db.site.lat.lon <- function(site.id, con) {
 ##' @param model, model to convert the met data to
 ##' @param dir, folder where results are stored (in subfolder)
 ##' @param username, used when downloading data from Ameriflux like sites
+##' @param con, database connection
 ## 
 ##' @author Rob Kooper
-browndog.met <- function(browndog, source, site, start_date, end_date, model, dir, username) {
+browndog.met <- function(browndog, source, site, start_date, end_date, model, dir, username, con) {
   folder <- tempfile("BD-", dir)
   dir.create(folder, showWarnings = FALSE, recursive = TRUE)
   
@@ -371,8 +372,22 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                           startdate = start_date, enddate = end_date,
                           dbfile.name = basename(outputfile), 
                           stringsAsFactors = FALSE)
+  } else if (model == "BIOCRO") {
+    metinfo <- db.query(paste0("select mimetypes.type_string, formats.name from mimetypes, formats, modeltypes, modeltypes_formats",
+                               " where modeltype_id=modeltypes.id and format_id=formats.id and formats.mimetype_id=mimetypes.id",
+                               " and tag='met' and modeltypes.name='", model, "'"), con)
+
+    formatname <- tolower(paste0("met.", model))
+    outputfile <- file.path(folder, "browndog_generated.out") # TODO is there a better name?
+    results <- data.frame(file = outputfile, 
+                          host = PEcAn.remote::fqdn(), 
+                          mimetype = metinfo$type_string,
+                          formatname = metinfo$name,
+                          startdate = start_date, enddate = end_date,
+                          dbfile.name = basename(outputfile), 
+                          stringsAsFactors = FALSE)
   } else {
-   PEcAn.logger::logger.warn("Could not process model", model)
+    PEcAn.logger::logger.warn("Could not process model", model)
     return(invisible(NA))
   }
   
@@ -383,7 +398,8 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                     "<lon>", site$lon, "</lon>",
                     "<start_date>", start_date, "</start_date>", 
                     "<end_date>", end_date, "</end_date>", 
-                    "<username>", username, "</username>", 
+                    "<username>", username, "</username>",
+                    "<model>", model, "</model>", 
                     "</input>")
   
   userpass <- paste(browndog$username, browndog$password, sep = ":")
@@ -391,6 +407,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   result <- postForm(paste0(browndog$url, formatname, "/"), 
                      fileData = fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
   url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
+  PEcAn.logger::logger.info("browndog download url :", url)
   downloadedfile <- download.url(url, outputfile, 600, curloptions)
   
   # fix returned data

@@ -114,7 +114,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         tau <- 15 * tstep
         filt <- exp(-(1:length(Tair)) / tau)
         filt <- (filt / sum(filt))
-        soilT <- convolve(Tair, filt) - 273.15
+        soilT <- convolve(Tair, filt)
         soilT <- udunits2::ud.convert(soilT, "K", "degC")
         PEcAn.logger::logger.info("soil_temperature absent; soilT approximated from Tair")
       } else {
@@ -218,7 +218,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         extra.days  <- length(as.Date(start_date):as.Date(end_date))
         if (extra.days > 1){
           PEcAn.logger::logger.info("Subsetting SIPNET met to match end date")
-          end.row <-  nrow(tmp) - ((extra.days - 1) * 86400 / dt)  #subtract to include end.date
+          end.row <-  extra.days * 86400 / dt  #subtract to include end.date
           tmp <- tmp[1:end.row,]
         }
       } else{
