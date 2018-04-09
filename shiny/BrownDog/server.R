@@ -67,7 +67,7 @@ server <- shinyServer(function(input, output, session) {
       db.query(
         paste0(
           "SELECT sitename, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry))
-          AS lat FROM sites, sitegroups_sites where sites.id = sitegroups_sites.site_id
+          AS lat FROM sites, sitegroups_sites where sites.geometry IS NOT NULL AND sites.id = sitegroups_sites.site_id
           and sitegroups_sites.sitegroup_id in ( select id from sitegroups  where
           sitegroups.name like '",
           input$type,
@@ -76,10 +76,16 @@ server <- shinyServer(function(input, output, session) {
         con
         )
     
-    ids <- sites$sitename
-    latitude <- sites$lat
-    longitude <- sites$lon
-    
+    if(length(sites) > 0){
+      ids <- sites$sitename
+      latitude <- sites$lat
+      longitude <- sites$lon
+    } else {
+      ids <- c()
+      latitude <- c()
+      longitude <- c()
+    }
+
     # fake sites to run on local (without DB)
     # latitude<-c(35.94077, 35.83770, 35.84545, 35.81584, 35.79387, 36.05600)
     # longitude<-c(-78.58010, -78.78084, -78.72444, -78.62568, -78.64262, -78.67600)

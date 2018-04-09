@@ -170,6 +170,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
     
     ##datetime_index <- which(format$vars$bety_name == "datetime")
     datetime_index <- format$time.row
+    alldatetime <- 0
     if (length(datetime_index) == 0) {
       bety_year <- format$vars$bety_name == 'year'
       bety_day <- format$vars$bety_name == 'day'
@@ -186,7 +187,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
         alldatetime <- as.POSIXct(yyddhhmm)
       } else {
         ## Does not match any of the known date formats, add new ones here!
-        PEcAn.logger::logger.error("datetime column is not specified in format")
+        PEcAn.logger::logger.severe("datetime column is not specified in format")
       }
     } else {
       datetime_raw <- alldat[, format$vars$input_name[datetime_index]]
