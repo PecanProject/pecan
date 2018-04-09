@@ -38,10 +38,10 @@ ed.var <- function(varname) {
                drelated = NULL, 
                expr    = "BROOT")                                                  } else
   if(varname == "GWBI") {
-    out = list(readvar = "DAGB_DT", # this is actually rate of change in AGB 
-               type = 'co', units = "kgC/plant/yr", 
+    out = list(readvar = "DLNAGB_DT", # this is actually rate of change in AGB 
+               type = 'co', units = "1/yr", 
                drelated = NULL,
-               expr    = "DAGB_DT")                                                } else
+               expr    = "DLNAGB_DT")                                              } else
   { # No Match!
     warning(paste0("Couldn't find varname ", varname, "!"))
     out = NULL

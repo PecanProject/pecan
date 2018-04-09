@@ -995,7 +995,7 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   ed_units     <- trans_out$units # might use
   
   # List of vars to extract includes the requested one, plus others needed below 
-  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT")
+  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT", "DAGB_DT")
   vars <- c(ed_varnames, add_vars) 
   
   # list to collect outputs
@@ -1060,11 +1060,17 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
         tmp.var <- eval(parse(text = expr)) # parse
         
         # check for different variables/units?
-        if(ed_units[l] %in% c("kgC/plant", "kgC/plant/yr")){
-          #     kgC/m2 = kgC/plant  *   plant/m2  
+        if(ed_units[l] %in% c("kgC/plant")){
           tmp.var[!ind] <- 0
+          #     kgC/m2 = kgC/plant  *   plant/m2  
           plant2cohort <- tmp.var * plant_dens
           cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), mean, na.rm = TRUE)
+          out[[pecan_names[l]]][k] <- sum(cohort2patch, na.rm = TRUE)
+        }else if(ed_units[l] %in% c("1/yr")){
+          tmp.var[!ind] <- 0
+          #   kgC/m2/yr = kgC/plant/yr  *   plant/m2  
+         # plant2cohort <- tmp.var * plant_dens
+          cohort2patch <- tapply(tmp.var, list("patch" = patch_index), mean, na.rm = TRUE) # should rates be summed?
           out[[pecan_names[l]]][k] <- sum(cohort2patch, na.rm = TRUE)
         }
     
