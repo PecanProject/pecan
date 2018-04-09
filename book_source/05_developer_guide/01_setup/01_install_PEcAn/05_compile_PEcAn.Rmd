@@ -1,0 +1,52 @@
+### Download and Compile PEcAn 
+
+Set `R_LIBS_USER` 
+
+[CRAN Reference](http://cran.r-project.org/doc/manuals/r-devel/R-admin.html#Managing-libraries)
+
+```bash
+# point R to personal lib folder
+echo 'export R_LIBS_USER=${HOME}/R/library' >> ~/.profile
+source ~/.profile
+mkdir -p ${R_LIBS_USER}
+```
+
+
+#### Download, compile and install PEcAn from GitHub
+
+```bash
+# download pecan
+cd
+git clone https://github.com/PecanProject/pecan.git
+
+# compile pecan
+cd pecan
+./scripts/build.sh --dependencies
+```
+
+Following will run a small script to setup some hooks to prevent people from using the pecan demo user account to check in any code.
+
+```bash
+# prevent pecan user from checking in code
+./scripts/create-hooks.sh
+```
+
+### PEcAn Testrun
+
+Do the run, this assumes you have [installed the BETY database][Installing BETY], [sites][Site Information] tar file and [SIPNET].
+
+```bash
+# create folder
+cd
+mkdir testrun.pecan
+cd testrun.pecan
+
+# copy example of pecan workflow and configuration file
+cp ../pecan/tests/pecan32.sipnet.xml pecan.xml
+cp ../pecan/scripts/workflow.R workflow.R
+
+# exectute workflow
+rm -rf pecan
+./workflow.R pecan.xml
+```
+NB: pecan.xml is configured for the virtual machine, you will need to change the <met> field from '/home/carya/' to wherever you installed your 'sites', usually $HOME

@@ -1,0 +1,9 @@
+# Web workflow
+
+- Model and site selection
+- Run configuration
+- Run execution
+- Results
+- Interactive visualizations
+
+Note: We recommend that all new users begin with [Demo 01](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html). The documentation below assumes you are already familiar with how to navigate to PEcAn's interactive web interface for running models.

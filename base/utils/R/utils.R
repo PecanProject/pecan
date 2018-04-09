@@ -170,64 +170,6 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL) {
   return(result)
 } # get.run.id
 
-
-##' @export
-listToXml <- function(x, ...) {
-  .Deprecated("PEcAn.settings::listToXml")
-  UseMethod("listToXml")
-} # listToXml
-
-
-#--------------------------------------------------------------------------------------------------#
-##' Convert List to XML
-##'
-##' DEPRECATED. Use \code{\link[PEcAn.settings:listToXml.default]{PEcAn.settings::listToXml.default}} instead.
-##' Can convert list or other object to an xml object using xmlNode
-##' @title List to XML
-##' @param item object to be converted. Despite the function name, need not actually be a list
-##' @param tag xml tag
-##' @return xmlNode
-##' @export
-##' @author David LeBauer, Carl Davidson, Rob Kooper
-listToXml.default <- function(item, tag) {
-  .Deprecated("PEcAn.settings::listToXml.default")
-
-  # just a textnode, or empty node with attributes
-  if (typeof(item) != "list") {
-    if (length(item) > 1) {
-      xml <- XML::xmlNode(tag)
-      for (name in names(item)) {
-        XML::xmlAttrs(xml)[[name]] <- item[[name]]
-      }
-      return(xml)
-    } else {
-      return(XML::xmlNode(tag, item))
-    }
-  }
-
-  # create the node
-  if (identical(names(item), c("text", ".attrs"))) {
-    # special case a node with text and attributes
-    xml <- XML::xmlNode(tag, item[["text"]])
-  } else {
-    # node with child nodes
-    xml <- XML::xmlNode(tag)
-    for (i in seq_along(item)) {
-      if (is.null(names(item)) || names(item)[i] != ".attrs") {
-        xml <- XML::append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
-      }
-    }
-  }
-
-  # add attributes to node
-  attrs <- item[[".attrs"]]
-  for (name in names(attrs)) {
-    XML::xmlAttrs(xml)[[name]] <- attrs[[name]]
-  }
-  return(xml)
-} # listToXml.default
-
-
 #--------------------------------------------------------------------------------------------------#
 ##' Zero bounded density using log density transform
 ##'
@@ -257,7 +199,7 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @title Summarize Results
 ##' @param result dataframe with results of trait data query
 ##' @return result with replicate observations summarized
-##' @export
+##' @export summarize.result
 ##' @author David LeBauer
 summarize.result <- function(result) {
   ans1 <- plyr::ddply(result[result$n == 1, ],
