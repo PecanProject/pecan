@@ -12,14 +12,15 @@
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-##' @importFrom PEcAn.utils fqdn logger.debug logger.error logger.warn logger.severe
-##' 
+##' @param username Ameriflux username
+##' @param method Optional. download.file() function option.  Use this to set custom programs such as ncftp
+##'
 ##' @examples
 ##' result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
 ##' 
-##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
+##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
 download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, 
-                                  overwrite = FALSE, verbose = FALSE, username = "pecan", ...) {
+                                  overwrite = FALSE, verbose = FALSE, username = "pecan", method, ...) {
   # get start/end year code works on whole years only
   
   
@@ -49,7 +50,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   
   # test to see that we got back a FTP
   if (is.null(ftplink)) {
-    logger.severe("Could not get information about", site, ".", "Is this an AmerifluxLBL site?")
+    PEcAn.logger::logger.severe("Could not get information about", site, ".", "Is this an AmerifluxLBL site?")
   }
   # get zip and csv filenames
   outfname <- strsplit(ftplink, "/")
@@ -71,17 +72,17 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   download_file_flag     <- TRUE
   extract_file_flag      <- TRUE
   if (!overwrite && file.exists(output_zip_file)) {
-    logger.debug("File '", output_zip_file, "' already exists, skipping download")
+    PEcAn.logger::logger.debug("File '", output_zip_file, "' already exists, skipping download")
     download_file_flag   <- FALSE
   }
   if (!overwrite && file.exists(output_csv_file)) {
-    logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
+    PEcAn.logger::logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
     download_file_flag   <- FALSE
     extract_file_flag    <- FALSE
     file_timestep        <- "HH"
   } else {
     if (!overwrite && file.exists(output_csv_file_hr)) {
-      logger.debug("File '", output_csv_file_hr, "' already exists, skipping extraction.")
+      PEcAn.logger::logger.debug("File '", output_csv_file_hr, "' already exists, skipping extraction.")
       download_file_flag <- FALSE
       extract_file_flag  <- FALSE
       file_timestep      <- "HR"
@@ -92,9 +93,9 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   
   if (download_file_flag) {
     extract_file_flag <- TRUE
-    utils::download.file(ftplink, output_zip_file)
+    PEcAn.utils::download.file(ftplink, output_zip_file, method)
     if (!file.exists(output_zip_file)) {
-      logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
+      PEcAn.logger::logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
     }
   }
   if (extract_file_flag) {
@@ -107,12 +108,12 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
         output_csv_file <- output_csv_file_hr
         outcsvname <- outcsvname_hr
       } else {
-        logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
+        PEcAn.logger::logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
       }
     }
     unzip(output_zip_file, outcsvname, exdir = outfolder)
     if (!file.exists(output_csv_file)) {
-      logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
+      PEcAn.logger::logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
     }
   }
   
@@ -140,10 +141,10 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   eyear <- lubridate::year(lastdate)
   
   if (start_year > eyear) {
-    logger.severe("Start_Year", start_year, "exceeds end of record ", eyear, " for ", site)
+    PEcAn.logger::logger.severe("Start_Year", start_year, "exceeds end of record ", eyear, " for ", site)
   }
   if (end_year < syear) {
-    logger.severe("End_Year", end_year, "precedes start of record ", syear, " for ", site)
+    PEcAn.logger::logger.severe("End_Year", end_year, "precedes start of record ", syear, " for ", site)
   }
   
   rows    <- 1
@@ -157,7 +158,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
                         stringsAsFactors = FALSE)
 
   results$file[rows]       <- output_csv_file
-  results$host[rows]       <- fqdn()
+  results$host[rows]       <- PEcAn.remote::fqdn()
   results$startdate[rows]  <- firstdate_st
   results$enddate[rows]    <- lastdate_st
   results$mimetype[rows]   <- "text/csv"

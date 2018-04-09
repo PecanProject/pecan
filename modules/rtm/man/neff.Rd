@@ -4,12 +4,11 @@
 \alias{neff}
 \title{Effective sample size}
 \usage{
-neff(x)
+neff(x, ...)
 }
 \arguments{
 \item{x}{A vector or time series}
 }
 \description{
-Calculate effective sample size of vector based on its 
-autocorrelation.
+Calculate effective sample size of vector based on its autocorrelation.
 }

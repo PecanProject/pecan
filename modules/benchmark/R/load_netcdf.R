@@ -44,14 +44,17 @@ load_x_netcdf <- function(data.path, format, site, vars = NULL) {
     }
     # throw error if can't parse time format
     if (is.na(date.origin)) {
-      PEcAn.utils::logger.error("All time formats failed to parse. No formats found.")
+      PEcAn.logger::logger.error("All time formats failed to parse. No formats found.")
     }
     
+
     time.stamp.match <- gsub("UTC", "", date.origin)
     t.units <- gsub(paste0(" since ", time.stamp.match, ".*"), "", 
                     ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)
     
-    foo <- as.POSIXlt(date.origin, tz = "UTC") + udunits2::ud.convert(time.col[[i]], t.units, "seconds")
+    # need to change system TZ otherwise, lines below keeps writing in the current time zone
+    Sys.setenv(TZ = 'UTC')
+    foo <- as.POSIXct(date.origin, tz = "UTC") + udunits2::ud.convert(time.col[[i]], t.units, "seconds")
     time.col[[i]] <- foo
   }
   
@@ -59,8 +62,9 @@ load_x_netcdf <- function(data.path, format, site, vars = NULL) {
   # while reading Ameriflux for example however the model timesteps are more regular and the last
   # value can be '2006-12-31 23:30:00'..  this will result in cutting the last value in the
   # align_data step
-  dat$posix <- round(as.POSIXlt(do.call("c", time.col), tz = "UTC"), "mins")
-
+  dat$posix <- round(as.POSIXct(do.call("c", time.col), tz = "UTC"), "mins")
+  dat$posix <- as.POSIXct(dat$posix)
+  
   lapply(nc, ncdf4::nc_close)
   
   return(dat)

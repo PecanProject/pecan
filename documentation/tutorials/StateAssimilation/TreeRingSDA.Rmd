@@ -40,48 +40,62 @@ Perform a site-level SIPNET run using the following settings
 * At the top of the file add the following tags to set the ensemble size
 
 ```
-<state.data.assimilation>
-  <n.ensemble>35</n.ensemble>
-  <process.variance>FALSE</process.variance>
-  <sample.parameters>TRUE</sample.parameters>
+   <state.data.assimilation>
+   <n.ensemble>35</n.ensemble>
+   <process.variance>FALSE</process.variance>
+   <sample.parameters>TRUE</sample.parameters>
+   <data>
+    <format_id>1000000040</format_id>
+    <input.id>1000013298</input.id>
+  </data>
    <state.variables>
-    <variable>
-      <variable.name>NPP</variable.name>
-      <unit>MgC/ha/yr</unit>
-    </variable>
-    <variable>
-      <variable.name>AbvGrndWood</variable.name>
+   <variable>
+   <variable.name>NPP</variable.name>
+   <unit>MgC/ha/yr</unit>
+        <min_value>-9999</min_value>
+        <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>AbvGrndWood</variable.name>
+       <unit>KgC/m^2</unit>
+       <min_value>0</min_value>
+       <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>TotSoilCarb</variable.name>
       <unit>KgC/m^2</unit>
-    </variable>
-    <variable>
-      <variable.name>TotSoilCarb</variable.name>
-      <unit>KgC/m^2</unit>
-    </variable>
-    <variable>
-      <variable.name>LeafC</variable.name>
-      <unit>m^2/m^2</unit>
-    </variable>
-    <variable>
-      <variable.name>SoilMoistFrac</variable.name>
-      <unit></unit>
-    </variable>
-    <variable>
-      <variable.name>SWE</variable.name>
-      <unit>cm</unit>
-    </variable>
-    <variable>
-      <variable.name>Litter</variable.name>
-      <unit>gC/m^2</unit>
-    </variable>
-  </state.variables>
-  <spin.up>
-    <start.date>1979/01/01</start.date>
-    <end.date>1979/12/31</end.date>
-  </spin.up>
-  <forecast.time.step>1</forecast.time.step>
+      <min_value>0</min_value>
+      <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>LeafC</variable.name>
+         <unit>m^2/m^2</unit>
+         <min_value>0</min_value>
+         <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>SoilMoistFrac</variable.name>
+         <unit></unit>
+         <min_value>0</min_value>
+         <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>SWE</variable.name>
+         <unit>cm</unit>
+         <min_value>0</min_value>
+         <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>Litter</variable.name>
+         <unit>gC/m^2</unit>
+         <min_value>0</min_value>
+         <max_value>9999</max_value>
+   </variable>
+   </state.variables>
+   <forecast.time.step>year</forecast.time.step>
   <start.date>1980/01/01</start.date>
   <end.date>2015/12/31</end.date>
- </state.data.assimilation>
+  </state.data.assimilation>
 ```
 
 * Delete the ```<pfts>`` block from the settings

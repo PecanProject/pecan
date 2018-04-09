@@ -1,61 +1,52 @@
-#' @name invert.auto 
+#' Inversion with automatic convergence checking
 #' 
-#' @title Inversion with automatic convergence checking
 #' @details Performs an inversion via the \code{invert.custom} function with 
 #' multiple chains and automatic convergence checking.  Convergence checks are 
 #' performed using the multivariate Gelman-Rubin diagnostic.
 #' @param invert.options Parameters related to inversion.
-#' @param return.samples Include full samples list in output. Default = 
-#' \code{TRUE}.
+#' @param return.samples Include full samples list in output. Default = `TRUE.`
 #' @param save.samples Save samples to file as the inversion proceeds (useful 
-#' for debugging). If \code{NULL}, do not save samples. Default = \code{NULL}.
+#' for debugging). If `NULL`, do not save samples. Default = `NULL`.
 #' @param parallel Logical. Whether or not to run multiple chains in parallel 
-#' on multiple cores (default = \code{TRUE}).
+#' on multiple cores (default = `TRUE`).
 #' @param parallel.cores Number of cores to use for parallelization. If 
-#' \code{NULL}
-#' (default), allocate one fewer than detected number of cores.
+#' `NULL` (default), allocate one fewer than detected number of cores.
 #' @param parallel.output Filename (or '' for stdout) for printing parallel 
-#' outputs. Use with caution. Default = \code{'/dev/null'}.
+#' outputs. Use with caution. Default = `'/dev/null'`.
 #' @inheritParams invert.custom
 #' 
 #' @details
-#' Parameters specific to \code{invert.auto} are described here.
-#' For the remaining parameters, see \code{\link{invert.custom}}.
-#' \itemize{
+#' Parameters specific to `invert.auto` are described here.
+#' For the remaining parameters, see [invert.custom()].
 #' 
-#' \item{model}{The model to be inverted. This should be an R function that 
+#' * `model` -- The model to be inverted. This should be an R function that 
 #' takes \code{params} as input and returns one column of \code{observed} 
-#' (nrows should be the same). Constants should be implicitly included here. }
+#' (nrows should be the same). Constants should be implicitly included here. 
 #'
-#' \item{nchains}{Number of independent chains.}
+#' * `nchains` -- Number of independent chains.
 #' 
-#' \item{inits.function}{Function for generating initial conditions.}
+#' * `inits.function` -- Function for generating initial conditions.
 #' 
-#' \item{ngibbs.max}{Maximum number of total iterations (per chain). DEFAULT 
-#' = 5e6}
+#' * `ngibbs.max` -- Maximum number of total iterations (per chain). DEFAULT = 5e6
 #'
-#' \item{ngibbs.min}{Minimum number of total iterations (per chain). DEFAULT = 
-#' 5000.}
+#' * `ngibbs.min` -- Minimum number of total iterations (per chain). DEFAULT = 5000.
 #'
-#' \item{ngibbs.step}{Number of iterations between convergence checks. Default 
-#' = 1000.}
+#' * `ngibbs.step` -- Number of iterations between convergence checks. Default = 1000.
 #'
-#' \item{run_first}{Function to run before running sampling. Takes parallel 
+#' * `run_first` -- Function to run before running sampling. Takes parallel 
 #' inputs list containing runID, initial values, and resume (NULL) as an 
-#' argument.}
+#' argument.
 #'
-#' \item{calculate.burnin}{If \code{TRUE}, use 
-#' \code{PEcAn.assim.batch::autoburin} function to calculate burnin. Otherwise, 
-#' assume burnin is \code{min(niter/2, iter_conv_check)}.}
+#' * `calculate.burnin` -- If `TRUE`, use `PEcAn.assim.batch::autoburin` 
+#' function to calculate burnin. Otherwise, assume burnin is `min(niter/2, 
+#' iter_conv_check)`.
 #'
-#' \item{threshold}{Maximum value of the Gelman-Rubin diagnostic for 
-#' determining convergence. Default = 1.1}
-#' }
-#' 
+#' * `threshold` -- Maximum value of the Gelman-Rubin diagnostic for 
+#' determining convergence. Default = 1.1
 #'
-#' @return List including \code{results} (summary statistics), \code{samples} 
-#' (\code{mcmc.list} object, or \code{NA} if \code{return.samples=FALSE}), and 
-#' other information.
+#' @return List including `results` (summary statistics), `samples` 
+#' (`mcmc.list` object, or `NA` if `return.samples=FALSE`), and other 
+#' information.
 #' @export
 
 invert.auto <- function(observed, invert.options,
@@ -318,7 +309,7 @@ process_output <- function(output.list,
     message("Passed initial convergence check.")
   }
   if (calculate.burnin) {
-    burn <- PEcAn.assim.batch::autoburnin(out$samples, return.burnin = TRUE)
+    burn <- PEcAn.assim.batch::autoburnin(out$samples, return.burnin = TRUE, method = 'gelman.plot')
     out$burnin <- burn$burnin
     if (out$burnin == 1) {
       message("Robust convergence check in autoburnin failed. ",

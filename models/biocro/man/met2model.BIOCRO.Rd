@@ -27,7 +27,7 @@ a dataframe of information about the written file
 }
 \description{
 Converts a met CF file to a model specific met file. The input
-files are calld <in.path>/<in.prefix>.YYYY.cf
+files are called <in.path>/<in.prefix>.YYYY.cf
 }
 \author{
 Rob Kooper, David LeBauer

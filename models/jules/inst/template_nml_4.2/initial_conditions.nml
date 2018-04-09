@@ -5,7 +5,6 @@ file='initial_conditions.dat',
 nvars=9,
 total_snow=.true.,
 use_file=5*.false.,.true.,.true.,.true.,
-var='canopy','tstar_tile','cs','gs','rgrain','sthuf','t_soil',
-'snow_tile','lai'
+var='canopy','tstar_tile','cs','gs','rgrain','sthuf','t_soil','snow_tile','lai'
 var_name='',
 /

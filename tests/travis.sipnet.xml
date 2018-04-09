@@ -48,7 +48,9 @@
       <id>772</id>
     </site>
     <inputs>
-      <met>/home/travis/sipnet_unk/niwot_tutorial.clim</met>
+      <met>
+        <path>/home/travis/sipnet_unk/niwot_tutorial.clim</path>
+      </met>
     </inputs>
     <start.date>2002-01-01 00:00:00</start.date>
     <end.date>2005-12-31 00:00:00</end.date>

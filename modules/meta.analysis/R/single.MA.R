@@ -115,7 +115,7 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior, jag.model.file,
   ## I would have done a while loop, but it could take forever 
   ## So just give one chance to try again
   if (coda::gelman.diag(jags.out)$mpsrf > 1.2) {
-    logger.warn("model did not converge; re-running with j.iter * 10")
+    PEcAn.logger::logger.warn("model did not converge; re-running with j.iter * 10")
     jags.out <- coda.samples(model = j.model, 
                              variable.names = vars,
                              n.iter = j.iter * 10, 

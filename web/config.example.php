@@ -50,7 +50,7 @@ $anonymous_page = 99;
 $fqdn=exec('hostname -f');
 
 # List of all host and options. The list should be the server pointing
-# to an array. The second array contains a key value pair used to 
+# to an array. The second array contains a key value pair used to
 # configure the host. Currenly the following options are available:
 # - qsub       : if specified the jobs are launched using qsub, this can
 #                be an empty value to indicate to use default settings.
@@ -65,13 +65,13 @@ $fqdn=exec('hostname -f');
 # - postrun    : any special options to add at the end of the job.
 # - folder     : folder on remote machine, will add username and the
 #                workflowid to the folder name
-# - models     : any special options to add to a specific model that is 
+# - models     : any special options to add to a specific model that is
 #                launched. This is an array of the modeltype and
 #                additional parameters for the job.sh.
 # - scratchdir : folder to be used for scratchspace when running certain
 #                models (such as ED)
 $hostlist=array($fqdn => array(),
-                "geo.bu.edu" => 
+                "geo.bu.edu" =>
                     array("qsub"    => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
                           "jobid"   => "Your job ([0-9]+) .*",
                           "qstat"   => "qstat -j @JOBID@ || echo DONE",
@@ -81,7 +81,7 @@ $hostlist=array($fqdn => array(),
                               array("prerun"  => "module load hdf5"))));
 
 # Folder where PEcAn is installed
-$pecan_install="/home/carya/R/library";
+$R_library_path="/home/carya/R/library";
 
 # Location where PEcAn is installed, not really needed anymore
 $pecan_home="/home/carya/pecan/";
@@ -109,5 +109,10 @@ $logfile = "/home/carya/output/betydb.log";
 # uncomment the following variable to enable the simple interface
 #$simpleBETY = TRUE;
 
+# syncing details
+
+$server_url="192.168.0.5";    // local test server
+$client_sceret="";
+$server_auth_token="";
 
 ?>

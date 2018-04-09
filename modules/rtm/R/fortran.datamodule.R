@@ -1,5 +1,6 @@
-#' @title List to FORTRAN data module
+#' List to FORTRAN data module
 #' 
+#' Convert R list to a Fortran `/data/` module block
 #' @author Alexey Shiklomanov
 #' @details For models with large constants (e.g. absorption features in the
 #'       PROSPECT model), it may be preferable to store these in FORTRAN90
@@ -21,7 +22,7 @@
 #'       z <- seq(exp(1), pi, length.out=42)
 #'       l <- list(x=x, y=y, z=z) ## NOTE that names must be explicitly declared
 #'       l.types <- c('real','integer', 'real*4', 'real*8')
-#'       f.data.module(l, l.types, 'testmod')
+#'       fortran_data_module(l, l.types, 'testmod')
 #'  
 #'       x <- runif(10)
 #'       y <- rnorm(10)

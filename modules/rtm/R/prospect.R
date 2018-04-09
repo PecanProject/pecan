@@ -1,14 +1,14 @@
-#' @name prospect
-#' @title PROSPECT (4, 5, or 5B) model
+#' PROSPECT (4, 5, or 5B) model
+#' 
+#' R wrapper for PROSPECT models
 #' @author Alexey Shiklomanov
-#' @details R wrapper for PROSPECT models
 #' @param param Vector of PROSPECT parameter values:
-#'     N: Effective number of leaf layers (>1)
-#'     Cab: Leaf chlorophyll content (ug/cm2) (>0)
-#'     (5) Car: Leaf carotenoid content (ug/cm2) (>0)
-#'     (5B) Cbrown: Leaf brown matter content (ug/cm2) (>0)
-#'     Cw: Leaf water content (cm) (>0)
-#'     Cm: Leaf dry matter content (ug/cm2) (>0)
+#'     * N: Effective number of leaf layers (>1)
+#'     * Cab: Leaf chlorophyll content (ug/cm2) (>0)
+#'     * (5) Car: Leaf carotenoid content (ug/cm2) (>0)
+#'     * (5B) Cbrown: Leaf brown matter content (ug/cm2) (>0)
+#'     * Cw: Leaf water content (cm) (>0)
+#'     * Cm: Leaf dry matter content (ug/cm2) (>0)
 #' @param version PROSPECT version: 4, 5, or '5B'
 #' @param include.wl Whether or not to append wavelengths to output matrix.  
 #' Included to provide some backward compatibility and benchmarking, but will 

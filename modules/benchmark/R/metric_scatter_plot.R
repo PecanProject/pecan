@@ -3,11 +3,13 @@
 ##' @export
 ##' @param metric_dat
 ##' @param var
+##' @param filename
+##' @param draw.plot
 ##' 
 ##' @author Betsy Cowdery
 
 metric_scatter_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
-  PEcAn.utils::logger.info("Metric: Scatter Plot")
+  PEcAn.logger::logger.info("Metric: Scatter Plot")
   
   p <- ggplot2::ggplot(data = metric_dat) 
   p <- p + ggplot2::geom_point(aes(x = model, y = obvs), size = 4) 
@@ -21,7 +23,7 @@ metric_scatter_plot <- function(metric_dat, var, filename = NA, draw.plot = is.n
   }
   
   if (draw.plot) {
-    plot(p)
+    return(p)
   }
 
 } # metric_scatter_plot

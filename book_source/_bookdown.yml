@@ -1,4 +1,4 @@
-rmd_files: [ 
+rmd_files: [
   "index.Rmd",
   "book_intro/project_overview.Rmd",
   "book_intro/Code-of-Conduct.Rmd",
@@ -59,7 +59,7 @@ rmd_files: [
   "developers_guide/Directory-structure.Rmd",
   "developers_guide/Adding-an-Ecosystem-Model.Rmd",
   "developers_guide/Adding-an-Input-Converter.Rmd",
-  "adv_user_guide_web/DART_state_data_assimilation.Rmd",
+  "developers_guide/How-to-insert-new-Input-data.Rmd",
   "developers_guide/Configuration-Files.Rmd",
   "developers_guide/Coding_style.Rmd",
   "developers_guide/Roxygen2.Rmd",
@@ -77,6 +77,10 @@ rmd_files: [
   "installation/Installing-PEcAn-Ubuntu.Rmd",
   "installation/Installing-PEcAn-models.Rmd",
   "installation/PEcAn-in-the-Cloud.Rmd",
-  "installation/centos.shiny.Rmd",
+  "installation/shiny.Rmd",
+  "installation/thredds.Rmd",
+  "docker/introduction.Rmd",
+  "docker/architecture.Rmd",
+  "docker/models.Rmd",
   "misc/faq.Rmd"
 ]

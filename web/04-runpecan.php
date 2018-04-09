@@ -485,9 +485,9 @@ if ($pecan_edit) {
   chdir($folder);
 
   if ($model_edit) {
-    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r'));
+    pclose(popen('R_LIBS_USER="' . $R_library_path . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r'));
   } else {
-    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r'));
+    pclose(popen('R_LIBS_USER="' . $R_library_path . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r'));
   }
 
   #done

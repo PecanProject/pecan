@@ -29,7 +29,7 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = l
   } else if (dt_hr > 6 & dt_hr < 24) {
     # cfmet <- cfmet[,list(air_temperature_max = max(air_temperature), air_temperature_min =
     # min(air_temperature), ), by = 'year,doy']) dt_hr <- 24
-    logger.error("timestep of input met data is between 6 and 24 hours.\n", "PEcAn will automatically convert this to daily data\n", 
+   PEcAn.logger::logger.error("timestep of input met data is between 6 and 24 hours.\n", "PEcAn will automatically convert this to daily data\n", 
                  "you should confirm validity of downscaling, in particular that min / max temperatures are realistic")
   }
 
@@ -39,7 +39,7 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = l
     }
     downscaled.result <- cfmet.downscale.daily(dailymet = cfmet, output.dt = output.dt, lat = lat)
   } else if (dt_hr > 24) {
-    logger.error("only daily and sub-daily downscaling supported")
+   PEcAn.logger::logger.error("only daily and sub-daily downscaling supported")
   }
 
   return(downscaled.result)
@@ -72,7 +72,7 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1) {
     downscaled.result[["northward_wind"]] <- rep(subdailymet$northward_wind, each = tint)
     downscaled.result[["eastward_wind"]]  <- rep(subdailymet$eastward_wind, each = tint)
   } else if (!'wind_speed' %in% colnames(subdailymet)){
-    logger.error("no wind speed data")
+   PEcAn.logger::logger.error("no wind speed data")
   }
   downscaled.result[["wind_speed"]] <- rep(subdailymet$wind_speed, each = tint)
 
@@ -168,7 +168,7 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
       wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)
     }
   } else {
-    logger.error("no wind_speed found in daily met dataset")
+   PEcAn.logger::logger.error("no wind_speed found in daily met dataset")
   }
   
   ## Precipitation

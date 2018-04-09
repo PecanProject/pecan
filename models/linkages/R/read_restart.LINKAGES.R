@@ -30,7 +30,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
                      start.year = lubridate::year(stop.time), 
                      end.year = lubridate::year(stop.time), 
                      variables = var.names)  # change to just 'AGB' for plot level biomass
-  
+  if(!is.na(ens)){
   # Add PFT name to variable if applicable
   pft.names <- numeric(length(settings$pfts))
   for (i in seq_along(settings$pfts)) {
@@ -42,15 +42,25 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   forecast <- list()
 
   if ("AGB.pft" %in% var.names) {
-    forecast[[1]] <- ens$AGB.pft #udunits2::ud.convert(, "kg/m^2", "Mg/ha")  #* unit.conv 
+    forecast[[1]] <- ens$AGB.pft #already has C  #* unit.conv 
     names(forecast[[1]]) <- paste0('AGB.pft.',pft.names)
   }
     
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[2]] <- ens$TotSoilCarb #udunits2::ud.convert(, "kg/m^2", "Mg/ha") * .48  #* unit.conv 
+    forecast[[2]] <- udunits2::ud.convert(ens$TotSoilCarb, "kg/m^2", "Mg/ha") #* unit.conv 
     names(forecast[[2]]) <- c("TotSoilCarb")
   }
   
+  }else{
+    forecast <- list()
+    if ("AGB.pft" %in% var.names) {
+      forecast[[1]] <- rep(NA,length(settings$pfts))
+    }
+    
+    if ("TotSoilCarb" %in% var.names) {
+      forecast[[2]] <- NA
+    }
+  }
   # Put forecast into vector
   print(runid)
   unlist(forecast)

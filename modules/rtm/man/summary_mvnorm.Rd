@@ -10,6 +10,6 @@ summary_mvnorm(samples)
 \item{samples}{Matrix of MCMC samples.}
 }
 \description{
-Fit multivariate normal to samples. Return means and covariance 
-matrix as a long list (for easy construction of data.tables)
+Fit multivariate normal to samples. Return means and covariance matrix as a
+long list (for easy construction of data.tables)
 }

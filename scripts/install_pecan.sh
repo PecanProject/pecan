@@ -18,7 +18,7 @@ SETUP_VM=""
 SETUP_PALEON=""
 REBUILD=""
 
-RSTUDIO_SERVER="1.0.136"
+RSTUDIO_SERVER="1.0.143"
 SHINY_SERVER="1.5.3.838"
 
 if [ -e $(dirname $0)/install_pecan.config ]; then
@@ -69,13 +69,13 @@ case "$OS_VERSION" in
     sudo yum install -y wget
     sudo wget -O /etc/yum.repos.d/cornell.repo http://download.opensuse.org/repositories/home:cornell_vrdc/CentOS_CentOS-6/home:cornell_vrdc.repo
     sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
-    ;;  
+    ;;
   RH_6)
     sudo yum install -y wget
     sudo wget -O /etc/yum.repos.d/cornell.repo http://download.opensuse.org/repositories/home:cornell_vrdc/CentOS_CentOS-6/home:cornell_vrdc.repo
     sudo yum -y localinstall https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-x86_64/pgdg-centos95-9.5-2.noarch.rpm
     sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-    ;;  
+    ;;
   RH_7)
     sudo yum install -y wget
     sudo wget -O /etc/yum.repos.d/cornell.repo wget http://download.opensuse.org/repositories/home:cornell_vrdc/CentOS_7/home:cornell_vrdc.repo
@@ -120,7 +120,7 @@ case "$OS_VERSION" in
     # for PostgreSQL
     sudo yum install -y postgresql95-server postgresql95-devel postgis2_95
     # web gui
-    sudo yum install -y httpd php php-pgsql php-xml
+    sudo yum install -y httpd php php-pgsql php-xml expect expectk
     ;;
   Ubuntu)
     sudo apt-get -y install build-essential gfortran git r-base-core jags liblapack-dev libnetcdf-dev netcdf-bin bc libcurl4-gnutls-dev curl udunits-bin libudunits2-dev libgmp-dev python-dev libgdal1-dev libproj-dev expect
@@ -146,13 +146,13 @@ echo "######################################################################"
 echo "POSTGRES"
 echo "######################################################################"
 #    ADD export PATH=${PATH}:/usr/pgsql-9.5/bin
-#    ADD exclude=postgresql* to /etc/yum.repos.d/CentOS-Base.repo or /etc/yum/pluginconf.d/rhnplugin.conf 
+#    ADD exclude=postgresql* to /etc/yum.repos.d/CentOS-Base.repo or /etc/yum/pluginconf.d/rhnplugin.conf
 #    SEE https://wiki.postgresql.org/wiki/YUM_Installation#Configure_your_YUM_repository
 case "$OS_VERSION" in
   RH_5)
     echo "No PostgreSQL configuration (yet) for RedHat 5"
     exit 1
-    ;;  
+    ;;
   RH_6)
     sudo service postgresql-9.5 initdb
     sudo sh -c 'if ! grep -Fq "bety" /var/lib/pgsql/9.5/data/pg_hba.conf ; then
@@ -163,7 +163,7 @@ host    all             bety            ::1/128                 trust" /var/lib/
     fi'
     chkconfig postgresql-9.5 on
     sudo service postgresql-9.5 start
-    ;;  
+    ;;
   RH_7)
     sudo /usr/pgsql-9.5/bin/postgresql95-setup initdb
     sudo sh -c 'if ! grep -Fq "bety" /var/lib/pgsql/9.5/data/pg_hba.conf ; then
@@ -195,6 +195,9 @@ if [ -z "${R_LIBS_USER}" ]; then
   export export R_LIBS_USER=${HOME}/R/library
   mkdir -p ${R_LIBS_USER}
 
+  echo "options(shiny.port = 6438)" >> ${HOME}/.Rprofile
+  echo "options(shiny.launch.browser = 'FALSE')" >> ${HOME}/.Rprofile
+
   case "$OS_VERSION" in
     RH_*)
       echo 'export PATH=${PATH}:/usr/pgsql-9.5/bin' >> ${HOME}/.bashrc
@@ -209,6 +212,9 @@ echo 'if(!"udunits2" %in% installed.packages()) install.packages("udunits2", con
 echo 'if(!"leaflet" %in% installed.packages()) install.packages("leaflet", repos="http://cran.rstudio.com/")' | R --vanilla
 echo 'if(!"RJSONIO" %in% installed.packages()) install.packages("RJSONIO", repos="http://cran.rstudio.com/")' | R --vanilla
 
+# packages for other shiny apps
+echo 'if(!"DT" %in% installed.packages()) install.packages("DT", repos="http://cran.rstudio.com/")' | R --vanilla
+
 #echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | sudo R --vanilla
 echo 'x <- rownames(old.packages(repos="http://cran.rstudio.com/")); update.packages(repos="http://cran.rstudio.com/", ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | sudo R --vanilla
 
@@ -219,7 +225,7 @@ echo "######################################################################"
 echo "ED"
 echo "######################################################################"
 if [ ! -e ${HOME}/ED2 ]; then
-  cd 
+  cd
   git clone https://github.com/rykelly/ED2.git
   cd ED2
   git checkout modularize
@@ -243,7 +249,7 @@ echo "SIPNET"
 echo "######################################################################"
 if [ ! -e ${HOME}/sipnet_unk ]; then
   cd
-  curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/models/sipnet_unk.tar.gz
+  curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_unk.tar.gz
   tar zxf sipnet_unk.tar.gz
   rm sipnet_unk.tar.gz
 fi
@@ -255,7 +261,7 @@ make clean
 
 if [ ! -e ${HOME}/sipnet_r136 ]; then
   cd
-  curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_r136.tar.gz
+  curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_r136.tar.gz
   tar zxf sipnet_r136.tar.gz
   rm sipnet_r136.tar.gz
   sed -i 's#$(LD) $(LIBLINKS) \(.*\)#$(LD) \1 $(LIBLINKS)#' ${HOME}/sipnet_r136/Makefile
@@ -324,6 +330,20 @@ make clean
 make dalec_EnKF
 make dalec_seqMH
 sudo cp dalec_EnKF dalec_seqMH /usr/local/bin
+make clean
+
+echo "######################################################################"
+echo "GDAY"
+echo "######################################################################"
+if [ ! -e ${HOME}/GDAY ]; then
+  cd
+  git clone https://github.com/mdekauwe/GDAY.git
+fi
+cd ${HOME}/GDAY
+git pull
+cd src
+make
+sudo cp gday /usr/local/bin
 make clean
 
 echo "######################################################################"
@@ -670,9 +690,9 @@ if [ "$SETUP_PALEON" != "" ]; then
     rm LinBacon_2.2.zip
   fi
   cd ${HOME}/LinBacon_2.2/cpp
-  rm -f *.o 
+  rm -f *.o
   make -f makefileLinux
-  rm *.o 
+  rm *.o
 
   if [ ! -e ${HOME}/clam ]; then
     cd
@@ -695,9 +715,9 @@ if [ "${SETUP_VM}" != "" ]; then
       sudo apt-get -y install hdf5-tools cdo nco netcdf-bin ncview gdb emacs ess nedit
       ;;
   esac
-  
+
   # MOTD
-  VERSION=$( awk '/Version: / { print $2 }' $HOME/pecan/all/DESCRIPTION )
+  VERSION=$( awk '/Version: / { print $2 }' $HOME/pecan/base/all/DESCRIPTION )
   cat > /tmp/motd << EOF
 PEcAn version ${VERSION}
 
@@ -711,4 +731,3 @@ EOF
   sudo cp /tmp/motd /etc/motd
   rm /tmp/motd
 fi
-

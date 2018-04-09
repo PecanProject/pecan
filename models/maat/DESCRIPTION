@@ -1,18 +1,20 @@
 Package: PEcAn.MAAT
 Type: Package
 Title: PEcAn package for integration of the MAAT model
-Version: 1.4.10.1
-Date: 2017-04-18
+Version: 1.5.2
+Date: 2017-12-04
 Author: Shawn Serbin, Anthony Walker
 Maintainer: Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to link the MAAT to PEcAn.
-Depends:
-    PEcAn.utils,
-    ncdf4
 Imports:
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.settings,
+    PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    udunits2 (>= 0.11)
+    udunits2 (>= 0.11),
+    XML
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: MAAT

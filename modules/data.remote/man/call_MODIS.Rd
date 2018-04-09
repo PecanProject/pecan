@@ -4,19 +4,43 @@
 \alias{call_MODIS}
 \title{call_MODIS}
 \usage{
-call_MODIS(outfolder = ".", fname = "m_data.nc", start, end, lat, lon,
-  size = 0, product = "MOD15A2", band = "Lai_1km", qc_band = NA,
-  sd_band = NA)
+call_MODIS(outfolder = ".", fname = "m_data.nc", start_date, end_date, lat,
+  lon, size = 0, product = "MOD15A2", band = "Lai_1km", qc_band = NA,
+  sd_band = NA, verbose = TRUE)
 }
 \arguments{
-\item{start}{first date in year and day-of-year. For example May 1 2010 would be 2010121}
+\item{outfolder}{where the output file will be stored}
 
-\item{end}{laste date in year and day-of-year. For example May 1 2010 would be 2010121}
+\item{fname}{name of netcdf file to output}
+
+\item{start_date}{beginning of date range for LAI download in unambiguous date format}
+
+\item{end_date}{end of date range for LAI download in unambiguous date format}
 
 \item{lat}{Latitude of the pixel}
 
 \item{lon}{Longitude of the pixel}
+
+\item{size}{NS and WE distance in km to be included}
+
+\item{product}{MODIS product number}
+
+\item{band}{which measurement to extract}
+
+\item{qc_band}{which quality control band (optional)}
+
+\item{sd_band}{which standard deviation band (optional)}
+
+\item{verbose}{tell python whether or not to print debug statements (all or nothing)
+
+depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4}
 }
 \description{
 Get MODIS data by date and location
+}
+\examples{
+\dontrun{
+test <- call_MODIS(start="2001001",end="2016366",lat=44.0646,lon=-71.28808,size=3,qc_band = "FparLai_QC",sd_band = "LaiStdDev_1km")
+}
+
 }

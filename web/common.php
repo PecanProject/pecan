@@ -10,9 +10,9 @@ session_start();
 
 function get_footer() {
   return "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
-    (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA 
+    (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA
     Terrestrial Ecosystems, the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.4.10.1</span>";
+    <span style=\"float:right\">PEcAn Version 1.5.2</span>";
 }
 
 function whoami() {
@@ -38,7 +38,7 @@ function passvars($ignore) {
         echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
       }
     }
-  }  
+  }
 }
 # ----------------------------------------------------------------------
 # CONVERT STRING TO XML
@@ -59,7 +59,17 @@ function open_database() {
   global $db_bety_type;
   global $pdo;
 
-  $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
+  try {
+    $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+  } catch (PDOException $e) {
+    // handler to input database configurations manually
+    $host  = $_SERVER['HTTP_HOST'];
+    header("Location: http://$host/setups/edit.php?key=database&message=1",TRUE,307);
+    //echo "Something wrong :(</br>Connection failed: " . $e->getMessage();
+    die();
+  }
+//  $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
 }
 
 function close_database() {
@@ -121,7 +131,7 @@ function encrypt_password($password, $salt) {
   for($i=0; $i<$REST_AUTH_DIGEST_STRETCHES; $i++) {
     $digest=sha1($digest . "--" . $salt . "--" . $password . "--" . $REST_AUTH_SITE_KEY);
   }
-  return $digest;  
+  return $digest;
 }
 
 function logout() {

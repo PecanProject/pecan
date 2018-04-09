@@ -73,7 +73,7 @@ library(PEcAn.photosynthesis)
 
 ### Load built in data
 filenames <- system.file("extdata", paste0("flux-course-3",c("aci","aq")), package = "PEcAn.photosynthesis")
-dat<-do.call("rbind", lapply(filenames, read.Licor))
+dat<-do.call("rbind", lapply(filenames, read_Licor))
 
 ## Simple plots
 aci = as.character(dat$fname) == basename(filenames[1])
@@ -173,7 +173,7 @@ In the final set of plots we look at the actual A-Ci and A-Q curves themselves. 
 
 ```{r}
 ## Response curve
-plot.photo(dat,fit)
+plot_photo(dat,fit)
 ```
 
 Note: on the last figure you will get warnings about "No ACi" and "No AQ" which can be ignored. These are occuring because the file that had the ACi curve didn't have an AQ curve, and the file that had the AQ curve didn't have an ACi curve.

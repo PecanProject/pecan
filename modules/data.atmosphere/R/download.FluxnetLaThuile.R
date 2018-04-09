@@ -63,7 +63,7 @@ download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date,
     # create array with results
     row                     <- year - start_year + 1
     results$file[row]       <- outputfile
-    results$host[row]       <- PEcAn.utils::fqdn()
+    results$host[row]       <- PEcAn.remote::fqdn()
     results$startdate[row]  <- paste0(year, "-01-01 00:00:00")
     results$enddate[row]    <- paste0(year, "-12-31 23:59:59")
     results$mimetype[row]   <- "text/csv"
@@ -71,7 +71,7 @@ download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date,
     
     # see if file exists
     if (file.exists(outputfile) && !overwrite) {
-      PEcAn.utils::logger.debug("File '", outputfile, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", outputfile, "' already exists, skipping to next file.")
       next
     }
     

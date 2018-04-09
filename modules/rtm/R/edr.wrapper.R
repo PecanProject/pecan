@@ -1,19 +1,19 @@
 #' @title ED radiative transfer module (EDR) wrapper function
 #' 
-#' @name EDR
-#' @description This function provides a convenient way to call the ED 
+#' This function provides a convenient way to call the ED 
 #' radiative transfer module (EDR, which simulates full spectral return of an 
 #' ED patch for a given point in time) directly from R.
+#' 
 #' @param paths List of relevant paths. Must contain the following:
-#' `ed2in` -- Path to ED2IN file for the original ED run. If this is `NA`, the 
-#' function assumes that the ED2IN file in `output.path` is already up-to-date 
-#' and skips the analysis step.
-#' `history` -- Path and prefix for history file for the run of interest;
-#' `edr.exe` -- Path to EDR executable
-#' `soil_reflect` -- Path to soil reflectance. If NULL or unset, use 
-#' reflectance in package. If NA, skip (assume data already in directory).
-#' `wood_reflect` -- Path to wood reflectance. If NULL or unset, use 
-#' reflectance in package. If NA, skip (assume data already in directory).
+#'  * `ed2in` -- Path to ED2IN file for the original ED run. If this is `NA`, the 
+#'  function assumes that the ED2IN file in `output.path` is already up-to-date 
+#'  and skips the analysis step.
+#'  * `history` -- Path and prefix for history file for the run of interest;
+#'  * `edr.exe` -- Path to EDR executable
+#'  * `soil_reflect` -- Path to soil reflectance. If NULL or unset, use 
+#'  reflectance in package. If NA, skip (assume data already in directory).
+#'  * `wood_reflect` -- Path to wood reflectance. If NULL or unset, use 
+#'  reflectance in package. If NA, skip (assume data already in directory).
 #' @param spectra_list List of spectral data matrices. Names must exactly match 
 #' the PFTs given in `trait.values`. Each item must be a matrix of wavelengths, 
 #' reflectance, and transmittance values. Matrix must have column names 'wl' 
@@ -117,22 +117,26 @@ EDR <- function(paths,
   nir.ind <- which(wavelengths %in% nir.wl)
 
   # Set up soil and wood reflectance files
+  soil_fname <- "soil_reflect_par.dat"
   soil_reflect_path <- paths$soil_reflect
   if (is.null(soil_reflect_path)) {
-    soil_reflect_path <- system.file('extdata', 'soil_reflect_par.dat', package = 'PEcAnRTM')
+    soil_reflect_path <- system.file('extdata', soil_fname, package = 'PEcAnRTM')
   }
 
   if (!is.na(soil_reflect_path)) {
-    file.copy(soil_reflect_path, output.path, overwrite = TRUE, recursive = TRUE)
+    file.copy(soil_reflect_path, file.path(output.path, soil_fname),
+              overwrite = TRUE)
   }
 
+  wood_fname <- "wood_reflect_par.dat"
   wood_reflect_path <- paths$wood_reflect
   if (is.null(wood_reflect_path)) {
-    wood_reflect_path <- system.file('extdata', 'wood_reflect_par.dat', package = 'PEcAnRTM')
+    wood_reflect_path <- system.file('extdata', wood_fname, package = 'PEcAnRTM')
   }
 
   if (!is.na(wood_reflect_path)) {
-    file.copy(wood_reflect_path, output.path, overwrite = TRUE, recursive = TRUE)
+    file.copy(wood_reflect_path, file.path(output.path, wood_fname),
+              overwrite = TRUE)
   }
 
   # Multi-PFT settings

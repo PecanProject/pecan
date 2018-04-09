@@ -1,8 +1,8 @@
 Package: PEcAn.CLM45
 Type: Package
 Title: PEcAn package for integration of CLM4.5 model
-Version: 1.4.10.1
-Date: 2017-04-18
+Version: 1.5.2
+Date: 2017-12-04
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -12,6 +12,7 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     efficacy of scientific investigation. This package provides functions to
     link the Community Land Model, version 4.5, to PEcAn.
 Depends:
+    PEcAn.logger,
     PEcAn.utils
 Imports:
     udunits2 (>= 0.11),

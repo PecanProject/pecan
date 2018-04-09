@@ -1,3 +1,94 @@
 # (PART) User Appendix {-}
 
+<br>
+
 # User Appendix
+
+<br>
+
+### File download: Alternative options when behind a firewall
+#### Using the PEcAn download.file() function
+download.file(url, destination_file, method) <br>
+<br>
+
+This custom PEcAn function works together with the base R function download.file (https://stat.ethz.ch/R-manual/R-devel/library/utils/html/download.file.html).  However, it provides expanded functionality to generalize the use for a broad range of environments.  This is because some computing environments are behind a firewall or proxy, including FTP firewalls. This may require the use of a custom FTP program and/or initial proxy server authentication to retrieve the files needed by PEcAn (e.g. meteorology drivers, other inputs) to run certain model simulations or tools.  For example, the Brookhaven National Laboratory (BNL) requires an initial connection to a FTP proxy before downloading files via FTP protocol. As a result, the computers running PEcAn behind the BNL firewall (e.g. https://modex.bnl.gov) use the ncftp cleint (http://www.ncftp.com/) to download files for PEcAn because the base options with R::base download.file() such as curl, libcurl which don't have the functionality to provide credentials for a proxy or even those such as wget which do but don't easily allow for connecting through a proxy server before downloading files. The current option for use in these instances is **ncftp**, specifically **ncftpget**
+
+<br>
+
+Examples: <br>
+*HTTP* <br>
+```
+download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt") 
+``` 
+*FTP*
+```
+download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
+```
+*customizing to use ncftp when running behind an FTP firewall (requires ncftp to be installed and availible)* <br>
+```
+download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc", method=""ncftpget")
+```
+
+<br>
+
+On modex.bnl.gov, the ncftp firewall configuration file (e.g. ~/.ncftp/firewall) is configured as:
+firewall-type=1
+firewall-host=ftpgateway.sec.bnl.local
+firewall-port=21
+
+which then allows for direct connection through the firewall using a command like:
+
+```
+ncftpget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-fortran-4.4.4.tar.gz
+```
+
+To allow the use of ncftpget from within the download.file() function you need to set your R profile download.ftp.method option in your options list.  To see your current R options run options() from R cmd, which should look something like this:
+```
+> options()
+$add.smooth
+[1] TRUE
+
+$bitmapType
+[1] "cairo"
+
+$browser
+[1] "/usr/bin/xdg-open"
+
+$browserNLdisabled
+[1] FALSE
+
+$CBoundsCheck
+[1] FALSE
+
+$check.bounds
+[1] FALSE
+
+$citation.bibtex.max
+[1] 1
+
+$continue
+[1] "+ "
+
+$contrasts
+        unordered           ordered
+"contr.treatment"      "contr.poly"
+```
+
+In order to set your download.ftp.method option you  need to add a line such as
+```
+# set default FTP
+options(download.ftp.method = "ncftpget")
+```
+
+In your ~/.Rprofile.  On modex at BNL we have set the global option in /usr/lib64/R/etc/Rprofile.site.
+
+Once this is done you should be able to see the option set using this command in R:
+```
+> options("download.ftp.method")
+$download.ftp.method
+[1] "ncftpget"
+```
+
+
+
+

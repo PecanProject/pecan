@@ -8,7 +8,7 @@ run.sensitivity.analysis(settings, plot = TRUE, ensemble.id = NULL,
   variable = NULL, start.year = NULL, end.year = NULL, ...)
 }
 \arguments{
-\item{plot}{logical. Option to generate sensitivity analysis and variance 
+\item{plot}{logical. Option to generate sensitivity analysis and variance
 decomposition plots (plot=TRUE) or to turn these plots off (plot=FALSE).}
 }
 \value{

@@ -26,7 +26,7 @@ assim.batch <- function(settings) {
   } else if (settings$assim.batch$method == "bayesian.tools") {
     settings <- pda.bayesian.tools(settings)
   } else {
-    logger.error(paste0("PDA method ", settings$assim.batch$method, " not found!"))
+    PEcAn.logger::logger.error(paste0("PDA method ", settings$assim.batch$method, " not found!"))
   }
   
   return(settings)
@@ -76,7 +76,7 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
     settings$assim.batch$param.names <- param.names
   }
   if (is.null(settings$assim.batch$param.names)) {
-    logger.error("Parameter data assimilation requested, but no parameters specified for PDA")
+    PEcAn.logger::logger.error("Parameter data assimilation requested, but no parameters specified for PDA")
   } else {
     settings$assim.batch$param.names <- lapply(settings$assim.batch$param.names, as.list)
   }
@@ -87,35 +87,36 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
   constant.names <- unlist(sapply(settings$pfts, function(x) names(x$constants)))
   params.in.constants <- which(unlist(settings$assim.batch$param.names) %in% constant.names)
   if (length(params.in.constants) > 0) {
-    logger.severe(paste0("PDA requested for parameter(s) [", 
+    PEcAn.logger::logger.severe(paste0("PDA requested for parameter(s) [", 
                          paste(unlist(settings$assim.batch$param.names)[params.in.constants], collapse = ", "), 
                          "] but these parameters are specified as constants in pecan.xml!"))
   }
 
-  # if settings$assim.batch$prior$prev.prior.id is not null, it means an extension run was already done
-  # store it to prior.id so that it's not overwritten for 3rd or more "longer" extension
-  # if it's 3rd or more "round" of emulator extension then we do want to overwrite it 
-  # Revisit this if you want to change knot proposal design 
-  if (!is.null(settings$assim.batch$prior$prev.prior.id) & !run.round) {
-    settings$assim.batch$prior$prior.id <- settings$assim.batch$prior$prev.prior.id
-  }
-  
-  # if settings$assim.batch$prior$prior.id is not null, it means a PDA run was already done
-  # store it to prev.prior.id, need it for extension runs
-  if (!is.null(settings$assim.batch$prior$prior.id)) {
-    settings$assim.batch$prior$prev.prior.id <- settings$assim.batch$prior$prior.id
-  }
-  
-  # if settings$pfts$pft$posteriorid is not null, use it as new PDA prior:
-  
-  # (a) settings$pfts$pft$posteriorid can be full if you went through meta.analysis and write.configs
-  # if it's empty pda.load.priors will handle it later
-  
-  # (b) settings$pfts$pft$posteriorid will be full and overwritten by a PDA posterior id if a PDA was run
-  if (!is.null(settings$pfts$pft$posteriorid)) {
+  # # if settings$assim.batch$prior$prev.prior.id is not null, it means an extension run was already done
+  # # store it to prior.id so that it's not overwritten for 3rd or more "longer" extension
+  # # if it's 3rd or more "round" of emulator extension then we do want to overwrite it 
+  # # Revisit this if you want to change knot proposal design 
+  # if (!is.null(settings$assim.batch$prior$prev.prior.id) & !run.round) {
+  #   settings$assim.batch$prior$prior.id <- settings$assim.batch$prior$prev.prior.id
+  # }
+  # 
+  # # if settings$assim.batch$prior$prior.id is not null, it means a PDA run was already done
+  # # store it to prev.prior.id, need it for extension runs
+  if (is.null(settings$assim.batch$prior$prior.id)) {
     settings$assim.batch$prior$prior.id <- lapply(settings$pfts, `[[`, "posteriorid")
     names(settings$assim.batch$prior$prior.id) <- sapply(settings$pfts, `[[`, "name")
   }
+  
+  # # if settings$pfts$pft$posteriorid is not null, use it as new PDA prior:
+  # 
+  # # (a) settings$pfts$pft$posteriorid can be full if you went through meta.analysis and write.configs
+  # # if it's empty pda.load.priors will handle it later
+  # 
+  # # (b) settings$pfts$pft$posteriorid will be full and overwritten by a PDA posterior id if a PDA was run
+  # if (!is.null(settings$pfts$pft$posteriorid)) {
+  #   settings$assim.batch$prior$prior.id <- lapply(settings$pfts, `[[`, "posteriorid")
+  #   names(settings$assim.batch$prior$prior.id) <- sapply(settings$pfts, `[[`, "name")
+  # }
   
   # if a prior.id is explicity passed to this function, overwrite and use it as PDA prior
   if (!is.null(prior.id)) {
@@ -214,7 +215,7 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.load.priors <- function(settings, con, extension.check = TRUE) {
+pda.load.priors <- function(settings, con, extension.check = FALSE) {
   
   # settings$assim.batch$prior$prior.id is not NULL if you've done a PDA or meta.analysis and went through write.configs
   # then you can proceed loading objects by querying their paths according to their ids
@@ -222,7 +223,7 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
 
   if (is.null(settings$assim.batch$prior$prior.id)) {
       
-    logger.info(paste0("Defaulting to most recent posterior/prior as PDA prior."))
+    PEcAn.logger::logger.info(paste0("Defaulting to most recent posterior/prior as PDA prior."))
     ## by default, use the most recent posterior/prior as the prior
     priorids <- list()
     for (i in seq_along(settings$pfts)) {
@@ -247,26 +248,27 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
     settings$assim.batch$prior$prior.id <- priorids
   }
 
-  # if this is an extension run you want to use priors of the previous round
-  # extension.check == TRUE not an extension run
-  # extension.check == FALSE an extension run
-  if(!extension.check){
-    priorids <- settings$assim.batch$prior$prev.prior.id
+  # extension.check == FALSE not an extension run
+  # extension.check == TRUE a "round" extension run
+  if(extension.check){
+    priorids <- sapply(settings$pfts, `[[`, "posteriorid")
   } else{
     priorids <- settings$assim.batch$prior$prior.id
   }
   
-  logger.info(paste0("Using posterior ID(s) ", paste(unlist(priorids), collapse = ", "), " as PDA prior(s)."))
+  PEcAn.logger::logger.info(paste0("Using posterior ID(s) ", paste(unlist(priorids), collapse = ", "), " as PDA prior(s)."))
   
 
   prior.out <- list()
   prior.paths <- list()
     
+  tmp_hostname <- ifelse(!PEcAn.remote::is.localhost(settings$host), PEcAn.remote::fqdn(), settings$host$name)
+  
   # now that you filled priorids load the PDA prior objects
   # if files becomes NULL try loading objects from workflow oft folders
   for (i in seq_along(settings$pfts)) {
       
-    files <- dbfile.check("Posterior", priorids[[i]], con, settings$host$name)
+    files <- dbfile.check("Posterior", priorids[[i]], con, tmp_hostname, return.all  = TRUE)
       
     pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
     
@@ -293,6 +295,10 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
         }
       }
     }
+    
+    # make sure there are no left over distributions in the environment
+    suppressWarnings(rm(post.distns, prior.distns))
+    
     load(prior.paths[[i]])
     if (!exists("post.distns")) {
       prior.out[[i]] <- prior.distns
@@ -310,7 +316,7 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
   params.no.priors <- which(is.na(match(unlist(settings$assim.batch$param.names), 
                                         unlist(lapply(prior.out, rownames)))))
   if (length(params.no.priors) > 0) {
-    logger.severe(paste0("PDA requested for parameter(s) [", paste(unlist(settings$assim.batch$param.names)[params.no.priors], 
+    PEcAn.logger::logger.severe(paste0("PDA requested for parameter(s) [", paste(unlist(settings$assim.batch$param.names)[params.no.priors], 
                                                                    collapse = ", "), "] but no prior found!"))
   }
   
@@ -536,20 +542,20 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
 ##' @author Ryan Kelly
 ##' @export
 pda.adjust.jumps <- function(settings, jmp.list, accept.rate, pnames = NULL) {
-  logger.info(paste0("Acceptance rates were (", paste(pnames, collapse = ", "), ") = (", 
+  PEcAn.logger::logger.info(paste0("Acceptance rates were (", paste(pnames, collapse = ", "), ") = (", 
                      paste(round(accept.rate/settings$assim.batch$jump$adapt, 3), collapse = ", "), ")"))
   
-  # logger.info(paste0('Using jump variances (',
+  # PEcAn.logger::logger.info(paste0('Using jump variances (',
   # paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=', '), ')'))
-  logger.info(paste0("Old jump variances were (", paste(round(jmp.list, 3), collapse = ", "), ")"))
+  PEcAn.logger::logger.info(paste0("Old jump variances were (", paste(round(jmp.list, 3), collapse = ", "), ")"))
   
   adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
   adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
   # settings$assim.batch$jump$jvar <- as.list(unlist(settings$assim.batch$jump$jvar) * adj)
-  # logger.info(paste0('New jump variances are (',
+  # PEcAn.logger::logger.info(paste0('New jump variances are (',
   # paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=', '), ')'))
   jmp.list <- jmp.list * adj
-  logger.info(paste0("New jump variances are (", paste(round(jmp.list, 3), collapse = ", "), ")"))
+  PEcAn.logger::logger.info(paste0("New jump variances are (", paste(round(jmp.list, 3), collapse = ", "), ")"))
   return(jmp.list)
 } # pda.adjust.jumps
 
@@ -568,9 +574,9 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
     params.recent <- params[(i - settings$assim.batch$jump$adapt):(i - 1), prior.ind]
   }
   pnames <- colnames(params.recent)
-  logger.info(paste0("Acceptance rate was ", 
+  PEcAn.logger::logger.info(paste0("Acceptance rate was ", 
                      round(accept.count / settings$assim.batch$jump$adapt, 3)))
-  logger.info(paste0("Using jump variance diagonals (", 
+  PEcAn.logger::logger.info(paste0("Using jump variance diagonals (", 
                      paste(pnames, collapse = ", "), ") = (", 
                      paste(round(diag(jcov), 3), collapse = ", "), ")"))
   
@@ -591,7 +597,7 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
     jcov <- rescale %*% corr %*% rescale
   }
   
-  logger.info(paste0("New jump variance diagonals are (", 
+  PEcAn.logger::logger.info(paste0("New jump variance diagonals are (", 
                      paste(round(diag(jcov), 3), collapse = ", "), ")"))
   return(jcov)
 } # pda.adjust.jumps.bs
@@ -646,8 +652,8 @@ pda.generate.sf <- function(n.knot, sf, prior.list){
   
   n.sf <- length(sf)
   # prior for scaling factor
-  prior.sf <- data.frame(distn = rep("unif", n.sf), 
-                         parama = rep(0, n.sf), 
+  prior.sf <- data.frame(distn = rep("beta", n.sf), 
+                         parama = rep(1, n.sf), 
                          paramb = rep(1, n.sf), 
                          n = rep(NA, n.sf))
   rownames(prior.sf) <- paste0(sf,"_SF")
@@ -660,208 +666,6 @@ pda.generate.sf <- function(n.knot, sf, prior.list){
   
 }
 
-
-
-##' Helper function for creating log-priors compatible with BayesianTools package
-##'
-##' @title Create priors for BayesianTools
-##' @param prior.sel prior distributions of the selected parameters
-##'
-##' @return out prior class object for BayesianTools package
-##'
-##' @author Istem Fer
-##' @export
-pda.create.btprior <- function(prior.sel) {
-  
-  dens.fn <- samp.fn <- list()
-  
-  # TODO: test exponential
-  for (i in seq_len(nrow(prior.sel))) {
-    # if(prior.sel$distn[i] == 'exp'){
-    # dens.fn[[i]]=paste('d',prior.sel$distn[i],'(x[',i,'],',prior.sel$parama[i],',log=TRUE)',sep='')
-    # samp.fn[[i]] <- paste('x[',i,']=r',prior.sel$distn[i],'(1,',prior.sel$parama[i],')',sep='')
-    # }else{
-    dens.fn[[i]] <- paste0("d", 
-                           prior.sel$distn[i], 
-                           "(x[", i, "],", 
-                           prior.sel$parama[i],
-                           ",", 
-                           prior.sel$paramb[i], 
-                           ",log=TRUE)")
-    samp.fn[[i]] <- paste0("x[", i, "]=r", 
-                           prior.sel$distn[i], 
-                           "(1,", prior.sel$parama[i],
-                           ",", 
-                           prior.sel$paramb[i], 
-                           ")")
-    # }
-  }
-  
-  to.density <- paste(dens.fn, collapse = ",")
-  to.sampler <- paste(samp.fn, collapse = " ", "\n")
-  
-  density <- eval(parse(text = paste0("function(x){ \n return(sum(", to.density, ")) \n }")))
-  sampler <- eval(parse(text = paste0("function(){ \n x=rep(NA,", nrow(prior.sel), ") \n", to.sampler, 
-                                      "return(x) \n ", "}")))
-  
-  # Use createPrior{BayesianTools} function to create prior class object compatible
-  # with rest of the functions
-  out <- createPrior(density = density, sampler = sampler)
-  return(out)
-} # pda.create.btprior
-
-
-##' Helper function for applying BayesianTools specific settings from PEcAn general settings
-##'
-##' @title Apply settings for BayesianTools
-##' @param settings PEcAn settings
-##'
-##' @return bt.settings list of runMCMC{BayesianTools} settings
-##'
-##' @author Istem Fer
-##' @export
-##' 
-pda.settings.bt <- function(settings) {
-  
-  sampler <- settings$assim.batch$bt.settings$sampler
-  
-  iterations <- as.numeric(settings$assim.batch$bt.settings$iter)
-  optimize <- ifelse(!is.null(settings$assim.batch$bt.settings$optimize), 
-                     settings$assim.batch$bt.settings$optimize, 
-                     TRUE)
-  # consoleUpdates = ifelse(!is.null(settings$assim.batch$bt.settings$consoleUpdates),
-  # as.numeric(settings$assim.batch$bt.settings$consoleUpdates), max(round(iterations/10),100))
-  adapt <- ifelse(!is.null(settings$assim.batch$bt.settings$adapt), 
-                  settings$assim.batch$bt.settings$adapt, 
-                  TRUE)
-  adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval),
-                              as.numeric(settings$assim.batch$bt.settings$adaptationInverval),
-                              max(round(iterations/100*5),100))
-  adaptationNotBefore <- ifelse(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore), 
-                                as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore), 
-                                adaptationInverval)
-  DRlevels <- ifelse(!is.null(settings$assim.batch$bt.settings$DRlevels),
-                     as.numeric(settings$assim.batch$bt.settings$DRlevels), 
-                     1)
-  if (!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)) {
-    gibbsProbabilities <- as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities))
-  } else {
-    gibbsProbabilities <- NULL
-  }
-  
-  if (sampler == "Metropolis") {
-    bt.settings <- list(iterations = iterations,
-                        optimize = optimize, 
-                        DRlevels = DRlevels, 
-                        adapt = adapt, 
-                        adaptationNotBefore = adaptationNotBefore,
-                        gibbsProbabilities = gibbsProbabilities)
-  } else if (sampler %in% c("AM", "M", "DRAM", "DR")) {
-    bt.settings <- list(iterations = iterations, startValue = "prior")
-  } else if (sampler %in% c("DE", "DEzs", "DREAM", "DREAMzs", "Twalk")) {
-    bt.settings <- list(iterations = iterations)
-  } else if (sampler == "SMC") {
-    bt.settings <- list(initialParticles = list("prior", iterations))
-  } else {
-    logger.error(paste0(sampler, " sampler not found!"))
-  }
-  
-  return(bt.settings)
-} # pda.settings.bt
-
-
-#' Flexible function to create correlation density plots
-#' numeric matrix or data.frame
-#' @author Florian Hartig
-#' @param mat matrix or data frame of variables
-#' @param density type of plot to do
-#' @param thin thinning of the matrix to make things faster. Default is to thin to 5000 
-#' @param method method for calculating correlations
-#' @import IDPmisc
-#' @import ellipse
-#' @references The code for the correlation density plot originates from Hartig, F.; Dislich, C.; Wiegand, T. & Huth, A. (2014) Technical Note: Approximate Bayesian parameterization of a process-based tropical forest model. Biogeosciences, 11, 1261-1272.
-#' @export
-#' 
-correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pearson", whichParameters = NULL) {
-  
-  if (inherits(mat, "bayesianOutput")) {
-    mat <- getSample(mat, thin = thin, whichParameters = whichParameters, ...)
-  }
-  
-  numPars <- ncol(mat)
-  names <- colnames(mat)
-  
-  panel.hist.dens <- function(x, ...) {
-    usr <- par("usr")
-    on.exit(par(usr))
-    par(usr = c(usr[1:2], 0, 1.5))
-    h <- hist(x, plot = FALSE)
-    breaks <- h$breaks
-    nB <- length(breaks)
-    y <- h$counts
-    y <- y/max(y)
-    rect(breaks[-nB], 0, breaks[-1], y, col = "blue4", ...)
-  } # panel.hist.dens
-  
-  # replaced by spearman
-  panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
-    usr <- par("usr")
-    on.exit(par(usr))
-    par(usr = c(0, 1, 0, 1))
-    r <- cor(x, y, use = "complete.obs", method = method)
-    txt <- format(c(r, 0.123456789), digits = digits)[1]
-    txt <- paste0(prefix, txt)
-    if (missing(cex.cor)) {
-      cex.cor <- 0.8/strwidth(txt)
-    }
-    text(0.5, 0.5, txt, cex = cex.cor * abs(r))
-  } # panel.cor
-  
-  plotEllipse <- function(x, y) {
-    usr <- par("usr")
-    on.exit(par(usr))
-    par(usr = c(usr[1:2], 0, 1.5))
-    cor <- cor(x, y)
-    el <- ellipse::ellipse(cor)
-    polygon(el[, 1] + mean(x), el[, 2] + mean(y), col = "red")
-  } # plotEllipse
-  
-  correlationEllipse <- function(x) {
-    cor <- cor(x)
-    ToRGB <- function(x) {
-      rgb(x[1] / 255, x[2] / 255, x[3] / 255)
-    }
-    C1 <- ToRGB(c(178, 24, 43))
-    C2 <- ToRGB(c(214, 96, 77))
-    C3 <- ToRGB(c(244, 165, 130))
-    C4 <- ToRGB(c(253, 219, 199))
-    C5 <- ToRGB(c(247, 247, 247))
-    C6 <- ToRGB(c(209, 229, 240))
-    C7 <- ToRGB(c(146, 197, 222))
-    C8 <- ToRGB(c(67, 147, 195))
-    C9 <- ToRGB(c(33, 102, 172))
-    CustomPalette <- colorRampPalette(rev(c(C1, C2, C3, C4, C5, C6, C7, C8, C9)))
-    ord <- order(cor[1, ])
-    xc <- cor[ord, ord]
-    colors <- unlist(CustomPalette(100))
-    ellipse::plotcorr(xc, col = colors[xc * 50 + 50])
-  } # correlationEllipse
-  
-  if (density == "smooth") {
-    pairs(mat, lower.panel = function(...) {
-      par(new = TRUE)
-      IDPmisc::ipanel.smooth(...)
-    }, diag.panel = panel.hist.dens, upper.panel = panel.cor)
-  } else if (density == "corellipseCor") {
-    pairs(mat, lower.panel = plotEllipse, diag.panel = panel.hist.dens, upper.panel = panel.cor)
-  } else if (density == "ellipse") {
-    correlationEllipse(mat)
-  } else if (density == F) {
-    pairs(mat, lower.panel = panel.cor, diag.panel = panel.hist.dens, upper.panel = panel.cor)
-  } else stop("wrong sensity argument")
-  
-  # The if block above is generating return values
-} # correlationPlot
 
 ##' @title return.bias
 ##' @author Istem Fer
@@ -904,7 +708,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
     prior.names[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
     names(bias.params)[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
   }
-
+  
   rownames(bias.prior) <- prior.names
   prior.list.bias[[(length(prior.list.bias)+1)]] <- bias.prior
   
@@ -914,7 +718,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
                        function(b) punif(bias.params[[b]], 
                                          prior.list.bias[[length(prior.list.bias)]]$parama[b], 
                                          prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
-
+  
   
   # if this is another round, use the first priors
   if(run.round){
@@ -932,4 +736,45 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
   
   return(list(bias.params = bias.params, bias.probs = bias.probs, prior.list.bias = prior.list.bias))
   
-}
+} # return.bias
+
+
+##' @title return_hyperpars
+##' @author Istem Fer
+##' @export
+return_hyperpars <- function(assim.settings, inputs){
+  
+  check.hypers <- sapply(assim.settings$inputs, `[[`, "hyper.pars")
+    
+  hyper.pars <- list()
+  
+  if(length(unlist(check.hypers)) == 0){
+    # no hyper parameters passed via settings
+    # default to scaled hyper params
+    for(k in seq_along(assim.settings$inputs)){
+      hyper.pars[[k]] <- list()
+      hyper.pars[[k]]$parama <- 0.001
+      hyper.pars[[k]]$paramb <- 0.001 * mean(inputs[[k]]$data[,1], na.rm = TRUE) ^ 2
+    }
+    
+  }else{
+    
+    # hyperparameters at least for one likelihood was passed
+    for(k in seq_along(assim.settings$inputs)){
+      
+      if(is.null(check.hypers[[k]])){
+        hyper.pars[[k]] <- list()
+        hyper.pars[[k]]$parama <- 0.001
+        hyper.pars[[k]]$paramb <- 0.001 * mean(inputs[[k]]$data[,1], na.rm = TRUE) ^ 2
+      }else{
+        hyper.pars[[k]] <- list()
+        hyper.pars[[k]]$parama <- as.numeric(assim.settings$inputs[[k]]$hyper.pars$parama)
+        hyper.pars[[k]]$paramb <- as.numeric(assim.settings$inputs[[k]]$hyper.pars$paramb)
+      }
+
+    }
+    
+  }
+  
+  return(hyper.pars)
+} # return_hyperpars

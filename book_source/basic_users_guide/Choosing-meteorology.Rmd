@@ -19,6 +19,8 @@ Consider a generic met data product named MET for simplicity. PEcAn will use a f
 
 Once data is in the standard format and processed, it will be converted to the model-specific format using a met2model.MODEL function (located in that MODEL's module).
 
+More detailed information on how PEcAn processes inputs can be found on our [Input Conversion] page.
+
 ### Troubleshooting meteorological conversions
 
 At the current moment (PEcAn 1.4.0), most of the issues below address possible errors that the Ameriflux meteorology workflow might report

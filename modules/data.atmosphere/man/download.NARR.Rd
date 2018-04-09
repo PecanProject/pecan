@@ -5,11 +5,25 @@
 \title{Download NARR files}
 \usage{
 download.NARR(outfolder, start_date, end_date, overwrite = FALSE,
-  verbose = FALSE, ...)
+  verbose = FALSE, method, ...)
+}
+\arguments{
+\item{overwrite}{Overwrite existing files?  Default=FALSE}
+
+\item{verbose}{Turn on verbose output? Default=FALSE}
+
+\item{method}{Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
+example options(download.ftp.method="ncftpget")}
 }
 \description{
 Download NARR files
 }
+\examples{
+\dontrun{
+download.NARR("~/",'2000/01/01','2000/01/02', overwrite = TRUE, verbose = TRUE)
+}
+
+}
 \author{
-Betsy Cowdery
+Betsy Cowdery, Shawn Serbin
 }

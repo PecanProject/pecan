@@ -11,7 +11,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, "trait.data.Rdata")) || 
       !file.exists(file.path(pft$outdir, "prior.distns.Rdata"))) {
-    logger.severe("Could not find output from get.trait for", pft$name)
+    PEcAn.logger::logger.severe("Could not find output from get.trait for", pft$name)
     return(NA)
   }
   
@@ -19,29 +19,29 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   if (file.exists(file.path(pft$outdir, "trait.mcmc.Rdata")) && 
       file.exists(file.path(pft$outdir, "post.distns.Rdata")) && 
       settings$meta.analysis$update != TRUE) {
-    logger.info("Assuming get.trait copied results already")
+    PEcAn.logger::logger.info("Assuming get.trait copied results already")
     return(pft)
   }
   
   # make sure there is a posteriorid
   if (is.null(pft$posteriorid)) {
-    logger.severe("Make sure to pass in pft list from get.trait. Missing posteriorid for", pft$name)
+    PEcAn.logger::logger.severe("Make sure to pass in pft list from get.trait. Missing posteriorid for", pft$name)
     return(NA)
   }
   
   # get list of existing files so they get ignored saving
   old.files <- list.files(path = pft$outdir)
   
-  logger.info("-------------------------------------------------------------------")
-  logger.info(" Running meta.analysis for PFT:", pft$name)
-  logger.info("-------------------------------------------------------------------")
+  PEcAn.logger::logger.info("-------------------------------------------------------------------")
+  PEcAn.logger::logger.info(" Running meta.analysis for PFT:", pft$name)
+  PEcAn.logger::logger.info("-------------------------------------------------------------------")
   
   ## Load trait data for PFT
   load(file.path(pft$outdir, "trait.data.Rdata"))
   load(file.path(pft$outdir, "prior.distns.Rdata"))
   
   if (length(trait.data) == 0) {
-    logger.info("no trait data for PFT", pft$name, "\n so no meta-analysis will be performed")
+    PEcAn.logger::logger.info("no trait data for PFT", pft$name, "\n so no meta-analysis will be performed")
     return(NA)
   }
   
@@ -59,15 +59,15 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 
     if (p.data <= 1 - perr & p.data >= perr) {
       if (p.data <= 1 - pwarn & p.data >= pwarn) {
-        logger.info("OK! ", trait, " ", msg_var, " and prior are consistent:")
+        PEcAn.logger::logger.info("OK! ", trait, " ", msg_var, " and prior are consistent:")
       } else {
-        logger.warn("CHECK THIS: ", trait, " ", msg_var, " and prior are inconsistent:")
+        PEcAn.logger::logger.warn("CHECK THIS: ", trait, " ", msg_var, " and prior are inconsistent:")
       }
     } else {
-      logger.debug("NOT OK! ", trait, " ", msg_var, " and prior are probably not the same:")
+      PEcAn.logger::logger.debug("NOT OK! ", trait, " ", msg_var, " and prior are probably not the same:")
       return(NA)
     }
-    logger.info(trait, "P[X<x] =", p.data)
+    PEcAn.logger::logger.info(trait, "P[X<x] =", p.data)
     return(1)
   }
 
@@ -174,7 +174,7 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
 
 ##' @export
 runModule.run.meta.analysis <- function(settings) {
-  if (is.MultiSettings(settings)) {
+  if (PEcAn.settings::is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
     for (i in seq_along(settings)) {
@@ -185,7 +185,7 @@ runModule.run.meta.analysis <- function(settings) {
       pft.names   <- sapply(pfts, function(x) x$name)
     }
     
-    logger.info(paste0("Running meta-analysis on all PFTs listed by any Settings object in the list: ", 
+    PEcAn.logger::logger.info(paste0("Running meta-analysis on all PFTs listed by any Settings object in the list: ", 
                        paste(pft.names, collapse = ", ")))
     
     iterations <- settings$meta.analysis$iter

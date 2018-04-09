@@ -1,8 +1,8 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn package for integration of ED2 model
-Version: 1.4.10.1
-Date: 2017-04-18
+Version: 1.5.2
+Date: 2017-12-04
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper, Shawn Serbin
 Maintainer: Mike Dietze <dietze@bu.edu>
@@ -16,6 +16,9 @@ Depends:
     PEcAn.utils,
     coda
 Imports:
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.settings,
     abind (>= 1.4.5),
     ncdf4 (>= 1.15),
     stringr(>= 1.1.0),

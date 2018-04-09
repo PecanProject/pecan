@@ -10,6 +10,7 @@
 ##' @param host Host info from settings file
 ##' @param dbparms  database settings from settings file
 ##' @param dir  directory to write outputs to
+##' @param spin spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)
 ##' @param overwrite Whether to force met.process to proceed.
 ##' 
 ##'        `overwrite` may be a list with individual components corresponding to 
@@ -20,11 +21,31 @@
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
 ##'
+##' @importFrom PEcAn.DB db.query db.close dbfile.input.insert
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
-                        host = "localhost", dbparms, dir, browndog = NULL, 
+                        host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
-  library(RPostgreSQL)
+
+  # get met source and potentially determine where to start in the process
+  if(is.null(input_met$source)){
+    if(is.null(input_met$id)){
+      PEcAn.logger::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
+      return(input_met$path)
+    }else {
+     PEcAn.logger::logger.warn("No met source specified")
+      if(!is.null(input_met$id) & !is.null(input_met$path)){
+       PEcAn.logger::logger.warn("Assuming source CFmet")
+        met <- input_met$source <- "CFmet" ## this case is normally hit when the use provides an existing file that has already been
+        ## downloaded, processed, and just needs conversion to model-specific format.
+        ## setting a 'safe' (global) default
+      } else {
+       PEcAn.logger::logger.error("Cannot process met without source information")
+      }  
+    }
+  } else {
+    met <-input_met$source
+  }
   
   # If overwrite is a plain boolean, fill in defaults for each stage
   if (!is.list(overwrite)) {
@@ -54,7 +75,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
         overwrite.check[i] == TRUE && 
         !all(overwrite.check[(i + 1):length(overwrite.check)])) {
       print(overwrite)
-      logger.error(paste0("If overwriting any stage of met.process, ", "all subsequent stages need to be overwritten too. Please correct."))
+     PEcAn.logger::logger.error(paste0("If overwriting any stage of met.process, ", "all subsequent stages need to be overwritten too. Please correct."))
     }
   }
   
@@ -67,17 +88,12 @@ met.process <- function(site, input_met, start_date, end_date, model,
   con <- bety$con
   on.exit(db.close(con))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
-  machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
+  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
-  
-  # get met source and potentially determine where to start in the process
-  met <- ifelse(is.null(input_met$source), 
-                logger.error("Must specify met source"), 
-                input_met$source)
-  
+
   # special case Brown Dog
   if (!is.null(browndog)) {
-    result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username)
+    result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username, con)
     
     if (is.data.frame(result)) {
       dbfile.input.insert(in.path = dirname(result$file), 
@@ -101,14 +117,17 @@ met.process <- function(site, input_met, start_date, end_date, model,
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
     format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
   } else {
-    stage <- met.process.stage(input_met$id, register$format$id, con)
+    stage <- met.process.stage(input.id=input_met$id, raw.id=register$format$id, con)
     format.vars <- query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
     # Is there a situation in which the input ID could be given but not the file path? 
     # I'm assuming not right now
     assign(stage$id.name, list(inputid = input_met$id,
-                               dbfileid = db.query(paste0("SELECT id from dbfiles where file_name = '", 
-                                                          basename(input_met$path), "' AND file_path = '", 
-                                                          dirname(input_met$path), "'"), con)[[1]]))
+                               dbfileid = dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
+  }
+  print(stage)
+  
+  if(is.null(model)){
+    stage$model <- FALSE
   }
   
   # setup additional browndog arguments
@@ -151,6 +170,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        site = site, username = username)
     if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
+      # input_met$id overwrites ready.id below, needs to be populated here
+      input_met$id <- raw.id
       stage$met2cf <- FALSE
       stage$standardize <- FALSE
     }
@@ -174,6 +195,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             overwrite = overwrite$met2cf, 
                             format.vars = format.vars,
                             bety = bety)
+  } else {
+    cf.id = input_met$id
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -204,6 +227,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                      host = host, 
                                      overwrite = overwrite$standardize)
     }
+  } else {
+    ready.id = input_met$id
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -224,20 +249,32 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           site = site, 
                                           start_date = start_date, end_date = end_date, 
                                           browndog = browndog, 
-                                          new.site = new.site, 
+                                          new.site = new.site,
                                           overwrite = overwrite$met2model,
-                                          exact.dates = reg.model$exact.dates)
+                                          exact.dates = reg.model$exact.dates,
+                                          spin = spin)
     
     model.id  <- met2model.result$model.id
-    outfolder <- met2model.result$outfolder
+    model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+    model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+    
   } else {
-    model.id  <- ready.id
-    outfolder <- file.path(dir, paste0(met, "_site_", str_ns))
+    PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
+    model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
+    if(is.null(model.id)|length(model.id)==0){
+      model.file <- input_met$path
+    }else{
+      model.id$dbfile.id  <- model.id$id 
+      model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+      model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+    }
+    #PEcAn.logger::logger.info("model.file = ",model.file,input.met)
+    PEcAn.logger::logger.info("model.file = ",model.file,input_met)
   }
   
-  model.file <- db.query(paste("SELECT * from dbfiles where id =", model.id$dbfile.id), con)[["file_name"]]
-  
-  return(file.path(outfolder, model.file))
+
+    
+  return(model.file)
 } # met.process
 
 ################################################################################################################################# 
@@ -247,18 +284,19 @@ met.process <- function(site, input_met, start_date, end_date, model,
 ##' @export
 ##' @param site.id
 ##' @param con
+##' @importFrom PEcAn.DB db.query
 ##' @author Betsy Cowdery
 db.site.lat.lon <- function(site.id, con) {
   site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
                          site.id), con)
   if (nrow(site) == 0) {
-    logger.error("Site not found")
+   PEcAn.logger::logger.error("Site not found")
     return(NULL)
   }
   if (!(is.na(site$lat)) && !(is.na(site$lat))) {
     return(list(lat = site$lat, lon = site$lon))
   } else {
-    logger.severe("We should not be here!")
+   PEcAn.logger::logger.severe("We should not be here!")
   }
 } # db.site.lat.lon
 
@@ -277,9 +315,10 @@ db.site.lat.lon <- function(site.id, con) {
 ##' @param model, model to convert the met data to
 ##' @param dir, folder where results are stored (in subfolder)
 ##' @param username, used when downloading data from Ameriflux like sites
+##' @param con, database connection
 ## 
 ##' @author Rob Kooper
-browndog.met <- function(browndog, source, site, start_date, end_date, model, dir, username) {
+browndog.met <- function(browndog, source, site, start_date, end_date, model, dir, username, con) {
   folder <- tempfile("BD-", dir)
   dir.create(folder, showWarnings = FALSE, recursive = TRUE)
   
@@ -288,7 +327,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   } else if (source == "NARR") {
     sitename <- gsub("[\\s/()]", "-", site$name, perl = TRUE)
   } else {
-    logger.warn("Could not process source", source)
+   PEcAn.logger::logger.warn("Could not process source", source)
     return(invisible(NA))
   }
   
@@ -297,7 +336,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     formatname <- "clim"
     outputfile <- file.path(folder, "sipnet.clim")
     results <- data.frame(file = outputfile, 
-                          host = fqdn(), 
+                          host = PEcAn.remote::fqdn(), 
                           mimetype = "text/csv",
                           formatname = "Sipnet.climna", 
                           startdate = start_date, enddate = end_date, 
@@ -307,7 +346,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     formatname <- "ed.zip"
     outputfile <- file.path(folder, "ed.zip")
     results <- data.frame(file = file.path(folder, "ED_MET_DRIVER_HEADER"), 
-                          host = fqdn(), 
+                          host = PEcAn.remote::fqdn(), 
                           mimetype = "text/plain", 
                           formatname = "ed.met_driver_header files format",
                           startdate = start_date, enddate = end_date, 
@@ -317,7 +356,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     formatname <- "dalec"
     outputfile <- file.path(folder, "dalec.dat")
     results <- data.frame(file = outputfile, 
-                          host = fqdn(), 
+                          host = PEcAn.remote::fqdn(), 
                           mimetype = "text/plain", 
                           formatname = "DALEC meteorology", 
                           startdate = start_date, enddate = end_date, 
@@ -327,14 +366,28 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     formatname <- "linkages"
     outputfile <- file.path(folder, "climate.txt")
     results <- data.frame(file = outputfile, 
-                          host = fqdn(), 
+                          host = PEcAn.remote::fqdn(), 
                           mimetype = "text/plain", 
                           formatname = "LINKAGES meteorology", 
                           startdate = start_date, enddate = end_date,
                           dbfile.name = basename(outputfile), 
                           stringsAsFactors = FALSE)
+  } else if (model == "BIOCRO") {
+    metinfo <- db.query(paste0("select mimetypes.type_string, formats.name from mimetypes, formats, modeltypes, modeltypes_formats",
+                               " where modeltype_id=modeltypes.id and format_id=formats.id and formats.mimetype_id=mimetypes.id",
+                               " and tag='met' and modeltypes.name='", model, "'"), con)
+
+    formatname <- tolower(paste0("met.", model))
+    outputfile <- file.path(folder, "browndog_generated.out") # TODO is there a better name?
+    results <- data.frame(file = outputfile, 
+                          host = PEcAn.remote::fqdn(), 
+                          mimetype = metinfo$type_string,
+                          formatname = metinfo$name,
+                          startdate = start_date, enddate = end_date,
+                          dbfile.name = basename(outputfile), 
+                          stringsAsFactors = FALSE)
   } else {
-    logger.warn("Could not process model", model)
+    PEcAn.logger::logger.warn("Could not process model", model)
     return(invisible(NA))
   }
   
@@ -345,7 +398,8 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                     "<lon>", site$lon, "</lon>",
                     "<start_date>", start_date, "</start_date>", 
                     "<end_date>", end_date, "</end_date>", 
-                    "<username>", username, "</username>", 
+                    "<username>", username, "</username>",
+                    "<model>", model, "</model>", 
                     "</input>")
   
   userpass <- paste(browndog$username, browndog$password, sep = ":")
@@ -353,6 +407,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   result <- postForm(paste0(browndog$url, formatname, "/"), 
                      fileData = fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
   url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
+  PEcAn.logger::logger.info("browndog download url :", url)
   downloadedfile <- download.url(url, outputfile, 600, curloptions)
   
   # fix returned data

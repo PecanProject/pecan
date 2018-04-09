@@ -1,27 +1,25 @@
 #' Writes ED specific IC files
 #'
 #' @param outfolder where to write files
-#' @param overwrite
-#' @return results data frame
+#' @return filenames
 #' @export
 #' @author Istem Fer
-veg2model.ED2 <- function(outfolder, start_date, end_date, 
-                          lat, lon, site_id, source,
-                          veg_info, overwrite = FALSE, ...){
+veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   
+
+  lat       <- as.numeric(as.character(new_site$lat))
+  lon       <- as.numeric(as.character(new_site$lon))
 
   #--------------------------------------------------------------------------------------------------#
   # Handle file names
   
   start_year  <- lubridate::year(start_date)
-  end_year    <- lubridate::year(end_date)
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   dbfilenames <- c("css.file", "pss.file", "site.file")
   
-  file.prefix <- paste("siteid", site_id, source, start_year, end_year,
+  file.prefix <- paste(source, start_year,
                       get.ed.file.latlon.text(lat, lon, site.style = FALSE), sep = ".")
-  #site.prefix  <- paste("siteid", site_id, source, start_year, end_year,
-  #                       get.ed.file.latlon.text(lat, lon, site.style = TRUE), sep = ".")
+
   
   filenames   <- c(paste0(file.prefix, ".css"),
                    paste0(file.prefix, ".pss"),
@@ -33,32 +31,26 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   #--------------------------------------------------------------------------------------------------#
   # Prepare pss
   
-  # get data that was processed in the upstream 
-  # this check should be unnecessary once we handle pss data in the upstream
-  if(source == "FIA"){
-    
-    # this might change depending on how I process data in put.veg  
-    pss <- veg_info[[1]]
-    
-  } else{
-    
-    # other cases for now,
-    # create pss file from scratch by using values passed from using defaults 
-    # if you don't want to pass these from settings make sure you pass them to convert.inputs in put.veg.module
-    # wait until we solve metadata problem?
-    
-    ### assuming one patch for now, otherwise these lines might change ###
-    time    <- start_year-1
-    n.patch <- 1
-    trk     <- 1
-    age     <- 100
+  # veg_info[[1]] either has 
+  # i)   full pss info (FIA case)
+  # ii)  info passed from settings
+  # iii) no info
+  pss <- as.data.frame(veg_info[[1]], stringsAsFactors = FALSE)
+  
+  # for FIA these steps are unnecessary, it already has the pss info
+  if(source != "FIA"){
+    time    <- ifelse(!is.null(pss$time), pss$time, start_year)
+    n.patch <- ifelse(!is.null(pss$n.patch), pss$n.patch, 1)
+    trk     <- ifelse(!is.null(pss$trk), pss$trk, 1)
+    age     <- ifelse(!is.null(pss$age), pss$age, 100)
     
     pss <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
     
-    PEcAn.utils::logger.info(paste0("Values used in the patch file - time:", 
+    PEcAn.logger::logger.info(paste0("Values used in the patch file - time:", 
                                     pss$time, ", patch:", pss$patch, ", trk:", 
                                     pss$trk, ", age:", pss$age))
     
+    # TODO : soils can also be here, passed from settings
   }
   
   n.patch   <- nrow(pss)
@@ -72,7 +64,7 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   pss <- pss[, c("site", "time", "patch", "trk", "age", "area", "water")]
   
   # Add soil data
-  soil            <- c(1, 5, 5, 0.01, 0, 1, 1)  #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)\t
+  soil            <- c(1, 5, 5, 0.01, 0, 1, 1)  #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)
   soil.dat        <- as.data.frame(matrix(soil, n.patch, 7, byrow = TRUE))
   names(soil.dat) <- c("fsc", "stsc", "stsl", "ssc", "psc", "msn", "fsn")
   pss             <- cbind(pss, soil.dat)
@@ -80,9 +72,13 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   #--------------------------------------------------------------------------------------------------#
   # Prepare css
   
-  # this might change depending on how I process data in put.veg  
-  css <- veg_info[[2]]
-    
+  obs <- veg_info[[2]]
+  
+  # remove NA rows for unmatched PFTs, this should mean dead trees only
+  css <- obs[!is.na(obs$pft), ]
+  
+  # might further need removing dead trees by mortality status
+  # css <- remove_dead_trees()
 
   if(is.null(css$patch)){
     css$patch  <- 1
@@ -91,9 +87,9 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   # Remove rows that don't map to any patch
   css <- css[which(css$patch %in% pss$patch), ]
   if (nrow(css) == 0) {
-    logger.severe("No trees map to previously selected patches.")
+    PEcAn.logger::logger.severe("No trees map to previously selected patches.")
   } else {
-    logger.debug(paste0(nrow(css), " trees that map to previously selected patches."))
+    PEcAn.logger::logger.debug(paste0(nrow(css), " trees that map to selected patches."))
   }
 
     
@@ -109,9 +105,9 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   
   inv.years <- as.numeric(unique(css$year))
   # suitable years
-  av.years <- inv.years[inv.years < start_year]
+  av.years <- inv.years[inv.years <= start_year]
   if(length(av.years) == 0){
-    logger.severe("No available years found in the data.")
+    PEcAn.logger::logger.severe("No available years found in the data.")
   }
   css$time <- max(av.years)
   # filter out other years
@@ -128,7 +124,7 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   for (p in seq_along(css$pft)) {
     css$pft.number[p] <- pftmapping$ED[pftmapping$PEcAn == as.character(css$pft[p])]
     if (is.null(css$pft.number[p])) {
-      logger.severe(paste0("Couldn't find an ED2 PFT number for ", as.character(css$pft[p])))
+      PEcAn.logger::logger.severe(paste0("Couldn't find an ED2 PFT number for ", as.character(css$pft[p])))
     }
   }
   
@@ -169,18 +165,9 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   writeLines(site, filenames_full[3])
   close(site.file.con)
   
-  # Build results dataframe for convert.input
-  results <- data.frame(file = filenames_full, 
-                        host = c(fqdn()), 
-                        mimetype = "text/plain", 
-                        formatname = formatnames, 
-                        startdate = start_date, 
-                        enddate = end_date, 
-                        dbfile.name = filenames, 
-                        stringsAsFactors = FALSE)
-  
-  ### return for convert.inputs
-  return(invisible(results))  
+  # convert.input inserts only 1 file anyway
+  return(list(filepath = filenames_full[1], filename = filenames[1], 
+              mimetype = "text/plain", formatname = "ED2.cohort"))
 
 }
 

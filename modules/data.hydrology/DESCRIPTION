@@ -1,8 +1,8 @@
 Package: PEcAn.data.hydrology
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.4.10.1
-Date: 2017-04-18
+Version: 1.5.2
+Date: 2017-12-04
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -11,6 +11,9 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
+Imports:
+    PEcAn.logger,
+    PEcAn.utils
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE

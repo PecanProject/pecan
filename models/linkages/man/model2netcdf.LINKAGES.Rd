@@ -5,7 +5,7 @@
 \title{Code to convert LINKAGES's output into netCDF format}
 \usage{
 model2netcdf.LINKAGES(outdir, sitelat, sitelon, start_date = NULL,
-  end_date = NULL, force = FALSE)
+  end_date = NULL, force = FALSE, overwrite = FALSE)
 }
 \arguments{
 \item{outdir}{Location of model output}
@@ -17,6 +17,8 @@ model2netcdf.LINKAGES(outdir, sitelat, sitelon, start_date = NULL,
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
+
+\item{overwrite}{Flag for overwriting nc files or not}
 }
 \description{
 Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)

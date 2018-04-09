@@ -18,8 +18,8 @@ library(RCurl)
 # make sure always to call status.end
 options(warn=1)
 options(error=quote({
-  status.end("ERROR")
-  kill.tunnel(settings)
+  PEcAn.utils::status.end("ERROR")
+  PEcAn.remote::kill.tunnel(settings)
   if (!interactive()) {
     q()
   }
@@ -43,7 +43,16 @@ if (is.na(args[1])){
 # Check for additional modules that will require adding settings
 if("benchmarking" %in% names(settings)){
   library(PEcAn.benchmark)
-  settings <- papply(settings, read_settings_RR)
+  settings <- papply(settings, read_settings_BRR)
+}
+
+if("sitegroup" %in% names(settings)){
+  if(is.null(settings$sitegroup$nSite)){
+    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id)
+  } else {
+    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id,nSite = settings$sitegroup$nSite)
+  }
+  settings$sitegroup <- NULL ## zero out so don't expand a second time if re-reading
 }
 
 # Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
@@ -59,15 +68,14 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 }
   
 # Do conversions
-settings <- do.conversions(settings)
-
+settings <- PEcAn.utils::do_conversions(settings)
 
 # Query the trait database for data and priors
-if (status.check("TRAIT") == 0){
-  status.start("TRAIT")
-  settings <- runModule.get.trait.data(settings)
+if (PEcAn.utils::status.check("TRAIT") == 0){
+  PEcAn.utils::status.start("TRAIT")
+  settings <- PEcAn.DB::runModule.get.trait.data(settings)
   PEcAn.settings::write.settings(settings, outputfile='pecan.TRAIT.xml')
-  status.end()
+  PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
 }
@@ -75,85 +83,85 @@ if (status.check("TRAIT") == 0){
   
 # Run the PEcAn meta.analysis
 if(!is.null(settings$meta.analysis)) {
-  if (status.check("META") == 0){
-    status.start("META")
-    runModule.run.meta.analysis(settings)
-    status.end()
+  if (PEcAn.utils::status.check("META") == 0){
+    PEcAn.utils::status.start("META")
+    PEcAn.MA::runModule.run.meta.analysis(settings)
+    PEcAn.utils::status.end()
   }
 }
   
 # Write model specific configs
-if (status.check("CONFIG") == 0){
-  status.start("CONFIG")
-  settings <- runModule.run.write.configs(settings)
+if (PEcAn.utils::status.check("CONFIG") == 0){
+  PEcAn.utils::status.start("CONFIG")
+  settings <- PEcAn.utils::runModule.run.write.configs(settings)
   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
-  status.end()
+  PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
 }
     
-if ((length(which(commandArgs() == "--advanced")) != 0) && (status.check("ADVANCED") == 0)) {
-  status.start("ADVANCED")
+if ((length(which(commandArgs() == "--advanced")) != 0) && (PEcAn.utils::status.check("ADVANCED") == 0)) {
+  PEcAn.utils::status.start("ADVANCED")
   q();
 }
 
 # Start ecosystem model runs
-if (status.check("MODEL") == 0) {
-  status.start("MODEL")
-  runModule.start.model.runs(settings)
-  status.end()
+if (PEcAn.utils::status.check("MODEL") == 0) {
+  PEcAn.utils::status.start("MODEL")
+  PEcAn.remote::runModule.start.model.runs(settings,stop.on.error=FALSE)
+  PEcAn.utils::status.end()
 }
 
 # Get results of model runs
-if (status.check("OUTPUT") == 0) {
-  status.start("OUTPUT")
+if (PEcAn.utils::status.check("OUTPUT") == 0) {
+  PEcAn.utils::status.start("OUTPUT")
   runModule.get.results(settings)
-  status.end()
+  PEcAn.utils::status.end()
 }
 
 # Run ensemble analysis on model output. 
-if ('ensemble' %in% names(settings) & status.check("ENSEMBLE") == 0) {
-  status.start("ENSEMBLE")
+if ('ensemble' %in% names(settings) & PEcAn.utils::status.check("ENSEMBLE") == 0) {
+  PEcAn.utils::status.start("ENSEMBLE")
   runModule.run.ensemble.analysis(settings, TRUE)    
-  status.end()
+  PEcAn.utils::status.end()
 }
 
 # Run sensitivity analysis and variance decomposition on model output
-if ('sensitivity.analysis' %in% names(settings) & status.check("SENSITIVITY") == 0) {
-  status.start("SENSITIVITY")
+if ('sensitivity.analysis' %in% names(settings) & PEcAn.utils::status.check("SENSITIVITY") == 0) {
+  PEcAn.utils::status.start("SENSITIVITY")
   runModule.run.sensitivity.analysis(settings)
-  status.end()
+  PEcAn.utils::status.end()
 }
 
 # Run parameter data assimilation
 if ('assim.batch' %in% names(settings)) {
-  if (status.check("PDA") == 0) {
-    status.start("PDA")
+  if (PEcAn.utils::status.check("PDA") == 0) {
+    PEcAn.utils::status.start("PDA")
     settings <- PEcAn.assim.batch::runModule.assim.batch(settings)
-    status.end()
+    PEcAn.utils::status.end()
   }
 }
 
 # Run state data assimilation
 if ('state.data.assimilation' %in% names(settings)) {
-  if (status.check("SDA") == 0) {
-    status.start("SDA")
+  if (PEcAn.utils::status.check("SDA") == 0) {
+    PEcAn.utils::status.start("SDA")
     settings <- sda.enfk(settings)
-    status.end()
+    PEcAn.utils::status.end()
   }
 }
 
 # Run benchmarking
-if("benchmarking" %in% names(settings)){
-  status.start("BENCHMARKING")
+if("benchmarking" %in% names(settings) & "benchmark" %in% names(settings$benchmarking)){
+  PEcAn.utils::status.start("BENCHMARKING")
   results <- papply(settings, function(x) calc_benchmark(x, bety))
-  status.end()
+  PEcAn.utils::status.end()
 }
   
 # Pecan workflow complete
-if (status.check("FINISHED") == 0) {
-  status.start("FINISHED")
-  kill.tunnel(settings)
+if (PEcAn.utils::status.check("FINISHED") == 0) {
+  PEcAn.utils::status.start("FINISHED")
+  PEcAn.remote::kill.tunnel(settings)
   db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
 
   # Send email if configured
@@ -162,7 +170,7 @@ if (status.check("FINISHED") == 0) {
              paste0("Workflow has finished executing at ", base::date()),
              paste0("You can find the results on ", settings$email$url))
   }
-  status.end()
+  PEcAn.utils::status.end()
 }
 
 db.print.connections()

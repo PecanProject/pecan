@@ -1,15 +1,16 @@
 Package: PEcAn.emulator
 Type: Package
 Title: Gausian Process emulator
-Version: 1.4.10.1
-Date: 2017-04-18
+Version: 1.5.2
+Date: 2017-12-04
 Author: Michael Dietze
 Maintainer: Michael Dietze <dietze@bu.edu>
 Depends:
     mvtnorm,
-    GPfit,
+    mlegp,
     MCMCpack
 Imports:
+    PEcAn.logger,
     coda (>= 0.18),
     methods
 Description: Implementation of a Gaussian Process model (both likelihood and

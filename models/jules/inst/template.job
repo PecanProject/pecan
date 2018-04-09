@@ -20,7 +20,7 @@ if [ ! -e "@OUTDIR@/*.nc" ]; then
   # check the status
   if [ $STATUS -ne 0 ]; then
     echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
-    exit $STATUS
+#    exit $STATUS
   fi
 
   ## rename JULES output netcdf to PEcAn standard [YEAR].nc
@@ -42,3 +42,4 @@ cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # all done
 echo -e "MODEL JULES FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+exit $STATUS
