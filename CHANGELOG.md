@@ -19,6 +19,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed bug that overwrote remote  met file paths with local file paths
 - PEcAnRTM:
     - Remove non-portable extensions from `src/Makevars`. This should make the package Windows-compatible.
+- Fixed BrownDog shiny issues of removing site without geometry; fixing sites.length==0; removing old map markers when change input$type; fixing agreement bug when change input$type
 
 ### Added
 - Functionality to read pft-specific outputs and to run sensitivity analysis on pft-specific outputs.
