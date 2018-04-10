@@ -48,7 +48,7 @@
 #'(history) files
 #' @param run_dir Directory in which to store run-related config files (e.g. `config.xml`).
 #' @param runtype ED initialization mode; either "INITIAL" or "HISTORY"
-#' @param pecan_defaults Logical. If `TRUE` (default), set common `ED2IN` defaults.
+#' @param pecan_defaults Logical. If `TRUE`, set common `ED2IN` defaults.
 #' @param add_if_missing Logical. If `TRUE`, all-caps arguments not found in 
 #'existing `ed2in` list will be added to the end.  Default = `FALSE`.
 #' @param check_paths Logical. If `TRUE` (default), for any parameters that 
@@ -69,7 +69,7 @@ modify_ed2in <- function(ed2in, ...,
                          run_dir = NULL,
                          runtype = NULL,
                          run_name = NULL,
-                         pecan_defaults = TRUE,
+                         pecan_defaults = FALSE,
                          add_if_missing = FALSE,
                          check_paths = TRUE,
                          .dots = list()) {
