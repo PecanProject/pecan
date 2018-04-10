@@ -1,23 +1,26 @@
-##' Duplicate existing prior for new pft
+##' Duplicate existing pft with associated priors, species, and cultivars
 ##'
 ##' Creates a new pft that is a duplicate of an existing pft,
-##' including relationships with priors and species of the existing pft
+##' including relationships with priors, species, and cultivars (if any) of the existing pft.
+##' This function mimics the 'clone pft' button in the PFTs record view page in the 
+##' BETYdb web interface for PFTs that aggregate >=1 species, but adds the ability to 
+##' clone the cultivar associations.
 ##'
 ##' @param parent.pft.name name of PFT to duplicate
 ##' @param new.pft.name name for new PFT. Must not be the same as parent.pft.name
 ##' @param new.pft.definition text for the new PFT's definition field.
-##' @param settings PEcAn settings list, used only for Bety connection parameters
-##' @return ID of the newly created pft in database
+##' @param settings PEcAn settings list, used only for BETYdb connection parameters
+##' @return ID of the newly created pft in database, creates new PFT as a side effect
 ##' @author David LeBauer, Chris Black
 ##' @examples \dontrun{
 ##' priordupe(parent.pft.name    = "tempdecid",
 ##'           new.pft.name       = "mytempdecid",
 ##'           new.pft.definition = "mytempdecid is a new pft")
 ##' }
-priordupe <- function(parent.pft.name,
-                      new.pft.name,
-                      new.pft.definition,
-                      settings){
+clone_prior <- function(parent.pft.name,
+                        new.pft.name,
+                        new.pft.definition,
+                        settings){
 
   if (new.pft.name == parent.pft.name) {
     PEcAn.logger::logger.severe("new.pft.name must not be the same as parent.pft.name")
