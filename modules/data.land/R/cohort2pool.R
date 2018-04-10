@@ -2,7 +2,7 @@
 ##'Calculates total biomass using veg cohort file. 
 ##'
 ##' @export
-##' @param veg_file standard cohort veg_file
+##' @param veg_file path to standard cohort veg_file
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
 ##' @author Saloni Shah
 ##' @example 
@@ -11,7 +11,6 @@
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
 ##' }
 
-veg_file <- "/fs/data1/pecan.data/dbfiles/Forest_Geo_site_1-5005/Forest_Geo.1981.veg.rds" #file path for RDS file
 cohort2pool <- function(veg_file,allom_param =NULL) {
   
   ## Building Site ID from past directories
