@@ -42,7 +42,6 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                     'fia' = 'spcd',
                     'latin_name' = 'scientificname',
                     'custom' = 'custom')
-  
   if (!format_name %in% names(formats_dict)) {
     PEcAn.logger::logger.severe('format_name "', format_name, '" not found. ',
                                 'Please use one of the following: ',
@@ -73,21 +72,14 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
   } else {
     column <- formats_dict[format_name]
     if(!is.null(bety)){
-      # query BETY
-      library(dplyr) #added package in order to make 'input_codes' upper case
-      library(R.utils) #added package in order to make 'input_codes' upper case
-      filter_cri <- lazyeval::interp(~ col %in% codes,
-                                     col = as.name(column),
-                                     codes = input_codes)
+      # query BETY for species, id, genus, and latin name
       translation <- dplyr::tbl(bety, 'species') %>%
-        #dplyr::filter_(filter_cri) %>%
         dplyr::select_('bety_species_id' = 'id', 'genus', 'species',
                        'input_code' = column) %>%
         dplyr::collect()
-       translation<- translation %>% mutate(input_code = toupper(input_code)) #match_species_id is case-sensitive, to match species names in obs to translation, 'input_codes' needs to be upper-case since 'latin_names' in obs are upper-case
+       translation<- translation %>% dplyr::mutate(input_code = toupper(input_code)) #match_species_id is case-sensitive, to match species names in obs to translation, 'input_codes' needs to be upper-case since 'latin_names' in obs are upper-case
       colnames(translation) <- c('bety_species_id', 'genus', 'species',"input_codes") #semi_join requires that the column name within the tables being matched have the same name
-      translation <- semi_join(translation, input_codes, by = "input_codes" )  #Keep rows in translation table that have the same 'latin_name' within obs
-      
+      translation <- dplyr::semi_join(translation, input_codes, by = "input_codes" )  #Keep rows in translation table that have the same 'latin_name' within obs
     }else{
       # use traits package
       
@@ -113,11 +105,9 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
   # preserving the order is important for downstream
   colnames(translation)<- c('bety_species_id', 'genus', 'species',"input_code") #changed 'latin_name' back to 'input_codes' to enable 'left_join' since columns being matched must have same name, also changed 'id' back to 'bety_species_id' so species id can be checked in bety database  
   merge_table <- dplyr::left_join(input_table, translation)
-  
   if(sum(is.na(merge_table$bety_species_id)) > 0){
     bad <- unique(merge_table$input_code[is.na(merge_table$bety_species_id)])
     PEcAn.logger::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
   }
-  
   return(merge_table)
 } # match_species_id
