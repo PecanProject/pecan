@@ -3,14 +3,14 @@
                             start_date, end_date,
                             dbparms,
                             new_site, 
-                            host, machine_host, #machine_host is either pecan1 or pecan2
+                            host, machine_host, 
                             overwrite){
 
   #--------------------------------------------------------------------------------------------------#
   # Extract/load data : this step requires DB connections 
   # can be passed to convert.inputs now because process IC locally
   
-  lat       <-new_site$lat
+  lat       <- new_site$lat
   lon       <- new_site$lon
   site_id   <- new_site$id
   site_name <- new_site$name
@@ -41,7 +41,7 @@
                                # fcn specific args 
                                new_site = new.site,
                                gridres = input_veg$gridres, dbparms = dbparms,
-                               machine_host = machine.host, input_veg = input, #machine_host is either pecan1 or pecan2
+                               machine_host = machine.host, input_veg = input, 
                                source = input_veg$source)
   
     
@@ -70,7 +70,7 @@
                                source_id = source.id,
                                format_name = input_veg$match.format,
                                dbparms = dbparms,
-                               machine_host = machine.host,#machine_host is either pecan1 or pecan2
+                               machine_host = machine.host,
                                source = input_veg$source,
                                ##  any meta data passed via settings to be used in the IC files (in veg2model)
                                ##  if different than defaults, e.g.:

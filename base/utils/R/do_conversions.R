@@ -65,7 +65,6 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       ## which is done locally in rundir and then rsync'ed to remote
       ## rather than having a model-format soils file that is processed remotely
     }
-   ## STOPP
     # met conversion
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
