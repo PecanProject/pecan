@@ -21,21 +21,20 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   
   sda_datestr  <- gregexpr("-S-", histfile)[[1]]
   sda_suffix   <- paste0("SDA.", substr(histfile, sda_datestr[1] + 3, sda_datestr[1] + 19))
+  hyear        <- substr(histfile, sda_datestr[1] + 3, sda_datestr[1] + 6)
   
   # check these dirs for local vs remote
   #### Backup old run files to date directory
   runfiles <- list.files.nodir(file.path(rundir, runid))
-  modoutfiles <- list.files.nodir(file.path(mod_outdir, runid))
-  other_files <- grep("history-.*.h5", modoutfiles, value = TRUE, invert = TRUE)
-  copy_files <- c(basename(histfile), other_files)
+  modoutfiles <- list.files.nodir(file.path(mod_outdir, runid), hyear) # copy only current year, otherwise it cumulatively copies everything
 
   dir.create(file.path(rundir, runid, sda_suffix))
   dir.create(file.path(mod_outdir, runid, sda_suffix))
   file.copy(file.path(rundir, runid, runfiles),
             file.path(rundir, runid, sda_suffix, runfiles), 
             overwrite = TRUE)
-  file.copy(file.path(mod_outdir, runid, copy_files),
-            file.path(mod_outdir, runid, sda_suffix, copy_files),
+  file.copy(file.path(mod_outdir, runid, modoutfiles),
+            file.path(mod_outdir, runid, sda_suffix, modoutfiles),
             overwrite = TRUE)
 
 
@@ -44,7 +43,6 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   # but this causes mismatches in start-date because ED2 writes them as 1961-01-01 not 1961-12-31
   # then if timeh starts from 1962 it can't find the 1961 files, if you give dates accordingly it starts the simulation early
   # my solution is to copy-rename the history file. Other solutions are to change ED2's naming, or writing daily/monthly history files
-  hyear   <- substr(histfile, sda_datestr[1] + 3, sda_datestr[1] + 6)
   new_basename <- gsub(hyear, lubridate::year(start.time), basename(histfile))
   new_local_histfile   <- file.path(dirname(histfile), new_basename)
   new_remote_histfile  <- file.path(settings$host$outdir, runid, new_basename)
