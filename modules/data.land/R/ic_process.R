@@ -60,7 +60,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     end_date   <- settings$run$end.date
   }else{
     
-    query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
+   query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
    input_file <- db.query(query, con = con) 
    start_date <- input_file$start_date
    end_date   <- input_file$end_date
@@ -78,24 +78,26 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   # setup site database number, lat, lon and name and copy for format.vars if new input
   new.site <- data.frame(id = as.numeric(site$id), 
-                        lat = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lat, 
-                        lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
+                         lat = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lat, 
+                         lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
   new.site$name <- settings$run$site$name
   
 
 str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
-  outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
+  
+outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
 
-   getveg.id <- putveg.id <- NULL
+   
+getveg.id <- putveg.id <- NULL
   
   
-  #--------------------------------------------------------------------------------------------------#
+#--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
-  if (is.null(getveg.id) & is.null(putveg.id)) {
+if (is.null(getveg.id) & is.null(putveg.id)) {
 
-    getveg.id <- PEcAn.data.land:::.get.veg.module(input_veg = input, 
+    getveg.id <-.get.veg.module(input_veg = input, 
                               outfolder = outfolder, 
                               start_date = start_date, end_date = end_date,
                               dbparms = dbparms,
@@ -107,12 +109,12 @@ str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   }
   
 
-  #--------------------------------------------------------------------------------------------------#
+#--------------------------------------------------------------------------------------------------#
   # Match species to PFTs + veg2model module
   
   if (!is.null(getveg.id) & is.null(putveg.id)) { # probably need a more sophisticated check here
     
-    putveg.id <-  PEcAn.data.land:::.put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
+    putveg.id <-.put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
                                 input_veg = input, pfts = settings$pfts,
                                 outfolder = outfolder, 
                                 dir = dir, machine = machine, model = model,

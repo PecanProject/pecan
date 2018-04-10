@@ -50,13 +50,11 @@
   }else{
     
     fcn <- "load_veg"
-    
     if(!is.null(input_veg$source.id)){
       source.id <- input_veg$source.id
     }else{
       PEcAn.logger::logger.error("Must specify input source.id")
     }
-    
     getveg.id <- convert.input(input.id = NA,
                                outfolder = outfolder, 
                                formatname = "spp.info", 
