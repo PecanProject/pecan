@@ -2,25 +2,23 @@
 % Please edit documentation in R/priordupe.R
 \name{priordupe}
 \alias{priordupe}
-\title{Duplicate PFT}
+\title{Duplicate existing prior for new pft}
 \usage{
-priordupe(parent.pft.name = NULL, new.pft.name = NULL,
-  new.pft.definition = NULL, settings = NULL)
+priordupe(parent.pft.name, new.pft.name, new.pft.definition, settings)
 }
 \arguments{
 \item{parent.pft.name}{name of PFT to duplicate}
 
 \item{new.pft.name}{name for new PFT. Must not be the same as parent.pft.name}
 
-\item{new.pft.definition}{text for the new PFT's definition field. If NULL the definition will be empty, not copied from the parent PFT.}
+\item{new.pft.definition}{text for the new PFT's definition field.}
+
+\item{settings}{PEcAn settings list, used only for Bety connection parameters}
 }
 \value{
-nothing, creates new pft in database as a side-effect
+ID of the newly created pft in database
 }
 \description{
-Duplicate existing prior for new pft
-}
-\details{
 Creates a new pft that is a duplicate of an existing pft,
 including relationships with priors and species of the existing pft
 }
@@ -32,5 +30,5 @@ priordupe(parent.pft.name    = "tempdecid",
 }
 }
 \author{
-David LeBauer
+David LeBauer, Chris Black
 }
