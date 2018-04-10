@@ -8,7 +8,7 @@ modify_ed2in(ed2in, ..., veg_prefix = NULL, latitude = NULL,
   longitude = NULL, met_driver = NULL, start_date = NULL,
   end_date = NULL, EDI_path = NULL, output_types = NULL,
   output_dir = NULL, run_dir = NULL, runtype = NULL, run_name = NULL,
-  pecan_defaults = TRUE, add_if_missing = FALSE, check_paths = TRUE,
+  pecan_defaults = FALSE, add_if_missing = FALSE, check_paths = TRUE,
   .dots = list())
 }
 \arguments{
@@ -43,7 +43,7 @@ and \code{THSUMS_DATABASE} files.}
 
 \item{runtype}{ED initialization mode; either "INITIAL" or "HISTORY"}
 
-\item{pecan_defaults}{Logical. If \code{TRUE} (default), set common \code{ED2IN} defaults.}
+\item{pecan_defaults}{Logical. If \code{TRUE}, set common \code{ED2IN} defaults.}
 
 \item{add_if_missing}{Logical. If \code{TRUE}, all-caps arguments not found in
 existing \code{ed2in} list will be added to the end.  Default = \code{FALSE}.}
