@@ -5,7 +5,7 @@
 #' @export
 list.files.nodir <- function(path, ...) {
     allfiles <- list.files(path, ...)
-    dirs <- list.dirs(path, ...)
+    dirs <- list.dirs(path, full.names = FALSE)
     outfiles <- setdiff(allfiles, dirs)
     return(outfiles)
 }
