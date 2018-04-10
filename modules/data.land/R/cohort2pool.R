@@ -1,5 +1,6 @@
-##' @name cohort2pool
-##' @title cohort2pool
+##' cohort2pool function
+##'Calculates total biomass using veg cohort file. 
+##'
 ##' @export
 ##' @param veg_file standard cohort veg_file
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
@@ -9,6 +10,8 @@
 ##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
 ##' }
+
+veg_file <- "/fs/data1/pecan.data/dbfiles/Forest_Geo_site_1-5005/Forest_Geo.1981.veg.rds" #file path for RDS file
 cohort2pool <- function(veg_file,allom_param =NULL) {
   
   ## Building Site ID from past directories
@@ -37,11 +40,13 @@ cohort2pool <- function(veg_file,allom_param =NULL) {
   
   #Calculate AGB
   biomass = 10^(a + b*log10(dbh))
+  biomass[is.na(biomass)] <- 0
   tot_biomass <- sum(biomass)
+  AGB <- tot_biomass
   
   #Prep Arguments for pool_ic function
-  dims <- list(time =1)
-  variables <-list(AGB=tot_biomass)
+  dims <- list(time =1) #Time dimension may be irrelevant
+  variables <-list(AGB = tot_biomass)
   input <- list(dims = dims,
                 vals = variables)
   
