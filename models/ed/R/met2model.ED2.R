@@ -122,16 +122,16 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     LW   <- ncdf4::ncvar_get(nc, "surface_downwelling_longwave_flux_in_air")
     CO2  <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
 
-    use_UV <- is.numeric(U) & !is.numeric(V)
-    # PalEON data don't have U & V
-    # per Mike's comment I'm writing only ws from now on [is this a problem?]:
-    # ED2 only actually uses the wind speed scalar, not vector, it just reads the vector in because it's assuming it's being fed reanalysis
-    if(use_UV){
-      Wind <- sqrt(U ^ 2 + V ^ 2)
-      PEcAn.logger::logger.info("calculated wind_speed from eastward_wind and northward_wind")
-    }else{
-      Wind <- ncdf4::ncvar_get(nc, "wind_speed")
-      PEcAn.logger::logger.info("eastward_wind and northward_wind are absent, using wind_speed")
+    use_UV <- is.numeric(U) & is.numeric(V)
+
+    if(!use_UV){
+      U <- try(ncdf4::ncvar_get(nc, "wind_speed"), silent = TRUE)
+      if(is.numeric(U)){
+        PEcAn.logger::logger.info("eastward_wind and northward_wind are absent, using wind_speed to approximate eastward_wind")
+        V <- rep(0, length(U))
+      }else{
+        PEcAn.logger::logger.severe("No eastward_wind and northward_wind or wind_speed in the met data")
+      }
     }
     useCO2 <- is.numeric(CO2)
 
@@ -148,9 +148,8 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     slen <- seq_along(SW)
     Tair <- c(rep(Tair[1], toff), Tair)[slen]
     Qair <- c(rep(Qair[1], toff), Qair)[slen]
-    # U  <- c(rep(U[1], toff), U)[slen]
-    # V  <- c(rep(V[1], toff), V)[slen]
-    Wind <- c(rep(Wind[1], toff), Wind)[slen]
+    U  <- c(rep(U[1], toff), U)[slen]
+    V  <- c(rep(V[1], toff), V)[slen]
     Rain <- c(rep(Rain[1], toff), Rain)[slen]
     pres <- c(rep(pres[1], toff), pres)[slen]
     SW   <- c(rep(SW[1], toff), SW)[slen]
@@ -231,9 +230,8 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     dlwrfA <- LW  # downward long wave radiation [W/m2]
     presA  <- pres  # pressure [Pa]
     hgtA   <- rep(50, n)  # geopotential height [m]
-    #ugrdA <- U  # zonal wind [m/s]
-    #vgrdA <- V  # meridional wind [m/s]
-    ugrdA  <- Wind  # zonal wind [m/s]
+    ugrdA <- U  # zonal wind [m/s]
+    vgrdA <- V  # meridional wind [m/s]
     shA    <- Qair  # specific humidity [kg_H2O/kg_air]
     tmpA   <- Tair  # temperature [K]
     if (useCO2) {
@@ -270,7 +268,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         pres  <- array(presA[selm], dim = dims)
         hgt   <- array(hgtA[selm], dim = dims)
         ugrd  <- array(ugrdA[selm], dim = dims)
-        # vgrd  <- array(vgrdA[selm], dim = dims)
+        vgrd  <- array(vgrdA[selm], dim = dims)
         sh    <- array(shA[selm], dim = dims)
         tmp   <- array(tmpA[selm], dim = dims)
         if (useCO2) {
@@ -285,7 +283,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         ed_met_h5[["pres"]] <- pres
         ed_met_h5[["hgt"]] <- hgt
         ed_met_h5[["ugrd"]] <- ugrd
-        # ed_met_h5[["vgrd"]] <- vgrd
+        ed_met_h5[["vgrd"]] <- vgrd
         ed_met_h5[["sh"]] <- sh
         ed_met_h5[["tmp"]] <- tmp
         if (useCO2) {
@@ -297,7 +295,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     ## write DRIVER file
     metvar <- c("nbdsf", "nddsf", "vbdsf", "vddsf", "prate", "dlwrf",
-                "pres", "hgt", "ugrd", "sh", "tmp", "co2")
+                "pres", "hgt", "ugrd", "vgrd", "sh", "tmp", "co2")
     metvar_table <- data.frame(
       variable = metvar,
       update_frequency = dt,
