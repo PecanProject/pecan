@@ -13,21 +13,22 @@
 ##' @return ID of the newly created pft in database, creates new PFT as a side effect
 ##' @author David LeBauer, Chris Black
 ##' @examples \dontrun{
-##' priordupe(parent.pft.name    = "tempdecid",
+##' clone_pft(parent.pft.name    = "tempdecid",
 ##'           new.pft.name       = "mytempdecid",
-##'           new.pft.definition = "mytempdecid is a new pft")
+##'           new.pft.definition = "mytempdecid is a new pft",
+##'           settings = pecan_settings_list)
 ##' }
-clone_prior <- function(parent.pft.name,
-                        new.pft.name,
-                        new.pft.definition,
-                        settings){
+clone_pft <- function(parent.pft.name,
+                      new.pft.name,
+                      new.pft.definition,
+                      settings){
 
   if (new.pft.name == parent.pft.name) {
     PEcAn.logger::logger.severe("new.pft.name must not be the same as parent.pft.name")
   }
 
   if (length(new.pft.name) > 1 || length(parent.pft.name) > 1) {
-    PEcAn.logger::logger.severe("multiple PFT names given, and priordupe only knows how to handle one at a time.")
+    PEcAn.logger::logger.severe("multiple PFT names given, and clone_pft only knows how to handle one at a time.")
   }
 
   con <- db.open(settings$database$bety)
