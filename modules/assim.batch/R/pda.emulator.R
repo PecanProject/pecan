@@ -673,6 +673,14 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                                                        ".Rdata"))
   save(resume.list, file = settings$assim.batch$resume.path)
   
+  # save inputs list, this object has been processed for autocorrelation correction 
+  # this can take a long time depending on the data, re-load and skip in next iteration
+  external.data <- inputs
+  save(external.data, file = file.path(settings$outdir,
+                                       paste0("external.", 
+                                              settings$assim.batch$ensemble.id, 
+                                              ".Rdata")))
+  
   # save prior.list with bias term
   if(any(unlist(any.mgauss) == "multipGauss")){
     settings$assim.batch$bias.path <- file.path(settings$outdir, 
