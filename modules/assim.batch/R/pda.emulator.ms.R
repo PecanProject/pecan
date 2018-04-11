@@ -38,17 +38,14 @@ pda.emulator.ms <- function(multi.settings) {
   
   ## -------------------------------------- Local runs and calibration ------------------------------------------
   
-  for(s in seq_along(multi.settings)){ # site runs - loop begin
-    
-    settings <- multi.settings[[s]]
+  if(local){
     # NOTE: local flag is not used currently, prepearation for future use
     # if this flag is FALSE, pda.emulator will not fit GP and run MCMC, 
     # but will run LHC ensembles, calculate SS and return settings list with saved SS paths etc.
     # this requires some re-arrangement in pda.emulator, 
     # for now we will always run site-level calibration
-    settings <- pda.emulator(settings, local = local)
-    multi.settings[[s]] <- settings
-  } # site runs - loop end
+    multi.settings <- papply(multi.settings, pda.emulator, local = local)
+  }
   
   #PEcAn.settings::write.settings(multi.settings, outputfile='pecan.PDAMS.xml')
   
@@ -328,13 +325,15 @@ pda.emulator.ms <- function(multi.settings) {
       #      sigma_global <- solve(tau_global)
       #
       
-      tau_df <- nsites + nparam + 1
+      tau_df <- nparam + 1
       tau_V  <- diag(1, nparam)
       V_inv  <- solve(tau_V)  # will be used in gibbs updating
       
       # initialize tau_global (nparam x nparam)
       tau_global   <- rWishart(1, tau_df, tau_V)[,,1]
       
+      # df to use while updating tau later, setting here one out of the loop
+      tau_df <- tau_df + nsites
       
       # initialize jcov.arr (jump variances per site)
       jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
