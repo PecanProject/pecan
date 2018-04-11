@@ -167,159 +167,6 @@ In the meantime, your `<run>` section should specify `<inputs>`, `<start.date>` 
  </run>
 ```
 
-If requested, your `<ensemble>` and `<sensitivity.analysis>` sections would look similar to this in your `pecan.CONFIGS.xml`:
-
-
-```
- <ensemble>
-  <settings.1>
-   <size>100</size>
-   <variable>NEE</variable>
-   <ensemble.id>1000017326</ensemble.id>
-   <start.year>2005</start.year>
-   <end.year>2011</end.year>
-  </settings.1>
-  <settings.2>
-   <size>100</size>
-   <variable>NEE</variable>
-   <ensemble.id>1000017326</ensemble.id>
-   <start.year>2010</start.year>
-   <end.year>2015</end.year>
-  </settings.2>
-  <settings.3>
-   <size>100</size>
-   <variable>NEE</variable>
-   <ensemble.id>1000017326</ensemble.id>
-   <start.year>2001</start.year>
-   <end.year>2014</end.year>
-  </settings.3>
-  <settings.4>
-   <size>100</size>
-   <variable>NEE</variable>
-   <ensemble.id>1000017326</ensemble.id>
-   <start.year>2005</start.year>
-   <end.year>2015</end.year>
-  </settings.4>
-  <settings.5>
-   <size>100</size>
-   <variable>NEE</variable>
-   <ensemble.id>1000017326</ensemble.id>
-   <start.year>2007</start.year>
-   <end.year>2014</end.year>
-  </settings.5>
-  <settings.6>
-   <size>100</size>
-   <variable>NEE</variable>
-   <ensemble.id>1000017326</ensemble.id>
-   <start.year>1999</start.year>
-   <end.year>2006</end.year>
-  </settings.6>
-  <settings.7>
-   <size>100</size>
-   <variable>NEE</variable>
-   <ensemble.id>1000017326</ensemble.id>
-   <start.year>2013</start.year>
-   <end.year>2015</end.year>
-  </settings.7>
-  <settings.8>
-   <size>100</size>
-   <variable>NEE</variable>
-   <ensemble.id>1000017326</ensemble.id>
-   <start.year>1997</start.year>
-   <end.year>2010</end.year>
-  </settings.8>
- </ensemble>
- <sensitivity.analysis>
-  <settings.1>
-   <quantiles>
-    <sigma>-1</sigma>
-    <sigma>0</sigma>
-    <sigma>1</sigma>
-   </quantiles>
-   <variable>NEE</variable>
-   <ensemble.id>1000017325</ensemble.id>
-   <start.year>2005</start.year>
-   <end.year>2011</end.year>
-  </settings.1>
-  <settings.2>
-   <quantiles>
-    <sigma>-1</sigma>
-    <sigma>0</sigma>
-    <sigma>1</sigma>
-   </quantiles>
-   <variable>NEE</variable>
-   <ensemble.id>1000017325</ensemble.id>
-   <start.year>2010</start.year>
-   <end.year>2015</end.year>
-  </settings.2>
-  <settings.3>
-   <quantiles>
-    <sigma>-1</sigma>
-    <sigma>0</sigma>
-    <sigma>1</sigma>
-   </quantiles>
-   <variable>NEE</variable>
-   <ensemble.id>1000017325</ensemble.id>
-   <start.year>2001</start.year>
-   <end.year>2014</end.year>
-  </settings.3>
-  <settings.4>
-   <quantiles>
-    <sigma>-1</sigma>
-    <sigma>0</sigma>
-    <sigma>1</sigma>
-   </quantiles>
-   <variable>NEE</variable>
-   <ensemble.id>1000017325</ensemble.id>
-   <start.year>2005</start.year>
-   <end.year>2015</end.year>
-  </settings.4>
-  <settings.5>
-   <quantiles>
-    <sigma>-1</sigma>
-    <sigma>0</sigma>
-    <sigma>1</sigma>
-   </quantiles>
-   <variable>NEE</variable>
-   <ensemble.id>1000017325</ensemble.id>
-   <start.year>2007</start.year>
-   <end.year>2014</end.year>
-  </settings.5>
-  <settings.6>
-   <quantiles>
-    <sigma>-1</sigma>
-    <sigma>0</sigma>
-    <sigma>1</sigma>
-   </quantiles>
-   <variable>NEE</variable>
-   <ensemble.id>1000017325</ensemble.id>
-   <start.year>1999</start.year>
-   <end.year>2006</end.year>
-  </settings.6>
-  <settings.7>
-   <quantiles>
-    <sigma>-1</sigma>
-    <sigma>0</sigma>
-    <sigma>1</sigma>
-   </quantiles>
-   <variable>NEE</variable>
-   <ensemble.id>1000017325</ensemble.id>
-   <start.year>2013</start.year>
-   <end.year>2015</end.year>
-  </settings.7>
-  <settings.8>
-   <quantiles>
-    <sigma>-1</sigma>
-    <sigma>0</sigma>
-    <sigma>1</sigma>
-   </quantiles>
-   <variable>NEE</variable>
-   <ensemble.id>1000017325</ensemble.id>
-   <start.year>1997</start.year>
-   <end.year>2010</end.year>
-  </settings.8>
- </sensitivity.analysis>
-```
 
 ## Settings for HB-PDA
 
@@ -327,21 +174,22 @@ Similar to PDA settings, we will contain HB-PDA settings under the `<assim.batch
 
 ```
 <assim.batch>
-  <method>emulator.ms</method>
-  <mode>local</mode>
-  <n.knot>60</n.knot>
-  <iter>10000</iter>
-  <chain>3</chain>
+ <method>emulator.ms</method>
+ <mode>local</mode>
+ <n.knot>115</n.knot>
+ <iter>100000</iter>
+ <chain>3</chain>
   <param.names>
    <soil>
     <param>som_respiration_rate</param>
     <param>soil_respiration_Q10</param>
-    <param>soilWHC</param>
    </soil>
    <temperate.deciduous>
     <param>half_saturation_PAR</param>
     <param>dVPDSlope</param>
     <param>psnTOpt</param>
+    <param>AmaxFrac</param>
+    <param>leafGrowth</param>
    </temperate.deciduous>
   </param.names>
 </assim.batch>
