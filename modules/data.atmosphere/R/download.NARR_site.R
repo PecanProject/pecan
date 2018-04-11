@@ -1,4 +1,4 @@
-#' Download NARR time series as CSV
+#' Download NARR time series for a single site
 #'
 #' @param outfolder Target directory for storing output
 #' @param start_date Start date for met data
@@ -9,35 +9,112 @@
 #' @param verbose Turn on verbose output? Default=FALSE
 #' 
 #' @examples
-#' download.NARR_csv(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
+#' download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 #' 
 #' @export
 #'
 #' @author Alexey Shiklomanov
-download.NARR_csv <- function(outfolder, start_date, end_date, lat.in, lon.in, overwrite = FALSE, verbose = FALSE, ...) {
+download.NARR_site <- function(outfolder,
+                               start_date, end_date,
+                               lat.in, lon.in,
+                               overwrite = FALSE,
+                               verbose = FALSE,
+                               progress = TRUE,
+                               ...) {
 
   if (verbose) PEcAn.logger::logger.info("Downloading NARR data")
-  narr_data <- get_NARR_thredds(start_date, end_date, lat.in, lon.in, progress = verbose)
+  narr_data <- get_NARR_thredds(start_date, end_date, lat.in, lon.in, progress = progress)
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
 
-  narr_file <- file.path(outfolder, "NARR_data.csv")
-  if (verbose) PEcAn.logger::logger.info("Saving NARR data to: ", normalizePath(narr_file))
-  write.csv(narr_data, narr_file, row.names = FALSE)
-
   date_limits_chr <- strftime(range(narr_data$datetime), "%Y-%m-%d %H:%M:%S", tz = "UTC")
-  results <- data.frame(
-    file = narr_file,
-    host = PEcAn.remote::fqdn(),
-    mimetype = "text/csv",
-    formatname = "NARR_csv",
-    startdate = date_limits_chr[1],
-    enddate = date_limits_chr[2],
-    dbfile.name = "NARR_csv",
-    stringsAsFactors = FALSE
+
+  narr_byyear <- narr_data %>%
+    dplyr::mutate(year = lubridate::year(datetime)) %>%
+    dplyr::group_by(year) %>%
+    tidyr::nest()
+
+  # Prepare result data frame
+  result_full <- narr_byyear %>%
+    dplyr::mutate(
+      file = file.path(outfolder, paste("NARR", year, "nc", sep = ".")),
+      host = PEcAn.remote::fqdn(),
+      start_date = date_limits_chr[1],
+      end_date = date_limits_chr[2],
+      mimetype = "application/x-netcdf",
+      formatname = "CF Meteorology",
+    )
+
+  lat <- ncdf4::ncdim_def(
+    name = "latitude",
+    units = "degree_north",
+    vals = lat.in,
+    create_dimvar = TRUE
+  )
+  lon <- ncdf4::ncdim_def(
+    name = "longitude",
+    units = "degree_east",
+    vals = lon.in,
+    create_dimvar = TRUE
   )
 
+  narr_proc <- result_full %>%
+    dplyr::mutate(
+      data_nc = purrr::map2(data, file, prepare_narr_year, lat = lat, lon = lon)
+    )
+
+  results <- dplyr::select(result_full, -data)
   return(invisible(results))
-} # download.NARR_csv
+} # download.NARR_site
+
+#' Write NetCDF file for a single year of data
+#'
+#' @param dat NARR tabular data for a single year ([get_NARR_thredds])
+#' @param file Full path to target file
+#' @param lat_nc `ncdim` object for latitude
+#' @param lon_nc `ncdim` object for longitude
+#' @param verbose 
+#' @return List of NetCDF variables in data. Creates NetCDF file containing 
+#' data as a side effect
+prepare_narr_year <- function(dat, file, lat_nc, lon_nc, verbose = FALSE) {
+  starttime <- min(dat$datetime)
+  starttime_f <- strftime(starttime, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+  time <- difftime(dat$datetime, starttime) %>%
+    as.numeric() %>%
+    udunits2::ud.convert("seconds", "hours")
+  time_nc <- ncdf4::ncdim_def(
+    name = "time",
+    units = paste0("hours since ", starttime_f),
+    vals = time,
+    create_dimvar = TRUE,
+    unlim = TRUE
+  )
+  nc_values <- dplyr::select(dat, narr_all_vars$CF_name)
+  ncvar_list <- purrr::map(
+    colnames(nc_values),
+    col2ncvar,
+    dims = list(lat_nc, lon_nc, time_nc)
+  )
+  nc <- ncdf4::nc_create(file, ncvar_list, verbose = verbose)
+  on.exit(ncdf4::nc_close(nc))
+  purrr::iwalk(nc_values, ~ncdf4::ncvar_put(nc, .y, .x, verbose = verbose))
+  invisible(ncvar_list)
+}
+
+#' Create `ncvar` object from variable name
+#'
+#' @param variable CF variable name
+#' @param dims List of NetCDF dimension objects (passed to 
+#' `ncdf4::ncvar_def(..., dim)`)
+#' @return `ncvar` object (from `ncvar_def`)
+col2ncvar <- function(variable, dims) {
+  var_info <- narr_all_vars %>% dplyr::filter(CF_name == variable)
+  ncdf4::ncvar_def(
+    name = variable,
+    units = var_info$units,
+    dim = dims,
+    missval = -999,
+  )
+}
 
 #' Retrieve NARR data using thredds
 #'
@@ -158,6 +235,8 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
 }
 
 #' Post process raw NARR downloaded data frame
+#'
+#' @param dat Nested `tibble` from mapped call to [get_narr_url]
 post_process <- function(dat) {
   dat %>%
     tidyr::unnest(data) %>%
@@ -278,6 +357,9 @@ narr_sfc_vars <- tibble::tribble(
   "surface_downwelling_shortwave_flux_in_air", "Downward_shortwave_radiation_flux_surface_3_Hour_Average", "W/m2",
   "precipitation_flux", "Total_precipitation_surface_3_Hour_Accumulation", "kg/m2/s",
 )
+
+#' @rdname narr_flx_vars
+narr_all_vars <- dplyr::bind_rows(narr_flx_vars, narr_sfc_vars)
 
 #' Convert latitude and longitude coordinates to NARR indices
 #'
