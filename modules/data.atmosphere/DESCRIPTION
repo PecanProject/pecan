@@ -35,7 +35,8 @@ Imports:
     nneo,
     httr
 Suggests:
-    testthat
+    testthat,
+    progress
 Remotes:
     github::ropenscilabs/nneo,
     github::rforge/reddyproc/pkg/REddyProc

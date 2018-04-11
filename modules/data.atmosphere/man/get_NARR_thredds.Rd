@@ -15,7 +15,8 @@ get_NARR_thredds(start_date, end_date, lat.in, lon.in, progress = TRUE)
 
 \item{lon.in}{Longitude coordinate}
 
-\item{progress}{Whether or not to show a progress bar (default = `TRUE`)}
+\item{progress}{Whether or not to show a progress bar (default = `TRUE`).
+Requires the `progress` package to be installed.}
 }
 \value{
 `tibble` containing time series of NARR data for the given site
