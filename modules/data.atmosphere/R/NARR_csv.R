@@ -80,7 +80,11 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   )
 
   narr_start <- lubridate::ymd("1979-01-01")
-  narr_end <- lubridate::ymd("2018-03-31")
+  # NARR is updated monthly
+  # Set end day to the last day of the previous month
+  # (e.g. March 31 if today is April 10)
+  today <- lubridate::as_date(Sys.Date())
+  narr_end <- today - lubridate::days(lubridate::mday(today))
 
   start_date <- lubridate::as_date(start_date)
   end_date <- lubridate::as_date(end_date)
