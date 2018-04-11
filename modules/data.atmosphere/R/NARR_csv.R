@@ -1,3 +1,44 @@
+#' Download NARR time series as CSV
+#'
+#' @param outfolder Target directory for storing output
+#' @param start_date Start date for met data
+#' @param end_date End date for met data
+#' @param lat.in Site latitude coordinate
+#' @param lon.in Site longitude coordinate
+#' @param overwrite Overwrite existing files?  Default=FALSE
+#' @param verbose Turn on verbose output? Default=FALSE
+#' 
+#' @examples
+#' download.NARR_csv(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
+#' 
+#' @export
+#'
+#' @author Alexey Shiklomanov
+download.NARR_csv <- function(outfolder, start_date, end_date, lat.in, lon.in, overwrite = FALSE, verbose = FALSE, ...) {
+
+  if (verbose) PEcAn.logger::logger.info("Downloading NARR data")
+  narr_data <- get_NARR_thredds(start_date, end_date, lat.in, lon.in, progress = verbose)
+  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+
+  narr_file <- file.path(outfolder, "NARR_data.csv")
+  if (verbose) PEcAn.logger::logger.info("Saving NARR data to: ", normalizePath(narr_file))
+  write.csv(narr_data, narr_file, row.names = FALSE)
+
+  date_limits_chr <- strftime(range(narr_data$datetime), "%Y-%m-%d %H:%M:%S", tz = "UTC")
+  results <- data.frame(
+    file = narr_file,
+    host = PEcAn.remote::fqdn(),
+    mimetype = "text/csv",
+    formatname = "NARR_csv",
+    startdate = date_limits_chr[1],
+    enddate = date_limits_chr[2],
+    dbfile.name = "NARR_csv",
+    stringsAsFactors = FALSE
+  )
+
+  return(invisible(results))
+} # download.NARR_csv
+
 #' Retrieve NARR data using thredds
 #'
 #' @param start_date Start date for meteorology
@@ -6,13 +47,17 @@
 #' @param lon.in Longitude coordinate
 #' @param progress Whether or not to show a progress bar (default = `TRUE`).  
 #' Requires the `progress` package to be installed.
+#' @param drop_outside Whether or not to drop dates outside of `start_date` to 
+#' `end_date` range (default = `TRUE`).
 #' @return `tibble` containing time series of NARR data for the given site
 #' @author Alexey Shiklomanov
 #' @examples
 #' dat <- get_NARR_thredds("2008-01-01", "2008-01-15", 43.3724, -89.9071)
 #' @export
 get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
-                             progress = TRUE) {
+                             progress = TRUE,
+                             drop_outside = TRUE
+                             ) {
 
   PEcAn.logger::severeifnot(
     length(start_date) == 1,
@@ -100,6 +145,10 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   flx_data <- post_process(flx_data_raw) %>% dplyr::rename(flx_url = url)
   sfc_data <- post_process(sfc_data_raw) %>% dplyr::rename(sfc_url = url)
   met_data <- dplyr::full_join(flx_data, sfc_data, by = "datetime")
+  if (drop_outside) {
+    met_data <- met_data %>%
+      dplyr::filter(datetime >= start_date, datetime <= (end_date + lubridate::days(1)))
+  }
 
   met_data
 }
