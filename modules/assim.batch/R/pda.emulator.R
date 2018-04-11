@@ -53,7 +53,11 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
     adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, run.round)
   
-
+  # load inputs with neff if this is another round
+  if(!run.normal){
+    load(file.path(settings$outdir, paste0("external.", settings$assim.batch$ensemble.id, ".Rdata")))
+  }
+  
   
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
