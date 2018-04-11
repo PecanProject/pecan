@@ -225,10 +225,11 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   # Set times
   flx_data <- post_process(flx_data_raw) %>% dplyr::rename(flx_url = url)
   sfc_data <- post_process(sfc_data_raw) %>% dplyr::rename(sfc_url = url)
-  met_data <- dplyr::full_join(flx_data, sfc_data, by = "datetime")
+  met_data <- dplyr::full_join(flx_data, sfc_data, by = "datetime") %>%
+    dplyr::arrange(datetime)
   if (drop_outside) {
     met_data <- met_data %>%
-      dplyr::filter(datetime >= start_date, datetime <= (end_date + lubridate::days(1)))
+      dplyr::filter(datetime >= start_date, datetime < (end_date + lubridate::days(1)))
   }
 
   met_data
@@ -279,9 +280,9 @@ generate_narr_url <- function(dates, flx) {
       # Weird logic to match file-grouping scheme described above
       endday = (unique(daygroup) + 1) * ngroup - as.integer(!flx),
       startday = max(1, 1 + endday - ngroup),
-      endday = min(endday, lubridate::days_in_month(unique(month))),
       startdate = as.POSIXct(ISOdatetime(unique(year), unique(month), startday,
                                          0, 0, 0, tz = "UTC")),
+      endday = min(endday, lubridate::days_in_month(startdate)),
       url = sprintf("%6$s/%1$d/NARR%5$s_%1$d%2$02d_%3$02d%4$02d.tar",
                       unique(year), unique(month), startday, endday, tag, base_url),
     ) %>%
@@ -299,8 +300,7 @@ get_narr_url <- function(url, xy, flx, pb = NULL) {
   stopifnot(length(xy) == 2, length(url) == 1, is.character(url))
   nc <- ncdf4::nc_open(url)
   on.exit(ncdf4::nc_close(nc))
-  timevar <- if (flx) "time" else "time3"
-  dhours <- ncdf4::ncvar_get(nc, timevar)
+  dhours <- ncdf4::ncvar_get(nc, "time1")
   narr_vars <- if (flx) narr_flx_vars else narr_sfc_vars
   result <- purrr::pmap(
     narr_vars %>% dplyr::select(variable = NARR_name, unit = units),

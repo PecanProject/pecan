@@ -1,22 +1,25 @@
 context("Download NARR via THREDDS")
 
-start_date <- "2000-01-03"
-end_date <- "2000-01-12"
+start_date <- "2012-02-20"
+end_date <- "2012-03-05"
 ntime <- as.numeric(difftime(end_date, start_date) + 1) * 24 / 3 + 1
 lat.in <- 43.3724
 lon.in <- -89.9071
 verbose <- TRUE
 outfolder <- tempdir()
 
+r <- download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in, progress = TRUE)
+
 test_that(
   "NARR download works as expected",
   {
-    r <- download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in, progress = TRUE)
     expect_equal(nrow(r), 1)
     expect_true(file.exists(r$file))
     nc <- ncdf4::nc_open(r$file)
     temp <- ncdf4::ncvar_get(nc, "air_temperature")
-    expect_true(all(temp > 0), length(temp) == ntime)
+    precip <- ncdf4::ncvar_get(nc, "precipitation_flux")
+    expect_true(all(!is.na(temp)), all(temp > 0), length(temp) == ntime)
+    expect_true(all(!is.na(precip)), length(precip) == ntime)
     ncdf4::nc_close(nc)
   }
 )
