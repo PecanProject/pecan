@@ -29,5 +29,5 @@ download.GFDL(outfolder, start_date, end_date, site_id, lat.in, lon.in,
 Download GFDL CMIP5 outputs for a single grid point using OPeNDAP and convert to CF
 }
 \author{
-James Simkins, Alexey Shiklomanov
+James Simkins, Alexey Shiklomanov, Ankur Desai
 }
