@@ -8,11 +8,18 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+## [1.5.3] - not yet
+
 ### Fixes
+- read.output now accepts date-times for start.year and end.year argument (#1887)
+- read.output no longer assumes timestamps are in days since the beginning of the year
+- Fixed xss issue in setup folder, now require users to login before accessing the setup folder scripts.
+- Fixed issue where in website not all sites are shown #1884
 - Fixed status page, should now be run from cronjob, creates static page
 - Fixed bug that overwrote remote  met file paths with local file paths
 - PEcAnRTM:
     - Remove non-portable extensions from `src/Makevars`. This should make the package Windows-compatible.
+- Fixed BrownDog shiny issues of removing site without geometry; fixing sites.length==0; removing old map markers when change input$type; fixing agreement bug when change input$type
 
 ### Added
 - Functionality to read pft-specific outputs and to run sensitivity analysis on pft-specific outputs.
