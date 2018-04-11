@@ -12,18 +12,16 @@ read.output(runid, outdir, start.year = NA, end.year = NA,
 
 \item{outdir}{the directory that the model's output was sent to}
 
-\item{start.year}{first year of output to read (should be greater than )}
-
-\item{end.year}{last year of output to read}
+\item{start.year, end.year}{first and last year of output to read. Specify as a date-time (only the year portion is used) or as a four-digit number or string. If NA, reads all years found in \code{outdir}.}
 
 \item{variables}{variables to be read from model output}
 
-\item{dataframe}{A boolean that will return output in a data.frame format with a posix column. Useful for align.data and plotting.}
+\item{dataframe}{Logical: if TRUE, will return output in a data.frame format with a posix column. Useful for align.data and plotting.}
 
 \item{pft.name}{character string, name of the pft to read pft-specific output. If NULL no pft-specific output will be read even the variable has pft as a dimension.}
 }
 \value{
-vector of output variable
+If \code{dataframe=FALSE}, a vector of output variables. If \code{dataframe=TRUE}, a data.frame of output variables with POSIXct timestamps added.
 }
 \description{
 Reads the output of a single model run
