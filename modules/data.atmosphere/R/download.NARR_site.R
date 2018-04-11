@@ -278,6 +278,7 @@ generate_narr_url <- function(dates, flx) {
     dplyr::summarize(
       # Weird logic to match file-grouping scheme described above
       endday = (unique(daygroup) + 1) * ngroup - as.integer(!flx),
+      endday = min(endday, lubridate::days_in_month(unique(month))),
       startday = max(1, 1 + endday - ngroup),
       startdate = as.POSIXct(ISOdatetime(unique(year), unique(month), startday,
                                          0, 0, 0, tz = "UTC")),
