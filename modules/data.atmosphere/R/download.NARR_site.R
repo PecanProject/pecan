@@ -300,7 +300,12 @@ get_narr_url <- function(url, xy, flx, pb = NULL) {
   stopifnot(length(xy) == 2, length(url) == 1, is.character(url))
   nc <- ncdf4::nc_open(url)
   on.exit(ncdf4::nc_close(nc))
-  dhours <- ncdf4::ncvar_get(nc, "time1")
+  timevar <- if (flx) "time" else "reftime"
+  dhours <- ncdf4::ncvar_get(nc, timevar)
+  # HACK: Time variable seems inconsistent.
+  # Sometimes starts at 0, sometimes offset by 3.
+  # This is a hack to make it always start at zero
+  if (dhours[1] == 3) dhours <- dhours - 3
   narr_vars <- if (flx) narr_flx_vars else narr_sfc_vars
   result <- purrr::pmap(
     narr_vars %>% dplyr::select(variable = NARR_name, unit = units),
