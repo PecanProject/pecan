@@ -68,7 +68,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   # Retrieve remaining variables by iterating over URLs
   npb <- nrow(flx_df) * nrow(narr_flx_vars) +
     nrow(sfc_df) * nrow(narr_sfc_vars)
-  if (progress && requireNamespace("progres")) {
+  if (progress && requireNamespace("progress")) {
     pb <- progress::progress_bar$new(total = npb)
   } else {
     pb <- NULL
