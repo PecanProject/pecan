@@ -4,11 +4,13 @@
 #' @param end_date End date for meteorology
 #' @param lat.in Latitude coordinate
 #' @param lon.in Longitude coordinate
-#' @param progress Whether or not to show a progress bar (default = `TRUE`)
+#' @param progress Whether or not to show a progress bar (default = `TRUE`).  
+#' Requires the `progress` package to be installed.
 #' @return `tibble` containing time series of NARR data for the given site
 #' @author Alexey Shiklomanov
 #' @examples
 #' dat <- get_NARR_thredds("2008-01-01", "2008-01-15", 43.3724, -89.9071)
+#' @export
 get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
                              progress = TRUE) {
 
@@ -66,7 +68,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   # Retrieve remaining variables by iterating over URLs
   npb <- nrow(flx_df) * nrow(narr_flx_vars) +
     nrow(sfc_df) * nrow(narr_sfc_vars)
-  if (progress) {
+  if (progress && requireNamespace("progres")) {
     pb <- progress::progress_bar$new(total = npb)
   } else {
     pb <- NULL
