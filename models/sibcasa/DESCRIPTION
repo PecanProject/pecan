@@ -3,7 +3,7 @@ Type: Package
 Title: PEcAn package for integration of the SiBCASA model
 Version: 1.5.2
 Date: 2017-12-04
-Author: Tony Gardella
+Author: Tony Gardella, Yasin Elshorabany
 Maintainer: Tony Gardella <tonygard@bu.edu>
 Description: This module provides functions to link (SiBCASA) to PEcAn.
 Imports:

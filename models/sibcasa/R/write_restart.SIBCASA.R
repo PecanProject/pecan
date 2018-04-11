@@ -1,4 +1,4 @@
-#' @title Write restart template for SDA
+#' Write restart template for SDA
 #' 
 #' @author Alexey Shiklomanov
 #' 
@@ -10,7 +10,7 @@
 #' @description Write restart files for model
 #' 
 #' @export
-write_restart.ModelName <- function(outdir,
+write_restart.SIBCASA <- function(outdir,
                                     runid,
                                     start.time,
                                     stop.time,

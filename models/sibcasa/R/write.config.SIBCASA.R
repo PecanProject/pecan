@@ -76,37 +76,18 @@ write.config.SIBCASA <- function(defaults, trait.values, settings, run.id) {
   
   #-----------------------------------------------------------------------
   ### Edit a templated config file for runs
-  if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
-    config.text <- readLines(con = settings$model$config, n = -1)
-  } else {
-    filename <- system.file(settings$model$config, package = "PEcAn.MODEL")
-    if (filename == "") {
-      if (!is.null(settings$model$revision)) {
-        filename <- system.file(paste0("config.", settings$model$revision), package = "PEcAn.MODEL")
-      } else {
-        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
-        filename <- system.file(paste0("config.r", model$revision), package = "PEcAn.MODEL")
-      }
-    }
-    if (filename == "") {
-      PEcAn.logger::logger.severe("Could not find config template")
-    }
-    PEcAn.logger::logger.info("Using", filename, "as template")
-    config.text <- readLines(con = filename, n = -1)
-  }
+  nl_sib <- readLines(con = system.file("namel_sibdrv", package = "PEcAn.SIBCASA"), n = -1)
   
-  /projectnb/dietzelab/tonygard/sibcasa/gimmsg_0.5x0.5_CRUNCEP_30d/sib_param_RCP85/sib_param
-  
-  namel_sibdrv<- gsub("@SITE_LAT@", settings$run$site$lat, config.text)
-  namel_sibdrv <- gsub("@SITE_LON@", settings$run$site$lon, config.text)
-  namel_sibdrv <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
-  namel_sibdrv <- gsub("@START_DAY@", format(startdate, "%d"), config.text)
-  namel_sibdrv <- gsub("@START_YEAR@", format(startdate, "%Y"), config.text)
-  namel_sibdrv <- gsub("@END_YEAR@", format(enddate, "%Y"), config.text)
-  namel_sibdrv <- gsub("@OUTDIR@", settings$host$outdir, config.text)
-  namel_sibdrv <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
+  namel_sibdrv <- gsub("@SITE_LAT@", settings$run$site$lat,nl_sib)
+  namel_sibdrv <- gsub("@SITE_LON@", settings$run$site$lon, nl_sib)
+  namel_sibdrv <- gsub("@SITE_MET@", settings$run$inputs$met$path, nl_sib)
+  namel_sibdrv <- gsub("@START_DAY@", format(startdate, "%d"), nl_sib)
+  namel_sibdrv <- gsub("@START_YEAR@", format(startdate, "%Y"), nl_sib)
+  namel_sibdrv <- gsub("@END_YEAR@", format(enddate, "%Y"), nl_sib)
+  namel_sibdrv <- gsub("@OUTDIR@", settings$host$outdir, nl_sib)
+  namel_sibdrv <- gsub("@OUTFILE@", paste0("out", run.id), nl_sib)
   
   #-----------------------------------------------------------------------
-  config.file.name <- paste0("CONFIG.", run.id, ".txt")
-  writeLines(config.text, con = paste(outdir, config.file.name, sep = ""))
+  writeLines(namel_sibdrv, con = paste(, namel_sibdrv, sep = ""))
+  
 } # write.config.MODEL

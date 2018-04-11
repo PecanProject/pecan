@@ -8,19 +8,19 @@
 #-------------------------------------------------------------------------------
 
 ##-------------------------------------------------------------------------------------------------#
-##' Converts a met CF file to a model specific met file. The input
+##' Converts a met CF file to a sibcasa specific met file. The input
 ##' files are calld <in.path>/<in.prefix>.YYYY.cf
 ##'
-##' @name met2model.MODEL
-##' @title Write MODEL met files
+##' @name met2model.SIBCASA
+##' @title Write SIBCASA met files
 ##' @param in.path path on disk where CF file lives
 ##' @param in.prefix prefix for each file
 ##' @param outfolder location where model specific output is written.
 ##' @return OK if everything was succesful.
 ##' @export
-##' @author Rob Kooper
+##' @author Tony Gardella
 ##-------------------------------------------------------------------------------------------------#
-met2model.MODEL <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
+met2model.SIBCASA <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
   PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 
   # Please follow the PEcAn style guide:
@@ -33,4 +33,4 @@ met2model.MODEL <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
   # Also, `require()` should be used only when a package dependency is truly
   # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
   
-} # met2model.MODEL
+} # met2model.SIBCASA

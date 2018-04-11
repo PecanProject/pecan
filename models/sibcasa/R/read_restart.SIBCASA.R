@@ -1,4 +1,4 @@
-#' @title Read restart template for SDA
+#' Read restart template for SDA
 #' 
 #' @author Alexey Shiklomanov
 #' 
@@ -13,7 +13,7 @@
 #' 
 #' @return Forecast numeric matrix
 #' @export
-read_restart.ModelName <- function(outdir,
+read_restart.SIBCASA<- function(outdir,
                                    runid, 
                                    stop.time,
                                    settings,

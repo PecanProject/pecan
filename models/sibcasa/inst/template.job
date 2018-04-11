@@ -11,9 +11,10 @@ exec &> "@OUTDIR@/logfile.txt"
 mkdir -p "@OUTDIR@"
 
 # see if application needs running
-if [ ! -e "@OUTDIR@/results.csv" ]; then
+if [ ! -e "@OUTDIR@/*.nc" ]; then
   cd "@RUNDIR@"
   
+  ln -s "@BINARY@" SiB
   "@BINARY@"
   STATUS=$?
   

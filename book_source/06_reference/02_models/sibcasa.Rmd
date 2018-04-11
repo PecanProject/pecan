@@ -5,34 +5,37 @@
 | Home Page | |
 | Source Code | |
 | License |  |
-| Authors | |
-| PEcAn Integration | |
+| Authors | KEvin Shaefer|
+| PEcAn Integration |Tony Gardella, Yasin Elshorbany |
 
 **Introduction**
 
-Introduction about model
+SiBCASA was created from the combination of the Carnegie-Ames_Stanford Approach (CASA) and the Simple Biosphere(SiB) model.They have added other features, including dynamic allocation of GPP for the growth and maintance of leaves, roots, and wood andd explicit calculation of autotrophic respiration.
+
+Schaefer, Kevin, et al. "The combined Simple Biosphere/Carnegie-Ames-Stanford Approach (SiBCASA) Model." J. Geophys. Res 113: G03034.
 
 **PEcAn configuration file additions**
 
-Should list the model specific additions to the PEcAn file here
 
 **Model specific input files**
 
-List of inputs required by model, such as met, etc.
-
+Software libraries-  
 PGI 16.5 or later
+https://www.pgroup.com/products/community.htm
+
 NETCDF 3.6.0
 
+Input - 
+Driver data: Made to use CRUNCEP data by default.
+Param File 
+Initial Condition File
+
 **Model configuration files**
+The namel_sibdrv is the namelist file that 
 
-MODEL is configured using 3 files which are placed in the run folder, as well as a symbolic link to the met file.
-
-* **file1** : template for this file is located at models/MODEL/inst/file1 and is not modified.  
-* **file2** : template for this file is located at models/MODEL/inst/file2 and is not modified.  
-* **file3** : template for this file is in models/MODEL/inst/file3 or it is specified in the \<model\> section as \<template\>. The values in this template are replaced by those computed in the earlier stages of PEcAN.
 
 **Installation notes**
-
-Compilation of the model 
+Compilation of the model includes
 
 **VM**
+Currently Not Avialable on the VM
