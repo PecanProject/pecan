@@ -5,7 +5,8 @@
 \title{Download NARR time series for a single site}
 \usage{
 download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
-  overwrite = FALSE, verbose = FALSE, progress = TRUE, ...)
+  overwrite = FALSE, verbose = FALSE, progress = TRUE, parallel = FALSE,
+  ncores = if (parallel) parallel::detectCores() else NULL, ...)
 }
 \arguments{
 \item{outfolder}{Target directory for storing output}
@@ -21,6 +22,11 @@ download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
 \item{overwrite}{Overwrite existing files?  Default=FALSE}
 
 \item{verbose}{Turn on verbose output? Default=FALSE}
+
+\item{parallel}{Download in parallel? Default = TRUE.}
+
+\item{ncores}{Number of cores for parallel download. Default is 
+`parallel::detectCores()`}
 }
 \description{
 Download NARR time series for a single site

@@ -38,7 +38,10 @@ Imports:
     rgdal
 Suggests:
     testthat,
-    progress
+    progress,
+    foreach,
+    parallel,
+    doParallel
 Remotes:
     github::ropenscilabs/nneo,
     github::rforge/reddyproc/pkg/REddyProc
