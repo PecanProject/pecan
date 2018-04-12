@@ -242,8 +242,8 @@ post_process <- function(dat) {
   dat %>%
     tidyr::unnest(data) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(datetime = startdate + lubridate::hours(dhours)) %>%
-    dplyr::select(-startdate, -startday, -endday, -dhours, -year, -month) %>%
+    dplyr::mutate(datetime = startdate + lubridate::dhours(dhours)) %>%
+    dplyr::select(-startdate, -dhours) %>%
     dplyr::select(datetime, dplyr::everything()) %>%
     dplyr::select(-url, url)
 }
@@ -267,26 +267,41 @@ generate_narr_url <- function(dates, flx) {
     sep = "/"
   )
   tibble::tibble(date = dates) %>%
-    dplyr::mutate(
-      year = lubridate::year(date),
-      month = lubridate::month(date),
-      mday = lubridate::mday(date),
-      # FLX files: groups of 8: 0108, 0916, 1724, ...
-      # SFC files: groups of 10, but the first is shorter: 0109, 1019, 2029
-      daygroup = (mday - as.integer(flx)) %/% ngroup
-    ) %>%
-    dplyr::group_by(year, month, daygroup) %>%
+    dplyr::mutate(daygroup = daygroup(date, flx)) %>%
+    dplyr::group_by(daygroup) %>%
     dplyr::summarize(
-      # Weird logic to match file-grouping scheme described above
-      endday = (unique(daygroup) + 1) * ngroup - as.integer(!flx),
-      startday = max(1, 1 + endday - ngroup),
-      startdate = as.POSIXct(ISOdatetime(unique(year), unique(month), startday,
-                                         0, 0, 0, tz = "UTC")),
-      endday = min(endday, lubridate::days_in_month(startdate)),
-      url = sprintf("%6$s/%1$d/NARR%5$s_%1$d%2$02d_%3$02d%4$02d.tar",
-                      unique(year), unique(month), startday, endday, tag, base_url),
+      startdate = min(date),
+      url = sprintf(
+        "%s/%d/NARR%s_%d%02d_%s.tar",
+        base_url,
+        lubridate::year(startdate),
+        tag,
+        lubridate::year(startdate),
+        lubridate::month(startdate),
+        unique(daygroup)
+      )
     ) %>%
-    dplyr::select(year, month, startday, endday, startdate, url)
+    dplyr::select(startdate, url)
+}
+
+#' Assign daygroup tag for a given date
+daygroup <- function(date, flx) {
+  mday <- lubridate::mday(date)
+  mmax <- lubridate::days_in_month(date)
+  if (flx) {
+    dplyr::case_when(
+      mday %in% 1:8 ~ "0108",
+      mday %in% 9:16 ~ "0916",
+      mday %in% 17:24 ~ "1724",
+      mday >= 25 ~ paste0(25, mmax)
+    )
+  } else {
+    dplyr::case_when(
+      mday %in% 1:9 ~ "0109",
+      mday %in% 10:19 ~ "1019",
+      mday >= 20 ~ paste0(20, mmax)
+    )
+  }
 }
 
 #' Retrieve NARR data from a given URL
