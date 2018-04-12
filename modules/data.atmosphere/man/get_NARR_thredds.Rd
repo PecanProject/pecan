@@ -5,7 +5,7 @@
 \title{Retrieve NARR data using thredds}
 \usage{
 get_NARR_thredds(start_date, end_date, lat.in, lon.in, progress = TRUE,
-  drop_outside = TRUE)
+  drop_outside = TRUE, parallel = TRUE, ncores = 1)
 }
 \arguments{
 \item{start_date}{Start date for meteorology}
@@ -21,6 +21,11 @@ Requires the `progress` package to be installed.}
 
 \item{drop_outside}{Whether or not to drop dates outside of `start_date` to 
 `end_date` range (default = `TRUE`).}
+
+\item{parallel}{Download in parallel? Default = TRUE.}
+
+\item{ncores}{Number of cores for parallel download. Default is 
+`parallel::detectCores()`}
 }
 \value{
 `tibble` containing time series of NARR data for the given site

@@ -7,6 +7,9 @@
 #' @param lon.in Site longitude coordinate
 #' @param overwrite Overwrite existing files?  Default=FALSE
 #' @param verbose Turn on verbose output? Default=FALSE
+#' @param parallel Download in parallel? Default = TRUE.
+#' @param ncores Number of cores for parallel download. Default is 
+#' `parallel::detectCores()`
 #' 
 #' @examples
 #' download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
@@ -20,10 +23,17 @@ download.NARR_site <- function(outfolder,
                                overwrite = FALSE,
                                verbose = FALSE,
                                progress = TRUE,
+                               parallel = FALSE,
+                               ncores = if (parallel) parallel::detectCores() else NULL,
                                ...) {
 
   if (verbose) PEcAn.logger::logger.info("Downloading NARR data")
-  narr_data <- get_NARR_thredds(start_date, end_date, lat.in, lon.in, progress = progress)
+  narr_data <- get_NARR_thredds(
+    start_date, end_date, lat.in, lon.in,
+    progress = progress,
+    parallel = parallel,
+    ncores = ncores
+  )
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
 
   date_limits_chr <- strftime(range(narr_data$datetime), "%Y-%m-%d %H:%M:%S", tz = "UTC")
@@ -126,6 +136,7 @@ col2ncvar <- function(variable, dims) {
 #' Requires the `progress` package to be installed.
 #' @param drop_outside Whether or not to drop dates outside of `start_date` to 
 #' `end_date` range (default = `TRUE`).
+#' @inheritParams download.NARR_site
 #' @return `tibble` containing time series of NARR data for the given site
 #' @author Alexey Shiklomanov
 #' @examples
@@ -133,7 +144,9 @@ col2ncvar <- function(variable, dims) {
 #' @export
 get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
                              progress = TRUE,
-                             drop_outside = TRUE
+                             drop_outside = TRUE,
+                             parallel = TRUE,
+                             ncores = 1
                              ) {
 
   PEcAn.logger::severeifnot(
@@ -191,63 +204,68 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   on.exit(ncdf4::nc_close(nc1))
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
-  if (FALSE) {
-    # Load in parallel
-    # hold off on committing this yet
-    import::from(foreach, foreach, "%dopar%")
-    import::from(doParallel, registerDoParallel)
-    import::from(parallel, makeCluster)
+  if (parallel) {
 
+    # Load in parallel
+    PEcAn.logger::logger.info("Downloading in parallel")
     flx_df$flx <- TRUE
     sfc_df$flx <- FALSE
-
     get_dfs <- dplyr::bind_rows(flx_df, sfc_df)
-
-    cl <- makeCluster(4)
-    registerDoParallel(cl)
-
-    out <- foreach(url = get_dfs$url, flx = get_dfs$flx,
-                   .packages = c("PEcAn.data.atmosphere", "magrittr"),
-                   .export = c("get_narr_url", "robustly")) %dopar%
-                     robustly(get_narr_url)(url, xy = xy, flx = flx)
-  }
-
-  # Retrieve remaining variables by iterating over URLs
-  npb <- nrow(flx_df) * nrow(narr_flx_vars) +
-    nrow(sfc_df) * nrow(narr_sfc_vars)
-  if (progress && requireNamespace("progress")) {
-    pb <- progress::progress_bar$new(total = npb)
+    cl <- parallel::makeCluster(ncores)
+    doParallel::registerDoParallel(cl)
+    get_dfs$data <- foreach::`%dopar%`(
+      foreach::foreach(
+        url = get_dfs$url, flx = get_dfs$flx,
+        .packages = c("PEcAn.data.atmosphere", "magrittr"),
+        .export = c("get_narr_url", "robustly")
+      ),
+        robustly(get_narr_url)(url, xy = xy, flx = flx)
+    )
+    flx_data_raw <- dplyr::filter(get_dfs, flx)
+    sfc_data_raw <- dplyr::filter(get_dfs, !flx)
   } else {
-    pb <- NULL
+
+    # Retrieve remaining variables by iterating over URLs
+    npb <- nrow(flx_df) * nrow(narr_flx_vars) +
+      nrow(sfc_df) * nrow(narr_sfc_vars)
+    if (progress && requireNamespace("progress")) {
+      pb <- progress::progress_bar$new(
+        total = npb,
+        format = "[:bar] :current/:total ETA: :eta"
+      )
+    } else {
+      pb <- NULL
+    }
+
+    flx_data_raw <- flx_df %>%
+      dplyr::mutate(
+        data = purrr::map(
+          url,
+          robustly(get_narr_url, n = 20, timeout = 1),
+          xy = xy,
+          flx = TRUE,
+          pb = pb
+        )
+      )
+
+    sfc_data_raw <- sfc_df %>%
+      dplyr::mutate(
+        data = purrr::map(
+          url,
+          robustly(get_narr_url, n = 20, timeout = 1),
+          xy = xy,
+          flx = FALSE,
+          pb = pb
+        )
+      )
   }
-
-  flx_data_raw <- flx_df %>%
-    dplyr::mutate(
-      data = purrr::map(
-        url,
-        robustly(get_narr_url, n = 20, timeout = 1),
-        xy = xy,
-        flx = TRUE,
-        pb = pb
-      )
-    )
-
-  sfc_data_raw <- sfc_df %>%
-    dplyr::mutate(
-      data = purrr::map(
-        url,
-        robustly(get_narr_url, n = 20, timeout = 1),
-        xy = xy,
-        flx = FALSE,
-        pb = pb
-      )
-    )
-
-  # Set times
-  flx_data <- post_process(flx_data_raw) %>% dplyr::rename(flx_url = url)
-  sfc_data <- post_process(sfc_data_raw) %>% dplyr::rename(sfc_url = url)
+  flx_data <- post_process(flx_data_raw) %>%
+    dplyr::select(datetime, narr_flx_vars$CF_name)
+  sfc_data <- post_process(sfc_data_raw) %>%
+    dplyr::select(datetime, narr_sfc_vars$CF_name)
   met_data <- dplyr::full_join(flx_data, sfc_data, by = "datetime") %>%
     dplyr::arrange(datetime)
+
   if (drop_outside) {
     met_data <- met_data %>%
       dplyr::filter(datetime >= start_date, datetime < (end_date + lubridate::days(1)))
@@ -288,20 +306,25 @@ generate_narr_url <- function(dates, flx) {
     sep = "/"
   )
   tibble::tibble(date = dates) %>%
-    dplyr::mutate(daygroup = daygroup(date, flx)) %>%
-    dplyr::group_by(daygroup) %>%
+    dplyr::mutate(
+      year = lubridate::year(date),
+      month = lubridate::month(date),
+      daygroup = daygroup(date, flx)
+    ) %>%
+    dplyr::group_by(year, month, daygroup) %>%
     dplyr::summarize(
       startdate = min(date),
       url = sprintf(
         "%s/%d/NARR%s_%d%02d_%s.tar",
         base_url,
-        lubridate::year(startdate),
+        unique(year),
         tag,
-        lubridate::year(startdate),
-        lubridate::month(startdate),
+        unique(year),
+        unique(month),
         unique(daygroup)
       )
     ) %>%
+    dplyr::ungroup() %>%
     dplyr::select(startdate, url)
 }
 
