@@ -603,6 +603,8 @@ $ED_NL
    !      correction for high and low temperatures are the same as in Moorcroft et al.     !
    !      (2001).                                                                          !
    ! 3 -- Same as 2, except that we find Gamma* as in Farquhar et al. (1980) and in CLM.   !
+   ! 4 -- Use "Arrhenius" function as in Harley et al. (1991). This has to be run with     !
+   !      ISTOMATA_SCHEME = 1                                                              !
    !---------------------------------------------------------------------------------------!
    NL%IPHYSIOL = 2
    !---------------------------------------------------------------------------------------!
@@ -656,6 +658,11 @@ $ED_NL
    !                                                                                       !
    !  3: grasses   - drought-deciduous (new scheme);                                       !
    !     tropical  - drought-deciduous (light phenology);                                  !
+   !     conifers  - evergreen;                                                            !
+   !     hardwoods - cold-deciduous;                                                       !
+   !                                                                                       !
+   !  4: grasses   - drought-deciduous (plant hydraulics);                                 !
+   !     tropical  - drought-deciduous (plant hydraulics;                                  !
    !     conifers  - evergreen;                                                            !
    !     hardwoods - cold-deciduous;                                                       !
    !                                                                                       !
@@ -782,8 +789,62 @@ $ED_NL
    !                      where psi is the matric potentital at layer k, z is the layer    !
    !                      depth, H it the crown height and psi_fc and psi_wp are the       !
    !                      matric potentials at wilting point and field capacity.           !
+   !                  3.  Use leaf water potential to modify fsw following Powell et al.   !
+   !                      2017. Need to set PLANT_HYDRO_SCHEME to non-zero values          !
+   !                  4.  Use leaf water potential to modify Optimization-based stomatal   !
+   !                      model following Xu et al. 2016. Need to set PLANT_HYDRO_SCHEME   !
+   !                      to non-zero values and set ISTOMATA_SCHEME to 1.                 !
    !---------------------------------------------------------------------------------------!
    NL%H2O_PLANT_LIM   = 1
+   !---------------------------------------------------------------------------------------!
+   !  PLANT_HYDRO_SCHEME -- Whether to track plant hydrodynamics.                          !
+   !                        0. No hydraulics (leaf and wood are always saturated)          ! 
+   !                        1. Track plant hydrodynamics using parameters from             !
+   !                           Christofferson et al. 2016 GMD                              !
+   !                        2. Track plant hydrodynamics using parameters from             !
+   !                           Xu et al. 2016 New Phytologist                              !
+   !                       -1. Same as 1 but leaf/wood heat capacity does not change       !
+   !                       -2. Same as 2 but leaf/wood heat capacity does not change       !
+   !---------------------------------------------------------------------------------------!
+   NL%PLANT_HYDRO_SCHEME   = 0
+   !---------------------------------------------------------------------------------------!
+
+   !---------------------------------------------------------------------------------------!
+   ! ISTRUCT_GROWTH_SCHEME -- Different methods to perform structural growth.              !
+   !                          0. Use all bstorage (default by ED2.2 and before)            !
+   !                          1. Reserve bstorage to reflush the whole canopy and          !
+   !                             fine roots once before calculating structural growth.     !
+   !                             This helps to give deciduous PFTs enough carbon to flush  !
+   !                             new leaves when growing season comes                      !
+   !---------------------------------------------------------------------------------------!
+   NL%ISTRUCT_GROWTH_SCHEME = 0
+   !---------------------------------------------------------------------------------------!
+
+   !---------------------------------------------------------------------------------------!
+   ! ISTOMATA_SCHEME -- Which stomatal conductance model to use.                           !
+   !                    0. Leuning (default by ED2.2 and before)                           !
+   !                    1. Katul's optimization based model (see Xu et al. 2016)           !
+   !---------------------------------------------------------------------------------------!
+   NL%ISTOMATA_SCHEME = 0
+   !---------------------------------------------------------------------------------------!
+
+   !---------------------------------------------------------------------------------------!
+   ! TRAIT_PLASTICITY_SCHEME -- Whether/How plant traits vary with local environment.      !
+   !                            0. No trait plasticity. Trait parameters for each PFT      !
+   !                               is fixed. (ED2.2 and before).                           !
+   !                            1. Vm0 and SLA change with cohort light environment based  !
+   !                               on Lloyld et al. 2010 Biogeosciences. For each cohort,  !
+   !                               Vm0 decreases and SLA increases with shading. The       !
+   !                               magnitude of changes is calcualted using overtopping    !
+   !                               LAI and corresponding extinction facotrs for each trait.!
+   !                               The traits for each cohort are updated every year.      !
+   !                               (Not applicable to grass PFTs)                          !
+   !                            2. Same as 1 but the traits are updated every month.       !
+   !                           -1. Same as 1 but use height to adjust SLA                  !
+   !                           -2. Same as 2 but use height to adjust SLA                  !
+   !---------------------------------------------------------------------------------------!
+   NL%TRAIT_PLASTICITY_SCHEME = 0
+   !---------------------------------------------------------------------------------------!
    !---------------------------------------------------------------------------------------!
    !  IDDMORT_SCHEME -- This flag determines whether storage should be accounted in the    !
    !                    carbon balance.                                                    !
