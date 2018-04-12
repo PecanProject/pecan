@@ -14,17 +14,17 @@ pda.emulator.ms <- function(multi.settings) {
   # check mode 
   pda.mode <- unique(sapply(multi.settings$assim.batch,`[[`, "mode"))
   
-  if(pda.mode == "local"){
-    local <- TRUE
-    global <- hierarchical <- FALSE
-  }else if(pda.mode == "global"){
-    global <- TRUE
-    local <- hierarchical <- FALSE
+  if(pda.mode == "individual"){
+    individual <- TRUE
+    joint <- hierarchical <- FALSE
+  }else if(pda.mode == "joint"){
+    joint <- TRUE
+    individual <- hierarchical <- FALSE
   }else if(pda.mode == "hierarchical"){
     hieararchical <- TRUE
-    local <- global <- FALSE
+    individual <- joint <- FALSE
   }else{
-    local <- global <- hierarchical <- TRUE
+    individual <- joint <- hierarchical <- TRUE
   }
   
   # how many sites
@@ -36,20 +36,20 @@ pda.emulator.ms <- function(multi.settings) {
   SS.stack      <- vector("list", nsites) 
   #nstack       <- vector("list", nsites) 
   
-  ## -------------------------------------- Local runs and calibration ------------------------------------------
+  ## -------------------------------------- Individual runs and calibration ------------------------------------------
   
-  if(local){
-    # NOTE: local flag is not used currently, prepearation for future use
+  if(individual){
+    # NOTE: individual flag is not used currently, prepearation for future use
     # if this flag is FALSE, pda.emulator will not fit GP and run MCMC, 
     # but will run LHC ensembles, calculate SS and return settings list with saved SS paths etc.
     # this requires some re-arrangement in pda.emulator, 
     # for now we will always run site-level calibration
-    multi.settings <- papply(multi.settings, pda.emulator, local = local)
+    multi.settings <- papply(multi.settings, pda.emulator, individual = individual)
   }
   
   #PEcAn.settings::write.settings(multi.settings, outputfile='pecan.PDAMS.xml')
   
-  ## -------------------------------- Prepare for Global and Hierarchical ----------------------------------------- 
+  ## -------------------------------- Prepare for Joint and Hierarchical ----------------------------------------- 
   
   
   # we need some objects that are common to all calibrations
@@ -109,8 +109,8 @@ pda.emulator.ms <- function(multi.settings) {
   }
   
 
-  ## -------------------------------------- Global calibration -------------------------------------------------- 
-  if(global){ # global - if begin
+  ## -------------------------------------- Joint calibration -------------------------------------------------- 
+  if(joint){ # joint - if begin
     
     ## Get an ensemble id for global calibration
     tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
@@ -152,7 +152,7 @@ pda.emulator.ms <- function(multi.settings) {
     
     # Stop the clock
     ptm.finish <- proc.time() - ptm.start
-    logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
+    logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
     
     mcmc.samp.list <- sf.samp.list <- list()
     
@@ -228,9 +228,9 @@ pda.emulator.ms <- function(multi.settings) {
       }
     }
     
-    tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_global")
+    tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_joint")
     
-  } # global - if end
+  } # joint - if end
   
   ## -------------------------------------- Hierarchical MCMC ------------------------------------------ 
   if(hierarchical){ # hierarchical - if begin

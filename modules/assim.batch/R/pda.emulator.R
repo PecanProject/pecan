@@ -14,7 +14,7 @@
 pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                          params.id = NULL, param.names = NULL, prior.id = NULL, 
                          chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
-                         ar.target = NULL, jvar = NULL, n.knot = NULL, local = TRUE) {
+                         ar.target = NULL, jvar = NULL, n.knot = NULL, individual = TRUE) {
   
   ## this bit of code is useful for defining the variables passed to this function if you are
   ## debugging
@@ -22,7 +22,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     external.data <- external.priors <- NULL
     params.id <- param.names <- prior.id <- chain <- iter <- NULL
     n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
-    local <- TRUE
+    individual <- TRUE
   }
   
   # handle extention flags
@@ -57,7 +57,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   if(!run.normal){
     external_data_path <- file.path(settings$outdir, paste0("external.", settings$assim.batch$ensemble.id, ".Rdata"))
     load(external_data_path)
-    # and maybe delete the file afterwards because it will be re-written with a new ensemble id in the end
+    # and delete the file afterwards because it will be re-written with a new ensemble id in the end
     file.remove(external_data_path)
   }
   

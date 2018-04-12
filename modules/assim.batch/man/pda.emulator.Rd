@@ -7,7 +7,7 @@
 pda.emulator(settings, external.data = NULL, external.priors = NULL,
   params.id = NULL, param.names = NULL, prior.id = NULL, chain = NULL,
   iter = NULL, adapt = NULL, adj.min = NULL, ar.target = NULL,
-  jvar = NULL, n.knot = NULL, local = TRUE)
+  jvar = NULL, n.knot = NULL, individual = TRUE)
 }
 \arguments{
 \item{settings}{= a pecan settings list}
