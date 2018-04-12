@@ -204,7 +204,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
     dplyr::mutate(
       data = purrr::map(
         url,
-        get_narr_url,
+        robustly(get_narr_url, n = 20, timeout = 1),
         xy = xy,
         flx = TRUE,
         pb = pb
@@ -215,7 +215,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
     dplyr::mutate(
       data = purrr::map(
         url,
-        get_narr_url,
+        robustly(get_narr_url, n = 20, timeout = 1),
         xy = xy,
         flx = FALSE,
         pb = pb
@@ -298,10 +298,10 @@ generate_narr_url <- function(dates, flx) {
 #' @author Alexey Shiklomanov
 get_narr_url <- function(url, xy, flx, pb = NULL) {
   stopifnot(length(xy) == 2, length(url) == 1, is.character(url))
-  nc <- robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(url)
+  nc <- ncdf4::nc_open(url)
   on.exit(ncdf4::nc_close(nc))
   timevar <- if (flx) "time" else "reftime"
-  dhours <- robustly(ncdf4::ncvar_get, n = 10, timeout = 0.5)(nc, timevar)
+  dhours <- ncdf4::ncvar_get(nc, timevar)
   # HACK: Time variable seems inconsistent.
   # Sometimes starts at 0, sometimes offset by 3.
   # This is a hack to make it always start at zero
@@ -334,7 +334,7 @@ read_narr_var <- function(nc, xy, variable, unit, flx, pb = NULL) {
     count <- c(1, 1, -1, -1)
   }
   nc_unit <- ncdf4::ncatt_get(nc, variable, "units")$value
-  out <- robustly(ncdf4::ncvar_get, n = 10, timeout = 0.5)(nc, variable, start = start, count = count)
+  out <- ncdf4::ncvar_get(nc, variable, start = start, count = count)
   # Precipitation is a special case -- unit is actually precipitation per 3 hours
   # So, divide by seconds in 3 hours and change unit accordingly
   if (variable == "Total_precipitation_surface_3_Hour_Accumulation") {
@@ -375,8 +375,8 @@ narr_all_vars <- dplyr::bind_rows(narr_flx_vars, narr_sfc_vars)
 #' used in `ncdf4::ncvar_get` `start` argument.
 #' @author Alexey Shiklomanov
 latlon2narr <- function(nc, lat.in, lon.in) {
-  narr_x <- robustly(ncdf4::ncvar_get, timeout = 0.5, n = 10)(nc, "x")
-  narr_y <- robustly(ncdf4::ncvar_get, timeout = 0.5, n = 10)(nc, "y")
+  narr_x <- ncdf4::ncvar_get(nc, "x")
+  narr_y <- ncdf4::ncvar_get(nc, "y")
   ptrans <- latlon2lcc(lat.in, lon.in)
   x_ind <- which.min((ptrans$x - narr_x) ^ 2)
   y_ind <- which.min((ptrans$y - narr_y) ^ 2)
