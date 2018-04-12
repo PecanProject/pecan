@@ -187,7 +187,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   sfc_df <- generate_narr_url(dates, FALSE)
 
   # Load dimensions, etc. from first netCDF file
-  nc1 <- ncdf4::nc_open(flx_df$url[1])
+  nc1 <- robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(flx_df$url[1])
   on.exit(ncdf4::nc_close(nc1))
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
@@ -298,10 +298,10 @@ generate_narr_url <- function(dates, flx) {
 #' @author Alexey Shiklomanov
 get_narr_url <- function(url, xy, flx, pb = NULL) {
   stopifnot(length(xy) == 2, length(url) == 1, is.character(url))
-  nc <- ncdf4::nc_open(url)
+  nc <- robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(url)
   on.exit(ncdf4::nc_close(nc))
   timevar <- if (flx) "time" else "reftime"
-  dhours <- ncdf4::ncvar_get(nc, timevar)
+  dhours <- robustly(ncdf4::ncvar_get, n = 10, timeout = 0.5)(nc, timevar)
   # HACK: Time variable seems inconsistent.
   # Sometimes starts at 0, sometimes offset by 3.
   # This is a hack to make it always start at zero
@@ -334,7 +334,7 @@ read_narr_var <- function(nc, xy, variable, unit, flx, pb = NULL) {
     count <- c(1, 1, -1, -1)
   }
   nc_unit <- ncdf4::ncatt_get(nc, variable, "units")$value
-  out <- ncdf4::ncvar_get(nc, variable, start = start, count = count)
+  out <- robustly(ncdf4::ncvar_get, n = 10, timeout = 0.5)(nc, variable, start = start, count = count)
   # Precipitation is a special case -- unit is actually precipitation per 3 hours
   # So, divide by seconds in 3 hours and change unit accordingly
   if (variable == "Total_precipitation_surface_3_Hour_Accumulation") {
@@ -375,8 +375,8 @@ narr_all_vars <- dplyr::bind_rows(narr_flx_vars, narr_sfc_vars)
 #' used in `ncdf4::ncvar_get` `start` argument.
 #' @author Alexey Shiklomanov
 latlon2narr <- function(nc, lat.in, lon.in) {
-  narr_x <- ncdf4::ncvar_get(nc, "x")
-  narr_y <- ncdf4::ncvar_get(nc, "y")
+  narr_x <- robustly(ncdf4::ncvar_get, timeout = 0.5, n = 10)(nc, "x")
+  narr_y <- robustly(ncdf4::ncvar_get, timeout = 0.5, n = 10)(nc, "y")
   ptrans <- latlon2lcc(lat.in, lon.in)
   x_ind <- which.min((ptrans$x - narr_x) ^ 2)
   y_ind <- which.min((ptrans$y - narr_y) ^ 2)
