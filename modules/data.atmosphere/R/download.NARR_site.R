@@ -191,6 +191,27 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   on.exit(ncdf4::nc_close(nc1))
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
+  if (FALSE) {
+    # Load in parallel
+    # hold off on committing this yet
+    import::from(foreach, foreach, "%dopar%")
+    import::from(doParallel, registerDoParallel)
+    import::from(parallel, makeCluster)
+
+    flx_df$flx <- TRUE
+    sfc_df$flx <- FALSE
+
+    get_dfs <- dplyr::bind_rows(flx_df, sfc_df)
+
+    cl <- makeCluster(4)
+    registerDoParallel(cl)
+
+    out <- foreach(url = get_dfs$url, flx = get_dfs$flx,
+                   .packages = c("PEcAn.data.atmosphere", "magrittr"),
+                   .export = c("get_narr_url", "robustly")) %dopar%
+                     robustly(get_narr_url)(url, xy = xy, flx = flx)
+  }
+
   # Retrieve remaining variables by iterating over URLs
   npb <- nrow(flx_df) * nrow(narr_flx_vars) +
     nrow(sfc_df) * nrow(narr_sfc_vars)
