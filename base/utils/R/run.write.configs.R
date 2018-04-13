@@ -40,7 +40,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
         files <- PEcAn.DB::dbfile.check("Posterior",
                               settings$pfts[[i]]$posteriorid, 
-                              con, settings$host$name)
+                              con, settings$host$name, return.all = TRUE)
         pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
         if (length(pid) == 0) {
           pid <- grep("prior.distns.Rdata", files$file_name)  ## is there a prior file?
