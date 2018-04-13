@@ -70,13 +70,13 @@
 "wood_trans_nir";"wood NIR transmittance";"0-1";"wood_trans_nir"
 "orient_factor";"Leaf orientation";"0-1";"orient_factor"
 "num";"ED2 PFT Number";"Constant";"num"
-"HTMAX";"Max Height";"meters";
-"DBHMAX";"Max DBH";"meters";
-"AGEMX";"Max Age";"years";
-"G";"G";"cm";
-"D3";"D3";"percent";
-"FROST";"Min January Temp";"Celsius";
-"TL";"TL";"index";
+"HTMAX";"Max Height";"meters";""
+"DBHMAX";"Max DBH";"meters";""
+"AGEMX";"Max Age";"years";""
+"G";"G";"cm";""
+"D3";"D3";"percent";""
+"FROST";"Min January Temp";"Celsius";""
+"TL";"TL";"index";""
 "CM1";"CM1";"";""
 "CM2";"CM2";"";""
 "CM3";"CM3";"";""
@@ -92,3 +92,9 @@
 "DMAX";"DMAX";"degree days";""
 "DMIN";"DMIN";"degree days";""
 "leaf_longevity";"leaf longevity";"year";""
+"gdd_tbase";"GDD Base Temperature", "Celsius"; "gdd_tbase"
+"volume_fraction_of_water_in_soil_at_field_capacity";"Field Capacity";"volumetric fraction";"volume_fraction_of_water_in_soil_at_field_capacity"
+"volume_fraction_of_condensed_water_in_soil_at_wilting_point";"Wilting Point";"volumetric fraction";"volume_fraction_of_condensed_water_in_soil_at_wilting_point"
+"chi_leaf";"Leaf Angle Distribution Chi";"ratio";"chi_leaf"
+"pstemp_min";"Photosynthesis Minimum Temperature";"Celsius";"pstemp_min"
+"theta";"Collatz Curvature Parameter";"";"theta"
