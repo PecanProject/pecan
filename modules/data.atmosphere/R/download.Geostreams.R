@@ -90,8 +90,14 @@ download.Geostreams <- function(outfolder, sitename,
   for (year in lubridate::year(start_date):lubridate::year(end_date)) {
     query_args <- list(
       sensor_id = sensor_id,
-      since = max(start_date, lubridate::ymd(paste0(year, "-01-01"), tz="UTC")),
-      until = min(end_date, lubridate::ymd(paste0(year, "-12-31"), tz="UTC")),
+      since = strftime(
+        max(start_date, lubridate::ymd(paste0(year, "-01-01"), tz="UTC")),
+        format = "%Y-%m-%dT%H:%M:%SZ",
+        tz = "UTC"),
+      until = strftime(
+        min(end_date, lubridate::ymd(paste0(year, "-12-31"), tz="UTC")),
+        format = "%Y-%m-%dT%H:%M:%SZ",
+        tz = "UTC"),
       key = auth$key,
       ...)
 
