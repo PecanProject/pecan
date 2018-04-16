@@ -815,6 +815,8 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
     # need to modify init.list and jmp.list as well
     parnames <- names(init.list[[1]])
     
+    prior.fn.all <- pda.define.prior.fn(prior.all) # setup prior functions again
+    
     for(i in seq_along(SS.stack)){
       # NOTE: there might be differences in dimensions, 
       # some SS-matrices might have likelihood params such as bias 
@@ -825,7 +827,6 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
           prior.quantiles <- eval(prior.fn.all$pprior[[prior.ind.all[p]]], list(q = ss[,p]))
           stdnorm.vals    <- qnorm(prior.quantiles)
           ss[,p] <- stdnorm.vals
-          
         }
         return(ss)
       })   
@@ -834,9 +835,12 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
       rng[,,i] <- t(rng.tmp[,-ncol(rng.tmp)])
     }
     
+    all_knots <- do.call("rbind", lapply(SS.stack,`[[`,1))
+    rand_ind  <- sample(seq_len(nrow(all_knots)), length(init.list))
+    
     for(c in seq_along(init.list)){
       init.list[[c]] <- lapply(seq_along(init.list[[c]]), function(x){
-          init.list[[c]][[x]] <- rnorm(1)
+          init.list[[c]][[x]] <- all_knots[rand_ind[c],x]
       })
       names(init.list[[c]]) <- parnames
       jmp.list[[c]][psel] <- 0.1 * diff(qnorm(c(0.05, 0.95)))
@@ -844,7 +848,8 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
     
   }
   
-  return(list(normSS = SS.stack, normF = norm.check, init = init.list, jmp = jmp.list, rng = rng))
+  return(list(normSS = SS.stack, normF = norm.check, init = init.list, jmp = jmp.list, 
+              rng = rng, prior.all = prior.all,  prior.fn.all = prior.fn.all))
   
 } # norm_transform_priors
 
@@ -852,10 +857,9 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
 ##' Helper function that transforms the samples back to their original prior distribution equivalents
 ##' @author Istem Fer
 ##' @export
-back_transform_posteriors <- function(prior.list, prior.fn.all, prior.ind.all, mcmc.out){
+back_transform_posteriors <- function(prior.all, prior.fn.all, prior.ind.all, mcmc.out){
   
   # check for non-normals
-  prior.all  <- do.call("rbind", prior.list)
   psel       <- prior.all[prior.ind.all, 1] != "norm"
   norm.check <- all(!psel) # if all are norm do nothing
   
@@ -885,3 +889,52 @@ back_transform_posteriors <- function(prior.list, prior.fn.all, prior.ind.all, m
   return(mcmc.out)
   
 }
+
+
+##' Helper function to sample from previous MCMC chain while proposing new knots
+##' @author Istem Fer
+##' @export
+sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp){
+  
+  PEcAn.logger::logger.info("Sampling from previous round's MCMC")
+  
+  load(mcmc_path)
+  
+  mcmc.param.list <- params.subset <- list()
+  ind <- 0
+  for (i in seq_along(n.param.orig)) {
+    mcmc.param.list[[i]] <- lapply(mcmc.samp.list, function(x) x[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE])
+    ind <- ind + n.param.orig[i]
+  }
+  
+  burnins <- rep(NA, length(mcmc.param.list))
+  for (i in seq_along(mcmc.param.list)) {
+    params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
+    
+    burnin     <- getBurnin(params.subset[[i]], method = "gelman.plot")
+    burnins[i] <- max(burnin, na.rm = TRUE)
+  }
+  maxburn <- max(burnins)
+  
+  collect_samples <- list()
+  for (i in seq_along(mcmc.samp.list)) {
+    collect_samples[[i]] <- window(mcmc.samp.list[[i]], start = maxburn)
+  }
+  
+  mcmc_samples <- do.call(rbind, collect_samples)
+  
+  get_samples <- sample(1:nrow(mcmc_samples), n.post.knots)
+  new_knots <- mcmc_samples[get_samples,]
+  
+  ind <- 0
+  for(i in seq_along(n.param.orig)){
+    knots.params.temp[[i]][, prior.ind.orig[[i]]] <- new_knots[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE]
+    ind <- ind + n.param.orig[i]
+  }
+  
+  return(knots.params.temp)
+  
+}
+
+
+

@@ -190,8 +190,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     # loads the posteriors of the the previous emulator run
     temp.round <- pda.load.priors(settings, con, run.round)
     prior.round.list <- temp.round$prior
-    
-    
+
+
     prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
     
     ## Propose a percentage (if not specified 80%) of the new parameter knots from the posterior of the previous run
@@ -217,6 +217,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       probs.round.sf     <- NULL
     }
     
+
     ## set prior distribution functions for posterior of the previous emulator run
     ## need to do two things here: 
     ## 1) for non-SF parameters, use the posterior of previous emulator
@@ -253,6 +254,11 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       }
     }
     
+    # TODO: I need to revise this later, most of the code above is unnecessary (load posteriors, propose from them etc.)
+    # but for now going with the simplest and hopefully bug-free version (NEEDs CHECKING SF VERSION)
+    # sample from MCMC
+    knots.params.temp <- sample_MCMC(settings$assim.batch$mcmc.path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp)
+
     # mixture of knots
     mix.knots <- sample(settings$assim.batch$n.knot, (settings$assim.batch$n.knot - n.post.knots))
     for (i in seq_along(settings$pfts)) {

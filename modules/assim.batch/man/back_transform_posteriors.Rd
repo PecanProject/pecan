@@ -4,7 +4,7 @@
 \alias{back_transform_posteriors}
 \title{Helper function that transforms the samples back to their original prior distribution equivalents}
 \usage{
-back_transform_posteriors(prior.list, prior.fn.all, prior.ind.all, mcmc.out)
+back_transform_posteriors(prior.all, prior.fn.all, prior.ind.all, mcmc.out)
 }
 \description{
 Helper function that transforms the samples back to their original prior distribution equivalents
