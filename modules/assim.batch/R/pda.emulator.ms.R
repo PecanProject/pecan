@@ -47,8 +47,10 @@ pda.emulator.ms <- function(multi.settings) {
     multi.settings <- papply(multi.settings, pda.emulator, individual = individual)
   }
   
-  #PEcAn.settings::write.settings(multi.settings, outputfile='pecan.PDAMS.xml')
+  # write multi.settings with individual-pda info
+  PEcAn.settings::write.settings(multi.settings, outputfile='pecan.PDA_MS.xml')
   
+
   ## -------------------------------- Prepare for Joint and Hierarchical ----------------------------------------- 
   
   
@@ -115,6 +117,10 @@ pda.emulator.ms <- function(multi.settings) {
     ## Get an ensemble id for global calibration
     tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
     
+    ## history restart
+    hbpda.restart.file <- file.path(settings$outdir,paste0("history.hbpda",
+                                                           settings$assim.batch$ensemble.id, ".Rdata"))
+    
     gp <- unlist(gp.stack, recursive = FALSE)
 
     # start the clock
@@ -153,6 +159,9 @@ pda.emulator.ms <- function(multi.settings) {
     # Stop the clock
     ptm.finish <- proc.time() - ptm.start
     logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
+    
+    current.step <- "END OF JOINT MCMC"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
     
     mcmc.samp.list <- sf.samp.list <- list()
     
@@ -230,6 +239,9 @@ pda.emulator.ms <- function(multi.settings) {
     
     tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_joint")
     
+    current.step <- "JOINT - END"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    
   } # joint - if end
   
   ## -------------------------------------- Hierarchical MCMC ------------------------------------------ 
@@ -238,10 +250,19 @@ pda.emulator.ms <- function(multi.settings) {
     ## Get an ensemble id for hierarchical calibration
     tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
     
+    ## history restart
+    hbpda.restart.file <- file.path(settings$outdir,paste0("history.hbpda",
+                                                           settings$assim.batch$ensemble.id, ".Rdata"))
+
+    
     ## Transform values from non-normal distributions to standard Normal
     ## it won't do anything if all priors are already normal
     norm_transform <- norm_transform_priors(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list)
     if(!norm_transform$normF){ # means SS values are transformed
+      
+      prior.all    <- norm_transform$prior.all
+      prior.fn.all <- norm_transform$prior.fn.all
+      
       ## get new SS.stack with transformed values
       SS.stack <- norm_transform$normSS
       
@@ -260,6 +281,9 @@ pda.emulator.ms <- function(multi.settings) {
 
       
     }
+    
+    current.step <- "HIERARCHICAL MCMC PREP"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
     
 
     ########### hierarchical MCMC function with Gibbs ##############
@@ -306,7 +330,7 @@ pda.emulator.ms <- function(multi.settings) {
       #
 
       mu_f    <- unlist(mu0)
-      P_f     <- diag(jmp0)
+      P_f     <- diag(1, nparam)
       P_f_inv <- solve(P_f) 
       
       # # initialize mu_global (nparam)
@@ -342,7 +366,7 @@ pda.emulator.ms <- function(multi.settings) {
       
       # initialize mu_site (nsite x nparam)
       mu_site_curr <- matrix(NA_real_, nrow = nsites, ncol= nparam)
-      mu_site_new  <- matrix(NA_real_, nrow = nsites, ncol= n.param)
+      mu_site_new  <- matrix(NA_real_, nrow = nsites, ncol= nparam)
       for(ns in 1:nsites){
         repeat{
           mu_site_curr[ns,] <- mvtnorm::rmvnorm(1, mu_global, jcov.arr[,,ns]) # site mean
@@ -375,7 +399,7 @@ pda.emulator.ms <- function(multi.settings) {
           # update site level jvars
           params.recent <- mu_site_samp[(g - settings$assim.batch$jump$adapt):(g - 1), , ]
           #colnames(params.recent) <- names(x0)
-          jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], accept.count[v], params.recent[,,v]))
+          jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], musite.accept.count[v], params.recent[,,v]))
           jcov.arr  <- abind::abind(jcov.list, along=3)
           musite.accept.count <- rep(0, nsites)  # Reset counter
 
@@ -478,11 +502,11 @@ pda.emulator.ms <- function(multi.settings) {
     
     # prepare for parallelization
     dcores <- parallel::detectCores() - 1
-    ncores <- min(max(dcores, 1), settings$assim.batch$chain)
+    ncores <- min(max(dcores, 1), tmp.settings$assim.batch$chain)
      
-    logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+    logger.setOutputFile(file.path(tmp.settings$outdir, "pda.log"))
     
-    cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
+    cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(tmp.settings$outdir, "pda.log"))
     
     
     ## Sample posterior from emulator
@@ -499,11 +523,14 @@ pda.emulator.ms <- function(multi.settings) {
     ptm.finish <- proc.time() - ptm.start
     logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
     
+    current.step <- "HIERARCHICAL MCMC END"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    
     # transform samples from std normal to prior quantiles
-    mcmc.out2 <- back_transform_posteriors(prior.list, prior.fn.all, prior.ind.all, mcmc.out)
+    mcmc.out2 <- back_transform_posteriors(prior.all, prior.fn.all, prior.ind.all, mcmc.out)
     
     # Collect global params in their own list and postprocess
-    mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+    mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
     tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical")
     
     # Collect site-level params in their own list and postprocess
@@ -511,6 +538,10 @@ pda.emulator.ms <- function(multi.settings) {
       mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "mu_site_samp", ns = ns, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
       settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = paste0("_hierarchical_SL",ns))
     }
+    
+    current.step <- "HIERARCHICAL - END"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    
   } # hierarchical - if end
   
 }

@@ -260,7 +260,7 @@ pda.sort.params <- function(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, 
   
   mcmc.samp.list <- list()
   
-  for (c in seq_len(settings$assim.batch$chain)) {
+  for (c in seq_along(mcmc.out)) {
     
     if(sub.sample == "mu_global_samp"){
       m <- matrix(NA, nrow =  nrow(mcmc.out[[c]][[sub.sample]]), ncol = length(prior.ind.all.ns))
