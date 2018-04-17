@@ -17,14 +17,36 @@ This vignette documents the steps and settings of Hierarchical Bayesian Paramete
 
 Add the `<sitegroup>` tag in your `pecan.xml` for the groups of sites you are interested in. In this vignette, we will use HB-PDA site group in BETYdb which consists of the temperate decidious broadleaf forest (DBF) sites of Ameriflux network.
 
+
 ```
 <sitegroup>
    <id>1000000022</id>
 </sitegroup>
 ```
+In the meantime, your `<run>` tag will look like this:
+```
+  <run>
+    <inputs>
+      <met>
+        <source>AmerifluxLBL</source>
+        <output>SIPNET</output>
+      <username>pecan</username>
+      </met>
+    </inputs>
+    <start.date>2004/01/01</start.date>
+    <end.date>2004/12/31</end.date>
+  </run>
+```
 
-In the meantime, your `<run>` section should specify `<inputs>`, `<start.date>` and `<end.date>` information accordingly. E.g.:
+It's OK if not all your sites have the same `start.date` and `end.date`, multi settings functions will use this as a template to expand.
 
+Now start going through the workflow script and stop after:
+```
+# Write pecan.CHECKED.xml
+PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
+```
+
+When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded with the same information repeated. Now you specify `<inputs>`, `<start.date>` and `<end.date>` information accordingly if you want them to be different. E.g.:
 
 ```
  <run>
@@ -47,23 +69,6 @@ In the meantime, your `<run>` section should specify `<inputs>`, `<start.date>` 
   </settings.1>
   <settings.2>
    <site>
-    <id>758</id>
-    <met.start>2010/01/01</met.start>
-    <met.end>2015/12/31</met.end>
-    <name>Harvard Forest EMS Tower/HFR1 (US-Ha1)</name>
-    <lat>42.5378</lat>
-    <lon>-72.1715</lon>
-   </site>
-   <start.date>2010/01/01</start.date>
-   <end.date>2015/12/31</end.date>
-   <inputs>
-    <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-758/AMF_US-Ha1_BASE_HR_10-1.2010-01-01.2015-12-31.clim</path>
-    </met>
-   </inputs>
-  </settings.2>
-  <settings.3>
-   <site>
     <id>767</id>
     <met.start>2001/01/01</met.start>
     <met.end>2014/12/31</met.end>
@@ -78,8 +83,8 @@ In the meantime, your `<run>` section should specify `<inputs>`, `<start.date>` 
      <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-767/AMF_US-MMS_BASE_HR_8-1.2001-01-01.2014-12-31.clim</path>
     </met>
    </inputs>
-  </settings.3>
-  <settings.4>
+  </settings.2>
+  <settings.3>
    <site>
     <id>768</id>
     <met.start>2005/01/01</met.start>
@@ -95,8 +100,8 @@ In the meantime, your `<run>` section should specify `<inputs>`, `<start.date>` 
      <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-768/AMF_US-MOz_BASE_HH_7-1.2005-01-01.2015-12-31.clim</path>
     </met>
    </inputs>
-  </settings.4>
-  <settings.5>
+  </settings.3>
+  <settings.4>
    <site>
     <id>776</id>
     <met.start>2007/01/01</met.start>
@@ -112,8 +117,8 @@ In the meantime, your `<run>` section should specify `<inputs>`, `<start.date>` 
      <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-776/AMF_US-UMB_BASE_HH_10-1.2007-01-01.2014-12-31.clim</path>
     </met>
    </inputs>
-  </settings.5>
-  <settings.6>
+  </settings.4>
+  <settings.5>
    <site>
     <id>676</id>
     <met.start>1999/01/01</met.start>
@@ -129,8 +134,8 @@ In the meantime, your `<run>` section should specify `<inputs>`, `<start.date>` 
      <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-676/AMF_US-WCr_BASE_HH_11-1.1999-01-01.2006-12-31.clim</path>
     </met>
    </inputs>
-  </settings.6>
-  <settings.7>
+  </settings.5>
+  <settings.6>
    <site>
     <id>1000000109</id>
     <met.start>2013/01/01</met.start>
@@ -146,58 +151,89 @@ In the meantime, your `<run>` section should specify `<inputs>`, `<start.date>` 
      <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-109/AMF_CA-TPD_BASE_HH_1-1.2013-01-01.2015-12-31.clim</path>
     </met>
    </inputs>
-  </settings.7>
-  <settings.8>
+  </settings.6>
+  <settings.7>
    <site>
-    <id>740</id>
-    <met.start>1997/01/01</met.start>
+    <id>1000000145</id>
+    <met.start>2008/01/01</met.start>
     <met.end>2010/12/31</met.end>
-    <name>BOREAS SSA Old Aspen (CA-Oas)</name>
-    <lat>53.6289</lat>
-    <lon>-106.198</lon>
+    <name>Chestnut Ridge (US-ChR)</name>
+    <lat>35.9311</lat>
+    <lon>-84.3324</lon>
    </site>
-   <start.date>1997/01/01</start.date>
+   <start.date>2008/01/01</start.date>
    <end.date>2010/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-740/AMF_CA-Oas_BASE_HH_1-1.1997-01-01.2010-12-31.clim</path>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-145/AMF_US-ChR_BASE_HH_2-1.2008-01-01.2010-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.7>
+  <settings.8>
+   <site>
+    <id>1000000066</id>
+    <met.start>2005/01/01</met.start>
+    <met.end>2014/12/31</met.end>
+    <name>Silas Little- New Jersey (US-Slt)</name>
+    <lat>39.9138</lat>
+    <lon>-74.596</lon>
+   </site>
+   <start.date>2005/01/01</start.date>
+   <end.date>2014/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-66/AMF_US-Slt_BASE_HH_5-1.2005-01-01.2014-12-31.clim</path>
     </met>
    </inputs>
   </settings.8>
+  <settings.9>
+   <site>
+    <id>1000000061</id>
+    <met.start>2004/01/01</met.start>
+    <met.end>2013/12/31</met.end>
+    <name>Oak Openings (US-Oho)</name>
+    <lat>41.5545</lat>
+    <lon>-83.8438</lon>
+   </site>
+   <start.date>2004/01/01</start.date>
+   <end.date>2013/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-61/AMF_US-Oho_BASE_HH_4-1.2005-01-01.2006-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.9>
  </run>
 ```
+
+Re-read the updated `pecan.CHECKED.xml`, make sure to re-assign random effects as logical, otherwise `meta.analysis` will throw an error:
+```
+settings <- read.settings("pecan.CHECKED.xml")
+settings$meta.analysis$random.effects <- as.logical(settings$meta.analysis$random.effects)
+```
+
+Then continue with the rest of the workflow until `<assim.batch>` module:
+```
+# Run parameter data assimilation
+if ('assim.batch' %in% names(settings)) {
+  if (PEcAn.utils::status.check("PDA") == 0) {
+    PEcAn.utils::status.start("PDA")
+    settings <- PEcAn.assim.batch::runModule.assim.batch(settings)
+    PEcAn.utils::status.end()
+  }
+}
+```
+
+Now add the PDA tags, see next section.
 
 
 ## Settings for HB-PDA
 
-Similar to PDA settings, we will contain HB-PDA settings under the `<assim.batch>` section. Likewise standard PDA, if you have chosen the parameters you want to target in the calibration, open the `pecan.CONFIGS.xml` file, insert the tag below, and save as `pecan.HBPDA.xml`:
+Similar to PDA settings, we will contain HB-PDA settings under the `<assim.batch>` section. Likewise standard PDA, if you have chosen the parameters you want to target in the calibration, we will open the `pecan.CONFIGS.xml` file, and insert the `<assim.batch>` tag. 
 
-```
-<assim.batch>
- <method>emulator.ms</method>
- <mode>local</mode>
- <n.knot>115</n.knot>
- <iter>100000</iter>
- <chain>3</chain>
-  <param.names>
-   <soil>
-    <param>som_respiration_rate</param>
-    <param>soil_respiration_Q10</param>
-   </soil>
-   <temperate.deciduous>
-    <param>half_saturation_PAR</param>
-    <param>dVPDSlope</param>
-    <param>psnTOpt</param>
-    <param>AmaxFrac</param>
-    <param>leafGrowth</param>
-   </temperate.deciduous>
-  </param.names>
-</assim.batch>
-```
+Different from the PDA settings, this time the main function will be the `emulator.ms`. This function can be run in three modes, which will be selected under the `<mode>` tag above: individual, joint and hierarchical. If left empty, the function will go through all three modes. But note that, for both joint and hierarhical calibration, we need site-level runs. We will start with individual mode, i.e. site-level calibration. 
 
-Different from the PDA settings, this time the main function will be the `emulator.ms`. This function can be run in three modes, which will be selected under the `<mode>` tag above: local, global and hierarchical. If left empty, the function will go through all three modes. But note that, for both global and hierarhical calibration, we need site-level runs. We will start with local mode, i.e. site-level calibration. 
-
-Now we will extend the settings above to include information about data to assimilate and likelihoods, similar to the standard-PDA setup, except for multiple sites. First, add `<assim.batch>` tag to the multisettings in the bottom of your `pecan.HBPDA.xml`:
+Now open the `pecan.CONFIGS.xml` file. First, add `<assim.batch>` tag to the multisettings in the bottom of your xml among others: 
 
 ```
  <multisettings>
@@ -208,27 +244,28 @@ Now we will extend the settings above to include information about data to assim
  </multisettings>
 ```
 
-Now we can insert multi-site settings in the `<assim.batch>` section accordingly (note that now the chunk above where we defined `method`, `mode`, `param.names` etc. will go under each `setting.*`):
+Now we can insert multi-site settings in the `<assim.batch>` section accordingly (note that `method`, `mode`, `param.names` etc. will go under each `setting.*`):
 
 ```
-  <assim.batch>
+ <assim.batch>
   <settings.1>
     <method>emulator.ms</method>
-    <mode>local</mode>
-    <n.knot>60</n.knot>
-    <iter>10000</iter>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
     <chain>3</chain>
     <param.names>
-     <soil>
+     <soil.IF>
       <param>som_respiration_rate</param>
       <param>soil_respiration_Q10</param>
-      <param>soilWHC</param>
-     </soil>
-     <temperate.deciduous>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
       <param>half_saturation_PAR</param>
       <param>dVPDSlope</param>
       <param>leafGrowth</param>
-     </temperate.deciduous>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
     </param.names>
     <inputs>
       <file>
@@ -247,54 +284,22 @@ Now we can insert multi-site settings in the `<assim.batch>` section accordingly
   </settings.1>
   <settings.2>
     <method>emulator.ms</method>
-    <mode>local</mode>
-    <n.knot>60</n.knot>
-    <iter>10000</iter>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
     <chain>3</chain>
     <param.names>
-     <soil>
+     <soil.IF>
       <param>som_respiration_rate</param>
       <param>soil_respiration_Q10</param>
-      <param>soilWHC</param>
-     </soil>
-     <temperate.deciduous>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
       <param>half_saturation_PAR</param>
       <param>dVPDSlope</param>
       <param>leafGrowth</param>
-     </temperate.deciduous>
-    </param.names>
-    <inputs>
-      <file>
-        <input.id>2000000128</input.id>
-        <path>
-         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-758/AMF_US-Ha1_BASE_HR_10-1.csv</path>
-        </path>
-        <likelihood>Laplace</likelihood>
-        <variable.id>1000000042</variable.id>
-        <variable.name>
-          <variable.name>FC</variable.name>
-          <variable.name>UST</variable.name>
-       </variable.name>
-     </file>
-    </inputs>
-  </settings.2>
-  <settings.3>
-    <method>emulator.ms</method>
-    <mode>local</mode>
-    <n.knot>60</n.knot>
-    <iter>10000</iter>
-    <chain>3</chain>
-    <param.names>
-     <soil>
-      <param>som_respiration_rate</param>
-      <param>soil_respiration_Q10</param>
-      <param>soilWHC</param>
-     </soil>
-     <temperate.deciduous>
-      <param>half_saturation_PAR</param>
-      <param>dVPDSlope</param>
-      <param>leafGrowth</param>
-     </temperate.deciduous>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
     </param.names>
     <inputs>
       <file>
@@ -310,24 +315,25 @@ Now we can insert multi-site settings in the `<assim.batch>` section accordingly
        </variable.name>
      </file>
     </inputs>
-  </settings.3>
-  <settings.4>
+  </settings.2>
+  <settings.3>
     <method>emulator.ms</method>
-    <mode>local</mode>
-    <n.knot>60</n.knot>
-    <iter>10000</iter>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
     <chain>3</chain>
     <param.names>
-     <soil>
+     <soil.IF>
       <param>som_respiration_rate</param>
       <param>soil_respiration_Q10</param>
-      <param>soilWHC</param>
-     </soil>
-     <temperate.deciduous>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
       <param>half_saturation_PAR</param>
       <param>dVPDSlope</param>
       <param>leafGrowth</param>
-     </temperate.deciduous>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
     </param.names>
     <inputs>
       <file>
@@ -343,24 +349,25 @@ Now we can insert multi-site settings in the `<assim.batch>` section accordingly
        </variable.name>
      </file>
     </inputs>
-  </settings.4>
-  <settings.5>
+  </settings.3>
+  <settings.4>
     <method>emulator.ms</method>
-    <mode>local</mode>
-    <n.knot>60</n.knot>
-    <iter>10000</iter>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
     <chain>3</chain>
     <param.names>
-     <soil>
+     <soil.IF>
       <param>som_respiration_rate</param>
       <param>soil_respiration_Q10</param>
-      <param>soilWHC</param>
-     </soil>
-     <temperate.deciduous>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
       <param>half_saturation_PAR</param>
       <param>dVPDSlope</param>
       <param>leafGrowth</param>
-     </temperate.deciduous>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
     </param.names>
     <inputs>
       <file>
@@ -376,24 +383,25 @@ Now we can insert multi-site settings in the `<assim.batch>` section accordingly
        </variable.name>
      </file>
     </inputs>
-  </settings.5>
-  <settings.6>
+  </settings.4>
+  <settings.5>
     <method>emulator.ms</method>
-    <mode>local</mode>
-    <n.knot>60</n.knot>
-    <iter>10000</iter>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
     <chain>3</chain>
     <param.names>
-     <soil>
+     <soil.IF>
       <param>som_respiration_rate</param>
       <param>soil_respiration_Q10</param>
-      <param>soilWHC</param>
-     </soil>
-     <temperate.deciduous>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
       <param>half_saturation_PAR</param>
       <param>dVPDSlope</param>
       <param>leafGrowth</param>
-     </temperate.deciduous>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
     </param.names>
     <inputs>
       <file>
@@ -409,24 +417,25 @@ Now we can insert multi-site settings in the `<assim.batch>` section accordingly
        </variable.name>
      </file>
     </inputs>
-  </settings.6>
-  <settings.7>
+  </settings.5>
+  <settings.6>
     <method>emulator.ms</method>
-    <mode>local</mode>
-    <n.knot>60</n.knot>
-    <iter>10000</iter>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
     <chain>3</chain>
     <param.names>
-     <soil>
+     <soil.IF>
       <param>som_respiration_rate</param>
       <param>soil_respiration_Q10</param>
-      <param>soilWHC</param>
-     </soil>
-     <temperate.deciduous>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
       <param>half_saturation_PAR</param>
       <param>dVPDSlope</param>
       <param>leafGrowth</param>
-     </temperate.deciduous>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
     </param.names>
     <inputs>
       <file>
@@ -442,30 +451,65 @@ Now we can insert multi-site settings in the `<assim.batch>` section accordingly
        </variable.name>
      </file>
     </inputs>
-  </settings.7>
-  <settings.8>
+  </settings.6>
+  <settings.7>
     <method>emulator.ms</method>
-    <mode>local</mode>
-    <n.knot>60</n.knot>
-    <iter>10000</iter>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
     <chain>3</chain>
     <param.names>
-     <soil>
+     <soil.IF>
       <param>som_respiration_rate</param>
       <param>soil_respiration_Q10</param>
-      <param>soilWHC</param>
-     </soil>
-     <temperate.deciduous>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
       <param>half_saturation_PAR</param>
       <param>dVPDSlope</param>
       <param>leafGrowth</param>
-     </temperate.deciduous>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
     </param.names>
     <inputs>
       <file>
-        <input.id>1000013838</input.id>
+        <input.id>1000013546</input.id>
         <path>
-         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-740/AMF_CA-Oas_BASE_HH_1-1.csv</path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_1-145/AMF_US-ChR_BASE_HH_2-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.7>
+  <settings.8>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013572</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_1-66/AMF_US-Slt_BASE_HH_5-1.csv</path>
         </path>
         <likelihood>Laplace</likelihood>
         <variable.id>1000000042</variable.id>
@@ -476,8 +520,44 @@ Now we can insert multi-site settings in the `<assim.batch>` section accordingly
      </file>
     </inputs>
   </settings.8>
+    <settings.9>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013482</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_1-61/AMF_US-Oho_BASE_HH_4-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.9>
   </assim.batch>
 ```
+
+Now save this as `pecan.HBPDA.xml` and read it. 
 
 Following section briefly explains what happens after:
 ```
