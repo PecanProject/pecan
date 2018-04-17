@@ -1,4 +1,8 @@
-
+##' 
+##' @param settings PEcAn settings list
+##' @param nens number of ensemble members to be sampled
+##' 
+##' @export
 sample_met <- function(settings, nens=1){
 
   path <- settings$run$inputs$met[["path"]]
