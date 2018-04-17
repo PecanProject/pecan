@@ -118,8 +118,8 @@ pda.emulator.ms <- function(multi.settings) {
     tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
     
     ## history restart
-    hbpda.restart.file <- file.path(settings$outdir,paste0("history.hbpda",
-                                                           settings$assim.batch$ensemble.id, ".Rdata"))
+    hbc.restart.file <- file.path(tmp.settings$outdir,paste0("history.hbc",
+                                                           tmp.settings$assim.batch$ensemble.id, ".Rdata"))
     
     gp <- unlist(gp.stack, recursive = FALSE)
 
@@ -161,7 +161,7 @@ pda.emulator.ms <- function(multi.settings) {
     logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
     
     current.step <- "END OF JOINT MCMC"
-    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
     mcmc.samp.list <- sf.samp.list <- list()
     
@@ -240,7 +240,7 @@ pda.emulator.ms <- function(multi.settings) {
     tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_joint")
     
     current.step <- "JOINT - END"
-    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
   } # joint - if end
   
@@ -251,8 +251,8 @@ pda.emulator.ms <- function(multi.settings) {
     tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
     
     ## history restart
-    hbpda.restart.file <- file.path(settings$outdir,paste0("history.hbpda",
-                                                           settings$assim.batch$ensemble.id, ".Rdata"))
+    hbc.restart.file <- file.path(tmp.settings$outdir,paste0("history.hbc",
+                                                           tmp.settings$assim.batch$ensemble.id, ".Rdata"))
 
     
     ## Transform values from non-normal distributions to standard Normal
@@ -283,7 +283,7 @@ pda.emulator.ms <- function(multi.settings) {
     }
     
     current.step <- "HIERARCHICAL MCMC PREP"
-    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
 
     ########### hierarchical MCMC function with Gibbs ##############
@@ -356,7 +356,7 @@ pda.emulator.ms <- function(multi.settings) {
       # initialize tau_global (nparam x nparam)
       tau_global   <- rWishart(1, tau_df, tau_V)[,,1]
       
-      # df to use while updating tau later, setting here one out of the loop
+      # df to use while updating tau later, setting here out of the loop
       tau_df <- tau_df + nsites
       
       # initialize jcov.arr (jump variances per site)
@@ -410,7 +410,7 @@ pda.emulator.ms <- function(multi.settings) {
         ########################################
         # update tau_global | mu_global, mu_site
         #
-        # tau_global ~ W(tau_df, tau_sigma)
+        # W(tau_global | mu_global, mu_site) ~ MVN( mu_site | mu_global, tau_global) * W(tau_global | tau_df, tau_V)
         # 
         # tau_global   : error precision matrix
         
@@ -434,6 +434,10 @@ pda.emulator.ms <- function(multi.settings) {
         # mu_global     : global parameters
         # global_mu     : precision weighted average between the data (mu_site) and prior mean (mu_f)
         # global_Sigma  : sum of mu_site and mu_f precision
+        #
+        # MVN(mu_global | mu_site, tau_global) ~ MVN( mu_site | mu_global, tau_global) * W(tau_global | tau_df, tau_V)
+        
+
         
 
         global_Sigma <- solve(P_f + (nsites * sigma_global))
@@ -524,7 +528,7 @@ pda.emulator.ms <- function(multi.settings) {
     logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
     
     current.step <- "HIERARCHICAL MCMC END"
-    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
     # transform samples from std normal to prior quantiles
     mcmc.out2 <- back_transform_posteriors(prior.all, prior.fn.all, prior.ind.all, mcmc.out)
@@ -540,7 +544,7 @@ pda.emulator.ms <- function(multi.settings) {
     }
     
     current.step <- "HIERARCHICAL - END"
-    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
   } # hierarchical - if end
   
