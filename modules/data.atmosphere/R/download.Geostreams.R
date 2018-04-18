@@ -57,9 +57,9 @@ download.Geostreams <- function(outfolder, sitename,
   sensor_info <- jsonlite::fromJSON(sensor_txt)
   sensor_id <- sensor_info$id
   sensor_mintime = lubridate::parse_date_time(sensor_info$min_start_time,
-                                              orders = c("ymd", "ymdHMS", "ymdHMSz"), tz = "UTC")
+                                              orders = "ymdHMSz", tz = "UTC")
   sensor_maxtime = lubridate::parse_date_time(sensor_info$max_end_time,
-                                              orders = c("ymd", "ymdHMS", "ymdHMSz"), tz = "UTC")
+                                              orders = "ymdHMSz", tz = "UTC")
   if (start_date < sensor_mintime) {
     PEcAn.logger::logger.severe("Requested start date", start_date, "is before data begin", sensor_mintime)
   }
