@@ -5,7 +5,7 @@
 \title{Write ED configuration files}
 \usage{
 write.config.ED2(trait.values, settings, run.id,
-  defaults = settings$constants, check = FALSE, ...)
+  defaults = settings$constants, check = FALSE, inputs = NULL, ...)
 }
 \arguments{
 \item{trait.values}{Named list of trait values, with names corresponding to PFT}
