@@ -4,7 +4,7 @@
 \alias{print.ed2in}
 \title{Print method for \code{ed2in}}
 \usage{
-print.ed2in(x, ...)
+\method{print}{ed2in}(x, ...)
 }
 \arguments{
 \item{x}{an object used to select a method.}
