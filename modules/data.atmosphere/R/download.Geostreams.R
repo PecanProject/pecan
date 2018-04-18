@@ -56,25 +56,6 @@ download.Geostreams <- function(outfolder, sitename,
   sensor_txt <- httr::content(sensor_result, as = "text", encoding = "UTF-8")
   sensor_info <- jsonlite::fromJSON(sensor_txt)
   sensor_id <- sensor_info$id
-
-  # Request that Geostreams recalculate data availability for us
-  # otherwise start and end dates may be null or stale
-  update_result <- httr::GET(url = paste0(url, "/sensors/", sensor_id, "/update"),
-                             query = list(key = auth$key, ...),
-                             config = auth$userpass)
-  update_status <- jsonlite::fromJSON(httr::content(update_result, as = "text", encoding = "UTF-8"))
-  if (update_status$status != "updated") {
-    PEcAn.logger::logger.error("Failed to update Clowder data availability.",
-                               "Will attempt to get data anyway, but recently-added dates might not be found")
-  }
-
-  # Now get updated sensor info
-  sensor_result <- httr::GET(url = paste0(url, "/sensors/", sensor_id),
-                             query = list(key = auth$key, ...),
-                             config = auth$userpass)
-  httr::stop_for_status(sensor_result, "look up site info in Clowder")
-  sensor_txt <- httr::content(sensor_result, as = "text", encoding = "UTF-8")
-  sensor_info <- jsonlite::fromJSON(sensor_txt)
   sensor_mintime = lubridate::parse_date_time(sensor_info$min_start_time,
                                               orders = c("ymd", "ymdHMS", "ymdHMSz"), tz = "UTC")
   sensor_maxtime = lubridate::parse_date_time(sensor_info$max_end_time,
