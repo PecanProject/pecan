@@ -106,7 +106,7 @@ convert.samples.ED <- function(trait.samples) {
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 ##-------------------------------------------------------------------------------------------------#
-write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE, ...) {
+write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE, inputs = NULL, ...) {
   
   
   jobsh <- write.config.jobsh.ED2(settings = settings, run.id = run.id)
@@ -149,6 +149,13 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
                        error = function(e) settings$run$site$met.start)
   metend <- tryCatch(format(as.Date(settings$run$site$met.end), "%Y"), 
                      error = function(e) settings$run$site$met.end)
+  
+  if (!is.null(inputs)) {
+    ## override if specified in inputs
+    if ("met" %in% names(inputs)) {
+      settings$run$inputs$met$path <- inputs$met$path
+    }
+  }
 
   ed2in.text <- modify_ed2in(
     ed2in.text,

@@ -5,6 +5,7 @@
 ##' @export
 sample_met <- function(settings, nens=1){
 
+  # path where ensemble met folders are
   path <- settings$run$inputs$met[["path"]]
 
   if(settings$host$name == "localhost"){
@@ -28,7 +29,8 @@ sample_met <- function(settings, nens=1){
   # This function is temporary but if we will continue to use this approach for met ensembles (instead of met process workflow)
   # it might not be a bad idea to have sample_met.model
   if(settings$model$type == "ED2"){
-    ens_members <- file.path(ens_members, "ED_MET_DRIVER_HEADER")
+    # TODO : it doesn't have to be called ED_MET_DRIVER_HEADER
+    ens_members <- file.path(basename(ens_members), "ED_MET_DRIVER_HEADER") 
     ens_ind     <- seq_along(ens_members)
   }else if(settings$model$type == "SIPNET"){
     ens_ind <- unlist(sapply(paste0(member_names, ".clim"), grep, tmp_members))
