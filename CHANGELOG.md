@@ -8,13 +8,21 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Fixes
+- PEcAn.data.atmosphere: 
+    - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
+    - Fixed swapped lat/lon in met2CF.Geostreams
+
+### Added
+
+### Removed
+
+### Changed
+
+
 ## [1.5.3] - not yet
 
 ### Fixes
-- PEcAn.data.atmosphere: 
-    - download.Geostreams now triggers an update even when looking up a sensor. This should make it find recently-added datapoints more reliably.
-    - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
-    - Fixed swapped lat/lon in met2CF.Geostreams
 - read.output now accepts date-times for start.year and end.year argument (#1887)
 - read.output no longer assumes timestamps are in days since the beginning of the year
 - Fixed xss issue in setup folder, now require users to login before accessing the setup folder scripts.
