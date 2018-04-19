@@ -132,7 +132,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
             vals <- as.data.frame(trait.values[[group]])
           }
           
-          
+          if ("SLA" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*10000
+            }
           
           # replace defaults with traits
           #new.params.locs <- which(names(spp.params) %in% names(vals))
@@ -199,9 +201,6 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           }
           if ("CM5" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM5 <- vals$CM5
-          }
-          if ("FWT" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FWT <- vals$FWT
           }
           if ("SLTA" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SLTA <- vals$SLTA
