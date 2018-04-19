@@ -31,7 +31,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   #Fix Outfolder to include model and scenario
   folder_name <- paste0("GFDL_",model,"_",scenario,"_",ensemble_member)
   source_id_foldername <- basename(outfolder)
-  source_all_foldername <- gsub("GFDL", folder_name, source_id)
+  source_all_foldername <- gsub("GFDL", folder_name, source_id_foldername)
   outfolder <- file.path(paste0(outfolder,source_foldername))
   
   lat.in     <- as.numeric(lat.in)
