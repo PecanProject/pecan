@@ -22,9 +22,17 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   end_year   <- lubridate::year(end_date)
 
   #Fix Outfolder to include model and scenario
+<<<<<<< HEAD
   folder_name <- paste0("GFDL_", model, "_", scenario, "_", ensemble_member)
   outfolder <- gsub("GFDL", folder_name, outfolder)
 
+=======
+  folder_name <- paste0("GFDL_",model,"_",scenario,"_",ensemble_member)
+  source_id_foldername <- basename(outfolder)
+  source_all_foldername <- gsub("GFDL", folder_name, source_id_foldername)
+  outfolder <- file.path(paste0(outfolder,source_all_foldername))
+  
+>>>>>>> 2d1cd3eda17e9e3b9bfc4b449e7632b405b32e86
   lat.in     <- as.numeric(lat.in)
   lat_floor  <- floor(lat.in)
   lon.in     <- as.numeric(lon.in)
