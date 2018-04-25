@@ -12,7 +12,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - PEcAn.data.atmosphere: 
     - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
     - Fixed swapped lat/lon in met2CF.Geostreams
-
+- ED:
+    - Change all history parameter files to have zero storage respiration
+    
 ### Added
 
 - From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
