@@ -5,6 +5,8 @@
 # trusty. They are marked with TRUSTY for easy grepping.
 
 language: r
+r:
+  - 3.4
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
