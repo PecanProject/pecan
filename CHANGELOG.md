@@ -15,6 +15,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 
+- From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
+
 ### Removed
 
 ### Changed
