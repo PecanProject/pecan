@@ -9,4 +9,4 @@
 
 * created by `model2netcdf` functions
 * based on format used by [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml)
-
+* Can be seen at [Model Variables]

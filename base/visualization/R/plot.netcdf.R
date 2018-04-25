@@ -23,7 +23,7 @@ data.fetch <- function(var, nc, fun = mean) {
   #   values extracted from the nc data
   if (var == "time") {
     val <- unique(floor(nc$dim[["time"]]$vals))
-    attr(val, "lbl") <- "Day of the year"
+    attr(val, "lbl") <- nc$dim$time$units
     return(val)
   }
   
