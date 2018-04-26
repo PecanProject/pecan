@@ -1,4 +1,4 @@
-### Adding An Ecosystem Model
+## Adding An Ecosystem Model
 
 **Adding a model to PEcAn involves two activities:**
 
