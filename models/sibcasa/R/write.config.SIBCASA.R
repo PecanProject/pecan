@@ -90,4 +90,6 @@ write.config.SIBCASA <- function(defaults, trait.values, settings, run.id) {
   #-----------------------------------------------------------------------
   writeLines(namel_sibdrv, con = paste(, namel_sibdrv, sep = ""))
   
+  PEcAn.logger::logger.warn("Parameters are currently not handled ")
+
 } # write.config.MODEL

@@ -18,5 +18,7 @@ read_restart.SIBCASA<- function(outdir,
                                    stop.time,
                                    settings,
                                    var.names,
-                                   params) {}
+                                   params) {
+  PEcAn.logger::logger.severe("NOT IMPLEMENTED")
+}
 

@@ -3,9 +3,9 @@
 | Model Information ||
 | -- | -- |
 | Home Page | |
-| Source Code | |
+| Source Code | Contact Kevin Schaefer at (kevin.schaefer[at]nsidc.org|
 | License |  |
-| Authors | KEvin Shaefer|
+| Authors | Kevin Shaefer|
 | PEcAn Integration |Tony Gardella, Yasin Elshorbany |
 
 **Introduction**
@@ -31,11 +31,25 @@ Param File
 Initial Condition File
 
 **Model configuration files**
-The namel_sibdrv is the namelist file that 
+The namel_sibdrv is the namelist file that controls input and output file locations.
 
 
 **Installation notes**
-Compilation of the model includes
+Update $PATH to the netcdf library version 3.6 (compiled with the same PGI Fortran compiler) in: 
+PEcAn/sim_setup/Makefile     &
+PEcAn/SiB/sibcasa_arctic4/Makefile
+
+Change paths in:
+Line 379:  /SiB/sibcasa_ arctic4/read_ti.F90
+Line 260, 273, 286: /SiB/sibcasa_ arctic4/sibdrv_read_ncep2.F90
+Update $PATH variables in: /SiB/sibcasa_arctic4/sibmerg.in
+        IMPORTANT: update “fmt_type='sing_proc'” even if running on parallel computing system, since the file names will otherwise be incompatible with the outputted data..check
+
+Compile code: in     ~/SiB/sibcasa_arctic4/
+`Make clean`
+`Make`
+
+
 
 **VM**
 Currently Not Avialable on the VM
