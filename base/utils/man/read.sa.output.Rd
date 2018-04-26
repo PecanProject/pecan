@@ -5,7 +5,7 @@
 \title{Read Sensitivity Analysis output}
 \usage{
 read.sa.output(traits, quantiles, pecandir, outdir, pft.name = "", start.year,
-  end.year, variable, sa.run.ids = NULL)
+  end.year, variable, sa.run.ids = NULL, per.pft = FALSE)
 }
 \arguments{
 \item{traits}{model parameters included in the sensitivity analysis}
@@ -21,6 +21,8 @@ read.sa.output(traits, quantiles, pecandir, outdir, pft.name = "", start.year,
 \item{start.year}{first year to include in sensitivity analysis}
 
 \item{end.year}{last year to include in sensitivity analysis}
+
+\item{per.pft}{flag to determine whether we want SA on pft-specific variables}
 
 \item{variables}{variables to be read from model output}
 }

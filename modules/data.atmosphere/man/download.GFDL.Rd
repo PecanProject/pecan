@@ -2,22 +2,32 @@
 % Please edit documentation in R/download.GFDL.R
 \name{download.GFDL}
 \alias{download.GFDL}
-\title{download.GFDL}
+\title{Download GFDL CMIP5 outputs for a single grid point using OPeNDAP and convert to CF}
 \usage{
 download.GFDL(outfolder, start_date, end_date, site_id, lat.in, lon.in,
   overwrite = FALSE, verbose = FALSE, model = "CM3", scenario = "rcp45",
   ensemble_member = "r1i1p1", ...)
 }
 \arguments{
-\item{model}{, select which GFDL model to run (options are CM3, ESM2M, ESM2G)}
+\item{outfolder}{Directory for storing output}
 
-\item{scenario}{, select which scenario to run (options are rcp26, rcp45, rcp60, rcp85)}
+\item{start_date}{Start date for met (will be converted via [base::as.POSIXlt])}
 
-\item{ensemble_member}{, select which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)}
+\item{end_date}{End date for met (will be converted via [base::as.POSIXlt])}
+
+\item{lat.in}{Latitude coordinate for met}
+
+\item{lon.in}{Longitude coordinate for met}
+
+\item{model}{Which GFDL model to run (options are CM3, ESM2M, ESM2G)}
+
+\item{scenario}{Which scenario to run (options are rcp26, rcp45, rcp60, rcp85)}
+
+\item{ensemble_member}{Which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)}
 }
 \description{
 Download GFDL CMIP5 outputs for a single grid point using OPeNDAP and convert to CF
 }
 \author{
-James Simkins
+James Simkins, Alexey Shiklomanov, Ankur Desai
 }
