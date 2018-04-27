@@ -7,6 +7,7 @@
 ##' @param verbose Turn on verbose output? Default=FALSE
 ##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
 ##' example options(download.ftp.method="ncftpget")
+##' @importFrom magrittr %>%
 ##' 
 ##' @examples
 ##' \dontrun{
