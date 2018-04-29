@@ -404,15 +404,15 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   
   userpass <- paste(browndog$username, browndog$password, sep = ":")
   curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
-  result <- postForm(paste0(browndog$url, formatname, "/"), 
-                     fileData = fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
+  result <- RCurl::postForm(paste0(browndog$url, formatname, "/"),
+                     fileData = RCurl::fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
   url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
   PEcAn.logger::logger.info("browndog download url :", url)
-  downloadedfile <- download.url(url, outputfile, 600, curloptions)
+  downloadedfile <- PEcAn.utils::download.url(url, outputfile, 600, curloptions)
   
   # fix returned data
   if (model == "ED2") {
-    unzip(downloadedfile, exdir = folder)
+    utils::unzip(downloadedfile, exdir = folder)
     # fix ED_MET_DRIVER_HEADER
     x <- readLines(results$file)
     x[3] <- ifelse(grepl("/$", folder), folder, paste0(folder, "/"))
