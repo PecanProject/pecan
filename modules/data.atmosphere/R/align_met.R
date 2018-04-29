@@ -78,8 +78,6 @@
 # Begin Function
 #----------------------------------------------------------------------
 align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, mems.train=NULL, seed=Sys.Date(), print.progress = FALSE) {
-  # Load required libraries
-  library(lubridate)
   
   met.out <- list() # where the aligned data will be stored
 
@@ -266,7 +264,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       ncT <- ncdf4::nc_open(file.path(source.path, files.source[i]))
 
       # Set up the time data frame to help index
-      nday <- ifelse(leap_year(yr.now), 366, 365)
+      nday <- ifelse(lubridate::leap_year(yr.now), 366, 365)
       ntime <- length(ncT$dim$time$vals)
       step.day <- nday/ntime
       step.hr  <- step.day*24
@@ -311,13 +309,13 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
         if(align == "aggregate"){
           df.tem <- cbind(src.time, data.frame(df.tem))
   
-          df.agg <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=mean)
+          df.agg <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=mean)
           met.out$dat.source[[v]] <- rbind(met.out$dat.source[[v]], as.matrix(df.agg[,(3+1:n.src)]))
           
           # if workign wiht air temp, also find the max & min
           if(v=="air_temperature"){
-            tmin <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=min)
-            tmax <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=max)
+            tmin <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=min)
+            tmax <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=max)
             
             met.out$dat.source[["air_temperature_minimum"]] <- rbind(met.out$dat.source[["air_temperature_minimum"]], as.matrix(tmin[,(3+1:n.src)]))
             met.out$dat.source[["air_temperature_maximum"]] <- rbind(met.out$dat.source[["air_temperature_maximum"]], as.matrix(tmax[,(3+1:n.src)]))
@@ -386,7 +384,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
         ncT <- nc_open(file.path(source.path, ens.source[j], files.source[i]))
         
         # Set up the time data frame to help index
-        nday <- ifelse(leap_year(yr.now), 366, 365)
+        nday <- ifelse(lubridate::leap_year(yr.now), 366, 365)
         ntime <- length(ncT$dim$time$vals)
         step.day <- nday/ntime
         step.hr  <- step.day*24
@@ -438,13 +436,13 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
           if(align == "aggregate"){
             df.tem <- cbind(src.time, data.frame(df.tem))
             
-            df.agg <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=mean)
+            df.agg <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=mean)
             dat.ens[[v]] <- rbind(dat.ens[[v]], as.matrix(df.agg[,(3+1:n.src)]))
             
             # if working with air temp, also find the max & min
             if(v=="air_temperature"){
-              tmin <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=min)
-              tmax <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=max)
+              tmin <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=min)
+              tmax <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=max)
               
               dat.ens[["air_temperature_minimum"]] <- rbind(dat.ens[["air_temperature_minimum"]], as.matrix(tmin[,(3+1:n.src)]))
               dat.ens[["air_temperature_maximum"]] <- rbind(dat.ens[["air_temperature_maximum"]], as.matrix(tmax[,(3+1:n.src)]))

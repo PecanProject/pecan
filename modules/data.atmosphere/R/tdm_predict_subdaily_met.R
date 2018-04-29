@@ -60,7 +60,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
   
   if(direction.filter %in% toupper( c("backward", "backwards"))) direction.filter="backward"
   
-  if(!tolower(direction.filter) %in% c("backward", "forward", "backwards", "forwards")) logger.severe("Invalid direction.filter")
+  if(!tolower(direction.filter) %in% c("backward", "forward", "backwards", "forwards")) PEcAn.logger::logger.severe("Invalid direction.filter")
   
   vars.hour <- c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
                  "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 

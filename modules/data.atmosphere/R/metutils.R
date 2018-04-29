@@ -122,10 +122,9 @@ get.rh <- function(T, Td) {
 ##' @export
 ##' @author David LeBauer
 wide2long <- function(data.wide, lat, lon, var) {
-  library(reshape)
   colnames(data.wide) <- lon
   data.wide <- cbind(lat, data.wide)
-  data.long <- melt(data.wide, id = "lat")
+  data.long <- reshape::melt(data.wide, id = "lat")
   colnames(data.long) <- c("lat", "lon", var)
   data.long$lon <- as.numeric(as.character(data.long$lon))
   return(data.long)
