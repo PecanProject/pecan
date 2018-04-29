@@ -66,10 +66,6 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
                                   parallel = FALSE, n.cores = NULL, overwrite = TRUE, verbose = FALSE) {
   library(MASS)
   library(mgcv)
-  library(ggplot2)
-  library(stringr)
-  library(lubridate)
-  library(ncdf4)
   
   set.seed(seed)
   
@@ -996,12 +992,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       # Plotting the observed and the bias-corrected 95% CI
       png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")))
       print(
-        ggplot(data=dat.pred[dat.pred$Year>=mean(dat.pred$Year)-1 & dat.pred$Year<=mean(dat.pred$Year)+1,]) +
-          geom_ribbon(aes(x=Date, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
-          geom_line(aes(x=Date, y=mean), color="red", size=0.5) +
-          geom_line(aes(x=Date, y=obs), color='black', size=0.5) +
-          ggtitle(paste0(v, " - ensemble mean & 95% CI (daily slice)")) +
-          theme_bw()
+        ggplot2::ggplot(data=dat.pred[dat.pred$Year>=mean(dat.pred$Year)-1 & dat.pred$Year<=mean(dat.pred$Year)+1,]) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=Date, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Date, y=mean), color="red", size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Date, y=obs), color='black', size=0.5) +
+          ggplot2::ggtitle(paste0(v, " - ensemble mean & 95% CI (daily slice)")) +
+          ggplot2::theme_bw()
       )
       dev.off()
       
@@ -1011,10 +1007,10 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       
       png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")))
       print(
-        ggplot(data=stack.sims[stack.sims$Year>=mean(stack.sims$Year)-2 & stack.sims$Year<=mean(stack.sims$Year)+2,]) +
-          geom_line(aes(x=Date, y=values, color=ind), size=0.2, alpha=0.8) +
-          ggtitle(paste0(v, " - example ensemble members (daily slice)")) +
-          theme_bw()
+        ggplot2::ggplot(data=stack.sims[stack.sims$Year>=mean(stack.sims$Year)-2 & stack.sims$Year<=mean(stack.sims$Year)+2,]) +
+          ggplot2::geom_line(ggplot2::aes(x=Date, y=values, color=ind), size=0.2, alpha=0.8) +
+          ggplot2::ggtitle(paste0(v, " - example ensemble members (daily slice)")) +
+          ggplot2::theme_bw()
       )
       dev.off()
       
@@ -1026,12 +1022,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       
       png(file.path(path.diagnostics, paste(ens.name, v, "annual.png", sep="_")))
       print(
-        ggplot(data=dat.yr[,]) +
-          geom_ribbon(aes(x=Year, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
-          geom_line(aes(x=Year, y=mean), color="red", size=0.5) +
-          geom_line(aes(x=Year, y=obs), color='black', size=0.5) +
-          ggtitle(paste0(v, " - annual mean time series")) +
-          theme_bw()
+        ggplot2::ggplot(data=dat.yr[,]) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=Year, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Year, y=mean), color="red", size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Year, y=obs), color='black', size=0.5) +
+          ggplot2::ggtitle(paste0(v, " - annual mean time series")) +
+          ggplot2::theme_bw()
       )
       dev.off()
       
@@ -1065,7 +1061,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
   for(yr in yrs.save){
     # Doing some row/time indexing
     rows.yr <- which(dat.out$time$Year==yr)
-    nday <- ifelse(leap_year(yr), 366, 365)
+    nday <- ifelse(lubridate::leap_year(yr), 366, 365)
     
     # Finish defining our time variables (same for all ensemble members)
     dim.time <- ncdf4::ncdim_def(name='time', units="sec", vals=seq(1*24*360, (nday+1-1/24)*24*360, length.out=length(rows.yr)), create_dimvar=TRUE, unlim=TRUE)

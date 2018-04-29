@@ -119,8 +119,8 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
     if (de_method == "median") {
       for (u in add_var){
         if (all(is.na(source[[u]])) == FALSE) {
-          med_source <- median(source[[u]])
-          med_train <- median(train[[u]])
+          med_source <- stats::median(source[[u]])
+          med_train <- stats::median(train[[u]])
           med_diff <- med_train - med_source
           debi[1:reso_len, u] <- source[[u]] + med_diff
         } else {
@@ -129,8 +129,8 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
       }
       for (u in mult_var){
         if (all(is.na(source[[u]])) == FALSE) {
-          med_source <- median(source[[u]][source[[u]]>0])
-          med_train <- median(train[[u]][train[[u]]>0])
+          med_source <- stats::median(source[[u]][source[[u]]>0])
+          med_train <- stats::median(train[[u]][train[[u]]>0])
           med_ratio <- med_train/med_source
           debi[1:reso_len, u] <- source[[u]] * med_ratio
         } else {
@@ -143,7 +143,7 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
         for (i in add_var) {
           if (all(is.na(source[[i]])) == FALSE & all(is.na(lin_train[[i]])) == 
               FALSE) {
-            lin <- lm(lin_train[[i]] ~ source[[i]])
+            lin <- stats::lm(lin_train[[i]] ~ source[[i]])
             x <- as.numeric(lin$coefficients[2])
             b <- as.numeric(lin$coefficients[1])
             debi[1:reso_len,i] <- (source[[i]] * x + b)
@@ -157,7 +157,7 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
         for (i in mult_var) {
           if (all(is.na(source[[i]])) == FALSE & all(is.na(lin_train[[i]])) == 
               FALSE) {
-            lin <- lm(lin_train[[i]] ~ source[[i]])
+            lin <- stats::lm(lin_train[[i]] ~ source[[i]])
             x <- as.numeric(lin$coefficients[2])
             b <- 0
             debi[1:reso_len,i] <- (source[[i]] * x + b)
