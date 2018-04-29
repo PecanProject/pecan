@@ -14,9 +14,6 @@
 ##' @author James Simkins
 download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, model='IPSL-CM5A-LR', scenario='rcp85', ensemble_member='r1i1p1', 
                           overwrite=FALSE, verbose=FALSE, ...){  
-  library(PEcAn.utils)
-  library(lubridate)
-  library(ncdf4)
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)

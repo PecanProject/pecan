@@ -1,6 +1,6 @@
 # lookup the site based on the site_id
 download.Ameriflux.site <- function(site_id) {
-  sites <- read.csv(system.file("data/FLUXNET.sitemap.csv", package = "PEcAn.data.atmosphere"), 
+  sites <- utils::read.csv(system.file("data/FLUXNET.sitemap.csv", package = "PEcAn.data.atmosphere"), 
                     stringsAsFactors = FALSE)
   sites$FLUX.id[which(sites$site.id == site_id)]
 } # download.Ameriflux.site
@@ -23,9 +23,6 @@ download.Ameriflux.site <- function(site_id) {
 download.Ameriflux <- function(sitename, outfolder, start_date, end_date,
                                overwrite = FALSE, verbose = FALSE, ...) {
   # get start/end year code works on whole years only
-  
-  library(PEcAn.utils)
-  library(data.table)
   
   site <- sub(".* \\((.*)\\)", "\\1", sitename)
   
@@ -50,7 +47,7 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date,
   
   # fetch all links
   links <- tryCatch({
-    xpathSApply(htmlParse(baseurl), "//a/@href")
+    XML::xpathSApply(XML::htmlParse(baseurl), "//a/@href")
   }, error = function(e) {
     PEcAn.logger::logger.severe("Could not get information about", site, ".", "Is this an Ameriflux site?")
   })
@@ -83,11 +80,11 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date,
       next
     }
     
-    file <- tail(as.character(links[grep(paste0("_", year, "_.*.nc"), links)]), n = 1)
+    file <- utils::tail(as.character(links[grep(paste0("_", year, "_.*.nc"), links)]), n = 1)
     if (length(file) == 0) {
       PEcAn.logger::logger.severe("Could not download data for", site, "for the year", year)
     }
-    download.file(paste0(baseurl, file), outputfile)
+    PEcAn.utils::download.file(paste0(baseurl, file), outputfile)
   }
   
   # return list of files downloaded

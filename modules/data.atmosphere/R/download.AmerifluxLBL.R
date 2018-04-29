@@ -99,7 +99,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
     }
   }
   if (extract_file_flag) {
-    avail_file <- unzip(output_zip_file, list = TRUE)
+    avail_file <- utils::unzip(output_zip_file, list = TRUE)
     if (length(grep("HH", avail_file)) > 0) {
       file_timestep <- "HH"
     } else {
@@ -111,7 +111,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
         PEcAn.logger::logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
       }
     }
-    unzip(output_zip_file, outcsvname, exdir = outfolder)
+    utils::unzip(output_zip_file, outcsvname, exdir = outfolder)
     if (!file.exists(output_csv_file)) {
       PEcAn.logger::logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
     }

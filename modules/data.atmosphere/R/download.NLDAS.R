@@ -64,19 +64,19 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
       days.use <- 1:nday
     } else if (rows == 1) {
       # if we're working with only 1 year, lets only pull what we need to
-      day1 <- yday(start_date)
+      day1 <- lubridate::yday(start_date)
       # Now we need to check whether we're ending on the right day
-      day2 <- yday(end_date)
+      day2 <- lubridate::yday(end_date)
       days.use <- day1:day2
       nday <- length(days.use)  # Update nday
     } else if (i == 1) {
       # If this is the first of many years, we only need to worry about the start date
-      day1 <- yday(start_date)
+      day1 <- lubridate::yday(start_date)
       days.use <- day1:nday
       nday <- length(days.use)  # Update nday
     } else if (i == rows) {
       # If this is the last of many years, we only need to worry about the start date
-      day2 <- yday(end_date)
+      day2 <- lubridate::yday(end_date)
       days.use <- 1:day2
       nday <- length(days.use)  # Update nday
     }
@@ -110,8 +110,8 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     ## get data off OpenDAP
     for (j in seq_along(days.use)) {
       date.now <- as.Date(days.use[j], origin = as.Date(paste0(year - 1, "-12-31")))
-      mo.now <- stringr::str_pad(month(date.now), 2, pad = "0")
-      day.mo <- stringr::str_pad(day(date.now), 2, pad = "0")
+      mo.now <- stringr::str_pad(lubridate::month(date.now), 2, pad = "0")
+      day.mo <- stringr::str_pad(lubridate::day(date.now), 2, pad = "0")
       doy <- stringr::str_pad(days.use[j], 3, pad = "0")
       for (h in seq_along(time.stamps)) {
         hr <- stringr::str_pad(time.stamps[h], 4, pad = "0")
@@ -122,9 +122,9 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
         latlon <- RCurl::getURL(paste0(dap_file, "lat[0:1:223],lon[0:1:463]"))
         lat.ind <- gregexpr("lat", latlon)
         lon.ind <- gregexpr("lon", latlon)
-        lats <- as.vector(read.table(con <- textConnection(substr(latlon, lat.ind[[1]][3],
+        lats <- as.vector(utils::read.table(con <- textConnection(substr(latlon, lat.ind[[1]][3],
                                                                   lon.ind[[1]][3] - 1)), sep = ",", fileEncoding = "\n", skip = 1))
-        lons <- as.vector(read.table(con <- textConnection(substr(latlon, lon.ind[[1]][3],
+        lons <- as.vector(utils::read.table(con <- textConnection(substr(latlon, lon.ind[[1]][3],
                                                                   nchar(latlon))), sep = ",", fileEncoding = "\n", skip = 1))
 
         lat.use <- which(lats - 0.125 / 2 <= lat.in & lats + 0.125 / 2 >= lat.in)
@@ -148,7 +148,7 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
           ind.1   <- gregexpr(paste(var.now, var.now, sep = "."), dap.out)
           end.1   <- gregexpr(paste(var.now, "time", sep = "."), dap.out)
           dat.list[[v]][, , j * 24 - 24 + h] <-
-            read.delim(con <- textConnection(substr(dap.out,
+            utils::read.delim(con <- textConnection(substr(dap.out,
                                                     ind.1[[1]][1], end.1[[1]][2])), sep = ",", fileEncoding = "\n")[1, 1]
         }  # end variable loop
       }  # end hour
