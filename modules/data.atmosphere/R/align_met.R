@@ -298,7 +298,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       
       # Extract the met info, making matrices with the appropriate number of ensemble members
       for(v in names(ncT$var)){
-        dat.tem <- ncvar_get(ncT, v)
+        dat.tem <- ncdf4::ncvar_get(ncT, v)
         
         if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
           dat.tem <- rep(dat.tem, each=length(stamps.hr))
@@ -381,7 +381,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       for(i in 1:length(files.source)){
         yr.now <- yrs.file[i]
         
-        ncT <- nc_open(file.path(source.path, ens.source[j], files.source[i]))
+        ncT <- ncdf4::nc_open(file.path(source.path, ens.source[j], files.source[i]))
         
         # Set up the time data frame to help index
         nday <- ifelse(lubridate::leap_year(yr.now), 366, 365)
@@ -425,7 +425,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
         
         # Extract the met info, making matrices with the appropriate number of ensemble members
         for(v in names(ncT$var)){
-          dat.tem <- ncvar_get(ncT, v)
+          dat.tem <- ncdf4::ncvar_get(ncT, v)
           
           if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
             dat.tem <- rep(dat.tem, each=stamps.hr)
@@ -452,7 +452,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
           }
           
         } #End variable loop
-        nc_close(ncT)
+        ncdf4::nc_close(ncT)
         if(print.progress==TRUE){
           utils::setTxtProgressBar(pb, pb.ind)
           pb.ind <- pb.ind+1

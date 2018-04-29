@@ -98,7 +98,7 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
 
     # Defining our dimensions up front
     for (j in 1:nrow(var)) {
-      var.list[[j]] <- ncvar_def(name = as.character(var$CF.name[j]),
+      var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]),
                                  units = as.character(var$units[j]),
                                  dim = dim,
                                  missval = -999,

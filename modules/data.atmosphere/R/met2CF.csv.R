@@ -128,7 +128,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       skiplog <- TRUE
       skiprows <- c(1:header - 1)
     }
-    alldat <- read.csv(files, 
+    alldat <- utils::read.csv(files, 
                        header = header,
                        skip = format$skip, 
                        na.strings = format$na.strings,

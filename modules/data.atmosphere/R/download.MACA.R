@@ -100,7 +100,7 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
       ncdf4::nc_close(dap)
       } else {
         dat.list[[j]] <- NA
-        var.list[[j]] <- ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
+        var.list[[j]] <- ncdf4::ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
     }
     
     dat.list <- as.data.frame(dat.list)
@@ -132,7 +132,7 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     }
     
     ## put data in new file
-    loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
+    loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, verbose=verbose)
     for(j in seq_along(var$CF.name)){
       ncdf4::ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }

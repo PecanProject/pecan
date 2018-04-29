@@ -21,7 +21,6 @@
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
 ##'
-##' @importFrom PEcAn.DB db.query db.close dbfile.input.insert
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
@@ -86,10 +85,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
                        password = dbparms$password)
   
   con <- bety$con
-  on.exit(db.close(con))
+  on.exit(PEcAn.DB::db.close(con))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-  machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
+  machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
 
   # special case Brown Dog
   if (!is.null(browndog)) {
@@ -255,7 +254,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           spin = spin)
     
     model.id  <- met2model.result$model.id
-    model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+    model.file.info <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
     model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     
   } else {
@@ -265,7 +264,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       model.file <- input_met$path
     }else{
       model.id$dbfile.id  <- model.id$id 
-      model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+      model.file.info <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
       model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     }
     #PEcAn.logger::logger.info("model.file = ",model.file,input.met)
@@ -284,10 +283,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
 ##' @export
 ##' @param site.id
 ##' @param con
-##' @importFrom PEcAn.DB db.query
 ##' @author Betsy Cowdery
 db.site.lat.lon <- function(site.id, con) {
-  site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
+  site <- PEcAn.DB::db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
                          site.id), con)
   if (nrow(site) == 0) {
    PEcAn.logger::logger.error("Site not found")
@@ -373,7 +371,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                           dbfile.name = basename(outputfile), 
                           stringsAsFactors = FALSE)
   } else if (model == "BIOCRO") {
-    metinfo <- db.query(paste0("select mimetypes.type_string, formats.name from mimetypes, formats, modeltypes, modeltypes_formats",
+    metinfo <- PEcAn.DB::db.query(paste0("select mimetypes.type_string, formats.name from mimetypes, formats, modeltypes, modeltypes_formats",
                                " where modeltype_id=modeltypes.id and format_id=formats.id and formats.mimetype_id=mimetypes.id",
                                " and tag='met' and modeltypes.name='", model, "'"), con)
 
