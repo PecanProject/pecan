@@ -13,8 +13,6 @@
 ##' @author Christy Rollinson (with help from Ankur Desai)
 download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
                            overwrite = FALSE, verbose = FALSE, ...) {
-  library(PEcAn.utils)
-  library(RCurl)
 
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -121,7 +119,7 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
                            mo.now, day.mo, ".", hr, ".002.grb.ascii?")
 
         # Query lat/lon
-        latlon <- getURL(paste0(dap_file, "lat[0:1:223],lon[0:1:463]"))
+        latlon <- RCurl::getURL(paste0(dap_file, "lat[0:1:223],lon[0:1:463]"))
         lat.ind <- gregexpr("lat", latlon)
         lon.ind <- gregexpr("lon", latlon)
         lats <- as.vector(read.table(con <- textConnection(substr(latlon, lat.ind[[1]][3],
@@ -144,7 +142,7 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
         }
         dap_query <- substr(dap_query, 2, nchar(dap_query))
 
-        dap.out <- getURL(paste0(dap_file, dap_query))
+        dap.out <- RCurl::getURL(paste0(dap_file, dap_query))
         for (v in seq_len(nrow(var))) {
           var.now <- var$DAP.name[v]
           ind.1   <- gregexpr(paste(var.now, var.now, sep = "."), dap.out)

@@ -33,7 +33,8 @@ Imports:
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
     nneo,
-    httr
+    httr,
+    RCurl
 Suggests:
     testthat
 Remotes:
