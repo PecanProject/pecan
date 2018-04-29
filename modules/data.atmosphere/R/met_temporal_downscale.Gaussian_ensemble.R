@@ -15,8 +15,9 @@ substrRight <- function(x, n) {
 ##' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset 
 ##'                    (see download.Fluxnet2015 or download.Ameriflux) 
 ##' @param site.id
-##' @param overwrite 
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists? 
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
+##'   print debugging information as they run?
 ##' @param swdn_method - Downwelling shortwave flux in air downscaling method (options are "sine", "spline", and "Waichler")
 ##' @param n_ens - numeric value with the number of ensembles to run
 ##' @param w_len - numeric value that is the window length in days  

@@ -33,8 +33,8 @@
 ##'                     specific hours coefficients. Must be integer because we want statistics from the same time of day
 ##'                     for each day surrounding the model day
 ##' @param seed - seed for randomization to allow for reproducible results                    
-##' @param overwrite
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists?
+##' @param verbose logical, currently ignored
 ##' @param print.progress - print progress bar? (gets passed through)
 ##' @export
 # -----------------------------------

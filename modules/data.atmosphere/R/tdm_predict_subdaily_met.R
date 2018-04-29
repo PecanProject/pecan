@@ -32,8 +32,8 @@
 ##' @param resids - logical stating whether to pass on residual data or not
 ##' @param force.sanity - (logical) do we force the data to meet sanity checks?                             
 ##' @param sanity.tries - how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop
-##' @param overwrite
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists?
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?
 ##' @param print.progress - print the progress bar?
 ##' @param seed - manually set seed for results to be reproducible
 ##' @export

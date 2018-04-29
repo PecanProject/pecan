@@ -4,8 +4,8 @@
 #' @param in.prefix   prefix of original data
 #' @param start_date  
 #' @param end_date 
-#' @param overwrite 
-#' @param verbose 
+#' @param overwrite logical: replace output file if it already exists? 
+#' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run? 
 #' @param ... other arguments, currently ignored
 #'
 #' @return

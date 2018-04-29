@@ -5,8 +5,9 @@
 #' @param start_date  
 #' @param end_date 
 #' @param merge.file  path of file to be merged in
-#' @param overwrite 
-#' @param verbose 
+#' @param overwrite logical: replace output file if it already exists? 
+#' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
+#'   print debugging information as they run? 
 #' @param ... 
 #'
 #' @return

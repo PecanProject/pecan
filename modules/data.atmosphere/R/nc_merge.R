@@ -22,8 +22,9 @@
 ##' @param lon.in - longitude as numeric
 ##' @param upscale - Upscale can either be set for FALSE (leave alone) or to the temporal resolution you want to aggregate to
 #                    options are: "year", "doy" (day of year), or "hour"
-##' @param overwrite
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists?
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+##'   functions print debugging information as they run?
 ##' @export
 # -----------------------------------
 #----------------------------------------------------------------------

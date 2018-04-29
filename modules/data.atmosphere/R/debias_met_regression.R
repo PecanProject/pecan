@@ -38,8 +38,9 @@
 ##' @param path.diagnostics - path to where the diagnostic graphs should be saved
 ##' @param parallel - (experimental) logical stating whether to run temporal_downscale_functions.R in parallel *Not Implemented yet
 ##' @param n.cores - (experimental) how many cores to use in parallelization *Not implemented yet
-##' @param overwrite - overwrite existing files?
-##' @param verbose
+##' @param overwrite - overwrite existing files? Currently ignored
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+##'   functions print debugging information as they run?
 ##' @export
 # -----------------------------------
 # Workflow
