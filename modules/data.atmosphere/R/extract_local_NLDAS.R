@@ -22,7 +22,7 @@
 ##' @param lat.in site latitude in decimal degrees
 ##' @param lon.in site longitude in decimal degrees
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
-##' @param verbose logical. Passed on to [ncdf4]{ncvar_def}} and [ncdf4]{nc_create}
+##' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
 ##'   to control printing of debug info
 ##' @param ... Other arguments, currently ignored
 ##' @export
