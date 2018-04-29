@@ -149,7 +149,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
   # -------------------------------------------
   print("")
   print("Debiasing Meteorology")
-  pb <- txtProgressBar(min=0, max=length(vars.debias)*n.ens, style=3)
+  pb <- utils::txtProgressBar(min=0, max=length(vars.debias)*n.ens, style=3)
   pb.ind=1
   for(v in vars.debias){
     # -------------
@@ -957,7 +957,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         sim.final[,ens] <- apply(sim1, 1, mean)
       }
       
-      setTxtProgressBar(pb, pb.ind)
+      utils::setTxtProgressBar(pb, pb.ind)
       pb.ind <- pb.ind+1
       
       rm(mod.bias, anom.train, anom.src, mod.anom, Xp, Xp.anom, sim1, sim1a, sim1b)
@@ -1060,7 +1060,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
 
   print("")
   print("Saving Ensemble")
-  pb <- txtProgressBar(min=0, max=length(yrs.save)*n.ens, style=3)
+  pb <- utils::txtProgressBar(min=0, max=length(yrs.save)*n.ens, style=3)
   pb.ind=1
   for(yr in yrs.save){
     # Doing some row/time indexing
@@ -1102,7 +1102,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       }
       ncdf4::nc_close(loc)
 
-      setTxtProgressBar(pb, pb.ind)
+      utils::setTxtProgressBar(pb, pb.ind)
       pb.ind <- pb.ind+1
     } # End ensemble member loop
   } # End year loop

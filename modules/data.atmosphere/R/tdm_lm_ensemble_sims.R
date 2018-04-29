@@ -72,8 +72,8 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
   # # Set progress bar
   if(print.progress==TRUE){
     pb.index <- 1
-    pb <- txtProgressBar(min = 1, max = length(vars.list)*length(days.sim), style = 3)
-    setTxtProgressBar(pb, pb.index)
+    pb <- utils::txtProgressBar(min = 1, max = length(vars.list)*length(days.sim), style = 3)
+    utils::setTxtProgressBar(pb, pb.index)
   }
   
   # Figure out if we need to extract the approrpiate
@@ -570,7 +570,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
       rm(mod.save)  # Clear out the model to save memory
 
       if(print.progress==TRUE){
-        setTxtProgressBar(pb, pb.index)
+        utils::setTxtProgressBar(pb, pb.index)
         pb.index <- pb.index + 1
       }
       

@@ -39,8 +39,8 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
     
     if(print.progress==TRUE){
       pb.index <- 1
-      pb <- txtProgressBar(min = 1, max = 8, style = 3)
-      setTxtProgressBar(pb, pb.index)
+      pb <- utils::txtProgressBar(min = 1, max = 8, style = 3)
+      utils::setTxtProgressBar(pb, pb.index)
     }
     # Declare the variables of interest that will be called in the
     # overarching loop
@@ -224,7 +224,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
 
         if(print.progress==TRUE){
           pb.index <- pb.index + 1
-          setTxtProgressBar(pb, pb.index)
+          utils::setTxtProgressBar(pb, pb.index)
         }
     }  # end of the variable for loop
     

@@ -146,7 +146,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
   dat.time <- seq(start_date, end_date, by="day")  # Everything should end up being a day
   
   print("- Extracting files: ")
-  pb <- txtProgressBar(min=1, max=n.file, style=3)
+  pb <- utils::txtProgressBar(min=1, max=n.file, style=3)
   pb.ind=1
   # Loop through each variable so that we don't have to open files more than once
   for(v in 1:nrow(var)){
@@ -161,7 +161,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     # Figure out what file we need
     # file.ind <- which(files.var[[var.now]][i])
     for(i in 1:nrow(files.var[[var.now]])){
-      setTxtProgressBar(pb, pb.ind)
+      utils::setTxtProgressBar(pb, pb.ind)
       pb.ind=pb.ind+1
       f.now <- files.var[[var.now]][i,"file.name"]
       # print(f.now)
@@ -257,9 +257,9 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
 
   print("")
   print("- Writing to NetCDF: ")
-  pb <- txtProgressBar(min=1, max=rows, style=3)
+  pb <- utils::txtProgressBar(min=1, max=rows, style=3)
   for (i in 1:rows){
-    setTxtProgressBar(pb, i)
+    utils::setTxtProgressBar(pb, i)
     
     y.now = ylist[i]    
     yr.ind <- which(year(dat.time)==y.now)

@@ -116,12 +116,12 @@ extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, site_i
     # Progress bar just to help us track what's going on
     print("")
     print(y.now)
-    pb <- txtProgressBar(min=1, max=nday, style=3)
+    pb <- utils::txtProgressBar(min=1, max=nday, style=3)
     pb.index=1
     
     ## get data off OpenDAP
     for(j in 1:length(days.use)){
-      setTxtProgressBar(pb, pb.index)
+      utils::setTxtProgressBar(pb, pb.index)
       
       date.now <- as.Date(days.use[j], origin=as.Date(paste0(y.now-1,"-12-31")))
       mo.now <- str_pad(month(date.now), 2, pad="0")

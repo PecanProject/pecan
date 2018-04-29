@@ -179,8 +179,8 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
   # ----------------------------------
   # Set progress bar
   # pb.index <- 1
-  if(print.progress==TRUE) pb <- txtProgressBar(min = 0, max = length(yrs.tdm), style = 3)
-  # setTxtProgressBar(pb, pb.index)
+  if(print.progress==TRUE) pb <- utils::txtProgressBar(min = 0, max = length(yrs.tdm), style = 3)
+  # utils::setTxtProgressBar(pb, pb.index)
 
   for (y in 1:length(yrs.tdm)) {
     yr.train <- ifelse(lubridate::leap_year(yrs.tdm[y]), train.leap, train.nl)
@@ -377,7 +377,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
         }
         ncdf4::nc_close(loc)
     } # End writing ensemble members 
-    if(print.progress==TRUE) setTxtProgressBar(pb, y)
+    if(print.progress==TRUE) utils::setTxtProgressBar(pb, y)
     # print(paste0("finished year ", yrs.tdm[y]))
     # -----------------------------------
     

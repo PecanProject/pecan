@@ -48,7 +48,7 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     verbose = FALSE, print.progress=FALSE) {
   
     # pb.index <- 1
-    # pb <- txtProgressBar(min = 1, max = 8, style = 3)
+    # pb <- utils::txtProgressBar(min = 1, max = 8, style = 3)
     
     # Just in case we have a capitalization or singular/plural issue 
     if(direction.filter %in% toupper( c("backward", "backwards"))) direction.filter="backward"
