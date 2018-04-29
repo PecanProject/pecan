@@ -96,7 +96,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username, con)
     
     if (is.data.frame(result)) {
-      dbfile.input.insert(in.path = dirname(result$file), 
+      PEcAn.DB::dbfile.input.insert(in.path = dirname(result$file),
                           in.prefix = result$dbfile.name,
                           siteid = site$id, 
                           startdate = start_date, enddate = end_date,
@@ -115,14 +115,14 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # first attempt at function that designates where to start met.process
   if (is.null(input_met$id)) {
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
-    format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
+    format.vars <- PEcAn.DB::query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
   } else {
     stage <- met.process.stage(input.id=input_met$id, raw.id=register$format$id, con)
-    format.vars <- query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
+    format.vars <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
     # Is there a situation in which the input ID could be given but not the file path? 
     # I'm assuming not right now
     assign(stage$id.name, list(inputid = input_met$id,
-                               dbfileid = dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
+                               dbfileid = PEcAn.DB::dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
   }
   print(stage)
   
@@ -260,7 +260,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     
   } else {
     PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
-    model.id  <- dbfile.check("Input", ready.id, con, hostname=machine.host)
+    model.id  <- PEcAn.DB::dbfile.check("Input", ready.id, con, hostname=machine.host)
     if(is.null(model.id)|length(model.id)==0){
       model.file <- input_met$path
     }else{
