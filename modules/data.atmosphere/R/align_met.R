@@ -79,7 +79,6 @@
 #----------------------------------------------------------------------
 align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, mems.train=NULL, seed=Sys.Date(), print.progress = FALSE) {
   # Load required libraries
-  library(ncdf4)
   library(lubridate)
   
   met.out <- list() # where the aligned data will be stored
