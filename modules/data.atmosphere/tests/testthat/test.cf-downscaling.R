@@ -24,6 +24,6 @@ test_that(
 
 
 test_that("get.ncvector works",{
-  run.dates <- data.table(index = 1:2, date = c(lubridate::ymd("1951-01-01 UTC"), lubridate::ymd("1951-01-02 UTC")))
+  run.dates <- data.table::data.table(index = 1:2, date = c(lubridate::ymd("1951-01-01 UTC"), lubridate::ymd("1951-01-02 UTC")))
   c <- get.ncvector("air_temperature", lati = 1, loni = 1, run.dates, met.nc = daily.nc)
 })
