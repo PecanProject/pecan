@@ -54,10 +54,10 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   suppressWarnings(all.dates <- data.table::data.table(index = seq(time.idx), date = round(date)))
   
   if (start.date + lubridate::days(1) < min(all.dates$date)) {
-   PEcAn.logger::logger.error("run start date", start.date, "before met data starts", min(all.dates$date))
+   PEcAn.logger::logger.severe("run start date", start.date, "before met data starts", min(all.dates$date))
   }
   if (end.date > max(all.dates$date)) {
-   PEcAn.logger::logger.error("run end date", end.date, "after met data ends", max(all.dates$date))
+   PEcAn.logger::logger.severe("run end date", end.date, "after met data ends", max(all.dates$date))
   }
   
   run.dates <- all.dates[date >= start.date & date <= end.date,
