@@ -63,7 +63,7 @@ The **easiest** approach is to use GitHub's browser based workflow. This is usef
 ### Recommended Git Workflow
 
 
-**Each feature should be in it’s own branch** (for example each issue is a branch, names of branches are often the issue in a bug tracking system).
+**Each feature should be in its own branch** (for example each issue is a branch, names of branches are often the issue in a bug tracking system).
 
 **Commit and Push Frequency** On your branch, commit **_at minimum once a day before you push changes:_** even better: every time you reach a stopping point and move to a new issue. best: any time that you have done work that you do not want to re-do. Remember, pushing changes to your branch is like saving a draft. Submit a pull request when you are done.
 
@@ -94,9 +94,10 @@ If this does not work, try the https method
 
 4. Define upstream repository
 
+```
 cd pecan
 git remote add upstream git@github.com:PecanProject/pecan.git
-
+```
 
 ### During development:
 
@@ -161,7 +162,7 @@ We do not recommend using this workflow is you plan on continuously contributing
 
 7. Push this branch to your github space 
 
-git push origin <branchname>
+`git push origin <branchname>`
 
 8. submit pull request with [[link commits to issues|Using-Git#link-commits-to-issuess]]; 
 * also see [explanation in this PecanProject/bety issue](https://github.com/PecanProject/bety/issues/57) and [github documentation](https://help.github.com/articles/using-pull-requests)
@@ -170,15 +171,15 @@ git push origin <branchname>
 
 1. Make sure you start in master 
 
-git checkout develop
+`git checkout develop`
 
 2. delete branch remotely 
 
-git push origin --delete <branchname>
+`git push origin --delete <branchname>`
 
 3. delete branch locally 
 
-git branch -D <branchname>
+`git branch -D <branchname>`
 
 
 #### Fixing a release Branch
@@ -186,17 +187,26 @@ git branch -D <branchname>
 If you would like to make changes to a release branch, you must follow a differetn workflow, as the release branhc will contain the latest code on develop and must remain seperate.
 
 1. Fetch upstream remote branches
-`git fetch upstream'
+
+`git fetch upstream`
+
 2. Checkout the correct release branch
+
 `git checkout -b release/vX.Y.Z`
 
-4. Compie Code with make 
+4. Compile Code with make 
+
 `make`
+
 5. Make changes and commit them
+
 `git add <changed_file.R>`
 `git commit -m "Describe changes"`
+
 6. Compile and make roxygen changes
+`make`
 `make document`
+
 7. Commit and push any files that were changed by make document
 
 8. Make a pull request. It is essential that you compare your pull request to the remote release branch, NOT the develop branch.
@@ -208,7 +218,7 @@ You can reference and close issues from comments, pull requests, and commit mess
 
 There are two ways to do this. One easy way is to include the following text in your commit message:
   
-  * [**Github**](https://github.com/blog/1386-closing-issues-via-commit-messages)
+* [**Github**](https://github.com/blog/1386-closing-issues-via-commit-messages)
 * to close: "closes gh-xxx" (or syn. close, closed, fixes, fix, fixed)  
 * to reference: just the issue number (e.g. "gh-xxx")
 * avoid "closes #xxx" which will cross-reference Redmine issues 
@@ -219,25 +229,12 @@ Another way is to just add the url to the issue that you are updating. For examp
 
 #### Other Useful Git Commands:
 
-
-
 * GIT encourages branching "early and often"
-* First pull from master 
+* First pull from develop
 * Branch before working on feature
 * One branch per feature
 * You can switch easily between branches
 * Merge feature into main line when branch done
-
-git branch <name of branch>
-  git checkout <name of branch>
-  repeat 
-    write some code
-commit
-until done
-
-git checkout master
-git merge <name of brach>
-  git push
 
 If during above process you want to work on something else, commit all
 your code, create a new branch, and work on new branch. 
@@ -246,35 +243,15 @@ your code, create a new branch, and work on new branch.
 * Delete a branch: `git branch -d <name of branch>`
 * To push a branch git: `push -u origin `<name of branch>`
 * To check out a branch: 
-  ```
+
+```
 git fetch origin
 git checkout --track origin/<name of branch>
-  ```
-
-
-* Get the remote repository locally:
-  
-  git clone URL
-
-* To update local repository to latest:
-  
-  git pull
-
-* To add new files to the local repository:
-  
-  git add <file>
-  
-  * To commit changes
-
-git commit <file|folder>
-  
-  * To update remote repository:
-  
-  git push
+```
 
 * Show graph of commits:
   
-  git log --graph --oneline --all
+`git log --graph --oneline --all`
 
 #### Tags
 
@@ -283,21 +260,21 @@ Git supports two types of tags: lightweight and annotated. For more information 
 Lightweight tags are useful, but here we discuss the annotated tags that are used for marking stable versions, major releases, and versions associated with published results. 
 
 The basic command is `git tag`. The `-a` flag means 'annotated' and `-m` is used before a message.  Here is an example:
-  
+```  
   git tag -a v0.6 -m "stable version with foo and bar features, used in the foobar publication by Bob"
-
+```
 Adding a tag to the a remote repository must be done explicitly with a push, e.g.
-
+```
 git push v0.6
-
+```
 To use a tagged version, just checkout: 
-  
+```  
   git checkout v0.6
-
+```
 To tag an earlier commit, just append the commit SHA to the command, e.g. 
-
+```
 git tag -a v0.99 -m "last version before 1.0" 9fceb02
-
+```
 
 **Using GitHub** The easiest way to get working with GitHub is by installing the GitHub
 client. For instructions for your specific OS and download of the
