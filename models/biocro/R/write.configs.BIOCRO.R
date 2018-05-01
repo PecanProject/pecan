@@ -17,14 +17,12 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"biocro.dtd\">\
 ##' @title Convert samples for biocro
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @param biocro_version numeric, but currently only checks whether version is less than 1.0
-##' @return matrix or dataframe with values transformed
+##' @return dataframe with values transformed
 ##' @export
 ##' @author David LeBauer
 convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
 
-  if (is.list(trait.samples)) {
-    trait.samples <- as.data.frame(trait.samples)
-  }
+  trait.samples <- as.data.frame(trait.samples)
   trait.names <- colnames(trait.samples)
 
   ## transform values with different units cuticular conductance - BETY default is
