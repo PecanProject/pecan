@@ -35,7 +35,16 @@ Imports:
     nneo,
     httr,
     RCurl,
-    reshape2
+    reshape2,
+    jsonlite,
+    zoo,
+    truncnorm,
+    car,
+    maptools,
+    mgcv,
+    aspace,
+    RAtmosphere,
+    MASS
 Suggests:
     testthat
 Remotes:
