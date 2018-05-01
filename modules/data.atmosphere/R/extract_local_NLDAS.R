@@ -94,9 +94,9 @@ extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, site_i
     loc.file = file.path(outfolder, paste("NLDAS",y.now,"nc",sep="."))
     
     ## Create dimensions
-    dim.lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
-    dim.lon <- ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
-    dim.time <- ncdim_def(name='time', units="sec", vals=seq((min(days.use)+1-1/24)*24*360, (max(days.use)+1-1/24)*24*360, length.out=ntime), create_dimvar=TRUE, unlim=TRUE)
+    dim.lat <- ncdf4::ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
+    dim.lon <- ncdf4::ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
+    dim.time <- ncdf4::ncdim_def(name='time', units="sec", vals=seq((min(days.use)+1-1/24)*24*360, (max(days.use)+1-1/24)*24*360, length.out=ntime), create_dimvar=TRUE, unlim=TRUE)
     nc.dim=list(dim.lat,dim.lon,dim.time)
     
     var.list = list()
@@ -104,7 +104,7 @@ extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, site_i
     
     # Defining our dimensions up front
     for(j in 1:nrow(var)){
-      var.list[[j]] = ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=nc.dim, missval=-999, verbose=verbose)
+      var.list[[j]] = ncdf4::ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=nc.dim, missval=-999, verbose=verbose)
       dat.list[[j]] <- array(NA, dim=c(length(lat.in), length(lon.in), ntime)) # Go ahead and make the arrays
     }
     names(var.list) <- names(dat.list) <- var$CF.name

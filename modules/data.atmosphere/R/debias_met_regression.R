@@ -991,7 +991,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       dat.pred$upr  <- apply(dat.out[[v]], 1, quantile, 0.975, na.rm=T)
       
       # Plotting the observed and the bias-corrected 95% CI
-      png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")))
+      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")))
       print(
         ggplot2::ggplot(data=dat.pred[dat.pred$Year>=mean(dat.pred$Year)-1 & dat.pred$Year<=mean(dat.pred$Year)+1,]) +
           ggplot2::geom_ribbon(ggplot2::aes(x=Date, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
@@ -1000,20 +1000,20 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           ggplot2::ggtitle(paste0(v, " - ensemble mean & 95% CI (daily slice)")) +
           ggplot2::theme_bw()
       )
-      dev.off()
+      grDevices::dev.off()
       
       # Plotting a few random series to get an idea for what an individual pattern looks liek
       stack.sims <- utils::stack(data.frame(dat.out[[v]][,sample(1:n.ens, min(3, n.ens))]))
       stack.sims[,c("Year", "DOY", "Date")] <- dat.pred[,c("Year", "DOY", "Date")]
       
-      png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")))
+      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")))
       print(
         ggplot2::ggplot(data=stack.sims[stack.sims$Year>=mean(stack.sims$Year)-2 & stack.sims$Year<=mean(stack.sims$Year)+2,]) +
           ggplot2::geom_line(ggplot2::aes(x=Date, y=values, color=ind), size=0.2, alpha=0.8) +
           ggplot2::ggtitle(paste0(v, " - example ensemble members (daily slice)")) +
           ggplot2::theme_bw()
       )
-      dev.off()
+      grDevices::dev.off()
       
       # Looking tat the annual means over the whole time series to make sure we're getting decent interannual variability
       dat.yr <- aggregate(dat.pred[,c("obs", "mean", "lwr", "upr")],
@@ -1021,7 +1021,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
                           FUN=mean)
       names(dat.yr)[1] <- "Year"
       
-      png(file.path(path.diagnostics, paste(ens.name, v, "annual.png", sep="_")))
+      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "annual.png", sep="_")))
       print(
         ggplot2::ggplot(data=dat.yr[,]) +
           ggplot2::geom_ribbon(ggplot2::aes(x=Year, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
@@ -1030,7 +1030,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           ggplot2::ggtitle(paste0(v, " - annual mean time series")) +
           ggplot2::theme_bw()
       )
-      dev.off()
+      grDevices::dev.off()
       
     }
     # -------------
