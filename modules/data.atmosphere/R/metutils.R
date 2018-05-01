@@ -124,7 +124,7 @@ get.rh <- function(T, Td) {
 wide2long <- function(data.wide, lat, lon, var) {
   colnames(data.wide) <- lon
   data.wide <- cbind(lat, data.wide)
-  data.long <- reshape::melt(data.wide, id = "lat")
+  data.long <- reshape2::melt(data.wide, id = "lat")
   colnames(data.long) <- c("lat", "lon", var)
   data.long$lon <- as.numeric(as.character(data.long$lon))
   return(data.long)

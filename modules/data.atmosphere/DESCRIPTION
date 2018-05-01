@@ -34,7 +34,8 @@ Imports:
     XML (>= 3.98-1.4),
     nneo,
     httr,
-    RCurl
+    RCurl,
+    reshape2
 Suggests:
     testthat
 Remotes:
