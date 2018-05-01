@@ -3,7 +3,7 @@
 ##' @name download.Fluxnet2015
 ##' @title download.Fluxnet2015
 ##' @export
-##' @param site the FLUXNET ID of the site to be downloaded, used as file name prefix. 
+##' @param sitename the FLUXNET ID of the site to be downloaded, used as file name prefix. 
 ##' The 'SITE_ID' field in \href{http://fluxnet.fluxdata.org//sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)

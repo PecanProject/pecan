@@ -102,8 +102,8 @@ SatVapPres <- function(T) {
 ##' Relative Humidity and the Dewpoint Temperature in Moist Air
 ##' A Simple Conversion and Applications.)
 ##' @title get RH
-##' @param temp T in original equation
-##' @param dewpoint Td in original
+##' @param T temperature
+##' @param Td dewpoint
 ##' @return numeric vector
 ##' @export
 ##' @author David LeBauer

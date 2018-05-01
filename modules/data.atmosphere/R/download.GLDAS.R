@@ -7,8 +7,8 @@
 ##' @param start_date
 ##' @param end_date
 ##' @param site_id
-##' @param lat
-##' @param lon
+##' @param lat.in
+##' @param lon.in
 ##'
 ##' @author Christy Rollinson
 download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,

@@ -5,7 +5,7 @@
 ##' Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
 ##' 
 ##' @export
-##' @param site the Ameriflux ID of the site to be downloaded, used as file name prefix. 
+##' @param sitename the Ameriflux ID of the site to be downloaded, used as file name prefix. 
 ##' The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)

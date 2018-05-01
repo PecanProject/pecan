@@ -18,8 +18,6 @@
 ##' @param in.prefix - prefix of model string as character (e.g. IPSL.r1i1p1.rcp85)
 ##' @param start_date - yyyy-mm-dd
 ##' @param end_date - yyyy-mm-dd
-##' @param lat.in - latitude as numeric
-##' @param lon.in - longitude as numeric
 ##' @param upscale - Upscale can either be set for FALSE (leave alone) or to the temporal resolution you want to aggregate to
 #                    options are: "year", "doy" (day of year), or "hour"
 ##' @param overwrite logical: replace output file if it already exists?

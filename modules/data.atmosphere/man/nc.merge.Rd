@@ -24,10 +24,6 @@ nc.merge(outfolder, in.path, in.prefix, start_date, end_date, upscale = FALSE,
 
 \item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
 functions print debugging information as they run?}
-
-\item{lat.in}{- latitude as numeric}
-
-\item{lon.in}{- longitude as numeric}
 }
 \description{
 This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function

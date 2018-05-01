@@ -1,11 +1,9 @@
-##' @name met2CF.FACE
-##' @title met2CF.FACE
+##' convert FACE files to CF files
 ##' @export
 ##' 
 ##' @param in.path
 ##' @param in.prefix
 ##' @param outfolder
-##' @param convert FACE files to CF files
 ##' @author Elizabeth Cowdery
 
 met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id,site,format, ...) {
