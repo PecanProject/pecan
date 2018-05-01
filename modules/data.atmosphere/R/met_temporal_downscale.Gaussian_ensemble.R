@@ -307,7 +307,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       I <- 1000 * aspace::cos_d(Z)
       m <- vector()
       for (i in seq_len(12)) {
-        m[i] <- Hmisc::monthDays(as.Date(paste0(year, "-", i, "-01")))
+        m[i] <- lubridate::days_in_month(as.Date(paste0(year, "-", i, "-01")))
       }
       bmlist <- vector()
       
