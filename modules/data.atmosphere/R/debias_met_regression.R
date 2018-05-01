@@ -199,7 +199,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     # -----
     met.train <- data.frame(year=train.data$time$Year,
                             doy=train.data$time$DOY,
-                            Y=stack(data.frame(train.data[[v]][,ens.train]))[,1],
+                            Y=utils::stack(data.frame(train.data[[v]][,ens.train]))[,1],
                             ind=rep(paste0("X", 1:n.ens), each=nrow(train.data[[v]]))
                             )
     met.train[,v] <- 0
@@ -227,7 +227,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     # -----
     met.src <- data.frame(year=source.data$time$Year,
                           doy=source.data$time$DOY,
-                          X=stack(data.frame(source.data[[v]][,ens.src]))[,1],
+                          X=utils::stack(data.frame(source.data[[v]][,ens.src]))[,1],
                           ind.src=rep(paste0("X", 1:length(ens.src)), each=nrow(source.data[[v]]))
                           )
     # met.src[,v] <- 
@@ -255,12 +255,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     
     # Adding in the covariates from what's been done:
     for(v.pred in vars.debias[!vars.debias==v]){
-      met.train[,v.pred] <- stack(data.frame(train.data[[v.pred]][,ens.train]))[,1]
+      met.train[,v.pred] <- utils::stack(data.frame(train.data[[v.pred]][,ens.train]))[,1]
       
       if(v.pred %in% names(dat.out)){
-        met.src[,v.pred] <- stack(data.frame(dat.out[[v.pred]]))[,1]
+        met.src[,v.pred] <- utils::stack(data.frame(dat.out[[v.pred]]))[,1]
       } else {
-        met.src[,v.pred] <- stack(data.frame(source.data[[v.pred]][,ens.src]))[,1]
+        met.src[,v.pred] <- utils::stack(data.frame(source.data[[v.pred]][,ens.src]))[,1]
       }
     }
     
@@ -1003,7 +1003,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       dev.off()
       
       # Plotting a few random series to get an idea for what an individual pattern looks liek
-      stack.sims <- stack(data.frame(dat.out[[v]][,sample(1:n.ens, min(3, n.ens))]))
+      stack.sims <- utils::stack(data.frame(dat.out[[v]][,sample(1:n.ens, min(3, n.ens))]))
       stack.sims[,c("Year", "DOY", "Date")] <- dat.pred[,c("Year", "DOY", "Date")]
       
       png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")))

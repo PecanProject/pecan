@@ -369,9 +369,9 @@ neonmet.getVals <- function(dates,product,site,datetime,
       #Extract and read 30 minute data from the highest vertical level among files returned
       #If belowground, then take top most level (lowest value)
       if (belowground==TRUE) {
-        url30 <- head(sort(urls[grep(urlstring,urls)]),1)        
+        url30 <- utils::head(sort(urls[grep(urlstring,urls)]),1)
       } else {
-        url30 <- tail(sort(urls[grep(urlstring,urls)]),1)        
+        url30 <- utils::tail(sort(urls[grep(urlstring,urls)]),1)
       }
       if (length(url30)!=0) {
         csvData <- nneo::nneo_file(product_code = product, site_code = site, year_month = mon, filename = url30) 
