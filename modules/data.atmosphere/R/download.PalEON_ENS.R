@@ -2,8 +2,8 @@
 ##'
 ##' @export
 ##' @param outfolder
-##' @param start_year
-##' @param end_year
+##' @param start_date
+##' @param end_date
 ##' 
 ##' @author Betsy Cowdery, Mike Dietze
 download.PalEON_ENS <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, ...) {
