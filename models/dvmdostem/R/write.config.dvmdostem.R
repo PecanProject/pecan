@@ -320,8 +320,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # TODO:
   #  [x] finish with parameter update process
   #  [x] dynamically copy parameters to right place
-  #  - dynamically copy the output_spec from insts folder to the
-  #    right place (see variable above for getting stuff from inst)
+  #  [x] dynamically copy the output_spec from insts folder to the
+  #      right place (see variable above for getting stuff from inst)
   #  - figure out how to handle the met.
   #     -> step one is symlink from raw data locations (Model install folder)
   #        into pecan run folder, maybe do this within job.sh?
@@ -389,6 +389,16 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     stop()
   }
 
+  ## Read in the custom output_spec file. 
+  # The general output_spec file that ships with dvmdostem has too much 
+  # stuff enabled and results in way too much output generated, epecially
+  # when doing larger ensemble runs, or sensitivity analysis. So we have
+  # stored in the dvmdostem package folder a custom output spec for pecan
+  # and here we copy that file from the package directory to the run
+  # run-directory, overwriting the output_spec.csv that exists (was previously
+  # copied from the base dvmdostem install)
+  outspec <- readLines(con=system.file("output_spec_pecan0.csv", package = "PEcAn.dvmdostem"), n=-1)
+  writeLines(outspec, con=file.path(settings$rundir, run.id, "config/output_spec.csv"))
 
   ## Update dvm-dos-tem config.js file
 
