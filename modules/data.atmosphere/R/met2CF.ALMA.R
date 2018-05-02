@@ -186,10 +186,6 @@ met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end
 met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, lat, lon, overwrite = FALSE,
                           verbose = FALSE, ...) {
 
-  #---------------- Load libraries. -----------------------------------------------------------------#
-  library(PEcAn.utils)
-  #--------------------------------------------------------------------------------------------------#
-
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
@@ -334,7 +330,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     # add global attributes from original file
     for (j in seq_along(cp.global.atts)) {
-      ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
+      ncdf4::ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
     }
 
     # done, close file
@@ -470,7 +466,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     print(latlon)
     var <- ncdf4::ncvar_def(name = "latitude", units = "degree_north", dim = (list(lat, lon, time)),
                      missval = as.numeric(-9999))
-    nc2 <- nc_create(filename = new.file, vars = var, verbose = verbose)
+    nc2 <- ncdf4::nc_create(filename = new.file, vars = var, verbose = verbose)
     ncdf4::ncvar_put(nc = nc2, varid = "latitude", vals = rep(latlon[1], tdim$len))
 
     # copy lon attribute to longitude
@@ -613,19 +609,19 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     var <- ncdf4::ncvar_def(name = "eastward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
     nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
     ncdf4::ncvar_put(nc = nc2, varid = "eastward_wind", vals = ew)
-    ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_min", attval = -max)
-    ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_max", attval = max)
+    ncdf4::ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_min", attval = -max)
+    ncdf4::ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_max", attval = max)
 
     var <- ncdf4::ncvar_def(name = "northward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
     nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
     ncdf4::ncvar_put(nc = nc2, varid = "northward_wind", vals = nw)
-    ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_min", attval = -max)
-    ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_max", attval = max)
+    ncdf4::ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_min", attval = -max)
+    ncdf4::ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_max", attval = max)
 
     # add global attributes from original file
     cp.global.atts <- ncdf4::ncatt_get(nc = nc1, varid = 0)
     for (j in seq_along(cp.global.atts)) {
-      ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
+      ncdf4::ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
     }
 
     # done, close both files

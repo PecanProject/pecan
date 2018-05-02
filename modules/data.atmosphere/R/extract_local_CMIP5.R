@@ -39,9 +39,6 @@
 extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_id, lat.in, lon.in, 
                                 model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, no.leap=NULL,
                                 overwrite = FALSE, verbose = FALSE, ...){
-  library(lubridate)
-  library(ncdf4)
-  library(stringr)
   
   # Some GCMs don't do leap year; we'll have to deal with this separately
   # no.leap <- c("bcc-csm1-1", "CCSM4")
@@ -52,7 +49,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     } else if(scenario == "historical" & GCM!="MPI-ESM-P") {
       date.origin=as.Date("1850-01-01")
     } else {
-      logger.error("No date.origin specified and scenario not implemented yet")
+      PEcAn.logger::logger.error("No date.origin specified and scenario not implemented yet")
     }
   } 
   
@@ -146,7 +143,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
   dat.time <- seq(start_date, end_date, by="day")  # Everything should end up being a day
   
   print("- Extracting files: ")
-  pb <- txtProgressBar(min=1, max=n.file, style=3)
+  pb <- utils::txtProgressBar(min=1, max=n.file, style=3)
   pb.ind=1
   # Loop through each variable so that we don't have to open files more than once
   for(v in 1:nrow(var)){
@@ -161,7 +158,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     # Figure out what file we need
     # file.ind <- which(files.var[[var.now]][i])
     for(i in 1:nrow(files.var[[var.now]])){
-      setTxtProgressBar(pb, pb.ind)
+      utils::setTxtProgressBar(pb, pb.ind)
       pb.ind=pb.ind+1
       f.now <- files.var[[var.now]][i,"file.name"]
       # print(f.now)
@@ -175,7 +172,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       nc.time <- ncdf4::ncvar_get(ncT, "time")
 
       # splt.ind <- ifelse(GCM %in% c("MPI-ESM-P"), 4, 3)
-      # date.origin <- as.Date(str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
+      # date.origin <- as.Date(stringr::str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
       nc.date <- date.origin + nc.time
       date.leaps <- seq(as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")), as.Date(paste0(files.var[[var.now]][i,"last.year"], "-12-31")), by="day")
       # Figure out if we're missing leap dat
@@ -257,12 +254,12 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
 
   print("")
   print("- Writing to NetCDF: ")
-  pb <- txtProgressBar(min=1, max=rows, style=3)
+  pb <- utils::txtProgressBar(min=1, max=rows, style=3)
   for (i in 1:rows){
-    setTxtProgressBar(pb, i)
+    utils::setTxtProgressBar(pb, i)
     
     y.now = ylist[i]    
-    yr.ind <- which(year(dat.time)==y.now)
+    yr.ind <- which(lubridate::year(dat.time)==y.now)
     
     
     dpm <- lubridate::days_in_month(1:12)
@@ -277,15 +274,15 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     } else if(rows==1){
       # if we're working with only 1 year, lets only pull what we need to
       nday  = ifelse(lubridate::leap_year(y.now), 366, 365) # leap year or not; days per year
-      day1 <- yday(start_date)
+      day1 <- lubridate::yday(start_date)
       # Now we need to check whether we're ending on the right day
-      day2 <- yday(end_date)
+      day2 <- lubridate::yday(end_date)
       days.use = day1:day2
       nday=length(days.use) # Update nday
     } else if(i==1) {
       # If this is the first of many years, we only need to worry about the start date
       nday  = ifelse(lubridate::leap_year(y.now), 366, 365) # leap year or not; days per year
-      day1 <- yday(start_date)
+      day1 <- lubridate::yday(start_date)
       day2 = nday
       days.use = day1:day2
       nday=length(days.use) # Update nday
@@ -299,7 +296,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     }
     ntime = nday # leap year or not; time slice (coerce to daily)
     
-    loc.file <- file.path(outfolder, paste(model, scenario, ensemble_member, str_pad(y.now, width=4, side="left",  pad="0"), "nc", sep = "."))
+    loc.file <- file.path(outfolder, paste(model, scenario, ensemble_member, stringr::str_pad(y.now, width=4, side="left",  pad="0"), "nc", sep = "."))
     
     
     ## Create dimensions
