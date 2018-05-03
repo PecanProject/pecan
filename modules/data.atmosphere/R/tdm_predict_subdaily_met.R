@@ -32,8 +32,8 @@
 ##' @param resids - logical stating whether to pass on residual data or not
 ##' @param force.sanity - (logical) do we force the data to meet sanity checks?                             
 ##' @param sanity.tries - how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop
-##' @param overwrite
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists?
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?
 ##' @param print.progress - print the progress bar?
 ##' @param seed - manually set seed for results to be reproducible
 ##' @export
@@ -60,7 +60,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
   
   if(direction.filter %in% toupper( c("backward", "backwards"))) direction.filter="backward"
   
-  if(!tolower(direction.filter) %in% c("backward", "forward", "backwards", "forwards")) logger.severe("Invalid direction.filter")
+  if(!tolower(direction.filter) %in% c("backward", "forward", "backwards", "forwards")) PEcAn.logger::logger.severe("Invalid direction.filter")
   
   vars.hour <- c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
                  "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
@@ -179,8 +179,8 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
   # ----------------------------------
   # Set progress bar
   # pb.index <- 1
-  if(print.progress==TRUE) pb <- txtProgressBar(min = 0, max = length(yrs.tdm), style = 3)
-  # setTxtProgressBar(pb, pb.index)
+  if(print.progress==TRUE) pb <- utils::txtProgressBar(min = 0, max = length(yrs.tdm), style = 3)
+  # utils::setTxtProgressBar(pb, pb.index)
 
   for (y in 1:length(yrs.tdm)) {
     yr.train <- ifelse(lubridate::leap_year(yrs.tdm[y]), train.leap, train.nl)
@@ -377,7 +377,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
         }
         ncdf4::nc_close(loc)
     } # End writing ensemble members 
-    if(print.progress==TRUE) setTxtProgressBar(pb, y)
+    if(print.progress==TRUE) utils::setTxtProgressBar(pb, y)
     # print(paste0("finished year ", yrs.tdm[y]))
     # -----------------------------------
     

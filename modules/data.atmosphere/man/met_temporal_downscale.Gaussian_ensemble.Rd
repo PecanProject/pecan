@@ -18,7 +18,10 @@ met_temporal_downscale.Gaussian_ensemble(in.path, in.prefix, outfolder,
 \item{train_met}{- the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset 
 (see download.Fluxnet2015 or download.Ameriflux)}
 
-\item{overwrite}{}
+\item{overwrite}{logical: replace output file if it already exists?}
+
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
+print debugging information as they run?}
 
 \item{swdn_method}{- Downwelling shortwave flux in air downscaling method (options are "sine", "spline", and "Waichler")}
 

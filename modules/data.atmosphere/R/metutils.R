@@ -102,8 +102,8 @@ SatVapPres <- function(T) {
 ##' Relative Humidity and the Dewpoint Temperature in Moist Air
 ##' A Simple Conversion and Applications.)
 ##' @title get RH
-##' @param temp T in original equation
-##' @param dewpoint Td in original
+##' @param T temperature
+##' @param Td dewpoint
 ##' @return numeric vector
 ##' @export
 ##' @author David LeBauer
@@ -122,10 +122,9 @@ get.rh <- function(T, Td) {
 ##' @export
 ##' @author David LeBauer
 wide2long <- function(data.wide, lat, lon, var) {
-  library(reshape)
   colnames(data.wide) <- lon
   data.wide <- cbind(lat, data.wide)
-  data.long <- melt(data.wide, id = "lat")
+  data.long <- reshape2::melt(data.wide, id = "lat")
   colnames(data.long) <- c("lat", "lon", var)
   data.long$lon <- as.numeric(as.character(data.long$lon))
   return(data.long)

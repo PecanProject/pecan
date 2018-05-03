@@ -29,7 +29,8 @@ Units for datetime field are the lubridate function that will be used to parse t
 }
 \examples{
 \dontrun{
-bety = list(user='bety', password='bety',host='localhost', dbname='bety', driver='PostgreSQL',write=TRUE)
+bety <- list(user='bety', password='bety', host='localhost',
+  dbname='bety', driver='PostgreSQL',write=TRUE)
 con <- PEcAn.DB::db.open(bety)
 bety$con <- con
 start_date <- lubridate::ymd_hm('200401010000')
@@ -43,7 +44,10 @@ format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
 format$lon <- -92.0
 format$lat <- 45.0
 format$time_zone <- "America/Chicago"
-results<-PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=TRUE)
+results <- PEcAn.data.atmosphere::met2CF.csv(
+  in.path, in.prefix, outfolder,
+  start_date, end_date, format,
+  overwrite=TRUE)
 }
 }
 \author{
