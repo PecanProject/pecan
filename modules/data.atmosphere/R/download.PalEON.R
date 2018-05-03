@@ -4,13 +4,11 @@
 ##' @title download.PalEON
 ##' @export
 ##' @param outfolder
-##' @param start_year
-##' @param end_year
+##' @param start_date
+##' @param end_date
 ##' 
 ##' @author Betsy Cowdery
 download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, ...) {
-  
-  library(PEcAn.utils)
   
   if (sitename == "Harvard Forest - Lyford Plots (PalEON PHA)") {
     site <- "PHA"
