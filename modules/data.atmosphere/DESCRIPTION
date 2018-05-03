@@ -44,9 +44,17 @@ Imports:
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
+    nneo,
+    httr,
+    sp,
+    rgdal,
     zoo
 Suggests:
-    testthat
+    testthat,
+    progress,
+    foreach,
+    parallel,
+    doParallel
 Remotes:
     github::ropenscilabs/nneo,
     github::rforge/reddyproc/pkg/REddyProc
