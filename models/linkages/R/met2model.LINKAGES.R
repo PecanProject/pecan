@@ -65,7 +65,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   nyear <- length(year)  # number of years to simulate
 
   month_matrix_precip <- matrix(NA, nyear, 12)
-  DOY_vec_hr <- c(1, c(32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365) * 4)
+  DOY_vec_hr <- c(1, c(32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365) * 24)
 
   if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
 
@@ -99,6 +99,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     ncin <- ncdf4::nc_open(infile)
     # print(ncin)
     nctemp <- ncdf4::ncvar_get(ncin, "air_temperature")  #units are kg m-2 s-1
+    #browser()
     for (m in 1:12) {
       month_matrix_temp_mean[i, m] <- (mean(nctemp[DOY_vec_hr[m]:(DOY_vec_hr[m + 1] - 1)]) -
                                          273.15)  #sub daily to monthly
