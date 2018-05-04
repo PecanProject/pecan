@@ -11,6 +11,7 @@
       <dbname>bety</dbname>
       <write>FALSE</write>
     </bety>
+    <dbfiles>pecan/dbfiles</dbfiles>
   </database>
 
   <pfts>
@@ -59,6 +60,5 @@
     <host>
       <name>localhost</name>
     </host>
-    <dbfiles>pecan/dbfiles</dbfiles>
   </run>
 </pecan>

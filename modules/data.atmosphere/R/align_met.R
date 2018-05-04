@@ -78,9 +78,6 @@
 # Begin Function
 #----------------------------------------------------------------------
 align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, mems.train=NULL, seed=Sys.Date(), print.progress = FALSE) {
-  # Load required libraries
-  library(ncdf4)
-  library(lubridate)
   
   met.out <- list() # where the aligned data will be stored
 
@@ -106,7 +103,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
     # Loop through the .nc files putting everything into a list
     if(print.progress==TRUE){
       print("Processing Training Data")
-      pb <- txtProgressBar(min=0, max=length(files.train), style=3)
+      pb <- utils::txtProgressBar(min=0, max=length(files.train), style=3)
     } 
     for(i in 1:length(files.train)){
       yr.now <- yrs.file[i]
@@ -135,7 +132,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       
       ncdf4::nc_close(ncT)
 
-      if(print.progress==TRUE) setTxtProgressBar(pb, i)
+      if(print.progress==TRUE) utils::setTxtProgressBar(pb, i)
     } # End looping through training data files
   } else { # we have an ensemble we need to deal with
     # Figure out how many ensemble members we're working with
@@ -163,7 +160,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
     
     if(print.progress==TRUE){
       print("Processing Training Data")
-      pb <- txtProgressBar(min=0, max=length(ens.train)*n.files, style=3)
+      pb <- utils::txtProgressBar(min=0, max=length(ens.train)*n.files, style=3)
       pb.ind=1
     }
     
@@ -210,7 +207,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
         ncdf4::nc_close(ncT)
 
         if(print.progress==TRUE){
-          setTxtProgressBar(pb, pb.ind)
+          utils::setTxtProgressBar(pb, pb.ind)
           pb.ind <- pb.ind+1
         }
       } # End looping through training data files
@@ -258,7 +255,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
     # Loop through the .nc files putting everything into a list
     if(print.progress==TRUE){
       print("Processing Source Data")
-      pb <- txtProgressBar(min=0, max=length(files.source), style=3)
+      pb <- utils::txtProgressBar(min=0, max=length(files.source), style=3)
     }
     
     for(i in 1:length(files.source)){
@@ -267,7 +264,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       ncT <- ncdf4::nc_open(file.path(source.path, files.source[i]))
 
       # Set up the time data frame to help index
-      nday <- ifelse(leap_year(yr.now), 366, 365)
+      nday <- ifelse(lubridate::leap_year(yr.now), 366, 365)
       ntime <- length(ncT$dim$time$vals)
       step.day <- nday/ntime
       step.hr  <- step.day*24
@@ -301,7 +298,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       
       # Extract the met info, making matrices with the appropriate number of ensemble members
       for(v in names(ncT$var)){
-        dat.tem <- ncvar_get(ncT, v)
+        dat.tem <- ncdf4::ncvar_get(ncT, v)
         
         if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
           dat.tem <- rep(dat.tem, each=length(stamps.hr))
@@ -312,13 +309,13 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
         if(align == "aggregate"){
           df.tem <- cbind(src.time, data.frame(df.tem))
   
-          df.agg <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=mean)
+          df.agg <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=mean)
           met.out$dat.source[[v]] <- rbind(met.out$dat.source[[v]], as.matrix(df.agg[,(3+1:n.src)]))
           
           # if workign wiht air temp, also find the max & min
           if(v=="air_temperature"){
-            tmin <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=min)
-            tmax <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=max)
+            tmin <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=min)
+            tmax <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=max)
             
             met.out$dat.source[["air_temperature_minimum"]] <- rbind(met.out$dat.source[["air_temperature_minimum"]], as.matrix(tmin[,(3+1:n.src)]))
             met.out$dat.source[["air_temperature_maximum"]] <- rbind(met.out$dat.source[["air_temperature_maximum"]], as.matrix(tmax[,(3+1:n.src)]))
@@ -329,7 +326,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
         
       }
       ncdf4::nc_close(ncT)
-      if(print.progress==TRUE) setTxtProgressBar(pb, i)
+      if(print.progress==TRUE) utils::setTxtProgressBar(pb, i)
     } # End looping through source met files
     if(print.progress==TRUE) print("")
   } else { # we have an ensemble we need to deal with
@@ -357,7 +354,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
     
     if(print.progress==TRUE){
       print("Processing Source Data")
-      pb <- txtProgressBar(min=0, max=length(ens.source)*n.files, style=3)
+      pb <- utils::txtProgressBar(min=0, max=length(ens.source)*n.files, style=3)
       pb.ind=1
     }
     for(j in 1:length(ens.source)){
@@ -384,10 +381,10 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       for(i in 1:length(files.source)){
         yr.now <- yrs.file[i]
         
-        ncT <- nc_open(file.path(source.path, ens.source[j], files.source[i]))
+        ncT <- ncdf4::nc_open(file.path(source.path, ens.source[j], files.source[i]))
         
         # Set up the time data frame to help index
-        nday <- ifelse(leap_year(yr.now), 366, 365)
+        nday <- ifelse(lubridate::leap_year(yr.now), 366, 365)
         ntime <- length(ncT$dim$time$vals)
         step.day <- nday/ntime
         step.hr  <- step.day*24
@@ -428,7 +425,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
         
         # Extract the met info, making matrices with the appropriate number of ensemble members
         for(v in names(ncT$var)){
-          dat.tem <- ncvar_get(ncT, v)
+          dat.tem <- ncdf4::ncvar_get(ncT, v)
           
           if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
             dat.tem <- rep(dat.tem, each=stamps.hr)
@@ -439,13 +436,13 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
           if(align == "aggregate"){
             df.tem <- cbind(src.time, data.frame(df.tem))
             
-            df.agg <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=mean)
+            df.agg <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=mean)
             dat.ens[[v]] <- rbind(dat.ens[[v]], as.matrix(df.agg[,(3+1:n.src)]))
             
             # if working with air temp, also find the max & min
             if(v=="air_temperature"){
-              tmin <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=min)
-              tmax <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=max)
+              tmin <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=min)
+              tmax <- stats::aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=max)
               
               dat.ens[["air_temperature_minimum"]] <- rbind(dat.ens[["air_temperature_minimum"]], as.matrix(tmin[,(3+1:n.src)]))
               dat.ens[["air_temperature_maximum"]] <- rbind(dat.ens[["air_temperature_maximum"]], as.matrix(tmax[,(3+1:n.src)]))
@@ -455,9 +452,9 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
           }
           
         } #End variable loop
-        nc_close(ncT)
+        ncdf4::nc_close(ncT)
         if(print.progress==TRUE){
-          setTxtProgressBar(pb, pb.ind)
+          utils::setTxtProgressBar(pb, pb.ind)
           pb.ind <- pb.ind+1
         }
       } # End looping through source met files
