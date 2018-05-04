@@ -99,7 +99,6 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     ncin <- ncdf4::nc_open(infile)
     # print(ncin)
     nctemp <- ncdf4::ncvar_get(ncin, "air_temperature")  #units are kg m-2 s-1
-    #browser()
     for (m in 1:12) {
       month_matrix_temp_mean[i, m] <- (mean(nctemp[DOY_vec_hr[m]:(DOY_vec_hr[m + 1] - 1)]) -
                                          273.15)  #sub daily to monthly

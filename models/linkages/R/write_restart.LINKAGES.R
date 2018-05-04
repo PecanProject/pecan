@@ -46,9 +46,14 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   new.state.save <- new.state
   
-  if(grep('Fcomp',names.keep)){
+  if(any(grep('Fcomp',names.keep))){
     new.state <- new.state.save[grep("Fcomp", names(new.state.save))]
     new.state.other <- new.state.save[grep("Fcomp", names(new.state.save), invert = TRUE)]
+  }
+  
+  if(any(grep('AGB.pft',names.keep))){
+    new.state <- new.state.save[grep("AGB.pft", names(new.state.save))]
+    new.state.other <- new.state.save[grep("AGB.pft", names(new.state.save), invert = TRUE)]
   }
   
   variables <- names(new.state)
@@ -60,6 +65,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   }
   diag(distance.matrix) <- 0
   
+  if(FALSE){
   distance.matrix <- rbind(c(0, 1, 4, 3, 2, 6, 5, 8, 7, 9, 10, 11, 12, 13, 14), 
                            c(5, 0, 3, 4, 8, 1, 2, 7, 6, 9, 10, 11, 12, 13, 14), 
                            c(5, 3, 0, 1, 8, 4, 2, 7, 6, 9, 10, 11, 12, 13, 14), 
@@ -75,8 +81,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
                            c(3, 6, 4, 5, 1, 7, 8, 12, 2, 9, 10, 11, 0, 13, 14), 
                            c(3, 6, 4, 5, 1, 7, 8, 13, 2, 9, 10, 11, 12, 0, 14), 
                            c(3, 6, 4, 5, 1, 7, 8, 14, 2, 9, 10, 11, 12, 13, 0))
-  
-  # distance.matrix <- rbind(c(0,3,1,2), c(3,0,2,1), c(1,2,0,3), c(2,1,3,0))
+  }
+  distance.matrix <- rbind(c(0,3,1,2), c(3,0,2,1), c(1,2,0,3), c(2,1,3,0))
   
   ## HACK
   spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages"))  #default spp.params
