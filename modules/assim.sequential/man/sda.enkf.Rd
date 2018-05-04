@@ -5,7 +5,7 @@
 \title{sda.enkf}
 \usage{
 sda.enkf(settings, obs.mean, obs.cov, IC = NULL, Q = NULL,
-  adjustment = TRUE, restart = NULL)
+  adjustment = FALSE, restart = NULL)
 }
 \arguments{
 \item{settings}{PEcAn settings object}
