@@ -2,13 +2,13 @@
 % Please edit documentation in R/met2CF.FACE.R
 \name{met2CF.FACE}
 \alias{met2CF.FACE}
-\title{met2CF.FACE}
+\title{convert FACE files to CF files}
 \usage{
 met2CF.FACE(in.path, in.prefix, outfolder, start_date, end_date, input.id, site,
   format, ...)
 }
-\arguments{
-\item{convert}{FACE files to CF files}
+\description{
+convert FACE files to CF files
 }
 \author{
 Elizabeth Cowdery

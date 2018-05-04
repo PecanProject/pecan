@@ -11,7 +11,7 @@ logger.setQuitOnSevere(severeQuits)
 }
 \description{
 The default is for a non-interactive session to quit. Setting this to false is
-especially useful for running tests when placed in \code{inst/tests/test.<fn>.R}, 
+especially useful for running tests when placed in \code{inst/tests/test.<fn>.R},
 but is not passed from \code{tests/run.all.R}.
 }
 \examples{

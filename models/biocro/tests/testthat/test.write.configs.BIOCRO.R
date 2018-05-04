@@ -21,10 +21,6 @@ test_that("convert.samples.BIOCRO works for BioCro 0.9", {
   expect_equal(biocro.parms$SLA, samples$biocro.saof$SLA)
   expect_equal(biocro.parms$Rd, samples$biocro.saof$leaf_respiration_rate_m2)
   expect_equal(biocro.parms$b1, samples$biocro.saof$stomatal_slope.BB)
-
-  ## re-create bug #1491
-  test.list <- list(vmax = 1, b0 = 2)
-  convert.samples.BIOCRO(test.list, 0.9)  ## this should work
 })
 
 test_that("convert.samples.BIOCRO works for BioCro 1.0", {
@@ -36,6 +32,20 @@ test_that("convert.samples.BIOCRO works for BioCro 1.0", {
   expect_equal(biocro.parms$iSp, samples$biocro.saof$SLA)
   expect_equal(biocro.parms$Rd, samples$biocro.saof$leaf_respiration_rate_m2)
   expect_equal(biocro.parms$b1, samples$biocro.saof$stomatal_slope.BB)
+})
+
+test_that("convert.samples.BIOCRO accepts list, matrix, data frame", {
+  in_df <- data.frame(Vcmax = 1, b0 = 2, SLA=3)
+  in_lst <- list(Vcmax = 1, b0 = 2, SLA = 3)
+  in_mtrx <- matrix(1:3, ncol = 3, dimnames = list(NULL, c("Vcmax", "b0", "SLA")))
+  
+  out <- in_df
+  out$SLA <- out$SLA/10 # bety sends kg/m2, biocro takes g/cm2
+  colnames(out) <- c("vmax1", "b0", "iSp")
+    
+  expect_equal(convert.samples.BIOCRO(in_df, 1.0), out)  # Redmine #1491
+  expect_equal(convert.samples.BIOCRO(in_lst, 1.0), out)
+  expect_equal(convert.samples.BIOCRO(in_mtrx, 1.0), out)
 })
 
 test_that("write.config.BIOCRO produces expected output", {
