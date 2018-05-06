@@ -24,6 +24,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
+  obs_per_year <- 365 * 24 /3 # 3-hr intervals, leap days ignored
 
   #Fix Outfolder to include model and scenario
   folder_name <- paste0("GFDL_", model, "_", scenario, "_", ensemble_member)
@@ -75,7 +76,8 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
 
   for (i in seq_len(rows)) {
     year <- ylist[i]
-    ntime <- 14600
+    # find start position of currently-wanted year in the 5-year DAP file
+    time_offset <- 1 + ((year-1) %% 5) * obs_per_year
 
     PEcAn.logger::logger.debug(
       sprintf(
@@ -144,8 +146,8 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
       dap_file <- paste0(dap_base, dap_end)
       dap <- ncdf4::nc_open(dap_file)
       dat.list[[j]] <- ncdf4::ncvar_get(dap, as.character(var$DAP.name[j]),
-                                 c(lon_GFDL, lat_GFDL, 1),
-                                 c(1, 1, ntime))
+                                 start = c(lon_GFDL, lat_GFDL, time_offset),
+                                 count = c(1, 1, obs_per_year))
       var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]),
                                  units = as.character(var$units[j]),
                                  dim = dim,
@@ -154,22 +156,6 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
       ncdf4::nc_close(dap)
     }
 
-    dat.list <- as.data.frame(dat.list)
-    if (year %% 5 == 1) {
-      dat.list <- dat.list[1:2920, ]
-    }
-    if (year %% 5 == 2) {
-      dat.list <- dat.list[2920:5839, ]
-    }
-    if (year %% 5 == 3) {
-      dat.list <- dat.list[5840:8759, ]
-    }
-    if (year %% 5 == 4) {
-      dat.list <- dat.list[8760:11679, ]
-    }
-    if (year %% 5 == 0) {
-      dat.list <- dat.list[11680:14599, ]
-    }
 
     ## put data in new file
     loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, verbose = verbose)
