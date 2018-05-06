@@ -4,7 +4,7 @@
 \alias{download.GFDL}
 \title{Download GFDL CMIP5 outputs for a single grid point using OPeNDAP and convert to CF}
 \usage{
-download.GFDL(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+download.GFDL(outfolder, start_date, end_date, lat.in, lon.in,
   overwrite = FALSE, verbose = FALSE, model = "CM3", scenario = "rcp45",
   ensemble_member = "r1i1p1", ...)
 }
