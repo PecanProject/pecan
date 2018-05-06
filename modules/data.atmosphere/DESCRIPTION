@@ -26,6 +26,7 @@ Imports:
     httr,
     jsonlite,
     lubridate (>= 1.6.0),
+    magrittr,
     maptools,
     MASS,
     mgcv,
@@ -35,26 +36,26 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.utils,
+    purrr (>= 0.2.3),
     RAtmosphere,
     RCurl,
     REddyProc,
     reshape2,
+    rgdal,
+    sp,
     stringr (>= 1.1.0),
     tibble,
+    tidyr,
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
-    nneo,
-    httr,
-    sp,
-    rgdal,
     zoo
 Suggests:
-    testthat,
-    progress,
+    doParallel,
     foreach,
     parallel,
-    doParallel
+    progress,
+    testthat
 Remotes:
     github::ropenscilabs/nneo,
     github::rforge/reddyproc/pkg/REddyProc
