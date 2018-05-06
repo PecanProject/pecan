@@ -114,12 +114,12 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
     time <- ncdf4::ncdim_def(
       name = "time",
-      units = "sec",
-      vals = (1:2920) * 10800,
+      units = paste("seconds since", results$startdate[i]),
+      vals = (1:obs_per_year) * 10800, # 3 hr interval * 3600 sec/hr
       create_dimvar = TRUE,
       unlim = TRUE
     )
-    dim <- list(lat, lon, time)
+    dim <- list(lat = lat, lon = lon, time = time)
 
     var.list <- list()
     dat.list <- list()
@@ -144,7 +144,18 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
         start_url, "00-", end_url, "23.nc"
       )
       dap_file <- paste0(dap_base, dap_end)
-      dap <- ncdf4::nc_open(dap_file)
+      dap <- ncdf4::nc_open(dap_file, suppress_dimvals = TRUE)
+
+      # Sanity check:
+      # We're saving the data with timestamps at the end of the interval,
+      # while GFDL-supplied timestamps vary slightly -- some vars are
+      # timestamped in middle of interval, others at end.
+      # But if these disagree by more than 3 hours, we have a problem.
+      raw_time <- ncdf4::ncvar_get(dap, "time", start = time_offset, count = obs_per_year)
+      converted_time <- udunits2::ud.convert(raw_time, dap$dim$time$units, dim$time$units)
+      PEcAn.logger::errorifnot(all(diff(converted_time) == 3 * 60 * 60))
+      PEcAn.logger::errorifnot(all(abs(dim$time$vals - converted_time) < (3 * 60 * 60)))
+
       dat.list[[j]] <- ncdf4::ncvar_get(dap, as.character(var$DAP.name[j]),
                                  start = c(lon_GFDL, lat_GFDL, time_offset),
                                  count = c(1, 1, obs_per_year))
