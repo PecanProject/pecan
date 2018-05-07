@@ -1,3 +1,9 @@
+## Model configuration
+
+This page is used for basic model configuration, including when your model will run and what input data it will use.
+
+
+
 ### Choosing meteorology
 
 Once a Machine, Model, and Site have been selected, PEcAn will take you to the Input selection page. From this page you will select what Plant Functional Type (PFT) you want to run at a site, the start and end dates of the run, and various Input selections. The most common of these across all models is the need to specify meteorological forcing data. The exact name of the menu item for meteorology will vary by model because all of the Input requirements are generated individually for each model based on the MODEL_TYPE table.  In general there are 3 possible cases for meteorology
@@ -12,11 +18,11 @@ If you want to upload your own met data this can be done in three ways.
 
 1. The default way to add met data is to incorporate it into the overall meteorological processing workflow. This is preferred if you are working with a common meteorological data product that is not yet in PEcAn's workflow. This case can be divided into two special cases:
 
-    i) Data is in a common MIME-type that PEcAn already has a converter for (e.g. CSV). In this case you'll want to create a new Format record for the meta-data so that the existing converter can process this data. See documentation for [adding a new format](#NewFormat) for more details.
+    i) Data is in a common MIME-type that PEcAn already has a converter for (e.g. CSV). In this case you'll want to create a new Format record for the meta-data so that the existing converter can process this data. See documentation for [Creating a new Format record in BETY] for more details.
     
-    ii) Data is in a more complicated format or interactive database, but large/useful enough to warrent a custom conversion function. Details on creating custom met conversions is [here](#InputConversions), though at this stage you would also be strongly encouraged to contact the PEcAn development team.
+    ii) Data is in a more complicated format or interactive database, but large/useful enough to warrent a custom conversion function. Details on creating custom met conversions is in the [Input Conversion], though at this stage you would also be strongly encouraged to contact the PEcAn development team.
 
-2. The second-best way is to upload data in PEcAn's standard meteorological format (netCDF files, CF metadata). See [here](#InputConversions) for details about variables and units. From this standard, PEcAn can then convert the file to the model-specific format required by the model you have chosen. This approach is preferred for a rare or one-off meterological file format, because PEcAn will also be able to convert the file into the format required by any other model as well. 
+2. The second-best way is to upload data in PEcAn's standard meteorological format (netCDF files, CF metadata). See [Input Conversion] for details about variables and units. From this standard, PEcAn can then convert the file to the model-specific format required by the model you have chosen. This approach is preferred for a rare or one-off meterological file format, because PEcAn will also be able to convert the file into the format required by any other model as well. 
 
 3. The last option for adding met data is to add it in a model-specific format, which is often easiest if you've already been running your model at a site and are just switching to using PEcAn. 
 
@@ -29,7 +35,7 @@ Consider a generic met data product named MET for simplicity. PEcAn will use a f
 
 Once data is in the standard format and processed, it will be converted to the model-specific format using a met2model.MODEL function (located in that MODEL's module).
 
-More detailed information on how PEcAn processes inputs can be found on our [Input Conversion](#InputConversions) page.
+More detailed information on how PEcAn processes inputs can be found on our [Input Conversion] page.
 
 #### Troubleshooting meteorological conversions
 
