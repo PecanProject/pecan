@@ -18,9 +18,10 @@ merge_met_variable(in.path, in.prefix, start_date, end_date, merge.file,
 
 \item{merge.file}{path of file to be merged in}
 
-\item{overwrite}{}
+\item{overwrite}{logical: replace output file if it already exists?}
 
-\item{verbose}{}
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
+print debugging information as they run?}
 
 \item{...}{}
 }

@@ -18,8 +18,8 @@ SETUP_VM=""
 SETUP_PALEON=""
 REBUILD=""
 
-RSTUDIO_SERVER="1.1.423"
-SHINY_SERVER="1.5.3.838"
+RSTUDIO_SERVER="1.1.442"
+SHINY_SERVER="1.5.6.875"
 
 if [ -e $(dirname $0)/install_pecan.config ]; then
   . $(dirname $0)/install_pecan.config
@@ -52,7 +52,7 @@ case "$OS_VERSION" in
     sudo apt-get -y dist-upgrade
     sudo apt-get -y purge --auto-remove
     if [ "$SETUP_VM" != "" ]; then
-      sudo sed -i -e "s/^127.0.0.1 .*\$/127.0.0.1 ${HOSTNAME}.pecan ${HOSTNAME} localhost/" /etc/hosts
+      sudo sed -i -e "s/^127.0.0.1[ \t].*\$/127.0.0.1\t${HOSTNAME}.vm ${HOSTNAME} localhost/" /etc/hosts
     fi
     ;;
   *)
@@ -286,20 +286,20 @@ make
 sudo cp maespa.out /usr/local/bin/maespa.git
 make clean
 
-echo "######################################################################"
-echo "LPJ-GUESS"
-echo "######################################################################"
-if [ ! -e ${HOME}/guess_3.1 ]; then
-  cd
-  curl -o guess_3.1.tar.gz http://stormbringerii.nateko.lu.se/public/guess_download/guess_3.1.tar.gz
-  tar xf guess_3.1.tar.gz
-  rm guess_3.1.tar.gz
-fi
-cd ${HOME}/guess_3.1
-cmake .
-make
-sudo cp guess /usr/local/bin/guess.3.1
-make clean
+# echo "######################################################################"
+# echo "LPJ-GUESS"
+# echo "######################################################################"
+# if [ ! -e ${HOME}/guess_3.1 ]; then
+#   cd
+#   curl -o guess_3.1.tar.gz http://stormbringerii.nateko.lu.se/public/guess_download/guess_3.1.tar.gz
+#   tar xf guess_3.1.tar.gz
+#   rm guess_3.1.tar.gz
+# fi
+# cd ${HOME}/guess_3.1
+# cmake .
+# make
+# sudo cp guess /usr/local/bin/guess.3.1
+# make clean
 
 echo "######################################################################"
 echo "BioCro"
@@ -437,6 +437,9 @@ EOF
   sudo cp /tmp/bety.conf ${HTTP_CONF}/bety.conf
   rm /tmp/bety.conf
   sudo ln -s $HOME/bety/public /var/www/html/bety
+
+  sudo sh -c "echo '\n## BETY secret key\nexport SECRET_KEY_BASE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 120 | head -n 1)' >> /etc/apache2/envvars"
+  cp $HOME/bety/public/javascripts/cache/all.js-sample $HOME/bety/public/javascripts/cache/all.js
 fi
 
 echo "######################################################################"
@@ -518,12 +521,7 @@ fi
 sudo rm -rf ${HOME}/output
 mkdir ${HOME}/output
 chmod 2777 ${HOME}/output
-sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -m 99 -r 0 -c -u
-for x in 0 1; do
-  for r in 1 2 5; do
-    sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -r $r
-  done
-done
+sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -g -m 99 -r 0 -c -u -w https://ebi-forecast.igb.illinois.edu/pecan/dumpall/bety.tar.gz
 ${HOME}/pecan/scripts/add.models.sh
 ${HOME}/pecan/scripts/add.data.sh
 

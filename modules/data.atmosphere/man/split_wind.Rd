@@ -16,9 +16,9 @@ split_wind(in.path, in.prefix, start_date, end_date, overwrite = FALSE,
 
 \item{end_date}{}
 
-\item{overwrite}{}
+\item{overwrite}{logical: replace output file if it already exists?}
 
-\item{verbose}{}
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?}
 
 \item{...}{other arguments, currently ignored}
 }
