@@ -82,7 +82,7 @@ download.GFDL <- function(outfolder, start_date, end_date, lat.in, lon.in,
     PEcAn.logger::logger.debug(
       sprintf(
         "Downloading GFDL year %d (%d of %d)",
-        year, i, length(rows)
+        year, i, rows
       )
     )
 
