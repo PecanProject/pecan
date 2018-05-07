@@ -21,7 +21,7 @@ Do you have ideas for new features?
 
 ## Setup page
 
-For now this is just a pace to see some information about the run you just loaded. 
+For now this is just a place to see some information about the run you just loaded. 
 
 --------------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ You need to register a run before performing benchmarks.
 
 **Variables**
 
-These are the varibles that the model and data have in common.
+These are the variables that the model and data have in common.
 
 **Metrics**
 
