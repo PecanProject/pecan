@@ -7,7 +7,7 @@ observeEvent(input$load_model,{
   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
   README.text <- c()
   
-  for(i in 1:nrow(ids_DF)){
+  for(i in seq(nrow(ids_DF))){
     
     dfsub <- df %>% filter(run_id == ids_DF$runID[i])
     
