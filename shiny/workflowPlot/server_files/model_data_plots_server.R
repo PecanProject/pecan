@@ -43,27 +43,29 @@ observeEvent(input$ex_plot_modeldata,{
   output$modelDataPlot <- renderPlotly({
     input$ex_plot_modeldata
     isolate({
-      masterDF <- load.model()
-      df <- dplyr::filter(masterDF, var_name == input$var_name_model)
-      updateSliderInput(session,"smooth_n_modeldata", min = 0, max = nrow(df))
       
-      title <- unique(df$title)
-      xlab <- unique(df$xlab)
-      ylab <- unique(df$ylab)
-      
-      externalData <- load.model.data()
-
       var = input$var_name_modeldata
-      df = df %>% select(posix = dates, vals)
-      colnames(df)[which(colnames(df) == "vals")] <- var
-      aligned_data = PEcAn.benchmark::align_data(model.calc = df, obvs.calc = externalData, var =var, align_method = "mean_over_larger_timestep")
-      colnames(aligned_data)[grep("[.]m", colnames(aligned_data))] <- "model"
-      colnames(aligned_data)[grep("[.]o", colnames(aligned_data))] <- "observations"
-      colnames(aligned_data)[which(colnames(aligned_data) == "posix")] <- "Date"
+      
+      model_data <- dplyr::filter(load.model(), var_name == var) 
+
+      updateSliderInput(session,"smooth_n_modeldata", min = 0, max = nrow(model_data))
+      title <- unique(model_data$title)
+      xlab  <- unique(model_data$xlab)
+      ylab  <- unique(model_data$ylab)
+      
+      model_data <- model_data %>% dplyr::select(posix = dates, !!var := vals)
+      external_data <- load.model.data()
+      aligned_data = PEcAn.benchmark::align_data(
+        model.calc = model_data, obvs.calc = external_data, 
+        var = var, align_method = "mean_over_larger_timestep") %>% 
+        dplyr::select(everything(), 
+                      model = matches("[.]m"), 
+                      observations = matches("[.]o"), 
+                      Date = posix)
       
       print(head(aligned_data))
       # Melt dataframe to plot two types of columns together
-      aligned_data <- reshape2::melt(aligned_data, "Date")
+      aligned_data <- tidyr::gather(aligned_data, variable, value, -Date)
       
       unit <- ylab
       if(input$units_modeldata != unit & udunits2::ud.are.convertible(unit, input$units_modeldata)){
