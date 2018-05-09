@@ -17,7 +17,7 @@
 ##'
 ##' @name convert.samples.dvmdostem
 ##' @title Convert samples for dvmdostem
-##' @param trait.samples a matrix or dataframe of samples from the trait distribution
+##' @param trait_samples a matrix or dataframe of samples from the trait distribution
 ##' @return matrix or dataframe with values transformed
 ##' @export
 ##' @author Shawn Serbin, Tobey Carman
@@ -166,6 +166,7 @@ enforce.runmask.cmt.vegmap.harmony <- function(siteDataPath, rundir, cmtnum){
 write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.id) {
 
   ## site information
+  ## (Currently unused)
   site <- settings$run$site
   site.id <- as.numeric(site$id)
 
@@ -419,17 +420,41 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #     -> step one is symlink from raw data locations (Model install folder)
   #        into pecan run folder, maybe do this within job.sh?
 
+  # Here we set up two things: 
+  #  1) the paths to the met drivers (temperature, precip, etc)
+  #  2) paths to the other input data files that dvmdostem requires (soil maps, 
+  #     vegetation maps, topography etc).
+  # This will allow us to source the meteorology data from PEcAn (or BetyDB) and 
+  # collect the other inputs from a different location.
+
   # Met info
   met_driver_dir <- dirname(settings$run$inputs$met$path)
-  PEcAn.logger::logger.info(paste0("Using met driver path: ", met_driver_dir))
+  # Not sure what happens here if the site is selected from the
+  # map and instead of having <met><path> tags, the xml file has
+  # <met><id> tags?
   
   # Pick up the site and pixel settings from the xml file if they exist
   if (is.null(settings$model$dvmdostem_site)){
+    # Client did not setup a dvmdostem specific site tags in the
+    # xml file. Assume that all the site data has the same path
+    # as the met data
     siteDataPath <- met_driver_dir
   } else {
+    # Pull out the client's settings from the xml file.
     siteDataPath <- settings$model$dvmdostem_site
   }
   PEcAn.logger::logger.info(paste0("Using siteDataPath: ", siteDataPath))
+  PEcAn.logger::logger.info(paste0("Using met_driver_path: ", met_driver_dir))
+
+  # Check the size of the input dataset(s)
+  # 1) met data set and other site data are the same size/shape (what if the
+  #    met comes from PEcAn/Bety and is single site and the other inputs come
+  #    from a single or multi-pixel dvmdostem dataset???)
+  # 2) if the incoming datasets are NOT single pixel, then 
+  #    we need to adjust the run-mask and choose the correct pixel
+  # 3) if the incoming datasets ARE single pixel, then no runmask
+  #    adjustment, but warn user if they have set dvmdostem_pixel_x
+  #    and dvmdostem_pixel_y tags in the xml file
 
   if (is.null(settings$model$dvmdostem_pixel_y)){
     pixel_Y <- 1

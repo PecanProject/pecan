@@ -62,7 +62,10 @@
   -->
   <!--
   The model section contains special tags for controlling
-  the model being run.
+  the model being run. As per discussion on PEcAn Slack channel,
+  these special tags are the best way to add user control to the
+  web interface for items that do not fit nicely with the 
+  pre-existing web interface buttons/dropdowns.
   -->
   <model>
     <type>dvmdostem</type>
