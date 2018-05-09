@@ -51,6 +51,99 @@ convert.samples.dvmdostem <- function(trait_values) {
 }
 ##-------------------------------------------------------------------------------------------------#
 
+##-------------------------------------------------------------------------------------------------#
+##' Adjust the runmask for dvmdostem. This is necessary if you are
+##' using a mutisite dvmdostem dataset (more than one grid cell/pixel)
+##' and you are not forcing the community (cmt or vegetation) type. In 
+##' other words you are using a vegetation map to determine the pixel's cmt
+##' type. In this case you must make sure that for the site and PFTs
+##' you have selected, the underlying veg map classifies the site as the
+##' same community type of the PFT you have chosen to run.
+##'
+##' @name adjust.runmask.dvmdostem
+##' @title Adjust runmask for dvmdostem.
+##' @param siteDataPath path to expected/default runmask (one of dvmdostem standard input files)
+##' @param rundir path to the location for this run (local run directory)
+##' @param pixel_X the X coordinate of the pixel to turn on (1 based!)
+##' @param pixel_Y the Y coordinate of the pixel to turn on (1 based!)
+##' @return NULL
+##' @export
+##' @author Tobey Carman
+##' 
+adjust.runmask.dvmdostem <- function(siteDataPath, rundir, pixel_X, pixel_Y) {
+
+  # Copy the run-mask from the input data directory to the run directory
+  system2(paste0("cp"),
+          wait=TRUE,
+          args=(c("-r",
+                  file.path(siteDataPath, 'run-mask.nc'),
+                  file.path(rundir, 'run-mask.nc'))))
+
+  # # Turn off all pixels except the 0,0 pixel in the mask
+  # Can't seem to use this as python-netcdf4 is not available. WTF.
+  # system2(paste0(file.path(appbinary_path, "scripts/runmask-util.py")),
+  #         wait=TRUE,
+  #         args=c("--reset", "--yx", pixel_Y, pixel_X, file.path(rundir, 'run-mask.nc')))
+
+  ## !!DANGER!!
+  ## - crazy R dimension ordering, with X first! (Y first in all other implementations!)
+  ## - R does not have a 64bit integer datatype so we get a warning about casting
+  ##   and that there may be information lost (unlikely in this case)
+  ncMaskFile <- ncdf4::nc_open(file.path(rundir, 'run-mask.nc'), write = TRUE)
+  new_data <- matrix(0, ncMaskFile$dim$X$len, ncMaskFile$dim$Y$len)
+  new_data[[strtoi(pixel_X), strtoi(pixel_Y)]] <- 1
+  ncdf4::ncvar_put(ncMaskFile, ncMaskFile$var$run, new_data, verbose=TRUE)
+  ncdf4::nc_close(ncMaskFile)
+
+  PEcAn.logger::logger.info(paste0("Set run mask pixel (y,x)=("),pixel_Y,",",pixel_X,")" )
+
+}
+##-------------------------------------------------------------------------------------------------#
+
+##-------------------------------------------------------------------------------------------------#
+##' Make sure that selected run mask pixel, veg map pixel value and CMT type are all copasetic. The
+##' function calls stop() if there is anything inconsistent, for example more tha one pixel is 
+##' enabled in the run mask, or the enabled pixel's vegetation type does not match the 
+##' vegetation/community type of the chosen PFTs.
+##' 
+##' @name enforce.runmask.cmt.vegmap.harmony
+##' @title 
+##' @param siteDataPath is the path to the folder where we expect to find the dvmdostem input data files.
+##' @param rundir is the path to the local running directory where customized files (config, parameters, 
+##' runmask etc) are copied to.
+##' @param cmtnum is the community type (vegetation type) that should be used for the run. Based on the
+##' chosen PFT, and required to look up the correct parameters in the parameter files.
+##' @return none
+##' @export
+##' @author Tobey Carman
+##'
+enforce.runmask.cmt.vegmap.harmony <- function(siteDataPath, rundir, cmtnum){
+
+  # Open the runmask and see which pixel is enabled
+  ncRunMaskFile <- ncdf4::nc_open(file.path(rundir, "run-mask.nc"), write=FALSE)
+  run_mask <- ncdf4::ncvar_get(ncRunMaskFile, ncRunMaskFile$var$run)
+  enabled_px <- which(run_mask!=0, arr.ind=TRUE)
+  print("========================================================================")
+  print(c("length(enabled_px):", length(enabled_px), " enabled_px:", unlist(enabled_px)))
+  print("========================================================================")
+  if (length(enabled_px != 2)) {
+    PEcAn.logger::logger.error("THERE MUST BE A SINGLE PIXEL ENABLED IN THE RUN MASK FILE!")
+    PEcAn.logger::logger.error(c("Instead found ", length(enabled_px), " pixels in file: ", file.path(rundir, "run-mask.nc") ) )
+    stop()
+  }
+
+  # Open the input veg file, check that the pixel that is enabled in the
+  # run mask is the right veg type to match the cmt/pft that is selected
+  # for the run.
+  ncVegCMTFile <- ncdf4::nc_open(file.path(siteDataPath, "vegetation.nc"), write=FALSE)
+  veg_class <- ncdf4::ncvar_get(ncVegCMTFile, ncVegCMTFile$var$veg_class)
+  if (cmtnum != veg_class[[enabled_px[1],enabled_px[2]]]) {
+    PEcAn.logger::logger.error("INCORRECT PIXEL!! THIS RUN WILL NOT WORK!")
+    PEcAn.logger::logger.error("STOPPING NOW TO PREVENT FUTURE HEARTACHE!")
+    stop()
+  }
+
+}
 
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes a dvmdostem PEcAn config file.
@@ -349,45 +442,24 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     pixel_X <- settings$model$dvmdostem_pixel_x
   }
 
+  # First, turn on a specific pixel in the run mask.
+  # In the case of a single pixel dataset, this will ensure that the
+  # pixel is set to run.
+  adjust.runmask.dvmdostem(siteDataPath, rundir, pixel_X, pixel_Y)
 
-  # Build a custom run-mask - in case the run-mask that ships with dvmdostem
-  # it not what we want.
-
-  # Copy the run-mask from the input data directory to the run directory
-  system2(paste0("cp"),
-          wait=TRUE,
-          args=(c("-r",
-                  file.path(siteDataPath, 'run-mask.nc'),
-                  file.path(rundir, 'run-mask.nc'))))
-
-  # # Turn off all pixels except the 0,0 pixel in the mask
-  # Can't seem to use this as python-netcdf4 is not available. WTF.
-  # system2(paste0(file.path(appbinary_path, "scripts/runmask-util.py")),
-  #         wait=TRUE,
-  #         args=c("--reset", "--yx", pixel_Y, pixel_X, file.path(rundir, 'run-mask.nc')))
-
-  ## !!DANGER!!
-  ## - crazy R dimension ordering, with X first! (Y first in all other implementations!)
-  ## - R does not have a 64bit integer datatype so we get a warning about casting
-  ##   and that there may be information lost (unlikely in this case)
-  ncMaskFile <- ncdf4::nc_open(file.path(rundir, 'run-mask.nc'), write = TRUE)
-  new_data <- matrix(0, ncMaskFile$dim$X$len, ncMaskFile$dim$Y$len)
-  new_data[[strtoi(pixel_X), strtoi(pixel_Y)]] <- 1
-  ncdf4::ncvar_put(ncMaskFile, ncMaskFile$var$run, new_data, verbose=TRUE)
-  ncdf4::nc_close(ncMaskFile)
-
-  PEcAn.logger::logger.error(paste0("Set run mask pixel (y,x)=("),pixel_Y,",",pixel_X,")" )
-
-  # Open the input veg file, check that the pixel that is enabled in the
-  # run mask is the right veg type to match the cmt/pft that is selected
-  # for the run.
-  ncVegCMTFile <- ncdf4::nc_open(file.path(siteDataPath, "vegetation.nc"), write=FALSE)
-  veg_class <- ncdf4::ncvar_get(ncVegCMTFile, ncVegCMTFile$var$veg_class)
-  if (cmtnum != veg_class[[strtoi(pixel_X), strtoi(pixel_Y)]]) {
-    PEcAn.logger::logger.error("INCORRECT PIXEL!! THIS RUN WILL NOT WORK!")
-    PEcAn.logger::logger.error("STOPPING NOW TO PREVENT FUTURE HEARTACHE!")
-    stop()
+  # If the user has not explicity said to force the CMT type in
+  # their xml settings, then we have to look at the run mask, figure out
+  # which pixel is enabled, and then check the corresponding pixel in the
+  # veg map to make sure that cmt number matches the cmt number for the
+  # chosen PFTs.
+  if ((toupper(settings$model$dvmdostem_forcecmtnum) == 'YES') || (toupper(settings$model$dvmdostem_forcecmtnum) == "Y")) {
+    # Nothing to do
+  } else {
+    print("Enforcing harmony between the runmask, vegmap, and required CMT type.")
+    enforce.runmask.cmt.vegmap.harmony(siteDataPath, rundir, cmtnum)
   }
+
+
 
   ## Read in the custom output_spec file. 
   # The general output_spec file that ships with dvmdostem has too much 
