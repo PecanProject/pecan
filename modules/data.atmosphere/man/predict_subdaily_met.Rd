@@ -37,6 +37,10 @@ ensemble rather than overwriting with a default naming scheme}
 
 \item{sanity.tries}{- how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop}
 
+\item{overwrite}{logical: replace output file if it already exists?}
+
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?}
+
 \item{seed}{- manually set seed for results to be reproducible}
 
 \item{print.progress}{- print the progress bar?}

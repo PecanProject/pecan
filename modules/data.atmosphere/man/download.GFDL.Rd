@@ -19,6 +19,12 @@ download.GFDL(outfolder, start_date, end_date, site_id, lat.in, lon.in,
 
 \item{lon.in}{Longitude coordinate for met}
 
+\item{overwrite}{Logical: Download a fresh version even if a local file with
+the same name already exists?}
+
+\item{verbose}{Logical, passed on to \code{\link[ncdf4]{ncvar_def}} and
+\code{\link[ncdf4]{nc_create}} to control printing of debug info}
+
 \item{model}{Which GFDL model to run (options are CM3, ESM2M, ESM2G)}
 
 \item{scenario}{Which scenario to run (options are rcp26, rcp45, rcp60, rcp85)}

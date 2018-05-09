@@ -11,8 +11,9 @@ substrRight <- function(x, n) {
 ##' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format
 ##' @param de_method - select which debias method you would like to use, options are 'normal', 'linear regression'
 ##' @param site.id
-##' @param overwrite
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists? Currently ignored.
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+##'   functions print debugging information as they run?
 ##' @author James Simkins
 debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "linear", 
                        overwrite = FALSE, verbose = FALSE, ...) {
@@ -119,8 +120,8 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
     if (de_method == "median") {
       for (u in add_var){
         if (all(is.na(source[[u]])) == FALSE) {
-          med_source <- median(source[[u]])
-          med_train <- median(train[[u]])
+          med_source <- stats::median(source[[u]])
+          med_train <- stats::median(train[[u]])
           med_diff <- med_train - med_source
           debi[1:reso_len, u] <- source[[u]] + med_diff
         } else {
@@ -129,8 +130,8 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
       }
       for (u in mult_var){
         if (all(is.na(source[[u]])) == FALSE) {
-          med_source <- median(source[[u]][source[[u]]>0])
-          med_train <- median(train[[u]][train[[u]]>0])
+          med_source <- stats::median(source[[u]][source[[u]]>0])
+          med_train <- stats::median(train[[u]][train[[u]]>0])
           med_ratio <- med_train/med_source
           debi[1:reso_len, u] <- source[[u]] * med_ratio
         } else {
@@ -143,7 +144,7 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
         for (i in add_var) {
           if (all(is.na(source[[i]])) == FALSE & all(is.na(lin_train[[i]])) == 
               FALSE) {
-            lin <- lm(lin_train[[i]] ~ source[[i]])
+            lin <- stats::lm(lin_train[[i]] ~ source[[i]])
             x <- as.numeric(lin$coefficients[2])
             b <- as.numeric(lin$coefficients[1])
             debi[1:reso_len,i] <- (source[[i]] * x + b)
@@ -157,7 +158,7 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
         for (i in mult_var) {
           if (all(is.na(source[[i]])) == FALSE & all(is.na(lin_train[[i]])) == 
               FALSE) {
-            lin <- lm(lin_train[[i]] ~ source[[i]])
+            lin <- stats::lm(lin_train[[i]] ~ source[[i]])
             x <- as.numeric(lin$coefficients[2])
             b <- 0
             debi[1:reso_len,i] <- (source[[i]] * x + b)
