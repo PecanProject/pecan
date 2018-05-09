@@ -14,7 +14,6 @@
 ##' @param verbose should the function be very verbose
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
-##' @importFrom ncdf4 ncvar_get ncatt_get ncdim_def ncvar_def ncvar_add ncvar_put
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {
 
@@ -79,19 +78,19 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## Should probably check for variable names (need to install ncdf4-helpers package)
 
     # extract time, lat, lon
-    time <- ncvar_get(nc = nc, varid = "time")
-    lat  <- ncvar_get(nc = nc, varid = "latitude")
-    lon  <- ncvar_get(nc = nc, varid = "longitude")
+    time <- ncdf4::ncvar_get(nc = nc, varid = "time")
+    lat  <- ncdf4::ncvar_get(nc = nc, varid = "latitude")
+    lon  <- ncdf4::ncvar_get(nc = nc, varid = "longitude")
 
     ## create time lat lon dimensions for adding new variables
-    x <- ncdim_def("longitude", "degrees_east", lon)
-    y <- ncdim_def("latitude", "degrees_north", lat)
-    t <- ncdim_def("time", "days since 1700-01-01", time)
+    x <- ncdf4::ncdim_def("longitude", "degrees_east", lon)
+    y <- ncdf4::ncdim_def("latitude", "degrees_north", lat)
+    t <- ncdf4::ncdim_def("time", "days since 1700-01-01", time)
     xytdim <- list(x, y, t)
 
     # extract elevation and timezone for radiation calculations
-    elev  <- ncatt_get(nc = nc, varid = 0, "elevation")
-    tzone <- ncatt_get(nc = nc, varid = "time", "units")
+    elev  <- ncdf4::ncatt_get(nc = nc, varid = 0, "elevation")
+    tzone <- ncdf4::ncatt_get(nc = nc, varid = "time", "units")
     ## Future: query elevation from site.id
     if (elev$hasatt) {
       elevation <- as.numeric((unlist(strsplit(elev$value, " ")))[1])
@@ -107,12 +106,12 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     }
 
     ## Required to exist in file
-    Tair <- try(ncvar_get(nc = nc, varid = "air_temperature"), silent = TRUE)
+    Tair <- try(ncdf4::ncvar_get(nc = nc, varid = "air_temperature"), silent = TRUE)
     if (!is.numeric(Tair)) {
       PEcAn.logger::logger.error("air_temperature not defined in met file for metgapfill")
     }
     Tair_degC <- udunits2::ud.convert(Tair, "K", "degC")
-    precip <- try(ncvar_get(nc = nc, varid = "precipitation_flux"), silent = TRUE)
+    precip <- try(ncdf4::ncvar_get(nc = nc, varid = "precipitation_flux"), silent = TRUE)
     if (!is.numeric(precip)) {
       PEcAn.logger::logger.error("precipitation_flux not defined in met file for metgapfill")
     }
@@ -121,25 +120,25 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     missingarr <- as.numeric(array(NA, length(Tair)))
 
     ## One of these must exist, create the other one for gap-filling
-    Rg <- try(ncvar_get(nc = nc, varid = "surface_downwelling_shortwave_flux_in_air"), silent = TRUE)
+    Rg <- try(ncdf4::ncvar_get(nc = nc, varid = "surface_downwelling_shortwave_flux_in_air"), silent = TRUE)
     if (!is.numeric(Rg)) {
       Rg <- missingarr
-      myvar <- ncvar_def(name = "surface_downwelling_shortwave_flux_in_air",
+      myvar <- ncdf4::ncvar_def(name = "surface_downwelling_shortwave_flux_in_air",
                          units = "W m-2",
                          dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
 
-    PAR <- try(ncvar_get(nc = nc, varid = "surface_downwelling_photosynthetic_photon_flux_in_air"),
+    PAR <- try(ncdf4::ncvar_get(nc = nc, varid = "surface_downwelling_photosynthetic_photon_flux_in_air"),
                silent = TRUE)
     if (!is.numeric(PAR)) {
       PAR <- missingarr
-      myvar <- ncvar_def(name = "surface_downwelling_photosynthetic_photon_flux_in_air",
+      myvar <- ncdf4::ncvar_def(name = "surface_downwelling_photosynthetic_photon_flux_in_air",
                          units = "mol m-2 s-1",
                          dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
 
     # check to see if we have Rg values
@@ -189,22 +188,22 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     ## If these don't exist, create blank ones that will be filled with default values, or imputed from
     ## other vars
-    co2 <- try(ncvar_get(nc = nc, varid = "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
+    co2 <- try(ncdf4::ncvar_get(nc = nc, varid = "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
     if (!is.numeric(co2)) {
       co2 <- missingarr
-      myvar <- ncvar_def(name = "mole_fraction_of_carbon_dioxide_in_air",
+      myvar <- ncdf4::ncvar_def(name = "mole_fraction_of_carbon_dioxide_in_air",
                          units = "mol mol-1",
                          dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
 
-    press <- try(ncvar_get(nc = nc, varid = "air_pressure"), silent = TRUE)
+    press <- try(ncdf4::ncvar_get(nc = nc, varid = "air_pressure"), silent = TRUE)
     if (!is.numeric(press)) {
       press <- missingarr
-      myvar <- ncvar_def(name = "air_pressure", units = "Pa", dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      myvar <- ncdf4::ncvar_def(name = "air_pressure", units = "Pa", dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
     # default pressure (in Pascals) if no pressure observations are available (based on NOAA 1976
     # equation for pressure altitude for WMO international standard atmosphere)
@@ -213,45 +212,45 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       press[is.na(press)] <- standard_pressure
     }
 
-    Lw <- try(ncvar_get(nc = nc, varid = "surface_downwelling_longwave_flux_in_air"), silent = TRUE)
+    Lw <- try(ncdf4::ncvar_get(nc = nc, varid = "surface_downwelling_longwave_flux_in_air"), silent = TRUE)
     if (!is.numeric(Lw)) {
       Lw <- missingarr
-      myvar <- ncvar_def(name = "surface_downwelling_longwave_flux_in_air",
+      myvar <- ncdf4::ncvar_def(name = "surface_downwelling_longwave_flux_in_air",
                          units = "W m-2",
                          dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
 
-    Ts1 <- try(ncvar_get(nc = nc, varid = "soil_temperature"), silent = TRUE)
+    Ts1 <- try(ncdf4::ncvar_get(nc = nc, varid = "soil_temperature"), silent = TRUE)
     if (!is.numeric(Ts1)) {
       Lw <- missingarr
-      myvar <- ncvar_def(name = "soil_temperature", units = "K", dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      myvar <- ncdf4::ncvar_def(name = "soil_temperature", units = "K", dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
 
     ## one of these must exist, create the others
-    rH <- try(ncvar_get(nc = nc, varid = "relative_humidity"), silent = TRUE)
+    rH <- try(ncdf4::ncvar_get(nc = nc, varid = "relative_humidity"), silent = TRUE)
     if (!is.numeric(rH)) {
       rH <- missingarr
-      myvar <- ncvar_def(name = "relative_humidity", units = "%", dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      myvar <- ncdf4::ncvar_def(name = "relative_humidity", units = "%", dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    sHum <- try(ncvar_get(nc = nc, varid = "specific_humidity"), silent = TRUE)
+    sHum <- try(ncdf4::ncvar_get(nc = nc, varid = "specific_humidity"), silent = TRUE)
     if (!is.numeric(sHum)) {
       sHum <- missingarr
-      myvar <- ncvar_def(name = "specific_humidity", units = "kg kg-1", dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      myvar <- ncdf4::ncvar_def(name = "specific_humidity", units = "kg kg-1", dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    VPD <- try(ncvar_get(nc = nc, varid = "water_vapor_saturation_deficit"), silent = TRUE)
+    VPD <- try(ncdf4::ncvar_get(nc = nc, varid = "water_vapor_saturation_deficit"), silent = TRUE)
     if (!is.numeric(VPD)) {
       VPD <- missingarr
-      myvar <- ncvar_def(name = "water_vapor_saturation_deficit", units = "Pa", dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      myvar <- ncdf4::ncvar_def(name = "water_vapor_saturation_deficit", units = "Pa", dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
 
     ## Fill these variables from each other
@@ -313,29 +312,29 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     sHum[sHum < 0] <- 0
     
     ## one set of these must exist (either wind_speed or east+north wind)
-    ws <- try(ncvar_get(nc = nc, varid = "wind_speed"), silent = TRUE)
+    ws <- try(ncdf4::ncvar_get(nc = nc, varid = "wind_speed"), silent = TRUE)
     if (!is.numeric(ws)) {
       ws <- missingarr
-      myvar <- ncvar_def(name = "wind_speed", units = "m s-1", dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      myvar <- ncdf4::ncvar_def(name = "wind_speed", units = "m s-1", dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    east_wind <- try(ncvar_get(nc = nc, varid = "eastward_wind"), silent = TRUE)
+    east_wind <- try(ncdf4::ncvar_get(nc = nc, varid = "eastward_wind"), silent = TRUE)
     if (!is.numeric(east_wind)) {
       east_wind <- missingarr
-      myvar <- ncvar_def(name = "eastward_wind", units = "m s-1", dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      myvar <- ncdf4::ncvar_def(name = "eastward_wind", units = "m s-1", dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    north_wind <- try(ncvar_get(nc = nc, varid = "northward_wind"), silent = TRUE)
+    north_wind <- try(ncdf4::ncvar_get(nc = nc, varid = "northward_wind"), silent = TRUE)
     if (!is.numeric(north_wind)) {
       north_wind <- missingarr
-      myvar <- ncvar_def(name = "northward_wind", units = "m s-1", dim = xytdim)
-      nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingarr)
+      myvar <- ncdf4::ncvar_def(name = "northward_wind", units = "m s-1", dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
+      ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
 
-    # Rn <- ncvar_get(nc=nc,varid='Rn') Ts2 <-ncvar_get(nc=nc,varid='TS2')
+    # Rn <- ncdf4::ncvar_get(nc=nc,varid='Rn') Ts2 <-ncdf4::ncvar_get(nc=nc,varid='TS2')
 
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair, Rg, rH, PAR, precip, sHum, Lw, Ts1,
@@ -368,7 +367,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     # figure out datetime of nc file and convert to POSIX
     nelem <- length(time)
-    tunit <- ncatt_get(nc = nc, varid = "time", attname = "units", verbose = verbose)
+    tunit <- ncdf4::ncatt_get(nc = nc, varid = "time", attname = "units", verbose = verbose)
     origin <- "1900-01-01 00:00:00"
     time <- round(as.POSIXlt(udunits2::ud.convert(time, tunit$value, paste("seconds since", origin)),
                              origin = origin, tz = "UTC"), units = "mins")
@@ -488,7 +487,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(Tair_f))) > 0) {
       error <- c(error, "air_temperature")
     }
-    ncvar_put(nc, varid = "air_temperature", vals = Tair_f)
+    ncdf4::ncvar_put(nc, varid = "air_temperature", vals = Tair_f)
 
     if (("Rg_f" %in% colnames(Extracted))) {
       Rg_f <- Extracted[, "Rg_f"]
@@ -496,7 +495,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(Rg_f))) > 0) {
       error <- c(error, "surface_downwelling_shortwave_flux_in_air")
     }
-    ncvar_put(nc, varid = "surface_downwelling_shortwave_flux_in_air", vals = Rg_f)
+    ncdf4::ncvar_put(nc, varid = "surface_downwelling_shortwave_flux_in_air", vals = Rg_f)
 
     if (("rH_f" %in% colnames(Extracted))) {
       rH_f <- Extracted[, "rH_f"]
@@ -506,7 +505,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(rH_f))) > 0) {
       error <- c(error, "relative_humidity")
     }
-    ncvar_put(nc, varid = "relative_humidity", vals = rH_f)
+    ncdf4::ncvar_put(nc, varid = "relative_humidity", vals = rH_f)
 
     if (("PAR_f" %in% colnames(Extracted))) {
       PAR_f <- Extracted[, "PAR_f"]
@@ -514,7 +513,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(PAR_f))) > 0) {
       error <- c(error, "surface_downwelling_photosynthetic_photon_flux_in_air")
     }
-    ncvar_put(nc, varid = "surface_downwelling_photosynthetic_photon_flux_in_air", vals = PAR_f)
+    ncdf4::ncvar_put(nc, varid = "surface_downwelling_photosynthetic_photon_flux_in_air", vals = PAR_f)
 
     if (("precip_f" %in% colnames(Extracted))) {
       precip_f <- Extracted[, "precip_f"]
@@ -522,7 +521,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(precip_f))) > 0) {
       error <- c(error, "precipitation_flux")
     }
-    ncvar_put(nc, varid = "precipitation_flux", vals = precip_f)
+    ncdf4::ncvar_put(nc, varid = "precipitation_flux", vals = precip_f)
 
     if (("sHum_f" %in% colnames(Extracted))) {
       sHum_f <- Extracted[, "sHum_f"]
@@ -533,7 +532,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(sHum_f))) > 0) {
       error <- c(error, "specific_humidity")
     }
-    ncvar_put(nc, varid = "specific_humidity", vals = sHum_f)
+    ncdf4::ncvar_put(nc, varid = "specific_humidity", vals = sHum_f)
 
     if (("Lw_f" %in% colnames(Extracted))) {
       Lw_f <- Extracted[, "Lw_f"]
@@ -542,7 +541,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(Lw_f))) > 0) {
       error <- c(error, "surface_downwelling_longwave_flux_in_air")
     }
-    ncvar_put(nc, varid = "surface_downwelling_longwave_flux_in_air", vals = Lw_f)
+    ncdf4::ncvar_put(nc, varid = "surface_downwelling_longwave_flux_in_air", vals = Lw_f)
 
     if (("Ts1_f" %in% colnames(Extracted))) {
       Ts1_f <- udunits2::ud.convert(Extracted[, "Ts1_f"], "degC", "K")
@@ -553,13 +552,13 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       tau <- 15 * DTS.n
       filt <- exp(-(1:length(Tair_ff)) / tau)
       filt <- (filt / sum(filt))
-      Ts_1ff <- convolve(Tair_ff, filt)
+      Ts_1ff <- stats::convolve(Tair_ff, filt)
       Ts1_f[is.na(Ts1_f)] <- Ts_1ff[is.na(Ts1_f)]
     }
     if (length(which(is.na(Ts1_f))) > 0) {
       error <- c(error, "soil_temperature")
     }
-    ncvar_put(nc, varid = "soil_temperature", vals = Ts1_f)
+    ncdf4::ncvar_put(nc, varid = "soil_temperature", vals = Ts1_f)
 
     if (("VPD_f" %in% colnames(Extracted))) {
       VPD_f <- udunits2::ud.convert(Extracted[, "VPD_f"], "kPa", "Pa")
@@ -576,7 +575,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(VPD_f))) > 0) {
       error <- c(error, "water_vapor_saturation_deficit")
     }
-    ncvar_put(nc, varid = "water_vapor_saturation_deficit", vals = VPD_f)
+    ncdf4::ncvar_put(nc, varid = "water_vapor_saturation_deficit", vals = VPD_f)
 
     if (("ws_f" %in% colnames(Extracted))) {
       ws_f <- Extracted[, "ws_f"]
@@ -590,7 +589,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(co2_f))) > 0) {
       error <- c(error, "mole_fraction_of_carbon_dioxide_in_air")
     }
-    ncvar_put(nc, varid = "mole_fraction_of_carbon_dioxide_in_air", vals = co2_f)
+    ncdf4::ncvar_put(nc, varid = "mole_fraction_of_carbon_dioxide_in_air", vals = co2_f)
 
     if (("press_f" %in% colnames(Extracted))) {
       press_f <- Extracted[, "press_f"]
@@ -601,7 +600,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(press_f))) > 0) {
       error <- c(error, "air_pressure")
     }
-    ncvar_put(nc, varid = "air_pressure", vals = press_f)
+    ncdf4::ncvar_put(nc, varid = "air_pressure", vals = press_f)
 
     if (("east_wind_f" %in% colnames(Extracted))) {
       east_wind_f <- Extracted[, "east_wind_f"]
@@ -609,7 +608,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(east_wind_f))) > 0) {
       error <- c(error, "eastward_wind")
     }
-    ncvar_put(nc, varid = "eastward_wind", vals = east_wind_f)
+    ncdf4::ncvar_put(nc, varid = "eastward_wind", vals = east_wind_f)
 
     if (("north_wind_f" %in% colnames(Extracted))) {
       north_wind_f <- Extracted[, "north_wind_f"]
@@ -619,13 +618,13 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(north_wind_f))) > 0) {
       error <- c(error, "northward_wind")
     }
-    ncvar_put(nc, varid = "northward_wind", vals = north_wind_f)
+    ncdf4::ncvar_put(nc, varid = "northward_wind", vals = north_wind_f)
 
     ws_f[is.na(ws_f)] <- sqrt(north_wind_f[is.na(ws_f)] ^ 2 + east_wind_f[is.na(ws_f)] ^ 2)
     if (length(which(is.na(ws_f))) > 0) {
       error <- c(error, "wind_speed")
     }
-    ncvar_put(nc, varid = "wind_speed", vals = ws_f)
+    ncdf4::ncvar_put(nc, varid = "wind_speed", vals = ws_f)
 
     ncdf4::nc_close(nc)
 
