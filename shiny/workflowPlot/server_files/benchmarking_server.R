@@ -7,7 +7,7 @@ bm <- reactiveValues()
 ## Observe when the model run is loaded and check to see if it is registered 
 ## as a reference run. If not, create the record upon button click
 
-observeEvent(input$load,{
+observeEvent(input$load_model,{
   req(input$all_run_id)
   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
   button <- FALSE
@@ -291,10 +291,11 @@ observeEvent(bm$load_results,{
       plot_list <- apply(
         result.out$bench.results[plots_used,c("variable", "metric")],
         1, paste, collapse = " ")
+      selection <- as.list(as.numeric(names(plot_list)))
+      names(selection) <- as.vector(plot_list)
       output$bm_plots <-  renderUI({
-        radioButtons("bench_plot", "Benchmark Plot",
-                     choiceNames = as.vector(plot_list), 
-                     choiceValues = as.numeric(names(plot_list)))
+        selectInput("bench_plot", "Benchmark Plot", multiple = FALSE,
+                     choices = selection)
       })
     }
   }
@@ -314,7 +315,6 @@ observeEvent(input$bench_plot,{
     filename = NA,
     draw.plot = TRUE
   )
-  output$blarg_message <- renderText({paste(input$bench_plot, var)})
   p <- do.call(fcn, args)
   output$bmPlot <- renderPlotly({
     plotly::ggplotly(p)
