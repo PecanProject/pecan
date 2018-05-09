@@ -36,6 +36,10 @@ for each day surrounding the model day}
 
 \item{n.cores}{- deals with parallelization}
 
+\item{overwrite}{logical: replace output file if it already exists?}
+
+\item{verbose}{logical, currently ignored}
+
 \item{print.progress}{- print progress bar? (gets passed through)}
 }
 \description{

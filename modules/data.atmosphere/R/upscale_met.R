@@ -28,7 +28,7 @@ upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FAL
    PEcAn.logger::logger.severe("Output file", loc.file, "already exists. To replace it, set overwrite = TRUE")
   }
 
-  met_lookup <- read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
+  met_lookup <- utils::read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
                          header = TRUE, stringsAsFactors = FALSE)
   tem <- ncdf4::nc_open(input_met)
   dim <- tem$dim

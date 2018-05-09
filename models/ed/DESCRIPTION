@@ -1,8 +1,8 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn package for integration of ED2 model
-Version: 1.5.2
-Date: 2017-12-04
+Version: 1.5.3
+Date: 2018-04-26
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov
 Maintainer: Mike Dietze <dietze@bu.edu>

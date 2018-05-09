@@ -17,7 +17,7 @@
 #'  file and must contain a \code{<clowder>} key that specifies hostname, user, and
 #'  password for your Clowder server:
 #'
-#' \code{\preformatted{
+#' \preformatted{
 #'   <?xml version="1.0"?>
 #'   <pecan>
 #'     <clowder>
@@ -26,7 +26,7 @@
 #'       <password>superSecretPassw0rd</password>
 #'     </clowder>
 #'   </pecan>
-#' }}
+#' }
 #'
 #' @export
 #' @author Harsh Agrawal, Chris Black

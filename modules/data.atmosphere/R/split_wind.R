@@ -4,8 +4,8 @@
 #' @param in.prefix   prefix of original data
 #' @param start_date  
 #' @param end_date 
-#' @param overwrite 
-#' @param verbose 
+#' @param overwrite logical: replace output file if it already exists? 
+#' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run? 
 #' @param ... other arguments, currently ignored
 #'
 #' @return
@@ -69,7 +69,7 @@ split_wind <- function(in.path, in.prefix, start_date, end_date,
     wind_speed.attr <- ncdf4::ncatt_get(nc, "wind_speed")
     WD <- "wind_direction" %in% names(nc$var)
     if(WD){
-      wind_dir <- pi/2 - udunits2::ud_convert(ncdf4::ncvar_get(nc, "wind_direction"), wind_dir$units, "radians")
+      wind_dir <- pi/2 - udunits2::ud.convert(ncdf4::ncvar_get(nc, "wind_direction"), wind_dir$units, "radians")
       wind_dir.attr <- ncdf4::ncatt_get(nc, "wind_direction")
       east <- wind_speed*cos(wind_dir)
       north <- wind_speed*sin(wind_dir)
