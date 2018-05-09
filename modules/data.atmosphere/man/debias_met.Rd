@@ -14,6 +14,11 @@ debias.met(outfolder, input_met, train_met, site_id, de_method = "linear",
 \item{train_met}{- the observed dataset that will be used to train the modeled dataset in NC format}
 
 \item{de_method}{- select which debias method you would like to use, options are 'normal', 'linear regression'}
+
+\item{overwrite}{logical: replace output file if it already exists? Currently ignored.}
+
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+functions print debugging information as they run?}
 }
 \description{
 debias.met takes input_met and debiases it based on statistics from a train_met dataset

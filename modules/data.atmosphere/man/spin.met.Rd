@@ -51,7 +51,10 @@ resample   <- TRUE
 \dontrun{
 if(!is.null(spin)){
    ## if spinning up, extend processed met by resampling or cycling met
-   start_date <- PEcAn.data.atmosphere::spin.met(in.path,in.prefix,start_date,end_date,nyear,nsample,resample)
+   start_date <- PEcAn.data.atmosphere::spin.met(
+     in.path, in.prefix,
+     start_date, end_date,
+     nyear, nsample, resample)
 }
 }
 }

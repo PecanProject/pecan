@@ -1,8 +1,8 @@
 Package: PEcAn.GDAY
 Type: Package
 Title: PEcAn package for integration of the GDAY model
-Version: 1.5.2
-Date: 2017-12-04
+Version: 1.5.3
+Date: 2018-04-26
 Author: Martin De Kauwe
 Maintainer: Martin De Kauwe <mdekauwe@gmail.com>
 Description: This module provides functions to link the GDAY model to PEcAn.
