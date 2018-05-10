@@ -22,9 +22,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
+- Fixed Git instructions and remote exectuion instructions.
 
 
-## [1.5.3] - not yet
+## [1.5.3] - 2018-5-9
 
 ### Fixes
 - read.output now accepts date-times for start.year and end.year argument (#1887)
