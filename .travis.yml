@@ -5,6 +5,8 @@
 # trusty. They are marked with TRUSTY for easy grepping.
 
 language: r
+r:
+  - 3.4
 
 r:
   - 3.4
@@ -46,6 +48,8 @@ addons:
       - tcl
       - tcl-dev
       - libhdf5-dev
+      - libgdal-dev
+      - gdal-bin
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
       - r-cran-ape

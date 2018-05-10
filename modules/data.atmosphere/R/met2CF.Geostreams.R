@@ -53,12 +53,12 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
 
     if (length(unique(dat$geometry.coordinates)) == 1) {
       # all lat/lons are are identical-- no need to store extra copies
-      raw_lat <- dat$geometry.coordinates[[1]][[1]]
-      raw_lon <- dat$geometry.coordinates[[1]][[2]]
+      raw_lon <- dat$geometry.coordinates[[1]][[1]]
+      raw_lat <- dat$geometry.coordinates[[1]][[2]]
     } else {
       # multiple coords in same file -- keep lat and lon as full-length vectors
-      raw_lat <- sapply(dat$geometry.coordinates, function(x)x[[1]])
-      raw_lon <- sapply(dat$geometry.coordinates, function(x)x[[2]])
+      raw_lon <- sapply(dat$geometry.coordinates, function(x)x[[1]])
+      raw_lat <- sapply(dat$geometry.coordinates, function(x)x[[2]])
     }
     
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degrees_north", vals = raw_lat, create_dimvar = TRUE)
