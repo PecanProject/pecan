@@ -7,9 +7,10 @@
 debias.met.regression(train.data, source.data, n.ens, vars.debias = NULL,
   CRUNCEP = FALSE, pair.anoms = TRUE, pair.ens = FALSE,
   uncert.prop = "mean", resids = FALSE, seed = Sys.Date(), outfolder,
-  yrs.save = NULL, ens.name, ens.mems = NULL, lat.in, lon.in,
-  save.diagnostics = TRUE, path.diagnostics = NULL, parallel = FALSE,
-  n.cores = NULL, overwrite = TRUE, verbose = FALSE)
+  yrs.save = NULL, ens.name, ens.mems = NULL, force.sanity = TRUE,
+  sanity.tries = 25, lat.in, lon.in, save.diagnostics = TRUE,
+  path.diagnostics = NULL, parallel = FALSE, n.cores = NULL,
+  overwrite = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{train.data}{- training data coming out of align.met}
@@ -43,6 +44,10 @@ met variables that have been naively gapfilled for certain time periods}
 \item{ens.mems}{- what labels/numbers to attach to the ensemble members so we can gradually build bigger ensembles 
 without having to do do giant runs at once; if NULL will be numbered 1:n.ens}
 
+\item{force.sanity}{- (logical) do we force the data to meet sanity checks?}
+
+\item{sanity.tries}{- how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop}
+
 \item{lat.in}{- latitude of site}
 
 \item{lon.in}{- longitude of site}
@@ -55,7 +60,10 @@ without having to do do giant runs at once; if NULL will be numbered 1:n.ens}
 
 \item{n.cores}{- (experimental) how many cores to use in parallelization *Not implemented yet}
 
-\item{overwrite}{- overwrite existing files?}
+\item{overwrite}{- overwrite existing files? Currently ignored}
+
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+functions print debugging information as they run?}
 }
 \description{
 This script debiases one dataset (e.g. GCM, re-analysis product) given another higher 

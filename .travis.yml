@@ -1,9 +1,17 @@
 # Follow instructions on:
 # https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
 
-language: r
+# A few blocks in here can be removed when Travis updates its Ubuntu image past 
+# trusty. They are marked with TRUSTY for easy grepping.
 
-# use containers
+language: r
+r:
+  - 3.4
+
+r:
+  - 3.4
+
+# TRUSTY: Change version when 16.04 image is available.
 dist: trusty
 sudo: false
 
@@ -18,10 +26,13 @@ cache:
 addons:
   postgresql: 9.6
   apt:
+    sources:
+      - sourceline: 'ppa:marutter/c2d4u'
+      - sourceline: 'ppa:nschloe/hdf5-backports'
     packages:
       - libnetcdf-dev
       - liblapack-dev
-      - libcurl4-gnutls-dev
+      - libcurl4-openssl-dev
       - jags
       - libudunits2-dev
       - python-dev 
@@ -36,6 +47,32 @@ addons:
       - pandoc
       - tcl
       - tcl-dev
+      - libhdf5-dev
+      - libgdal-dev
+      - gdal-bin
+      # R package binaries from c2d4u
+      - r-bioc-biocinstaller
+      - r-cran-ape
+      - r-cran-curl
+      - r-cran-devtools
+      - r-cran-dplyr
+      - r-cran-ggplot2
+      - r-cran-httr
+      - r-cran-igraph
+      - r-cran-lme4
+      - r-cran-matrixstats
+      - r-cran-mcmcpack
+      - r-cran-mcmcpack
+      - r-cran-raster
+      - r-cran-rcpp
+      - r-cran-rcurl
+      - r-cran-rncl
+      - r-cran-roxygen2
+      - r-cran-shiny
+      - r-cran-testthat
+      - r-cran-tidyverse
+      - r-cran-xml
+      - r-cran-xml2
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
@@ -54,6 +91,9 @@ notifications:
     on_success: always
     on_failure: always
     on_start: always
+  slack:
+    # Slack token created by Chris Black, 2018-02-17
+    secure: "DHHSNmiCf71SLa/FFSqx9oOnJjJt2GHYk7NsFIBb9ZY10RvQtIPfaoNxkPjqu9HLyZWJSFtg/uNKKplEHc6W80NoXyqoTvwOxTPjMaViXaCNqsmzjjR/JaCWT/oWGXyAw0VX3S8cwuIexlKQGgZwJpIzoVOZqUrDrHI/O17kZoM="
   email:
     on_success: always
     on_failure: always
@@ -62,7 +102,6 @@ notifications:
 services:
   - postgresql
 
-## install sipnet and clim file
 install:
   - pushd $HOME
   - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
@@ -72,10 +111,10 @@ install:
   - popd
 
 before_script:
-  - psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
-  - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
+  - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
+  - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
-  - psql -U postgres < bety.sql
+  - psql -q -o /dev/null -U postgres < bety.sql
   - rm bety.sql
   - ./scripts/add.models.sh
   - chmod +x book_source/deploy.sh
@@ -100,6 +139,7 @@ script:
   - set +e
 
 after_script:
+  - set -e
   - echo 'Building Book'
   - pushd book_source
   - make
@@ -108,3 +148,4 @@ after_script:
   - pushd documentation/tutorials
   - make build deploy
   - popd
+  - set +e

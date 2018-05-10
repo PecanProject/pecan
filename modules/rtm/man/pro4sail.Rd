@@ -25,11 +25,12 @@ pro4sail(param)
 * psoil: Fraction of soil moisture}
 }
 \value{
-Matrix (2101 x 4) of reflectance factors:
-* rddt: bi-hemispherical reflectance
-* rsdt: hemispherical directional
-* rdot: directional hemispherical
-* rsot: bi-directional
+Spectra matrix (see \code{\link[=spectra]{spectra()}}) (2101 x 4) of reflectance factors
+for wavelengths 400 to 2500nm:
+* bi-hemispherical reflectance (rddt)
+* hemispherical directional (rsdt)
+* directional hemispherical (rdot)
+* bi-directional (rsot)
 }
 \description{
 R wrapper for PRO4SAIL model

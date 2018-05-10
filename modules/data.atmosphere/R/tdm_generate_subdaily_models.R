@@ -33,8 +33,8 @@
 ##'                     specific hours coefficients. Must be integer because we want statistics from the same time of day
 ##'                     for each day surrounding the model day
 ##' @param seed - seed for randomization to allow for reproducible results                    
-##' @param overwrite
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists?
+##' @param verbose logical, currently ignored
 ##' @param print.progress - print progress bar? (gets passed through)
 ##' @export
 # -----------------------------------
@@ -48,8 +48,11 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     verbose = FALSE, print.progress=FALSE) {
   
     # pb.index <- 1
-    # pb <- txtProgressBar(min = 1, max = 8, style = 3)
+    # pb <- utils::txtProgressBar(min = 1, max = 8, style = 3)
     
+    # Just in case we have a capitalization or singular/plural issue 
+    if(direction.filter %in% toupper( c("backward", "backwards"))) direction.filter="backward"
+  
     # ----- 1.0 Read data & Make time stamps ---------- Load the data
     
     vars.info <- data.frame(CF.name = c("air_temperature", "precipitation_flux", "air_temperature_max", 
@@ -61,7 +64,7 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     
     # Getting a list of all the available files and then subsetting to just the ones we 
     # actually want to use
-    files.train <- dir(path.train)
+    files.train <- dir(path.train, ".nc")
     yrs.file <- strsplit(files.train, "[.]")
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
     yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension

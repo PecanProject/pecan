@@ -1,0 +1,112 @@
+## Benchmarking {#Benchmarking}
+
+Benchmarking is the process of comparing model outputs against either experimental data or against other model outputs as a way to validate model performance. 
+We have a suit of statistical comparisons that provide benchmarking scores as well as visual comparisons that help in diagnosing data-model and/or model-model differences.
+
+### Data Preparation
+
+All data that you want to compare with model runs must be registered in the database. 
+This is currently a step that must be done by hand either from the command line or through the online BETY interface. 
+The data must have three records:
+
+1. An input record (Instructions [here](#NewInput))
+
+2. A database file record (Instructions [here](#NewInput))
+
+3. A format record (Instructions [here](#NewFormat))
+
+### Model Runs
+
+Model runs can be setup and executed 
+- Using the PEcAn web interface online or with a VM ([see setup](#GettingStarted))
+- By hand using the [pecan.xml](#pecanXML) 
+
+### The Benchmarking Shiny App
+
+The entire benchmarking process can be done through the Benchmarking R Shiny app. 
+
+When the model run has completed, navigate to the workflow visualization Shiny app. 
+
+- Load model data
+    - Select the workflow and run id
+    - Make sure that your model output is loading properly (i.e. you can see plots of your data)
+- Load benchmarking data
+    - Again make sure that you can see the uploaded data plotted alongside the model output. In the future there will be more tools for double checking that your uploaded data is appropriate for benchmarking, but for now you may need to do the sanity checks by hand. 
+
+#### Create a reference run record
+
+- Navigate to the Benchmarking tab
+  + The first step is to register the new model run as a reference run in the database. Benchmarking cannot be done before this step is completed. When the reference run record has been created, additional menus for benchmarking will appear. 
+  
+#### Setup Benchmarks and metrics
+
+- From the menus select
+    - The variables in the uploaded data that you wish to compare with model output.
+    - The numerical metrics you would like to use in your comparison. 
+    - Additional comparison plots that you would like to see.
+- Note: All these selections populate the benchmarking section of the `pecan.BENCH.xml` which is then saved in the same location as the original run output. This xml is purely for reference.
+
+##### Benchmarking Output
+
+- All benchmarking results are stored in the benchmarking directory which is created in the same folder as the original model run. 
+- The benchmaking directory contains subdirectories for each of the datasets compared with the model output. The names of these directories are the same as the corresponding data set's input id in BETY. 
+- Each input directory contains `benchmarking.output.Rdata`, an Rdata file contianing all the results of the benchmarking workflow. `load(benchmarking.output.Rdata) ` loads a list  called `result.out`  which contains the following:
+  - `bench.results`: a data frame of all numeric benchmarking scores
+  - `format`: a data frame that can be used to see how the input data was transformed to make it comparable to the model output. This involves converting from the original variable names and units to the internal pecan standard. 
+  - `aligned.dat`: a data frame of the final aligned model and input values. 
+- All plots are saved as pdf files with names with "benchmark_plot-type_variable_input-id.pdf"
+  
+- To view interactive results, naviage to the Benchmarking Plots tab in the shiny app.
+
+
+
+### Benchmarking in pecan.xml
+
+Before reading this section, it is recommended that you [familiarize yourself with basics of the pecan.xml file.](#pecanXML) 
+
+The `pecan.xml` has an _optional_ benchmarking section. Below are all the tags in the benchmarking section explained. Many of these field are filled in automatically during the benchmarking process when using the benchmarking shiny app. 
+
+The only time one should edit the benchmarking section by hand is for performing clone runs. See [clone run documentation.](#CloneRun)
+
+`<benchmarking>` settings:
+
+- `ensemble_id`: the id of the ensemble that you will be using - the settings from this ensemble will be saved in a reference run record and then `ensemble_id` will be replaced with `reference_run_id` 
+- `new_run`: TRUE = create new run, FALSE = use existing run (required, default FALSE)
+
+It is possible to look at more than one benchmark with a particular run. 
+The specific settings related to each benchmark are in a sub section called `benchmark`
+
+- `input_id`: the id of the benchmarking data  (required)
+- `variable_id`: the id of the variable of interest within the data. If you leave this blank, all variables that are shared between the input and model output will be used. 
+- `metric_id`: the id(s) of the metric(s) to be calculated. If you leave this blank, all metrics will be used. 
+
+Example:
+In this example, 
+- we are using a pre-existing run from `ensemble_id = 1000010983` (`new_run = FALSE`)
+- the output will be compared to data from `input_id = 1000013743`, specifically two variables of interest: `variable_id = 411, variable_id = 18`
+- for `variable_id = 411` we will perform only one metric of comparison `metric_id = 1000000001`
+- for for `variable_id = 18` we will perform two metrics of comparison `metric_id = 1000000001, metric_id = 1000000002`
+
+```xml
+<benchmarking>
+  <ensemble_id>1000010983</ensemble_id>
+  <new_run>FALSE</new_run>
+  <benchmark>
+   <input_id>1000013743</input_id>
+   <variable_id>411</variable_id>
+   <site_id>853</site_id>
+   <metrics>
+    <metric_id>1000000001</metric_id>
+   </metrics>
+  </benchmark>
+  <benchmark>
+   <input_id>1000013743</input_id>
+   <variable_id>18</variable_id>
+   <site_id>853</site_id>
+   <metrics>
+    <metric_id>1000000001</metric_id>
+    <metric_id>1000000002</metric_id>
+   </metrics>
+  </benchmark>
+</benchmarking>
+```

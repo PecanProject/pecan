@@ -4,17 +4,17 @@
 \alias{query.pft_species}
 \title{Query species given pft name}
 \usage{
-query.pft_species(pft, modeltype, con)
+query.pft_species(pft, modeltype = NULL, con)
 }
 \arguments{
 \item{pft}{string pft name}
 
-\item{modeltype}{type of model that is used, this is is used to distinguis between different pfts with the same name.}
+\item{modeltype}{type of model that is used, this is used to distinguish between different pfts with the same name.}
 
 \item{con}{database connection}
 }
 \value{
-string of species.id for species associated with pft
+data.frame containing id, genus, species, scientificname of each species associated with pft
 }
 \description{
 select plant id's associated with pft

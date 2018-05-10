@@ -10,7 +10,7 @@ patch_cohort_index(nc)
 \item{nc}{\code{ncdf4} object for ED history restart file.}
 }
 \description{
-Generate a vector of integer indices for mapping ED state 
+Generate a vector of integer indices for mapping ED state
 cohort vectors onto patches, for instance for use with \code{tapply}.
 }
 \author{

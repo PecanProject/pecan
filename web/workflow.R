@@ -34,7 +34,7 @@ options(error=quote({
 # Open and read in settings file for PEcAn run.
 args <- commandArgs(trailingOnly = TRUE)
 if (is.na(args[1])){
-  settings <- PEcAn.settings::read.settings("pecan.xml")
+  settings <- PEcAn.settings::read.settings("pecan.xml") 
 } else {
   settings.file = args[1]
   settings <- PEcAn.settings::read.settings(settings.file)
@@ -73,7 +73,7 @@ settings <- PEcAn.utils::do_conversions(settings)
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0){
   PEcAn.utils::status.start("TRAIT")
-  settings <- PEcAn.DB::runModule.get.trait.data(settings)
+  settings <- PEcAn.workflow::runModule.get.trait.data(settings)
   PEcAn.settings::write.settings(settings, outputfile='pecan.TRAIT.xml')
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {

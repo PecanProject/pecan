@@ -12,6 +12,8 @@ get_var_names(bety, workflow_id, run_id, remove_pool = TRUE)
 \item{workflow_id}{Workflow ID}
 
 \item{run_id}{Run ID}
+
+\item{remove_pool}{logical: ignore variables with 'pools' in their names?}
 }
 \description{
 Get vector of variable names for a particular workflow and run ID
