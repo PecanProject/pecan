@@ -300,6 +300,15 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       VPD[badVPD] <- as.numeric(fCalcVPDfromRHandTair(rH[badVPD], Tair_degC[badVPD])) * 100
     }
 
+    ##Once all are filled, do one more consistency check
+    es <- get.es(Tair_degC) * 100
+    rH[rH < 0] <- 0
+    rH[rH > 100] <- 100
+    VPD[VPD < 0] <- 0
+    badVPD_es <- which(VPD > es)  
+    VPD[badVPD_es] <- es[badVPD_es]  
+    sHum[sHum < 0] <- 0
+    
     ## one set of these must exist (either wind_speed or east+north wind)
     ws <- try(ncvar_get(nc = nc, varid = "wind_speed"), silent = TRUE)
     if (!is.numeric(ws)) {
@@ -488,6 +497,8 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     if (("rH_f" %in% colnames(Extracted))) {
       rH_f <- Extracted[, "rH_f"]
+      rH_f[rH_f < 0] <- 0
+      rH_f[rH_f > 100] <- 100
     }
     if (length(which(is.na(rH_f))) > 0) {
       error <- c(error, "relative_humidity")
@@ -512,6 +523,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     if (("sHum_f" %in% colnames(Extracted))) {
       sHum_f <- Extracted[, "sHum_f"]
+      sHum_f[sHum_f < 0] <- 0
     }
     sHum_f[is.na(sHum_f)] <- 0.622 *
       (rH_f[is.na(sHum_f)] / 100) * (get.es(udunits2::ud.convert(Tair_f[is.na(sHum_f)], "K", "degC")) / 1000)
@@ -548,6 +560,13 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     if (("VPD_f" %in% colnames(Extracted))) {
       VPD_f <- udunits2::ud.convert(Extracted[, "VPD_f"], "kPa", "Pa")
+      VPD_f[VPD_f < 0] <- 0
+      if (("Tair_f" %in% colnames(Extracted))) {
+        Tair_f_degC <- udunits2::ud.convert(Tair_f, "K", "degC")
+        es <- get.es(Tair_f_degC) * 100
+        badVPD_f <- which(VPD_f > es) 
+        VPD_f[badVPD_f] <- es[badVPD_f] 
+      }
     }
     if (length(which(is.na(VPD_f))) > 0) {
       error <- c(error, "water_vapor_saturation_deficit")

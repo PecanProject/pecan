@@ -30,6 +30,8 @@
 ##' @param ens.labs - vector containing the labels (suffixes) for each ensemble member; this allows you to add to your 
 ##'                   ensemble rather than overwriting with a default naming scheme
 ##' @param resids - logical stating whether to pass on residual data or not
+##' @param force.sanity - (logical) do we force the data to meet sanity checks?                             
+##' @param sanity.tries - how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop
 ##' @param overwrite
 ##' @param verbose
 ##' @param print.progress - print the progress bar?
@@ -53,10 +55,12 @@
 #----------------------------------------------------------------------
 
 predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, direction.filter="forward", lm.models.base,
-                                 yrs.predict=NULL, ens.labs = 1:3, resids = FALSE, 
+                                 yrs.predict=NULL, ens.labs = 1:3, resids = FALSE, force.sanity=TRUE, sanity.tries=25,
                                  overwrite = FALSE, verbose = FALSE, seed=format(Sys.time(), "%m%d"), print.progress=FALSE, ...) {
   
-  if(!direction.filter %in% c("backward", "forward")) logger.severe("Invalid direction.filter")
+  if(direction.filter %in% toupper( c("backward", "backwards"))) direction.filter="backward"
+  
+  if(!tolower(direction.filter) %in% c("backward", "forward", "backwards", "forwards")) logger.severe("Invalid direction.filter")
   
   vars.hour <- c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
                  "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
@@ -113,24 +117,76 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
       "Wind speed"), units = c("K", "kg m-2 s-1", "W m-2", "W m-2", "Pa",
       "kg kg-1", "m s-1"))
   
+  
+  # ----------------------------------
+  # Prep some info on precipitation distribution
+  # ----------------------------------
+  # Read in the data and dupe it into the temporal resolution we want to end up with (based on our training data)
+  files.train <- dir(path.train, ".nc")
+  
+  # Getting a list of years just to make things faster for align.met
+  yrs.file <- strsplit(files.train, "[.]")
+  yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
+  yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
+  
+  train.nl <- yrs.file[which(!lubridate::leap_year(yrs.file))[1]]
+  train.leap <- yrs.file[which(lubridate::leap_year(yrs.file))[1]]
+  
+  # Set up our preciptiation distribution info
+  precip.dist <- list()
+  precip.dist$hrs.rain <- list()
+  precip.dist$hrs.max <- list()
+  for(i in 1:366){
+    precip.dist$hrs.rain[[i]] <- vector()
+    precip.dist$hrs.max[[i]] <- vector()
+  }
+  for(i in 1:length(files.train)){
+    nday <- ifelse(lubridate::leap_year(yrs.file[i]), 366, 365)
+    
+    ncT <- ncdf4::nc_open(file.path(path.train, files.train[i]))
+    precip.hr <- ncdf4::ncvar_get(ncT, "precipitation_flux")
+    ncdf4::nc_close(ncT)
+    
+    obs.day <- round(length(precip.hr)/nday)
+    # Setting up precip as a list to make doing
+    precip.temp <- list()
+    day.ind <- seq(1, length(precip.hr), by=obs.day)
+    for(j in seq_along(day.ind)){
+      precip.temp[[j]] <- precip.hr[day.ind[j]:(day.ind[j]+23)]
+    } # end j loop
+    for(j in 1:length(precip.temp)){
+      if(j <= 7){
+        rain.train <- c(unlist(precip.temp[1:(j+7)]), unlist(precip.temp[(length(precip.temp)-7+j):length(precip.temp)]))
+      } else if(j>=(length(precip.temp)-7)){
+        rain.train <- c(unlist(precip.temp[j:length(precip.temp)]), unlist(precip.temp[1:(length(precip.temp)-j+6)]))
+      } else {
+        rain.train <- unlist(precip.temp[(j-7):(j+7)])
+      }
+      hrs.tmp <- max(round(length(which(rain.train>0))/length(rain.train)*obs.day), 1) # Getting the average number of obs of rain per day
+      hrs.tmp <- min(hrs.tmp, obs.day/2) # Just to prevent constant drizzle problem, it's can't rain in more than half the observations
+      precip.dist$hrs.rain[[j]] <- c(precip.dist$hrs.rain[[j]], hrs.tmp)
+      
+      rain.train <- matrix(rain.train, ncol=length(rain.train)/obs.day, byrow = FALSE)
+      rain.tot <- apply(rain.train, 1, sum)
+      
+      precip.dist$hrs.max[[j]] <- c(precip.dist$hrs.max[[j]], which(rain.tot==max(rain.tot))[1])
+    }  # end j loop
+  } # end file loop
+  # ----------------------------------
+  
+  
+  
   # ----------------------------------
   # Set progress bar
   # pb.index <- 1
   if(print.progress==TRUE) pb <- txtProgressBar(min = 0, max = length(yrs.tdm), style = 3)
   # setTxtProgressBar(pb, pb.index)
-  
-  for (y in 1:length(yrs.tdm)) {
 
-    # Read in the data and dupe it into the temporal resolution we want to end up with (based on our training data)
-    files.train <- dir(path.train, ".nc")
-    
-    yrs.file <- strsplit(files.train, "[.]")
-    yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
-    yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
-    yrs.file <- yrs.file[length(yrs.file)/2]
+  for (y in 1:length(yrs.tdm)) {
+    yr.train <- ifelse(lubridate::leap_year(yrs.tdm[y]), train.leap, train.nl)
     
     met.out <- align.met(train.path=path.train, source.path=in.path, 
-                         yrs.train=NULL, yrs.source=yrs.tdm[y], 
+                         yrs.train=yr.train, yrs.source=yrs.tdm[y], 
                          n.ens=1, seed=201708, pair.mems = FALSE)
     
     # Package the raw data into the dataframe that will get passed into the function
@@ -251,7 +307,8 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
                                  path.model = file.path(lm.models.base), lags.list = NULL, 
                                  lags.init = lags.init,
                                  direction.filter=direction.filter,
-                                 dat.train = met.out$dat.train, seed=seed, print.progress=F)
+                                 dat.train = met.out$dat.train, precip.distribution=precip.dist,
+                                 force.sanity=force.sanity, sanity.tries=sanity.tries, seed=seed, print.progress=F)
     
     # -----------------------------------
 
@@ -300,7 +357,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
         for (j in nc.info$CF.name) {
             ens.sims[[j]][["X1"]]
             e <- paste0("X", i)
-            df[[j]] <- ens.sims[[j]][[e]]
+            df[,j] <- ens.sims[[j]][[e]]
         }
 
         df <- df[, c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air",
@@ -312,7 +369,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
         out.ens <- file.path(outfolder, paste(in.prefix, ens.labs[i], sep="."))
         dir.create(out.ens, showWarnings = FALSE, recursive = TRUE)
         
-        loc.file <- file.path(out.ens, paste(in.prefix, ens.labs[i], yrs.tdm[y], "nc", sep="."))
+        loc.file <- file.path(out.ens, paste(in.prefix, ens.labs[i], stringr::str_pad(yrs.tdm[y], 4, "left", pad="0"), "nc", sep="."))
         loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, verbose = verbose)
 
         for (j in nc.info$CF.name) {
@@ -323,6 +380,8 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
     if(print.progress==TRUE) setTxtProgressBar(pb, y)
     # print(paste0("finished year ", yrs.tdm[y]))
     # -----------------------------------
+    
+    rm(met.out, dat.ens, met.nxt, dat.nxt, dat.nxt2, ens.sims)
     
   } # End year loop
   msg.done <- paste("Temporal Downscaling Complete:", in.prefix, min(yrs.tdm), "-", max(yrs.tdm), sep=" ")

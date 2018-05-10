@@ -17,8 +17,6 @@ dbfile.posterior.check(pft, mimetype, formatname, con,
 \item{con}{database connection object}
 
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
-
-\item{params}{database connection information}
 }
 \value{
 data.frame with the id, filename and pathname of the posterior that is requested

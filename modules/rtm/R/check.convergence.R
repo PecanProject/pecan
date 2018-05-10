@@ -12,7 +12,7 @@
 #'      * diagnostics: Numerical value of Gelman-Rubin diagnostics for each parameter and multivariate diagnostic
 #'      * error: Logical. Whether or not an error occured in the Gelman-Rubin calculation.  
 #' @export
-check.convergence <- function(jags_out, 
+check.convergence <- function(jags_out,
                               threshold = 1.1,
                               verbose = TRUE,
                               ...){
@@ -34,9 +34,10 @@ check.convergence <- function(jags_out,
     } else {
       converged <- FALSE
       too_large <- diagnostics[diagnostics > threshold]
-      msg <- sprintf("The following parameters did not converge: %s",
-                     paste(sprintf("%s (%.3f)", names(too_large), too_large),
-                           collapse = ", "))
+      msg <- sprintf(
+        "The following parameters did not converge: %s",
+        paste(sprintf("%s (%.3f)", names(too_large), too_large), collapse = ", ")
+      )
     }
     if (verbose) {
       print(msg)
