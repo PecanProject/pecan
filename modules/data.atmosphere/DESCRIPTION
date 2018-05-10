@@ -1,8 +1,8 @@
 Package: PEcAn.data.atmosphere
 Type: Package
 Title: PEcAn functions used for managing climate driver data
-Version: 1.5.2
-Date: 2017-12-04
+Version: 1.5.3
+Date: 2018-04-26
 Author: Carl Davidson, Mike Dietze, Rob Kooper, Deepak Jaiswal, David LeBauer
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -26,6 +26,7 @@ Imports:
     httr,
     jsonlite,
     lubridate (>= 1.6.0),
+    magrittr,
     maptools,
     MASS,
     mgcv,
@@ -35,17 +36,25 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.utils,
+    purrr (>= 0.2.3),
     RAtmosphere,
     RCurl,
     REddyProc,
     reshape2,
+    rgdal,
+    sp,
     stringr (>= 1.1.0),
     tibble,
+    tidyr,
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
     zoo
 Suggests:
+    doParallel,
+    foreach,
+    parallel,
+    progress,
     testthat
 Remotes:
     github::ropenscilabs/nneo,
