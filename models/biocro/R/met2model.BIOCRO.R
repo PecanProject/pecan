@@ -179,10 +179,10 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   newmet <- met[, list(year = lubridate::year(met$date),
                        doy = lubridate::yday(met$date),
                        hour = round(lubridate::hour(met$date) + lubridate::minute(met$date) / 60, 0),
-                       SolarR = ppfd, 
+                       solar = ppfd,
                        Temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
                        RH = met$relative_humidity,
-                       WS = wind_speed,
+                       windspeed = wind_speed,
                        precip = udunits2::ud.convert(met$precipitation_flux, "s-1", "h-1"))]
   newmet <- newmet[newmet$hour <= 23,]
   return(as.data.frame(newmet))

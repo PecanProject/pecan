@@ -4,15 +4,22 @@
 \alias{query.traits}
 \title{Query trait data}
 \usage{
-query.traits(spstr, priors, con = NULL, update.check.only = FALSE)
+query.traits(ids, priors, con = NULL, update.check.only = FALSE,
+  ids_are_cultivars = FALSE)
 }
 \arguments{
-\item{spstr}{string of species id's from trait database}
+\item{ids}{vector of species or cultivar id's from trait database}
 
 \item{priors}{vector of parameters for which priors have been specified}
+
+\item{con}{database connection object}
+
+\item{update.check.only}{if TRUE, returns results but does not print summaries}
+
+\item{ids_are_cultivars}{if TRUE, ids is a vector of cultivar IDs, otherwise they are species IDs}
 }
 \value{
-dataframe with trait data
+list of dataframes, each with data for one trait
 }
 \description{
 Query available trait data associated with a given pft and a list of traits
