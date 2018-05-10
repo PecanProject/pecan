@@ -1,131 +1,150 @@
 {
-     "creators": [
-        {
-            "affiliation": "University of Illinois at Urbana-Champaign", 
-            "name": "David LeBauer",
-            "orcid": "0000-0001-7228-053X"
-        }, 
-        {
-            "affiliation": "Boston University", 
-            "name": "Michael Dietze",
-            "orcid": "0000-0002-2324-2518"
-        }, 
-        {
-            "affiliation": "National Center for Supercomputing Applications", 
-            "name": "Rob Kooper",
-            "orcid": "0000-0002-5781-7287"
-        }, 
-        {
-            "affiliation": "Boston University", 
-            "name": "Alexey Shiklomanov",
-            "orcid": "0000-0003-4022-5979"
-        }, 
-        {
-            "affiliation": "Boston University", 
-            "name": "Betsy Cowdery",
-            "orcid": "0000-0002-6538-6296"
-        }, 
-        {
-            "affiliation": "Boston Univeristy", 
-            "name": "Istem Fer",
-            "orcid": "0000-0001-8236-303X"
-        }, 
-        {
-            "affiliation": "Boston Univeristy", 
-            "name": "Anthony Gardella"
-        }, 
-        {
-            "affiliation": "Pacific Northwest National Laboratory / University of Maryland", 
-            "name": "Ben Bond-Lamberty",
-            "orcid": "0000-0001-9525-4633"
-        }, 
-        {
-            "affiliation": "Brookhaven National Laboratory", 
-            "name": "Shawn P. Serbin",
-            "orcid": "0000-0003-4136-8971"
-        }, 
-        {
-            "affiliation": "University of Notre Dame", 
-            "name": "Ann Raiho"
-        }, 
-        {
-            "affiliation": "Brigham Young University",
-            "name": "Anne Thomas"
-        }, 
-        {
-            "affiliation": "Pennsylvania State University", 
-            "name": "Chris Black",
-            "orcid": "0000-0001-8382-298X"
-        }, 
-        {
-            "affiliation": "University of Wisconsin-Madison", 
-            "name": "James Simkins"
-        }, 
-        {
-            "affiliation": "University of Wisconsin-Madison", 
-            "name": "Ankur Desai",
-            "orcid": "0000-0002-5226-6041"
-        }, 
-        {
-            "affiliation": "Worchester Academy",
-            "name": "Joshua Mantooth"
-        }, 
-        {
-            "name": "Aman Kumar"
-        }, 
-        {
-            "affiliation": "Boston University", 
-            "name": "Liam Burke"
-        }, 
-        {
-            "affiliation": "Boston University", 
-            "name": "Afshin Pourmokhtarian"
-        }, 
-        {
-            "affiliation": "Morton Arboretum", 
-            "name": "Christy Rollinson"
-        }, 
-        {
-            "name": "Shubham Agarwal"
-        }, 
-        {
-            "affiliation": "Purdue University",
-            "name": "Brady Hardiman"
-        }, 
-        {
-            "affiliation": "University of New South Wales", 
-            "name": "Martin De Kauwe",
-            "orcid": "0000-0002-3399-9098"
-        }, 
-        {
-            "name": "Eugene"
-        }, 
-        {
-            "affiliation": "Boston University", 
-            "name": "Tess McCabe"
-        }, 
-        {
-            "affiliation": "Boston University", 
-            "name": "Katie Ragosta"
-        }, 
-        {
-            "name": "Tony Cohen"
-        }, 
-        {
-            "name": "zhangwenx"
-        }, 
-        {
-            "affiliation": "Finnish Meteorological Institute", 
-            "name": "Tony Viskari",
-            "oricid": "0000-0002-3357-1374"
-        }, 
-        {
-            "name": "Yan Zhao"
-        }, 
-        {
-           "affiliation": "University of Illinois at Urbana-Champaign",
-            "name": "Jing Xia"
-        }
-    ], 
-    "access_right": "open", 
+	"creators": [{
+			"affiliation": "University of Illinois at Urbana-Champaign",
+			"name": "David LeBauer",
+			"orcid": "0000-0001-7228-053X"
+		},
+		{
+			"affiliation": "Boston University",
+			"name": "Michael Dietze",
+			"orcid": "0000-0002-2324-2518"
+		},
+		{
+			"affiliation": "National Center for Supercomputing Applications",
+			"name": "Rob Kooper",
+			"orcid": "0000-0002-5781-7287"
+		},
+		{
+			"affiliation": "Boston University",
+			"name": "Alexey Shiklomanov",
+			"orcid": "0000-0003-4022-5979"
+		},
+		{
+			"affiliation": "Boston University",
+			"name": "Betsy Cowdery",
+			"orcid": "0000-0002-6538-6296"
+		},
+		{
+			"affiliation": "Boston Univeristy",
+			"name": "Istem Fer",
+			"orcid": "0000-0001-8236-303X"
+		},
+		{
+			"affiliation": "Boston Univeristy",
+			"name": "Anthony Gardella",
+                        "orcid": "0000-0003-4380-3412"
+		},
+		{
+			"affiliation": "Pacific Northwest National Laboratory / University of Maryland",
+			"name": "Ben Bond-Lamberty",
+			"orcid": "0000-0001-9525-4633"
+		},
+		{
+			"affiliation": "Brookhaven National Laboratory",
+			"name": "Shawn P. Serbin",
+			"orcid": "0000-0003-4136-8971"
+		},
+		{
+			"affiliation": "University of Notre Dame",
+			"name": "Ann Raiho"
+		},
+		{
+			"affiliation": "Brigham Young University",
+			"name": "Anne Thomas"
+		},
+		{
+			"affiliation": "Pennsylvania State University",
+			"name": "Chris Black",
+			"orcid": "0000-0001-8382-298X"
+		},
+		{
+			"affiliation": "University of Wisconsin-Madison",
+			"name": "James Simkins"
+		},
+		{
+			"affiliation": "University of Wisconsin-Madison",
+			"name": "Ankur Desai",
+			"orcid": "0000-0002-5226-6041"
+		},
+		{
+			"affiliation": "Worchester Academy",
+			"name": "Joshua Mantooth"
+		},
+		{
+			"name": "Aman Kumar"
+		},
+		{
+			"affiliation": "Boston University",
+			"name": "Liam Burke"
+		},
+		{
+			"affiliation": "Boston University",
+			"name": "Afshin Pourmokhtarian"
+		},
+		{
+			"affiliation": "Morton Arboretum",
+			"name": "Christy Rollinson"
+		},
+		{
+			"name": "Shubham Agarwal"
+		},
+		{
+			"affiliation": "Purdue University",
+			"name": "Brady Hardiman"
+		},
+		{
+			"affiliation": "University of New South Wales",
+			"name": "Martin De Kauwe",
+			"orcid": "0000-0002-3399-9098"
+		},
+		{
+			"name": "Eugene"
+		},
+		{
+			"affiliation": "Boston University",
+			"name": "Tess McCabe"
+		},
+		{
+			"affiliation": "Boston University",
+			"name": "Katie Ragosta"
+		},
+		{
+			"name": "Tony Cohen"
+		},
+		{
+			"name": "zhangwenx"
+		},
+		{
+			"affiliation": "Finnish Meteorological Institute",
+			"name": "Tony Viskari",
+			"oricid": "0000-0002-3357-1374"
+		},
+		{
+			"affiliation": "University of Illinois at Urbana-Champaign",
+			"name": "Yan Zhao"
+		},
+		{
+			"affiliation": "University of Illinois at Urbana-Champaign",
+			"name": "Jing Xia"
+		}
+	],
+	"references": [
+		"LeBauer, David S, Dan Wang, Katherine Richter, Carl Davidson, and Michael C Dietze (2013). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs. doi:10.1890/12-0137.1",
+		"Wang, Dan, David S LeBauer, and Michael C Dietze (2013). Predicting yields of short-rotation hybrid poplar (Populus spp.) for the contiguous US through model-data synthesis. Ecological Applications doi:10.1890/12-0854.1",
+		"Dietze, Michael C, David S LeBauer, and Rob Kooper (2013). On improving the communication between models and data. Plant, Cell, & Environment doi:10.1111/pce.12043",
+		"Dietze, Michael C, Shawn P Serbin, Carl Davidson, Ankur R Desai, Xiaohui Feng, Ryan Kelly, Rob Kooper, David LeBauer, Josh Mantooth, Kenton McHenry, Dan Wang (2014) A quantitative assessment of a terrestrial biosphere model's data needs across North American biomes. Journal of Geophysical Research: Biogeosciences 119, no. 3 (2014): 286-300.",
+		"Viskari, Toni, Brady Hardiman, Ankur R. Desai, and Michael C. Dietze. (2015) Model-data assimilation of multiple phenological observations to constrain and predict leaf area index. doi:10.1890/14-0497.1",
+		"Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. (2016) Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion. Remote Sensing of the Environment 183: 226-238",
+		"LeBauer, David S, Rob Kooper, Patrick Mulrooney, Scott Rohde, Dan Wang, Stephen P Long, & Michael C Dietze (2018). BETYdb: a yield, trait, and ecosystem service database applied to second generation bioenergy feedstock production. GCB Bioenergy, 10(1), 61-71. doi: 10.1111/gcbb.12420"
+	],
+	"notes": "The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891, EF #1501873, EF #1638577, EF #1702996), NASA Terrestrial Ecosystems #NNX14AH65G, NASA CMS #80NSSC17KO711, NASA NESSF #NNX16AO13H, the Department of Energy (ARPA-E awards #DE-AR0000594, #DE-AR0000598, and #SERDP RC-2636), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.",
+	"resource_type": {
+		"title": "Software",
+		"type": "software"
+	},
+	"license": {
+		"id": "NCSA"
+	},
+	"access_right": "open"
+
 }

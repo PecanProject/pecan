@@ -6,12 +6,16 @@
 \usage{
 read_T_files(yr, yfiles, tfiles, outdir, start_date, end_date, ...)
 }
+\arguments{
+\item{yr}{the year being processed}
+
+\item{yfiles}{the years on the filenames, will be used to matched tfiles for that year}
+}
 \description{
-yr     : the year being processed
-yfiles : the years on the filenames, will be used to matched tfiles for that year
+Function for reading -T- files
 }
 \details{
 e.g.    yr = 1999
-     yfiles = 1999 2000
-     tfiles = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
+yfiles = 1999 2000
+tfiles = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
 }

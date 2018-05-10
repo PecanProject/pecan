@@ -26,7 +26,8 @@
 ##' @author Mike Dietze, David LeBauer, Ankur Desai
 ##' @examples
 ##' \dontrun{
-##' bety = list(user='bety', password='bety',host='localhost', dbname='bety', driver='PostgreSQL',write=TRUE)
+##' bety <- list(user='bety', password='bety', host='localhost',
+##'   dbname='bety', driver='PostgreSQL',write=TRUE)
 ##' con <- PEcAn.DB::db.open(bety)
 ##' bety$con <- con
 ##' start_date <- lubridate::ymd_hm('200401010000')
@@ -40,7 +41,10 @@
 ##' format$lon <- -92.0
 ##' format$lat <- 45.0
 ##' format$time_zone <- "America/Chicago"
-##' results<-PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=TRUE)
+##' results <- PEcAn.data.atmosphere::met2CF.csv(
+##'   in.path, in.prefix, outfolder,
+##'   start_date, end_date, format,
+##'   overwrite=TRUE)
 ##' }
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE,...) {
@@ -128,7 +132,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       skiplog <- TRUE
       skiprows <- c(1:header - 1)
     }
-    alldat <- read.csv(files, 
+    alldat <- utils::read.csv(files, 
                        header = header,
                        skip = format$skip, 
                        na.strings = format$na.strings,
