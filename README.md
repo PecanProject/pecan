@@ -1,5 +1,9 @@
-[![Build Status](https://travis-ci.org/PecanProject/pecan.svg?branch=master)](https://travis-ci.org/PecanProject/pecan)[![Join the chat at https://gitter.im/PecanProject/pecan](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PecanProject/pecan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
+[![Build Status](https://travis-ci.org/PecanProject/pecan.svg?branch=master)](https://travis-ci.org/PecanProject/pecan)
+[![Slack](https://img.shields.io/badge/slack-login-green.svg)](https://pecanproject.slack.com/) 
+[![Slack](https://img.shields.io/badge/slack-join_chat-green.svg)](https://publicslack.com/slacks/pecanproject/invites/new) 
 [![DOI](https://zenodo.org/badge/4469/PecanProject/pecan.svg)](https://zenodo.org/badge/latestdoi/4469/PecanProject/pecan)
+
+
 
 ## Our Vision
 #### Ecosystem science, policy, and management informed by the best available data and models

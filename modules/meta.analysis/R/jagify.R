@@ -46,7 +46,7 @@ jagify <- function(result) {
     r$stat[r$stat <= 0] <- NA
   }
   
-  rename.jags.columns(r)
+  rename_jags_columns(r)
 } # jagify
 # ==================================================================================================#
 

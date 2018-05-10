@@ -52,9 +52,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
                         stringsAsFactors = FALSE)
   
   ### return for convert.inputs
-  return(invisible(results))  
-  
+  return(invisible(results))
+
   
 } # write_ic
-
-
