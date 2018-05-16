@@ -65,3 +65,27 @@ docker stop postgresql
 
 Containers that are started without the `--detach` can be stopped by pressing Ctrl-C, if you have started containers in the background they will keep on running until the machine is restarted or the container is stopped using `docker stop`
 
+## Working with docker-compose
+
+In the case of PEcAn we have multiple docker containers that we want to work together. To help with this we can use docker-compose. This will take a file as input that lists all the containers that make up the application and the dependencies between these containers. For example in the case of BETY we need the postgres container as well as the BETY container. 
+
+```yaml
+version: "3"
+services:
+  postgres:
+    image: mdillon/postgis:9.5
+  bety:
+    image: pecan/bety
+    depends_on:
+      - postgres
+```
+
+This simple file allows us to bring up a full BETY application with both database and BETY application. The BETY app will not be brought up until the database container has started.
+
+You can now start this application using:
+
+```
+docker-compose up
+```
+
+This will start the application, and you will see the log files for the 2 different containers.
