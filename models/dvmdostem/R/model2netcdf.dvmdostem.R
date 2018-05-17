@@ -29,7 +29,20 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   # First things first, we need to check the run_status.nc file and make sure
   # that the a) only one pixel ran, and b) the success code is > 0
   nc_runstatus <- ncdf4::nc_open(file.path(outdir, "run_status.nc"), write=FALSE)
+  if (length(nc_runstatus$var) != 1) {
+    PEcAn.logger::logger.error(c("INVALID run_status.nc file! Expecting 1 variable, found: ", length(nc_runstatus$var)))
+    stop()
+  }
+
   run_status <- ncdf4::ncvar_get(nc_runstatus, nc_runstatus$var$run_status)
+
+  # Cooerce the array into the right shape. the ncvar_get function does the 
+  # right thing if we are reading run_mask with more than one pixel. But if
+  # there is only one pixel, then a 1D list is returned, which causes problems
+  # later in the function. So here we force the array into a 2D shape.
+  dim.lengths = sapply(nc_runstatus$var[[1]]$dim, function(x) x$len)
+  run_status <- array(run_status, dim=dim.lengths)
+
   ncdf4::nc_close(nc_runstatus)
   good_px <- which(run_status > 0)
   if (length(good_px) != 1) {
@@ -195,6 +208,14 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
       # Convert the data
       vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, curvar[["newunits"]])
 
+      # Coerce the data into the right shape (y, x, time).
+      # With a single pixel run, the Y and X dimensions are lost when
+      # reading from the file with ncdf4::ncvar_get, and the subsequent 
+      # ncdf4::ncvar_put call fails. So here we make sure that the
+      # vardata_new data is a 3D structure:
+      dim_lengths <- sapply(ncin_tr_y$var[[1]]$dim, function(x) x$len)
+      vardata_new <- array(vardata_new, dim = dim_lengths)
+
       # Write the data to the file...
       starts <-c(y = px_Y, x = px_X, time = 1)
       counts <-c(y = 1, x = 1, time = 1)
@@ -226,6 +247,14 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
 
       # Convert the data
       vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, curvar[["newunits"]])
+
+      # Coerce the data into the right shape (y, x, time).
+      # With a single pixel run, the Y and X dimensions are lost when
+      # reading from the file with ncdf4::ncvar_get, and the subsequent 
+      # ncdf4::ncvar_put call fails. So here we make sure that the
+      # vardata_new data is a 3D structure:
+      dim_lengths <- sapply(ncin_sc_y$var[[1]]$dim, function(x) x$len)
+      vardata_new <- array(vardata_new, dim = dim_lengths)
 
       # Write the data to the file...
       starts <-c(y = px_Y, x = px_X, time = 1)
