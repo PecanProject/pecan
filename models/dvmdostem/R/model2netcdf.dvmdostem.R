@@ -176,7 +176,7 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   # the respective yearly PEcAn output files.
   for (i in seq_along(1:length(y_tr_starts))) {
     ncout <- ncdf4::nc_open(file.path(outdir, paste0(lubridate::year(y_tr_starts[i]), ".nc")), write = TRUE)
-    for (j in dvmdostem_outputs){
+    for (j in dvmdostem_outputs) {
       ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_yearly_tr.nc")))
       vardata <- ncdf4::ncvar_get(ncin_tr_y, j)
 
@@ -196,7 +196,10 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
       vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, curvar[["newunits"]])
 
       # Write the data to the file...
-      ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], c(1,1,1), c(1,1,1))
+      starts <-c(y = px_Y, x = px_X, time = 1)
+      counts <-c(y = 1, x = 1, time = 1)
+      dim.order <- sapply(ncin_tr_y$var[[j]]$dim, function(x) x$name)
+      ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], start = starts[dim.order], count = counts[dim.order])
     }
     ncdf4::nc_close(ncout)
   }
@@ -225,7 +228,11 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
       vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, curvar[["newunits"]])
 
       # Write the data to the file...
-      ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], c(1,1,1), c(1,1,1))
+      starts <-c(y = px_Y, x = px_X, time = 1)
+      counts <-c(y = 1, x = 1, time = 1)
+      dim.order <- sapply(ncin_sc_y$var[[j]]$dim, function(x) x$name)
+      ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], start = starts[dim.order], count = counts[dim.order])
+
     }
     ncdf4::nc_close(ncout)
   }
