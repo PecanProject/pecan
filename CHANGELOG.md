@@ -14,6 +14,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - Fixed swapped lat/lon in met2CF.Geostreams
     - download.GFDL now records reference date in time units field, as required by the CF met standard
     - Reduced download.GFDL network load by not preloading dimension data
+    - Fixed spurious `No geonamesUsername set` warning by updating geonames package to development version
 - ED:
     - Change all history parameter files to have zero storage respiration
     
