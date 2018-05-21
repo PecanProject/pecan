@@ -34,7 +34,7 @@ options(error=quote({
 # Open and read in settings file for PEcAn run.
 args <- commandArgs(trailingOnly = TRUE)
 if (is.na(args[1])){
-  settings <- PEcAn.settings::read.settings("pecan.xml")
+  settings <- PEcAn.settings::read.settings("pecan.xml") 
 } else {
   settings.file = args[1]
   settings <- PEcAn.settings::read.settings(settings.file)

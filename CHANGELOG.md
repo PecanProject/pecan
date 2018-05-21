@@ -9,10 +9,34 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- PEcAn.data.atmosphere: 
+    - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
+    - Fixed swapped lat/lon in met2CF.Geostreams
+    - download.GFDL now records reference date in time units field, as required by the CF met standard
+    - Reduced download.GFDL network load by not preloading dimension data
+- ED:
+    - Change all history parameter files to have zero storage respiration
+    
+### Added
+
+- From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
+
+### Removed
+
+### Changed
+
+## [1.5.3] - 2018-05-15
+
+### Fixes
+- read.output now accepts date-times for start.year and end.year argument (#1887)
+- read.output no longer assumes timestamps are in days since the beginning of the year
+- Fixed xss issue in setup folder, now require users to login before accessing the setup folder scripts.
+- Fixed issue where in website not all sites are shown #1884
 - Fixed status page, should now be run from cronjob, creates static page
 - Fixed bug that overwrote remote  met file paths with local file paths
 - PEcAnRTM:
     - Remove non-portable extensions from `src/Makevars`. This should make the package Windows-compatible.
+- Fixed BrownDog shiny issues of removing site without geometry; fixing sites.length==0; removing old map markers when change input$type; fixing agreement bug when change input$type
 
 ### Added
 - Functionality to read pft-specific outputs and to run sensitivity analysis on pft-specific outputs.
@@ -31,6 +55,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - `EDR` API has been revised. Setup has been refactored from EDR via new `setup_edr` function, which relies on the ED utilities (see `PEcAn.ED2` below), and the `EDR` function now focuses only on execution. Also, added new `params2edr` function to make it easy to convert complex EDR parameters list to flat parameter vector required by `invert_bt` (or other optimization functions).
 - PEcAn.ED2:
     - New set of utilities for working with ED meteorology and vegetation inputs, and the ED2IN file. Existing PEcAn code has been revised to use these utilities.
+- PEcAn.data.atmosphere:
+    - New utilities for efficiently downloading NARR time series using THREDDS/OpenDAP
 
 ### Removed
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).

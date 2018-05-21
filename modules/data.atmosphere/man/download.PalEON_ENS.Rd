@@ -8,7 +8,7 @@ download.PalEON_ENS(sitename, outfolder, start_date, end_date,
   overwrite = FALSE, ...)
 }
 \arguments{
-\item{end_year}{}
+\item{end_date}{}
 }
 \author{
 Betsy Cowdery, Mike Dietze
