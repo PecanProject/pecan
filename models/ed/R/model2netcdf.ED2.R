@@ -974,7 +974,12 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
 
 #' S-file contents are not written to standard netcdfs but are used by read_restart
 #' from SDA's perspective it doesn't make sense to write and read to ncdfs because ED restarts from history files
-#'
+#' 
+#' @param sfile history file name e.g. "history-S-1961-01-01-000000-g01.h5"
+#' @param outdir path to run outdir, where the -S- file is
+#' @param pft_names string vector, names of ED2 pfts in the run, e.g. c("temperate.Early_Hardwood", "temperate.Late_Conifer")
+#' @param pecan_names string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")
+#' 
 #' @export
 read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   
