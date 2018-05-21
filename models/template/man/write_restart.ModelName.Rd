@@ -5,7 +5,7 @@
 \title{Write restart template for SDA}
 \usage{
 write_restart.ModelName(outdir, runid, start.time, stop.time, settings,
-  new.state)
+  new.state, RENAME, new.params, inputs)
 }
 \arguments{
 \item{start.time}{Time of current assimilation step}
@@ -13,6 +13,12 @@ write_restart.ModelName(outdir, runid, start.time, stop.time, settings,
 \item{stop.time}{Time of next assimilation step}
 
 \item{new.state}{Analysis state matrix returned by \code{sda.enkf}}
+
+\item{RENAME}{flag to either rename output file or not}
+
+\item{new.params}{optional, additionals params to pass write.configs that are deterministically related to the parameters updated by the analysis}
+
+\item{inputs}{new input paths updated by the SDA workflow, will be passed to write.configs}
 }
 \description{
 Write restart files for model

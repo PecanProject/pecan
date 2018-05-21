@@ -6,19 +6,6 @@
 \usage{
 read_restart.ED2(outdir, runid, stop.time, settings, var.names, params)
 }
-\arguments{
-\item{outdir}{Output directory}
-
-\item{runid}{Run ID}
-
-\item{stop.time}{Year that is being read}
-
-\item{settings}{PEcAn settings object}
-
-\item{var.names}{Variable names to be extracted}
-
-\item{params}{Any parameters required for state calculations}
-}
 \examples{
 \dontrun{
   outdir <- "~/sda-hackathon/outputs"
