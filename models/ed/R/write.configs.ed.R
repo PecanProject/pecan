@@ -102,6 +102,7 @@ convert.samples.ED <- function(trait.samples) {
 ##' @param defaults list of defaults to process. Default=settings$constants
 ##' @param check Logical. If `TRUE`, check ED2IN validity before running and 
 ##' throw an error if anything is wrong (default = `FALSE`)
+##' @param inputs updated input paths coming from SDA workflow, will modify ED2IN
 ##' @return configuration file and ED2IN namelist for given run
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
