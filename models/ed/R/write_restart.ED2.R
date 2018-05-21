@@ -5,7 +5,7 @@
 #' @return TRUE if successful
 #' @export
 write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
-                              settings, new.state, new.params, inputs, RENAME = TRUE) {
+                              settings, new.state, RENAME = TRUE, new.params, inputs) {
   
   restart <- new.params$restart
   
