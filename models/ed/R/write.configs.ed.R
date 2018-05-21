@@ -548,6 +548,9 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
   
+  # remove the tag that is only used for restart runs
+  jobsh <- gsub("@REMOVE_HISTORY_XML@", "", jobsh)
+  
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
