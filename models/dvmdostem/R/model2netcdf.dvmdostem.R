@@ -21,6 +21,7 @@
 ##'
 ##' @author Tobey Carman, Shawn Serbin
 ##'
+library(lubridate)
 model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
 
   PEcAn.logger::logger.info(paste0("Run start: ", runstart, " Run end: ", runend))
@@ -94,6 +95,8 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   # [x]     write the datapoint to the file
   # [x]   close the file
 
+  monthly_dvmdostem_outputs <- list.files(outdir, "*_monthly_*")
+  yearly_dvmdostem_outputs <- list.files(outdir, "*_yearly_*")
   dvmdostem_outputs <- c("GPP", "NPP", "RH", "SOC", "LAI") # NOT SURE YET WHERE THIS LIST SHOULD BE SETUP??
 
   # Build a mapping from dvmdostem names to PEcAn names, units, etc.
@@ -107,17 +110,36 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
     "LAI"=c(newname="LAI", longname="Leaf Area Index", newunits="m-2/m-2")
   )
 
+  # Look at the first dvmdostem output, see if it is was provided by dvmdostem
+  # as monthly or yearly, and adjust accordingly.
+  if(TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",dvmdostem_outputs[1],"_"), x))) {
+    trfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_monthly_tr.nc"))
+    scfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_monthly_sc.nc"))
+    timedivisor <- 12
+  } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",dvmdostem_outputs[1],"_"), x))) {
+    trfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_yearly_tr.nc"))
+    scfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_yearly_sc.nc"))
+    timedivisor <- 1
+  } else {
+    PEcAn.logger::logger.info(paste0("ERROR! - can't find ", dvmdostem_outputs[1], " in yearly or monthly outputs!?"))
+    stop()
+  }
+
   PEcAn.logger::logger.info(paste0("Opening dvmdostem raw output file for variable (transient): ", dvmdostem_outputs[1]))
-  ncin_y_tr <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[1],"_yearly_tr.nc")))
+  ncin_y_tr <- ncdf4::nc_open(trfile)
   y_tr_time_start <- ncin_y_tr$dim$time$units
   y_tr_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", y_tr_time_start) )
-  y_tr_starts <- paste0(seq(y_tr_time_start, y_tr_time_start + ncin_y_tr$dim$time$len-1, 1), "-01-01 00:00:00")
+  y_tr_time_end <- y_tr_time_start + (ncin_y_tr$dim$time$len/timedivisor) - 1
+  y_tr_starts <- paste0(seq(y_tr_time_start, y_tr_time_end, 1), "-01-01 00:00:00")
 
   PEcAn.logger::logger.info(paste0("Opening dvmdostem raw output file for variable (scenario): ", dvmdostem_outputs[1]))
-  ncin_y_sc <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[1],"_yearly_sc.nc")))
+  ncin_y_sc <- ncdf4::nc_open(scfile)
   y_sc_time_start <- ncin_y_sc$dim$time$units
   y_sc_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", y_sc_time_start) )
-  y_sc_starts <- paste0(seq(y_sc_time_start, y_sc_time_start + ncin_y_sc$dim$time$len-1, 1), "-01-01 00:00:00")
+  y_sc_time_end <- y_sc_time_start + (ncin_y_sc$dim$time$len/timedivisor) - 1
+  y_sc_starts <- paste0(seq(y_sc_time_start, y_sc_time_end, 1), "-01-01 00:00:00")
+
+
 
   # Check that transient and sceario runs were contiguous...
   if ((lubridate::year(y_tr_starts[length(y_tr_starts)]) + 1) != lubridate::year(y_sc_starts[1])) {
@@ -132,7 +154,9 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   all_yrs <- c(y_tr_starts, y_sc_starts)
   for (i in seq_along(1:length(all_yrs))) {
 
-    PEcAn.logger::logger.info("Creating dimensions for new PEcAn style files...")
+    PEcAn.logger::logger.info("Creating dimensions (and coordinate variables) for new PEcAn style files...")
+    # The way R netcdf works is that you pass a vals argument when creating dimensions
+    # and it creates the coordinate variables for you.
     lond <- ncdf4::ncdim_def(name='lon',
                              units="degrees_east",
                              vals=c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
@@ -143,9 +167,15 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
                              vals=c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
                              longname="coordinate_latitude")
 
+    if (length(monthly_dvmdostem_outputs) > 0) {
+      # last day of each month
+      timed_vals <- cumsum(sapply(seq(12), function(x) lubridate::days_in_month(x)))
+    } else {
+      timed_vals <- c(0)
+    }
     timed <- ncdf4::ncdim_def(name='time',
                               units=paste0("days since ", all_yrs[i]),
-                              vals=c(0),
+                              vals=timed_vals,
                               unlim=TRUE,
                               longname="time",
                               calendar='365_day')
@@ -153,6 +183,7 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
     out_nc_dims <- list(lon=lond, lat=latd, time=timed) # dimension order: X, Y, time
 
     PEcAn.logger::logger.info("Creating variables for new PEcAn style files...")
+
     newvars <- c() # Not very efficient, would be better to pre-allocate space
     for (j in seq_along(1:length(dvmdostem_outputs))) {
       # Use pecan utility function that can reognize and create proper longname
