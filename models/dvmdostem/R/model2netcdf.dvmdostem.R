@@ -221,7 +221,18 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   for (i in seq_along(1:length(y_tr_starts))) {
     ncout <- ncdf4::nc_open(file.path(outdir, paste0(lubridate::year(y_tr_starts[i]), ".nc")), write = TRUE)
     for (j in dvmdostem_outputs) {
-      ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_yearly_tr.nc")))
+
+      if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
+        # The current variable (j) is a monthly output
+        ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_monthly_tr.nc")))
+      } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
+        # The current variable (j) is a yearly output
+        ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_yearly_tr.nc")))
+      } else {
+        PEcAn.logger::logger.error(paste0("ERROR!: ", j, " is not a monthly or yearly variable!"))
+        stop()
+      }
+
       vardata <- ncdf4::ncvar_get(ncin_tr_y, j)
 
       # Look up the units in dvmdostem world
@@ -247,11 +258,22 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
       dim_lengths <- sapply(ncin_tr_y$var[[1]]$dim, function(x) x$len)
       vardata_new <- array(vardata_new, dim = dim_lengths)
 
-      # Write the data to the file...
-      starts <-c(y = px_Y, x = px_X, time = 1)
-      counts <-c(y = 1, x = 1, time = 1)
       dim.order <- sapply(ncin_tr_y$var[[j]]$dim, function(x) x$name)
-      ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], start = starts[dim.order], count = counts[dim.order])
+      starts <-c(y = px_Y, x = px_X, time = 1)
+
+      # Write the data to the file...
+      if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
+        # The current variable (j) is a monthly output
+        counts <- c(y=1, x=1, time=12)
+        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i:(i+11)], start = starts[dim.order], count = counts[dim.order])
+      } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
+        # The current variable (j) is a yearly output
+        counts <- c(y=1, x=1, time=1)
+        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], start = starts[dim.order], count = counts[dim.order])
+      } else {
+        PEcAn.logger::logger.error(paste0("ERROR!: ", j, " is not a monthly or yearly variable!"))
+        stop()
+      }
     }
     ncdf4::nc_close(ncout)
   }
@@ -261,7 +283,18 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   for (i in seq_along(1:length(y_sc_starts))) {
     ncout <- ncdf4::nc_open(file.path(outdir, paste0(lubridate::year(y_sc_starts[i]), ".nc")), write = TRUE)
     for (j in dvmdostem_outputs){
-      ncin_sc_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_yearly_sc.nc")))
+
+      if(TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
+        # The current variable (j) is a monthly output
+        ncin_sc_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_monthly_sc.nc")))
+      } else if(TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
+        # The current variable (j) is a yearly output
+        ncin_sc_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_yearly_sc.nc")))
+      } else {
+        PEcAn.logger::logger.error(paste0("ERROR!: ", j, " is not a monthly or yearly variable! (processing transient outputs)"))
+        stop()
+      }
+
       vardata <- ncdf4::ncvar_get(ncin_sc_y, j)
 
       # Look up the units in dvmdostem world
@@ -281,17 +314,27 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
 
       # Coerce the data into the right shape (y, x, time).
       # With a single pixel run, the Y and X dimensions are lost when
-      # reading from the file with ncdf4::ncvar_get, and the subsequent 
+      # reading from the file with ncdf4::ncvar_get, and the subsequent
       # ncdf4::ncvar_put call fails. So here we make sure that the
       # vardata_new data is a 3D structure:
       dim_lengths <- sapply(ncin_sc_y$var[[1]]$dim, function(x) x$len)
       vardata_new <- array(vardata_new, dim = dim_lengths)
 
-      # Write the data to the file...
-      starts <-c(y = px_Y, x = px_X, time = 1)
-      counts <-c(y = 1, x = 1, time = 1)
       dim.order <- sapply(ncin_sc_y$var[[j]]$dim, function(x) x$name)
-      ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], start = starts[dim.order], count = counts[dim.order])
+      starts <-c(y = px_Y, x = px_X, time = 1)
+
+      # Write the data to the file...
+      if(TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"),x))) {
+        # The current variable (j) is a monthly output
+        counts <- c(y=1, x=1, time=12)
+        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i:(i+11)], start = starts[dim.order], count = counts[dim.order])
+      } else if(TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"),x))) {
+        # The current variable (j) is a yearly output
+        counts <- c(y=1, x=1, time=1)
+        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], start = starts[dim.order], count = counts[dim.order])
+      } else {
+        PEcAn.logger::logger.error(paste0("ERROR!:", j, " is not a monthly or yearly variable!? (processing scenario outputs)"))
+      }
 
     }
     ncdf4::nc_close(ncout)
