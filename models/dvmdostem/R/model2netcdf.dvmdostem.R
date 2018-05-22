@@ -96,6 +96,17 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
 
   dvmdostem_outputs <- c("GPP", "NPP", "RH", "SOC", "LAI") # NOT SURE YET WHERE THIS LIST SHOULD BE SETUP??
 
+  # Build a mapping from dvmdostem names to PEcAn names, units, etc.
+  # The temunits should (is) looked up from the dvmdostem output file's units
+  # attributes...
+  varmap <- list(
+    "GPP"=c(newname="GPP", longname="Gross Primary Productivity", newunits="kg C m-2 s-1"),
+    "NPP"=c(newname="NPP", longname="Net Primary Productivity", newunits="kg C m-2 s-1"),
+    "RH"=c(newname="HeteroResp", longname="Heterotrophic Respiration", newunits="kg C m-2 s-1"),
+    "SOC"=c(newname="SoilOrgC", longname="Soil Organic Carbon", newunits="kg C m-2"),
+    "LAI"=c(newname="LAI", longname="Leaf Area Index", newunits="m-2/m-2")
+  )
+
   PEcAn.logger::logger.info(paste0("Opening dvmdostem raw output file for variable (transient): ", dvmdostem_outputs[1]))
   ncin_y_tr <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[1],"_yearly_tr.nc")))
   y_tr_time_start <- ncin_y_tr$dim$time$units
@@ -116,17 +127,6 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
                                       " Begining of scenario: ",
                                       lubridate::year(y_sc_starts[1])))
   }
-
-  # Build a mapping from dvmdostem names to PEcAn names, units, etc.
-  # The temunits should (is) looked up from the dvmdostem output file's units
-  # attributes...
-  varmap <- list(
-    "GPP"=c(newname="GPP", longname="Gross Primary Productivity", newunits="kg C m-2 s-1"),
-    "NPP"=c(newname="NPP", longname="Net Primary Productivity", newunits="kg C m-2 s-1"),
-    "RH"=c(newname="HeteroResp", longname="Heterotrophic Respiration", newunits="kg C m-2 s-1"),
-    "SOC"=c(newname="SoilOrgC", longname="Soil Organic Carbon", newunits="kg C m-2"),
-    "LAI"=c(newname="LAI", longname="Leaf Area Index", newunits="m-2/m-2")
-  )
 
   PEcAn.logger::logger.info("Creating one netcdf file for each output year...")
   all_yrs <- c(y_tr_starts, y_sc_starts)
