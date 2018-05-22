@@ -9,22 +9,60 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- PEcAn.data.atmosphere: 
+    - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
+    - Fixed swapped lat/lon in met2CF.Geostreams
+    - download.GFDL now records reference date in time units field, as required by the CF met standard
+    - Reduced download.GFDL network load by not preloading dimension data
+- ED:
+    - Change all history parameter files to have zero storage respiration
+    
+### Added
+
+- From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
+
+### Removed
+
+### Changed
+
+## [1.5.3] - 2018-05-15
+
+### Fixes
+- read.output now accepts date-times for start.year and end.year argument (#1887)
+- read.output no longer assumes timestamps are in days since the beginning of the year
+- Fixed xss issue in setup folder, now require users to login before accessing the setup folder scripts.
+- Fixed issue where in website not all sites are shown #1884
 - Fixed status page, should now be run from cronjob, creates static page
+- Fixed bug that overwrote remote  met file paths with local file paths
+- PEcAnRTM:
+    - Remove non-portable extensions from `src/Makevars`. This should make the package Windows-compatible.
+- Fixed BrownDog shiny issues of removing site without geometry; fixing sites.length==0; removing old map markers when change input$type; fixing agreement bug when change input$type
 
 ### Added
+- Functionality to read pft-specific outputs and to run sensitivity analysis on pft-specific outputs.
 - Ability to allow for insecure sync using -k flag
 - Added information on how to join slack
 - PEcAn.BIOCRO now supports BioCro version 1.0. BioCro 0.9x models should still work as before, but note parameter and weather format changes in the `Changed` section below.  
-- RTM: Exposed PROSPECT absorption coefficients and `gpm()` function ("generalized plate model"), facilitating experimentation with different absorption coefficients
-- RTM: Added `spectra` S3 class and methods for subsetting (e.g. `myspec[[400:700]]`), plotting (`plot()` and `matplot()`), and combining spectra by wavelength.
 - Added new model package (PEcAn.dvmdostem) and initial wrappers for integration of the DVM-DOS-TEM model and tested.
+- PEcAn now supports PFTs whose members are cultivars rather than species, and will automatically restrict the meta-analysis to matching records, e.g. runs with a PFT containing only Panicum virgatum 'Cave-In-Rock' will not use observations from Panicum virgatum 'Alamo', but a PFT containing the whole species will use observations from both. However, there is not yet any BETYdb interface to *create* cultivar-PFTs other than manual SQL.
 - New base package `PEcAn.workflow`, for functions used to perform the each major step of the analysis. These were previously scattered in other base packages.
 - Added PR review time estimate to PR template 
+- New set of `PEcAn.logger` functions similar to `stopifnot` to facilitate assertive programming: `severeifnot`, `errorifnot`, `warnifnot`, `infoifnot`, `debugifnot`
+- PEcAnRTM:
+    - Exposed PROSPECT absorption coefficients and `gpm()` function ("generalized plate model"), facilitating experimentation with different absorption coefficients
+    - Added `spectra` S3 class and methods for subsetting (e.g. `myspec[[400:700]]`), plotting (`plot()` and `matplot()`), and combining spectra by wavelength.
+    - Added `resample` functions for quickly resampling spectra (and, more generally, vectors and functions) to different dimensions. 
+    - `EDR` API has been revised. Setup has been refactored from EDR via new `setup_edr` function, which relies on the ED utilities (see `PEcAn.ED2` below), and the `EDR` function now focuses only on execution. Also, added new `params2edr` function to make it easy to convert complex EDR parameters list to flat parameter vector required by `invert_bt` (or other optimization functions).
+- PEcAn.ED2:
+    - New set of utilities for working with ED meteorology and vegetation inputs, and the ED2IN file. Existing PEcAn code has been revised to use these utilities.
+- PEcAn.data.atmosphere:
+    - New utilities for efficiently downloading NARR time series using THREDDS/OpenDAP
 
 ### Removed
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
 
 ### Changed
+- Updated wrappers for FATES model to work with recent CLM5 release. Updated write.config, job.template, and other associated files to work with CLM5 inputs and met drivers
 - Updated model2netcdf.MAAT to use ncdf4::ncvar_def to define netCDF variables
 - Fixed an remote code execution discovered by NCSA security team.
 - Column name changes for newly generated biocromet csvs: `SolarR` is now `solar` and `WS` is now `windspeed`. Previously generated met files with the old names will still work for BioCro 0.9 runs, but will need to be renamed before using them with BioCro 1.0.
@@ -36,6 +74,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Replaced `rhdf5` library with `hdf5r`, a more modern alternative that is available on CRAN.
 - PEcAn.DB function `runModule.get.trait.data` has been moved to the new PEcAn.workflow package to avoid a circular package dependency between PEcAn.DB and PEcAn.settings.
 - Major documentation refactoring. The documentation names are now directly tied to the order in which they are rendered, and all `Rmd` files in all subdirectories of the documentation source are rendered by default. The overall structure of the documentation has been revised for clarity and cohesiveness.
+- Edited met2model.ED2 to not enforce leap years. 
 - Integrate demo 1 into basic user guide
 
 ## [1.5.2] - 2017-12-07
@@ -50,7 +89,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed incorrect `PEcAn.BIOCRO` daily and yearly results: Was calculating every row from whole simulation instead of that day (#1738)
 
 ### Added
-- New Dockerfile to create PEcAN specific container for SIPNET.
+- New Dockerfile to create PEcAn specific container for SIPNET.
 
 ### Removed
 - Removed `PEcAn.utils::model2netcdf`, which has been deprecated since PEcAn 1.3.7. Use `model2netcdf.<YOURMODEL>` in the appropriate model package instead.

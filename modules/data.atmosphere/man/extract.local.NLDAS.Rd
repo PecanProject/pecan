@@ -24,6 +24,9 @@ extract.local.NLDAS(outfolder, in.path, start_date, end_date, site_id, lat.in,
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
 
+\item{verbose}{logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
+to control printing of debug info}
+
 \item{...}{Other arguments, currently ignored}
 }
 \description{

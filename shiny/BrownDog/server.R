@@ -67,7 +67,7 @@ server <- shinyServer(function(input, output, session) {
       db.query(
         paste0(
           "SELECT sitename, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry))
-          AS lat FROM sites, sitegroups_sites where sites.id = sitegroups_sites.site_id
+          AS lat FROM sites, sitegroups_sites where sites.geometry IS NOT NULL AND sites.id = sitegroups_sites.site_id
           and sitegroups_sites.sitegroup_id in ( select id from sitegroups  where
           sitegroups.name like '",
           input$type,
@@ -76,22 +76,30 @@ server <- shinyServer(function(input, output, session) {
         con
         )
     
-    ids <- sites$sitename
-    latitude <- sites$lat
-    longitude <- sites$lon
-    
-    # fake sites to run on local (without DB)
-    # latitude<-c(35.94077, 35.83770, 35.84545, 35.81584, 35.79387, 36.05600)
-    # longitude<-c(-78.58010, -78.78084, -78.72444, -78.62568, -78.64262, -78.67600)
-    # ids<-c("a", "b", "c", "d", "e", "f")
-    
-    #add markers on the map
-    map = createLeafletMap(session, 'map')
-    session$onFlushed(once = TRUE, function() {
-      map$addMarker(lat = latitude,
-                    lng = longitude,
-                    layerId = ids)
-    })
+    if(length(sites) > 0){
+      ids <- sites$sitename
+      latitude <- sites$lat
+      longitude <- sites$lon
+      
+      # fake sites to run on local (without DB)
+      # latitude<-c(35.94077, 35.83770, 35.84545, 35.81584, 35.79387, 36.05600)
+      # longitude<-c(-78.58010, -78.78084, -78.72444, -78.62568, -78.64262, -78.67600)
+      # ids<-c("a", "b", "c", "d", "e", "f")
+      
+      map = createLeafletMap(session, 'map')
+      #add markers on the map
+      session$onFlushed(once = TRUE, function() {
+        map$clearMarkers()
+        map$addMarker(lat = latitude,
+                      lng = longitude,
+                      layerId = ids)
+      })
+    } else{
+      map = createLeafletMap(session, 'map')
+      session$onFlushed(once = TRUE, function() {
+        map$clearMarkers()
+      })
+    } 
     
     observe({
       click <- input$map_marker_click
@@ -106,7 +114,7 @@ server <- shinyServer(function(input, output, session) {
         map$showPopup(click$lat, click$lng, text)
       }
       selectedsite <- reactive({
-        if (is.null(input$agreement) || input$agreement) {
+        if ( !(input$type %in% c("Ameriflux", "NARR", "Fluxnet2015"))  || input$agreement) {
           paste(
             c(
               "<input>",
@@ -150,7 +158,7 @@ server <- shinyServer(function(input, output, session) {
           "example.xml"
         },
         content = function(file) {
-          if (is.null(input$agreement) || input$agreement) {
+          if (!(input$type %in% c("Ameriflux", "NARR", "Fluxnet2015")) || input$agreement) {
             writeLines(
               c(
                 "<input>",

@@ -33,8 +33,8 @@
 ##'                     specific hours coefficients. Must be integer because we want statistics from the same time of day
 ##'                     for each day surrounding the model day
 ##' @param seed - seed for randomization to allow for reproducible results                    
-##' @param overwrite
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists?
+##' @param verbose logical, currently ignored
 ##' @param print.progress - print progress bar? (gets passed through)
 ##' @export
 # -----------------------------------
@@ -48,7 +48,7 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     verbose = FALSE, print.progress=FALSE) {
   
     # pb.index <- 1
-    # pb <- txtProgressBar(min = 1, max = 8, style = 3)
+    # pb <- utils::txtProgressBar(min = 1, max = 8, style = 3)
     
     # Just in case we have a capitalization or singular/plural issue 
     if(direction.filter %in% toupper( c("backward", "backwards"))) direction.filter="backward"

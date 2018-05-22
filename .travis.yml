@@ -5,6 +5,11 @@
 # trusty. They are marked with TRUSTY for easy grepping.
 
 language: r
+r:
+  - 3.4
+
+r:
+  - 3.4
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
@@ -43,6 +48,8 @@ addons:
       - tcl
       - tcl-dev
       - libhdf5-dev
+      - libgdal-dev
+      - gdal-bin
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
       - r-cran-ape
@@ -84,6 +91,9 @@ notifications:
     on_success: always
     on_failure: always
     on_start: always
+  slack:
+    # Slack token created by Chris Black, 2018-02-17
+    secure: "DHHSNmiCf71SLa/FFSqx9oOnJjJt2GHYk7NsFIBb9ZY10RvQtIPfaoNxkPjqu9HLyZWJSFtg/uNKKplEHc6W80NoXyqoTvwOxTPjMaViXaCNqsmzjjR/JaCWT/oWGXyAw0VX3S8cwuIexlKQGgZwJpIzoVOZqUrDrHI/O17kZoM="
   email:
     on_success: always
     on_failure: always
