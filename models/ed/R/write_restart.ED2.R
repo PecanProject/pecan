@@ -157,7 +157,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   jobsh[which(jobsh.tmp == "@REMOVE_HISTORY_XML@")] <- remote_remove_cmd
   
   # also update mode2netcdf.ED2 call
-  mod2cf_line        <- grep("model2netcdf.ED2", jobsh.tmp)
+  mod2cf_line        <- grep("model2netcdf.ED2", jobsh)
   mod2cf_string      <- jobsh[mod2cf_line]
   from_year          <- paste0("'", hyear,"/")  # trying to make sure year is not somewhere else in the path
   to_year            <- paste0("'", lubridate::year(start.time), "/")
