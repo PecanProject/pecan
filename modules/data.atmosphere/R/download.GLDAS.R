@@ -7,8 +7,8 @@
 ##' @param start_date
 ##' @param end_date
 ##' @param site_id
-##' @param lat
-##' @param lon
+##' @param lat.in
+##' @param lon.in
 ##'
 ##' @author Christy Rollinson
 download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
@@ -127,10 +127,16 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
         latlon <- RCurl::getURL(paste0(dap_file, "lat[0:1:599],lon[0:1:1439]"))
         lat.ind <- gregexpr("lat", latlon)
         lon.ind <- gregexpr("lon", latlon)
-        lats <- as.vector(read.table(con = textConnection(substr(latlon, lat.ind[[1]][3],
-                                                                 lon.ind[[1]][3] - 1)), sep = ",", fileEncoding = "\n", skip = 1))
-        lons <- as.vector(read.table(con = textConnection(substr(latlon, lon.ind[[1]][3],
-                                                                 nchar(latlon))), sep = ",", fileEncoding = "\n", skip = 1))
+        lats <- as.vector(utils::read.table(
+          con = textConnection(substr(latlon, lat.ind[[1]][3], lon.ind[[1]][3] - 1)),
+          sep = ",",
+          fileEncoding = "\n",
+          skip = 1))
+        lons <- as.vector(utils::read.table(
+          con = textConnection(substr(latlon, lon.ind[[1]][3], nchar(latlon))),
+          sep = ",",
+          fileEncoding = "\n",
+          skip = 1))
 
         lat.use <- which(lats - 0.25 / 2 <= lat.in & lats + 0.25 / 2 >= lat.in)
         lon.use <- which(lons - 0.25 / 2 <= lon.in & lons + 0.25 / 2 >= lon.in)
@@ -148,8 +154,10 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
           var.now <- var$DAP.name[v]
           ind.1 <- gregexpr(paste(var.now, var.now, sep = "."), dap.out)
           end.1 <- gregexpr(paste(var.now, "time", sep = "."), dap.out)
-          dat.list[[v]][, , (j * 8) - 8 + h - 1] <-
-            read.delim(con = textConnection(substr(dap.out, ind.1[[1]][1], end.1[[1]][2])), sep = ",", fileEncoding = "\n")[1, 1]
+          dat.list[[v]][, , (j * 8) - 8 + h - 1] <- utils::read.delim(
+            con = textConnection(substr(dap.out, ind.1[[1]][1], end.1[[1]][2])),
+            sep = ",",
+            fileEncoding = "\n")[1, 1]
         }  # end variable loop
       }  # end hour
     }  # end day

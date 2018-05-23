@@ -8,7 +8,7 @@ download.GLDAS(outfolder, start_date, end_date, site_id, lat.in, lon.in,
   overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
-\item{lon}{}
+\item{lon.in}{}
 }
 \description{
 Download and convert single grid point GLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface

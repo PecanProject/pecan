@@ -5,7 +5,7 @@
 ##' Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
 ##' 
 ##' @export
-##' @param site the Ameriflux ID of the site to be downloaded, used as file name prefix. 
+##' @param sitename the Ameriflux ID of the site to be downloaded, used as file name prefix. 
 ##' The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
@@ -99,7 +99,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
     }
   }
   if (extract_file_flag) {
-    avail_file <- unzip(output_zip_file, list = TRUE)
+    avail_file <- utils::unzip(output_zip_file, list = TRUE)
     if (length(grep("HH", avail_file)) > 0) {
       file_timestep <- "HH"
     } else {
@@ -111,7 +111,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
         PEcAn.logger::logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
       }
     }
-    unzip(output_zip_file, outcsvname, exdir = outfolder)
+    utils::unzip(output_zip_file, outcsvname, exdir = outfolder)
     if (!file.exists(output_csv_file)) {
       PEcAn.logger::logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
     }

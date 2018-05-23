@@ -3,7 +3,7 @@
 #' @inheritParams is_spectra
 #' @param ... Additional arguments to `plot`
 #' @export
-plot.spectra <- function(spectra, ...) {
+plot.spectra <- function(spectra, type = "l", ...) {
   if (ncol(spectra) > 1) {
     warning("Multiple columns in spectra.",
             "Only plotting first column.",
@@ -11,5 +11,5 @@ plot.spectra <- function(spectra, ...) {
   }
   wavelength <- wavelengths(spectra)
   value <- spectra[, 1]
-  plot(x = wavelength, y = value, type = "l", ...)
+  plot(x = wavelength, y = value, type = type, ...)
 }
