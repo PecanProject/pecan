@@ -2,11 +2,11 @@
 #' 
 #' @author Alexey Shiklomanov
 #' 
-#' @param outdir
-#' @param runid
+#' @param outdir       outout directory
+#' @param runid        run id  
 #' @param start.time   Time of current assimilation step 
 #' @param stop.time    Time of next assimilation step
-#' @param settings
+#' @param settings     pecan settings list
 #' @param new.state    Analysis state matrix returned by \code{sda.enkf}
 #' @param RENAME       flag to either rename output file or not
 #' @param new.params   optional, additionals params to pass write.configs that are deterministically related to the parameters updated by the analysis 
