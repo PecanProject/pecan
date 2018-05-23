@@ -16,8 +16,6 @@
 extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat, slon,
                        overwrite = FALSE, verbose = FALSE, ...) {
   
-  library(PEcAn.utils)
-  
   in.path   <- as.character(in.path)
   in.prefix <- as.character(in.prefix)
   outfolder <- as.character(outfolder)

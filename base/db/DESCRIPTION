@@ -1,8 +1,8 @@
 Package: PEcAn.DB
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.5.2
-Date: 2017-12-04
+Version: 1.5.3
+Date: 2018-04-26
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
     Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -26,11 +26,12 @@ Imports:
     magrittr,
     ncdf4,
     plyr (>= 1.8.4),
+    rlang,
     udunits2
 Suggests:
     RPostgreSQL,
     RSQLite,
-    testthat (>= 1.0.2),
+    testthat (>= 2.0.0),
     tidyverse,
     data.table,
     rcrossref,

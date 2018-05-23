@@ -15,8 +15,9 @@ substrRight <- function(x, n) {
 ##' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset 
 ##'                    (see download.Fluxnet2015 or download.Ameriflux) 
 ##' @param site.id
-##' @param overwrite 
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists? 
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
+##'   print debugging information as they run?
 ##' @param swdn_method - Downwelling shortwave flux in air downscaling method (options are "sine", "spline", and "Waichler")
 ##' @param n_ens - numeric value with the number of ensembles to run
 ##' @param w_len - numeric value that is the window length in days  
@@ -303,10 +304,10 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
                   by = inter)
       
       Z <- RAtmosphere::SZA(days, lat_train, lon_train)
-      I <- 1000 * aspace::cos_d(Z)
+      I <- 1000 * cos(Z * pi/180) # degrees to radians
       m <- vector()
       for (i in seq_len(12)) {
-        m[i] <- Hmisc::monthDays(as.Date(paste0(year, "-", i, "-01")))
+        m[i] <- lubridate::days_in_month(as.Date(paste0(year, "-", i, "-01")))
       }
       bmlist <- vector()
       

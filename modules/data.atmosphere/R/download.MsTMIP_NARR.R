@@ -11,7 +11,6 @@
 ##' @author James Simkins
 download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
                                  overwrite = FALSE, verbose = FALSE, ...) {
-  library(PEcAn.utils)
 
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")

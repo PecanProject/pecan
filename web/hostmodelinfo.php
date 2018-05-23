@@ -211,6 +211,7 @@ function get_sites() {
       foreach($sites as &$site) {
         $site['format_id'][] = $row['format_id'];
       }
+      unset($site);
     } 
     $stmt->closeCursor();
 
@@ -223,6 +224,7 @@ function get_sites() {
           $site['format_id'][] = $met['CF'];
         }
       }
+      unset($site);
 
       // Check for CF -> model
       $stmt = $pdo->prepare("SELECT modeltypes.name FROM modeltypes, models" .
@@ -242,6 +244,7 @@ function get_sites() {
           }
         }
       }
+      unset($site);
     }
 
     // 4. Get list of all formats needed for model
@@ -263,6 +266,7 @@ function get_sites() {
         $filtered[] = $site;
       }
     }
+    unset($site);
     $sites = $filtered;
   }
 
