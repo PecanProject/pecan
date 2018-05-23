@@ -8,7 +8,7 @@
 #' @param RENAME       flag to either rename output file or not
 #' @param new.params   optional, additionals params to pass write.configs that are deterministically related to the parameters updated by the analysis 
 #' @param inputs       new input paths updated by the SDA workflow, will be passed to write.configs
-#' @inheritParams read.restart.ModelName
+#' @inheritParams read_restart.ModelName
 #' 
 #' @description Write restart files for model
 #' 
