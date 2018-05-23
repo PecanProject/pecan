@@ -57,10 +57,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   my.read_restart  <- paste0("read_restart.", model)
   my.write_restart <- paste0("write_restart.", model)
   my.split_inputs  <- paste0("split_inputs.", model)
-  # models that don't need split_inputs OR some flag passed via settings
-  # or should there be a split_inputs.ED2 doing nothing?
-  nosi <- c("ED2")
-  no_split <- model %in% nosi
+  
+  # models that don't need split_inputs, check register file for that
+  register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
+  register <- XML::xmlToList(XML::xmlParse(register.xml))
+  no_split <- !as.logical(register$exact.dates)
   
   if (!exists(my.write.config)) {
     PEcAn.logger::logger.warn(my.write.config, "does not exist")
