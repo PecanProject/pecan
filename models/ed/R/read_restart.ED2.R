@@ -93,6 +93,8 @@ read_restart.ED2 <- function(outdir,
     
     restart <- list()
     # pass certain things for write_restart to use (so that there we don't have to re-read and re-calculate stuff)
+    # IMPORTANT NOTE: in the future, these "certain things" need to be confined to old states that will be used
+    # to carry out deternimistic relationships, no other read/write restart should copy this logic
     restart$restart  <- histout$restart
     restart$oldstate <- forecast[["AbvGrndWood"]] # this will probably change as we change our disaggregation approach
     restart$histfile <- histfile
