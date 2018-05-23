@@ -9,6 +9,8 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   
   restart <- new.params$restart
   
+  # IMPORTANT NOTE: in the future, things that are passed via "restart" list need to be confined to old states that will be used
+  # to carry out deternimistic relationships, no other read/write restart should copy this logic
   old.state <- restart$oldstate # hack: this will probably change in the near future, it's currently just AbvGrndWood 
   histfile  <- restart$histfile # Get history restart file path
   restart   <- restart$restart
