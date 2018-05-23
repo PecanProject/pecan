@@ -97,6 +97,6 @@
 "chi_leaf";"Leaf Angle Distribution Chi";"ratio";"chi_leaf"
 "pstemp_min";"Photosynthesis Minimum Temperature";"Celsius";"pstemp_min"
 "theta";"Collatz Curvature Parameter";"";"theta"
-"gdd_tbase";"GDD Base Temperature","Celsius";"gdd_tbase"
+"gdd_tbase";"GDD Base Temperature";"Celsius";"gdd_tbase"
 "frprod_perc_10";"fine root allocation percentage vertically in soils (every 10 cm)";"0-100";"frprod_perc_10"
 "gcmax";"Maximum canopy conductance";"m s-1";"gcmax"
