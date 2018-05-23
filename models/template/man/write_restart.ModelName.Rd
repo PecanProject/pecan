@@ -8,15 +8,9 @@ write_restart.ModelName(outdir, runid, start.time, stop.time, settings,
   new.state, RENAME, new.params, inputs)
 }
 \arguments{
-\item{outdir}{Output directory}
-
-\item{runid}{Run ID}
-
 \item{start.time}{Time of current assimilation step}
 
 \item{stop.time}{Time of next assimilation step}
-
-\item{settings}{PEcAn settings object}
 
 \item{new.state}{Analysis state matrix returned by \code{sda.enkf}}
 
