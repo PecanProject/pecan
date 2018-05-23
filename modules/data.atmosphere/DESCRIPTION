@@ -16,7 +16,6 @@ Depends:
     methods
 Imports:
     abind (>= 1.4.5),
-    aspace,
     car,
     data.table,
     dbplyr,
