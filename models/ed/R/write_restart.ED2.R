@@ -146,7 +146,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   # read the jobsh in the rundir
   jobsh <- readLines(file.path(rundir, runid, "job.sh"),-1)
   remote_remove_cmd <- paste0("rm -f ", file.path(settings$host$outdir, runid, "history.xml"))
-  jobsh[which(jobsh == "@REMOVE_HISTXML@")+1] <- remote_remove_cmd
+  jobsh[grep("@REMOVE_HISTXML@", jobsh)+1] <- remote_remove_cmd
   
   # also update mode2netcdf.ED2 call
   mod2cf_line        <- grep("model2netcdf.ED2", jobsh)
