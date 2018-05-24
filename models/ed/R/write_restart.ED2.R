@@ -143,18 +143,10 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   # Remove old history.xml file, which job.sh looks for
   file.remove(file.path(mod_outdir, runid, "history.xml"))  # this is local
   
-  # have job.sh delete the old history.xml: this is temporary, this script will eventually run on remote
-  # first read the template to match lines
-  if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
-    jobsh.tmp <- readLines(con = settings$model$jobtemplate, n = -1)
-  } else {
-    jobsh.tmp <- readLines(con = system.file("template.job", package = "PEcAn.ED2"), n = -1)
-  }
-  
   # read the jobsh in the rundir
   jobsh <- readLines(file.path(rundir, runid, "job.sh"),-1)
   remote_remove_cmd <- paste0("rm -f ", file.path(settings$host$outdir, runid, "history.xml"))
-  jobsh[which(jobsh.tmp == "@REMOVE_HISTORY_XML@")] <- remote_remove_cmd
+  jobsh[which(jobsh == "@REMOVE_HISTXML@")+1] <- remote_remove_cmd
   
   # also update mode2netcdf.ED2 call
   mod2cf_line        <- grep("model2netcdf.ED2", jobsh)
