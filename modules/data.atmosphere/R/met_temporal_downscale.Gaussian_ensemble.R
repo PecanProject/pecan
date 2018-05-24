@@ -304,7 +304,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
                   by = inter)
       
       Z <- RAtmosphere::SZA(days, lat_train, lon_train)
-      I <- 1000 * aspace::cos_d(Z)
+      I <- 1000 * cos(Z * pi/180) # degrees to radians
       m <- vector()
       for (i in seq_len(12)) {
         m[i] <- lubridate::days_in_month(as.Date(paste0(year, "-", i, "-01")))

@@ -16,7 +16,6 @@ Depends:
     methods
 Imports:
     abind (>= 1.4.5),
-    aspace,
     car,
     data.table,
     dbplyr,
@@ -58,6 +57,7 @@ Suggests:
     rlang (>= 0.2.0),
     testthat (>= 2.0.0)
 Remotes:
+    github::ropensci/geonames,
     github::ropenscilabs/nneo,
     github::rforge/reddyproc/pkg/REddyProc
 License: FreeBSD + file LICENSE
