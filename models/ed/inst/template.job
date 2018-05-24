@@ -14,8 +14,8 @@ echo "Logging on "$TIMESTAMP
 mkdir -p "@OUTDIR@"
 @SCRATCH_MKDIR@
 
-# tag needed to remove "history.xml" on remote for restarts
-@REMOVE_HISTORY_XML@
+# @REMOVE_HISTXML@ : tag to remove "history.xml" on remote for restarts, commented out on purpose
+
 
 # flag needed for ubuntu
 export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
