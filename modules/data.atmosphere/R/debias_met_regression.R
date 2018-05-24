@@ -880,7 +880,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
               # too few rainless days because of only slight redistribution (r+1) or buildup 
               # towards the end of the year (random day that hasn't happened)
               dry1 <- rows.yr[which(sim1[rows.yr,j] < cutoff)]
-              dry <- sample(dry1, n.now, replace=F)
+              dry <- sample(dry1, min(n.now, length(dry1)), replace=F)
 
               dry1 <- dry1[!dry1 %in% dry]
               # dry <- dry[order(dry)]
