@@ -70,8 +70,10 @@ $(subst .doc/base/logger,,$(ALL_PKGS_D)): | .install/base/logger
 
 $(call depends,base/utils): | .install/base/remote
 $(call depends,base/db): | .install/base/utils
+$(call depends,base/qaqc): | .install/base/utils
 $(call depends,base/settings): | .install/base/utils .install/base/db
 $(call depends,base/visualization): | .install/base/db
+$(call depends,base/workflow): | .install/base/db .install/base/settings
 $(call depends,modules/data.atmosphere): | .install/base/utils .install/base/remote
 $(call depends,modules/data.land): | .install/base/db .install/base/utils .install/base/remote
 $(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/remote .install/base/settings
@@ -81,6 +83,7 @@ $(call depends,modules/rtm): | .install/modules/assim.batch .install/base/remote
 $(call depends,modules/uncertainty): | .install/base/utils .install/modules/priors .install/base/remote
 $(call depends,models/template): | .install/base/utils .install/base/remote
 $(call depends,models/biocro): | .install/mockery .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land .install/base/remote
+$(call depends,models/ed): | .install/base/settings
 
 clean:
 	rm -rf .install .check .test .doc
