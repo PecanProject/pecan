@@ -18,9 +18,10 @@ merge_met_variable(in.path, in.prefix, start_date, end_date, merge.file,
 
 \item{merge.file}{path of file to be merged in}
 
-\item{overwrite}{}
+\item{overwrite}{logical: replace output file if it already exists?}
 
-\item{verbose}{}
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
+print debugging information as they run?}
 
 \item{...}{}
 }
@@ -34,6 +35,7 @@ Currently does not yet support merge data that has lat/lon
 New variable only has time dimension and thus MIGHT break downstream code....
 }
 \examples{
+\dontrun{
 in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
 in.prefix  <- ""
 outfolder  <- "~/paleon/metTest/"
@@ -43,7 +45,6 @@ end_date   <- "2010-12-31"
 overwrite  <- FALSE
 verbose    <- TRUE
 
-\dontrun{
 merge_met_variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
 PEcAn.DALEC::met2model.DALEC(in.path,in.prefix,outfolder,start_date,end_date)
 }

@@ -1,8 +1,8 @@
 Package: PEcAn.allometry
 Type: Package
 Title: PEcAn allometry functions
-Version: 1.5.0
-Date: 2017-07-14
+Version: 1.5.3
+Date: 2018-04-26
 Author: Mike Dietze <dietze@bu.edu>
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: Synthesize allometric equations or fit allometries to data
@@ -11,6 +11,7 @@ Depends:
     mvtnorm,
     tools
 Imports:
+    PEcAn.logger,
     coda (>= 0.18),
     XML (>= 3.98-1.4)
 Suggests:

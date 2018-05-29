@@ -21,7 +21,7 @@
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
 met2model.CABLE <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
-  logger.severe("NOT IMPLEMENTED")
+  PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 
   # Please follow the PEcAn style guide:
   # https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Coding_style.html

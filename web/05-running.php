@@ -135,7 +135,7 @@ if (!$finished) {
 <?php } ?>
     </form>
     
-    <form id="formnext" method="POST" action="08-finished.php">
+    <form id="formnext" method="GET" action="08-finished.php">
 <?php if ($offline != "") { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>

@@ -4,6 +4,7 @@ ebifarm.acsa3;11
 ebifarm.c3grass;12
 ebifarm.c4crop;15
 ebifarm.c4grass;14
+ebifarm.c4grass.doe_vd;14
 ebifarm.castanea;11
 ebifarm.forb;12
 ebifarm.liqui;9
@@ -62,3 +63,12 @@ temperate.Western_Hardwood;10
 broadleaf_evergreen_tropical_tree;3
 tundra.deciduous.NGEE_Arctic;11
 tundra.grass.NGEE_Arctic;5
+temperate.Early_Hardwood.IF;9
+temperate.Late_Conifer.IF;8
+temperate.Late_Hardwood.IF;11
+temperate.Northern_Pine.IF;6
+temperate.North_Mid_Hardwood.IF;10
+cogongrass2;1
+boreal.blackspruce.2;8
+boreal.hardwood;9
+lianas;17

@@ -29,6 +29,7 @@
     case 'browndog': $pattern = '/\$browndog*/i'; break;
     case 'database': $pattern = '/\$db_bety_*/i'; break;
     case 'fiadb': $pattern = '/\$db_fia_*/i'; break;
+    case 'client_sceret': $pattern = '/\$client_sceret*/i'; break;
     default: $pattern = '/^\$'.$key.'/i';
   }
 
@@ -46,4 +47,13 @@
     '4' => "",
     );
 
+  // always require user to be logged in.
+  include '../common.php';
+  open_database();
+  if (!check_login()) {
+    header( "Location: ../login.php");
+    close_database();
+    exit;
+  }
+  close_database();
 ?>

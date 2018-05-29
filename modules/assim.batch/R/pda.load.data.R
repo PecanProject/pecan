@@ -36,7 +36,7 @@ load.pda.data <- function(settings, bety) {
     # because 'data.path <- query.file.path(obvs.id, con)' might return an incomplete path 
     # which results in reading all the files in that particular directory in the load_x_netcdf step
     if (is.null(inputs[[i]]$input.id) | is.null(data.path)) {
-      logger.error("Must provide both ID and PATH for all data assimilation inputs.")
+      PEcAn.logger::logger.error("Must provide both ID and PATH for all data assimilation inputs.")
     }
     
     format <- query.format.vars(bety = bety, input.id = inputs[[i]]$input.id)
@@ -60,10 +60,11 @@ load.pda.data <- function(settings, bety) {
       
       var.obs <- colnames(inputs[[i]]$data)[!colnames(inputs[[i]]$data) %in% c("UST", "posix", "year", format$vars[format$time.row,]$bety_name)]
       
-      AMFo                     <- inputs[[i]]$data[[var.obs]]
-      UST                      <- inputs[[i]]$data$UST
-      AMFo[AMFo == -9999]      <- NA
-      AMFo[UST < ustar.thresh] <- NA
+      AMFo                        <- inputs[[i]]$data[[var.obs]]
+      UST                         <- inputs[[i]]$data$UST
+      AMFo[AMFo == -9999]         <- NA
+      AMFo[UST < ustar.thresh]    <- NA
+      inputs[[i]]$data[[var.obs]] <- AMFo # write filtered data
       
       # Have to just pretend like these quality control variables exist...
       AMFq  <- rep(0, length(AMFo))

@@ -16,7 +16,7 @@ partition_roots <- function(roots, rtsize){
     rtsize_thresh_idx <- which.min(sapply(rtsize-threshold,abs)) 
     rtsize_thresh <- rtsize[rtsize_thresh_idx]
     if(abs(rtsize_thresh-threshold) > epsilon){
-      PEcAn.utils::logger.error(paste("Closest rtsize to fine root threshold of", threshold, "m (", rtsize_thresh, 
+      PEcAn.logger::logger.error(paste("Closest rtsize to fine root threshold of", threshold, "m (", rtsize_thresh, 
                                       ") is greater than", epsilon, 
                                       "m off; fine roots can't be partitioned. Please improve rtsize dimensions."))
       return(NULL)
@@ -25,15 +25,15 @@ partition_roots <- function(roots, rtsize){
       fine.roots <- sum(roots[1:rtsize_thresh_idx-1])
       coarse.roots <- sum(roots) - fine.roots
       if(fine.roots >= 0 && coarse.roots >= 0){
-        PEcAn.utils::logger.info("Using partitioned root values", fine.roots, "for fine and", coarse.roots, "for coarse.")
+        PEcAn.logger::logger.info("Using partitioned root values", fine.roots, "for fine and", coarse.roots, "for coarse.")
         return(list(fine.roots = fine.roots, coarse.roots = coarse.roots))
       } else{
-        PEcAn.utils::logger.error("Roots could not be partitioned (fine or coarse is less than 0).")
+        PEcAn.logger::logger.error("Roots could not be partitioned (fine or coarse is less than 0).")
         return(NULL)
       }
     }
   } else {
-    PEcAn.utils::logger.error("Inadequate or incorrect number of levels of rtsize associated with roots; please ensure roots and rtsize lengths match and are greater than 1.")
+    PEcAn.logger::logger.error("Inadequate or incorrect number of levels of rtsize associated with roots; please ensure roots and rtsize lengths match and are greater than 1.")
     return(NULL)
   }
 }

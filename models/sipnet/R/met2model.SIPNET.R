@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -24,121 +24,119 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-##' @importFrom ncdf4 ncvar_get
-met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date, 
+met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, ...) {
-  library(PEcAn.utils)
-  
-  PEcAn.utils::logger.info("START met2model.SIPNET")
+  PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"), 
-                    strptime(end_date, "%Y-%m-%d"), 
-                    "clim", 
+  out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
+                    strptime(end_date, "%Y-%m-%d"),
+                    "clim",
                     sep = ".")
   out.file.full <- file.path(outfolder, out.file)
-  
-  results <- data.frame(file = out.file.full, 
-                        host = fqdn(), 
-                        mimetype = "text/csv", 
-                        formatname = "Sipnet.climna", 
-                        startdate = start_date, 
-                        enddate = end_date, 
-                        dbfile.name = out.file, 
+
+  results <- data.frame(file = out.file.full,
+                        host = PEcAn.remote::fqdn(),
+                        mimetype = "text/csv",
+                        formatname = "Sipnet.climna",
+                        startdate = start_date,
+                        enddate = end_date,
+                        dbfile.name = out.file,
                         stringsAsFactors = FALSE)
-  PEcAn.utils::logger.info("internal results")
+  PEcAn.logger::logger.info("internal results")
   print(results)
-  
+
   if (file.exists(out.file.full) && !overwrite) {
-    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
+    PEcAn.logger::logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
-  
-  library(PEcAn.data.atmosphere)
-  
+
   ## check to see if the outfolder is defined, if not create directory for output
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
-  
+
   out <- NULL
-  
+
   # get start/end year since inputs are specified on year basis
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
-  
-  ## loop over files TODO need to filter out the data that is not inside start_date, end_date
+
+  ## loop over files
   for (year in start_year:end_year) {
-    
+
     skip <- FALSE
-    PEcAn.utils::logger.info(year)
-    
+    PEcAn.logger::logger.info(year)
+
+    diy <- PEcAn.utils::days_in_year(year)
+
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
-    
+
     if (file.exists(old.file)) {
       ## open netcdf
       nc <- ncdf4::nc_open(old.file)
-      
+
       ## convert time to seconds
       sec <- nc$dim$time$vals
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
-      
-      dt <- ifelse(lubridate::leap_year(year) == TRUE, 
-                   366 * 24 * 60 * 60 / length(sec), # leap year
-                   365 * 24 * 60 * 60 / length(sec)) # non-leap year
+
+      dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
       tstep <- round(86400 / dt)
       dt <- 86400 / tstep
-      
+
       ## extract variables
-      lat <- ncvar_get(nc, "latitude")
-      lon <- ncvar_get(nc, "longitude")
-      Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
-      Qair <- ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
-      ws <- try(ncvar_get(nc, "wind_speed"))
+      lat <- ncdf4::ncvar_get(nc, "latitude")
+      lon <- ncdf4::ncvar_get(nc, "longitude")
+      Tair <-ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
+      Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
+      Qair <-ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
+      ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
       if (!is.numeric(ws)) {
-        U <- ncvar_get(nc, "eastward_wind")
-        V <- ncvar_get(nc, "northward_wind")
+        U <- ncdf4::ncvar_get(nc, "eastward_wind")
+        V <- ncdf4::ncvar_get(nc, "northward_wind")
         ws <- sqrt(U ^ 2 + V ^ 2)
-        PEcAn.utils::logger.info("wind_speed absent; calculated from eastward_wind and northward_wind")
+        PEcAn.logger::logger.info("wind_speed absent; calculated from eastward_wind and northward_wind")
       }
-      
-      Rain <- ncvar_get(nc, "precipitation_flux")
-      # pres <- ncvar_get(nc,'air_pressure') ## in pascal
-      SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
-      
-      PAR <- try(ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  ## in mol/m2/s
+
+      Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")
+      # pres <- ncdf4::ncvar_get(nc,'air_pressure') ## in pascal
+      SW <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
+
+      PAR <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  ## in mol/m2/s
       if (!is.numeric(PAR)) {
         PAR <- SW * 0.45
-        PEcAn.utils::logger.info("surface_downwelling_photosynthetic_photon_flux_in_air absent; PAR set to SW * 0.45")
+        PEcAn.logger::logger.info("surface_downwelling_photosynthetic_photon_flux_in_air absent; PAR set to SW * 0.45")
       }
-      
-      soilT <- try(ncvar_get(nc, "soil_temperature"))
+
+      soilT <- try(ncdf4::ncvar_get(nc, "soil_temperature"))
       if (!is.numeric(soilT)) {
         # approximation borrowed from SIPNET CRUNCEPpreprocessing's tsoil.py
         tau <- 15 * tstep
         filt <- exp(-(1:length(Tair)) / tau)
         filt <- (filt / sum(filt))
-        soilT <- convolve(Tair, filt) - 273.15
-        PEcAn.utils::logger.info("soil_temperature absent; soilT approximated from Tair")
+        soilT <- convolve(Tair, filt)
+        soilT <- udunits2::ud.convert(soilT, "K", "degC")
+        PEcAn.logger::logger.info("soil_temperature absent; soilT approximated from Tair")
       } else {
-        soilT <- soilT - 273.15
+        soilT <- udunits2::ud.convert(soilT, "K", "degC")
       }
-      
-      SVP <- udunits2::ud.convert(get.es(Tair - 273.15), "millibar", "Pa")  ## Saturation vapor pressure
-      VPD <- try(ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
+
+      SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
+      VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
-        VPD <- SVP * (1 - qair2rh(Qair, Tair - 273.15))
-        PEcAn.utils::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
+        VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, Tair_C))
+        PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
       }
       e_a <- SVP - VPD
-      VPDsoil <- udunits2::ud.convert(get.es(soilT), "millibar", "Pa") * (1 - qair2rh(Qair, soilT))
-      
+      VPDsoil <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(soilT), "millibar", "Pa") *
+        (1 - PEcAn.data.atmosphere::qair2rh(Qair, soilT))
+
       ncdf4::nc_close(nc)
     } else {
-      PEcAn.utils::logger.info("Skipping to next year")
+      PEcAn.logger::logger.info("Skipping to next year")
       next
     }
-    
+
     ## build time variables (year, month, day of year)
     nyr <- floor(length(sec) / 86400 / 365 * dt)
     yr <- NULL
@@ -146,13 +144,8 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     hr <- NULL
     asec <- sec
     for (y in year + 1:nyr - 1) {
-      ytmp <- rep(y, 365 * 86400 / dt)
-      dtmp <- rep(1:365, each = 86400 / dt)
-      if (lubridate::leap_year(y)) {
-        ## is leap
-        ytmp <- rep(y, 366 * 86400 / dt)
-        dtmp <- rep(1:366, each = 86400 / dt)
-      }
+      ytmp <- rep(y, diy * 86400 / dt)
+      dtmp <- rep(seq_len(diy), each = 86400 / dt)
       if (is.null(yr)) {
         yr <- ytmp
         doy <- dtmp
@@ -165,7 +158,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       rng <- length(doy) - length(ytmp):1 + 1
       if (!all(rng >= 0)) {
         skip <- TRUE
-        logger.warn(paste(year, "is not a complete year and will not be included"))
+       PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
         break
       }
       asec[rng] <- asec[rng] - asec[rng[1]]
@@ -175,7 +168,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       rng <- (length(yr) + 1):length(sec)
       if (!all(rng >= 0)) {
         skip <- TRUE
-        logger.warn(paste(year, "is not a complete year and will not be included"))
+       PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
         break
       }
       yr[rng] <- rep(y + 1, length(rng))
@@ -183,49 +176,76 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       hr[rng] <- rep(seq(0, length = 86400 / dt, by = dt/86400 * 24), 366)[1:length(rng)]
     }
     if (skip) {
-      PEcAn.utils::logger.info("Skipping to next year")
+      PEcAn.logger::logger.info("Skipping to next year")
       next
     }
-    
+
     ## 0 YEAR DAY HOUR TIMESTEP AirT SoilT PAR PRECIP VPD VPD_Soil AirVP(e_a) WIND SoilM build data
     ## matrix
     n <- length(Tair)
-    tmp <- cbind(rep(0, n), 
+    tmp <- cbind(rep(0, n),
                  yr[1:n],
-                 doy[1:n], 
-                 hr[1:n], 
-                 rep(dt / 86400, n), 
-                 Tair - 273.15, 
-                 soilT, 
-                 PAR * dt,  # mol/m2/hr 
+                 doy[1:n],
+                 hr[1:n],
+                 rep(dt / 86400, n),
+                 Tair_C,
+                 soilT,
+                 PAR * dt,  # mol/m2/hr
                  Rain * dt, # converts from mm/s to mm
-                 VPD, 
-                 VPDsoil, 
-                 e_a, 
+                 VPD,
+                 VPDsoil,
+                 e_a,
                  ws, # wind
                  rep(0.6, n)) # put soil water at a constant. Don't use, set SIPNET to MODEL_WATER = 1
-    
+
     ## quick error check, sometimes get a NA in the last hr
     hr.na <- which(is.na(tmp[, 4]))
     if (length(hr.na) > 0) {
       tmp[hr.na, 4] <- tmp[hr.na - 1, 4] + dt/86400 * 24
     }
-    
+
+    ##filter out days not included in start or end date
+    if(year == start_year){
+      extra.days <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
+      if (extra.days > 1){
+        PEcAn.logger::logger.info("Subsetting SIPNET met to match start date")
+        start.row <-  ((extra.days - 1) * 86400 / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
+        tmp <- tmp[start.row:nrow(tmp),]
+      }
+    }
+    if (year == end_year){
+      if(year == start_year){
+        extra.days  <- length(as.Date(start_date):as.Date(end_date))
+        if (extra.days > 1){
+          PEcAn.logger::logger.info("Subsetting SIPNET met to match end date")
+          end.row <-  extra.days * 86400 / dt  #subtract to include end.date
+          tmp <- tmp[1:end.row,]
+        }
+      } else{
+          extra.days <- length(as.Date(end_date):as.Date(paste0(end_year, "-12-31"))) #extra days length includes the end date
+          if (extra.days > 1){
+            PEcAn.logger::logger.info("Subsetting SIPNET met to match end date")
+            end.row <-  nrow(tmp) - ((extra.days - 1) * 86400 / dt)  #subtract to include end.date
+            tmp <- tmp[1:end.row,]
+          }
+      }
+    }
+
     if (is.null(out)) {
       out <- tmp
     } else {
       out <- rbind(out, tmp)
     }
-    
+
   }  ## end loop over years
-  
+
   if (!is.null(out)) {
-    
+
     ## write output
     write.table(out, out.file.full, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
     return(invisible(results))
   } else {
-    PEcAn.utils::logger.info("NO MET TO OUTPUT")
+    PEcAn.logger::logger.info("NO MET TO OUTPUT")
     return(invisible(NULL))
   }
 } # met2model.SIPNET

@@ -98,9 +98,9 @@ write.config.CABLE <- function(defaults, trait.values, settings, run.id) {
       }
     }
     if (filename == "") {
-      logger.severe("Could not find config template")
+      PEcAn.logger::logger.severe("Could not find config template")
     }
-    logger.info("Using", filename, "as template")
+    PEcAn.logger::logger.info("Using", filename, "as template")
     config.text <- readLines(con = filename, n = -1)
   }
   

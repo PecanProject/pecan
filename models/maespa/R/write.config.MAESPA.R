@@ -24,8 +24,12 @@
 ##' @author Tony Gardella
 ##-------------------------------------------------------------------------------------------------#
 write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
-  
-  library(Maeswrap)
+
+  if(!require("Maeswrap")){
+    logger.severe("The Maeswrap package is not installed. 
+                  Please consult PEcAn documentation for install notes:
+                  https://pecanproject.github.io/pecan-documentation/master/pecan-models.html#maespa")
+  }
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, as.character(run.id))
@@ -91,10 +95,10 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
   confile.run.path <- file.path(settings$rundir, run.id, "confile.dat")
   writeLines(confile, con = confile.run.path)
   
-  replacePAR(confile.run.path, "itermax", "model", newval = 100, noquotes = TRUE)
-  replacePAR(confile.run.path, "itargets", "treescon", newval = 153, noquotes = TRUE)
-  replacePAR(confile.run.path, "startdate", "dates", newval = start_date)
-  replacePAR(confile.run.path, "enddate", "dates", newval = end_date)
+  Maeswrap::replacePAR(confile.run.path, "itermax", "model", newval = 100, noquotes = TRUE)
+  Maeswrap::replacePAR(confile.run.path, "itargets", "treescon", newval = 153, noquotes = TRUE)
+  Maeswrap::replacePAR(confile.run.path, "startdate", "dates", newval = start_date)
+  Maeswrap::replacePAR(confile.run.path, "enddate", "dates", newval = end_date)
   
   ### str.dat USING DEFAULT EXAMPLE VERSION RIGHT NOW AS IS
   strfile.path     <- system.file("str.dat", package = "PEcAn.MAESPA")
@@ -108,10 +112,10 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
   phyfile.run.path <- file.path(settings$rundir, run.id, "phy.dat")
   writeLines(phyfile, con = phyfile.run.path)
   
-  replacePAR(phyfile.run.path, "values", "vcmax", newval = vcmax)
-  replacePAR(phyfile.run.path, "dates", "vcmax", newval = start_date)
-  replacePAR(phyfile.run.path, "values", "jmax", newval = jmax)
-  replacePAR(phyfile.run.path, "dates", "jmax", newval = start_date)
+  Maeswrap::replacePAR(phyfile.run.path, "values", "vcmax", newval = vcmax)
+  Maeswrap::replacePAR(phyfile.run.path, "dates", "vcmax", newval = start_date)
+  Maeswrap::replacePAR(phyfile.run.path, "values", "jmax", newval = jmax)
+  Maeswrap::replacePAR(phyfile.run.path, "dates", "jmax", newval = start_date)
   
   ### trees.dat
   treesfile.path <- system.file("trees.dat", package = "PEcAn.MAESPA")
@@ -119,9 +123,9 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
   treesfile.run.path <- file.path(settings$rundir, run.id, "trees.dat")
   writeLines(treesfile, con = treesfile.run.path)
   
-  replacePAR(treesfile.run.path, "xmax", "plot", newval = xmax, noquotes = TRUE)
-  replacePAR(treesfile.run.path, "ymax", "plot", newval = ymax, noquotes = TRUE)
-  replacePAR(treesfile.run.path, "notrees", "plot", newval = notrees, noquotes = TRUE)
+  Maeswrap::replacePAR(treesfile.run.path, "xmax", "plot", newval = xmax, noquotes = TRUE)
+  Maeswrap::replacePAR(treesfile.run.path, "ymax", "plot", newval = ymax, noquotes = TRUE)
+  Maeswrap::replacePAR(treesfile.run.path, "notrees", "plot", newval = notrees, noquotes = TRUE)
   
   ## watpar.dat
   watparsfile.path <- system.file("watpars.dat", package = "PEcAn.MAESPA")

@@ -1,7 +1,5 @@
----
-title: "Parameter Data Assimilation"
-output: html_document
----
+# Parameter Data Assimilation
+
 
 ## Objectives
 * Gain hands-on experience in using Bayesian MCMC techniques to calibrate a simple ecosystem model using parameter data assimilation (PDA)
@@ -48,7 +46,7 @@ This tutorial assumes you have successfully completed an ensemble and a sensitiv
 ## Defining variables
 
 The following variables need to be set specific to the site being run and the workflow being run
-```{r}
+```{r, eval=FALSE}
 workflow_id <- 99000000002  ## comes from the History table, your successful ensemble run's workflow ID
 
 ## from URL/bety/inputs.  
@@ -255,7 +253,7 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
   PEcAn.settings::write.settings(settings, outputfile=paste0('pecan.pda', postPDA.settings$assim.batch$ensemble.id,'.xml'))
 
  # Start ecosystem model runs, this one takes awhile...
-  start.model.runs(postPDA.settings, postPDA.settings$database$bety$write)
+  PEcAn.remote::start.model.runs(postPDA.settings, postPDA.settings$database$bety$write)
 
  # Get results of model runs
   get.results(postPDA.settings)

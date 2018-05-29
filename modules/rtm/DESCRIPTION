@@ -1,8 +1,8 @@
 Package: PEcAnRTM
 Type: Package
 Title: PEcAn functions used for radiative transfer modeling
-Version: 1.5.0
-Date: 2017-07-14
+Version: 1.5.3
+Date: 2018-04-26
 Author: Alexey Shiklomanov, Shawn Serbin, Mike Dietze
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains functions for performing forward runs and
@@ -10,21 +10,21 @@ Description: This package contains functions for performing forward runs and
     using maximum likelihood, or more complex hierarchical Bayesian methods.
     Underlying numerical analyses are optimized for speed using Fortran code.
 Imports:
+    PEcAn.logger,
     MASS,
     coda,
     lubridate (>= 1.6.0),
-    PEcAn.assim.batch
+    PEcAn.assim.batch,
+    BayesianTools
 Suggests:
     minpack.lm,
     mclust,
     PEcAn.utils,
     PEcAn.ED2,
+    XML,
     testthat (>= 1.0.2),
-    knitr
-Remotes:
-    github::pecanproject/pecan/modules/assim.batch,
-    github::pecanproject/pecan/models/ed,
-    github::pecanproject/pecan/utils
+    knitr,
+    pwr
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors

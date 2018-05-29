@@ -1,18 +1,12 @@
-##' @name met2CF.FACE
-##' @title met2CF.FACE
+##' convert FACE files to CF files
 ##' @export
 ##' 
 ##' @param in.path
 ##' @param in.prefix
 ##' @param outfolder
-##' @param convert FACE files to CF files
 ##' @author Elizabeth Cowdery
 
-##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put
 met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id,site,format, ...) {
-
-  
-  library(PEcAn.utils)
   
   files <- dir(in.path, in.prefix)
   file <- files[grep(pattern = "*.nc", files)]
@@ -37,27 +31,27 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
       #---------------------------------------------------------------------#
       # Latitude and Longitude
       
-      nc1 <- nc_open(f, write = TRUE)
+      nc1 <- ncdf4::nc_open(f, write = TRUE)
       
       time_units <- paste0("hours/2", unlist(strsplit(nc1$var$TIMEstp$units, "timesteps"))[2])
-      time <- ncdim_def(name = "time", units = time_units, vals = nc1$dim$tstep$vals)
-      lon <- ncdim_def("longitude", "degrees_east", site$lon)  # define netCDF dimensions for variables
-      lat <- ncdim_def("latitude", "degrees_north", site$lat)
+      time <- ncdf4::ncdim_def(name = "time", units = time_units, vals = nc1$dim$tstep$vals)
+      lon <- ncdf4::ncdim_def("longitude", "degrees_east", as.numeric(site$lon)) # define netCDF dimensions for variables
+      lat <- ncdf4::ncdim_def("latitude", "degrees_north", as.numeric(site$lat))
       dim <- list(lat, lon, time)
       
       # convert wind speed and wind direction to eastward_wind and northward_wind
       wd <- 0  # wind direction - not specified so I set to 0???
-      ws <- ncvar_get(nc = nc1, varid = "Wind")  #wind speed
+      ws <- ncdf4::ncvar_get(nc = nc1, varid = "Wind")  #wind speed
       ew <- ws * cos(wd * (pi / 180))
       nw <- ws * sin(wd * (pi / 180))
       
-      var <- ncvar_def(name = "eastward_wind", units = "m/s", dim = dim, missval = -6999, verbose = FALSE)
-      nc2 <- nc_create(filename = f.cf, vars = var, verbose = FALSE)
-      ncvar_put(nc = nc2, varid = "eastward_wind", vals = ew)
+      var <- ncdf4::ncvar_def(name = "eastward_wind", units = "m/s", dim = dim, missval = -6999, verbose = FALSE)
+      nc2 <- ncdf4::nc_create(filename = f.cf, vars = var, verbose = FALSE)
+      ncdf4::ncvar_put(nc = nc2, varid = "eastward_wind", vals = ew)
       
-      var <- ncvar_def(name = "northward_wind", units = "m/s", dim = dim, missval = -6999, verbose = FALSE)
-      nc2 <- ncvar_add(nc = nc2, v = var, verbose = FALSE)
-      ncvar_put(nc = nc2, varid = "northward_wind", vals = nw)
+      var <- ncdf4::ncvar_def(name = "northward_wind", units = "m/s", dim = dim, missval = -6999, verbose = FALSE)
+      nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = FALSE)
+      ncdf4::ncvar_put(nc = nc2, varid = "northward_wind", vals = nw)
       
       #---------------------------------------------------------------------#
       # Loop through variables and convert 
@@ -83,7 +77,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
       
       # begin loop
       for (i in seq_len(nrow(vars_used))) {
-        vals <- ncvar_get(nc1, vars_used$input_name[i])
+        vals <- ncdf4::ncvar_get(nc1, vars_used$input_name[i])
         
         if (vars_used$input_units[i] == vars_used$pecan_units[i]) {
           print("match")
@@ -95,34 +89,34 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
                           vars_used$input_name[i], vars_used$input_units[i], 
                           vars_used$pecan_name[i], vars_used$pecan_units[i]))
             vals <- udunits2::ud.convert(vals, u1, u2)
-          } else if (misc.are.convertible(u1, u2)) {
+          } else if (PEcAn.utils::misc.are.convertible(u1, u2)) {
             print(sprintf("convert %s %s to %s %s", 
                           vars_used$input_name[i], u1, 
                           vars_used$pecan_name[i], u2))
-            vals <- misc.convert(x, u1, u2)
+            vals <- PEcAn.utils::misc.convert(x, u1, u2)
           } else {
-            PEcAn.utils::logger.error("Units cannot be converted")
+            PEcAn.logger::logger.error("Units cannot be converted")
           } 
         }
         
-        var <- ncvar_def(name = vars_used$pecan_name[i], 
+        var <- ncdf4::ncvar_def(name = vars_used$pecan_name[i], 
                          units = vars_used$pecan_units[i], 
                          dim = dim, verbose = FALSE)
-        nc2 <- ncvar_add(nc = nc2, v = var, verbose = FALSE)
-        ncvar_put(nc = nc2, varid = vars_used$pecan_name[i], vals = vals)
+        nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = FALSE)
+        ncdf4::ncvar_put(nc = nc2, varid = vars_used$pecan_name[i], vals = vals)
         
-        att <- ncatt_get(nc1,vars_used$input_name[i], "long_name")
+        att <- ncdf4::ncatt_get(nc1,vars_used$input_name[i], "long_name")
         if (att$hasatt) {
           val <- att$value
-          ncatt_put(nc = nc2, varid = vars_used$pecan_name[i], attname = "long_name", attval = val)
+          ncdf4::ncatt_put(nc = nc2, varid = vars_used$pecan_name[i], attname = "long_name", attval = val)
         }
       }
-      nc_close(nc2)
+      ncdf4::nc_close(nc2)
     
       
       # Split into annual files
       
-      year <- ncvar_get(nc1, "YEAR")
+      year <- ncdf4::ncvar_get(nc1, "YEAR")
       y <- year[1]:year[length(year)]
       n <- length(y)
       t <- -1
@@ -173,7 +167,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
 #            "solar_elevation_angle")
 # 
 # if (!(length(nvars) == length(vars))) {
-#   logger.error("Variable mismatch")
+#  PEcAn.logger::logger.error("Variable mismatch")
 # }
 # 
 # l <- length(vars)
@@ -181,18 +175,18 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
 #   if (vars[k] %in% nc.vars) {
 #     # nc <- tncar_rename(nc,vars[k],nvars[k])
 #     
-#     vals <- ncvar_get(nc1, vars[k])
+#     vals <- ncdf4::ncvar_get(nc1, vars[k])
 #     
-#     units <- ncatt_get(nc1, varid = vars[k], attname = "units", verbose = FALSE)$value
+#     units <- ncdf4::ncatt_get(nc1, varid = vars[k], attname = "units", verbose = FALSE)$value
 #     
-#     var <- ncvar_def(name = nvars[k], units = units, dim = dim, verbose = FALSE)
-#     nc2 <- ncvar_add(nc = nc2, v = var, verbose = TRUE)
-#     ncvar_put(nc = nc2, varid = nvars[k], vals = vals)
+#     var <- ncdf4::ncvar_def(name = nvars[k], units = units, dim = dim, verbose = FALSE)
+#     nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = TRUE)
+#     ncdf4::ncvar_put(nc = nc2, varid = nvars[k], vals = vals)
 #     
-#     att <- ncatt_get(nc1, vars[k], "long_name")
+#     att <- ncdf4::ncatt_get(nc1, vars[k], "long_name")
 #     if (att$hasatt) {
 #       val <- att$value
-#       ncatt_put(nc = nc2, varid = nvars[k], attname = "long_name", attval = val)
+#       ncdf4::ncatt_put(nc = nc2, varid = nvars[k], attname = "long_name", attval = val)
 #     }
 #   }
 # }

@@ -19,6 +19,6 @@ read_restart.CABLE <- function(outdir,
                                    settings,
                                    var.names,
                                    params) {
-logger.severe("NOT IMPLEMENTED")
+PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 }
 

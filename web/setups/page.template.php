@@ -56,7 +56,7 @@
       <br>
         <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
       <br>
-        <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+        <a href="submitissues.php" target="_blank">Bug Report</a>
       </p>
     </div>
     <div id="output">

@@ -4,7 +4,7 @@
 \alias{neff}
 \title{Effective sample size}
 \usage{
-neff(x)
+neff(x, ...)
 }
 \arguments{
 \item{x}{A vector or time series}

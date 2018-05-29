@@ -39,7 +39,7 @@ extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms
     
   plot.info <- db.query(query, con = fia.con)
   if (nrow(plot.info) == 0) {
-    logger.severe("No plot data found on FIA.")
+    PEcAn.logger::logger.severe("No plot data found on FIA.")
   }
     
   for (statecd in unique(plot.info$statecd)) {
@@ -59,7 +59,7 @@ extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms
   plot.info <- plot.info[.select.unique.fia.plot.records(plot.info$patch, plot.info$prev_plt_cn, plot.info$time, start_year), ]
     
   if (nrow(plot.info) == 0) {
-    logger.severe("All plot data were invalid.")
+    PEcAn.logger::logger.severe("All plot data were invalid.")
   }
     
   plot.info$trk[is.na(plot.info$trk)] <- 1
@@ -68,7 +68,7 @@ extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms
   # Dropping unneeded columns
   plot.info <- plot.info[, c("time", "patch", "trk", "age")]
     
-  logger.debug(paste0("Found ", nrow(plot.info), " patches for coordinates lat:", lat, " lon:", lon))
+  PEcAn.logger::logger.debug(paste0("Found ", nrow(plot.info), " patches for coordinates lat:", lat, " lon:", lon))
   
   veg_info[[1]] <- plot.info
     
@@ -89,17 +89,17 @@ extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms
   names(tree.info) <- tolower(names(tree.info))
     
   if (nrow(tree.info) == 0) {
-    logger.severe("No FIA data found.")
+    PEcAn.logger::logger.severe("No FIA data found.")
   } else {
-    logger.debug(paste0(nrow(tree.info), " trees found initially"))
+    PEcAn.logger::logger.debug(paste0(nrow(tree.info), " trees found initially"))
   }
     
   # Remove rows that don't map to any retained patch
   tree.info <- tree.info[which(tree.info$patch %in% plot.info$patch), ]
   if (nrow(tree.info) == 0) {
-    logger.severe("No trees map to previously selected patches.")
+    PEcAn.logger::logger.severe("No trees map to previously selected patches.")
   } else {
-    logger.debug(paste0(nrow(tree.info), " trees that map to previously selected patches."))
+    PEcAn.logger::logger.debug(paste0(nrow(tree.info), " trees that map to previously selected patches."))
   }
     
   ## Remove rows with no dbh, spcd, or n
@@ -108,9 +108,9 @@ extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms
     tree.info <- tree.info[-notree, ]
   }
   if (nrow(tree.info) == 0) {
-    logger.severe("No trees remain after removing entries with no dbh, spcd, and/or n.")
+    PEcAn.logger::logger.severe("No trees remain after removing entries with no dbh, spcd, and/or n.")
   } else {
-    logger.debug(paste0(nrow(tree.info), " trees remain after removing entries with no dbh, spcd, and/or n."))
+    PEcAn.logger::logger.debug(paste0(nrow(tree.info), " trees remain after removing entries with no dbh, spcd, and/or n."))
   }
     
   veg_info[[2]] <- tree.info
@@ -129,7 +129,7 @@ extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms
 # current code. But it could be useful for future updates. 
 .select.unique.fia.plot.records <- function(plt_cn, prev_plt_cn, measyear, target.year) {
   if (length(plt_cn) != length(prev_plt_cn)) {
-    logger.error("Inputs must have same length!")
+    PEcAn.logger::logger.error("Inputs must have same length!")
     return(NULL)
   }
   

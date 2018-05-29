@@ -1,6 +1,6 @@
 context("loading data from PEcAn-CF met drivers")
 
-logger.setLevel("OFF")
+PEcAn.logger::logger.setLevel("DEBUG")
 
 daily_file <- "data/urbana_daily_test.nc"
 subdaily_file <- "data/urbana_subdaily_test.nc"
@@ -8,7 +8,7 @@ subdaily_file <- "data/urbana_subdaily_test.nc"
 daily.nc <- ncdf4::nc_open(daily_file)
 on.exit(ncdf4::nc_close(daily.nc))
 daily.cf <- load.cfmet(met.nc = daily.nc, lat = 39.75, lon = -87.25,
-                       start.date = "1951-01-01", end.date = "1951-06-01")
+                       start.date = "1951-01-02", end.date = "1951-05-31")
 subdaily.nc <- ncdf4::nc_open(subdaily_file)
 on.exit(ncdf4::nc_close(subdaily.nc), add=TRUE)
 
@@ -34,26 +34,24 @@ test_that("data extracted from test pecan-cf met files is valid",{
 })
 
 test_that("load.cfmet respects start/end date",{
-  skip("Broken test #1343")
-  expect_equal(strftime(min(daily.cf$date), "%F"), "1951-01-01")
-  expect_equal(strftime(max(daily.cf$date), "%F"), "1951-05-30")
+  expect_equal(strftime(min(daily.cf$date), "%F"), "1951-01-02")
+  expect_equal(strftime(max(daily.cf$date), "%F"), "1951-05-31")
   expect_equal(nrow(daily.cf), 150)
 })
 
 test_that("load.cfmet throws error if start/end date out of range",{
-
-  skip("Broken test #1343")
-
   expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88,
-                          start.date = "9999-01-01", end.date = "9999-02-02"))
+                          start.date = "9999-01-01", end.date = "9999-02-02"),
+               "run end date .* after met data ends")
   expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88,
-                          start.date = "0000-01-01", end.date = "0000-02-02"))
+                          start.date = "0000-01-01", end.date = "0000-02-02"),
+               "run start date .* before met data starts")
   expect_error(load.cfmet(met.nc = daily.nc, lat = 39, lon = -88,
                           start.date = "1950-12-31", end.date = "1951-12-31"),
                "run start date .* before met data starts")
   expect_error(load.cfmet(met.nc = daily.nc, lat = 39, lon = -88,
-                          start.date = "1951-01-01", end.date = "1952-01-01"),
-               "run start date .* after met data ends")
+                          start.date = "1951-01-02", end.date = "1952-01-01"),
+               "run end date .* after met data ends")
 })
 
 test_that("load.cfmet enforces lat/lon matching",{

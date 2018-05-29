@@ -1,0 +1,34 @@
+# Debugging
+
+How to identify the source of a problem.
+
+
+### Using `tests/workflow.R`
+
+This script, along with model-specific settings files in the `tests` folder, provide a working example. From inside the tests folder, `R CMD --vanilla -- --settings pecan.<model>.xml < workflow.R` should work.
+
+The next step is to add `debugonce(<broken.function.name>)` before running the test workflow.
+
+This allows you can step through the function and evaluate the different objects as they are created and/or transformed.
+
+See [tests README](https://github.com/PecanProject/pecan/blob/master/tests/README.md) for more information.
+
+
+
+### Useful scripts 
+
+The following scripts (in `qaqc/vignettes` identify, respectively:
+
+1. [relationships among functions across packages](https://github.com/PecanProject/pecan/blob/master/qaqc/vignettes/function_relationships.Rmd)
+2. [function inputs and outputs](https://github.com/PecanProject/pecan/blob/master/qaqc/vignettes/module_output.Rmd) (e.g. that will identify which functions and outputs are used in a workflow).
+
+
+### Debugging Shiny Apps
+
+When developing shiny apps you can run the application from rstudio and place breakpoints int he code. To do this you will need to do the following steps first (already done on the VM) before starting rstudio:
+- echo "options(shiny.port = 6438)" >> ${HOME}/.Rprofile
+- echo "options(shiny.launch.browser = 'FALSE')" >> ${HOME}/.Rprofile
+
+Next you will need to create a tunnel for port 6438 to the VM, which will be used to open the shiny app, the following command will creat this tunnel: `ssh -l carya -p 6422 -L 6438:localhost:6438 localhost`.
+
+Now you can from rstudio run your application using `shiny::runApp()` and it will show the output from the application in your console. You can now place breakpoints and evaluate the output.

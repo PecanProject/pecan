@@ -14,9 +14,6 @@
 ##' @author James Simkins
 download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, model='IPSL-CM5A-LR', scenario='rcp85', ensemble_member='r1i1p1', 
                           overwrite=FALSE, verbose=FALSE, ...){  
-  library(PEcAn.utils)
-  library(lubridate)
-  library(ncdf4)
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
@@ -103,7 +100,7 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
       ncdf4::nc_close(dap)
       } else {
         dat.list[[j]] <- NA
-        var.list[[j]] <- ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
+        var.list[[j]] <- ncdf4::ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
     }
     
     dat.list <- as.data.frame(dat.list)
@@ -135,14 +132,14 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     }
     
     ## put data in new file
-    loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
+    loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, verbose=verbose)
     for(j in seq_along(var$CF.name)){
       ncdf4::ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }
     ncdf4::nc_close(loc)
     
     results$file[i] <- loc.file
-    results$host[i] <- fqdn()
+    results$host[i] <- PEcAn.remote::fqdn()
     results$startdate[i] <- paste0(year,"-01-01 00:00:00")
     results$enddate[i] <- paste0(year,"-12-31 23:59:59")
     results$mimetype[i] <- 'application/x-netcdf'

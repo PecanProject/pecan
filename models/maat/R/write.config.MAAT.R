@@ -20,11 +20,11 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @name convert.samples.MAAT
 ##' @title Convert samples for MAAT
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
+##' @param runid optional parameter for debugging
 ##' @return matrix or dataframe with values transformed
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
-##' @importFrom udunits2 ud.convert
-convert.samples.MAAT <- function(trait.samples) {
+convert.samples.MAAT <- function(trait.samples, runid) {
   
   ### Convert object
   if (is.list(trait.samples)) {
@@ -33,36 +33,52 @@ convert.samples.MAAT <- function(trait.samples) {
   
   ### first rename variables
   trait.names <- colnames(trait.samples)
-  trait.names[trait.names == "leaf_respiration_rate_m2"]   <- "atref.rd"
-  trait.names[trait.names == "Vcmax"]                      <- "atref.vcmax"
-  trait.names[trait.names == "Jmax"]                       <- "atref.jmax"
-  trait.names[trait.names == "Ev_Arrhenius"]               <- "Ha.vcmax"  # Arrhenius activation energy
-  trait.names[trait.names == "Ej_Arrhenius"]               <- "Ha.jmax"  # Arrhenius activation energy
-  trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"] <- "Ha.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"] <- "Hd.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "stomatal_slope"]             <- "g1_leuning"
-  trait.names[trait.names == "stomatal_slope.g1"]          <- "g1_medlyn"
-  trait.names[trait.names == "stomatal_slope.BB"]          <- "g1_ball"
+  trait.names[trait.names == "leaf_respiration_rate_m2"]    <- "atref.rd"
+  trait.names[trait.names == "Vcmax"]                       <- "atref.vcmax"
+  trait.names[trait.names == "Jmax"]                        <- "atref.jmax"
+  trait.names[trait.names == "Ev_Arrhenius"]                <- "Ha.vcmax"  # Arrhenius activation energy
+  trait.names[trait.names == "Ej_Arrhenius"]                <- "Ha.jmax"  # Arrhenius activation energy
+  trait.names[trait.names == "Ha_Modified_Arrhenius_Vcmax"] <- "Ha.vcmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Hd_Modified_Arrhenius_Vcmax"] <- "Hd.vcmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"]  <- "Ha.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"]  <- "Hd.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "stomatal_slope"]              <- "g1_leuning"
+  trait.names[trait.names == "stomatal_slope.g1"]           <- "g1_medlyn"
+  trait.names[trait.names == "stomatal_slope.BB"]           <- "g1_ball"
+  trait.names[trait.names == "f_frac"]                      <- "f"
   colnames(trait.samples) <- trait.names
   
   ### Conversions -- change to only use if Collatz, should also provide standard Rd oputput
   if ("atref.rd" %in% names(trait.samples)) {
     ## Calculate dark_resp_factor - rd as a proportion of Vcmax, Williams & Flannagan 1998 ~ 0.1
     ## (unitless)
-    trait.samples[["rd_prop_vcmax"]] <- trait.samples[["atref.rd"]] / trait.samples[["atref.vcmax"]]
+    trait.samples[["b_rdv_25"]] <- trait.samples[["atref.rd"]] / trait.samples[["atref.vcmax"]]
   }
   if ("Ha.vcmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.vcmax = ud.convert(Ha.vcmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.vcmax = udunits2::ud.convert(Ha.vcmax, "kJ", "J"))
+  }
+  if ("Hd.vcmax" %in% names(trait.samples)) {
+    ## Convert from kJ mol-1 to J mol-1
+    trait.samples <- transform(trait.samples, Hd.vcmax = udunits2::ud.convert(Hd.vcmax, "kJ", "J"))
   }
   if ("Ha.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.jmax = ud.convert(Ha.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.jmax = udunits2::ud.convert(Ha.jmax, "kJ", "J"))
   }
   if ("Hd.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Hd.jmax = ud.convert(Hd.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Hd.jmax = udunits2::ud.convert(Hd.jmax, "kJ", "J"))
   }
+  if ("leaf_reflect_vis" %in% names(trait.samples) & "leaf_trans_vis" %in% names(trait.samples) ){
+    leaf_abs <- 1-(trait.samples[["leaf_reflect_vis"]]+trait.samples[["leaf_trans_vis"]])
+    trait.samples[["a"]] <- leaf_abs
+    remove <- which(colnames(trait.samples)=="leaf_trans_vis" | colnames(trait.samples)=="leaf_reflect_vis")
+    trait.samples <- trait.samples[,-remove]
+  }
+
+  # for debugging conversions 
+  #save(trait.samples, file = file.path(settings$host$outdir,runid,'trait.samples.Rdata'))
   
   ### Return trait.samples as modified by function
   return(trait.samples)
@@ -85,7 +101,6 @@ convert.samples.MAAT <- function(trait.samples) {
 ##' @return configuration file for MAAT for given run
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker, Rob Kooper
-##' @importFrom PEcAn.utils listToXml logger.info
 ##' @importFrom XML saveXML addChildren
 write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   
@@ -94,20 +109,30 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   outdir <- file.path(settings$host$outdir, run.id)
   
   ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs changed to below as
-  ### advised by Rob Kooper, 20160405
   system2(file.path(settings$model$binary, "run_scripts/setup_MAAT_project.bs"), 
           c(rundir, file.path(settings$model$binary, "run_scripts"), 
             file.path(settings$model$binary, "src")))
   
   ### Parse config options to XML
-  xml <- listToXml(settings$model$config, "default")
+  if (!is.null(settings$model$config$mod_mimic)) {
+    PEcAn.logger::logger.info(paste0("Running with model mimic: ",settings$model$config$mod_mimic))
+    mod_mimic <- as.character(settings$model$config$mod_mimic)
+    settings$model$config$mod_mimic <- NULL
+    xml <- listToXml(settings$model$config, "default")
+  } else {
+    PEcAn.logger::logger.info("*** Model mimic not selected ***")
+    mod_mimic <- 'NULL'
+    xml <- listToXml(settings$model$config, "default")
+  }
   
   ### Run rename and conversion function on PEcAn trait values
-  traits <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
+  traits <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]],runid=run.id)
+  # below for debugging
+  #save(traits, file = file.path(settings$host$outdir,run.id,'trait.samples.converted.Rdata'))
   
   ### Convert traits to list
   traits.list <- as.list(traits)
-  traits.xml <- listToXml(traits.list, "pars")
+  traits.xml <- PEcAn.settings::listToXml(traits.list, "pars")
   
   ### Finalize XML
   xml[[1]] <- addChildren(xml[[1]], traits.xml)
@@ -118,12 +143,11 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
           file = file.path(settings$rundir, run.id, "leaf_user_static.xml"), 
           indent = TRUE, 
           prefix = PREFIX_XML)
-  
-  ### Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
   #saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_default.xml"), indent=TRUE, prefix = PREFIX_XML)
   if (is.null(settings$run$inputs$met)) {
-    logger.info("-- No met selected. Running without a met driver --")
-    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
+    PEcAn.logger::logger.info("-- No met selected. Running without a met driver --")
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," "," ","\"xml<-T","\""," ","\"uq<-F","\""," ",
+                    "\"factorial<-F","\""," ","\"mod_mimic<-",mod_mimic,"\""," ",
                     "\"odir <- ","'",outdir,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
                     ' library(PEcAn.MAAT); model2netcdf.MAAT(',
@@ -133,6 +157,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
                     settings$run$start.date,"', '",
                     settings$run$end.date,"') ",
                     '" | R --vanilla')
+
     # Run with met drivers 
     # !!Need to update for running with met, needs to paste mdir (met dir) to command !!
   } else if (!is.null(settings$run$inputs$met)) {
@@ -144,7 +169,11 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
               recursive = FALSE, 
               copy.mode = TRUE, 
               copy.date = TRUE)
-    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
+    
+    PEcAn.logger::logger.info("-- Met selected. Running with a met driver --")
+    PEcAn.logger::logger.info(paste0("Running with met: ",met.file))
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ","\"xml<-T","\""," ","\"uq<-F","\""," ",
+                    "\"factorial<-F","\""," ","\"mod_mimic<-",mod_mimic,"\""," ",
                     "\"odir <- ","'",outdir,"'","\""," ","\"mdir <- ","'",met.dir,"'",
                     "\""," ","\"metdata <- ","'",met.file,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
@@ -160,7 +189,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   # Write the job.sh script
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  
 } # write.config.MAAT
-
 ##-------------------------------------------------------------------------------------------------#
 ## EOF

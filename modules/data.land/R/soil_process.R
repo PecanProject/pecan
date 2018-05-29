@@ -12,7 +12,7 @@
 soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
   
   if(is.null(input$id)){
-    PEcAn.utils::logger.severe("currently soil_process requires an input ID to be specified")
+    PEcAn.logger::logger.severe("currently soil_process requires an input ID to be specified")
     return(NULL)
   }
   
@@ -62,7 +62,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   
   # set up host information
   machine.host <- ifelse(host == "localhost" || host$name == "localhost" || run.local,
-                         PEcAn.utils::fqdn(), host$name)
+                         PEcAn.remote::fqdn(), host$name)
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
   # retrieve model type info

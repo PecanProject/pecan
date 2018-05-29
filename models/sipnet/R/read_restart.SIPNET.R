@@ -11,7 +11,7 @@
 ##' 
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
-##' @inheritParams PEcAn.ModelName::read
+##' @inheritParams PEcAn.ModelName::read_restart.ModelName
 ##' 
 ##' @description Read Restart for SIPNET
 ##' 
@@ -19,10 +19,13 @@
 ##' @export
 read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
   
-  prior.sla <- params[[which(names(params) != "soil")[1]]]$SLA
+  prior.sla <- params[[which(!names(params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   
   forecast <- list()
   
+  # additional varnames, because we need these deterministic relationships
+#  var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
+   
   # Read ensemble output
   ens <- read.output(runid = runid, 
                      outdir = file.path(outdir, runid), 
@@ -30,48 +33,58 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
                      end.year = lubridate::year(stop.time),
                      variables = var.names)
   
-  last <- length(ens$NPP)
+  last <- length(ens$GWBI)
   
   forecast <- list()
   
-  # unit.conv <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kgC m-2 s-1 -> MgC/ha/yr
   
   #### PEcAn Standard Outputs
-  if ("NPP" %in% var.names) {
-    forecast[[1]] <- udunits2::ud.convert(mean(ens$NPP), "kg/m^2/s", "Mg/ha/yr")  #* unit.conv 
-    names(forecast[[1]]) <- c("NPP")
+  if ("GWBI" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
+    names(forecast[[length(forecast)]]) <- c("GWBI")
   }
   
   if ("AbvGrndWood" %in% var.names) {
-    forecast[[2]] <- ens$AbvGrndWood[last] / (1 - 0.2 - 0.2)  ## kgC/m2
-    names(forecast[[2]]) <- c("AbvGrndWood")
+    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
+    names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
+    
+    # calculate fractions, store in params, will use in write_restart
+    wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
+    abvGrndWoodFrac <- ens$AbvGrndWood[last]  / wood_total_C
+    coarseRootFrac  <- ens$coarse_root_carbon_content[last] / wood_total_C
+    fineRootFrac    <- ens$fine_root_carbon_content[last]   / wood_total_C
+    params$restart <- c(abvGrndWoodFrac, coarseRootFrac, fineRootFrac)
+    names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
   }
   
-  if ("LeafC" %in% var.names) {
-    forecast[[3]] <- ens$LeafC[last]  ## kgC/m2*m2/kg*2kg/kgC
-    names(forecast[[3]]) <- c("LeafC")
+  if ("leaf_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$leaf_carbon_content[last]  ## kgC/m2*m2/kg*2kg/kgC
+    names(forecast[[length(forecast)]]) <- c("LeafC")
   }
   
-  if ("Litter" %in% var.names) {
-    forecast[[4]] <- ens$Litter[last]  ##kgC/m2
-    names(forecast[[4]]) <- c("Litter")
+  if ("litter_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
+    names(forecast[[length(forecast)]]) <- c("Litter")
   }
   
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[5]] <- ens$TotSoilCarb[last]  ## kgC/m2
-    names(forecast[[5]]) <- c("TotSoilCarb")
+    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
+    names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
   if ("SoilMoistFrac" %in% var.names) {
-    forecast[[6]] <- ens$SoilMoistFrac[last]  ## kgC/m2
-    names(forecast[[6]]) <- c("SoilMoistFrac")
+    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
+    names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
   }
   
   if ("SWE" %in% var.names) {
-    forecast[[7]] <- ens$SWE[last]  ## kgC/m2
-    names(forecast[[7]]) <- c("SWE")
+    forecast[[length(forecast) + 1]] <- ens$SWE[last]  ## kgC/m2
+    names(forecast[[length(forecast)]]) <- c("SWE")
   }
   
   print(runid)
-  return(unlist(forecast))
+  
+  X_tmp <- list(X = unlist(forecast), params = params)
+                
+  return(X_tmp)
 } # read_restart.SIPNET

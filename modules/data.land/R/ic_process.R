@@ -60,16 +60,14 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     end_date   <- settings$run$end.date
   }else{
     
-    query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
-    input_file <- db.query(query, con = con)
-    start_date <- input_file$start_date
-    end_date   <- input_file$end_date
+   query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
+   input_file <- db.query(query, con = con) 
+   start_date <- input_file$start_date
+   end_date   <- input_file$end_date
     
   }
-  
-  
   # set up host information
-  machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
+  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
   # retrieve model type info
@@ -83,21 +81,23 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                          lat = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lat, 
                          lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
   new.site$name <- settings$run$site$name
-  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
-  outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
 
-  # veg or some other IC? Need to update later for other models
-  vegIC <- c("css", "pss", "site")
-  getveg.id <- putveg.id <- NULL
+str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   
-  #--------------------------------------------------------------------------------------------------#
+outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
+
+   
+getveg.id <- putveg.id <- NULL
+  
+  
+#--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
-  if (is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) {
+if (is.null(getveg.id) & is.null(putveg.id)) {
 
-    getveg.id <- .get.veg.module(input_veg = input, 
+    getveg.id <-.get.veg.module(input_veg = input, 
                               outfolder = outfolder, 
                               start_date = start_date, end_date = end_date,
                               dbparms = dbparms,
@@ -109,12 +109,12 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   }
   
 
-  #--------------------------------------------------------------------------------------------------#
+#--------------------------------------------------------------------------------------------------#
   # Match species to PFTs + veg2model module
   
-  if (!is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) { # probably need a more sophisticated check here
+  if (!is.null(getveg.id) & is.null(putveg.id)) { # probably need a more sophisticated check here
     
-    putveg.id <- .put.veg.module(getveg.id = getveg.id, bety = bety, 
+    putveg.id <-.put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
                                 input_veg = input, pfts = settings$pfts,
                                 outfolder = outfolder, 
                                 dir = dir, machine = machine, model = model,
@@ -126,7 +126,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
 
   #--------------------------------------------------------------------------------------------------#
   # Fill settings
-  if (!is.null(putveg.id) & input$output %in% vegIC) {
+  if (!is.null(putveg.id)) {
     
     
     model_file <- db.query(paste("SELECT * from dbfiles where container_id =", putveg.id), con)
@@ -138,7 +138,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     
     # NOTE : THIS BIT IS SENSITIVE TO THE ORDER OF TAGS IN PECAN.XML
     # this took care of "css" only, others have the same prefix
-    if(input$output == "css"){
+    if(input$output == "css"){  
       settings$run$inputs[["pss"]][['path']]  <- gsub("css","pss", path_to_settings)
       settings$run$inputs[["site"]][['path']] <- gsub("css","site", path_to_settings)
       
@@ -152,17 +152,17 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
         
         # copies css
         css_file <- basename(settings$run$inputs[["css"]][['path']])
-        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = css_file, settings$host, con)
+        PEcAn.remote::remote.copy.update(putveg.id, remote_dir, remote_file_name = css_file, settings$host, con)
         settings$run$inputs[["css"]][['path']] <- file.path(remote_dir, css_file)
         
         # pss 
         pss_file <-  basename(settings$run$inputs[["pss"]][['path']])
-        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = pss_file, settings$host, con)
+        PEcAn.remote::remote.copy.update(putveg.id, remote_dir, remote_file_name = pss_file, settings$host, con)
         settings$run$inputs[["pss"]][['path']] <- file.path(remote_dir, pss_file)
           
         # site
         site_file <- basename(settings$run$inputs[["site"]][['path']])
-        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = site_file, settings$host, con)
+        PEcAn.remote::remote.copy.update(putveg.id, remote_dir, remote_file_name = site_file, settings$host, con)
         settings$run$inputs[["site"]][['path']] <- file.path(remote_dir, site_file)
         
       }

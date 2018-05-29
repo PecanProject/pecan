@@ -4,8 +4,8 @@
 #' @param in.prefix   prefix of original data
 #' @param start_date  
 #' @param end_date 
-#' @param overwrite 
-#' @param verbose 
+#' @param overwrite logical: replace output file if it already exists? 
+#' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run? 
 #' @param ... other arguments, currently ignored
 #'
 #' @return
@@ -14,6 +14,7 @@
 #' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
 #'
 #' @examples
+#' \dontrun{
 #' in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
 #' in.prefix  <- ""
 #' outfolder  <- "~/paleon/metTest/"
@@ -22,7 +23,6 @@
 #' overwrite  <- FALSE
 #' verbose    <- TRUE
 #' 
-#' \notrun{
 #' split_wind(in.path, in.prefix, start_date, end_date, merge.file, overwrite, verbose)
 #' }
 split_wind <- function(in.path, in.prefix, start_date, end_date,
@@ -53,12 +53,12 @@ split_wind <- function(in.path, in.prefix, start_date, end_date,
     nc <- ncdf4::nc_open(old.file, write = TRUE)
     
     if("eastward_wind" %in% names(nc$var)) {
-      PEcAn.utils::logger.info("eastward_wind already exists", year_txt)
+      PEcAn.logger::logger.info("eastward_wind already exists", year_txt)
       ncdf4::nc_close(nc)
       next
     }
     if(!("wind_speed" %in% names(nc$var))) {
-      PEcAn.utils::logger.error("wind_speed does not exist", year_txt)
+      PEcAn.logger::logger.error("wind_speed does not exist", year_txt)
       ncdf4::nc_close(nc)
       next
     }
@@ -69,7 +69,7 @@ split_wind <- function(in.path, in.prefix, start_date, end_date,
     wind_speed.attr <- ncdf4::ncatt_get(nc, "wind_speed")
     WD <- "wind_direction" %in% names(nc$var)
     if(WD){
-      wind_dir <- pi/2 - udunits2::ud_convert(ncdf4::ncvar_get(nc, "wind_direction"), wind_dir$units, "radians")
+      wind_dir <- pi/2 - udunits2::ud.convert(ncdf4::ncvar_get(nc, "wind_direction"), wind_dir$units, "radians")
       wind_dir.attr <- ncdf4::ncatt_get(nc, "wind_direction")
       east <- wind_speed*cos(wind_dir)
       north <- wind_speed*sin(wind_dir)

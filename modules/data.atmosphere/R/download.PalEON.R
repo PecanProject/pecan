@@ -4,13 +4,11 @@
 ##' @title download.PalEON
 ##' @export
 ##' @param outfolder
-##' @param start_year
-##' @param end_year
+##' @param start_date
+##' @param end_date
 ##' 
 ##' @author Betsy Cowdery
 download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, ...) {
-  
-  library(PEcAn.utils)
   
   if (sitename == "Harvard Forest - Lyford Plots (PalEON PHA)") {
     site <- "PHA"
@@ -31,7 +29,7 @@ download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite
     site <- "PUN"
   }  # 1-675 done
   else {
-    logger.severe("Unknown site name")
+   PEcAn.logger::logger.severe("Unknown site name")
   }
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -59,7 +57,7 @@ download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite
   
   files <- dir(outfolder)
   if (sum(!(vlist %in% files)) > 0) {
-    logger.error("Don't have all variables downloaded")
+   PEcAn.logger::logger.error("Don't have all variables downloaded")
   } else {
     for (v in vlist) {
       print(sprintf("Checking %s", v))
@@ -67,12 +65,12 @@ download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite
         for (m in mlist) {
           file <- file.path(outfolder, v, sprintf("%s_%s_%04d_%02d.nc", site, v, y, m))
           if (!(file.exists(file))) {
-            logger.error("Missing met file")
+           PEcAn.logger::logger.error("Missing met file")
           }
           row <- (which(vlist == v) - 1) * Y * M + (which(ylist == y) - 1) * M + m
           # print(row)
           results$file[row] <- dirname(file)
-          results$host[row] <- fqdn()
+          results$host[row] <- PEcAn.remote::fqdn()
           results$startdate[row] <- paste0(y, "-01-01 00:00:00")
           results$enddate[row] <- paste0(y, "-12-31 23:59:59")
           results$mimetype[row] <- "application/x-netcdf"

@@ -6,6 +6,6 @@
 ##' @author Mike Dietze
 
 metric_cor <- function(dat, ...) {
-  PEcAn.utils::logger.info("Metric: Correlation Coefficient")
+  PEcAn.logger::logger.info("Metric: Correlation Coefficient")
   return(cor(dat$model,dat$obvs,use ="pairwise.complete.obs"))
 } # metric_cor

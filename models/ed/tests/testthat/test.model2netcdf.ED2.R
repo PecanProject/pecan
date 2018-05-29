@@ -63,7 +63,7 @@ test_that("variables have MsTMIP standard units",{
       ms.units <-  mstmip_vars[mstmip_vars$Variable.Name == var$name, "Units"]
       if(!(ms.units ==  var$units)) {
         ed.output.message <- paste(var$name, "units", var$units, "do not match MsTMIP Units", ms.units)
-        logger.warn(ed.output.message)
+        PEcAn.logger::logger.warn(ed.output.message)
       }
     }
   }

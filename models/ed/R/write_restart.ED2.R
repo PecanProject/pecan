@@ -20,7 +20,7 @@ write_restart.ED2 <- function(outdir,
   # Get history restart file path
   histfile <- get_restartfile.ED2(mod_outdir, runid, start.time)
   if (is.null(histfile)) {
-    PEcAn.utils::logger.severe("Failed to find ED2 history restart file.")
+    PEcAn.logger::logger.severe("Failed to find ED2 history restart file.")
   }
 
   #### Backup old run files to date directory
@@ -112,10 +112,15 @@ write_restart.ED2 <- function(outdir,
       #     (h0 + a * (1-exp(b*DBH))) + b1d*DBH^(b2d)
 
       #### Write new state to file
-      h5_write <- rhdf5::h5write.default(new.nplant_co_plant, histfile, "NPLANT")
-      # Returns NULL on success...?
+      # Default mode of H5File$new is "a", which is read + write and create file if it doesn't exist
+      histfile_h5 <- hdf5r::H5File$new(histfile)
+      # The empty brackets (`[]`) indicate the whole vector is replaced.
+      # This is necessary to overwrite an existing dataset
+      histfile_h5[["NPLANT"]][] <- new.nplant_co_plant
+      # This closes the file and all objects related to the file.
+      histfile_h5$close_all()
     } else {
-      PEcAn.utils::logger.error("Variable ", var_name,
+      PEcAn.logger::logger.error("Variable ", var_name,
                                 " not currently supported",
                                 " by write.restart.ED2")
     }
@@ -123,26 +128,19 @@ write_restart.ED2 <- function(outdir,
 
   ##### Modify ED2IN
   ed2in_path <- file.path(rundir, runid, "ED2IN")
-  ed2in_orig <- readLines(ed2in_path)
-  ed2in_new <- ed2in_orig
+  ed2in_orig <- read_ed2in(ed2in_path, check = FALSE)
 
-  ## IED_INIT_MODE = 5 --> Run from history.h5 file
-  tag_val_list <- list("RUNTYPE" = "history",
-                       "IED_INIT_MODE" = 5,
-                       "SFILIN" = file.path(mod_outdir, runid, "history"),
-                       "IMONTHA" = strftime(start.time, "%m"), 
-                       "IDATEA" = strftime(start.time, "%d"),
-                       "IYEARA" = strftime(start.time, "%Y"),
-                       "ITIMEA" = strftime(start.time, "%H%M"),
-                       "IMONTHZ" = strftime(stop.time, "%m"),
-                       "IDATEZ" = strftime(stop.time, "%d"),
-                       "IYEARZ" = strftime(stop.time, "%Y"),
-                       "ITIMEZ" = strftime(stop.time, "%H%M"))
+  ed2in_new <- modify_ed2in(
+    ed2in_orig,
+    start_date = start.time,
+    end_date = stop.time,
+    RUNTYPE = "HISTORY",
+    IED_INIT_MODE = 5,
+    SFILIN = file.path(mod_outdir, runid, "history")
+  )
 
-  modstr <- 'Modified by write.restart.ED2'
-  ed2in_new <- ed2in_set_value_list(tag_val_list, ed2in_orig, modstr)
-
-  writeLines(ed2in_new, file.path(ed2in_path))
+  check_ed2in(ed2in_new)
+  write_ed2in(ed2in_new, ed2in_path)
 
   # Remove old history.xml file, which job.sh looks for
   file.remove(file.path(mod_outdir, runid, "history.xml"))

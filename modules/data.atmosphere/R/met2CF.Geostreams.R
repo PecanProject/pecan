@@ -34,11 +34,11 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
     dat$start_time <- lubridate::parse_date_time(dat$start_time, orders = "ymdHMSz", tz = "UTC")
     dat$end_time <- lubridate::parse_date_time(dat$end_time, orders = "ymdHMSz", tz = "UTC")
     if (year == lubridate::year(start_date) & start_date < min(dat$start_time)) {
-     logger.severe("Requested start date is", start_date,
+    PEcAn.logger::logger.severe("Requested start date is", start_date,
                    "but", year, "data begin on", min(dat$start_time))
     }
     if (year == lubridate::year(end_date) & end_date > max(dat$end_time)) {
-     logger.severe("Requested end date is", end_date,
+    PEcAn.logger::logger.severe("Requested end date is", end_date,
                    "but", year, "data end on", max(dat$end_time))
     }
 
@@ -53,12 +53,12 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
 
     if (length(unique(dat$geometry.coordinates)) == 1) {
       # all lat/lons are are identical-- no need to store extra copies
-      raw_lat <- dat$geometry.coordinates[[1]][[1]]
-      raw_lon <- dat$geometry.coordinates[[1]][[2]]
+      raw_lon <- dat$geometry.coordinates[[1]][[1]]
+      raw_lat <- dat$geometry.coordinates[[1]][[2]]
     } else {
       # multiple coords in same file -- keep lat and lon as full-length vectors
-      raw_lat <- sapply(dat$geometry.coordinates, function(x)x[[1]])
-      raw_lon <- sapply(dat$geometry.coordinates, function(x)x[[2]])
+      raw_lon <- sapply(dat$geometry.coordinates, function(x)x[[1]])
+      raw_lat <- sapply(dat$geometry.coordinates, function(x)x[[2]])
     }
     
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degrees_north", vals = raw_lat, create_dimvar = TRUE)
@@ -75,7 +75,7 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
 
     make_ncvar <- function(name){
       if (! name %in% met.lookup$CF_standard_name) {
-        logger.severe("Don't know how to convert parameter", name, "to CF standard format")
+       PEcAn.logger::logger.severe("Don't know how to convert parameter", name, "to CF standard format")
       }
       unit <- met.lookup[met.lookup$CF_standard_name == name, "units"]
       ncdf4::ncvar_def(name = name,
@@ -89,7 +89,7 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
     dir.create(outfolder, recursive = TRUE, showWarnings = FALSE)
     nc.file <- file.path(outfolder, paste(in.prefix, year, "nc", sep = "."))
     if (!overwrite &&  file.exists(nc.file)) {
-      logger.severe("Refusing to overwrite existing file", nc.file, " -- If you're sure, set overwrite=TRUE")
+     PEcAn.logger::logger.severe("Refusing to overwrite existing file", nc.file, " -- If you're sure, set overwrite=TRUE")
     }
     cf <- ncdf4::nc_create(filename = nc.file, vars = var_list, verbose = verbose)
     for (var in var_list) {
@@ -103,7 +103,7 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
   }
 
   return(data.frame(file = out_files,
-                    host = PEcAn.utils::fqdn(),
+                    host = PEcAn.remote::fqdn(),
                     startdate = start_date,
                     enddate = end_date,
                     mimetype = "application/x-netcdf",

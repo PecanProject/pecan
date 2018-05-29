@@ -1,0 +1,11 @@
+## Input Conversions
+
+### Input Data
+
+Models require input data as drivers, parameters, and boundary conditions. In order to make a variety of data sources that have unique formats compatible with models, conversion scripts are written to convert them into a PEcAn standard format. That format is a netcdf file with variables names and specified to our standard variable table.
+
+Within the PEcAn repository, code pertaining to input conversion is in the MODULES directory under the data.atmosphere and data.land directories. 
+
+### Initial Conditions
+
+Initial Conditions

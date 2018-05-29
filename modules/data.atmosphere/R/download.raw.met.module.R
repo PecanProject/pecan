@@ -1,4 +1,3 @@
-#' @importFrom PEcAn.utils convert.input
 .download.raw.met.module <- function(dir, met, register, machine, start_date, end_date, str_ns,
                                      con, input_met, site.id, lat.in, lon.in, host, site, username, overwrite = FALSE) {
   
@@ -8,7 +7,7 @@
   fcn <- paste0("download.", met)
   
   if (register$scale == "regional") {
-    raw.id <- convert.input(input.id = NA, 
+    raw.id <- PEcAn.utils::convert.input(input.id = NA, 
                             outfolder = outfolder, 
                             formatname = register$format$name, 
                             mimetype = register$format$mimetype,
@@ -26,7 +25,7 @@
     
   } else if (register$scale == "site") {
     # Site-level met
-    raw.id <- convert.input(input.id = NA,
+    raw.id <- PEcAn.utils::convert.input(input.id = NA,
                             outfolder = outfolder, 
                             formatname = register$format$name, 
                             mimetype = register$format$mimetype,
@@ -40,7 +39,7 @@
                             username = username)
     
   } else {
-    logger.severe("Unknown register$scale")
+    PEcAn.logger::logger.severe("Unknown register$scale")
   }
   
   return(raw.id)

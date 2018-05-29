@@ -26,8 +26,10 @@ pda.define.llik.fn <- function(settings) {
       
       llik.fn[[i]] <- function(pda.errors, llik.par) {
         # lnL = (n/2) * log(tau) - (tau/2) * SS
-        LL <- (llik.par$n/2) * log(llik.par$par) - (llik.par$par/2) * pda.errors
-        return(LL)
+  
+          LL <- (llik.par$n/2) * log(llik.par$par) - (llik.par$par/2) * pda.errors
+          return(LL)
+
       }
       
     } # if-block
@@ -71,17 +73,34 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         
         resid <- abs(model_out[[k]] - inputs[[k]]$obs)
         pos <- (model_out[[k]] >= 0)
-        SS <- c(dexp(resid[pos],
-                     1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[2] * 
-                                                  sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
-                                                  model_out[[k]][pos])), log = TRUE),
-                dexp(resid[!pos],
-                     1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[3] * 
-                            sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
-                            model_out[[k]][!pos])), log = TRUE))
+        # SS <- c(dexp(resid[pos],
+        #              1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[2] * 
+        #                                           sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
+        #                                           model_out[[k]][pos])), log = TRUE),
+        #         dexp(resid[!pos],
+        #              1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[3] * 
+        #                     sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
+        #                     model_out[[k]][!pos])), log = TRUE))
+        # 
+        # pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
+        # SSdb[[k]] <- sum(SS, na.rm = TRUE) 
         
-        pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
-        SSdb[[k]] <- sum(SS, na.rm = TRUE) 
+        # heteroskedastic slopes, slope varies with magnitude of the flux 
+        # inflated by sqrt(n/neff) because var is 2b^2 for laplacian likelihood
+        beta_p <- (inputs[[k]]$par[1] + inputs[[k]]$par[2] * model_out[[k]][pos]) * sqrt(inputs[[k]]$n/inputs[[k]]$n_eff)  
+        beta_n <- (inputs[[k]]$par[1] + inputs[[k]]$par[3] * model_out[[k]][!pos])* sqrt(inputs[[k]]$n/inputs[[k]]$n_eff)
+        
+        # there might not be a negative slope if non-negative variable, assign zero, move on
+        suppressWarnings(if(length(beta_n) == 0) beta_n <- 0)
+        
+        # weigh down log-likelihood calculation with neff
+        # if we had one beta value (no heteroscadasticity), we could've multiply n_eff*beta
+        # now need to multiply every term with n_eff/n 
+        SS_p <- - (inputs[[k]]$n_eff/inputs[[k]]$n) * log(beta_p) - resid[[1]][pos]/beta_p
+        SS_n <- - (inputs[[k]]$n_eff/inputs[[k]]$n) * log(beta_n) - resid[[1]][!pos]/beta_n
+        suppressWarnings(if(length(SS_n) == 0) SS_n <- 0)
+        pda.errors[[k]] <- sum(SS_p, SS_n, na.rm = TRUE)
+        SSdb[[k]] <- pda.errors[[k]]
         
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") { 
       # multiplicative Gaussian
@@ -166,13 +185,14 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
 ##' @title pda.calc.llik.par
 ##' 
 ##' @param settings list
-##' @param n named vector
-##' @param error.stats list
+##' @param n named vector, sample sizes of inputs
+##' @param error.stats list, Sufficient Statistics 
+##' @param hyper.pars list, hyperparameters
 ##' 
 ##' @author Istem Fer
 ##' @export
 
-pda.calc.llik.par <-function(settings, n, error.stats){
+pda.calc.llik.par <-function(settings, n, error.stats, hyper.pars){
   
   llik.par <- list()
   
@@ -183,9 +203,10 @@ pda.calc.llik.par <-function(settings, n, error.stats){
     if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
         settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
-      llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + error.stats[k]/2)
-      names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
-      
+        llik.par[[k]]$par <- rgamma(1, hyper.pars[[k]]$parama + n[k]/2, 
+                                    hyper.pars[[k]]$paramb + error.stats[k]/2)
+        names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
+
     }
     llik.par[[k]]$n     <- n[k]
     

@@ -16,9 +16,9 @@ split_wind(in.path, in.prefix, start_date, end_date, overwrite = FALSE,
 
 \item{end_date}{}
 
-\item{overwrite}{}
+\item{overwrite}{logical: replace output file if it already exists?}
 
-\item{verbose}{}
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?}
 
 \item{...}{other arguments, currently ignored}
 }
@@ -29,6 +29,7 @@ Split wind_speed into eastward_wind and northward_wind
 Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record.
 }
 \examples{
+\dontrun{
 in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
 in.prefix  <- ""
 outfolder  <- "~/paleon/metTest/"
@@ -37,7 +38,6 @@ end_date   <- "2010-12-31"
 overwrite  <- FALSE
 verbose    <- TRUE
 
-\\notrun{
 split_wind(in.path, in.prefix, start_date, end_date, merge.file, overwrite, verbose)
 }
 }

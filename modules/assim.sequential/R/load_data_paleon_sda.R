@@ -29,7 +29,7 @@ load_data_paleon_sda <- function(settings){
   d <- settings$database$bety[c("dbname", "password", "host", "user")]
   bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
   
-  if(settings$host$name != 'localhost') logger.severe('ERROR: Code does not support anything but settings$host$name <- localhost at this time.')
+  if(settings$host$name != 'localhost') PEcAn.logger::logger.severe('ERROR: Code does not support anything but settings$host$name <- localhost at this time.')
   
   site <- PEcAn.DB::query.site(settings$run$site$id, bety$con)
   format_id <- settings$state.data.assimilation$data$format_id
@@ -52,7 +52,7 @@ load_data_paleon_sda <- function(settings){
   obs.cov <- obs.cov.tmp <- list()
 
   obs.times <- seq(as.Date(start_date), as.Date(end_date), by = settings$state.data.assimilation$forecast.time.step)
-  obs.times <- year(obs.times)
+  obs.times <- lubridate::year(obs.times)
   
   biomass2carbon <- 0.48
   
@@ -63,28 +63,43 @@ load_data_paleon_sda <- function(settings){
     data.path <- PEcAn.DB::query.file.path(input.id[[i]], settings$host$name, bety$con)
     format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id[[i]], bety, format.id = NA, var.ids=NA)
     
+    if(TRUE){
+      # hack instead of changing the units in BETY format for now
+      # I don't want load_data to convert anything
+      # data itself is in Mg / ha 
+      format$vars[1,1] <-  format$vars[1,8] <- format$vars[1,10] <- "AbvGrndWood"
+      format$vars[1,4] <- "kg C m-2"
+      
+      format$vars[4,1] <-  format$vars[4,8] <- format$vars[4,10] <- "GWBI"
+      format$vars[4,4] <- "kg C m-2 s-1"
+    }
+    
     format$na.strings <- 'NA'
     time.row <- format$time.row
     time.type <- format$vars$input_units[time.row] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
     
     # ---- LOAD INPUT DATA ---- #
-    logger.info(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
+    PEcAn.logger::logger.info(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
     obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site)
     
-    dataset <- obvs[[i]]
     variable <- intersect(var.names,colnames(obvs[[i]]))
+    
+    kgms2Mghayr <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kg m-2 s-1 -> Mg ha-1 yr-1
+    kgm2Mgha <- (10000/1)*(1/1000) ## kg m-2  -> Mg ha-1
     
     ### Tree Ring Data Product
     if(format_id[[i]] == '1000000040'){
       obvs[[i]] <- obvs[[i]][obvs[[i]]$model_type=='Model RW + Census',]
-      obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon
-      obvs[[i]]$NPP <- obvs[[i]]$NPP * biomass2carbon
+      obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon #* kgm2Mgha 
+      obvs[[i]]$GWBI <- obvs[[i]]$GWBI * biomass2carbon  #* kgms2Mghayr 
       arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
       arguments2 <- list(.(year), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
     }else{
-      logger.severe('ERROR: This data format has not been added to this function (ツ)_/¯ ')
+      PEcAn.logger::logger.severe('ERROR: This data format has not been added to this function (ツ)_/¯ ')
     }
+    
+    dataset <- obvs[[i]]
     
     ### Map species to model specific PFTs
     if(any(var.names == 'AGB.pft')){
@@ -95,35 +110,35 @@ load_data_paleon_sda <- function(settings){
       x <- paste0('AGB.pft.', pft_mat$pft)
       names(x) <- spp_id$input_code
       
-      logger.info('Now, mapping data species to model PFTs')
+      PEcAn.logger::logger.info('Now, mapping data species to model PFTs')
       dataset$pft.cat <- x[dataset$species_id]
-      dataset <- dataset[dataset$pft.cat!='NA_AbvGrndWood',]
+      dataset <- dataset[dataset$pft.cat!='AGB.pft.NA',]
       
-      variable <- sub('AGB.pft','AbvGrndWood',variable)
+      variable <- c('AbvGrndWood')
       arguments <- list(.(year, MCMC_iteration, site_id, pft.cat), .(variable))
       arguments2 <- list(.(year, pft.cat), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(pft.cat, variable), .(year))
     } 
     
-    logger.info('Now, aggregating data and creating SDA input lists')
+    PEcAn.logger::logger.info('Now, aggregating data and creating SDA input lists')
     melt_id <- colnames(dataset)[-which(colnames(dataset) %in% variable)]
     melt.test <- reshape2::melt(dataset, id = melt_id, na.rm = TRUE)
     cast.test <- reshape2::dcast(melt.test, arguments, sum, margins = variable)
     
-    melt_id <- colnames(cast.test)[-which(colnames(cast.test) %in% variable)]
-    melt.next <- reshape2::melt(cast.test, id = melt_id)
+    melt_id_next <- colnames(cast.test)[-which(colnames(cast.test) %in% variable)]
+    melt.next <- reshape2::melt(cast.test, id = melt_id_next)
     mean_mat <- reshape2::dcast(melt.next, arguments2, mean)
     
     iter_mat <- reshape2::acast(melt.next, arguments3, mean)
     cov.test <- apply(iter_mat,3,function(x){cov(x)})
    
     for(t in seq_along(obs.times)){
-      obs.mean.tmp[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], variable] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
+      obs.mean.tmp[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], -c(1)] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
       
       if(any(var.names == 'AGB.pft')){
-        obs.mean.tmp[[t]] <- rep(NA, length(x))
-        names(obs.mean.tmp[[t]]) <- sort(x)
-        for(r in seq_along(x)){
+        obs.mean.tmp[[t]] <- rep(NA, length(unique(dataset$pft.cat)))
+        names(obs.mean.tmp[[t]]) <- sort(unique(dataset$pft.cat))
+        for(r in seq_along(unique(dataset$pft.cat))){
           k <- mean_mat[mean_mat$year==obs.times[t] & mean_mat$pft.cat==names(obs.mean.tmp[[t]][r]), variable]
           if(any(k)){
             obs.mean.tmp[[t]][r] <- k

@@ -2,8 +2,8 @@ Package: PEcAn.uncertainty
 Type: Package
 Title: PEcAn functions used for ecological forecasts and
     reanalysis
-Version: 1.5.0
-Date: 2017-07-14
+Version: 1.5.3
+Date: 2018-04-26
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang,
     Mike Dietze, Carl Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -15,6 +15,7 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Depends:
+    PEcAn.logger,
     PEcAn.utils,
     PEcAn.priors,
     ggplot2,

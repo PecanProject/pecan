@@ -5,7 +5,7 @@
 ##' 
 ##' @author Betsy Cowdery
 metric_lmDiag_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
-  PEcAn.utils::logger.info("Metric: Linear Regression Diagnostic Plot")
+  PEcAn.logger::logger.info("Metric: Linear Regression Diagnostic Plot")
   
   fit <- lm(metric_dat[, 1] ~ metric_dat[, 2])
 

@@ -26,7 +26,7 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
   lpjguess.out.files <- list.files(outdir, pattern = "\\.out$")
   
   if (length(lpjguess.out.files) == 0) {
-    logger.error("No output files found at ", outdir)
+    PEcAn.logger::logger.error("No output files found at ", outdir)
   }
   
   lpjguess.output <- lapply(file.path(outdir, lpjguess.out.files), read.table, header = TRUE, sep = "")
@@ -88,10 +88,16 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
     output[[5]] <- nee[which(years == y), ]  # NEE in kgC/m2/s
     output[[6]] <- lai[which(years == y), ]  # LAI in m2/m2
     
+    if(lubridate::leap_year(y)){
+      month_days <- c(001, 032, 061, 092, 122, 153, 183, 214, 245, 275, 306, 336)
+    } else {
+      month_days <- c(001, 032, 060, 091, 121, 152, 182, 213, 244, 274, 305, 335)
+    }
+
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
                    units = paste0("days since ", y, "-01-01 00:00:00"), 
-                   vals = 1:12, 
+                   month_days,
                    calendar = "standard", 
                    unlim = TRUE)
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
@@ -99,13 +105,15 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
     
     mstmipvar <- PEcAn.utils::mstmipvar
     
+    dims <- list(lon = lon, lat = lat, time = t)
+    
     var <- list()
-    var[[1]] <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[2]] <- mstmipvar("NPP", lat, lon, t, NA)
-    var[[3]] <- mstmipvar("AutoResp", lat, lon, t, NA)
-    var[[4]] <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[5]] <- mstmipvar("NEE", lat, lon, t, NA)
-    var[[6]] <- mstmipvar("LAI", lat, lon, t, NA)
+    var[[1]] <- PEcAn.utils::to_ncvar("GPP", dims)
+    var[[2]] <- PEcAn.utils::to_ncvar("NPP", dims)
+    var[[3]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    var[[4]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
+    var[[5]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    var[[6]] <- PEcAn.utils::to_ncvar("LAI", dims)
     
     # ******************** Declare netCDF variables ********************#
     
