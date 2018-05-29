@@ -33,7 +33,7 @@ met2CF.AmerifluxLBL <- function(in.path, in.prefix, outfolder, start_date, end_d
       PEcAn.logger::logger.warn(length(files), ' met files found. Using first file: ', files[1])
       files <- files[1]
     }
-    somedat <- read.csv(files, 
+    somedat <- utils::read.csv(files, 
                        header = TRUE,
                        skip = format$skip, 
                        na.strings = format$na.strings,

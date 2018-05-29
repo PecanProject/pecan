@@ -74,9 +74,6 @@ getLatLon <- function(nc1) {
 met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, ...) {
 
-  #---------------- Load libraries. -----------------------------------------------------------------#
-  library(geonames)  ## has to be loaded as a library
-  #--------------------------------------------------------------------------------------------------#
 
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
@@ -129,8 +126,10 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     if ((tdimtz == "+") || (tdimtz == "-")) {
       lst <- tdimunit[length(tdimunit)]  #already in definition, leave it alone
     } else {
-      options(geonamesUsername = "carya")  #login to geoname server
-      lst <- GNtimezone(latlon[1], latlon[2], radius = 0)$gmtOffset
+      if (is.null(getOption("geonamesUsername"))) {
+        options(geonamesUsername = "carya")  #login to geoname server
+      }
+      lst <- geonames::GNtimezone(latlon[1], latlon[2], radius = 0)$gmtOffset
       if (lst >= 0) {
         lststr <- paste("+", lst, sep = "")
       } else {
