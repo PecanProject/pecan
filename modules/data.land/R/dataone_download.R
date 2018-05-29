@@ -18,8 +18,6 @@
 #' }
 
 dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
-  
-
   ### automatically retrieve mnId
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = id) 
@@ -35,10 +33,7 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNod
   newdir <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
   dir.create(newdir)
   
-  # download the data with wget
-  for(i in 1:n){
-    system(paste("cd", newdir, "&&", "{", "wget", "--content-disposition", names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
-  }
+  
  
 }
 
