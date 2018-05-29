@@ -33,7 +33,20 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNod
   newdir <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
   dir.create(newdir)
   
-  
+  # extract the data
+  for(i in 1:n){ 
+    pkgMember <- datapack::getMember(pkg, names(files[i])) # extract data from dataPackage
+    data <- datapack::getData(pkgMember) 
+    
+    if(files[i][1] == "text/csv"){ # format is stored as the first entry of the list "files"
+      base::writeLines(rawToChar(data), paste0(newdir, "/", "Data", i, ".csv")) #  If csv, add .csv 
+      
+    } else if(files[i][1] == "text/xml"){
+      base::writeLines(rawToChar(data), paste0(newdir, "/", "MetaData", i, ".xml")) # If XML add .xml and add Metadata title
+      
+    } else 
+      base::writeLines(rawToChar(data), paste0(newdir, "/", "MetaData", i)) # If other, process without extension (typically eml)
+  }
  
 }
 
