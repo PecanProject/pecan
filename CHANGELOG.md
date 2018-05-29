@@ -8,6 +8,24 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Fixes
+- PEcAn.data.atmosphere: 
+    - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
+    - Fixed swapped lat/lon in met2CF.Geostreams
+    - download.GFDL now records reference date in time units field, as required by the CF met standard
+    - Reduced download.GFDL network load by not preloading dimension data
+    - Fixed spurious `No geonamesUsername set` warning by updating geonames package to development version
+- ED:
+    - Change all history parameter files to have zero storage respiration
+    
+### Added
+
+- From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
+
+### Removed
+
+### Changed
+
 ## [1.5.3] - 2018-05-15
 
 ### Fixes
@@ -30,10 +48,16 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - PEcAn now supports PFTs whose members are cultivars rather than species, and will automatically restrict the meta-analysis to matching records, e.g. runs with a PFT containing only Panicum virgatum 'Cave-In-Rock' will not use observations from Panicum virgatum 'Alamo', but a PFT containing the whole species will use observations from both. However, there is not yet any BETYdb interface to *create* cultivar-PFTs other than manual SQL.
 - New base package `PEcAn.workflow`, for functions used to perform the each major step of the analysis. These were previously scattered in other base packages.
 - Added PR review time estimate to PR template 
+- New set of `PEcAn.logger` functions similar to `stopifnot` to facilitate assertive programming: `severeifnot`, `errorifnot`, `warnifnot`, `infoifnot`, `debugifnot`
 - PEcAnRTM:
     - Exposed PROSPECT absorption coefficients and `gpm()` function ("generalized plate model"), facilitating experimentation with different absorption coefficients
     - Added `spectra` S3 class and methods for subsetting (e.g. `myspec[[400:700]]`), plotting (`plot()` and `matplot()`), and combining spectra by wavelength.
     - Added `resample` functions for quickly resampling spectra (and, more generally, vectors and functions) to different dimensions. 
+    - `EDR` API has been revised. Setup has been refactored from EDR via new `setup_edr` function, which relies on the ED utilities (see `PEcAn.ED2` below), and the `EDR` function now focuses only on execution. Also, added new `params2edr` function to make it easy to convert complex EDR parameters list to flat parameter vector required by `invert_bt` (or other optimization functions).
+- PEcAn.ED2:
+    - New set of utilities for working with ED meteorology and vegetation inputs, and the ED2IN file. Existing PEcAn code has been revised to use these utilities.
+- PEcAn.data.atmosphere:
+    - New utilities for efficiently downloading NARR time series using THREDDS/OpenDAP
 
 ### Removed
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
@@ -51,6 +75,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Replaced `rhdf5` library with `hdf5r`, a more modern alternative that is available on CRAN.
 - PEcAn.DB function `runModule.get.trait.data` has been moved to the new PEcAn.workflow package to avoid a circular package dependency between PEcAn.DB and PEcAn.settings.
 - Major documentation refactoring. The documentation names are now directly tied to the order in which they are rendered, and all `Rmd` files in all subdirectories of the documentation source are rendered by default. The overall structure of the documentation has been revised for clarity and cohesiveness.
+- Edited met2model.ED2 to not enforce leap years. 
 - Integrate demo 1 into basic user guide
 
 ## [1.5.2] - 2017-12-07

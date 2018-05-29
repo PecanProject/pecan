@@ -8,6 +8,9 @@ download.AmerifluxLBL(sitename, outfolder, start_date, end_date,
   overwrite = FALSE, verbose = FALSE, username = "pecan", method, ...)
 }
 \arguments{
+\item{sitename}{the Ameriflux ID of the site to be downloaded, used as file name prefix. 
+The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
+
 \item{outfolder}{location on disk where outputs will be stored}
 
 \item{start_date}{the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)}
@@ -21,9 +24,6 @@ download.AmerifluxLBL(sitename, outfolder, start_date, end_date,
 \item{username}{Ameriflux username}
 
 \item{method}{Optional. download.file() function option.  Use this to set custom programs such as ncftp}
-
-\item{site}{the Ameriflux ID of the site to be downloaded, used as file name prefix. 
-The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
 }
 \description{
 download.AmerifluxLBL

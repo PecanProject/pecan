@@ -28,7 +28,8 @@ Depends:
     PEcAn.emulator,
     PEcAn.priors,
     PEcAn.benchmark,
-    PEcAn.remote
+    PEcAn.remote,
+    PEcAn.workflow
 Suggests:
     PEcAn.ed,
     PEcAn.sipnet,
