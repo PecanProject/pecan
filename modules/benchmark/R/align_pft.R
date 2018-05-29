@@ -57,7 +57,9 @@
 #' 
 #' 
 #' @export
-align_pft<-function(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE, comparison_type="data_to_data", ...){
+align_pft<-function(con, observation_one, observation_two, custom_table=NULL, 
+                    format_one = NULL, format_two = NULL, subset_are_ok=FALSE, 
+                    comparison_type="data_to_data", ...){
 
   if(comparison_type == "data_to_model"){
     
@@ -67,6 +69,9 @@ align_pft<-function(con, observation_one, observation_two, custom_table=NULL, fo
     
   }else if (comparison_type == "data_to_data"){
     
+    if(is.null(format_one) | is.null(format_two)){
+      PEcAn.logger::logger.error("Must specify formats for both sets of PFTs")
+    }
     align_data_to_data_pft(observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE)
     
   }else if (comparison_type == "model_to_model"){
@@ -77,6 +82,7 @@ align_pft<-function(con, observation_one, observation_two, custom_table=NULL, fo
     
   }else{
     PEcAn.logger::logger.severe("comparison_type must be set to either 'data_to_model', 'data_to_data', or model_to_model")
+
   }
 
 }
