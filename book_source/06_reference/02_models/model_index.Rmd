@@ -7,14 +7,14 @@ This section will contain information about all models and output variables that
 | [BioCro] | Yes | Yes | Yes| No |
 | [CLM]| No | No | No| No |
 | [DALEC]| Yes | Yes | Yes| No |
-| [ED]| Yes | Yes | Yes| No |
+| [ED]| Yes | Yes | Yes| Yes |
 | FATES | No | Yes | | No|
 | [GDAY] | No | No | No| No |
 | [LINKAGES] | Yes | Yes | Yes| Yes |
 | [LPJ-GUESS]| Yes | Yes | No | No |
 | [MAESPA]| Yes | Yes | No | No |
 | [PRELES] | Yes | Yes | Partially | No |
-| [Sipnet]| Yes | Yes | Yes| No |
+| [Sipnet]| Yes | Yes | Yes| Yes |
 
 
 **Output Variables**
