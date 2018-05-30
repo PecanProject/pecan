@@ -969,3 +969,130 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
   
 } # put_E_values
 
+
+
+
+#' S-file contents are not written to standard netcdfs but are used by read_restart
+#' from SDA's perspective it doesn't make sense to write and read to ncdfs because ED restarts from history files
+#' 
+#' @param sfile history file name e.g. "history-S-1961-01-01-000000-g01.h5"
+#' @param outdir path to run outdir, where the -S- file is
+#' @param pft_names string vector, names of ED2 pfts in the run, e.g. c("temperate.Early_Hardwood", "temperate.Late_Conifer")
+#' @param pecan_names string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")
+#' 
+#' @export
+read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
+  
+  PEcAn.logger::logger.info(paste0("*** Reading -S- file ***"))
+  
+  # commonly used vars
+  if(is.null(pecan_names)) pecan_names <- c("AGB", "AbvGrndWood", "GWBI", "DBH")
+
+  ed_varnames <- pecan_names
+  
+  # TODO: ed.var lookup function can also return deterministically related variables
+  
+  # translate pecan vars to ED vars
+  trans_out    <- translate_vars_ed(ed_varnames)
+  ed_varnames  <- trans_out$vars  # variables to read from history files
+  ed_derivs    <- trans_out$expr  # derivations to obtain pecan standard variables
+  add_vars     <- trans_out$addvars # these are the vars -if there are any- that won't be updated by analysis, but will be used in write_restart
+  ed_units     <- trans_out$units # might use
+  
+  # List of vars to extract includes the requested one, plus others needed below 
+  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT", "DAGB_DT")
+  vars <- c(ed_varnames, add_vars) 
+  
+  # list to collect outputs
+  ed.dat <- list()
+  
+  nc <- ncdf4::nc_open(file.path(outdir, sfile))
+  allvars <- names(nc$var)
+  if(!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
+    
+  for(j in seq_along(allvars)){
+    ed.dat[[j]] <- list()
+    ed.dat[[j]] <- ncdf4::ncvar_get(nc, allvars[j])
+  }
+  names(ed.dat) <- allvars
+  
+  ncdf4::nc_close(nc)
+
+
+  # for now this function does not read any ED variable that has soil as a dimension
+  soil.check <- grepl("soil", pft_names)
+  if(any(soil.check)){
+    # for now keep soil out
+    pft_names <- pft_names[!(soil.check)]
+  }
+  
+  npft <- length(pft_names)
+  data(pftmapping, package = "PEcAn.ED2")
+  pft_nums <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
+  
+  out <- list()
+  for(varname in pecan_names) {
+    out[[varname]] <- array(NA, npft)
+  }
+  
+
+  # Get cohort-level variables 
+  pft        <- ed.dat$PFT
+  plant_dens <- ed.dat$NPLANT  # Cohort stem density -- plant/m2
+    
+  # Get patch areas. In general patches aren't the same area, so this is needed to area-weight when averaging up to site level. Requires minor finnagling to convert patch-level AREA to a cohort-length variable. 
+  patch_area  <- ed.dat$AREA    # unitless, a proportion of total site area  -- one entry per patch (always add up to 1)
+  paco_n      <- ed.dat$PACO_N  # number of cohorts per patch
+  
+  patch_index <- rep(1:length(paco_n), times = paco_n)
+ 
+  # patch_area <- rep(patch_area, paco_n)  # patch areas, repped out to one entry per cohort
+  # # 
+  # # # Now can get number of plants per cohort, which will be used for weighting. Note that area is a proportion of total site area, rather than an absolute measure. In which case this nplant is a tiny and meaningless number in terms of actual number of plants. But that doesn't matter for weighting purposes. 
+  # nplant <- plant_dens * patch_area # -- plant/m2
+
+ 
+  # Aggregate
+  for(k in seq_len(npft)) {
+    ind <- (pft == pft_nums[k])
+      
+    if(any(ind)) {
+      for(l in seq_along(pecan_names)) {
+        variable <- convert.expr(ed_derivs[l])  # convert
+        expr <- variable$variable.eqn$expression
+        
+        sapply(variable$variable.eqn$variables, function(x) assign(x, ed.dat[[x]], envir = .GlobalEnv))
+        tmp.var <- eval(parse(text = expr)) # parse
+        
+        # check for different variables/units?
+        if(ed_units[l] %in% c("kgC/plant")){
+          tmp.var[!ind] <- 0
+          #     kgC/m2 = kgC/plant  *   plant/m2  
+          plant2cohort <- tmp.var * plant_dens
+          cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), mean, na.rm = TRUE)
+          out[[pecan_names[l]]][k] <- sum(cohort2patch, na.rm = TRUE)
+        }else if(ed_units[l] %in% c("1/yr")){
+          tmp.var[!ind] <- 0
+          #   kgC/m2/yr = kgC/plant/yr  *   plant/m2  
+         # plant2cohort <- tmp.var * plant_dens
+          cohort2patch <- tapply(tmp.var, list("patch" = patch_index), mean, na.rm = TRUE) # should rates be summed?
+          out[[pecan_names[l]]][k] <- sum(cohort2patch, na.rm = TRUE)
+        }
+    
+        } #pecan_names loop
+      
+      # here (or maybe out of these loops) there could be an add_vars loop for variables that will be updated deterministically
+      # pass as read? or aggregate as well? punting implementation until needed
+      # pass to a sublist? so that read_restart doesn't care?
+      # out$restart <- ...
+      
+      } #any(ind)-if
+    } #k-loop
+  
+  # pass everything, unaggregated
+  out$restart <- ed.dat
+    
+  
+  return(out)
+  
+} # read_S_files
