@@ -37,7 +37,7 @@ This document describes the steps required to download PEcAn, make changes to co
   
 In short, there are three main branches you must be aware of:
 
-* **develop** - Main Branch containing the latest code. This is the main brancy you will make changes to. 
+* **develop** - Main Branch containing the latest code. This is the main branch you will make changes to. 
 * **master** - Branch containing the latest stable code. DO NOT MAKE CHANGES TO THIS BRANCH. 
 * **release/vX.X.X** - Named branches containing code specific to a release. Only make changes to this branch if you are fixing a bug on a release branch.
 
@@ -107,7 +107,7 @@ git remote add upstream git@github.com:PecanProject/pecan.git
 
 ### Basic Workflow
 
-We do not recommend using this workflow is you plan on continuously contributing to PEcAn
+This workflow is for educational purposes only. Please use the Recommended Workflow if you plan on contributing to PEcAn. This workflow does not include creating branches, a feature we would like you to use.
 1. Get the latest code from the main repository
 
 `git pull upstream develop`
@@ -184,7 +184,7 @@ We do not recommend using this workflow is you plan on continuously contributing
 
 #### Fixing a release Branch
 
-If you would like to make changes to a release branch, you must follow a differetn workflow, as the release branhc will contain the latest code on develop and must remain seperate.
+If you would like to make changes to a release branch, you must follow a different workflow, as the release branch will not contain the latest code on develop and must remain seperate.
 
 1. Fetch upstream remote branches
 
@@ -220,11 +220,7 @@ There are two ways to do this. One easy way is to include the following text in 
   
 * [**Github**](https://github.com/blog/1386-closing-issues-via-commit-messages)
 * to close: "closes gh-xxx" (or syn. close, closed, fixes, fix, fixed)  
-* to reference: just the issue number (e.g. "gh-xxx")
-* avoid "closes #xxx" which will cross-reference Redmine issues 
-
-Another way is to just add the url to the issue that you are updating. For example, if you are resolving an issue in Redmine, you can simply write the text "resolved by pull request https://github.com/PecanProject/pecan/pull/1" in the comments.
-
+* to reference: just the issue number (e.g. "gh-xxx") 
 
 
 #### Other Useful Git Commands:

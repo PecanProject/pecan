@@ -13,7 +13,7 @@ This section describes the following:
 + Basics of SSH tunnels, and how they are used in PEcAn
 
 2. Description of PEcAn related tools that control remote execution
-+ Basic remote exection R functions in `PEcAn.remote`
++ Basic remote execution R functions in `PEcAn.remote`
 
 3. SETUP- Configuration Files and settings
 + Remote model execution configuration in the `pecan.xml` and `config.php`
@@ -232,7 +232,7 @@ The `config.php` has a few variables that will control where the web
 interface can run jobs, and how to run those jobs. It is located in the `/web` directory and if you have not touched it yet it will
 be named as `config.example.php`. Rename it to 'config.php` and edit by folowing the following directions.
 
-These variablesare `$hostlist`, `$qsublist`, `$qsuboptions`, and `$SSHtunnel`. In
+These variables are `$hostlist`, `$qsublist`, `$qsuboptions`, and `$SSHtunnel`. In
 the near future `$hostlist`, `$qsublist`, `$qsuboptions` will be
 combined into a single list.
 

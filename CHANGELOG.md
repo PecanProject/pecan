@@ -25,7 +25,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
-- Fixed Git instructions and remote exectuion instructions.
+- Fixed Git instructions and remote execution instructions.
 
 
 ## [1.5.3] - 2018-05-15
