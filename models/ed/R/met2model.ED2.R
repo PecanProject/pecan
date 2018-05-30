@@ -114,14 +114,25 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     sec  <- nc$dim$time$vals
     Tair <- ncdf4::ncvar_get(nc, "air_temperature")
     Qair <- ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
-    U    <- ncdf4::ncvar_get(nc, "eastward_wind")
-    V    <- ncdf4::ncvar_get(nc, "northward_wind")
+    U    <- try(ncdf4::ncvar_get(nc, "eastward_wind"),  silent = TRUE)
+    V    <- try(ncdf4::ncvar_get(nc, "northward_wind"), silent = TRUE)
     Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")
     pres <- ncdf4::ncvar_get(nc, "air_pressure")
     SW   <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
     LW   <- ncdf4::ncvar_get(nc, "surface_downwelling_longwave_flux_in_air")
     CO2  <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
 
+    use_UV <- is.numeric(U) & is.numeric(V)
+
+    if(!use_UV){
+      U <- try(ncdf4::ncvar_get(nc, "wind_speed"), silent = TRUE)
+      if(is.numeric(U)){
+        PEcAn.logger::logger.info("eastward_wind and northward_wind are absent, using wind_speed to approximate eastward_wind")
+        V <- rep(0, length(U))
+      }else{
+        PEcAn.logger::logger.severe("No eastward_wind and northward_wind or wind_speed in the met data")
+      }
+    }
     useCO2 <- is.numeric(CO2)
 
     ## convert time to seconds
@@ -137,8 +148,8 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     slen <- seq_along(SW)
     Tair <- c(rep(Tair[1], toff), Tair)[slen]
     Qair <- c(rep(Qair[1], toff), Qair)[slen]
-    U    <- c(rep(U[1], toff), U)[slen]
-    V    <- c(rep(V[1], toff), V)[slen]
+    U  <- c(rep(U[1], toff), U)[slen]
+    V  <- c(rep(V[1], toff), V)[slen]
     Rain <- c(rep(Rain[1], toff), Rain)[slen]
     pres <- c(rep(pres[1], toff), pres)[slen]
     SW   <- c(rep(SW[1], toff), SW)[slen]
@@ -219,8 +230,8 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     dlwrfA <- LW  # downward long wave radiation [W/m2]
     presA  <- pres  # pressure [Pa]
     hgtA   <- rep(50, n)  # geopotential height [m]
-    ugrdA  <- U  # zonal wind [m/s]
-    vgrdA  <- V  # meridional wind [m/s]
+    ugrdA <- U  # zonal wind [m/s]
+    vgrdA <- V  # meridional wind [m/s]
     shA    <- Qair  # specific humidity [kg_H2O/kg_air]
     tmpA   <- Tair  # temperature [K]
     if (useCO2) {
