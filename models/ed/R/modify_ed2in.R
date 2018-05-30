@@ -165,6 +165,7 @@ modify_ed2in <- function(ed2in, ...,
       as.numeric(strftime(start_date, "%H%M", tz = "UTC"))
     ed2in[["METCYC1"]] <- ed2in[["IYEARA"]]
   }
+  
 
   if (!is.null(end_date)) {
     ed2in[["IYEARZ"]] <- lubridate::year(end_date)
