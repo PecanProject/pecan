@@ -29,6 +29,7 @@ Imports:
     dplyr,
     tibble,
     lubridate,
+    magrittr,
     purrr
 Suggests:
     testthat (>= 1.0.2)
