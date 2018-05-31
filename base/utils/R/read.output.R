@@ -37,10 +37,10 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   ## wflux = c('Evap', 'TVeg', 'Qs', 'Qsb', 'Rainf') # kgH20 m-2 d-1
   
   # create list of *.nc years - look only for files formatted as YYYY.nc, the default pecan output file name standard
-  nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern = "^[[:digit:]]{4}\\.nc$", 
+  nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern = "^-?[[:digit:]]{4}\\.nc$", 
                                                    full.names = FALSE), ".nc")),
                         mode = "numeric") # N.B. coercing from character
-  ncfiles <- list.files(path = outdir, pattern = "^[[:digit:]]{4}\\.nc$", full.names = TRUE)
+  ncfiles <- list.files(path = outdir, pattern = "^-?[[:digit:]]{4}\\.nc$", full.names = TRUE)
   
   if(!is.na(start.year) && !is.na(end.year)){
     if (lubridate::is.instant(start.year)) { # true if a Date, POSIXct, or POSIXlt
