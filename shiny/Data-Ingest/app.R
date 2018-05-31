@@ -58,7 +58,7 @@ ui <- dashboardPage(
 server <- function(input, output) {
   options(shiny.maxRequestSize=30*1024^2) #maximum file input size
   
-   path <- PEcAn.utils::read_web_config("../../web/config.php")
+   path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder 
     
    d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id, filepath = path) }) #run dataone_download with input from id on click
   
