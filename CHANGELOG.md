@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- Fixed issue #1939 which corrects output time vector for FATES output
 - PEcAn.data.atmosphere: 
     - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
     - Fixed swapped lat/lon in met2CF.Geostreams
