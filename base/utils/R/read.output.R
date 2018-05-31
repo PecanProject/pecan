@@ -68,7 +68,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   }
 
   years <- start.year:end.year
-  run_origin <- paste0(start.year, "-01-01")
+  run_origin <- paste0(start.year, "-01-01") #-- should we be hard-coding this assumption?
 
   # throw error if no *.nc files selected/availible
   nofiles <- FALSE
@@ -179,7 +179,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
 ##'--------------------------------------------------------------------------------------------------#
 ##' Converts the output of all model runs
 ##'
-##' @title convert outputs from model specific code to 
+##' @title convert outputs from model specific code to pecan standard (deprecated) 
 ##' @name convert.outputs
 ##' @param model name of simulation model currently accepts ('ED', 'SIPNET', 'BIOCRO')
 ##' @param settings settings loaded from pecan.xml
@@ -187,5 +187,5 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
 ##' @export
 ##' @author Rob Kooper
 convert.outputs <- function(model, settings, ...) {
-  PEcAn.logger::logger.severe("This function is not longer used and will be removed in the future.")
+  PEcAn.logger::logger.severe("DEPRECATED: This function is no longer used and will be removed in the future.")
 } # convert.outputs
