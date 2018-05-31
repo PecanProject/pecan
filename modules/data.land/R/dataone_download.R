@@ -35,13 +35,14 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNod
   files <- datapack::getValue(pkg, name="sysmeta@formatId")
   n <- length(files) # number of files
 
-  # make new directory within this directory
+  ### make new directory within this directory
   newdir <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
   dir.create(newdir)
   
-  # download the data with wget
+  ### download the data with wget 
+  # '--header='  spoofs the user agent so that we avoid authentication errors. DataONE is now actively preventing web scraping. 
   for(i in 1:n){
-    system(paste("cd", newdir, "&&", "{", "wget", "--content-disposition", names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
+    system(paste("cd", newdir, "&&", "{", "wget",  "--header='User-Agent: Mozilla/5.0 (Windows NT 5.1; rv:23.0) Gecko/20100101 Firefox/23.0'", "--content-disposition", names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
   }
  
 }
