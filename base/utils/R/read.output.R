@@ -37,10 +37,9 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   ## wflux = c('Evap', 'TVeg', 'Qs', 'Qsb', 'Rainf') # kgH20 m-2 d-1
   
   # create list of *.nc years - look only for files formatted as YYYY.nc, the default pecan output file name standard
-  nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern = "^-?[[:digit:]]{4}\\.nc$", 
-                                                   full.names = FALSE), ".nc")),
-                        mode = "numeric") # N.B. coercing from character
-  ncfiles <- list.files(path = outdir, pattern = "^-?[[:digit:]]{4}\\.nc$", full.names = TRUE)
+  ncfiles_sub <- list.files(path = outdir, pattern = "^-?[[:digit:]]{4}\\.nc$", full.names = FALSE)
+  ncfiles <- file.path(outdir, ncfiles_sub)
+  nc_years <- as.numeric(gsub("^(-?[[:digit:]]{4})\\.nc", "\\1", ncfiles_sub))
   
   if(!is.na(start.year) && !is.na(end.year)){
     if (lubridate::is.instant(start.year)) { # true if a Date, POSIXct, or POSIXlt
@@ -59,24 +58,24 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     }
 
     # select only those *.nc years requested by user
-    keep <- which(nc.years >= start.year & nc.years <= end.year)
+    keep <- which(nc_years >= start.year & nc_years <= end.year)
     ncfiles <- ncfiles[keep]
-  } else if(length(nc.years) != 0){
+  } else if(length(nc_years) != 0){
       PEcAn.logger::logger.info("No start or end year provided; reading output for all years")
-      start.year <- min(nc.years)
-      end.year <- max(nc.years)
+      start.year <- min(nc_years)
+      end.year <- max(nc_years)
   }
 
   years <- start.year:end.year
-  run_origin <- paste0(start.year, "-01-01") #-- should we be hard-coding this assumption?
+  run_origin <- paste0(start.year, "-01-01")
 
   # throw error if no *.nc files selected/availible
   nofiles <- FALSE
   if (length(ncfiles) == 0) {
     PEcAn.logger::logger.warn("read.output: no netCDF files of model output present for runid = ", 
                 runid, " in ", outdir, " for years ", start.year, ":", end.year, ". will return NA")
-    if (length(nc.years) > 0) {
-      PEcAn.logger::logger.info("netCDF files for other years present", nc.years)
+    if (length(nc_years) > 0) {
+      PEcAn.logger::logger.info("netCDF files for other years present", nc_years)
     }
     nofiles <- TRUE
   } else {
@@ -174,18 +173,3 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   }
   
 } # read.output
-
-
-##'--------------------------------------------------------------------------------------------------#
-##' Converts the output of all model runs
-##'
-##' @title convert outputs from model specific code to pecan standard (deprecated) 
-##' @name convert.outputs
-##' @param model name of simulation model currently accepts ('ED', 'SIPNET', 'BIOCRO')
-##' @param settings settings loaded from pecan.xml
-##' @param ... arguments passed to \code{\link{read.output}}, e.g. \code{variables}, \code{start.year}, \code{end.year}
-##' @export
-##' @author Rob Kooper
-convert.outputs <- function(model, settings, ...) {
-  PEcAn.logger::logger.severe("DEPRECATED: This function is no longer used and will be removed in the future.")
-} # convert.outputs
