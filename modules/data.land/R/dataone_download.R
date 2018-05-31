@@ -18,12 +18,6 @@
 #' }
 
 dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
-  ### Check for wget functionality
-  test <- try(system2("wget", "--version", stderr = TRUE))
-  if (class(test) == "try-error") {
-    PEcAn.logger::logger.severe("wget system utility is not available on this system. Please install it to use this functionality.")
-  }
-
   ### automatically retrieve mnId
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = id) 
@@ -39,9 +33,19 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNod
   newdir <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
   dir.create(newdir)
   
-  # download the data with wget
-  for(i in 1:n){
-    system(paste("cd", newdir, "&&", "{", "wget", "--content-disposition", names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
+  # extract the data
+  for(i in 1:n){ 
+    pkgMember <- datapack::getMember(pkg, names(files[i])) # extract data from dataPackage
+    data <- datapack::getData(pkgMember) 
+    
+    if(files[i][1] == "text/csv"){ # format is stored as the first entry of the list "files"
+      base::writeLines(rawToChar(data), paste0(newdir, "/", "Data", i, ".csv")) #  If csv, add .csv 
+      
+    } else if(files[i][1] == "text/xml"){
+      base::writeLines(rawToChar(data), paste0(newdir, "/", "MetaData", i, ".xml")) # If XML add .xml and add Metadata title
+      
+    } else 
+      base::writeLines(rawToChar(data), paste0(newdir, "/", "MetaData", i)) # If other, process without extension (typically eml)
   }
  
 }

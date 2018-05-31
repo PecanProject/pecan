@@ -161,12 +161,20 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
 - Updated downloadAmeriflux and downloadNARR to make use of PEcAn.utils::download.file()
 - Added -w flag to load.bety.sh script to specify the URL to fetch the data from
+<<<<<<< HEAD
+- add new table sites_cultivars to betydb sync scripts (dump and load)
+- added docker container scrips (.yml) to create docker container for PEcAn
+- added the configuration edit page to allow easy modification of config via web interface
+- thredds server documentation and catlog generating script
+- added min_upload_level (and set to 3) for upload authentication
+=======
 - Add new table sites_cultivars to betydb sync scripts (dump and load)
 - Added docker container scrips (.yml) to create docker container for PEcAn
 - Added the configuration edit page to allow easy modification of config via web interface
 - Thredds server documentation and catlog generating script
 - Added new standard variables table (standard_vars.csv) and to_ncvar and to_ncdim functions in PEcAn.utils
 - Added initial conditions file io functions for pool-based models in data.land
+>>>>>>> 25bba2e70058a30d7993ca755c10bb1add35919a
 
 ### Changed
 - upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter
