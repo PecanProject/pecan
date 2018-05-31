@@ -2,7 +2,7 @@
 % Please edit documentation in R/read.output.R
 \name{convert.outputs}
 \alias{convert.outputs}
-\title{convert outputs from model specific code to}
+\title{convert outputs from model specific code to pecan standard (deprecated)}
 \usage{
 convert.outputs(model, settings, ...)
 }
