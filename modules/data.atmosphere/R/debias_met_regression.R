@@ -38,8 +38,9 @@
 ##' @param path.diagnostics - path to where the diagnostic graphs should be saved
 ##' @param parallel - (experimental) logical stating whether to run temporal_downscale_functions.R in parallel *Not Implemented yet
 ##' @param n.cores - (experimental) how many cores to use in parallelization *Not implemented yet
-##' @param overwrite - overwrite existing files?
-##' @param verbose
+##' @param overwrite - overwrite existing files? Currently ignored
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+##'   functions print debugging information as they run?
 ##' @export
 # -----------------------------------
 # Workflow
@@ -66,10 +67,6 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
                                   parallel = FALSE, n.cores = NULL, overwrite = TRUE, verbose = FALSE) {
   library(MASS)
   library(mgcv)
-  library(ggplot2)
-  library(stringr)
-  library(lubridate)
-  library(ncdf4)
   
   set.seed(seed)
   
@@ -149,7 +146,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
   # -------------------------------------------
   print("")
   print("Debiasing Meteorology")
-  pb <- txtProgressBar(min=0, max=length(vars.debias)*n.ens, style=3)
+  pb <- utils::txtProgressBar(min=0, max=length(vars.debias)*n.ens, style=3)
   pb.ind=1
   for(v in vars.debias){
     # -------------
@@ -202,7 +199,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     # -----
     met.train <- data.frame(year=train.data$time$Year,
                             doy=train.data$time$DOY,
-                            Y=stack(data.frame(train.data[[v]][,ens.train]))[,1],
+                            Y=utils::stack(data.frame(train.data[[v]][,ens.train]))[,1],
                             ind=rep(paste0("X", 1:n.ens), each=nrow(train.data[[v]]))
                             )
     met.train[,v] <- 0
@@ -230,7 +227,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     # -----
     met.src <- data.frame(year=source.data$time$Year,
                           doy=source.data$time$DOY,
-                          X=stack(data.frame(source.data[[v]][,ens.src]))[,1],
+                          X=utils::stack(data.frame(source.data[[v]][,ens.src]))[,1],
                           ind.src=rep(paste0("X", 1:length(ens.src)), each=nrow(source.data[[v]]))
                           )
     # met.src[,v] <- 
@@ -258,12 +255,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     
     # Adding in the covariates from what's been done:
     for(v.pred in vars.debias[!vars.debias==v]){
-      met.train[,v.pred] <- stack(data.frame(train.data[[v.pred]][,ens.train]))[,1]
+      met.train[,v.pred] <- utils::stack(data.frame(train.data[[v.pred]][,ens.train]))[,1]
       
       if(v.pred %in% names(dat.out)){
-        met.src[,v.pred] <- stack(data.frame(dat.out[[v.pred]]))[,1]
+        met.src[,v.pred] <- utils::stack(data.frame(dat.out[[v.pred]]))[,1]
       } else {
-        met.src[,v.pred] <- stack(data.frame(source.data[[v.pred]][,ens.src]))[,1]
+        met.src[,v.pred] <- utils::stack(data.frame(source.data[[v.pred]][,ens.src]))[,1]
       }
     }
     
@@ -853,19 +850,20 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
               dry <- rows.yr[which(sim1[rows.yr,j] < 0)] # update our dry days
             }
             
+            # n.now = number of rainless days for this sim
             n.now <- round(rnorm(1, mean(rainless, na.rm=T), sd(rainless, na.rm=T)), 0) 
         
             # We're having major seasonality issues, so lets randomly redistribute our precip
-            # Pull twice what we need and randomly select from that so that we don't have such clean cuttoffs
+            # Pull ~twice what we need and randomly select from that so that we don't have such clean cuttoffs
             # set.seed(12)
             cutoff <- quantile(sim1[rows.yr, j], min(n.now/366*2.5, max(0.75, n.now/366)), na.rm=T)
             if(length(which(sim1[rows.yr,j]>0)) < n.now){
-              # if we need to re-distribute our rain, use the inverse of the cutoff
+              # if we need to re-distribute our rain (make more rainy days), use the inverse of the cutoff
               # cutoff <- 1-cutoff
               dry1 <- rows.yr[which(sim1[rows.yr,j] > cutoff)]
               dry <- sample(dry1, 365-n.now, replace=T)
               
-              wet <- sample(rows.yr[!rows.yr %in% dry], length(dry), replace=F)
+              wet <- sample(rows.yr[!rows.yr %in% dry], length(dry), replace=T)
               
               # Go through and randomly redistribute the precipitation to days we're not designating as rainless
               # Note, if we don't loop through, we might lose some of our precip
@@ -882,7 +880,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
               # too few rainless days because of only slight redistribution (r+1) or buildup 
               # towards the end of the year (random day that hasn't happened)
               dry1 <- rows.yr[which(sim1[rows.yr,j] < cutoff)]
-              dry <- sample(dry1, n.now, replace=F)
+              dry <- sample(dry1, min(n.now, length(dry1)), replace=F)
 
               dry1 <- dry1[!dry1 %in% dry]
               # dry <- dry[order(dry)]
@@ -957,7 +955,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         sim.final[,ens] <- apply(sim1, 1, mean)
       }
       
-      setTxtProgressBar(pb, pb.ind)
+      utils::setTxtProgressBar(pb, pb.ind)
       pb.ind <- pb.ind+1
       
       rm(mod.bias, anom.train, anom.src, mod.anom, Xp, Xp.anom, sim1, sim1a, sim1b)
@@ -994,29 +992,29 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       dat.pred$upr  <- apply(dat.out[[v]], 1, quantile, 0.975, na.rm=T)
       
       # Plotting the observed and the bias-corrected 95% CI
-      png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")))
+      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")))
       print(
-        ggplot(data=dat.pred[dat.pred$Year>=mean(dat.pred$Year)-1 & dat.pred$Year<=mean(dat.pred$Year)+1,]) +
-          geom_ribbon(aes(x=Date, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
-          geom_line(aes(x=Date, y=mean), color="red", size=0.5) +
-          geom_line(aes(x=Date, y=obs), color='black', size=0.5) +
-          ggtitle(paste0(v, " - ensemble mean & 95% CI (daily slice)")) +
-          theme_bw()
+        ggplot2::ggplot(data=dat.pred[dat.pred$Year>=mean(dat.pred$Year)-1 & dat.pred$Year<=mean(dat.pred$Year)+1,]) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=Date, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Date, y=mean), color="red", size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Date, y=obs), color='black', size=0.5) +
+          ggplot2::ggtitle(paste0(v, " - ensemble mean & 95% CI (daily slice)")) +
+          ggplot2::theme_bw()
       )
-      dev.off()
+      grDevices::dev.off()
       
       # Plotting a few random series to get an idea for what an individual pattern looks liek
-      stack.sims <- stack(data.frame(dat.out[[v]][,sample(1:n.ens, min(3, n.ens))]))
+      stack.sims <- utils::stack(data.frame(dat.out[[v]][,sample(1:n.ens, min(3, n.ens))]))
       stack.sims[,c("Year", "DOY", "Date")] <- dat.pred[,c("Year", "DOY", "Date")]
       
-      png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")))
+      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")))
       print(
-        ggplot(data=stack.sims[stack.sims$Year>=mean(stack.sims$Year)-2 & stack.sims$Year<=mean(stack.sims$Year)+2,]) +
-          geom_line(aes(x=Date, y=values, color=ind), size=0.2, alpha=0.8) +
-          ggtitle(paste0(v, " - example ensemble members (daily slice)")) +
-          theme_bw()
+        ggplot2::ggplot(data=stack.sims[stack.sims$Year>=mean(stack.sims$Year)-2 & stack.sims$Year<=mean(stack.sims$Year)+2,]) +
+          ggplot2::geom_line(ggplot2::aes(x=Date, y=values, color=ind), size=0.2, alpha=0.8) +
+          ggplot2::ggtitle(paste0(v, " - example ensemble members (daily slice)")) +
+          ggplot2::theme_bw()
       )
-      dev.off()
+      grDevices::dev.off()
       
       # Looking tat the annual means over the whole time series to make sure we're getting decent interannual variability
       dat.yr <- aggregate(dat.pred[,c("obs", "mean", "lwr", "upr")],
@@ -1024,16 +1022,16 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
                           FUN=mean)
       names(dat.yr)[1] <- "Year"
       
-      png(file.path(path.diagnostics, paste(ens.name, v, "annual.png", sep="_")))
+      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "annual.png", sep="_")))
       print(
-        ggplot(data=dat.yr[,]) +
-          geom_ribbon(aes(x=Year, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
-          geom_line(aes(x=Year, y=mean), color="red", size=0.5) +
-          geom_line(aes(x=Year, y=obs), color='black', size=0.5) +
-          ggtitle(paste0(v, " - annual mean time series")) +
-          theme_bw()
+        ggplot2::ggplot(data=dat.yr[,]) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=Year, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Year, y=mean), color="red", size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Year, y=obs), color='black', size=0.5) +
+          ggplot2::ggtitle(paste0(v, " - annual mean time series")) +
+          ggplot2::theme_bw()
       )
-      dev.off()
+      grDevices::dev.off()
       
     }
     # -------------
@@ -1060,12 +1058,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
 
   print("")
   print("Saving Ensemble")
-  pb <- txtProgressBar(min=0, max=length(yrs.save)*n.ens, style=3)
+  pb <- utils::txtProgressBar(min=0, max=length(yrs.save)*n.ens, style=3)
   pb.ind=1
   for(yr in yrs.save){
     # Doing some row/time indexing
     rows.yr <- which(dat.out$time$Year==yr)
-    nday <- ifelse(leap_year(yr), 366, 365)
+    nday <- ifelse(lubridate::leap_year(yr), 366, 365)
     
     # Finish defining our time variables (same for all ensemble members)
     dim.time <- ncdf4::ncdim_def(name='time', units="sec", vals=seq(1*24*360, (nday+1-1/24)*24*360, length.out=length(rows.yr)), create_dimvar=TRUE, unlim=TRUE)
@@ -1102,7 +1100,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       }
       ncdf4::nc_close(loc)
 
-      setTxtProgressBar(pb, pb.ind)
+      utils::setTxtProgressBar(pb, pb.ind)
       pb.ind <- pb.ind+1
     } # End ensemble member loop
   } # End year loop

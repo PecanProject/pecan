@@ -10,6 +10,8 @@
 ##' Main driver function to call the ecosystem model specific (e.g. ED, SiPNET) 
 ##' run and configuration file scripts 
 ##' 
+##' DEPRECATED: This function has been moved to the PEcAn.workflow package and will be removed from PEcAn.utils.
+##'
 ##' @name run.write.configs
 ##' @title Run model specific write configuration functions
 ##' @param model the ecosystem model to generate the configuration files for
@@ -28,6 +30,7 @@
 run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
+  .Deprecated("PEcAn.workflow::run.write.configs")
   
   con <- PEcAn.DB::db.open(settings$database$bety)
   on.exit(PEcAn.DB::db.close(con))
@@ -153,6 +156,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
 
 ##' @export
 runModule.run.write.configs <- function(settings, overwrite = TRUE) {
+  .Deprecated("PEcAn.workflow::runModule.run.write.configs")
   if (PEcAn.settings::is.MultiSettings(settings)) {
     if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
       PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")

@@ -15,9 +15,6 @@
 ##' @author David LeBauer
 load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   
-  library(data.table)
-  library(PEcAn.utils)
-  
   ## Lat and Lon
   Lat <- ncdf4::ncvar_get(met.nc, "latitude")
   Lon <- ncdf4::ncvar_get(met.nc, "longitude")
@@ -54,13 +51,13 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
 
   ## data table warns not to use POSIXlt, which is induced by round() 
   ## but POSIXlt moves times off by a second
-  suppressWarnings(all.dates <- data.table(index = seq(time.idx), date = round(date)))
+  suppressWarnings(all.dates <- data.table::data.table(index = seq(time.idx), date = round(date)))
   
   if (start.date + lubridate::days(1) < min(all.dates$date)) {
-   PEcAn.logger::logger.error("run start date", start.date, "before met data starts", min(all.dates$date))
+   PEcAn.logger::logger.severe("run start date", start.date, "before met data starts", min(all.dates$date))
   }
   if (end.date > max(all.dates$date)) {
-   PEcAn.logger::logger.error("run end date", end.date, "after met data ends", max(all.dates$date))
+   PEcAn.logger::logger.severe("run end date", end.date, "after met data ends", max(all.dates$date))
   }
   
   run.dates <- all.dates[date >= start.date & date <= end.date,
@@ -87,5 +84,5 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
 
   names(vars) <- gsub("surface_pressure", "air_pressure", variables)
 
-  return(cbind(run.dates, as.data.table(vars[!sapply(vars, is.null)])))
+  return(cbind(run.dates, data.table::as.data.table(vars[!sapply(vars, is.null)])))
 } # load.cfmet

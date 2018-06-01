@@ -1,8 +1,8 @@
 Package: PEcAn.data.atmosphere
 Type: Package
 Title: PEcAn functions used for managing climate driver data
-Version: 1.5.2
-Date: 2017-12-04
+Version: 1.5.3
+Date: 2018-04-26
 Author: Carl Davidson, Mike Dietze, Rob Kooper, Deepak Jaiswal, David LeBauer
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -15,28 +15,49 @@ Additional Repositories: http://r-forge.r-project.org/
 Depends:
     methods
 Imports:
+    abind (>= 1.4.5),
+    car,
+    data.table,
+    dbplyr,
+    dplyr,
+    geonames,
+    ggplot2,
+    httr,
+    jsonlite,
+    lubridate (>= 1.6.0),
+    magrittr,
+    maptools,
+    MASS,
+    mgcv,
+    ncdf4 (>= 1.15),
+    nneo,
+    PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.utils,
-    PEcAn.DB,
-    ggplot2,
-    data.table,
+    purrr (>= 0.2.3),
+    RAtmosphere,
+    RCurl,
     REddyProc,
-    dplyr,
-    tibble,
-    dbplyr,
-    geonames,
-    abind (>= 1.4.5),
-    lubridate (>= 1.6.0),
-    ncdf4 (>= 1.15),
+    reshape2,
+    rgdal,
+    sp,
     stringr (>= 1.1.0),
+    tibble,
+    tidyr,
+    truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
-    nneo,
-    httr
+    zoo
 Suggests:
-    testthat
+    doParallel,
+    foreach,
+    parallel,
+    progress,
+    rlang (>= 0.2.0),
+    testthat (>= 2.0.0)
 Remotes:
+    github::ropensci/geonames,
     github::ropenscilabs/nneo,
     github::rforge/reddyproc/pkg/REddyProc
 License: FreeBSD + file LICENSE
