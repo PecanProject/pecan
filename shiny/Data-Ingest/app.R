@@ -3,6 +3,7 @@ library(PEcAn.data.land)
 library(PEcAn.utils)
 library(shinydashboard)
 library(dataone)
+library(shinyFiles)
 
 
 # Define UI for application
@@ -12,7 +13,7 @@ ui <- dashboardPage(
   dashboardHeader(title = "Data Ingest"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Import Data", tabName = "importData", icon = icon("file")),
+      menuItem("Data Ingest Workflow", tabName = "importData", icon = icon("file")),
       menuItem("Step 2 -- dbfiles record", tabName = "step2", icon = icon("cog")),
       menuItem("Step 3 -- format record", tabName = "step3", icon = icon("cog")),
       menuItem("Step 4 -- etc.", tabName = "step4", icon = icon("cog"))
@@ -24,7 +25,7 @@ ui <- dashboardPage(
               fluidRow( 
                 box(
                   textInput("id", label = h3("Import From DataONE"), placeholder = "Enter doi or id here"),
-                  actionButton(inputId = "D1Button", label = "Upload"),
+                  actionButton(inputId = "D1Button", label = "Download"),
                   hr(),
                   fluidRow(column(12, verbatimTextOutput("identifier"))) 
                 ),
@@ -35,11 +36,17 @@ ui <- dashboardPage(
                   p("This is a placeholder and is not yet functional"),
                   tableOutput("contents")
                 )
+              ),
+              fluidRow(
+               box(
+                 
+               )
+            
               )
       ),
       
       tabItem(tabName = "step2",
-              h2("under construction")
+              h2("coming soon")
       ),
       
       tabItem(tabName = "step3",
@@ -54,37 +61,46 @@ ui <- dashboardPage(
     )
   )
 )
+############################################################################################################
+######################################### SERVER SIDE ######################################################
+############################################################################################################
 
 server <- function(input, output) {
   options(shiny.maxRequestSize=30*1024^2) #maximum file input size
   
-   path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder 
+   path <- tempdir() # PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder 
     
-   d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id, filepath = path) }) #run dataone_download with input from id on click
+   d1d <- eventReactive(input$D1Button,{
+                        withProgress(message = "Downloading", value = 0, {
+                          PEcAn.data.land::dataone_download(input$id, filepath = path) 
+                          }) #run dataone_download with input from id on click
+                        })
   
   output$identifier <- renderText({
     d1d()
+    
+    
   })
   
-  
+ 
 ###### FileInput <-- Will add this functionality shortly
-#  output$contents <- renderTable({
+  output$contents <- renderTable({
     # input$file1 will be NULL initially. After the user selects
     # and uploads a file, it will be a data frame with 'name',
     # 'size', 'type', and 'datapath' columns. The 'datapath'
     # column will contain the local filenames where the data can
     # be found.
-#    inFile <- input$file
+    inFile <- input$file
     
-#    if (is.null(inFile))
-#      return(NULL)
-#    read.csv(inFile$datapath, header = TRUE)
+    if (is.null(inFile))
+      return(NULL)
     
-#  })
+      return(inFile[c("name", "datapath")])
+  })
 
 
 
-    #file.copy(inFile$datapath, header = input$header)
+   # file.copy(inFile$datapath, header = input$header)
 
 
   
