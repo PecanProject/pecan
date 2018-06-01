@@ -2,7 +2,4 @@
 
 Instructions to download source code
 
-```bash
-wget http://stormbringerii.nateko.lu.se/public/guess_download/guess_3.1.tar.gz
-tar -xvzf guess_3.1.tar.gz
-```
+Go to [LPJ-GUESS website](http://web.nateko.lu.se/lpj-guess/download.html) for instructions to access code. 

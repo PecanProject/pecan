@@ -96,6 +96,7 @@ close_database();
         row += '  <div class="cell">' + workflow.attr("started_at") + '</div>';
         row += '  <div class="cell">' + workflow.attr("finished_at") + '</div>';
 <?php if (check_login() && (get_page_acccess_level() <= $min_delete_level)) { ?>
+        row += '  <div class="cell"><a href="curl.php?workflowid=' + workflow.attr("id") + '">CURL</a></div>';
         row += '  <div class="cell"><a href="delete.php?workflowid=' + workflow.attr("id") + '">DELETE</a></div>';
 <?php } ?>
         row += '</div>';
@@ -158,6 +159,7 @@ close_database();
           <div class="header">Started</div>
           <div class="header">Finished</div>
 <?php if (check_login() && (get_page_acccess_level() <= $min_delete_level)) { ?>
+          <div class="header">Curl</div>
           <div class="header">Delete</div>
 <?php } ?>
         </div>

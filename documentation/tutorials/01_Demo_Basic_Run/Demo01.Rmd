@@ -1,4 +1,4 @@
-# (Part) Demos and Vignettes {-}
+# (PART) Demos and Vignettes {-}
 
 # PEcAn Hands-On Demo 01: Basic Run
 
