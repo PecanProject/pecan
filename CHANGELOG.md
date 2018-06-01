@@ -30,6 +30,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
+- models/fates/R/model2netcdf.FATES.R to increase supported model outputs. Added longname to nc file variables
 - PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
 
 
