@@ -23,17 +23,17 @@
 ##' @author Michael Dietze, Shawn Serbin
 model2netcdf.FATES <- function(outdir) {
 
-    #        var_update("AR","AutoResp","kgC m-2 s-1")
-    var_update <- function(out,oldname,newname,newunits=NULL){
+    # E.g. var_update("AR","AutoResp","kgC m-2 s-1", "Autotrophic Respiration")
+    var_update <- function(out,oldname,newname,newunits=NULL,long_name=NULL){
       
       ## define variable
       oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
       if(is.null(newunits)) newunits = oldunits
-      newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = xyt)
+      newvar <- ncdf4::ncvar_def(name = newname, units = newunits, longname=long_name, dim = xyt)
       
       ## convert data
       dat <- ncdf4::ncvar_get(ncin,oldname)
-      dat.new <- misc.convert(dat,oldunits,newunits)
+      dat.new <- PEcAn.utils::misc.convert(dat,oldunits,newunits)
       
       ## prep for writing
       if(is.null(out)) {
@@ -47,7 +47,6 @@ model2netcdf.FATES <- function(outdir) {
       }
       return(out)
     }
-    
     
     ## Get files and years
     files <- dir(outdir, "*clm2.h0.*.nc", full.names = TRUE)
@@ -95,16 +94,22 @@ model2netcdf.FATES <- function(outdir) {
         ### build netCDF data
         ## !! TODO: ADD MORE OUTPUTS HERE
         out <- NULL
-        out <- var_update(out,"AR","AutoResp","kgC m-2 s-1")
-        out <- var_update(out,"GPP","GPP","kgC m-2 s-1")
-        out <- var_update(out,"NPP","NPP","kgC m-2 s-1")
+        out <- var_update(out,"AR","AutoResp","kgC m-2 s-1","Autotrophic Respiration")
+        out <- var_update(out,"GPP","GPP","kgC m-2 s-1","Gross Primary Productivity")
+        out <- var_update(out,"NPP","NPP","kgC m-2 s-1","Net Primary Productivity")
         #out <- var_update(out,"NPP_column","NPP","kgC m-2 s-1") #!! RKnox suggested using NPP not NPP_column
-        #out <- var_update(out,"NEP","NEE","kgC m-2 s-1") # !!temporarily disabling NEE. See https://github.com/NGEET/ed-clm/issues/154
-        out <- var_update(out,"EFLX_LH_TOT","Qle","W m-2")
-        out <- var_update(out,"QVEGT","TVeg","mm s-1") ## equiv to std of kg m-2 s but don't trust udunits to get right
-        out <- var_update(out,"ED_biomass","AbvGrndWood","kgC m-2")
-        out <- var_update(out,"ED_bleaf","CarbPools","kgC m-2")
-        out <- var_update(out,"TSOI_10CM","SoilTemp","K")
+        out <- var_update(out,"NEP","NEE","kgC m-2 s-1", "Net Ecosystem Exchange")
+        out <- var_update(out,"FLDS","LWdown","W m-2","Surface incident longwave radiation") 
+        out <- var_update(out,"FSDS","SWdown","W m-2","Surface incident shortwave radiation")
+        out <- var_update(out,"TBOT","Tair","K","Near surface air temperature") # not certain these are equivelent yet
+        out <- var_update(out,"QBOT","Qair","kg kg-1","Near surface specific humidity") # not certain these are equivelent yet
+        out <- var_update(out,"WIND","Wind","m s-1","Near surface module of the wind") # not certain these are equivelent yet
+        out <- var_update(out,"EFLX_LH_TOT","Qle","W m-2","Latent heat")
+        out <- var_update(out,"QVEGT","TVeg","mm s-1","TVeg") ## equiv to std of kg m-2 s but don't trust udunits to get right
+        out <- var_update(out,"ED_biomass","AbvGrndWood","kgC m-2","Above ground woody biomass")
+        out <- var_update(out,"ED_bleaf","CarbPools","kgC m-2","Size of each carbon pool")
+        #out <- var_update(out,"TLAI","LAI","m2 m-2","Leaf Area Index") # turned off for now since TLAI units in FATES is presently "none"
+        out <- var_update(out,"TSOI_10CM","SoilTemp","K","Average Layer Soil Temperature at 10cm")
         
         ncdf4::nc_close(ncin)
         
