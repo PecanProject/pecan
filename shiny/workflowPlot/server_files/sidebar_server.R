@@ -7,9 +7,12 @@ observe({
   # get_workflow_ids function (line 137) in db/R/query.dplyr.R takes a flag to check
   # if we want to load all workflow ids.
   # get_workflow_id function from query.dplyr.R
-  query <- isolate(shiny::parseQueryString(session$clientData$url_search))
   all_ids <- get_workflow_ids(bety, query, all.ids=TRUE)
   updateSelectizeInput(session, "all_workflow_id", choices = all_ids)
+  # Get URL prameters
+  query <- parseQueryString(session$clientData$url_search)
+  # Pre-select workflow_id from URL prams
+  updateSelectizeInput(session, "all_workflow_id", selected = query[["workflow_id"]])
 })
 
 # Update run ids
@@ -35,13 +38,19 @@ all_run_ids <- reactive({
 # Update all run_ids ('workflow ',w_id,', run ',r_id)
 observe({
   updateSelectizeInput(session, "all_run_id", choices = all_run_ids())
+  # Get URL parameters
+  query <- parseQueryString(session$clientData$url_search)
+  # Make the run_id string with workflow_id
+  url_run_id <- paste0('workflow ', query[["workflow_id"]],', run ', query[["run_id"]])
+  # Pre-select run_id from URL params
+  updateSelectizeInput(session, "all_run_id", selected = url_run_id)
 })
 
 
 # Loads data for all workflow and run ids after the load button is pressed.
 # All information about a model is contained in 'all_run_id' string
 # Wrapper over 'load_data_single_run' in PEcAn.db::query.dplyr
-# Model data different from observations data 
+# Model data different from observations data
 load.model <- eventReactive(input$load_model,{
   req(input$all_run_id)
   # Get IDs DF from 'all_run_id' string
@@ -98,24 +107,24 @@ observe({
 
 load.model.data <- eventReactive(input$load_data, {
   req(input$all_input_id)
-  
+
   inputs_df <- getInputs(bety,c(input$all_site_id))
   inputs_df <- inputs_df %>% dplyr::filter(input_selection_list == input$all_input_id)
-  
+
   input_id <- inputs_df$input_id
   # File_format <- getFileFormat(bety,input_id)
   File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_id)
   start.year <- as.numeric(lubridate::year(inputs_df$start_date))
   end.year <- as.numeric(lubridate::year(inputs_df$end_date))
   File_path <- inputs_df$filePath
-  # TODO There is an issue with the db where file names are not saved properly. 
+  # TODO There is an issue with the db where file names are not saved properly.
   # To make it work with the VM, uncomment the line below
   # File_path <- paste0(inputs_df$filePath,'.csv')
   site.id <- inputs_df$site_id
   site <- PEcAn.DB::query.site(site.id,bety$con)
   observations <- PEcAn.benchmark::load_data(
-    data.path = File_path, format = File_format, time.row = File_format$time.row,  
-    site = site, start_year = start.year, end_year = end.year) 
+    data.path = File_path, format = File_format, time.row = File_format$time.row,
+    site = site, start_year = start.year, end_year = end.year)
   print("Yay the observational data is loaded!")
   print(head(observations))
   return(observations)
@@ -126,6 +135,6 @@ load.model.data <- eventReactive(input$load_data, {
 observeEvent(input$load_data, {
   model.df <- load.model()
   obvs.df <- load.model.data()
-  updateSelectizeInput(session, "var_name_modeldata", 
+  updateSelectizeInput(session, "var_name_modeldata",
                        choices = intersect(model.df$var_name, names(obvs.df)))
 })
