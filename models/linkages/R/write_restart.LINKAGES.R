@@ -94,23 +94,23 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   spp.params <- spp.params.default[spp.params.save, ]
   biomass_spp_params <- function(new.params, default.params, pft) {
-    if ("SLTA" %in% names(new.params)) {
-      slta <- new.params$pft$SLTA
+    if ("SLTA" %in% names(new.params[[as.character(pft)]])) {
+      slta <- new.params[[as.character(pft)]]$SLTA
     } else {
       slta <- default.params[default.params$Spp_Name == pft, ]$SLTA
     }
-    if ("SLTB" %in% names(new.params)) {
-      sltb <- new.params$pft$SLTB
+    if ("SLTB" %in% names(new.params[[as.character(pft)]])) {
+      sltb <- new.params[[as.character(pft)]]$SLTB
     } else {
       sltb <- default.params[default.params$Spp_Name == pft, ]$SLTB
     }
-    if ("FWT" %in% names(new.params)) {
-      fwt <- new.params$pft$FWT
+    if ("SLA" %in% names(new.params[[as.character(pft)]])) {
+      fwt <- (1 / new.params[[as.character(pft)]]$SLA) * 10000
     } else {
       fwt <- default.params[default.params$Spp_Name == pft, ]$FWT
     }
-    if ("FRT" %in% names(new.params)) {
-      frt <- new.params$pft$FRT
+    if ("FRT" %in% names(new.params[[as.character(pft)]])) {
+      frt <- new.params[[as.character(pft)]]$FRT
     } else {
       frt <- default.params[default.params$Spp_Name == pft, ]$FRT
     }
@@ -165,6 +165,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     large.trees <- which(dbh >= 20)
   }
   
+  large.trees <- which(dbh > 0)
+  
   for (s in seq_along(settings$pfts)) {
     ntrees[s] <- length(which(n.index[large.trees] == s))
   }
@@ -199,11 +201,11 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   data2 <- data.frame(ind.biomass = ind.biomass,
                       n.index = n.index)
   mean.biomass.spp <- aggregate(ind.biomass ~ n.index, mean, data = data2)   # calculate mean individual biomass for each species
-  
+  #browser()
   # calculate number of individuals needed to match new.state
   for (s in seq_along(settings$pfts)) {
     if (ntrees[s] > 0) {
-      fix <- new.state[s]/mean.biomass.spp[mean.biomass.spp[, 1] == s, 2]  # number of individuals needed to agree with new.state      
+      fix_adjust <- new.state[s]/mean.biomass.spp[mean.biomass.spp[, 1] == s, 2]  # number of individuals needed to agree with new.state      
     } else {
       for (r in 1:(length(settings$pfts) - 1)) {
         s.select <- which(distance.matrix[s, ] == r)  # select a new spp. to clone from
@@ -211,9 +213,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
           break
         }
       }
-      fix <- new.state[s] / mean.biomass.spp[mean.biomass.spp[, 1] == s.select, 2]
+      fix_adjust <- new.state[s] / mean.biomass.spp[mean.biomass.spp[, 1] == s.select, 2]
     }
-    new.ntrees[s] <- as.numeric(ceiling(fix))  #new number of ind. of each species
+    new.ntrees[s] <- as.numeric(ceiling(fix_adjust-.01))  #new number of ind. of each species
     if(new.ntrees[s]>100&!is.na(new.ntrees[s])){
       new.ntrees[s] = sample(size = 1, x = 50:150)
     } 
@@ -303,7 +305,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     }
     
     b_calc1[s] <- sum(biomass_function(dbh.temp[nl:nu], 
-                                       spp.biomass.params = spp.biomass.params)) * (1 / 883) * 0.48
+                                       spp.biomass.params = spp.biomass.params)) * (1 / 833) * 0.48
     nl <- nu + 1
   }
   

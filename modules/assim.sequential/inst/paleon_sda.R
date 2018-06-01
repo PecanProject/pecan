@@ -12,6 +12,9 @@ library(PEcAn.visualization)
 #setwd('/fs/data2/output//PEcAn_1000003314/')
 #setwd('/fs/data2/output//PEcAn_1000007999/') #full run 50 nens
 setwd('/fs/data2/output//PEcAn_1000008008/')
+
+
+
 file.copy('/fs/data2/output//PEcAn_1000007999/sda.obs.Rdata',getwd())
 #TO DO: Having problem with running proc.var == TRUE because nimble isn't keeping the toggle sampler in the function environment.
 

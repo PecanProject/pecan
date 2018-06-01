@@ -15,6 +15,7 @@
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
+##' 
 ##' @return NONE
 ##' @export
 ##' 
@@ -422,11 +423,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   
+  
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------### 
   
-  for(t in seq_len(nt)) {
+  for(t in 1) {
+    if(t == 1){
+      recompile = TRUE
+    }else{
+      recompile = FALSE
+    }
+    
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
     ###-------------------------------------------------------------------###  
@@ -451,8 +459,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     for(i in seq_len(length(run.id))){
       if(is.na(X[[i]][1])) {
         print(i)
-        run.id[[i]] <- NULL 
-        X[[i]] <- NULL
+        #run.id[[i]] <- NULL 
+        #X[[i]] <- NULL
       }
     }
     
@@ -595,7 +603,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           }
         }
         
-        if(t == 1 | length(run.id) < nens){
+        if(recompile == TRUE){
           #The purpose of this step is to impute data for mu.f 
           #where there are zero values so that 
           #mu.f is in 'tobit space' in the full model
@@ -678,9 +686,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         
         iycens <- grep("y.censored",colnames(dat.tobit2space))
         
+        # Why does cov(X.new) != Pf ?
         X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
+        #Pf <- cov(X.new)
         
-        if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
+        if(sum(diag(Pf)-diag(cov(X.new))) > 3 | sum(diag(Pf)-diag(cov(X.new))) < -3) logger.severe('Increase Sample Size')
         
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
@@ -712,7 +722,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
-        if(t == 1){ #TO DO need to make something that works to pick weather to compile or not
+        if(recompile == TRUE){ #TO DO need to make something that works to pick weather to compile or not
           constants.tobit = list(N = ncol(X), YN = length(y.ind))
           dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
                                   Q = c(length(mu.f),length(mu.f)))
@@ -975,7 +985,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }else{
           plot(as.Date(obs.times[t1:t]), 
                Xbar, 
-               ylim = c(0,250),#range(c(XaCI, Xci), na.rm = TRUE), 
+               ylim = range(c(XaCI, Xci), na.rm = TRUE), 
                type = "n", 
                xlab = "Year", 
                ylab = ylab.names[grep(colnames(X)[i], var.names)], 
@@ -1191,6 +1201,24 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
                   "intercept =", signif(summary(reg1)$coefficients[1], 
                                         digits = 3)))
       # d<-density(c(Xbar[t1:t] - Xa[t1:t])) lines(d$y+1,d$x)
+      
+      dat <- data.frame(model = Xbar, obvs = Ybar[,i], time = rownames(Ybar))
+      dat.stats <- data.frame(rmse = PEcAn.benchmark::metric_RMSE(dat),
+                              r2 = PEcAn.benchmark::metric_R2(dat),
+                              rae = PEcAn.benchmark::metric_RAE(dat),
+                              ame = PEcAn.benchmark::metric_AME(dat))
+      require(gridExtra)
+      plot1 <- PEcAn.benchmark::metric_residual_plot(dat, var = colnames(Ybar)[i])
+      plot2 <- PEcAn.benchmark::metric_scatter_plot(dat, var = colnames(Ybar)[i])
+      #PEcAn.benchmark::metric_lmDiag_plot(dat, var = colnames(Ybar)[i])
+      plot3 <- PEcAn.benchmark::metric_timeseries_plot(dat, var = colnames(Ybar)[i])
+      text = paste("\n   The following is text that'll appear in a plot window.\n",
+                   "       As you can see, it's in the plot window\n",
+                   "       One might imagine useful informaiton here")
+      ss <- tableGrob(signif(dat.stats,digits = 3))
+      grid.arrange(plot1,plot2,plot3,ss,ncol=2)
+      
+      
     }
     dev.off()
     

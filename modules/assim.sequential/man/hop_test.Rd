@@ -4,7 +4,7 @@
 \alias{hop_test}
 \title{hop_test}
 \usage{
-hop_test(settings)
+hop_test(settings, ens.runid = NULL)
 }
 \arguments{
 \item{settings}{SDA PEcAn settings object}

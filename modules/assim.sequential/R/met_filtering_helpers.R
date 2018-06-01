@@ -1,13 +1,13 @@
 
 sample_met <- function(settings,nens=1){
   
-  path <- settings$run$inputs$met[["path"]]
+  path <- settings$run$inputs$met$path
 
   ens_members <- list.files(path, recursive = TRUE)
   
   
-  start_date <- as.POSIXlt(strptime(settings$run$site$met.start, "%Y/%m/%d"))
-  end_date   <- as.POSIXlt(strptime(settings$run$site$met.end, "%Y/%m/%d"))
+  start_date <- as.POSIXlt((settings$run$site$met.start))
+  end_date   <- as.POSIXlt((settings$run$site$met.end))
   start_date$zone <- end_date$zone <- NULL
   
   # only the original (not-splitted) file has start and end date only
