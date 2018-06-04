@@ -265,7 +265,9 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
       if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
         # The current variable (j) is a monthly output
         counts <- c(y=1, x=1, time=12)
-        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i:(i+11)], start = starts[dim.order], count = counts[dim.order])
+        startidx <- ((i-1)*12)+1
+        endidx <- i*12
+        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,startidx:endidx], start = starts[dim.order], count = counts[dim.order])
       } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
         # The current variable (j) is a yearly output
         counts <- c(y=1, x=1, time=1)
@@ -327,7 +329,9 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
       if(TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"),x))) {
         # The current variable (j) is a monthly output
         counts <- c(y=1, x=1, time=12)
-        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i:(i+11)], start = starts[dim.order], count = counts[dim.order])
+        startidx <- ((i-1)*12)+1
+        endidx <- i*12
+        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,startidx:endidx], start = starts[dim.order], count = counts[dim.order])
       } else if(TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"),x))) {
         # The current variable (j) is a yearly output
         counts <- c(y=1, x=1, time=1)
