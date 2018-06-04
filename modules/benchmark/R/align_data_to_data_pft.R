@@ -41,13 +41,13 @@
 #' table<-as.data.frame(table)
 #'
 #' format_one<-"species_USDA_symbol"
-#' format_two<-"plant_funtional_type"
+#' format_two<-"plant_functional_type"
 #' 
 #' aligned<-align_data_to_data_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
 #' format_one = format_one, format_two = format_two, custom_table = table)
 #' @export
 
-align_data_to_data_pft<-function(observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_is_ok=FALSE){ 
+align_data_to_data_pft<-function(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_is_ok=FALSE){
 
   translation_table<-NULL
   bety_codes_one<-NA
@@ -139,12 +139,12 @@ align_data_to_data_pft<-function(observation_one, observation_two, custom_table=
         aligned_by_two<-align_by_first_observation(observation_two,observation_one, custom_table)
         
       }else{
-        logger.severe("custom_table provided does not correctly map plant_function_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant funcitonal types.")
+        logger.severe("custom_table provided does not correctly map plant_functional_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant functional types.")
       } 
     }
     
   }else{
-    PEcAn.logger::logger.severe("PFTs are not in the correct format. Observations must have variables compatible with check_if_species_list(), or use the 'plant_funtional_type' variable")
+    PEcAn.logger::logger.severe("PFTs are not in the correct format. Observations must have variables compatible with check_if_species_list(), or use the 'plant_functional_type' variable")
   }
   
   aligned_species_list<-list()

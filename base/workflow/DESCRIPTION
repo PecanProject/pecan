@@ -19,7 +19,8 @@ License: FreeBSD + file LICENSE
 Imports:
 	PEcAn.DB,
 	PEcAn.logger,
-	PEcAn.settings
+	PEcAn.settings,
+	PEcAn.utils
 Suggests:
 	testthat,
     mockery
