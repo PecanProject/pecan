@@ -26,6 +26,7 @@ get_pft <- function(pftname) {
 
 
 test_that("reference species and cultivar PFTs write traits properly",{
+  skip("Disabled until Travis bety contains Pavi_alamo and Pavi_all (#1958)")
   pavi_sp <- get_pft("pavi")
   expect_equal(pavi_sp$name, "pavi")
   sp_csv = file.path(dbdir, "posterior", pavi_sp$posteriorid, "species.csv")

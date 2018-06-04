@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- Fixed issue #1939 which corrects output time vector for FATES output
 - Update to read.output to look for and read only PEcAn formatted .nc output based on the pecan standard filename format of YYYY.nc.  Solves issues with models such as FATES and dvm-dos-tem where the original model output is also in .nc file format and was not ignored by read.output, causing errors with output parsing and plotting with Shiny. Removed deprecated function convert.outputs
 - PEcAn.data.atmosphere: 
     - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
@@ -18,6 +19,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - Fixed spurious `No geonamesUsername set` warning by updating geonames package to development version
 - ED:
     - Change all history parameter files to have zero storage respiration
+    
+- dataone_download:
+    - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
     
 ### Added
 

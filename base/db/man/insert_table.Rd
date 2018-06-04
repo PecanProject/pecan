@@ -30,6 +30,6 @@ database.
 \examples{
 irisdb <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 dplyr::copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
-insert_table(iris[-1,], "iris", irisdb$con)
+insert_table(iris[-1,], "iris", irisdb)
 dplyr::tbl(irisdb, "iris")
 }
