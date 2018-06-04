@@ -33,7 +33,6 @@ ui <- dashboardPage(
                 box(
                   # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
                   fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE, placeholder = "Drag and drop files here"),
-                  p("This is a placeholder and is not yet functional"),
                   tableOutput("contents")
                 )
               ),
