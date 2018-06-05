@@ -226,7 +226,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
 
 ##' Function to write posterior distributions of the scaling factors
 ##' @export
-write_sf_posterior <- function(sf.samp.list, sf.prior, sf.filename){
+write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
   
   sf.samp <- as.mcmc.list(lapply(sf.samp.list, mcmc))
   
@@ -238,13 +238,13 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.filename){
   sf.subset.list <- list()
   sf.subset.list[[1]] <- as.data.frame(do.call("rbind", sf.samp))
 
-  filename.flag <- gsub(".*post.distns\\s*|.Rdata.*", "", basename(sf.filename))
+  filename.flag <- basename(sf.samp.filename))
   
   sf.post.distns <- PEcAn.MA::approx.posterior(trait.mcmc = sf.subset.list[[1]], priors = sf.prior,
                                                outdir = dirname(sf.filename),
                                                filename.flag = filename.flag)
   
-  save(sf.subset.list, file = file.path(dirname(sf.filename), paste0("samples", filename.flag, ".Rdata")))
+  save(sf.subset.list, file = sf.samp.filename)
   
   return(sf.post.distns)
   
