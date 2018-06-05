@@ -83,8 +83,8 @@ server <- function(input, output) {
   })
   
  
-###### FileInput <-- Will add this functionality shortly
-  output$contents <- renderTable({
+###### FileInput 
+  output$contents <- renderTable({ 
     # input$file1 will be NULL initially. After the user selects
     # and uploads a file, it will be a data frame with 'name',
     # 'size', 'type', and 'datapath' columns. The 'datapath'
@@ -94,21 +94,16 @@ server <- function(input, output) {
       n <- length(inFile$name)
       names <- inFile$name
       
+      # find the tempdir for the R session
+      split <- base::sub("/.../........../", "", inFile[1,"datapath"])
+      t_dir <- stringr::str_replace(inFile[1,"datapath"], split, "")
     
     if (is.null(inFile))
       return(NULL)
+
+      return(list.files(t_dir))
       
-     # split <- stringr::str_extract(inFile[,"datapath"])
-      
-      split <- base::sub("/.../........../", "", inFile[i,"datapath"])
-     
-      return(split)
-      
-      # for(i in 1:n){
-      # base::strsplit(inFile[1,"datapath"], "/tmp/RtmpXk4iZs")
-      
-     # base::file.rename(inFile[1,"datapath"], paste0(path, inFile[1,"name"]))
-      
+    
       #return(inFile[,"datapath"])
   })
 
