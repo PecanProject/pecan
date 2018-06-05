@@ -5,13 +5,13 @@
 ##' @param veg_file path to standard cohort veg_file
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
 ##' @author Saloni Shah
-##' @example 
+##' @examples
 ##' \dontrun{
 ##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
 ##' }
 
-cohort2pool <- function(veg_file,allom_param =NULL) {
+cohort2pool <- function(veg_file, allom_param = NULL) {
   
   ## Building Site ID from past directories
   path <- dirname(veg_file)
