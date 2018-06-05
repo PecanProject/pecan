@@ -8,7 +8,7 @@ output:
   html_document: default
 ---
 
-```{r setup, include=FALSE}
+```{r setup_sda, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
