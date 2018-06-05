@@ -52,11 +52,6 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
     adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, run.round)
   
-  ## history restart
-  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
-                                                       settings$assim.batch$ensemble.id, ".Rdata"))
-  current.step <- "START" 
-  
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
   isbias <- which(unlist(any.mgauss) == "multipGauss")
@@ -138,6 +133,10 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   ## Create an ensemble id
   settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
   
+  ## history restart
+  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
+                                                       settings$assim.batch$ensemble.id, ".Rdata"))
+  current.step <- "START" 
   
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
@@ -305,7 +304,24 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       # how many bias parameters per dataset requested
       nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
                       as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
-      bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias, run.round, settings$assim.batch$bias.path)
+      bprior <- data.frame(distn  = rep(NA,length(isbias)),
+                           parama = rep(NA,length(isbias)),
+                           paramb = rep(NA,length(isbias)))
+      for(b in seq_along(isbias)){
+        # any prior passed via settings?
+        if(!is.null(settings$assim.batch$inputs[[isbias]]$bprior)){
+          bprior$distn[b]  <- settings$assim.batch$inputs[[isbias[b]]]$bprior$distn
+          bprior$parama[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$parama
+          bprior$paramb[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$paramb
+        }else{ # assume log-normal(0,0.5)
+          PEcAn.logger::logger.info(paste0("No prior is defined for the bias parameter, assuming lnorm(0, 0.5)"))
+          bprior$distn[b]  <- "lnorm"
+          bprior$parama[b] <- 0
+          bprior$paramb[b] <- 0.5
+        }
+        
+      }
+      bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias, run.round, bprior, settings$assim.batch$bias.path)
       bias.terms <- bias.list$bias.params
       prior.list <- bias.list$prior.list.bias
       prior.fn <- lapply(prior.list, pda.define.prior.fn)
