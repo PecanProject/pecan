@@ -756,3 +756,60 @@ return_hyperpars <- function(assim.settings, inputs){
   
   return(hyper.pars)
 } # return_hyperpars
+
+
+##' Helper function to sample from previous MCMC chain while proposing new knots
+##' 
+##' @param mcmc_path path to previous emulator mcmc samples object
+##' @param n.param.orig vector, number of parameters targeted in each (pft) sublist
+##' @param prior.ind.orig list, actual indices of parameters targeted in each (pft) sublist
+##' @param n.post.knots number of new samples requested
+##' @param knots.params.temp list of parameter samples proposed from the original PDA-prior
+##' 
+##' @author Istem Fer
+##' @export
+sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp){
+  
+  PEcAn.logger::logger.info("Sampling from previous round's MCMC")
+  
+  load(mcmc_path)
+  
+  mcmc.param.list <- params.subset <- list()
+  ind <- 0
+  for (i in seq_along(n.param.orig)) {
+    mcmc.param.list[[i]] <- lapply(mcmc.samp.list, function(x) x[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE])
+    ind <- ind + n.param.orig[i]
+  }
+  
+  burnins <- rep(NA, length(mcmc.param.list))
+  for (i in seq_along(mcmc.param.list)) {
+    params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
+    
+    burnin     <- getBurnin(params.subset[[i]], method = "gelman.plot")
+    burnins[i] <- max(burnin, na.rm = TRUE)
+  }
+  maxburn <- max(burnins)
+  
+  if(maxburn ==1){ # if no convergence focus last bit
+    maxburn <- 0.9*nrow(params.subset[[1]][[1]])
+  }
+  
+  collect_samples <- list()
+  for (i in seq_along(mcmc.samp.list)) {
+    collect_samples[[i]] <- window(mcmc.samp.list[[i]], start = maxburn)
+  }
+  
+  mcmc_samples <- do.call(rbind, collect_samples)
+  
+  get_samples <- sample(1:nrow(mcmc_samples), n.post.knots)
+  new_knots <- mcmc_samples[get_samples,]
+  
+  ind <- 0
+  for(i in seq_along(n.param.orig)){
+    knots.params.temp[[i]][, prior.ind.orig[[i]]] <- new_knots[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE]
+    ind <- ind + n.param.orig[i]
+  }
+  
+  return(knots.params.temp)
+  
+}
