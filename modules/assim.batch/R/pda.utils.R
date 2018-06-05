@@ -732,7 +732,7 @@ return_hyperpars <- function(assim.settings, inputs){
     for(k in seq_along(assim.settings$inputs)){
       hyper.pars[[k]] <- list()
       hyper.pars[[k]]$parama <- 0.001
-      hyper.pars[[k]]$paramb <- 0.001 * mean(inputs[[k]]$data[,1], na.rm = TRUE) ^ 2
+      hyper.pars[[k]]$paramb <- 0.001 * sd(inputs[[k]]$data[,1], na.rm = TRUE) ^ 2
     }
     
   }else{
@@ -743,7 +743,7 @@ return_hyperpars <- function(assim.settings, inputs){
       if(is.null(check.hypers[[k]])){
         hyper.pars[[k]] <- list()
         hyper.pars[[k]]$parama <- 0.001
-        hyper.pars[[k]]$paramb <- 0.001 * mean(inputs[[k]]$data[,1], na.rm = TRUE) ^ 2
+        hyper.pars[[k]]$paramb <- 0.001 * sd(inputs[[k]]$data[,1], na.rm = TRUE) ^ 2
       }else{
         hyper.pars[[k]] <- list()
         hyper.pars[[k]]$parama <- as.numeric(assim.settings$inputs[[k]]$hyper.pars$parama)
