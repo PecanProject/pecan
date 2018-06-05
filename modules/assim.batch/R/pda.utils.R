@@ -765,7 +765,11 @@ return_hyperpars <- function(assim.settings, inputs){
 ##' @param prior.ind.orig list, actual indices of parameters targeted in each (pft) sublist
 ##' @param n.post.knots number of new samples requested
 ##' @param knots.params.temp list of parameter samples proposed from the original PDA-prior
+##' @param prior.list PDA-prior list
+##' @param prior.fn list for parameter d/r/q/p functions
+##' @param sf SF parameter names
 ##' 
+##' @param sf.subset.list SF parameters MCMC samples
 ##' @author Istem Fer
 ##' @export
 sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp, 

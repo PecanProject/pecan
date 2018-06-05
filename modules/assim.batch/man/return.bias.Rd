@@ -5,7 +5,7 @@
 \title{return.bias}
 \usage{
 return.bias(isbias, model.out, inputs, prior.list.bias, nbias,
-  run.round = FALSE, prev.bias = NULL)
+  run.round = FALSE, bprior, prev.bias = NULL)
 }
 \author{
 Istem Fer
