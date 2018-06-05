@@ -34,7 +34,8 @@ ui <- dashboardPage(
                 box(
                   # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
                   fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE, placeholder = "Drag and drop files here"),
-                  tableOutput("contents")
+                  tableOutput("contents"),
+                  actionButton(inputId = "EmptyDirectoryButton"), "Empty Directory")
                 )
               ),
               fluidRow(
@@ -102,11 +103,12 @@ server <- function(input, output) {
         # find the tempdir for the R session
         splits <- base::sub("/.../........../", "", inFile[i,"datapath"])
         t_dir <- stringr::str_replace(inFile[i,"datapath"], splits[i], "")
-        base::file.rename(paste0(t_dir, "/", splits[i]), paste0(t_dir, "/", inFile[i, "name"]))
+        base::file.rename(paste0(t_dir, "/", splits[i]), paste0(t_dir, "/", inFile[i, "name"])) # rename the file to include the original filename
+        base::file.remove(paste0(t_dir, "/", splits[i])) # remove the file with the userhostile name
       }
       return(list.files(t_dir))
       
-    
+       unlink(t_dir)
       #return(inFile[,"datapath"])
   })
 
