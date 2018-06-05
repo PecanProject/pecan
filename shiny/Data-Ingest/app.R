@@ -33,17 +33,13 @@ ui <- dashboardPage(
                 
                 box(
                   # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
-                  fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE, placeholder = "Drag and drop files here"),
+                  fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = FALSE, placeholder = "Drag and drop files here"),
                   tableOutput("contents"),
-                  actionButton(inputId = "EmptyDirectoryButton", "Empty Directory")
+                  actionButton(inputId = "EmptyDirectoryButton", label = "Empty Directory")
                 )
               ),
               fluidRow(
-               box(
-                 
-                 
-               )
-            
+                box()
               )
       ),
       
@@ -67,7 +63,7 @@ ui <- dashboardPage(
 ######################################### SERVER SIDE ######################################################
 ############################################################################################################
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   options(shiny.maxRequestSize=30*1024^2) #maximum file input size
   
    path <- tempdir() # PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder 
@@ -98,20 +94,40 @@ server <- function(input, output) {
       
     if (is.null(inFile))
       return(NULL)
-
+      
+        splits <<- list() 
+        t_dir <<- list()
+        
       for(i in 1:n){
         # find the tempdir for the R session
-        splits <- base::sub("/.../........../", "", inFile[i,"datapath"])
+        splits <- base::sub("/tmp/Rtmp[[:alnum:]]{6}/", "", inFile[i,"datapath"])# make this more platform agnostic
         t_dir <- stringr::str_replace(inFile[i,"datapath"], splits[i], "")
-        base::file.rename(paste0(t_dir, "/", splits[i]), paste0(t_dir, "/", inFile[i, "name"])) # rename the file to include the original filename
-        base::file.remove(paste0(t_dir, "/", splits[i])) # remove the file with the userhostile name
+        print(splits)
+        print(t_dir)
+        oldpath <- file.path(t_dir[i], splits[i])
+        print(dirname(oldpath))
+        base::file.rename(oldpath, file.path(t_dir[i], inFile[i, "name"])) # rename the file to include the original filename
+        base::unlink(dirname(oldpath), recursive = TRUE) # remove the file with the userhostile name 
+        
       }
+      #return(t_dir)
       return(list.files(t_dir))
+
       
-       unlink(t_dir)
-      #return(inFile[,"datapath"])
+      
   })
 
+  observeEvent(input$"EmptyDirectoryButton", {
+    tempfiles <- list.files(t_dir)
+      print(tempfiles)
+    nfiles <- length(tempfiles)
+     print(tempfiles)
+   # base::file.remove(tempfiles)
+  })
+   
+  
+  
+  
 }
 
 # Run the application 
