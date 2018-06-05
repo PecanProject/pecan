@@ -16,7 +16,7 @@
 #' @examples
 #' irisdb <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 #' dplyr::copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
-#' insert_table(iris[-1,], "iris", irisdb$con)
+#' insert_table(iris[-1,], "iris", irisdb)
 #' dplyr::tbl(irisdb, "iris")
 insert_table <- function(values, table, con, coerce_col_class = TRUE, drop = TRUE) {
   values_fixed <- match_dbcols(values, table, con, coerce_col_class, drop = TRUE)
