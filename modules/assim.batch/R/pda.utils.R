@@ -768,7 +768,8 @@ return_hyperpars <- function(assim.settings, inputs){
 ##' 
 ##' @author Istem Fer
 ##' @export
-sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp){
+sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp, 
+                        prior.list, prior.fn, sf, sf.subset.list){
   
   PEcAn.logger::logger.info("Sampling from previous round's MCMC")
   
@@ -804,12 +805,35 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   get_samples <- sample(1:nrow(mcmc_samples), n.post.knots)
   new_knots <- mcmc_samples[get_samples,]
   
+  # when using sf, need to sample from sf mcmc samples and calculate back actual parameter values
+  if(!is.null(sf.subset.list)){
+    get_samples <- sample(1:nrow(sf.subset.list[[1]]), n.post.knots)
+    sf_knots    <- sf.subset.list[[1]][get_samples,]
+    
+    ind <- 0
+    for(i in seq_along(n.param.orig)){
+      if(all(sf %in% rownames(prior.list[[i]]))){
+        temp.knots <- sapply(seq_along(prior.ind.orig[[i]]), function(z){
+          eval(prior.fn[[i]]$qprior[prior.ind.orig[[i]]][[z]], list(p = sf_knots[,z]))
+        })
+        new_knots[, (ind + 1):(ind + n.param.orig[i])] <- temp.knots
+      }
+      ind <- ind + n.param.orig[i]
+    }
+    
+  }else{
+    sf_knots <- NULL
+  }
+  
+  # now replace with new knots
   ind <- 0
   for(i in seq_along(n.param.orig)){
-    knots.params.temp[[i]][, prior.ind.orig[[i]]] <- new_knots[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE]
+    sub_knots <- new_knots[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE]
+    knots.params.temp[[i]][, prior.ind.orig[[i]]] <- sub_knots
+
     ind <- ind + n.param.orig[i]
   }
   
-  return(knots.params.temp)
+  return(list(knots.params.temp = knots.params.temp, sf_knots = sf_knots))
   
 }

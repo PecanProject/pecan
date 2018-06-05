@@ -177,13 +177,6 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   ## Run this block if this is a "round" extension
   if (run.round) {
     
-    # loads the posteriors of the the previous emulator run
-    temp.round <- pda.load.priors(settings, con, run.round)
-    prior.round.list <- temp.round$prior
-    
-    
-    prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
-    
     ## Propose a percentage (if not specified 80%) of the new parameter knots from the posterior of the previous run
     knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
                               as.numeric(settings$assim.batch$knot.par),
@@ -191,64 +184,22 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
     
-    if(!is.null(sf)){
-      load(settings$assim.batch$sf.path)
-      sf.round.post <- pda.define.prior.fn(sf.post.distns)
-      rm(sf.post.distns)
-      n.sf <- length(sf)
-      sf.round.list <- pda.generate.knots(n.post.knots,
-                                          sf = NULL, probs.sf = NULL,
-                                          n.param.all = n.sf,
-                                          prior.ind = seq_len(n.sf),
-                                          prior.fn = sf.round.post, 
-                                          pname = paste0(sf, "_SF"))
-      probs.round.sf     <- sf.round.list$params
-    }else {
-      probs.round.sf     <- NULL
-    }
-    
-    ## set prior distribution functions for posterior of the previous emulator run
-    ## need to do two things here: 
-    ## 1) for non-SF parameters, use the posterior of previous emulator
-    knots.list.nonsf <- lapply(seq_along(settings$pfts),
-                              function(x) pda.generate.knots(n.post.knots,
-                                                             sf, probs.round.sf,
-                                                             n.param.all[x],
-                                                             prior.ind.orig[[x]],
-                                                             prior.round.fn[[x]],
-                                                             pname[[x]]))
-    
-    knots.params.nonsf <- lapply(knots.list.nonsf, `[[`, "params")
-    
-    ## 2) for SF parameters use the posterior sf-values but on the prior of the actual params
-    knots.list.sf <- lapply(seq_along(settings$pfts),
-                               function(x) pda.generate.knots(n.post.knots,
-                                                              sf, probs.round.sf,
-                                                              n.param.all[x],
-                                                              prior.ind.orig[[x]],
-                                                              prior.fn[[x]], # note the difference
-                                                              pname[[x]]))
-    
-    knots.params.sf <- lapply(knots.list.sf, `[[`, "params")
-    
-    
-    knots.params.temp <- knots.params.nonsf
+    # trim down, as a placeholder
+    knots.params.temp <- lapply(knots.params, function(x) x[1:n.post.knots, ])
     
     if(!is.null(sf)){
-      # get new proposals for non-sf and sf together
-      for(i in seq_along(settings$pfts)){
-        if(!is.null(any.scaling[[i]])){
-          knots.params.temp[[i]] <- knots.params.sf[[i]]
-        }
-      }
+      load(settings$assim.batch$sf.samp)
+    }else{
+      sf.subset.list <- NULL
     }
+    sampled_knots <- sample_MCMC(settings$assim.batch$mcmc.path, n.param.orig, prior.ind.orig, 
+                                     n.post.knots, knots.params.temp,
+                                     prior.list, prior.fn, sf, sf.subset.list)
+
+    knots.params.temp <- sampled_knots$knots.params.temp
+    probs.round.sf    <- sampled_knots$sf_knots
     
-    # TODO: I need to revise this later, most of the code above is unnecessary (load posteriors, propose from them etc.)
-    # but for now going with the simplest and hopefully bug-free version (NEEDs CHECKING SF VERSION)
-    # sample from MCMC
-    knots.params.temp <- sample_MCMC(settings$assim.batch$mcmc.path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp)
-    
-    
+
     # mixture of knots
     mix.knots <- sample(settings$assim.batch$n.knot, (settings$assim.batch$n.knot - n.post.knots))
     for (i in seq_along(settings$pfts)) {
@@ -262,8 +213,6 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }
     
     knots.params <- lapply(knots.list, `[[`, "params")
-    # don't need anymore
-    # knots.probs  <- lapply(knots.list, `[[`, "probs")
     
     current.step <- "Generate Knots: round-if block"
     save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
@@ -704,12 +653,15 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   # save sf posterior
   if(!is.null(sf)){
-    sf.filename <- file.path(settings$outdir, 
+    sf.post.filename <- file.path(settings$outdir, 
                              paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
+    sf.samp.filename <- file.path(settings$outdir, 
+                             paste0("samples.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
-    sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
-    save(sf.post.distns, file = sf.filename)
-    settings$assim.batch$sf.path <- sf.filename
+    sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.samp.filename)
+    save(sf.post.distns, file = sf.post.filename)
+    settings$assim.batch$sf.path <- sf.post.filename
+    settings$assim.batch$sf.samp <- sf.samp.filename
   }
   
   # Separate each PFT's parameter samples (and bias term) to their own list
