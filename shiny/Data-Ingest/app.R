@@ -4,6 +4,7 @@ library(PEcAn.utils)
 library(shinydashboard)
 library(dataone)
 library(shinyFiles)
+library(stringr)
 
 
 # Define UI for application
@@ -90,19 +91,26 @@ server <- function(input, output) {
     # column will contain the local filenames where the data can
     # be found.
     inFile <- input$file
+      n <- length(inFile$name)
+      names <- inFile$name
+      
     
     if (is.null(inFile))
       return(NULL)
-    
-      return(inFile[c("name", "datapath")])
+      
+     # split <- stringr::str_extract(inFile[,"datapath"])
+      
+      split <- base::sub("/.../........../", "", inFile[i,"datapath"])
+     
+      return(split)
+      
+      # for(i in 1:n){
+      # base::strsplit(inFile[1,"datapath"], "/tmp/RtmpXk4iZs")
+      
+     # base::file.rename(inFile[1,"datapath"], paste0(path, inFile[1,"name"]))
+      
+      #return(inFile[,"datapath"])
   })
-
-
-
-   # file.copy(inFile$datapath, header = input$header)
-
-
-  
 
 }
 
