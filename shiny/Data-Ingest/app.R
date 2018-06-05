@@ -40,6 +40,7 @@ ui <- dashboardPage(
               fluidRow(
                box(
                  
+                 
                )
             
               )
@@ -94,13 +95,15 @@ server <- function(input, output) {
       n <- length(inFile$name)
       names <- inFile$name
       
-      # find the tempdir for the R session
-      split <- base::sub("/.../........../", "", inFile[1,"datapath"])
-      t_dir <- stringr::str_replace(inFile[1,"datapath"], split, "")
-    
     if (is.null(inFile))
       return(NULL)
 
+      for(i in 1:n){
+        # find the tempdir for the R session
+        splits <- base::sub("/.../........../", "", inFile[i,"datapath"])
+        t_dir <- stringr::str_replace(inFile[i,"datapath"], splits[i], "")
+        base::file.rename(paste0(t_dir, "/", splits[i]), paste0(t_dir, "/", inFile[i, "name"]))
+      }
       return(list.files(t_dir))
       
     
