@@ -70,11 +70,13 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain  
 ##' @param env.samples env samples
 ##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
+##' @param ma.traits a list of parameter names that were fitted either by MA or PDA
+##' 
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
-##' @author David LeBauer
+##' @author David LeBauer, Istem Fer
 get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
-                                 method = "uniform", ...) {
+                                 method = "uniform", ma.traits = NULL, ...) {
   
   if (is.null(method)) {
     PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
@@ -95,14 +97,18 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       pft2col <- c(pft2col, rep(i, length(pft.samples[[i]])))
     }
     
+
     total.sample.num <- sum(sapply(pft.samples, length))
     random.samples <- NULL
+    
     
     if (method == "halton") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- randtoolbox::halton(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
+      #generate random numbers between 1 and same.size
+      same.i <- random.samples[,1]
     } else if (method == "sobol") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, ...)
@@ -130,15 +136,35 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
                                total.sample.num)
     }
     
+    
     ensemble.samples <- list()
+    
     
     col.i <- 0
     for (pft.i in seq(pft.samples)) {
       ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
+      
+      if(length(pft.samples[[pft.i]])>0){
+        # coming from anything that fits parmeters jointly (PDA / global-MA), we want to preserve correlations
+        same.i <- stats::quantile(pft.samples[[pft.i]][[1]], random.samples[, 1]) # use 1st
+        # will use these same indices for samples that will go together
+        same.i <- which(round(pft.samples[[pft.i]][[1]], digits = 4) %in% round(same.i, digits=4))
+        same.i <- same.i[!duplicated(round(pft.samples[[pft.i]][[1]], digits = 4)[same.i])]
+        if(length(same.i) != ensemble.size & !is.null(ma.traits)){ # can numerical errors give us hard time in the above equality checks? 
+          # throw a warning, but also don't break
+          PEcAn.logger::logger.warn("There might be some numerical error matching the quantiles. Defaulting to uniform sampling of the chain.")
+          same.i <- ceiling(runif(ensemble.size, 1, length(pft.samples[[pft.i]][[1]])))
+        }
+      }
+     
       for (trait.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
-        ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],
-                                                         random.samples[, col.i])
+        if(names(pft.samples[[pft.i]])[trait.i] %in% ma.traits[[pft.i]]){ # keeping samples
+          ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
+        }else{
+          ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],
+                                                                  random.samples[, col.i])
+        }
       }  # end trait
       ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
       colnames(ensemble.samples[[pft.i]]) <- names(pft.samples[[pft.i]])
