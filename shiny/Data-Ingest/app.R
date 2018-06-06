@@ -77,29 +77,24 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2) #maximum file input size
   
-  path <-
-    tempdir() # PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
-  
+  temp <- tempdir() 
+  #PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
+  print(temp) #for testing only
+
   d1d <- eventReactive(input$D1Button, {
     withProgress(message = "Downloading", value = 0, {
-      PEcAn.data.land::dataone_download(input$id, filepath = path)
+      PEcAn.data.land::dataone_download(input$id, filepath = temp)
     }) #run dataone_download with input from id on click
   })
   
   output$identifier <- renderText({
     d1d()
-    
-    
   })
   
   
   ###### FileInput
-  output$contents <- renderTable({
-    # input$contents will be NULL initially. After the user selects
-    # and uploads a file, it will be a data frame with 'name',
-    # 'size', 'type', and 'datapath' columns. The 'datapath'
-    # column will contain the local filenames where the data can
-    # be found.
+ # output$contents <- renderTable({
+   localdownload <- eventReactive({
     inFile <- input$file
     n <- length(inFile$name)
     names <- inFile$name
@@ -108,34 +103,49 @@ server <- function(input, output, session) {
       return(NULL)
     
     splits <- list()
-    t_dir <- list()
+   # t_dir <- list()
     
     for (i in 1:n) {
-      # find the tempdir for the R session
+   #   # find the tempdir for the R session
       splits <-
         base::sub("/tmp/Rtmp[[:alnum:]]{6}/", "", inFile[i, "datapath"])# make this more platform agnostic
-      t_dir <-
-        stringr::str_replace(inFile[i, "datapath"], splits[i], "")
-      oldpath <- file.path(t_dir[i], splits[i])
-      base::file.rename(oldpath, file.path(t_dir[i], inFile[i, "name"])) # rename the file to include the original filename
-      base::unlink(dirname(oldpath), recursive = TRUE) # remove the file with the userhostile name
+      print(splits)
+   #   t_dir <-
+   #     stringr::str_replace(inFile[i, "datapath"], splits[i], "")
+   #   print(t_dir)
+   #   oldpath <- file.path(t_dir[i], splits[i])
+   #   base::file.rename(oldpath, file.path(t_dir[i], inFile[i, "name"])) # rename the file to include the original filename
+   #   base::unlink(dirname(oldpath), recursive = TRUE) # remove the file with the userhostile name
+      
+      ####### Trying it with temp instead of this hackish stuff ########
+
+      filenames<- list.files(temp)
+      oldpath <- file.path(temp, splits[i])
+        print(oldpath[i])
+         print(list.files(temp)[i])
+         print(file.path(temp, inFile[i, "name"]))
+       base::file.rename(oldpath[i], file.path(temp, inFile[i, "name"])) # rename the file to include the original filename
+       base::unlink(dirname(oldpath[i]), recursive = TRUE) # remove the file with the userhostile name
     }
-    return(list.files(t_dir))
+    return(list.files(temp))
   })
   
   
-  
+
   observeEvent(input$"EmptyDirectoryButton", {
-    nfiles <- length(list.files(t_dir))
-    print(nfiles)
-    
+    tempfiles <- list.files(temp)
+    nfiles <- length(tempfiles)
+    # print(temp)
+    # print(tempfiles)
+
     for (i in 1:nfiles) {
-      filepath <- file.path(t_dir[i], list.files(t_dir)[i])
+      filepath <- file.path(temp, tempfiles[i])
       base::file.remove(filepath[i])
+
     }
-    
+
   })
-  
+
 }
 
 # Run the application
