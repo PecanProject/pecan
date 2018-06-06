@@ -103,21 +103,11 @@ server <- function(input, output, session) {
       return(NULL)
     
     splits <- list()
-   # t_dir <- list()
     
     for (i in 1:n) {
-   #   # find the tempdir for the R session
       splits <-
         base::sub("/tmp/Rtmp[[:alnum:]]{6}/", "", inFile[i, "datapath"])# make this more platform agnostic
       print(splits)
-   #   t_dir <-
-   #     stringr::str_replace(inFile[i, "datapath"], splits[i], "")
-   #   print(t_dir)
-   #   oldpath <- file.path(t_dir[i], splits[i])
-   #   base::file.rename(oldpath, file.path(t_dir[i], inFile[i, "name"])) # rename the file to include the original filename
-   #   base::unlink(dirname(oldpath), recursive = TRUE) # remove the file with the userhostile name
-      
-      ####### Trying it with temp instead of this hackish stuff ########
 
       filenames<- list.files(temp)
       oldpath <- file.path(temp, splits[i])
