@@ -17,16 +17,8 @@ get.parameter.samples <- function(settings,
   outdirs   <- list()
   
   ## Open database connection
-  if (settings$database$bety$write) {
-    con <- try(db.open(settings$database$bety), silent = TRUE)
-    if (is(con, "try-error")) {
-      con <- NULL
-    } else {
-      on.exit(db.close(con))
-    }
-  } else {
-    con <- NULL
-  }
+  con <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(con))
   
   for (i.pft in seq_along(pfts)) {
     pft.names[i.pft] <- settings$pfts[[i.pft]]$name
