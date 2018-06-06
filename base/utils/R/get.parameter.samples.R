@@ -6,7 +6,7 @@
 ##' @param pfts the pfts node of the list of pecan settings
 ##' @export
 ##'
-##' @author David LeBauer, Shawn Serbin
+##' @author David LeBauer, Shawn Serbin, Istem Fer
 ### Identify PFTs in the input settings.xml file
 get.parameter.samples <- function(settings, 
                                   posterior.files = rep(NA, length(settings$pfts)), 
@@ -40,7 +40,10 @@ get.parameter.samples <- function(settings,
   PEcAn.logger::logger.info("Selected PFT(s): ", pft.names)
   
   ## Generate empty list arrays for output.
-  trait.samples <- sa.samples <- ensemble.samples <- env.samples <- runs.samples <- list()
+  trait.samples <- sa.samples <- ensemble.samples <- env.samples <- runs.samples <- ma.traits <- list()
+  
+  # flag determining whether samples are independent (e.g. when params fitted individually)
+  independent <- TRUE
   
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)) {
@@ -73,6 +76,12 @@ get.parameter.samples <- function(settings,
         trait.mcmc.file <- file.path(files$file_path[tid], files$file_name[tid])
         ma.results <- TRUE
         load(trait.mcmc.file)
+        
+        # PDA samples are fitted together, to preserve correlations downstream let workflow know they should go together
+        if(grepl("mcmc.pda", trait.mcmc.file)) independent <- FALSE 
+        # NOTE: Global MA samples will also be together, right?
+        
+        
       }else{
         PEcAn.logger::logger.info("No trait.mcmc file is associated with this posterior ID.")
         ma.results <- FALSE
@@ -92,21 +101,22 @@ get.parameter.samples <- function(settings,
     priors <- rownames(prior.distns)
     
     if (exists("trait.mcmc")) {
-      ma.traits <- names(trait.mcmc)
+      ma.traits[[i]] <- names(trait.mcmc)
+      names(ma.traits)[i] <- pft.name
       
       samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
       
       ## report which traits use MA results, which use priors
-      if (length(ma.traits) > 0) {
+      if (length(ma.traits[[i]]) > 0) {
         PEcAn.logger::logger.info("PFT", pft.names[i], "has MCMC samples for:\n",
                                   paste0(ma.traits, collapse = "\n "))
       }
-      if (!all(priors %in% ma.traits)) {
+      if (!all(priors %in% ma.traits[[i]])) {
         PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for:\n", 
                                   paste0(priors[!priors %in% ma.traits], collapse = "\n "))
       }
     } else {
-      ma.traits <- NULL
+      ma.traits[[i]] <- NULL
       samples.num <- 20000
       PEcAn.logger::logger.info("No MCMC results for PFT", pft.names[i])
       PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for", 
@@ -115,7 +125,7 @@ get.parameter.samples <- function(settings,
     
     PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
     for (prior in priors) {
-      if (prior %in% ma.traits) {
+      if (prior %in% ma.traits[[i]]) {
         samples <- as.matrix(trait.mcmc[[prior]][, "beta.o"])
       } else {
         samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num)
@@ -123,6 +133,12 @@ get.parameter.samples <- function(settings,
       trait.samples[[pft.name]][[prior]] <- samples
     }
   }  ### End for loop
+  
+  # if samples are independent, set ma.traits to NULL
+  # this is important for downstream, when ma.traits is not NULL MCMC will be sampled accordingly
+  if(independent){
+    ma.traits <- NULL
+  }
   
   if ("sensitivity.analysis" %in% names(settings)) {
     
@@ -147,7 +163,7 @@ get.parameter.samples <- function(settings,
       
       ## subset the trait.samples to ensemble size using Halton sequence
       ensemble.samples <- get.ensemble.samples(settings$ensemble$size, trait.samples, 
-                                               env.samples, ens.sample.method)
+                                               env.samples, ens.sample.method, ma.traits)
     }
   }
   
