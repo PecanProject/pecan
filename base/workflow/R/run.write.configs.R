@@ -1,36 +1,30 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
-##' Main driver function to call the ecosystem model specific (e.g. ED, SiPNET) 
-##' run and configuration file scripts 
-##' 
-##' DEPRECATED: This function has been moved to the PEcAn.workflow package and will be removed from PEcAn.utils.
-##'
-##' @name run.write.configs
-##' @title Run model specific write configuration functions
-##' @param model the ecosystem model to generate the configuration files for
-##' @param write should the runs be written to the database
-##' @param ens.sample.method how to sample the ensemble members('halton' sequence or 'uniform' random)
-##' @param posterior.files Filenames for posteriors for drawing samples for ensemble and sensitivity
-##'    analysis (e.g. post.distns.Rdata, or prior.distns.Rdata). Defaults to NA, in which case the 
-##'    most recent posterior or prior (in that order) for the workflow is used. Should be a vector, 
-##'    with one entry for each PFT. File name only; PFT outdirs will be appended (this forces use of only
-##'    files within this workflow, to avoid confusion).
-##'
-##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
-##' @export
-##'
-##' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
+#' Write model-specific run scripts and configuration files
+#'
+#' Generates run scripts and configuration files for all analyses specified
+#' in the provided settings. Most of the heavy lifting is done by the
+#' \code{write.config.*} function for your specific ecosystem model
+#' (e.g. write.config.ED2, write.config.SIPNET).
+#'
+#' @param settings a PEcAn settings list
+#' @param write should the runs be written to the database?
+#' @param ens.sample.method how to sample the ensemble members('halton' sequence or 'uniform' random)
+#' @param posterior.files Filenames for posteriors for drawing samples for ensemble and sensitivity
+#'    analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)
+#' @param overwrite logical: Replace output files that already exist?
+#'
+#' @details The default value for \code{posterior.files} is NA, in which case the
+#'    most recent posterior or prior (in that order) for the workflow is used.
+#'    When specified, \code{posterior.files} should be a vector of filenames with one entry for each PFT.
+#'    Specify filenames with no path; PFT outdirs will be appended. This forces use of only
+#'    files within this workflow, to avoid confusion.
+#'
+#' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
+#' @export
+#'
+#' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
 run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
-  .Deprecated("PEcAn.workflow::run.write.configs")
   
   con <- PEcAn.DB::db.open(settings$database$bety)
   on.exit(PEcAn.DB::db.close(con))
@@ -60,7 +54,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   model <- settings$model$type
   scipen <- getOption("scipen")
   options(scipen = 12)
-  get.parameter.samples(settings, posterior.files, ens.sample.method)
+  PEcAn.utils::get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
   
   ## remove previous runs.txt
@@ -69,7 +63,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     unlink(file.path(settings$rundir, "runs.txt"))
   }
   
-  load.modelpkg(model)
+  PEcAn.utils::load.modelpkg(model)
   
   ## Check for model-specific write configs
   
@@ -103,7 +97,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
       assign("cnt", cnt, .GlobalEnv)
     }
     PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
-    sa.runs <- write.sa.configs(defaults = settings$pfts, 
+    sa.runs <- PEcAn.utils::write.sa.configs(defaults = settings$pfts,
                                 quantile.samples = sa.samples, 
                                 settings = settings, 
                                 model = model,
@@ -114,7 +108,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
     
     # Save sensitivity analysis info
-    fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata", 
+    fname <- PEcAn.utils::sensitivity.filename(settings, "sensitivity.samples", "Rdata",
                                   all.var.yr = TRUE, pft = NULL)
     save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file = fname)
     
@@ -122,7 +116,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   
   ### Write ENSEMBLE
   if ("ensemble" %in% names(settings)) {
-    ens.runs <- write.ensemble.configs(defaults = settings$pfts, 
+    ens.runs <- PEcAn.utils::write.ensemble.configs(defaults = settings$pfts,
                                        ensemble.samples = ensemble.samples, 
                                        settings = settings,
                                        model = model, 
@@ -134,7 +128,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     ens.samples <- ensemble.samples  # rename just for consistency
     
     # Save ensemble analysis info
-    fname <- ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr = TRUE)
+    fname <- PEcAn.utils::ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr = TRUE)
     save(ens.run.ids, ens.ensemble.id, ens.samples, pft.names, trait.names, file = fname)
   } else {
     PEcAn.logger::logger.info("not writing config files for ensemble, settings are NULL")
@@ -151,23 +145,4 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   options(scipen = scipen)
   
   return(invisible(settings))
-} # run.write.configs
-
-
-##' @export
-runModule.run.write.configs <- function(settings, overwrite = TRUE) {
-  .Deprecated("PEcAn.workflow::runModule.run.write.configs")
-  if (PEcAn.settings::is.MultiSettings(settings)) {
-    if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
-      PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
-      unlink(file.path(settings$rundir, "runs.txt"))
-    }
-    return(PEcAn.settings::papply(settings, runModule.run.write.configs, overwrite = FALSE))
-  } else if (PEcAn.settings::is.Settings(settings)) {
-    write <- settings$database$bety$write
-    ens.sample.method <- settings$ensemble$method
-    return(run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
-  } else {
-    stop("runModule.run.write.configs only works with Settings or MultiSettings")
-  }
-} # runModule.run.write.configs
+}

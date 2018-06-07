@@ -102,11 +102,12 @@ convert.samples.ED <- function(trait.samples) {
 ##' @param defaults list of defaults to process. Default=settings$constants
 ##' @param check Logical. If `TRUE`, check ED2IN validity before running and 
 ##' throw an error if anything is wrong (default = `FALSE`)
+##' @param inputs updated input paths coming from SDA workflow, will modify ED2IN
 ##' @return configuration file and ED2IN namelist for given run
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 ##-------------------------------------------------------------------------------------------------#
-write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE) {
+write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE, inputs = NULL, ...) {
   
   
   jobsh <- write.config.jobsh.ED2(settings = settings, run.id = run.id)
@@ -149,6 +150,13 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
                        error = function(e) settings$run$site$met.start)
   metend <- tryCatch(format(as.Date(settings$run$site$met.end), "%Y"), 
                      error = function(e) settings$run$site$met.end)
+  
+  if (!is.null(inputs)) {
+    ## override if specified in inputs
+    if ("met" %in% names(inputs)) {
+      settings$run$inputs$met$path <- inputs$met$path
+    }
+  }
 
   ed2in.text <- modify_ed2in(
     ed2in.text,
@@ -212,12 +220,14 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     # Default values
     sda_tags <- list(
       ISOUTPUT = 3,     # Save history state file
-      UNITSTATE = 1,    # History state frequency is days
-      FRQSTATE = 1      # Write history file every 1 day
+      UNITSTATE = 3,    # History state frequency is years
+      FRQSTATE = 1      # Write history file every 1 year
     )
-
+    
     # Overwrite defaults with values from settings$model$ed2in_tags list
-    sda_tags <- modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
+    if(!is.null(settings$model$ed2in_tags)){
+      sda_tags <- modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
+    }
     ed2in.text <- modify_ed2in(ed2in.text, .dots = sda_tags, add_if_missing = TRUE, check_paths = check)
   }
 

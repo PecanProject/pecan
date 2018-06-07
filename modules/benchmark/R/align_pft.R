@@ -67,7 +67,7 @@ align_pft<-function(con, observation_one, observation_two, custom_table=NULL, fo
     
   }else if (comparison_type == "data_to_data"){
     
-    align_data_to_data_pft(observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE)
+    align_data_to_data_pft(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE)
     
   }else if (comparison_type == "model_to_model"){
     
