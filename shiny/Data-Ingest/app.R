@@ -93,20 +93,19 @@ server <- function(input, output, session) {
   
   
   ###### FileInput
- # output$contents <- renderTable({
-   localdownload <- eventReactive({
+  output$contents <- renderTable({
+   #localdownload <- eventReactive({
     inFile <- input$file
     n <- length(inFile$name)
     names <- inFile$name
     
-    if (is.null(inFile))
-      return(NULL)
+     if (is.null(inFile))  # Do I need this here? 
+       return(NULL)
     
     splits <- list()
     
     for (i in 1:n) {
-      splits <-
-        base::sub("/tmp/Rtmp[[:alnum:]]{6}/", "", inFile[i, "datapath"])# make this more platform agnostic
+      splits <- base::sub("/tmp/Rtmp[[:alnum:]]{6}/", "", inFile[i, "datapath"])  # Consider making this more program agnostic?
       print(splits)
 
       filenames<- list.files(temp)
@@ -117,10 +116,20 @@ server <- function(input, output, session) {
        base::file.rename(oldpath[i], file.path(temp, inFile[i, "name"])) # rename the file to include the original filename
        base::unlink(dirname(oldpath[i]), recursive = TRUE) # remove the file with the userhostile name
     }
-    return(list.files(temp))
+     return(list.files(temp)) # I think I should move this too
   })
   
-  
+   # This doesn't work yet
+  # output$contents <- renderTable({
+  #   localdownload()
+  #   
+  #   if (is.null(inFile)) 
+  #      return(NULL)
+  #   
+  #   return(list.files(temp))
+  # })
+   
+   
 
   observeEvent(input$"EmptyDirectoryButton", {
     tempfiles <- list.files(temp)
