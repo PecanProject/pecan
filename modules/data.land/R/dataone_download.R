@@ -17,7 +17,7 @@
 #' dataone_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = "/fs/data1/pecan.data/dbfiles/")
 #' }
 
-dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNode = "PROD", lazyLoad = FALSE, quiet = T){ 
+dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
   ### Check for wget functionality
   test <- try(system2("wget", "--version", stderr = TRUE))
   if (class(test) == "try-error") {
