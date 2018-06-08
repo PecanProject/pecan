@@ -70,7 +70,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain  
 ##' @param env.samples env samples
 ##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
-##' @param ma.traits a list of parameter names that were fitted either by MA or PDA
+##' @param ma.traits a list of parameter names that were fitted either by MA or PDA, important parameter, if NULL parameters will be resampled independently
 ##' 
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
