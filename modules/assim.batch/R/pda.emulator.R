@@ -256,33 +256,15 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
     if(any(unlist(any.mgauss) == "multipGauss")) {
-      # how many bias parameters per dataset requested
-      nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
-                      as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
-      bprior <- data.frame(distn  = rep(NA,length(isbias)),
-                           parama = rep(NA,length(isbias)),
-                           paramb = rep(NA,length(isbias)))
-      for(b in seq_along(isbias)){
-        # any prior passed via settings?
-        if(!is.null(settings$assim.batch$inputs[[isbias]]$bprior)){
-          bprior$distn[b]  <- settings$assim.batch$inputs[[isbias[b]]]$bprior$distn
-          bprior$parama[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$parama
-          bprior$paramb[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$paramb
-        }else{ # assume log-normal(0,0.5)
-          PEcAn.logger::logger.info(paste0("No prior is defined for the bias parameter, assuming lnorm(0, 0.5)"))
-          bprior$distn[b]  <- "lnorm"
-          bprior$parama[b] <- 0
-          bprior$paramb[b] <- 0.5
-        }
-        
-      }
-      bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias, run.round, bprior, settings$assim.batch$bias.path)
+      bias.list  <- return.bias(settings, isbias, model.out, inputs, prior.list, run.round)
+      nbias      <-
       bias.terms <- bias.list$bias.params
       prior.list <- bias.list$prior.list.bias
-      prior.fn <- lapply(prior.list, pda.define.prior.fn)
+      prior.fn   <- lapply(prior.list, pda.define.prior.fn)
     } else {
       bias.terms <- NULL
     }
+    
     
     for (i in seq_len(settings$assim.batch$n.knot)) {
       if(!is.null(bias.terms)){
@@ -350,25 +332,26 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     for(inputi in seq_len(n.input)){
       error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
       
-      if(unlist(any.mgauss)[inputi] == "multipGauss") {
+     # if(unlist(any.mgauss)[inputi] == "multipGauss") {
         
         # if yes, then we need to include bias term in the emulator
         #bias.probs <- bias.list$bias.probs
         #biases <- c(t(bias.probs[[bc]]))
-        bias.params <- bias.list$bias.params
+        bias.params <- bias.terms
         biases <- c(t(bias.params[[bc]]))
-        bc <- bc + 1
+        #bc <- bc + 1
         
         # replicate model parameter set per bias parameter
         rep.rows <- rep(1:nrow(X), each = nbias)
         X.rep <- X[rep.rows,]
         Xnew <- cbind(X.rep, biases)
-        colnames(Xnew) <- c(colnames(X.rep), paste0("bias.", names(n.of.obs)[inputi]))
+        #colnames(Xnew) <- c(colnames(X.rep), paste0("bias.", names(n.of.obs)[inputi]))
+        colnames(Xnew) <- c(colnames(X.rep), paste0("bias.SoilResp"))
         SS.list[[inputi]] <- cbind(Xnew, c(error.statistics[[inputi]]))
         
-      } else {
-        SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
-      } # if-block
+      #} else {
+      #  SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
+      #} # if-block
       
       # check failed runs and remove them if you'll have a reasonable amount of param sets after removal
       # how many runs failed?
