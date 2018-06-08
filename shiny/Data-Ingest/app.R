@@ -56,7 +56,12 @@ ui <- dashboardPage(
                 actionButton(inputId = "EmptyDirectoryButton", label = "Clear All")
               )
             ),
-            fluidRow(box())),
+            fluidRow(
+              box(
+                #tableOutput("contents")
+              )
+              )
+            ),
     
     tabItem(tabName = "step2",
             h2("coming soon")),
@@ -80,30 +85,41 @@ server <- function(input, output, session) {
   temp <- tempdir() 
   #PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   print(temp) #for testing only
-
+  
+  # Create a directory in the tempfile 
+  d1_tdir <- dir.create(file.path(temp, "d1_tempdir"))
+  local_tdir <- dir.create(file.path(temp, "local_tempdir"))
+  print(list.files(temp))
+  
+  
   d1d <- eventReactive(input$D1Button, {
     withProgress(message = "Downloading", value = 0, {
-      PEcAn.data.land::dataone_download(input$id, filepath = temp)
+      PEcAn.data.land::dataone_download(input$id, filepath = D1_dir)
     }) #run dataone_download with input from id on click
   })
-  
-  output$identifier <- renderText({
-    d1d()
+
+  output$identifier <- renderTable({
+    D1File <- input$id
+
+    if (is.null(D1File))
+      return(NULL)
+
+      return(list.files(D1_dir))
   })
-  
-  
+
+
   ###### FileInput
   output$contents <- renderTable({
    #localdownload <- eventReactive({
     inFile <- input$file
     n <- length(inFile$name)
     names <- inFile$name
-    
-     if (is.null(inFile))  # Do I need this here? 
+
+     if (is.null(inFile))  # Do I need this here?
        return(NULL)
-    
+
     splits <- list()
-    
+
     for (i in 1:n) {
       splits <- base::sub("/tmp/Rtmp[[:alnum:]]{6}/", "", inFile[i, "datapath"])  # Consider making this more program agnostic?
       print(splits)
@@ -118,18 +134,18 @@ server <- function(input, output, session) {
     }
      return(list.files(temp)) # I think I should move this too
   })
-  
+
    # This doesn't work yet
   # output$contents <- renderTable({
   #   localdownload()
-  #   
-  #   if (is.null(inFile)) 
+  #
+  #   if (is.null(inFile))
   #      return(NULL)
-  #   
+  #
   #   return(list.files(temp))
   # })
-   
-   
+
+
 
   observeEvent(input$"EmptyDirectoryButton", {
     tempfiles <- list.files(temp)
@@ -139,10 +155,11 @@ server <- function(input, output, session) {
 
     for (i in 1:nfiles) {
       filepath <- file.path(temp, tempfiles[i])
-      base::file.remove(filepath[i])
+    #  base::file.remove(filepath[i])
 
     }
-
+     lapply(tempfiles,unlink)
+     print(list.files(temp))
   })
 
 }
