@@ -670,15 +670,40 @@ pda.generate.sf <- function(n.knot, sf, prior.list){
 ##' @title return.bias
 ##' @author Istem Fer
 ##' @export
-return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.round = FALSE, bprior, prev.bias = NULL){
+return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, run.round = FALSE){
+  
+  # how many bias parameters per dataset requested
+  nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
+                  as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
+
+  prev.bias <- settings$assim.batch$bias.path
+  
+  # to store priors
+  bprior <- data.frame(distn  = rep(NA,length(isbias)),
+                       parama = rep(NA,length(isbias)),
+                       paramb = rep(NA,length(isbias)),
+                       n      = rep(NA,length(isbias)))
+  for(b in seq_along(isbias)){
+    # any prior passed via settings?
+    if(!is.null(settings$assim.batch$inputs[[isbias]]$bprior)){
+      bprior$distn[b]  <- settings$assim.batch$inputs[[isbias[b]]]$bprior$distn
+      bprior$parama[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$parama
+      bprior$paramb[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$paramb
+    }else{ # assume log-normal(0,0.5)
+      PEcAn.logger::logger.info(paste0("No prior is defined for the bias parameter, assuming lnorm(0, 0.5)"))
+      bprior$distn[b]  <- "lnorm"
+      bprior$parama[b] <- 0
+      bprior$paramb[b] <- 0.5
+    }
+  }
+  bias.prior <- bprior
   
   # there can be more than one multiplicative Gaussian requested
   ibias <- length(isbias)
   
   # to store bias parameters and probabilitied
   bias.params <- bias.probs <- list()
-  # to store priors
-  bias.prior <- bprior
+
   prior.names <- rep(NA, ibias)
   
   for(i in seq_along(isbias)){
@@ -712,7 +737,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
     prior.list.bias <- prior.list
   }
   
-  return(list(bias.params = bias.params, prior.list.bias = prior.list.bias))
+  return(list(bias.params = bias.params, prior.list.bias = prior.list.bias, nbias = nbias))
   
 } # return.bias
 
@@ -786,6 +811,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
     ind <- ind + n.param.orig[i]
   }
   
+  
   burnins <- rep(NA, length(mcmc.param.list))
   for (i in seq_along(mcmc.param.list)) {
     params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
@@ -806,6 +832,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   
   mcmc_samples <- do.call(rbind, collect_samples)
   
+ 
   get_samples <- sample(1:nrow(mcmc_samples), n.post.knots)
   new_knots <- mcmc_samples[get_samples,]
   
