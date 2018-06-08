@@ -94,7 +94,7 @@ server <- function(input, output, session) {
   
   d1d <- eventReactive(input$D1Button, {
     withProgress(message = "Downloading", value = 0, {
-      PEcAn.data.land::dataone_download(input$id, filepath = D1_dir)
+      PEcAn.data.land::dataone_download(input$id, filepath = d1_tdir)
     }) #run dataone_download with input from id on click
   })
 
