@@ -110,14 +110,14 @@ server <- function(input, output, session) {
     }) #run dataone_download with input from id on click
   })
 
-  # output$identifier <- renderTable({
-  #   D1File <- input$id
-  # 
-  #   if (is.null(D1File))
-  #     return(NULL)
-  # 
-  #     return(list.files(D1_dir))
-  # })
+   output$identifier <- renderTable({
+     D1File <- input$id
+   
+     if (is.null(D1File))
+       return(NULL)
+   
+       return(list.files(D1_dir))
+   })
 
 
   ###### FileInput
