@@ -35,6 +35,7 @@ ui <- dashboardPage(
     menuItem("Step 4 -- etc.", tabName = "step4", icon = icon("cog"))
   )),
   dashboardBody(tabItems(
+    ################ Tab 1 -- DataONE download ##################################
     tabItem(tabName = "importDataONE",
             fluidRow(
               box(
@@ -52,11 +53,11 @@ ui <- dashboardPage(
             ),
             fluidRow(
               box(
-                #tableOutput("contents")
+                tableOutput("identifier")
               )
               )
             ),
-    
+    ################ Tab 2 -- Local File Upload ##################################
     tabItem(tabName = "uploadLocal",
             fluidRow(
               box(
