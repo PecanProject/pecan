@@ -13,8 +13,13 @@ ui <- dashboardPage(
   dashboardHeader(title = "Data Ingest"),
   dashboardSidebar(sidebarMenu(
     menuItem(
-      "Data Ingest Workflow",
-      tabName = "importData",
+      "Import from DataONE",
+      tabName = "importDataONE",
+      icon = icon("file")
+    ),
+    menuItem(
+      "Upload Local Files",
+      tabName = "uploadLocal",
       icon = icon("file")
     ),
     menuItem(
@@ -30,7 +35,7 @@ ui <- dashboardPage(
     menuItem("Step 4 -- etc.", tabName = "step4", icon = icon("cog"))
   )),
   dashboardBody(tabItems(
-    tabItem(tabName = "importData",
+    tabItem(tabName = "importDataONE",
             fluidRow(
               box(
                 textInput(
@@ -41,8 +46,19 @@ ui <- dashboardPage(
                 actionButton(inputId = "D1Button", label = "Download"),
                 hr(),
                 fluidRow(column(12, verbatimTextOutput("identifier")))
-              ),
+              )
               
+             
+            ),
+            fluidRow(
+              box(
+                #tableOutput("contents")
+              )
+              )
+            ),
+    
+    tabItem(tabName = "uploadLocal",
+            fluidRow(
               box(
                 # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
                 fileInput(
@@ -54,11 +70,6 @@ ui <- dashboardPage(
                 ),
                 tableOutput("contents"),
                 actionButton(inputId = "EmptyDirectoryButton", label = "Clear All")
-              )
-            ),
-            fluidRow(
-              box(
-                #tableOutput("contents")
               )
               )
             ),
@@ -98,14 +109,14 @@ server <- function(input, output, session) {
     }) #run dataone_download with input from id on click
   })
 
-  output$identifier <- renderTable({
-    D1File <- input$id
-
-    if (is.null(D1File))
-      return(NULL)
-
-      return(list.files(D1_dir))
-  })
+  # output$identifier <- renderTable({
+  #   D1File <- input$id
+  # 
+  #   if (is.null(D1File))
+  #     return(NULL)
+  # 
+  #     return(list.files(D1_dir))
+  # })
 
 
   ###### FileInput
