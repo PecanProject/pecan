@@ -96,7 +96,7 @@ server <- function(input, output, session) {
   
   temp <- tempdir() 
   #PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
-  print(temp) #for testing only
+  print(temp) #for testing only -- shows in console only
   
   # Create a directory in the tempfile 
   d1_tdir <- dir.create(file.path(temp, "d1_tempdir"))
