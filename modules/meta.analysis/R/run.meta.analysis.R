@@ -157,9 +157,11 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' @param random should random effects be used?
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
+##' @param threshold Gelman-Rubin convergence diagnostic, passed on to
+##'   \code{\link{pecan.ma.summary}}
 ##' @return nothing, as side effect saves \code{trait.mcmc} created by
 ##' \code{\link{pecan.ma}} and post.distns created by
-##' \code{\link{approx.posterior(trait.mcmc, ...)}}  to trait.mcmc.Rdata \
+##' \code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata \
 ##' and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
