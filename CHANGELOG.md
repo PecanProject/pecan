@@ -20,12 +20,16 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - ED:
     - Change all history parameter files to have zero storage respiration
     
-- dataone_download:
+- dataone_download.R:
     - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
     
 ### Added
 
 - From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
+
+- dataone_download.R:
+  - Added progress messages to indicate that the function is working during longer downloads via PEcAn logger. 
+  - Store path to downloaded data as newdir_D1 so that the download app can call this path. 
 
 ### Removed
 
