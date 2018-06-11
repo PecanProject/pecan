@@ -7,19 +7,23 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+##' Generate summary statistics and diagnostics for PEcAn meta.analysis
 ##'
-##' @name pecan.ma.summary
-##' @title Generate summary statitics and diagnostics for PEcAn meta.analysis
 ##' @param mcmc.object JAGS mcmc output from \code{\link{pecan.ma}}
 ##' @param pft plant functional type
 ##' @param outdir output directory
 ##' @param threshold Gelman-Rubin convergence diagnostic (MGPRF)
 ##' default = 1.2 following Bolker 2008 Ecological Models and Data in R
+##' @param gg produce extra diagnostic plots using the "ggmcmc" package? Caution: very slow!
 ##' @export
 ##'
 ##' @examples
 ##' \dontrun{
-##' summary <- pecan.ma.summary(trait.mcmc,settings$pfts$pft,settings$outdir,settings$meta.analysis$threshold)
+##' summary <- pecan.ma.summary(
+##'  trait.mcmc,
+##'  settings$pfts$pft,
+##'  settings$outdir,
+##'  settings$meta.analysis$threshold)
 ##' }
 ##' @author David LeBauer, Shawn Serbin
 pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE) {
