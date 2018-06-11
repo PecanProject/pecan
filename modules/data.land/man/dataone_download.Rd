@@ -4,8 +4,8 @@
 \alias{dataone_download}
 \title{DataONE download}
 \usage{
-dataone_download(id, filepath = "/fs/data1/pecan.data/dbfiles/",
-  CNode = "PROD", lazyLoad = FALSE, quiet = F)
+dataone_download(id, filepath = "/fs/data1/pecan.data/dbfiles",
+  CNode = "PROD", lazyLoad = FALSE, quiet = FALSE)
 }
 \arguments{
 \item{id}{"The identifier of a package, package metadata or other package member" -- dataone r}
@@ -22,7 +22,7 @@ dataone_download(id, filepath = "/fs/data1/pecan.data/dbfiles/",
 Adapts the dataone::getDataPackage workflow to allow users to download data from the DataONE federation by simply entering the doi or associated package id
 }
 \examples{
-/dontrun{
+\dontrun{
 dataone_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = "/fs/data1/pecan.data/dbfiles")
 }
 }
