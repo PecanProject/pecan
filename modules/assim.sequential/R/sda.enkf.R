@@ -471,15 +471,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       new.params[[i]] <- X_tmp[[i]]$params
     }
     
-    ## Trying to find a way to flag incomplete runs and drop them.
-    for(i in seq_len(length(run.id))){
-      if(is.na(X[[i]][1])) {
-        print(i)
-        run.id[[i]] <- NULL 
-        X[[i]] <- NULL
-      }
-    }
-    
     X <- do.call(rbind, X)
 
     FORECAST[[t]] <- X
