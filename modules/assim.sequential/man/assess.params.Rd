@@ -5,7 +5,7 @@
 \alias{assessParams}
 \title{assess.params}
 \usage{
-assessParams(dat, Xt, mu_f_TRUE, P_f_TRUE)
+assessParams(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL)
 }
 \arguments{
 \item{dat}{MCMC output}
