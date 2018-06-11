@@ -7,7 +7,9 @@ library(shinyFiles)
 library(stringr)
 
 
-# Define UI for application
+#############################################################################
+################################## UI #######################################
+#############################################################################
 
 ui <- dashboardPage(
   dashboardHeader(title = "Data Ingest"),
@@ -32,9 +34,12 @@ ui <- dashboardPage(
       tabName = "step3",
       icon = icon("cog")
     ),
-    menuItem("Step 4 -- etc.", tabName = "step4", icon = icon("cog"))
+    menuItem("Step 4 -- etc.", 
+             tabName = "step4", 
+             icon = icon("cog"))
   )),
-  dashboardBody(tabItems(
+  dashboardBody(
+    tabItems(
     ################ Tab 1 -- DataONE download ##################################
     tabItem(tabName = "importDataONE",
             fluidRow(
@@ -45,17 +50,9 @@ ui <- dashboardPage(
                   placeholder = "Enter doi or id here"
                 ),
                 actionButton(inputId = "D1Button", label = "Download"),
-                hr(),
-                fluidRow(column(12, verbatimTextOutput("identifier")))
-              )
-              
-             
-            ),
-            fluidRow(
-              box(
                 tableOutput("identifier")
               )
-              )
+            )
             ),
     ################ Tab 2 -- Local File Upload ##################################
     tabItem(tabName = "uploadLocal",
@@ -84,7 +81,6 @@ ui <- dashboardPage(
     tabItem(tabName = "step4",
             h2("under construction"))
     
-    
   ))
 )
 ############################################################################################################
@@ -95,28 +91,29 @@ server <- function(input, output, session) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2) #maximum file input size
   
   temp <- tempdir() 
-  #PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
+  PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   print(temp) #for testing only -- shows in console only
   
-  # Create a directory in the tempfile 
-  d1_tdir <- dir.create(file.path(temp, "d1_tempdir"))
-  local_tdir <- dir.create(file.path(temp, "local_tempdir"))
+  # Create a directory in the tempfile
+  d1_tempdir <- dir.create(file.path(temp, "d1_tempdir"), showWarnings = F)
+  local_tempdir <- dir.create(file.path(temp, "local_tempdir"), showWarnings = F)
   print(list.files(temp))
-  
-  
+ # print(list.files(d1_tempdir))
+
+
   d1d <- eventReactive(input$D1Button, {
     withProgress(message = "Downloading", value = 0, {
-      PEcAn.data.land::dataone_download(input$id, filepath = d1_tdir)
+      PEcAn.data.land::dataone_download(input$id, filepath = PEcAn_path)
     }) #run dataone_download with input from id on click
   })
 
    output$identifier <- renderTable({
      D1File <- input$id
-   
+
      if (is.null(D1File))
        return(NULL)
-   
-       return(list.files(D1_dir))
+
+       return(list.files(paste(temp, "d1_tempdir", sep = '/')))
    })
 
 
@@ -136,15 +133,15 @@ server <- function(input, output, session) {
       splits <- base::sub("/tmp/Rtmp[[:alnum:]]{6}/", "", inFile[i, "datapath"])  # Consider making this more program agnostic?
       print(splits)
 
-      filenames<- list.files(temp)
+      filenames <- list.files(temp)
       oldpath <- file.path(temp, splits[i])
         print(oldpath[i])
-         print(list.files(temp)[i])
-         print(file.path(temp, inFile[i, "name"]))
+        print(list.files(temp)[i])
+        print(file.path(temp, inFile[i, "name"]))
        base::file.rename(oldpath[i], file.path(temp, inFile[i, "name"])) # rename the file to include the original filename
        base::unlink(dirname(oldpath[i]), recursive = TRUE) # remove the file with the userhostile name
     }
-     return(list.files(temp)) # I think I should move this too
+     return(list.files(paste(temp, "local_temp", sep = '/'))) # I think I should move this too
   })
 
    # This doesn't work yet
