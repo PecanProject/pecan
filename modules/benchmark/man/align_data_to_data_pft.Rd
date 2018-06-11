@@ -4,10 +4,12 @@
 \alias{align_data_to_data_pft}
 \title{align_data_to_data_pft}
 \usage{
-align_data_to_data_pft(observation_one, observation_two, custom_table = NULL,
-  format_one, format_two, subset_is_ok = FALSE)
+align_data_to_data_pft(con, observation_one, observation_two,
+  custom_table = NULL, format_one, format_two, subset_is_ok = FALSE)
 }
 \arguments{
+\item{con}{database connection}
+
 \item{observation_one}{a vector of plant fucntional types, or species}
 
 \item{observation_two}{another vector of plant fucntional types, or species}
@@ -18,8 +20,6 @@ In the second case, must be passable to match_species_id.}
 \item{format_one}{The output of query.format.vars() of observation one of the form output$vars$bety_names}
 
 \item{format_two}{The output of query.format.vars() of observation two of the form output$vars$bety_names}
-
-\item{con}{database connection}
 
 \item{subset_are_ok}{When aligning two species lists, this allows for alignement when species lists aren't identical. 
 set to FALSE by default.}
@@ -59,7 +59,7 @@ table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
 table<-as.data.frame(table)
 
 format_one<-"species_USDA_symbol"
-format_two<-"plant_funtional_type"
+format_two<-"plant_functional_type"
 
 aligned<-align_data_to_data_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
 format_one = format_one, format_two = format_two, custom_table = table)

@@ -14,7 +14,7 @@
 #' @param scenario Which scenario to run (options are rcp26, rcp45, rcp60, rcp85)
 #' @param ensemble_member Which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)
 #' @author James Simkins, Alexey Shiklomanov, Ankur Desai
-download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+download.GFDL <- function(outfolder, start_date, end_date, lat.in, lon.in,
                           overwrite = FALSE, verbose = FALSE,
                           model = "CM3", scenario = "rcp45", ensemble_member = "r1i1p1", ...) {
 
@@ -24,6 +24,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
+  obs_per_year <- 365 * 24 /3 # 3-hr intervals, leap days ignored
 
   #Fix Outfolder to include model and scenario
   folder_name <- paste0("GFDL_", model, "_", scenario, "_", ensemble_member)
@@ -75,12 +76,13 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
 
   for (i in seq_len(rows)) {
     year <- ylist[i]
-    ntime <- 14600
+    # find start position of currently-wanted year in the 5-year DAP file
+    time_offset <- 1 + ((year-1) %% 5) * obs_per_year
 
     PEcAn.logger::logger.debug(
       sprintf(
         "Downloading GFDL year %d (%d of %d)",
-        year, i, length(rows)
+        year, i, rows
       )
     )
 
@@ -112,12 +114,12 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
     time <- ncdf4::ncdim_def(
       name = "time",
-      units = "sec",
-      vals = (1:2920) * 10800,
+      units = paste("seconds since", results$startdate[i]),
+      vals = (1:obs_per_year) * 10800, # 3 hr interval * 3600 sec/hr
       create_dimvar = TRUE,
       unlim = TRUE
     )
-    dim <- list(lat, lon, time)
+    dim <- list(lat = lat, lon = lon, time = time)
 
     var.list <- list()
     dat.list <- list()
@@ -142,10 +144,34 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
         start_url, "00-", end_url, "23.nc"
       )
       dap_file <- paste0(dap_base, dap_end)
-      dap <- ncdf4::nc_open(dap_file)
+      dap <- ncdf4::nc_open(dap_file, suppress_dimvals = TRUE)
+
+      # Sanity check:
+      # We're saving the data with timestamps at the end of the interval,
+      # while GFDL-supplied timestamps vary slightly -- some vars are
+      # timestamped in middle of interval, others at end.
+      # But if these disagree by more than 3 hours, we have a problem.
+      raw_time <- ncdf4::ncvar_get(dap, "time", start = time_offset, count = obs_per_year)
+      converted_time <- udunits2::ud.convert(raw_time, dap$dim$time$units, dim$time$units)
+      if(!all(diff(converted_time) == 3 * 60 * 60)){
+        PEcAn.logger::logger.error(
+          "Expected timestamps at 3-hour intervals, got",
+          paste(range(diff(converted_time)), collapse = "-"),
+          "seconds")
+      }
+      if(!all(abs(dim$time$vals - converted_time) < (3 * 60 * 60))){
+        PEcAn.logger::logger.error(
+          "Timestamps in GFDL source file differ from expected by more than 3 hours:",
+          "Expected", paste(range(dim$time$vals), collapse = "-"),
+          dim$time$units,
+          ", got", paste(range(converted_time), collapse = "-"),
+          ". Greatest difference from expected:",
+            max(abs(dim$time$vals - converted_time)), "seconds")
+      }
+
       dat.list[[j]] <- ncdf4::ncvar_get(dap, as.character(var$DAP.name[j]),
-                                 c(lon_GFDL, lat_GFDL, 1),
-                                 c(1, 1, ntime))
+                                 start = c(lon_GFDL, lat_GFDL, time_offset),
+                                 count = c(1, 1, obs_per_year))
       var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]),
                                  units = as.character(var$units[j]),
                                  dim = dim,
@@ -154,22 +180,6 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
       ncdf4::nc_close(dap)
     }
 
-    dat.list <- as.data.frame(dat.list)
-    if (year %% 5 == 1) {
-      dat.list <- dat.list[1:2920, ]
-    }
-    if (year %% 5 == 2) {
-      dat.list <- dat.list[2920:5839, ]
-    }
-    if (year %% 5 == 3) {
-      dat.list <- dat.list[5840:8759, ]
-    }
-    if (year %% 5 == 4) {
-      dat.list <- dat.list[8760:11679, ]
-    }
-    if (year %% 5 == 0) {
-      dat.list <- dat.list[11680:14599, ]
-    }
 
     ## put data in new file
     loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, verbose = verbose)

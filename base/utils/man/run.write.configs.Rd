@@ -27,6 +27,9 @@ an updated settings list, which includes ensemble IDs for SA and ensemble analys
 Main driver function to call the ecosystem model specific (e.g. ED, SiPNET) 
 run and configuration file scripts
 }
+\details{
+DEPRECATED: This function has been moved to the PEcAn.workflow package and will be removed from PEcAn.utils.
+}
 \author{
 David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
 }
