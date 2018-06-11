@@ -606,7 +606,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         for(j in seq_along(mu.f)){
           for(n in seq_len(nrow(X))){
             x.ind[n,j] <- as.numeric(X[n,j] > 0)
-            x.censored[n,j] <- as.numeric(ifelse(X[n,j] > 100000, 0, X[n,j])) #
+            x.censored[n,j] <- as.numeric(ifelse(X[n,j] > intervalX[j,2], 0, X[n,j])) #
           }
         }
         
@@ -978,7 +978,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }else{
           plot(as.Date(obs.times[t1:t]), 
                Xbar, 
-               ylim = c(0,250),#range(c(XaCI, Xci), na.rm = TRUE), 
+               ylim = range(c(XaCI, Xci), na.rm = TRUE), 
                type = "n", 
                xlab = "Year", 
                ylab = ylab.names[grep(colnames(X)[i], var.names)], 
@@ -1125,7 +1125,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
          main = colnames(X)[i])
     
     # observation / data
-    if (i<10) { #
+    if (i<ncol(X)) { #
       ciEnvelope(as.Date(obs.times[t1:t]), 
                  as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
                  as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 
