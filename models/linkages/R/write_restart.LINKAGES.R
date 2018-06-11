@@ -30,7 +30,8 @@
 # outdir, runid, time, settings, new.state, variables, sample_parameters = FALSE, trait.values =
 # NA,met=NULL,RENAME = TRUE
 
-write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, settings, new.state, 
+write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
+                                   settings, new.state, 
                                    RENAME = TRUE, new.params, inputs) {
   
   ### TO DO : needs to be vectorized to improve SDA speed for runs that are longer than 50 years
@@ -40,18 +41,15 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   new.state[new.state < 0] <- 0
   
   names.keep <- names(new.state)
-  
   new.state <- as.matrix(new.state)
-  
   names(new.state) <- names.keep
   
-  if(sum(new.state)>1000) {
-    prop.stop <- new.state/sum(new.state)
-    new.state <- 1000 * prop.stop
-  }
   new.state.save <- new.state
-  new.state <- new.state.save[grep("pft", names(new.state.save))]
-  new.state.other <- new.state.save[grep("pft", names(new.state.save), invert = TRUE)]
+  
+  if(grep('Fcomp',names.keep)){
+    new.state <- new.state.save[grep("Fcomp", names(new.state.save))]
+    new.state.other <- new.state.save[grep("Fcomp", names(new.state.save), invert = TRUE)]
+  }
   
   variables <- names(new.state)
   ### Going to need to change this... ### Get some expert opinion
@@ -217,7 +215,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   #making sure to stick with density dependence rules in linkages (< 198 trees per 800/m^2)
   #someday we could think about estimating this parameter from data
-  if(sum(new.ntrees) > 198) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,160,195))
+  if(sum(new.ntrees) > 98) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,95,98))
   
   print(paste0("new.ntrees =", new.ntrees))
   
@@ -226,9 +224,11 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     new.n.index <- c(new.n.index, rep(i, new.ntrees[i]))
   }
   
-  dbh.temp <- numeric(200)
-  iage.temp <- numeric(200)
-  nogro.temp <- numeric(200)
+  n.ind <- 100
+  
+  dbh.temp <- numeric(n.ind)
+  iage.temp <- numeric(n.ind)
+  nogro.temp <- numeric(n.ind)
   
   # sample from individuals to construct new states
   for (s in seq_len(nspec)) {
@@ -290,8 +290,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     
     b_obs[nl:nu] <- biomass_function(dbh.temp[nl:nu], 
                                      spp.biomass.params = spp.biomass.params) * as.numeric(bcorr[s])
+    bMax <- 200
     for (j in nl:nu) {
-      dbh.temp[j] <- optimize(merit, c(1, 200), b_obs = b_obs[j], 
+      dbh.temp[j] <- optimize(merit, c(1, bMax), b_obs = b_obs[j], 
                               spp.biomass.params = spp.biomass.params)$minimum
     }
     
@@ -304,7 +305,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   iage <- iage.temp
   nogro <- nogro.temp  # numeric(200)#hack
   
-  nogro[nogro < (-2)] <- 1
+  #nogro[nogro < 1] <- 1
   
   ntrees <- new.ntrees
   
@@ -325,12 +326,16 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   # optimize(merit, c(0,200),b_obs=b_obs)$minimum } } nu <- nl + ntrees[n] - 1 nl <- nu + 1 }
   
   ##### SOIL
-  if ("TotSoilCarb" %in% variables) {
+  if ("TotSoilCarb" %in% names(new.state.other)) {
     leaf.sum <- sum(tyl[1:12]) * 0.48
+    if(new.state.other["TotSoilCarb"] > 1000) new.state.other["TotSoilCarb"] = rnorm(1,1000,10)
     soil.org.mat <- new.state.other["TotSoilCarb"] - leaf.sum
-    soil.corr <- soil.org.mat/(sum(C.mat[C.mat[, 5], 1]) * 0.48)
-    C.mat[C.mat[, 5], 1] <- C.mat[C.mat[, 5], 1] * as.numeric(soil.corr)
-  }
+    soil.corr <- soil.org.mat / (sum(C.mat[C.mat[1:ncohrt, 5], 1]) * 0.48)
+    #if(soil.corr > 1) soil.corr <- 1
+    C.mat[C.mat[1:ncohrt, 5], 1] <- C.mat[C.mat[1:ncohrt, 5], 1] * as.numeric(soil.corr)
+    C.mat[is.na(C.mat[1:ncohrt,1]),1] <- 0
+    C.mat[C.mat[1:ncohrt,1] < 0,1] <- 0
+    }
   
   if (RENAME) {
     file.rename(file.path(settings$rundir, runid, "linkages.restart.Rdata"), 
@@ -343,8 +348,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   # make a new settings with the right years min start date and end date - fail in informative way
   
-  settings$run$start.date <- paste0(start.time + 1, "/01/01")
-  settings$run$end.date <- paste0(stop.time + 1, "/12/31")
+  settings$run$start.date <- paste0(formatC(year(start.time + 1), width = 4, format = "d", flag = "0"), "/01/01")
+  settings$run$end.date <- paste0(formatC(year(stop.time), width = 4, format = "d", flag = "0"), "/12/31")
   
   do.call(write.config.LINKAGES, 
           args = list(trait.values = new.params, settings = settings, run.id = runid, 
