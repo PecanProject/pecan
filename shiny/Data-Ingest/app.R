@@ -5,7 +5,7 @@ library(shinydashboard)
 library(dataone)
 library(shinyFiles)
 library(stringr)
-
+library(unixtools) #DEVELOPMENT VERSION! UNSURE IF THIS IS VIABLE FOR IMPLEMENTATION IN PECAN
 
 #############################################################################
 ################################## UI #######################################
@@ -100,7 +100,6 @@ server <- function(input, output, session) {
   print(list.files(temp))
  # print(list.files(d1_tempdir))
 
-
   d1d <- eventReactive(input$D1Button, {
     withProgress(message = "Downloading", value = 0, {
       PEcAn.data.land::dataone_download(input$id, filepath = PEcAn_path)
@@ -144,7 +143,7 @@ server <- function(input, output, session) {
      return(list.files(paste(temp, "local_temp", sep = '/'))) # I think I should move this too
   })
 
-   # This doesn't work yet
+  # This doesn't work yet
   # output$contents <- renderTable({
   #   localdownload()
   #
@@ -155,7 +154,7 @@ server <- function(input, output, session) {
   # })
 
 
-
+############### Empty Directory Button (for testing) ########################
   observeEvent(input$"EmptyDirectoryButton", {
     tempfiles <- list.files(temp)
     nfiles <- length(tempfiles)
