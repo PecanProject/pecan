@@ -36,6 +36,7 @@ test_that("nonexistant PFTs and modeltypes return empty dataframes", {
 
 
 test_that("query.pft_cultivars finds cultivars for a PFT", {
+  skip("Disabled until Travis bety contains Pavi_alamo and Pavi_all (#1958)")
   one_cv <- query.pft_cultivars(pft = "Pavi_alamo", modeltype = NULL, con)
   expect_is(one_cv, "data.frame")
   expect_equal(nrow(one_cv), 1)
