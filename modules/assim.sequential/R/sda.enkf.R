@@ -368,16 +368,28 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     )
   )
   
-  y_star_create <-  nimbleFunction(
-    run = function(X = double(1)) {
-      returnType(double(1))
-      
-      X_use <- X
-      X_use[X_use<0] <- 0
-      y_star <- X_use/sum(X_use)
-      
-      return(y_star)
-    })
+  if(var.names=="Fcomp"){
+    y_star_create <-  nimbleFunction(
+      run = function(X = double(1)) {
+        returnType(double(1))
+        
+        X_use <- X
+        X_use[X_use<0] <- 0
+        y_star <- X_use/sum(X_use)
+        
+        return(y_star)
+      })
+  }else{
+    y_star_create <-  nimbleFunction(
+      run = function(X = double(1)) {
+        returnType(double(1))
+        
+        y_star <- X
+        
+        return(y_star)
+      })
+  }
+  
   
   tobit.model <- nimbleCode({ 
     
