@@ -12,8 +12,13 @@ library(unixtools) #DEVELOPMENT VERSION! UNSURE IF THIS IS VIABLE FOR IMPLEMENTA
 #############################################################################
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Data Ingest"),
+  dashboardHeader(title = "Data Ingest"), 
   dashboardSidebar(sidebarMenu(
+    # menuItem(
+    #   "Select Data Acquisition Method",
+    #   tabName = "importDataONE",
+    #   icon = icon("file")
+    # ),
     menuItem(
       "Import from DataONE",
       tabName = "importDataONE",
@@ -36,7 +41,8 @@ ui <- dashboardPage(
     ),
     menuItem("Step 4 -- etc.", 
              tabName = "step4", 
-             icon = icon("cog"))
+             icon = icon("cog")
+    )
   )),
   dashboardBody(
     tabItems(
@@ -94,18 +100,20 @@ server <- function(input, output, session) {
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   print(temp) #for testing only -- shows in console only
   
-  # Create a directory in the tempfile
+  # Create two sub-directories in the tempfile
   d1_tempdir <- dir.create(file.path(temp, "d1_tempdir"), showWarnings = F)
   local_tempdir <- dir.create(file.path(temp, "local_tempdir"), showWarnings = F)
   print(list.files(temp))
- # print(list.files(d1_tempdir))
 
   d1d <- eventReactive(input$D1Button, {
     withProgress(message = "Downloading", value = 0, {
       PEcAn.data.land::dataone_download(input$id, filepath = PEcAn_path)
     }) #run dataone_download with input from id on click
+    print(newdir)
+   # print(d1_tempdir)
   })
 
+  
    output$identifier <- renderTable({
      D1File <- input$id
 
