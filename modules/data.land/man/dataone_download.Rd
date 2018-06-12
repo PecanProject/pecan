@@ -22,6 +22,7 @@ dataone_download(id, filepath = "/fs/data1/pecan.data/dbfiles",
 Adapts the dataone::getDataPackage workflow to allow users to download data from the DataONE federation by simply entering the doi or associated package id
 }
 \examples{
+
 \dontrun{
 dataone_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = "/fs/data1/pecan.data/dbfiles")
 }
