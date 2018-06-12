@@ -52,13 +52,15 @@ ui <- dashboardPage(
               box(
                 textInput(
                   "id",
-                  label = h3("Import From DataONE"),
+                  label = h2("Import From DataONE"),
                   placeholder = "Enter doi or id here"
                 ),
+                p("Copy Paste the following DOI as an example: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87"),
                 actionButton(inputId = "D1Button", label = "Download"),
                 hr(),
-                tableOutput("console")
-                #tableOutput("identifier")
+                tableOutput("identifier"),
+                hr(),
+                actionButton(inputId = "D1FinishButton", label = "Finish Download")
               )
             )
             ),
@@ -69,11 +71,12 @@ ui <- dashboardPage(
                 # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
                 fileInput(
                   inputId = "file",
-                  label = h3("Upload Local Files"),
+                  label = h2("Upload Local Files"), 
                   accept = NULL,
                   multiple = FALSE,
                   placeholder = "Drag and drop files here"
                 ),
+                h3("This feature is currently unavailable"),
                 tableOutput("contents"),
                 actionButton(inputId = "EmptyDirectoryButton", label = "Clear All")
               )
@@ -113,18 +116,36 @@ server <- function(input, output, session) {
   print(list.files(temp))
 
    observeEvent(input$D1Button, {
-     #run dataone_download with input from id on click
-     #PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # store files in tempfile
-      newdir_D1 <- "/tmp/Rtmp35jOEK/d1_tempdir/DataOne_doi:10.6073-pasta-63ad7159306bc031520f09b2faefcf87"
+     # run dataone_download with input from id on click
+     PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # store files in tempfile
+     # newdir_D1 <<- "/tmp/Rtmp35jOEK/d1_tempdir/DataOne_doi:10.6073-pasta-63ad7159306bc031520f09b2faefcf87"
         Filename <- list.files(newdir_D1)
         D1_file_df <- as.data.frame(Filename)
+        list_of_d1_files <<- list.files(newdir_D1) # I call this later
+        
+        # Grab the name of the D1_file from newdir_D1
+        d1_dirname <<- base::sub("/tmp/Rtmp[[:alnum:]]{6}/d1_tempdir/", "", newdir_D1) # let users create their own filenames
+        
         Shared.data$downloaded <- D1_file_df # Reactive Variable
-      
   })
-
-   output$console <- renderTable(rownames = TRUE, hover = TRUE, {Shared.data$downloaded})
-
-  ###### FileInput
+  
+   # Display downloaded files in data.frame
+   output$identifier <- renderTable(rownames = TRUE, hover = TRUE, {Shared.data$downloaded})
+   
+   # Move files to correct dbfiles location (make a custom function for this?)
+   observeEvent(input$D1FinishButton, {
+     # create the new directory in /dbfiles
+     dir.create(paste0(PEcAn_path, d1_dirname))
+     
+     n <- length(list_of_d1_files)
+     for (i in 1:n){
+       base::file.copy(file.path(newdir_D1, list_of_d1_files[i]), file.path(PEcAn_path, d1_dirname, list_of_d1_files[i]))
+     }
+     
+   })
+   
+   
+  ######### FileInput ########################################
   output$contents <- renderTable({
    #localdownload <- eventReactive({
     inFile <- input$file
