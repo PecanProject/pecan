@@ -56,7 +56,9 @@ ui <- dashboardPage(
                   placeholder = "Enter doi or id here"
                 ),
                 actionButton(inputId = "D1Button", label = "Download"),
-                tableOutput("identifier")
+                hr(),
+                tableOutput("console")
+                #tableOutput("identifier")
               )
             )
             ),
@@ -96,33 +98,31 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2) #maximum file input size
   
+  Shared.data<-reactiveValues(downloaded=NULL)
+  
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
-  print(temp) #for testing only -- shows in console only
+  print(temp) #for testing only -- show in console only
   
   # Create two sub-directories in the tempfile
-  d1_tempdir <- dir.create(file.path(temp, "d1_tempdir"), showWarnings = F)
-  local_tempdir <- dir.create(file.path(temp, "local_tempdir"), showWarnings = F)
+  d1_tempdir <- file.path(temp, "d1_tempdir")
+    dir.create(d1_tempdir, showWarnings = F)
+  local_tempdir <- file.path(temp, "local_tempdir")
+    dir.create(local_tempdir, showWarnings = F)
+    
   print(list.files(temp))
 
-  d1d <- eventReactive(input$D1Button, {
-    withProgress(message = "Downloading", value = 0, {
-      PEcAn.data.land::dataone_download(input$id, filepath = PEcAn_path)
-    }) #run dataone_download with input from id on click
-    print(newdir)
-   # print(d1_tempdir)
+   observeEvent(input$D1Button, {
+     #run dataone_download with input from id on click
+     #PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # store files in tempfile
+      newdir_D1 <- "/tmp/Rtmp35jOEK/d1_tempdir/DataOne_doi:10.6073-pasta-63ad7159306bc031520f09b2faefcf87"
+        Filename <- list.files(newdir_D1)
+        D1_file_df <- as.data.frame(Filename)
+        Shared.data$downloaded <- D1_file_df # Reactive Variable
+      
   })
 
-  
-   output$identifier <- renderTable({
-     D1File <- input$id
-
-     if (is.null(D1File))
-       return(NULL)
-
-       return(list.files(paste(temp, "d1_tempdir", sep = '/')))
-   })
-
+   output$console <- renderTable(rownames = TRUE, hover = TRUE, {Shared.data$downloaded})
 
   ###### FileInput
   output$contents <- renderTable({
