@@ -487,7 +487,7 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
     ## write config
     do.call(my.write.config, args = list(defaults = settings$pfts, 
                                          trait.values = lapply(params, 
-                                                               function(x, n) { x[n, ] },
+                                                               function(x, n) { x[n, , drop=FALSE] },
                                                                n = i), 
                                          settings = settings, 
                                          run.id = run.ids[i]))
