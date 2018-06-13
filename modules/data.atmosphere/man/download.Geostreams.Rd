@@ -36,7 +36,7 @@ If using `~/.pecan.clowder.xml`, it must be a valid PEcAn-formatted XML settings
  file and must contain a \code{<clowder>} key that specifies hostname, user, and
  password for your Clowder server:
 
-\code{\preformatted{
+\preformatted{
   <?xml version="1.0"?>
   <pecan>
     <clowder>
@@ -45,7 +45,7 @@ If using `~/.pecan.clowder.xml`, it must be a valid PEcAn-formatted XML settings
       <password>superSecretPassw0rd</password>
     </clowder>
   </pecan>
-}}
+}
 }
 \examples{
 \dontrun{

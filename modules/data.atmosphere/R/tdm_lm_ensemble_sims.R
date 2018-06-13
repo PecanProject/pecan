@@ -22,6 +22,10 @@
 ##' @param lags.init - a data frame of initialization parameters to match the data in dat.mod
 ##' @param dat.train - the training data used to fit the model; needed for night/day in 
 ##'                    surface_downwelling_shortwave_flux_in_air
+##' @param precip.distribution - a list with 2 sub-lists containing the number of observations with precip in the training data per day & 
+##'                              the hour of max rain in the training data.  This will be used to help solve the "constant drizzle" problem
+##' @param force.sanity - (logical) do we force the data to meet sanity checks?                             
+##' @param sanity.tries - how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop
 ##' @param seed - (optional) set the seed manually to allow reproducible results
 ##' @param print.progress - if TRUE will print progress bar
 ##' @export
@@ -31,10 +35,14 @@
 #----------------------------------------------------------------------
 
 lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.list = NULL, 
-                                      lags.init = NULL, dat.train, seed=Sys.time(), print.progress=FALSE) {
+                             lags.init = NULL, dat.train, precip.distribution, force.sanity=TRUE, sanity.tries=25,
+                             seed=Sys.time(), print.progress=FALSE) {
   
   # Set our random seed
   set.seed(seed)
+  
+  # Just in case we have a capitalization or singular/plural issue 
+  if(direction.filter %in% toupper( c("backward", "backwards"))) direction.filter="backward"
   
   # Setting our our time indexes
   if(direction.filter=="backward"){
@@ -64,8 +72,8 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
   # # Set progress bar
   if(print.progress==TRUE){
     pb.index <- 1
-    pb <- txtProgressBar(min = 1, max = length(vars.list)*length(days.sim), style = 3)
-    setTxtProgressBar(pb, pb.index)
+    pb <- utils::txtProgressBar(min = 1, max = length(vars.list)*length(days.sim), style = 3)
+    utils::setTxtProgressBar(pb, pb.index)
   }
   
   # Figure out if we need to extract the approrpiate
@@ -105,12 +113,12 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
     
     # Create beta list so each ensemble for each variable pulls the same
     # betas
-    for (i in seq_len(length(days.sim))) {
-      betas.tem <- sample(1:(n.beta-n.ens), 1, replace = TRUE)
-      rows.beta[i] <- betas.tem
-    }
-    rows.beta <- as.numeric(rows.beta)
-    
+    # for (i in seq_len(length(days.sim))) {
+    #   betas.tem <- sample(1:(n.beta-n.ens), 1, replace = TRUE)
+    #   rows.beta[i] <- betas.tem
+    # }
+    # rows.beta <- as.numeric(rows.beta)
+
     # fill our dat.sim list
     dat.sim[[v]] <- data.frame(array(dim = c(nrow(dat.mod), n.ens)))
     
@@ -137,11 +145,11 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         
         # dat.temp <- merge(dat.temp, data.frame(ens=paste0("X", 1:n.ens)))
         if (i == 1) {
-          sim.lag <- stack(lags.init[[v]])
+          sim.lag <- utils::stack(lags.init[[v]])
           names(sim.lag) <- c(paste0("lag.", v), "ens")
           
         } else {
-          sim.lag <- stack(data.frame(array(0,dim = c(1, ncol(dat.sim[[v]])))))
+          sim.lag <- utils::stack(data.frame(array(0,dim = c(1, ncol(dat.sim[[v]])))))
           names(sim.lag) <- c(paste0("lag.", v), "ens")
         }
         dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
@@ -151,18 +159,18 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         
         # Set up the lags
         if (i == 1) { # First time through, so pull from our inital lags
-          sim.lag <- stack(lags.init$air_temperature)
+          sim.lag <- utils::stack(lags.init$air_temperature)
           names(sim.lag) <- c("lag.air_temperature", "ens")
           
-          sim.lag$lag.air_temperature_min <- stack(lags.init$air_temperature_min)[,1]
-          sim.lag$lag.air_temperature_max <- stack(lags.init$air_temperature_max)[,1]
+          sim.lag$lag.air_temperature_min <- utils::stack(lags.init$air_temperature_min)[,1]
+          sim.lag$lag.air_temperature_max <- utils::stack(lags.init$air_temperature_max)[,1]
         } else {
-          sim.lag <- stack(data.frame(array(dat.sim[["air_temperature"]][dat.mod$sim.day == (days.sim[i-1]) & 
+          sim.lag <- utils::stack(data.frame(array(dat.sim[["air_temperature"]][dat.mod$sim.day == (days.sim[i-1]) &
                                                                            dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim$air_temperature)))))
           names(sim.lag) <- c("lag.air_temperature", "ens")
-          sim.lag$lag.air_temperature_min <- stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, min))[, 1]
-          sim.lag$lag.air_temperature_max <- stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, max))[, 1]
+          sim.lag$lag.air_temperature_min <- utils::stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, min))[, 1]
+          sim.lag$lag.air_temperature_max <- utils::stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, max))[, 1]
         }
         dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
       } else if (v == "precipitation_flux") {
@@ -176,11 +184,11 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         # Set up the lags This is repeated differently because Precipitation
         # dat.temp is merged
         if (i == 1) {
-          sim.lag <- stack(lags.init[[v]])
+          sim.lag <- utils::stack(lags.init[[v]])
           names(sim.lag) <- c(paste0("lag.", v), "ens")
           
         } else {
-          sim.lag <- stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] & 
+          sim.lag <- utils::stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] &
                                                            dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim[[v]])))))
           names(sim.lag) <- c(paste0("lag.", v), "ens")
@@ -192,11 +200,11 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         dat.temp <- dat.mod[rows.now, dat.info]
         
         if (i == 1) {
-          sim.lag <- stack(lags.init[[v]])
+          sim.lag <- utils::stack(lags.init[[v]])
           names(sim.lag) <- c(paste0("lag.", v), "ens")
           
         } else {
-          sim.lag <- stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] & 
+          sim.lag <- utils::stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] &
                                                            dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim[[v]])))))
           names(sim.lag) <- c(paste0("lag.", v), "ens")
@@ -221,49 +229,275 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
                                            ".Rdata")))
       
       # Pull coefficients (betas) from our saved matrix
+
+      # for (i in seq_len(length(days.sim))) {
+        # betas.tem <- sample(1:(n.beta-n.ens), 1, replace = TRUE)
+        # rows.beta[i] <- betas.tem
+      # }
+      # rows.beta <- as.numeric(rows.beta)
+      n.new <- round(n.ens/2)+1
+      cols.redo <- 1:n.new
+      sane.attempt=0
       betas_nc <- ncdf4::nc_open(file.path(path.model, v, paste0("betas_", v, "_", day.now, ".nc")))
       col.beta <- betas_nc$var[[1]]$dim[[2]]$len # number of coefficients
-      Rbeta <- as.matrix(ncdf4::ncvar_get(betas_nc, paste(day.now), c(rows.beta[i],1), c(n.ens,col.beta)), ncol = col.beta)
-      ncdf4::nc_close(betas_nc)
-      dat.pred <- subdaily_pred(newdata = dat.temp, model.predict = mod.save, 
-                                Rbeta = Rbeta, resid.err = FALSE, model.resid = NULL, Rbeta.resid = NULL, 
-                                n.ens = n.ens)
+      while(n.new>0 & sane.attempt <= sanity.tries){
+        betas.tem <- sample(1:(n.beta-n.new), 1, replace = TRUE)
+        
+        Rbeta <- as.matrix(ncdf4::ncvar_get(betas_nc, paste(day.now), c(betas.tem,1), c(n.new,col.beta)), ncol = col.beta)
+        
+        if(ncol(Rbeta)!=col.beta) Rbeta <- t(Rbeta)
+        
+        # If we're starting from scratch, set up the prediction matrix
+        if(sane.attempt==0){
+          dat.pred <- matrix(nrow=nrow(dat.temp), ncol=n.new)
+        }
+        
+        dat.pred[,cols.redo] <- subdaily_pred(newdata = dat.temp, model.predict = mod.save, 
+                                  Rbeta = Rbeta, resid.err = FALSE, model.resid = NULL, Rbeta.resid = NULL, 
+                                  n.ens = n.new)
+        
+        # Occasionally specific humidty may go serioulsy off the rails
+        if(v=="specific_humidity" & (max(dat.pred)>log(40e-3) | min(dat.pred)<log(1e-6))){
+          dat.pred[dat.pred>log(40e-3)] <- log(40e-3)
+          dat.pred[dat.pred<log( 1e-6)] <- log(1e-6)
+        }
+        
+        # Precipitation Re-distribute negative probabilities -- add randomly to
+        # make more peaky If there's no rain on this day, skip the
+        # re-proportioning
+        if (v == "precipitation_flux") {
+          if (max(dat.pred[,cols.redo]) > 0) {
+            tmp <- 1:nrow(dat.pred)  # A dummy vector of the 
+            for (j in cols.redo) {
+              if (min(dat.pred[, j]) >= 0) next # skip if no negative rain to redistribute
+              rows.neg <- which(dat.pred[, j] < 0)
+              rows.add <- sample(tmp[!tmp %in% rows.neg], length(rows.neg), 
+                                 replace = TRUE)
+              
+              # Redistribute days with negative rain
+              for (z in 1:length(rows.neg)) {
+                dat.pred[rows.add[z], j] <- dat.pred[rows.add[z], j] - dat.pred[rows.neg[z], j]
+                dat.pred[rows.neg[z], j] <- 0
+              }
+            } # j End loop
+
+            # Make sure each day sums to 1
+            dat.pred[,cols.redo] <- dat.pred[,cols.redo]/rowSums(dat.pred[,cols.redo], na.rm=T)
+            dat.pred[is.na(dat.pred)] <- 0
+          } # End case of re-proportioning
+          
+          # Convert precip proportions into real units
+          dat.pred[,cols.redo] <- dat.pred[,cols.redo] * as.vector((dat.temp$precipitation_flux.day))*length(unique(dat.temp$hour))
+        } # End Precip re-propogation
+        
+        # -----
+        # SANITY CHECKS!!!
+        # -----
+        # Here we'll also take into account the values from the past 2 weeks using a "six-sigma filter" per email with Ankur
+        # -- this is apparently what they do with the flux data
+        
+        # vars.sqrt <- c("surface_downwelling_longwave_flux_in_air", "wind_speed")
+        # vars.log <- c("specific_humidity")
+        
+        # Determine which ensemble members fail sanity checks
+        #don't forget to check for transformed variables
+        # vars.transform <- c("surface_downwelling_shortwave_flux_in_air", "specific_humidity", "surface_downwelling_longwave_flux_in_air", "wind_speed")
+        # dat.sim[[v]][rows.now, j]
+        if(i>14){
+          if(direction.filter=="backward"){
+            rows.filter <- which(dat.mod$sim.day >= days.sim[i] & dat.mod$sim.day <= days.sim[i]+14)
+          } else {
+            rows.filter <- which(dat.mod$sim.day <= days.sim[i] & dat.mod$sim.day >= days.sim[i]-14)
+          }
+          dat.filter <- utils::stack(dat.sim[[v]][rows.filter,])[,1]
+          
+          filter.mean <- mean(dat.filter, na.rm=T) 
+          filter.sd   <- sd(dat.filter, na.rm=T) 
+        } else {
+          
+          if(v %in% vars.sqrt){
+            filter.mean <- mean(c(dat.pred^2, utils::stack(dat.sim[[v]])[,1]), na.rm=T)
+            filter.sd   <- sd(c(dat.pred^2, utils::stack(dat.sim[[v]])[,1]), na.rm=T)
+          } else if(v %in% vars.log){
+            filter.mean <- mean(c(exp(dat.pred), utils::stack(dat.sim[[v]])[,1]), na.rm=T)
+            filter.sd   <- sd(c(exp(dat.pred), utils::stack(dat.sim[[v]])[,1]), na.rm=T)
+          } else {
+            filter.mean <- mean(c(dat.pred, utils::stack(dat.sim[[v]])[,1]), na.rm=T)
+            filter.sd   <- sd(c(dat.pred, utils::stack(dat.sim[[v]])[,1]), na.rm=T)
+          }
+        }
+        
+        if(v %in% c("air_temperature", "air_temperature_maximum", "air_temperature_minimum")){
+          # max air temp = 70 C; hottest temperature from sattellite; very ridiculous
+          # min air temp = -95 C; colder than coldest natural temperature recorded in Antarctica
+          
+          tmax.ens <- max(dat.temp$air_temperature_max.day)
+          tmin.ens <- min(dat.temp$air_temperature_min.day)
+          
+          # we'll allow some drift outside of what we have for our max/min, but not too much; 
+          # - right now general rule of thumb of 2 degrees leeway on the prescribed
+          cols.redo <- which(apply(dat.pred, 2, function(x) min(x) < 273.15-95 | max(x) > 273.15+70 | 
+                                                           # min(x) < tmin.ens-2 | max(x) > tmax.ens+2 | 
+                                                           min(x) < filter.mean-6*filter.sd | max(x) > filter.mean+6*filter.sd 
+                                   ))
+        }
+        #"specific_humidity", 
+        if(v == "specific_humidity"){ #LOG!!
+          # Based on google, it looks like values of 30 g/kg can occur in the tropics, so lets go above that
+          # Also, the minimum humidity can't be 0 so lets just make it extremely dry; lets set this for 1 g/Mg
+          cols.redo <- which(apply(dat.pred, 2, function(x) min(exp(x)) < 1e-6  | max(exp(x)) > 40e-3 | 
+                                                            min(exp(x)) < filter.mean-6*filter.sd | 
+                                                            max(exp(x)) > filter.mean+6*filter.sd 
+                                   ) )
+        }
+        #"surface_downwelling_shortwave_flux_in_air", 
+        if(v == "surface_downwelling_shortwave_flux_in_air"){
+          # Based on something found from Columbia, average Radiative flux at ATM is 1360 W/m2, so for a daily average it should be less than this
+          # Lets round 1360 and divide that by 2 (because it should be a daily average) and conservatively assume albedo of 20% (average value is more like 30)
+          # Source http://eesc.columbia.edu/courses/ees/climate/lectures/radiation/
+          dat.pred[dat.pred < 0] <- 0
+          cols.redo <- which(apply(dat.pred, 2, function(x) max(x) > 1360 | min(x) < filter.mean-6*filter.sd | 
+                                                            max(x) > filter.mean+6*filter.sd 
+                                   )) 
+        }
+        if(v == "air_pressure"){
+          # According to wikipedia the highest barometric pressure ever recorded was 1085.7 hPa = 1085.7*100 Pa; Dead sea has average pressure of 1065 hPa
+          #  - Lets round up to 1100 hPA
+          # Also according to Wikipedia, the lowest non-tornadic pressure ever measured was 870 hPA
+          cols.redo <- which(apply(dat.pred, 2, function(x) min(x) < 850*100  | max(x) > 1100*100 |
+                                                            min(x) < filter.mean-6*filter.sd | 
+                                                            max(x) > filter.mean+6*filter.sd 
+                                   )) 
+        }
+        if(v == "surface_downwelling_longwave_flux_in_air"){ # SQRT
+          # A NASA presentation has values topping out ~300 and min ~0:  https://ceres.larc.nasa.gov/documents/STM/2003-05/pdf/smith.pdf
+          # A random journal article has 130 - 357.3: http://www.tandfonline.com/doi/full/10.1080/07055900.2012.760441
+          # Based on what what CRUNCEP did, lets assume these are annual averages, so we can do 50% above it and for the min, in case we run tropics, lets go 130/4
+          # ED2 sanity checks bound longwave at 40 & 600
+          cols.redo <- which(apply(dat.pred, 2, function(x) min(x^2) < 40  | max(x^2) > 600 |
+                                                            min(x^2) < filter.mean-6*filter.sd | 
+                                                            max(x^2) > filter.mean+6*filter.sd 
+                                     )) 
+          
+        }
+        if(v == "wind_speed"){
+          # According to wikipedia, the hgihest wind speed ever recorded is a gust of 113 m/s; the maximum 5-mind wind speed is 49 m/s
+          cols.redo <- which(apply(dat.pred, 2, function(x) max(x^2) > 50 |
+                                                            min(x^2) < filter.mean-6*filter.sd |
+                                                            max(x^2) > filter.mean+6*filter.sd
+                                   ))  
+        }
+        if(v == "precipitation_flux"){
+          # According to wunderground, ~16" in 1 hr is the max
+          # https://www.wunderground.com/blog/weatherhistorian/what-is-the-most-rain-to-ever-fall-in-one-minute-or-one-hour.html
+          # 16; x25.4 = inches to mm; /(60*60) = hr to sec
+          cols.redo <- which(apply(dat.pred, 2, function(x) max(x) > 16*25.4/(60*60) 
+                                   ))  
+        }
+        
+        n.new = length(cols.redo)
+        if(force.sanity){
+          sane.attempt = sane.attempt + 1
+        } else { 
+          # If we're not forcing sanity, just stop now
+          sane.attempt=sanity.tries + 1
+        }
+        # -----
+      } # End while case
       
-      #----- Now we do a little quality control per variable
-      
-      # Make Sure that Shortwave is above 0
-      if (v == "surface_downwelling_shortwave_flux_in_air") {
-        dat.pred[dat.pred < 0] <- 0
-      }
-      
-      # Precipitation Re-distribute negative probabilities -- add randomly to
-      # make more peaky If there's no rain on this day, skip the
-      # re-proportioning
-      if (v == "precipitation_flux") {
-        if (max(dat.pred) > 0) {
-          tmp <- 1:nrow(dat.pred)  # A dummy vector of the 
-          for (j in 1:ncol(dat.pred)) {
-            if (min(dat.pred[, j]) >= 0) next # skip if no negative rain to redistribute
-            rows.neg <- which(dat.pred[, j] < 0)
-            rows.add <- sample(tmp[!tmp %in% rows.neg], length(rows.neg), 
-                               replace = TRUE)
-            
-            # Redistribute days with negative rain
-            for (z in 1:length(rows.neg)) {
-              dat.pred[rows.add[z], j] <- dat.pred[rows.add[z], j] - dat.pred[rows.neg[z], j]
-              dat.pred[rows.neg[z], j] <- 0
+      # If we ran out of attempts, but want to foce sanity, do so now
+      if(force.sanity & n.new>0){
+        # If we're still struggling, but we have at least some workable columns, lets just duplicate those:
+        if(n.new<(round(n.ens/2)+1)){
+          cols.safe <- 1:ncol(dat.pred)
+          cols.safe <- cols.safe[!(cols.safe %in% cols.redo)]
+          dat.pred[,cols.redo] <- dat.pred[,sample(cols.safe, n.new, replace=T)]
+        } else {
+          if(v=="surface_downwelling_shortwave_flux_in_air"){
+            # Shouldn't be a huge problem, but it's not looking good
+            # min(x) < 273.15-95 | max(x) > 273.15+70
+            warning(paste("Forcing Sanity:", v))
+            if(min(dat.pred) < max(filter.mean-6*filter.sd)){
+              qtrim <- max(filter.mean-6*filter.sd)
+              dat.pred[dat.pred < qtrim] <- qtrim
             }
+            if(max(dat.pred) > min(1360, filter.mean+6*filter.sd)){
+              qtrim <- min(1360, filter.mean+6*filter.sd)
+              dat.pred[dat.pred > qtrim] <- qtrim
+            }
+            
+          } else if(v=="air_temperature"){
+            # Shouldn't be a huge problem, but it's not looking good
+            # min(x) < 273.15-95 | max(x) > 273.15+70
+            warning(paste("Forcing Sanity:", v))
+            if(min(dat.pred) < max(273.15-95, filter.mean-6*filter.sd )){
+              qtrim <- max(273.15-95, filter.mean-6*filter.sd)
+              dat.pred[dat.pred < qtrim] <- qtrim
+            }
+            if(max(dat.pred) > min(273.15+70, filter.mean+6*filter.sd)){
+              qtrim <- min(273.15+70, filter.mean+6*filter.sd)
+              dat.pred[dat.pred > qtrim] <- qtrim
+            }
+            
+          } else if(v=="air_pressure"){
+            # A known problem child
+            warning(paste("Forcing Sanity:", v))
+            if(min(dat.pred) < max(870*100, filter.mean-6*filter.sd )){
+              qtrim <- max(870*100, filter.mean-6*filter.sd)
+              dat.pred[dat.pred < qtrim] <- qtrim
+            }
+            if(max(dat.pred) > min(1100*100, filter.mean+6*filter.sd)){
+              qtrim <- min(1100*100, filter.mean+6*filter.sd)
+              dat.pred[dat.pred > qtrim] <- qtrim
+            }
+            
+          } else if(v=="surface_downwelling_longwave_flux_in_air"){
+            # A known problem child
+            # ED2 sanity checks boudn longwave at 40 & 600
+            warning(paste("Forcing Sanity:", v))
+            if(min(dat.pred^2) < max(40, filter.mean-6*filter.sd )){
+              qtrim <- max(40, filter.mean-6*filter.sd)
+              dat.pred[dat.pred^2 < qtrim] <- sqrt(qtrim)
+            }
+            if(max(dat.pred^2) > min(600, filter.mean+6*filter.sd)){
+              qtrim <- min(600, filter.mean+6*filter.sd)
+              dat.pred[dat.pred^2 > qtrim] <- sqrt(qtrim)
+            }
+            
+          } else  if(v=="specific_humidity") {
+            warning(paste("Forcing Sanity:", v))
+            if(min(exp(dat.pred)) < max(1e-6, filter.mean-6*filter.sd )){
+              qtrim <- max(1e-6, filter.mean-6*filter.sd)
+              dat.pred[exp(dat.pred) < qtrim] <- log(qtrim)
+            }
+            if(max(exp(dat.pred)) > min(40e-3, filter.mean+6*filter.sd)){
+              qtrim <- min(40e-3, filter.mean+6*filter.sd)
+              dat.pred[exp(dat.pred) > qtrim] <- log(qtrim)
+            }
+            
+          } else if(v=="wind_speed"){
+            # A known problem child
+            warning(paste("Forcing Sanity:", v))
+            # if(min(dat.pred^2) < max(0, filter.mean-6*filter.sd )){
+            # qtrim <- max(0, 1)
+            # dat.pred[dat.pred < qtrim] <- qtrim
+            # }
+            if(max(dat.pred^2) > min(50, filter.mean+6*filter.sd)){
+              qtrim <- min(50, filter.mean+6*filter.sd)
+              dat.pred[dat.pred^2 > qtrim] <- sqrt(qtrim)
+            }
+            
+          } else {
+            stop(paste("Unable to produce a sane prediction:", v, "- day", day.now, "; problem child =", paste(cols.redo, collapse=" ")))
           }
           
-          # Make sure each day sums to 1
-          dat.pred <- dat.pred/rowSums(dat.pred, na.rm=T)
-          dat.pred[is.na(dat.pred)] <- 0
         }
-
-        # Convert precip proportions into real units
-        dat.pred <- dat.pred * as.vector((dat.temp$precipitation_flux.day))*length(unique(dat.temp$hour))
-      }
+      } # End force sanity
       
+      ncdf4::nc_close(betas_nc)
+      
+
+      #----- Now we do a little quality control per variable
       # un-transforming our variables
       if (v %in% vars.sqrt) { 
         dat.pred <- dat.pred^2
@@ -271,22 +505,49 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         dat.pred <- exp(dat.pred)      
       }
       
-      
-      # Longwave needs some sanity bounds
-      if (v == "surface_downwelling_longwave_flux_in_air") {
-        dat.pred[dat.pred < 100] <- 100
-        dat.pred[dat.pred > 600] <- 600
-      }
-      
-      # Specific Humidity sometimes ends up with high or infinite values
-      if (v == "specific_humidity") {
-        if (max(dat.pred) > 0.03) {
-          specific_humidity.fix <- ifelse(quantile(dat.pred, 0.99) < 
-                                            0.03, quantile(dat.pred, 0.99), 0.03)
-          dat.pred[dat.pred > specific_humidity.fix] <- specific_humidity.fix
+      # ---------- 
+      # Re-distribute precip so we don't get the constant drizzle problem
+      # -- this could go earlier, but I'm being lazy because I don't want to mess with cols.redo
+      # ---------- 
+      if(v == "precipitation_flux"){
+        # Pick the number of hours to spread rain across from our observed distribution
+        # in case we don't have a large distribution, use multiple days
+        if(day.now <=3) {
+          rain.ind <- c(1:(day.now+3), (length(precip.distribution$hrs.rain)-3+day.now):length(precip.distribution$hrs.rain))
+        } else if (day.now >= length(precip.distribution$hrs.rain)-3 ){
+          rain.ind <-c(day.now:length(precip.distribution$hrs.rain), 1:(length(precip.distribution$hrs.rain)-day.now+3))
+        } else {
+          rain.ind <- (day.now-3):(day.now+3)
         }
-      }
-      # ---------- End Quality Control
+        
+        hrs.rain <- sample(unlist(precip.distribution$hrs.rain[rain.ind]),1)
+        # hr.max <- sample(precip.distribution$hrs.max[[day.now]],1)
+        
+        for(j in 1:ncol(dat.pred)){
+          obs.day <- nrow(dat.pred)/ncol(dat.pred)
+          start.ind <- seq(1, nrow(dat.pred), by=obs.day)
+          for(z in seq_along(start.ind)){
+            rain.now <- dat.pred[start.ind[z]:(start.ind[z]+obs.day-1),j]
+            hrs.now <- which(rain.now>0)
+            
+            if(length(hrs.now)<=hrs.rain) next # If we don't need to redistribute, skip what's next
+  
+            # Figure out when it's going to rain based on what normally has the most number of hours
+            hrs.add <- sample(unlist(precip.distribution$hrs.max[rain.ind]), hrs.rain, replace=T)
+            hrs.go <- hrs.now[!hrs.now %in% hrs.add]
+            hrs.wet <- sample(hrs.add, length(hrs.go), replace=T)
+  
+            for(dry in seq_along(hrs.go)){
+              rain.now[hrs.wet[dry]] <- rain.now[hrs.go[dry]]
+              rain.now[hrs.go[dry]] <- 0
+            }
+            
+            # Put the rain back into place
+            dat.pred[start.ind[z]:(start.ind[z]+obs.day-1),j] <- rain.now
+          } # End row loop
+        } # End column loop
+      } # End hour redistribution
+      # ---------- 
       
       # ---------- 
       # Begin propogating values and saving values Shortwave Radiaiton
@@ -299,20 +560,6 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         }
         
         dat.sim[[v]][rows.now[!rows.now %in% rows.mod], ] <- 0
-      } else if (v == "air_temperature") {
-        cols.prop <- as.integer(cols.list[i,])
-        for (j in 1:ncol(dat.sim[[v]])) {
-          
-          dat.prop <- dat.pred[dat.temp$ens == paste0("X", j), cols.prop[j]]
-          air_temperature_max.ens <- max(dat.temp[dat.temp$ens == paste0("X", j), "air_temperature_max.day"])
-          air_temperature_min.ens <- min(dat.temp[dat.temp$ens == paste0("X", j), "air_temperature_min.day"])
-          
-          # Setting some sanity bounds on our temperatures
-          dat.prop[dat.prop > air_temperature_max.ens + 2] <- air_temperature_max.ens +  2
-          dat.prop[dat.prop < air_temperature_min.ens - 2] <- air_temperature_min.ens - 2
-          
-          dat.sim[["air_temperature"]][rows.now, j] <- dat.prop
-        }
       } else {
         cols.prop <- as.integer(cols.list[i,])
         
@@ -323,9 +570,11 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
       rm(mod.save)  # Clear out the model to save memory
 
       if(print.progress==TRUE){
-        setTxtProgressBar(pb, pb.index)
+        utils::setTxtProgressBar(pb, pb.index)
         pb.index <- pb.index + 1
       }
+      
+      rm(dat.temp, dat.pred)
     } # end day loop
     # --------------------------------
     

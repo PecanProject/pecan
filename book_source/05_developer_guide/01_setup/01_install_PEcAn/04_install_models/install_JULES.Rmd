@@ -1,0 +1,47 @@
+#### JULES
+
+INSTALL STEPS:
+    1) Download JULES and FCM
+JULES:
+    Model requires registration to download. Not to be put on PEcAn VM
+Registration: https://jules.jchmr.org/software-and-documentation
+Documentation: http://jules-lsm.github.io/vn4.2/index.html  
+
+FCM:
+```bash
+    https://github.com/metomi/fcm/
+    wget https://github.com/metomi/fcm/archive/2015.05.0.tar.gz
+```
+
+2) edit makefile
+```bash
+open etc/fcm-make/make.cfg
+
+set JULES_NETCDF = actual instead of dummy
+set path (e.g. /usr/) and lib_path /lib64 to netCDF libraries
+```
+
+3) compile JULES 
+
+```bash
+cd etc/fcm-make/
+{path.to.fcm}/fcm make -f etc/fcm-make/make.cfg --new
+
+```
+
+```bash
+UBUNTU VERSION: installed without having to add any perl libraries
+#perl stuff that I had to install on pecan2 not PEcAN VM
+sudo yum install perl-Digest-SHA
+sudo yum install perl-Time-modules
+sudo yum install cpan
+curl -L http://cpanmin.us | perl - --sudo App::cpanminus
+sudo cpanm Time/Piece.pm
+sudo cpanm IO/Uncompress/Gunzip.pm
+```
+
+
+Executable is under build/bin/jules.exe
+
+Example rundir:  examples/point_loobos
+

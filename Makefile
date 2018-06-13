@@ -1,9 +1,9 @@
 NCPUS ?= 1
 
-BASE := logger utils db settings visualization qaqc remote
+BASE := logger utils db settings visualization qaqc remote workflow
 
 MODELS := biocro clm45 dalec ed fates gday jules linkages \
-				lpjguess maat maespa preles sipnet template
+				lpjguess maat maespa preles sipnet dvmdostem template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.hydrology data.land \
@@ -74,7 +74,7 @@ $(call depends,base/settings): | .install/base/utils .install/base/db
 $(call depends,base/visualization): | .install/base/db
 $(call depends,modules/data.atmosphere): | .install/base/utils .install/base/remote
 $(call depends,modules/data.land): | .install/base/db .install/base/utils .install/base/remote
-$(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/remote
+$(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/remote .install/base/settings
 $(call depends,modules/priors): | .install/base/utils .install/base/remote
 $(call depends,modules/assim.batch): | .install/base/utils .install/base/db .install/modules/meta.analysis .install/base/remote
 $(call depends,modules/rtm): | .install/modules/assim.batch .install/base/remote
@@ -87,25 +87,25 @@ clean:
 	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools: | .install
-	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	time Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
 .install/roxygen2: | .install
-	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	time Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
 .install/testthat: | .install
-	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	time Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
 .install/mockery: | .install
-	Rscript -e "if(!require('mockery')) install.packages('mockery', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	time Rscript -e "if(!require('mockery')) install.packages('mockery', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
-depends_R_pkg = Rscript -e "devtools::install_deps('$(strip $(1))', threads = ${NCPUS});"
-install_R_pkg = Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
+depends_R_pkg = time Rscript -e "devtools::install_deps('$(strip $(1))', threads = ${NCPUS});"
+install_R_pkg = time Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
-test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
+test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .install/roxygen2 .install/testthat

@@ -21,12 +21,13 @@
 ##' @param start.year first year to include in sensitivity analysis 
 ##' @param end.year last year to include in sensitivity analysis
 ##' @param variables variables to be read from model output
+##' @param per.pft flag to determine whether we want SA on pft-specific variables
 ##' @export
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
 #--------------------------------------------------------------------------------------------------#
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "", 
-                           start.year, end.year, variable, sa.run.ids = NULL) {
+                           start.year, end.year, variable, sa.run.ids = NULL, per.pft = FALSE) {
   
   
   if (is.null(sa.run.ids)) {
@@ -51,7 +52,13 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
       run.id <- sa.run.ids[[pft.name]][quantile, trait]
       
       for(var in seq_along(variables)){
-        out.tmp <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
+        # if SA is requested on a variable available per pft, pass pft.name to read.output
+        # so that it only returns values for that pft
+        pass_pft <- switch(per.pft + 1, NULL, pft.name) 
+        out.tmp <- read.output(runid = run.id, outdir = file.path(outdir, run.id), 
+                               start.year = start.year, end.year = end.year, 
+                               variables = variables[var], 
+                               pft.name = pass_pft)
         assign(variables[var], out.tmp[[variables[var]]])
       }
       

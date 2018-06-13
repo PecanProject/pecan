@@ -14,6 +14,9 @@ echo "Logging on "$TIMESTAMP
 mkdir -p "@OUTDIR@"
 @SCRATCH_MKDIR@
 
+# @REMOVE_HISTXML@ : tag to remove "history.xml" on remote for restarts, commented out on purpose
+
+
 # flag needed for ubuntu
 export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 
@@ -45,7 +48,7 @@ if [ ! -e "@OUTDIR@/history.xml" ]; then
 
   # convert to MsTMIP
   echo "require (PEcAn.ED2)
-model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @PFT_NAMES@)
 " | R --vanilla
 fi
 

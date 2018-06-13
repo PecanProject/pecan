@@ -11,8 +11,8 @@ session_start();
 function get_footer() {
   return "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
     (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA
-    Terrestrial Ecosystems, the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.5.1</span>";
+    Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
+    <span style=\"float:right\">PEcAn Version 1.5.3</span>";
 }
 
 function whoami() {

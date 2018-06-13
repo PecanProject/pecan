@@ -34,7 +34,7 @@ options(error=quote({
 # Open and read in settings file for PEcAn run.
 args <- commandArgs(trailingOnly = TRUE)
 if (is.na(args[1])){
-  settings <- PEcAn.settings::read.settings("pecan.xml")
+  settings <- PEcAn.settings::read.settings("pecan.xml") 
 } else {
   settings.file = args[1]
   settings <- PEcAn.settings::read.settings(settings.file)
@@ -73,7 +73,7 @@ settings <- PEcAn.utils::do_conversions(settings)
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0){
   PEcAn.utils::status.start("TRAIT")
-  settings <- PEcAn.DB::runModule.get.trait.data(settings)
+  settings <- PEcAn.workflow::runModule.get.trait.data(settings)
   PEcAn.settings::write.settings(settings, outputfile='pecan.TRAIT.xml')
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
@@ -93,7 +93,7 @@ if(!is.null(settings$meta.analysis)) {
 # Write model specific configs
 if (PEcAn.utils::status.check("CONFIG") == 0){
   PEcAn.utils::status.start("CONFIG")
-  settings <- PEcAn.utils::runModule.run.write.configs(settings)
+  settings <- PEcAn.workflow::runModule.run.write.configs(settings)
   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
@@ -152,7 +152,7 @@ if ('state.data.assimilation' %in% names(settings)) {
 }
 
 # Run benchmarking
-if("benchmarking" %in% names(settings)){
+if("benchmarking" %in% names(settings) & "benchmark" %in% names(settings$benchmarking)){
   PEcAn.utils::status.start("BENCHMARKING")
   results <- papply(settings, function(x) calc_benchmark(x, bety))
   PEcAn.utils::status.end()

@@ -5,7 +5,7 @@
 #' @param observation_two another vector of plant fucntional types, or species. Provides the order. 
 #' @param custom_table a table that either maps two pft's to one another or maps custom species codes to bety id codes. 
 #' In the second case, must be passable to match_species_id. 
-#' @return \code{vector} Returns a vector of PFT's/species from observation_one that matches the order of observation_two } 
+#' @return \code{vector} Returns a vector of PFT's/species from observation_one that matches the order of observation_two  
 #' 
 #' @author Tempest McCabe
 #' @examples
@@ -18,7 +18,7 @@
 #' table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
 #' table<-as.data.frame(table)
 #'
-#' aligned<-align_by_observation_one(observation_one = observation_one, observation_two = observation_two, 
+#' aligned<-align_by_first_observation(observation_one = observation_one, observation_two = observation_two,
 #' custom_table = table)
 #' 
 #' # aligned should be a vector '[1] "AMCA3" "ARHY"  "AMCA3" "AMCA3"'

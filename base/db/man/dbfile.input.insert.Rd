@@ -9,6 +9,10 @@ dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate, mimetype,
   allow.conflicting.dates = FALSE)
 }
 \arguments{
+\item{in.path}{path to the directory containing the file to be inserted}
+
+\item{in.prefix}{initial portion of the filename that does not vary by date. Does not include directory; specify that as part of in.path}
+
 \item{siteid}{the id of the site that this data is applicable to}
 
 \item{startdate}{the start date of the data stored in the file}
@@ -19,17 +23,13 @@ dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate, mimetype,
 
 \item{formatname}{the name of the format to distinguish between simmilair mime-types}
 
+\item{parentid}{the id of the parent of the input}
+
 \item{con}{database connection object}
 
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
 
 \item{allow.conflicting.dates}{Whether to allow a new input record with same siteid, name, and format but different start/end dates}
-
-\item{filename}{the name of the file to be inserted}
-
-\item{parent}{the id of the parent of the input}
-
-\item{params}{database connection information}
 }
 \value{
 data.frame with the id, filename and pathname of the input that is requested

@@ -4,13 +4,15 @@
 \alias{convert.samples.BIOCRO}
 \title{Convert samples for biocro}
 \usage{
-convert.samples.BIOCRO(trait.samples)
+convert.samples.BIOCRO(trait.samples, biocro_version = 1)
 }
 \arguments{
 \item{trait.samples}{a matrix or dataframe of samples from the trait distribution}
+
+\item{biocro_version}{numeric, but currently only checks whether version is less than 1.0}
 }
 \value{
-matrix or dataframe with values transformed
+dataframe with values transformed
 }
 \description{
 convert parameters from PEcAn database default units to biocro defaults

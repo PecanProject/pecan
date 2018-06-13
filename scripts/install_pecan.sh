@@ -18,8 +18,8 @@ SETUP_VM=""
 SETUP_PALEON=""
 REBUILD=""
 
-RSTUDIO_SERVER="1.0.143"
-SHINY_SERVER="1.5.3.838"
+RSTUDIO_SERVER="1.1.442"
+SHINY_SERVER="1.5.6.875"
 
 if [ -e $(dirname $0)/install_pecan.config ]; then
   . $(dirname $0)/install_pecan.config
@@ -52,7 +52,7 @@ case "$OS_VERSION" in
     sudo apt-get -y dist-upgrade
     sudo apt-get -y purge --auto-remove
     if [ "$SETUP_VM" != "" ]; then
-      sudo sed -i -e "s/^127.0.0.1 .*\$/127.0.0.1 ${HOSTNAME}.pecan ${HOSTNAME} localhost/" /etc/hosts
+      sudo sed -i -e "s/^127.0.0.1[ \t].*\$/127.0.0.1\t${HOSTNAME}.vm ${HOSTNAME} localhost/" /etc/hosts
     fi
     ;;
   *)
@@ -195,6 +195,9 @@ if [ -z "${R_LIBS_USER}" ]; then
   export export R_LIBS_USER=${HOME}/R/library
   mkdir -p ${R_LIBS_USER}
 
+  echo "options(shiny.port = 6438)" >> ${HOME}/.Rprofile
+  echo "options(shiny.launch.browser = 'FALSE')" >> ${HOME}/.Rprofile
+
   case "$OS_VERSION" in
     RH_*)
       echo 'export PATH=${PATH}:/usr/pgsql-9.5/bin' >> ${HOME}/.bashrc
@@ -208,6 +211,9 @@ echo 'if(!"udunits2" %in% installed.packages()) install.packages("udunits2", con
 # packages for BrownDog shiny app
 echo 'if(!"leaflet" %in% installed.packages()) install.packages("leaflet", repos="http://cran.rstudio.com/")' | R --vanilla
 echo 'if(!"RJSONIO" %in% installed.packages()) install.packages("RJSONIO", repos="http://cran.rstudio.com/")' | R --vanilla
+
+# packages for other shiny apps
+echo 'if(!"DT" %in% installed.packages()) install.packages("DT", repos="http://cran.rstudio.com/")' | R --vanilla
 
 #echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | sudo R --vanilla
 echo 'x <- rownames(old.packages(repos="http://cran.rstudio.com/")); update.packages(repos="http://cran.rstudio.com/", ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | sudo R --vanilla
@@ -243,7 +249,7 @@ echo "SIPNET"
 echo "######################################################################"
 if [ ! -e ${HOME}/sipnet_unk ]; then
   cd
-  curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/models/sipnet_unk.tar.gz
+  curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_unk.tar.gz
   tar zxf sipnet_unk.tar.gz
   rm sipnet_unk.tar.gz
 fi
@@ -255,7 +261,7 @@ make clean
 
 if [ ! -e ${HOME}/sipnet_r136 ]; then
   cd
-  curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_r136.tar.gz
+  curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_r136.tar.gz
   tar zxf sipnet_r136.tar.gz
   rm sipnet_r136.tar.gz
   sed -i 's#$(LD) $(LIBLINKS) \(.*\)#$(LD) \1 $(LIBLINKS)#' ${HOME}/sipnet_r136/Makefile
@@ -280,20 +286,20 @@ make
 sudo cp maespa.out /usr/local/bin/maespa.git
 make clean
 
-echo "######################################################################"
-echo "LPJ-GUESS"
-echo "######################################################################"
-if [ ! -e ${HOME}/guess_3.1 ]; then
-  cd
-  curl -o guess_3.1.tar.gz http://stormbringerii.nateko.lu.se/public/guess_download/guess_3.1.tar.gz
-  tar xf guess_3.1.tar.gz
-  rm guess_3.1.tar.gz
-fi
-cd ${HOME}/guess_3.1
-cmake .
-make
-sudo cp guess /usr/local/bin/guess.3.1
-make clean
+# echo "######################################################################"
+# echo "LPJ-GUESS"
+# echo "######################################################################"
+# if [ ! -e ${HOME}/guess_3.1 ]; then
+#   cd
+#   curl -o guess_3.1.tar.gz http://stormbringerii.nateko.lu.se/public/guess_download/guess_3.1.tar.gz
+#   tar xf guess_3.1.tar.gz
+#   rm guess_3.1.tar.gz
+# fi
+# cd ${HOME}/guess_3.1
+# cmake .
+# make
+# sudo cp guess /usr/local/bin/guess.3.1
+# make clean
 
 echo "######################################################################"
 echo "BioCro"
@@ -324,6 +330,20 @@ make clean
 make dalec_EnKF
 make dalec_seqMH
 sudo cp dalec_EnKF dalec_seqMH /usr/local/bin
+make clean
+
+echo "######################################################################"
+echo "GDAY"
+echo "######################################################################"
+if [ ! -e ${HOME}/GDAY ]; then
+  cd
+  git clone https://github.com/mdekauwe/GDAY.git
+fi
+cd ${HOME}/GDAY
+git pull
+cd src
+make
+sudo cp gday /usr/local/bin
 make clean
 
 echo "######################################################################"
@@ -417,6 +437,9 @@ EOF
   sudo cp /tmp/bety.conf ${HTTP_CONF}/bety.conf
   rm /tmp/bety.conf
   sudo ln -s $HOME/bety/public /var/www/html/bety
+
+  sudo sh -c "echo '\n## BETY secret key\nexport SECRET_KEY_BASE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 120 | head -n 1)' >> /etc/apache2/envvars"
+  cp $HOME/bety/public/javascripts/cache/all.js-sample $HOME/bety/public/javascripts/cache/all.js
 fi
 
 echo "######################################################################"
@@ -498,12 +521,7 @@ fi
 sudo rm -rf ${HOME}/output
 mkdir ${HOME}/output
 chmod 2777 ${HOME}/output
-sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -m 99 -r 0 -c -u
-for x in 0 1; do
-  for r in 1 2 5; do
-    sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -r $r
-  done
-done
+sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -g -m 99 -r 0 -c -u -w https://ebi-forecast.igb.illinois.edu/pecan/dumpall/bety.tar.gz
 ${HOME}/pecan/scripts/add.models.sh
 ${HOME}/pecan/scripts/add.data.sh
 
@@ -697,7 +715,7 @@ if [ "${SETUP_VM}" != "" ]; then
   esac
 
   # MOTD
-  VERSION=$( awk '/Version: / { print $2 }' $HOME/pecan/all/DESCRIPTION )
+  VERSION=$( awk '/Version: / { print $2 }' $HOME/pecan/base/all/DESCRIPTION )
   cat > /tmp/motd << EOF
 PEcAn version ${VERSION}
 

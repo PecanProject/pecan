@@ -1,84 +1,69 @@
 library(shiny)
 library(plotly)
-# Helper allows to load functions and variables that could be shared both by server.R and ui.R 
-# source('helper.R')
+library(shinythemes)
+library(knitr)
+library(shinyjs)
+
+source("ui_utils.R", local = TRUE)
+plot_var <- "temp_var"
+
 # Define UI
-ui <- shinyUI(fluidPage(
-  # Application title
-  titlePanel("Workflow Plots"),
-  sidebarLayout(
-    sidebarPanel(
-      h3("Load Model Output"),
-      wellPanel(
-        p("Please select the workflow IDs to continue. You can select multiple IDs"),
-        selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(),multiple=TRUE),
-        p("Please select the run IDs. You can select multiple IDs"),
-        selectizeInput("all_run_id", "Mutliple Run IDs", c(),multiple=TRUE),
-        actionButton("load", "Load Model outputs")
-      ),
-      
-      h3("Load External Data"),
-      wellPanel(
-        selectizeInput("all_site_id", "Select Site ID", c()),
-        # If loading multiple sites in future
-        # selectizeInput("all_site_id", "Select Site ID", c(), multiple=TRUE),
-        selectizeInput("all_input_id", "Select Input ID", c()),
-        actionButton("load_data", "Load External Data")
-      )
-    ),
-    mainPanel(
-      tabsetPanel(
-        tabPanel("Visualizations", 
-                 column(12, plotlyOutput("outputPlot")),
-                 column(12, wellPanel( 
-                   selectInput("variable_name", "Variable Name", ""),
-                   radioButtons("plotType", "Plot Type (for Model Outputs)", 
-                                c("Scatter Plot" = "scatterPlot", 
-                                  "Line Chart" = "lineChart"), 
-                                selected="scatterPlot"),
-                   radioButtons("data_geom", "Plot Type (for loaded data)", 
-                                c("Scatter Plot" = "point", 
-                                  "Line Chart" = "line"), 
-                                selected="point"),
-                   # uiOutput("slider"),
-                   sliderInput("smooth_n", "Value for smoothing:",
-                               min=0, max=100, value=80))
-                 ),
-                 verbatimTextOutput("outputNoVariableFound")
-        ),
-        tabPanel("Benchmarking Settings", 
-                 column(12, h3("Setup Reference Run")),
-                 column(12, 
-                        verbatimTextOutput("brr_message"),
-                        uiOutput("button_BRR")
-                 ),
-                 column(12,
-                        h3("Setup Benchmarks")),
-                 column(12, 
-                        uiOutput("results_message"),
-                        uiOutput("bm_inputs")
-                 ),
-                 column(12, h3("Calculate Benchmarks")),
-                 column(12, 
-                        verbatimTextOutput("calc_bm_message"),
-                        # verbatimTextOutput("report"),
-                        uiOutput("calc_bm_button"),
-                        uiOutput("inputs_df_table"),
-                        uiOutput("config_list_table"),
-                        uiOutput("reportvars"),
-                        uiOutput("reportmetrics"),
-                        uiOutput("print_bm_settings")
-                 )
-        ),
-        tabPanel("Benchmarking Scores", 
-                 DT::dataTableOutput("results_table")
-        ),
-        tabPanel("Benchmarking Plots",
-                 verbatimTextOutput("blarg_message"),
-                 uiOutput("bm_plots"),
-                 plotlyOutput("bmPlot")
-        )
-      )
-    )
-  )
-))
+ui <- fluidPage(theme = shinytheme("simplex"),
+                # Initializing shinyJs
+                useShinyjs(),
+                # Adding CSS to head
+                tags$head(
+                  tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+                ),
+                # Showing the animation
+                div( id = "loading-content",
+                     div(class = "plotlybars-wrapper",
+                         div( class="plotlybars",
+                              div(class="plotlybars-bar b1"),
+                              div(class="plotlybars-bar b2"),
+                              div(class="plotlybars-bar b3"),
+                              div(class="plotlybars-bar b4"),
+                              div(class="plotlybars-bar b5"),
+                              div(class="plotlybars-bar b6"),
+                              div(class="plotlybars-bar b7")
+                         ),
+                         div(class="plotlybars-text",
+                             p("Shiny is on its way!")
+                         )
+                     )
+                ),
+                # Hiding the application content till the page is ready
+                hidden(
+                  div(
+                    id = "app",
+                    sidebarLayout(
+                      source_ui("sidebar_UI.R"), # Sidebar
+                      mainPanel(navbarPage(title = NULL,
+                                           tabPanel(h4("Select Data"),
+                                                    # tabsetPanel(
+                                                    source_ui("select_data_UI.R")
+                                                    # )
+                                           ),
+                                           tabPanel(h4("Exploratory Plots"),
+                                                    tabsetPanel(
+                                                      source_ui("model_plots_UI.R"),
+                                                      source_ui("model_data_plots_UI.R")
+                                                    )
+                                           ),
+                                           tabPanel(h4("Benchmarking"),
+                                                    tabsetPanel(
+                                                      source_ui("benchmarking_settings_UI.R"),
+                                                      source_ui("benchmarking_scores_UI.R"),
+                                                      source_ui("benchmarking_plots_UI.R")
+                                                    )
+                                           ),
+                                           tabPanel(h4("Documentation"),
+                                                    withMathJax(includeMarkdown("markdown/workflowPlot_doc.Rmd"))
+                                           )
+                      )
+
+                      )
+                    )
+                  )
+                )
+                )
