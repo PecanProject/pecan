@@ -201,7 +201,7 @@ server <- function(input, output, session) {
      for (i in 1:n){
        base::file.copy(file.path(path_to_local_tempdir, list_of_local_files[i]), file.path(PEcAn_path, local_dirname, list_of_local_files[i]))
      }
-     output$LocaldbfilesPath <- renderText({paste0(PEcAn_path, local_dirname)}) # Print path to paper
+     output$LocaldbfilesPath <- renderText({paste0(PEcAn_path, local_dirname)}) # Print path to dbfiles
    })
 }
 
