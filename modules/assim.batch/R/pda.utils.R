@@ -793,12 +793,12 @@ return_hyperpars <- function(assim.settings, inputs){
 ##' @param prior.list PDA-prior list
 ##' @param prior.fn list for parameter d/r/q/p functions
 ##' @param sf SF parameter names
+##' @param sf.samples SF parameters MCMC samples
 ##' 
-##' @param sf.subset.list SF parameters MCMC samples
 ##' @author Istem Fer
 ##' @export
 sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp, 
-                        prior.list, prior.fn, sf, sf.subset.list){
+                        prior.list, prior.fn, sf, sf.samples){
   
   PEcAn.logger::logger.info("Sampling from previous round's MCMC")
   
@@ -837,9 +837,9 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   new_knots <- mcmc_samples[get_samples,]
   
   # when using sf, need to sample from sf mcmc samples and calculate back actual parameter values
-  if(!is.null(sf.subset.list)){
-    get_samples <- sample(1:nrow(sf.subset.list[[1]]), n.post.knots)
-    sf_knots    <- sf.subset.list[[1]][get_samples,]
+  if(!is.null(sf.samples)){
+    get_samples <- sample(1:nrow(sf.samples), n.post.knots)
+    sf_knots    <- sf.samples[get_samples,]
     
     ind <- 0
     for(i in seq_along(n.param.orig)){

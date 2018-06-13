@@ -230,6 +230,10 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
   
   sf.samp <- as.mcmc.list(lapply(sf.samp.list, mcmc))
   
+  # saving this before discarding burnin, because in resampling we want to keep the samples together
+  sf.samples <- as.data.frame(do.call("rbind", sf.samp))
+  save(sf.samples, file = sf.samp.filename)
+  
   burnin <- getBurnin(sf.samp, method = "gelman.plot")
   
   sf.samp <- window(sf.samp, start = max(burnin, na.rm = TRUE))
@@ -244,7 +248,6 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
                                                outdir = dirname(sf.filename),
                                                filename.flag = filename.flag)
   
-  save(sf.subset.list, file = sf.samp.filename)
   
   return(sf.post.distns)
   
