@@ -177,7 +177,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   ## Run this block if this is a "round" extension
   if (run.round) {
     
-    ## Propose a percentage (if not specified 80%) of the new parameter knots from the posterior of the previous run
+    ## Propose a percentage (if not specified 90%) of the new parameter knots from the posterior of the previous run
     knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
                               as.numeric(settings$assim.batch$knot.par),
                               0.9)
