@@ -116,7 +116,7 @@ get.parameter.samples <- function(settings,
                                   paste0(priors[!priors %in% ma.traits], collapse = "\n "))
       }
     } else {
-      ma.traits[[i]] <- NULL
+      ma.traits[[i]] <- list()
       samples.num <- 20000
       PEcAn.logger::logger.info("No MCMC results for PFT", pft.names[i])
       PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for", 
