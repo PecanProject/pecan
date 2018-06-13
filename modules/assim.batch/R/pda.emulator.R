@@ -452,9 +452,12 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   prior.fn.all <- pda.define.prior.fn(prior.all)
   
   # define range to make sure mcmc.GP doesn't propose new values outside
-  rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)),
-                  sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))),
-                nrow = sum(n.param))
+  
+  # NOTE: this will need to change when there is more than one bias parameter
+  # but then there are other things that needs to change in the emulator workflow
+  # such as the way proposed parameters are used in estimation in get_ss function
+  # so punting this development until it is needed
+  rng <-  t(apply(SS[[isbias]][,-ncol(SS[[isbias]])], 2, range))
   
   if (run.normal | run.round) {
     
