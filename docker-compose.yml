@@ -14,32 +14,47 @@ services:
     volumes:
       - /dev/null:/traefik.toml
       - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
+    restart: unless-stopped
+
+  # webserver to handle all traffic to bety/pecan/rabbitmq
+  minio:
+    image: minio/minio
+    networks:
+      - pecan
+    command: server /data
+    #ports:
+    #  - "9000:9000"     # The HTTP port
+    environment:
+      - MINIO_ACCESS_KEY=carya
+      - MINIO_SECRET_KEY=illinois
+    volumes:
+      - pecan:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=9000"
+      - "traefik.frontend.rule=PathPrefix:/minio/"
+      - "traefik.backend=minio"
+    restart: unless-stopped
 
   # postgresql + postgis to hold all the data
   postgres:
     image: mdillon/postgis:9.5
     networks:
       - pecan
-    #ports:
-    #  - 5432
+    # ports:
+    #   - 8002:5432
     volumes:
       - postgres:/var/lib/postgresql/data
     restart: unless-stopped
-    deploy:
-      mode: replicated
-      restart_policy:
-        condition: any
-      placement:
-        constraints: [node.role == worker]
 
   # rabbitmq to connect to extractors
   rabbitmq:
     image: rabbitmq:management
     networks:
       - pecan
-    #ports:
-      #- 5672
-      #- 15672
+    # ports:
+    #   - 5672
+    #   - 8003:15672
     volumes:
       - rabbitmq:/var/lib/rabbitmq
     labels:
@@ -48,20 +63,14 @@ services:
       - "traefik.frontend.rule=PathPrefix:/"
       - "traefik.backend=rabbitmq"
     restart: unless-stopped
-    deploy:
-      mode: replicated
-      restart_policy:
-        condition: any
-      placement:
-        constraints: [node.role == worker]
 
   # BETY rails frontend to the database
   bety:
-    image: pecan/bety:unicorn
+    image: hub.ncsa.illinois.edu/pecan/bety:latest
     networks:
       - pecan
-    #ports:
-      #- 8000
+    # ports:
+    #   - 8004:8000
     environment:
       - UNICORN_WORKER_PROCESSES=1
       - SECRET_KEY_BASE=1208q7493e8wfhdsohfo9ewhrfiouaho908ruq30oiewfdjspadosuf08q345uwrasdy98t7q243
@@ -75,21 +84,17 @@ services:
     restart: unless-stopped
     deploy:
       mode: replicated
-      restart_policy:
-        condition: any
-      placement:
-        constraints: [node.role == manager]
 
   # PEcAn web front end, this is just the PHP code
-  pecan-gui:
-    image: pecan/pecan-web
+  web:
+    image: hub.ncsa.illinois.edu/pecan/web:develop
     networks:
       - pecan
-    #ports:
-      #- 80
+    # ports:
+    #   - 8005:80
     volumes:
       - pecan:/data
-      - ${PWD}/web:/var/www/html/pecan
+      - pecan:/var/www/html/pecan/data
     depends_on:
        - postgres
        - rabbitmq
@@ -102,8 +107,38 @@ services:
       mode: replicated
       restart_policy:
         condition: any
-      placement:
-        constraints: [node.role == manager]
+
+  # PEcAn executor, executes jobs launched from web
+  executor:
+    image: hub.ncsa.illinois.edu/pecan/executor:develop
+    networks:
+      - pecan
+    hostname: docker
+    volumes:
+      - pecan:/data
+    depends_on:
+       - postgres
+       - rabbitmq
+    restart: unless-stopped
+    deploy:
+      mode: replicated
+      restart_policy:
+        condition: any
+
+  # PEcAn sipnet model runner
+  sipnet:
+    image: hub.ncsa.illinois.edu/pecan/model-sipnet:develop
+    networks:
+      - pecan
+    volumes:
+      - pecan:/data
+    depends_on:
+       - rabbitmq
+    restart: unless-stopped
+    deploy:
+      mode: replicated
+      restart_policy:
+        condition: any
 
 networks:
   pecan:

@@ -20,6 +20,14 @@ $browndog_url="";
 $browndog_username="";
 $browndog_password="";
 
+# rabbitmq connection
+$rabbitmq_host="rabbitmq";
+$rabbitmq_port="5672";
+$rabbitmq_vhost="/";
+$rabbitmq_queue="pecan";
+$rabbitmq_username="guest";
+$rabbitmq_password="guest";
+
 # R binary
 $Rbinary="/usr/bin/R";
 
@@ -71,24 +79,24 @@ $fqdn="docker";
 # - scratchdir : folder to be used for scratchspace when running certain
 #                models (such as ED)
 $hostlist=array($fqdn => 
-                    array("docker"  => TRUE),
+                    array("rabbitmq" => "amqp://guest:guest@rabbitmq/%2F"),
                 "geo.bu.edu" =>
-                    array("qsub"    => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
-                          "jobid"   => "Your job ([0-9]+) .*",
-                          "qstat"   => "qstat -j @JOBID@ || echo DONE",
-                          "prerun"  => "module load udunits R/R-3.0.0_gnu-4.4.6",
-                          "postrun" => "sleep 60",
-                          "models"  => array("ED2" =>
+                    array("qsub"     => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+                          "jobid"    => "Your job ([0-9]+) .*",
+                          "qstat"    => "qstat -j @JOBID@ || echo DONE",
+                          "prerun"   => "module load udunits R/R-3.0.0_gnu-4.4.6",
+                          "postrun"  => "sleep 60",
+                          "models"   => array("ED2" =>
                               array("prerun"  => "module load hdf5"))));
 
 # Folder where PEcAn is installed
 $R_library_path="/home/carya/R/library";
 
 # Folder where the runs are stored
-$output_folder="/data/";
+$output_folder="/data/workflows";
 
 # Folder where the generated files are stored
-$dbfiles_folder=$output_folder . "/dbfiles";
+$dbfiles_folder="/data/dbfiles";
 
 # location of BETY DB set to empty to not create links, can be both
 # relative or absolute paths or full URL's. Should point to the base
