@@ -257,9 +257,9 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
     if(any(unlist(any.mgauss) == "multipGauss")) {
       bias.list  <- return.bias(settings, isbias, model.out, inputs, prior.list, run.round)
-      nbias      <-
       bias.terms <- bias.list$bias.params
       prior.list <- bias.list$prior.list.bias
+      nbias      <- bias.list$nbias
       prior.fn   <- lapply(prior.list, pda.define.prior.fn)
     } else {
       bias.terms <- NULL
@@ -332,26 +332,23 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     for(inputi in seq_len(n.input)){
       error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
       
-     # if(unlist(any.mgauss)[inputi] == "multipGauss") {
+     if(unlist(any.mgauss)[inputi] == "multipGauss") {
         
         # if yes, then we need to include bias term in the emulator
-        #bias.probs <- bias.list$bias.probs
-        #biases <- c(t(bias.probs[[bc]]))
         bias.params <- bias.terms
         biases <- c(t(bias.params[[bc]]))
-        #bc <- bc + 1
+        bc <- bc + 1
         
         # replicate model parameter set per bias parameter
         rep.rows <- rep(1:nrow(X), each = nbias)
         X.rep <- X[rep.rows,]
         Xnew <- cbind(X.rep, biases)
-        #colnames(Xnew) <- c(colnames(X.rep), paste0("bias.", names(n.of.obs)[inputi]))
-        colnames(Xnew) <- c(colnames(X.rep), paste0("bias.SoilResp"))
+        colnames(Xnew) <- c(colnames(X.rep), paste0("bias.", names(n.of.obs)[inputi]))
         SS.list[[inputi]] <- cbind(Xnew, c(error.statistics[[inputi]]))
         
-      #} else {
-      #  SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
-      #} # if-block
+      } else {
+        SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
+      } # if-block
       
       # check failed runs and remove them if you'll have a reasonable amount of param sets after removal
       # how many runs failed?
