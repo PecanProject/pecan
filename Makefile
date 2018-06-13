@@ -74,7 +74,7 @@ $(call depends,base/settings): | .install/base/utils .install/base/db
 $(call depends,base/visualization): | .install/base/db
 $(call depends,modules/data.atmosphere): | .install/base/utils .install/base/remote
 $(call depends,modules/data.land): | .install/base/db .install/base/utils .install/base/remote
-$(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/remote
+$(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/remote .install/base/settings
 $(call depends,modules/priors): | .install/base/utils .install/base/remote
 $(call depends,modules/assim.batch): | .install/base/utils .install/base/db .install/modules/meta.analysis .install/base/remote
 $(call depends,modules/rtm): | .install/modules/assim.batch .install/base/remote
