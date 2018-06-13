@@ -70,13 +70,13 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain  
 ##' @param env.samples env samples
 ##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
-##' @param ma.traits a list of parameter names that were fitted either by MA or PDA, important parameter, if NULL parameters will be resampled independently
+##' @param param.names a list of parameter names that were fitted either by MA or PDA, important parameter, if NULL parameters will be resampled independently
 ##' 
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
 ##' @author David LeBauer, Istem Fer
 get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
-                                 method = "uniform", ma.traits = NULL, ...) {
+                                 method = "uniform", param.names = NULL, ...) {
   
   if (is.null(method)) {
     PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
@@ -150,7 +150,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
         # will use these same indices for samples that will go together
         same.i <- which(round(pft.samples[[pft.i]][[1]], digits = 4) %in% round(same.i, digits=4))
         same.i <- same.i[!duplicated(round(pft.samples[[pft.i]][[1]], digits = 4)[same.i])]
-        if(length(same.i) != ensemble.size & !is.null(ma.traits)){ # can numerical errors give us hard time in the above equality checks? 
+        if(length(same.i) != ensemble.size & !is.null(param.names)){ # can numerical errors give us hard time in the above equality checks? 
           # throw a warning, but also don't break
           PEcAn.logger::logger.warn("There might be some numerical error matching the quantiles. Defaulting to uniform sampling of the chain.")
           same.i <- ceiling(runif(ensemble.size, 1, length(pft.samples[[pft.i]][[1]])))
@@ -159,7 +159,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
      
       for (trait.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
-        if(names(pft.samples[[pft.i]])[trait.i] %in% ma.traits[[pft.i]]){ # keeping samples
+        if(names(pft.samples[[pft.i]])[trait.i] %in% param.names[[pft.i]]){ # keeping samples
           ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
         }else{
           ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],

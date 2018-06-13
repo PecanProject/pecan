@@ -40,7 +40,7 @@ get.parameter.samples <- function(settings,
   PEcAn.logger::logger.info("Selected PFT(s): ", pft.names)
   
   ## Generate empty list arrays for output.
-  trait.samples <- sa.samples <- ensemble.samples <- env.samples <- runs.samples <- ma.traits <- list()
+  trait.samples <- sa.samples <- ensemble.samples <- env.samples <- runs.samples <- param.names <- list()
   
   # flag determining whether samples are independent (e.g. when params fitted individually)
   independent <- TRUE
@@ -101,22 +101,22 @@ get.parameter.samples <- function(settings,
     priors <- rownames(prior.distns)
     
     if (exists("trait.mcmc")) {
-      ma.traits[[i]] <- names(trait.mcmc)
-      names(ma.traits)[i] <- pft.name
+      param.names[[i]] <- names(trait.mcmc)
+      names(param.names)[i] <- pft.name
       
       samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
       
       ## report which traits use MA results, which use priors
-      if (length(ma.traits[[i]]) > 0) {
+      if (length(param.names[[i]]) > 0) {
         PEcAn.logger::logger.info("PFT", pft.names[i], "has MCMC samples for:\n",
-                                  paste0(ma.traits, collapse = "\n "))
+                                  paste0(param.names, collapse = "\n "))
       }
-      if (!all(priors %in% ma.traits[[i]])) {
+      if (!all(priors %in% param.names[[i]])) {
         PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for:\n", 
-                                  paste0(priors[!priors %in% ma.traits], collapse = "\n "))
+                                  paste0(priors[!priors %in% param.names[[i]]], collapse = "\n "))
       }
     } else {
-      ma.traits[[i]] <- list()
+      param.names[[i]] <- list()
       samples.num <- 20000
       PEcAn.logger::logger.info("No MCMC results for PFT", pft.names[i])
       PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for", 
@@ -125,7 +125,7 @@ get.parameter.samples <- function(settings,
     
     PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
     for (prior in priors) {
-      if (prior %in% ma.traits[[i]]) {
+      if (prior %in% param.names[[i]]) {
         samples <- as.matrix(trait.mcmc[[prior]][, "beta.o"])
       } else {
         samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num)
@@ -134,10 +134,10 @@ get.parameter.samples <- function(settings,
     }
   }  ### End for loop
   
-  # if samples are independent, set ma.traits to NULL
-  # this is important for downstream, when ma.traits is not NULL MCMC will be sampled accordingly
+  # if samples are independent, set param.names to NULL
+  # this is important for downstream, when param.names is not NULL MCMC will be sampled accordingly
   if(independent){
-    ma.traits <- NULL
+    param.names <- NULL
   }
   
   if ("sensitivity.analysis" %in% names(settings)) {
@@ -163,7 +163,7 @@ get.parameter.samples <- function(settings,
       
       ## subset the trait.samples to ensemble size using Halton sequence
       ensemble.samples <- get.ensemble.samples(settings$ensemble$size, trait.samples, 
-                                               env.samples, ens.sample.method, ma.traits)
+                                               env.samples, ens.sample.method, param.names)
     }
   }
   
