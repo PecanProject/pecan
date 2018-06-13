@@ -190,11 +190,11 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     if(!is.null(sf)){
       load(settings$assim.batch$sf.samp)
     }else{
-      sf.subset.list <- NULL
+      sf.samples <- NULL
     }
     sampled_knots <- sample_MCMC(settings$assim.batch$mcmc.path, n.param.orig, prior.ind.orig, 
                                      n.post.knots, knots.params.temp,
-                                     prior.list, prior.fn, sf, sf.subset.list)
+                                     prior.list, prior.fn, sf, sf.samples)
 
     knots.params.temp <- sampled_knots$knots.params.temp
     probs.round.sf    <- sampled_knots$sf_knots
