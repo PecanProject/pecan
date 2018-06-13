@@ -43,8 +43,7 @@
 #' format_one <- "species_USDA_symbol"
 #' format_two <- "plant_functional_type"
 #' 
-#' aligned <- align_data_to_data_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
-#' format_one = format_one, format_two = format_two, custom_table = table)
+#' aligned <- align_data_to_data_pft(con = con, observation_one = observation_one, observation_two = observation_two, format_one = format_one, format_two = format_two, custom_table = table)
 #' @export
 
 align_data_to_data_pft <- function(con, observation_one, observation_two,custom_table, format_one, format_two, subset_are_ok, ...){
