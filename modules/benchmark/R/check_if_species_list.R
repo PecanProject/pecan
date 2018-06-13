@@ -8,7 +8,7 @@
 #' In the second case, must be passable to match_species_id. 
 #' @return \code{boolean} 
 #' @author Tempest McCabe
-check_if_species_list<-function(vars,custom_table=NULL){
+check_if_species_list<-function(vars, custom_table=NULL){
   
   if(any(c("species_id", "species_name", "species_USDA_symbol", "species_FIA_symbol") %in% vars)){
     return(TRUE)

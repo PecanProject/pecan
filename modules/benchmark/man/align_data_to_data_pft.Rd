@@ -4,8 +4,8 @@
 \alias{align_data_to_data_pft}
 \title{align_data_to_data_pft}
 \usage{
-align_data_to_data_pft(con, observation_one, observation_two,
-  custom_table = NULL, format_one, format_two, subset_is_ok = FALSE)
+align_data_to_data_pft(con, observation_one, observation_two, custom_table,
+  format_one, format_two, subset_are_ok, ...)
 }
 \arguments{
 \item{con}{database connection}
@@ -50,18 +50,18 @@ Can align:
 }
 \examples{
 
-observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
-observation_two<-c("a", "b", "a", "a")
+observation_one <- c("AMCA3","AMCA3","AMCA3","AMCA3")
+observation_two <- c("a", "b", "a", "a")
 
-table<-list()
-table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
-table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
-table<-as.data.frame(table)
+table <- list()
+table$plant_functional_type_one <-  c("AMCA3","AMCA3","ARHY", "ARHY")
+table$plant_functional_type_two <-  c('a','a','b', 'b') # PFT groupings
+table <- as.data.frame(table)
 
-format_one<-"species_USDA_symbol"
-format_two<-"plant_functional_type"
+format_one <- "species_USDA_symbol"
+format_two <- "plant_functional_type"
 
-aligned<-align_data_to_data_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
+aligned <- align_data_to_data_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
 format_one = format_one, format_two = format_two, custom_table = table)
 }
 \author{

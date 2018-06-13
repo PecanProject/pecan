@@ -40,24 +40,23 @@
 #' 
 #' 
 #' #------------ A species to PFT alignment -----------
-#' observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
-#' observation_two<-c("a", "b", "a", "a") #
+#' observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3") # Species code
+#' observation_two<-c("a", "b", "a", "a") # example PFT
 #' 
 #' format_one<-"species_USDA_symbol"
 #' format_two<-"plant_funtional_type"
 #' 
 #' table<-list()
-#' table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
+#' table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY") # Species code
 #' table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
 #' table<-as.data.frame(table)
 #'
 #' 
-#' aligned<-align_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
-#' format_one = format_one, format_two = format_two, custom_table = table)
+#' aligned<-align_pft(con = con, observation_one = observation_one, observation_two = observation_two, format_one = format_one, format_two = format_two, custom_table = table)
 #' 
 #' 
 #' @export
-align_pft<-function(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE, comparison_type="data_to_data", ...){
+align_pft <- function(con, observation_one, observation_two, custom_table = NULL, format_one, format_two, subset_are_ok = FALSE, comparison_type="data_to_data", ...){
 
   if(comparison_type == "data_to_model"){
     
@@ -67,7 +66,7 @@ align_pft<-function(con, observation_one, observation_two, custom_table=NULL, fo
     
   }else if (comparison_type == "data_to_data"){
     
-    align_data_to_data_pft(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE)
+    align_data_to_data_pft(con, observation_one, observation_two, custom_table, format_one, format_two, subset_are_ok, ...)
     
   }else if (comparison_type == "model_to_model"){
     
