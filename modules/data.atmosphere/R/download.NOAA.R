@@ -4,13 +4,42 @@
 ##'@param d a POSIX Date
 ##'@return A representation of the date as a string with no separators
 ##' rnoaa::gefs requires a nate in the format YYYYMMDD instead of a POSIX date
-POSIXtoGEFSDate <- function(d) {
+##' This function requires that the lubridate package be installed.
+POSIX.to.GEFSDate <- function(d) {
   mon = lubridate::month(start_date)  #Extract parts of the date
   day = lubridate::month(start_date)
   if (mon < 10) { mon = paste0("0", mon) } #Add leading zeros, if necessary
   if (day < 10) { day = paste0("0", day) }
   return(paste0(lubridate::year(start_date), mon, day)) #concantanate parts of the date and return
 }
+
+##' Helper function
+##' @param d1 a POSIX Date
+##' @param d2 a POSIX Date
+##' This function returns a value greater than one if the first date is greater than the second, zero if the 
+##' dates are the same, and a negative value if the first date is less than the second.
+##' This function requires that the lubridate package be installed.
+compare.POSIX.dates <- function(d1, d2) {
+  d1_year = lubridate::year(d1)
+  d1_month = lubridate::month(d1)
+  d1_day = lubridate::day(d1)
+  
+  d2_year = lubridate::year(d2)
+  d2_month = lubridate::month(d2)
+  d2_day = lubridate::day(d2)
+  
+  if (d1_year != d2_year) {
+    return(d1_year - d2_year)
+  } else if (d1_month != d2_month) {
+    return(d1_month - d2_month)
+  } else {
+    return(d1_day - d2_day)
+  }
+}
+
+
+
+
 
 ##' Download NOAA Weather Data
 ##' 
@@ -39,47 +68,35 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat, lon,
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   
-  #Exracting Date Components
-  start_year <- lubridate::year(start_date)
-  start_month <- lubridate::month(start_date)
-  start_day <- lubridate::day(start_date)
-  
-  end_year <- lubridate::year(end_date)
-  end_month <- lubridate::month(end_date)
-  end_day <- lubridate::day(end_date)
-  
-  ###print(c(start_year, start_month, start_day))
-  ###print(c(end_year, end_month, end_day))
-  
   #Date error checking - Checks to see if the start date is before the end date
-  if (start_year > end_year) {
-    PEcAn.logger::logger.severe("Invalid dates: end year occurs before start year.")
-  } else if (start_year == end_year) {
-    if (start_month > end_month) {
-      PEcAn.logger::logger.severe("Invalid dates: end month occurs before start month.")
-    } else if (start_month == end_month) {
-      if (start_day > end_day) {
-        PEcAn.logger::logger.severe("Invalid dates: end day occurs before start day.")
-      }
-    }
+  if (compare.POSIX.dates(end_date, start_date) < 0) {
+    PEcAn.logger::logger.severe("Invalid dates: end date occurs before start date")
   }
   
   #Bounds date checking
   #NOAA's GEFS database started recording data January 1, 2018.
-  NOAA_GEFS_Startyr = 2008
-  Current_Date = Sys.Date()
-  Current_Year = lubridate::year(Current_Date)
-  Current_Month = lubridate::month(Current_Date)
-  Current_Day = lubridate::day(Current_Date)
+  NOAA_GEFS_Start_Date = as.POSIXlt("2008-01-01")
   
-  ##This error checking needs A LOT more work.**********************************************************************
-  if (start_year < NOAA_GEFS_Startyr | end_year > Current_Year) {
-    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the NOAA range (%d:%d)',
-                                        start_year, end_year,
-                                        NOAA+GEFS_Startyr, Current_Year))
+  if (compare.POSIX.dates(Sys.Date(), end_date) < 0 || compare.POSIX.dates(start_date, NOAA_GEFS_Start_Date) < 0) {
+    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the NOAA range (%d:%d), or date provided is beyond current date.',
+                                        lubridate::year(start_date), lubridate::year(end_date),
+                                        lubridate::year(NOAA_GEFS_Start_Date), lubridate::year(Sys.Date())))
   }
+  #End date error checking
   
-  #Date error checking complete.
+  #Set up the data frame with file information.  This data frame will be returned and stored in the BETY database to 
+  #locate the files later.
+  #file_info <- data.frame(
+   # file = character(rows),
+  #  host = character(rows),
+  #  mimetype = character(rows),
+  #  formatname = character(rows),
+   # startdate = character(rows),
+  #  enddate = character(rows),
+    #dbfile.name =                   #paste("GFDL", model, scenario, ensemble_member, sep = "."),   # 'GFDL',
+   # stringsAsFactors = FALSE
+  #)
+  
   
   #NOAA variable downloading
   
@@ -102,7 +119,7 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat, lon,
   #  print(sprintf("cf / noaa   :   %s / %s", cf_var_names[[i]], noaa_var_names[[i]]))
   #}
   
-  get_date = POSIXtoGEFS(start_date)
+  get_date = POSIX.to.GEFS(start_date)
   
   noaa_data = list()
   
@@ -190,5 +207,4 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat, lon,
       }
     }
   }
-  
 }
