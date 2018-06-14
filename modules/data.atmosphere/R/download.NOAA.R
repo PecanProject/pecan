@@ -6,11 +6,11 @@
 ##' rnoaa::gefs requires a nate in the format YYYYMMDD instead of a POSIX date
 ##' This function requires that the lubridate package be installed.
 POSIX.to.GEFSDate <- function(d) {
-  mon = lubridate::month(start_date)  #Extract parts of the date
-  day = lubridate::month(start_date)
+  mon = lubridate::month(d)  #Extract parts of the date
+  day = lubridate::day(d)
   if (mon < 10) { mon = paste0("0", mon) } #Add leading zeros, if necessary
   if (day < 10) { day = paste0("0", day) }
-  return(paste0(lubridate::year(start_date), mon, day)) #concantanate parts of the date and return
+  return(paste0(lubridate::year(d), mon, day)) #concantanate parts of the date and return
 }
 
 ##' Helper function
@@ -56,13 +56,13 @@ compare.POSIX.dates <- function(d1, d2) {
 ##' @param lon site longitude in decimal degrees
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical.  Print additional debug information.
-##' @param include_forecast logical.  If TRUE, forecast data is tacked on to the end of the data set
+##' @param include_forecast logical.  If TRUE, 16 day forecast data is tacked on to the end of the data set
 ##' @param ... Other arguments, currently ignored
 ##' @export
 ##' 
 ##' @author Luke Dramko
 ##' 
-download.NOAA <- function(outfolder, start_date, end_date, site_id, lat, lon,
+download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
                              overwrite = FALSE, verbose = FALSE, include_forecast = FALSE, ...) {
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -102,15 +102,20 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat, lon,
   
   #We want data for each of the following variables. Here, we're just getting the raw data; later, we will convert it to the 
   #cf standard format when relevant.
-  noaa_var_names = list("Temperature_height_above_ground_ens", "Pressure_surface_ens", "Relative_humidity_height_above_ground_ens", "Downward_Long-Wave_Radp_Flux_surface_6_Hour_Average_ens", 
+  noaa_var_names = c("Temperature_height_above_ground_ens", "Pressure_surface_ens", "Relative_humidity_height_above_ground_ens", "Downward_Long-Wave_Radp_Flux_surface_6_Hour_Average_ens", 
                    "Downward_Short-Wave_Radiation_Flux_surface_6_Hour_Average_ens", "Total_precipitation_surface_6_Hour_Accumulation_ens",
                    "u-component_of_wind_height_above_ground_ens", "v-component_of_wind_height_above_ground_ens")
   
   #These are the cf standard names
-  cf_var_names = list("air_temperature", "air_pressure", "specific_humidity", "surface_downwelling_longwave_flux_in_air", 
+  cf_var_names = c("air_temperature", "air_pressure", "specific_humidity", "surface_downwelling_longwave_flux_in_air", 
                       "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", "eastward_wind", "northward_wind")
   
-  #cf_var_names and noaa_var_names are parelell arrays
+  #Creating a data frame to store all of the information about the variables:
+  var_info = data.frame(
+    noaa_var_names,
+    cf_var_names
+  )
+  
   
   # This debugging loop allows you to check if the cf variables are correctly mapped to the equivalent
   # NOAA variable names.  This is very important, as much of the processing below will be erroneous if 
@@ -119,9 +124,44 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat, lon,
   #  print(sprintf("cf / noaa   :   %s / %s", cf_var_names[[i]], noaa_var_names[[i]]))
   #}
   
-  get_date = POSIX.to.GEFS(start_date)
-  
   noaa_data = list()
+  
+  #Setting up the loops.  num_days represents the length of time in days before the start and end of the data being collected.
+  num_days = lubridate::time_length(lubridate::interval(start_date, end_date), unit="day")
+  request_time = Sys.time()
+  
+  
+  ###NOTE: THE FUNCTION BELOW MAY FAIL IF THE DATA DOESN'T EXIST ON THE MOST CURRENT AVALIABLE DAY (FOR EXAMPLE,
+  ###YOU REQUEST 6.00 P.M. DATA AT 1.00 PM)
+  
+  #We're gathering data for each variable we want in the NOAA data set
+  for (i in 1:length(cf_var_names)) {
+    #Some code...
+    current_date = start_date #Incremented in the loop to fetch the proper day's data for the
+    gefs_date = POSIX.to.GEFSDate(current_date)
+    
+    var_dat = matrix(rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0000", date=gefs_date)$data,
+                     nrow=21, ncol=1)
+    var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0600", date=gefs_date)$data)
+    var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1200", date=gefs_date)$data)
+    var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1800", date=gefs_date)$data)
+    j = 1
+    while (j < num_days) {
+      current_date = current_date + lubridate::days(1)  #increments the date by one
+      gefs_date = POSIX.to.GEFSDate(current_date)
+      var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0600", date=gefs_date)$data)
+      var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0600", date=gefs_date)$data)
+      var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1200", date=gefs_date)$data)
+      var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1800", date=gefs_date)$data)
+      j = j + 1   
+    }
+    noaa_data[[i]] = var_dat
+    #some code...
+  }
+  
+  print(noaa_data[[1]])
+  
+  quit(save = "no", status = 0)  ###Currently here to keep the function from running past this point.  For debugging only.
   
   #This code actually does the downloading of the information using the rnoaa gefs function.  It is stored
   #as a list of lists (the data itself is also stored in a list).
