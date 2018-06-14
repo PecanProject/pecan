@@ -690,10 +690,10 @@ return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, ru
       bprior$parama[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$parama
       bprior$paramb[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$paramb
     }else{ # assume log-normal(0,0.5)
-      PEcAn.logger::logger.info(paste0("No prior is defined for the bias parameter, assuming lnorm(0, 0.5)"))
+      PEcAn.logger::logger.info(paste0("No prior is defined for the bias parameter, assuming standard log-normal"))
       bprior$distn[b]  <- "lnorm"
       bprior$parama[b] <- 0
-      bprior$paramb[b] <- 0.5
+      bprior$paramb[b] <- 1
     }
   }
   bias.prior <- bprior
