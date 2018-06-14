@@ -190,7 +190,5 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat, lon,
       }
     }
   }
-   
-  print("Done.")
   
 }
