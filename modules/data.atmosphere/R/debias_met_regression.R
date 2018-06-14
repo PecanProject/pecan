@@ -159,7 +159,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       # rain.train <- met.bias[met.bias$dataset==dat.train.orig,]
       rainless <- vector()
       cons.wet <- vector()
-      for(y in min(train.data$time$Year):max(train.data$time$Year)){
+      for(y in unique(train.data$time$Year)){
         for(i in 1:ncol(train.data$precipitation_flux)){
           rain.now <- train.data$precipitation_flux[train.data$time$Year==y, i]
           
