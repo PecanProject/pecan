@@ -81,20 +81,6 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat, lon,
   
   #Date error checking complete.
   
-  #Set up the data frame with file information.  This data frame will be returned and stored in the BETY database to 
-  #locate the files later.
-  file_info <- data.frame(
-    file = character(rows),
-    host = character(rows),
-    mimetype = character(rows),
-    formatname = character(rows),
-    startdate = character(rows),
-    enddate = character(rows),
-    dbfile.name =                   #paste("GFDL", model, scenario, ensemble_member, sep = "."),   # 'GFDL',
-    stringsAsFactors = FALSE
-  )
-  
-  
   #NOAA variable downloading
   
   #We want data for each of the following variables. Here, we're just getting the raw data; later, we will convert it to the 
