@@ -25,6 +25,7 @@ Depends:
     earth,
     XML,
     shiny,
+    shinyjs,
     PEcAn.DB,
     RPostgreSQL,
     dplyr,
