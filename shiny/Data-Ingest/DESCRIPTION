@@ -1,0 +1,19 @@
+Type: Shiny
+Title: Data-Ingest
+License: FreeBSD + file LICENSE
+Date: 2018-06-14
+Author: Liam Burke liam.burke24@gmail.com
+Tags: PEcAn
+DisplayMode:showcase 
+Depends:
+    shiny,
+    PEcAn.data.land,
+    PEcAn.utils,
+    shinydashboard,
+    dataone,
+    stringr,
+    shinyFiles,
+    DT,
+    shinycssloaders
+    
+  
