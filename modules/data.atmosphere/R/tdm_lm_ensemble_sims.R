@@ -408,7 +408,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
       # If we ran out of attempts, but want to foce sanity, do so now
       if(force.sanity & n.new>0){
         # If we're still struggling, but we have at least some workable columns, lets just duplicate those:
-        if(n.new<(round(n.ens/2)+1)){
+        if(n.new<n.ens){
           cols.safe <- 1:ncol(dat.pred)
           cols.safe <- cols.safe[!(cols.safe %in% cols.redo)]
           dat.pred[,cols.redo] <- dat.pred[,sample(cols.safe, n.new, replace=T)]
