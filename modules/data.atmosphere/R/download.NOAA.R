@@ -110,6 +110,8 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   cf_var_names = c("air_temperature", "air_pressure", "specific_humidity", "surface_downwelling_longwave_flux_in_air", 
                       "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", "eastward_wind", "northward_wind")
   ###cf_var_names = c("air_temperature")
+  cf_var_units = c("K", "Pa", "1", "Wm-2", "Wm-2", "kgm-2s-1", "ms-1", "ms-1")  #Negative numbers indicate negative exponents
+  
 
 
   ###May want to delete this
@@ -138,22 +140,16 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   #to request data for 12 a.m. or 6:00 p.m. - the data doesn't yet exist.
   ends_today = FALSE
   if (as.POSIXlt(Sys.Date()) == end_date) {
-    print(sprintf("Entered: first if statment.  Dates are %s and %s.", as.POSIXlt(Sys.Date()), end_date))
     ends_today = TRUE
     #The last day will be handled in its own special block of code...
   } else {
     num_days = num_days + 1 # ...otherwise, we need to do it in the main loop.
   }
   
-  print(sprintf("num_days = %d", num_days))
-  
   #This is where the actual download of the data occurs.
   i = 1
   max = length(cf_var_names)
   while (i <= max && as.logical(num_days)) {
-    ###Debugging
-    print(sprintf("while loop: i = %d", i))
-    print(sprintf("date = %s", start_date))
     current_date = start_date #Incremented in the loop to fetch the proper day's data
     
     gefs_date = POSIX.to.GEFSDate(current_date)
@@ -167,9 +163,6 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     while (j < num_days) {
       current_date = current_date + lubridate::days(1)  #increments the date by one
       
-      ###Debugging
-      print(sprintf("    while loop: j = %d; date = %s", j, current_date))
-      
       gefs_date = POSIX.to.GEFSDate(current_date)
       var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0000", date=gefs_date)$data)
       var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0600", date=gefs_date)$data)
@@ -181,29 +174,26 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     i = i+1
   }
   
-  print("Finished main loop.  Moving on to the special cases.")
-  
   last_data_set_at = "1800"
   
   if (ends_today) {
-    print("Entered ends_today")
     for (i in 1:length(cf_var_names)) {
       gefs_date = POSIX.to.GEFSDate(end_date)
       last_data_set_at = "0000"
       hour = lubridate::hour(as.POSIXlt(Sys.time()))
       continue = TRUE
       
-      print(sprintf("hour = %d", hour))
-      
-      if (length(noaa_data) != 0) { #The data matrix already exists (it was created in the loop above), and we just have to add to it.
+      print("Good")
+      print(noaa_data)
+      if (num_days > 0) { #The data matrix already exists (it was created in the loop above), and we just have to add to it.
+        print(sprintf("Entered if: i = %d; length = %d", i, length(noaa_data)))
         noaa_data[[i]] = cbind(noaa_data[[i]], rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0000", date=gefs_date)$data)
       } else { #we have to make the data matrix and put it in the array.
+        print(sprintf("Entered else: i = ; length = ", i, length(noaa_data)))
         noaa_data[[i]] = matrix(rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0000", date=gefs_date)$data,
                            nrow=21, ncol=1)
       }
-      
-      print(sprintf("variable = %s", cf_var_names[i]))
-      print("Got through hour == 0")
+      print("2. ")
       
       #The "hour > 6" statement is an attempt to reconcile the current time with the GEFS data should become avaliable.  However, this
       #is not assured, and so the tryCatch block exists to handle cases when data are not yet avaliable.
@@ -218,7 +208,7 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
           })
       } 
       
-      print("Got through hour == 6")
+      print("3. ")
       
       if (hour > 12 && continue) {
         noaa_data[[i]] = tryCatch({
@@ -231,7 +221,7 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
           })
       }
       
-      print("Got through hour == 12")
+      print("4. ")
       
       if (hour > 18 && continue) {
         noaa_data[[i]] = tryCatch({
@@ -244,27 +234,16 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
           })
       }
       
-      print("Got through hour == 18")
+      print("5. ")
     }
   }
   
-  print(noaa_data)
-  
-  
   if (include_forecast) {
-    ###debugging
-    print("Entered include_forecast")
-    
     for (i in 1:length(cf_var_names)) {
-      print(sprintf("Line 259: i = %d, var = %s", i, cf_var_names[i]))
+      print(cf_var_names[i])
       noaa_data[[i]] = cbind(noaa_data[[i]], rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 2:64, forecast_time = last_data_set_at, date=gefs_date)$data)
     }
   }
-  
-  print("Done.")
-  
-  print(noaa_data)
-  print("***************************************************************")
   
   ###################################################
   # Not all NOAA data units match the cf data standard.  In this next section, data are processed to
@@ -279,13 +258,6 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   humid_data = noaa_data[humid_index][[1]]
   temperature_data = noaa_data[cf_var_names == "air_temperature"][[1]]
   pressure_data = noaa_data[cf_var_names == "air_pressure"][[1]]
-  
-  ###print("***************** relative humidity ***********************")
-  ###print(humid_data)
-  ### print("****************************************")
-  ### print(temperature_data)
-  ### print("****************************************")
-  ### print(pressure_data)
    
   #Depending on the volume and dimensions of data you download, sometimes R stores it as a vector and sometimes
   #as a matrix; the different cases must be processed with different loops.
@@ -318,28 +290,47 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   
   setwd(outfolder)
   
-  #Generate file name
-  styr = lubridate::year(start_year)
-  edyr = lubridate::year(end_year)
-  yrcomponent = styr
-  if (styr != endyr) {
-    yrcomponent = styr, 
+  #Generate file name.  File names need to account for the specificity in the data.
+  st = lubridate::year(start_date)
+  ed = lubridate::year(end_date)
+  yrcomponent = st
+  if (st != ed) { yrcomponent = paste0(st, "-", ed) } #This could be a function, but it's rather simple and specific for that.
+  
+  st = lubridate::month(start_date)
+  ed = lubridate::month(end_date)
+  moncomponent = st
+  if (st != ed) { moncomponent = paste0(st, "-", ed) }
+  
+  st = lubridate::day(start_date)
+  ed = lubridate::day(end_date)
+  dycomponent = st
+  if (st != ed) { dycomponent = paste0(st, "-", ed) }
+  
+  flname = paste("NOAA", "GEFS", yrcomponent, moncomponent, dycomponent, "nc", sep=".")
+  
+  #Begin working the netcdf4 saving format
+  #define dimensions.  Note that all variables will have the same dimension, so we can reuse them for all variables.  The data is two dimensional: one dimension
+  #is time (measured in periods of six hours), while the other one is which particular ensemble the data is drawn from.
+  time_dim = ncdf4::ncdim_def("Time", "6 Hours", 1:ncol(noaa_data[[1]]))
+  ensemble_dim = ncdf4::ncdim_def("Ensemble Number", "Unitless", 1:21)
+  dimensions_list = list(ensemble_dim, time_dim)
+  
+  nc_var_list = list()
+  
+  for (i in 1:length(cf_var_names)) {
+    nc_var_list[[i]] = ncdf4::ncvar_def(cf_var_names[i], cf_var_units[i], dimensions_list, missval=NaN)
   }
   
+  #file pointer
+  nc_flptr = ncdf4::nc_create(flname, nc_var_list, verbose=verbose)
   
-  quit(save = "no", status = 0)  ###Currently here to keep the function from running past this point.  For debugging only.
-  
-  for (i in 1:length(noaa_data)) {
-    v = noaa_data[[i]]
-    flname = paste(NOAA.GE, v[[2]], cf_var_names[i] ,"NOAA", "Rdata", sep= ".")
-    if (overwrite | !file.exists(flname)) {
-      save(v, file = flname)
-    } else {
-      PEcAn.logger::logger.info(paste0("File ", flname, " already exists, and was not overwritten."))
-      if (verbose) {
-         PEcAn.logger::logger.info(paste0("The file represents ", cf_var_names[i] ," data from ", substr(v[[1]],1,4) , "-",
-                                       substr(v[[1]],5,6) , "-", substr(v[[1]],8,9), ", at ", v[[2]], " hrs."))
-      }
-    }
+  for (i in 1:length(nc_var_list)) {
+    ncdf4::ncvar_put(nc_flptr, nc_var_list[[i]], noaa_data[[i]])
   }
+  
+  #Define some useful global attributes
+  ncdf4::ncatt_put(nc_flptr, 0, "includes_forecast", as.integer(include_forecast)) #Unfortuenately, we have a tense change here in the variable names - the attribute
+                                                                  #is called "includes_forecast", while the variable is called "include_forecast".
+  
+  ncdf4::nc_close(nc_flptr)
 }
