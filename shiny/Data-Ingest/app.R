@@ -1,11 +1,13 @@
-library(shiny)
-library(PEcAn.data.land)
-library(PEcAn.utils)
-library(shinydashboard)
-library(dataone)
-library(stringr)
-library(shinyFiles)
-library(DT)
+ library(PEcAn.data.land)
+ library(PEcAn.visualization)
+ library(PEcAn.utils)
+ library(shinydashboard)
+ library(dataone)
+ library(stringr)
+ library(shinyFiles)
+ library(DT)
+ library(shinyjs)
+ library(shiny)
 
 #############################################################################
 ################################## UI #######################################
@@ -43,7 +45,8 @@ ui <- dashboardPage(
              tabName = "step4", 
              icon = icon("cog")
     )
-  )),
+  )
+  ),
   dashboardBody(
     tabItems(
     ################ Tab 1 -- DataONE download ##################################
@@ -58,9 +61,13 @@ ui <- dashboardPage(
                 p("Copy and Paste the following example data sets:"),
                 p("doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87"),
                 p("doi:10.6073-pasta-f31b28b912e6051bf1d383ff1ef18987"),
-                actionButton(inputId = "D1Button", label = "Download"),
+                 actionButton(inputId = "D1Button", label = "Download"),
                 hr(),
-                DTOutput("identifier"),
+                conditionalPanel(condition="$('html').hasClass('shiny-busy')",
+                                 tags$div(id="loadmessage",
+                                          HTML(paste0("<div style='background-color:lightgreen'> <h3>Download in Progress...</h3> <p>This download may take a couple of minutes. This is a placeholder for a spinning loader.</p> </div>"))
+                                           )), 
+                 DTOutput("identifier"), 
                 hr(),
                 actionButton(inputId = "D1FinishButton", label = "Finish Download"),
                 hr(),
@@ -100,7 +107,9 @@ ui <- dashboardPage(
     tabItem(tabName = "step4",
             h2("under construction"))
     
-  ))
+  )),
+  title = "PEcAn Data Ingest",
+  skin =  "green"
 )
 ############################################################################################################
 ######################################### SERVER SIDE ######################################################
@@ -113,7 +122,6 @@ server <- function(input, output, session) {
   Shared.data <- reactiveValues(downloaded=NULL)
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
-  # print(temp) #for testing only -- show in console only
   
 ##################### DataONE Download #############################################  
   ## Create two sub-directories in the tempfile ##
@@ -121,13 +129,10 @@ server <- function(input, output, session) {
     dir.create(d1_tempdir, showWarnings = F)
   local_tempdir <- file.path(temp, "local_tempdir")
     dir.create(local_tempdir, showWarnings = F)
-    
-  # print(list.files(temp)) # for testing only -- show
 
    observeEvent(input$D1Button, {
      # run dataone_download with input from id on click
      PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # store files in tempfile
-      #newdir_D1 <<- file.path(temp, "d1_tempdir/DataOne_doi:10.6073-pasta-f31b28b912e6051bf1d383ff1ef18987") # For Testing (so I don't have to re-download the data)
      list_of_d1_files <<- list.files(newdir_D1)
      D1_file_df <- as.data.frame(list_of_d1_files)
         
