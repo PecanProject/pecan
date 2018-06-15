@@ -228,7 +228,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
       
       lags.init[["air_temperature"]] <- data.frame(array(mean(met.out$dat.source$air_temperature_maximum[lag.use], met.out$dat.source$air_temperature_minimum[lag.use]), dim=c(1, n.ens)))
       lags.init[["air_temperature_min"]] <- data.frame(array(met.out$dat.source$air_temperature_minimum[lag.use], dim=c(1, n.ens)))
-      lags.init[["air_temperature_max"]] <- data.frame(array(met.out$dat.source$air_temperature_minimum[lag.use], dim=c(1, n.ens)))
+      lags.init[["air_temperature_max"]] <- data.frame(array(met.out$dat.source$air_temperature_maximum[lag.use], dim=c(1, n.ens)))
       for(v in vars.hour[2:length(vars.hour)]){
         lags.init[[v]] <- data.frame(array(met.out$dat.source[[v]][lag.use], dim=c(1,n.ens)))
       }
