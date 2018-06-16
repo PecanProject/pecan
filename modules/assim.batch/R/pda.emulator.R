@@ -190,11 +190,11 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     if(!is.null(sf)){
       load(settings$assim.batch$sf.samp)
     }else{
-      sf.samples <- NULL
+      sf.samp <- NULL
     }
     sampled_knots <- sample_MCMC(settings$assim.batch$mcmc.path, n.param.orig, prior.ind.orig, 
                                      n.post.knots, knots.params.temp,
-                                     prior.list, prior.fn, sf, sf.samples)
+                                     prior.list, prior.fn, sf, sf.samp)
 
     knots.params.temp <- sampled_knots$knots.params.temp
     probs.round.sf    <- sampled_knots$sf_knots
@@ -451,7 +451,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   # define range to make sure mcmc.GP doesn't propose new values outside
   
   # NOTE: this will need to change when there is more than one bias parameter
-  # but then there are other things that needs to change in the emulator workflow
+  # but then, there are other things that needs to change in the emulator workflow
   # such as the way proposed parameters are used in estimation in get_ss function
   # so punting this development until it is needed
   rng <-  t(apply(SS[[isbias]][,-ncol(SS[[isbias]])], 2, range))
@@ -460,18 +460,20 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     resume.list <- list()
     
+    # start from knots
+    indx <- sample(seq_len(settings$assim.batch$n.knot), settings$assim.batch$chain)
+    
     for (c in seq_len(settings$assim.batch$chain)) {
       jmp.list[[c]] <- sapply(prior.fn.all$qprior, 
                               function(x) 0.1 * diff(eval(x, list(p = c(0.05, 0.95)))))[prior.ind.all]
       jmp.list[[c]] <- sqrt(jmp.list[[c]])
       
-      init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n = 1)))
-      names(init.x) <- rownames(prior.all)[prior.ind.all]
-      init.list[[c]] <- init.x
+      init.list[[c]] <- as.list(SS[[isbias]][indx[c], -ncol(SS[[isbias]])])
       resume.list[[c]] <- NA
     }
   }
   
+
   if (!is.null(settings$assim.batch$mix)) {
     mix <- settings$assim.batch$mix
   } else if (sum(n.param) > 1) {
