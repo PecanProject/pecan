@@ -231,8 +231,7 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
   sf.samp <- as.mcmc.list(lapply(sf.samp.list, mcmc))
   
   # saving this before discarding burnin, because in resampling we want to keep the samples together
-  sf.samples <- as.data.frame(do.call("rbind", sf.samp))
-  save(sf.samples, file = sf.samp.filename)
+  save(sf.samp, file = sf.samp.filename)
   
   burnin <- getBurnin(sf.samp, method = "gelman.plot")
   
@@ -242,10 +241,10 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
   sf.subset.list <- list()
   sf.subset.list[[1]] <- as.data.frame(do.call("rbind", sf.samp))
 
-  filename.flag <- basename(sf.samp.filename)
+  filename.flag <- paste0("_", basename(sf.samp.filename))
   
   sf.post.distns <- PEcAn.MA::approx.posterior(trait.mcmc = sf.subset.list[[1]], priors = sf.prior,
-                                               outdir = dirname(sf.filename),
+                                               outdir = dirname(sf.samp.filename),
                                                filename.flag = filename.flag)
   
   
