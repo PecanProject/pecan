@@ -5,7 +5,7 @@
 \title{Helper function to sample from previous MCMC chain while proposing new knots}
 \usage{
 sample_MCMC(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots,
-  knots.params.temp, prior.list, prior.fn, sf, sf.samples)
+  knots.params.temp, prior.list, prior.fn, sf, sf.samp)
 }
 \arguments{
 \item{mcmc_path}{path to previous emulator mcmc samples object}
@@ -24,7 +24,7 @@ sample_MCMC(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots,
 
 \item{sf}{SF parameter names}
 
-\item{sf.samples}{SF parameters MCMC samples}
+\item{sf.samp}{SF parameters MCMC samples}
 }
 \description{
 Helper function to sample from previous MCMC chain while proposing new knots
