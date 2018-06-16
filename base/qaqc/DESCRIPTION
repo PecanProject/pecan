@@ -10,6 +10,8 @@ Depends:
     plotrix
 Imports:
     PEcAn.logger
+Suggests:
+	testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
