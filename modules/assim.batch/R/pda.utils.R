@@ -793,12 +793,12 @@ return_hyperpars <- function(assim.settings, inputs){
 ##' @param prior.list PDA-prior list
 ##' @param prior.fn list for parameter d/r/q/p functions
 ##' @param sf SF parameter names
-##' @param sf.samples SF parameters MCMC samples
+##' @param sf.samp SF parameters MCMC samples
 ##' 
 ##' @author Istem Fer
 ##' @export
 sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp, 
-                        prior.list, prior.fn, sf, sf.samples){
+                        prior.list, prior.fn, sf, sf.samp){
   
   PEcAn.logger::logger.info("Sampling from previous round's MCMC")
   
@@ -837,9 +837,16 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   new_knots <- mcmc_samples[get_samples,]
   
   # when using sf, need to sample from sf mcmc samples and calculate back actual parameter values
-  if(!is.null(sf.samples)){
-    get_samples <- sample(1:nrow(sf.samples), n.post.knots)
-    sf_knots    <- sf.samples[get_samples,]
+  if(!is.null(sf.samp)){
+    
+    sf_samples <- list()
+    for (i in seq_along(sf.samp)) {
+      sf_samples[[i]] <- window(sf.samp[[i]], start = maxburn)
+    }
+    sf_samples <- do.call(rbind, sf_samples)
+    
+    get_samples <- sample(1:nrow(sf_samples), n.post.knots)
+    sf_knots    <- sf_samples[get_samples,]
     
     ind <- 0
     for(i in seq_along(n.param.orig)){
