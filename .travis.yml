@@ -124,7 +124,7 @@ script:
   # TODO: Would be nice to add `-Otarget` after `-j"$NCPUS"` below,
   # but not supported in Make 3.x.
   # When Travis updates, check for Make 4 and add -O if available.
-  - make -j"$NCPUS"
+  - make # TODO: can't use -j here; rtm compilation not parallel-safe
   - echo 'Testing PEcAn packages'
   - make -j"$NCPUS" test
   - make -j"$NCPUS" document
