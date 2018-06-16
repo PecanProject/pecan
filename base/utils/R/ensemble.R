@@ -144,19 +144,16 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
     for (pft.i in seq(pft.samples)) {
       ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
       
-      if(length(pft.samples[[pft.i]])>0){
-        # coming from anything that fits parmeters jointly (PDA / global-MA), we want to preserve correlations
-        same.i <- stats::quantile(pft.samples[[pft.i]][[1]], random.samples[, 1]) # use 1st
-        # will use these same indices for samples that will go together
-        same.i <- which(round(pft.samples[[pft.i]][[1]], digits = 4) %in% round(same.i, digits=4))
-        same.i <- same.i[!duplicated(round(pft.samples[[pft.i]][[1]], digits = 4)[same.i])]
-        if(length(same.i) != ensemble.size & !is.null(param.names)){ # can numerical errors give us hard time in the above equality checks? 
-          # throw a warning, but also don't break
-          PEcAn.logger::logger.warn("There might be some numerical error matching the quantiles. Defaulting to uniform sampling of the chain.")
-          same.i <- ceiling(runif(ensemble.size, 1, length(pft.samples[[pft.i]][[1]])))
+      # meaning we want to keep MCMC samples together
+      if(length(pft.samples[[pft.i]])>0 & !is.null(param.names)){ 
+        # TODO: for now we are sampling row numbers uniformly
+        # throw a warning if other methods were requested 
+        if(method != "uniform"){
+          PEcAn.logger::logger.warn("Other approaches are not implemented yet for sampling jointly. Defaulting to uniform sampling of the chain.")
         }
+        same.i <- ceiling(runif(ensemble.size, 1, length(pft.samples[[pft.i]][[1]])))
       }
-     
+      
       for (trait.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
         if(names(pft.samples[[pft.i]])[trait.i] %in% param.names[[pft.i]]){ # keeping samples
