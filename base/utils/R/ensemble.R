@@ -149,7 +149,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
         if(method != "uniform"){
           PEcAn.logger::logger.warn("Other approaches are not implemented yet for sampling jointly. Defaulting to uniform sampling of the chain.")
         }
-        same.i <- ceiling(runif(ensemble.size, 1, length(pft.samples[[pft.i]][[1]])))
+        same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
       }
       
       for (trait.i in seq(pft.samples[[pft.i]])) {
