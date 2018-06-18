@@ -15,7 +15,9 @@ Depends:
     PEcAn.DB,
     PEcAn.utils,
     dbplyr, 
-    dataone
+    redland,
+    datapack,
+    dataone,
 Imports:
     PEcAn.logger,
     PEcAn.remote,
