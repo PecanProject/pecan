@@ -67,7 +67,7 @@ ui <- dashboardPage(
                                  tags$div(id="loadmessage",
                                           HTML(paste0("<div style='background-color:lightgreen'> <h3>Download in Progress...</h3> <p>This download may take a couple of minutes. This is a placeholder for a spinning loader.</p> </div>"))
                                            )), 
-                 DTOutput("identifier"), 
+                DTOutput("identifier"), 
                 hr(),
                 actionButton(inputId = "D1FinishButton", label = "Finish Download"),
                 hr(),
@@ -89,6 +89,12 @@ ui <- dashboardPage(
                   placeholder = "Drag and drop files here"
                 ),
                 tableOutput("contents"),
+                hr(),
+                textInput(
+                  "new_local_filename",
+                  label = h4("Set Destination Directory"),
+                  placeholder = "Enter New Directory Name Here"
+                ),
                 actionButton(inputId = "LocalFinishButton", label = "Finish Download"),
                 hr(),
                 p("Location of Downloaded Files:"),
@@ -151,16 +157,11 @@ server <- function(input, output, session) {
      # create the new directory in /dbfiles
      dir.create(paste0(PEcAn_path, d1_dirname))
      
-     ### Return a warning if the directory already exists ### Not working yet
-   # if (!file.exists(file.path(PEcAn_path, d1_dirname))){
-     # print("File Already Exists")
-    #}else{
      n <- length(list_of_d1_files) 
         for (i in 1:n){
           base::file.copy(file.path(newdir_D1, list_of_d1_files[i]), file.path(PEcAn_path, d1_dirname, list_of_d1_files[i]))
         }
      output$D1dbfilesPath <- renderText({paste0(PEcAn_path, d1_dirname)}) # Print path to data
-   # }
    })
    
   ######### FileInput ########################################
@@ -186,22 +187,18 @@ server <- function(input, output, session) {
        base::file.rename(oldpath[i], file.path(temp, "local_tempdir", inFile[i, "name"])) # rename the file to include the original filename
        base::unlink(dirname(oldpath[i]), recursive = TRUE) # remove the file with the userhostile name
     }
-     return(list.files(file.path(temp, "local_tempdir"))) # I think I should move this too
+     return(list.files(file.path(temp, "local_tempdir"))) 
   })
    
    # Move files to correct dbfiles location (make a custom function for this?)
    observeEvent(input$LocalFinishButton, {
      # create the new directory in /dbfiles
-     local_dirname <- "TESTDIR_LOCAL_DOWNLOAD" # I will replace this with a naming field in the next PR
+     local_dirname <- gsub(" ", "_", input$new_local_filename) # Are there any other types of breaking chatacters that I should avoid with directory naming? 
      dir.create(file.path(PEcAn_path, local_dirname))
      
      path_to_local_tempdir <- file.path(local_tempdir)
      list_of_local_files <- list.files(path_to_local_tempdir) 
-     
-     ### Return a warning if the directory already exists ### Not working yet
-     # if (!file.exists(file.path(PEcAn_path, d1_dirname))){
-     # print("File Already Exists")
-     #}else{
+    
      n <- length(list_of_d1_files)
      for (i in 1:n){
        base::file.copy(file.path(path_to_local_tempdir, list_of_local_files[i]), file.path(PEcAn_path, local_dirname, list_of_local_files[i]))
