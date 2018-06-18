@@ -67,8 +67,8 @@ ui <- dashboardPage(
                 conditionalPanel(condition="$('html').hasClass('shiny-busy')",
                                  tags$div(id="loadmessage",
                                           HTML(paste0("<div> <h3>Download in Progress.</h3> <p>This download may take a couple of minutes.</p> <img src=\'http://www.lettersmarket.com/uploads/lettersmarket/blog/loaders/common_green/ajax_loader_green_64.gif' height=\"64\" width=\"64\"> </div>"))
-                                           )), #"<div style='background-color:lightgreen'> <h3>Download in Progress...</h3> <p>This download may take a couple of minutes. This is a placeholder for a spinning loader.</p> </div>"
-                DTOutput("identifier"), # http://www.lettersmarket.com/uploads/lettersmarket/blog/loaders/common_green/ajax_loader_green_64.gif
+                                           )), 
+                DTOutput("identifier"), 
                 actionButton(inputId = "D1FinishButton", label = "Finish Download"),
                 hr(),
                 p("Location of Downloaded files:"),
