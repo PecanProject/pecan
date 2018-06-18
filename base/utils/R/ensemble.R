@@ -70,7 +70,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain  
 ##' @param env.samples env samples
 ##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
-##' @param param.names a list of parameter names that were fitted either by MA or PDA, important parameter, if NULL parameters will be resampled independently
+##' @param param.names a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently
 ##' 
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
@@ -107,8 +107,6 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       random.samples <- randtoolbox::halton(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
-      #generate random numbers between 1 and same.size
-      same.i <- random.samples[,1]
     } else if (method == "sobol") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, ...)
