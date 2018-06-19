@@ -136,7 +136,7 @@ script:
   - touch .check/modules/benchmark # delete when #1978 closed
   - touch .check/modules/data.land # delete when #1977 closed
   - touch .check/modules/rtm # delete when #1976 closed
-  - make -j2 check
+#  - make -j2 check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 
