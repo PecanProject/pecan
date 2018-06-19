@@ -28,6 +28,7 @@ model2netcdf.FATES <- function(outdir) {
       
       ## define variable
       oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
+      if (oldunits=="gC/m^2/s") oldunits <- "gC m-2 s-1"
       if(is.null(newunits)) newunits = oldunits
       newvar <- ncdf4::ncvar_def(name = newname, units = newunits, longname=long_name, dim = xyt)
       
@@ -94,7 +95,7 @@ model2netcdf.FATES <- function(outdir) {
         ### build netCDF data
         ## !! TODO: ADD MORE OUTPUTS HERE
         out <- NULL
-        out <- var_update(out,"AR","AutoResp","kgC m-2 s-1","Autotrophic Respiration")
+        out <- var_update(out,"AR","AutoResp","kg C m-2 s-1","Autotrophic Respiration")
         out <- var_update(out,"GPP","GPP","kgC m-2 s-1","Gross Primary Productivity")
         out <- var_update(out,"NPP","NPP","kgC m-2 s-1","Net Primary Productivity")
         #out <- var_update(out,"NPP_column","NPP","kgC m-2 s-1") #!! RKnox suggested using NPP not NPP_column
