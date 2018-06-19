@@ -49,8 +49,9 @@ addons:
       - libhdf5-dev
       - libgdal-dev
       - libgdal20
-      - libgdal1h
       - libspatialite-dev
+      - libspatialite5
+      - libgeos-c1v5
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
       - r-cran-ape
