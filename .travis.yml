@@ -51,6 +51,9 @@ addons:
       - libspatialite-dev
       - libspatialite5
       - libgeos-c1v5
+      - libgdal1h
+      - libgeos-c1
+      - liblwgeom-2.2-5
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
       - r-cran-ape
@@ -68,7 +71,6 @@ addons:
       - r-cran-rcpp
       - r-cran-rcurl
       - r-cran-redland
-      - r-cran-rgdal
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-shiny
