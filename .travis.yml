@@ -27,9 +27,9 @@ addons:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
     packages:
-      - libnetcdf-dev
       - liblapack-dev
       - libcurl4-openssl-dev
+      - libnetcdf-dev
       - jags
       - libudunits2-dev
       - python-dev 
