@@ -26,7 +26,7 @@ addons:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
-      -sourceline: 'ppa:ubuntugis/ppa'
+      - sourceline: 'ppa:ubuntugis/ppa'
     packages:
       - liblapack-dev
       - libcurl4-openssl-dev
