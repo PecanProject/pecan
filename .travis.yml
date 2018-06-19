@@ -29,10 +29,7 @@ addons:
     packages:
       - libnetcdf-dev
       - liblapack-dev
-      - libcurl4-gnutls-dev
-      - libraptor2-dev
-      - librasqal3-dev
-      - librdf0-dev
+      - libcurl4-openssl-dev
       - jags
       - libudunits2-dev
       - python-dev 
@@ -66,6 +63,7 @@ addons:
       - r-cran-raster
       - r-cran-rcpp
       - r-cran-rcurl
+      - r-cran-redland
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-shiny
