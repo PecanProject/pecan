@@ -30,6 +30,8 @@ addons:
       - libnetcdf-dev
       - liblapack-dev
       - libcurl4-openssl-dev
+      - libraptor2-dev
+      - librasqal3-dev
       - librdf0-dev
       - jags
       - libudunits2-dev
