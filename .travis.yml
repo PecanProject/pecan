@@ -9,7 +9,7 @@ r:
   - 3.4
 
 # TRUSTY: Change version when 16.04 image is available.
-dist: trusty
+dist: xenial
 sudo: false
 
 cache: 
@@ -26,7 +26,6 @@ addons:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
-      - sourceline: 'ppa:ubuntugis/ppa'
     packages:
       - liblapack-dev
       - libcurl4-openssl-dev
@@ -35,8 +34,6 @@ addons:
       - libudunits2-dev
       - python-dev
       - postgis
-      #- postgresql-10-postgis-2.4
-      #- postgresql-10-postgis-2.4-scripts
       - netcdf-bin
       - bc
       - curl
