@@ -29,7 +29,6 @@ addons:
     packages:
       - libnetcdf-dev
       - liblapack-dev
-      - libcurl4-openssl-dev
       - libcurl4-gnutls-dev
       - libraptor2-dev
       - librasqal3-dev
