@@ -52,6 +52,8 @@ addons:
       - libgdal1h
       - libspatialite5
       - libspatialite-dev
+      - libgeos-c1v5
+      - liblwgeom-2.4.0
       - libgeos-dev
       - gdal-bin
       # R package binaries from c2d4u
