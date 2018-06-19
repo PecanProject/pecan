@@ -41,6 +41,7 @@ Imports:
     REddyProc,
     reshape2,
     rgdal,
+    rnoaa,
     sp,
     stringr (>= 1.1.0),
     tibble,
