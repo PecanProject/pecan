@@ -33,9 +33,10 @@ addons:
       - libnetcdf-dev
       - jags
       - libudunits2-dev
-      - python-dev 
-      - postgresql-10-postgis-2.4
-      - postgresql-10-postgis-2.4-scripts
+      - python-dev
+      - postgis
+      #- postgresql-10-postgis-2.4
+      #- postgresql-10-postgis-2.4-scripts
       - netcdf-bin
       - bc
       - curl
@@ -47,6 +48,7 @@ addons:
       - tcl-dev
       - libhdf5-dev
       - libgdal-dev
+      - libgdal20
       - gdal-bin
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
