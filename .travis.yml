@@ -21,7 +21,7 @@ cache:
   - packages
 
 addons:
-  postgresql: 9.6
+  postgresql: 10
   apt:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
@@ -34,8 +34,8 @@ addons:
       - jags
       - libudunits2-dev
       - python-dev 
-      - postgresql-9.6-postgis-2.3
-      - postgresql-9.6-postgis-2.3-scripts
+      - postgresql-10-postgis-2.4
+      - postgresql-10-postgis-2.4-scripts
       - netcdf-bin
       - bc
       - curl
@@ -136,7 +136,7 @@ script:
   - touch .check/modules/benchmark # delete when #1978 closed
   - touch .check/modules/data.land # delete when #1977 closed
   - touch .check/modules/rtm # delete when #1976 closed
-#  - make -j2 check
+  - make -j2 check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 
