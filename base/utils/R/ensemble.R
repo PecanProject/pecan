@@ -145,9 +145,9 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       # meaning we want to keep MCMC samples together
       if(length(pft.samples[[pft.i]])>0 & !is.null(param.names)){ 
         # TODO: for now we are sampling row numbers uniformly
-        # throw a warning if other methods were requested 
+        # stop if other methods were requested 
         if(method != "uniform"){
-          PEcAn.logger::logger.warn("Other approaches are not implemented yet for sampling jointly. Defaulting to uniform sampling of the chain.")
+          PEcAn.logger::logger.severe("Only uniform sampling is available for joint sampling at the moment. Other approaches are not implemented yet.")
         }
         same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
       }
