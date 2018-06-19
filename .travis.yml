@@ -64,6 +64,7 @@ addons:
       - r-cran-rcpp
       - r-cran-rcurl
       - r-cran-redland
+      - r-cran-rgdal
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-shiny
