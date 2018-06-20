@@ -24,16 +24,9 @@ download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
 \item{verbose}{Turn on verbose output? Default=FALSE}
 
 \item{parallel}{Download in parallel? Default = TRUE.}
-
-\item{ncores}{Number of cores for parallel download. Default is 
-`parallel::detectCores()`}
 }
 \description{
 Download NARR time series for a single site
-}
-\examples{
-download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
-
 }
 \author{
 Alexey Shiklomanov
