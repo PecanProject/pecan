@@ -45,93 +45,22 @@ ui <- dashboardPage(
   skin =  "green"
 )
 ############################################################################################################
-######################################### SERVER SIDE ######################################################
+######################################### SERVER ######################################################
 ############################################################################################################
 
 server <- function(input, output, session) {
-  options(shiny.maxRequestSize = 30 * 1024 ^ 2) #maximum file input size
+  options(shiny.maxRequestSize = 100 * 1024 ^ 2) #maximum file input size
   
   ## Setup ##
   Shared.data <- reactiveValues(downloaded=NULL)
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
-##################### DataONE Download #############################################  
-  ## Create two sub-directories in the tempfile ##
-  d1_tempdir <- file.path(temp, "d1_tempdir")
-    dir.create(d1_tempdir, showWarnings = F)
-  local_tempdir <- file.path(temp, "local_tempdir")
-    dir.create(local_tempdir, showWarnings = F)
-
-   observeEvent(input$D1Button, {
-     # run dataone_download with input from id on click
-     PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # store files in tempfile
-     list_of_d1_files <<- list.files(newdir_D1)
-     D1_file_df <- as.data.frame(list_of_d1_files)
-        
-        
-      # Grab the name of the D1_file from newdir_D1
-      d1_dirname <<- base::sub("/tmp/Rtmp[[:alnum:]]{6}/d1_tempdir/", "", newdir_D1) # let users create their own filenames eventually
-       
-      Shared.data$downloaded <- D1_file_df # Reactive Variable 
-  })
-  
-   # Display downloaded files in data.frame
-   output$identifier <- DT::renderDT({Shared.data$downloaded})
-   
-   # Move files to correct dbfiles location (make a custom function for this?)
-   observeEvent(input$D1FinishButton, {
-     # create the new directory in /dbfiles
-     dir.create(paste0(PEcAn_path, d1_dirname))
-     
-     n <- length(list_of_d1_files) 
-        for (i in 1:n){
-          base::file.copy(file.path(newdir_D1, list_of_d1_files[i]), file.path(PEcAn_path, d1_dirname, list_of_d1_files[i]))
-        }
-     output$D1dbfilesPath <- renderText({paste0(PEcAn_path, d1_dirname)}) # Print path to data
-   })
+##################### DataONE Download ############################################# 
+  source("server_files/d1_download_svr.R", local = TRUE)
    
   ######### FileInput ########################################
-  output$contents <- renderTable({
-    inFile <- input$file
-    n <- length(inFile$name)
-    names <- inFile$name
-
-     if (is.null(inFile))  
-       return(NULL)
-
-    splits <- list()
-
-    for (i in 1:n) {
-      splits <- base::sub("/tmp/Rtmp[[:alnum:]]{6}/", "", inFile[i, "datapath"])  # Consider making this more program agnostic?
-      print(splits)
-
-      filenames <- list.files(temp)
-      oldpath <- file.path(temp, splits[i])
-        print(oldpath[i])
-        print(list.files(temp)[i])
-        print(file.path(temp, inFile[i, "name"]))
-       base::file.rename(oldpath[i], file.path(temp, "local_tempdir", inFile[i, "name"])) # rename the file to include the original filename
-       base::unlink(dirname(oldpath[i]), recursive = TRUE) # remove the file with the userhostile name
-    }
-     return(list.files(file.path(temp, "local_tempdir"))) 
-  })
-   
-   # Move files to correct dbfiles location (make a custom function for this?)
-   observeEvent(input$LocalFinishButton, {
-     # create the new directory in /dbfiles
-     local_dirname <- gsub(" ", "_", input$new_local_filename) # Are there any other types of breaking chatacters that I should avoid with directory naming? 
-     dir.create(file.path(PEcAn_path, local_dirname))
-     
-     path_to_local_tempdir <- file.path(local_tempdir)
-     list_of_local_files <- list.files(path_to_local_tempdir) 
-    
-     n <- length(list_of_d1_files)
-     for (i in 1:n){
-       base::file.copy(file.path(path_to_local_tempdir, list_of_local_files[i]), file.path(PEcAn_path, local_dirname, list_of_local_files[i]))
-     }
-     output$LocaldbfilesPath <- renderText({paste0(PEcAn_path, local_dirname)}) # Print path to dbfiles
-   })
+  source("server_files/local_upload_svr.R", local = TRUE)
 }
 
 # Run the application
