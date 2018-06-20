@@ -53,7 +53,7 @@ get.change <- function(measurement) {
 ##' @param bin.num = number of bins (default = 10)
 ##' @param transform = transformation of magnitude (default = identity)
 ##' @param minBin = minimum number of points allowed in a bin
-##' @return List of parameters from the fitted uncertainty model
+##' @return return.list List of parameters from the fitted uncertainty model
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
 flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10, 
@@ -115,19 +115,27 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
   ## would be better to fit a two line model with a common intercept, but this
   ## is quicker to implement for the time being
   E2 <- errBin - errBin[zero]
-  mp <- lm(E2[pos] ~ magBin[pos] - 1)
-  mn <- lm(E2[neg] ~ magBin[neg] - 1)
+  E2 <- errBin - errBin[zero]
   intercept <- errBin[zero]
-  slopeP <- mp$coefficients[1]
-  slopeN <- mn$coefficients[1]
   
-  return(list(mag = magBin, 
-              err = errBin, 
-              bias = biasBin, 
-              n = nBin, 
-              intercept = intercept, 
-              slopeP = slopeP,
-              slopeN = slopeN))
+  return.list <- list(mag = magBin, 
+                      err = errBin, 
+                      bias = biasBin, 
+                      n = nBin,
+                      intercept = intercept)
+  
+  if(!all(is.na(E2[pos]))){
+    mp <- lm(E2[pos] ~ magBin[pos] - 1)
+    return.list$slopeP <- mp$coefficients[1]
+  } 
+  if(!all(is.na(E2[neg]))){
+    mn <- lm(E2[neg] ~ magBin[neg] - 1)
+    return.list$slopeN <- mn$coefficients[1]
+  }else{
+    return.list$slopeN <- mp$coefficients[1]
+  }
+  
+  return(return.list)
 } # flux.uncertainty
 
 
