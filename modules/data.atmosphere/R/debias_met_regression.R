@@ -185,8 +185,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       
       # Hard-coding in some sort of max for precipitaiton
       rain.max <- max(train.data$precipitation_flux) + sd(train.data$precipitation_flux)
-      rainless.min <- ifelse(min(rainless)-sd(rainless)>0, min(rainless)-sd(rainless), max(min(rainless)-sd(rainless)/2, 1))
-      rainless.max <- ifelse(max(rainless)+sd(rainless)<365, max(rainless)+sd(rainless), min(max(rainless)+sd(rainless)/2, 364))
+      rainless.min <- ifelse(min(rainless)-sd(rainless)>=0, min(rainless)-sd(rainless), max(min(rainless)-sd(rainless)/2, 0))
+      rainless.max <- ifelse(max(rainless)+sd(rainless)<=365, max(rainless)+sd(rainless), min(max(rainless)+sd(rainless)/2, 365))
     }
     # -------------
     
