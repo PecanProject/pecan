@@ -1,5 +1,5 @@
 fluidRow(
-  box(
+  box(width = 8,
     textInput(
       "id",
       label = h2("Import From DataONE"),
