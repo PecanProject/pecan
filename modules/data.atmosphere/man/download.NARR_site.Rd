@@ -28,6 +28,15 @@ download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
 \description{
 Download NARR time series for a single site
 }
+<<<<<<< HEAD
+=======
+\examples{
+\dontrun{
+download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
+}
+
+}
+>>>>>>> 4bc485478dc07d0cdb21730704119b4f9279c4b1
 \author{
 Alexey Shiklomanov
 }
