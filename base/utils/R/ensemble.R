@@ -70,11 +70,13 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain  
 ##' @param env.samples env samples
 ##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
+##' @param param.names a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently
+##' 
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
-##' @author David LeBauer
+##' @author David LeBauer, Istem Fer
 get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
-                                 method = "uniform", ...) {
+                                 method = "uniform", param.names = NULL, ...) {
   
   if (is.null(method)) {
     PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
@@ -95,8 +97,10 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       pft2col <- c(pft2col, rep(i, length(pft.samples[[i]])))
     }
     
+
     total.sample.num <- sum(sapply(pft.samples, length))
     random.samples <- NULL
+    
     
     if (method == "halton") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
@@ -130,15 +134,32 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
                                total.sample.num)
     }
     
+    
     ensemble.samples <- list()
+    
     
     col.i <- 0
     for (pft.i in seq(pft.samples)) {
       ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
+      
+      # meaning we want to keep MCMC samples together
+      if(length(pft.samples[[pft.i]])>0 & !is.null(param.names)){ 
+        # TODO: for now we are sampling row numbers uniformly
+        # stop if other methods were requested 
+        if(method != "uniform"){
+          PEcAn.logger::logger.severe("Only uniform sampling is available for joint sampling at the moment. Other approaches are not implemented yet.")
+        }
+        same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
+      }
+      
       for (trait.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
-        ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],
-                                                         random.samples[, col.i])
+        if(names(pft.samples[[pft.i]])[trait.i] %in% param.names[[pft.i]]){ # keeping samples
+          ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
+        }else{
+          ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],
+                                                                  random.samples[, col.i])
+        }
       }  # end trait
       ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
       colnames(ensemble.samples[[pft.i]]) <- names(pft.samples[[pft.i]])

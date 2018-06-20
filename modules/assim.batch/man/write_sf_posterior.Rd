@@ -4,7 +4,7 @@
 \alias{write_sf_posterior}
 \title{Function to write posterior distributions of the scaling factors}
 \usage{
-write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+write_sf_posterior(sf.samp.list, sf.prior, sf.samp.filename)
 }
 \description{
 Function to write posterior distributions of the scaling factors
