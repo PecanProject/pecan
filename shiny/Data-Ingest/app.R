@@ -22,36 +22,13 @@ ui <- dashboardPage(
   ),
   dashboardBody(
     tabItems(
-    ################ Tab 1 -- DataONE download ##################################
+    ## Tab 1 -- DataONE download
     tabItem(tabName = "importDataONE",
             source_ui("d1_download_ui.R")
             ),
-    ################ Tab 2 -- Local File Upload ##################################
+    ## Tab 2 -- Local File Upload
     tabItem(tabName = "uploadLocal",
-            fluidRow(
-              box(
-                # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
-                fileInput(
-                  inputId = "file",
-                  label = h2("Upload Local Files"), 
-                  accept = NULL,
-                  multiple = FALSE,
-                  placeholder = "Drag and drop files here"
-                ),
-                tableOutput("contents"),
-                hr(),
-                textInput(
-                  "new_local_filename",
-                  label = h4("Set Destination Directory"),
-                  placeholder = "Enter New Directory Name Here"
-                ),
-                actionButton(inputId = "LocalFinishButton", label = "Finish Download"),
-                hr(),
-                p("Location of Downloaded Files:"),
-                verbatimTextOutput("LocaldbfilesPath")
-                
-              )
-              )
+            source_ui("local_file_upload_ui.R")
             ),
     
     tabItem(tabName = "step2",
