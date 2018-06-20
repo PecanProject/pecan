@@ -1,42 +1,3 @@
-##' Helper function
-##'@param d a POSIX Date
-##'@return A representation of the date as a string with no separators
-##' rnoaa::gefs requires a nate in the format YYYYMMDD instead of a POSIX date
-##' This function requires that the lubridate package be installed.
-POSIX.to.GEFSDate <- function(d) {
-  mon = lubridate::month(d)  #Extract parts of the date
-  day = lubridate::day(d)
-  if (mon < 10) { mon = paste0("0", mon) } #Add leading zeros, if necessary
-  if (day < 10) { day = paste0("0", day) }
-  return(paste0(lubridate::year(d), mon, day)) #concantanate parts of the date and return
-}
-
-##' Helper function
-##' @param d1 a POSIX Date
-##' @param d2 a POSIX Date
-##' This function returns a positive value if the first date is greater than the second, zero if the 
-##' dates are the same, and a negative value if the first date is less than the second.
-##' This function requires that the lubridate package be installed.
-compare.POSIX.dates <- function(d1, d2) {
-  d1_year = lubridate::year(d1)
-  d1_month = lubridate::month(d1)
-  d1_day = lubridate::day(d1)
-  
-  d2_year = lubridate::year(d2)
-  d2_month = lubridate::month(d2)
-  d2_day = lubridate::day(d2)
-  
-  if (d1_year != d2_year) {
-    return(d1_year - d2_year)
-  } else if (d1_month != d2_month) {
-    return(d1_month - d2_month)
-  } else {
-    return(d1_day - d2_day)
-  }
-}
-
-
-
 ##' Download NOAA Weather Data
 ##' 
 ##' Information on NOAA weather units can be found here:
@@ -44,76 +5,95 @@ compare.POSIX.dates <- function(d1, d2) {
 ##' Note that the temperature is measured in degrees C, but is converted at the station and downlaoded
 ##' in Kelvin.
 ##' 
-##' Note: You must have your own NOAA access token (i.e. API key) to access NOAA data.  This is not provided by the function.
-##' You can set up your API key by placing the following statement in your .Rprofile file:
-##' options(noaakey = "key")
-##' Obtain a NOAA API key here: https://www.ncdc.noaa.gov/cdo-web/token
-##' 
 ##' This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  A 16 day forecast is avaliable
-##' every 6 hours.  In order to assemble the most accurate data, this function uses the data point with the shortest forecast time.  For example, 
-##' if the 16 day forecast on June 1st and the 1 day forecast on June 15 are both avaliable to predict the weather or June 16, the function fill record the
-##' value in the June 15th forecast.  Whenever possible, the function uses 6 hr forecast data (the most accurate data avaliable).
+##' every 6 hours.  Each forecast includes information on a total of 8 variables.  These are transformed from the NOAA standard to the internal PEcAn
+##' standard.
 ##' 
-##' Weather for 8 cf variables are transformed from the NOAA standard into the PEcAn internal cf standard.
-##' 
-##' NOAA GEFS weather data is avaliable on a rolling 12 day basis; dates provided in "start_date" and "end_date" must be within this range.  If one wants to 
-##' attach the 16 day forecast to the end of that data set, simply call the function with the flag include_forecast = TRUE (it is FALSE by default). This is
-##' especially useful if end_date is the current day.  This allows you to obtain as much data in the future as is possible from NOAA GEFS data.
-##' 
-##' If end_date is the current day, the function will fetch all data avaliable for the current day.  Otherwise, all four data points (every 6 hours) will
-##' be fetched for the given day.
+##' NOAA GEFS weather data is avaliable on a rolling 12 day basis; dates provided in "start_date" must be within this range. The end date can be any point after
+##' that, but if the end date is beyond 16 days, only 16 days worth of forecast are recorded.  Times are rounded down to the previous 6 hour forecast.  If you
+##' call the funciton with 
 ##' 
 ##' Dependencies: (R packages)
 ##' --Avaliable on CRAN Mirrors --
 ##' lubridate
 ##' rnoaa
 ##' ncdf4
+##' udunits2
 ##' --Avaliable of PEcAn's GitHub --
 ##' PEcAn.logger
 ##' PEcAn.data.atmosphere
 ##' PEcAn.remote
 ##' 
 ##' Data is saved in the netcdf format to the specified directory.  File names reflect the precision of the data to the given range of days.
-##' NOAA.GEFS.2018.5.4-6.nc for example, are the data from May 4th through May 6th.
-##' NOAA.GEFS.2018.5-6.30-03.f.nc indicates the data are for May 30th through June 3rd, with forecast data included.
+##' NOAA.GEFS.20180608.at.0600.to.20180614.at.0600.1.nc refers to data for ensemble member 1 on 
 ##' 
 ##' A data frame is returned containing information about the data file that can be used to locate it later.
 ##'
 ##' Download and convert to CF NOAA weather data
 ##' @param outfolder Directory where results should be written
-##' @param start_date, end_date Range of dates/times to be downloaded
-##' @param site_id numeric. Currently ignored
+##' @param start_date, end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)
 ##' @param lat site latitude in decimal degrees
 ##' @param lon site longitude in decimal degrees
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
-##' @param verbose logical.  Print additional debug information.
-##' @param include_forecast logical.  If TRUE, 16 day forecast data is tacked on to the end of the data set
+##' @param verbose logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.
 ##' @param ... Other arguments, currently ignored
 ##' @export
 ##' 
 ##' @author Luke Dramko
 ##' 
-download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
-                             overwrite = FALSE, verbose = FALSE, include_forecast = FALSE, ...) {
+download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, start_date = Sys.time(), end_date = (start_date + lubridate::days(16)),
+                             overwrite = FALSE, verbose = FALSE, ...) {
   
-  start_date <- as.POSIXlt(start_date, tz = "UTC")
-  end_date <- as.POSIXlt(end_date, tz = "UTC")
+  start_date <- as.POSIXct(start_date, tz = "UTC")
+  end_date <- as.POSIXct(end_date, tz = "UTC")
   
-  #Date error checking - Checks to see if the start date is before the end date
-  if (compare.POSIX.dates(end_date, start_date) < 0) {
+  #Date/time error checking - Checks to see if the start date is before the end date
+  if (start_date > end_date) {
     PEcAn.logger::logger.severe("Invalid dates: end date occurs before start date")
+  } else if (as.numeric(end_date - start_date, units="hours") < 6) { #Done separately to produce a more helpful error message.
+    PEcAn.logger::logger.severe("Times not far enough appart for a forecast to fall between them.  Forecasts occur every six hours; make sure start 
+                                and end dates are at least 6 hours appart.")
   }
+  
+  #Set the end forecast date (default is the full 16 days)
+  if (end_date > start_date + lubridate::days(16)) {
+    end_date = start_date + lubridate::days(16)
+  }
+  
+  #Round the starting date/time down to the previous block of 6 hours.  Adjust the time frame to match.
+  forecast_hour = (lubridate::hour(start_date) %/% 6) * 6 #Integer division by 6 followed by re-multiplication acts like a "floor function" for multiples of 6
+  increments = as.integer(as.numeric(end_date - start_date, units = "hours") / 6) #Calculating the number of forecasts between start and end dates.
+  increments = increments + ((lubridate::hour(end_date) - lubridate::hour(start_date)) %/% 6) #These calculations are required to use the rnoaa package.
+  
+  end_hour = sprintf("%04d", ((forecast_hour + (increments * 6)) %% 24) * 100)  #Calculating the starting hour as a string, which is required type to access the 
+                                                                        #data via the rnoaa package
+  forecast_hour = sprintf("%04d", forecast_hour * 100)  #Having the end date as a string is useful later, too.
+  
+  #Recreate the adjusted start and end dates.
+  start_date = as.POSIXct(paste0(lubridate::year(start_date), "-", lubridate::month(start_date), "-", lubridate::day(start_date), " ", 
+                                 substring(forecast_hour, 1,2), ":00:00"), tz="UTC")
+  end_date = start_date + lubridate::hours(increments * 6)
   
   #Bounds date checking
   #NOAA's GEFS database maintains a rolling 12 days of forecast data for access through this function.
-  NOAA_GEFS_Start_Date = as.POSIXlt(Sys.Date()) - lubridate::days(11)  #Subtracting 11 days is correct, not 12.
+  #We do want Sys.Date() here - NOAA makes data unavaliable days at a time, not forecasts at a time.
+  NOAA_GEFS_Start_Date = as.POSIXct(Sys.Date(), tz="UTC") - lubridate::days(11)  #Subtracting 11 days is correct, not 12.
   
-  if (compare.POSIX.dates(Sys.Date(), end_date) < 0 || compare.POSIX.dates(start_date, NOAA_GEFS_Start_Date) < 0) {
-    PEcAn.logger::logger.severe(sprintf('Input date range (%s:%s) exceeds the NOAA GEFS range (%s:%s).',
-                                        start_date, end_date,
+  #Check to see if start_date is valid. This must be done after date adjustment.
+  if (as.POSIXct(Sys.time(), tz="UTC") < start_date || start_date < NOAA_GEFS_Start_Date) {
+    PEcAn.logger::logger.severe(sprintf('Start date (%s) exceeds the NOAA GEFS range (%s to %s).',
+                                        start_date,
                                         NOAA_GEFS_Start_Date, Sys.Date()))
   }
-  #End date error checking
+  
+  if (lubridate::hour(start_date) > 23) {
+    PEcAn.logger::logger.severe(sprintf("Start time %s is not a valid time", lubridate::hour(start_date)))
+  }
+  
+  if (lubridate::hour(end_date) > 23) {  #Done separately from the previous if statement in order to have more specific error messages.
+    PEcAn.logger::logger.severe(sprintf("End time %s is not a valid time", lubridate::hour(end_date)))
+  }
+  #End date/time error checking
   
   #NOAA variable downloading
   
@@ -126,7 +106,6 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   #These are the cf standard names
   cf_var_names = c("air_temperature", "air_pressure", "specific_humidity", "surface_downwelling_longwave_flux_in_air", 
                       "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", "eastward_wind", "northward_wind")
-  ###cf_var_names = c("air_temperature")
   cf_var_units = c("K", "Pa", "1", "Wm-2", "Wm-2", "kgm-2s-1", "ms-1", "ms-1")  #Negative numbers indicate negative exponents
   
   # This debugging loop allows you to check if the cf variables are correctly mapped to the equivalent
@@ -138,122 +117,10 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   
   noaa_data = list()
   
-  #Setting up the loops.  num_days represents the length of time in days betwen the start and end of the data being collected.
-  num_days = lubridate::time_length(lubridate::interval(start_date, end_date), unit="day")
-  
-  #If the requested forecast data ends on the current day, we have to be careful about the time of day we ask
-  #for data.  Data is posted every 6 hours.  If this function is called at 9:00 a.m., it wouldn't make sense
-  #to request data for 12 a.m. or 6:00 p.m. - the data doesn't yet exist.
-  ends_today = FALSE
-  if (as.POSIXlt(Sys.Date()) == end_date) {
-    ends_today = TRUE
-    #The last day will be handled in its own special block of code...
-  } else {
-    num_days = num_days + 1 # ...otherwise, we need to do it in the main loop.
-  }
-  
-  #This is where the actual download of the data occurs (for most data).  This loop handles days that have already passed.  Therefore,
-  #all data is avaliable for those days, and there doesn't need to be any checking to see if the data exists or not.
-  
-  if (verbose) {
-    PEcAn.logger::logger.info("Beginning Data Download...")
-  }
-  
-  i = 1
-  max = length(cf_var_names)
-  while (i <= max && as.logical(num_days)) {
-    current_date = start_date #Incremented in the loop to fetch the proper day's data
-    
-    gefs_date = POSIX.to.GEFSDate(current_date)
-    
-    var_dat = matrix(rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0000", date=gefs_date)$data,
-                     nrow=21, ncol=1)
-    var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0600", date=gefs_date)$data)
-    var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1200", date=gefs_date)$data)
-    var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1800", date=gefs_date)$data)
-    j = 1
-    while (j < num_days) {
-      current_date = current_date + lubridate::days(1)  #increments the date by one
-      
-      gefs_date = POSIX.to.GEFSDate(current_date)
-      var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0000", date=gefs_date)$data)
-      var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0600", date=gefs_date)$data)
-      var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1200", date=gefs_date)$data)
-      var_dat = cbind(var_dat, rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1800", date=gefs_date)$data)
-      j = j + 1   
-    }
-    noaa_data[[i]] = var_dat
-    i = i+1
-  }
-  
-  last_data_set_at = "1800"
-  
-  #Data requests that end on the current day have to be handled in their own special loop because not all data for a given day is necessarily
-  #avaliable.  
-  if (ends_today) {
-    for (i in 1:length(cf_var_names)) {
-      gefs_date = POSIX.to.GEFSDate(end_date)
-      last_data_set_at = "0000"
-      hour = lubridate::hour(as.POSIXlt(Sys.time()))
-      continue = TRUE
-      
-      if (num_days > 0) { #The data matrix already exists (it was created in the loop above), and we just have to add to it.
-        noaa_data[[i]] = cbind(noaa_data[[i]], rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0000", date=gefs_date)$data)
-      } else { #we have to make the data matrix and put it in the array.
-        #This might be the case when the start and end dates are both the current date.
-        noaa_data[[i]] = matrix(rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0000", date=gefs_date)$data,
-                           nrow=21, ncol=1)
-      }
-      
-      #The "hour > 6" statement is an attempt to reconcile the current time with the GEFS data should become avaliable.  However, this
-      #is not always assured, and so the tryCatch block exists to handle cases when data are not yet avaliable.
-      if (hour > 6 && continue) {
-        noaa_data[[i]] = tryCatch({
-          last_data_set_at = "0600"
-           cbind(noaa_data[[i]], rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "0600", date=gefs_date)$data)
-        }, error=function(e){
-          continue=FALSE
-          last_data_set_at = "0000"
-          PEcAn.logger::logger.info(paste0("Last data avaliable for ", Sys.Date(), " is the 12:00 midnight data point (0:00)."))
-          noaa_data
-          })
-      }
-      
-      if (hour > 12 && continue) {
-        noaa_data[[i]] = tryCatch({
-          last_data_set_at = "1200"
-          cbind(noaa_data[[i]], rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1200", date=gefs_date)$data)
-        }, error=function(e){
-          continue=FALSE
-          last_data_set_at = "0600"
-          PEcAn.logger::logger.info(paste0("Last data avaliable for ", Sys.Date(), " is the 6:00 a.m. data point."))
-          noaa_data
-          })
-      }
-      
-      if (hour > 18 && continue) {
-        noaa_data[[i]] = tryCatch({
-          last_data_set_at = "1800"
-          cbind(noaa_data[[i]], rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = "1800", date=gefs_date)$data)
-        }, error=function(e){
-          continue=FALSE
-          last_data_set_at = "1200"
-          PEcAn.logger::logger.info(paste0("Last data avaliable for ", Sys.Date(), " is the 12:00 noon data point."))
-          noaa_data
-          })
-      }
-    }
-  }
-  
-  if (verbose && include_forecast) {
-    PEcAn.logger::logger.info("Downloading forecast data...")
-  }
-  
-  #This loop attaches 16 day forecast data onto the data that currently exists.
-  if (include_forecast) {
-    for (i in 1:length(cf_var_names)) {
-      noaa_data[[i]] = cbind(noaa_data[[i]], rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 2:64, forecast_time = last_data_set_at, date=gefs_date)$data)
-    }
+  #Downloading the data here.  It is stored in a matrix, where columns represent time in intervals of 6 hours, and rows represent
+  #each ensemble member.  Each variable gets its own matrix, which is stored in the list noaa_data.
+  for (i in 1:length(noaa_var_names)) {
+    noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1:increments, forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
   }
   
   ###################################################
@@ -262,20 +129,19 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   # The following is a list of variables which need to be processed:
   # 1. NOAA's relative humidity must be converted to specific humidity
   # 2. NOAA's measure of precipitation is the accumulation over 6 hours; cf's standard is precipitation per second
-  
-  if (verbose) {
-    PEcAn.logger::logger.info("Converting units.")
-  }
-  
+
   #Convert NOAA's relative humidity to specific humidity
-  humid_index = cf_var_names == "specific_humidity"
+  humid_index = which(cf_var_names == "specific_humidity")
   
-  humid_data = noaa_data[humid_index][[1]]
-  temperature_data = noaa_data[cf_var_names == "air_temperature"][[1]]
-  pressure_data = noaa_data[cf_var_names == "air_pressure"][[1]]
+  #Temperature, pressure, and relative humidity are required to calculate specific humidity.
+  humid_data = noaa_data[[humid_index]]
+  temperature_data = noaa_data[[which(cf_var_names == "air_temperature")]]
+  pressure_data = noaa_data[[which(cf_var_names == "air_pressure")]]
    
   #Depending on the volume and dimensions of data you download, sometimes R stores it as a vector and sometimes
   #as a matrix; the different cases must be processed with different loops.
+  #(The specific corner case in which a vector would be generated is if only one hour is requested; for example, 
+  #only the data at time_idx 1, for example).
   if (as.logical(nrow(humid_data))) {
      for (i in 1:length(humid_data)) {
        humid_data[i] = PEcAn.data.atmosphere::rh2qair(humid_data[i], temperature_data[i], pressure_data[i])
@@ -289,99 +155,74 @@ download.NOAA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   }
   
   #Update the noaa_data list with the correct data
-  noaa_data[humid_index][[1]] <- humid_data
+  noaa_data[[humid_index]] <- humid_data
   
   # Convert NOAA's total precipitation (kg m-2) to precipitation flux (kg m-2 s-1)
   #NOAA precipitation data is an accumulation over 6 hours.
-  precip_index = cf_var_names == "precipitation_flux"
+  precip_index = which(cf_var_names == "precipitation_flux")
   
-  noaa_data[precip_index][[1]] = noaa_data[precip_index][[1]] / 21600  #There are 21600 seconds in 6 hours
+  #The statement udunits2::ud.convert(1, "kg m-2 6 hr-1", "kg m-2 s-1") is equivalent to udunits2::ud.convert(1, "kg m-2 hr-1", "kg m-2 s-1") * 6,
+  #which is a little unintuitive. What will do the conversion we want is what's below:
+  noaa_data[[precip_index]] = udunits2::ud.convert(noaa_data[[precip_index]], "kg m-2 hr-1", "kg m-2 6 s-1")  #There are 21600 seconds in 6 hours
   
   #############################################
-  # Done with data processing.  Now writing the data to the specified directory.
-  if (verbose) {
-    PEcAn.logger::logger.info("Writing data to netcdf file")
-  }
-  
-  
+  # Done with data processing.  Now writing the data to the specified directory. Each ensemble member is written to its own file, for a total
+  # of 21 files.  
   if (!dir.exists(outfolder)) {
     dir.create(outfolder, recursive=TRUE)
   }
   
-  setwd(outfolder)
-  
-  #Generate file name.  File names need to account for the specificity in the data.
-  st = lubridate::year(start_date)
-  ed = lubridate::year(end_date)
-  yrcomponent = st
-  if (st != ed) { yrcomponent = paste0(st, "-", ed) } #This could be a function, but it's rather simple and specific for that.
-  
-  st = lubridate::month(start_date)
-  ed = lubridate::month(end_date)
-  moncomponent = st
-  if (st != ed) { moncomponent = paste0(st, "-", ed) }
-  
-  st = lubridate::day(start_date)
-  ed = lubridate::day(end_date)
-  dycomponent = st
-  if (st != ed) { dycomponent = paste0(st, "-", ed) }
-  
-  flname <- if (include_forecast) {
-    paste("NOAA", "GEFS", yrcomponent, moncomponent, dycomponent, "f", "nc", sep=".")
-  } else {
-    paste("NOAA", "GEFS", yrcomponent, moncomponent, dycomponent, "nc", sep=".")
-  }
-  
-  
   # Create a data frame with information about the file.  This data frame's format is an internal PEcAn standard, and is stored in the BETY database to
   # locate the data file.  The data file is stored on the local machine where the download occured.
   results = data.frame(
-    file = file.path(outfolder, flname),  #Path to the file
+    file = character(21),                 #Path to the file
     host = PEcAn.remote::fqdn(),          #Name of the server where the file is stored
     mimetype = "application/x-netcdf",    #Format the data is saved in
     formatname = "CF Meteorology",        #Type of data
-    startdate = paste0(as.character(start_date), " 00:00:00"),                                     #starting date and time, down to the second
-    enddate = paste0(as.character(end_date), " ", substring(last_data_set_at, 1, 2), ":00:00"),    #ending date and time, down to the second
-    dbfile.name = "NOAA.GEFS",            #Source of data
+    startdate = paste0(format(start_date, "%Y-%m-%d"), " ", substring(forecast_hour, 1,2), ":00:00"),              #starting date and time, down to the second
+    enddate = paste0(format(end_date, "%Y-%m-%d"), " ", substring(end_hour, 1, 2), ":00:00"),                      #ending date and time, down to the second
+    dbfile.name = "NOAA_GEFS",            #Source of data
     stringsAsFactors = FALSE
   )
   
-  #Begin working with the netcdf4 saving format
-  #define dimensions.  Note that all variables will have the same dimension, so we can reuse them for all variables.  The data is two dimensional: one dimension
-  #is time (measured in periods of six hours), while the other one is which particular ensemble the data is drawn from.
+  #Each ensemble gets its own file.
+  #These dimensions will be used for all 21 ncdf4 file members, so they're all declared once here.
+  #The data is really one-dimensional for each file (though we include lattitude and longitude dimensions
+  #to comply with the PEcAn standard).
+  time_dim = ncdf4::ncdim_def("Time", "6 Hours", 1:ncol(noaa_data[[1]]))
+  lat_dim = ncdf4::ncdim_def("Lattitude", "Degrees North", lat.in)
+  lon_dim = ncdf4::ncdim_def("Lattitude", "Degrees East", lon.in)
   
-  if (!file.exists(flname) | overwrite) {
-    time_dim = ncdf4::ncdim_def("Time", "6 Hours", 1:ncol(noaa_data[[1]]))
-    ensemble_dim = ncdf4::ncdim_def("Ensemble Number", "Unitless", 1:21)
-    dimensions_list = list(ensemble_dim, time_dim)
-    
-    nc_var_list = list()
-    
-    for (i in 1:length(cf_var_names)) {
-      nc_var_list[[i]] = ncdf4::ncvar_def(cf_var_names[i], cf_var_units[i], dimensions_list, missval=NaN)
-    }
-    
-    #file pointer
-    nc_flptr = ncdf4::nc_create(flname, nc_var_list, verbose=verbose)
-    
-    for (i in 1:length(nc_var_list)) {  #Actually storing the variables in the file.
-      ncdf4::ncvar_put(nc_flptr, nc_var_list[[i]], noaa_data[[i]])
-    }
-    
-    #Define some useful global attributes
-    ncdf4::ncatt_put(nc_flptr, 0, "includes_forecast", as.integer(include_forecast)) #Unfortuenately, we have a tense change here in the variable names - the attribute
-    #is called "includes_forecast", while the variable is called "include_forecast".  Just by looking at the data, it is difficult to see if forecast
-    #data is included.  This flag lets you know.
-    
-    ncdf4::nc_close(nc_flptr) #Close and write to disc.
-  } else {
-    PEcAn.logger::logger.info(paste0("The file ", flname, " already exists, which contains NOAA GEFS weather data in the range of ", 
-                                     yrcomponent, "/", moncomponent, "/", dycomponent, ".  It was not overwritten."))
+  dimensions_list = list(time_dim, lat_dim, lon_dim)
+  
+  nc_var_list = list()
+  for (i in 1:length(cf_var_names)) { #Each ensemble member will have data on each variable stored in their respective file.
+    nc_var_list[[i]] = ncdf4::ncvar_def(cf_var_names[i], cf_var_units[i], dimensions_list, missval=NaN)
   }
   
-  if (verbose) {
-    PEcAn.logger::logger.info("Data downloaded and saved.")
+  #For each ensemble
+  for (i in 1:21) { # i is the ensemble number
+    #Generating the file name.  File name is specific to the range of dates and times of the forecast.
+    flname = file.path(outfolder, paste("NOAA", "GEFS", format(start_date, "%Y%m%d"), "at", forecast_hour, "to", 
+                                        format(end_date, "%Y%m%d"), "at", end_hour, i, "nc", sep="."))
+    
+    results$file[i] = flname
+    
+    if (!file.exists(flname) | overwrite) {
+      nc_flptr = ncdf4::nc_create(flname, nc_var_list, verbose=verbose)
+      
+      #For each variable associated with that ensemble
+      for (j in 1:length(cf_var_names)) {
+        # "j" is the variable number.  "i" is the ensemble number. Remember that each row represents an ensemble
+        ncdf4::ncvar_put(nc_flptr, nc_var_list[[j]], noaa_data[[j]][i,])
+      }
+      
+      ncdf4::nc_close(nc_flptr)  #Write to the disk/storage
+    } else {
+      PEcAn.logger::logger.info(paste0("The file ", flname, " already exists.  It was not overwritten."))
+    }
+    
   }
   
   return(results)
-} #download.NOAA
+} #download.NOAA_GEFS
