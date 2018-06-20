@@ -8,6 +8,7 @@
  library(DT)
  library(shinyjs)
  library(shiny)
+ library(selectr)
  
  source("ui_utils.R", local = TRUE)
 
@@ -16,7 +17,7 @@
 #############################################################################
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Data Ingest"), 
+  dashboardHeader(title = "Data Ingest Workflow"), 
   dashboardSidebar(
     source_ui("sidebar_ui.R")
   ),
@@ -30,9 +31,10 @@ ui <- dashboardPage(
     tabItem(tabName = "uploadLocal",
             source_ui("local_file_upload_ui.R")
             ),
-    
+    ## Next Steps
     tabItem(tabName = "step2",
-            h2("coming soon")),
+            source_ui("input_record_ui.R")
+            ),
     
     tabItem(tabName = "step3",
             h2("under construction")),
@@ -58,7 +60,7 @@ server <- function(input, output, session) {
   
 ##################### DataONE Download ############################################# 
   source("server_files/d1_download_svr.R", local = TRUE)
-   
+  
   ######### FileInput ########################################
   source("server_files/local_upload_svr.R", local = TRUE)
 }

@@ -7,17 +7,17 @@ sidebarMenu(
   menuItem(
     "Import from DataONE",
     tabName = "importDataONE",
-    icon = icon("file")
+    icon = icon("download", lib = "font-awesome")
   ),
   menuItem(
     "Upload Local Files",
     tabName = "uploadLocal",
-    icon = icon("file")
+    icon = icon("upload", lib = "font-awesome")
   ),
   menuItem(
     "Step 2 -- dbfiles record",
     tabName = "step2",
-    icon = icon("cog")
+    icon = icon("database", lib = "font-awesome")
   ),
   menuItem(
     "Step 3 -- format record",
