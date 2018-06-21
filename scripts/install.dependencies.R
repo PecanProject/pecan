@@ -21,7 +21,7 @@ if (!("Rgraphviz" %in% installed.packages()[, "Package"])) {
 }
 
 # install packages needed from CRAN
-list.of.packages <- c("BayesianTools","data.table", "doSNOW", "dplR", "earth", 
+list.of.packages <- c("roxygen2", "BayesianTools","data.table", "doSNOW", "dplR", "earth", 
                       "emulator", "ggmap", "ggplot2", "gridExtra", "Hmisc", "httr", "kernlab", 
                       "GPfit", "knitr", "Maeswrap", "MASS", "MCMCpack", "mvtnorm",
                       "plotrix", "raster", "randtoolbox", "rjags", "rgdal", "tgp", "DBI", 
