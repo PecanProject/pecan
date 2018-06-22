@@ -41,7 +41,7 @@
 ##' @examples 
 ##' 
 ##' \dontrun {
-##'  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek")
+##'  download.NOAA_GEFS("~/Working/results", lat.in= 45.805925, lon.in = -90.07961, "US-WCr")
 ##' }
 ##' 
 ##' @author Luke Dramko
