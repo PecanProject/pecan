@@ -47,8 +47,6 @@
 ##' 
 download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz="UTC") + lubridate::days(16)),
                              overwrite = FALSE, verbose = FALSE, ...) {
-  print(start_date)
-  print(end_date)
   
   start_date <- as.POSIXct(start_date, tz = "UTC")
   end_date <- as.POSIXct(end_date, tz = "UTC")
@@ -60,10 +58,6 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = 
     start_date = start_date - lubridate::hours(2)
     end_date = end_date - lubridate::hours(2)
   }
-  
-  print("****************")
-  print(start_date)
-  print(end_date)
   
   #Date/time error checking - Checks to see if the start date is before the end date
   if (start_date > end_date) {
@@ -112,12 +106,6 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = 
     PEcAn.logger::logger.severe(sprintf("End time %s is not a valid time", lubridate::hour(end_date)))
   }
   #End date/time error checking
-  
-  print("****************")
-  print(start_date)
-  print(end_date)
-  
-  quit(save="no")
   
   #################################################
   #NOAA variable downloading
@@ -229,8 +217,8 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = 
   #For each ensemble
   for (i in 1:21) { # i is the ensemble number
     #Generating the file name.  File name is specific to the range of dates and times of the forecast.
-    flname = file.path(outfolder, paste("NOAA", "GEFS", format(start_date, "%Y%m%d"), "at", forecast_hour, "to", 
-                                        format(end_date, "%Y%m%d"), "at", end_hour, i, "nc", sep="."))
+    flname = file.path(outfolder, paste("NOAA_GEFS", site_id, i, format(start_date, "%Y-%m-%dT%H:%M"), 
+                                        format(end_date, "%Y-%m-%dT%H:%M"), "nc", sep="."))
     
     results$file[i] = flname
     
