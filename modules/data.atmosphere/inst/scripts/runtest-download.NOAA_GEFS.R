@@ -18,20 +18,21 @@ source("~/pecan/modules/data.atmosphere/R/download.NOAA_GEFS.R")
 # Other parameters optional
 
 if (test_no == 1) { #Default case - should work - normal 16 day forecast
-  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek")
+  download.NOAA_GEFS("~/Working/results", lat.in= 45.805925, lon.in = -90.07961, "US-WCr")
 } else if (test_no == 2) { #Should be an Error - date out of bounds
-  download.NOAA_GEFS("~/Working/results",lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time() - lubridate::days(12), Sys.time(), verbose = FALSE)
+  download.NOAA_GEFS("~/Working/results", lat.in= 45.805925, lon.in = -90.07961, "US-WCr", Sys.time() - lubridate::days(12), Sys.time(), verbose = FALSE)
 } else if (test_no == 3) { #Should work - normal 16 day forecast
-  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time() - lubridate::days(4), verbose = FALSE)
+  download.NOAA_GEFS("~/Working/results", lat.in= 45.805925, lon.in = -90.07961, "US-WCr", Sys.time() - lubridate::days(4), verbose = FALSE)
 } else if (test_no == 4) { #Should work - 1 day's worth of data
-  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time() - lubridate::days(8), Sys.time() - lubridate::days(7),  verbose = FALSE)
+  download.NOAA_GEFS("~/Working/results", llat.in= 45.805925, lon.in = -90.07961, "US-WCr", Sys.time() - lubridate::days(8), Sys.time() - lubridate::days(7),  verbose = FALSE)
 } else if (test_no == 5) { #Should be an error - date out of bounds 
-  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.Date() + lubridate::days(1), verbose = FALSE)
+  download.NOAA_GEFS("~/Working/results", lat.in= 45.805925, lon.in = -90.07961, "US-WCr", Sys.Date() + lubridate::days(1), verbose = FALSE)
 } else if (test_no == 6) { #Should crash - timespan not large enough
-  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time(), Sys.time(), verbose = FALSE)
+  download.NOAA_GEFS("~/Working/results", lat.in= 45.805925, lon.in = -90.07961, "US-WCr", Sys.time(), Sys.time(), verbose = FALSE)
 } else if (test_no == 7) { #Should work, but have the timespan shrunk by one day.  Output should be identical to default case.
-  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time(), Sys.time() + lubridate::days(17), verbose = FALSE)
+  download.NOAA_GEFS("~/Working/results", lat.in= 45.805925, lon.in = -90.07961, "US-WCr", Sys.time(), Sys.time() + lubridate::days(17), verbose = FALSE)
 }
+
 
   
   
