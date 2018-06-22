@@ -1,4 +1,4 @@
-##' Download NOAA Weather Data
+##' @description  Download NOAA Weather Data
 ##' 
 ##' Information on NOAA weather units can be found here:
 ##' https://www.ncdc.noaa.gov/crn/measurements.html
@@ -42,6 +42,39 @@
 ##' @param verbose logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.
 ##' @param ... Other arguments, currently ignored
 ##' @export
+##' 
+##' Example testcases for running.
+##' \dontrun {
+##'  #This program is to test the R script donload.NOAA.R during development.
+##'
+##' test_no = 1
+##' args = commandArgs(trailingOnly = TRUE)
+##' if (length(args) > 0) {
+##'  test_no = as.integer(args[1])
+##'}
+##'
+##' source("~/pecan/modules/data.atmosphere/R/download.NOAA_GEFS.R")
+##'
+##'
+##' if (test_no == 1) { #Default case
+##'  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek")
+##'} else if (test_no == 2) { #Should be an Error - date out of bounds
+##'  download.NOAA_GEFS("~/Working/results",lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time()  - lubridate::days(12), Sys.time(), verbose = FALSE)
+##' } else if (test_no == 3) { #Should work
+##'  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time() - lubridate::days(4), verbose = FALSE)
+##' } else if (test_no == 4) { #Should work - 1 day's worth of data
+##'   download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time() - lubridate::days(8), Sys.time() - lubridate::days(7),  verbose = FALSE)
+##' } else if (test_no == 5) { #Should be an error - date out of bounds 
+##'   download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.Date() + lubridate::days(1), verbose = FALSE)
+##' } else if (test_no == 6) { #Should crash - timespan not large enough
+##'  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time(), Sys.time(), verbose = FALSE)
+##' } else if (test_no == 7) { #Should work, but have the timespan shrunk by one day.  Output should be identical to default case.
+##'  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time(), Sys.time() + lubridate::days(17), verbose = FALSE)
+##'}
+##' }
+##' 
+##' It's also a good idea to test with dates passed as strings. (It's difficult to include cases where dates passed as strings word, because
+##' any "hardcoded" date would become invalid after 12 days).
 ##' 
 ##' @author Luke Dramko
 ##' 
