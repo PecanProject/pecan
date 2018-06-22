@@ -22,19 +22,6 @@
 ##' NOAA.GEFS.willow creek.3.2018-06-08T06:00.to.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
 ##' June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 ##' 
-##' @section Dependencies
-##' Dependencies: (R packages)
-##' --Avaliable on CRAN Mirrors --
-##' @import lubridate
-##' @import rnoaa
-##' @import ncdf4
-##' @import  udunits2
-##' --Avaliable of PEcAn's GitHub --
-##' @import PEcAn.logger
-##' @import PEcAn.data.atmosphere
-##' @import PEcAn.remote
-##' @include metutils
-##' 
 ##' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
 ##' data frame contains information about one file.
 ##'
