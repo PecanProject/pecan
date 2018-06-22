@@ -10,8 +10,9 @@
 ##' standard.
 ##' 
 ##' NOAA GEFS weather data is avaliable on a rolling 12 day basis; dates provided in "start_date" must be within this range. The end date can be any point after
-##' that, but if the end date is beyond 16 days, only 16 days worth of forecast are recorded.  Times are rounded down to the previous 6 hour forecast.  If you
-##' call the funciton with 
+##' that, but if the end date is beyond 16 days, only 16 days worth of forecast are recorded.  Times are rounded down to the previous 6 hour forecast.  NOAA
+##' weather data isn't always posted immediately, and to compensate, this function adjusts requests made in the last two hours
+##' back two hours to make sure the most current forecast is used.
 ##' 
 ##' Dependencies: (R packages)
 ##' --Avaliable on CRAN Mirrors --
@@ -25,15 +26,18 @@
 ##' PEcAn.remote
 ##' 
 ##' Data is saved in the netcdf format to the specified directory.  File names reflect the precision of the data to the given range of days.
-##' NOAA.GEFS.20180608.at.0600.to.20180614.at.0600.1.nc refers to data for ensemble member 1 on 
+##' NOAA.GEFS.willow creek.3.2018-06-08 006:00.to.2018-06-24 06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
+##' June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 ##' 
-##' A data frame is returned containing information about the data file that can be used to locate it later.
+##' A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
+##' data frame contains information about one file.
 ##'
 ##' Download and convert to CF NOAA weather data
 ##' @param outfolder Directory where results should be written
 ##' @param start_date, end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)
 ##' @param lat site latitude in decimal degrees
 ##' @param lon site longitude in decimal degrees
+##' @param site_id The unique ID given to each site. This is used as part of the file name.
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.
 ##' @param ... Other arguments, currently ignored
@@ -41,7 +45,7 @@
 ##' 
 ##' @author Luke Dramko
 ##' 
-download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, start_date = Sys.time(), end_date = (start_date + lubridate::days(16)),
+download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = Sys.time(), end_date = (start_date + lubridate::days(16)),
                              overwrite = FALSE, verbose = FALSE, ...) {
   
   start_date <- as.POSIXct(start_date, tz = "UTC")
@@ -95,7 +99,9 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, start_date = Sys.time(
   }
   #End date/time error checking
   
+  #################################################
   #NOAA variable downloading
+  #Uses the rnoaa package to download data
   
   #We want data for each of the following variables. Here, we're just getting the raw data; later, we will convert it to the 
   #cf standard format when relevant.
