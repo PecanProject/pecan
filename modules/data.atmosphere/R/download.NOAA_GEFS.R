@@ -26,7 +26,7 @@
 ##' PEcAn.remote
 ##' 
 ##' Data is saved in the netcdf format to the specified directory.  File names reflect the precision of the data to the given range of days.
-##' NOAA.GEFS.willow creek.3.2018-06-08 006:00.to.2018-06-24 06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
+##' NOAA.GEFS.willow creek.3.2018-06-08T06:00.to.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
 ##' June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 ##' 
 ##' A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
@@ -45,11 +45,25 @@
 ##' 
 ##' @author Luke Dramko
 ##' 
-download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = Sys.time(), end_date = (start_date + lubridate::days(16)),
+download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz="UTC") + lubridate::days(16)),
                              overwrite = FALSE, verbose = FALSE, ...) {
+  print(start_date)
+  print(end_date)
   
   start_date <- as.POSIXct(start_date, tz = "UTC")
   end_date <- as.POSIXct(end_date, tz = "UTC")
+  
+  #It takes about 2 hours for NOAA GEFS weather data to be posted.  Therefore, if a request is made within that 2 hour window,
+  #we instead want to adjust the start time to the previous forecast, which is the most recent one avaliable.  (For example, if
+  #there's a request at 7:00 a.m., the data isn't up yet, so the function grabs the data at midnight instead.)
+  if (abs(as.numeric(Sys.time() - start_date, units="hours")) <= 2) {
+    start_date = start_date - lubridate::hours(2)
+    end_date = end_date - lubridate::hours(2)
+  }
+  
+  print("****************")
+  print(start_date)
+  print(end_date)
   
   #Date/time error checking - Checks to see if the start date is before the end date
   if (start_date > end_date) {
@@ -98,6 +112,12 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = 
     PEcAn.logger::logger.severe(sprintf("End time %s is not a valid time", lubridate::hour(end_date)))
   }
   #End date/time error checking
+  
+  print("****************")
+  print(start_date)
+  print(end_date)
+  
+  quit(save="no")
   
   #################################################
   #NOAA variable downloading
