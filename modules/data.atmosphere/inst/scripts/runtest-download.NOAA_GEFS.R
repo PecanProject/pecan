@@ -1,4 +1,6 @@
 #This program is to test the R script donload.NOAA.R during development.
+#It accepts a command line argument specifying the case test number to run, otherwise, it
+#defaults to the first case.
 
 test_no = 1
 args = commandArgs(trailingOnly = TRUE)
