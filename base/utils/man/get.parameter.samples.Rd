@@ -14,5 +14,5 @@ get.parameter.samples(settings, posterior.files = rep(NA,
 Convert priors / MCMC samples to chains that can be sampled for model parameters
 }
 \author{
-David LeBauer, Shawn Serbin
+David LeBauer, Shawn Serbin, Istem Fer
 }

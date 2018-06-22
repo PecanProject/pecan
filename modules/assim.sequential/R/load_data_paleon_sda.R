@@ -12,7 +12,7 @@
 load_data_paleon_sda <- function(settings){
   
   #### Types of Data needed
-  ## STEPPS Fcomp
+  ## STEPPS Fcomp (Work in progress)
   ## ReFAB biomass
   ## HF Tree Rings (CHECK)
   ## Tree Rings from tree ring module
@@ -52,7 +52,7 @@ load_data_paleon_sda <- function(settings){
   obs.cov <- obs.cov.tmp <- list()
 
   obs.times <- seq(as.Date(start_date), as.Date(end_date), by = settings$state.data.assimilation$forecast.time.step)
-  obs.times <- lubridate::year(obs.times)
+  obs.times <- formatC(lubridate::year(obs.times), width = 4, format = "d", flag = "0")
   
   biomass2carbon <- 0.48
   
@@ -63,7 +63,9 @@ load_data_paleon_sda <- function(settings){
     data.path <- PEcAn.DB::query.file.path(input.id[[i]], settings$host$name, bety$con)
     format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id[[i]], bety, format.id = NA, var.ids=NA)
     
-    if(TRUE){
+
+    ### Tree Ring Data Product
+    if(format_id[[i]] == '1000000040'){
       # hack instead of changing the units in BETY format for now
       # I don't want load_data to convert anything
       # data itself is in Mg / ha 
@@ -78,14 +80,11 @@ load_data_paleon_sda <- function(settings){
     time.row <- format$time.row
     time.type <- format$vars$input_units[time.row] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
     
-    # ---- LOAD INPUT DATA ---- #
-    PEcAn.logger::logger.info(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
-    obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site)
+      # ---- LOAD INPUT DATA ---- #
+      PEcAn.logger::logger.info(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
+      obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site)
     
-    variable <- intersect(var.names,colnames(obvs[[i]]))
-    
-    kgms2Mghayr <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kg m-2 s-1 -> Mg ha-1 yr-1
-    kgm2Mgha <- (10000/1)*(1/1000) ## kg m-2  -> Mg ha-1
+      variable <- intersect(var.names,colnames(obvs[[i]]))
     
     ### Tree Ring Data Product
     if(format_id[[i]] == '1000000040'){
@@ -95,64 +94,179 @@ load_data_paleon_sda <- function(settings){
       arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
       arguments2 <- list(.(year), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
-    }else{
-      PEcAn.logger::logger.severe('ERROR: This data format has not been added to this function (ツ)_/¯ ')
+      
+      dataset <- obvs[[i]]
+      
+      ### Map species to model specific PFTs
+      if(any(var.names == 'AGB.pft')){
+        spp_id <- match_species_id(unique(dataset$species_id),format_name = 'usda',bety)
+        pft_mat <- match_pft(spp_id$bety_species_id, settings$pfts,
+                             con = bety$con, allow_missing = TRUE)
+        
+        x <- paste0('AGB.pft.', pft_mat$pft)
+        names(x) <- spp_id$input_code
+        
+        PEcAn.logger::logger.info('Now, mapping data species to model PFTs')
+        dataset$pft.cat <- x[dataset$species_id]
+        dataset <- dataset[dataset$pft.cat!='AGB.pft.NA',]
+        
+        variable <- c('AbvGrndWood')
+        arguments <- list(.(year, MCMC_iteration, site_id, pft.cat), .(variable))
+        arguments2 <- list(.(year, pft.cat), .(variable))
+        arguments3 <- list(.(MCMC_iteration), .(pft.cat, variable), .(year))
+      } 
+      
+      PEcAn.logger::logger.info('Now, aggregating data and creating SDA input lists')
+      melt_id <- colnames(dataset)[-which(colnames(dataset) %in% variable)]
+      melt.test <- reshape2::melt(dataset, id = melt_id, na.rm = TRUE)
+      cast.test <- reshape2::dcast(melt.test, arguments, sum, margins = variable)
+      
+      melt_id_next <- colnames(cast.test)[-which(colnames(cast.test) %in% variable)]
+      melt.next <- reshape2::melt(cast.test, id = melt_id_next)
+      mean_mat <- reshape2::dcast(melt.next, arguments2, mean)
+      
+      iter_mat <- reshape2::acast(melt.next, arguments3, mean)
+      cov.test <- apply(iter_mat,3,function(x){cov(x)})
+      
+      for(t in seq_along(obs.times)){
+        obs.mean.tmp[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], -c(1)] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
+        
+        if(any(var.names == 'AGB.pft')){
+          obs.mean.tmp[[t]] <- rep(NA, length(unique(dataset$pft.cat)))
+          names(obs.mean.tmp[[t]]) <- sort(unique(dataset$pft.cat))
+          for(r in seq_along(unique(dataset$pft.cat))){
+            k <- mean_mat[mean_mat$year==obs.times[t] & mean_mat$pft.cat==names(obs.mean.tmp[[t]][r]), variable]
+            if(any(k)){
+              obs.mean.tmp[[t]][r] <- k
+            }
+          }
+        }
+        
+        obs.cov.tmp[[t]] <- matrix(cov.test[,which(colnames(cov.test) %in% obs.times[t])],
+                                   ncol = sqrt(dim(cov.test)[1]),
+                                   nrow = sqrt(dim(cov.test)[1]))
+        if(any(var.names == 'AGB.pft')){
+          colnames(obs.cov.tmp[[t]]) <- names(iter_mat[1,,t]) 
+        }
+      }
     }
     
-    dataset <- obvs[[i]]
-    
-    ### Map species to model specific PFTs
-    if(any(var.names == 'AGB.pft')){
-      spp_id <- match_species_id(unique(dataset$species_id),format_name = 'usda',bety)
-      pft_mat <- match_pft(spp_id$bety_species_id, settings$pfts,
-                           con = bety$con, allow_missing = TRUE)
+    ### Pollen Data Product (STEPPS)
+    if(format_id[[i]] == '1000000058'){
+      ncin <- ncdf4::nc_open(data.path)
       
-      x <- paste0('AGB.pft.', pft_mat$pft)
-      names(x) <- spp_id$input_code
+      coords <- data.frame(x=site$lon,y=site$lat)
+      sp::coordinates(coords) <- ~ x + y
+      sp::proj4string(coords) <- sp::CRS('+proj=longlat +ellps=WGS84')
       
-      PEcAn.logger::logger.info('Now, mapping data species to model PFTs')
-      dataset$pft.cat <- x[dataset$species_id]
-      dataset <- dataset[dataset$pft.cat!='AGB.pft.NA',]
+      ### site utm coordinates
+      utm <- sp::spTransform(coords, CRS("+proj=utm +zone=18N ellps=WGS84"))
+      utm <- as.matrix(data.frame(utm))
       
-      variable <- c('AbvGrndWood')
-      arguments <- list(.(year, MCMC_iteration, site_id, pft.cat), .(variable))
-      arguments2 <- list(.(year, pft.cat), .(variable))
-      arguments3 <- list(.(MCMC_iteration), .(pft.cat, variable), .(year))
-    } 
-    
-    PEcAn.logger::logger.info('Now, aggregating data and creating SDA input lists')
-    melt_id <- colnames(dataset)[-which(colnames(dataset) %in% variable)]
-    melt.test <- reshape2::melt(dataset, id = melt_id, na.rm = TRUE)
-    cast.test <- reshape2::dcast(melt.test, arguments, sum, margins = variable)
-    
-    melt_id_next <- colnames(cast.test)[-which(colnames(cast.test) %in% variable)]
-    melt.next <- reshape2::melt(cast.test, id = melt_id_next)
-    mean_mat <- reshape2::dcast(melt.next, arguments2, mean)
-    
-    iter_mat <- reshape2::acast(melt.next, arguments3, mean)
-    cov.test <- apply(iter_mat,3,function(x){cov(x)})
-   
-    for(t in seq_along(obs.times)){
-      obs.mean.tmp[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], -c(1)] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
+      ### find grid cell
+      site.x <- which(min(abs(ncvar_get(ncin, 'x') - utm[1])) == abs(ncvar_get(ncin, 'x') - utm[1]))
+      site.y <- which(min(abs(ncvar_get(ncin, 'y') - utm[2])) == abs(ncvar_get(ncin, 'y') - utm[2]))
+      years <- formatC(ncvar_get(ncin, 'year'), width = 4, format = "d", flag = "0")
       
-      if(any(var.names == 'AGB.pft')){
-        obs.mean.tmp[[t]] <- rep(NA, length(unique(dataset$pft.cat)))
-        names(obs.mean.tmp[[t]]) <- sort(unique(dataset$pft.cat))
-        for(r in seq_along(unique(dataset$pft.cat))){
-          k <- mean_mat[mean_mat$year==obs.times[t] & mean_mat$pft.cat==names(obs.mean.tmp[[t]][r]), variable]
-          if(any(k)){
-            obs.mean.tmp[[t]][r] <- k
-          }
+      taxa <- names(ncin$var)
+      if('other'%in%taxa) taxa <- taxa[-c(grep('other',taxa))]
+        
+      sims.keep <- array(NA,dim=c(length(taxa),length(ncin$dim$year$vals),length(ncin$dim$sample$vals)))
+      for(n in seq_along(taxa)){
+        taxa.start <- ncvar_get(ncin, taxa[n])
+        
+        # input is a matrix 'sims', with rows as time and columns as MCMC samples
+        sims.keep[n,,] <- taxa.start[site.x,site.y,,]
+      }
+      
+      #####
+      ##### Calculating Effective Sample Size #####
+      #####
+      
+      ESS_calc <- function(ntimes, sims){
+        row.means.sims <- sims - rowMeans(sims)  # center based on mean at each time to remove baseline temporal correlation 
+        # (we want to estimate effective sample size effect from correlation of the errors)
+        
+        # compute all pairwise covariances at different times
+        covars <- NULL
+        for(lag in 1:(ntimes-1)){
+          covars <- c(covars, rowMeans(row.means.sims[(lag+1):ntimes, , drop = FALSE] * row.means.sims[1:(ntimes-lag), , drop = FALSE])) 
+        }
+        vars <- apply(row.means.sims, 1, var) # pointwise post variances at each time, might not be homoscedastic
+        
+        # nominal sample size scaled by ratio of variance of an average
+        # under independence to variance of average of correlated values
+        neff <- ntimes * sum(vars) / (sum(vars) + 2 * sum(covars))
+        return(neff)
+      }
+      
+      neff.keep <- mean.keep <- list()
+      pecan.pfts <- as.character(lapply(settings$pfts, function(x) x[["name"]]))
+      
+      for(n in taxa){
+        sims.start <- ncvar_get(ncin,n)
+        
+        # input is a matrix 'sims', with rows as time and columns as MCMC samples
+        sims <- sims.start[site.x,site.y,,]
+        
+        ntimes <- 10
+      
+        neff.keep[[n]] <- ESS_calc(ntimes = ntimes, sims = sims)
+        mean.keep[[n]] <- rowMeans(sims)
+       
+      }
+      
+      var.inf <- 1000/mean(unlist(neff.keep))
+      
+      mean.mat <- as.data.frame(mean.keep)
+      
+      for(n in seq_len(ncol(mean.mat))){
+        new.name <- pecan.pfts[grep(taxa[n],pecan.pfts,ignore.case = T)]
+        if(any(nchar(new.name))){
+          colnames(mean.mat)[n] <- paste0('Fcomp.',new.name)
         }
       }
       
-      obs.cov.tmp[[t]] <- matrix(cov.test[,which(colnames(cov.test) %in% obs.times[t])],
-                             ncol = sqrt(dim(cov.test)[1]),
-                             nrow = sqrt(dim(cov.test)[1]))
-      if(any(var.names == 'AGB.pft')){
-        colnames(obs.cov.tmp[[t]]) <- names(iter_mat[1,,t]) 
+      #####
+      ##### Calculating Mean and Covariance
+      #####
+
+      obs.mean <- list()
+      for(n in 1:nrow(mean.mat)){
+        obs.mean[[n]]<- mean.mat[n,]
       }
-    } 
+      
+      names(obs.mean) <- paste0(years,'/12/31')
+
+      rownames(sims.keep) <- colnames(mean.mat)
+      obs.cov <- list()
+      for(n in 1:length(ncin$dim$year$vals)){
+        obs.cov[[n]] <- cov(t(sims.keep[,n,])) #* var.inf
+      }
+      
+      names(obs.cov) <- paste0(years,'/12/31')
+      
+      #### Interpolate over all years
+      which.keep <- list()
+      
+      for(n in obs.times){
+        min.vec <- na.omit(as.numeric(n) - year(as.Date(names(obs.mean))))
+        which.keep[[n]] <- which(min(abs(min.vec))==abs(min.vec))
+        obs.mean.tmp[[n]] <- obs.mean[[which.keep[[n]][1]]]
+        obs.cov.tmp[[n]] <- obs.cov[[which.keep[[n]][1]]]
+      }
+      
+      names(obs.mean.tmp)<-paste0(obs.times,'/12/31')
+      names(obs.cov.tmp)<-paste0(obs.times,'/12/31')
+      
+    }
+    
+    ### Error Message for no data product
+    if(format_id[[i]] != '1000000040' & format_id[[i]] != '1000000058'){
+      PEcAn.logger::logger.severe('ERROR: This data format has not been added to this function (ツ)_/¯ ')
+    }
+    
+  }
     
     ### Combine data if more than one type of data
     if(i > 1){
@@ -167,7 +281,6 @@ load_data_paleon_sda <- function(settings){
     
     names(obs.mean) <- paste0(obs.times,'/12/31')
     names(obs.cov) <- paste0(obs.times,'/12/31')
-  }
   
   obs.list <- list(obs.mean = obs.mean, obs.cov = obs.cov)
   save(obs.list,file=file.path(settings$outdir,'sda.obs.Rdata'))
