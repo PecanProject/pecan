@@ -11,7 +11,7 @@
 ##' 
 ##' NOAA GEFS weather data is avaliable on a rolling 12 day basis; dates provided in "start_date" must be within this range. The end date can be any point after
 ##' that, but if the end date is beyond 16 days, only 16 days worth of forecast are recorded.  Times are rounded down to the previous 6 hour forecast.  NOAA
-##' weather data isn't always posted immediately, and to compensate, this function adjusts requests made in the last two hours
+##' GEFS weather data isn't always posted immediately, and to compensate, this function adjusts requests made in the last two hours
 ##' back two hours to make sure the most current forecast is used.
 ##' 
 ##' Dependencies: (R packages)
@@ -187,17 +187,21 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = 
   }
   
   # Create a data frame with information about the file.  This data frame's format is an internal PEcAn standard, and is stored in the BETY database to
-  # locate the data file.  The data file is stored on the local machine where the download occured.
+  # locate the data file.  The data file is stored on the local machine where the download occured.  Because NOAA GEFS is an 
+  # ensemble of 21 different forecast models, each model gets its own data frame.  All of the information is the same for 
+  # each file except for the file name.
   results = data.frame(
-    file = character(21),                 #Path to the file
+    file = "",                            #Path to the file (added in loop below).
     host = PEcAn.remote::fqdn(),          #Name of the server where the file is stored
     mimetype = "application/x-netcdf",    #Format the data is saved in
     formatname = "CF Meteorology",        #Type of data
-    startdate = paste0(format(start_date, "%Y-%m-%d"), " ", substring(forecast_hour, 1,2), ":00:00"),              #starting date and time, down to the second
-    enddate = paste0(format(end_date, "%Y-%m-%d"), " ", substring(end_hour, 1, 2), ":00:00"),                      #ending date and time, down to the second
+    startdate = paste0(format(start_date, "%Y-%m-%dT%H:%M:00")),    #starting date and time, down to the second
+    enddate = paste0(format(end_date, "%Y-%m-%dT%H:%M:00")),        #ending date and time, down to the second
     dbfile.name = "NOAA_GEFS",            #Source of data
     stringsAsFactors = FALSE
   )
+  
+  results_list = list()
   
   #Each ensemble gets its own file.
   #These dimensions will be used for all 21 ncdf4 file members, so they're all declared once here.
@@ -220,7 +224,11 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = 
     flname = file.path(outfolder, paste("NOAA_GEFS", site_id, i, format(start_date, "%Y-%m-%dT%H:%M"), 
                                         format(end_date, "%Y-%m-%dT%H:%M"), "nc", sep="."))
     
-    results$file[i] = flname
+    #Each ensemble member gets its own unique data frame, which is stored in results_list
+    #Object references in R work differently than in other languages. When adding an item to a list, R creates a copy of it
+    #for you instead of just inserting the object reference, so this works.
+    results$file = flname
+    results_list[[i]] = results
     
     if (!file.exists(flname) | overwrite) {
       nc_flptr = ncdf4::nc_create(flname, nc_var_list, verbose=verbose)
@@ -238,5 +246,5 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = 
     
   }
   
-  return(results)
+  return(results_list)
 } #download.NOAA_GEFS
