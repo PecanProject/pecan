@@ -1,35 +1,41 @@
-##' @description  Download NOAA Weather Data
+##' @title Download NOAA GEFS Weather Data
 ##' 
+##' @section Information on Units
 ##' Information on NOAA weather units can be found here:
-##' https://www.ncdc.noaa.gov/crn/measurements.html
+##' @references https://www.ncdc.noaa.gov/crn/measurements.html
 ##' Note that the temperature is measured in degrees C, but is converted at the station and downlaoded
 ##' in Kelvin.
 ##' 
+##' @section NOAA_GEFS General Information
 ##' This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  A 16 day forecast is avaliable
 ##' every 6 hours.  Each forecast includes information on a total of 8 variables.  These are transformed from the NOAA standard to the internal PEcAn
 ##' standard.
 ##' 
+##' @section Data Avaliability
 ##' NOAA GEFS weather data is avaliable on a rolling 12 day basis; dates provided in "start_date" must be within this range. The end date can be any point after
 ##' that, but if the end date is beyond 16 days, only 16 days worth of forecast are recorded.  Times are rounded down to the previous 6 hour forecast.  NOAA
 ##' GEFS weather data isn't always posted immediately, and to compensate, this function adjusts requests made in the last two hours
-##' back two hours to make sure the most current forecast is used.
+##' back two hours (approximately the amount of time it takes to post the data) to make sure the most current forecast is used.
 ##' 
-##' Dependencies: (R packages)
-##' --Avaliable on CRAN Mirrors --
-##' lubridate
-##' rnoaa
-##' ncdf4
-##' udunits2
-##' --Avaliable of PEcAn's GitHub --
-##' PEcAn.logger
-##' PEcAn.data.atmosphere
-##' PEcAn.remote
-##' 
+##' @section Data Save Format
 ##' Data is saved in the netcdf format to the specified directory.  File names reflect the precision of the data to the given range of days.
 ##' NOAA.GEFS.willow creek.3.2018-06-08T06:00.to.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
 ##' June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 ##' 
-##' A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
+##' @section Dependencies
+##' Dependencies: (R packages)
+##' --Avaliable on CRAN Mirrors --
+##' @import lubridate
+##' @import rnoaa
+##' @import ncdf4
+##' @import  udunits2
+##' --Avaliable of PEcAn's GitHub --
+##' @import PEcAn.logger
+##' @import PEcAn.data.atmosphere
+##' @import PEcAn.remote
+##' @include metutils
+##' 
+##' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
 ##' data frame contains information about one file.
 ##'
 ##' Download and convert to CF NOAA weather data
@@ -43,7 +49,10 @@
 ##' @param ... Other arguments, currently ignored
 ##' @export
 ##' 
-##' Example testcases for running.
+##' It's also a good idea to test with hardcoded dates.  It's difficult to provide those in example code, because valid
+##' dates expire in at most 12 days.
+##' @examples 
+##' 
 ##' \dontrun {
 ##'  #This program is to test the R script donload.NOAA.R during development.
 ##'
@@ -72,9 +81,6 @@
 ##'  download.NOAA_GEFS("~/Working/results", lat.in= 46.2420, lon.in = -89.3476, "willow creek", Sys.time(), Sys.time() + lubridate::days(17), verbose = FALSE)
 ##'}
 ##' }
-##' 
-##' It's also a good idea to test with dates passed as strings. (It's difficult to include cases where dates passed as strings word, because
-##' any "hardcoded" date would become invalid after 12 days).
 ##' 
 ##' @author Luke Dramko
 ##' 
