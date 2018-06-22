@@ -19,6 +19,9 @@ run.meta.analysis(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles,
 
 \item{random}{should random effects be used?}
 
+\item{threshold}{Gelman-Rubin convergence diagnostic, passed on to
+\code{\link{pecan.ma.summary}}}
+
 \item{dbfiles}{location where previous results are found}
 
 \item{database}{database connection parameters}
@@ -26,7 +29,7 @@ run.meta.analysis(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles,
 \value{
 nothing, as side effect saves \code{trait.mcmc} created by
 \code{\link{pecan.ma}} and post.distns created by
-\code{\link{approx.posterior(trait.mcmc, ...)}}  to trait.mcmc.Rdata \
+\code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata \
 and post.distns.Rdata, respectively
 }
 \description{

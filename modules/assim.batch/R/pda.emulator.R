@@ -52,11 +52,6 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
     adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, run.round)
   
-  ## history restart
-  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
-                                                       settings$assim.batch$ensemble.id, ".Rdata"))
-  current.step <- "START" 
-  
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
   isbias <- which(unlist(any.mgauss) == "multipGauss")
@@ -138,6 +133,10 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   ## Create an ensemble id
   settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
   
+  ## history restart
+  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
+                                                       settings$assim.batch$ensemble.id, ".Rdata"))
+  current.step <- "START" 
   
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
@@ -178,72 +177,29 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   ## Run this block if this is a "round" extension
   if (run.round) {
     
-    # loads the posteriors of the the previous emulator run
-    temp.round <- pda.load.priors(settings, con, run.round)
-    prior.round.list <- temp.round$prior
-    
-    
-    prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
-    
-    ## Propose a percentage (if not specified 80%) of the new parameter knots from the posterior of the previous run
+    ## Propose a percentage (if not specified 90%) of the new parameter knots from the posterior of the previous run
     knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
                               as.numeric(settings$assim.batch$knot.par),
-                              0.8)
+                              0.9)
     
     n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
     
-    if(!is.null(sf)){
-      load(settings$assim.batch$sf.path)
-      sf.round.post <- pda.define.prior.fn(sf.post.distns)
-      rm(sf.post.distns)
-      n.sf <- length(sf)
-      sf.round.list <- pda.generate.knots(n.post.knots,
-                                          sf = NULL, probs.sf = NULL,
-                                          n.param.all = n.sf,
-                                          prior.ind = seq_len(n.sf),
-                                          prior.fn = sf.round.post, 
-                                          pname = paste0(sf, "_SF"))
-      probs.round.sf     <- sf.round.list$params
-    }else {
-      probs.round.sf     <- NULL
-    }
-    
-    ## set prior distribution functions for posterior of the previous emulator run
-    ## need to do two things here: 
-    ## 1) for non-SF parameters, use the posterior of previous emulator
-    knots.list.nonsf <- lapply(seq_along(settings$pfts),
-                              function(x) pda.generate.knots(n.post.knots,
-                                                             sf, probs.round.sf,
-                                                             n.param.all[x],
-                                                             prior.ind.orig[[x]],
-                                                             prior.round.fn[[x]],
-                                                             pname[[x]]))
-    
-    knots.params.nonsf <- lapply(knots.list.nonsf, `[[`, "params")
-    
-    ## 2) for SF parameters use the posterior sf-values but on the prior of the actual params
-    knots.list.sf <- lapply(seq_along(settings$pfts),
-                               function(x) pda.generate.knots(n.post.knots,
-                                                              sf, probs.round.sf,
-                                                              n.param.all[x],
-                                                              prior.ind.orig[[x]],
-                                                              prior.fn[[x]], # note the difference
-                                                              pname[[x]]))
-    
-    knots.params.sf <- lapply(knots.list.sf, `[[`, "params")
-    
-    
-    knots.params.temp <- knots.params.nonsf
+    # trim down, as a placeholder
+    knots.params.temp <- lapply(knots.params, function(x) x[1:n.post.knots, ])
     
     if(!is.null(sf)){
-      # get new proposals for non-sf and sf together
-      for(i in seq_along(settings$pfts)){
-        if(!is.null(any.scaling[[i]])){
-          knots.params.temp[[i]] <- knots.params.sf[[i]]
-        }
-      }
+      load(settings$assim.batch$sf.samp)
+    }else{
+      sf.samp <- NULL
     }
+    sampled_knots <- sample_MCMC(settings$assim.batch$mcmc.path, n.param.orig, prior.ind.orig, 
+                                     n.post.knots, knots.params.temp,
+                                     prior.list, prior.fn, sf, sf.samp)
+
+    knots.params.temp <- sampled_knots$knots.params.temp
+    probs.round.sf    <- sampled_knots$sf_knots
     
+
     # mixture of knots
     mix.knots <- sample(settings$assim.batch$n.knot, (settings$assim.batch$n.knot - n.post.knots))
     for (i in seq_along(settings$pfts)) {
@@ -257,8 +213,6 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }
     
     knots.params <- lapply(knots.list, `[[`, "params")
-    # don't need anymore
-    # knots.probs  <- lapply(knots.list, `[[`, "probs")
     
     current.step <- "Generate Knots: round-if block"
     save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
@@ -302,16 +256,15 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
     if(any(unlist(any.mgauss) == "multipGauss")) {
-      # how many bias parameters per dataset requested
-      nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
-                      as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
-      bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias, run.round, settings$assim.batch$bias.path)
+      bias.list  <- return.bias(settings, isbias, model.out, inputs, prior.list, run.round)
       bias.terms <- bias.list$bias.params
       prior.list <- bias.list$prior.list.bias
-      prior.fn <- lapply(prior.list, pda.define.prior.fn)
+      nbias      <- bias.list$nbias
+      prior.fn   <- lapply(prior.list, pda.define.prior.fn)
     } else {
       bias.terms <- NULL
     }
+    
     
     for (i in seq_len(settings$assim.batch$n.knot)) {
       if(!is.null(bias.terms)){
@@ -379,12 +332,10 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     for(inputi in seq_len(n.input)){
       error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
       
-      if(unlist(any.mgauss)[inputi] == "multipGauss") {
+     if(unlist(any.mgauss)[inputi] == "multipGauss") {
         
         # if yes, then we need to include bias term in the emulator
-        #bias.probs <- bias.list$bias.probs
-        #biases <- c(t(bias.probs[[bc]]))
-        bias.params <- bias.list$bias.params
+        bias.params <- bias.terms
         biases <- c(t(bias.params[[bc]]))
         bc <- bc + 1
         
@@ -498,26 +449,31 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   prior.fn.all <- pda.define.prior.fn(prior.all)
   
   # define range to make sure mcmc.GP doesn't propose new values outside
-  rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)),
-                  sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))),
-                nrow = sum(n.param))
+  
+  # NOTE: this will need to change when there is more than one bias parameter
+  # but then, there are other things that needs to change in the emulator workflow
+  # such as the way proposed parameters are used in estimation in get_ss function
+  # so punting this development until it is needed
+  rng <-  t(apply(SS[[isbias]][,-ncol(SS[[isbias]])], 2, range))
   
   if (run.normal | run.round) {
     
     resume.list <- list()
+    
+    # start from knots
+    indx <- sample(seq_len(settings$assim.batch$n.knot), settings$assim.batch$chain)
     
     for (c in seq_len(settings$assim.batch$chain)) {
       jmp.list[[c]] <- sapply(prior.fn.all$qprior, 
                               function(x) 0.1 * diff(eval(x, list(p = c(0.05, 0.95)))))[prior.ind.all]
       jmp.list[[c]] <- sqrt(jmp.list[[c]])
       
-      init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n = 1)))
-      names(init.x) <- rownames(prior.all)[prior.ind.all]
-      init.list[[c]] <- init.x
+      init.list[[c]] <- as.list(SS[[isbias]][indx[c], -ncol(SS[[isbias]])])
       resume.list[[c]] <- NA
     }
   }
   
+
   if (!is.null(settings$assim.batch$mix)) {
     mix <- settings$assim.batch$mix
   } else if (sum(n.param) > 1) {
@@ -682,12 +638,15 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   # save sf posterior
   if(!is.null(sf)){
-    sf.filename <- file.path(settings$outdir, 
+    sf.post.filename <- file.path(settings$outdir, 
                              paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
+    sf.samp.filename <- file.path(settings$outdir, 
+                             paste0("samples.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
-    sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
-    save(sf.post.distns, file = sf.filename)
-    settings$assim.batch$sf.path <- sf.filename
+    sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.samp.filename)
+    save(sf.post.distns, file = sf.post.filename)
+    settings$assim.batch$sf.path <- sf.post.filename
+    settings$assim.batch$sf.samp <- sf.samp.filename
   }
   
   # Separate each PFT's parameter samples (and bias term) to their own list

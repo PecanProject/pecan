@@ -8,9 +8,6 @@ language: r
 r:
   - 3.4
 
-r:
-  - 3.4
-
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
 sudo: false
@@ -124,10 +121,19 @@ script:
   - set -e
   # - scripts/build.sh --no-git --tests --name travis
   - echo 'Installing PEcAn packages'
-  - make
+  # TODO: Would be nice to add `-Otarget` after `-j` below,
+  # but not supported in Make 3.x.
+  # When Travis updates, check for Make 4 and add -O if available.
+  - make # TODO: add -j2 here after #1976 closed
   - echo 'Testing PEcAn packages'
-  - make test
-  - make document
+  - make -j2 test
+  - make -j2 document
+  # Skip modules with known broken checks
+  - mkdir -p .check/modules # only needed for `touch` below
+  - touch .check/modules/benchmark # delete when #1978 closed
+  - touch .check/modules/data.land # delete when #1977 closed
+  - touch .check/modules/rtm # delete when #1976 closed
+  - make -j2 check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 
