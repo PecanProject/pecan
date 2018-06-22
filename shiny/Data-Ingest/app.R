@@ -4,11 +4,8 @@
  library(shinydashboard)
  library(dataone)
  library(stringr)
- library(shinyFiles)
  library(DT)
- library(shinyjs)
  library(shiny)
- library(selectr)
  
  source("ui_utils.R", local = TRUE)
 
@@ -46,9 +43,9 @@ ui <- dashboardPage(
   title = "PEcAn Data Ingest",
   skin =  "green"
 )
-############################################################################################################
+#######################################################################################################
 ######################################### SERVER ######################################################
-############################################################################################################
+#######################################################################################################
 
 server <- function(input, output, session) {
   options(shiny.maxRequestSize = 100 * 1024 ^ 2) #maximum file input size
@@ -58,11 +55,10 @@ server <- function(input, output, session) {
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
-##################### DataONE Download ############################################# 
+  ##################### DataONE Download #################################
   source("server_files/d1_download_svr.R", local = TRUE)
   
-  ######### FileInput ########################################
-  source("server_files/local_upload_svr.R", local = TRUE)
+  ######### FileInput ########################################  source("server_files/local_upload_svr.R", local = TRUE)
 }
 
 # Run the application
