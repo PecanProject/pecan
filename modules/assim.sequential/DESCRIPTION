@@ -18,6 +18,8 @@ Imports:
     lubridate (>= 1.6.0),
     reshape2 (>= 1.4.2),
     nimble
+Suggests:
+    testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
