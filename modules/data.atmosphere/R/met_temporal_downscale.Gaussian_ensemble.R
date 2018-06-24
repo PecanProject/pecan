@@ -299,12 +299,13 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     # matches our observations (1 significantly undervalues SW downwelling flux)
     if (swdn_method == "Waichler") {
       inter <- paste0(reso, " hour")
-      days <- seq(as.POSIXct(paste0(eph_year, "-01-01 00:00:00")), 
-                  as.POSIXct(paste0(eph_year, "-12-31 18:00:00")), 
+      days <- seq(as.POSIXct(paste0(eph_year, "-01-01 00:00:00"),tz="UTC"), 
+                  as.POSIXct(paste0(eph_year, "-12-31 18:00:00"),tz="UTC"), 
                   by = inter)
-      
-      Z <- RAtmosphere::SZA(days, lat_train, lon_train)
-      I <- 1000 * cos(Z * pi/180) # degrees to radians
+      days.doy <- as.numeric(format(days,"%j"))
+      days.hour <- lubridate::hour(days) + lubridate::minute(days) / 60 + lubridate::second(days) / 3600
+      cosZ <- PEcAn.data.atmosphere::cos_solar_zenith_angle(days.doy, lat_train, lon_train, inter, days.hour)
+      I <- 1000 * cosZ
       m <- vector()
       for (i in seq_len(12)) {
         m[i] <- lubridate::days_in_month(as.Date(paste0(year, "-", i, "-01")))
