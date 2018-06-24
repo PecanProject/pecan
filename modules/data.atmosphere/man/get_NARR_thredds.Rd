@@ -23,6 +23,9 @@ Requires the `progress` package to be installed.}
 `end_date` range (default = `TRUE`).}
 
 \item{parallel}{Download in parallel? Default = TRUE.}
+
+\item{ncores}{Number of cores for parallel download. Default is 
+`parallel::detectCores()`}
 }
 \value{
 `tibble` containing time series of NARR data for the given site

@@ -10,19 +10,12 @@
 #' @param parallel Download in parallel? Default = TRUE.
 #' @param ncores Number of cores for parallel download. Default is 
 #' `parallel::detectCores()`
-<<<<<<< HEAD
-#' \dontrun{
-=======
-#'
->>>>>>> 4bc485478dc07d0cdb21730704119b4f9279c4b1
 #' @examples
+#' 
 #' \dontrun{
 #' download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 #' }
-<<<<<<< HEAD
-=======
-#'
->>>>>>> 4bc485478dc07d0cdb21730704119b4f9279c4b1
+#' 
 #' @export
 #'
 #' @author Alexey Shiklomanov
