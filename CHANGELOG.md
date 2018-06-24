@@ -39,6 +39,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Spinner displays when class "shiny-busy" is invoked during the dataONE download process. In this way, users can be sure that the app is live and is processing their request. 
   - Users can now input the name of the destination directory that they wish to create within dbfiles. 
   - Updated Travis.yml to include librdf0-dev so that it can download redland, datapack, and dataone. 
+  - Added Data-Ingest UI (not currently linked to server)
   
 ### Removed
 
