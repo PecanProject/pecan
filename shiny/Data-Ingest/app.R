@@ -58,7 +58,8 @@ server <- function(input, output, session) {
   ##################### DataONE Download #################################
   source("server_files/d1_download_svr.R", local = TRUE)
   
-  ######### FileInput ########################################  source("server_files/local_upload_svr.R", local = TRUE)
+  ######### FileInput ########################################
+  source("server_files/local_upload_svr.R", local = TRUE)
 }
 
 # Run the application
