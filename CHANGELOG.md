@@ -24,6 +24,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
     
 ### Added
+- shiny/ Dependency explorer 
+  - Explore the interdependencies between pecan packages/functions.
 
 - From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
 
