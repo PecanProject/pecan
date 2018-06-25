@@ -18,7 +18,8 @@ q <- 0.1
 tts <- 48
 tto <- 0 
 psi <- 234
-params <- c(LIDFa,LIDFb,TypeLIDF,TypeLIDF,LAI,q,tts,tto,psi)
+params <- c(LIDFa,LIDFb,TypeLIDF,LAI,q,tts,tto,psi)
+param <- params
 
 # get leaf refl/trans
 LRT <- PEcAnRTM::prospect(c(2,55,10,3,0.1,0.007,0.007), 'D')
@@ -27,7 +28,8 @@ refl <- LRT[,1]
 length(refl)
 tran <- LRT[,2]
 
+# generate 4SAIL canopy spectra
+sail_spec <- foursail(refl, tran, rsoil, params)
 
-sail_sepc <- foursail(refl, tran, rsoil, params)
-
-
+# plot results
+matplot(sail_spec)

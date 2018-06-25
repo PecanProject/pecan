@@ -4,9 +4,9 @@
 #' @author Shawn Serbin
 #' @author Alexey Shiklomanov
 #' 
-#' @param refl input leaf reflectance from 400-2500nm
-#' @param tran input leaf transmittance from 400-2500nm
-#' @param rsoil input soil reflectance spectra from 400-2500nm
+#' @param refl input leaf reflectance from 400-2500nm (can be measured or modeled)
+#' @param tran input leaf transmittance from 400-2500nm (can be measured or modeled)
+#' @param rsoil input soil reflectance spectra from 400-2500nm (can be measured or modeled)
 #' @param param Vector of SAIL parameter values:
 #'      * LIDFa: Leaf angle distribution function - parameter a
 #'      * LIDFb: Leaf angle distribution function - parameter b
@@ -28,7 +28,7 @@ foursail <- function(refl, tran, rsoil, param) {
   rho <- as.vector(refl)
   tau <- as.vector(tran)
   rsoil <- as.vector(rsoil)
-  plist <- list(rho, tau, rsoil, param)
+  plist <- c(list(rho), list(tau), as.list(param), list(rsoil))
   nw    <- 2101
   plist$rddt <- numeric(nw)
   plist$rsdt <- numeric(nw)
