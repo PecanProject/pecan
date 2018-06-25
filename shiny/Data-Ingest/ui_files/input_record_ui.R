@@ -20,7 +20,11 @@ fluidRow(title = "New Input",
        placeholder = "under construction"
      ),
      hr(),
-     selectizeInput("InputFormatID", label = "Format ID (under construction)", sites),
+     selectizeInput("InputFormatID", label = "Format ID", selectformat,  
+                    options = list(
+                      placeholder = 'Please search Formats by name',
+                      onInitialize = I('function() { this.setValue(""); }')
+     )),
      hr(),
      dateInput(
        "InputStartDate",
