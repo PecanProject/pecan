@@ -24,6 +24,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
     
 ### Added
+- In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs
 - shiny/ Dependency explorer 
   - Explore the interdependencies between pecan packages/functions.
 
