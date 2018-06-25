@@ -10,7 +10,10 @@ r:
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
-sudo: false
+sudo: required
+
+env:
+  - PGHOST=localhost
 
 cache: 
   - directories:
@@ -21,7 +24,6 @@ cache:
   - packages
 
 addons:
-  postgresql: 9.6
   apt:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
@@ -33,8 +35,6 @@ addons:
       - jags
       - libudunits2-dev
       - python-dev
-      - postgresql-9.6-postgis-2.3
-      - postgresql-9.6-postgis-2.3-scripts
       - netcdf-bin
       - bc
       - curl
@@ -98,7 +98,7 @@ notifications:
 
 ## list of services to be running
 services:
-  - postgresql
+  - docker
 
 install:
   - pushd $HOME
@@ -109,6 +109,14 @@ install:
   - popd
 
 before_script:
+  - sudo service postgresql stop
+  - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine
+  - echo -n "Waiting for Postgres to start...";
+    until psql -U postgres -c 'select 1' >/dev/null 2>&1;
+      do echo -n ".";
+      sleep 1;
+    done;
+    echo " OK"
   - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
   - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
