@@ -35,8 +35,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   
 - shiny/Data-Ingest 
   - Download data from DataONE to a temporary directory, display the contents of that directory, and then move files from the temporary directory to dbfiles
-  - Upload files from local machines (via drag and drop on some browsers), display files, and then move these files to a directory in dbfiles. 
-
+  - Upload files from local machines (via drag and drop on some browsers), display files, and then move these files to a directory in dbfiles.
+  - Spinner displays when class "shiny-busy" is invoked during the dataONE download process. In this way, users can be sure that the app is live and is processing their request. 
+  - Users can now input the name of the destination directory that they wish to create within dbfiles. 
+  - Updated Travis.yml to include librdf0-dev so that it can download redland, datapack, and dataone. 
+  
 ### Removed
 
 ### Changed

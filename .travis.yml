@@ -32,7 +32,7 @@ addons:
       - libcurl4-openssl-dev
       - jags
       - libudunits2-dev
-      - python-dev 
+      - python-dev
       - postgresql-9.6-postgis-2.3
       - postgresql-9.6-postgis-2.3-scripts
       - netcdf-bin
@@ -63,6 +63,7 @@ addons:
       - r-cran-raster
       - r-cran-rcpp
       - r-cran-rcurl
+      - r-cran-redland
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-shiny

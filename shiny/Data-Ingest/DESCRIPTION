@@ -4,7 +4,7 @@ License: FreeBSD + file LICENSE
 Date: 2018-06-14
 Author: Liam Burke liam.burke24@gmail.com
 Tags: PEcAn
-DisplayMode:showcase 
+DisplayMode: showcase 
 Depends:
     shiny,
     PEcAn.data.land,
@@ -15,5 +15,4 @@ Depends:
     shinyFiles,
     DT,
     shinycssloaders
-    
-  
+RoxygenNote: 6.0.1
