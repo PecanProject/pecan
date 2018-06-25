@@ -4,10 +4,9 @@
 \alias{extract.local.CMIP5}
 \title{extract.local.CMIP5}
 \usage{
-\method{extract}{local.CMIP5}(outfolder, in.path, start_date, end_date, site_id,
-  lat.in, lon.in, model, scenario, ensemble_member = "r1i1p1",
-  date.origin = NULL, no.leap = NULL, overwrite = FALSE,
-  verbose = FALSE, ...)
+extract.local.CMIP5(outfolder, in.path, start_date, end_date, site_id, lat.in,
+  lon.in, model, scenario, ensemble_member = "r1i1p1", date.origin = NULL,
+  no.leap = NULL, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output files will be stored}
