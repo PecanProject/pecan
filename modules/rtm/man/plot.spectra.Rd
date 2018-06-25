@@ -4,7 +4,7 @@
 \alias{plot.spectra}
 \title{Plot spectra vs. wavelength}
 \usage{
-plot.spectra(spectra, type = "l", ...)
+\method{plot}{spectra}(spectra, type = "l", ...)
 }
 \arguments{
 \item{spectra}{Vector (\code{length = length(wavelengths)}) or matrix (\code{ncol = length(wavelengths)})}
