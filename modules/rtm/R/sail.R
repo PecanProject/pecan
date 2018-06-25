@@ -6,6 +6,7 @@
 #' 
 #' @param refl input leaf reflectance from 400-2500nm
 #' @param tran input leaf transmittance from 400-2500nm
+#' @param rsoil input soil reflectance spectra from 400-2500nm
 #' @param param Vector of SAIL parameter values:
 #'      * LIDFa: Leaf angle distribution function - parameter a
 #'      * LIDFb: Leaf angle distribution function - parameter b
@@ -15,7 +16,6 @@
 #'      * tts: Solar zenith angle
 #'      * tto: Observer zenith angle
 #'      * psi: Sun-sensor azimuth angle
-#'      * psoil: Fraction of soil moisture
 #' 
 #' @return Spectra matrix (see [spectra()]) (2101 x 4) of reflectance factors 
 #' for wavelengths 400 to 2500nm:
