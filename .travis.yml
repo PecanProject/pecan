@@ -28,6 +28,7 @@ addons:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
+      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
     packages:
       - libnetcdf-dev
       - liblapack-dev
