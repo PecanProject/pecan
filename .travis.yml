@@ -21,22 +21,20 @@ cache:
   - packages
 
 addons:
-  postgresql: 10
+  postgresql: 9.6
   apt:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
-      - sourceline: 'ppa:ubuntugis/ppa'
     packages:
+      - libnetcdf-dev
       - liblapack-dev
       - libcurl4-openssl-dev
-      - libnetcdf-dev
       - jags
       - libudunits2-dev
       - python-dev
-      - postgis
-      #- postgresql-10-postgis-2.4
-      #- postgresql-10-postgis-2.4-scripts
+      - postgresql-9.6-postgis-2.3
+      - postgresql-9.6-postgis-2.3-scripts
       - netcdf-bin
       - bc
       - curl
@@ -48,7 +46,6 @@ addons:
       - tcl-dev
       - libhdf5-dev
       - libgdal-dev
-      - libgdal20
       - gdal-bin
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
@@ -67,7 +64,6 @@ addons:
       - r-cran-rcpp
       - r-cran-rcurl
       - r-cran-redland
-      - r-cran-rgdal
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-shiny
