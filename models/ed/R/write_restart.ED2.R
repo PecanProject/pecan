@@ -46,7 +46,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   # but this causes mismatches in start-date because ED2 writes them as 1961-01-01 not 1961-12-31
   # then if timeh starts from 1962 it can't find the 1961 files, if you give dates accordingly it starts the simulation early
   # my solution is to copy-rename the history file. Other solutions are to change ED2's naming, or writing daily/monthly history files
-  new_basename <- gsub(paste0(hyear, "-12"), paste0(lubridate::year(start.time),"-01"), basename(histfile))
+  new_basename <- gsub(paste0(hyear, "-12"), paste0(lubridate::year(stop.time),"-01"), basename(histfile))
   new_local_histfile   <- file.path(dirname(histfile), new_basename)
   new_remote_histfile  <- file.path(settings$host$outdir, runid, new_basename)
   
@@ -148,7 +148,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
 
   ed2in_new <- modify_ed2in(
     ed2in_orig,
-    start_date = start.time,
+    start_date = lubridate::ceiling_date(start.time, "1 day"),
     end_date = lubridate::floor_date(stop.time, "30 minutes"), # floor down to the last half hour so that ED2 doesn't write to next year's file
     RUNTYPE = "HISTORY",
     IED_INIT_MODE = 4,
