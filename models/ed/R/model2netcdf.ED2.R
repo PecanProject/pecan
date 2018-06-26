@@ -1000,7 +1000,7 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   ed_units     <- trans_out$units # might use
   
   # List of vars to extract includes the requested one, plus others needed below 
-  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT", "DAGB_DT")
+  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT", "BDEAD")
   vars <- c(ed_varnames, add_vars) 
   
   # list to collect outputs
@@ -1052,42 +1052,41 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   # nplant <- plant_dens * patch_area # -- plant/m2
 
  
-  # Aggregate
-  for(k in seq_len(npft)) {
-    ind <- (pft == pft_nums[k])
-      
-    if(any(ind)) {
-      for(l in seq_along(pecan_names)) {
-        variable <- convert.expr(ed_derivs[l])  # convert
-        expr <- variable$variable.eqn$expression
-        
-        sapply(variable$variable.eqn$variables, function(x) assign(x, ed.dat[[x]], envir = .GlobalEnv))
-        tmp.var <- eval(parse(text = expr)) # parse
-        
-        # check for different variables/units?
-        if(ed_units[l] %in% c("kgC/plant")){
-          tmp.var[!ind] <- 0
-          #     kgC/m2 = kgC/plant  *   plant/m2  
-          plant2cohort <- tmp.var * plant_dens
-          cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), mean, na.rm = TRUE)
-          out[[pecan_names[l]]][k] <- sum(cohort2patch, na.rm = TRUE)
-        }else if(ed_units[l] %in% c("1/yr")){
-          tmp.var[!ind] <- 0
-          #   kgC/m2/yr = kgC/plant/yr  *   plant/m2  
-         # plant2cohort <- tmp.var * plant_dens
-          cohort2patch <- tapply(tmp.var, list("patch" = patch_index), mean, na.rm = TRUE) # should rates be summed?
-          out[[pecan_names[l]]][k] <- sum(cohort2patch, na.rm = TRUE)
-        }
+  for(l in seq_along(pecan_names)){
     
-        } #pecan_names loop
+    variable <- convert.expr(ed_derivs[l])  # convert
+    expr <- variable$variable.eqn$expression
+    
+    sapply(variable$variable.eqn$variables, function(x) assign(x, ed.dat[[x]], envir = .GlobalEnv))
+    tmp.var <- eval(parse(text = expr)) # parse
+    
+    if(pecan_names[l] %in% c("AbvGrndWood", "GWBI")){ # use aggregated values
+      out[[pecan_names[l]]] <- tmp.var
       
-      # here (or maybe out of these loops) there could be an add_vars loop for variables that will be updated deterministically
-      # pass as read? or aggregate as well? punting implementation until needed
-      # pass to a sublist? so that read_restart doesn't care?
-      # out$restart <- ...
+    }else{ # Aggregate
       
-      } #any(ind)-if
-    } #k-loop
+      for(k in seq_len(npft)) {
+        ind <- (pft == pft_nums[k])
+        if(any(ind)) {
+          # check for different variables/units?
+          if(ed_units[l] %in% c("kgC/plant")){
+            tmp.var[!ind] <- 0
+            #     kgC/m2 = kgC/plant  *   plant/m2  
+            plant2cohort <- tmp.var * plant_dens
+            cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), mean, na.rm = TRUE)
+            out[[pecan_names[l]]][k] <- sum(cohort2patch, na.rm = TRUE)
+          }else if(ed_units[l] %in% c("1/yr")){
+            tmp.var[!ind] <- 0
+            #   kgC/m2/yr = kgC/plant/yr  *   plant/m2  
+            # plant2cohort <- tmp.var * plant_dens
+            cohort2patch <- tapply(tmp.var, list("patch" = patch_index), mean, na.rm = TRUE) # should rates be summed?
+            out[[pecan_names[l]]][k] <- sum(cohort2patch, na.rm = TRUE)
+          }
+        }
+      }
+    }
+  }
+    
   
   # pass everything, unaggregated
   out$restart <- ed.dat
