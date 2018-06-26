@@ -32,7 +32,9 @@ download.AmerifluxLBL
 Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
 }
 \examples{
+\dontrun{
 result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
+}
 
 }
 \author{
