@@ -29,7 +29,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   #### Backup old run files to date directory
   runfiles <- list.files.nodir(file.path(rundir, runid))
   modoutfiles <- list.files.nodir(file.path(mod_outdir, runid), hyear) # copy only current year, otherwise it cumulatively copies everything
-
+  
   dir.create(file.path(rundir, runid, sda_suffix))
   dir.create(file.path(mod_outdir, runid, sda_suffix))
   file.copy(file.path(rundir, runid, runfiles),
@@ -38,6 +38,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   file.copy(file.path(mod_outdir, runid, modoutfiles),
             file.path(mod_outdir, runid, sda_suffix, modoutfiles),
             overwrite = TRUE)
+  
 
 
   # rename history file 
@@ -45,7 +46,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   # but this causes mismatches in start-date because ED2 writes them as 1961-01-01 not 1961-12-31
   # then if timeh starts from 1962 it can't find the 1961 files, if you give dates accordingly it starts the simulation early
   # my solution is to copy-rename the history file. Other solutions are to change ED2's naming, or writing daily/monthly history files
-  new_basename <- gsub(hyear, lubridate::year(start.time), basename(histfile))
+  new_basename <- gsub(paste0(hyear, "-12"), paste0(lubridate::year(start.time),"-01"), basename(histfile))
   new_local_histfile   <- file.path(dirname(histfile), new_basename)
   new_remote_histfile  <- file.path(settings$host$outdir, runid, new_basename)
   
@@ -63,6 +64,10 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   patch_index <- rep(1:length(paco_n), times = paco_n)
 
 
+  #### Write new state to file
+  # Default mode of H5File$new is "a", which is read + write and create file if it doesn't exist
+  histfile_h5 <- hdf5r::H5File$new(new_local_histfile)
+  
   for (var_name in var.names) {
     # var_name <- "AbvGrndWood"
     if (var_name == "AbvGrndWood") {
@@ -75,7 +80,11 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
 
       new.tmp <- new.state[grep(var_name, names(new.state))]
       old.tmp <- old.state
-      agb_co_ratios <- new.tmp / old.tmp # not ideal, just trying to get the workflow to run
+      agw_ratios <- new.tmp / old.tmp # not ideal, just trying to get the workflow to run
+      
+      bdead <- restart$BDEAD
+      
+      new_bdead <- bdead * agw_ratios[1,1]
 
       # AbvGrndWood in state matrix is not per PFT but total
       # but leaving this bit as a reminder
@@ -86,7 +95,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # names(new2old.agb_pft) <- as.character(pftnums[new2old_pftnames])
       # agb_co_ratios <- new2old.agb_pft[as.character(pft_co)]
 
-      nplant_co_plant <- restart$NPLANT
+      #nplant_co_plant <- restart$NPLANT
 
       # The only AGB-related state variables read by ED's history restart 
       # subroutine are BDEAD, DBH, and NPLANT. The remaining states 
@@ -95,7 +104,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       #
       # Here, we adjust cohort-level AGB by adjusting the stand density 
       # (NPLANT) proportional to the change in biomass computed above.
-      new.nplant_co_plant <- nplant_co_plant * agb_co_ratios[1,1]
+      #new.nplant_co_plant <- nplant_co_plant * agb_co_ratios[1,1]
       # An alternative is to modify DBH and BDEAD, which requires solving 
       # the following allometric equation for DBH and then using ED 
       # allometric equations to recalculate BDEAD.
@@ -103,20 +112,30 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # AGB = b1L*DBH^(b2L) * (1 + qsw * agf_bs * 
       #     (h0 + a * (1-exp(b*DBH))) + b1d*DBH^(b2d)
 
-      #### Write new state to file
-      # Default mode of H5File$new is "a", which is read + write and create file if it doesn't exist
-      histfile_h5 <- hdf5r::H5File$new(new_local_histfile)
+
       # The empty brackets (`[]`) indicate the whole vector is replaced.
       # This is necessary to overwrite an existing dataset
-      histfile_h5[["NPLANT"]][] <- new.nplant_co_plant
-      # This closes the file and all objects related to the file.
-      histfile_h5$close_all()
+      #histfile_h5[["NPLANT"]][] <- new.nplant_co_plant
+      histfile_h5[["BDEAD"]][] <- new_bdead
+      
+      # overwrite the keeper you're reading in read.restart
+      histfile_h5[["TOTAL_AGB"]][] <- udunits2::ud.convert(new.tmp, "Mg/ha/yr", "kg/m^2/yr")
+      
+    } else if(var_name == "GWBI"){
+      
+      # zero cumulative rate keepers, nothing is calculated back from these
+      # so zeroing only the rate you're reading back is fine
+      histfile_h5[["TOTAL_AGB_GROWTH"]][] <- 0
+      
     } else {
       PEcAn.logger::logger.error("Variable ", var_name,
                                 " not currently supported",
                                 " by write.restart.ED2")
     }
   }
+  
+  # This closes the file and all objects related to the file.
+  histfile_h5$close_all()
   
   # copy the history file with new states and new timestamp to remote 
   # it's OK, because ED2 doesn't overwrite the history files and produces history-Z- files anyway
