@@ -1,17 +1,15 @@
 context("Testing standalone SAIL RTM")
 
-# get soil
+# get soil reflectance spectra
 rsoil <- system.file("extdata", "soil_reflect_par.dat", package="PEcAnRTM")
 rsoil <- read.table(rsoil,header = F)
-#str(rsoil)
 rsoil <- as.vector(unlist(rsoil[1,]))
-length(rsoil)
 rsoil <- c(rsoil,rsoil[2100]) # make soil reflectance the correct length
 if (interactive()) {
   plot(seq(400,2500,1), rsoil, type = "l")
 }
 
-# define some sail params
+# define sail parameters
 LIDFa <- -0.35 
 LIDFb <- -0.15
 TypeLIDF <- 1
@@ -23,7 +21,7 @@ psi <- 234
 params <- c(LIDFa,LIDFb,TypeLIDF,LAI,q,tts,tto,psi)
 param <- params
 
-# get leaf refl/trans
+# get leaf reflectance and transmittance
 LRT <- PEcAnRTM::prospect(c(2,55,10,3,0.1,0.007,0.007), 'D')
 if (interactive()) {
   plot(LRT[,1])
