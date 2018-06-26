@@ -1,14 +1,13 @@
 fluidRow(title = "New Input",
    box(title = h2("New Input"), width = 4, collapsible = TRUE,
      hr(),
-     selectizeInput("InputSiteID", label = "Site", sites, 
+     selectizeInput("InputSiteID", label = "Site", sitenames, 
                     options = list(
                       placeholder = 'Please search or select a site below',
                       onInitialize = I('function() { this.setValue(""); }')
                       )),
-     verbatimTextOutput("siteIDout"), 
      hr(),
-     selectizeInput("InputParentID", label = "Parent ID (under construction)", sites,
+     selectizeInput("InputParentID", label = "Parent ID (under construction)", sitenames,
                     options = list(
                       placeholder = 'Please search inputs by name or site',
                       onInitialize = I('function() { this.setValue(""); }')
@@ -17,7 +16,7 @@ fluidRow(title = "New Input",
      textInput(
        "InputName",
        label = "Name",
-       placeholder = "under construction"
+       placeholder = "Currently Inactive"
      ),
      hr(),
      selectizeInput("InputFormatID", label = "Format ID", selectformat,  
@@ -48,13 +47,20 @@ fluidRow(title = "New Input",
        label = "End Time (Hours-Minutes)",
        seconds = FALSE
      ),
+     textInput(
+       "Timezone",
+       label = "Timezone (UTC)",
+       placeholder = "UTC +/-"
+     ),
      hr(),
      textAreaInput(
        "InputNotes",
        label = "Notes",
        height = '150px'
      ),
-     actionButton("createInput", label = "Create Input") # Not sure if I want this here or only available when all forms are filled in. 
+     actionButton("createInput", label = "Create Input"), # Not sure if I want this here or only available when all forms are filled in.
+     hr(),
+     verbatimTextOutput("summInputs")
    ),
    box(title = h2("DbFiles Record"), width = 4, collapsible = TRUE, collapsed = TRUE, 
        hr(),
