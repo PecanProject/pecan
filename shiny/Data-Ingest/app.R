@@ -55,11 +55,14 @@ server <- function(input, output, session) {
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
-  ##################### DataONE Download #################################
+  ##################### DataONE Download #####################
   source("server_files/d1_download_svr.R", local = TRUE)
   
   ######### FileInput ########################################
   source("server_files/local_upload_svr.R", local = TRUE)
+  
+  ######### Input Record #####################################
+  source('server_files/input_record_svr.R', local = TRUE)
 }
 
 # Run the application
