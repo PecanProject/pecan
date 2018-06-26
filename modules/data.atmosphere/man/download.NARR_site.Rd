@@ -37,6 +37,7 @@ Download NARR time series for a single site
 download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 }
 
+
 }
 \author{
 Alexey Shiklomanov
