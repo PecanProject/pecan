@@ -19,7 +19,8 @@ get_restartfile.ED2 <- function(mod_outdir, runid, file.time) {
       tstamp <- substr(history_files[f], index[1] + 3, index[1] + 12)
     })
     
-    # if this is the first year of an annual assimilation, htimestamp will have one element like "1961-01-01"
+    # NOTE: this is under development, will change in ED codebase soon, this setting only applies to Istem's ED2 branch
+    # if this is the first year of an annual assimilation, htimestamp will have one element like "1961-12-01"
     # if this is the first year of a monthly assimilation, htimestamp will have 12 elements like "1961-01-01", "1961-02-01", ...
     # and so on...
     # the first timestamp will be like YYYY-01-01 regardless from assimilation time step
@@ -36,7 +37,7 @@ get_restartfile.ED2 <- function(mod_outdir, runid, file.time) {
     }
     
     file_year  <- lubridate::year(file.time) # always get year
-    file_month <- ifelse(monthly_check, lubridate::month(file.time), 1)
+    file_month <- ifelse(monthly_check, lubridate::month(file.time), 12)
     if(daily_check){
       file_day <- lubridate::day(file.time)
     }else{
