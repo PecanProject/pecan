@@ -8,7 +8,7 @@ if (length(args) > 0) {
   test_no = as.integer(args[1])
 }
 
-source("~/pecan/modules/data.atmosphere/R/download.NOAA_GEFS.R")
+devtools::load_all("~/pecan/modules/data.atmosphere/")
 
 ##' @param Output directory
 ##' @param lattitude of the site in decimal degrees
