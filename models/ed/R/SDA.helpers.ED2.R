@@ -29,12 +29,12 @@ get_restartfile.ED2 <- function(mod_outdir, runid, file.time) {
     # not as "history-S-1960-00-00-000000-g01.h5" or "history-S-1960-12-31-000000-g01.h5"
     annual_check <- TRUE
     monthly_check <- daily_check <- FALSE # this will result in reading the first file as YYYY-01-01 regardless of assimilation time step
-    if(length(htimestamps) > 1){
-      diff_check     <- difftime(htimestamps[2], htimestamps[1], units = c("hours"))
-      monthly_check  <- ifelse(diff_check > 744, FALSE, TRUE)
-      daily_check    <- ifelse(diff_check > 24,  FALSE, TRUE)
-      # if you want to extend this to checks for sub-daily assimilations, also modify timestamp extraction above
-    }
+    # if(length(htimestamps) > 1){
+    #   diff_check     <- difftime(htimestamps[2], htimestamps[1], units = c("hours"))
+    #   monthly_check  <- ifelse(diff_check > 744, FALSE, TRUE)
+    #   daily_check    <- ifelse(diff_check > 24,  FALSE, TRUE)
+    #   # if you want to extend this to checks for sub-daily assimilations, also modify timestamp extraction above
+    # }
     
     file_year  <- lubridate::year(file.time) # always get year
     file_month <- ifelse(monthly_check, lubridate::month(file.time), 12)

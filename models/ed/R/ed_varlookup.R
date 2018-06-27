@@ -23,10 +23,10 @@ ed.var <- function(varname) {
                drelated = NULL,
                expr    = "DBH")                                                    
   } else if(varname == "AbvGrndWood") {
-    out = list(readvar = c("TOTAL_AGB"), 
-               type = 'grid', units = "kgC/m2", 
+    out = list(readvar =  c("AGB_CO"), #until I change BLEAF keeper to be annual work with total AGB
+               type = 'co', units = "kgC/plant", 
                drelated = NULL, 
-               expr    = "TOTAL_AGB")                                           
+               expr    = "AGB_CO")                                           
   } else if(varname == "leaf_carbon_content") {
     out = list(readvar = "BLEAF", 
                type = 'co', units = "kgC/plant", 
@@ -38,10 +38,10 @@ ed.var <- function(varname) {
                drelated = NULL, 
                expr    = "BROOT")                                                  
   } else if(varname == "GWBI") {
-    out = list(readvar = "TOTAL_AGB_GROWTH", # this is actually rate of change in AGB 
-               type = 'grid', units = "kgC/m2/yr", 
+    out = list(readvar = "DDBH_DT", # this is actually rate of change in DBH, we'll calculate GWBI from it 
+               type = 'co', units = "cm/yr", 
                drelated = NULL,
-               expr    = "TOTAL_AGB_GROWTH")                                              
+               expr    = "DDBH_DT")                                              
   } else { # No Match!
     warning(paste0("Couldn't find varname ", varname, "!"))
     out = NULL
