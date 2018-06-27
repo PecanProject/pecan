@@ -208,8 +208,8 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   #The data is really one-dimensional for each file (though we include lattitude and longitude dimensions
   #to comply with the PEcAn standard).
   time_dim = ncdf4::ncdim_def("Time", "6 Hours", 1:ncol(noaa_data[[1]]))
-  lat_dim = ncdf4::ncdim_def("Lattitude", "Degrees North", lat.in)
-  lon_dim = ncdf4::ncdim_def("Lattitude", "Degrees East", lon.in)
+  lat_dim = ncdf4::ncdim_def("latitude", "Degrees North", lat.in)
+  lon_dim = ncdf4::ncdim_def("longitude", "Degrees East", lon.in)
   
   dimensions_list = list(time_dim, lat_dim, lon_dim)
   
@@ -221,7 +221,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   #For each ensemble
   for (i in 1:21) { # i is the ensemble number
     #Generating a unique identifier string that characterizes a particular data set.
-    identifier = paste("NOAA_GEFS", site_id, i, format(start_date, "%Y-%m-%dT%H:%M"), 
+    identifier = paste("NOAA_GEFS", sitename, i, format(start_date, "%Y-%m-%dT%H:%M"), 
           format(end_date, "%Y-%m-%dT%H:%M"), sep=".")
     
     ensemble_folder = file.path(outfolder, identifier)
