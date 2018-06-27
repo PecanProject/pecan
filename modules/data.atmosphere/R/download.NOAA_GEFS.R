@@ -30,7 +30,7 @@
 ##' @param start_date, end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)
 ##' @param lat site latitude in decimal degrees
 ##' @param lon site longitude in decimal degrees
-##' @param site_id The unique ID given to each site. This is used as part of the file name.
+##' @param sitename The unique ID given to each site. This is used as part of the file name.
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.
 ##' @param ... Other arguments, currently ignored
@@ -40,12 +40,12 @@
 ##' dates expire in at most 12 days.
 ##' @examples 
 ##' \dontrun{
-##'  download.NOAA_GEFS("~/Working/results", lat.in= 45.805925, lon.in = -90.07961, "US-WCr")
+##'  download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
 ##' }
 ##' 
 ##' @author Luke Dramko
 ##' 
-download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz="UTC") + lubridate::days(16)),
+download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz="UTC") + lubridate::days(16)),
                              overwrite = FALSE, verbose = FALSE, ...) {
   
   start_date <- as.POSIXct(start_date, tz = "UTC")
