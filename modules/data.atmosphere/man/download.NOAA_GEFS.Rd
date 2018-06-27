@@ -4,14 +4,14 @@
 \alias{download.NOAA_GEFS}
 \title{Download NOAA GEFS Weather Data}
 \usage{
-download.NOAA_GEFS(outfolder, lat.in, lon.in, site_id,
+download.NOAA_GEFS(outfolder, lat.in, lon.in, sitename,
   start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz = "UTC") +
   lubridate::days(16)), overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}
 
-\item{site_id}{The unique ID given to each site. This is used as part of the file name.}
+\item{sitename}{The unique ID given to each site. This is used as part of the file name.}
 
 \item{start_date, }{end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)}
 
@@ -32,9 +32,8 @@ data frame contains information about one file.
 Download and convert to CF NOAA weather data
 }
 \examples{
-
-\dontrun {
- download.NOAA_GEFS("~/Working/results", lat.in= 45.805925, lon.in = -90.07961, "US-WCr")
+\dontrun{
+ download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
 }
 
 }
