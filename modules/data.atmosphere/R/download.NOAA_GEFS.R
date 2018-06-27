@@ -183,7 +183,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   # Done with data processing.  Now writing the data to the specified directory. Each ensemble member is written to its own file, for a total
   # of 21 files.  
   if (!dir.exists(outfolder)) {
-    dir.create(outfolder, recursive=TRUE)
+    dir.create(outfolder, recursive=TRUE, showWarnings = FALSE)
   }
   
   # Create a data frame with information about the file.  This data frame's format is an internal PEcAn standard, and is stored in the BETY database to
@@ -228,7 +228,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
     
     #Each file will go in its own folder.
     if (!dir.exists(ensemble_folder)) {
-      dir.create(ensemble_folder, recursive=TRUE)
+      dir.create(ensemble_folder, recursive=TRUE, showWarnings = FALSE)
     }
     
     flname = file.path(ensemble_folder, paste(identifier, "nc", sep = "."))
