@@ -8,6 +8,11 @@
  library(shiny)
  
  source("ui_utils.R", local = TRUE)
+ 
+ ##### Bety Connect Stuff ######
+ bety <- betyConnect()
+ sitenames <- dplyr::tbl(bety, "sites") %>% distinct(sitename) %>% dplyr::arrange(sitename) %>% pull(sitename)
+ formats <- dplyr::tbl(bety, "formats") %>% distinct(name) %>% dplyr::arrange(name) %>% pull(name)
 
 #############################################################################
 ################################## UI #######################################
@@ -67,5 +72,7 @@ server <- function(input, output, session) {
 
 # Run the application
 shinyApp(ui = ui, server = server)
+
+
 
 # example data: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87

@@ -1,17 +1,18 @@
 fluidRow(title = "New Input",
    box(title = h2("New Input"), width = 4, collapsible = TRUE,
      hr(),
-     selectizeInput("InputSiteID", label = "Site", sitenames, 
+     selectizeInput("InputSiteID", label = "Site", sitenames,
                     options = list(
                       placeholder = 'Please search or select a site below',
                       onInitialize = I('function() { this.setValue(""); }')
                       )),
      hr(),
-     selectizeInput("InputParentID", label = "Parent ID (under construction)", sitenames,
-                    options = list(
-                      placeholder = 'Please search inputs by name or site',
-                      onInitialize = I('function() { this.setValue(""); }')
-                    )),
+     # selectizeInput("InputParentID", label = "Parent ID (under construction)", sitenames,
+     #                options = list(
+     #                  placeholder = 'Please search inputs by name or site',
+     #                  onInitialize = I('function() { this.setValue(""); }'),
+     #                  maxOptions = 100
+     #                )),
      hr(),
      textInput(
        "InputName",
@@ -19,7 +20,7 @@ fluidRow(title = "New Input",
        placeholder = "Currently Inactive"
      ),
      hr(),
-     selectizeInput("InputFormatID", label = "Format ID", selectformat,  
+     selectizeInput("InputFormatID", label = "Format ID", formats,
                     options = list(
                       placeholder = 'Please search Formats by name',
                       onInitialize = I('function() { this.setValue(""); }')
@@ -64,7 +65,11 @@ fluidRow(title = "New Input",
    ),
    box(title = h2("DbFiles Record"), width = 4, collapsible = TRUE, collapsed = TRUE, 
        hr(),
-       selectizeInput("InputMachineID", label = "Machine ID (under construction)", sites),
+       # selectizeInput("InputMachineID", label = "Machine ID (under construction)", sites, options = list(
+       #   placeholder = 'Please search MachineIDs by name or site',
+       #   onInitialize = I('function() { this.setValue(""); }'),
+       #   maxOptions = 100
+       # )),
        hr(),
        textInput(
          "InputFilePath",
@@ -79,11 +84,12 @@ fluidRow(title = "New Input",
        ),
    box(title = h2("Format ID"), width = 4, collapsible = TRUE, collapsed = TRUE,
        hr(),
-       selectizeInput("MimetypeID", label = "Mimetype ID (under construction)", sites,
-                      options = list(
-                        placeholder = 'Please search inputs by name or site',
-                        onInitialize = I('function() { this.setValue(""); }')
-                      )),
+       # selectizeInput("MimetypeID", label = "Mimetype ID (under construction)", sites,
+       #                options = list(
+       #                  placeholder = 'Please search inputs by name or site',
+       #                  onInitialize = I('function() { this.setValue(""); }'),
+       #                  maxOptions = 100
+       #                )),
        hr(),
        textInput(
          "NewMimeType",
