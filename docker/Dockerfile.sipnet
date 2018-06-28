@@ -4,7 +4,7 @@
 FROM debian as sipnet-binary
 
 # Some variables that can be used to set control the docker build
-ARG MODEL_VERSION=136
+ARG SIPNET_VERSION=136
 
 # install dependencies
 RUN apt-get update \
@@ -16,99 +16,43 @@ RUN apt-get update \
 
 # download, unzip and build sipnet
 WORKDIR /src
-RUN curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_r${MODEL_VERSION}.tar.gz \
-    && tar zxf sipnet_r${MODEL_VERSION}.tar.gz \
-    && cd sipnet_r${MODEL_VERSION} \
+RUN curl -o sipnet_r${SIPNET_VERSION}.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_r${SIPNET_VERSION}.tar.gz \
+    && tar zxf sipnet_r${SIPNET_VERSION}.tar.gz \
+    && cd sipnet_r${SIPNET_VERSION} \
     && make \
     && mv sipnet /src
 
 ########################################################################
 
 # ----------------------------------------------------------------------
-# BUILD PECAN FOR MODEL
+# BUILD PECAN FOR SIPNET
 # ----------------------------------------------------------------------
-FROM r-base
-
-# ----------------------------------------------------------------------
-# SETUP FOR BUILD
-# ----------------------------------------------------------------------
-
-WORKDIR /work
-
-# start job when starting container
-CMD /usr/local/bin/runcmd.R
-
-# Some variables that can be used to set control the docker build
-ARG PECAN_VERSION=develop
-ARG MODEL_VERSION=136
+FROM pecan/executor:latest
 
 # ----------------------------------------------------------------------
-# REQUIREMENTS FOR MOST MODELS
+# INSTALL SIPNET SPECIFIC PIECES
 # ----------------------------------------------------------------------
-
-# INSTALL DEVTOOLS
-RUN apt-get update \
-    && apt-get install -y \
-        libcurl4-gnutls-dev \
-        libssh2-1-dev \
-        libssl-dev \
-    && Rscript --vanilla -e "install.packages('devtools', repos='http://cran.rstudio.com/'); q(status=as.integer(!'devtools' %in% installed.packages()))"
-
-# COPY runcmd
-COPY docker/runcmd.R /usr/local/bin
-
-# INSTALL PEcAn.logger
-COPY base/logger /src/logger/
-RUN Rscript --vanilla -e  "devtools::install_local('/src/logger'); q(status=as.integer(!'PEcAn.logger' %in% installed.packages()))" 
-
-# INSTALL PEcAn.remote
-COPY base/remote /src/remote/
-RUN Rscript --vanilla -e  "devtools::install_local('/src/remote'); q(status=as.integer(!'PEcAn.remote' %in% installed.packages()))" 
-
-# INSTALL PEcAn.utils
-COPY base/utils /src/utils/
-RUN apt-get install -y \
-        jags \
-        libnetcdf-dev \
-        libudunits2-dev \
-        libxml2-dev \
-    && Rscript --vanilla -e  "devtools::install_local('/src/utils'); q(status=as.integer(!'PEcAn.utils' %in% installed.packages()))" 
-
-# INSTALL PEcAn.DB
-COPY base/db /src/db/
-RUN Rscript --vanilla -e  "devtools::install_local('/src/db'); q(status=as.integer(!'PEcAn.DB' %in% installed.packages()))" 
 
 # INSTALL PEcAn.data.atmosphere
-COPY modules/data.atmosphere /src/data.atmosphere/
-RUN Rscript --vanilla -e  "devtools::install_local('/src/data.atmosphere'); q(status=as.integer(!'PEcAn.data.atmosphere' %in% installed.packages()))" 
-
-# ----------------------------------------------------------------------
-# SIPNET
-# ----------------------------------------------------------------------
-
-# COPY sipnet binary
-COPY --from=sipnet-binary /src/sipnet /usr/local/bin
+#COPY modules/data.atmosphere /src/data.atmosphere/
+#RUN Rscript --vanilla -e  "devtools::install_local('/src/data.atmosphere'); q(status=as.integer(!'PEcAn.data.atmosphere' %in% installed.packages()))" 
 
 # INSTALL PEcAn.SIPNET
-COPY models/sipnet /src/sipnet/
-RUN Rscript --vanilla -e  "devtools::install_local('/src/sipnet'); q(status=as.integer(!'PEcAn.SIPNET' %in% installed.packages()))" 
-
-# CLEANUP
-RUN rm -rf /var/lib/apt/lists/*
+#COPY models/sipnet /src/sipnet/
+#RUN Rscript --vanilla -e  "devtools::install_local('/src/sipnet'); q(status=as.integer(!'PEcAn.SIPNET' %in% installed.packages()))" 
 
 # ----------------------------------------------------------------------
-# ENVIRONMENT VARIABLES THAT CONTROL RUNS
+# SETUP FOR SPECIFIC SIPNET VERSION
 # ----------------------------------------------------------------------
 
-# The custom part for the model
-ENV PECAN_VERSION=${PECAN_VERSION} \
-    MODEL=sipnet \
-    MODEL_VERSION=${MODEL_VERSION} \
-    BINARY=/usr/local/bin/sipnet \
-    OUTDIR=/work \
-    SITE_LAT=0 \
-    SITE_LON=0 \
-    START_DATE= \
-    END_DATE= \
-    DELETE_RAW=FALSE \
-    OVERWRITE=FALSE
+# Some variables that can be used to set control the docker build
+ARG SIPNET_VERSION=136
+
+# variables to store in docker image
+ENV APPLICATION="./job.sh" \
+    RABBITMQ_QUEUE="SIPNET_${SIPNET_VERSION}" \
+    SIPNET_VERSION=${SIPNET_VERSION}
+
+# COPY sipnet binary
+COPY --from=sipnet-binary /src/sipnet /usr/local/bin/sipnet.${SIPNET_VERSION}
+
