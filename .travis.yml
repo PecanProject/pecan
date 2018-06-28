@@ -47,7 +47,6 @@ addons:
       - tcl-dev
       - libhdf5-dev
       - libgdal1-dev
-      - libgdal-dev
       - gdal-bin
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
@@ -111,6 +110,7 @@ install:
   - popd
 
 before_script:
+  - sudo apt install -y libgdal-dev
   - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
   - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
