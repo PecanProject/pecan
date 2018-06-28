@@ -10,7 +10,7 @@ r:
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
-sudo: false
+sudo: required
 
 cache: 
   - directories:
@@ -26,6 +26,7 @@ addons:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
+      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
     packages:
       - libnetcdf-dev
       - liblapack-dev
@@ -45,6 +46,7 @@ addons:
       - tcl
       - tcl-dev
       - libhdf5-dev
+      - libgdal1-dev
       - libgdal-dev
       - gdal-bin
       # R package binaries from c2d4u
