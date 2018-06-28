@@ -26,7 +26,6 @@ addons:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
-      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
     packages:
       - libnetcdf-dev
       - liblapack-dev
@@ -110,7 +109,9 @@ install:
   - popd
 
 before_script:
-  - sudo apt install -y libgdal-dev
+  - echo "deb http://ppa.launchpad.net/ubuntugis/ppa/ubuntu xenial main" | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update
+  - sudo apt install -y libgdal-dev libgdal1-dev
   - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
   - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
