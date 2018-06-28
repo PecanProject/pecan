@@ -9,10 +9,56 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- Fixed issue #1939 which corrects output time vector for FATES output
+- Update to read.output to look for and read only PEcAn formatted .nc output based on the pecan standard filename format of YYYY.nc.  Solves issues with models such as FATES and dvm-dos-tem where the original model output is also in .nc file format and was not ignored by read.output, causing errors with output parsing and plotting with Shiny. Removed deprecated function convert.outputs
+- PEcAn.data.atmosphere: 
+    - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
+    - Fixed swapped lat/lon in met2CF.Geostreams
+    - download.GFDL now records reference date in time units field, as required by the CF met standard
+    - Reduced download.GFDL network load by not preloading dimension data
+    - Fixed spurious `No geonamesUsername set` warning by updating geonames package to development version
+- ED:
+    - Change all history parameter files to have zero storage respiration
+    
+- dataone_download.R:
+    - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
+    
+### Added
+- In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs
+- shiny/ Dependency explorer 
+  - Explore the interdependencies between pecan packages/functions.
+
+- From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
+
+- dataone_download.R:
+  - Added progress messages to indicate that the function is working during longer downloads via PEcAn logger. 
+  - Store path to downloaded data as newdir_D1 so that the download app can call this path. 
+  
+- shiny/Data-Ingest 
+  - Download data from DataONE to a temporary directory, display the contents of that directory, and then move files from the temporary directory to dbfiles
+  - Upload files from local machines (via drag and drop on some browsers), display files, and then move these files to a directory in dbfiles.
+  - Spinner displays when class "shiny-busy" is invoked during the dataONE download process. In this way, users can be sure that the app is live and is processing their request. 
+  - Users can now input the name of the destination directory that they wish to create within dbfiles. 
+  - Updated Travis.yml to include librdf0-dev so that it can download redland, datapack, and dataone. 
+  
+### Removed
+
+### Changed
+- PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
+
+
+## [1.5.3] - 2018-05-15
+
+### Fixes
+- read.output now accepts date-times for start.year and end.year argument (#1887)
+- read.output no longer assumes timestamps are in days since the beginning of the year
+- Fixed xss issue in setup folder, now require users to login before accessing the setup folder scripts.
+- Fixed issue where in website not all sites are shown #1884
 - Fixed status page, should now be run from cronjob, creates static page
 - Fixed bug that overwrote remote  met file paths with local file paths
 - PEcAnRTM:
     - Remove non-portable extensions from `src/Makevars`. This should make the package Windows-compatible.
+- Fixed BrownDog shiny issues of removing site without geometry; fixing sites.length==0; removing old map markers when change input$type; fixing agreement bug when change input$type
 
 ### Added
 - Functionality to read pft-specific outputs and to run sensitivity analysis on pft-specific outputs.
@@ -31,6 +77,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - `EDR` API has been revised. Setup has been refactored from EDR via new `setup_edr` function, which relies on the ED utilities (see `PEcAn.ED2` below), and the `EDR` function now focuses only on execution. Also, added new `params2edr` function to make it easy to convert complex EDR parameters list to flat parameter vector required by `invert_bt` (or other optimization functions).
 - PEcAn.ED2:
     - New set of utilities for working with ED meteorology and vegetation inputs, and the ED2IN file. Existing PEcAn code has been revised to use these utilities.
+- PEcAn.data.atmosphere:
+    - New utilities for efficiently downloading NARR time series using THREDDS/OpenDAP
 
 ### Removed
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).

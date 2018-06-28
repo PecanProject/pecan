@@ -126,7 +126,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     # seq.POSIXt returns class "POSIXct"
     # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
     if(diff(model.secs)[1] != 0){
-      model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = diff(model.secs)[1], length.out = length(model$time))
+      model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = round(diff(model.secs)[1]), length.out = length(model$time))
     }else{
       # yearly output
       model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = "year", length.out = length(model$time))

@@ -72,8 +72,8 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
   # # Set progress bar
   if(print.progress==TRUE){
     pb.index <- 1
-    pb <- txtProgressBar(min = 1, max = length(vars.list)*length(days.sim), style = 3)
-    setTxtProgressBar(pb, pb.index)
+    pb <- utils::txtProgressBar(min = 1, max = length(vars.list)*length(days.sim), style = 3)
+    utils::setTxtProgressBar(pb, pb.index)
   }
   
   # Figure out if we need to extract the approrpiate
@@ -145,11 +145,11 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         
         # dat.temp <- merge(dat.temp, data.frame(ens=paste0("X", 1:n.ens)))
         if (i == 1) {
-          sim.lag <- stack(lags.init[[v]])
+          sim.lag <- utils::stack(lags.init[[v]])
           names(sim.lag) <- c(paste0("lag.", v), "ens")
           
         } else {
-          sim.lag <- stack(data.frame(array(0,dim = c(1, ncol(dat.sim[[v]])))))
+          sim.lag <- utils::stack(data.frame(array(0,dim = c(1, ncol(dat.sim[[v]])))))
           names(sim.lag) <- c(paste0("lag.", v), "ens")
         }
         dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
@@ -159,18 +159,18 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         
         # Set up the lags
         if (i == 1) { # First time through, so pull from our inital lags
-          sim.lag <- stack(lags.init$air_temperature)
+          sim.lag <- utils::stack(lags.init$air_temperature)
           names(sim.lag) <- c("lag.air_temperature", "ens")
           
-          sim.lag$lag.air_temperature_min <- stack(lags.init$air_temperature_min)[,1]
-          sim.lag$lag.air_temperature_max <- stack(lags.init$air_temperature_max)[,1]
+          sim.lag$lag.air_temperature_min <- utils::stack(lags.init$air_temperature_min)[,1]
+          sim.lag$lag.air_temperature_max <- utils::stack(lags.init$air_temperature_max)[,1]
         } else {
-          sim.lag <- stack(data.frame(array(dat.sim[["air_temperature"]][dat.mod$sim.day == (days.sim[i-1]) & 
+          sim.lag <- utils::stack(data.frame(array(dat.sim[["air_temperature"]][dat.mod$sim.day == (days.sim[i-1]) &
                                                                            dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim$air_temperature)))))
           names(sim.lag) <- c("lag.air_temperature", "ens")
-          sim.lag$lag.air_temperature_min <- stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, min))[, 1]
-          sim.lag$lag.air_temperature_max <- stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, max))[, 1]
+          sim.lag$lag.air_temperature_min <- utils::stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, min))[, 1]
+          sim.lag$lag.air_temperature_max <- utils::stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, max))[, 1]
         }
         dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
       } else if (v == "precipitation_flux") {
@@ -184,11 +184,11 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         # Set up the lags This is repeated differently because Precipitation
         # dat.temp is merged
         if (i == 1) {
-          sim.lag <- stack(lags.init[[v]])
+          sim.lag <- utils::stack(lags.init[[v]])
           names(sim.lag) <- c(paste0("lag.", v), "ens")
           
         } else {
-          sim.lag <- stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] & 
+          sim.lag <- utils::stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] &
                                                            dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim[[v]])))))
           names(sim.lag) <- c(paste0("lag.", v), "ens")
@@ -200,11 +200,11 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         dat.temp <- dat.mod[rows.now, dat.info]
         
         if (i == 1) {
-          sim.lag <- stack(lags.init[[v]])
+          sim.lag <- utils::stack(lags.init[[v]])
           names(sim.lag) <- c(paste0("lag.", v), "ens")
           
         } else {
-          sim.lag <- stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] & 
+          sim.lag <- utils::stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] &
                                                            dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim[[v]])))))
           names(sim.lag) <- c(paste0("lag.", v), "ens")
@@ -309,21 +309,21 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
           } else {
             rows.filter <- which(dat.mod$sim.day <= days.sim[i] & dat.mod$sim.day >= days.sim[i]-14)
           }
-          dat.filter <- stack(dat.sim[[v]][rows.filter,])[,1]
+          dat.filter <- utils::stack(dat.sim[[v]][rows.filter,])[,1]
           
           filter.mean <- mean(dat.filter, na.rm=T) 
           filter.sd   <- sd(dat.filter, na.rm=T) 
         } else {
           
           if(v %in% vars.sqrt){
-            filter.mean <- mean(c(dat.pred^2, stack(dat.sim[[v]])[,1]), na.rm=T) 
-            filter.sd   <- sd(c(dat.pred^2, stack(dat.sim[[v]])[,1]), na.rm=T)
+            filter.mean <- mean(c(dat.pred^2, utils::stack(dat.sim[[v]])[,1]), na.rm=T)
+            filter.sd   <- sd(c(dat.pred^2, utils::stack(dat.sim[[v]])[,1]), na.rm=T)
           } else if(v %in% vars.log){
-            filter.mean <- mean(c(exp(dat.pred), stack(dat.sim[[v]])[,1]), na.rm=T)
-            filter.sd   <- sd(c(exp(dat.pred), stack(dat.sim[[v]])[,1]), na.rm=T)
+            filter.mean <- mean(c(exp(dat.pred), utils::stack(dat.sim[[v]])[,1]), na.rm=T)
+            filter.sd   <- sd(c(exp(dat.pred), utils::stack(dat.sim[[v]])[,1]), na.rm=T)
           } else {
-            filter.mean <- mean(c(dat.pred, stack(dat.sim[[v]])[,1]), na.rm=T) 
-            filter.sd   <- sd(c(dat.pred, stack(dat.sim[[v]])[,1]), na.rm=T) 
+            filter.mean <- mean(c(dat.pred, utils::stack(dat.sim[[v]])[,1]), na.rm=T)
+            filter.sd   <- sd(c(dat.pred, utils::stack(dat.sim[[v]])[,1]), na.rm=T)
           }
         }
         
@@ -408,7 +408,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
       # If we ran out of attempts, but want to foce sanity, do so now
       if(force.sanity & n.new>0){
         # If we're still struggling, but we have at least some workable columns, lets just duplicate those:
-        if(n.new<(round(n.ens/2)+1)){
+        if(n.new<n.ens){
           cols.safe <- 1:ncol(dat.pred)
           cols.safe <- cols.safe[!(cols.safe %in% cols.redo)]
           dat.pred[,cols.redo] <- dat.pred[,sample(cols.safe, n.new, replace=T)]
@@ -570,7 +570,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
       rm(mod.save)  # Clear out the model to save memory
 
       if(print.progress==TRUE){
-        setTxtProgressBar(pb, pb.index)
+        utils::setTxtProgressBar(pb, pb.index)
         pb.index <- pb.index + 1
       }
       

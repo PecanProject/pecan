@@ -3,6 +3,7 @@ library(PEcAn.all)
 library(PEcAn.SIPNET)
 library(PEcAn.LINKAGES)
 library(PEcAn.visualization)
+library(PEcAn.ED2)
 library(PEcAn.assim.sequential)
 library(nimble)
 library(lubridate)
@@ -69,6 +70,7 @@ if(FALSE){
   obs.cov = obs.list$obs.cov
   Q = NULL
   adjustment = TRUE
+  restart=NULL
 }
 
 

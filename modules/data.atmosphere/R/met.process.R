@@ -21,7 +21,6 @@
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
 ##'
-##' @importFrom PEcAn.DB db.query db.close dbfile.input.insert
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
@@ -86,17 +85,17 @@ met.process <- function(site, input_met, start_date, end_date, model,
                        password = dbparms$password)
   
   con <- bety$con
-  on.exit(db.close(con))
+  on.exit(PEcAn.DB::db.close(con))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-  machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
+  machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
 
   # special case Brown Dog
   if (!is.null(browndog)) {
     result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username, con)
     
     if (is.data.frame(result)) {
-      dbfile.input.insert(in.path = dirname(result$file), 
+      PEcAn.DB::dbfile.input.insert(in.path = dirname(result$file),
                           in.prefix = result$dbfile.name,
                           siteid = site$id, 
                           startdate = start_date, enddate = end_date,
@@ -115,14 +114,14 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # first attempt at function that designates where to start met.process
   if (is.null(input_met$id)) {
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
-    format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
+    format.vars <- PEcAn.DB::query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
   } else {
     stage <- met.process.stage(input.id=input_met$id, raw.id=register$format$id, con)
-    format.vars <- query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
+    format.vars <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
     # Is there a situation in which the input ID could be given but not the file path? 
     # I'm assuming not right now
     assign(stage$id.name, list(inputid = input_met$id,
-                               dbfileid = dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
+                               dbfileid = PEcAn.DB::dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
   }
   print(stage)
   
@@ -255,17 +254,17 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           spin = spin)
     
     model.id  <- met2model.result$model.id
-    model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+    model.file.info <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
     model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     
   } else {
     PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
-    model.id  <- dbfile.check("Input", ready.id, con, hostname=machine.host)
+    model.id  <- PEcAn.DB::dbfile.check("Input", ready.id, con, hostname=machine.host)
     if(is.null(model.id)|length(model.id)==0){
       model.file <- input_met$path
     }else{
       model.id$dbfile.id  <- model.id$id 
-      model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+      model.file.info <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
       model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     }
     #PEcAn.logger::logger.info("model.file = ",model.file,input.met)
@@ -284,10 +283,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
 ##' @export
 ##' @param site.id
 ##' @param con
-##' @importFrom PEcAn.DB db.query
 ##' @author Betsy Cowdery
 db.site.lat.lon <- function(site.id, con) {
-  site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
+  site <- PEcAn.DB::db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
                          site.id), con)
   if (nrow(site) == 0) {
    PEcAn.logger::logger.error("Site not found")
@@ -373,7 +371,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                           dbfile.name = basename(outputfile), 
                           stringsAsFactors = FALSE)
   } else if (model == "BIOCRO") {
-    metinfo <- db.query(paste0("select mimetypes.type_string, formats.name from mimetypes, formats, modeltypes, modeltypes_formats",
+    metinfo <- PEcAn.DB::db.query(paste0("select mimetypes.type_string, formats.name from mimetypes, formats, modeltypes, modeltypes_formats",
                                " where modeltype_id=modeltypes.id and format_id=formats.id and formats.mimetype_id=mimetypes.id",
                                " and tag='met' and modeltypes.name='", model, "'"), con)
 
@@ -404,15 +402,15 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   
   userpass <- paste(browndog$username, browndog$password, sep = ":")
   curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
-  result <- postForm(paste0(browndog$url, formatname, "/"), 
-                     fileData = fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
+  result <- RCurl::postForm(paste0(browndog$url, formatname, "/"),
+                     fileData = RCurl::fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
   url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
   PEcAn.logger::logger.info("browndog download url :", url)
-  downloadedfile <- download.url(url, outputfile, 600, curloptions)
+  downloadedfile <- PEcAn.utils::download.url(url, outputfile, 600, curloptions)
   
   # fix returned data
   if (model == "ED2") {
-    unzip(downloadedfile, exdir = folder)
+    utils::unzip(downloadedfile, exdir = folder)
     # fix ED_MET_DRIVER_HEADER
     x <- readLines(results$file)
     x[3] <- ifelse(grepl("/$", folder), folder, paste0(folder, "/"))

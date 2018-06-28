@@ -281,7 +281,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       
       
       newSS  <- get_ss(gp, xnew, pos.check)
-      if(newSS != -Inf){
+      if(all(newSS != -Inf)){
         
         newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)

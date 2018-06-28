@@ -5,6 +5,8 @@
 # trusty. They are marked with TRUSTY for easy grepping.
 
 language: r
+r:
+  - 3.4
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
@@ -30,7 +32,7 @@ addons:
       - libcurl4-openssl-dev
       - jags
       - libudunits2-dev
-      - python-dev 
+      - python-dev
       - postgresql-9.6-postgis-2.3
       - postgresql-9.6-postgis-2.3-scripts
       - netcdf-bin
@@ -43,6 +45,8 @@ addons:
       - tcl
       - tcl-dev
       - libhdf5-dev
+      - libgdal-dev
+      - gdal-bin
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
       - r-cran-ape
@@ -59,6 +63,7 @@ addons:
       - r-cran-raster
       - r-cran-rcpp
       - r-cran-rcurl
+      - r-cran-redland
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-shiny
@@ -117,10 +122,19 @@ script:
   - set -e
   # - scripts/build.sh --no-git --tests --name travis
   - echo 'Installing PEcAn packages'
-  - make
+  # TODO: Would be nice to add `-Otarget` after `-j` below,
+  # but not supported in Make 3.x.
+  # When Travis updates, check for Make 4 and add -O if available.
+  - make # TODO: add -j2 here after #1976 closed
   - echo 'Testing PEcAn packages'
-  - make test
-  - make document
+  - make -j2 test
+  - make -j2 document
+  # Skip modules with known broken checks
+  - mkdir -p .check/modules # only needed for `touch` below
+  - touch .check/modules/benchmark # delete when #1978 closed
+  - touch .check/modules/data.land # delete when #1977 closed
+  - touch .check/modules/rtm # delete when #1976 closed
+  - make -j2 check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 

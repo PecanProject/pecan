@@ -34,7 +34,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   model      <- settings$model$type
   write      <- settings$database$bety$write
   defaults   <- settings$pfts
-  outdir     <- settings$host$outdir
+  outdir     <- settings$modeloutdir # currently model runs locally, this will change if remote is enabled
   rundir     <- settings$host$rundir
   host       <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
@@ -48,7 +48,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
                              USE.NAMES = FALSE), 
                       use.names = FALSE)
   names(var.names) <- NULL
-  dir.create(rundir,recursive=TRUE)
+  dir.create(rundir,recursive=TRUE) # remote will give warning
   
   ###-------------------------------------------------------------------###
   ### get model specific functions                                      ###
@@ -59,16 +59,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   my.write_restart <- paste0("write_restart.", model)
   my.split_inputs  <- paste0("split_inputs.", model)
   
+  # models that don't need split_inputs, check register file for that
+  register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
+  register <- XML::xmlToList(XML::xmlParse(register.xml))
+  no_split <- !as.logical(register$exact.dates)
+  
   if (!exists(my.write.config)) {
-    print(paste(my.write.config, "does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for", model))
-    stop()
+    PEcAn.logger::logger.warn(my.write.config, "does not exist")
+    PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
   }
   
-  if (!exists(my.split_inputs)) {
-    print(paste(my.split_inputs, "does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for", model))
-    stop()
+  if (!exists(my.split_inputs)  &  !no_split) {
+    PEcAn.logger::logger.warn(my.split_inputs, "does not exist")
+    PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
   }
   
   ###-------------------------------------------------------------------###
@@ -81,7 +84,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
   }
   
- 
+
   if(is.null(restart) & is.null(restart$ens.inputs)){
     ens.inputs <- settings$run$inputs#sample_met(settings,nens)
   } else {
@@ -90,6 +93,20 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ens.inputs <- list()
   inputs <- list()
   for(i in seq_len(nens)){
+    
+    if(no_split){
+      inputs[[i]] <- ens.inputs[[i]] # passing settings$run$inputs$met$path is the same thing, just following the logic despite the hack above
+    }else{
+      ### get only necessary ensemble inputs. Do not change in analysis
+      #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
+      ### model specific split inputs
+      inputs[[i]] <- do.call(my.split_inputs, 
+                             args = list(settings = settings, 
+                                         start.time = settings$run$start.date, 
+                                         stop.time = as.Date(names(obs.mean)[1]),#settings$run$end.date,
+                                         inputs = ens.inputs[[i]]))#,
+      #                                       outpath = file.path(rundir,paste0("met",i))))
+    }
 
     ### get only necessary ensemble inputs. Do not change in analysis
     ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
@@ -358,16 +375,28 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     )
   )
   
-  y_star_create <-  nimbleFunction(
-    run = function(X = double(1)) {
-      returnType(double(1))
-      
-      X_use <- X
-      X_use[X_use<0] <- 0
-      y_star <- X_use/sum(X_use)
-      
-      return(y_star)
-    })
+  if(var.names=="Fcomp"){
+    y_star_create <-  nimbleFunction(
+      run = function(X = double(1)) {
+        returnType(double(1))
+        
+        X_use <- X
+        X_use[X_use<0] <- 0
+        y_star <- X_use/sum(X_use)
+        
+        return(y_star)
+      })
+  }else{
+    y_star_create <-  nimbleFunction(
+      run = function(X = double(1)) {
+        returnType(double(1))
+        
+        y_star <- X
+        
+        return(y_star)
+      })
+  }
+  
   
   tobit.model <- nimbleCode({ 
     
@@ -442,6 +471,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     X <- list()
     new.params <- params
     
+    # var.names <- c("AbvGrndWood", "GWBI", "TotLivBiom", "leaf_carbon_content") 
     for (i in seq_len(nens)) {
       X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
                                                      runid = run.id[[i]], 
@@ -599,7 +629,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         for(j in seq_along(mu.f)){
           for(n in seq_len(nrow(X))){
             x.ind[n,j] <- as.numeric(X[n,j] > 0)
-            x.censored[n,j] <- as.numeric(ifelse(X[n,j] > 100000, 0, X[n,j])) #
+            x.censored[n,j] <- as.numeric(ifelse(X[n,j] > intervalX[j,2], 0, X[n,j])) #
           }
         }
         
@@ -1013,13 +1043,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ### split model specific inputs for current runs                      ###
       ###-------------------------------------------------------------------### 
       
-      inputs <- list()
-      for(i in seq_len(nrow(X))){
-        inputs[[i]] <- do.call(my.split_inputs, 
-                               args = list(settings = settings, 
-                                           start.time = (ymd_hms(paste0(0,obs.times[t]),truncated = 3) + second(hms("00:00:01"))), 
-                                           stop.time = obs.times[t + 1],
-                                           inputs = ens.inputs[[i]])) 
+      if(!no_split){
+        
+        inputs <- list()
+        for(i in seq_len(nens)){
+          inputs[[i]] <- do.call(my.split_inputs, 
+                                 args = list(settings = settings, 
+                                             start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
+                                             stop.time = obs.times[t + 1],
+                                             inputs = ens.inputs[[i]])) 
+          
+        }
       }
       
       
@@ -1148,7 +1182,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2) #"black"
       
       legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
-      
+    
     }
     
     dev.off()
