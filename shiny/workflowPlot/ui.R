@@ -5,7 +5,6 @@ library(knitr)
 library(shinyjs)
 
 source("ui_utils.R", local = TRUE)
-plot_var <- "temp_var"
 
 # Define UI
 ui <- fluidPage(theme = shinytheme("simplex"),
