@@ -36,8 +36,6 @@
 ##' @param ... Other arguments, currently ignored
 ##' @export
 ##' 
-##' It's also a good idea to test with hardcoded dates.  It's difficult to provide those in example code, because valid
-##' dates expire in at most 12 days.
 ##' @examples 
 ##' \dontrun{
 ##'  download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
