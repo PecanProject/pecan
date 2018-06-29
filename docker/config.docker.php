@@ -2,26 +2,10 @@
 
 # Information to connect to the BETY database
 $db_bety_type="pgsql";
-$db_bety_hostname="pg";
-$db_bety_port="5432";
-$db_bety_username="postgres";
+$db_bety_hostname="postgres";
+$db_bety_username="bety";
 $db_bety_password="bety";
 $db_bety_database="bety";
-
-// under development code to get the data from the environment variables
-// $db_bety_hostname=getenv('PG_HOST');
-// $db_bety_port=getenv('PG_PORT');
-// $db_bety_username=getenv('PG_USER');
-// $db_bety_password=getenv('PG_PASSWORD');
-// $db_bety_database=getenv('PG_DATABASE_NAME');
-
-# use only for debuging
-#var_dump($db_bety_type);
-#var_dump($db_bety_hostname);
-#var_dump($db_bety_port);
-#var_dump($db_bety_username);
-#var_dump($db_bety_password);
-#var_dump($db_bety_database);
 
 # Information to connect to the FIA database
 # leave this blank if you do not have the FIA database installed.
@@ -35,6 +19,14 @@ $db_fia_database="";
 $browndog_url="";
 $browndog_username="";
 $browndog_password="";
+
+# rabbitmq connection
+$rabbitmq_host="rabbitmq";
+$rabbitmq_port="5672";
+$rabbitmq_vhost="/";
+$rabbitmq_queue="pecan";
+$rabbitmq_username="guest";
+$rabbitmq_password="guest";
 
 # R binary
 $Rbinary="/usr/bin/R";
@@ -63,7 +55,7 @@ $anonymous_level = 99;
 $anonymous_page = 99;
 
 # name of current machine
-$fqdn=exec('hostname -f');
+$fqdn="docker";
 
 # List of all host and options. The list should be the server pointing
 # to an array. The second array contains a key value pair used to
@@ -86,27 +78,25 @@ $fqdn=exec('hostname -f');
 #                additional parameters for the job.sh.
 # - scratchdir : folder to be used for scratchspace when running certain
 #                models (such as ED)
-$hostlist=array($fqdn => array(),
+$hostlist=array($fqdn => 
+                    array("rabbitmq" => "amqp://guest:guest@rabbitmq/%2F"),
                 "geo.bu.edu" =>
-                    array("qsub"    => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
-                          "jobid"   => "Your job ([0-9]+) .*",
-                          "qstat"   => "qstat -j @JOBID@ || echo DONE",
-                          "prerun"  => "module load udunits R/R-3.0.0_gnu-4.4.6",
-                          "postrun" => "sleep 60",
-                          "models"  => array("ED2" =>
+                    array("qsub"     => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+                          "jobid"    => "Your job ([0-9]+) .*",
+                          "qstat"    => "qstat -j @JOBID@ || echo DONE",
+                          "prerun"   => "module load udunits R/R-3.0.0_gnu-4.4.6",
+                          "postrun"  => "sleep 60",
+                          "models"   => array("ED2" =>
                               array("prerun"  => "module load hdf5"))));
 
 # Folder where PEcAn is installed
 $R_library_path="/home/carya/R/library";
 
-# Location where PEcAn is installed, not really needed anymore
-$pecan_home="/home/carya/pecan/";
-
 # Folder where the runs are stored
-$output_folder="/home/carya/output/";
+$output_folder="/data/workflows";
 
 # Folder where the generated files are stored
-$dbfiles_folder=$output_folder . "/dbfiles";
+$dbfiles_folder="/data/dbfiles";
 
 # location of BETY DB set to empty to not create links, can be both
 # relative or absolute paths or full URL's. Should point to the base
@@ -125,5 +115,10 @@ $logfile = "/home/carya/output/betydb.log";
 # uncomment the following variable to enable the simple interface
 #$simpleBETY = TRUE;
 
+# syncing details
+
+$server_url="192.168.0.5";    // local test server
+$client_sceret="";
+$server_auth_token="";
 
 ?>

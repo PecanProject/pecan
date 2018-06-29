@@ -1,0 +1,37 @@
+# ----------------------------------------------------------------------
+# PECAN FOR MODEL BASE IMAGE
+# ----------------------------------------------------------------------
+FROM pecan/pecan
+MAINTAINER Rob Kooper <kooper@illinois.edu>
+
+# ----------------------------------------------------------------------
+# SETUP FOR PYTHON CODE
+# ----------------------------------------------------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3-pip \
+    && pip3 install pika \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /work
+COPY docker/receiver.py docker/sender.py /work/
+CMD python3 /work/receiver.py
+
+# What version of PEcAn
+ARG PECAN_VERSION="develop"
+ARG PECAN_GIT_BRANCH="unknown"
+ARG PECAN_GIT_CHECKSUM="unknown"
+ARG PECAN_GIT_DATE="unknown"
+
+# variables to store in docker image
+ENV PECAN_VERSION=${PECAN_VERSION} \
+    PECAN_GIT_BRANCH=${PECAN_GIT_BRANCH} \
+    PECAN_GIT_CHECKSUM=${PECAN_GIT_CHECKSUM} \
+    PECAN_GIT_DATE=${PECAN_GIT_DATE} \
+    RABBITMQ_URI=amqp://guest:guest@rabbitmq/%2F \
+    RABBITMQ_QEUEUE="pecan" \
+    APPLICATION="R CMD BATCH workflow.R"
+
+COPY base/remote     /pecan/base/remote/
+RUN cd /pecan && make
+
+#docker build -t pecan/model-sipnet:latest -f docker/Dockerfile.sipnet . && docker run -ti --rm --network pecan_pecan --name pecan_sipnet_1 -v pecan_pecan:/data pecan/model-sipnet:latest
