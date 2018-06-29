@@ -1,5 +1,7 @@
 .download.raw.met.module <- function(dir, met, register, machine, start_date, end_date, str_ns,
                                      con, input_met, site.id, lat.in, lon.in, host, site, username, overwrite = FALSE) {
+  ### Entered download.raw.met.module
+  print("Entered download.raw.met.module")
   
   outfolder <- file.path(dir,paste0(met, "_site_", str_ns))
   
@@ -19,10 +21,10 @@
     ifelse(is.na(ensemble), FALSE, ensemble) #If ensemble happens to be a character vector or something it can't convert, as.integer will evaluate to NA.
   }
   
-  ### source("~/pecan/base/utils/R/convert.input.R")
+  source("~/pecan/base/utils/R/convert.input.R")
   
   if (register$scale == "regional") {
-    raw.id <- PEcAn.utils::convert.input(input.id = NA,   ### Change back to PEcAn.utils:: when done debugging!!!
+    raw.id <- convert.input(input.id = NA,   ### Change back to PEcAn.utils:: when done debugging!!!
                             outfolder = outfolder, 
                             formatname = register$format$name, 
                             mimetype = register$format$mimetype,
@@ -40,7 +42,7 @@
     
   } else if (register$scale == "site") {
     # Site-level met
-    raw.id <- PEcAn.utils::convert.input(input.id = NA,
+    raw.id <- convert.input(input.id = NA,   ### Change back to PEcAn.utils::
                             outfolder = outfolder, 
                             formatname = register$format$name, 
                             mimetype = register$format$mimetype,
@@ -53,7 +55,9 @@
                             forecast = forecast,
                             ensemble = ensemble,
                             sitename = site$name, 
-                            username = username)
+                            username = username,
+                            lat.in = lat.in,
+                            lon.in = lon.in)
     
   } else {
     PEcAn.logger::logger.severe("Unknown register$scale")
