@@ -462,7 +462,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   PEcAn.logger::logger.info("RESULTS: Convert.Input")
   ### PEcAn.logger::logger.info(result) ### Too much output
-  PEcAn.logger::logger.info(names(result[[i]]))
+  ### PEcAn.logger::logger.info(names(result[[i]]))
   
   if (length(result[[1]]) <= 1){ # result, a list, is gauranteed to have at least one elemet.  However that element could be an empty data frame.
     PEcAn.logger::logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
@@ -530,7 +530,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       newinput$input.id  <- existing.input$id
       newinput$dbfile.id <- dbfile.id 
     } else {
-      newinput_list = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
+      newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
       
       #Iterate over every member of the ensemble and add their input.id and dbfile id's to parellel vectors in the list
       for (i in 1:length(result)) {
@@ -545,8 +545,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                   con = con, 
                                                   hostname = machine$hostname,
                                                   allow.conflicting.dates = allow.conflicting.dates)
-        newinput_list$input.id <- c(newinput$input.id, new_entry$input.id)
-        newinput_list$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
+        newinput$input.id <- c(newinput$input.id, new_entry$input.id)
+        newinput$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
       }
     }
     
