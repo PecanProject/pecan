@@ -494,8 +494,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # and here we copy that file from the package directory to the run
   # run-directory, overwriting the output_spec.csv that exists (was previously
   # copied from the base dvmdostem install)
-  #outspec <- readLines(con=system.file("output_spec_pecan0.csv", package = "PEcAn.dvmdostem"), n=-1)
-  #writeLines(outspec, con=file.path(settings$rundir, run.id, "config/output_spec.csv"))
   if (is.null(settings$model$dvmdostem_output_spec)){
     outspec <- readLines(con=system.file("output_spec_pecan0.csv", package = "PEcAn.dvmdostem"), n=-1)
   } else {
