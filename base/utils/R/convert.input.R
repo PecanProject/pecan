@@ -533,7 +533,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       #Iterate over every member of the ensemble and add their input.id and dbfile id's to parellel vectors in the list
       for (i in 1:length(result)) {
-        newinput <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
+        new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
                                                   in.prefix = result[[i]]$dbfile.name[1], 
                                                   siteid = site.id, 
                                                   startdate = start_date,
@@ -544,8 +544,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                   con = con, 
                                                   hostname = machine$hostname,
                                                   allow.conflicting.dates = allow.conflicting.dates)
-        newinput_list$input.id = c(newinput_list$input.id, newinput$input.id)
-        newinput_list$dbfile.id = c(newinput_list$dbfile.id, newinput$dbfile.id)
+        newinput_list$input.id <- c(newinput$input.id, new_entry$input.id)
+        newinput_list$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
       }
     }
     
@@ -553,7 +553,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     ### one row with columns $input.id and $dbfile.id, among others.  Now, it always returns a list with two vecotrs: $input.id and $dbfile.id
     
     successful <- TRUE
-    return(newinput_list)
+    return(newinput)
   } else {
     PEcAn.logger::logger.warn("Input was not added to the database")
     successful <- TRUE
