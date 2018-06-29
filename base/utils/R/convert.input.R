@@ -447,20 +447,21 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     cmdFcn <- paste0(pkg, "::", fcn, "(", arg.string, ")")
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
-    result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+    ### temporarily removed for debugging since it takes a long time to execute
+    ### result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
     
-    save("result", file="~/Tests/sample.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
+    load("~/Tests/sample.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
     print("result saved.")
     
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
     # code below can process everything as if it were a list without worrying about data types.
-    if (is.data.frame()) {
+    if (is.data.frame(result)) {
       result <- list(result)  
     }
   }
   
   PEcAn.logger::logger.info("RESULTS: Convert.Input")
-  PEcAn.logger::logger.info(result)
+  ### PEcAn.logger::logger.info(result) ### Too much output
   PEcAn.logger::logger.info(names(result[[i]]))
   
   if (length(result[[1]]) <= 1){ # result, a list, is gauranteed to have at least one elemet.  However that element could be an empty data frame.
