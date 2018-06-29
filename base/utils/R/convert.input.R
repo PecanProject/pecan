@@ -4,7 +4,7 @@
 ##' @name convert.input
 ##' @title convert.input
 ##' @export
-##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella
+##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
@@ -449,14 +449,21 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
     
-   
+    save("result", file="~/Tests/sample.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
+    print("result saved.")
+    
+    # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
+    # code below can process everything as if it were a list without worrying about data types.
+    if (is.data.frame()) {
+      result <- list(result)  
+    }
   }
   
   PEcAn.logger::logger.info("RESULTS: Convert.Input")
   PEcAn.logger::logger.info(result)
-  PEcAn.logger::logger.info(names(result))
+  PEcAn.logger::logger.info(names(result[[i]]))
   
-  if (length(result) <= 1){
+  if (length(result[[1]]) <= 1){ # result, a list, is gauranteed to have at least one elemet.  However that element could be an empty data frame.
     PEcAn.logger::logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
     PEcAn.logger::logger.severe(paste0("Unable to process data using this function:",fcn))
   }
@@ -481,25 +488,40 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     if (overwrite) {
       # A bit hacky, but need to make sure that all fields are updated to expected
       # values (i.e., what they'd be if convert.input was creating a new record)
+      
+      ### Double check exactly how existing.input and existing.dbfile are set up, and if result[[i]] necessarily corresponds to 
+      ### existing.input[i,] (Actually, it shouldn't, sincd SQL queries don't return in any particular order.)
+      
+      ### If this code is called for an ensemble, it must be updated to work so that all ensemble members are updated, not just the first one,
+      ### hence the loop.  However, there's a mapping problem in that the order that the ensembles are returned by the database query 
+      ### may not match the same order as the list that the download function returns, so one ensemble member could be updated with another's
+      ### information.
+      
+      ### potential fix - use ORDERBY in the original query to generate the list of dbfiles and input files so they map properly.
       if (exists("existing.input") && nrow(existing.input) > 0) {
-        PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result$file[1])),
-                        "' WHERE id=", existing.input$id), con)
+        for (i in 1:length(result)) { # In most cases (when there's no ensemble) length(result) = 1, so this is exactly as if the loop weren't there
+                                      # and the code was result$file[1]
+          PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
+                                    "' WHERE id=", existing.input$id), con)
+        }
       }
       if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
-        PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result$file[1]),
-                        "', ", "file_name='", result$dbfile.name[1], 
-                        "' WHERE id=", existing.dbfile$id), con)
+        for (i in 1:length(result)) {
+          PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
+                                    "', ", "file_name='", result[[i]]$dbfile.name[1], 
+                                    "' WHERE id=", existing.dbfile$id), con)
+        }
       }
     }
     
-    parent.id <- ifelse(is.null(input), NA, input$id)
+    parent.id <- ifelse(is.null(input), NA, input$id)  ### unfortunately, this will also have to be a list
     
     if ("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])) {
       site.id <- input.args$newsite
     }
     
     if (insert.new.file) {
-      dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result$file[1]),
+      dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result[[1]]$file[1]),
                                  in.prefix = result$dbfile.name[1], 
                                  'Input', existing.input$id, 
                                  con, reuse=TRUE, hostname = machine$hostname)
@@ -507,21 +529,31 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       newinput$input.id  <- existing.input$id
       newinput$dbfile.id <- dbfile.id 
     } else {
-      newinput <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result$file[1]),
-                                      in.prefix = result$dbfile.name[1], 
-                                      siteid = site.id, 
-                                      startdate = start_date,
-                                      enddate = end_date, 
-                                      mimetype, 
-                                      formatname, 
-                                      parentid = parent.id,
-                                      con = con, 
-                                      hostname = machine$hostname,
-                                      allow.conflicting.dates = allow.conflicting.dates)  
+      newinput_list = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
+      
+      #Iterate over every member of the ensemble and add their input.id and dbfile id's to parellel vectors in the list
+      for (i in 1:length(result)) {
+        newinput <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
+                                                  in.prefix = result[[i]]$dbfile.name[1], 
+                                                  siteid = site.id, 
+                                                  startdate = start_date,
+                                                  enddate = end_date, 
+                                                  mimetype, 
+                                                  formatname, 
+                                                  parentid = parent.id,
+                                                  con = con, 
+                                                  hostname = machine$hostname,
+                                                  allow.conflicting.dates = allow.conflicting.dates)
+        newinput_list$input.id = c(newinput_list$input.id, newinput$input.id)
+        newinput_list$dbfile.id = c(newinput_list$dbfile.id, newinput$dbfile.id)
+      }
     }
     
+    ### Before, this function used to return a list with $input.id and $dbfile.id from some return points, and from others, a data frame of
+    ### one row with columns $input.id and $dbfile.id, among others.  Now, it always returns a list with two vecotrs: $input.id and $dbfile.id
+    
     successful <- TRUE
-    return(newinput)
+    return(newinput_list)
   } else {
     PEcAn.logger::logger.warn("Input was not added to the database")
     successful <- TRUE
