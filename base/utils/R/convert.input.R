@@ -55,6 +55,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     print(sprintf("enddate = %s", end_date))
     
     ### For debugging
+    
+    
+    ### UPDATE: HAVE A FOR LOOP FOR EACH ENSEMBLE MEMBER.  EACH ENSEMBLE MEMBER SHOULD BE ASSOCIATED WITH A GIVEN INPUT FILE IN THE DB.
     existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                     mimetype = mimetype, 
                                                     formatname = formatname, 
@@ -493,12 +496,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       ### Double check exactly how existing.input and existing.dbfile are set up, and if result[[i]] necessarily corresponds to 
       ### existing.input[i,] (Actually, it shouldn't, sincd SQL queries don't return in any particular order.)
       
-      ### If this code is called for an ensemble, it must be updated to work so that all ensemble members are updated, not just the first one,
-      ### hence the loop.  However, there's a mapping problem in that the order that the ensembles are returned by the database query 
-      ### may not match the same order as the list that the download function returns, so one ensemble member could be updated with another's
-      ### information.
-      
-      ### potential fix - use ORDERBY in the original query to generate the list of dbfiles and input files so they map properly.
+      ### 
       if (exists("existing.input") && nrow(existing.input) > 0) {
         for (i in 1:length(result)) { # In most cases (when there's no ensemble) length(result) = 1, so this is exactly as if the loop weren't there
                                       # and the code was result$file[1]
@@ -532,15 +530,21 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     } else {
       newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
       
+      formatbase = formatname
+      
       #Iterate over every member of the ensemble and add their input.id and dbfile id's to parellel vectors in the list
       for (i in 1:length(result)) {
+        if(as.logical(ensemble)) {  #Each ensemble member gets their own separate input file in the database.
+          formatbase = paste(formatname, i, sep=".")
+        }
+        
         new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
                                                   in.prefix = result[[i]]$dbfile.name[1], 
                                                   siteid = site.id, 
                                                   startdate = start_date,
                                                   enddate = end_date, 
                                                   mimetype, 
-                                                  formatname, 
+                                                  formatbase, 
                                                   parentid = parent.id,
                                                   con = con, 
                                                   hostname = machine$hostname,
