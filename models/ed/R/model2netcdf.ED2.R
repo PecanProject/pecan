@@ -1000,7 +1000,7 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   ed_units     <- trans_out$units # might use
   
   # List of vars to extract includes the requested one, plus others needed below 
-  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT","DAGB_DT", "BDEAD", "DBH")
+  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT","DAGB_DT", "BDEAD", "DBH", "BSTORAGE")
   vars <- c(ed_varnames, add_vars) 
   
   # list to collect outputs
@@ -1111,7 +1111,7 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
       # pass to a sublist? so that read_restart doesn't care?
       # out$restart <- ...
       
-    } #any(ind)-if THERE SHOULD PROBABLY BE AN ELSE?
+    } #any(ind)-if SHOULD THERE BE AN ELSE? DOES ED2 EVER DRIVES SOME PFTs TO EXTINCTION? 
   } #k-loop
     
   

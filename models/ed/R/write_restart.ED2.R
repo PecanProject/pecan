@@ -63,7 +63,12 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   paco_n      <- restart$PACO_N  # number of cohorts per patch
   patch_index <- rep(1:length(paco_n), times = paco_n)
 
-
+  # read xml to extract allometric coeffs later
+  configfile <- file.path(rundir, runid,"config.xml")
+  pars <- XML::xmlToList(XML::xmlParse(configfile))
+  # remove non-pft sublists
+  pars[names(pars)!="pft"] <- NULL
+  
   #### Write new state to file
   # Default mode of H5File$new is "a", which is read + write and create file if it doesn't exist
   histfile_h5 <- hdf5r::H5File$new(new_local_histfile)
@@ -82,9 +87,26 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       old.tmp <- old.state
       agw_ratios <- new.tmp / old.tmp # not ideal, just trying to get the workflow to run
       
-      bdead <- restart$BDEAD
+      bdead    <- restart$BDEAD
+      bstorage <- restart$BSTORAGE
       
-      new_bdead <- bdead * agw_ratios[1,1]
+      new_bdead    <- bdead * agw_ratios[1,1]
+      
+      # if you're nudging bdead, update bstorage and dbh too
+      new_bstorage <- bstorage * agw_ratios[1,1]
+      
+      pft_nums <- as.numeric(sapply(pars,`[[`, "num"))
+      # use ED2's allometric eqns to dtermine dbh from new bdead
+      C2B <- 2
+      new_dbh <- new_bdead
+      for(pn in seq_along(pft_nums)){
+        ind <- pft == pft_nums[pn]
+          
+        crit <- new_bdead[ind] <= pars[[pn]]$bdead_crit
+        new_dbh[ind][crit] = (new_bdead[ind][crit] / as.numeric(pars[[pn]]$b1Bs_small) * C2B)**(1.0/ as.numeric(pars[[pn]]$b2Bs_small))
+        new_dbh[ind][!crit] = (new_bdead[ind][!crit] / as.numeric(pars[[pn]]$b1Bs_large) * C2B)**(1.0/as.numeric(pars[[pn]]$b2Bs_large))
+        
+      }
 
       # AbvGrndWood in state matrix is not per PFT but total
       # but leaving this bit as a reminder
@@ -97,11 +119,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
 
       #nplant_co_plant <- restart$NPLANT
 
-      # The only AGB-related state variables read by ED's history restart 
-      # subroutine are BDEAD, DBH, and NPLANT. The remaining states 
-      # (including cohort and patch-level AGB) are recalculated from 
-      # these variables.
-      #
+
       # Here, we adjust cohort-level AGB by adjusting the stand density 
       # (NPLANT) proportional to the change in biomass computed above.
       #new.nplant_co_plant <- nplant_co_plant * agb_co_ratios[1,1]
@@ -117,6 +135,8 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # This is necessary to overwrite an existing dataset
       #histfile_h5[["NPLANT"]][] <- new.nplant_co_plant
       histfile_h5[["BDEAD"]][] <- new_bdead
+      histfile_h5[["BSTORAGE"]][] <- new_bstorage
+      histfile_h5[["DBH"]][] <- new_dbh
       
       # overwrite the keeper you're reading in read.restart
       histfile_h5[["TOTAL_AGB"]][] <- udunits2::ud.convert(new.tmp, "Mg/ha/yr", "kg/m^2/yr")
@@ -126,6 +146,9 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # zero cumulative rate keepers, nothing is calculated back from these
       # so zeroing only the rate you're reading back is fine
       histfile_h5[["TOTAL_AGB_GROWTH"]][] <- 0
+      #zero both
+      histfile_h5[["DDBH_DT"]][] <- rep(0, length(restart$DDBH_DT))
+      histfile_h5[["DAGB_DT"]][] <- rep(0, length(restart$DAGB_DT))
       
     } else {
       PEcAn.logger::logger.error("Variable ", var_name,
