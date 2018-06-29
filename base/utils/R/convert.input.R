@@ -13,6 +13,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           forecast = FALSE, ensemble = FALSE,...) {
   input.args <- list(...)
   
+  ### Debugging
+  print("Entered convert.inputs")
+  
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
@@ -27,12 +30,51 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   outname <- utils::tail(unlist(strsplit(outfolder, "/")), n = 1)
   
   PEcAn.logger::logger.info(paste("start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, 
-                    formatname, mimetype, site.id, start_date, end_date))
+                    formatname, mimetype, site.id, start_date, end_date, forecast, ensemble))
   
   
   ##----------------------------------------------------------------------------------------------------------------##  
-  
-  if (exact.dates) {
+  # Forecast data sets require their own set of database checking operations, making the following else if and else irrelevant
+  # for such data.  Forecast data are different if their start date (and if they are part of an ensemble, their ensemble id) are 
+  # different.
+  if (forecast) {
+    #if the data is an ensemble, ensemble will be set equal to the number of ensemble members.
+    #However, if the data is not an ensemble, ensemble will be equal to FALSE.  In order to treat ensemble and 
+    #non-ensemble members together in one piece of code, we set ensemble=1 if it's FALSE.
+    if (!is.integer(ensemble)) {ensemble = as.integer(1) }
+    
+    ### Just to check if this works...
+    print(sprintf("ensemble = %d", ensemble))
+    
+    ### More deugging print statements
+    print("$##$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$##$")
+    print(sprintf("sideid = %s", site.id))
+    print(sprintf("mimetype = %s", mimetype))
+    print(sprintf("formatname = %s", formatname))
+    print(sprintf("startdate = %s", start_date))
+    print(sprintf("enddate = %s", end_date))
+    
+    ### For debugging
+    existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+                                                    mimetype = mimetype, 
+                                                    formatname = formatname, 
+                                                    parentid = input.id, 
+                                                    startdate = start_date,
+                                                    enddate = end_date, 
+                                                    con = con, 
+                                                    hostname = host$name, 
+                                                    exact.dates = TRUE,
+                                                    pattern = pattern)
+    
+    if (nrow(existing.dbfile) >= ensemble) {
+      existing.inputs = list()
+      for (i in 1:ensemble) {
+        existing.inputs[[i]] = PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+      }
+    }
+    
+    
+  } else if (exact.dates) {
     
     # Find Existing input with exact dates.
     
@@ -145,6 +187,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           hostname = host$name,
                                           pattern = pattern
                                          )
+    print("^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^")
+    print(existing.dbfile)
+    print("^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^")
     
     PEcAn.logger::logger.debug("File id =", existing.dbfile$id,
                  " File name =", existing.dbfile$file_name,
@@ -157,7 +202,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     if (nrow(existing.dbfile) > 0) {
       
       existing.input <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
-      
       
       # Convert dates to Date objects and strip all time zones
       # (DB values are timezone-free)
@@ -404,6 +448,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
     result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+    
+   
   }
   
   PEcAn.logger::logger.info("RESULTS: Convert.Input")
@@ -420,7 +466,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   outlist <- unlist(strsplit(outname, "_"))
   
   ## insert new record into database
-  if (write) {
+  if (write) { # Defaults to TRUE
     
     if (exists("existing.input") && nrow(existing.input) > 0 && 
         (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
