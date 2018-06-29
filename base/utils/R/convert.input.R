@@ -9,7 +9,8 @@
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
                           format.vars, overwrite = FALSE, exact.dates = FALSE, 
-                          allow.conflicting.dates = TRUE, insert.new.file = FALSE, pattern = NULL,...) {
+                          allow.conflicting.dates = TRUE, insert.new.file = FALSE, pattern = NULL,
+                          forecast = FALSE, ensemble = FALSE,...) {
   input.args <- list(...)
   
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
