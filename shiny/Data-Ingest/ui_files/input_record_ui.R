@@ -1,18 +1,17 @@
 fluidRow(title = "New Input",
    box(title = h2("New Input"), width = 4, collapsible = TRUE,
      hr(),
-     selectizeInput("InputSiteID", label = "Site", sitenames,
+     selectizeInput("InputSiteName", label = "Site", choices = NULL,
                     options = list(
                       placeholder = 'Please search or select a site below',
                       onInitialize = I('function() { this.setValue(""); }')
                       )),
      hr(),
-     # selectizeInput("InputParentID", label = "Parent ID (under construction)", sitenames,
-     #                options = list(
-     #                  placeholder = 'Please search inputs by name or site',
-     #                  onInitialize = I('function() { this.setValue(""); }'),
-     #                  maxOptions = 100
-     #                )),
+     selectizeInput("InputParentName", label = "Parent ID (under construction)", choices = NULL,
+                    options = list(
+                      placeholder = 'Please search inputs by name or site',
+                      onInitialize = I('function() { this.setValue(""); }')
+                    )),
      hr(),
      textInput(
        "InputName",
@@ -20,7 +19,7 @@ fluidRow(title = "New Input",
        placeholder = "Currently Inactive"
      ),
      hr(),
-     selectizeInput("InputFormatID", label = "Format ID", formats,
+     selectizeInput("InputFormatName", label = "Format", choices = NULL,
                     options = list(
                       placeholder = 'Please search Formats by name',
                       onInitialize = I('function() { this.setValue(""); }')
@@ -65,11 +64,11 @@ fluidRow(title = "New Input",
    ),
    box(title = h2("DbFiles Record"), width = 4, collapsible = TRUE, collapsed = TRUE, 
        hr(),
-       # selectizeInput("InputMachineID", label = "Machine ID (under construction)", sites, options = list(
-       #   placeholder = 'Please search MachineIDs by name or site',
-       #   onInitialize = I('function() { this.setValue(""); }'),
-       #   maxOptions = 100
-       # )),
+       selectizeInput("InputMachineName", label = "Machine", choices = NULL,  #remember to set default to local
+                      options = list(
+                        placeholder = 'Please search machine by name',
+                        onInitialize = I('function() { this.setValue(""); }')
+                        )),
        hr(),
        textInput(
          "InputFilePath",
@@ -80,16 +79,17 @@ fluidRow(title = "New Input",
          "InputFileName",
          label = "File Name",
          placeholder = "This file name will be displayed from the download process. The user can edit the file name here"),
-       actionButton("createDBFilesRecord", label = "Create")
+       actionButton("createDBFilesRecord", label = "Create dbFiles Record"),
+       hr(),
+       verbatimTextOutput("dbFilesRecordOut")
        ),
    box(title = h2("Format ID"), width = 4, collapsible = TRUE, collapsed = TRUE,
        hr(),
-       # selectizeInput("MimetypeID", label = "Mimetype ID (under construction)", sites,
-       #                options = list(
-       #                  placeholder = 'Please search inputs by name or site',
-       #                  onInitialize = I('function() { this.setValue(""); }'),
-       #                  maxOptions = 100
-       #                )),
+       selectizeInput("MimetypeName", label = "Mimetype", choices = NULL,
+                      options = list(
+                        placeholder = 'Please search inputs by name or site',
+                        onInitialize = I('function() { this.setValue(""); }')
+                      )),
        hr(),
        textInput(
          "NewMimeType",
@@ -101,13 +101,14 @@ fluidRow(title = "New Input",
          label = "New Format Name",
          placeholder = "Create a New Format Name"),
        hr(),
-       textInput(
-         "HeaderFormat",
-         label = "Header",
-         placeholder = "Is this a Boolean?"),
+       radioButtons(
+         "HeaderBoolean",
+         label = "Is There a Header ?", 
+         choices =  c("Yes", "No")
+       ),
        hr(),
-       textInput(
-         "FormatSkip",
+       textInput( # I should Render UI only if Header = TRUE
+         "SkipLines",
          label = "Skip",
          placeholder = "Enter number of header lines to skip."),
        hr(),
@@ -115,7 +116,10 @@ fluidRow(title = "New Input",
          "FormatNotes",
          label = "Notes",
          height = '150px'
-       )
+       ),
+       actionButton("createFormatRecord", label = "Create Format Record"),
+       hr(),
+       verbatimTextOutput("FormatRecordOut")
        )
   
  )
