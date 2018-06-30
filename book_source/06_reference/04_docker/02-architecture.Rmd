@@ -15,8 +15,8 @@ The PEcAn framework containers consist of multiple unique ways to interact with 
 
 - PEcAn shiny hosts the shiny applications developed and will interact with the database to get all information necessary to display
 - PEcAn rstudio is a rstudio environment with the PEcAn libraries preloaded. This allows for prototyping of new algorithms that can be used as part of the PEcAn framework later.
-- PEcAn web allows the user to create a new PEcAn workflow. The workflow is stored in the database, and the models are exectued by the model containers.
-- PEcAn cli will allow the user to give a pecan.xml file that will be executed by the PEcAn framework.  The workflow created from the XML file is stored in the database, and the models are exectued by the model containers.
+- PEcAn web allows the user to create a new PEcAn workflow. The workflow is stored in the database, and the models are executed by the model containers.
+- PEcAn cli will allow the user to give a pecan.xml file that will be executed by the PEcAn framework.  The workflow created from the XML file is stored in the database, and the models are executed by the model containers.
 
 The model containers contain the actual models that are executed as well as small wrappers to make them work in the PEcAn framework. The containers will run the model based on the parameters received from the message bus and convert the outputs back to the standard PEcAn output format. Once the container is finished processing a message it will immediatly get the next message and start processing it.
 

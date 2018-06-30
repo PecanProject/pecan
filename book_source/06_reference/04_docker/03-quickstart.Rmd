@@ -1,0 +1,78 @@
+# Quickstart for Docker and PEcAn.
+
+This is a short documentation on how to start with Docker and PEcAn. This will not go into much detail about about how to use docker.
+
+## Install Docker
+
+You will need to install docker first. See https://www.docker.com/community-edition#/download
+
+##Running PEcAn
+
+We will use a yaml file to describe the containers that we make up, This yaml file is called [docker-compose.yml](https://github.com/PecanProject/pecan/blob/master/docker-compose.yml). Before you get started you will need to download this file first. Place this file somewhere on your machine and cd to the folder that contains this file.
+
+Next we will start the docker containers to start Docker. Since both BETY and PEcAn depend on a populated database we will first start the database and populate it with some data. This only needs to be done once, if this is done already, you can skip this step and go to the next step
+
+```bash
+docker-compose -p pecan up -d postgres
+docker run -ti --rm \
+	--network pecan_pecan \
+	hub.ncsa.illinois.edu/pecan/bety:latest initialize
+docker run -ti --rm \
+	--network pecan_pecan \
+    --volume pecan_pecan:/data \
+    hub.ncsa.illinois.edu/pecan/data:develop
+```
+
+If this is finished (or you had done this in the past), we can start the full stack:
+
+```bash
+docker-compose -p pecan up -d
+```
+
+This will start all the containers marked green in the architecture diagram. Once this is done you have a working instance of PEcAn. Following is a list of URL's you can visit
+
+| URL                          | Service                                               |
+| ---------------------------- | ----------------------------------------------------- |
+| http://localhost:8000/pecan/ | PEcAn web GUI                                         |
+| http://localhost:8000/bety/  | BETY web application                                  |
+| http://localhost:8000/minio/ | File browser (username carya, password illinois)      |
+| http://localhost:8000/       | RabbitMQ (username guest, password guest)             |
+| http://localhost:8001/       | Træfik, webserver shows mapping from url to container |
+
+## Testing PEcAn
+
+To test PEcAn you can use the following curl statement, or use the webpage to submit a request:
+
+```bash
+curl -v -X POST \
+    -F 'hostname=docker' \
+    -F 'modelid=5000000002' \
+    -F 'sitegroupid=1' \
+    -F 'siteid=772' \
+    -F 'sitename=Niwot Ridge Forest/LTER NWT1 (US-NR1)' \
+    -F 'pft[]=temperate.coniferous' \
+    -F 'start=2004/01/01' \
+    -F 'end=2004/12/31' \
+    -F 'input_met=5000000005' \
+    -F 'email=' \
+    -F 'notes=' \
+    'http://localhost:8000/pecan/04-runpecan.php'
+```
+
+This should return some text with in there `Location:` this is shows the workflow id, you can prepend http://localhost:8000/pecan/ to the front of this, for example: http://localhost:8000/pecan/05-running.php?workflowid=99000000001. Here you will be able to see the progress of the workflow.
+
+To see what is happening behind the scenes you can use look at the log file of the specific docker containers, once of interest are `pecan_executor_1` this is the container that will execute a single workflow and `pecan_sipnet_1` which executes the sipnet mode. To see the logs you use `docker logs pecan_executor_1` Following is an example output:
+
+```
+2018-06-13 15:50:37,903 [MainThread     ] INFO    : pika.adapters.base_connection - Connecting to 172.18.0.2:5672
+2018-06-13 15:50:37,924 [MainThread     ] INFO    : pika.adapters.blocking_connection - Created channel=1
+2018-06-13 15:50:37,941 [MainThread     ] INFO    : root -  [*] Waiting for messages. To exit press CTRL+C
+2018-06-13 19:44:49,523 [MainThread     ] INFO    : root - b'{"folder": "/data/workflows/PEcAn_99000000001", "workflowid": "99000000001"}'
+2018-06-13 19:44:49,524 [MainThread     ] INFO    : root - Starting job in /data/workflows/PEcAn_99000000001.
+2018-06-13 19:45:15,555 [MainThread     ] INFO    : root - Finished running job.
+```
+
+This shows that the executor connects to RabbitMQ, waits for messages. Once it picks up a message it will print the message, and execute the workflow in the folder passed in with the message. Once the workflow (including any model executions) is finished it will print Finished. The log file for `pecan_sipnet_1` is very similar, in this case it runs the `job.sh` in the run folder.
+
+To run multiple executors in parallel you can duplicate the executor section in the docker-compose file and just rename it from executor to executor1 and executor2 for example. The same can be done for the models. To make this easier it helps to deploy the containers using kubernetes allowing to easily scale up and down the containers.
+

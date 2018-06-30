@@ -29,6 +29,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Explore the interdependencies between pecan packages/functions.
 
 - From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
+- Experimental support for docker (#1028)
 
 - dataone_download.R:
   - Added progress messages to indicate that the function is working during longer downloads via PEcAn logger. 
