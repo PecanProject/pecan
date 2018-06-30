@@ -12,7 +12,17 @@
  ##### Bety Connect Stuff ######
  bety <- betyConnect()
  sitenames <- dplyr::tbl(bety, "sites") %>% distinct(sitename) %>% dplyr::arrange(sitename) %>% pull(sitename)
+ sites_sub <- dplyr::tbl(bety, "sites") %>% dplyr::select(sitename, id) %>% dplyr::arrange(sitename)
+ 
  formats <- dplyr::tbl(bety, "formats") %>% distinct(name) %>% dplyr::arrange(name) %>% pull(name)
+ formats_sub <- dplyr::tbl(bety, "formats") %>% dplyr::select(name, id) %>% dplyr::arrange(name)
+ 
+ machines <- dplyr::tbl(bety, "machines") %>% distinct(hostname) %>% dplyr::arrange(hostname)%>% pull(hostname)
+ machines_sub <- dplyr::tbl(bety, "machines") %>% dplyr::select(hostname, id) %>% dplyr::arrange(hostname)
+ 
+ mimetypes <- dplyr::tbl(bety, "mimetypes") %>% distinct(type_string) %>% dplyr::arrange(type_string) %>% pull(type_string)
+ mimetype_sub <- dplyr::tbl(bety, "mimetypes") %>% dplyr::select(type_string, id) %>% dplyr::arrange(type_string)
+
 
 #############################################################################
 ################################## UI #######################################
@@ -68,6 +78,8 @@ server <- function(input, output, session) {
   
   ######### Input Record #####################################
   source('server_files/input_record_svr.R', local = TRUE)
+  
+  
 }
 
 # Run the application
