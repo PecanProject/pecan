@@ -5,7 +5,26 @@
 \title{Helper function to sample from previous MCMC chain while proposing new knots}
 \usage{
 sample_MCMC(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots,
-  knots.params.temp)
+  knots.params.temp, prior.list, prior.fn, sf, sf.samp)
+}
+\arguments{
+\item{mcmc_path}{path to previous emulator mcmc samples object}
+
+\item{n.param.orig}{vector, number of parameters targeted in each (pft) sublist}
+
+\item{prior.ind.orig}{list, actual indices of parameters targeted in each (pft) sublist}
+
+\item{n.post.knots}{number of new samples requested}
+
+\item{knots.params.temp}{list of parameter samples proposed from the original PDA-prior}
+
+\item{prior.list}{PDA-prior list}
+
+\item{prior.fn}{list for parameter d/r/q/p functions}
+
+\item{sf}{SF parameter names}
+
+\item{sf.samp}{SF parameters MCMC samples}
 }
 \description{
 Helper function to sample from previous MCMC chain while proposing new knots

@@ -7,8 +7,7 @@ load_veg <- function(new_site, start_date, end_date,
                      source_id, source, icmeta = NULL, format_name = NULL, 
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){
   
-  
-  bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
+   bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
                               host     = dbparms$bety$host, 
                               user     = dbparms$bety$user, 
                               password = dbparms$bety$password)
@@ -17,7 +16,7 @@ load_veg <- function(new_site, start_date, end_date,
   # Load data : this step requires DB connections 
   
   # get machine id
-  machine_id <- get.id(table = "machines", colnames = "hostname", 
+  machine_id <- PEcAn.DB::get.id(table = "machines", colnames = "hostname", 
                        values = machine_host, con = bety$con)
   
   # query data.path from source id [input id in BETY]
@@ -25,13 +24,15 @@ load_veg <- function(new_site, start_date, end_date,
                        "AND machine_id=", machine_id)
   
   input_file <- PEcAn.DB::db.query(query, con = bety$con)
-  data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]])
+  data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]]) #File path and file name of source file from bety
+
   
   # query format info
   format     <- PEcAn.DB::query.format.vars(bety = bety, input.id = source_id)
   
   # load_data{benchmark}
   obs        <- PEcAn.benchmark::load_data(data.path = data_path, format, site = new_site)
+  
   
   #--------------------------------------------------------------------------------------------------#
   # Match species : this step requires DB connections 
@@ -42,6 +43,7 @@ load_veg <- function(new_site, start_date, end_date,
   }else if("latin_name" %in% format$vars$bety_name){
     # not encountered an actual case yet, put here as a reminder
     code.col <- "latin_name"
+    format_name <- "latin_name" 
     # might indicate a custom format, should be passed to function
     if(is.null(format_name)){
       PEcAn.logger::logger.severe("Can't match code to species. Please provide 'match.format' via settings.")
@@ -49,13 +51,10 @@ load_veg <- function(new_site, start_date, end_date,
   }else{
     PEcAn.logger::logger.severe("Can't match code to species. No valid format found.")
   } 
-  
   # match code to species ID
   # no lower case
   obs[[code.col]] <- toupper(obs[[code.col]])
-  
   spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format_name, bety = bety)
-  
   # merge with data
   tmp <- spp.info[ , colnames(spp.info) != "input_code"]
   
@@ -72,13 +71,11 @@ load_veg <- function(new_site, start_date, end_date,
   
   veg_info[[2]] <- cbind(obs, tmp)
   
-  
   #--------------------------------------------------------------------------------------------------#
   # Write vegettion data as rds, return results to convert.input
   
   # need check for overwrite
   sppfilename <- write_veg(outfolder, start_date, veg_info = veg_info, source)
-  
   # Build results dataframe for convert.input
   results <- data.frame(file = sppfilename, 
                         host = machine_host, 
@@ -88,7 +85,6 @@ load_veg <- function(new_site, start_date, end_date,
                         enddate = end_date, 
                         dbfile.name = basename(sppfilename), 
                         stringsAsFactors = FALSE)
-  
   ### return for convert.inputs
   return(invisible(results))  
   

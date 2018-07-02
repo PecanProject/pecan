@@ -25,11 +25,9 @@ still being worked on, set to FALSE}
 
 \item{seed}{- allows this to be reproducible}
 
+\item{outfolder}{= where the output should be stored}
+
 \item{print.progress}{- print progress of model generation?}
-
-\item{path.out}{- path to where the training models & betas will be stored}
-
-\item{outfoulder}{= where the output should be stored}
 }
 \description{
 This function contains the functions that do the heavy lifting in gen.subdaily.models()

@@ -2,4 +2,5 @@
 
 export(assessParams)
 export(load_data_paleon_sda)
+export(sample_met)
 export(sda.enkf)
