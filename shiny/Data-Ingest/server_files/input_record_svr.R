@@ -19,16 +19,12 @@ observeEvent(input$createInput, {
   
   ## ParentID
   inputsList$parentName <- input$InputParentName
-  inputsList$parentID <- sites %>% dplyr::filter(inputs %in% inputsList$parentName) %>% pull(id)
+  inputsList$parentID <- inputs %>% dplyr::filter(name %in% inputsList$parentName) %>% pull(id)
   
   ## FormatID
   inputsList$formatName <- input$InputFormatName
-  if(is.null(input$InputFormatName)){
-    inputsList$formatID <- "Null"
-  }else{
-   # inputsList$formatID <- formats_sub %>% dplyr::filter(name %in% inputsList$formatName) %>% pull(id)
-  }
-  
+  inputsList$formatID <- formats_sub %>% dplyr::filter(name %in% inputsList$formatName) %>% pull(id)
+
   ## Other Info
   inputsList$Name <- input$InputName
   inputsList$StartDate <- input$InputStartDate
