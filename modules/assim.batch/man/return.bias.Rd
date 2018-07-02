@@ -20,7 +20,7 @@ return.bias(settings, isbias, model.out, inputs, prior.list.bias,
 
 \item{run.round}{extension flag}
 
-\item{pass2bias}{if this is another round, this is re-sampled MCMC samples, will go with the rest od params}
+\item{pass2bias}{if this is another round, this is re-sampled MCMC samples, will go with the rest of model params}
 }
 \author{
 Istem Fer

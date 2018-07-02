@@ -674,7 +674,7 @@ pda.generate.sf <- function(n.knot, sf, prior.list){
 ##' @param inputs inputs list
 ##' @param prior.list.bias prior list, bias prior to be added
 ##' @param run.round extension flag
-##' @param pass2bias if this is another round, this is re-sampled MCMC samples, will go with the rest od params
+##' @param pass2bias if this is another round, this is re-sampled MCMC samples, will go with the rest of model params
 ##' 
 ##' @author Istem Fer
 ##' @export
