@@ -845,7 +845,6 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
     }
     sf_samples <- do.call(rbind, sf_samples)
     
-    get_samples <- sample(1:nrow(sf_samples), n.post.knots)
     sf_knots    <- sf_samples[get_samples,]
     
     ind <- 0
