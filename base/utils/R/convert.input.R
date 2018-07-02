@@ -56,6 +56,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     ### For debugging
     
+    for (i in 1:ensemble) {
+      
+    }
+    
     
     ### UPDATE: HAVE A FOR LOOP FOR EACH ENSEMBLE MEMBER.  EACH ENSEMBLE MEMBER SHOULD BE ASSOCIATED WITH A GIVEN INPUT FILE IN THE DB.
     existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
@@ -451,9 +455,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
     ### temporarily removed for debugging since it takes a long time to execute
-    ### result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+    result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
     
-    load("~/Tests/sample.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
+    save(result, file = "~/Tests/sample2.gefs.Rdata")
+    ### load("~/Tests/sample.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
     print("result saved.")
     
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
@@ -476,6 +481,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   # Insert into Database
   outlist <- unlist(strsplit(outname, "_"))
   
+  # Wrap in a list for consistant processing later
+  if (exists("existing.input") && is.data.frame(existing.input)) {
+    existing.input = list(existing.input)
+  }
+  
+  if (exists("existing.dbfile") && is.data.frame(existing.dbfile)) {
+    existing.dbfile = list(exisitng.input)
+  }
+  
   ## insert new record into database
   if (write) { # Defaults to TRUE
     
@@ -493,10 +507,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # A bit hacky, but need to make sure that all fields are updated to expected
       # values (i.e., what they'd be if convert.input was creating a new record)
       
-      ### Double check exactly how existing.input and existing.dbfile are set up, and if result[[i]] necessarily corresponds to 
-      ### existing.input[i,] (Actually, it shouldn't, sincd SQL queries don't return in any particular order.)
-      
-      ### 
+      ### This should be updated to 
+      ### a) wrap existing.input and existing.dbfile in a list, if they aren't already
+      ### b) iterate over that list, even if length one.  (Currently, we're only interating over results.)
       if (exists("existing.input") && nrow(existing.input) > 0) {
         for (i in 1:length(result)) { # In most cases (when there's no ensemble) length(result) = 1, so this is exactly as if the loop weren't there
                                       # and the code was result$file[1]
