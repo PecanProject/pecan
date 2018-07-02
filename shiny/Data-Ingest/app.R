@@ -9,10 +9,14 @@
  
  source("ui_utils.R", local = TRUE)
  
- ##### Bety Connect Stuff ######
+ ##### Bety Calls ######
  bety <- betyConnect()
- sitenames <- dplyr::tbl(bety, "sites") %>% distinct(sitename) %>% dplyr::arrange(sitename) %>% pull(sitename)
- sites_sub <- dplyr::tbl(bety, "sites") %>% dplyr::select(sitename, id) %>% dplyr::arrange(sitename)
+ 
+ sites <- dplyr::tbl(bety, "sites") %>% dplyr::select(sitename, id) %>% dplyr::arrange(sitename)
+ sitenames <- sites %>% pull(sitename)
+ 
+ inputs <- dplyr::tbl(bety, "inputs") %>% dplyr::select(name, id) %>% dplyr::arrange(name)
+ input_names <- inputs %>% pull(name)
  
  formats <- dplyr::tbl(bety, "formats") %>% distinct(name) %>% dplyr::arrange(name) %>% pull(name)
  formats_sub <- dplyr::tbl(bety, "formats") %>% dplyr::select(name, id) %>% dplyr::arrange(name)
