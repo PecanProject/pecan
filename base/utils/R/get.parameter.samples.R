@@ -109,7 +109,7 @@ get.parameter.samples <- function(settings,
       ## report which traits use MA results, which use priors
       if (length(param.names[[i]]) > 0) {
         PEcAn.logger::logger.info("PFT", pft.names[i], "has MCMC samples for:\n",
-                                  paste0(param.names, collapse = "\n "))
+                                  paste0(param.names[[i]], collapse = "\n "))
       }
       if (!all(priors %in% param.names[[i]])) {
         PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for:\n", 

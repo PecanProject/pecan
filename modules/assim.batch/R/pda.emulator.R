@@ -60,6 +60,9 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   any.scaling <- sapply(settings$assim.batch$param.names, `[[`, "scaling")
   sf <- unique(unlist(any.scaling))
   
+  # used in rounds only
+  pass2bias <- NULL
+  
   ## Open database connection
   if (settings$database$bety$write) {
     con <- try(db.open(settings$database$bety), silent = TRUE)
@@ -198,7 +201,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
 
     knots.params.temp <- sampled_knots$knots.params.temp
     probs.round.sf    <- sampled_knots$sf_knots
-    
+    pass2bias         <- sampled_knots$pass2bias
 
     # mixture of knots
     mix.knots <- sample(settings$assim.batch$n.knot, (settings$assim.batch$n.knot - n.post.knots))
@@ -256,7 +259,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
     if(any(unlist(any.mgauss) == "multipGauss")) {
-      bias.list  <- return.bias(settings, isbias, model.out, inputs, prior.list, run.round)
+      bias.list  <- return.bias(settings, isbias, model.out, inputs, prior.list, run.round, pass2bias)
       bias.terms <- bias.list$bias.params
       prior.list <- bias.list$prior.list.bias
       nbias      <- bias.list$nbias
