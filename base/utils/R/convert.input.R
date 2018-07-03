@@ -68,7 +68,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     for (i in 1:ensemble) {
       ensemble_name <- paste(formatname, i, sep=".")
-      existing.dbfile[[i]] = <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+      existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
                                                              formatname = ensemble_name, 
                                                              parentid = input.id, 
@@ -155,12 +155,17 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       }
       
       ### Debugging statement covering possible functione exit.
+      print("Exiting early")
       
       return(existing_records)
     }
     
     
     ### Print 
+    print(existing.input)
+    print("--------------------------------------------------")
+    print(existing.dbfile)
+    print("--------------------------------------------------")
     ##----------------------------------------- End of forecast section --------------------------------##
     
   } else if (exact.dates) {
