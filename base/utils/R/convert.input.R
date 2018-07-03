@@ -113,7 +113,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     } # -- End for loop --
     
     # Set up files to be deleted.  The deletion will actually happen after the function finishes execution.  In case there
-    # are any errors, this will make sure that 
+    # are any errors, this will make sure that
+    if (length(files.to.delete) > 0) {
       successful <- FALSE
       on.exit(if (exists("successful") && successful) {
         PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
