@@ -81,7 +81,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       }
     }
     
-    if (length(existing_records) == ensemble) {
+    if (length(existing_records$input.id) == ensemble) {
       if (ensemble == 1) { # Used to give a little more precise of an info message.
         PEcAn.logger::logger.info("File with forecast data in the given range already exists on this machine.")
       } else {
