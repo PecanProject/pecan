@@ -72,9 +72,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                              pattern = pattern)
       
       if(nrow(existing.dbfile[[i]]) > 0) {
-        existing.input <- 
+        existing.input[[i]] <-  <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
       } else {
-        existing.input <- data.frame() # We don't want there to be a "gap" in existing input which would cause the lists to not be parellel.
+        existing.input[[i]] <- data.frame() # We don't want there to be a "gap" in existing input which would cause the lists to not be parellel.
+                                            # Empty data frames are screened for when input/dbfile are processed below.
       }
     }
     
