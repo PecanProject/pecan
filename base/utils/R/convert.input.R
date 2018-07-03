@@ -93,22 +93,24 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
           if (overwrite) { #If the files are on the current machine, check to see if we should overwrite them.
             #Collect files for deletion, and store them in a list.
             #Actually setting up the deletion will be done after the loop.
+            #c() concantanes the elements in a list, not just vectors.
             files.to.delete <- c(files.to.delete, as.list(PEcAn.remote::remote.execute.R( paste0("list.files('",
                                                                                                  existing.dbfile[["file_path"]],
                                                                                                  "', full.names=TRUE)"),
                                                                                           host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)))
           } else { # If we're not overriding, we can just use the files that are already here.
-            
+            existing_records$input.id = c(existing_records$input.id, existing.input$id)
+            existing_records$dbfile.id = c(existing_records$dbfile.id, existing.dbfile$id)
           }
-        } else {
+        } else { # Else to "existing.machine$id == machine$id"
           insert.new.file <- TRUE
         }
         
-      } else {
+      } else { # Else to "nrow(existing.dbfile[[i]]) > 0)"
         existing.input[[i]] <- data.frame() # We don't want there to be a "gap" in existing input which would cause the lists to not be parellel.
                                             # Empty data frames are screened for when input/dbfile are processed below.
       }
-    }
+    } # -- End for loop --
     
     # Set up files to be deleted.  The deletion will actually happen after the function finishes execution.  In case there
     # are any errors, this will make sure that 
