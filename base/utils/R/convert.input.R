@@ -60,6 +60,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     existing_records <- list(input.id = NULL, dbfile.id = NULL)  # Empty vectors are null
     
+    files.to.delete <- list()
+    
     for (i in 1:ensemble) {
       ensemble_name <- paste(formatname, i, sep=".")
       existing.dbfile[[i]] = <- PEcAn.DB::dbfile.input.check(siteid = site.id,
@@ -76,18 +78,28 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
         
-        # Obtain machine information
+        ## Obtain machine information
+        #Grab machine info of file that exists
+        existing.machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where id  = '",
+                                                      existing.dbfile$machine_id, "'"), con)
+        
+        #Grab machine info of host machine
+        machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
+        machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
+                                             machine.host, "'"), con)
         
         # If the files aren't on the machine, we have to download them, so "overwrite" is meaningless.
         if (existing.machine$id == machine$id) {
-          
-          #If the files are on the current machine, we should check to see if we should overwrite them.
-          if (overwrite) {
-            #Collect files for deletion
+          if (overwrite) { #If the files are on the current machine, check to see if we should overwrite them.
+            #Collect files for deletion, and store them in a list.
+            #Actually setting up the deletion will be done after the loop.
+            files.to.delete <- c(files.to.delete, as.list(PEcAn.remote::remote.execute.R( paste0("list.files('",
+                                                                                                 existing.dbfile[["file_path"]],
+                                                                                                 "', full.names=TRUE)"),
+                                                                                          host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)))
           } else { # If we're not overriding, we can just use the files that are already here.
             
           }
-           
         } else {
           insert.new.file <- TRUE
         }
@@ -98,9 +110,26 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       }
     }
     
-    # If all of the files for an existing ensemble exist, we'll just use that ensemble.  Otherwise, we'll need to run the function to
+    # Set up files to be deleted.  The deletion will actually happen after the function finishes execution.  In case there
+    # are any errors, this will make sure that 
+      successful <- FALSE
+      on.exit(if (exists("successful") && successful) {
+        PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+        PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp, 
+                                        host, user = NA, 
+                                        verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
+      } else {
+        PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
+        PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp, 
+                                        host, user = NA, 
+                                        verbose = TRUE, R = Rbinary, scratchdir = outfolder )
+      }
+      )#Close on.exit
+    }
+    
+    # If all of the files for an existing ensemble exist, we'll just use those files.  Otherwise, we'll need to run the function to
     # fill in the gaps.  (The function should be smart enough not to overwrite previous files unless overwrite == TRUE).  If overwrite is TRUE,
-    # then exisitng_records$input.id will have length 0.
+    # then exisitng_records$input.id will have length 0, and this if statement won't be entered.
     if (length(existing_records$input.id) == ensemble) {
       if (ensemble == 1) { # Used to give a little more precise of an info message.
         PEcAn.logger::logger.info("File with forecast data in the given range already exists on this machine.")
@@ -110,7 +139,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       return(existing_records)
     }
-    ##----------------------------------------- End of forecast chunk --------------------------------#
+    ##----------------------------------------- End of forecast section --------------------------------##
     
   } else if (exact.dates) {
     
