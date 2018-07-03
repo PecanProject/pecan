@@ -54,7 +54,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     print(sprintf("startdate = %s", start_date))
     print(sprintf("enddate = %s", end_date))
     
-    ### For debugging
+    # Each ensemble member is associated with its own input file.  Therefore, each of these need to be lists.
     existing.dbfile <- list()
     existing.input <- list()
     
@@ -113,8 +113,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     } # -- End for loop --
     
     # Set up files to be deleted.  The deletion will actually happen after the function finishes execution.  In case there
-    # are any errors, this will make sure that
-    if (length(files.to.delete) > 0) {
+    # are any errors, this practice will make sure that the old files are preserved.
+    if (length(files.to.delete) > 0) { # Each list item is a file to delete.
+      file.deletion.commands <- .get.file.deletion.commands(unlist(files.to.delete)) 
+      
+      PEcAn.remote::remote.execute.R( file.deletion.commands$move.to.tmp,
+                                      host, user = NA, 
+                                      verbose = TRUE,R = Rbinary, scratchdir = outfolder)
+      
       successful <- FALSE
       on.exit(if (exists("successful") && successful) {
         PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
@@ -140,8 +146,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         PEcAn.logger::logger.info("Files for all ensemble members for this forecast already exist on this machine.")
       }
       
+      ### Debugging statement covering possible functione exit.
+      
       return(existing_records)
     }
+    
+    
+    ### Print 
     ##----------------------------------------- End of forecast section --------------------------------##
     
   } else if (exact.dates) {
@@ -257,9 +268,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           hostname = host$name,
                                           pattern = pattern
                                          )
-    print("^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^")
-    print(existing.dbfile)
-    print("^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^&^")
     
     PEcAn.logger::logger.debug("File id =", existing.dbfile$id,
                  " File name =", existing.dbfile$file_name,
