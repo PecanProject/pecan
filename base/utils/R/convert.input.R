@@ -58,6 +58,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     existing.dbfile <- list()
     existing.input <- list()
     
+    existing_records <- list(input.id = NULL, dbfile.id = NULL)
+    
     for (i in 1:ensemble) {
       ensemble_name <- paste(formatname, i, sep=".")
       existing.dbfile[[i]] = <- PEcAn.DB::dbfile.input.check(siteid = site.id,
@@ -77,6 +79,16 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         existing.input[[i]] <- data.frame() # We don't want there to be a "gap" in existing input which would cause the lists to not be parellel.
                                             # Empty data frames are screened for when input/dbfile are processed below.
       }
+    }
+    
+    if (length(existing_records) == ensemble) {
+      if (ensemble == 1) { # Used to give a little more precise of an info message.
+        PEcAn.logger::logger.info("File with forecast data in the given range already exists on this machine.")
+      } else {
+        PEcAn.logger::logger.info("Files for all ensemble members for this forecast already exist on this machine.")
+      }
+      
+      return(existing_records)
     }
     
     
