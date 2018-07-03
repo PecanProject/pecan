@@ -54,12 +54,16 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     print(sprintf("startdate = %s", start_date))
     print(sprintf("enddate = %s", end_date))
     
+    # Convert dates to Date objects and strip all time zones
+    # (DB values are timezone-free)
+    start_date <- lubridate::force_tz(lubridate::as_datetime(start_date), "UTC")
+    end_date   <- lubridate::force_tz(lubridate::as_datetime(end_date), "UTC")
+    
     # Each ensemble member is associated with its own input file.  Therefore, each of these need to be lists.
     existing.dbfile <- list()
     existing.input <- list()
     
     existing_records <- list(input.id = NULL, dbfile.id = NULL)  # Empty vectors are null
-    
     files.to.delete <- list()
     
     for (i in 1:ensemble) {
@@ -77,6 +81,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+        
+        # Date/time processing for existing input
+        existing.input[[i]]$start_date <- lubridate::force_tz(lubridate::as_datetime(existing.input$start_date), "UTC")
+        existing.input[[i]]$end_date   <- lubridate::force_tz(lubridate::as_datetime(existing.input$end_date), "UTC")
         
         ## Obtain machine information
         #Grab machine info of file that exists
