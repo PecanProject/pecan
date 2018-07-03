@@ -20,6 +20,8 @@ observeEvent(input$D1Button, {
 # Display downloaded files in data.frame
 output$identifier <- DT::renderDT({Shared.data$downloaded})
 
+output$rowSelection <- renderPrint(input$identifier_rows_selected)
+
 # Move files to correct dbfiles location (make a custom function for this?)
 observeEvent(input$D1FinishButton, {
   # create the new directory in /dbfiles
