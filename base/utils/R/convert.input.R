@@ -58,7 +58,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     existing.dbfile <- list()
     existing.input <- list()
     
-    existing_records <- list(input.id = NULL, dbfile.id = NULL)
+    existing_records <- list(input.id = NULL, dbfile.id = NULL)  # Empty vectors are null
     
     for (i in 1:ensemble) {
       ensemble_name <- paste(formatname, i, sep=".")
@@ -74,13 +74,33 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                              pattern = pattern)
       
       if(nrow(existing.dbfile[[i]]) > 0) {
-        existing.input[[i]] <-  <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+        existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+        
+        # Obtain machine information
+        
+        # If the files aren't on the machine, we have to download them, so "overwrite" is meaningless.
+        if (existing.machine$id == machine$id) {
+          
+          #If the files are on the current machine, we should check to see if we should overwrite them.
+          if (overwrite) {
+            #Collect files for deletion
+          } else { # If we're not overriding, we can just use the files that are already here.
+            
+          }
+           
+        } else {
+          insert.new.file <- TRUE
+        }
+        
       } else {
         existing.input[[i]] <- data.frame() # We don't want there to be a "gap" in existing input which would cause the lists to not be parellel.
                                             # Empty data frames are screened for when input/dbfile are processed below.
       }
     }
     
+    # If all of the files for an existing ensemble exist, we'll just use that ensemble.  Otherwise, we'll need to run the function to
+    # fill in the gaps.  (The function should be smart enough not to overwrite previous files unless overwrite == TRUE).  If overwrite is TRUE,
+    # then exisitng_records$input.id will have length 0.
     if (length(existing_records$input.id) == ensemble) {
       if (ensemble == 1) { # Used to give a little more precise of an info message.
         PEcAn.logger::logger.info("File with forecast data in the given range already exists on this machine.")
@@ -90,7 +110,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       return(existing_records)
     }
-    
+    ##----------------------------------------- End of forecast chunk --------------------------------#
     
   } else if (exact.dates) {
     
