@@ -55,28 +55,26 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     print(sprintf("enddate = %s", end_date))
     
     ### For debugging
+    existing.dbfile <- list()
+    existing.input <- list()
     
     for (i in 1:ensemble) {
+      ensemble_name <- paste(formatname, i, sep=".")
+      existing.dbfile[[i]] = <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+                                                             mimetype = mimetype, 
+                                                             formatname = ensemble_name, 
+                                                             parentid = input.id, 
+                                                             startdate = start_date,
+                                                             enddate = end_date, 
+                                                             con = con, 
+                                                             hostname = host$name, 
+                                                             exact.dates = TRUE,
+                                                             pattern = pattern)
       
-    }
-    
-    
-    ### UPDATE: HAVE A FOR LOOP FOR EACH ENSEMBLE MEMBER.  EACH ENSEMBLE MEMBER SHOULD BE ASSOCIATED WITH A GIVEN INPUT FILE IN THE DB.
-    existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
-                                                    mimetype = mimetype, 
-                                                    formatname = formatname, 
-                                                    parentid = input.id, 
-                                                    startdate = start_date,
-                                                    enddate = end_date, 
-                                                    con = con, 
-                                                    hostname = host$name, 
-                                                    exact.dates = TRUE,
-                                                    pattern = pattern)
-    
-    if (nrow(existing.dbfile) >= ensemble) {
-      existing.inputs = list()
-      for (i in 1:ensemble) {
-        existing.inputs[[i]] = PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+      if(nrow(existing.dbfile[[i]]) > 0) {
+        existing.input <- 
+      } else {
+        existing.input <- data.frame() # We don't want there to be a "gap" in existing input which would cause the lists to not be parellel.
       }
     }
     
@@ -455,10 +453,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
     ### temporarily removed for debugging since it takes a long time to execute
-    result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+    ### result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
     
-    save(result, file = "~/Tests/sample2.gefs.Rdata")
-    ### load("~/Tests/sample.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
+    ### save(result, file = "~/Tests/sample2.gefs.Rdata")
+    load("~/Tests/sample2.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
     print("result saved.")
     
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
@@ -482,17 +480,115 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   outlist <- unlist(strsplit(outname, "_"))
   
   # Wrap in a list for consistant processing later
+  print("Line 485")
   if (exists("existing.input") && is.data.frame(existing.input)) {
-    existing.input = list(existing.input)
+    print("Line 487")
+    existing.input <- list(existing.input)
+  }
+  print("Line 480")
+  
+  existing.dbfile
+  if (exists("existing.dbfile") && is.data.frame(existing.dbfile)) {
+    print("Line 493")
+    print(exists("existing.dbfile"))
+    print("Good now...")
+    print(existing.dbfile)
+    print("Ok")
+    existing.dbfile <- list(existing.dbfile)
   }
   
-  if (exists("existing.dbfile") && is.data.frame(existing.dbfile)) {
-    existing.dbfile = list(exisitng.input)
+  print("Line 497")
+  
+  ######_______________________________________
+  # New arrangement of database adding code to deal with ensembles.
+  if (write) {
+    # Setup newinput.  This list will contain two variables: a vector of input IDs and a vector of DB IDs for each entry in result.
+    # This list is the thing that will be returned.
+    newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
+    for(i in 1:length(result)) {  # Master for loop
+      flag = TRUE
+      
+      print("Line 504")
+      
+      if (exists("existing.input") && nrow(existing.input[[i]]) > 0 && 
+          (existing.input[[i]]$start_date != start_date || existing.input[[i]]$end_date != end_date)) {
+        # Updating record with new dates
+        PEcAn.DB::db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='",
+                                  end_date, "'  WHERE id=", existing.input[[i]]$id), 
+                           con)
+        #Record has been updated and file downloaded so just return existing dbfile and input pair
+        flag = FALSE
+        ### Function updated to now only return valid data through one exit point.
+        ### return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
+        
+        # The overall structure of this loop has been set up so that exactly one input.id and one dbfile.id will be written to newinput every interation.
+        newinput$input.id <- c(newinput$input.id, new_entry$input.id)
+        newinput$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
+      }
+      
+      print("Line 522")
+      
+      if (overwrite) {
+        if (exists("existing.input") && nrow(existing.input) > 0) {
+            PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
+                                      "' WHERE id=", existing.input[[i]]$id), con)
+          
+        }
+        
+        if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
+            PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
+                                      "', ", "file_name='", result[[i]]$dbfile.name[1], 
+                                      "' WHERE id=", existing.dbfile[[i]]$id), con)
+          
+        }
+      }
+      
+      print("Line 539")
+      
+      ### change from is.null to is.na?  download.raw.met.module.R calls this with NA, and is.null(NA) returns FALSE.
+      parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)  ### unfortunately, this will also have to be a list
+      
+      print("Line 544")
+      
+      if (insert.new.file && flag) {
+        dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result[[1]]$file[1]),
+                                             in.prefix = result$dbfile.name[1], 
+                                             'Input', existing.input$id, 
+                                             con, reuse=TRUE, hostname = machine$hostname)
+        newinput$input.id  <- c(newinput$input.id, existing.input$id)
+        newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
+      } else if (flag) {
+        formatbase <- formatname
+        if(ensemble - 1 > 0) {  #Each ensemble member gets their own separate input file in the database.
+          formatbase <- paste(formatname, i, sep=".")
+        }
+        
+        new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
+                                                   in.prefix = result[[i]]$dbfile.name[1], 
+                                                   siteid = site.id, 
+                                                   startdate = start_date,
+                                                   enddate = end_date, 
+                                                   mimetype, 
+                                                   formatbase, 
+                                                   parentid = parent.id,
+                                                   con = con, 
+                                                   hostname = machine$hostname,
+                                                   allow.conflicting.dates = allow.conflicting.dates)
+        newinput$input.id <- c(newinput$input.id, new_entry$input.id)
+        newinput$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
+      }
+      
+    }
+    return(newinput)
+  } else {
+    ### Easy enough to copy and paste.
   }
+  
+  
+  ##__________________________________________
   
   ## insert new record into database
   if (write) { # Defaults to TRUE
-    
     if (exists("existing.input") && nrow(existing.input) > 0 && 
         (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
       # Updating record with new dates
@@ -532,7 +628,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       site.id <- input.args$newsite
     }
     
-    if (insert.new.file) {
+    if (insert.new.file) { #Defaults to FALSE
       dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result[[1]]$file[1]),
                                  in.prefix = result$dbfile.name[1], 
                                  'Input', existing.input$id, 
@@ -541,29 +637,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       newinput$input.id  <- existing.input$id
       newinput$dbfile.id <- dbfile.id 
     } else {
-      newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
       
       formatbase = formatname
       
       #Iterate over every member of the ensemble and add their input.id and dbfile id's to parellel vectors in the list
       for (i in 1:length(result)) {
-        if(as.logical(ensemble)) {  #Each ensemble member gets their own separate input file in the database.
-          formatbase = paste(formatname, i, sep=".")
-        }
         
-        new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
-                                                  in.prefix = result[[i]]$dbfile.name[1], 
-                                                  siteid = site.id, 
-                                                  startdate = start_date,
-                                                  enddate = end_date, 
-                                                  mimetype, 
-                                                  formatbase, 
-                                                  parentid = parent.id,
-                                                  con = con, 
-                                                  hostname = machine$hostname,
-                                                  allow.conflicting.dates = allow.conflicting.dates)
-        newinput$input.id <- c(newinput$input.id, new_entry$input.id)
-        newinput$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
       }
     }
     
