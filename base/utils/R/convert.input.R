@@ -573,7 +573,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   }
   print("Line 480")
   
-  existing.dbfile
   if (exists("existing.dbfile") && is.data.frame(existing.dbfile)) {
     print("Line 493")
     print(exists("existing.dbfile"))
