@@ -18,7 +18,7 @@
     "proj_exp_fire_file": "@INPUT_DATA_DIR@/projected-explicit-fire.nc",
     "topo_file":          "@INPUT_DATA_DIR@/topo.nc",
     "output_dir":         "@MODEL_OUTPUT_DIR@/",
-    "output_spec_file":   "config/output_spec.csv",
+    "output_spec_file":   "@CUSTOM_OUTSPEC@",
     "output_monthly":     0, //JSON specific
     "output_nc_eq":       0,
     "output_nc_sp":       0,

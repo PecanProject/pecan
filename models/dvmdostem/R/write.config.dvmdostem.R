@@ -489,17 +489,33 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   ## Read in the custom output_spec file. 
   # The general output_spec file that ships with dvmdostem has too much 
   # stuff enabled and results in way too much output generated, epecially
-  # when doing larger ensemble runs, or sensitivity analysis. So we have
-  # stored in the dvmdostem package folder a custom output spec for pecan
-  # and here we copy that file from the package directory to the run
-  # run-directory, overwriting the output_spec.csv that exists (was previously
-  # copied from the base dvmdostem install)
-  if (is.null(settings$model$dvmdostem_output_spec)){
-    outspec <- readLines(con=system.file("output_spec_pecan0.csv", package = "PEcAn.dvmdostem"), n=-1)
+  # when doing larger ensemble runs, or sensitivity analysis. Here we pick up
+  # the path of the output spec file that the user (optionally) specified
+  # in the settings file.
+  if (is.null(settings$model$dvmdostem_output_spec)) {
+    # User did not specify - use the default file shipped with PEcAn
+    outspec_path <- file.path(system.file(package = "PEcAn.dvmdostem"), "output_spec_pecan0.csv")
   } else {
-    outspec <- readLines(con=settings$model$dvmdostem_output_spec, n=-1)
-  }  
-  writeLines(outspec, con=file.path(settings$rundir, run.id, "config/output_spec.csv"))
+    if (dirname(settings$model$dvmdostem_output_spec) == ".") {
+      # User specified the name of another file that should be in the inst folder
+      outspec_path <- file.path(system.file(package = "PEcAn.dvmdostem"), settings$model$dvmdostem_output_spec)
+    } else if(dirname(settings$model$dvmdostem_output_spec) != ".") {
+      # User specified full path to another file somewhere on the system
+      outspec_path <- settings$model$dvmdostem_output_spec
+    } else {
+      PEcAn.logger::logger.error("Should never get here...there is some confusion about output_spec file?")
+    }
+  }
+
+  if (! file.exists(outspec_path) ) {
+    PEcAn.logger::logger.error("ERROR! The specified output spec file does not exist on this system!")
+    PEcAn.logger::logger.error(c("Cannot find file: ", outspec_path))
+    stop()
+  }
+
+  # Then we copy the output_spec file into place in the run directory, and
+  # later we sub in the approproate path in to the config file template.
+  file.copy(outspec_path, file.path(settings$rundir, run.id, "config/", basename(outspec_path)))
 
   ## Update dvm-dos-tem config.js file
 
@@ -515,7 +531,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), siteDataPath), config_template)
   config_template <- gsub("@INPUT_DATA_DIR@", siteDataPath, config_template)
   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
-  config_template <- gsub("@CUSTOM_RUN_MASK@", file.path(rundir), config_template )
+  config_template <- gsub("@CUSTOM_RUN_MASK@", file.path(rundir), config_template)
+  config_template <- gsub("@CUSTOM_OUTSPEC@", file.path("config/", basename(outspec_path)), config_template)
 
   if (! file.exists(file.path(settings$rundir, run.id,"config")) ) {
     dir.create(file.path(settings$rundir, run.id,"config"),recursive = TRUE)
