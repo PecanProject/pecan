@@ -601,9 +601,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     for(i in 1:length(result)) {  # Master for loop
       flag <- TRUE ### Make this flag name more descriptive
       
+      print(paste0("In for loop i = ", i))
       
       if (exists("existing.input") && nrow(existing.input[[i]]) > 0 && 
           (existing.input[[i]]$start_date != start_date || existing.input[[i]]$end_date != end_date)) {
+        print("In date updating section")
+        
         # Updating record with new dates
         PEcAn.DB::db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='",
                                   end_date, "'  WHERE id=", existing.input[[i]]$id), 
@@ -614,20 +617,29 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         ### return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
         
         # The overall structure of this loop has been set up so that exactly one input.id and one dbfile.id will be written to newinput every interation.
-        newinput$input.id <- c(newinput$input.id, existing.input[[i]]$input.id)
-        newinput$dbfile.id <- c(newinput$dbfile.id, existing.dbfile[[i]]$dbfile.id)
+        print("Before executing update statements:")
+        print(newinput)
+        print("-------------")
+        newinput$input.id <- c(newinput$input.id, existing.input[[i]]$id)
+        newinput$dbfile.id <- c(newinput$dbfile.id, existing.dbfile[[i]]$id)
+        print("After executing update statements:")
+        print(newinput)
       }
       
-      print("Line 522")
+      print("624")
       
       if (overwrite) {
+        print("In overwrite section")
         if (exists("existing.input") && nrow(existing.input) > 0) {
+          print("    In update inputs section")
             PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
                                       "' WHERE id=", existing.input[[i]]$id), con)
           
         }
         
         if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
+          print("    In update dbfiles section")
+          
             PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
                                       "', ", "file_name='", result[[i]]$dbfile.name[1], 
                                       "' WHERE id=", existing.dbfile[[i]]$id), con)
@@ -640,9 +652,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       ### change from is.null to is.na?  download.raw.met.module.R calls this with NA, and is.null(NA) returns FALSE.
       parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)  ### unfortunately, this will also have to be a list
       
-      print("Line 544")
+      print("650")
       
       if (insert.new.file && flag) {
+        print("insert.new.file")
+        
         dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result[[1]]$file[1]),
                                              in.prefix = result$dbfile.name[1], 
                                              'Input', existing.input$id, 
@@ -650,6 +664,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         newinput$input.id  <- c(newinput$input.id, existing.input$id)
         newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
       } else if (flag) {
+        print("Default insert")
         formatbase <- formatname
         if(ensemble - 1 > 0) {  #Each ensemble member gets their own separate input file in the database.
           formatbase <- paste(formatname, i, sep=".")
@@ -670,7 +685,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         newinput$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
       }
       
-    }
+      print(newinput)
+      print("*** End of loop ***")
+      
+    } #End for loop
     return(newinput)
   } else {
     ### Easy enough to copy and paste.
