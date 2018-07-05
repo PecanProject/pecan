@@ -91,6 +91,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
                                              machine.host, "'"), con)
         
+        
         # If the files aren't on the machine, we have to download them, so "overwrite" is meaningless.
         if (existing.machine$id == machine$id) {
           if (overwrite) { #If the files are on the current machine, check to see if we should overwrite them.
@@ -102,8 +103,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                                                                  "', full.names=TRUE)"),
                                                                                           host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)))
           } else { # If we're not overriding, we can just use the files that are already here.
-            existing_records$input.id = c(existing_records$input.id, existing.input$id)
-            existing_records$dbfile.id = c(existing_records$dbfile.id, existing.dbfile$id)
+            existing_records$input.id = c(existing_records$input.id, existing.input[[i]]$id)
+            existing_records$dbfile.id = c(existing_records$dbfile.id, existing.dbfile[[i]]$id)
           }
         } else { # Else to "existing.machine$id == machine$id"
           insert.new.file <- TRUE
@@ -118,6 +119,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     # Set up files to be deleted.  The deletion will actually happen after the function finishes execution.  In case there
     # are any errors, this practice will make sure that the old files are preserved.
     if (length(files.to.delete) > 0) { # Each list item is a file to delete.
+      print("Entered 'files to delete'.")
       file.deletion.commands <- .get.file.deletion.commands(unlist(files.to.delete)) 
       
       PEcAn.remote::remote.execute.R( file.deletion.commands$move.to.tmp,
@@ -554,19 +556,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   outlist <- unlist(strsplit(outname, "_"))
   
   # Wrap in a list for consistant processing later
-  print("Line 485")
   if (exists("existing.input") && is.data.frame(existing.input)) {
-    print("Line 487")
     existing.input <- list(existing.input)
   }
-  print("Line 480")
   
   if (exists("existing.dbfile") && is.data.frame(existing.dbfile)) {
-    print("Line 493")
-    print(exists("existing.dbfile"))
-    print("Good now...")
-    print(existing.dbfile)
-    print("Ok")
     existing.dbfile <- list(existing.dbfile)
   }
   
