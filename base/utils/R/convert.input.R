@@ -43,18 +43,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     #non-ensemble members together in one piece of code, we set ensemble=1 if it's FALSE.
     if (!is.integer(ensemble)) {ensemble = as.integer(1) }
     
-    ### Just to check if this works...
-    print(sprintf("ensemble = %d", ensemble))
-    
-    ### More deugging print statements
-    print("$##$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$##$")
-    print(sprintf("sideid = %s", site.id))
-    print(sprintf("mimetype = %s", mimetype))
-    print(sprintf("formatname = %s", formatname))
-    print(sprintf("startdate = %s", start_date))
-    print(sprintf("enddate = %s", end_date))
-    source("~/pecan/base/db/R/dbfiles.R")
-    
     # Convert dates to Date objects and strip all time zones
     # (DB values are timezone-free)
     start_date <- lubridate::force_tz(lubridate::as_datetime(start_date), "UTC")
@@ -85,7 +73,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       print("^^^^^^^^^^ existing.dbfile[[i]] ^^^^^^^^^^^^^^^^")
       print(existing.dbfile[[i]])
       print("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
-      print(existing.dbfile[[i]]$container_id)
       
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
@@ -162,18 +149,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         PEcAn.logger::logger.info("Files for all ensemble members for this forecast already exist on this machine.")
       }
       
-      ### Debugging statement covering possible functione exit.
+      ### Debugging statement covering possible function exit.
       print("Exiting early")
       
       return(existing_records)
     }
-    
-    
-    ### Print 
-    print(existing.input)
-    print("--------------------------------------------------")
-    print(existing.dbfile)
-    print("--------------------------------------------------")
     ##----------------------------------------- End of forecast section --------------------------------##
     
   } else if (exact.dates) {
@@ -590,13 +570,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     existing.dbfile <- list(existing.dbfile)
   }
   
-  print("Line 497")
-  
-  ######_______________________________________
+  #---------------------------------------------------------------#
   # New arrangement of database adding code to deal with ensembles.
   if (write) {
     # Setup newinput.  This list will contain two variables: a vector of input IDs and a vector of DB IDs for each entry in result.
-    # This list is the thing that will be returned.
+    # This list will be returned.
     newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
     for(i in 1:length(result)) {  # Master for loop
       flag <- TRUE ### Make this flag name more descriptive
@@ -617,16 +595,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         ### return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
         
         # The overall structure of this loop has been set up so that exactly one input.id and one dbfile.id will be written to newinput every interation.
-        print("Before executing update statements:")
-        print(newinput)
-        print("-------------")
-        newinput$input.id <- c(newinput$input.id, existing.input[[i]]$id)
-        newinput$dbfile.id <- c(newinput$dbfile.id, existing.dbfile[[i]]$id)
-        print("After executing update statements:")
-        print(newinput)
       }
-      
-      print("624")
       
       if (overwrite) {
         print("In overwrite section")
@@ -647,12 +616,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         }
       }
       
-      print("Line 539")
-      
       ### change from is.null to is.na?  download.raw.met.module.R calls this with NA, and is.null(NA) returns FALSE.
       parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)  ### unfortunately, this will also have to be a list
-      
-      print("650")
       
       if (insert.new.file && flag) {
         print("insert.new.file")
