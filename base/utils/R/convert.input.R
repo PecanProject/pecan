@@ -596,7 +596,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         
         # The overall structure of this loop has been set up so that exactly one input.id and one dbfile.id will be written to newinput every interation.
         newinput$input.id = c(newinput$input.id, existing.input[[i]]$id)
-        newinput$input.id = c(newinput$input.id, existing.dbfile[[i]]$id)
+        newinput$dbfile.id = c(newinput$dbfile.id, existing.dbfile[[i]]$id)
       }
       
       if (overwrite) {
