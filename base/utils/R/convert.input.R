@@ -577,13 +577,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     # This list will be returned.
     newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
     for(i in 1:length(result)) {  # Master for loop
-      flag <- TRUE ### Make this flag name more descriptive
+      id_not_added <- TRUE
       
-      print(paste0("In for loop i = ", i))
+      print(paste0("In for loop i = ", i)) ###
       
       if (exists("existing.input") && nrow(existing.input[[i]]) > 0 && 
           (existing.input[[i]]$start_date != start_date || existing.input[[i]]$end_date != end_date)) {
-        print("In date updating section")
+        print("In date updating section") ###
         
         # Updating record with new dates
         PEcAn.DB::db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='",
@@ -600,6 +600,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       }
       
       if (overwrite) {
+        # A bit hacky, but need to make sure that all fields are updated to expected
+        # values (i.e., what they'd be if convert.input was creating a new record)
+        
         print("In overwrite section")
         if (exists("existing.input") && nrow(existing.input) > 0) {
           print("    In update inputs section")
@@ -618,8 +621,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         }
       }
       
-      ### change from is.null to is.na?  download.raw.met.module.R calls this with NA, and is.null(NA) returns FALSE.
-      parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)  ### unfortunately, this will also have to be a list
+      parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)
+      
+      if ("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])) {
+        site.id <- input.args$newsite
+      }
       
       if (insert.new.file && id_not_added) {
         print("insert.new.file") ###
@@ -652,79 +658,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         newinput$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
       }
       
-      print(newinput)
-      print("*** End of loop ***")
-      
     } #End for loop
-    return(newinput)
-  } else {
-    ### Easy enough to copy and paste.
-  }
-  ### FINISH THE CHANGEOVER TO THE NEW LOOP SYSTEM
-  
-  ##__________________________________________
-  
-  ## insert new record into database
-  if (write) { # Defaults to TRUE
-    if (exists("existing.input") && nrow(existing.input) > 0 && 
-        (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
-      # Updating record with new dates
-      PEcAn.DB::db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='",
-                      end_date, "'  WHERE id=", existing.input$id), 
-               con)
-      #Record has been updated and file downloaded so just return existing dbfile and input pair
-      return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
-    }
-    
-    if (overwrite) {
-      # A bit hacky, but need to make sure that all fields are updated to expected
-      # values (i.e., what they'd be if convert.input was creating a new record)
-      
-      ### This should be updated to 
-      ### a) wrap existing.input and existing.dbfile in a list, if they aren't already
-      ### b) iterate over that list, even if length one.  (Currently, we're only interating over results.)
-      if (exists("existing.input") && nrow(existing.input) > 0) {
-        for (i in 1:length(result)) { # In most cases (when there's no ensemble) length(result) = 1, so this is exactly as if the loop weren't there
-                                      # and the code was result$file[1]
-          PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
-                                    "' WHERE id=", existing.input$id), con)
-        }
-      }
-      if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
-        for (i in 1:length(result)) {
-          PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
-                                    "', ", "file_name='", result[[i]]$dbfile.name[1], 
-                                    "' WHERE id=", existing.dbfile$id), con)
-        }
-      }
-    }
-    
-    parent.id <- ifelse(is.null(input), NA, input$id)  ### unfortunately, this will also have to be a list
-    
-    if ("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])) {
-      site.id <- input.args$newsite
-    }
-    
-    if (insert.new.file) { #Defaults to FALSE
-      dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result[[1]]$file[1]),
-                                 in.prefix = result$dbfile.name[1], 
-                                 'Input', existing.input$id, 
-                                 con, reuse=TRUE, hostname = machine$hostname)
-      newinput <- list()
-      newinput$input.id  <- existing.input$id
-      newinput$dbfile.id <- dbfile.id 
-    } else {
-      
-      formatbase = formatname
-      
-      #Iterate over every member of the ensemble and add their input.id and dbfile id's to parellel vectors in the list
-      for (i in 1:length(result)) {
-        
-      }
-    }
-    
-    ### Before, this function used to return a list with $input.id and $dbfile.id from some return points, and from others, a data frame of
-    ### one row with columns $input.id and $dbfile.id, among others.  Now, it always returns a list with two vecotrs: $input.id and $dbfile.id
     
     successful <- TRUE
     return(newinput)
