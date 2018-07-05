@@ -53,6 +53,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     print(sprintf("formatname = %s", formatname))
     print(sprintf("startdate = %s", start_date))
     print(sprintf("enddate = %s", end_date))
+    source("~/pecan/base/db/R/dbfiles.R")
     
     # Convert dates to Date objects and strip all time zones
     # (DB values are timezone-free)
@@ -68,6 +69,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     for (i in 1:ensemble) {
       ensemble_name <- paste(formatname, i, sep=".")
+      
       existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
                                                              formatname = ensemble_name, 
@@ -79,17 +81,23 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                              exact.dates = TRUE,
                                                              pattern = pattern)
       
+      ### Debugging print statmenets
+      print("^^^^^^^^^^ existing.dbfile[[i]] ^^^^^^^^^^^^^^^^")
+      print(existing.dbfile[[i]])
+      print("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+      print(existing.dbfile[[i]]$container_id)
+      
       if(nrow(existing.dbfile[[i]]) > 0) {
-        existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+        existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
         
         # Date/time processing for existing input
-        existing.input[[i]]$start_date <- lubridate::force_tz(lubridate::as_datetime(existing.input$start_date), "UTC")
-        existing.input[[i]]$end_date   <- lubridate::force_tz(lubridate::as_datetime(existing.input$end_date), "UTC")
+        existing.input[[i]]$start_date <- lubridate::force_tz(lubridate::as_datetime(existing.input[[i]]$start_date), "UTC")
+        existing.input[[i]]$end_date   <- lubridate::force_tz(lubridate::as_datetime(existing.input[[i]]$end_date), "UTC")
         
         ## Obtain machine information
         #Grab machine info of file that exists
         existing.machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where id  = '",
-                                                      existing.dbfile$machine_id, "'"), con)
+                                                      existing.dbfile[[i]]$machine_id, "'"), con)
         
         #Grab machine info of host machine
         machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
@@ -103,7 +111,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
             #Actually setting up the deletion will be done after the loop.
             #c() concantanes the elements in a list, not just vectors.
             files.to.delete <- c(files.to.delete, as.list(PEcAn.remote::remote.execute.R( paste0("list.files('",
-                                                                                                 existing.dbfile[["file_path"]],
+                                                                                                 existing.dbfile[[i]]$file_path,
                                                                                                  "', full.names=TRUE)"),
                                                                                           host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)))
           } else { # If we're not overriding, we can just use the files that are already here.
@@ -591,9 +599,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     # This list is the thing that will be returned.
     newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
     for(i in 1:length(result)) {  # Master for loop
-      flag = TRUE
+      flag <- TRUE ### Make this flag name more descriptive
       
-      print("Line 504")
       
       if (exists("existing.input") && nrow(existing.input[[i]]) > 0 && 
           (existing.input[[i]]$start_date != start_date || existing.input[[i]]$end_date != end_date)) {
@@ -607,8 +614,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         ### return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
         
         # The overall structure of this loop has been set up so that exactly one input.id and one dbfile.id will be written to newinput every interation.
-        newinput$input.id <- c(newinput$input.id, new_entry$input.id)
-        newinput$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
+        newinput$input.id <- c(newinput$input.id, existing.input[[i]]$input.id)
+        newinput$dbfile.id <- c(newinput$dbfile.id, existing.dbfile[[i]]$dbfile.id)
       }
       
       print("Line 522")
@@ -668,7 +675,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   } else {
     ### Easy enough to copy and paste.
   }
-  
+  ### FINISH THE CHANGEOVER TO THE NEW LOOP SYSTEM
   
   ##__________________________________________
   
