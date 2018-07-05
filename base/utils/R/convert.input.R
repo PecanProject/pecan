@@ -590,7 +590,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                   end_date, "'  WHERE id=", existing.input[[i]]$id), 
                            con)
         #Record has been updated and file downloaded so just return existing dbfile and input pair
-        flag = FALSE
+        id_not_added = FALSE
         ### Function updated to now only return valid data through one exit point.
         ### return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
         
@@ -619,8 +619,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       ### change from is.null to is.na?  download.raw.met.module.R calls this with NA, and is.null(NA) returns FALSE.
       parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)  ### unfortunately, this will also have to be a list
       
-      if (insert.new.file && flag) {
-        print("insert.new.file")
+      if (insert.new.file && id_not_added) {
+        print("insert.new.file") ###
         
         dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result[[1]]$file[1]),
                                              in.prefix = result$dbfile.name[1], 
@@ -628,8 +628,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                              con, reuse=TRUE, hostname = machine$hostname)
         newinput$input.id  <- c(newinput$input.id, existing.input$id)
         newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
-      } else if (flag) {
-        print("Default insert")
+      } else if (id_not_added) {
+        print("Default insert") ###
         formatbase <- formatname
         if(ensemble - 1 > 0) {  #Each ensemble member gets their own separate input file in the database.
           formatbase <- paste(formatname, i, sep=".")
