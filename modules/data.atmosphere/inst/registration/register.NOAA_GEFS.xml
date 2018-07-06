@@ -5,7 +5,7 @@
   <forecast>TRUE</forecast>
   <format>
     <id>33</id>
-    <name>NOAA_GEFS</name>
+    <name>CF Meteorology</name>
     <mimetype>application/x-netcdf</mimetype>
     <inputtype>nc</inputtype>
   </format>
