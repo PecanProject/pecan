@@ -56,18 +56,33 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     files.to.delete <- list()
     
     for (i in 1:ensemble) {
-      ensemble_name <- paste(formatname, i, sep=".")
+      # In dbfile.input.check, pattern searches the file path for the specified regular expression.  filename_pattern
+      # contains a portion of the file name which can uniquely identify a particular data product at a particular 
+      # site and time, regardless of similaritied in formatname, mimetype, etc. Because sitenames can contain
+      # regular expression specific special characters and site-specific identification is already present through
+      # site.id, a regex placeholder is used instead.
+      
+      filename_pattern = pattern #pattern is always the name of the meteorological data product (met).
+      if (!is.null(input.args$sitename)) {
+        filename_pattern = paste(filename_pattern, "[^.]*", sep="\\.") #double backslash for regex
+      }
+      if (ensemble > 1) {
+        filename_pattern = paste(filename_pattern, i, sep = "\\.")
+      } 
+      
+      ###
+      print(paste0("Filename pattern = ", filename_pattern))
       
       existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
-                                                             formatname = ensemble_name, 
+                                                             formatname = formatname, 
                                                              parentid = input.id, 
                                                              startdate = start_date,
                                                              enddate = end_date, 
                                                              con = con, 
                                                              hostname = host$name, 
                                                              exact.dates = TRUE,
-                                                             pattern = pattern)
+                                                             pattern = filename_pattern)
       
       ### Debugging print statmenets
       print("^^^^^^^^^^ existing.dbfile[[i]] ^^^^^^^^^^^^^^^^")
@@ -532,7 +547,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     ### result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
     
     ### save(result, file = "~/Tests/sample2.gefs.Rdata")
-    load("~/Tests/sample2.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
+    load("~/Tests/sample5.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
     print("result saved.")
     
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 

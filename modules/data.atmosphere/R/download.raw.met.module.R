@@ -21,6 +21,7 @@
     ifelse(is.na(ensemble), FALSE, ensemble) #If ensemble happens to be a character vector or something it can't convert, as.integer will evaluate to NA.
   }
   
+  ###
   source("~/pecan/base/utils/R/convert.input.R")
   
   if (register$scale == "regional") {
@@ -57,7 +58,8 @@
                             sitename = site$name, 
                             username = username,
                             lat.in = lat.in,
-                            lon.in = lon.in)
+                            lon.in = lon.in,
+                            pattern = met)
     
   } else {
     PEcAn.logger::logger.severe("Unknown register$scale")
