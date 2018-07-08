@@ -35,36 +35,33 @@
 ui <- dashboardPage(
   dashboardHeader(title = "Data Ingest Workflow"), 
   dashboardSidebar(
-    source_ui("sidebar_ui.R")
+    source_ui("ui_files", "sidebar_ui.R")
   ),
   dashboardBody(
     tabItems(
-    ## Tab 1 -- DataONE download
+    ## Tab 1 -- Landing Page
+    tabItem(tabName = "Home",
+              h2("Home Page under construction. Please select upload method.")),
+    ## Tab 2 -- DataONE download
     tabItem(tabName = "importDataONE",
-            source_ui("d1_download_ui.R")
+            source_ui("ui_files", "d1_download_ui.R")
             ),
-    ## Tab 2 -- Local File Upload
+    ## Tab 3 -- Local File Upload
     tabItem(tabName = "uploadLocal",
-            source_ui("local_file_upload_ui.R")
+            source_ui("ui_files", "local_file_upload_ui.R")
             ),
     ## Next Steps
     tabItem(tabName = "step2",
-            source_ui("input_record_ui.R")
-            ),
-    
-    tabItem(tabName = "step3",
-            h2("under construction")),
-    
-    tabItem(tabName = "step4",
-            h2("under construction"))
-    
+            h2("Modularization in progress. This tab will eventually be deprecated.")
+           # source_ui("ui_files", "input_record_ui.R")
+            )
   )),
   title = "PEcAn Data Ingest",
   skin =  "green"
 )
-#######################################################################################################
-######################################### SERVER ######################################################
-#######################################################################################################
+####################################################################################
+################################ SERVER ############################################
+####################################################################################
 
 server <- function(input, output, session) {
   options(shiny.maxRequestSize = 100 * 1024 ^ 2) #maximum file input size
@@ -74,21 +71,33 @@ server <- function(input, output, session) {
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
+  ## Create lists called in inputs, dbfiles, and formats record svr ##
+  inputsList <- list()
+  dbFilesRecordList <- list()
+  FormatRecordList <- list()
+  
   ##################### DataONE Download #####################
   source("server_files/d1_download_svr.R", local = TRUE)
-  
+
   ######### FileInput ########################################
   source("server_files/local_upload_svr.R", local = TRUE)
-  
+
   ######### Input Record #####################################
   source('server_files/input_record_svr.R', local = TRUE)
+
+  ##### Input Record only svr file
+ # source("server_files/create_input_record_svr.R", local = TRUE)
+   
+  #### formats record only server file
+  source("server_files/formats_record_svr.R", local = TRUE)
   
+  #### dbfiles record only server file
+  source("server_files/dbfiles_record_svr.R", local = TRUE)
+
   
 }
 
 # Run the application
 shinyApp(ui = ui, server = server)
-
-
 
 # example data: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87
