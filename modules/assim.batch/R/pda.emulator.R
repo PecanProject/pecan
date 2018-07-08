@@ -467,7 +467,12 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   # but then, there are other things that needs to change in the emulator workflow
   # such as the way proposed parameters are used in estimation in get_ss function
   # so punting this development until it is needed
-  rng <-  t(apply(SS[[isbias]][,-ncol(SS[[isbias]])], 2, range))
+  if(any(unlist(any.mgauss) == "multipGauss")){
+    colsel <- isbias
+  }else{ # first is as good as any
+    colsel <- 1
+  }
+  rng <-  t(apply(SS[[colsel]][,-ncol(SS[[colsel]])], 2, range))
   
   if (run.normal | run.round) {
     
@@ -481,7 +486,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                               function(x) 0.1 * diff(eval(x, list(p = c(0.05, 0.95)))))[prior.ind.all]
       jmp.list[[c]] <- sqrt(jmp.list[[c]])
       
-      init.list[[c]] <- as.list(SS[[isbias]][indx[c], -ncol(SS[[isbias]])])
+      init.list[[c]] <- as.list(SS[[colsel]][indx[c], -ncol(SS[[colsel]])])
       resume.list[[c]] <- NA
     }
   }
