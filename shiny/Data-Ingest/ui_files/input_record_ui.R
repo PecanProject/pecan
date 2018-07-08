@@ -1,5 +1,5 @@
 fluidRow(title = "New Input",
-   box(title = h2("New Input"), width = 4, collapsible = TRUE,
+   box(title = h2("New Input"), width = 4, collapsible = TRUE, 
      hr(),
      selectizeInput("InputSiteName", label = "Site *", choices = NULL,
                     options = list(
