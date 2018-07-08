@@ -70,9 +70,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         filename_pattern = paste(filename_pattern, i, sep = "\\.")
       } 
       
-      ###
-      print(paste0("Filename pattern = ", filename_pattern))
-      
       existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
                                                              formatname = formatname, 
@@ -544,10 +541,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
     ### temporarily removed for debugging since it takes a long time to execute
-    ### result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+    result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
     
-    ### save(result, file = "~/Tests/sample2.gefs.Rdata")
-    load("~/Tests/sample5.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
+    save(result, file = "~/Tests/sample6.gefs.Rdata")
+    ### load("~/Tests/sample6.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
     print("result saved.")
     
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
@@ -647,10 +644,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
       } else if (id_not_added) {
         print("Default insert") ###
-        formatbase <- formatname
-        if(ensemble - 1 > 0) {  #Each ensemble member gets their own separate input file in the database.
-          formatbase <- paste(formatname, i, sep=".")
-        }
         
         new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
                                                    in.prefix = result[[i]]$dbfile.name[1], 
@@ -658,7 +651,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                    startdate = start_date,
                                                    enddate = end_date, 
                                                    mimetype, 
-                                                   formatbase, 
+                                                   formatname, 
                                                    parentid = parent.id,
                                                    con = con, 
                                                    hostname = machine$hostname,
