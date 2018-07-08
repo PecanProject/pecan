@@ -41,7 +41,8 @@ ui <- dashboardPage(
     tabItems(
     ## Tab 1 -- Landing Page
     tabItem(tabName = "Home",
-              h2("Home Page under construction. Please select upload method.")),
+            source_ui("ui_files", "homepage_ui.R")
+            ),
     ## Tab 2 -- DataONE download
     tabItem(tabName = "importDataONE",
             source_ui("ui_files", "d1_download_ui.R")
@@ -49,12 +50,12 @@ ui <- dashboardPage(
     ## Tab 3 -- Local File Upload
     tabItem(tabName = "uploadLocal",
             source_ui("ui_files", "local_file_upload_ui.R")
-            ),
-    ## Next Steps
-    tabItem(tabName = "step2",
-            h2("Modularization in progress. This tab will eventually be deprecated.")
-           # source_ui("ui_files", "input_record_ui.R")
             )
+    # ## Next Steps
+    # tabItem(tabName = "step2",
+    #         h2("Modularization in progress. This tab will eventually be deprecated.")
+    #        # source_ui("ui_files", "input_record_ui.R")
+    #         )
   )),
   title = "PEcAn Data Ingest",
   skin =  "green"
@@ -83,10 +84,10 @@ server <- function(input, output, session) {
   source("server_files/local_upload_svr.R", local = TRUE)
 
   ######### Input Record #####################################
-  source('server_files/input_record_svr.R', local = TRUE)
+ # source('server_files/input_record_svr.R', local = TRUE)
 
   ##### Input Record only svr file
- # source("server_files/create_input_record_svr.R", local = TRUE)
+  source("server_files/create_input_record_svr.R", local = TRUE)
    
   #### formats record only server file
   source("server_files/formats_record_svr.R", local = TRUE)

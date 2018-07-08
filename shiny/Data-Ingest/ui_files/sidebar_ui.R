@@ -13,10 +13,10 @@ sidebarMenu(
     "Upload Local Files",
     tabName = "uploadLocal",
     icon = icon("upload", lib = "font-awesome")
-  ),
-  menuItem(
-    "Step 2 -- New Input",
-    tabName = "step2",
-    icon = icon("database", lib = "font-awesome")
   )
+  # menuItem(
+  #   "Step 2 -- New Input",
+  #   tabName = "step2",
+  #   icon = icon("database", lib = "font-awesome")
+  # )
 )
