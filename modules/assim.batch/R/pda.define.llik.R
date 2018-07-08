@@ -172,8 +172,9 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
   
   for (k in seq_len(n.var)) {
     
-    j <- (k-1) %% length(llik.fn) + 1
-    
+    j <- k %% length(llik.fn)
+    if(j==0) j <- length(llik.fn)
+        
     LL.vec[k] <- llik.fn[[j]](pda.errors[k], llik.par[[k]])
   }
   
@@ -201,7 +202,8 @@ pda.calc.llik.par <-function(settings, n, error.stats, hyper.pars){
   
   for(k in seq_along(error.stats)){
     
-    j <- (k-1) %% length(settings$assim.batch$inputs) + 1
+    j <- k %% length(settings$assim.batch$inputs)
+    if(j==0) j <- length(settings$assim.batch$inputs)
     
     llik.par[[k]] <- list()
     
