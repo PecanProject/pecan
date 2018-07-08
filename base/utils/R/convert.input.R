@@ -70,6 +70,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         filename_pattern = paste(filename_pattern, i, sep = "\\.")
       } 
       
+      filename_pattern = paste0(filename_pattern, "\\.")
+      
       existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
                                                              formatname = formatname, 
@@ -543,9 +545,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     ### temporarily removed for debugging since it takes a long time to execute
     result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
     
-    save(result, file = "~/Tests/sample6.gefs.Rdata")
-    ### load("~/Tests/sample6.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
+    ### save(result, file = "~/Tests/sample9.gefs.Rdata")
+    ### load("~/Tests/sample9.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
     print("result saved.")
+    
+    ###
+    print("--------------------------------")
+    print(result)
+    print("--------------------------------")
     
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
     # code below can process everything as if it were a list without worrying about data types.
@@ -575,6 +582,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   if (exists("existing.dbfile") && is.data.frame(existing.dbfile)) {
     existing.dbfile <- list(existing.dbfile)
   }
+  
+  ### 
+  print("+-+-+-+-+-+ FOR LOOP +-+-+-+-+-+-+-+")
   
   #---------------------------------------------------------------#
   # New arrangement of database adding code to deal with ensembles.
@@ -644,6 +654,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
       } else if (id_not_added) {
         print("Default insert") ###
+        print(result[[i]])
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         
         new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
                                                    in.prefix = result[[i]]$dbfile.name[1], 
