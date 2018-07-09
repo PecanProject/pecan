@@ -15,6 +15,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   ### Debugging
   print("Entered convert.inputs")
+  source("~/pecan/base/db/R/dbfiles.R")
   
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
@@ -545,14 +546,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     ### temporarily removed for debugging since it takes a long time to execute
     result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
     
-    ### save(result, file = "~/Tests/sample9.gefs.Rdata")
-    ### load("~/Tests/sample9.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
+    ### save(result, file = "~/Tests/sample18.gefs.Rdata")
+    ### load("~/Tests/sample18.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
     print("result saved.")
-    
-    ###
-    print("--------------------------------")
-    print(result)
-    print("--------------------------------")
     
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
     # code below can process everything as if it were a list without worrying about data types.
@@ -562,7 +558,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   }
   
   PEcAn.logger::logger.info("RESULTS: Convert.Input")
-  ### PEcAn.logger::logger.info(result) ### Too much output
+  PEcAn.logger::logger.info(result) ### Too much output
   ### PEcAn.logger::logger.info(names(result[[i]]))
   
   if (length(result[[1]]) <= 1){ # result, a list, is gauranteed to have at least one elemet.  However that element could be an empty data frame.
@@ -595,6 +591,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     for(i in 1:length(result)) {  # Master for loop
       id_not_added <- TRUE
       
+      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ new iteration @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
       print(paste0("In for loop i = ", i)) ###
       
       if (exists("existing.input") && nrow(existing.input[[i]]) > 0 && 
@@ -654,10 +651,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
       } else if (id_not_added) {
         print("Default insert") ###
-        print(result[[i]])
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         
-        new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
+        new_entry <- dbfile.input.insert(in.path = dirname(result[[i]]$file[1]), ###PEcAn.DB::
                                                    in.prefix = result[[i]]$dbfile.name[1], 
                                                    siteid = site.id, 
                                                    startdate = start_date,
