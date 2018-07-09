@@ -182,9 +182,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
     }
   }
   
-  ###
-  quit("no")
-  
   #--------------------------------------------------------------------------------------------------#
   # Change to CF Standards
   if (stage$met2cf) {
@@ -247,24 +244,41 @@ met.process <- function(site, input_met, start_date, end_date, model,
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
     
-    met2model.result <- .met2model.module(ready.id = ready.id, 
-                                          model = model, 
-                                          con = con,
-                                          host = host, 
-                                          dir = dir, 
-                                          met = met, 
-                                          str_ns = str_ns,
-                                          site = site, 
-                                          start_date = start_date, end_date = end_date, 
-                                          browndog = browndog, 
-                                          new.site = new.site,
-                                          overwrite = overwrite$met2model,
-                                          exact.dates = reg.model$exact.dates,
-                                          spin = spin)
+    met2model.result = list()
+    for (i in 1:length(ready.id[[1]])) {
+      met2model.result[[i]] <- .met2model.module(ready.id = ready.id, 
+                                    model = model, 
+                                    con = con,
+                                    host = host, 
+                                    dir = dir, 
+                                    met = met, 
+                                    str_ns = str_ns,
+                                    site = site, 
+                                    start_date = start_date, end_date = end_date, 
+                                    browndog = browndog, 
+                                    new.site = new.site,
+                                    overwrite = overwrite$met2model,
+                                    exact.dates = reg.model$exact.dates,
+                                    spin = spin)
+    }
     
-    model.id  <- met2model.result$model.id
-    model.file.info <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
-    model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+    ###
+    print("met2model.result")
+    print(met2model.result)
+    
+    model.id = list()
+    model.file.info = list()
+    model.file = list()
+    
+    for (i in 1:length(met2model.result)) {
+      model.id[[i]]  <- met2model.result[[i]]$model.id
+      model.file.info[[i]] <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id[[i]]$dbfile.id), con)
+      model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
+    }
+    
+    print("met2model.result")
+    print(model.file)
+    quit("no")
     
   } else {
     PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
@@ -282,7 +296,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   
 
     
-  return(model.file)
+  return(model.file) #Returns the path to the file that the model will use.
 } # met.process
 
 ################################################################################################################################# 
