@@ -95,12 +95,16 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # if you're nudging bdead, update bstorage and dbh too
       new_bstorage <- bstorage * agw_ratios[1,1]
       
+      # what else to nudge?
+      # soil C : FAST_SOIL_C, SLOW_SOIL_C, STRUCTURAL_SOIL_C
+      # NPLANT
+      
       pft_nums <- as.numeric(sapply(pars,`[[`, "num"))
       # use ED2's allometric eqns to dtermine dbh from new bdead
       C2B <- 2
       new_dbh <- new_bdead
       for(pn in seq_along(pft_nums)){
-        ind <- pft == pft_nums[pn]
+        ind <- pft_co == pft_nums[pn]
           
         crit <- new_bdead[ind] <= pars[[pn]]$bdead_crit
         new_dbh[ind][crit] = (new_bdead[ind][crit] / as.numeric(pars[[pn]]$b1Bs_small) * C2B)**(1.0/ as.numeric(pars[[pn]]$b2Bs_small))
@@ -146,7 +150,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # zero cumulative rate keepers, nothing is calculated back from these
       # so zeroing only the rate you're reading back is fine
       histfile_h5[["TOTAL_AGB_GROWTH"]][] <- 0
-      #zero both
+      # zero both
       histfile_h5[["DDBH_DT"]][] <- rep(0, length(restart$DDBH_DT))
       histfile_h5[["DAGB_DT"]][] <- rep(0, length(restart$DAGB_DT))
       
