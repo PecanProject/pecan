@@ -9,6 +9,11 @@
  
  source("ui_utils.R", local = TRUE)
  
+ ## Modules ##
+ source("modules/dbFiles_module.R", local = TRUE)
+ source("modules/inputs_module.R", local = TRUE)
+ source("modules/formats_module.R", local = TRUE)
+ 
  ##### Bety Calls ######
  bety <- betyConnect()
  
@@ -51,11 +56,6 @@ ui <- dashboardPage(
     tabItem(tabName = "uploadLocal",
             source_ui("ui_files", "local_file_upload_ui.R")
             )
-    # ## Next Steps
-    # tabItem(tabName = "step2",
-    #         h2("Modularization in progress. This tab will eventually be deprecated.")
-    #        # source_ui("ui_files", "input_record_ui.R")
-    #         )
   )),
   title = "PEcAn Data Ingest",
   skin =  "green"
@@ -72,29 +72,26 @@ server <- function(input, output, session) {
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
-  ## Create lists called in inputs, dbfiles, and formats record svr ##
-  inputsList <- list()
-  dbFilesRecordList <- list()
-  FormatRecordList <- list()
-  
   ##################### DataONE Download #####################
   source("server_files/d1_download_svr.R", local = TRUE)
 
   ######### FileInput ########################################
   source("server_files/local_upload_svr.R", local = TRUE)
 
-  ######### Input Record #####################################
- # source('server_files/input_record_svr.R', local = TRUE)
-
-  ##### Input Record only svr file
-  source("server_files/create_input_record_svr.R", local = TRUE)
-   
-  #### formats record only server file
-  source("server_files/formats_record_svr.R", local = TRUE)
+  #### dbfiles record module server
+  callModule(dbfiles, "local_dbfiles")
   
-  #### dbfiles record only server file
-  source("server_files/dbfiles_record_svr.R", local = TRUE)
-
+  callModule(dbfiles, "d1_dbfiles")
+ 
+  ##### Input Record Module derver 
+  callModule(inputsRecord, "local_inputs_record")
+  
+  callModule(inputsRecord, "d1_inputs_record")
+  
+  #### formats record module server
+  callModule(formatsRecord, "local_formats_record")
+  
+  callModule(formatsRecord, "d1_formats_record")
   
 }
 
