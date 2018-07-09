@@ -24,11 +24,9 @@ fluidRow(
     
   ),
   ## Call Input Record UI
-  source(file.path("ui_files", "create_input_record_ui.R"), local = TRUE)$value,
+  inputsRecordUI("local_inputs_record"),
   ## Call dbfiles UI
-  source(file.path("ui_files", "dbfiles_record_ui.R"), local = TRUE)$value,
-  # source_ui("dbfiles_record_ui.R"),
+  dbfilesUI("local_dbfiles"),
   ## Call Formats Record UI
-  source(file.path("ui_files", "formats_record_ui.R"), local = TRUE)$value
-  # source_ui("formats_record_ui.R")
+  formatsRecordUI("local_formats_record")
 )

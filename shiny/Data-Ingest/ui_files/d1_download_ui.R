@@ -1,5 +1,5 @@
 fluidRow(
-  box(width = 4,
+  box(width = 3,
     textInput(
       "id",
       label = h2("Import From DataONE"),
@@ -22,11 +22,12 @@ fluidRow(
     hr(),
     p("Location of Downloaded files:"),
     verbatimTextOutput("D1dbfilesPath")
-  )# ,
-   ## Call Input Record UI
-  # source(file.path("ui_files", "create_input_record_ui.R"), local = TRUE)$value
-  # ## Call dbfiles UI
-  # source_ui("dbfiles_record_ui.R"),
-  # ## Call Formats Record UI
-  # source_ui("formats_record_ui.R")
+  ),
+  ## Call Input Record UI
+  inputsRecordUI("d1_inputs_record"),
+  ## Call dbfiles UI
+  dbfilesUI("d1_dbfiles"),
+  ## Call Formats Record UI
+  formatsRecordUI("d1_formats_record")
+ 
 )
