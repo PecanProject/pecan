@@ -25,6 +25,12 @@
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
+  ### Development and debugging statements
+  print("Entered met.process")
+  source("~/pecan/modules/data.atmosphere/R/download.raw.met.module.R")
+  source("~/pecan/modules/data.atmosphere/R/met2cf.module.R")
+  source("~/pecan/modules/data.atmosphere/R/metgapfill.module.R")
+  source("~/pecan/modules/data.atmosphere/R/met2model.module.R")
 
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
@@ -167,7 +173,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        host = host, 
                                        overwrite = overwrite$download,
                                        site = site, username = username)
-    if (met %in% c("CRUNCEP", "GFDL")) {
+    if (met %in% c("CRUNCEP", "GFDL", "NOAA_GEFS")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
       input_met$id <- raw.id
@@ -175,6 +181,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
       stage$standardize <- FALSE
     }
   }
+  
+  ###
+  quit("no")
   
   #--------------------------------------------------------------------------------------------------#
   # Change to CF Standards
@@ -194,6 +203,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             overwrite = overwrite$met2cf, 
                             format.vars = format.vars,
                             bety = bety)
+  } else if (input_met$source == "NOAA_GEFS") {  ### part of a really bad solution, but useful for development
+    cf.id <- raw.id
   } else {
     cf.id = input_met$id
   }
