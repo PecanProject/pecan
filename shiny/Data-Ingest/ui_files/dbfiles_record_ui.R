@@ -1,4 +1,5 @@
-box(title = h2("2. DbFiles Record"), width = 3, collapsible = TRUE, collapsed = TRUE, 
+box(
+  title = h2("2. DbFiles Record"), width = 3, collapsible = TRUE, collapsed = TRUE, 
     hr(),
     selectizeInput("InputMachineName", label = "Machine *", choices = NULL,  #remember to set default to local
                    options = list(

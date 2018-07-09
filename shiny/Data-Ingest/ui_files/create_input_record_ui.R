@@ -1,5 +1,5 @@
 box(
-  title = h2("1. Input Record"), width = 3, collapsible = TRUE,
+  title = h2("1. Input Record"), width = 3, collapsible = TRUE, 
   hr(),
   selectizeInput("InputSiteName", label = "Site *", choices = NULL,
     options = list(
