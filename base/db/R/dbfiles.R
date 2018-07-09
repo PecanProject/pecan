@@ -112,6 +112,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
                     "(site_id, format_id, created_at, updated_at, start_date, end_date, name, parent_id) VALUES (",
                     siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "',", parentid, ")")
     }
+    db.query(query = cmd, con = con)
 
     inputid <- db.query(
       query = paste0(
@@ -122,7 +123,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
         "'" , parent, ";"
       ),
       con = con
-    )[['id']]
+    )$id
   }
   
   if (length(inputid) > 1) {
