@@ -33,6 +33,8 @@
 ##' }
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname,
                                 parentid=NA, con, hostname=PEcAn.remote::fqdn(), allow.conflicting.dates=FALSE) {
+  print("Entered dbfile.input.insert")
+  
   name <- basename(in.path)
   hostname <- default_hostname(hostname)
 
@@ -48,6 +50,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     create = TRUE,
     dates = TRUE
   )
+  
 
   # setup parent part of query if specified
   if (is.na(parentid)) {
@@ -109,7 +112,6 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
                     "(site_id, format_id, created_at, updated_at, start_date, end_date, name, parent_id) VALUES (",
                     siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "',", parentid, ")")
     }
-    db.query(query = cmd, con = con)
 
     inputid <- db.query(
       query = paste0(
@@ -122,7 +124,15 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       con = con
     )[['id']]
   }
-
+  
+  if (length(inputid) > 1) {
+    PEcAn.logger::logger.warn(paste0("Multiple input files found matching parameters format_id = ", formatid, 
+                                     ", startdate = ", startdate, ", enddate = ", enddate, ", parent = ", parent, ".  Selecting the", 
+                                     " last input file.  This is normal for when an entire ensemble is inserted iteravely, but ", 
+                                     " is likely an error otherwise."))
+    inputid = inputid[length(inputid)]
+  }
+  
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname)
 
@@ -132,6 +142,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       PEcAn.logger::logger.warn("Multiple dbfiles found. Using last.")
       dbfile <- dbfile[nrow(dbfile),]
     }
+    
     if (dbfile$file_name != in.prefix || dbfile$file_path != in.path) {
       print(dbfile, digits = 10)
       PEcAn.logger::logger.error(paste0(
@@ -143,6 +154,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     } else {
       dbfileid <- dbfile[['id']]
     }
+    
   } else {
     #insert dbfile & return dbfile id
     dbfileid <- dbfile.insert(in.path = in.path, in.prefix = in.prefix, type = 'Input', id = inputid,
@@ -177,15 +189,21 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA,
                                con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL) {
+  print("Entered dbfile.input.check")
+  
   hostname <- default_hostname(hostname)
-
+  
   mimetypeid <- get.id(table = 'mimetypes', colnames = 'type_string', values = mimetype, con = con)
   if (is.null(mimetypeid)) {
     return(invisible(data.frame()))
   }
-
+  
   # find appropriate format
   formatid <- get.id(table = 'formats', colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
+  
+  print(paste0("formatid = ", formatid))
+  print(paste0("mimetypeid = ", mimetypeid, "  ", mimetype))
+  
   if (is.null(formatid)) {
     invisible(data.frame())
   }
@@ -219,6 +237,9 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       con = con
     )#[['id']]
   }
+  
+  print("After search:")
+  print(inputs)
 
   if (is.null(inputs) | length(inputs$id) == 0) {
     return(data.frame())
@@ -233,11 +254,12 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       }
 
       inputs <- inputs[is.na(inputs$parent_id),]
+      print("After reassignment")
+      print(inputs)
     }
 
     if (length(inputs$id) > 1) {
       PEcAn.logger::logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
-
       print(inputs)
       #      ni = length(inputs$id)
       #      dbfile = list()
