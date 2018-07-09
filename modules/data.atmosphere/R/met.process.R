@@ -203,8 +203,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             overwrite = overwrite$met2cf, 
                             format.vars = format.vars,
                             bety = bety)
-  } else if (input_met$source == "NOAA_GEFS") {  ### part of a really bad solution, but useful for development
-    cf.id <- raw.id
   } else {
     cf.id = input_met$id
   }
