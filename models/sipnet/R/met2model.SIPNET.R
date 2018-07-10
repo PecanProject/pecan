@@ -71,9 +71,15 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   out <- NULL
 
   # get start/end year since inputs are specified on year basis
-  ### Not necessarily.  This'll have to be redone.
-  start_year <- lubridate::year(start_date)
-  end_year <- lubridate::year(end_date)
+  # only if year.fragment = FALSE
+  if (year.fragment) {
+    start_year <- lubridate::year(start_date)
+    start_year <- lubridate::year(end_date) # Start year is listed twice because there's only one file. start_year and end_year only control
+                                            # the loop and file name.
+  } else {
+    start_year <- lubridate::year(start_date)
+    end_year <- lubridate::year(end_date)
+  }
 
   ## loop over files
   for (year in start_year:end_year) {
