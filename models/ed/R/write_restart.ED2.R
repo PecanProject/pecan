@@ -40,17 +40,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
             overwrite = TRUE)
   
 
-
-  # rename history file 
-  # (IF: At this point in order not to swamp directories I decided to write annual historu files
-  # but this causes mismatches in start-date because ED2 writes them as 1961-01-01 not 1961-12-31
-  # then if timeh starts from 1962 it can't find the 1961 files, if you give dates accordingly it starts the simulation early
-  # my solution is to copy-rename the history file. Other solutions are to change ED2's naming, or writing daily/monthly history files
-  new_basename <- gsub(paste0(hyear, "-12"), paste0(lubridate::year(stop.time),"-01"), basename(histfile))
-  new_local_histfile   <- file.path(dirname(histfile), new_basename)
-  new_remote_histfile  <- file.path(settings$host$outdir, runid, new_basename)
-  
-  file.copy(histfile, new_local_histfile, overwrite = TRUE)
+  remote_histfile  <- file.path(settings$host$outdir, runid, basename(histfile))
   
   #### Get common variables
   # PFT by cohort
@@ -71,7 +61,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   
   #### Write new state to file
   # Default mode of H5File$new is "a", which is read + write and create file if it doesn't exist
-  histfile_h5 <- hdf5r::H5File$new(new_local_histfile)
+  histfile_h5 <- hdf5r::H5File$new(histfile)
   
   for (var_name in var.names) {
     # var_name <- "AbvGrndWood"
@@ -165,8 +155,8 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   histfile_h5$close_all()
   
   # copy the history file with new states and new timestamp to remote 
-  # it's OK, because ED2 doesn't overwrite the history files and produces history-Z- files anyway
-  PEcAn.remote::remote.copy.to(settings$host, new_local_histfile, new_remote_histfile)
+  # it's OK, because we backed up the original above
+  PEcAn.remote::remote.copy.to(settings$host, histfile, remote_histfile)
 
   ##### Modify ED2IN
   ed2in_path <- file.path(rundir, runid, "ED2IN")
@@ -176,8 +166,8 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   ed2in_new <- modify_ed2in(
     ed2in_orig,
     start_date = lubridate::ceiling_date(start.time, "1 day"),
-    end_date = lubridate::floor_date(stop.time, "30 minutes"), # floor down to the last half hour so that ED2 doesn't write to next year's file
-    RUNTYPE = "HISTORY",
+    end_date   = lubridate::ceiling_date(stop.time, "1 day"), # ED2 writes annual history files at the same month as initial
+    RUNTYPE    = "HISTORY",
     IED_INIT_MODE = 4,
     SFILIN = file.path(settings$host$outdir, runid, "history")
   )
@@ -195,11 +185,15 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   jobsh[grep("@REMOVE_HISTXML@", jobsh)+1] <- remote_remove_cmd
   
   # also update mode2netcdf.ED2 call
-  mod2cf_line        <- grep("model2netcdf.ED2", jobsh)
-  mod2cf_string      <- jobsh[mod2cf_line]
-  from_year          <- paste0("'", hyear,"/")  # trying to make sure year is not somewhere else in the path
-  to_year            <- paste0("'", lubridate::year(start.time), "/")
-  mod2cf_string      <- gsub(from_year, to_year, mod2cf_string)
+  mod2cf_line    <- grep("model2netcdf.ED2", jobsh)
+  mod2cf_string  <- jobsh[mod2cf_line]
+  begin_from     <- paste0("'", lubridate::year(start.time), "/")
+  begin_to       <- paste0("'", hyear,"/")   
+  end_from       <- begin_to 
+  end_to         <- paste0("'", as.numeric(hyear)+1,"/") 
+  # this order matters
+  mod2cf_string      <- gsub(end_from,   end_to,   mod2cf_string) # e.g. change from (...'1961/01/01', '1962/01/01'...) to (...'1961/01/01', '1963/01/01'...)
+  mod2cf_string      <- gsub(begin_from, begin_to, mod2cf_string) # e.g. change from (...'1961/01/01', '1963/01/01'...) to (...'1962/01/01', '1963/01/01'...)
   jobsh[mod2cf_line] <- mod2cf_string
   
   writeLines(jobsh, file.path(rundir, runid, "job.sh"))
