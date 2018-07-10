@@ -138,12 +138,12 @@ pda.emulator.ms <- function(multi.settings) {
     mcmc.out <- parallel::parLapply(cl, 1:multi.settings[[1]]$assim.batch$chain, function(chain) {
       mcmc.GP(gp          = gp, ## Emulator(s)
               x0          = init.list[[chain]],     ## Initial conditions
-              nmcmc       = 100000,       ## Number of reps
+              nmcmc       = multi.settings[[1]]$assim.batch$iter,  ## Number of iters
               rng         = rng,       ## range
               format      = "lin",      ## "lin"ear vs "log" of LogLikelihood 
               mix         = "joint",     ## Jump "each" dimension independently or update them "joint"ly
               jmp0        = jmp.list[[chain]],  ## Initial jump size
-              ar.target   = 0.3,   ## Target acceptance rate
+              ar.target   = multi.settings[[1]]$assim.batch$jump$ar.target,   ## Target acceptance rate
               priors      = prior.fn.all$dprior[prior.ind.all], ## priors
               settings    = tmp.settings, # this is just for checking llik functions downstream
               run.block   = TRUE,  
