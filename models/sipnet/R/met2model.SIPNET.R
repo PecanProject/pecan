@@ -35,10 +35,16 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
-                    strptime(end_date, "%Y-%m-%d"),
-                    "clim",
-                    sep = ".")  ### Generate file name - needs to be changed for forecasts
+  if (year.fragment) { # Could start or end at any time within any year, so this level of specificity is needed.
+    out.file <- paste(in.prefix, format(start_date, "%Y-%m-%dT%H:%M"), 
+                      format(end_date, "%Y-%m-%dT%H:%M"), "clim", sep=".")
+  } else { # Default behavior
+    out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
+                      strptime(end_date, "%Y-%m-%d"),
+                      "clim",
+                      sep = ".")
+  }
+  
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = out.file.full,
