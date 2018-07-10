@@ -88,6 +88,20 @@ read_restart.ED2 <- function(outdir,
         
       }
       
+      if (var_name == "fast_soil_pool_carbon_content") {
+        
+        forecast[[length(forecast)+1]]      <- histout$fast_soil_pool_carbon_content # kgC/m2
+        names(forecast)[length(forecast)]   <- "fast_soil_pool_carbon_content"
+        
+      }
+      
+      if (var_name == "structural_soil_pool_carbon_content") {
+        
+        forecast[[length(forecast)+1]]      <- histout$structural_soil_pool_carbon_content # kgC/m2
+        names(forecast)[length(forecast)]   <- "structural_soil_pool_carbon_content"
+        
+      }
+      
 
     } # var.names loop
     

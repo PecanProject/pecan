@@ -41,7 +41,17 @@ ed.var <- function(varname) {
     out = list(readvar = "DDBH_DT", # this is actually rate of change in DBH, we'll calculate GWBI from it 
                type = 'co', units = "cm/yr", 
                drelated = NULL,
-               expr    = "DDBH_DT")                                              
+               expr    = "DDBH_DT") 
+  } else if(varname == "fast_soil_pool_carbon_content") {
+    out = list(readvar = "FAST_SOIL_C", 
+               type = 'pa', units = "kg/m2", 
+               drelated = NULL,
+               expr    = "FAST_SOIL_C")    
+  } else if(varname == "structural_soil_pool_carbon_content") {
+    out = list(readvar = "STRUCTURAL_SOIL_C", 
+               type = 'pa', units = "kg/m2", 
+               drelated = NULL,
+               expr    = "STRUCTURAL_SOIL_C")    
   } else { # No Match!
     warning(paste0("Couldn't find varname ", varname, "!"))
     out = NULL

@@ -1056,64 +1056,59 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   names(pars) <- pft_nums
   
   # Aggregate
-  for(k in seq_len(npft)) {
-    ind <- (pft == pft_nums[k])
+  for(l in seq_along(pecan_names)) {
     
-    if(any(ind)) {
-      for(l in seq_along(pecan_names)) {
-        variable <- convert.expr(ed_derivs[l])  # convert
-        expr <- variable$variable.eqn$expression
-        
-        sapply(variable$variable.eqn$variables, function(x) assign(x, ed.dat[[x]], envir = .GlobalEnv))
-        tmp.var <- eval(parse(text = expr)) # parse
-        
-        # check for different variables/units?
-        if(pecan_names[l] == "GWBI"){
-          # use allometric equations to calculate GWBI from DDBH_DT
-          ddbh_dt <- tmp.var
-          ddbh_dt[!ind] <- 0
-          dagb_dt <- ed.dat$DAGB_DT
-          dagb_dt[!ind] <- 0
-          
-          # get b1Bl/b2Bl/dbh_adult from xml
-          # these are in order so you can use k, but you can also extract by pft
-          small   <- dbh <= as.numeric(pars[[k]]$dbh_adult)
-          ddbh_dt[small]  <- as.numeric(pars[[k]]$b1Bl_small) / 2 * ddbh_dt[small]  ^ as.numeric(pars[[k]]$b2Bl_small)
-          ddbh_dt[!small] <- as.numeric(pars[[k]]$b1Bl_large) / 2 * ddbh_dt[!small] ^ as.numeric(pars[[k]]$b2Bl_large)
-          gwbi_ch <- dagb_dt - ddbh_dt
-          #     kgC/m2/yr = kgC/plant/yr  *   plant/m2  
-          plant2cohort <- gwbi_ch * plant_dens
-          cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), sum, na.rm = TRUE)
-          out[[pecan_names[l]]][k] <- sum(cohort2patch*patch_area, na.rm = TRUE)
-          
-        }else if(ed_units[l] %in% c("kgC/plant")){
-          
-          tmp.var[!ind] <- 0
-          #     kgC/m2 = kgC/plant  *   plant/m2  
-          plant2cohort <- tmp.var * plant_dens
-          # sum cohorts to aggrete to patches
-          cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), sum, na.rm = TRUE)
-          # scale up to site-level 
-          out[[pecan_names[l]]][k] <- sum(cohort2patch*patch_area, na.rm = TRUE)
-          
-        }else if(ed_units[l] %in% c("1/yr")){
-          tmp.var[!ind] <- 0
-          #   kgC/m2/yr = kgC/plant/yr  *   plant/m2  
-          # plant2cohort <- tmp.var * plant_dens
-          cohort2patch <- tapply(tmp.var, list("patch" = patch_index), mean, na.rm = TRUE) # should rates be summed?
-          out[[pecan_names[l]]][k] <- sum(cohort2patch, na.rm = TRUE)
-        }
-        
-      } #pecan_names loop
-      
-      # here (or maybe out of these loops) there could be an add_vars loop for variables that will be updated deterministically
-      # pass as read? or aggregate as well? punting implementation until needed
-      # pass to a sublist? so that read_restart doesn't care?
-      # out$restart <- ...
-      
-    } #any(ind)-if SHOULD THERE BE AN ELSE? DOES ED2 EVER DRIVES SOME PFTs TO EXTINCTION? 
-  } #k-loop
+    variable <- convert.expr(ed_derivs[l])  # convert
+    expr <- variable$variable.eqn$expression
     
+    sapply(variable$variable.eqn$variables, function(x) assign(x, ed.dat[[x]], envir = .GlobalEnv))
+    tmp.var <- eval(parse(text = expr)) # parse
+    
+    if(ed_units[l] %in% c("kg/m2")){ # does this always mean this is a patch-level variable w/o per-pft values?
+      out[[pecan_names[l]]] <- NA
+      out[[pecan_names[l]]] <- sum(tmp.var*patch_area, na.rm = TRUE)
+      
+    }else{# per-pft vars
+      for(k in seq_len(npft)) {
+        ind <- (pft == pft_nums[k])
+        
+        if(any(ind)) {
+          # check for different variables/units?
+          if(pecan_names[l] == "GWBI"){
+            # use allometric equations to calculate GWBI from DDBH_DT
+            ddbh_dt <- tmp.var
+            ddbh_dt[!ind] <- 0
+            dagb_dt <- ed.dat$DAGB_DT
+            dagb_dt[!ind] <- 0
+            
+            # get b1Bl/b2Bl/dbh_adult from xml
+            # these are in order so you can use k, but you can also extract by pft
+            small   <- dbh <= as.numeric(pars[[k]]$dbh_adult)
+            ddbh_dt[small]  <- as.numeric(pars[[k]]$b1Bl_small) / 2 * ddbh_dt[small]  ^ as.numeric(pars[[k]]$b2Bl_small)
+            ddbh_dt[!small] <- as.numeric(pars[[k]]$b1Bl_large) / 2 * ddbh_dt[!small] ^ as.numeric(pars[[k]]$b2Bl_large)
+            gwbi_ch <- dagb_dt - ddbh_dt
+            #     kgC/m2/yr = kgC/plant/yr  *   plant/m2  
+            plant2cohort <- gwbi_ch * plant_dens
+            cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), sum, na.rm = TRUE)
+            out[[pecan_names[l]]][k] <- sum(cohort2patch*patch_area, na.rm = TRUE)
+            
+          }else if(ed_units[l] %in% c("kgC/plant")){
+            pft.var <- tmp.var
+            pft.var[!ind] <- 0
+            #     kgC/m2 = kgC/plant  *   plant/m2  
+            plant2cohort <- pft.var * plant_dens
+            # sum cohorts to aggrete to patches
+            cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), sum, na.rm = TRUE)
+            # scale up to site-level 
+            out[[pecan_names[l]]][k] <- sum(cohort2patch*patch_area, na.rm = TRUE)
+            
+          }
+        }  #any(ind)-if SHOULD THERE BE AN ELSE? DOES ED2 EVER DRIVES SOME PFTs TO EXTINCTION? 
+      } #k-loop
+      
+    }# per-pft or not
+  } #l-loop
+
   
   # pass everything, unaggregated
   out$restart <- ed.dat

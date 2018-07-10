@@ -144,6 +144,20 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       histfile_h5[["DDBH_DT"]][] <- rep(0, length(restart$DDBH_DT))
       histfile_h5[["DAGB_DT"]][] <- rep(0, length(restart$DAGB_DT))
       
+    } else if(var_name == "fast_soil_pool_carbon_content"){
+      
+      fast_soil_c <- restart$FAST_SOIL_C
+      fsc_ratio   <- new.state$fast_soil_pool_carbon_content / sum(fast_soil_c*patch_area)
+      
+      histfile_h5[["FAST_SOIL_C"]][] <- fast_soil_c*fsc_ratio
+      
+    } else if(var_name == "structural_soil_pool_carbon_content"){
+      
+      structural_soil_c   <- restart$STRUCTURAL_SOIL_C
+      structural_sc_ratio <- new.state$structural_soil_pool_carbon_content / sum(structural_soil_c*patch_area)
+      
+      histfile_h5[["STRUCTURAL_SOIL_C"]][] <- structural_soil_c*structural_sc_ratio
+        
     } else {
       PEcAn.logger::logger.error("Variable ", var_name,
                                 " not currently supported",
