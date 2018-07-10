@@ -88,8 +88,16 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     PEcAn.logger::logger.info(year)
 
     diy <- PEcAn.utils::days_in_year(year)
-
-    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = ".")) ### this is failing, too.
+    
+    if (is.null(in.data.file)) { # default behavior
+        old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
+    } else {
+      if (is.character(in.data.file) && file.exists(in.data.file)) {
+        old.file <- in.data.file
+      } else {
+        PEcAn.logger::logger.severe("Specified input file does not exist.")
+      }
+    }
 
     if (file.exists(old.file)) {
       ## open netcdf
