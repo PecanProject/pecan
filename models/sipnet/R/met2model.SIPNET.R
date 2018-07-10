@@ -24,15 +24,21 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param year.fragment the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).
+##' @param in.data.file a data file to use for input - default behavior is to use all MET.year.nc files within the start and end year 
+##' range in the directory in.path.  If not null, overrides default behavior.
+##' 
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
-                             overwrite = FALSE, verbose = FALSE, ...) {
+                             overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, in.data.file = NULL, ...) {
+  
+  
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
                     strptime(end_date, "%Y-%m-%d"),
                     "clim",
-                    sep = ".")
+                    sep = ".")  ### Generate file name - needs to be changed for forecasts
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = out.file.full,
@@ -59,6 +65,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   out <- NULL
 
   # get start/end year since inputs are specified on year basis
+  ### Not necessarily.  This'll have to be redone.
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
 
@@ -70,7 +77,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
 
     diy <- PEcAn.utils::days_in_year(year)
 
-    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
+    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = ".")) ### this is failing, too.
 
     if (file.exists(old.file)) {
       ## open netcdf
@@ -110,7 +117,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
 
       soilT <- try(ncdf4::ncvar_get(nc, "soil_temperature"))
       if (!is.numeric(soilT)) {
-        # approximation borrowed from SIPNET CRUNCEPpreprocessing's tsoil.py
+        # approximation borrowed from SIPNET CRUNCEP preprocessing's tsoil.py
         tau <- 15 * tstep
         filt <- exp(-(1:length(Tair)) / tau)
         filt <- (filt / sum(filt))
