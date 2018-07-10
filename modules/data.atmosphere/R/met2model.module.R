@@ -1,6 +1,9 @@
 ##' @export
 .met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
-                              browndog, new.site, overwrite = FALSE, exact.dates,spin) {
+                              browndog, new.site, overwrite = FALSE, exact.dates,spin, register) {
+  
+  ###
+  source("~/pecan/base/utils/R/convert.input.R")
   
   # Determine output format name and mimetype
   model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
@@ -29,11 +32,19 @@
       }
     }
     
+    #Some data products can be forecasts instead of real time data.  Others can be ensembles of data instead of a single source.  Some can be both.
+    #Not all of the registration.xml files for each data source contains a <forecast> or <ensemble> tag; therefore, we must check for their 
+    #existence first.
+    forecast = FALSE
+    if (!is.null(register$forecast)) {
+      forecast = as.logical(register$forecast)
+    }
+    
     pkg <- paste0("PEcAn.", model)
     fcn <- paste0("met2model.", model)
     lst <- site.lst(site.id=site$id, con=con)
     
-    model.id <- PEcAn.utils::convert.input(input.id = input.id, 
+    model.id <- convert.input(input.id = input.id, ###PEcAn.utils::
                               outfolder = outfolder,
                               formatname = formatname, mimetype = mimetype, 
                               site.id = site$id, 
@@ -46,7 +57,8 @@
                               exact.dates = exact.dates,
                               spin_nyear = spin$nyear,
                               spin_nsample = spin$nsample,
-                              spin_resample = spin$resample)
+                              spin_resample = spin$resample,
+                              forecast = forecast)
   }
   
   PEcAn.logger::logger.info(paste("Finished Model Specific Conversion", model.id[1]))

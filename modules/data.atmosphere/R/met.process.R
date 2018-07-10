@@ -259,7 +259,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     new.site = new.site,
                                     overwrite = overwrite$met2model,
                                     exact.dates = reg.model$exact.dates,
-                                    spin = spin)
+                                    spin = spin,
+                                    register = register)
     }
     
     ###
@@ -276,6 +277,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
     }
     
+    ###
     print("met2model.result")
     print(model.file)
     quit("no")
