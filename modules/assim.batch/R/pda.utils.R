@@ -810,6 +810,15 @@ load_pda_history <- function(workdir, ensemble.id, objects){
 }
 
 ##' Helper function that transforms the values of each parameter into N(0,1) equivalent
+##' 
+##' @param prior.list list of prior data frames, same length as number of pfts
+##' @param prior.fn.all list of expressions of d/r/q/p functions of the priors given in the prior.list
+##' @param prior.ind.all a vector of indices identifying which params are targeted, indices refer to the row numbers when prior.list sublists are rbinded
+##' @param SS.stack list of design matrices for the emulator, length = nsites, each sublist will be of length nvars
+##' @param init.list list of initial values for the targeted params, they will change when the range is normalized
+##' @param jmp.list list of hump variances, they will change when the range is normalized
+##' 
+##' @return a list of new objects that contain the normalized versions
 ##' @author Istem Fer
 ##' @export
 norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list){
@@ -822,7 +831,7 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
   
   if(!norm.check){
     
-    rng <- array(NA, dim = c(length(prior.ind.all),2,length(SS.stack)))
+    rng <- array(NA, dim = c(length(prior.ind.all), 2, length(SS.stack)))
     
     # need to modify init.list and jmp.list as well
     parnames <- names(init.list[[1]])
@@ -867,6 +876,14 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
 
 
 ##' Helper function that transforms the samples back to their original prior distribution equivalents
+##' 
+##' @param prior.all a dataframe of all priors for both pfts
+##' @param prior.fn.all list of expressions of d/r/q/p functions of the priors with original parameter space
+##' @param prior.ind.all a vector of indices identifying targeted params 
+##' @param mcmc.out hierarchical MCMC outputs in standard-normal space
+##' 
+##' @return hierarchical MCMC outputs in original parameter space
+##' 
 ##' @author Istem Fer
 ##' @export
 back_transform_posteriors <- function(prior.all, prior.fn.all, prior.ind.all, mcmc.out){

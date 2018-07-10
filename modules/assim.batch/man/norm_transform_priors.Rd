@@ -7,6 +7,22 @@
 norm_transform_priors(prior.list, prior.fn.all, prior.ind.all, SS.stack,
   init.list, jmp.list)
 }
+\arguments{
+\item{prior.list}{list of prior data frames, same length as number of pfts}
+
+\item{prior.fn.all}{list of expressions of d/r/q/p functions of the priors given in the prior.list}
+
+\item{prior.ind.all}{a vector of indices identifying which params are targeted, indices refer to the row numbers when prior.list sublists are rbinded}
+
+\item{SS.stack}{list of design matrices for the emulator, length = nsites, each sublist will be of length nvars}
+
+\item{init.list}{list of initial values for the targeted params, they will change when the range is normalized}
+
+\item{jmp.list}{list of hump variances, they will change when the range is normalized}
+}
+\value{
+a list of new objects that contain the normalized versions
+}
 \description{
 Helper function that transforms the values of each parameter into N(0,1) equivalent
 }

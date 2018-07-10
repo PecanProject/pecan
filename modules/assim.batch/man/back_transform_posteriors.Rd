@@ -6,6 +6,18 @@
 \usage{
 back_transform_posteriors(prior.all, prior.fn.all, prior.ind.all, mcmc.out)
 }
+\arguments{
+\item{prior.all}{a dataframe of all priors for both pfts}
+
+\item{prior.fn.all}{list of expressions of d/r/q/p functions of the priors with original parameter space}
+
+\item{prior.ind.all}{a vector of indices identifying targeted params}
+
+\item{mcmc.out}{hierarchical MCMC outputs in standard-normal space}
+}
+\value{
+hierarchical MCMC outputs in original parameter space
+}
 \description{
 Helper function that transforms the samples back to their original prior distribution equivalents
 }
