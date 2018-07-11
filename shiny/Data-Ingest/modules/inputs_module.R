@@ -3,8 +3,7 @@ inputsRecordUI <- function(id){
   ns <- NS(id)
   
   box(
-    title = h2("1. Input Record"), width = 3, collapsible = TRUE,
-    hr(),
+    title = h2("2. Input Record"), width = 4, collapsible = TRUE, solidHeader = TRUE, status = "success",
     selectizeInput(ns("InputSiteName"), label = "Site *", choices = NULL,
                    options = list(
                      placeholder = 'Please search or select a site below',
@@ -12,7 +11,7 @@ inputsRecordUI <- function(id){
                    )
     ),
     hr(),
-    selectizeInput(ns("InputParentName"), label = "Parent", choices = NULL,
+    selectizeInput(ns("InputParentName"), label = "Parent *", choices = NULL,
                    options = list(
                      placeholder = 'Please search inputs by name or site',
                      onInitialize = I('function() { this.setValue(""); }')
@@ -23,12 +22,14 @@ inputsRecordUI <- function(id){
               label = "Name *",
               placeholder = ""),
     hr(),
-    selectizeInput(ns("InputFormatName"), label = "Format*", choices = NULL,
+    selectizeInput(ns("InputFormatName"), label = "Choose Format *", choices = NULL,
                    options = list(
                      placeholder = 'Please search Formats by name',
                      onInitialize = I('function() { this.setValue(""); }')
                    )
     ),
+    p("or"),
+    actionButton("NewFormat", label = "Create New Format"),
     hr(),
     dateInput(
       ns("InputStartDate"),
@@ -37,7 +38,7 @@ inputsRecordUI <- function(id){
       startview = "decade"
     ),
     shinyTime::timeInput(ns("StartTimeInput"),
-                         label = "Start Time (Hours - Minutes) *",
+                         label = "Start Time (Hours - Minutes)",
                          seconds = FALSE),
     dateInput(
       ns('InputEndDate'),
@@ -46,17 +47,16 @@ inputsRecordUI <- function(id){
       startview = 'decade'
     ),
     shinyTime::timeInput(ns("EndTimeInput"),
-                         label = "End Time (Hours-Minutes) *",
+                         label = "End Time (Hours-Minutes)",
                          seconds = FALSE),
     textInput(ns("Timezone"),
-              label = "Timezone (UTC) *",
+              label = "Timezone (UTC)",
               placeholder = "UTC +/-"),
     hr(),
     textAreaInput(ns("InputNotes"),
                   label = "Notes",
                   height = '150px'),
     actionButton(ns("createInput"), label = "Create Input"),
-    # Not sure if I want this here or only available when all forms are filled in.
     p("* Denotes a Required Field"),
     hr(),
     verbatimTextOutput(ns("summInputs"))
@@ -105,4 +105,5 @@ inputsRecord <- function(input, output, session){
     
     output$summInputs <- renderPrint({print(inputsList)})
   })
+
 }
