@@ -1,8 +1,8 @@
 fluidRow(
-  box(width = 3,
+  box(width = 4, title = h2("Import From DataONE"), solidHeader = TRUE, status = "success",
     textInput(
       "id",
-      label = h2("Import From DataONE"),
+      label = "Import from dataONE",
       placeholder = "Enter doi or id here"
     ),
     p("Copy and Paste the following example data sets:"),
@@ -26,7 +26,7 @@ fluidRow(
   ## Call Input Record UI
   inputsRecordUI("d1_inputs_record"),
   ## Call dbfiles UI
-  dbfilesUI("d1_dbfiles"),
+ # dbfilesUI("d1_dbfiles"),
   ## Call Formats Record UI
   formatsRecordUI("d1_formats_record")
  

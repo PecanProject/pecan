@@ -38,3 +38,4 @@ observeEvent(input$LocalFinishButton, {
   }
   output$LocaldbfilesPath <- renderText({paste0(PEcAn_path, local_dirname)}) # Print path to dbfiles
 })
+
