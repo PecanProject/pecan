@@ -6,7 +6,7 @@ ed.var <- function(varname) {
     out = list(readvar = "AGB_CO", 
                type = 'co', units = "kgC/plant", 
                drelated = NULL,                    # other deterministically related vars?
-               expr    = "TOTAL_AGB")                                                 
+               expr    = "AGB_CO")                                                 
   } else if(varname == "TotLivBiom") {
     out = list(readvar = c("BALIVE"),
                type = 'co', units = "kgC/plant", 
