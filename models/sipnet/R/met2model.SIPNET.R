@@ -28,14 +28,14 @@
 ##' @param in.data.file a data file to use for input - default behavior is to use all MET.year.nc files within the start and end year 
 ##' range in the directory in.path.  If not null, overrides default behavior.
 ##' 
+## Modified by Luke Dramko
+## Original author?
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, in.data.file = NULL, ...) {
   
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  print(start_date) ###
-  print(end_date) ###
   if (is.character(in.data.file)) { # Could start or end at any time within any year, so this level of specificity is needed.
                                     # in.data.file is not gauranteed to contain the file extension.
     escaped <- gsub("(\\W)", "\\\\\\1", in.data.file) # The file name may contain special characters that could mess up the regular expression.
@@ -55,7 +55,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       }
     } else { # no .nc files found... it could be that the extension was left off, or some other problem
       PEcAn.logger::logger.warn("No files found with extension '.nc'.  Using the first file in the list below:")
-      print(matching_files)
+      print(matching_files) # Not a debugging statement.
       in.data.file <- matching_files[i]
     }
   } else { # Default behavior
@@ -109,8 +109,6 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
 
     diy <- PEcAn.utils::days_in_year(year)
     
-    print(paste0("in.data.file = ", in.data.file))
-    
     if (!is.character(in.data.file)) { # default behavior
         old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
     } else { # Use the supplied file name
@@ -123,23 +121,19 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
 
       ## convert time to seconds
       sec <- nc$dim$time$vals
-      print(sec)
-      print("------------------")
-      
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
-      print(sec)
-      print(typeof(sec))
       
-      ### Not sure what this is supposed to do, but it doesn't seem to be right for a year fragment.
-      dt <- PEcAn.utils::seconds_in_year(year) / 31536000 #length(sec)
-      print("dt")
-      print(dt)
+      # Calculate the delta time.  If using whole-year data, the appropriate length in seconds is 
+      # fetched; otherwise, it is assumed that the length of time provided in the time dimension of
+      # the input file is correct.
+      if (year.fragment) {
+        dt <- mean(diff(sec), na.rm=TRUE)
+        
+      } else {
+        dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
+      }
       tstep <- round(86400 / dt)
-      print("tstep")
-      print(tstep)
       dt <- 86400 / tstep
-      print("dt")
-      print(dt)
 
       ## extract variables
       lat <- ncdf4::ncvar_get(nc, "latitude")
@@ -193,10 +187,6 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       PEcAn.logger::logger.info("Skipping to next year")
       next
     }
-    
-    print(("****** Done data processing ******"))
-    print(paste0("sec = ", sec))
-    print(paste0("dt = ", dt))
 
     ## build time variables (year, month, day of year)
     nyr <- floor(length(sec) / 86400 / 365 * dt)
