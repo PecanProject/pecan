@@ -33,7 +33,7 @@ inputsRecordUI <- function(id){
     hr(),
     dateInput(
       ns("InputStartDate"),
-      label = "Start Date *",
+      label = "Start Date",
       format = "yyyy-mm-dd",
       startview = "decade"
     ),
@@ -42,7 +42,7 @@ inputsRecordUI <- function(id){
                          seconds = FALSE),
     dateInput(
       ns('InputEndDate'),
-      label = 'End Date *',
+      label = 'End Date',
       format = 'yyyy-mm-dd',
       startview = 'decade'
     ),

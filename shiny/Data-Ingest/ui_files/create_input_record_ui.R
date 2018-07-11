@@ -19,7 +19,7 @@ box(
             label = "Name *",
             placeholder = ""),
   hr(),
-  selectizeInput("InputFormatName", label = "Format*", choices = NULL,
+  selectizeInput("InputFormatName", label = "Format *", choices = NULL,
     options = list(
       placeholder = 'Please search Formats by name',
       onInitialize = I('function() { this.setValue(""); }')
@@ -28,7 +28,7 @@ box(
   hr(),
   dateInput(
     "InputStartDate",
-    label = "Start Date *",
+    label = "Start Date",
     format = "yyyy-mm-dd",
     startview = "decade"
   ),
@@ -37,7 +37,7 @@ box(
                        seconds = FALSE),
   dateInput(
     'InputEndDate',
-    label = 'End Date *',
+    label = 'End Date',
     format = 'yyyy-mm-dd',
     startview = 'decade'
   ),
