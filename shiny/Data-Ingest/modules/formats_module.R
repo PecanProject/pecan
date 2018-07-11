@@ -13,7 +13,7 @@ formatsRecordUI <- function(id){
                          )),
           p("or"),
           # uiOutput(ns("tab")), ## Link to BETYdb
-          a(id = ns("betyURL"), "Create New Mimetype", href = "https://www.betydb.org/formats/new"),
+          a(id = ns("betyURL"), "Create New Mimetype", href = "https://www.betydb.org/formats/new", target = "_blank"),
           hr(),
           textInput(
             ns("NewFormatName"),
