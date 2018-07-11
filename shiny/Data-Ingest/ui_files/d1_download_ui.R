@@ -1,8 +1,8 @@
 fluidRow(
-  box(width = 8,
+  box(width = 4, title = h2("Import From DataONE"), solidHeader = TRUE, status = "success",
     textInput(
       "id",
-      label = h2("Import From DataONE"),
+      label = "Import from dataONE",
       placeholder = "Enter doi or id here"
     ),
     p("Copy and Paste the following example data sets:"),
@@ -15,10 +15,19 @@ fluidRow(
                      tags$div(id="loadmessage",
                               HTML(paste0("<div> <h3>Download in Progress.</h3> <p>This download may take a couple of minutes.</p> <img src=\'http://www.lettersmarket.com/uploads/lettersmarket/blog/loaders/common_green/ajax_loader_green_64.gif' height=\"64\" width=\"64\"> </div>"))
                      )), 
-    DTOutput("identifier"), 
+    DT::DTOutput("identifier"),
+    p("Selected Row (For Testing Purposes)"),
+    verbatimTextOutput("rowSelection"), ## For testing only
     actionButton(inputId = "D1FinishButton", label = "Finish Download"),
     hr(),
     p("Location of Downloaded files:"),
     verbatimTextOutput("D1dbfilesPath")
-  )
+  ),
+  ## Call Input Record UI
+  inputsRecordUI("d1_inputs_record"),
+  ## Call dbfiles UI
+ # dbfilesUI("d1_dbfiles"),
+  ## Call Formats Record UI
+  formatsRecordUI("d1_formats_record")
+ 
 )
