@@ -113,7 +113,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     if (!is.character(in.data.file)) { # default behavior
         old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
-    } else { # Use the supplied file path
+    } else { # Use the supplied file name
         old.file <- file.path(in.path, in.data.file)
     }
 
@@ -123,11 +123,23 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
 
       ## convert time to seconds
       sec <- nc$dim$time$vals
+      print(sec)
+      print("------------------")
+      
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
-
-      dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
+      print(sec)
+      print(typeof(sec))
+      
+      ### Not sure what this is supposed to do, but it doesn't seem to be right for a year fragment.
+      dt <- PEcAn.utils::seconds_in_year(year) / 31536000 #length(sec)
+      print("dt")
+      print(dt)
       tstep <- round(86400 / dt)
+      print("tstep")
+      print(tstep)
       dt <- 86400 / tstep
+      print("dt")
+      print(dt)
 
       ## extract variables
       lat <- ncdf4::ncvar_get(nc, "latitude")
@@ -181,6 +193,10 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       PEcAn.logger::logger.info("Skipping to next year")
       next
     }
+    
+    print(("****** Done data processing ******"))
+    print(paste0("sec = ", sec))
+    print(paste0("dt = ", dt))
 
     ## build time variables (year, month, day of year)
     nyr <- floor(length(sec) / 86400 / 365 * dt)
@@ -249,8 +265,9 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       tmp[hr.na, 4] <- tmp[hr.na - 1, 4] + dt/86400 * 24
     }
 
-    ##filter out days not included in start or end date
-    if(year == start_year){
+    ## filter out days not included in start or end date if not a year fragment. (This procedure would be nonsensible for a year
+    ## fragment, as it would filter out all of the days.)
+    if(year == start_year && !year.fragment){
       extra.days <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
       if (extra.days > 1){
         PEcAn.logger::logger.info("Subsetting SIPNET met to match start date")
@@ -258,7 +275,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         tmp <- tmp[start.row:nrow(tmp),]
       }
     }
-    if (year == end_year){
+    if (year == end_year && !year.fragment){
       if(year == start_year){
         extra.days  <- length(as.Date(start_date):as.Date(end_date))
         if (extra.days > 1){
