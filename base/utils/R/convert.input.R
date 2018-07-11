@@ -59,7 +59,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     for (i in 1:ensemble) {
       # In dbfile.input.check, pattern searches the file path for the specified regular expression.  filename_pattern
       # contains a portion of the file name which can uniquely identify a particular data product at a particular 
-      # site and time, regardless of similaritied in formatname, mimetype, etc. Because sitenames can contain
+      # site and time, regardless of similarities in formatname, mimetype, etc. Because sitenames can contain
       # regular expression specific special characters and site-specific identification is already present through
       # site.id, a regex placeholder is used instead.
       
@@ -533,6 +533,16 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     fcn.args$outfolder  <- outfolder
     fcn.args$start_date <- start_date
     fcn.args$end_date   <- end_date
+    print(forecast) ###
+    print(input.id)
+    print(!is.null(input.id))
+    print(!is.na(input.id))
+    
+    if (forecast && !is.null(input.id) && !is.na(input.id)) { # for met2model coversion
+      fcn.args$year.fragment = TRUE
+      parent.inputfile <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id =", input.id), con)
+      fcn.args$in.data.file = parent.inputfile$name #Sends the file name (minus the extension)
+    }
     
     arg.string <- listToArgString(fcn.args)
     
@@ -559,7 +569,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   PEcAn.logger::logger.info("RESULTS: Convert.Input")
   PEcAn.logger::logger.info(result) ### Too much output
-  ### PEcAn.logger::logger.info(names(result[[i]]))
+  PEcAn.logger::logger.info(names(result[[i]]))
   
   if (length(result[[1]]) <= 1){ # result, a list, is gauranteed to have at least one elemet.  However that element could be an empty data frame.
     PEcAn.logger::logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
