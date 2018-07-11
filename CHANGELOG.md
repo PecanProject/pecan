@@ -21,7 +21,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - Change all history parameter files to have zero storage respiration
     
 - dataone_download.R:
-    - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
+    - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget.
+    
+- Data_Ingest_App:
+    - use `updateSelectizeInput` to populate `selectizeInput` with choices from BETYdb. This instantly loads the inputfields where other methods take minutes to load. 
     
 ### Added
 - In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs
@@ -29,6 +32,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Explore the interdependencies between pecan packages/functions.
 
 - From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
+- Experimental support for docker (#1028)
 
 - dataone_download.R:
   - Added progress messages to indicate that the function is working during longer downloads via PEcAn logger. 
@@ -40,8 +44,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Spinner displays when class "shiny-busy" is invoked during the dataONE download process. In this way, users can be sure that the app is live and is processing their request. 
   - Users can now input the name of the destination directory that they wish to create within dbfiles. 
   - Updated Travis.yml to include librdf0-dev so that it can download redland, datapack, and dataone. 
+  - Added Data-Ingest UI (inputs, dbfiles, and formats record UI and some basic server side functionality are online)
+
   
 ### Removed
+  - pecan.worldmap function no longer used, dropped from visualization package
 
 ### Changed
 - PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.

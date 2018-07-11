@@ -5,7 +5,22 @@
 \title{return.bias}
 \usage{
 return.bias(settings, isbias, model.out, inputs, prior.list.bias,
-  run.round = FALSE)
+  run.round = FALSE, pass2bias = NULL)
+}
+\arguments{
+\item{settings}{settings list}
+
+\item{isbias}{bias variable index}
+
+\item{model.out}{model output list}
+
+\item{inputs}{inputs list}
+
+\item{prior.list.bias}{prior list, bias prior to be added}
+
+\item{run.round}{extension flag}
+
+\item{pass2bias}{if this is another round, this is re-sampled MCMC samples, will go with the rest of model params}
 }
 \author{
 Istem Fer

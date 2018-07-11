@@ -668,9 +668,17 @@ pda.generate.sf <- function(n.knot, sf, prior.list){
 
 
 ##' @title return.bias
+##' @param settings settings list
+##' @param isbias bias variable index
+##' @param model.out model output list
+##' @param inputs inputs list
+##' @param prior.list.bias prior list, bias prior to be added
+##' @param run.round extension flag
+##' @param pass2bias if this is another round, this is re-sampled MCMC samples, will go with the rest of model params
+##' 
 ##' @author Istem Fer
 ##' @export
-return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, run.round = FALSE){
+return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, run.round = FALSE, pass2bias = NULL){
   
   # how many bias parameters per dataset requested
   nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
@@ -735,6 +743,8 @@ return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, ru
   if(run.round){
     load(prev.bias)
     prior.list.bias <- prior.list
+    # TODO: implementation for multiple bias params, this requires multiple changes int he PDA workflow
+    bias.params[[1]][(nrow(bias.params[[1]])-length(pass2bias)+1):nrow(bias.params[[1]]), 1] <- pass2bias
   }
   
   return(list(bias.params = bias.params, prior.list.bias = prior.list.bias, nbias = nbias))
@@ -835,7 +845,10 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
  
   get_samples <- sample(1:nrow(mcmc_samples), n.post.knots)
   new_knots <- mcmc_samples[get_samples,]
-  
+  pass2bias <- new_knots[, ncol(new_knots)] # if there is bias param, it will be the last col
+  # if there is no bias param this won't be used anyway
+  # the rest of the code is not ready for bias params for multiple variables
+    
   # when using sf, need to sample from sf mcmc samples and calculate back actual parameter values
   if(!is.null(sf.samp)){
     
@@ -845,7 +858,6 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
     }
     sf_samples <- do.call(rbind, sf_samples)
     
-    get_samples <- sample(1:nrow(sf_samples), n.post.knots)
     sf_knots    <- sf_samples[get_samples,]
     
     ind <- 0
@@ -872,6 +884,6 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
     ind <- ind + n.param.orig[i]
   }
   
-  return(list(knots.params.temp = knots.params.temp, sf_knots = sf_knots))
+  return(list(knots.params.temp = knots.params.temp, sf_knots = sf_knots, pass2bias = pass2bias))
   
 }
