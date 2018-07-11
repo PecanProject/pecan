@@ -6,6 +6,7 @@
  library(stringr)
  library(DT)
  library(shiny)
+ library(shinyjs)
  
  source("ui_utils.R", local = TRUE)
  
@@ -26,8 +27,8 @@
  formats <- dplyr::tbl(bety, "formats") %>% distinct(name) %>% dplyr::arrange(name) %>% pull(name)
  formats_sub <- dplyr::tbl(bety, "formats") %>% dplyr::select(name, id) %>% dplyr::arrange(name)
  
- machines <- dplyr::tbl(bety, "machines") %>% distinct(hostname) %>% dplyr::arrange(hostname)%>% pull(hostname)
- machines_sub <- dplyr::tbl(bety, "machines") %>% dplyr::select(hostname, id) %>% dplyr::arrange(hostname)
+ # machines <- dplyr::tbl(bety, "machines") %>% distinct(hostname) %>% dplyr::arrange(hostname)%>% pull(hostname)
+ # machines_sub <- dplyr::tbl(bety, "machines") %>% dplyr::select(hostname, id) %>% dplyr::arrange(hostname)
  
  mimetypes <- dplyr::tbl(bety, "mimetypes") %>% distinct(type_string) %>% dplyr::arrange(type_string) %>% pull(type_string)
  mimetype_sub <- dplyr::tbl(bety, "mimetypes") %>% dplyr::select(type_string, id) %>% dplyr::arrange(type_string)
@@ -43,6 +44,7 @@ ui <- dashboardPage(
     source_ui("ui_files", "sidebar_ui.R")
   ),
   dashboardBody(
+    useShinyjs(), #Include shinyjs
     tabItems(
     ## Tab 1 -- Landing Page
     tabItem(tabName = "Home",
@@ -79,9 +81,9 @@ server <- function(input, output, session) {
   source("server_files/local_upload_svr.R", local = TRUE)
 
   #### dbfiles record module server
-  callModule(dbfiles, "local_dbfiles")
-  
-  callModule(dbfiles, "d1_dbfiles")
+  # callModule(dbfiles, "local_dbfiles")
+  # 
+  # callModule(dbfiles, "d1_dbfiles")
  
   ##### Input Record Module derver 
   callModule(inputsRecord, "local_inputs_record")
@@ -90,8 +92,12 @@ server <- function(input, output, session) {
   
   #### formats record module server
   callModule(formatsRecord, "local_formats_record")
-  
+   
   callModule(formatsRecord, "d1_formats_record")
+
+  # New Format Box
+  shinyjs::onclick("NewFormat", shinyjs::show(id = "formatbox", anim = TRUE))
+  
   
 }
 
