@@ -2,7 +2,7 @@ NCPUS ?= 1
 
 BASE := logger utils db settings visualization qaqc remote workflow
 
-MODELS := biocro clm45 dalec ed fates gday jules  \
+MODELS := biocro clm45 dalec ed fates gday jules linkages \
 				lpjguess maat maespa preles sipnet dvmdostem template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
