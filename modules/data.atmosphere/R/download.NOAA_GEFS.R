@@ -18,7 +18,7 @@
 ##' 
 ##' @section Data Save Format:
 ##' Data is saved in the netcdf format to the specified directory.  File names reflect the precision of the data to the given range of days.
-##' NOAA.GEFS.willow creek.3.2018-06-08T06:00.to.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
+##' NOAA.GEFS.willow creek.3.2018-06-08T06:00.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
 ##' June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 ##' 
 ##' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
@@ -203,9 +203,12 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   #These dimensions will be used for all 21 ncdf4 file members, so they're all declared once here.
   #The data is really one-dimensional for each file (though we include lattitude and longitude dimensions
   #to comply with the PEcAn standard).
-  time_dim = ncdf4::ncdim_def("Time", "6 Hours", 1:ncol(noaa_data[[1]]))
-  lat_dim = ncdf4::ncdim_def("latitude", "Degrees North", lat.in)
-  lon_dim = ncdf4::ncdim_def("longitude", "Degrees East", lon.in)
+  time_dim = ncdf4::ncdim_def(name="time", 
+                              paste(units="hours since", format(start_date, "%Y-%m-%dT%H:%M")), 
+                              seq(6, 6 * increments, by = 6),
+                              create_dimvar = TRUE)
+  lat_dim = ncdf4::ncdim_def("latitude", "degree_north", lat.in, create_dimvar = TRUE)
+  lon_dim = ncdf4::ncdim_def("longitude", "degree_east", lon.in, create_dimvar = TRUE)
   
   dimensions_list = list(time_dim, lat_dim, lon_dim)
   
