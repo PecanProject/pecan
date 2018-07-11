@@ -48,6 +48,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
   
 ### Removed
+  - pecan.worldmap function no longer used, dropped from visualization package
 
 ### Changed
 - PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
