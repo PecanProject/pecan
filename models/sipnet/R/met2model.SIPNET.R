@@ -31,13 +31,31 @@
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, in.data.file = NULL, ...) {
   
-  
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  if (year.fragment) { # Could start or end at any time within any year, so this level of specificity is needed.
-    out.file <- paste(in.prefix, format(start_date, "%Y-%m-%dT%H:%M"), 
-                      format(end_date, "%Y-%m-%dT%H:%M"), "clim", sep=".")
+  if (is.character(in.data.file)) { # Could start or end at any time within any year, so this level of specificity is needed.
+                                    # in.data.file is not gauranteed to contain the file extension.
+    escaped = gsub("(\\W)", "\\\\\\1", filename) # The file name may contain special characters that could mess up the regular expression.
+    matching_files <- grep(escaped, list.files(in.path), value=TRUE) 
+    if (length(matching_files) == 0) {
+      PEcAn.logger::logger.severe(paste0("No files found matching ", in.data.file, ". Cannot process data."))
+    }
+    
+    # This function is supposed to process netcdf files, so we'll search for files the the extension .nc and use those first.
+    nc_file = grep("\\.nc$", matching_files)
+    if (length(nc_file) > 0) {
+      if (grepl("\\.nc$", in.data.file)) {
+        out.file <- sub("\\.nc$", ".clim", in.data.file)
+      } else {
+        out.file <- paste0(in.data.file, ".clim")
+        in.data.file <- paste0(in.data.file, ".nc")
+      }
+    } else {
+      PEcAn.logger::logger.warn("No files found with extension '.nc'.  Using the first file in the list below:")
+      print(matching_files)
+      in.data.file = matching_files[i]
+    }
   } else { # Default behavior
     out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
                       strptime(end_date, "%Y-%m-%d"),
@@ -91,7 +109,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     if (is.null(in.data.file)) { # default behavior
         old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
-    } else {
+    } else { # Use the supplied file path
       if (is.character(in.data.file) && file.exists(in.data.file)) {
         old.file <- in.data.file
       } else {
