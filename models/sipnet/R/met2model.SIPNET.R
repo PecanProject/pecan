@@ -34,12 +34,14 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
+  print(start_date) ###
+  print(end_date) ###
   if (is.character(in.data.file)) { # Could start or end at any time within any year, so this level of specificity is needed.
                                     # in.data.file is not gauranteed to contain the file extension.
-    escaped = gsub("(\\W)", "\\\\\\1", filename) # The file name may contain special characters that could mess up the regular expression.
+    escaped <- gsub("(\\W)", "\\\\\\1", in.data.file) # The file name may contain special characters that could mess up the regular expression.
     matching_files <- grep(escaped, list.files(in.path), value=TRUE) 
     if (length(matching_files) == 0) {
-      PEcAn.logger::logger.severe(paste0("No files found matching ", in.data.file, ". Cannot process data."))
+      PEcAn.logger::logger.severe(paste0("No files found matching ", in.data.file, "; cannot process data."))
     }
     
     # This function is supposed to process netcdf files, so we'll search for files the the extension .nc and use those first.
@@ -51,10 +53,10 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         out.file <- paste0(in.data.file, ".clim")
         in.data.file <- paste0(in.data.file, ".nc")
       }
-    } else {
+    } else { # no .nc files found... it could be that the extension was left off, or some other problem
       PEcAn.logger::logger.warn("No files found with extension '.nc'.  Using the first file in the list below:")
       print(matching_files)
-      in.data.file = matching_files[i]
+      in.data.file <- matching_files[i]
     }
   } else { # Default behavior
     out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
@@ -92,8 +94,8 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   # only if year.fragment = FALSE
   if (year.fragment) {
     start_year <- lubridate::year(start_date)
-    start_year <- lubridate::year(end_date) # Start year is listed twice because there's only one file. start_year and end_year only control
-                                            # the loop and file name.
+    end_year <- lubridate::year(start_date) # Start year is listed twice because there's only one file. start_year and end_year only control
+                                            # the loop and file name, which are overriden for year.fragment/in.data.file
   } else {
     start_year <- lubridate::year(start_date)
     end_year <- lubridate::year(end_date)
@@ -107,14 +109,12 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
 
     diy <- PEcAn.utils::days_in_year(year)
     
-    if (is.null(in.data.file)) { # default behavior
+    print(paste0("in.data.file = ", in.data.file))
+    
+    if (!is.character(in.data.file)) { # default behavior
         old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
     } else { # Use the supplied file path
-      if (is.character(in.data.file) && file.exists(in.data.file)) {
-        old.file <- in.data.file
-      } else {
-        PEcAn.logger::logger.severe("Specified input file does not exist.")
-      }
+        old.file <- file.path(in.path, in.data.file)
     }
 
     if (file.exists(old.file)) {
