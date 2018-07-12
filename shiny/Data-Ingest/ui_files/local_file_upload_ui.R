@@ -6,11 +6,11 @@ fluidRow(
       inputId = "file",
       label = "Upload Local Files", 
       accept = NULL,
-      multiple = FALSE,
+      multiple = TRUE,
       placeholder = "Drag and drop files here"
     ),
-    tableOutput("contents"),
-#   verbatimTextOutput("test"),
+    DT::DTOutput("dtfiles"),
+    verbatimTextOutput("test"),
     hr(),
     textInput(
       "new_local_filename",
@@ -24,8 +24,6 @@ fluidRow(
   ),
   ## Call Input Record UI
   inputsRecordUI("local_inputs_record"),
-  ## Call dbfiles UI
-#  dbfilesUI("local_dbfiles"),
   ## Call Formats Record UI
   formatsRecordUI("local_formats_record")
 )

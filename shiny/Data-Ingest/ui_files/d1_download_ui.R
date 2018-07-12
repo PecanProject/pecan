@@ -25,8 +25,6 @@ fluidRow(
   ),
   ## Call Input Record UI
   inputsRecordUI("d1_inputs_record"),
-  ## Call dbfiles UI
- # dbfilesUI("d1_dbfiles"),
   ## Call Formats Record UI
   formatsRecordUI("d1_formats_record")
  
