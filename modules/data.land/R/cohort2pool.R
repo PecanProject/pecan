@@ -7,7 +7,7 @@
 ##' @author Saloni Shah
 ##' @examples
 ##' \dontrun{
-##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
+##' veg_file <- "/fs/data1/pecan.data/dbfiles/Forest_Geo_site_1-5005/Forest_Geo.1981.veg.rds"
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
 ##' }
 
@@ -43,9 +43,38 @@ cohort2pool <- function(veg_file, allom_param = NULL) {
   tot_biomass <- sum(biomass)
   AGB <- tot_biomass
   
+  #Calculate Component Biomass
+  #ratio = exp(B0 + (B1/DBH))
+  
+  component_names <- c("foliage","coarse_root", "stem_bark","stem_wood")
+  
+  hwood_0params <-c(-4.08113,-1.6911,-2.0129,-0.3065)
+  hwood_1params <- c(5.8816, 0.8160, -1.6805,-5.4240)
+  hlist <-list(hwood_0params, hwood_1params)
+  
+  swood_0params <-c(-2.9584,-1.5619,-2.0980,-0.3737)
+  swood_1params <- c(4.4766,0.6614,-1.1432,-1.8055)
+  slist <-list(swood_0params, swood_1params)
+  
+  
+  comp_ratios<-pmap(slist,function(B0,B1){
+    
+    exp(B0 + (B1/dbh))
+
+  }) %>%
+    setNames(component_names)
+
+  leaf_carbon_content        <- mean(as.vector(comp_ratios$foliage) * AGB, na.rm =TRUE)
+  coarse_root_carbon_content <- mean(as.vector(comp_ratios$coarse_root) * AGB, na.rm =TRUE)
+  tot_sbark_bmass            <- mean(as.vector(comp_ratios$stem_bark) * AGB, na.rm =TRUE)
+  wood_carbon_content        <- mean(as.vector(comp_ratios$stem_wood) * AGB, na.rm =TRUE) +tot_sbark_bmass
+
+  
+  
   #Prep Arguments for pool_ic function
   dims <- list(time =1) #Time dimension may be irrelevant
-  variables <-list(AGB = tot_biomass)
+  variables <-list(AGB,leaf_carbon_content,coarse_root_carbon_content,wood_carbon_content, names = TRUE)
+  mapply(function(v,x,y,z) { y },AGB,leaf_carbon_content,coarse_root_carbon_content,wood_carbon_content, SIMPLIFY = FALSE,USE.NAMES = TRUE)
   input <- list(dims = dims,
                 vals = variables)
   
