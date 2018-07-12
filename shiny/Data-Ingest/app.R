@@ -11,7 +11,6 @@
  source("ui_utils.R", local = TRUE)
  
  ## Modules ##
- source("modules/dbFiles_module.R", local = TRUE)
  source("modules/inputs_module.R", local = TRUE)
  source("modules/formats_module.R", local = TRUE)
  
@@ -70,7 +69,7 @@ server <- function(input, output, session) {
   options(shiny.maxRequestSize = 100 * 1024 ^ 2) #maximum file input size
   
   ## Setup ##
-  Shared.data <- reactiveValues(downloaded=NULL)
+  Shared.data <- reactiveValues(downloaded = NULL, selected_row = NULL, local_files = NULL, selected_row_local = NULL)
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
@@ -79,11 +78,6 @@ server <- function(input, output, session) {
 
   ######### FileInput ########################################
   source("server_files/local_upload_svr.R", local = TRUE)
-
-  #### dbfiles record module server
-  # callModule(dbfiles, "local_dbfiles")
-  # 
-  # callModule(dbfiles, "d1_dbfiles")
  
   ##### Input Record Module derver 
   callModule(inputsRecord, "local_inputs_record")
@@ -97,7 +91,6 @@ server <- function(input, output, session) {
 
   # New Format Box
   shinyjs::onclick("NewFormat", shinyjs::show(id = "formatbox", anim = TRUE))
-  
   
 }
 
