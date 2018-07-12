@@ -244,15 +244,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
     
-    ###
-    print("********************** ready.id ************************")
-    print(typeof(ready.id))
-    print(ready.id)
-    print("********************************************************")
-    
     met2model.result = list()
     for (i in 1:length(ready.id[[1]])) {
-      met2model.result[[i]] <- .met2model.module(ready.id = list(ready.id$input.id[i], ready.id$dbfile.id[i]), 
+      met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[i], dbfile.id = ready.id$dbfile.id[i]), 
                                     model = model, 
                                     con = con,
                                     host = host, 
