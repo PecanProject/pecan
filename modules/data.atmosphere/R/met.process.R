@@ -244,9 +244,15 @@ met.process <- function(site, input_met, start_date, end_date, model,
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
     
+    ###
+    print("********************** ready.id ************************")
+    print(typeof(ready.id))
+    print(ready.id)
+    print("********************************************************")
+    
     met2model.result = list()
     for (i in 1:length(ready.id[[1]])) {
-      met2model.result[[i]] <- .met2model.module(ready.id = ready.id, 
+      met2model.result[[i]] <- .met2model.module(ready.id = list(ready.id$input.id[i], ready.id$dbfile.id[i]), 
                                     model = model, 
                                     con = con,
                                     host = host, 
@@ -263,10 +269,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     register = register)
     }
     
-    ###
-    print("met2model.result")
-    print(met2model.result)
-    
     model.id = list()
     model.file.info = list()
     model.file = list()
@@ -276,11 +278,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
       model.file.info[[i]] <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id[[i]]$dbfile.id), con)
       model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
     }
-    
-    ###
-    print("met2model.result")
-    print(model.file)
-    quit("no")
     
   } else {
     PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
@@ -295,10 +292,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
     #PEcAn.logger::logger.info("model.file = ",model.file,input.met)
     PEcAn.logger::logger.info("model.file = ",model.file,input_met)
   }
-  
-
     
-  return(model.file) #Returns the path to the file that the model will use.
+  return(model.file) # Returns the path to the file that the model will use.
 } # met.process
 
 ################################################################################################################################# 
