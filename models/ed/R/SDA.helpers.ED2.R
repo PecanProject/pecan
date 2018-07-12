@@ -19,32 +19,32 @@ get_restartfile.ED2 <- function(mod_outdir, runid, file.time) {
       tstamp <- substr(history_files[f], index[1] + 3, index[1] + 12)
     })
     
-    # if this is the first year of an annual assimilation, htimestamp will have one element like "1961-01-01"
-    # if this is the first year of a monthly assimilation, htimestamp will have 12 elements like "1961-01-01", "1961-02-01", ...
-    # and so on...
-    # the first timestamp will be like YYYY-01-01 regardless from assimilation time step
-    # in that case we want to read both y/d/m from stop.time, otherwise we decide below
-    # this is because of ED2's weird file naming, writes out annual history files as "history-S-1960-01-01-000000-g01.h5"
-    # not as "history-S-1960-00-00-000000-g01.h5" or "history-S-1960-12-31-000000-g01.h5"
-    annual_check <- TRUE
-    monthly_check <- daily_check <- FALSE # this will result in reading the first file as YYYY-01-01 regardless of assimilation time step
-    if(length(htimestamps) > 1){
-      diff_check     <- difftime(htimestamps[2], htimestamps[1], units = c("hours"))
-      monthly_check  <- ifelse(diff_check > 744, FALSE, TRUE)
-      daily_check    <- ifelse(diff_check > 24,  FALSE, TRUE)
-      # if you want to extend this to checks for sub-daily assimilations, also modify timestamp extraction above
-    }
+    # NOTE: ED2 writes annual history files on the same month e.g. in ed_model.F90:
+    #
+    #           history_time   = new_month .and. isoutput /= 0 .and.                              &
+    #                            current_time%month == imontha .and.                              &
+    #                            mod(real(current_time%year-iyeara),frqstate) == 0.
+    #
+    # So the annual history file after starting a run at 1961/01/01 will be "history-S-1962-01-01-000000-g01.h5"
+    # this version of code checks for annual -S- files, but putting these flags here to remind that there can be monthly or daily history files 
+    annual_check <- monthly_check <- daily_check <- FALSE # this will result in reading the first file as YYYY-01-01 regardless of assimilation time step
     
-    file_year  <- lubridate::year(file.time) # always get year
-    file_month <- ifelse(monthly_check, lubridate::month(file.time), 1)
-    if(daily_check){
-      file_day <- lubridate::day(file.time)
-    }else{
-      # unfortunately ED2 writes monthly files as YYYY-MM-00 
-      # need to double check these while working with time steps other than annual
-      # this might change if I make changes to the ED2 output code
-      file_day <- ifelse(monthly_check, 0, 1)
-    }
+    # if(length(htimestamps) > 1){
+    #   diff_check     <- difftime(htimestamps[2], htimestamps[1], units = c("hours"))
+    #   monthly_check  <- ifelse(diff_check > 744, FALSE, TRUE)
+    #   daily_check    <- ifelse(diff_check > 24,  FALSE, TRUE)
+    #   # if you want to extend this to checks for sub-daily assimilations, also modify timestamp extraction above
+    # }
+    
+    # file.time comes from upstream in the format of "yyyy-12-31 23:59:59 UTC"
+    # to match ED2 naming for annual history files, round to next day  "YYYY-01-01 UTC"
+    ed.hist.annual <- lubridate::ceiling_date(file.time, "1 day")
+     
+    file_year     <-  ifelse(annual_check,  lubridate::year(file.time),  lubridate::year(ed.hist.annual))
+    file_month    <-  ifelse(monthly_check, lubridate::month(file.time), lubridate::month(ed.hist.annual))
+    file_day      <-  ifelse(daily_check,   lubridate::day(file.time),   lubridate::day(ed.hist.annual))
+    
+    # check how ED2 writes other -S- files
     
 
     datetime_string <- sprintf("%04d-%02d-%02d-000000", 
