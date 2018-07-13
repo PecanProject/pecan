@@ -61,6 +61,21 @@ colnames(state)<-c('AbvGrndWood','GWBI')
 IC <- sample.IC.SIPNET(ne, state = state)
 status.end()
 
+
+# ED2 IC sampling from tree-ring DBH posteriors
+lyford_samples <- readRDS("/fs/data2/output/paleon_data_products/1000000650/TreeRings/HF_DBH_iterations.RDS")
+IC <- sample.IC.ED2(samples = lyford_samples, 
+                    format_name = "usda",
+                    start_year = settings$run$start.date, 
+                    pfts = settings$pfts,
+                    ne,
+                    path_prefix = paste0(dirname(settings$run$inputs$css$path), "/HF_Lyford"),
+                    latitude = settings$run$site$lat,
+                    longitude = settings$run$site$lon,
+                    source = "HF_lyford.PalEON",
+                    outfolder = settings$rundir,
+                    metadata = list(area=pi*(20^2)))
+
 #develop/debug
 if(FALSE){
   obs.mean = obs.list$obs.mean
