@@ -30,7 +30,12 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
       PEcAn.logger::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
-      return(input_met$path)
+      
+      # Additional layer of list depth added for consistancy with other return statements.
+      temp_path = input_met$path
+      input_met$path <- list()
+      input_met$path$path1 <- temp_path
+      return(input_met)
     }else {
      PEcAn.logger::logger.warn("No met source specified")
       if(!is.null(input_met$id) & !is.null(input_met$path)){
@@ -95,7 +100,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username, con)
     
     if (is.data.frame(result)) {
-      PEcAn.DB::dbfile.input.insert(in.path = dirname(result$file),
+      dbentry = PEcAn.DB::dbfile.input.insert(in.path = dirname(result$file),
                           in.prefix = result$dbfile.name,
                           siteid = site$id, 
                           startdate = start_date, enddate = end_date,
@@ -103,7 +108,14 @@ met.process <- function(site, input_met, start_date, end_date, model,
                           formatname = result$formatname, 
                           parentid = NA, 
                           con = con, hostname = result$host)
-      return(invisible(result$file))
+      
+      # Additonal list depth added for consistancy with other return statements.
+      input_met$path <- list()
+      input_met$path$path1 <- result$file
+      input_met$id <- list()
+      input_met$id$id1 <- dbentry$input.id
+      
+      return(invisible(input_met))
     }
   }
   
