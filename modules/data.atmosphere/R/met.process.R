@@ -25,12 +25,6 @@
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
-  ### Development and debugging statements
-  print("Entered met.process")
-  source("~/pecan/modules/data.atmosphere/R/download.raw.met.module.R")
-  source("~/pecan/modules/data.atmosphere/R/met2cf.module.R")
-  source("~/pecan/modules/data.atmosphere/R/metgapfill.module.R")
-  source("~/pecan/modules/data.atmosphere/R/met2model.module.R")
 
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
@@ -263,11 +257,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     register = register)
     }
     
-    print("**** Met2model result *******")
-    print(met2model.result)
-    print("-----------------------------")
-    print(met2model.result[[1]]$model.id)
-    
     model.id = list()
     model.file.info = list()
     model.file = list()
@@ -286,7 +275,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
     
     for (i in 1:length(model.id)) {
       input_met$id[[paste0("id", i)]] <- model.id[[i]]$input.id
-      print(typeof(model.file[[i]]))
       input_met$path[[as.character(paste0("path", i))]] <- model.file[[i]]
     }
     

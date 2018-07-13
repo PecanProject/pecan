@@ -66,15 +66,13 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       ## rather than having a model-format soils file that is processed remotely
     }
     # met conversion
-    ### using source for developing
-    source("~/pecan/modules/data.atmosphere/R/met.process.R")
     
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
       if ( (PEcAn.utils::status.check(name) == 0)) { ## previously is.null(input$path) && 
         PEcAn.logger::logger.info("calling met.process: ",settings$run$inputs[[i]][['path']])
         settings$run$inputs[[i]] <- 
-          met.process(  ###PEcAn.data.atmosphere::
+          PEcAn.data.atmosphere::met.process(
             site       = settings$run$site, 
             input_met  = settings$run$inputs$met,
             start_date = settings$run$start.date,

@@ -2,9 +2,6 @@
 .met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
                               browndog, new.site, overwrite = FALSE, exact.dates,spin, register) {
   
-  ###
-  source("~/pecan/base/utils/R/convert.input.R")
-  
   # Determine output format name and mimetype
   model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
                                 " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
@@ -44,7 +41,7 @@
     fcn <- paste0("met2model.", model)
     lst <- site.lst(site.id=site$id, con=con)
     
-    model.id <- convert.input(input.id = input.id, ###PEcAn.utils::
+    model.id <- PEcAn.utils::convert.input(input.id = input.id,
                               outfolder = outfolder,
                               formatname = formatname, mimetype = mimetype, 
                               site.id = site$id, 

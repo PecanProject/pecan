@@ -33,8 +33,6 @@
 ##' }
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname,
                                 parentid=NA, con, hostname=PEcAn.remote::fqdn(), allow.conflicting.dates=FALSE) {
-  print("Entered dbfile.input.insert")
-  
   name <- basename(in.path)
   hostname <- default_hostname(hostname)
 
@@ -190,7 +188,6 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA,
                                con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL) {
-  print("Entered dbfile.input.check")
   
   hostname <- default_hostname(hostname)
   
@@ -201,9 +198,6 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   
   # find appropriate format
   formatid <- get.id(table = 'formats', colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
-  
-  print(paste0("formatid = ", formatid))
-  print(paste0("mimetypeid = ", mimetypeid, "  ", mimetype))
   
   if (is.null(formatid)) {
     invisible(data.frame())
@@ -229,6 +223,12 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       con = con
     )#[['id']]
   } else {
+      query = paste0(
+        "SELECT * FROM inputs WHERE site_id=", siteid,
+        " AND format_id=", formatid,
+        parent
+      )
+    
     inputs <- db.query(
       query = paste0(
         "SELECT * FROM inputs WHERE site_id=", siteid,
@@ -238,9 +238,6 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       con = con
     )#[['id']]
   }
-  
-  print("After search:")
-  print(inputs)
 
   if (is.null(inputs) | length(inputs$id) == 0) {
     return(data.frame())
@@ -255,8 +252,6 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       }
 
       inputs <- inputs[is.na(inputs$parent_id),]
-      print("After reassignment")
-      print(inputs)
     }
 
     if (length(inputs$id) > 1) {

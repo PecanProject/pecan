@@ -13,10 +13,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           forecast = FALSE, ensemble = FALSE,...) {
   input.args <- list(...)
   
-  ### Debugging
-  print("Entered convert.inputs")
-  source("~/pecan/base/db/R/dbfiles.R")
-  
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
@@ -84,11 +80,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                              exact.dates = TRUE,
                                                              pattern = filename_pattern)
       
-      ### Debugging print statmenets
-      print("^^^^^^^^^^ existing.dbfile[[i]] ^^^^^^^^^^^^^^^^")
-      print(existing.dbfile[[i]])
-      print("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
-      
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
         
@@ -134,7 +125,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     # Set up files to be deleted.  The deletion will actually happen after the function finishes execution.  In case there
     # are any errors, this practice will make sure that the old files are preserved.
     if (length(files.to.delete) > 0) { # Each list item is a file to delete.
-      print("Entered 'files to delete'.")
       file.deletion.commands <- .get.file.deletion.commands(unlist(files.to.delete)) 
       
       PEcAn.remote::remote.execute.R( file.deletion.commands$move.to.tmp,
@@ -165,9 +155,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       } else {
         PEcAn.logger::logger.info("Files for all ensemble members for this forecast already exist on this machine.")
       }
-      
-      ### Debugging statement covering possible function exit.
-      print("Exiting early")
       
       return(existing_records)
     }
@@ -549,12 +536,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     cmdFcn <- paste0(pkg, "::", fcn, "(", arg.string, ")")
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
-    ### temporarily removed for debugging since it takes a long time to execute
     result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
-    
-    ### save(result, file = "~/Tests/sample18.gefs.Rdata")
-    ### load("~/Tests/sample18.gefs.Rdata")  ### For testing, because calling NOAA_GEFS every time will take a while.
-    print("result saved.")
     
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
     # code below can process everything as if it were a list without worrying about data types.
@@ -564,8 +546,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   }
   
   PEcAn.logger::logger.info("RESULTS: Convert.Input")
-  PEcAn.logger::logger.info(result) ### Too much output
-  PEcAn.logger::logger.info(names(result[[i]]))
+  PEcAn.logger::logger.info(result)
   
   if (length(result[[1]]) <= 1){ # result, a list, is gauranteed to have at least one elemet.  However that element could be an empty data frame.
     PEcAn.logger::logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
@@ -585,9 +566,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     existing.dbfile <- list(existing.dbfile)
   }
   
-  ### 
-  print("+-+-+-+-+-+ FOR LOOP +-+-+-+-+-+-+-+")
-  
   #---------------------------------------------------------------#
   # New arrangement of database adding code to deal with ensembles.
   if (write) {
@@ -597,21 +575,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     for(i in 1:length(result)) {  # Master for loop
       id_not_added <- TRUE
       
-      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ new iteration @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-      print(paste0("In for loop i = ", i)) ###
-      
       if (exists("existing.input") && nrow(existing.input[[i]]) > 0 && 
           (existing.input[[i]]$start_date != start_date || existing.input[[i]]$end_date != end_date)) {
-        print("In date updating section") ###
         
         # Updating record with new dates
         PEcAn.DB::db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='",
                                   end_date, "'  WHERE id=", existing.input[[i]]$id), 
                            con)
-        #Record has been updated and file downloaded so just return existing dbfile and input pair
         id_not_added = FALSE
-        ### Function updated to now only return valid data through one exit point.
-        ### return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
         
         # The overall structure of this loop has been set up so that exactly one input.id and one dbfile.id will be written to newinput every interation.
         newinput$input.id = c(newinput$input.id, existing.input[[i]]$id)
@@ -621,18 +592,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       if (overwrite) {
         # A bit hacky, but need to make sure that all fields are updated to expected
         # values (i.e., what they'd be if convert.input was creating a new record)
-        
-        print("In overwrite section")
         if (exists("existing.input") && nrow(existing.input) > 0) {
-          print("    In update inputs section")
             PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
                                       "' WHERE id=", existing.input[[i]]$id), con)
           
         }
         
         if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
-          print("    In update dbfiles section")
-          
             PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
                                       "', ", "file_name='", result[[i]]$dbfile.name[1], 
                                       "' WHERE id=", existing.dbfile[[i]]$id), con)
@@ -647,8 +613,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       }
       
       if (insert.new.file && id_not_added) {
-        print("insert.new.file") ###
-        
         dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result[[1]]$file[1]),
                                              in.prefix = result$dbfile.name[1], 
                                              'Input', existing.input$id, 
@@ -656,9 +620,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         newinput$input.id  <- c(newinput$input.id, existing.input$id)
         newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
       } else if (id_not_added) {
-        print("Default insert") ###
-        
-        new_entry <- dbfile.input.insert(in.path = dirname(result[[i]]$file[1]), ###PEcAn.DB::
+        new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
                                                    in.prefix = result[[i]]$dbfile.name[1], 
                                                    siteid = site.id, 
                                                    startdate = start_date,

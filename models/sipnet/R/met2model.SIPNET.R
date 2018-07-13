@@ -36,8 +36,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  if (is.character(in.data.file)) { # Could start or end at any time within any year, so this level of specificity is needed.
-                                    # in.data.file is not gauranteed to contain the file extension.
+  if (is.character(in.data.file)) { # in.data.file is not gauranteed to contain the file extension.
     escaped <- gsub("(\\W)", "\\\\\\1", in.data.file) # The file name may contain special characters that could mess up the regular expression.
     matching_files <- grep(escaped, list.files(in.path), value=TRUE) 
     if (length(matching_files) == 0) {
@@ -76,7 +75,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
                         dbfile.name = out.file,
                         stringsAsFactors = FALSE)
   PEcAn.logger::logger.info("internal results")
-  print(results)
+  print(results) # Not a debugging statement
 
   if (file.exists(out.file.full) && !overwrite) {
     PEcAn.logger::logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
