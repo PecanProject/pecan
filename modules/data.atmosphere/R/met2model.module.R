@@ -22,6 +22,7 @@
     print("Convert to model format")
     
     input.id <- ready.id$input.id[1]
+    
     if(host$name == "localhost"){
       outfolder <- file.path(dir, paste0(met, "_", model, "_site_", str_ns))
     } else {
@@ -32,9 +33,8 @@
       }
     }
     
-    #Some data products can be forecasts instead of real time data.  Others can be ensembles of data instead of a single source.  Some can be both.
-    #Not all of the registration.xml files for each data source contains a <forecast> or <ensemble> tag; therefore, we must check for their 
-    #existence first.
+    #Some data products can be forecasts instead of real time data.
+    #Not all of the registration.xml files for each data source contains a <forecast> tag.
     forecast = FALSE
     if (!is.null(register$forecast)) {
       forecast = as.logical(register$forecast)
