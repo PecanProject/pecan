@@ -263,6 +263,11 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     register = register)
     }
     
+    print("**** Met2model result *******")
+    print(met2model.result)
+    print("-----------------------------")
+    print(met2model.result[[1]]$model.id)
+    
     model.id = list()
     model.file.info = list()
     model.file = list()
@@ -273,21 +278,38 @@ met.process <- function(site, input_met, start_date, end_date, model,
       model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
     }
     
+    # met.process now returns the entire $met portion of settings, updated with parellel vectors containing
+    # the model-specific data files and their input ids.
+    
+    input_met$id <- list()
+    input_met$path <- list()
+    
+    for (i in 1:length(model.id)) {
+      input_met$id[[paste0("id", i)]] <- model.id[[i]]$input.id
+      print(typeof(model.file[[i]]))
+      input_met$path[[as.character(paste0("path", i))]] <- model.file[[i]]
+    }
+    
+    
   } else {
+    # Because current ensemble data cannot reach this else statement, it only supports single source data.
     PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
     model.id  <- PEcAn.DB::dbfile.check("Input", ready.id, con, hostname=machine.host)
-    if(is.null(model.id)|length(model.id)==0){
-      model.file <- input_met$path
-    }else{
+    if(!(is.null(model.id)|length(model.id)==0)) {
       model.id$dbfile.id  <- model.id$id 
       model.file.info <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
-      model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+      model.file <- file.path(model.file.info$file_path, model.file.info$file_name)
+    } else {
+      PEcAn.logger::logger.severe("Missing model id.")
     }
-    #PEcAn.logger::logger.info("model.file = ",model.file,input.met)
+    
+    input_met$path <- list() # for consistancy with the code in the if to this else.
+    input_met$path$path1 <- model.file
+    input_met$id <- model.id$container_id # This is the input id, whereas $id is the dbfile id.
     PEcAn.logger::logger.info("model.file = ",model.file,input_met)
   }
     
-  return(model.file) # Returns the path to the file that the model will use.
+  return(input_met) # Returns an updated $met entry for the settings object.
 } # met.process
 
 ################################################################################################################################# 
