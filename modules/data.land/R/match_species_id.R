@@ -85,14 +85,14 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
       
       # can call traits::betydb_query one at a time?
       # reduce the number of calls
-      translation <- data.frame(input_code = unique(input_codes),
-                                bety_species_id  = rep(NA, length(unique(input_codes))),
+      translation <- data.frame(bety_species_id  = rep(NA, length(unique(input_codes))),
                                 genus            = rep(NA, length(unique(input_codes))),
                                 species          = rep(NA, length(unique(input_codes))),
+                                input_code = unique(input_codes),
                                 stringsAsFactors = FALSE)
-      for(i in 1:nrow(unique.tmp)){
+      for(i in 1:nrow(translation)){
         foo <- eval(parse(text =paste0("traits::betydb_query(",
-                                       column, "='", unique.tmp$input_code[i], "', table = 'species', user = 'bety', pwd = 'bety')")))
+                                       column, "='", translation$input_code[i], "', table = 'species', user = 'bety', pwd = 'bety')")))
         translation$bety_species_id[i] <- foo$id
         translation$genus[i]           <- foo$genus
         translation$species[i]         <- foo$species
