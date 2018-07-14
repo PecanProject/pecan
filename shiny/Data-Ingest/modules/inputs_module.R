@@ -30,7 +30,7 @@ inputsRecordUI <- function(id){
                    )
     ),
     p("or"),
-    actionButton("NewFormat", label = "Create New Format"),
+  #  actionButton("NewFormat", label = "Create New Format"),
     hr(),
     dateInput(
       ns("InputStartDate"),
@@ -106,6 +106,6 @@ inputsRecord <- function(input, output, session){
     
     output$summInputs <- renderPrint({print(inputsList)})
   })
-output$autoname <- renderPrint({Shared.data$selected_row_local})
+#output$autoname <- renderPrint({Shared.data$selected_row_local})
 
 }
