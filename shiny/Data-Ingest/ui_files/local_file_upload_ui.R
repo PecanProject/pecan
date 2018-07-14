@@ -1,7 +1,7 @@
-source("ui_utils.R", local = TRUE)
-fluidRow(
-  box(width = 4, title = h2("Upload Local Files"), solidHeader = T, status = "success",
+#fluidRow(
+#  box(width = 4, title = h2("Upload Local Files"), solidHeader = T, status = "success",
     # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
+tagList(
     fileInput(
       inputId = "file",
       label = "Upload Local Files", 
@@ -21,9 +21,9 @@ fluidRow(
     hr(),
     p("Location of Downloaded Files: (Testing Only)"),
     verbatimTextOutput("LocaldbfilesPath")
-  ),
-  ## Call Input Record UI
-  inputsRecordUI("local_inputs_record"),
-  ## Call Formats Record UI
-  formatsRecordUI("local_formats_record")
-)
+  )#,
+#   ## Call Input Record UI
+#   inputsRecordUI("local_inputs_record"),
+#   ## Call Formats Record UI
+#   formatsRecordUI("local_formats_record")
+# )
