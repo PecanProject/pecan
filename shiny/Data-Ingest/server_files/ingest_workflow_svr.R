@@ -52,7 +52,6 @@ observeEvent(input$createInput, {
   
   output$summInputs <- renderPrint({print(inputsList)})
 })
-output$autoname <- renderPrint({Shared.data$selected_row_local})
 
 
 ######### Formats Svr #############
@@ -60,7 +59,9 @@ output$autoname <- renderPrint({Shared.data$selected_row_local})
 ## Output List ##
 FormatRecordList <- list()
 
-shinyjs::onclick("NewFormat", shinyjs::show(id = "formatbox", anim = TRUE))
+#shinyjs::onclick("NewFormat", shinyjs::show(id = "formatbox", anim = TRUE))
+
+output$autoname <- renderPrint({Shared.data$selected_row_local})
 
 ######### Mimetype Name ##################
 updateSelectizeInput(session, "MimetypeName", choices = mimetypes, server = TRUE)
