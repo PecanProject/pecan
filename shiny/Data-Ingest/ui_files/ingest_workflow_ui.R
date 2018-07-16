@@ -4,11 +4,8 @@ box(
   title = h2("1. Select Input Method"), width = 4, solidHeader = TRUE, status = "success",
   # shinyWidgets::radioGroupButtons("inputMethod", label = "Select Input Method", 
   #                                 choices = c("Download from DataONE", "Upload Local File"), status = "success", selected = NULL),
-  conditionalPanel(condition = "input.d1Input",
-                   uiOutput("d1_import_ui")),
-  conditionalPanel(condition = "input.lclUpload",
-                   uiOutput("lcl_import_ui"))
-
+  shinyjs::hidden(source_ui("ui_files", "d1_download_ui.R")),
+  shinyjs::hidden(source_ui("ui_files", "local_file_upload_ui.R"))
 ),
 
 ### 2. Inputs
@@ -40,7 +37,6 @@ box(
                  )
   ),
   p("or"),
- # actionButton("NewFormat", label = "Create New Format"),
   shinyWidgets::dropdownButton(circle = FALSE, label = "Create New Format", 
       box(width = 48, solidHeader = TRUE, status = "warning",
         selectizeInput("MimetypeName", label = "Mimetype *", choices = NULL, width = '350px',
