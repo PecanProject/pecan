@@ -254,11 +254,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       
     }
     
+
    
     # if no ensemble piece was in the xml I replicare n times the first element in met and params
     if (is.null(samples$met)) samples$met$samples<-rep(settings$run$inputs$met$path[1],settings$ensemble$size)
     if (is.null(samples$parameters)) samples$parameters$samples<-ensemble.samples%>%purrr::map(~.x[rep(1,,settings$ensemble$size),])
-    #-some cheking if the met paths are there and params are fine
+
+
     #------------------------End of generating ensembles-----------------------------------
     # find all inputs that have an id
     inputs <- names(settings$run$inputs)
