@@ -60,20 +60,12 @@ formatsRecord <- function(input, output, session){
     FormatRecordList$mimetypeID <- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$mimetypeName) %>% pull(id)
     
     ## Everything else
-    # FormatRecordList$NewMimeType <- input$NewMimeType
     FormatRecordList$NewFormatName <- input$NewFormatName
     FormatRecordList$HeaderBoolean <- input$HeaderBoolean
     FormatRecordList$SkipLines <- input$SkipLines #This should appear only if header = TRUE
     FormatRecordList$FormatNotes <- input$FormatNotes
     
     output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
-    
-    # url <- a("Google Homepage", href="https://www.google.com/")
-    # output$tab <- renderUI({
-    #   tagList("URL link:", url)
-    # })
-    
-   # shinyjs::onclick("betyURL", shinyjs::
     
   })
   

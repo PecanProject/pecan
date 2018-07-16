@@ -1,7 +1,12 @@
 #### Conditional Pannel to Switch between d1 and local upload ####
 observeEvent(input$d1Input,{
-  show("dataFrame1")
-  hide("dataFrame2")
+  show("d1_ui")
+  hide("lcl_ui")
+})
+
+observeEvent(input$lclUpload, {
+  show("lcl_ui")
+  hide("d1_ui")
 })
 
 output$d1_import_ui <- renderUI({
@@ -58,8 +63,6 @@ observeEvent(input$createInput, {
 
 ## Output List ##
 FormatRecordList <- list()
-
-#shinyjs::onclick("NewFormat", shinyjs::show(id = "formatbox", anim = TRUE))
 
 output$autoname <- renderPrint({Shared.data$selected_row_local})
 

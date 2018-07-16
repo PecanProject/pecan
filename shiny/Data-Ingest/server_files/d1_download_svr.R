@@ -6,8 +6,8 @@ dir.create(local_tempdir, showWarnings = F)
 
 observeEvent(input$D1Button, {
   # run dataone_download with input from id on click
-#  PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # store files in tempfile
-  list_of_d1_files <<- c("f1", "f2", "f3", "f4", "f5")# list.files(newdir_D1)
+  PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # store files in tempfile
+  list_of_d1_files <<- list.files(newdir_D1) # For testing: c("f1", "f2", "f3", "f4", "f5")
   D1_file_df <- as.data.frame(list_of_d1_files)
   
   names(D1_file_df) <- "Available Files"
@@ -15,7 +15,7 @@ observeEvent(input$D1Button, {
   Shared.data$d1fileList <- list_of_d1_files
   
   # Grab the name of the D1_file from newdir_D1
-#  d1_dirname <<- base::sub("/tmp/Rtmp[[:alnum:]]{6}/d1_tempdir/", "", newdir_D1) # let users create their own filenames eventually
+  d1_dirname <<- base::sub("/tmp/Rtmp[[:alnum:]]{6}/d1_tempdir/", "", newdir_D1) # let users create their own filenames eventually
   
   Shared.data$downloaded <- D1_file_df # Reactive Variable 
 })

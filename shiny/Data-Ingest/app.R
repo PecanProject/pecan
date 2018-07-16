@@ -11,12 +11,6 @@
  
  source("ui_utils.R", local = TRUE)
  
- ## Modules ##
- source("modules/inputs_module.R", local = TRUE)
- source("modules/formats_module.R", local = TRUE)
- source("modules/d1_download_module.R", local = TRUE)
- source("modules/local_upload_module.R", local = TRUE)
- 
  ##### Bety Calls ######
  bety <- betyConnect()
  
@@ -52,14 +46,6 @@ ui <- dashboardPage(
     tabItem(tabName = "Home",
             source_ui("ui_files", "homepage_ui.R")
             ),
-    # ## Tab 2 -- DataONE download
-    # tabItem(tabName = "importDataONE",
-    #         source_ui("ui_files", "d1_download_ui.R")
-    #         ),
-    # ## Tab 3 -- Local File Upload
-    # tabItem(tabName = "uploadLocal",
-    #         source_ui("ui_files", "local_file_upload_ui.R")
-    #         ),
     ## Tab 4 -- Ingest Workflow
     tabItem(tabName = "ingestWorkflow",
             source_ui("ui_files", "ingest_workflow_ui.R")
@@ -88,19 +74,6 @@ server <- function(input, output, session) {
   
   ######### Ingest Workflow ##############################
   source("server_files/ingest_workflow_svr.R", local = TRUE)
- 
-  ##### Input Record Module derver 
-  callModule(inputsRecord, "local_inputs_record")
-  
-  callModule(inputsRecord, "d1_inputs_record")
-  
-  #### formats record module server
-  callModule(formatsRecord, "local_formats_record")
-   
-  callModule(formatsRecord, "d1_formats_record")
-
-  # New Format Box
-#  shinyjs::onclick("NewFormat", shinyjs::show(id = "formatbox", anim = TRUE))
   
 }
 
