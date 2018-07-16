@@ -258,7 +258,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
    
     # if no ensemble piece was in the xml I replicare n times the first element in met and params
     if (is.null(samples$met)) samples$met$samples<-rep(settings$run$inputs$met$path[1],settings$ensemble$size)
-    if (is.null(samples$parameters)) samples$parameters$samples<-ensemble.samples%>%purrr::map(~.x[rep(1,,settings$ensemble$size),])
+    if (is.null(samples$parameters)) samples$parameters$samples<-ensemble.samples%>%purrr::map(~.x[rep(1,settings$ensemble$size),])
 
 
     #------------------------End of generating ensembles-----------------------------------
@@ -351,7 +351,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            settings = settings,
                            new.state = new.state[i, ], 
                            new.params = new.params[[i]], 
-                           inputs =NULL, 
+                           inputs =list(met=list(path=inputs$samples[[i]])), 
                            RENAME = TRUE)
       )
     }
