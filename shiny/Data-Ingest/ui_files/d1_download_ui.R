@@ -1,5 +1,5 @@
-fluidRow(
-  box(width = 4, title = h2("Import From DataONE"), solidHeader = TRUE, status = "success",
+div(id = "d1_ui",
+tagList(
     textInput(
       "id",
       label = "Import from dataONE",
@@ -22,12 +22,5 @@ fluidRow(
     hr(),
     p("Location of Downloaded files:"),
     verbatimTextOutput("D1dbfilesPath")
-  ),
-  ## Call Input Record UI
-  inputsRecordUI("d1_inputs_record"),
-  ## Call dbfiles UI
- # dbfilesUI("d1_dbfiles"),
-  ## Call Formats Record UI
-  formatsRecordUI("d1_formats_record")
- 
+)
 )

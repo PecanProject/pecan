@@ -5,18 +5,18 @@ sidebarMenu(
     icon = icon("home", lib = "font-awesome")
   ),
   menuItem(
-    "Import from DataONE",
-    tabName = "importDataONE",
-    icon = icon("download", lib = "font-awesome")
+    "Ingest Workflow",
+    tabName = "ingestWorkflow",
+    icon = icon("database", lib = "font-awesome")
   ),
   menuItem(
-    "Upload Local Files",
-    tabName = "uploadLocal",
-    icon = icon("upload", lib = "font-awesome")
+    actionBttn("d1Input", label = "Import from DataONE",
+               icon = icon("download", lib = "font-awesome"),
+               size = "sm", color = "success")
+  ),
+  menuItem(
+    actionBttn("lclUpload", label = "Upload Local Files",
+               icon = icon("upload", lib = "font-awesome"),
+               size = "sm", color = "success")
   )
-  # menuItem(
-  #   "Step 2 -- New Input",
-  #   tabName = "step2",
-  #   icon = icon("database", lib = "font-awesome")
-  # )
 )

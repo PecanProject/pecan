@@ -7,9 +7,12 @@ dir.create(local_tempdir, showWarnings = F)
 observeEvent(input$D1Button, {
   # run dataone_download with input from id on click
   PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # store files in tempfile
-  list_of_d1_files <<- list.files(newdir_D1)
+  list_of_d1_files <<- list.files(newdir_D1) # For testing: c("f1", "f2", "f3", "f4", "f5")
   D1_file_df <- as.data.frame(list_of_d1_files)
   
+  names(D1_file_df) <- "Available Files"
+  
+  Shared.data$d1fileList <- list_of_d1_files
   
   # Grab the name of the D1_file from newdir_D1
   d1_dirname <<- base::sub("/tmp/Rtmp[[:alnum:]]{6}/d1_tempdir/", "", newdir_D1) # let users create their own filenames eventually
@@ -18,9 +21,13 @@ observeEvent(input$D1Button, {
 })
 
 # Display downloaded files in data.frame
-output$identifier <- DT::renderDT({Shared.data$downloaded})
+output$identifier <-  DT::renderDT({Shared.data$downloaded}, selection = 'single', options = list(ordering = F, dom = 'tp'))
 
-output$rowSelection <- renderPrint(input$identifier_rows_selected)
+observe({
+  Shared.data$selected_row <- as.character(Shared.data$downloaded[input$identifier_rows_selected,])
+})
+
+output$rowSelection <- renderPrint({Shared.data$selected_row})
 
 # Move files to correct dbfiles location (make a custom function for this?)
 observeEvent(input$D1FinishButton, {

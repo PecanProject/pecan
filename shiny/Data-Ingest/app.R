@@ -7,13 +7,9 @@
  library(DT)
  library(shiny)
  library(shinyjs)
+ library(shinyWidgets)
  
  source("ui_utils.R", local = TRUE)
- 
- ## Modules ##
- source("modules/dbFiles_module.R", local = TRUE)
- source("modules/inputs_module.R", local = TRUE)
- source("modules/formats_module.R", local = TRUE)
  
  ##### Bety Calls ######
  bety <- betyConnect()
@@ -39,8 +35,8 @@
 #############################################################################
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Data Ingest Workflow"), 
-  dashboardSidebar(
+  dashboardHeader(title = "Data Ingest Workflow", titleWidth = '215px'), 
+  dashboardSidebar(width = '215px',
     source_ui("ui_files", "sidebar_ui.R")
   ),
   dashboardBody(
@@ -50,13 +46,9 @@ ui <- dashboardPage(
     tabItem(tabName = "Home",
             source_ui("ui_files", "homepage_ui.R")
             ),
-    ## Tab 2 -- DataONE download
-    tabItem(tabName = "importDataONE",
-            source_ui("ui_files", "d1_download_ui.R")
-            ),
-    ## Tab 3 -- Local File Upload
-    tabItem(tabName = "uploadLocal",
-            source_ui("ui_files", "local_file_upload_ui.R")
+    ## Tab 4 -- Ingest Workflow
+    tabItem(tabName = "ingestWorkflow",
+            source_ui("ui_files", "ingest_workflow_ui.R")
             )
   )),
   title = "PEcAn Data Ingest",
@@ -70,7 +62,7 @@ server <- function(input, output, session) {
   options(shiny.maxRequestSize = 100 * 1024 ^ 2) #maximum file input size
   
   ## Setup ##
-  Shared.data <- reactiveValues(downloaded=NULL)
+  Shared.data <- reactiveValues(downloaded = NULL, selected_row = NULL, local_files = NULL, selected_row_local = NULL)
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
@@ -79,25 +71,9 @@ server <- function(input, output, session) {
 
   ######### FileInput ########################################
   source("server_files/local_upload_svr.R", local = TRUE)
-
-  #### dbfiles record module server
-  # callModule(dbfiles, "local_dbfiles")
-  # 
-  # callModule(dbfiles, "d1_dbfiles")
- 
-  ##### Input Record Module derver 
-  callModule(inputsRecord, "local_inputs_record")
   
-  callModule(inputsRecord, "d1_inputs_record")
-  
-  #### formats record module server
-  callModule(formatsRecord, "local_formats_record")
-   
-  callModule(formatsRecord, "d1_formats_record")
-
-  # New Format Box
-  shinyjs::onclick("NewFormat", shinyjs::show(id = "formatbox", anim = TRUE))
-  
+  ######### Ingest Workflow ##############################
+  source("server_files/ingest_workflow_svr.R", local = TRUE)
   
 }
 

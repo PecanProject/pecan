@@ -21,6 +21,7 @@ inputsRecordUI <- function(id){
     textInput(ns("InputName"),
               label = "Name *",
               placeholder = ""),
+    verbatimTextOutput(ns("autoname")),
     hr(),
     selectizeInput(ns("InputFormatName"), label = "Choose Format *", choices = NULL,
                    options = list(
@@ -29,7 +30,7 @@ inputsRecordUI <- function(id){
                    )
     ),
     p("or"),
-    actionButton("NewFormat", label = "Create New Format"),
+  #  actionButton("NewFormat", label = "Create New Format"),
     hr(),
     dateInput(
       ns("InputStartDate"),
@@ -105,5 +106,6 @@ inputsRecord <- function(input, output, session){
     
     output$summInputs <- renderPrint({print(inputsList)})
   })
+#output$autoname <- renderPrint({Shared.data$selected_row_local})
 
 }
