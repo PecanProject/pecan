@@ -361,7 +361,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 
 
 
-#' Title
+#' Function for reurning the met ensuble based on sampling method, parent or etc
 #'
 #' @param settings list of PEcAn settings
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
