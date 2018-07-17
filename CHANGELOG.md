@@ -19,12 +19,17 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - Fixed spurious `No geonamesUsername set` warning by updating geonames package to development version
 - ED:
     - Change all history parameter files to have zero storage respiration
-    
+- missing_port_bety    
 - dataone_download.R:
+
+    - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
+- Could not specify the port for BETY in config.php. Can now use `db_bety_port` to specify port.
+
     - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget.
     
 - Data_Ingest_App:
     - use `updateSelectizeInput` to populate `selectizeInput` with choices from BETYdb. This instantly loads the inputfields where other methods take minutes to load. 
+
     
 ### Added
 - In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs

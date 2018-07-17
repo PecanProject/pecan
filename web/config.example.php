@@ -3,6 +3,7 @@
 # Information to connect to the BETY database
 $db_bety_type="pgsql";
 $db_bety_hostname="localhost";
+$db_bety_port=5432;
 $db_bety_username="bety";
 $db_bety_password="bety";
 $db_bety_database="bety";
