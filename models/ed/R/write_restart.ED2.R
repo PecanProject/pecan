@@ -29,7 +29,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   #### Backup old run files to date directory
   runfiles <- list.files.nodir(file.path(rundir, runid))
   modoutfiles <- list.files.nodir(file.path(mod_outdir, runid), hyear) # copy only current year, otherwise it cumulatively copies everything
-
+  
   dir.create(file.path(rundir, runid, sda_suffix))
   dir.create(file.path(mod_outdir, runid, sda_suffix))
   file.copy(file.path(rundir, runid, runfiles),
@@ -38,18 +38,9 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   file.copy(file.path(mod_outdir, runid, modoutfiles),
             file.path(mod_outdir, runid, sda_suffix, modoutfiles),
             overwrite = TRUE)
-
-
-  # rename history file 
-  # (IF: At this point in order not to swamp directories I decided to write annual historu files
-  # but this causes mismatches in start-date because ED2 writes them as 1961-01-01 not 1961-12-31
-  # then if timeh starts from 1962 it can't find the 1961 files, if you give dates accordingly it starts the simulation early
-  # my solution is to copy-rename the history file. Other solutions are to change ED2's naming, or writing daily/monthly history files
-  new_basename <- gsub(hyear, lubridate::year(start.time), basename(histfile))
-  new_local_histfile   <- file.path(dirname(histfile), new_basename)
-  new_remote_histfile  <- file.path(settings$host$outdir, runid, new_basename)
   
-  file.copy(histfile, new_local_histfile, overwrite = TRUE)
+
+  remote_histfile  <- file.path(settings$host$outdir, runid, basename(histfile))
   
   #### Get common variables
   # PFT by cohort
@@ -62,7 +53,16 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   paco_n      <- restart$PACO_N  # number of cohorts per patch
   patch_index <- rep(1:length(paco_n), times = paco_n)
 
-
+  # read xml to extract allometric coeffs later
+  configfile <- file.path(rundir, runid,"config.xml")
+  pars <- XML::xmlToList(XML::xmlParse(configfile))
+  # remove non-pft sublists
+  pars[names(pars)!="pft"] <- NULL
+  
+  #### Write new state to file
+  # Default mode of H5File$new is "a", which is read + write and create file if it doesn't exist
+  histfile_h5 <- hdf5r::H5File$new(histfile)
+  
   for (var_name in var.names) {
     # var_name <- "AbvGrndWood"
     if (var_name == "AbvGrndWood") {
@@ -75,7 +75,32 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
 
       new.tmp <- new.state[grep(var_name, names(new.state))]
       old.tmp <- old.state
-      agb_co_ratios <- new.tmp / old.tmp # not ideal, just trying to get the workflow to run
+      agw_ratios <- new.tmp / old.tmp # not ideal, just trying to get the workflow to run
+      
+      bdead    <- restart$BDEAD
+      bstorage <- restart$BSTORAGE
+      
+      new_bdead    <- bdead * agw_ratios[1,1]
+      
+      # if you're nudging bdead, update bstorage and dbh too
+      new_bstorage <- bstorage * agw_ratios[1,1]
+      
+      # what else to nudge?
+      # soil C : FAST_SOIL_C, SLOW_SOIL_C, STRUCTURAL_SOIL_C
+      # NPLANT
+      
+      pft_nums <- as.numeric(sapply(pars,`[[`, "num"))
+      # use ED2's allometric eqns to dtermine dbh from new bdead
+      C2B <- 2
+      new_dbh <- new_bdead
+      for(pn in seq_along(pft_nums)){
+        ind <- pft_co == pft_nums[pn]
+          
+        crit <- new_bdead[ind] <= pars[[pn]]$bdead_crit
+        new_dbh[ind][crit] = (new_bdead[ind][crit] / as.numeric(pars[[pn]]$b1Bs_small) * C2B)**(1.0/ as.numeric(pars[[pn]]$b2Bs_small))
+        new_dbh[ind][!crit] = (new_bdead[ind][!crit] / as.numeric(pars[[pn]]$b1Bs_large) * C2B)**(1.0/as.numeric(pars[[pn]]$b2Bs_large))
+        
+      }
 
       # AbvGrndWood in state matrix is not per PFT but total
       # but leaving this bit as a reminder
@@ -86,16 +111,12 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # names(new2old.agb_pft) <- as.character(pftnums[new2old_pftnames])
       # agb_co_ratios <- new2old.agb_pft[as.character(pft_co)]
 
-      nplant_co_plant <- restart$NPLANT
+      #nplant_co_plant <- restart$NPLANT
 
-      # The only AGB-related state variables read by ED's history restart 
-      # subroutine are BDEAD, DBH, and NPLANT. The remaining states 
-      # (including cohort and patch-level AGB) are recalculated from 
-      # these variables.
-      #
+
       # Here, we adjust cohort-level AGB by adjusting the stand density 
       # (NPLANT) proportional to the change in biomass computed above.
-      new.nplant_co_plant <- nplant_co_plant * agb_co_ratios[1,1]
+      #new.nplant_co_plant <- nplant_co_plant * agb_co_ratios[1,1]
       # An alternative is to modify DBH and BDEAD, which requires solving 
       # the following allometric equation for DBH and then using ED 
       # allometric equations to recalculate BDEAD.
@@ -103,14 +124,40 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # AGB = b1L*DBH^(b2L) * (1 + qsw * agf_bs * 
       #     (h0 + a * (1-exp(b*DBH))) + b1d*DBH^(b2d)
 
-      #### Write new state to file
-      # Default mode of H5File$new is "a", which is read + write and create file if it doesn't exist
-      histfile_h5 <- hdf5r::H5File$new(new_local_histfile)
+
       # The empty brackets (`[]`) indicate the whole vector is replaced.
       # This is necessary to overwrite an existing dataset
-      histfile_h5[["NPLANT"]][] <- new.nplant_co_plant
-      # This closes the file and all objects related to the file.
-      histfile_h5$close_all()
+      #histfile_h5[["NPLANT"]][] <- new.nplant_co_plant
+      histfile_h5[["BDEAD"]][] <- new_bdead
+      histfile_h5[["BSTORAGE"]][] <- new_bstorage
+      histfile_h5[["DBH"]][] <- new_dbh
+      
+      # overwrite the keeper you're reading in read.restart
+      histfile_h5[["TOTAL_AGB"]][] <- udunits2::ud.convert(new.tmp, "Mg/ha/yr", "kg/m^2/yr")
+      
+    } else if(var_name == "GWBI"){
+      
+      # zero cumulative rate keepers, nothing is calculated back from these
+      # so zeroing only the rate you're reading back is fine
+      histfile_h5[["TOTAL_AGB_GROWTH"]][] <- 0
+      # zero both
+      histfile_h5[["DDBH_DT"]][] <- rep(0, length(restart$DDBH_DT))
+      histfile_h5[["DAGB_DT"]][] <- rep(0, length(restart$DAGB_DT))
+      
+    } else if(var_name == "fast_soil_pool_carbon_content"){
+      
+      fast_soil_c <- restart$FAST_SOIL_C
+      fsc_ratio   <- new.state$fast_soil_pool_carbon_content / sum(fast_soil_c*patch_area)
+      
+      histfile_h5[["FAST_SOIL_C"]][] <- fast_soil_c*fsc_ratio
+      
+    } else if(var_name == "structural_soil_pool_carbon_content"){
+      
+      structural_soil_c   <- restart$STRUCTURAL_SOIL_C
+      structural_sc_ratio <- new.state$structural_soil_pool_carbon_content / sum(structural_soil_c*patch_area)
+      
+      histfile_h5[["STRUCTURAL_SOIL_C"]][] <- structural_soil_c*structural_sc_ratio
+        
     } else {
       PEcAn.logger::logger.error("Variable ", var_name,
                                 " not currently supported",
@@ -118,9 +165,12 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
     }
   }
   
+  # This closes the file and all objects related to the file.
+  histfile_h5$close_all()
+  
   # copy the history file with new states and new timestamp to remote 
-  # it's OK, because ED2 doesn't overwrite the history files and produces history-Z- files anyway
-  PEcAn.remote::remote.copy.to(settings$host, new_local_histfile, new_remote_histfile)
+  # it's OK, because we backed up the original above
+  PEcAn.remote::remote.copy.to(settings$host, histfile, remote_histfile)
 
   ##### Modify ED2IN
   ed2in_path <- file.path(rundir, runid, "ED2IN")
@@ -129,9 +179,9 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
 
   ed2in_new <- modify_ed2in(
     ed2in_orig,
-    start_date = start.time,
-    end_date = lubridate::floor_date(stop.time, "30 minutes"), # floor down to the last half hour so that ED2 doesn't write to next year's file
-    RUNTYPE = "HISTORY",
+    start_date = lubridate::ceiling_date(start.time, "1 day"),
+    end_date   = lubridate::ceiling_date(stop.time, "1 day"), # ED2 writes annual history files at the same month as initial
+    RUNTYPE    = "HISTORY",
     IED_INIT_MODE = 4,
     SFILIN = file.path(settings$host$outdir, runid, "history")
   )
@@ -149,11 +199,15 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   jobsh[grep("@REMOVE_HISTXML@", jobsh)+1] <- remote_remove_cmd
   
   # also update mode2netcdf.ED2 call
-  mod2cf_line        <- grep("model2netcdf.ED2", jobsh)
-  mod2cf_string      <- jobsh[mod2cf_line]
-  from_year          <- paste0("'", hyear,"/")  # trying to make sure year is not somewhere else in the path
-  to_year            <- paste0("'", lubridate::year(start.time), "/")
-  mod2cf_string      <- gsub(from_year, to_year, mod2cf_string)
+  mod2cf_line    <- grep("model2netcdf.ED2", jobsh)
+  mod2cf_string  <- jobsh[mod2cf_line]
+  begin_from     <- paste0("'", lubridate::year(start.time), "/")
+  begin_to       <- paste0("'", hyear,"/")   
+  end_from       <- begin_to 
+  end_to         <- paste0("'", as.numeric(hyear)+1,"/") 
+  # this order matters
+  mod2cf_string      <- gsub(end_from,   end_to,   mod2cf_string) # e.g. change from (...'1961/01/01', '1962/01/01'...) to (...'1961/01/01', '1963/01/01'...)
+  mod2cf_string      <- gsub(begin_from, begin_to, mod2cf_string) # e.g. change from (...'1961/01/01', '1963/01/01'...) to (...'1962/01/01', '1963/01/01'...)
   jobsh[mod2cf_line] <- mod2cf_string
   
   writeLines(jobsh, file.path(rundir, runid, "job.sh"))

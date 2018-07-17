@@ -8,6 +8,7 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 require("common.php");
+
 open_database();
 if ($authentication) {
   if (!check_login()) {
@@ -425,6 +426,15 @@ if ($hostname != $fqdn) {
     fwrite($fh, "    <data_hostname>" . toXML($hostoptions['data_hostname']) . "</data_hostname>" . PHP_EOL);
   }
 }
+if ($rabbitmq_host != "") {
+  $rabbitmq_uri = "amqp://" . $rabbitmq_username . ":" . $rabbitmq_password . "@" . $rabbitmq_host . ":" . $rabbitmq_port . "/" . urlencode($rabbitmq_vhost);
+  $rabbitmq_model_queue = $modeltype . "_" . $revision;
+
+  fwrite($fh, "    <rabbitmq>" . PHP_EOL);
+  fwrite($fh, "      <uri>" . $rabbitmq_uri . "</uri>" . PHP_EOL);
+  fwrite($fh, "      <queue>" . $rabbitmq_model_queue . "</queue>" . PHP_EOL);
+  fwrite($fh, "    </rabbitmq>" . PHP_EOL);
+}
 fwrite($fh, "  </host>" . PHP_EOL);
 
 if ($email != "") {
@@ -473,6 +483,46 @@ if ($hostname != $fqdn) {
 # redirect to the right location
 if ($pecan_edit) {
   $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit";
+  if ($model_edit) {
+    $path .= "&model_edit=model_edit";
+  }
+  if ($offline) {
+    $path .= "&offline=offline";
+  }
+  header("Location: ${path}");
+} else if ($rabbitmq_host != "") {
+
+  # create connection and queue
+  $connection = new AMQPConnection();
+  $connection->setHost($rabbitmq_host);
+  $connection->setPort($rabbitmq_port);
+  $connection->setVhost($rabbitmq_vhost);
+  $connection->setLogin($rabbitmq_username);
+  $connection->setPassword($rabbitmq_password);
+  $connection->connect();
+  $channel = new AMQPChannel($connection);
+  $exchange = new AMQPExchange($channel);
+
+  # create the queue
+  $queue = new AMQPQueue($channel);
+  $queue->setName($rabbitmq_queue);
+  $queue->setFlags(AMQP_DURABLE);
+  $queue->declareQueue();
+
+  # create the message
+  $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"}';
+
+  # send the message
+  $exchange->publish($message, $rabbitmq_queue);
+
+  # cleanup
+  $connection->disconnect();
+
+  #done
+  $path = "05-running.php?workflowid=$workflowid";
+  if ($pecan_edit) {
+    $path .= "&pecan_edit=pecan_edit";
+  }
   if ($model_edit) {
     $path .= "&model_edit=model_edit";
   }
