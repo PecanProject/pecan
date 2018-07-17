@@ -27,16 +27,14 @@
 ##' @param year.fragment the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).
 ##' @param in.data.file a data file to use for input - default behavior is to use all MET.year.nc files within the start and end year 
 ##' range in the directory in.path.  If not null, overrides default behavior.
-##' 
-## Modified by Luke Dramko
-## Original author?
+##' @author Luke Dramko, Ben Bond-Lamberty, Michael Dietze, Anne Thomas, Alexey Shiklomanov, Betsy Cowdery, Rob Kooper, Ankur Desai, David LeBauer, Tony Gardella, Chris Black
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, in.data.file = NULL, ...) {
   
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  if (is.character(in.data.file)) { # in.data.file is not gauranteed to contain the file extension.
+  if (is.character(in.data.file)) { # in.data.file is not guaranteed to contain the file extension.
     escaped <- gsub("(\\W)", "\\\\\\1", in.data.file) # The file name may contain special characters that could mess up the regular expression.
     matching_files <- grep(escaped, list.files(in.path), value=TRUE) 
     if (length(matching_files) == 0) {
