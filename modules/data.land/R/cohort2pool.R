@@ -61,8 +61,7 @@ cohort2pool <- function(veg_file, allom_param = NULL) {
     
     exp(B0 + (B1/dbh))
 
-  }) %>%
-    setNames(component_names)
+  }) %>% setNames(component_names)
 
   leaf_carbon_content        <- mean(as.vector(comp_ratios$foliage) * AGB, na.rm =TRUE)
   coarse_root_carbon_content <- mean(as.vector(comp_ratios$coarse_root) * AGB, na.rm =TRUE)
@@ -73,8 +72,8 @@ cohort2pool <- function(veg_file, allom_param = NULL) {
   
   #Prep Arguments for pool_ic function
   dims <- list(time =1) #Time dimension may be irrelevant
-  variables <-list(AGB,leaf_carbon_content,coarse_root_carbon_content,wood_carbon_content, names = TRUE)
-  mapply(function(v,x,y,z) { y },AGB,leaf_carbon_content,coarse_root_carbon_content,wood_carbon_content, SIMPLIFY = FALSE,USE.NAMES = TRUE)
+  variables <-list(AGB =AGB,leaf_carbon_content=leaf_carbon_content,coarse_root_carbon_content= coarse_root_carbon_content,
+                   wood_carbon_content=wood_carbon_content)
   input <- list(dims = dims,
                 vals = variables)
   
