@@ -52,7 +52,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     existing_records <- list(input.id = NULL, dbfile.id = NULL)  # Empty vectors are null
     files.to.delete <- list()
     
-    for (i in 1:ensemble) {
+    for (i in seq_len(ensemble)) {
       # In dbfile.input.check, pattern searches the file path for the specified regular expression.  filename_pattern
       # contains a portion of the file name which can uniquely identify a particular data product at a particular 
       # site and time, regardless of similarities in formatname, mimetype, etc. Because sitenames can contain
