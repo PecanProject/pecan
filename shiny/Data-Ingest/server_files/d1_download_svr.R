@@ -1,3 +1,12 @@
+## Hide Download button until doi is entered ##
+observe({
+  if (is.null(input$id) || input$id == "") {
+    shinyjs::disable("D1Button")
+  } else {
+    shinyjs::enable("D1Button")
+  }
+})
+
 ## Create two sub-directories in the tempfile ##
 d1_tempdir <- file.path(temp, "d1_tempdir")
 dir.create(d1_tempdir, showWarnings = F)
@@ -6,11 +15,18 @@ dir.create(local_tempdir, showWarnings = F)
 
 observeEvent(input$D1Button, {
   # run dataone_download with input from id on click
-  PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # store files in tempfile
-  list_of_d1_files <<- list.files(newdir_D1) # For testing: c("f1", "f2", "f3", "f4", "f5")
-  D1_file_df <- as.data.frame(list_of_d1_files)
+  PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # ("doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = d1_tempdir) #store files in tempfile
+  list_of_d1_files <<- list.files(newdir_D1) #  c("f1", "f2", "f3", "f4", "f5") #
   
-  names(D1_file_df) <- "Available Files"
+  ## df to store href buttons for file preview ##
+  d1_paths_df <- data.frame(href = NA)
+  for(i in 1:length(list_of_d1_files)){
+    d1_paths_df[i,1] <- as.character(a("Preview", href = file.path(d1_tempdir, list_of_d1_files[i]), target = "_blank"))
+  }
+  
+  D1_file_df <- cbind(list_of_d1_files, d1_paths_df)
+  
+  names(D1_file_df) <- c("Available Files", "")
   
   Shared.data$d1fileList <- list_of_d1_files
   
@@ -21,10 +37,10 @@ observeEvent(input$D1Button, {
 })
 
 # Display downloaded files in data.frame
-output$identifier <-  DT::renderDT({Shared.data$downloaded}, selection = 'single', options = list(ordering = F, dom = 'tp'))
+output$identifier <-  DT::renderDT(datatable({Shared.data$downloaded}, escape = FALSE, selection = 'single', options = list(ordering = F, dom = 'tp')))
 
 observe({
-  Shared.data$selected_row <- as.character(Shared.data$downloaded[input$identifier_rows_selected,])
+  Shared.data$selected_row <- as.character(Shared.data$downloaded[input$identifier_rows_selected, 1])
 })
 
 output$rowSelection <- renderPrint({Shared.data$selected_row})
