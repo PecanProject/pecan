@@ -127,7 +127,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   if (length(inputid) > 1) {
     PEcAn.logger::logger.warn(paste0("Multiple input files found matching parameters format_id = ", formatid, 
                                      ", startdate = ", startdate, ", enddate = ", enddate, ", parent = ", parent, ".  Selecting the", 
-                                     " last input file.  This is normal for when an entire ensemble is inserted iteravely, but ", 
+                                     " last input file.  This is normal for when an entire ensemble is inserted iteratively, but ", 
                                      " is likely an error otherwise."))
     inputid = inputid[length(inputid)]
   }
