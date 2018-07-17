@@ -1,7 +1,12 @@
 #### Conditional Pannel to Switch between d1 and local upload ####
-observeEvent(input$d1Input,{
-  show("d1_ui")
-  hide("lcl_ui")
+observeEvent(input$inputMethod,{
+  if(input$inputMethod == "DataONE"){
+    show("d1_ui")
+    hide("lcl_ui")
+  }else{
+    show("lcl_ui")
+    hide("d1_ui")
+  }
 })
 
 observeEvent(input$lclUpload, {
@@ -64,7 +69,7 @@ observeEvent(input$createInput, {
 ## Output List ##
 FormatRecordList <- list()
 
-output$autoname <- renderPrint({Shared.data$selected_row_local})
+output$autoname <- renderPrint({Shared.data$selected_row}) #_local
 
 ######### Mimetype Name ##################
 updateSelectizeInput(session, "MimetypeName", choices = mimetypes, server = TRUE)
