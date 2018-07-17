@@ -1,9 +1,9 @@
 fluidRow(
 ## 1. D1 Download or Local Upload
 box(
-  title = h2("1. Select Input Method"), width = 4, solidHeader = TRUE, status = "success",
-  # shinyWidgets::radioGroupButtons("inputMethod", label = "Select Input Method", 
-  #                                 choices = c("Download from DataONE", "Upload Local File"), status = "success", selected = NULL),
+  title = h2("1. Select Files"), width = 4, solidHeader = TRUE, status = "success",
+  shinyWidgets::radioGroupButtons("inputMethod", label = "Select Input Method", 
+                                 choices = c("DataONE", "Local Files"), status = "success", selected = NULL),
   shinyjs::hidden(source_ui("ui_files", "d1_download_ui.R")),
   shinyjs::hidden(source_ui("ui_files", "local_file_upload_ui.R"))
 ),

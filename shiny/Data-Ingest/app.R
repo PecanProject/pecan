@@ -80,4 +80,4 @@ server <- function(input, output, session) {
 # Run the application
 shinyApp(ui = ui, server = server)
 
-# example data: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87
+# example data: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87, doi:10.6073-pasta-f31b28b912e6051bf1d383ff1ef18987
