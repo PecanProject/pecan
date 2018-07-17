@@ -548,7 +548,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   PEcAn.logger::logger.info("RESULTS: Convert.Input")
   PEcAn.logger::logger.info(result)
   
-  if (length(result[[1]]) <= 1){ # result, a list, is gauranteed to have at least one elemet.  However that element could be an empty data frame.
+  if (length(result[[1]]) <= 1){ # result, a list, is guaranteed to have at least one element.  However, that element could be an empty data frame.
     PEcAn.logger::logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
     PEcAn.logger::logger.severe(paste0("Unable to process data using this function:",fcn))
   }
