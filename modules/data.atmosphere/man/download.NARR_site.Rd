@@ -32,9 +32,11 @@ download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
 Download NARR time series for a single site
 }
 \examples{
+
 \dontrun{
 download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 }
+
 
 }
 \author{

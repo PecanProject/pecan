@@ -8,7 +8,7 @@ require(ggplot2)
 require(PEcAn.visualization)
 data(yielddf, package = "PEcAn.visualization")
 
-pecan.worldmap(yielddf, outfile=file.path(tempdir(), 'foo.png'))
+#pecan.worldmap(yielddf, outfile=file.path(tempdir(), 'foo.png'))
 
 spdf <- SpatialPointsDataFrame( data.frame( x = testdf$y , y = testdf$x ) , data = data.frame( z = testdf$z ) )
 
@@ -29,14 +29,14 @@ for(file in yieldfiles){
 
     outfile <- gsub("csv", "png", file)
     
-    pecan.worldmap(df.in, outfile=outfile)
+    #pecan.worldmap(df.in, outfile=outfile)
 }
 
 
 for(file in etfiles){
   df.in <- read.csv(file, skip = 1)
   outfile <- gsub("csv", "png", file)
-  pecan.worldmap(df.in, outfile=outfile)
+  #pecan.worldmap(df.in, outfile=outfile)
 }
 
 ```
