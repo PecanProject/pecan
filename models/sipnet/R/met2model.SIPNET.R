@@ -52,7 +52,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       }
     } else { # no .nc files found... it could be that the extension was left off, or some other problem
       PEcAn.logger::logger.warn("No files found with extension '.nc'.  Using the first file in the list below:")
-      print(matching_files) # Not a debugging statement.
+      PEcAn.logger::logger.warn(matching_files)
       in.data.file <- matching_files[i]
     }
   } else { # Default behavior
@@ -73,7 +73,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
                         dbfile.name = out.file,
                         stringsAsFactors = FALSE)
   PEcAn.logger::logger.info("internal results")
-  print(results) # Not a debugging statement
+  PEcAn.logger::logger.info(results)
 
   if (file.exists(out.file.full) && !overwrite) {
     PEcAn.logger::logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
@@ -89,12 +89,11 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
 
   # get start/end year since inputs are specified on year basis
   # only if year.fragment = FALSE
+  start_year <- lubridate::year(start_date)
   if (year.fragment) {
-    start_year <- lubridate::year(start_date)
     end_year <- lubridate::year(start_date) # Start year is listed twice because there's only one file. start_year and end_year only control
                                             # the loop and file name, which are overriden for year.fragment/in.data.file
   } else {
-    start_year <- lubridate::year(start_date)
     end_year <- lubridate::year(end_date)
   }
 
