@@ -523,8 +523,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     if (forecast && !is.null(input.id) && !is.na(input.id)) { # for met2model coversion, arguments will be extraneous otherwise.
       fcn.args$year.fragment = TRUE
-      parent.inputfile <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id =", input.id), con)
-      fcn.args$in.data.file = parent.inputfile$name #Sends the file name (minus the extension)
+      parent.inputfile.name <- PEcAn.DB::db.query(paste0("SELECT name FROM inputs WHERE id =", input.id), con)
+      fcn.args$in.data.file = parent.inputfile.name$name #Sends the file name (minus the extension)
     }
     
     arg.string <- listToArgString(fcn.args)
