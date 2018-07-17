@@ -245,6 +245,9 @@ fwrite($fh, "    <bety>" . PHP_EOL);
 fwrite($fh, "      <user>${db_bety_username}</user>" . PHP_EOL);
 fwrite($fh, "      <password>${db_bety_password}</password>" . PHP_EOL);
 fwrite($fh, "      <host>${db_bety_hostname}</host>" . PHP_EOL);
+if (isset($db_bety_port)) {
+        fwrite($fh, "      <port>${db_bety_port}</port>" . PHP_EOL);
+}
 fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
 if ($db_bety_type == "mysql") {
 	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
@@ -259,6 +262,9 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 	fwrite($fh, "      <user>${db_fia_username}</user>" . PHP_EOL);
 	fwrite($fh, "      <password>${db_fia_password}</password>" . PHP_EOL);
 	fwrite($fh, "      <host>${db_fia_hostname}</host>" . PHP_EOL);
+        if (isset($db_fia_port)) {
+                fwrite($fh, "      <port>${db_fia_port}</port>" . PHP_EOL);
+        }
 	fwrite($fh, "      <dbname>${db_fia_database}</dbname>" . PHP_EOL);
 	if ($db_fia_type == "mysql") {
 		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
