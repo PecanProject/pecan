@@ -21,7 +21,7 @@
 ##' @export
 ##'
 ##' @author Tony Gardella
-outdir <- "/fs/data3/tonygard/work/misc/recieving_files/sibcasa/"
+outdir <- "/fs/data3/tonygard/work/misc/recieving_files/sibcasa/output/"
 model2netcdf.SIBCASA <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     ## Get Files
@@ -33,7 +33,7 @@ model2netcdf.SIBCASA <- function(outdir, sitelat, sitelon, start_date, end_date)
       
       ysel <- which(years == year)  ## subselect files for selected year
       if (length(ysel) > 1) {
-        PEcAn.logger::logger.warn("PEcAn.FATES::model2netcdf.SIBCASA does not currently support multiple files per year")
+        PEcAn.logger::logger.warn("PEcAn.SIBCASA::model2netcdf.SIBCASA does not currently support multiple files per year")
       }
       
       fname <- paste0(outdir,"hsib_",year,".qp2.nc")
@@ -49,7 +49,7 @@ model2netcdf.SIBCASA <- function(outdir, sitelat, sitelon, start_date, end_date)
       nee1 <- ncdf4::ncvar_get(nc_file,"NEE_1") #micromoles/m^2/s (resp_tot - GPP)
       nee2 <- ncdf4::ncvar_get(nc_file,"NEE_2") #micromoles/m^2/s (conductance-based carbon flux)
       npp <- ncdf4::ncvar_get(nc_file,"npp") #micromol/m^2/s
-      carb_tot <- ncdf4::ncvar_get(nc_file,"carb_tot") #moles/m^2
+      carb_tot <- ncdf4::ncvar_get(nc_file,"carb_tot") #moles/m^2 (Total)
       
       #Unit Conversions
       
@@ -57,17 +57,27 @@ model2netcdf.SIBCASA <- function(outdir, sitelat, sitelon, start_date, end_date)
       micromole2kg_C <- 0.0000120107 #micromoles of carbon to kilogram of carbon
       
       output <- list()
-      output[[1]] <- gpp * micromole2kg_C
+      output[[1]] <- gpp * micromole2kg_C/ second
       output[[2]] <- nee1 * micromole2kg_C
       output[[3]] <- npp * micromole2kg_C
-      output[[4]] < carb_t * carb_tot
+      output[[4]] <  carb_tot * mole2kg_C
+      ####
+      ## SIBCASA Time
+      month         <- ncdf4::ncvar_get(nc_file, "month")
+      day_in_month  <- ncdf4::ncvar_get(nc_file, "DOM")  # Days in each month
+      hour          <- ncdf4::ncvar_get(nc_file, "HOD")
+      second        <- ncdf4::ncvar_get(nc_file, "seconds")
       
+      time <- day + sec / 86400
+      nt <- length(time)
+      nc.time <- ncin$dim$time$vals             # days since "start_date"
+     
       
       ## Build Standard netCDF files
       
       t <- ncdf4::ncdim_def(name = "time", 
-                            units = paste0("days since ", y, "-01-01 00:00:00"), 
-                            vals = (dayflx.dataframe$DOY), 
+                            units = paste0("days since ", year, "-01-01 00:00:00"), 
+                            vals = , 
                             calendar = "standard", 
                             unlim = TRUE)
       lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")

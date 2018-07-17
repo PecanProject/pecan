@@ -19,6 +19,7 @@
 ##' @return OK if everything was succesful.
 ##' @export
 ##' @author Tony Gardella
+##' "/fs/data3/tonygard/work/misc/recieving_files/sibcasa/input/"
 ##-------------------------------------------------------------------------------------------------#
 met2model.SIBCASA <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
   PEcAn.logger::logger.severe("NOT IMPLEMENTED")
