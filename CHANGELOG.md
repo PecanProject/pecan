@@ -45,9 +45,13 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Users can now input the name of the destination directory that they wish to create within dbfiles. 
   - Updated Travis.yml to include librdf0-dev so that it can download redland, datapack, and dataone. 
   - Added Data-Ingest UI (inputs, dbfiles, and formats record UI and some basic server side functionality are online)
+  - Modularized input record, format record, and dbfiles record into shiny modules. This allows the app to be greatly simplified to two, single-page workflows. These functions can also be used "plug-and-play" style elsewhere in PEcAn shiny apps to load in data. 
+  - Replaced modularized input, format and dbfiles records with static "Ingest Workflow" page. On this page, the user can select either importing from dataONE or Uploading from local files. If creating a new format is necessary, the user can click "Create New Format" and a dropdown menu will walk them through this process. 
+  - Selected files now autofill name value in input record workflow
 
   
 ### Removed
+  - pecan.worldmap function no longer used, dropped from visualization package
 
 ### Changed
 - PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.

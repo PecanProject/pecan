@@ -1,6 +1,27 @@
+#### Conditional Pannel to Switch between d1 and local upload ####
+observeEvent(input$d1Input,{
+  show("d1_ui")
+  hide("lcl_ui")
+})
+
+observeEvent(input$lclUpload, {
+  show("lcl_ui")
+  hide("d1_ui")
+})
+
+output$d1_import_ui <- renderUI({
+  source("ui_files/d1_download_ui.R", local = TRUE)
+})
+
+output$lcl_import_ui <- renderUI({
+  source("ui_files/local_file_upload_ui.R", local = TRUE)
+})
+
+########### Inputs svr ############# 
+
+## List of outputs##
 inputsList <- list()
-dbFilesRecordList <- list()
-FormatRecordList <- list()
+
 ######### Select Site ###############
 updateSelectizeInput(session, "InputSiteName",  choices = sitenames, server = TRUE)
 
@@ -24,7 +45,7 @@ observeEvent(input$createInput, {
   ## FormatID
   inputsList$formatName <- input$InputFormatName
   inputsList$formatID <- formats_sub %>% dplyr::filter(name %in% inputsList$formatName) %>% pull(id)
-
+  
   ## Other Info
   inputsList$Name <- input$InputName
   inputsList$StartDate <- input$InputStartDate
@@ -33,34 +54,19 @@ observeEvent(input$createInput, {
   inputsList$EndTime <- input$EndTimeInput
   inputsList$Timezone <- input$Timezone
   inputsList$Notes <- input$InputNotes
-
- output$summInputs <- renderPrint({print(inputsList)})
+  
+  output$summInputs <- renderPrint({print(inputsList)})
 })
 
-###################################################
-####### Db Files Record ###########################
-###################################################
 
-################ MachineID ########################
-updateSelectizeInput(session, "InputMachineName", choices = machines, server = TRUE)
+######### Formats Svr #############
 
-observeEvent(input$createDBFilesRecord, {
-  ## MachineID 
-  dbFilesRecordList$machine <- input$InputMachineName
-  dbFilesRecordList$machineID <- machines_sub %>% dplyr::filter(hostname %in% dbFilesRecordList$machine) %>% pull(id)
-  
-  dbFilesRecordList$filePath <- input$InputFilePath
-  dbFilesRecordList$fileName <- input$InputFileName
-  
-  output$dbFilesRecordOut <- renderPrint({print(dbFilesRecordList)})
-  
-})
+## Output List ##
+FormatRecordList <- list()
 
-###################################################
-############# Format ID ###########################
-###################################################
+output$autoname <- renderPrint({Shared.data$selected_row_local})
 
-######### Mimetype ID ##################
+######### Mimetype Name ##################
 updateSelectizeInput(session, "MimetypeName", choices = mimetypes, server = TRUE)
 
 observeEvent(input$createFormatRecord, {
@@ -78,4 +84,5 @@ observeEvent(input$createFormatRecord, {
   output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
   
 })
+
 

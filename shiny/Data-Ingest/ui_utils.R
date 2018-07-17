@@ -1,6 +1,7 @@
-source_ui <- function(...) {
+source_ui <- function(path, ...) {
   source(
-    file.path("ui_files", ...),
+    file.path(path = "ui_files", ...),
     local = TRUE
   )$value
 }
+
