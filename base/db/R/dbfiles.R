@@ -223,12 +223,6 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       con = con
     )#[['id']]
   } else {
-      query = paste0(
-        "SELECT * FROM inputs WHERE site_id=", siteid,
-        " AND format_id=", formatid,
-        parent
-      )
-    
     inputs <- db.query(
       query = paste0(
         "SELECT * FROM inputs WHERE site_id=", siteid,
