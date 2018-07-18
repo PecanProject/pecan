@@ -28,9 +28,35 @@ download.NOAA_GEFS(outfolder, lat.in, lon.in, sitename,
 \value{
 A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
 data frame contains information about one file.
-
-Download and convert to CF NOAA weather data
 }
+\section{Information on Units}{
+
+Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, but is converted at the station and downlaoded
+in Kelvin.
+}
+
+\section{NOAA_GEFS General Information}{
+
+This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  A 16 day forecast is avaliable
+every 6 hours.  Each forecast includes information on a total of 8 variables.  These are transformed from the NOAA standard to the internal PEcAn
+standard.
+}
+
+\section{Data Avaliability}{
+
+NOAA GEFS weather data is avaliable on a rolling 12 day basis; dates provided in "start_date" must be within this range. The end date can be any point after
+that, but if the end date is beyond 16 days, only 16 days worth of forecast are recorded.  Times are rounded down to the previous 6 hour forecast.  NOAA
+GEFS weather data isn't always posted immediately, and to compensate, this function adjusts requests made in the last two hours
+back two hours (approximately the amount of time it takes to post the data) to make sure the most current forecast is used.
+}
+
+\section{Data Save Format}{
+
+Data is saved in the netcdf format to the specified directory.  File names reflect the precision of the data to the given range of days.
+NOAA.GEFS.willow creek.3.2018-06-08T06:00.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
+June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
+}
+
 \examples{
 \dontrun{
  download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
@@ -39,8 +65,6 @@ Download and convert to CF NOAA weather data
 }
 \references{
 https://www.ncdc.noaa.gov/crn/measurements.html
-Note that the temperature is measured in degrees C, but is converted at the station and downlaoded
-in Kelvin.
 }
 \author{
 Luke Dramko
