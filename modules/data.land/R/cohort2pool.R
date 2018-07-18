@@ -8,7 +8,7 @@
 ##' @examples
 ##' \dontrun{
 ##' veg_file <- "/fs/data1/pecan.data/dbfiles/Forest_Geo_site_1-5005/Forest_Geo.1981.veg.rds"
-##' cohort2pool(veg_File = veg_file, allom_param = NULL)
+##' cohort2pool(veg_file = veg_file, allom_param = NULL)
 ##' }
 
 cohort2pool <- function(veg_file, allom_param = NULL) {
@@ -30,8 +30,8 @@ cohort2pool <- function(veg_file, allom_param = NULL) {
   
   ## Grab allometry
   if(is.null(allom_param)){
-    a <- 2                        
-    b <- 0.3
+    a <- -2                        
+    b <- 2.5
   } else {
     print("user provided allometry parameters not yet supported")
     return(NULL)
@@ -41,27 +41,35 @@ cohort2pool <- function(veg_file, allom_param = NULL) {
   biomass = 10^(a + b*log10(dbh))
   biomass[is.na(biomass)] <- 0
   tot_biomass <- sum(biomass)
-  AGB <- tot_biomass
+  ##### No P
+  #Need to Convert the total kg of biomass to (kg/m^2) but data on area of land does not exist
+  # Setting AGB to average biomass of the the stand
+  AGB <- tot_biomass/length(biomass) # units (KgC/m^2)
   
   #Calculate Component Biomass
+  #Jenkins, Jennifer C., et al. "Comprehensive database of diameter-based biomass regressions for North American tree species." 
+  # Gen. Tech. Rep. NE-319. Newtown Square, PA: US Department of Agriculture, Forest Service, Northeastern Research Station.(2004).
   #ratio = exp(B0 + (B1/DBH))
   
   component_names <- c("foliage","coarse_root", "stem_bark","stem_wood")
   
+  # Hardwood params
   hwood_0params <-c(-4.08113,-1.6911,-2.0129,-0.3065)
   hwood_1params <- c(5.8816, 0.8160, -1.6805,-5.4240)
   hlist <-list(hwood_0params, hwood_1params)
-  
+  # Softwood params
   swood_0params <-c(-2.9584,-1.5619,-2.0980,-0.3737)
   swood_1params <- c(4.4766,0.6614,-1.1432,-1.8055)
   slist <-list(swood_0params, swood_1params)
   
   
-  comp_ratios<-pmap(slist,function(B0,B1){
+  comp_ratios <- purrr::pmap(hlist,function(B0,B1){
     
     exp(B0 + (B1/dbh))
 
   }) %>% setNames(component_names)
+   
+  
 
   leaf_carbon_content        <- mean(as.vector(comp_ratios$foliage) * AGB, na.rm =TRUE)
   coarse_root_carbon_content <- mean(as.vector(comp_ratios$coarse_root) * AGB, na.rm =TRUE)
