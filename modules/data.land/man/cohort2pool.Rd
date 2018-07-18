@@ -19,7 +19,7 @@ Calculates total biomass using veg cohort file.
 \examples{
 \dontrun{
 veg_file <- "/fs/data1/pecan.data/dbfiles/Forest_Geo_site_1-5005/Forest_Geo.1981.veg.rds"
-cohort2pool(veg_File = veg_file, allom_param = NULL)
+cohort2pool(veg_file = veg_file, allom_param = NULL)
 }
 }
 \author{
