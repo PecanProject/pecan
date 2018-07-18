@@ -14,18 +14,16 @@ observeEvent(input$lclUpload, {
   hide("d1_ui")
 })
 
-output$d1_import_ui <- renderUI({
-  source("ui_files/d1_download_ui.R", local = TRUE)
-})
-
-output$lcl_import_ui <- renderUI({
-  source("ui_files/local_file_upload_ui.R", local = TRUE)
-})
-
 ########### Inputs svr ############# 
 
 ## List of outputs##
 inputsList <- list()
+
+observeEvent(input$createFormatRecord, {
+  Shared.data$new_format <- input$NewFormatName
+  updateSelectizeInput(session, "InputFormatName", choices = Shared.data$new_format, selected = Shared.data$new_format, server = TRUE)
+  
+})
 
 ######### Select Site ###############
 updateSelectizeInput(session, "InputSiteName",  choices = sitenames, server = TRUE)
@@ -35,6 +33,11 @@ updateSelectizeInput(session, "InputParentName",  choices = input_names, server 
 
 ####### Select Format ##############
 updateSelectizeInput(session, "InputFormatName", choices = formats, server = TRUE)
+
+####### Update Text Input for fileName ######
+observe({
+updateTextInput(session, "InputName", value = Shared.data$selected_row)
+})
 
 ####### Print all selections for Testing ##########
 
