@@ -28,7 +28,7 @@ box(
   textInput("InputName",
             label = "Name *",
             placeholder = ""),
-  verbatimTextOutput("autoname"),
+  #verbatimTextOutput("autoname"),
   hr(),
   selectizeInput("InputFormatName", label = "Choose Format *", choices = NULL,
                  options = list(

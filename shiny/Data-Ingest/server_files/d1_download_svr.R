@@ -21,7 +21,7 @@ observeEvent(input$D1Button, {
   ## df to store href buttons for file preview ##
   d1_paths_df <- data.frame(href = NA)
   for(i in 1:length(list_of_d1_files)){
-    d1_paths_df[i,1] <- as.character(a("Preview", href = file.path(d1_tempdir, list_of_d1_files[i]), target = "_blank"))
+    d1_paths_df[i,1] <- as.character(a("Preview", href = file.path(newdir_D1, list_of_d1_files[i]), target = "_blank"))
   }
   
   D1_file_df <- cbind(list_of_d1_files, d1_paths_df)

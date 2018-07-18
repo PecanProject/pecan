@@ -62,7 +62,7 @@ server <- function(input, output, session) {
   options(shiny.maxRequestSize = 100 * 1024 ^ 2) #maximum file input size
   
   ## Setup ##
-  Shared.data <- reactiveValues(downloaded = NULL, selected_row = NULL, local_files = NULL, selected_row_local = NULL)
+  Shared.data <- reactiveValues(downloaded = NULL, selected_row = NULL, local_files = NULL, selected_row_local = NULL, new_format = NULL)
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
