@@ -27,7 +27,7 @@
 ##' @param year.fragment the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).
 ##' @param in.data.file a data file to use for input - default behavior is to use all MET.year.nc files within the start and end year 
 ##' range in the directory in.path.  If not null, overrides default behavior.
-##' @author Luke Dramko, Ben Bond-Lamberty, Michael Dietze, Anne Thomas, Alexey Shiklomanov, Betsy Cowdery, Rob Kooper, Ankur Desai, David LeBauer, Tony Gardella, Chris Black
+##' @author Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, in.data.file = NULL, ...) {
   
