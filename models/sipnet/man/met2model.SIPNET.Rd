@@ -32,5 +32,5 @@ range in the directory in.path.  If not null, overrides default behavior.}
 met2model wrapper for SIPNET
 }
 \author{
-Luke Dramko, Ben Bond-Lamberty, Michael Dietze, Anne Thomas, Alexey Shiklomanov, Betsy Cowdery, Rob Kooper, Ankur Desai, David LeBauer, Tony Gardella, Chris Black
+Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
 }
