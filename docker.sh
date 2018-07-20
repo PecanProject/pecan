@@ -4,7 +4,7 @@ set -e
 
 DEBUG=${DEBUG:-""}
 
-IMAGES="web depends base executor model data"
+IMAGES="web base executor model data"
 MODELS="sipnet"
 
 # some git variables
@@ -14,6 +14,11 @@ PECAN_GIT_DATE="$(git log --pretty=format:%ad -1)"
 
 # get version number
 VERSION="$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"
+
+# not building dependencies image, following command will build this
+echo "# docker image for dependencies is not build by default."
+echo "# this image takes a long time to build."
+echo "docker build --tag pecan/depends:latest --file docker/Dockerfile.depends ."
 
 # build images
 for i in ${IMAGES}; do
