@@ -19,12 +19,6 @@ observeEvent(input$lclUpload, {
 ## List of outputs##
 inputsList <- list()
 
-observeEvent(input$createFormatRecord, {
-  Shared.data$new_format <- input$NewFormatName
-  updateSelectizeInput(session, "InputFormatName", choices = Shared.data$new_format, selected = Shared.data$new_format, server = TRUE)
-  
-})
-
 ######### Select Site ###############
 updateSelectizeInput(session, "InputSiteName",  choices = sitenames, server = TRUE)
 
@@ -34,26 +28,60 @@ updateSelectizeInput(session, "InputParentName",  choices = input_names, server 
 ####### Select Format ##############
 updateSelectizeInput(session, "InputFormatName", choices = formats, server = TRUE)
 
+observeEvent(input$createFormatRecord, {
+  new_format <- input$NewFormatName
+  updateSelectizeInput(session, "InputFormatName", choices = new_format, selected = tail(new_format,1), server = TRUE)
+  
+})
+
+###### Select Mimetype #########
+updateSelectizeInput(session, "MimetypeNameCurrent", choices = mimetypes, server = TRUE)
+
+observeEvent(input$createFormatRecord, {
+  updateSelectizeInput(session, "MimetypeNameCurrent", choices = input$MimetypeName, selected = input$MimetypeName, server = TRUE)
+  
+})
+
+
 ####### Update Text Input for fileName ######
 observe({
 updateTextInput(session, "InputName", value = Shared.data$selected_row)
 })
 
-####### Print all selections for Testing ##########
+####### Make Inputs List ##########
 
 observeEvent(input$createInput, {
   ## siteID
-  inputsList$siteName <- input$InputSiteName
-  inputsList$siteID <- sites %>% dplyr::filter(sitename %in% inputsList$siteName) %>% pull(id)
-  
+  if(input$InputSiteName == ""){
+    inputsList$siteName <- ""
+    inputsList$siteID <- ""
+  }else{
+    inputsList$siteName <- input$InputSiteName
+    inputsList$siteID <- sites %>% dplyr::filter(sitename %in% input$InputSiteName) %>% pull(id)
+  }
+    
   ## ParentID
-  inputsList$parentName <- input$InputParentName
-  inputsList$parentID <- inputs %>% dplyr::filter(name %in% inputsList$parentName) %>% pull(id)
-  
+  if(input$InputParentName == ""){
+    inputsList$parentName <- ""
+    inputsList$parentID <- NA
+  }else{
+    inputsList$parentName <- input$InputParentName
+    inputsList$parentID <- inputs %>% dplyr::filter(name %in% input$InputParentName) %>% pull(id)
+  }
+
   ## FormatID
-  inputsList$formatName <- input$InputFormatName
-  inputsList$formatID <- formats_sub %>% dplyr::filter(name %in% inputsList$formatName) %>% pull(id)
+  if(input$InputFormatName == ""){
+    inputsList$formatName <- ""
+    inputsList$formatID <- ""
+  }else{
+    inputsList$formatName <- input$InputFormatName
+   # inputsList$formatID <- formats_sub %>% dplyr::filter(name %in% input$InputFormatName) %>% pull(id) IF Format ID is necessary, I need to redesign this line. 
+  }
   
+  ## Mimetype (should I find the ID as well?)##
+  inputsList$Mimetype <- input$MimetypeNameCurrent
+  
+
   ## Other Info
   inputsList$Name <- input$InputName
   inputsList$StartDate <- input$InputStartDate
@@ -63,8 +91,30 @@ observeEvent(input$createInput, {
   inputsList$Timezone <- input$Timezone
   inputsList$Notes <- input$InputNotes
   
+  ## Print List
   output$summInputs <- renderPrint({print(inputsList)})
 })
+
+
+observeEvent(input$testBety, {
+  
+  Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = d1_tempdir,
+                                                                in.prefix = "hf103-01-eddy-2000-01.csv", #inputsList$Name,
+                                                                siteid =  "1000004955", # inputsList$siteID,
+                                                                startdate = "2000-07-01", #inputsList$StartDate,
+                                                                enddate =   "2014-07-01", #inputsList$EndDate,
+                                                                mimetype = "text/csv", # as.character(inputsList$Mimetype),
+                                                                formatname = "LTER-HFR-103", #inputsList$formatName,
+                                                                # parentid = inputsList$parentID,
+                                                                con = bety$con
+                                                                #hostname = localhost #?,
+                                                                #allow.conflicting.dates#?
+  )
+  
+  inputs_updated <<- dplyr::tbl(bety, "inputs") %>% collect()
+  
+})
+output$input_record_df <- renderPrint({Shared.data$input_record_df})
 
 
 ######### Formats Svr #############
