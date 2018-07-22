@@ -98,13 +98,13 @@ observeEvent(input$createInput, {
 
 observeEvent(input$testBety, {
   
-  Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = d1_tempdir,
-                                                                in.prefix = "hf103-01-eddy-2000-01.csv", #inputsList$Name,
+  Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = c(local_tempdir),
+                                                                in.prefix = inputsList$Name,
                                                                 siteid =  "1000004955", # inputsList$siteID,
-                                                                startdate = "2000-07-01", #inputsList$StartDate,
-                                                                enddate =   "2014-07-01", #inputsList$EndDate,
+                                                                startdate = "2004-01-01", #inputsList$StartDate,
+                                                                enddate =   "2018-01-01", #inputsList$EndDate,
                                                                 mimetype = "text/csv", # as.character(inputsList$Mimetype),
-                                                                formatname = "LTER-HFR-103", #inputsList$formatName,
+                                                                formatname = "Test_Format_7", #inputsList$formatName,
                                                                 # parentid = inputsList$parentID,
                                                                 con = bety$con
                                                                 #hostname = localhost #?,
