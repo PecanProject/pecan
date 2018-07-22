@@ -69,6 +69,12 @@ server <- function(input, output, session) {
   temp <- tempdir() 
   PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
+  ## Create two sub-directories in the tempfile ##
+  d1_tempdir <<- file.path(temp, "d1_tempdir")
+  dir.create(d1_tempdir, showWarnings = F)
+  local_tempdir <<- file.path(temp, "local_tempdir")
+  dir.create(local_tempdir, showWarnings = F)
+  
   ##################### DataONE Download #####################
   source("server_files/d1_download_svr.R", local = TRUE)
 

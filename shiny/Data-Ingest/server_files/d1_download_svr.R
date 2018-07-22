@@ -7,12 +7,6 @@ observe({
   }
 })
 
-## Create two sub-directories in the tempfile ##
-d1_tempdir <<- file.path(temp, "d1_tempdir")
-dir.create(d1_tempdir, showWarnings = F)
-local_tempdir <- file.path(temp, "local_tempdir")
-dir.create(local_tempdir, showWarnings = F)
-
 observeEvent(input$D1Button, {
   # run dataone_download with input from id on click
   PEcAn.data.land::dataone_download(trimws(input$id), filepath = d1_tempdir) # ("doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = d1_tempdir) #store files in tempfile
