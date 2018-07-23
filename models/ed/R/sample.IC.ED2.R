@@ -7,7 +7,6 @@
 ##' @param start_date settings$run$start.date
 ##' @param pfts settings$pfts
 ##' @param ne number of ensembles requested
-##' @param path_prefix file name prefix, e.g. paste0(dirname(settings$run$inputs$css$path), "/HF_Lyford")
 ##' @param latitude settings$run$site$lat
 ##' @param longitude settings$run$site$lon
 ##' @param source the source of the samples, will appear as prefix in the IC filenames e.g. "HF_lyford.PalEON"
@@ -21,8 +20,10 @@
 ##' @author Istem Fer
 ##' @export
 ##' 
-sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne, path_prefix, 
+sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne, 
                           latitude, longitude, source, metadata, outfolder, host_info, inputs_path) {
+  
+
   
   # developing code
   colnames(samples) <- c("tree", "Measurement_Year", "iter", "DBH", "plot")
@@ -115,9 +116,11 @@ sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne, p
       file.remove(localfiles[fls])
     }
     
-    ic.list[[icn]] <- list(css = remotefiles[1], pss = remotefiles[2], site = remotefiles[3])
+    ic.list[[icn]] <- data.frame(css = remotefiles[1], pss = remotefiles[2], site = remotefiles[3], stringsAsFactors = FALSE)
     
   }
-
+  
+  ic.list <- do.call("rbind", ic.list)
+  
   return(ic.list)
 } # sample.IC.ED2
