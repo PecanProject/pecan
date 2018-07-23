@@ -4,7 +4,7 @@
 ##' @export
 ##' @param veg_file path to standard cohort veg_file
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
-##' @author Saloni Shah
+##' @author Saloni Shah, Tony Gardella
 ##' @examples
 ##' \dontrun{
 ##' veg_file <- "/fs/data1/pecan.data/dbfiles/Forest_Geo_site_1-5005/Forest_Geo.1981.veg.rds"
@@ -37,14 +37,13 @@ cohort2pool <- function(veg_file, allom_param = NULL) {
     return(NULL)
   }
   
-  #Calculate AGB
+  #Calculate Total Biomass
+  #Need to Convert the total kg of biomass to (kg/m^2) but data on area of land does not exist
+  #In it's place,dividing by number of trees.
   biomass = 10^(a + b*log10(dbh))
   biomass[is.na(biomass)] <- 0
-  tot_biomass <- sum(biomass)
-  ##### No P
-  #Need to Convert the total kg of biomass to (kg/m^2) but data on area of land does not exist
-  # Setting AGB to average biomass of the the stand
-  AGB <- tot_biomass/length(biomass) # units (KgC/m^2)
+  tot_biomass <- sum(biomass)/length(biomass) # units (KgC/m^2)
+
   
   #Calculate Component Biomass
   #Jenkins, Jennifer C., et al. "Comprehensive database of diameter-based biomass regressions for North American tree species." 
@@ -71,11 +70,12 @@ cohort2pool <- function(veg_file, allom_param = NULL) {
    
   
 
-  leaf_carbon_content        <- mean(as.vector(comp_ratios$foliage) * AGB, na.rm =TRUE)
-  coarse_root_carbon_content <- mean(as.vector(comp_ratios$coarse_root) * AGB, na.rm =TRUE)
-  tot_sbark_bmass            <- mean(as.vector(comp_ratios$stem_bark) * AGB, na.rm =TRUE)
-  wood_carbon_content        <- mean(as.vector(comp_ratios$stem_wood) * AGB, na.rm =TRUE) +tot_sbark_bmass
+  leaf_carbon_content        <- mean(as.vector(comp_ratios$foliage) * tot_biomass, na.rm =TRUE)
+  coarse_root_carbon_content <- mean(as.vector(comp_ratios$coarse_root) * tot_biomass, na.rm =TRUE)
+  tot_sbark_bmass            <- mean(as.vector(comp_ratios$stem_bark) * tot_biomass, na.rm =TRUE)
+  wood_carbon_content        <- mean(as.vector(comp_ratios$stem_wood) * tot_biomass, na.rm =TRUE) +tot_sbark_bmass
 
+  AGB <- wood_carbon_content + leaf_carbon_content
   
   
   #Prep Arguments for pool_ic function
