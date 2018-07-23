@@ -235,7 +235,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         # rows.beta[i] <- betas.tem
       # }
       # rows.beta <- as.numeric(rows.beta)
-      n.new <- round(n.ens/2)+1
+      n.new <- n.ens
       cols.redo <- 1:n.new
       sane.attempt=0
       betas_nc <- ncdf4::nc_open(file.path(path.model, v, paste0("betas_", v, "_", day.now, ".nc")))
@@ -249,7 +249,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         
         # If we're starting from scratch, set up the prediction matrix
         if(sane.attempt==0){
-          dat.pred <- matrix(nrow=nrow(dat.temp), ncol=n.new)
+          dat.pred <- matrix(nrow=nrow(dat.temp), ncol=n.ens)
         }
         
         dat.pred[,cols.redo] <- subdaily_pred(newdata = dat.temp, model.predict = mod.save, 
