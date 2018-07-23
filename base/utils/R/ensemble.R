@@ -321,21 +321,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
           "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
           file = file.path(settings$rundir, run.id, "README.txt"))
       
-      print("-------- write.config.sipnet args -------------")
-      print("defaults")
-      print(defaults)
-      print("trait.values # this is the params")
-      print(lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i))
-      print("settings")
-      print("run.id")
-      print(run.id)
-      print("inputs")
-      print(list(met=list(path=samples$met$samples[[i]])))
-      print("samples$met$samples[[i]]")
-      print(samples$met$samples[[i]])
-      print(typeof(samples$met$samples[[i]]))
-      print("-----------------------------------------------")
-      
       do.call(my.write.config, args = list( defaults = defaults, 
                                             trait.values = lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i), # this is the params
                                             settings = settings, 
