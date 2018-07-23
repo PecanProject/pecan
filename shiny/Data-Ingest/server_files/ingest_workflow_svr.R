@@ -42,7 +42,6 @@ observeEvent(input$createFormatRecord, {
   
 })
 
-
 ####### Update Text Input for fileName ######
 observe({
 updateTextInput(session, "InputName", value = Shared.data$selected_row)
@@ -53,58 +52,61 @@ updateTextInput(session, "InputName", value = Shared.data$selected_row)
 observeEvent(input$createInput, {
   ## siteID
   if(input$InputSiteName == ""){
-    inputsList$siteName <- ""
-    inputsList$siteID <- ""
+    inputsList$siteName <<- ""
+    inputsList$siteID <<- ""
   }else{
-    inputsList$siteName <- input$InputSiteName
-    inputsList$siteID <- sites %>% dplyr::filter(sitename %in% input$InputSiteName) %>% pull(id)
+    inputsList$siteName <<- input$InputSiteName
+    inputsList$siteID <<- sites %>% dplyr::filter(sitename %in% input$InputSiteName) %>% pull(id)
   }
     
   ## ParentID
   if(input$InputParentName == ""){
-    inputsList$parentName <- ""
-    inputsList$parentID <- NA
+    inputsList$parentName <<- ""
+    inputsList$parentID <<- NA
   }else{
-    inputsList$parentName <- input$InputParentName
-    inputsList$parentID <- inputs %>% dplyr::filter(name %in% input$InputParentName) %>% pull(id)
+    inputsList$parentName <<- input$InputParentName
+    inputsList$parentID <<- inputs %>% dplyr::filter(name %in% input$InputParentName) %>% pull(id)
   }
 
   ## FormatID
   if(input$InputFormatName == ""){
-    inputsList$formatName <- ""
-    inputsList$formatID <- ""
+    inputsList$formatName <<- ""
+    inputsList$formatID <<- ""
   }else{
-    inputsList$formatName <- input$InputFormatName
-   # inputsList$formatID <- formats_sub %>% dplyr::filter(name %in% input$InputFormatName) %>% pull(id) IF Format ID is necessary, I need to redesign this line. 
+    inputsList$formatName <<- input$InputFormatName
+   # inputsList$formatID <<- formats_sub %>% dplyr::filter(name %in% input$InputFormatName) %>% pull(id) IF Format ID is necessary, I need to redesign this line. 
   }
   
   ## Mimetype (should I find the ID as well?)##
-  inputsList$Mimetype <- input$MimetypeNameCurrent
+  inputsList$Mimetype <<- input$MimetypeNameCurrent
   
 
   ## Other Info
-  inputsList$Name <- input$InputName
-  inputsList$StartDate <- input$InputStartDate
-  inputsList$StartTime <- input$StartTimeInput
-  inputsList$EndDate <- input$InputEndDate
-  inputsList$EndTime <- input$EndTimeInput
-  inputsList$Timezone <- input$Timezone
-  inputsList$Notes <- input$InputNotes
+  inputsList$Method <<- input$inputMethod
+  inputsList$Name <<- input$InputName
+  inputsList$Path <<- ifelse(inputsList$Method == "DataONE", file.path(newdir_D1, input$InputName), file.path(local_tempdir, input$InputName))
+  inputsList$StartDate <<- input$InputStartDate
+  inputsList$StartTime <<- input$StartTimeInput
+  inputsList$EndDate <<- input$InputEndDate
+  inputsList$EndTime <<- input$EndTimeInput
+  inputsList$Timezone <<- input$Timezone
+  inputsList$Notes <<- input$InputNotes
   
   ## Print List
-  output$summInputs <- renderPrint({print(inputsList)})
+  output$summInputs <- renderPrint({inputsList})
 })
 
 
 observeEvent(input$testBety, {
-  
-  Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = c(local_tempdir),
+ output$TestPUT <- renderPrint(inputs$List)
+ inputsList$Path <- "/tmp/RtmpolQsqK/local_tempdir/hf103-01-eddy-2000-01.csv"
+  Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
                                                                 in.prefix = inputsList$Name,
-                                                                siteid =  "1000004955", # inputsList$siteID,
-                                                                startdate = "2004-01-01", #inputsList$StartDate,
-                                                                enddate =   "2018-01-01", #inputsList$EndDate,
-                                                                mimetype = "text/csv", # as.character(inputsList$Mimetype),
-                                                                formatname = "Test_Format_7", #inputsList$formatName,
+                                                                siteid =   inputsList$siteID,
+                                                                startdate = inputsList$StartDate,
+                                                                enddate =   inputsList$EndDate,
+                                                                mimetype = inputsList$Mimetype,
+                                                                formatname = inputsList$formatName,
                                                                 # parentid = inputsList$parentID,
                                                                 con = bety$con
                                                                 #hostname = localhost #?,
