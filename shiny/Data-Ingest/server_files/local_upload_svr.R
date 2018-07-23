@@ -29,10 +29,10 @@ observe({
 output$dtfiles <- DT::renderDT({Shared.data$local_files}, selection = 'single', options = list(ordering = F, dom = 'tp'))
 
 observe({
-  Shared.data$selected_row_local <- as.character(Shared.data$local_files[input$dtfiles_rows_selected,])
+  Shared.data$selected_row <- as.character(Shared.data$local_files[input$dtfiles_rows_selected,]) #_local
 })
 
-output$test <- renderPrint({Shared.data$selected_row_local})
+output$test <- renderPrint({Shared.data$selected_row}) #_local
 
 # Move files to correct dbfiles location (make a custom function for this?)
 observeEvent(input$LocalFinishButton, {

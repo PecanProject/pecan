@@ -1,9 +1,9 @@
 fluidRow(
 ## 1. D1 Download or Local Upload
 box(
-  title = h2("1. Select Input Method"), width = 4, solidHeader = TRUE, status = "success",
-  # shinyWidgets::radioGroupButtons("inputMethod", label = "Select Input Method", 
-  #                                 choices = c("Download from DataONE", "Upload Local File"), status = "success", selected = NULL),
+  title = h2("1. Select Files"), width = 4, solidHeader = TRUE, status = "success",
+  shinyWidgets::radioGroupButtons("inputMethod", label = "Select Input Method", 
+                                 choices = c("DataONE", "Local Files"), status = "success", selected = NULL),
   shinyjs::hidden(source_ui("ui_files", "d1_download_ui.R")),
   shinyjs::hidden(source_ui("ui_files", "local_file_upload_ui.R"))
 ),
@@ -17,29 +17,34 @@ box(
                    onInitialize = I('function() { this.setValue(""); }')
                  )
   ),
-  hr(),
+#  hr(),
   selectizeInput("InputParentName", label = "Parent *", choices = NULL,
                  options = list(
                    placeholder = 'Please search inputs by name or site',
                    onInitialize = I('function() { this.setValue(""); }')
                  )
   ),
-  hr(),
+#  hr(),
   textInput("InputName",
             label = "Name *",
             placeholder = ""),
-  verbatimTextOutput("autoname"),
+  #verbatimTextOutput("autoname"),
   hr(),
-  selectizeInput("InputFormatName", label = "Choose Format *", choices = NULL,
+  selectizeInput("InputFormatName", label = "Format *", choices = NULL,
                  options = list(
                    placeholder = 'Please search Formats by name',
                    onInitialize = I('function() { this.setValue(""); }')
                  )
   ),
+  selectizeInput("MimetypeNameCurrent", label = "Corresponding Mimetype *", choices = NULL,
+               options = list(
+                 placeholder = 'Please search mimetypes by name',
+                 onInitialize = I('function() { this.setValue(""); }')
+               )),
   p("or"),
-  shinyWidgets::dropdownButton(circle = FALSE, label = "Create New Format", 
-      box(width = 48, solidHeader = TRUE, status = "warning",
-        selectizeInput("MimetypeName", label = "Mimetype *", choices = NULL, width = '350px',
+  shinyWidgets::dropdownButton(circle = FALSE, label = "Create New Format", width = '350px',
+      box(width = '350px', solidHeader = TRUE, status = "warning",
+        selectizeInput("MimetypeName", label = "Mimetype *", choices = NULL,
                      options = list(
                        placeholder = 'Please search inputs by name or site',
                        onInitialize = I('function() { this.setValue(""); }')
@@ -98,9 +103,11 @@ box(
                 label = "Notes",
                 height = '100px'),
   actionButton("createInput", label = "Create Input"),
+  actionButton("testBety", label = "Test Bety"),
   p("* Denotes a Required Field"),
   hr(),
-  verbatimTextOutput("summInputs")
+  verbatimTextOutput("summInputs"),
+  verbatimTextOutput("input_record_df")
   )
 )
 ## 4. Formats-Variables
