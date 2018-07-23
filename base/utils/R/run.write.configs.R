@@ -60,6 +60,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   model <- settings$model$type
   scipen <- getOption("scipen")
   options(scipen = 12)
+  #sample from parameters used for both sensitivity analysis and Ens
   get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
   
@@ -165,7 +166,8 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
     return(PEcAn.settings::papply(settings, runModule.run.write.configs, overwrite = FALSE))
   } else if (PEcAn.settings::is.Settings(settings)) {
     write <- settings$database$bety$write
-    ens.sample.method <- settings$ensemble$method
+    ens.sample.method <- settings$ensemble$samplingspace$parameters$method
+    if (is.null(settings$ensemble$samplingspace$parameters$method))ens.sample.method <-"uniform"
     return(run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")
