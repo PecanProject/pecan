@@ -19,12 +19,17 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - Fixed spurious `No geonamesUsername set` warning by updating geonames package to development version
 - ED:
     - Change all history parameter files to have zero storage respiration
-    
+- missing_port_bety    
 - dataone_download.R:
+
+    - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
+- Could not specify the port for BETY in config.php. Can now use `db_bety_port` to specify port.
+
     - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget.
     
 - Data_Ingest_App:
     - use `updateSelectizeInput` to populate `selectizeInput` with choices from BETYdb. This instantly loads the inputfields where other methods take minutes to load. 
+
     
 ### Added
 - In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs
@@ -46,6 +51,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Updated Travis.yml to include librdf0-dev so that it can download redland, datapack, and dataone. 
   - Added Data-Ingest UI (inputs, dbfiles, and formats record UI and some basic server side functionality are online)
   - Modularized input record, format record, and dbfiles record into shiny modules. This allows the app to be greatly simplified to two, single-page workflows. These functions can also be used "plug-and-play" style elsewhere in PEcAn shiny apps to load in data. 
+  - Replaced modularized input, format and dbfiles records with static "Ingest Workflow" page. On this page, the user can select either importing from dataONE or Uploading from local files. If creating a new format is necessary, the user can click "Create New Format" and a dropdown menu will walk them through this process. 
+  - Selected files now autofill name value in input record workflow
 
   
 ### Removed
