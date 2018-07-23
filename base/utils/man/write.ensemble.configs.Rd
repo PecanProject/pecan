@@ -5,7 +5,7 @@
 \title{Write ensemble configs}
 \usage{
 write.ensemble.configs(defaults, ensemble.samples, settings, model,
-  clean = FALSE, write.to.db = TRUE)
+  clean = FALSE, write.to.db = TRUE, restart = NULL)
 }
 \arguments{
 \item{defaults}{pft}
@@ -30,5 +30,5 @@ Given a pft.xml object, a list of lists as supplied by get.sa.samples,
 a name to distinguish the output files, and the directory to place the files.
 }
 \author{
-David LeBauer, Carl Davidson
+David LeBauer, Carl Davidson, Hamze Dokoohaki
 }
