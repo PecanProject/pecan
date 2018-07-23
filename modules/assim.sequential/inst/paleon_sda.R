@@ -66,15 +66,17 @@ status.end()
 lyford_samples <- readRDS("/fs/data2/output/paleon_data_products/1000000650/TreeRings/HF_DBH_iterations.RDS")
 IC <- sample.IC.ED2(samples = lyford_samples, 
                     format_name = "usda",
-                    start_year = settings$run$start.date, 
+                    start_date = settings$run$start.date, 
                     pfts = settings$pfts,
-                    ne,
+                    ne = as.numeric(settings$state.data.assimilation$n.ensemble),
                     path_prefix = paste0(dirname(settings$run$inputs$css$path), "/HF_Lyford"),
                     latitude = settings$run$site$lat,
                     longitude = settings$run$site$lon,
                     source = "HF_lyford.PalEON",
                     outfolder = settings$rundir,
-                    metadata = list(area=pi*(20^2)))
+                    metadata = list(area=pi*(20^2)),
+                    host_info = settings$host,
+                    inputs_path = dirname(settings$run$inputs$css$path))
 
 #develop/debug
 if(FALSE){

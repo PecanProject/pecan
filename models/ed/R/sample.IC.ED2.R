@@ -11,8 +11,10 @@
 ##' @param latitude settings$run$site$lat
 ##' @param longitude settings$run$site$lon
 ##' @param source the source of the samples, will appear as prefix in the IC filenames e.g. "HF_lyford.PalEON"
-##' @param outfolder settings$rundir
 ##' @param metadata any known metadata: age, area (to calculate density) etc.
+##' @param outfolder settings$rundir
+##' @param host_info host info, e.g. settings$host
+##' @param inputs_path dir path to inputs, e.g. dirname(settings$run$inputs$css$path)
 ##' 
 ##' @return IC 
 ##' 
@@ -20,7 +22,7 @@
 ##' @export
 ##' 
 sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne, path_prefix, 
-                          latitude, longitude, source, outfolder) {
+                          latitude, longitude, source, metadata, outfolder, host_info, inputs_path) {
   
   # developing code
   colnames(samples) <- c("tree", "Measurement_Year", "iter", "DBH", "plot")
@@ -104,11 +106,18 @@ sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne, p
     new_site[["latitude"]]  <- latitude
     new_site[["longitude"]] <- longitude
     
-    # rename source so that filenames are different
-    ic.list[[icn]] <- veg2model.ED2(outfolder, veg_info, start_date, new_site, source)
-    # zap to remote
+    ic.list[[icn]] <- veg2model.ED2(outfolder, veg_info, start_date, new_site, paste0(source, "_ens", icn))
+    localfiles     <- paste0(sub("(.*)[.].*", "\\1", ic.list[[icn]]$filepath), c(".css", ".pss", ".site"))
+    remotefiles    <- paste0(inputs_path, "/", sub("(.*)[.].*", "\\1", ic.list[[icn]]$filename), c(".css", ".pss", ".site"))
+    # copy to remote and delete local
+    for(fls in seq_along(localfiles)){
+      PEcAn.remote::remote.copy.to(host_info, localfiles[fls], remotefiles[fls])
+      file.remove(localfiles[fls])
+    }
+    
+    ic.list[[icn]] <- list(css = remotefiles[1], pss = remotefiles[2], site = remotefiles[3])
+    
   }
 
-    
-  return()
+  return(ic.list)
 } # sample.IC.ED2
