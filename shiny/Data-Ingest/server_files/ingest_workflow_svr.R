@@ -98,8 +98,6 @@ observeEvent(input$createInput, {
 
 
 observeEvent(input$testBety, {
- output$TestPUT <- renderPrint(inputs$List)
- inputsList$Path <- "/tmp/RtmpolQsqK/local_tempdir/hf103-01-eddy-2000-01.csv"
   Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
                                                                 in.prefix = inputsList$Name,
                                                                 siteid =   inputsList$siteID,
