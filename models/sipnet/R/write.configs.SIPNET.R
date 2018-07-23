@@ -27,7 +27,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(inputs) && ("met" %in% names(inputs))) { ## override if specified in inputs
     template.clim <- inputs$met$path
   } else if (!is.null(settings$run$inputs$met$path$path2)) {
-    PEcAn.logger::logger.warn("Multiple input files in settings$inputs$met$path.  Provided inputs do not override.  Using the first input file.")
+    PEcAn.logger::logger.warn("Multiple input files in settings$run$inputs$met$path.  Provided inputs do not override.  Using the first input file.")
   }
   
   PEcAn.logger::logger.info(paste0("Writing SIPNET configs with input ", template.clim))
