@@ -25,9 +25,6 @@ sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne,
   
 
   
-  # developing code
-  colnames(samples) <- c("tree", "Measurement_Year", "iter", "DBH", "plot")
-
   year <- lubridate::year(start_date)-1 # year before the initial run
   
   # subset samples for the year, if coming from load_data won't need this
@@ -36,15 +33,6 @@ sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne,
   # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
   samples <- samples[complete.cases(samples), ]
 
-  # dummy taxa until I get from Andria
-  samples$usda <- samples$plot
-  spp <- c("ACRU", "QURU", "BEAL2", "FAGR", "TSCA", "BELE", "PIST")
-  spp_codes <- rep(spp, length.out= length(unique(samples$tree)))
-  for(i in 1:length(unique(samples$tree))){
-    ind <- samples$tree == unique(samples$tree)[i]
-    samples$usda[ind] <- spp_codes[i]
-  }
-  
   # match spp info with species names 
   # the matching can go into the ic-loop below, depending which is easier to handle sample size vs ensemble size
   # for sample sizes of 10^5 this is still fast without sampling

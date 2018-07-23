@@ -69,14 +69,15 @@ IC <- sample.IC.ED2(samples = lyford_samples,
                     start_date = settings$run$start.date, 
                     pfts = settings$pfts,
                     ne = as.numeric(settings$state.data.assimilation$n.ensemble),
-                    path_prefix = paste0(dirname(settings$run$inputs$css$path), "/HF_Lyford"),
                     latitude = settings$run$site$lat,
                     longitude = settings$run$site$lon,
                     source = "HF_lyford.PalEON",
-                    outfolder = settings$rundir,
                     metadata = list(area=pi*(20^2)),
+                    outfolder = settings$rundir,
                     host_info = settings$host,
                     inputs_path = dirname(settings$run$inputs$css$path))
+
+  
 
 #develop/debug
 if(FALSE){
