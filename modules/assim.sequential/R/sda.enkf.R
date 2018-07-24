@@ -475,7 +475,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------### 
   
 
-for(t in seq_len(nt)) { #
+for(t in 12) { #
     if(t == 1){
       recompile = TRUE
     }else{
@@ -902,6 +902,7 @@ for(t in seq_len(nt)) { #
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
+  
     ###-------------------------------------------------------------------###
     ### update state matrix                                               ###
     ###-------------------------------------------------------------------### 
@@ -909,14 +910,8 @@ for(t in seq_len(nt)) { #
       
       if(!any(obs)){
         X.new <- X
-        Pa   <- Pf + solve(q.bar)
       }
-      enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
-    }
-    ###-------------------------------------------------------------------###
-    ### update state matrix                                               ###
-    ###-------------------------------------------------------------------### 
-    if(adjustment == TRUE){
+      
       S_f  <- svd(Pf)
       L_f  <- S_f$d
       V_f  <- S_f$v
@@ -1001,36 +996,6 @@ for(t in seq_len(nt)) { #
 
     
     ANALYSIS[[t]] <- as.matrix(analysis)
-    if (interactive() & t > 1 & nens > 1) { #
-      # # calculate likelihoods
-#      for(i in seq_len(nens)){
-#        wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,], mu.a, solve(Pa), log = TRUE)
-#      }
-      
-      if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
-      if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
-      
-      analysis <- as.data.frame(X_a)
-    }else{
-      analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
-    }
-    
-    colnames(analysis) <- colnames(X)
-
-    ##### Mapping analysis vectors to be in bounds of state variables
-    if(processvar==TRUE){
-      for(i in 1:ncol(analysis)){
-        int.save <- state.interval[which(startsWith(colnames(analysis)[i],
-                                                    var.names)),]
-        analysis[analysis[,i] < int.save[1],i] <- int.save[1]
-        analysis[analysis[,i] > int.save[2],i] <- int.save[2]
-      }
-    }
-    
-    ## in the future will have to be separated from analysis
-    new.state  <- analysis
-    
-    ANALYSIS[[t]] <- analysis
     if (interactive() & t > 1) { #
       t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
