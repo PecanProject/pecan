@@ -118,36 +118,31 @@ output$input_record_df <- renderPrint({Shared.data$input_record_df})
 
 
 ######### Formats Svr #############
-
-## Output List ##
-FormatRecordList <- list()
-
 output$autoname <- renderPrint({Shared.data$selected_row}) #_local
 
 ######### Mimetype Name ##################
 updateSelectizeInput(session, "MimetypeName", choices = mimetypes, server = TRUE)
 
 observeEvent(input$createFormatRecord, {
+  ## Output List ##
+  FormatRecordList <<- list()
   ## MimetypeID
-  FormatRecordList$mimetypeName <<- input$MimetypeName
-  FormatRecordList$mimetypeID <<- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$mimetypeName) %>% pull(id)
+  FormatRecordList$mimetypeName <- input$MimetypeName
+  FormatRecordList$mimetypeID <- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$mimetypeName) %>% pull(id)
   
   ## Everything else
-  FormatRecordList$NewMimeType <<- input$NewMimeType
-  FormatRecordList$NewFormatName <<- input$NewFormatName
-  FormatRecordList$HeaderBoolean <<- ifelse((input$HeaderBoolean == "Yes"), TRUE, FALSE)
-  FormatRecordList$SkipLines <<- input$SkipLines #This should appear only if header = TRUE
-  FormatRecordList$FormatNotes <<- input$FormatNotes
+  FormatRecordList$NewMimeType <- "text/csv" #input$NewMimeType
+  FormatRecordList$NewmimetypeID <- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$NewMimeType) %>% pull(id)
+  FormatRecordList$NewFormatName <- "Test_Format_Name_99" #input$NewFormatName
+  FormatRecordList$HeaderBoolean <- "TRUE" #ifelse((input$HeaderBoolean == "Yes"), "TRUE", "FALSE")
+  FormatRecordList$SkipLines <- "3" #input$SkipLines #This should appear only if header = TRUE
+  FormatRecordList$FormatNotes <- "These are some test notes" #input$FormatNotes
   
   output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
   
-  cmd <- paste0("INSERT INTO formats ",
-                       "(header, skip, created_at, updated_at, mimetype_id, notes, name) VALUES (",
-                       FormatRecordList$HeaderBoolean, ", ", input$SkipLines, ", NOW(), NOW(), '", FormatRecordList$mimetypeID, "', '", input$FormatNotes, "','", input$NewFormatName, "')")
-  
-  db.query(query = cmd, con = bety$con)
+  dbfile.format.variable.insert(header = FormatRecordList$HeaderBoolean, skip = FormatRecordList$SkipLines, mimetype_id = FormatRecordList$NewmimetypeID,
+                                format_notes = FormatRecordList$FormatNotes, format_name = FormatRecordList$NewFormatName, con = bety$con, format_variables = FALSE)
 
-    
 })
 
 

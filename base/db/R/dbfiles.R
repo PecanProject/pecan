@@ -667,6 +667,7 @@ dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
 #' }
 dbfile.format.variable.insert <- function(format_name, header, skip, mimetype_id, format_notes = "", con, format_variables = FALSE, 
                                           description = NA, units = NA, var_notes = NA, var_name = NA, max = NA, min = NA, standard_name = NA, label = NA, type = NA){
+ 
   formatid <- get.id(
     table = "formats",
     colnames = c('mimetype_id', 'name'),
