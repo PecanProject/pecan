@@ -13,12 +13,17 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
+##' @param year.fragment Data isn't an entire year
+##' @param in.data.file Data file to use, if supplied.
 ##' @author Ankur Desai
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
-                       overwrite = FALSE, verbose = FALSE, ...) {
+                       overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, in.data.file = NULL, ...) {
 
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
+  
+  ### REMOVE
+  library("PEcAn.data.atmosphere")
 
 
 
@@ -45,8 +50,35 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
                         stringsAsFactors = FALSE)
 
   for (year in start_year:end_year) {
-    old.file <- file.path(in.path, paste(in.prefix, sprintf("%04d", year), "nc", sep = "."))
-    new.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d", year), "nc", sep = "."))
+    
+    # If a data file is supplied, we'll use that.
+    print(in.data.file)
+    if (is.character(in.data.file)) {
+      escaped <- gsub("(\\W)", "\\\\\\1", in.data.file) # The file name may contain special characters that could mess up the regular expression.
+      matching_files <- grep(escaped, list.files(in.path), value=TRUE) 
+      if (length(matching_files) == 0) {
+        PEcAn.logger::logger.severe(paste0("No files found matching ", in.data.file, "; cannot process data."))
+      }
+      
+      # This function is supposed to process netcdf files, so we'll search for files the the extension .nc and use those first.
+      nc_file = grep("\\.nc$", matching_files)
+      if (length(nc_file) > 0) {
+        in.data.file <- matching_files[nc_file]
+      } else { # no .nc files found... it could be that the extension was left off, or some other problem
+        PEcAn.logger::logger.warn("No files found with extension '.nc'.  Using the first file in the list below:")
+        PEcAn.logger::logger.warn(matching_files)
+        in.data.file <- matching_files[1]
+      }
+      print(in.data.file)
+      print(typeof(in.data.file))
+      
+      old.file <- file.path(in.path, in.data.file)
+      new.file <- file.path(outfolder, basename(in.data.file))
+      
+    } else { # Default behavior
+      old.file <- file.path(in.path, paste(in.prefix, sprintf("%04d", year), "nc", sep = "."))
+      new.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d", year), "nc", sep = "."))
+    }
 
     # check if input exists
     if (!file.exists(old.file)) {
@@ -63,6 +95,11 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
     results$mimetype[row]   <- "application/x-netcdf"
     results$formatname[row] <- "CF (gapfilled)"
+    if (year.fragment) { #Overwrite default values with proper times
+       results$startdate[row] <- format(as.POSIXct(start_date, tz="UTC"), "%Y-%m-%d %H:%M:%S")
+       results$enddate[row] <- format(as.POSIXct(end_date, tz="UTC"), "%Y-%m-%d %H:%M:S")
+    }
+    
 
     if (file.exists(new.file) && !overwrite) {
       PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
@@ -333,6 +370,31 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
+    
+    print("At 'eddy.'") ###
+    print("Tair")
+    print(Tair)
+    print("Rg")
+    print(Rg)
+    print("rH")
+    print(rH)
+    print("PAR")
+    print(PAR)
+    print("precip")
+    print(precip)
+    print("sHum")
+    print(sHum)
+    print("Lw")
+    print(Lw)
+    print("Ts1")
+    print(Ts1)
+    print("VPD")
+    print(VPD)
+    print(ws)
+    print(co2)
+    print(press)
+    print(east_wind)
+    print(north_wind)
 
     # Rn <- ncdf4::ncvar_get(nc=nc,varid='Rn') Ts2 <-ncdf4::ncvar_get(nc=nc,varid='TS2')
 
@@ -364,6 +426,8 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     n_press  <- sum(is.na(EddyData.F[["press"]]))
     n_east_wind  <- sum(is.na(EddyData.F[["east_wind"]]))
     n_north_wind <- sum(is.na(EddyData.F[["north_wind"]]))
+    
+    print("Past eddy") ###
 
     # figure out datetime of nc file and convert to POSIX
     nelem <- length(time)
@@ -371,7 +435,15 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     origin <- "1900-01-01 00:00:00"
     time <- round(as.POSIXlt(udunits2::ud.convert(time, tunit$value, paste("seconds since", origin)),
                              origin = origin, tz = "UTC"), units = "mins")
+    
+    print("time")
+    print(time) ###
+    
     dtime <- diff(time)
+    
+    
+    print(dtime) ###
+    
     if (dtime[1] == 30) {
       DTS.n <- 48
       time <- 30 * 60 + time
