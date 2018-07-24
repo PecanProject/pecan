@@ -98,8 +98,6 @@ observeEvent(input$createInput, {
 
 
 observeEvent(input$testBety, {
- output$TestPUT <- renderPrint(inputs$List)
- inputsList$Path <- "/tmp/RtmpolQsqK/local_tempdir/hf103-01-eddy-2000-01.csv"
   Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
                                                                 in.prefix = inputsList$Name,
                                                                 siteid =   inputsList$siteID,
@@ -131,18 +129,25 @@ updateSelectizeInput(session, "MimetypeName", choices = mimetypes, server = TRUE
 
 observeEvent(input$createFormatRecord, {
   ## MimetypeID
-  FormatRecordList$mimetypeName <- input$MimetypeName
-  FormatRecordList$mimetypeID <- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$mimetypeName) %>% pull(id)
+  FormatRecordList$mimetypeName <<- input$MimetypeName
+  FormatRecordList$mimetypeID <<- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$mimetypeName) %>% pull(id)
   
   ## Everything else
-  FormatRecordList$NewMimeType <- input$NewMimeType
-  FormatRecordList$NewFormatName <- input$NewFormatName
-  FormatRecordList$HeaderBoolean <- input$HeaderBoolean
-  FormatRecordList$SkipLines <- input$SkipLines #This should appear only if header = TRUE
-  FormatRecordList$FormatNotes <- input$FormatNotes
+  FormatRecordList$NewMimeType <<- input$NewMimeType
+  FormatRecordList$NewFormatName <<- input$NewFormatName
+  FormatRecordList$HeaderBoolean <<- ifelse((input$HeaderBoolean == "Yes"), TRUE, FALSE)
+  FormatRecordList$SkipLines <<- input$SkipLines #This should appear only if header = TRUE
+  FormatRecordList$FormatNotes <<- input$FormatNotes
   
   output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
   
+  cmd <- paste0("INSERT INTO formats ",
+                       "(header, skip, created_at, updated_at, mimetype_id, notes, name) VALUES (",
+                       FormatRecordList$HeaderBoolean, ", ", input$SkipLines, ", NOW(), NOW(), '", FormatRecordList$mimetypeID, "', '", input$FormatNotes, "','", input$NewFormatName, "')")
+  
+  db.query(query = cmd, con = bety$con)
+
+    
 })
 
 
