@@ -95,14 +95,78 @@ for(j in 1:J){
   }
 }
 
+# samples has rows as iterations and columns as variables, you'll have
+# to manually remove a burn-in period
+# set up the "d" function for the distribution
+ddirchmulti <- nimbleFunction(
+  run = function(x = double(1), alpha = double(1), size = double(0), log = integer(0)){
+    returnType(double(0))
+    logProb <- lgamma(sum(alpha)) - sum(lgamma(alpha)) + sum(lgamma(alpha + x)) - lgamma(sum(alpha) + size)
+    
+    if(log) {
+      return(logProb)
+    } else {
+      return(exp(logProb))
+    }
+    
+  }
+)
+
+# set up the "r" function
+rdirchmulti <- nimbleFunction(
+  run = function(n = integer(0), alpha = double(1), size = double(0)) {
+    returnType(double(1))
+    if(n != 1) nimPrint("rdirchmulti only allows n = 1; using n = 1.")
+    p <- rdirch(1, alpha)
+    return(rmulti(1, size = size, prob = p))
+  })
+
+# tell NIMBLE about the newly available distribution
+registerDistributions(list(ddirchmulti = list(BUGSdist = "ddirchmulti(alpha, size)", 
+                                              types = c('value = double(1)', 'alpha = double(1)'))))
+
+dwtmnorm <- nimbleFunction(
+  run = function(x = double(1), mean = double(1), cov = double(2), wt = double(0), log = integer(0)){
+    returnType(double(0))
+    Prob <- dmnorm_chol(x, mean, chol(cov), prec_param = FALSE) * wt
+    return(Prob)
+  }
+)
+rwtmnorm <- nimbleFunction(
+  run = function(n = integer(0), mean = double(1), cov = double(2), wt = double(0)){
+    returnType(double(1))
+    if(n != 1) nimPrint("rdirchmulti only allows n = 1; using n = 1.")
+    Prob <- rmnorm_chol(n, mean, chol(cov), prec_param = FALSE) * wt
+    return(Prob)
+  }
+)
+
+dwtmnorm <- nimbleFunction(
+  run = function(x = double(1), mean = double(1), cov = double(2), wt = double(0), log = integer(0)){
+    returnType(double(0))
+    n <- nrow(cov)
+    logProb <- n * log(2 * pi) + log(det(cov)) + (x-mean) %*% inverse(cov) %*% t(x-mean) 
+    logProb <- -1/2 * wt * Prob
+    
+    if(log) return(logProb) else return(exp(logProb))
+  }
+)
+registerDistributions(list(dwtmnorm = list(BUGSdist = "dwtmnorm(mean, cov, wt)", 
+                                              types = c('value = double(1)','mean = double(1)', 'cov = double(2)', 'wt = double(0)'))))
+
 
 tobit2space.model <- nimbleCode({
+  
   for(i in 1:N){
-    y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
+    #row[i] ~ dcat(wts[1:N])
+    #s[i] ~ dcat(wts[1:N])
+    #d[i] <- myCalculation(grid[1:N], s[i])
+    y.censored[i,1:J] ~ dwtmnorm(mean = muf[1:J], cov = pf[1:J,1:J], wt = wts[i])
     for(j in 1:J){
       y.ind[i,j] ~ dinterval(y.censored[i,j], 0)
     }
   }
+  
   #weighting the likelihood
   #row[i] ~ dcat(weights)
   #X[row[j],]
@@ -122,6 +186,14 @@ for(j in seq_along(mu.f)){
   }
 }
 
+
+wts <- matrix(NA,20,50)
+for(i in 1:20){
+  wts[i,] <- sample(size = 50,x=1:50,replace = F)
+}
+
+wts <- rep(1,50)
+
 constants.tobit2space = list(N = nrow(X),
                              J = length(mu.f))
 
@@ -129,7 +201,8 @@ data.tobit2space = list(y.ind = x.ind,
                         y.censored = x.censored,
                         mu_0 = rep(0,length(mu.f)),
                         lambda_0 = diag(10,length(mu.f)),
-                        nu_0 = 3)#some measure of prior obs
+                        nu_0 = 3,
+                        wts = wts)#some measure of prior obs
 
 inits.tobit2space = list(pf = Pf, muf = colMeans(X)) 
 #set.seed(0)
@@ -159,6 +232,7 @@ for(j in seq_along(mu.f)){
 Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
 
 Cmodel_tobit2space <- compileNimble(tobit2space_pred)
+
 Cmcmc_tobit2space <- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
 
 for(i in seq_along(X)) {
@@ -321,40 +395,40 @@ bqq[t + 1]       <- n
 
 #ptm <- proc.time()
 for(t in 1:nt){
-
+  
   Cmodel$y.ind <- y.ind[t,]
   Cmodel$y.censored <- y.censored[t,]
   Cmodel$aq <- aqq[,,t]
   Cmodel$bq <- bqq[t]
   Cmodel$muf <- mu.f
   Cmodel$pf <- Pf
-
+  
   for(i in 1:2) {
     ## ironically, here we have to "toggle" the value of y.ind[i]
     ## this specifies that when y.ind[i] = 1,
     ## indicator variable is set to 0, which specifies *not* to sample
     valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[t,i])
   }
-
+  
   set.seed(0)
   dat <- runMCMC(Cmcmc, niter = 10000, progressBar=FALSE)
-
+  
   dat = dat[500:1000,]
   #dat.save[,,t] = dat
   mu.a  = colMeans(dat[,5:6]) #X
   Pa  = cov(dat[,5:6]) #cov(X)
   Pa.save[,,t] = Pa
   Pa[is.na(Pa)]<- 0
-
+  
   CI.X1[,t] = quantile(dat[,5],c(0.025,0.5,0.975))#X[1]
   CI.X2[,t] = quantile(dat[,6],c(0.025,0.5,0.975))#X[2]
-
+  
   mq = dat[,1:4] #Sigma, Variance #Q
   mq1 = dat[,9:12] #Omega, Precision #q
-
+  
   Sbar = matrix(apply(mq,2,mean),2,2) #Mean Sigma, Variance
   q.bar = matrix(apply(mq1,2,mean),2,2) #Mean Omega, Precision
-
+  
   col = matrix(1:4,2,2)
   WV = matrix(0,2,2)
   for(i in 1:2){
@@ -362,21 +436,21 @@ for(t in 1:nt){
       WV[i,j] <- wish.df(q.bar, X = mq1, i=i, j=j, col=col[i,j])
     }
   }
-
+  
   n = mean(WV) #n + 1
   if(n < 2) n = 2
   V = solve(q.bar) * n
-
+  
   aqq[,,t+1] = V
   bqq[t+1] = n
-
+  
   plot(bqq[1:t+1],pch=19)
-
+  
   q.bar.save[,,t] = q.bar
   q.bar.CI[,,t] = apply(mq1,2,quantile,c(0.025,0.5,0.975))
   Sbar.save[,,t] = Sbar
   Sbar.CI[,,t] = apply(mq,2,quantile,c(0.025,0.5,0.975))
-
+  
   ## Ensemble forward simulation
   Xf = rmvnorm(1000,m*mu.a,Pa)
   mu.f = t(colMeans(Xf))
