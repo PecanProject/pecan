@@ -1,6 +1,6 @@
 ##' Samples intial conditions for ED2
 ##' 
-##' NOTE: almost all of the fcn args can be extracted from pecan settings list, just wnated to be explicit
+##' NOTE: almost all of the fcn args can be extracted from pecan settings list, just wanted to be explicit
 ##' 
 ##' @param samples a dataframe with columns: tree id, spp info, Measurement_Year, DBH, plot id (if applicable), could come from load_data
 ##' @param format_name how the spp info provided: usda, fia, latin_name, custom
@@ -24,7 +24,6 @@ sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne,
                           latitude, longitude, source, metadata, outfolder, host_info, inputs_path) {
   
 
-  
   year <- lubridate::year(start_date)-1 # year before the initial run
   
   # subset samples for the year, if coming from load_data won't need this
@@ -32,7 +31,7 @@ sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne,
   
   # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
   samples <- samples[complete.cases(samples), ]
-
+  
   # match spp info with species names 
   # the matching can go into the ic-loop below, depending which is easier to handle sample size vs ensemble size
   # for sample sizes of 10^5 this is still fast without sampling
@@ -42,7 +41,7 @@ sample.IC.ED2 <- function(samples, format_name = "usda", start_date, pfts, ne,
   pft_match   <- match_pft(bety_species_id = spp_match$bety_species_id, pfts = pfts) 
   samples$pft <- pft_match$pft
   
-  # how many pathces we want? should "n.patches" be a function argument?
+  # how many patches we want? should "n.patches" be a function argument?
   if(!is.null(samples$plot)){
     n.patches <- length(unique(samples$plot))
   }else{
