@@ -15,11 +15,11 @@ sample_met <- function(settings, nens=1){
     ens_members <- PEcAn.remote::remote.execute.cmd(host, paste0('ls -d -1 ', path, "/*.*"))
   }
   
-  #start_date <- as.POSIXlt((settings$run$site$met.start))
-  #end_date   <- as.POSIXlt((settings$run$site$met.end))
+  start_date <- as.POSIXlt((settings$run$site$met.start))
+  end_date   <- as.POSIXlt((settings$run$site$met.end))
 
-  start_date <- as.POSIXlt(strptime(settings$run$site$met.start, "%Y/%m/%d"))
-  end_date   <- as.POSIXlt(strptime(settings$run$site$met.end, "%Y/%m/%d"))
+  #start_date <- as.POSIXlt(strptime(settings$run$site$met.start, "%Y/%m/%d"))
+  #end_date   <- as.POSIXlt(strptime(settings$run$site$met.end, "%Y/%m/%d"))
 
   start_date$zone <- end_date$zone <- NULL
   
@@ -37,6 +37,8 @@ sample_met <- function(settings, nens=1){
     ens_ind     <- seq_along(ens_members)
   }else if(settings$model$type == "SIPNET"){
     ens_ind <- unlist(sapply(paste0(member_names, ".clim"), grep, tmp_members))
+  }else if(settings$model$type == "LINKAGES"){
+    ens_ind <- seq_along(ens_members)
   }
   
 
