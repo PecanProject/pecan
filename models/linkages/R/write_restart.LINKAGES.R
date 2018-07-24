@@ -361,7 +361,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   do.call(write.config.LINKAGES, 
           args = list(trait.values = new.params, settings = settings, run.id = runid, 
-                      restart = TRUE, spinup = FALSE))
+                      restart = TRUE, spinup = FALSE, inputs = inputs))
   
   # save original output
   if (RENAME) {
