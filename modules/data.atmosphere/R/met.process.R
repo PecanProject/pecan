@@ -179,12 +179,16 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        host = host, 
                                        overwrite = overwrite$download,
                                        site = site, username = username)
-    if (met %in% c("CRUNCEP", "GFDL", "NOAA_GEFS")) {
+    if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
       input_met$id <- raw.id
       stage$met2cf <- FALSE
       stage$standardize <- FALSE
+    } else if (met %in% c("NOAA_GEFS")) {
+      input_met$id <-raw.id
+      
+      stage$met2cf <- FALSE
     }
   }
   
@@ -213,31 +217,42 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   if (stage$standardize) {
-    if (register$scale == "regional") {
-      #### Site extraction
-      ready.id <- .extract.nc.module(cf.id = cf.id, 
-                                     register = register, 
-                                     dir = dir, 
-                                     met = met, 
-                                     str_ns = str_ns, 
-                                     site = site, new.site = new.site, 
-                                     con = con, 
-                                     start_date = start_date, end_date = end_date, 
-                                     host = host, 
-                                     overwrite = overwrite$standardize)
-    } else if (register$scale == "site") {
-      ##### Site Level Processing
-      ready.id <- .metgapfill.module(cf.id = cf.id, 
-                                     register = register,
-                                     dir = dir,
-                                     met = met, 
-                                     str_ns = str_ns, 
-                                     site = site, new.site = new.site, 
-                                     con = con, 
-                                     start_date = start_date, end_date = end_date,
-                                     host = host, 
-                                     overwrite = overwrite$standardize)
+    standardize_result = list()
+    
+    for (i in seq_len(cf.id[[1]])) {
+      if (register$scale == "regional") {
+        #### Site extraction
+        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$input.id[i], dbfile.id = cf.id$dbfile.id[i]), 
+                                       register = register, 
+                                       dir = dir, 
+                                       met = met, 
+                                       str_ns = str_ns, 
+                                       site = site, new.site = new.site, 
+                                       con = con, 
+                                       start_date = start_date, end_date = end_date, 
+                                       host = host, 
+                                       overwrite = overwrite$standardize)
+      } else if (register$scale == "site") {
+        ##### Site Level Processing
+        standardize_result[[i]] <- .metgapfill.module(cf.id = list(input.id = cf.id$input.id[i], dbfile.id = cf.id$dbfile.id[i]), 
+                                       register = register,
+                                       dir = dir,
+                                       met = met, 
+                                       str_ns = str_ns, 
+                                       site = site, new.site = new.site, 
+                                       con = con, 
+                                       start_date = start_date, end_date = end_date,
+                                       host = host, 
+                                       overwrite = overwrite$standardize)
+      }
+      
     }
+    ready.id = list(input.id = NULL, dbfile.id = NULL)
+    for (i in seq_len(standardize_result)) {
+      ready.id$input.id <- c(ready.id$input.id, standardize_result[[i]]$input.id)
+      ready.id$dbfile.id <- c(ready.id$dbfile.id, standardize_result[[i]]$dbfile.id)
+    }
+    
   } else {
     ready.id = input_met$id
   }
