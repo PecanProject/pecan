@@ -55,7 +55,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Selected files now autofill name value in input record workflow
   - Store inputs and formats in the global environment
   - "Test BETY" button allows users create a record in BETY with `dbfile.input.insert`
-  - Added separate `db.query` to create format record. 
+  - Added `dbfiles.format.variables.insert` to create format and variables records. 
+  
+- dbfiles.R 
+  - `dbfiles.format.variables.insert` is a new db query that creates a format record and a variables record. 
 
   
 ### Removed
