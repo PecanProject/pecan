@@ -24,11 +24,11 @@
 #' clay <- c(0.3,0.3,0.3)
 #' soil_params(sand=sand,clay=clay)
 soil_params <- function(soil_type,sand,silt,clay,bulk){
-
+  browser()
   ## load soil parameters
   load(system.file("data/soil_class.RData",package = "PEcAn.data.land"))
   mysoil <- list()
-  
+
   #---------------------------------------------------------------------------------------#
   #     Find soil class and sand, silt, and clay fractions.                               #
   #---------------------------------------------------------------------------------------#
@@ -50,7 +50,9 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
       clay <- 1-sand-silt
     } else {
       #not missing anything else, normalize
+
       stot <- sand+silt+clay
+
       if(any(stot > 2)) stot <- stot*100 ## assume values reported in % not proportion
       sand <- sand/stot
       silt <- silt/stot

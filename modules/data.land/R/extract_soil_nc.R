@@ -1,5 +1,67 @@
 #' Extract soil data
 #'
+#' @param outdir 
+#' @param lat 
+#' @param lon 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' outdir  <- "~/paleon/envTest"
+#' lat     <- 40
+#' lon     <- -80
+#' \dontrun{
+#'    PEcAn.data.land::extract_soil_gssurgo(outdir,lat,lon)
+#' }
+#' @author Hamze Dokoohaki
+#' 
+extract_soil_gssurgo<-function(outdir,lat,lon){
+  #reading the mapunit based on latitude and longitude of the site
+  #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
+  #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
+  RCurl::getURL(paste0("https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=MapunitPoly&FILTER=<Filter><DWithin><PropertyName>Geometry</PropertyName><gml:Point>%20<gml:coordinates>",
+                lon,",",lat,"</gml:coordinates></gml:Point><Distance%20units=%27m%27>0</Distance>%20</DWithin></Filter>"), ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)->xmll
+  regexpr('<ms:mukey>',xmll)->startp
+  regexpr('</ms:mukey>',xmll)->stopp
+  #if you found the mapunit key
+  if (startp!=-1 & stopp!=-1)
+    gSSURGO.Query(substr(xmll,startp%>%as.numeric+10,stopp%>%as.numeric-1))->soilprop
+    
+    #Filter based on the most abundant component in that mapunit key 
+    soilprop%>%
+      filter(comppct==max(soilprop$comppct,na.rm=T),depth>0)%>%
+      arrange(depth)%>%
+      select(-comppct,-cokey,-mukey,-AWC)->soilprop.new
+    # rename it to however pecan likes it
+    names(soilprop.new)<-c("fraction_of_gravel_in_soil","soil_cec","fraction_of_sand_in_soil","fraction_of_silt_in_soil",
+                           "fraction_of_clay_in_soil","soilC","soil_ph","soil_depth","soil_bulk_density")
+    
+    #unit colnversion
+    soilprop.new$soil_bulk_density<-udunits2::ud.convert(soilprop.new$soil_bulk_density,"g cm-3","kg m-3")
+    #converting it to list
+    names(soilprop.new)%>%
+      purrr::map(function(var){
+        soilprop.new[,var]
+      })%>%setNames(names(soilprop.new))->soil.data.gssurgo
+    
+    # calc new filename
+    prefix <- "gSSURGO_soil"
+    new.file <- file.path(outdir,paste0(prefix,".nc"))
+    
+    #sending it to the func where some new params will be added and then it will be written down as nc file.
+    soil2netcdf(soil.data.gssurgo,new.file)
+    
+    return(new.file)
+}
+
+
+
+
+
+
+#' Extract soil data
+#'
 #' @param in.file 
 #' @param outdir 
 #' @param lat 

@@ -11,17 +11,19 @@
 #' @examples
 soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
   
-  if(is.null(input$id)){
+  browser()
+  
+  if(input$soil$source=="PalEON_soil" & is.null(input$id)){
     PEcAn.logger::logger.severe("currently soil_process requires an input ID to be specified")
     return(NULL)
   }
   
-  if(is.null(input$source)){
-    input$source <- "PalEON_soil"  ## temporarily hardcoding in the only source
+  if(is.null(input$soil$source)){
+    input$soil$source <- "PalEON_soil"  ## temporarily hardcoding in the only source
                                    ## in the future this should throw an error
   }
   
-  #--------------------------------------------------------------------------------------------------#
+
   # Extract info from settings and setup
   site       <- settings$run$site
   model      <- settings$model$type
@@ -35,7 +37,22 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
                               password = dbparms$bety$password)
   con <- bety$con
   on.exit(PEcAn.DB::db.close(con))
+  # get site info
+  latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)
+  new.site <- data.frame(id = as.numeric(site$id), 
+                         lat = latlon$lat, 
+                         lon = latlon$lon)
+  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
+  outfolder <- file.path(dbfiles, paste0(input$soil$source, "_site_", str_ns))
+  if(!dir.exists(outfolder)) dir.create(outfolder)
+  #--------------------------------------------------------------------------------------------------#   
+  # if we are reading from gSSURGO
+  if (input$soil$source=="gSSURGO"){
+    newfile<-extract_soil_gssurgo(outfolder,lat = latlon$lat,lon=latlon$lon)
+    return(newfile)
+  }
   
+   #--------------------------------------------------------------------------------------------------# 
   # get existing input info
   source.input <- PEcAn.DB::db.query(paste0("SELECT * from Inputs where id =",input$id),con)
   if(run.local){
@@ -53,13 +70,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
     }
   }  ## otherwise continue to process soil
   
-  # get site info
-  latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)
-  new.site <- data.frame(id = as.numeric(site$id), 
-                         lat = latlon$lat, 
-                         lon = latlon$lon)
-  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
-  
+
   # set up host information
   machine.host <- ifelse(host == "localhost" || host$name == "localhost" || run.local,
                          PEcAn.remote::fqdn(), host$name)
@@ -70,9 +81,6 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
     modeltype_id <- db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
     model <- db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
   }
-  
-  outfolder <- file.path(dbfiles, paste0(input$source, "_site_", str_ns))
-  if(!dir.exists(outfolder)) dir.create(outfolder)
   
   newfile <- PEcAn.data.land::extract_soil_nc(source.file,outfolder,lat = latlon$lat,lon=latlon$lon)
   
