@@ -21,7 +21,8 @@
                             write = TRUE, 
                             lst = lst, 
                             overwrite = overwrite,
-                            exact.dates = FALSE)
+                            exact.dates = FALSE,
+                            forecast = TRUE)
   
   print(ready.id) # Not a debugging statement
   
