@@ -25,13 +25,16 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # If overwrite is a plain boolean, fill in defaults for each module
   if (!is.list(overwrite)) {
     if (overwrite) {
-      overwrite <- list(getveg = TRUE,  putveg = TRUE)
+      overwrite <- list(getveg = TRUE,  ensveg = TRUE,  putveg = TRUE)
     } else {
-      overwrite <- list(getveg = FALSE, putveg = FALSE)
+      overwrite <- list(getveg = FALSE, ensveg = FALSE, putveg = FALSE)
     }
   } else {
     if (is.null(overwrite$getveg)) {
       overwrite$getveg <- FALSE
+    }
+    if (is.null(overwrite$ensveg)) {
+      overwrite$ensveg <- FALSE
     }
     if (is.null(overwrite$putveg)) {
       overwrite$putveg <- FALSE
@@ -83,19 +86,19 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   new.site$name <- settings$run$site$name
   
 
-str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
+  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   
-outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
+  outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
 
    
-getveg.id <- putveg.id <- NULL
+  getveg.id <- putveg.id <- NULL
   
   
 #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
-if (is.null(getveg.id) & is.null(putveg.id)) {
+  if (is.null(getveg.id) & is.null(putveg.id)) {
 
     getveg.id <-.get.veg.module(input_veg = input, 
                               outfolder = outfolder, 
@@ -108,7 +111,21 @@ if (is.null(getveg.id) & is.null(putveg.id)) {
 
   }
   
-
+#--------------------------------------------------------------------------------------------------#
+  # Sampling/ensemble module
+  
+  if (!is.null(getveg.id) & !is.null(input$ensemble) & is.null(putveg.id)) { 
+    
+    getveg.id <-.ens.veg.module(getveg.id = getveg.id, dbparms = dbparms,
+                                input_veg = input, pfts = settings$pfts,
+                                outfolder = outfolder, 
+                                dir = dir, machine = machine, model = model,
+                                start_date = start_date, end_date = end_date,
+                                new_site = new.site,
+                                host = host, overwrite = overwrite$putveg)
+    
+  }
+  
 #--------------------------------------------------------------------------------------------------#
   # Match species to PFTs + veg2model module
   

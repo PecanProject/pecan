@@ -1,4 +1,4 @@
-.put.veg.module <- function(getveg.id, dbparms, 
+.ens.veg.module <- function(getveg.id, dbparms, 
                             input_veg, pfts,
                             outfolder, 
                             dir, machine, model,
@@ -6,7 +6,7 @@
                             new_site, 
                             host, overwrite){
   
-
+  
   
   #--------------------------------------------------------------------------------------------------#
   # Write model specific IC files
@@ -18,32 +18,24 @@
   con <- bety$con
   on.exit(db.close(con))
   
-  # Determine IC file format name and mimetype
-  model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
-                                " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
-                                " where m.name = '", model, "' AND mf.tag='", input_veg$output,"'"), con)
-  
-  PEcAn.logger::logger.info("Begin Model Specific Conversion")
-  
-  formatname <- model_info[1]
-  mimetype   <- model_info[3]
+  PEcAn.logger::logger.info("Begin IC sampling")
   
   spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
   
-  
   pkg  <- "PEcAn.data.land"
-  fcn  <- "write_ic"
+  fcn  <- "sample_ic"
   
-  putveg.id <- convert.input(input.id = getveg.id,
+  ensveg.id <- convert.input(input.id = getveg.id,
                              outfolder = outfolder, 
-                             formatname = formatname, 
-                             mimetype = mimetype,
+                             formatname = "spp.info", 
+                             mimetype = "application/rds",
                              site.id = new_site$id, 
                              start_date = start_date, end_date = end_date, 
                              pkg = pkg, fcn = fcn, 
                              con = con, host = host, browndog = NULL, 
                              write = TRUE, 
                              overwrite = overwrite, 
+                             ensemble = as.numeric(input$ensemble),
                              # fcn specific args 
                              in.path = spp.file$file_path, 
                              in.name = spp.file$file_name,
@@ -53,7 +45,7 @@
                              source = input_veg$source)
   
   
-  return(putveg.id)
+  return(ensveg.id)
   
-
+  
 }
