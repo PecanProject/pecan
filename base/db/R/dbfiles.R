@@ -636,3 +636,68 @@ dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
     invisible(NA)
   }
 }
+
+#' Function to Insert Records into the Formats and Variables Tables
+#' @name dbfile.format.variable.insert
+#' @param format_name Format Name
+#' @param header TRUE/FALSE Boolean describing whether or not the file contains a header
+#' @param skip The number of lines in the header
+#' @param mimetype_id The mimetype id of the mimetype that is associated with the format
+#' @param format_notes Any useful notes that describe the format being created
+#' @param con Connection object to connect to bety
+#' @param format-variables A TRUE/FALSE Boolean used to toggle a format-variables db query
+#' @param description variable descripthon
+#' @param units variable units
+#' @param variable_notes notes to further describe the variable
+#' @param var_name variable name
+#' @param max maximum possible value
+#' @param min minimum possible value
+#' @param standard_name PEcAn specific name? 
+#' @param label ?
+#' @param type ?
+#' @author Liam Burke
+#'
+#' @return formatid
+#' @export
+#' \dontrun{
+#' bety <- betyConnect()
+##'   dbfile.format.variable.insert('Test_Format', header = TRUE, skip = 2, mimetype_id = 1060, con = bety$con)
+##'   
+##' }
+#'
+#' @examples
+dbfile.format.variable.insert <- function(format_name, header, skip, mimetype_id, format_notes = "", con, format-variables = FALSE, 
+                                          description = NA, units = NA, variable_notes = NA, var_name = NA, max = NA, min = NA, standard_name = NA, label = NA, type = NA){
+  
+  # find appropriate format, create if it does not exist
+  formatid <- get.id(
+    table = "formats",
+    colnames = c('mimetype_id', 'name'),
+    values = c(mimetypeid, formatname),
+    con = con,
+    create = TRUE,
+    dates = TRUE
+    
+    #### Formats Query ####
+    cmd <- paste0("INSERT INTO formats ",
+                   "(header, skip, mimetype_id, notes, name) VALUES (",
+                   header, ", ", skip, "', '", mimetype_id, "', '", notes, "','", name, "')")
+    
+    db.query(query = cmd, con = bety$con)
+    
+    #### Format Variables Query ####
+    if(format-variables == TRUE){
+    cmd_fv <- paste0("INSERT INTO variables ",
+                     "(description, units, notes, name, max, min, standard_name, standard_units, label, type) VALUES (",
+                     description, ", ", units, "', '", notes, "', '", var_name, "', '", max, "', '", min, "', '", standard_name, "', '", standard_units, "', '", label, "', '", type, "','", max, "')")
+  
+    db.query(query = cmd_fv, con = bety$con)
+    }
+    
+
+}   return(formatid)
+  
+
+
+)
+  
