@@ -84,14 +84,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
   }
   
+  ens.inputs <- list()
+  inputs <- list()
 
   if(is.null(restart) & is.null(restart$ens.inputs)){
-    ens.inputs <- settings$run$inputs#sample_met(settings,nens)
+      ens.inputs <- sample_met(settings,nens)
+    
   } else {
     ens.inputs <- restart$ens.inputs
   }
-  ens.inputs <- list()
-  inputs <- list()
+  
   for(i in seq_len(nens)){
     
     if(no_split){
@@ -108,15 +110,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       #                                       outpath = file.path(rundir,paste0("met",i))))
     }
 
-    ### get only necessary ensemble inputs. Do not change in analysis
-    ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
-    ### model specific split inputs
-    inputs[[i]] <- do.call(my.split_inputs, 
-                           args = list(settings = settings, 
-                                       start.time = settings$run$start.date, 
-                                       stop.time = settings$run$end.date, #as.Date(names(obs.mean)[1]),
-                                       inputs = ens.inputs[[i]]))#,
-#                                       outpath = file.path(rundir,paste0("met",i))))
+#     ### get only necessary ensemble inputs. Do not change in analysis
+#     ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
+#     ### model specific split inputs
+#     inputs[[i]] <- do.call(my.split_inputs, 
+#                            args = list(settings = settings, 
+#                                        start.time = settings$run$start.date, 
+#                                        stop.time = settings$run$end.date, #as.Date(names(obs.mean)[1]),
+#                                        inputs = ens.inputs[[i]]))#,
+# #                                       outpath = file.path(rundir,paste0("met",i))))
   }
   
   ###-------------------------------------------------------------------###
@@ -457,7 +459,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------### 
   
-  for(t in 1) {
+  for(t in seq_len(nt)) { #
     if(t == 1){
       recompile = TRUE
     }else{
@@ -720,7 +722,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
         #Pf <- cov(X.new)
         
-        if(sum(diag(Pf)-diag(cov(X.new))) > 3 | sum(diag(Pf)-diag(cov(X.new))) < -3) logger.severe('Increase Sample Size')
+        if(sum(diag(Pf)-diag(cov(X.new))) > 3 | sum(diag(Pf)-diag(cov(X.new))) < -3) logger.warn('Covariance in tobit2space model estimate is too different from original forecast covariance. Consider increasing your number of ensemble members.')
         
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
@@ -867,6 +869,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ###-------------------------------------------------------------------### 
       
       ### no process variance -- forecast is the same as the analysis ###
+      ### this logic might require more explanation. Why are we giving Q if there is no process variance?
       if (processvar==FALSE) {
         mu.a <- mu.f
         Pa   <- Pf + Q
@@ -877,7 +880,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           q.bar <- diag(ncol(X))
           print('Process variance not estimated. Analysis has been given uninformative process variance')
         } 
-        Pa   <- Pf + solve(q.bar)
+        Pa   <- Pf + solve(q.bar) # should this be V instead of solve(q.bar)?
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
@@ -885,6 +888,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ### update state matrix                                               ###
     ###-------------------------------------------------------------------### 
     if(adjustment == TRUE){
+      
+      if(!any(obs)){
+        X.new <- X
+      }
+      
       S_f  <- svd(Pf)
       L_f  <- S_f$d
       V_f  <- S_f$v
@@ -1083,7 +1091,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------### 
-    save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir, "sda.output.Rdata"))
+    save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir,'out', "sda.output.Rdata"))
 
     
   }  ## end loop over time
@@ -1101,6 +1109,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     precip.mat   <- precip.mat[year(obs.times) - 853, ]
   } else {
     print("climate diagnostics under development")
+  }
+  
+  if(is.null(X)){
+    X <- as.matrix(FORECAST[[t]])
   }
   
   ###-------------------------------------------------------------------###
