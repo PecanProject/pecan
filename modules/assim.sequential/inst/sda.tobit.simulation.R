@@ -11,6 +11,7 @@ library(nimble)
 library(mvtnorm)
 library(PEcAn.assim.sequential)
 
+
 sampler_toggle <- nimbleFunction(
   contains = sampler_BASE,
   setup = function(model, mvSaved, target, control) {
@@ -32,7 +33,7 @@ sampler_toggle <- nimbleFunction(
   )
 )
 
-#`row[i] ~ dcat(weights)` and then loop over the data as `X[row[j],]`
+# `row[i] ~ dcat(weights)` and then loop over the data as `X[row[j],]`
 
 tobit.model <- nimbleCode({ 
   
@@ -48,6 +49,7 @@ tobit.model <- nimbleCode({
   
   ## Analysis
   y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
+
   
   #don't flag y.censored as data, y.censored in inits
   #remove y.censored samplers and only assign univariate samplers on NAs
@@ -262,14 +264,13 @@ iycens <- grep("y.censored",colnames(dat.tobit2space))
 X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
 #Pf <- cov(X.new)
 
-
-#### Simulate some collected? data
 nt = 50
 m = c(1.03,.9)
 model = matrix(0,nt,2) ; Y.dat = model ; y.ind = model ; y.censored = model
 model[1,] = c(0,10)
 q = diag(2) #process variance
 R = r = diag(2)*2 #observation error #the lower you make this the better the convergence on the covariance matrix
+
 
 for(t in 2:nt){
   model[t,] = rmvnorm(1,m*model[t-1,],q)
@@ -324,6 +325,8 @@ inits.pred = list(q = diag(length(mu.f)), X.mod = as.vector(mu.f),
 #ptm <- proc.time()
 model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
                           constants = constants.tobit, inits = inits.pred)
+## Adding X.mod,q,r as data for building model.
+
 conf <- configureMCMC(model_pred, print=TRUE)
 conf$addMonitors(c("X","q","Q")) 
 ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
@@ -341,7 +344,7 @@ for(i in 1:length(y.ind[t,])) {
 conf$printSamplers()
 
 ## can monitor y.censored, if you wish, to verify correct behaviour
-#conf$addMonitors('y.censored')
+conf$addMonitors('y.censored')
 
 Rmcmc <- buildMCMC(conf)
 
@@ -388,10 +391,6 @@ V <- solve(q.bar) * n
 
 aqq[t + 1, , ]   <- V
 bqq[t + 1]       <- n
-
-
-
-
 
 #ptm <- proc.time()
 for(t in 1:nt){

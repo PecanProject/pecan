@@ -284,19 +284,20 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
  
  
  # save the comparison plots to pdf
- pdf(file.path(outdir,paste0("PEcAn_",workflow_id),"model.data.comparison1.pdf"), onefile=T,
-     paper='A4r', height=15, width=20) 
+ pdf(file.path(outdir,paste0("PEcAn_",workflow_id),"model.data.comparison1.pdf"), onefile=T,paper='A4r', height=15, width=20) 
  
  # now plot the pre-PDA ensemble similar to the way we did before
  preCI <- apply(pre_pda, 2, quantile, c(0.025, 0.5, 0.975), na.rm = TRUE)
  ymin <- min(min(c(preCI, fobs), na.rm = TRUE))
  ymax <- max(max(c(preCI, fobs), na.rm = TRUE))
+
  plot(1709:2009,pre_pda[1,], ylim = c(ymin, ymax), lwd = 2, xlab = "time", ylab = "NEE", main = "pre-PDA vs post-PDA", type = "n",xlim=c(1709,2015))
  prepoly <- 1709:2009
  polygon(c(prepoly, rev(prepoly)),c(preCI[3,], rev(preCI[1,])),col='khaki',border=NA)
 
  # plot the post-PDA ensemble
  postCI <- apply(post_pda, 2, quantile, c(0.025, 0.5, 0.975), na.rm = TRUE)
+
  postpoly <- 1709:2009
  polygon(c(postpoly, rev(postpoly)),c(postCI[3,], rev(postCI[1,])),col='lightblue',border=NA)
  

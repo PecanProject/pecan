@@ -239,7 +239,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     
     ## read model outputs    
-    for (i in 170:300) {
+    for (i in seq_len(settings$assim.batch$n.knot)) {
       align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
       model.out[[i]] <- align.return$model.out
       if(all(!is.na(model.out[[i]]))){

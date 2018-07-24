@@ -128,7 +128,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
       } else {
         ## copy values
         if (!is.null(trait.values[[group]])) {
-          
+
           # IF: not sure what's going on here but I had to have this hack to overwrite params below
           # should come back to this
           if(is.null(dim(trait.values[[group]]))){
@@ -171,6 +171,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("AGEMX" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
           }
+
           if ("Gmax" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
           }
@@ -206,6 +207,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           }
           if ("CM5" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM5 <- vals$CM5
+          }
+          if ("FWT" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$FWT <- vals$FWT
           }
           if ("SLTA" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SLTA <- vals$SLTA
@@ -296,7 +300,6 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
   pft_names <- paste0("pft_names = c('", paste(pft_names, collapse = "','"), "')")
   jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
-  
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 } # write.config.LINKAGES

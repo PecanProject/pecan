@@ -21,7 +21,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
   }else{
     perpft <- FALSE
   } 
-  
+ 
   start.year <- strftime(settings$run$start.date,"%Y")
   end.year <- strftime(settings$run$end.date,"%Y")
   

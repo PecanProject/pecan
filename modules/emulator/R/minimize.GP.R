@@ -219,7 +219,6 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   }
   
   
-  
   currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
   pcurr   <- unlist(sapply(currllp, `[[` , "par"))
   
