@@ -8,7 +8,7 @@ div(id = "lcl_ui",
         placeholder = "Drag and drop files here"
       ),
       DT::DTOutput("dtfiles"),
-      verbatimTextOutput("test"),
+     # verbatimTextOutput("test"),
       hr(),
       textInput(
         "new_local_filename",
