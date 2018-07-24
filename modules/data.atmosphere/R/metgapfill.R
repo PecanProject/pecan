@@ -261,7 +261,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     Ts1 <- try(ncdf4::ncvar_get(nc = nc, varid = "soil_temperature"), silent = TRUE)
     if (!is.numeric(Ts1)) {
-      Lw <- missingarr
+      Ts1 <- missingarr
       myvar <- ncdf4::ncvar_def(name = "soil_temperature", units = "K", dim = xytdim)
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)
