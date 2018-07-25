@@ -7,8 +7,8 @@
 #' @export
 #'
 #' @details 
-#' @import XML
-#' Full documention of available tables and their relationships can be found here www.sdmdataaccess.nrcs.usda.gov/QueryHelp.aspx
+#' @import XML 
+#' Full documention of available tables and their relationships can be found here \url{www.sdmdataaccess.nrcs.usda.gov/QueryHelp.aspx}
 #' There have been occasions where NRCS made some minor changes to the structure of the API which this code is where those changes need
 #' to be implemneted here.
 gSSURGO.Query<-function(mukeys=2747727){
