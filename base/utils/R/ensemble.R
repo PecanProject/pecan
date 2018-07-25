@@ -241,26 +241,24 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     samp[c(order,names(samp)[!(names(samp)%in%order)])]->samp.ordered
     #performing the sampling
     samples<-list()
+  
     for(i in seq_along(samp.ordered)){
-      
       myparent<-samp.ordered[[i]]$parent # do I have a parent ?
       #call the function responsible for generating the ensemble
-      do.call(paste0(names(samp.ordered[i]),".ens.gen"),
+      do.call(input.ens.gen,
               args = list(settings=settings,
+                          input=names(samp.ordered)[i],
                           method=samp.ordered[[i]]$method,
                           parenids=if(!is.null(myparent)) samples[[myparent]], # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
-                          ensemble.samples)
+                          ensemble.samples=ensemble.samples
+                          )
       )->samples[[names(samp.ordered[i])]]
       
     }
-    
-
-   
+      #browser()
     # if no ensemble piece was in the xml I replicare n times the first element in met and params
     if (is.null(samples$met)) samples$met$samples<-rep(settings$run$inputs$met$path[1],settings$ensemble$size)
-    if (is.null(samples$parameters)) samples$parameters$samples<-ensemble.samples%>%purrr::map(~.x[rep(1,,settings$ensemble$size),])
-
-
+    if (is.null(samples$parameters$samples)) samples$parameters$samples<-ensemble.samples%>%purrr::map(~.x[rep(1,,settings$ensemble$size),])
     #------------------------End of generating ensembles-----------------------------------
     # find all inputs that have an id
     inputs <- names(settings$run$inputs)
@@ -331,10 +329,12 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       )
       )
       cat(run.id, file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
+     
     }
     return(invisible(list(runs = runs, ensemble.id = ensemble.id, samples=samples)))
     #------------------------------------------------- if we already have everything ------------------        
   }else{
+    #browser()
     #reading retsrat inputs
     inputs<-restart$inputs
     run.id<-restart$runid
@@ -351,12 +351,14 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            settings = settings,
                            new.state = new.state[i, ], 
                            new.params = new.params[[i]], 
-                           inputs =NULL, 
+                           inputs =list(met=list(path=inputs$samples[[i]])), 
                            RENAME = TRUE)
       )
     }
     params<-new.params
-    return(invisible(list(runs = data.frame(id=run.id), ensemble.id = ensemble.id)))
+    return(invisible(list(runs = data.frame(id=run.id), ensemble.id = ensemble.id, samples=list(met=inputs)
+                          )
+                     ))
   }
   
   
@@ -376,95 +378,28 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #' @export
 #'
 #' @examples
-met.ens.gen<-function(settings,method="sampling",parenids=NULL,...){
-  #-- reading the dots and exposing them to the inside of the function
-  samples<-list()
-  dots<-list(...)
-  if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
-  #-- assing the sample ids based on different scenarios
-  if(!is.null(parenids)) {
-    samples$ids<-parenids$ids  
-    sample$ids[samples$ids>settings$run$inputs$met$path%>%length]->out.of.sample.size
-    #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
-    samples(settings$run$inputs$met$path%>%seq_along(),out.of.sample.size,replace = T)->samples$ids[samples$ids%in%out.of.sample.size]
-  }else if(method=="sampling") {
-    samples$ids<-sample(settings$run$inputs$met$path%>%seq_along(),settings$ensemble$size,replace = T)  
-  }else if(method=="looping"){
-    samples$ids<-rep_len(settings$run$inputs$met$path%>%seq_along(), length.out=settings$ensemble$size)
-  }
-  #using the sample ids
-  samples$samples<-settings$run$inputs$met$path[samples$ids]
-  return(samples)
-}
-
-#' function for generating params ens
-#'
-#' @param settings list of PEcAn settings
-#' @param method  Method for sampling - For now looping or sampling with replacement is implemented
-#' @param parenids If params's id are read from a parent what are the ids
-#' @param ...  ensemble samples needs to be passed to this sample. This object is made by function get.parameter.samples
-#'
-#' @return
-#' @export
-#'
-#' @examples
-parameters.ens.gen<-function(settings,method="sampling",parenids=NULL,...){
+input.ens.gen<-function(settings,input,method="sampling",parenids=NULL,...){
   #-- reading the dots and exposing them to the inside of the function
   samples<-list()
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
   
-  if(!is.null(parenids)) { # if you have a parent - ids are sent by the parent
-    #ids are sent based on the total sample size of the parent we need to make sure that the child also has as many samples
-    samples$ids<-parenids$ids
-    samples$ids[samples$ids>ensemble.samples[[1]]%>%nrow]->out.of.sample.size
-    #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
-    sample(ensemble.samples[[1]]%>%nrow,length(out.of.sample.size),replace = T)->samples$ids[samples$ids%in%out.of.sample.size]
-  }else if (method=="sampling"){
-    samples$ids<-sample(ensemble.samples[[1]]%>%nrow,settings$ensemble$size,replace = T)
-  }else if(method=="looping"){
-    samples$ids<-rep_len(ensemble.samples[[1]]%>%nrow%>%vector(length=.)%>%seq_along, length.out=settings$ensemble$size)
+  if (tolower(input)=="met"){
+      #-- assing the sample ids based on different scenarios
+      if(!is.null(parenids)) {
+        samples$ids<-parenids$ids  
+        sample$ids[samples$ids>settings$run$inputs$met$path%>%length]->out.of.sample.size
+        #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
+        samples(settings$run$inputs$met$path%>%seq_along(),out.of.sample.size,replace = T)->samples$ids[samples$ids%in%out.of.sample.size]
+      }else if(tolower(method)=="sampling") {
+        samples$ids<-sample(settings$run$inputs$met$path%>%seq_along(),settings$ensemble$size,replace = T)  
+      }else if(tolower(method)=="looping"){
+        samples$ids<-rep_len(settings$run$inputs$met$path%>%seq_along(), length.out=settings$ensemble$size)
+      }
+    #using the sample ids
+    samples$samples<-settings$run$inputs$met$path[samples$ids]
   }
-  samples$samples<-ensemble.samples%>%purrr::map(~.x[samples$ids,])
-  #browser()
-  #if(is.null(parenids) & method=="sampling") samples<-sample(settings$run$inputs$met%>%seq_along(),settings$ensemble$size,replace = T)
-  return(samples)
-}
 
-#' generating params for Veg parameters - needs to be implemented 
-#'
-#' @param settings 
-#' @param method 
-#' @param parenids 
-#' @param ... 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-vegetation.ens.gen<-function(settings,method="sampling",parenids=NULL,...){
-  #-- reading the dots and exposing them to the inside of the function
-  dots<-list(...)
-  if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
-  samples<-list()
-  return(samples)
-}
 
-#' generating params for soil parameters - needs to be implemented 
-#'
-#' @param settings 
-#' @param method 
-#' @param parenids 
-#' @param ... 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-soil.ens.gen<-function(settings,method="",parenids=NULL,...){
-  #-- reading the dots and exposing them to the inside of the function
-  dots<-list(...)
-  if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
-  samples<-list()
   return(samples)
 }
