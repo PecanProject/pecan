@@ -24,7 +24,6 @@
 #' clay <- c(0.3,0.3,0.3)
 #' soil_params(sand=sand,clay=clay)
 soil_params <- function(soil_type,sand,silt,clay,bulk){
-  browser()
   ## load soil parameters
   load(system.file("data/soil_class.RData",package = "PEcAn.data.land"))
   mysoil <- list()

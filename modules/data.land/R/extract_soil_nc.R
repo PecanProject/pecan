@@ -1,4 +1,4 @@
-#' Extract soil data
+#' Extract soil data from gssurgo
 #'
 #' @param outdir 
 #' @param lat 
@@ -25,9 +25,9 @@ extract_soil_gssurgo<-function(outdir,lat,lon){
   regexpr('<ms:mukey>',xmll)->startp
   regexpr('</ms:mukey>',xmll)->stopp
   #if you found the mapunit key
-  if (startp!=-1 & stopp!=-1)
-    gSSURGO.Query(substr(xmll,startp%>%as.numeric+10,stopp%>%as.numeric-1))->soilprop
-    
+  if (startp==-1 | stopp==-1) PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
+    # caaling the query function sending the mapunit key
+   gSSURGO.Query(substr(xmll,startp%>%as.numeric+10,stopp%>%as.numeric-1))->soilprop
     #Filter based on the most abundant component in that mapunit key 
     soilprop%>%
       filter(comppct==max(soilprop$comppct,na.rm=T),depth>0)%>%
@@ -44,11 +44,9 @@ extract_soil_gssurgo<-function(outdir,lat,lon){
       purrr::map(function(var){
         soilprop.new[,var]
       })%>%setNames(names(soilprop.new))->soil.data.gssurgo
-    
     # calc new filename
     prefix <- "gSSURGO_soil"
     new.file <- file.path(outdir,paste0(prefix,".nc"))
-    
     #sending it to the func where some new params will be added and then it will be written down as nc file.
     soil2netcdf(soil.data.gssurgo,new.file)
     
