@@ -24,8 +24,6 @@ Insert Format and Format-Variable Records
 bety <- betyConnect
   insert.format.vars(con = bety$con, formats_df, formats_variables_df)
 }
-
-
 }
 \author{
 Liam Burke (liam.burke24@gmail.com)
