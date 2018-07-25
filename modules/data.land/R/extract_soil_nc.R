@@ -29,7 +29,6 @@ extract_soil_gssurgo<-function(outdir,lat,lon){
                 lon ,",", lat,"</gml:coordinates></gml:Point><Distance%20units=%27m%27>0</Distance>%20</DWithin></Filter>"), ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)->xmll
   regexpr('<ms:mukey>', xmll)->startp
   regexpr('</ms:mukey>', xmll)->stopp
-  browser()
   #if you found the mapunit key
   if (startp==-1 | stopp==-1) PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
     # caaling the query function sending the mapunit key
