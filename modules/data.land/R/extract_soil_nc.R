@@ -26,16 +26,16 @@ extract_soil_gssurgo<-function(outdir,lat,lon){
   #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
   #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
   RCurl::getURL(paste0("https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=MapunitPoly&FILTER=<Filter><DWithin><PropertyName>Geometry</PropertyName><gml:Point>%20<gml:coordinates>",
-                lon,",",lat,"</gml:coordinates></gml:Point><Distance%20units=%27m%27>0</Distance>%20</DWithin></Filter>"), ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)->xmll
-  regexpr('<ms:mukey>',xmll)->startp
-  regexpr('</ms:mukey>',xmll)->stopp
+                lon ," , ", lat,"</gml:coordinates></gml:Point><Distance%20units=%27m%27>0</Distance>%20</DWithin></Filter>"), ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)->xmll
+  regexpr('<ms:mukey>', xmll)->startp
+  regexpr('</ms:mukey>', xmll)->stopp
   #if you found the mapunit key
   if (startp==-1 | stopp==-1) PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
     # caaling the query function sending the mapunit key
-    soilprop<-gSSURGO.Query(substr(xmll,startp%>%as.numeric+10,stopp%>%as.numeric-1))
+    soilprop<-gSSURGO.Query(substr(xmll, startp%>%as.numeric+10, stopp%>%as.numeric-1))
     #Filter based on the most abundant component in that mapunit key 
     soilprop.new<-soilprop%>%
-      filter(comppct_r==max(soilprop$comppct_r,na.rm=T),hzdept_r>0)%>%
+      filter(comppct_r==max(soilprop$comppct_r, na.rm=T),hzdept_r>0)%>%
       arrange(hzdept_r)%>%
       select(-comppct_r,-chkey,-aws050wta)
     # rename it to however pecan likes it
@@ -45,13 +45,13 @@ extract_soil_gssurgo<-function(outdir,lat,lon){
     soilprop.new [, c("soilC")] <- soilprop.new [,c("soilC")]*0.69/100
     soilprop.new$soil_bulk_density <- udunits2::ud.convert(soilprop.new$soil_bulk_density, "g cm-3", "kg m-3")
     #converting it to list
-    names(soilprop.new)%>%
+    names(soilprop.new) %>%
       purrr::map(function(var){
         soilprop.new[,var]
-      })%>%setNames(names(soilprop.new))->soil.data.gssurgo
+      })%>% setNames(names(soilprop.new))->soil.data.gssurgo
     # calc new filename
     prefix <- "gSSURGO_soil"
-    new.file <- file.path(outdir,paste0(prefix,".nc"))
+    new.file <- file.path(outdir, paste0(prefix,".nc"))
     #sending it to the func where some new params will be added and then it will be written down as nc file.
     soil2netcdf(soil.data.gssurgo, new.file)
     
