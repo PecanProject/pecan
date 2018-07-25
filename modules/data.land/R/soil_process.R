@@ -11,7 +11,7 @@
 #' @examples
 soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
   
-  if(input$soil$source=="PalEON_soil" & is.null(input$id)){
+  if(input$soil$source=="PalEON_soil" && is.null(input$id)){
     PEcAn.logger::logger.severe("currently soil_process requires an input ID to be specified")
     return(NULL)
   }

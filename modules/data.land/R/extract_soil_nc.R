@@ -1,10 +1,10 @@
 #' Extract soil data from gssurgo
 #'
-#' @param outdir 
-#' @param lat 
-#' @param lon 
+#' @param outdir Output directory for writing down the netcdf file
+#' @param lat Latitude 
+#' @param lon Longitude
 #'
-#' @return
+#' @return It returns the addresses fir the generated soil netcdf file
 #' @export
 #'
 #' @examples
@@ -15,8 +15,13 @@
 #'    PEcAn.data.land::extract_soil_gssurgo(outdir,lat,lon)
 #' }
 #' @author Hamze Dokoohaki
-#' 
+
 extract_soil_gssurgo<-function(outdir,lat,lon){
+  #dictionary of names
+  soil.name.dic <- list("fraction_of_sand_in_soil","fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" , "soilC" , "soil_depth" , "fraction_of_gravel_in_soil",
+                        "soil_bulk_density" , "soil_ph" ,"soil_cec")
+  names(soil.name.dic) <- c("sandtotal_r" , "silttotal_r" , "claytotal_r" , "om_r" , "hzdept_r" , "frag3to10_r" ,
+                            "dbovendry_r" , "ph1to1h2o_r" , "cec_r")
   #reading the mapunit based on latitude and longitude of the site
   #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
   #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
@@ -27,18 +32,18 @@ extract_soil_gssurgo<-function(outdir,lat,lon){
   #if you found the mapunit key
   if (startp==-1 | stopp==-1) PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
     # caaling the query function sending the mapunit key
-   gSSURGO.Query(substr(xmll,startp%>%as.numeric+10,stopp%>%as.numeric-1))->soilprop
+    soilprop<-gSSURGO.Query(substr(xmll,startp%>%as.numeric+10,stopp%>%as.numeric-1))
     #Filter based on the most abundant component in that mapunit key 
-    soilprop%>%
-      filter(comppct==max(soilprop$comppct,na.rm=T),depth>0)%>%
-      arrange(depth)%>%
-      select(-comppct,-cokey,-mukey,-AWC)->soilprop.new
+    soilprop.new<-soilprop%>%
+      filter(comppct_r==max(soilprop$comppct_r,na.rm=T),hzdept_r>0)%>%
+      arrange(hzdept_r)%>%
+      select(-comppct_r,-chkey,-aws050wta)
     # rename it to however pecan likes it
-    names(soilprop.new)<-c("fraction_of_gravel_in_soil","soil_cec","fraction_of_sand_in_soil","fraction_of_silt_in_soil",
-                           "fraction_of_clay_in_soil","soilC","soil_ph","soil_depth","soil_bulk_density")
-    
+    names(soilprop.new) <- soil.name.dic[names(soilprop.new)]%>%unlist()
     #unit colnversion
-    soilprop.new$soil_bulk_density<-udunits2::ud.convert(soilprop.new$soil_bulk_density,"g cm-3","kg m-3")
+    soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" ,"fraction_of_gravel_in_soil" , "soil_depth")] <- soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" ,"fraction_of_gravel_in_soil" , "soil_depth")]/100
+    soilprop.new [, c("soilC")] <- soilprop.new [,c("soilC")]*0.69/100
+    soilprop.new$soil_bulk_density <- udunits2::ud.convert(soilprop.new$soil_bulk_density, "g cm-3", "kg m-3")
     #converting it to list
     names(soilprop.new)%>%
       purrr::map(function(var){
@@ -48,7 +53,7 @@ extract_soil_gssurgo<-function(outdir,lat,lon){
     prefix <- "gSSURGO_soil"
     new.file <- file.path(outdir,paste0(prefix,".nc"))
     #sending it to the func where some new params will be added and then it will be written down as nc file.
-    soil2netcdf(soil.data.gssurgo,new.file)
+    soil2netcdf(soil.data.gssurgo, new.file)
     
     return(new.file)
 }
