@@ -1,10 +1,11 @@
 .ens.veg.module <- function(getveg.id, dbparms, 
-                            input_veg, pfts,
+                            input_veg, 
                             outfolder, 
-                            dir, machine, model,
+                            machine, 
                             start_date, end_date,
+                            ensemble, n.ensemble,
                             new_site, 
-                            host, overwrite){
+                            host, machine_host){
   
   
   
@@ -34,14 +35,16 @@
                              pkg = pkg, fcn = fcn, 
                              con = con, host = host, browndog = NULL, 
                              write = TRUE, 
-                             overwrite = overwrite, 
-                             ensemble = as.numeric(input$ensemble),
+                             overwrite = FALSE, 
+                             pattern = paste0(input_veg$source, "_ens", n.ensemble),
+                             forecast = TRUE,
+                             ensemble = ensemble,
                              # fcn specific args 
+                             sitename = new_site$name,
                              in.path = spp.file$file_path, 
                              in.name = spp.file$file_name,
-                             model = model,
-                             new_site = new_site,
-                             pfts = pfts,
+                             n.ensemble = n.ensemble,
+                             machine_host = machine_host,
                              source = input_veg$source)
   
   

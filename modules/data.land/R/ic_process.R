@@ -116,14 +116,22 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   if (!is.null(getveg.id) & !is.null(input$ensemble) & is.null(putveg.id)) { 
     
-    getveg.id <-.ens.veg.module(getveg.id = getveg.id, dbparms = dbparms,
-                                input_veg = input, pfts = settings$pfts,
-                                outfolder = outfolder, 
-                                dir = dir, machine = machine, model = model,
-                                start_date = start_date, end_date = end_date,
-                                new_site = new.site,
-                                host = host, overwrite = overwrite$putveg)
-    
+    ensveg.id <- list()
+    for(i in seq_len(as.numeric(input$ensemble))){
+      ensveg.id[[i]] <-.ens.veg.module(getveg.id    = getveg.id, 
+                                       dbparms      = dbparms,
+                                       input_veg    = input, 
+                                       outfolder    = outfolder, 
+                                       machine      = machine, 
+                                       start_date   = start_date, 
+                                       end_date     = end_date,
+                                       ensemble     = as.numeric(input$ensemble), 
+                                       n.ensemble   = i,
+                                       new_site     = new.site,
+                                       host         = host, 
+                                       machine_host = machine.host)
+    }
+    getveg.id <- ensveg.id
   }
   
 #--------------------------------------------------------------------------------------------------#
