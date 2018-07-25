@@ -592,13 +592,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       if (overwrite) {
         # A bit hacky, but need to make sure that all fields are updated to expected
         # values (i.e., what they'd be if convert.input was creating a new record)
-        if (exists("existing.input") && nrow(existing.input) > 0) {
+        if (exists("existing.input") && nrow(existing.input[[i]]) > 0) {
             PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
                                       "' WHERE id=", existing.input[[i]]$id), con)
           
         }
         
-        if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
+        if (exists("existing.dbfile") && nrow(existing.dbfile[[i]]) > 0) {
             PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
                                       "', ", "file_name='", result[[i]]$dbfile.name[1], 
                                       "' WHERE id=", existing.dbfile[[i]]$id), con)
