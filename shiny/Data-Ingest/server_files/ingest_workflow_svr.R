@@ -126,6 +126,7 @@ updateSelectizeInput(session, "MimetypeName", choices = mimetypes, server = TRUE
 observeEvent(input$createFormatRecord, {
   ## Output List ##
   FormatRecordList <<- list()
+  
   ## MimetypeID
   FormatRecordList$MimetypeName <- input$MimetypeName
   FormatRecordList$NewmimetypeID <- ifelse((input$MimetypeName == ""), "", mimetype_sub %>% dplyr::filter(type_string %in% input$MimetypeName) %>% pull(id))
@@ -136,6 +137,7 @@ observeEvent(input$createFormatRecord, {
   FormatRecordList$SkipLines <- input$SkipLines #This should appear only if header = TRUE
   FormatRecordList$FormatNotes <- input$FormatNotes
   
+  ## Make 'data.frame' for format record query 
   FormatsRecord_df <- data.frame(
     header = FormatRecordList$HeaderBoolean,
     skip = FormatRecordList$SkipLines,
@@ -143,13 +145,10 @@ observeEvent(input$createFormatRecord, {
     notes = FormatRecordList$FormatNotes,
     name = FormatRecordList$NewFormatName
   )
-
+  ## Print format record for testing
   output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
-  
-  # dbfile.format.variable.insert(header = FormatRecordList$HeaderBoolean, skip = FormatRecordList$SkipLines, mimetype_id = FormatRecordList$NewmimetypeID,
-  #                               format_notes = FormatRecordList$FormatNotes, format_name = FormatRecordList$NewFormatName, con = bety$con, format_variables = FALSE)
-  
-  
+
+  ## Insert Format Record
   PEcAn.DB::insert.format.vars(con = bety$con, formats_df = FormatsRecord_df, formats_variables_df = NULL)
 })
 
