@@ -22,6 +22,7 @@ Imports:
     dplyr,
     geonames,
     ggplot2,
+    glue,
     httr,
     jsonlite,
     lubridate (>= 1.6.0),
