@@ -127,17 +127,15 @@ observeEvent(input$createFormatRecord, {
   ## Output List ##
   FormatRecordList <<- list()
   ## MimetypeID
-  FormatRecordList$mimetypeName <- input$MimetypeName
-  FormatRecordList$mimetypeID <- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$mimetypeName) %>% pull(id)
+  FormatRecordList$MimetypeName <- input$MimetypeName
+  FormatRecordList$NewmimetypeID <- ifelse((input$MimetypeName == ""), "", mimetype_sub %>% dplyr::filter(type_string %in% input$MimetypeName) %>% pull(id))
   
   ## Everything else
-  FormatRecordList$NewMimeType <- "text/csv" #input$NewMimeType
-  FormatRecordList$NewmimetypeID <- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$NewMimeType) %>% pull(id)
-  FormatRecordList$NewFormatName <- "Test_Format_Name_99" #input$NewFormatName
-  FormatRecordList$HeaderBoolean <- "TRUE" #ifelse((input$HeaderBoolean == "Yes"), "TRUE", "FALSE")
-  FormatRecordList$SkipLines <- "3" #input$SkipLines #This should appear only if header = TRUE
-  FormatRecordList$FormatNotes <- "These are some test notes" #input$FormatNotes
-  
+  FormatRecordList$NewFormatName <- input$NewFormatName
+  FormatRecordList$HeaderBoolean <- ifelse((input$HeaderBoolean == "Yes"), "TRUE", "FALSE")
+  FormatRecordList$SkipLines <- input$SkipLines #This should appear only if header = TRUE
+  FormatRecordList$FormatNotes <- input$FormatNotes
+
   output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
   
   dbfile.format.variable.insert(header = FormatRecordList$HeaderBoolean, skip = FormatRecordList$SkipLines, mimetype_id = FormatRecordList$NewmimetypeID,
