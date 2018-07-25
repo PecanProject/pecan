@@ -1,4 +1,4 @@
-############ soil data retrive from ssurgo
+############ Retrives soil data from gssurgo
 #' This function queries the gSSURGO database for a series of map unit keys
 #'
 #' @param mukeys map unit key from gssurgo
