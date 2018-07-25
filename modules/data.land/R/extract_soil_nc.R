@@ -4,7 +4,7 @@
 #' @param lat Latitude 
 #' @param lon Longitude
 #'
-#' @return It returns the addresses fir the generated soil netcdf file
+#' @return It returns the address for the generated soil netcdf file
 #' @export
 #'
 #' @examples
