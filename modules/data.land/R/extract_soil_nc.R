@@ -26,9 +26,10 @@ extract_soil_gssurgo<-function(outdir,lat,lon){
   #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
   #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
   RCurl::getURL(paste0("https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=MapunitPoly&FILTER=<Filter><DWithin><PropertyName>Geometry</PropertyName><gml:Point>%20<gml:coordinates>",
-                lon ," , ", lat,"</gml:coordinates></gml:Point><Distance%20units=%27m%27>0</Distance>%20</DWithin></Filter>"), ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)->xmll
+                lon ,",", lat,"</gml:coordinates></gml:Point><Distance%20units=%27m%27>0</Distance>%20</DWithin></Filter>"), ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)->xmll
   regexpr('<ms:mukey>', xmll)->startp
   regexpr('</ms:mukey>', xmll)->stopp
+  browser()
   #if you found the mapunit key
   if (startp==-1 | stopp==-1) PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
     # caaling the query function sending the mapunit key
