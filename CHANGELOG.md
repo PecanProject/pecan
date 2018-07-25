@@ -55,11 +55,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Selected files now autofill name value in input record workflow
   - Store inputs and formats in the global environment
   - "Test BETY" button allows users create a record in BETY with `dbfile.input.insert`
-  - Added `dbfiles.format.variables.insert` to create format and variables records. 
+  - Removed `dbfiles.format.variables.insert` 
+  - Added `input.format.vars` to query the BETYdb
   
-- dbfiles.R 
-  - `dbfiles.format.variables.insert` is a new db query that creates a format record and a variables record. 
-
+- pecan/base/db
+  - New File: `input.format.vars.R`. This function registers the format and the (optional) formats_variables record using `db_merge_into`. 
   
 ### Removed
   - pecan.worldmap function no longer used, dropped from visualization package
