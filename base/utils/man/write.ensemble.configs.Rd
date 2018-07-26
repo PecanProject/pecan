@@ -5,7 +5,7 @@
 \title{Write ensemble configs}
 \usage{
 write.ensemble.configs(defaults, ensemble.samples, settings, model,
-  clean = FALSE, write.to.db = TRUE)
+  clean = FALSE, write.to.db = TRUE, restart = NULL)
 }
 \arguments{
 \item{defaults}{pft}
@@ -15,6 +15,8 @@ write.ensemble.configs(defaults, ensemble.samples, settings, model,
 \item{settings}{list of PEcAn settings}
 
 \item{clean}{remove old output first?}
+
+\item{restart}{In case this a continuation of an old simulation. restart needs to be a list with runid, inputs, parameters (new.params), initial condition (new.state), ensemble id (ensemble.id), start.time and stop.time}
 
 \item{write.config}{a model-specific function to write config files, e.g. \link{write.config.ED}}
 }
@@ -30,5 +32,5 @@ Given a pft.xml object, a list of lists as supplied by get.sa.samples,
 a name to distinguish the output files, and the directory to place the files.
 }
 \author{
-David LeBauer, Carl Davidson
+David LeBauer, Carl Davidson, Hamze Dokoohaki
 }

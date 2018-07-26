@@ -182,7 +182,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
-##' @param restart In case this a continuation of an old simulation. restart needs to be a list with runid, inputs, parameters (new.params), initial condition (new.state), ensemble id (ensemble.id), start.time and stop.time
+##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble ids), start.time and stop.time.
 ##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
@@ -259,8 +259,8 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     # if no ensemble piece was in the xml I replicare n times the first element in met and params
     if ( is.null(samples$met)) samples$met$samples <- rep(settings$run$inputs$met$path[1], settings$ensemble$size)
 
-    if ( is.null(samp$parameters))            samples$parameters$samples<-ensemble.samples%>%purrr::map(~.x[rep(1,settings$ensemble$size),])
-    if ( is.null(samples$parameters$samples)) samples$parameters$samples<-ensemble.samples
+    if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, settings$ensemble$size) , ])
+    if ( is.null(samples$parameters$samples) ) samples$parameters$samples <- ensemble.samples
     #------------------------End of generating ensembles-----------------------------------
     # find all inputs that have an id
     inputs <- names(settings$run$inputs)
