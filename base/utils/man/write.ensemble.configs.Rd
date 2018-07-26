@@ -16,7 +16,7 @@ write.ensemble.configs(defaults, ensemble.samples, settings, model,
 
 \item{clean}{remove old output first?}
 
-\item{restart}{In case this a continuation of an old simulation. restart needs to be a list with runid, inputs, parameters (new.params), initial condition (new.state), ensemble id (ensemble.id), start.time and stop.time}
+\item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble ids), start.time and stop.time.}
 
 \item{write.config}{a model-specific function to write config files, e.g. \link{write.config.ED}}
 }
