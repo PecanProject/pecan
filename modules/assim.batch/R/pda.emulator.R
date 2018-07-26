@@ -459,16 +459,22 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   if (run.normal | run.round) {
     
     resume.list <- list()
-    
+
     # start from knots
     indx <- sample(seq_len(settings$assim.batch$n.knot), settings$assim.batch$chain)
-    
+
+    # start from knots where model was run
+    init.list <- apply(SS[[1]][sample(nrow(SS[[1]]), settings$assim.batch$chain), -ncol(SS[[1]])], 1, as.list)
+
     for (c in seq_len(settings$assim.batch$chain)) {
       jmp.list[[c]] <- sapply(prior.fn.all$qprior, 
                               function(x) 0.1 * diff(eval(x, list(p = c(0.05, 0.95)))))[prior.ind.all]
       jmp.list[[c]] <- sqrt(jmp.list[[c]])
       
       init.list[[c]] <- as.list(SS[[isbias]][indx[c], -ncol(SS[[isbias]])])
+      # init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n = 1)))
+      # names(init.x) <- rownames(prior.all)[prior.ind.all]
+      # init.list[[c]] <- init.x
       resume.list[[c]] <- NA
     }
   }
@@ -564,6 +570,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
         }
         
       }else{
+        #this should be compatible for most cases but might not work for all
+        idx <- ifelse(length(idx)>1, idx[idx==i], idx)
         m[, i] <- mcmc.out[[c]]$mcmc.samp[, idx]
       }
     }

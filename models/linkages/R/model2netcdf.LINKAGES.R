@@ -18,7 +18,6 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param overwrite Flag for overwriting nc files or not
 ##' @export
 ##'
 ##' @author Ann Raiho, Betsy Cowdery

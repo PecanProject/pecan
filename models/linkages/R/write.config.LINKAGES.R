@@ -127,8 +127,6 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
         
       } else {
         ## copy values
-        if (!is.null(trait.values[[group]])) {
-
           # IF: not sure what's going on here but I had to have this hack to overwrite params below
           # should come back to this
           if(is.null(dim(trait.values[[group]]))){

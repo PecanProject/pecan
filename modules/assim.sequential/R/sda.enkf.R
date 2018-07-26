@@ -89,7 +89,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
 
   if(is.null(restart) & is.null(restart$ens.inputs)){
       ens.inputs <- sample_met(settings,nens)
-    
   } else {
     ens.inputs <- restart$ens.inputs
   }
@@ -475,7 +474,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------### 
   
 
-for(t in 12) { #
+for(t in seq_len(nt)) { #
     if(t == 1){
       recompile = TRUE
     }else{
