@@ -52,7 +52,7 @@ check_met_input_file <- function(metfile,
         "degrees_east"
       )
     }
-  ), error = function(e) conditionMessage(e)
+  ), error = function(e) e
   )
 
   test_dims_summary <- summarize_error_list(list(test_dims), "dimensions", "correct dimensions")
@@ -75,7 +75,7 @@ check_met_input_file <- function(metfile,
   test_vars <- process_error_list(test_vars_raw, nc_vars)
   test_vars_summary <- summarize_error_list(test_vars_raw, nc_vars, "var format and units")
 
-  all_errors <- c(list(dimensions = test_dims), test_has_vars, test_vars)
+  all_errors <- c(list(dimensions = conditionMessage(test_dims)), test_has_vars, test_vars)
 
   test_summary <- tibble::tibble(
     target_variable = c(NA, required_vars, nc_vars),
