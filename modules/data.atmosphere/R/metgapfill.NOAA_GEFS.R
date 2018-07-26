@@ -73,20 +73,6 @@ metgapfill.NOAA_GEFS <- function(in.data.file, in.prefix, in.path, outfolder, st
   air_temperature <- zoo::na.spline(air_temperature)
   precipitation_flux <- zoo::na.spline(precipitation_flux)
   
-  # test
-  humidity <- ncdf4::ncvar_get(flptr, "specific_humidity")
-  
-  fitted.data <- data.frame(air_temperature = air_temperature,
-                            precipitation_flux = precipitation_flux)
-  fitted.data[['humidity']] <- humidity
-  model <- lm(fitted.data$humidity ~ ., fitted.data)
-  print(model)
-  out <- predict(model, fitted.data)
-  print(typeof(out))
-  print(out)
-  print("*******************************")
-  # quit("no")
-  
   fitted.data <- data.frame(air_temperature = air_temperature,
                             precipitation_flux = precipitation_flux)
   
@@ -202,7 +188,7 @@ metgapfill.NOAA_GEFS <- function(in.data.file, in.prefix, in.path, outfolder, st
                         formatname = "CF (gapfilled)",                # file format
                         startdate = start_date,                       # start date of file contents
                         enddate = end_date,                           # end date of file contents
-                        dbfile.name = paste0(in.prefix, ensemble),    # met product identifier
+                        dbfile.name = basename(out.data.file),        # output file name
                         stringsAsFactors = FALSE)
   
   return(results)
