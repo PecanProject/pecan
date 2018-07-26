@@ -523,12 +523,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     if (forecast && !is.null(input.id) && !is.na(input.id)) { # for met2model coversion, arguments will be extraneous otherwise.
       fcn.args$year.fragment = TRUE
-      parent.inputfile.name <- PEcAn.DB::db.query(paste0("SELECT name, id FROM inputs WHERE id =", input.id), con)
+      parent.inputfile.name <- PEcAn.DB::db.query(paste0("SELECT name, parent_id FROM inputs WHERE id =", input.id), con)
       # A Hack-y quirk that takes advantage of the fact that the only forecast product currently being used is in a folder
       # that's the same as its name.
       # Should talk about fixing this when there's more time; this may cause problems for other forecast data products when they're added.
-      while (!is.na(parent.inputfile.name$id)) {
-        parent.inputfile.name <- PEcAn.DB::db.query(paste0("SELECT name, id FROM inputs WHERE id =", input.id), con)
+      while (!is.na(parent.inputfile.name$parent_id)) {
+        parent.inputfile.name <- PEcAn.DB::db.query(paste0("SELECT name, parent_id FROM inputs WHERE id =", parent.inputfile.name$parent_id), con)
       }
       fcn.args$in.data.file = parent.inputfile.name$name #Sends the file name (minus the extension)
     }
