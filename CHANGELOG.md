@@ -24,7 +24,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
     
 ### Added
--Added the feature of generating ensembles for parameters and met separatly. 
+-You can now generate ensembles for parameters and met separatly and using different methods. 
 
 - From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
 
