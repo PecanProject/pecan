@@ -44,6 +44,7 @@ Imports:
     rnoaa,
     sp,
     stringr (>= 1.1.0),
+    testthat (>= 2.0.0),
     tibble,
     tidyr,
     truncnorm,
@@ -55,8 +56,7 @@ Suggests:
     foreach,
     parallel,
     progress,
-    rlang (>= 0.2.0),
-    testthat (>= 2.0.0)
+    rlang (>= 0.2.0)
 Remotes:
     github::ropensci/geonames,
     github::ropenscilabs/nneo,

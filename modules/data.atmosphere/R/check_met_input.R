@@ -8,7 +8,7 @@
 #' @export
 check_met_input_file <- function(metfile, variable_table = pecan_standard_met_table) {
 
-  metfile <- normalizePath(metfile)
+  metfile <- normalizePath(metfile, mustWork = FALSE)
 
   PEcAn.logger::severeifnot(
     file.exists(metfile),
@@ -25,20 +25,25 @@ check_met_input_file <- function(metfile, variable_table = pecan_standard_met_ta
         testthat::expect_type(dimensions, "list")
         testthat::expect_equal(length(dimensions), 3)
         testthat::expect_true("time" %in% names(dimensions))
+        time_regex <- paste0(
+          "^(seconds|minutes|hours|hours|days) since ",
+          "[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}",
+          "T[[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}Z$"
+        )
         testthat::expect_match(
           ncdf4::ncatt_get(nc, "time", "units")[["value"]],
-          "^days since [[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}T[[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}Z$"
+          time_regex
         )
-         testthat::expect_true("latitude" %in% names(dimensions))
-         testthat::expect_equal(
-           ncdf4::ncatt_get(nc, "latitude", "units")[["value"]],
-           "degrees_north"
-         )
-         testthat::expect_true("longitude" %in% names(dimensions))
-         testthat::expect_equal(
-           ncdf4::ncatt_get(nc, "longitude", "units")[["value"]],
-           "degrees_east"
-         )
+        testthat::expect_true("latitude" %in% names(dimensions))
+        testthat::expect_equal(
+          ncdf4::ncatt_get(nc, "latitude", "units")[["value"]],
+          "degrees_north"
+        )
+        testthat::expect_true("longitude" %in% names(dimensions))
+        testthat::expect_equal(
+          ncdf4::ncatt_get(nc, "longitude", "units")[["value"]],
+          "degrees_east"
+        )
        }
     ), error = function(e) conditionMessage(e)
   )
@@ -59,7 +64,7 @@ check_met_input_file <- function(metfile, variable_table = pecan_standard_met_ta
 
   if (length(all_errors) > 0) {
     cat(unlist(all_errors), sep = "\n\n")
-    stop("At least one error was found.")
+    PEcAn.logger::logger.severe("At least one error was found.")
   }
 
   invisible(TRUE)
