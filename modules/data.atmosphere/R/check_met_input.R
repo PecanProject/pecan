@@ -63,8 +63,12 @@ check_met_input_file <- function(metfile, variable_table = pecan_standard_met_ta
   all_errors <- c(list(dimensions = test_dims), test_vars_errors)
 
   if (length(all_errors) > 0) {
-    cat(unlist(all_errors), sep = "\n\n")
-    PEcAn.logger::logger.severe("At least one error was found.")
+    error_string <- paste(unlist(all_errors), collapse = "\n\n")
+    PEcAn.logger::logger.severe(
+      "\nThe following errors were detected:\n\n",
+      error_string,
+      wrap = FALSE
+    )
   }
 
   invisible(TRUE)

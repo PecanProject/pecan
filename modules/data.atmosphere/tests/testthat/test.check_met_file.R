@@ -9,7 +9,7 @@ test_that(
     )
     expect_error(
       check_met_input_file(urbana_daily_met),
-      regexp = "At least one error was found\\."
+      regexp = "nc, \"time\", \"units\".* does not match"
     )
     urbana_subdaily_met <- system.file(
       "tests/testthat/data/urbana_subdaily_test.nc",
@@ -17,7 +17,7 @@ test_that(
     )
     expect_error(
       check_met_input_file(urbana_subdaily_met),
-      regexp = "At least one error was found\\."
+      regexp = "length\\(dimensions\\) not equal to 3"
     )
   }
 )
