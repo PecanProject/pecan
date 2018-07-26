@@ -4,18 +4,22 @@
 \alias{check_met_input_file}
 \title{Check a meteorology data file for compliance with the PEcAn standard}
 \usage{
-check_met_input_file(metfile, variable_table = pecan_standard_met_table,
+check_met_input_file(metfile, throw_error = TRUE,
+  variable_table = pecan_standard_met_table,
   required_vars = pecan_standard_met_table \%>\% dplyr::filter(is_required)
   \%>\% dplyr::pull(cf_standard_name))
 }
 \arguments{
 \item{metfile}{Path of met file to check, as a scalar character.}
 
+\item{throw_error}{Logical. If `TRUE`, throw an informative error
+if any tests fail. If `FALSE`,}
+
 \item{variable_table}{`data.frame` linking standard names to their
 units. Defaults to [pecan_standard_met_table].}
 }
 \value{
-`TRUE` (invisibly) if successful, otherwise throw an informative error.
+Tidy `data.frame` summarizing the results of the tests.
 }
 \description{
 Check a meteorology data file for compliance with the PEcAn standard
