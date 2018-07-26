@@ -224,7 +224,6 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
         }
       }
     }
-  }
   
   switch.mat <- switch.mat[spp.params.save, ]
   
