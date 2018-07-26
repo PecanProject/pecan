@@ -11,6 +11,18 @@ test_that(
       check_met_input_file(urbana_daily_met),
       regexp = "nc, \"time\", \"units\".* does not match"
     )
+    urbana_daily_results <- check_met_input_file(urbana_daily_met, throw_error = FALSE)
+    expect_s3_class(urbana_daily_results, "data.frame")
+    expect_true(
+      all(urbana_daily_results %>%
+            dplyr::filter(test_type == "var format and units") %>%
+            dplyr::pull(test_passed))
+    )
+    expect_false(
+      all(urbana_daily_results %>%
+            dplyr::filter(target_variable %in% c("dimensions", "air_pressure", "eastward_wind")) %>%
+            dplyr::pull(test_passed))
+    )
     urbana_subdaily_met <- system.file(
       "tests/testthat/data/urbana_subdaily_test.nc",
       package = "PEcAn.data.atmosphere"

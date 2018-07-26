@@ -1,12 +1,15 @@
 #' Check a meteorology data file for compliance with the PEcAn standard
 #'
 #' @param metfile Path of met file to check, as a scalar character.
+#' @param throw_error Logical. If `TRUE`, throw an informative error
+#'   if any tests fail. If `FALSE`,
 #' @param variable_table `data.frame` linking standard names to their
 #'   units. Defaults to [pecan_standard_met_table].
-#' @return `TRUE` (invisibly) if successful, otherwise throw an informative error.
+#' @return Tidy `data.frame` summarizing the results of the tests.
 #' @author Alexey Shiklomanov
 #' @export
 check_met_input_file <- function(metfile,
+                                 throw_error = TRUE,
                                  variable_table = pecan_standard_met_table,
                                  required_vars = pecan_standard_met_table %>%
                                    dplyr::filter(is_required) %>%
@@ -52,25 +55,38 @@ check_met_input_file <- function(metfile,
   ), error = function(e) conditionMessage(e)
   )
 
+  test_dims_summary <- summarize_error_list(list(test_dims), "dimensions", "correct dimensions")
+
   nc_vars <- names(nc[["var"]])
 
-  test_has_vars <- purrr::map(
+  test_has_vars_raw <- purrr::map(
     required_vars,
     check_has_required_variable,
     nc_vars = nc_vars
-  ) %>%
-    process_error_list(required_vars)
+  )
+  test_has_vars <- process_error_list(test_has_vars_raw, required_vars)
+  test_has_vars_summary <- summarize_error_list(test_has_vars_raw, required_vars, "has required variable")
 
-  test_vars <- purrr::map(
+  test_vars_raw <- purrr::map(
     nc_vars,
     check_met_variable,
     nc = nc
-  ) %>%
-    process_error_list(nc_vars)
+  )
+  test_vars <- process_error_list(test_vars_raw, nc_vars)
+  test_vars_summary <- summarize_error_list(test_vars_raw, nc_vars, "var format and units")
 
   all_errors <- c(list(dimensions = test_dims), test_has_vars, test_vars)
 
-  if (length(all_errors) > 0) {
+  test_summary <- tibble::tibble(
+    target_variable = c(NA, required_vars, nc_vars),
+    test_type = c(
+      "dimensions",
+      rep("required variables present", length(required_vars)),
+      rep("correct units", length(nc_vars))
+    )
+  )
+
+  if (length(all_errors) > 0 && throw_error) {
     error_string <- paste(unlist(all_errors), collapse = "\n\n")
     PEcAn.logger::logger.severe(
       "\nThe following errors were detected:\n\n",
@@ -79,7 +95,13 @@ check_met_input_file <- function(metfile,
     )
   }
 
-  invisible(TRUE)
+  results_df <- dplyr::bind_rows(
+    test_dims_summary,
+    test_has_vars_summary,
+    test_vars_summary
+  )
+
+  return(results_df)
 }
 
 #' Clean up list output of tests mapped across a vector of variables
@@ -100,6 +122,22 @@ process_error_list <- function(error_list, var_names) {
   test_errors <- tests_raw[tests_which_errors] %>%
     purrr::map(conditionMessage)
   test_errors
+}
+
+#' Convert an error list into a tidy `data.frame`
+#'
+#' @param error_list List of `testthat` results
+#' @param var_names Vector of variable names corresponding to `error_list`.
+#' @param test_type Type of test, as a character
+#' @return Tidy `data.frame` summarizing the error output
+#' @author Alexey Shiklomanov
+summarize_error_list <- function(error_list, var_names, test_type) {
+  tibble::tibble(
+    target_variable = var_names,
+    test_type = test_type,
+    test_passed = purrr::map_lgl(error_list, isTRUE),
+    test_error_message = purrr::map_chr(error_list, purrr::possibly(conditionMessage, NA))
+  )
 }
 
 #' Check a met variable for PEcAn standard compliance
