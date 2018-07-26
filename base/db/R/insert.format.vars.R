@@ -39,11 +39,11 @@ insert.format.vars <- function(con, format_notes, format_name, header, skip, mim
 }
 
 ### For Testing###
-bety <- betyConnect()
-con = bety$con
-format_notes = "Testing 1,2,3,4,5,6"
-format_name = "New Name 1235678"
-header = as.character(FALSE)
-skip = ""
-mimetype_id = 1090
+# bety <- betyConnect()
+# con = bety$con
+# format_notes = "Testing 1,2,3,4,5,6"
+# format_name = "New Name 1235678"
+# header = as.character(FALSE)
+# skip = ""
+# mimetype_id = 1090
 #######
