@@ -11,6 +11,18 @@
   mimetype   <- "application/x-netcdf"
   lst        <- site.lst(site.id=site$id, con=con)
   
+  if (!is.null(register$forecast)) {
+    forecast <- isTRUE(as.logical(register$forecast))
+  } else {
+    forecast <- FALSE
+  }
+  
+  # met products requiring special gapfilling functions (incompatable with metgapfill)
+  # Overrides default value of "fcn"
+  if (met %in% c("NOAA_GEFS")) {
+    fcn <- "metgapfill.NOAA_GEFS"
+  }
+  
   ready.id <- PEcAn.utils::convert.input(input.id = input.id, 
                             outfolder = outfolder, 
                             formatname = formatname, 
@@ -22,7 +34,7 @@
                             lst = lst, 
                             overwrite = overwrite,
                             exact.dates = FALSE,
-                            forecast = TRUE)
+                            forecast = forecast)
   
   print(ready.id) # Not a debugging statement
   
