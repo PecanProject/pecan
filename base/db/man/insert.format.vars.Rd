@@ -4,17 +4,26 @@
 \alias{insert.format.vars}
 \title{Insert Format and Format-Variable Records}
 \usage{
-insert.format.vars(con, formats_df, formats_variables_df = NULL)
+insert.format.vars(con, format_notes, format_name, header, skip, mimetype_id,
+  formats_variables_df = NULL)
 }
 \arguments{
 \item{con}{Bety connection object}
 
-\item{formats_df}{A 'data.frame' consisting of entries that correspond to columns in the formats table}
+\item{format_notes}{Character string used to}
+
+\item{format_name}{}
+
+\item{header}{}
+
+\item{skip}{}
+
+\item{mimetype_id}{}
 
 \item{formats_variables_df}{A 'data.frame' consisting of entries that correspond to columns in the formats-variables table}
 }
 \value{
-Data frame: Inner join of SQL table and input data frame (as unevaluated "lazy query" table)
+format id
 }
 \description{
 Insert Format and Format-Variable Records
