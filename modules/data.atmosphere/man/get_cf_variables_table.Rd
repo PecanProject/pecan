@@ -5,11 +5,10 @@
 \title{Retrieve the current CF variables table from `cfconventions.org`
 and convert it into a `data.frame`}
 \usage{
-
-  get_cf_variables_table(cf_url = "http://cfconventions.org/Data/cf-standard-names/57/src/cf-standard-name-table.xml")
+get_cf_variables_table(cf_url = build_cf_variables_table_url(57))
 }
 \arguments{
-\item{cf_url}{URL of CF variables table XML}
+\item{cf_url}{URL of CF variables table XML. See also [build_cf_variables_table_url].}
 }
 \value{
 CF variables table, as a `tibble`
