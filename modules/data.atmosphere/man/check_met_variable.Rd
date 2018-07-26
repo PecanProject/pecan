@@ -4,7 +4,8 @@
 \alias{check_met_variable}
 \title{Check a met variable for PEcAn standard compliance}
 \usage{
-check_met_variable(nc, variable, variable_table = pecan_standard_met_table)
+check_met_variable(nc, variable, variable_table = pecan_standard_met_table,
+  warn_unknown = TRUE)
 }
 \arguments{
 \item{nc}{NetCDF object (as returned by [ncdf4::nc_open]).}
@@ -13,6 +14,9 @@ check_met_variable(nc, variable, variable_table = pecan_standard_met_table)
 
 \item{variable_table}{`data.frame` linking standard names to their
 units. Defaults to [pecan_standard_met_table].}
+
+\item{warn_unknown}{Logical. If `TRUE`, warn about unknown
+variables.}
 }
 \value{
 `TRUE` (invisibly) if successful, otherwise throw an informative error.
