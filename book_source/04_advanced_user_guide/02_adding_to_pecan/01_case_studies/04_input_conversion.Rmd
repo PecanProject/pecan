@@ -311,4 +311,18 @@ In addition to location-specific soil data, PEcAn can extract soil texture infor
 In the future we aim to extend this extraction to a wider range of soil products.
 
 
+###### Example 3: Extracting soil properties from gSSURGO database
+
+In addition to location-specific soil data, PEcAn can extract soil texture information from the gSSURGO data product. This product needs no installation and it extract soil proeprties for the lower 48 states in U.S. In order to let the pecan know that you're planning to use gSSURGO, you can the following XML tag under input in your pecan xml file.
+
+```<inputs>```
+
+```
+   <soil>
+     <source>gSSURGO</source>
+   </soil>
+```
+```</inputs>```
+
+
 

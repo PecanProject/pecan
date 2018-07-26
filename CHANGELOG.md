@@ -32,8 +32,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
     
 ### Added
+- Soil process is now capable of reading in soil data from gSSURGO databse.
 - In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs
-- shiny/ Dependency explorer 
+- Shiny/Dependency explorer 
   - Explore the interdependencies between pecan packages/functions.
 
 - From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
