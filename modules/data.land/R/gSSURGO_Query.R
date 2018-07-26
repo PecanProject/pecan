@@ -52,21 +52,24 @@ gSSURGO.Query<-function(mukeys=2747727){
   #parsing the table  
   tryCatch({
     suppressMessages(
-      suppressWarnings(
+      suppressWarnings({
         tables<-getNodeSet(tablesxml,"//Table")
-      )
+        
+        ##### All datatables below newdataset
+        # This method leaves out the variables are all NAs  - so we can't have a fixed naming scheme for this df
+        dfs<-tables%>%
+          purrr::map_dfr(function(child){
+            xmlToList(child)[1:13]%>%
+              purrr::map(~ as.numeric( .x ))%>%
+              t%>%
+              as.data.frame()
+          })%>%
+          mutate_all(as.numeric)%>%
+          select(comppct_r:aws050wta)
+        
+      })
     )
-    ##### All datatables below newdataset
-    # This method leaves out the variables are all NAs  - so we can't have a fixed naming scheme for this df
-    dfs<-tables%>%
-      purrr::map_dfr(function(child){
-        xmlToList(child)%>%
-          unlist()%>%
-          t%>%
-          as.data.frame()
-      })%>%
-      mutate_all(as.numeric)%>%
-      select(comppct_r:aws050wta)
+    
     
     return(dfs)
   },
