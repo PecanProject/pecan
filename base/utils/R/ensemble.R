@@ -182,6 +182,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
+##' @param restart In case this a continuation of an old simulation. restart needs to be a list with runid, inputs, parameters (new.params), initial condition (new.state), ensemble id (ensemble.id), start.time and stop.time
 ##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
@@ -232,13 +233,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       ensemble.id <- NA
     }
     #-------------------------generating met/param/soil/veg/... for all ensumbles----
-    settings$ensemble$samplingspace->samp 
+    settings$ensemble$samplingspace -> samp 
     #finding who has a parent
-    parents<-lapply(samp,'[[','parent')
+    parents<-lapply(samp,'[[', 'parent')
     #order parents based on the need of who has to be first
-    names(samp)[lapply(parents,function(tr) which(names(samp)%in%tr))%>%unlist()]->order
+    names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()] -> order
     #new ordered sampling space
-    samp[c(order,names(samp)[!(names(samp)%in%order)])]->samp.ordered
+    samp[c(order, names(samp)[!(names(samp) %in% order)])] -> samp.ordered
     #performing the sampling
     samples<-list()
   
@@ -252,14 +253,14 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                           parenids=if(!is.null(myparent)) samples[[myparent]], # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
                           ensemble.samples=ensemble.samples
                           )
-      )->samples[[names(samp.ordered[i])]]
+      )-> samples[[names(samp.ordered[i])]]
       
     }
     # if no ensemble piece was in the xml I replicare n times the first element in met and params
-    if (is.null(samples$met)) samples$met$samples<-rep(settings$run$inputs$met$path[1],settings$ensemble$size)
+    if ( is.null(samples$met)) samples$met$samples <- rep(settings$run$inputs$met$path[1], settings$ensemble$size)
 
-    if (is.null(samp$parameters))            samples$parameters$samples<-ensemble.samples%>%purrr::map(~.x[rep(1,settings$ensemble$size),])
-    if (is.null(samples$parameters$samples)) samples$parameters$samples<-ensemble.samples
+    if ( is.null(samp$parameters))            samples$parameters$samples<-ensemble.samples%>%purrr::map(~.x[rep(1,settings$ensemble$size),])
+    if ( is.null(samples$parameters$samples)) samples$parameters$samples<-ensemble.samples
     #------------------------End of generating ensembles-----------------------------------
     # find all inputs that have an id
     inputs <- names(settings$run$inputs)
@@ -383,19 +384,19 @@ input.ens.gen<-function(settings,input,method="sampling",parenids=NULL,...){
   #-- reading the dots and exposing them to the inside of the function
   samples<-list()
   dots<-list(...)
-  if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
+  if (length(dots) > 0 ) lapply(names(dots), function(name){assign(name, dots[[name]], pos=1 )})
 
-  if (tolower(input)=="met"){
+  if ( tolower(input)=="met" ){
       #-- assing the sample ids based on different scenarios
       if(!is.null(parenids)) {
         samples$ids<-parenids$ids  
-        sample$ids[samples$ids>settings$run$inputs$met$path%>%length]->out.of.sample.size
+        sample$ids[samples$ids > settings$run$inputs$met$path %>% length] -> out.of.sample.size
         #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
-        samples(settings$run$inputs$met$path%>%seq_along(),out.of.sample.size,replace = T)->samples$ids[samples$ids%in%out.of.sample.size]
-      }else if(tolower(method)=="sampling") {
-        samples$ids<-sample(settings$run$inputs$met$path%>%seq_along(),settings$ensemble$size,replace = T)  
-      }else if(tolower(method)=="looping"){
-        samples$ids<-rep_len(settings$run$inputs$met$path%>%seq_along(), length.out=settings$ensemble$size)
+        samples(settings$run$inputs$met$path%>%seq_along(), out.of.sample.size, replace = T) -> samples$ids[samples$ids%in%out.of.sample.size]
+      }else if( tolower(method)=="sampling") {
+        samples$ids <- sample(settings$run$inputs$met$path %>% seq_along(), settings$ensemble$size, replace = T)  
+      }else if( tolower(method)=="looping"){
+        samples$ids <- rep_len(settings$run$inputs$met$path %>% seq_along(), length.out=settings$ensemble$size)
       }
     #using the sample ids
     samples$samples<-settings$run$inputs$met$path[samples$ids]

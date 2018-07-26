@@ -166,8 +166,11 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
     return(PEcAn.settings::papply(settings, runModule.run.write.configs, overwrite = FALSE))
   } else if (PEcAn.settings::is.Settings(settings)) {
     write <- settings$database$bety$write
+    
     ens.sample.method <- settings$ensemble$samplingspace$parameters$method
-    if (is.null(settings$ensemble$samplingspace$parameters$method))ens.sample.method <-"uniform"
+    
+    if (is.null(settings$ensemble$samplingspace$parameters$method)) ens.sample.method <-"uniform"
+    
     return(run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")
