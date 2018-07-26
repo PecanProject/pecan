@@ -25,6 +25,10 @@
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
+  
+  source("~/pecan/modules/data.atmosphere/R/download.raw.met.module.R")
+  source("~/pecan/modules/data.atmosphere/R/metgapfill.module.R")
+  source("~/pecan/modules/data.atmosphere/R/met2model.module.R")
 
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
@@ -185,9 +189,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
       input_met$id <- raw.id
       stage$met2cf <- FALSE
       stage$standardize <- FALSE
-    } else if (met %in% c("NOAA_GEFS")) {
+    } else if (met %in% c("NOAA_GEFS")) { # Can sometimes have missing values, so the gapfilling step is required.
+      cf.id <- raw.id
       input_met$id <-raw.id
-      
       stage$met2cf <- FALSE
     }
   }
@@ -219,7 +223,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (stage$standardize) {
     standardize_result = list()
     
-    for (i in seq_len(cf.id[[1]])) {
+    for (i in 1:length(cf.id[[1]])) {
       if (register$scale == "regional") {
         #### Site extraction
         standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$input.id[i], dbfile.id = cf.id$dbfile.id[i]), 
@@ -246,9 +250,13 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        overwrite = overwrite$standardize)
       }
       
-    }
+    } # End for loop
     ready.id = list(input.id = NULL, dbfile.id = NULL)
-    for (i in seq_len(standardize_result)) {
+    
+    print("************* standardize_result ***************")
+    print(standardize_result)
+    
+    for (i in 1:length(standardize_result)) {
       ready.id$input.id <- c(ready.id$input.id, standardize_result[[i]]$input.id)
       ready.id$dbfile.id <- c(ready.id$dbfile.id, standardize_result[[i]]$dbfile.id)
     }
