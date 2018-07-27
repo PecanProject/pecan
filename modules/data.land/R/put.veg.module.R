@@ -1,6 +1,6 @@
 .put.veg.module <- function(getveg.id, dbparms, 
                             input_veg, pfts,
-                            outfolder, 
+                            outfolder, n.ensemble,
                             dir, machine, model,
                             start_date, end_date,
                             new_site, 
@@ -35,7 +35,7 @@
   fcn  <- "write_ic"
   
   putveg.id <- convert.input(input.id = getveg.id,
-                             outfolder = outfolder, 
+                             outfolder = paste0(outfolder, "/", input_veg$source, "_ens", n.ensemble, ".", lubridate::year(start_date)), 
                              formatname = formatname, 
                              mimetype = mimetype,
                              site.id = new_site$id, 

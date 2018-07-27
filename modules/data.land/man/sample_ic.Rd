@@ -4,8 +4,8 @@
 \alias{sample_ic}
 \title{sample_ic}
 \usage{
-sample_ic(in.path, in.name, start_date, end_date, n.ensemble, machine_host,
-  source = input_veg$source, ...)
+sample_ic(in.path, in.name, start_date, end_date, outfolder, n.ensemble,
+  machine_host, source = input_veg$source, ...)
 }
 \author{
 Istem Fer

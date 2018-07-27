@@ -65,7 +65,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
       area <- 1000 # m2
     }
     
-    pss <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
+    pss <- data.frame(time = rep(time, n.patch), patch = seq_len(n.patch), trk = rep(trk, n.patch), age = rep(age, n.patch))
     
     PEcAn.logger::logger.info(paste0("Values used in the patch file - time:", 
                                     pss$time, ", patch:", pss$patch, ", trk:", 
@@ -73,8 +73,6 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     
     # TODO : soils can also be here, passed from settings
   }
-  
-  n.patch   <- nrow(pss)
   
   ## fill missing data w/ defaults
   pss$site  <- 1
@@ -101,7 +99,9 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # might further need removing dead trees by mortality status
   # css <- remove_dead_trees()
 
-  if(is.null(css$patch)){
+  if(!is.null(css$Subplot)){
+    css$patch  <- css$Subplot
+  }else{
     css$patch  <- 1
   }
 
@@ -131,6 +131,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     PEcAn.logger::logger.severe("No available years found in the data.")
   }
   css$time <- max(av.years)
+  
   # filter out other years
   css <- css[css$year == css$time, ]
   
@@ -149,10 +150,10 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     }
   }
   
-    
+  if(is.null(css$cohort)) css$cohort <- do.call("c", lapply(seq_len(n.patch), function(x) 1:sum(css$patch==x))) 
+  
   # --- Continue work formatting css 
-  n.cohort                      <- nrow(css)
-  css$time[is.na(css$time)]     <- 1
+  css$time[is.na(css$time)]     <- start_year
   css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
   css$dbh[is.na(css$dbh)]       <- 1  # assign nominal small dbh to missing
   density.median                <- median(css$n[which(css$n > 0)])

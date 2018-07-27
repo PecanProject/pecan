@@ -72,13 +72,13 @@
                                dbparms = dbparms,
                                machine_host = machine.host,
                                source = input_veg$source,
-                               ##  any meta data passed via settings to be used in the IC files (in veg2model)
+                               ##  any metadata passed via settings to be used in the IC files (in veg2model)
                                ##  if different than defaults, e.g.:
                                ##
-                               ##  <meta>
+                               ##  <metadata>
                                ##   <trk>2</trk>
                                ##   <age>70</age>
-                               ##  </meta>
+                               ##  </metadata>
                                ##
                                icmeta = input_veg$metadata)
     
