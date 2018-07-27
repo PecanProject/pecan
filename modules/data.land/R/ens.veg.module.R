@@ -3,7 +3,7 @@
                             outfolder, 
                             machine, 
                             start_date, end_date,
-                            ensemble, n.ensemble,
+                            n.ensemble,
                             new_site, 
                             host, machine_host){
   
@@ -19,7 +19,7 @@
   con <- bety$con
   on.exit(db.close(con))
   
-  PEcAn.logger::logger.info("Begin IC sampling")
+  PEcAn.logger::logger.info("Begin IC sampling, ensemble member: ", n.ensemble)
   
   spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
   
@@ -27,7 +27,7 @@
   fcn  <- "sample_ic"
   
   ensveg.id <- convert.input(input.id = getveg.id,
-                             outfolder = outfolder, 
+                             outfolder = paste0(outfolder, "/", input_veg$source, "_ens", n.ensemble, ".", lubridate::year(start_date)), 
                              formatname = "spp.info", 
                              mimetype = "application/rds",
                              site.id = new_site$id, 
@@ -38,9 +38,8 @@
                              overwrite = FALSE, 
                              pattern = paste0(input_veg$source, "_ens", n.ensemble),
                              forecast = TRUE,
-                             ensemble = ensemble,
+                             ensemble = 1,
                              # fcn specific args 
-                             sitename = new_site$name,
                              in.path = spp.file$file_path, 
                              in.name = spp.file$file_name,
                              n.ensemble = n.ensemble,

@@ -59,6 +59,11 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     }else{
       age <- 100
     }
+    if(!is.null(pss$area)){
+      area <- pss$area
+    }else{
+      area <- 1000 # m2
+    }
     
     pss <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
     
@@ -111,7 +116,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     
   if(is.null(css$n)){ 
     # will get back to giving sensical values
-    css$n <- 0.001
+    css$n <- 1/area
   }
   
   if(is.null(css$cohort)){ 

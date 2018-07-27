@@ -80,7 +80,7 @@
                                ##   <age>70</age>
                                ##  </meta>
                                ##
-                               icmeta = input_veg$meta)
+                               icmeta = input_veg$metadata)
     
 
     return(getveg.id)

@@ -100,14 +100,23 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   if (is.null(getveg.id) & is.null(putveg.id)) {
 
-    getveg.id <-.get.veg.module(input_veg = input, 
-                              outfolder = outfolder, 
-                              start_date = start_date, end_date = end_date,
-                              dbparms = dbparms,
-                              new_site = new.site,
-                              host = host, 
-                              machine_host = machine.host,
-                              overwrite = overwrite$getveg)
+    getveg.id <- list()
+    # this also needs to be in for-loop, n = 1 should be a special case
+    # but we might still want an ensemble from a single source, so need a check accordinly
+    # best pass a flag (<ensemble.source>TRUE<\ensemble.source>) if that's the case, omit the flag otherwise
+    # currently downloading/reading in different ensemble members is not implemented, 
+    # then we'll need to pass pattern, ensemble etc to convert.input
+    nsource <- ifelse(!is.null(input$ensemble.source) & !is.null(input$ensemble), as.numeric(input$ensemble), 1)
+    for(i in 1:nsource){
+      getveg.id[[i]] <-.get.veg.module(input_veg = input, 
+                                       outfolder = outfolder, 
+                                       start_date = start_date, end_date = end_date,
+                                       dbparms = dbparms,
+                                       new_site = new.site,
+                                       host = host, 
+                                       machine_host = machine.host,
+                                       overwrite = overwrite$getveg)
+    }
 
   }
   
@@ -118,14 +127,13 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     
     ensveg.id <- list()
     for(i in seq_len(as.numeric(input$ensemble))){
-      ensveg.id[[i]] <-.ens.veg.module(getveg.id    = getveg.id, 
+      ensveg.id[[i]] <-.ens.veg.module(getveg.id    = getveg.id[[i]], 
                                        dbparms      = dbparms,
                                        input_veg    = input, 
                                        outfolder    = outfolder, 
                                        machine      = machine, 
                                        start_date   = start_date, 
                                        end_date     = end_date,
-                                       ensemble     = as.numeric(input$ensemble), 
                                        n.ensemble   = i,
                                        new_site     = new.site,
                                        host         = host, 
@@ -139,13 +147,17 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   if (!is.null(getveg.id) & is.null(putveg.id)) { # probably need a more sophisticated check here
     
-    putveg.id <-.put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
-                                input_veg = input, pfts = settings$pfts,
-                                outfolder = outfolder, 
-                                dir = dir, machine = machine, model = model,
-                                start_date = start_date, end_date = end_date,
-                                new_site = new.site,
-                                host = host, overwrite = overwrite$putveg)
+    putveg.id <- list()
+    for(i in seq_along){
+      putveg.id[[i]] <-.put.veg.module(getveg.id = getveg.id[[i]], dbparms = dbparms,
+                                  input_veg = input, pfts = settings$pfts,
+                                  outfolder = outfolder, 
+                                  dir = dir, machine = machine, model = model,
+                                  start_date = start_date, end_date = end_date,
+                                  new_site = new.site,
+                                  host = host, overwrite = overwrite$putveg)
+    }
+
     
   }
 

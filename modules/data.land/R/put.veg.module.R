@@ -28,8 +28,8 @@
   formatname <- model_info[1]
   mimetype   <- model_info[3]
   
-  spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
-  
+  # spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
+  spp.file <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", getveg.id$dbfile.id), con)
   
   pkg  <- "PEcAn.data.land"
   fcn  <- "write_ic"
