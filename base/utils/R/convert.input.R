@@ -612,6 +612,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         site.id <- input.args$newsite
       }
       
+      print(insert.new.file)
+      print(id_not_added)
+      
       if (insert.new.file && id_not_added) {
         dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result[[1]]$file[1]),
                                              in.prefix = result$dbfile.name[1], 
