@@ -56,7 +56,6 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Selected files now autofill name value in input record workflow
   - Store inputs and formats in the global environment
   - "Test BETY" button allows users create a record in BETY with `dbfile.input.insert`
-  - Removed `dbfiles.format.variables.insert` 
   - Added `input.format.vars` to query the BETYdb
   
 - pecan/base/db
