@@ -137,19 +137,17 @@ observeEvent(input$createFormatRecord, {
   FormatRecordList$SkipLines <- input$SkipLines #This should appear only if header = TRUE
   FormatRecordList$FormatNotes <- input$FormatNotes
   
-  ## Make 'data.frame' for format record query 
-  FormatsRecord_df <- data.frame(
-    header = FormatRecordList$HeaderBoolean,
-    skip = FormatRecordList$SkipLines,
-    mimetype_id = FormatRecordList$NewmimetypeID,
-    notes = FormatRecordList$FormatNotes,
-    name = FormatRecordList$NewFormatName
-  )
   ## Print format record for testing
   output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
 
   ## Insert Format Record
-  PEcAn.DB::insert.format.vars(con = bety$con, formats_df = FormatsRecord_df, formats_variables_df = NULL)
+  PEcAn.DB::insert.format.vars(con = bety$con, 
+                               header = FormatRecordList$HeaderBoolean, 
+                               skip = FormatRecordList$SkipLines, 
+                               mimetype_id = FormatRecordList$NewmimetypeID, 
+                               format_name = FormatRecordList$NewFormatName,
+                               format_notes = FormatRecordList$FormatNotes, 
+                               formats_variables_df = NULL)
 })
 
 
