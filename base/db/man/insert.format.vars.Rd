@@ -4,34 +4,53 @@
 \alias{insert.format.vars}
 \title{Insert Format and Format-Variable Records}
 \usage{
-insert.format.vars(con, format_notes, format_name, header, skip, mimetype_id,
-  formats_variables_df = NULL)
+insert.format.vars(con, format_notes, format_name, header, skip = "",
+  mimetype_id, formats_variables_df = NULL)
 }
 \arguments{
-\item{con}{Bety connection object}
+\item{con}{SQL connection to BETYdb}
 
-\item{format_notes}{Character string used to}
+\item{format_notes}{Character string that describes format.}
 
-\item{format_name}{}
+\item{format_name}{Character string}
 
-\item{header}{}
+\item{header}{Boolean that indicates the presence of a header in the format}
 
-\item{skip}{}
+\item{skip}{Integer that indicates the number of lines to skip in the header. Defaults to ""}
 
-\item{mimetype_id}{}
+\item{mimetype_id}{Integer}
 
 \item{formats_variables_df}{A 'data.frame' consisting of entries that correspond to columns in the formats-variables table}
 }
 \value{
-format id
+format_id
 }
 \description{
 Insert Format and Format-Variable Records
 }
+\details{
+It is very important that the formats_variables_df 'data.frame' be structured in a specific format so that the SQL query functions properly. First, all arguments should be passed as vectors so that each entry will correspond with a specific row.
+Variables: 
+\enumerate{
+\item variable_id: vector of integers
+\item name: vector of character strings
+\item unit: vector of character strings
+\item storage_type: vector of character strings
+\item column_number: vector of integers
+}
+}
 \examples{
 \dontrun{
 bety <- betyConnect
-  insert.format.vars(con = bety$con, formats_df, formats_variables_df)
+
+formats_variables_df <- tibble::tibble(
+       variable_id = c(327, 2.98e+02), # integer 
+       name = c("New Name", "Other New Name"), # 
+       unit = c("Yoonits", "Other Units"),
+       storage_type = c("\%j", "\%Y"),
+       column_number = c(as.integer(22), as.integer(24)),
+ )
+  insert.format.vars(con = bety$con, format_notes = "Info about format", format_name = "New Format", header = TRUE, skip = 2, mimetype_id = 1090, formats_variables_df)
 }
 }
 \author{
