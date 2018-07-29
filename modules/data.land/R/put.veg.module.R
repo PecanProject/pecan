@@ -35,7 +35,7 @@
   fcn  <- "write_ic"
   
   putveg.id <- convert.input(input.id = getveg.id,
-                             outfolder = paste0(outfolder, "/", input_veg$source, "_ens", n.ensemble, ".", lubridate::year(start_date)), 
+                             outfolder = spp.file$file_path, 
                              formatname = formatname, 
                              mimetype = mimetype,
                              site.id = new_site$id, 

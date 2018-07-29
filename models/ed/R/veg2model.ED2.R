@@ -82,7 +82,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # Reorder columns
   pss <- pss[, c("site", "time", "patch", "trk", "age", "area", "water")]
   
-  # Add soil data
+  # Add soil data: Currently uses default values, will soil_process overwrite it afterwards?
   soil            <- c(1, 5, 5, 0.01, 0, 1, 1)  #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)
   soil.dat        <- as.data.frame(matrix(soil, n.patch, 7, byrow = TRUE))
   names(soil.dat) <- c("fsc", "stsc", "stsl", "ssc", "psc", "msn", "fsn")
@@ -115,13 +115,13 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
 
     
   if(is.null(css$n)){ 
-    # will get back to giving sensical values
+    # if area was NULL this will default to 0.001
     css$n <- 1/area
   }
   
   if(is.null(css$cohort)){ 
-    # will get back to giving sensical values
-    css$cohort <- 1:nrow(css)
+    # every tree is its own cohort, ED2 will fuse them or simulate them individually depending on max.cohort
+    css$cohort <-  do.call("c", lapply(seq_len(n.patch), function(x) 1:sum(css$patch==x))) 
   }
   
   inv.years <- as.numeric(unique(css$year))
@@ -149,8 +149,6 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
       PEcAn.logger::logger.severe(paste0("Couldn't find an ED2 PFT number for ", as.character(css$pft[p])))
     }
   }
-  
-  if(is.null(css$cohort)) css$cohort <- do.call("c", lapply(seq_len(n.patch), function(x) 1:sum(css$patch==x))) 
   
   # --- Continue work formatting css 
   css$time[is.na(css$time)]     <- start_year
