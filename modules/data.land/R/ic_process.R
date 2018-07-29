@@ -171,10 +171,11 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   if (!is.null(putveg.id)) {
     
     settings_inputs <- lapply(seq_along(putveg.id), function(x) settings$run$inputs)
+    names(settings_inputs) <- paste0("ens", seq_along(putveg.id))
     
     for(i in seq_along(putveg.id)){
       
-      model_file <- db.query(paste("SELECT * from dbfiles where container_id =", putveg.id[[i]]), con)
+      model_file <- db.query(paste("SELECT * from dbfiles where container_id =", putveg.id[[i]], "and machine_id =", machine$id), con)
       
       # now that we don't have multipasses, convert.input only inserts 1st filename
       # do we want to change it in convert.inputs such that it loops over the dbfile.insert?
@@ -193,31 +194,32 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
         # Copy to remote, update DB and change paths if needed
         if (settings$host$name != "localhost") {
           
-          folder_dir <- paste0(input$source, "_site_", str_ns, "/", input$source, "_ens", i, ".", start_year)
+          folder_dir <- paste0(input$source, "_site_", str_ns, "/", input$source, "_ens", i, ".", lubridate::year(start_date))
           remote_dir <- file.path(settings$host$folder, folder_dir)
           
           # copies css
-          css_file <- basename(settings_inputs[[i]][["css"]][['path']])
-          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, remote_file_name = css_file, settings$host, con)
-          settings_inputs[[i]][["css"]][['path']] <- file.path(remote_dir, css_file)
+          css_file <- settings_inputs[[i]][["css"]][['path']]
+          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = css_file, host = settings$host, con = con)
+          settings_inputs[[i]][["css"]][['path']] <- file.path(remote_dir, basename(css_file))
           
           # pss 
-          pss_file <-  basename(settings_inputs[[i]][["pss"]][['path']])
-          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, remote_file_name = pss_file, settings$host, con)
-          settings_inputs[[i]][["pss"]][['path']] <- file.path(remote_dir, pss_file)
+          pss_file <- settings_inputs[[i]][["pss"]][['path']]
+          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = pss_file, host = settings$host, con = con)
+          settings_inputs[[i]][["pss"]][['path']] <- file.path(remote_dir, basename(pss_file))
           
           # site
-          site_file <- basename(settings_inputs[[i]][["site"]][['path']])
-          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, remote_file_name = site_file, settings$host, con)
-          settings_inputs[[i]][["site"]][['path']] <- file.path(remote_dir, site_file)
+          site_file <- settings_inputs[[i]][["site"]][['path']]
+          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = site_file, host = settings$host, con = con)
+          settings_inputs[[i]][["site"]][['path']] <- file.path(remote_dir, basename(site_file))
           
         }
       }
     }
 
-    settigns$run$inputs <- settings_inputs
+    settings$run$inputs <- settings_inputs
   }
   
+  PEcAn.logger::logger.info("Finished IC for vegetation.")
   
   return(settings)
 } # ic_process

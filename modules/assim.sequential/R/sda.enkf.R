@@ -93,8 +93,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   inputs <- list()
   for(i in seq_len(nens)){
     
-    if(no_split){
-      inputs[[i]] <- ens.inputs[[i]] # passing settings$run$inputs$met$path is the same thing, just following the logic despite the hack above
+    if(no_split){ # currently this is only for ED2, ensemble generator + refactoring will change these soon anyway
+      # note that write configs accepts one "settings" for now, so I'll use the inputs arg to pass IC ensembles
+      inputs[[i]]     <- settings$run$inputs[[i]]
+      inputs[[i]]$met <- ens.inputs[[i]]$met 
     }else{
       ### get only necessary ensemble inputs. Do not change in analysis
       #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
@@ -224,6 +226,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   
   
   for (i in seq_len(nens)) {
+    
+    # is this gonna break other runs?
+    settings$run$inputs <- inputs[[i]]
     
     ## set RUN.ID
     if (!is.null(con)) {
