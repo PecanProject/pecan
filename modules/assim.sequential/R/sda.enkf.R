@@ -85,7 +85,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   
 
   if(is.null(restart) & is.null(restart$ens.inputs)){
-    ens.inputs <- sample_met(settings,nens)
+    ens.inputs <- sample_met(settings, nens)
   }else {
     ens.inputs <- restart$ens.inputs
   }
@@ -227,7 +227,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   
   for (i in seq_len(nens)) {
     
-    # is this gonna break other runs?
+    # is this gonna break other model runs? inputs is usually just the met path which is all they need anyway?
     settings$run$inputs <- inputs[[i]]
     
     ## set RUN.ID
@@ -1030,6 +1030,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ###-------------------------------------------------------------------### 
       
       for (i in seq_len(nens)) {
+        
+        settings$run$inputs <- inputs[[i]]
+        
         do.call(my.write_restart, 
                 args = list(outdir = outdir, 
                             runid = run.id[[i]], 
