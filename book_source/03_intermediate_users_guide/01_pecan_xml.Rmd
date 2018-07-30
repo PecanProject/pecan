@@ -194,7 +194,7 @@ Each piece in the sampling space can potentially have a method tag and a parent 
 Availbe sampling methods for `parameters` can be found in the documentation of the `get.ensemble.samples` function in `PEcAn.utils` package.
 For the cases where we need simulations with a predefined set of parameters, met and initial condition we can use the restart argument. Restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble ids), start.time and stop.time.
 
-Resatrt functionality here is developed using model specific functions called write_restart.modelname . You need to make sure first that this function is already exsit for your dersired model.
+The resatrt functionality is developed using model specific functions by called write_restart.modelname. You need to make sure first that this function is already exsit for your dersired model.
 
 Note: if the ensemble size is set to 1, PEcAn will select the **posterior median** parameter values rather than taking a single random draw from the posterior
 

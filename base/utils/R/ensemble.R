@@ -182,7 +182,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
-##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with a samples and ids used for each component. Also writes sensitivity analysis configuration files as a side effect
+##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
 ##' @details Resatrt functionality here is developed using model specific functions called write_restart.modelname . You need to make sure first that this function is already exsit for your dersired model.
 ##' `new state` is mainly a dataframe with a different column for different variables for n rows and n sample size. `new.params` also has similar structure to ensemble.samples which is sent as an argument.
 ##' @export

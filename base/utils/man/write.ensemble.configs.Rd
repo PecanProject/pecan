@@ -21,7 +21,7 @@ write.ensemble.configs(defaults, ensemble.samples, settings, model,
 \item{write.config}{a model-specific function to write config files, e.g. \link{write.config.ED}}
 }
 \value{
-list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with a samples and ids used for each component. Also writes sensitivity analysis configuration files as a side effect
+list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
 }
 \description{
 Write ensemble config files
