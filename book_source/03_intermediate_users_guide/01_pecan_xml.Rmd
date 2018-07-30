@@ -182,16 +182,6 @@ Only if this section is defined an ensemble analysis is done.
   <met>
       <method>sampling</method>
   </met>
-    
-  <soil>
-     <method>sampling</method>    
-  </soil>
-    
-  <vegetation>
-    <method>sampling</method>
-    <parent>met</parent>
-  </vegetation>
-  
   </samplingspace>
 </ensemble>
 ```

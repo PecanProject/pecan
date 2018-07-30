@@ -183,8 +183,9 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
-##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
+##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with a samples and ids used for each component. Also writes sensitivity analysis configuration files as a side effect
 ##' @details Resatrt functionality here is developed using model specific functions called write_restart.modelname . You need to make sure first that this function is already exsit for your dersired model.
+##' `new state` is mainly a dataframe with a different column for different variables for n rows and n sample size. `new.params` also has similar structure to ensemble.samples which is sent as an argument.
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
@@ -234,6 +235,18 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       ensemble.id <- NA
     }
     #-------------------------generating met/param/soil/veg/... for all ensumbles----
+    if (!is.null(con)){
+      #-- lets first find out what tags are required for this model
+      tbl(con,'models')%>%
+      filter(id==settings$model$id%>%as.numeric())%>%
+      inner_join(tbl(con, "modeltypes_formats"),by=c('modeltype_id'))%>% collect%>%
+      filter(required==T)%>%
+      pull(tag)->required_tags
+    }else{
+      required_tags<-c("met","parameters")
+    }
+
+    #now looking into the xml
     samp <- settings$ensemble$samplingspace
     #finding who has a parent
     parents <- lapply(samp,'[[', 'parent')
@@ -243,7 +256,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
     #performing the sampling
     samples<-list()
-  
+    # For the tags specified in the xml I do the sampling
     for(i in seq_along(samp.ordered)){
       myparent<-samp.ordered[[i]]$parent # do I have a parent ?
       #call the function responsible for generating the ensemble
@@ -252,10 +265,12 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                                          method=samp.ordered[[i]]$method,
                                                          parent_ids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
                                                          )
-      
     }
-    # if no ensemble piece was in the xml I replicare n times the first element in met 
-    if ( is.null(samples$met)) samples$met$samples <- rep(settings$run$inputs$met$path[1], settings$ensemble$size)
+    # if there is a tag required by the model but it is not specified in the xml then I replicare n times the first element 
+    required_tags%>%
+      purrr::walk(function(r_tag){
+        if (is.null(samples[[r_tag]])) samples[[r_tag]]$samples <- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
+      })
     # if no ensemble piece was in the xml I replicare n times the first element in params
     if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, settings$ensemble$size) , ])
     # This where we handle the parameters - `ensemble.samples` is already generated in run.write.config and it's sent to this function as arg - 
@@ -270,18 +285,17 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     for (i in seq_len(settings$ensemble$size)) {
       if (!is.null(con)) {
         paramlist <- paste("ensemble=", i, sep = "")
-        run.id <- PEcAn.DB::db.query(paste0(
-          "INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
-          "values ('", 
-          settings$model$id, "', '", 
-          settings$run$site$id, "', '", 
-          settings$run$start.date, "', '", 
-          settings$run$end.date, "', '", 
-          settings$run$outdir, "', ", 
-          ensemble.id, ", '", 
-          paramlist, "') ",
-          "RETURNING id"), con = con)[['id']]
+        # inserting this into the table and getting an id back
+        run.qu<-tibble::tibble(model_id = settings$model$id %>% as.numeric(),
+                               site_id = settings$run$site$id %>% as.numeric(),
+                               start_time = settings$run$start.date %>% as.POSIXct(),
+                               finish_time = settings$run$end.date %>% as.POSIXct(),
+                               outdir = ifelse(!is.null(settings$run$outdir), settings$run$outdir, settings$outdir),
+                               ensemble_id = ensemble.id%>%as.numeric(),
+                               parameter_list=paramlist )
         
+        run.id <- db_merge_into (run.qu, 'runs', con= con, by = c('ensemble_id')) %>%
+                  pull(id)
         # associate inputs with runs
         if (!is.null(inputs)) {
           for (x in inputs) {
@@ -380,9 +394,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #'
 #' @examples
 input.ens.gen<-function(settings,input,method="sampling",parent_ids=NULL){
+
   #-- reading the dots and exposing them to the inside of the function
   samples<-list()
   samples$ids<-c()
+      #
+      if (is.null(method)) return(NULL)
+      # parameter is exceptional it needs to be handled spearatly
       if (input=="parameters") return(NULL)
       #-- assing the sample ids based on different scenarios
       if(!is.null(parent_ids)) {

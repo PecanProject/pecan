@@ -168,7 +168,7 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
     write <- settings$database$bety$write
 
     #Old version of pecan xml which don't have a sampling space if it's not specified either it's an old xml or it's just not especified.
-    if (is.null(settings$ensemble$samplingspace)){
+    if (is.null(settings$ensemble$samplingspace) | !is.list(settings$ensemble$samplingspace)){
       
       settings$ensemble$samplingspace$parameters$method <- settings$ensemble$method
       
