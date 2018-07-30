@@ -1,20 +1,19 @@
 #' Insert Format and Format-Variable Records 
 #'
 #' @param con SQL connection to BETYdb
-#' @param format_notes Character string that describes format.
-#' @param format_name Character string 
-#' @param header Boolean that indicates the presence of a header in the format 
-#' @param skip Integer that indicates the number of lines to skip in the header. Defaults to "" 
-#' @param mimetype_id Integer 
-#' @param formats_variables_df A 'data.frame' consisting of entries that correspond to columns in the formats-variables table
+#' @param name The name of the format. Type: character string.
+#' @param notes Additional description of the format: character string.
+#' @param header Boolean that indicates the presence of a header in the format. Defaults to "TRUE".
+#' @param skip Integer that indicates the number of lines to skip in the header. Defaults to 0. 
+#' @param mimetype_id The id associated with the mimetype of the format. Type: integer. 
+#' @param formats_variables_df A 'data.frame' consisting of entries that correspond to columns in the formats-variables table. See Details for further information. 
 #' @details It is very important that the formats_variables_df 'data.frame' be structured in a specific format so that the SQL query functions properly. First, all arguments should be passed as vectors so that each entry will correspond with a specific row.
-#' Variables: 
-#' \enumerate{
-#' \item variable_id: vector of integers
-#' \item name: vector of character strings
-#' \item unit: vector of character strings
-#' \item storage_type: vector of character strings
-#' \item column_number: vector of integers
+#' \describe{
+#' \item{variable_id}{(Required) Vector of integers.}
+#' \item{name}{(Optional) Vector of character strings. Need only be specified if the} 
+#' \item{unit}{(Optional) Vector of character strings. }
+#' \item{storage_type}{(Optional) Vector of character strings}
+#' \item{column_number}{(Optional) Vector of integers that determines the} 
 #' }
 #' @author Liam Burke (liam.burke24@gmail.com)
 #' @return format_id
@@ -32,7 +31,19 @@
 #'  )
 #'   insert.format.vars(con = bety$con, format_notes = "Info about format", format_name = "New Format", header = TRUE, skip = 2, mimetype_id = 1090, formats_variables_df)
 #' }
-insert.format.vars <- function(con, format_notes, format_name, header, skip = "", mimetype_id, formats_variables_df = NULL){
+insert.format.vars <- function(con, name, mimetype_id, notes = NULL, header = TRUE, skip = 0, formats_variables_df = NULL){
+ 
+   #Test if skip is an integer
+  if(!is.integer(skip)){
+  PEcAn.logger::logger.error(
+    "Skip must be an Integer"
+  )}
+  
+  #Test if header is a Boolean
+  if(!rapportools::is.boolean("ghe")){
+    PEcAn.logger::logger.error(
+      "Header must be a Boolean"
+  )}
   
     formats_df <- tibble::tibble(
       header = as.character(header),
@@ -50,10 +61,7 @@ insert.format.vars <- function(con, format_notes, format_name, header, skip = ""
   if(!is.null(formats_variables_df)){
     ## Insert format_id into 
     n <- nrow(formats_variables_df)
-    format_id_df <- matrix(data = NA, nrow = n, ncol = 1)
-    for(i in 1:n){
-      format_id_df[i,1] <- format_id
-    }
+    format_id_df <- matrix(data = format_id, nrow = n, ncol = 1)
     colnames(format_id_df) <- "format_id"
     
     ## Make query data.frame

@@ -4,23 +4,23 @@
 \alias{insert.format.vars}
 \title{Insert Format and Format-Variable Records}
 \usage{
-insert.format.vars(con, format_notes, format_name, header, skip = "",
-  mimetype_id, formats_variables_df = NULL)
+insert.format.vars(con, name, mimetype_id, notes = NULL, header = TRUE,
+  skip = 0, formats_variables_df = NULL)
 }
 \arguments{
 \item{con}{SQL connection to BETYdb}
 
-\item{format_notes}{Character string that describes format.}
+\item{name}{The name of the format. Type: character string.}
 
-\item{format_name}{Character string}
+\item{mimetype_id}{The id associated with the mimetype of the format. Type: integer.}
 
-\item{header}{Boolean that indicates the presence of a header in the format}
+\item{notes}{Additional description of the format: character string.}
 
-\item{skip}{Integer that indicates the number of lines to skip in the header. Defaults to ""}
+\item{header}{Boolean that indicates the presence of a header in the format. Defaults to "TRUE".}
 
-\item{mimetype_id}{Integer}
+\item{skip}{Integer that indicates the number of lines to skip in the header. Defaults to 0.}
 
-\item{formats_variables_df}{A 'data.frame' consisting of entries that correspond to columns in the formats-variables table}
+\item{formats_variables_df}{A 'data.frame' consisting of entries that correspond to columns in the formats-variables table. See Details for further information.}
 }
 \value{
 format_id
@@ -30,13 +30,12 @@ Insert Format and Format-Variable Records
 }
 \details{
 It is very important that the formats_variables_df 'data.frame' be structured in a specific format so that the SQL query functions properly. First, all arguments should be passed as vectors so that each entry will correspond with a specific row.
-Variables: 
-\enumerate{
-\item variable_id: vector of integers
-\item name: vector of character strings
-\item unit: vector of character strings
-\item storage_type: vector of character strings
-\item column_number: vector of integers
+\describe{
+\item{variable_id}{(Required) Vector of integers.}
+\item{name}{(Optional) Vector of character strings. Need only be specified if the} 
+\item{unit}{(Optional) Vector of character strings. }
+\item{storage_type}{(Optional) Vector of character strings}
+\item{column_number}{(Optional) Vector of integers that determines the} 
 }
 }
 \examples{
