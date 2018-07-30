@@ -1,76 +1,135 @@
-version: '3'
-
-networks:
-  net1:
-    driver: bridge
+version: "3"
 
 services:
-  postgres:
-    image: 'mdillon/postgis:9.4'
-    networks:
-      net1:
-        aliases:
-          - pg
-    ports:
-      - '5432:5432'
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-      - /home/skywalker/pgdata:/var/lib/postgresql/data/pgdata
 
+  # webserver to handle all traffic to bety/pecan/rabbitmq
+  traefik:
+    image: traefik:latest
+    networks:
+      - pecan
+    command: --api --web --docker --docker.domain=traefik --logLevel=INFO #--docker.exposedbydefault=false
+    ports:
+      - "8000:80"     # The HTTP port
+      - "8001:8080" # The Web UI (enabled by --api)
+    volumes:
+      - /dev/null:/traefik.toml
+      - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
+    restart: unless-stopped
+
+  # webserver to handle all traffic to bety/pecan/rabbitmq
+  minio:
+    image: minio/minio
+    networks:
+      - pecan
+    command: server /data
+    #ports:
+    #  - "9000:9000"     # The HTTP port
+    environment:
+      - MINIO_ACCESS_KEY=carya
+      - MINIO_SECRET_KEY=illinois
+    volumes:
+      - pecan:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=9000"
+      - "traefik.frontend.rule=PathPrefix:/minio/"
+      - "traefik.backend=minio"
+    restart: unless-stopped
+
+  # postgresql + postgis to hold all the data
+  postgres:
+    image: mdillon/postgis:9.5
+    networks:
+      - pecan
+    # ports:
+    #   - 8002:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # rabbitmq to connect to extractors
+  rabbitmq:
+    image: rabbitmq:management
+    networks:
+      - pecan
+    # ports:
+    #   - 5672
+    #   - 8003:15672
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=15672"
+      - "traefik.frontend.rule=PathPrefix:/"
+      - "traefik.backend=rabbitmq"
+    restart: unless-stopped
+
+  # BETY rails frontend to the database
   bety:
+    image: hub.ncsa.illinois.edu/pecan/bety:latest
+    networks:
+      - pecan
+    # ports:
+    #   - 8004:8000
+    environment:
+      - UNICORN_WORKER_PROCESSES=1
+      - SECRET_KEY_BASE=1208q7493e8wfhdsohfo9ewhrfiouaho908ruq30oiewfdjspadosuf08q345uwrasdy98t7q243
+      - RAILS_RELATIVE_URL_ROOT=/bety
     depends_on:
       - postgres
-    image: 'pecan/bety:latest'
-    networks:
-       net1:
-        aliases:
-          - bety
-    ports:
-      - '3000:3000'
-    environment:
-      - PG_PORT_5432_TCP_ADDR=pg
-      - PG_PORT_5432_TCP_PORT=5432
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/bety/"
+      - "traefik.backend=bety"
+    restart: unless-stopped
 
-  pecan-core:
+  # PEcAn web front end, this is just the PHP code
+  web:
+    image: hub.ncsa.illinois.edu/pecan/web:develop
+    networks:
+      - pecan
+    # ports:
+    #   - 8005:80
+    volumes:
+      - pecan:/data
+      - pecan:/var/www/html/pecan/data
     depends_on:
        - postgres
-       - bety
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: amanskywalker/pecan-dev:0.1
-    networks:
-       net1:
-        aliases:
-          - pecan-core
-    environment:
-      - PG_HOST=pg
-      - PG_PORT=5432
-      - PG_USER=bety
-      - PG_PASSWORD=bety
-      - PG_DATABASE_NAME=bety
-    volumes:
-      - /home/skywalker/pecandata:/pecandata
+       - rabbitmq
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/pecan/"
+      - "traefik.backend=pecan"
+    restart: unless-stopped
 
-  pecan-web:
+  # PEcAn executor, executes jobs launched from web
+  executor:
+    image: hub.ncsa.illinois.edu/pecan/executor:develop
+    networks:
+      - pecan
+    hostname: docker
+    volumes:
+      - pecan:/data
     depends_on:
        - postgres
-       - bety
-    build:
-      context: ./docker
-      dockerfile: Dockerfile
+       - rabbitmq
+    restart: unless-stopped
+
+  # PEcAn sipnet model runner
+  sipnet:
+    image: hub.ncsa.illinois.edu/pecan/model-sipnet:develop
     networks:
-       net1:
-        aliases:
-          - pecan-web
-    ports:
-      - '8080:80'
-    environment:
-      - PG_HOST=pg
-      - PG_PORT=5432
-      - PG_USER=bety
-      - PG_PASSWORD=bety
-      - PG_DATABASE_NAME=bety
+      - pecan
     volumes:
-      - /home/skywalker/pecandata:/pecandata
+      - pecan:/data
+    depends_on:
+       - rabbitmq
+    restart: unless-stopped
+
+networks:
+  pecan:
+
+volumes:
+  postgres:
+  rabbitmq:
+  pecan:

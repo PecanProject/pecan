@@ -97,7 +97,6 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       pft2col <- c(pft2col, rep(i, length(pft.samples[[i]])))
     }
     
-    
     total.sample.num <- sum(sapply(pft.samples, length))
     random.samples <- NULL
     
