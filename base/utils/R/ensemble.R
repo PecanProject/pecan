@@ -271,7 +271,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       purrr::walk(function(r_tag){
         if (is.null(samples[[r_tag]]) & r_tag!="parameters") samples[[r_tag]]$samples <<- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
       })
-    browser()
     # if no ensemble piece was in the xml I replicare n times the first element in params
     if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, settings$ensemble$size) , ])
     # This where we handle the parameters - `ensemble.samples` is already generated in run.write.config and it's sent to this function as arg - 
