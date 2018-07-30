@@ -265,11 +265,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                                          parent_ids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
                                                          )
     }
+
     # if there is a tag required by the model but it is not specified in the xml then I replicare n times the first element 
     required_tags%>%
       purrr::walk(function(r_tag){
-        if (is.null(samples[[r_tag]])) samples[[r_tag]]$samples <- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
+        if (is.null(samples[[r_tag]]) & r_tag!="parameters") samples[[r_tag]]$samples <<- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
       })
+    browser()
     # if no ensemble piece was in the xml I replicare n times the first element in params
     if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, settings$ensemble$size) , ])
     # This where we handle the parameters - `ensemble.samples` is already generated in run.write.config and it's sent to this function as arg - 
@@ -278,7 +280,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     # find all inputs that have an id
     inputs <- names(settings$run$inputs)
     inputs <- inputs[grepl(".id$", inputs)]
-    
+
     # write configuration for each run of the ensemble
     runs <- data.frame()
     for (i in seq_len(settings$ensemble$size)) {

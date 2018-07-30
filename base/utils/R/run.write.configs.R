@@ -183,8 +183,7 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
       ens.sample.method <- settings$ensemble$samplingspace$parameters$method
     }
 
-    
-    return(run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
+    return(PEcAn.utils::run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")
   }
