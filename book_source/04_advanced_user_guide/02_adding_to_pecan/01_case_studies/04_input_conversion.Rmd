@@ -199,10 +199,10 @@ With the input id  in hand you can now edit a pecan XML so that the PEcAn functi
         <username>pecan</username>
         <source.id>1000013064</source.id>
         <useic>TRUE</useic>
-        <meta>
+        <metadata>
           <trk>1</trk>
           <age>70</age>
-        </meta>
+        </metadata>
       </css>
       <pss>
         <source>FFT</source>
@@ -235,6 +235,57 @@ With the input id  in hand you can now edit a pecan XML so that the PEcAn functi
         <id>296</id>
       </veg>
     </inputs>
+```
+
+This IC workflow also supports generating ensembles of initial conditions from posterior estimates of DBH. To do this the tags below can be inserted to the pecan.xml:
+```
+       <css>
+        <source>PalEON</source>
+        <output>css</output>
+        <source.id>1000015682</source.id>
+        <useic>TRUE</useic>
+        <ensemble>20</ensemble>
+        <metadata>
+          <area>1256.637</area>
+          <n.patch>3</n.patch>
+        </metadata>
+      </css>
+```
+Here the `source.id` should point to a file that has MCMC samples to generate the ensemble from. The number between the `<ensemble>` tag defines the number of ensembles requested. The workflow will populate the settings list `run$inputs` tag with ensemble member information. E.g.:
+```
+ <inputs>
+   <ens1>
+    <css>...</css>
+    <pss>...</pss>
+    <site>...</site>
+    <met>...</met>
+    <lu>...</lu>
+    <soil>...</soil>
+    <thsum>...</thsum>
+    <veg>...</veg>
+   </ens1>
+   <ens2>
+    <css>...</css>
+    <pss>...</pss>
+    <site>...</site>
+    <met>...</met>
+    <lu>...</lu>
+    <soil>...</soil>
+    <thsum>...</thsum>
+    <veg>...</veg>
+   </ens2>
+   ...
+   <ensN>
+    <css>...</css>
+    <pss>...</pss>
+    <site>...</site>
+    <met>...</met>
+    <lu>...</lu>
+    <soil>...</soil>
+    <thsum>...</thsum>
+    <veg>...</veg>
+   </ensN>
+</inputs>
 ```
 
 Once you edit your PEcAn.xml you can than create a settings object using PEcAn functions. Your `pecan.xml` must be in your working directory.
