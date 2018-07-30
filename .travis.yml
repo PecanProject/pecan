@@ -30,24 +30,24 @@ addons:
       - sourceline: 'ppa:nschloe/hdf5-backports'
       - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
     packages:
-      - libnetcdf-dev
-      - liblapack-dev
-      - libcurl4-openssl-dev
-      - jags
-      - libudunits2-dev
-      - python-dev
-      - netcdf-bin
       - bc
       - curl
-      - udunits-bin 
+      - gdal-bin
+      - jags
+      - libcurl4-openssl-dev
+      - libgdal-dev
       - libgmp-dev
+      - libhdf5-dev
+      - liblapack-dev
+      - libnetcdf-dev
       - libproj-dev
+      - libudunits2-dev
+      - netcdf-bin
       - pandoc
+      - python-dev
       - tcl
       - tcl-dev
-      - libhdf5-dev
-      - libgdal-dev
-      - gdal-bin
+      - udunits-bin
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
       - r-cran-ape
@@ -60,7 +60,6 @@ addons:
       - r-cran-lme4
       - r-cran-matrixstats
       - r-cran-mcmcpack
-      - r-cran-mcmcpack
       - r-cran-raster
       - r-cran-rcpp
       - r-cran-rcurl
@@ -72,24 +71,10 @@ addons:
       - r-cran-tidyverse
       - r-cran-xml
       - r-cran-xml2
-      # need to compile documentation
-      # BROKEN MISSING FONT
-      #- texinfo
-      #- texlive-latex-base
-      #- texlive-latex-recommended
-      #- texlive-latex-extra
-      #- texlive-fonts-recommended
-      #- texlive-fonts-extra
 
   
 ## notifications should go to gitter
 notifications:
-  webhooks:
-    urls:
-      - secure: "gL81TwDOcK/32Hxxl2BcY7pioyrtyV4y1f+D/vGEpQz8mYL+M+55tUkhHJF53779XSUdQdML/gsr8JZVtApJdLIBysFU67GVYXm1s7x/b8J61CkMfDgsmposEWK4NFYHfeIRj32ioeajrQ+RKi1I6chjzYT7gLyl70gtPelRJ4s="
-    on_success: always
-    on_failure: always
-    on_start: always
   slack:
     # Slack token created by Chris Black, 2018-02-17
     secure: "DHHSNmiCf71SLa/FFSqx9oOnJjJt2GHYk7NsFIBb9ZY10RvQtIPfaoNxkPjqu9HLyZWJSFtg/uNKKplEHc6W80NoXyqoTvwOxTPjMaViXaCNqsmzjjR/JaCWT/oWGXyAw0VX3S8cwuIexlKQGgZwJpIzoVOZqUrDrHI/O17kZoM="
@@ -129,7 +114,6 @@ before_script:
 
 script:
   - set -e
-  # - scripts/build.sh --no-git --tests --name travis
   - echo 'Installing PEcAn packages'
   # TODO: Would be nice to add `-Otarget` after `-j` below,
   # but not supported in Make 3.x.
