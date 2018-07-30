@@ -182,8 +182,9 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
-##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble ids), start.time and stop.time.
+##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
 ##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
+##' @details Resatrt functionality here is developed using model specific functions called write_restart.modelname . You need to make sure first that this function is already exsit for your dersired model.
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
@@ -249,7 +250,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       samples[[names(samp.ordered[i])]] <- input.ens.gen(settings=settings,
                                                          input=names(samp.ordered)[i],
                                                          method=samp.ordered[[i]]$method,
-                                                         parenids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
+                                                         parent_ids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
                                                          )
       
     }
@@ -334,8 +335,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     return(invisible(list(runs = runs, ensemble.id = ensemble.id, samples=samples)))
     #------------------------------------------------- if we already have everything ------------------        
   }else{
-    #browser()
-    #reading retsrat inputs
+    #reading retstart inputs
     inputs<-restart$inputs
     run.id<-restart$runid
     new.params<-restart$new.params
@@ -371,32 +371,37 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #'
 #' @param settings list of PEcAn settings
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
-#' @param parenids If met's ids are read from a parent what are the ids
-#' @param ... 
+#' @param parent_ids This is basically the order of the paths that the parent is sampled.See Details.
 #'
 #' @return
+#' @details If for example met was a parent and it's sampling method resulted in choosing the first, third and fourth samples, these are the ids that need to be sent as
+#' parent_ids to this function.
 #' @export
 #'
 #' @examples
-input.ens.gen<-function(settings,input,method="sampling",parenids=NULL){
+input.ens.gen<-function(settings,input,method="sampling",parent_ids=NULL){
   #-- reading the dots and exposing them to the inside of the function
   samples<-list()
   samples$ids<-c()
-  if ( tolower(input)=="met" ){
+      if (input=="parameters") return(NULL)
       #-- assing the sample ids based on different scenarios
-      if(!is.null(parenids)) {
-        samples$ids<-parenids$ids  
-        out.of.sample.size <- sample$ids[samples$ids > settings$run$inputs$met$path %>% length]
+      if(!is.null(parent_ids)) {
+        samples$ids<-parent_ids$ids  
+        out.of.sample.size <- sample$ids[samples$ids > settings$run$inputs[[tolower(input)]]$path %>% length]
         #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
-        samples$ids[samples$ids%in%out.of.sample.size] <- samples(settings$run$inputs$met$path%>%seq_along(), out.of.sample.size, replace = T)
+        samples$ids[samples$ids%in%out.of.sample.size] <- samples(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
+                                                                  out.of.sample.size,
+                                                                  replace = T)
       }else if( tolower(method)=="sampling") {
-        samples$ids <- sample(settings$run$inputs$met$path %>% seq_along(), settings$ensemble$size, replace = T)  
+        samples$ids <- sample(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
+                              settings$ensemble$size,
+                              replace = T)  
       }else if( tolower(method)=="looping"){
-        samples$ids <- rep_len(settings$run$inputs$met$path %>% seq_along(), length.out=settings$ensemble$size)
+        samples$ids <- rep_len(settings$run$inputs[[tolower(input)]]$path %>% seq_along(), length.out=settings$ensemble$size)
       }
     #using the sample ids
-    samples$samples<-settings$run$inputs$met$path[samples$ids]
-  }
+    samples$samples<-settings$run$inputs[[tolower(input)]]$path[samples$ids]
+
 
 
   return(samples)
