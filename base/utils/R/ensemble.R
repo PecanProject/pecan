@@ -233,33 +233,31 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       ensemble.id <- NA
     }
     #-------------------------generating met/param/soil/veg/... for all ensumbles----
-    settings$ensemble$samplingspace -> samp 
+    samp <- settings$ensemble$samplingspace
     #finding who has a parent
-    parents<-lapply(samp,'[[', 'parent')
+    parents <- lapply(samp,'[[', 'parent')
     #order parents based on the need of who has to be first
-    names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()] -> order
+    order <- names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()] 
     #new ordered sampling space
-    samp[c(order, names(samp)[!(names(samp) %in% order)])] -> samp.ordered
+    samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
     #performing the sampling
     samples<-list()
   
     for(i in seq_along(samp.ordered)){
       myparent<-samp.ordered[[i]]$parent # do I have a parent ?
       #call the function responsible for generating the ensemble
-      do.call(input.ens.gen,
-              args = list(settings=settings,
-                          input=names(samp.ordered)[i],
-                          method=samp.ordered[[i]]$method,
-                          parenids=if(!is.null(myparent)) samples[[myparent]], # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
-                          ensemble.samples=ensemble.samples
-                          )
-      )-> samples[[names(samp.ordered[i])]]
+      samples[[names(samp.ordered[i])]] <- input.ens.gen(settings=settings,
+                                                         input=names(samp.ordered)[i],
+                                                         method=samp.ordered[[i]]$method,
+                                                         parenids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
+                                                         )
       
     }
-    # if no ensemble piece was in the xml I replicare n times the first element in met and params
+    # if no ensemble piece was in the xml I replicare n times the first element in met 
     if ( is.null(samples$met)) samples$met$samples <- rep(settings$run$inputs$met$path[1], settings$ensemble$size)
-
+    # if no ensemble piece was in the xml I replicare n times the first element in params
     if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, settings$ensemble$size) , ])
+    # This where we handle the parameters - `ensemble.samples` is already generated in run.write.config and it's sent to this function as arg - 
     if ( is.null(samples$parameters$samples) ) samples$parameters$samples <- ensemble.samples
     #------------------------End of generating ensembles-----------------------------------
     # find all inputs that have an id
@@ -380,19 +378,17 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #' @export
 #'
 #' @examples
-input.ens.gen<-function(settings,input,method="sampling",parenids=NULL,...){
+input.ens.gen<-function(settings,input,method="sampling",parenids=NULL){
   #-- reading the dots and exposing them to the inside of the function
   samples<-list()
-  dots<-list(...)
-  if (length(dots) > 0 ) lapply(names(dots), function(name){assign(name, dots[[name]], pos=1 )})
-
+  samples$ids<-c()
   if ( tolower(input)=="met" ){
       #-- assing the sample ids based on different scenarios
       if(!is.null(parenids)) {
         samples$ids<-parenids$ids  
-        sample$ids[samples$ids > settings$run$inputs$met$path %>% length] -> out.of.sample.size
+        out.of.sample.size <- sample$ids[samples$ids > settings$run$inputs$met$path %>% length]
         #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
-        samples(settings$run$inputs$met$path%>%seq_along(), out.of.sample.size, replace = T) -> samples$ids[samples$ids%in%out.of.sample.size]
+        samples$ids[samples$ids%in%out.of.sample.size] <- samples(settings$run$inputs$met$path%>%seq_along(), out.of.sample.size, replace = T)
       }else if( tolower(method)=="sampling") {
         samples$ids <- sample(settings$run$inputs$met$path %>% seq_along(), settings$ensemble$size, replace = T)  
       }else if( tolower(method)=="looping"){
