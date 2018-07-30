@@ -10,8 +10,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
                           format.vars, overwrite = FALSE, exact.dates = FALSE, 
                           allow.conflicting.dates = TRUE, insert.new.file = FALSE, pattern = NULL,
-                          forecast = FALSE, ensemble = FALSE,...) {
+                          forecast = FALSE, ensemble = FALSE, ensemble_name = NULL, ...) {
   input.args <- list(...)
+  
+  ###
+  print("----------------------------- START convert.input --------------------------------------")
+  source("~/pecan/base/db/R/dbfiles.R")
   
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
@@ -60,16 +64,23 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # site.id, a regex placeholder is used instead.
       
       filename_pattern = pattern #pattern is always the name of the meteorological data product (met).
-      if (!is.null(input.args$sitename)) {
+      if (!is.null(input.args$sitename) || !is.null(site.id)) {
         filename_pattern = paste(filename_pattern, "[^.]*", sep="\\.") #double backslash for regex
       }
-      if (ensemble > 1) {
+      if (!is.null(ensemble_name)) {
+        filename_pattern = paste(filename_pattern, ensemble_name, sep="\\.")
+      } else if (ensemble > 1) {
         filename_pattern = paste(filename_pattern, i, sep = "\\.")
       } 
       
       filename_pattern = paste0(filename_pattern, "\\.")
       
-      existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+      print("Query Arguments")
+      print(paste0("mimetype = ", mimetype, "; formatname = ", formatname, "; parentid = ", input.id,
+                   "; start_date = ", start_date, "; enddate" = end_date, "; hostname = ", host$name,
+                   "; pattern = ", filename_pattern))
+      
+      existing.dbfile[[i]] <- dbfile.input.check(siteid = site.id, ###PEcAn.DB::
                                                              mimetype = mimetype, 
                                                              formatname = formatname, 
                                                              parentid = input.id, 
@@ -79,6 +90,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                              hostname = host$name, 
                                                              exact.dates = TRUE,
                                                              pattern = filename_pattern)
+      
+      print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+      print(existing.dbfile[[i]])
+      print("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
       
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
@@ -642,6 +657,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       }
       
     } #End for loop
+    
+    ### Debugging
+    print("----------------------------- END convert.input --------------------------------------")
     
     successful <- TRUE
     return(newinput)

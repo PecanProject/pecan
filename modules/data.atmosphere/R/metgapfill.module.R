@@ -1,6 +1,9 @@
 .metgapfill.module <- function(cf.id, register, dir, met, str_ns, site, new.site, con, 
-                               start_date, end_date, host, overwrite = FALSE) {
+                               start_date, end_date, host, overwrite = FALSE, ensemble_name = NULL) {
   PEcAn.logger::logger.info("Gapfilling")  # Does NOT take place on browndog!
+  
+  ###
+  source("~/pecan/base/utils/R/convert.input.R")
   
   input.id   <- cf.id[1]
   outfolder  <- file.path(dir, paste0(met, "_CF_gapfill_site_", str_ns))
@@ -23,7 +26,7 @@
     fcn <- "metgapfill.NOAA_GEFS"
   }
   
-  ready.id <- PEcAn.utils::convert.input(input.id = input.id, 
+  ready.id <- convert.input(input.id = input.id, ### PEcAn.utils::
                             outfolder = outfolder, 
                             formatname = formatname, 
                             mimetype =  mimetype, 
@@ -34,7 +37,10 @@
                             lst = lst, 
                             overwrite = overwrite,
                             exact.dates = FALSE,
-                            forecast = forecast)
+                            forecast = forecast,
+                            pattern = met,
+                            ensemble = !is.null(register$ensemble) && as.logical(register$ensemble),
+                            ensemble_name = ensemble_name)
   
   print(ready.id) # Not a debugging statement
   

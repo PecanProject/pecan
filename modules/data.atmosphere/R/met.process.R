@@ -236,6 +236,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        start_date = start_date, end_date = end_date, 
                                        host = host, 
                                        overwrite = overwrite$standardize)
+                                       # Expand to support ensemble names in the future
       } else if (register$scale == "site") {
         ##### Site Level Processing
         standardize_result[[i]] <- .metgapfill.module(cf.id = list(input.id = cf.id$input.id[i], dbfile.id = cf.id$dbfile.id[i]), 
@@ -247,7 +248,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        con = con, 
                                        start_date = start_date, end_date = end_date,
                                        host = host, 
-                                       overwrite = overwrite$standardize)
+                                       overwrite = overwrite$standardize,
+                                       ensemble_name = i)
       }
       
     } # End for loop
@@ -273,6 +275,11 @@ met.process <- function(site, input_met, start_date, end_date, model,
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
     
+    print("********* ready.id **********")
+    print(ready.id)
+    print("-------")
+    print(input_met$id)
+    
     met2model.result = list()
     for (i in 1:length(ready.id[[1]])) {
       met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[i], dbfile.id = ready.id$dbfile.id[i]), 
@@ -289,20 +296,30 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     overwrite = overwrite$met2model,
                                     exact.dates = reg.model$exact.dates,
                                     spin = spin,
-                                    register = register)
+                                    register = register,
+                                    ensemble_name = i)
     }
     
     model.id = list()
     model.file.info = list()
     model.file = list()
     
+    print("********** met2model.result *************")
+    print(met2model.result)
+    
     for (i in 1:length(met2model.result)) {
       model.id[[i]]  <- met2model.result[[i]]$model.id
       model.file.info[[i]] <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id[[i]]$dbfile.id), con)
       model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
+      print("^^^^^^^^^^^^^^^^^^^^^")
+      print(model.file.info[[i]]$file_path)
+      print(model.file.info[[i]]$file_name)
+      print("vvvvvvvvvvvvvvvvvvvvv")
     }
     
-    # met.process now returns the entire $met portion of settings, updated with parellel vectors containing
+    
+    
+    # met.process now returns the entire $met portion of settings, updated with parellel lists containing
     # the model-specific data files and their input ids.
     
     input_met$id <- list()

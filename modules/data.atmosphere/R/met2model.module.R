@@ -1,6 +1,10 @@
 ##' @export
 .met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
-                              browndog, new.site, overwrite = FALSE, exact.dates,spin, register) {
+                              browndog, new.site, overwrite = FALSE, exact.dates,spin, register, ensemble_name) {
+  
+  ###
+  print("Entered met2model.module")
+  source("~/pecan/base/utils/R/convert.input.R")
   
   # Determine output format name and mimetype
   model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
@@ -41,7 +45,7 @@
     fcn <- paste0("met2model.", model)
     lst <- site.lst(site.id=site$id, con=con)
     
-    model.id <- PEcAn.utils::convert.input(input.id = input.id,
+    model.id <- convert.input(input.id = input.id,  ###PEcAn.utils::
                               outfolder = outfolder,
                               formatname = formatname, mimetype = mimetype, 
                               site.id = site$id, 
@@ -55,7 +59,9 @@
                               spin_nyear = spin$nyear,
                               spin_nsample = spin$nsample,
                               spin_resample = spin$resample,
-                              forecast = forecast)
+                              forecast = forecast,
+                              ensemble = !is.null(register$ensemble) && as.logical(register$ensemble),
+                              ensemble_name = ensemble_name)
   }
   
   PEcAn.logger::logger.info(paste("Finished Model Specific Conversion", model.id[1]))
