@@ -16,12 +16,12 @@ write.ensemble.configs(defaults, ensemble.samples, settings, model,
 
 \item{clean}{remove old output first?}
 
-\item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble ids), start.time and stop.time.}
+\item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.}
 
 \item{write.config}{a model-specific function to write config files, e.g. \link{write.config.ED}}
 }
 \value{
-list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
+list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with a samples and ids used for each component. Also writes sensitivity analysis configuration files as a side effect
 }
 \description{
 Write ensemble config files
@@ -30,6 +30,9 @@ Write ensemble config files
 Writes config files for use in meta-analysis and returns a list of run ids.
 Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 a name to distinguish the output files, and the directory to place the files.
+
+Resatrt functionality here is developed using model specific functions called write_restart.modelname . You need to make sure first that this function is already exsit for your dersired model.
+`new state` is mainly a dataframe with a different column for different variables for n rows and n sample size. `new.params` also has similar structure to ensemble.samples which is sent as an argument.
 }
 \author{
 David LeBauer, Carl Davidson, Hamze Dokoohaki

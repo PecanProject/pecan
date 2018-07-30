@@ -4,17 +4,19 @@
 \alias{input.ens.gen}
 \title{Function for reurning the met ensuble based on sampling method, parent or etc}
 \usage{
-input.ens.gen(settings, input, method = "sampling", parenids = NULL, ...)
+input.ens.gen(settings, input, method = "sampling", parent_ids = NULL)
 }
 \arguments{
 \item{settings}{list of PEcAn settings}
 
 \item{method}{Method for sampling - For now looping or sampling with replacement is implemented}
 
-\item{parenids}{If met's ids are read from a parent what are the ids}
-
-\item{...}{}
+\item{parent_ids}{This is basically the order of the paths that the parent is sampled.See Details.}
 }
 \description{
 Function for reurning the met ensuble based on sampling method, parent or etc
+}
+\details{
+If for example met was a parent and it's sampling method resulted in choosing the first, third and fourth samples, these are the ids that need to be sent as
+parent_ids to this function.
 }
