@@ -65,16 +65,46 @@ metgapfill.NOAA_GEFS <- function(in.data.file, in.prefix, in.path, outfolder, st
     print("**********************")
   }
   
+  # Put data into a matrix
+  var <- ncdf4::ncvar_get(flptr, "air_temperature")
+  allvars <- matrix(var, ncol=length(var), nrow=1)
+  var <- ncdf4::ncvar_get(flptr, "precipitation_flux")
+  allvars = rbind(allvars, var)
+  
+  for (i in 1:length(dependent_vars)) {
+    allvars <- rbind(allvars, ncdf4::ncvar_get(flptr, dependent_vars[i]))
+  }
+  
+  # Use this matrix to fill in missing days at the end of the forecast with data from the
+  # same time of day.
+  # First, count how far back needs going.
+  k <- ncol(allvars)
+  while (length(which(is.na(allvars[,k]))) > 0) {
+    k = k - 1;
+  }
+  
+  # i = column, row = j
+  for (i in 1:nrow(allvars)) {
+    for (j in k:ncol(allvars)) {
+      if (is.na(allvars[i,j])) {
+        allvars[i,j] = sample(na.omit(allvars[i,seq(j, 1, by = -4)]), 1)
+      }
+    }
+  }
+  
   # Use a basic spline to fill in missing values for basic variables
-  # Other variables will be fit to these for internal consistancy in gapfilling
-  air_temperature <- ncdf4::ncvar_get(flptr, "air_temperature")
-  precipitation_flux <- ncdf4::ncvar_get(flptr, "precipitation_flux")
+  # Other variables will be fit to these for internal consistency in gapfilling
+  air_temperature <- allvars[1,]
+  precipitation_flux <- allvars[2,]
   
   air_temperature <- zoo::na.spline(air_temperature)
   precipitation_flux <- zoo::na.spline(precipitation_flux)
   
   fitted.data <- data.frame(air_temperature = air_temperature,
                             precipitation_flux = precipitation_flux)
+  
+  print("allvars")
+  print(allvars)
   
   # This loop does the gapfilling of the other variables, based on air_temperature and precipitation_flux.
   # It does so in the following way:
@@ -85,10 +115,11 @@ metgapfill.NOAA_GEFS <- function(in.data.file, in.prefix, in.path, outfolder, st
   # values in the output of the prediciton function.
   # The new data is put into the data frame used to fit the next model
   for (i in 1:length(dependent_vars)) {
-    var <- ncdf4::ncvar_get(flptr, dependent_vars[i])
+    var <- allvars[i,]
     if(is.na(var[1])) {
       var[1] <- mean(var, na.rm = TRUE)
     }
+    
     fitted.data[[dependent_vars[i]]] = var
     
     # Unfortunately, R is picky, and the data.frame[['var_as_string']] notation doesn't work
@@ -108,20 +139,12 @@ metgapfill.NOAA_GEFS <- function(in.data.file, in.prefix, in.path, outfolder, st
     }
     prediction <- predict(reg, fitted.data)
     
-    print(dependent_vars[i])
-    print(prediction)
-    
     # Update the values in the data frame
     for (j in 1:length(prediction)) {
       if(is.na(fitted.data[[dependent_vars[i]]][j])) {
         fitted.data[[dependent_vars[i]]][j] <- prediction[j]
       }
     }
-    #fitted.data$original <- ncdf4::ncvar_get(flptr, "specific_humidity")
-    #fitted.data$test <- out
-    #fitted.data$model <- prediction
-    #print(fitted.data)
-    print("______________________________________________")
   }
   
   print(fitted.data)
@@ -135,12 +158,9 @@ metgapfill.NOAA_GEFS <- function(in.data.file, in.prefix, in.path, outfolder, st
   if (!dir.exists(out.data.file)) {
     dir.create(out.data.file, recursive=TRUE, showWarnings = FALSE)
   }
-  print(out.data.file)
   
   # The file names are the same, but the data is in a different directory.
   out.data.file <- file.path(out.data.file, in.data.file)
-  
-  print(out.data.file)
   
   # Write new, gapfilled file
   if (!file.exists(out.data.file) || overwrite) {
