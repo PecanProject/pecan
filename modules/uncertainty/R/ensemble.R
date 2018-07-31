@@ -183,8 +183,11 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param clean remove old output first?
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
 ##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
-##' @details Resatrt functionality here is developed using model specific functions called write_restart.modelname . You need to make sure first that this function is already exsit for your dersired model.
-##' new state is mainly a dataframe with a different column for different variables for n rows and n sample size. new.params also has similar structure to ensemble.samples which is sent as an argument.
+##' @details The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/master/pecan-models.html}
+##' new state is a dataframe with a different column for each state variable. The number of the rows in this dataframe needs to be the same as the ensemble size.
+##' State variables that you can use for setting up the intial conditions differs for different models. You may check the documentation of the write_restart.modelname your model.
+##' 
+##' new.params also has similar structure to ensemble.samples which is sent as an argument.
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
@@ -266,12 +269,12 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                                          )
     }
 
-    # if there is a tag required by the model but it is not specified in the xml then I replicare n times the first element 
+    # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
       purrr::walk(function(r_tag){
         if (is.null(samples[[r_tag]]) & r_tag!="parameters") samples[[r_tag]]$samples <<- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
       })
-    # if no ensemble piece was in the xml I replicare n times the first element in params
+    # if no ensemble piece was in the xml I replicate n times the first element in params
     if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, settings$ensemble$size) , ])
     # This where we handle the parameters - ensemble.samples is already generated in run.write.config and it's sent to this function as arg - 
     if ( is.null(samples$parameters$samples) ) samples$parameters$samples <- ensemble.samples
@@ -381,7 +384,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 
 
 
-#' Function for reurning the met ensuble based on sampling method, parent or etc
+#' Function for generating samples based on sampling method, parent or etc
 #'
 #' @param settings list of PEcAn settings
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
@@ -396,33 +399,33 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #' \dontrun{input.ens.gen(settings,"met","sampling")}
 #'  
 input.ens.gen<-function(settings,input,method="sampling",parent_ids=NULL){
-
+  
   #-- reading the dots and exposing them to the inside of the function
   samples<-list()
   samples$ids<-c()
-      #
-      if (is.null(method)) return(NULL)
-      # parameter is exceptional it needs to be handled spearatly
-      if (input=="parameters") return(NULL)
-      #-- assing the sample ids based on different scenarios
-      if(!is.null(parent_ids)) {
-        samples$ids<-parent_ids$ids  
-        out.of.sample.size <- sample$ids[samples$ids > settings$run$inputs[[tolower(input)]]$path %>% length]
-        #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
-        samples$ids[samples$ids%in%out.of.sample.size] <- samples(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
-                                                                  out.of.sample.size,
-                                                                  replace = T)
-      }else if( tolower(method)=="sampling") {
-        samples$ids <- sample(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
-                              settings$ensemble$size,
-                              replace = T)  
-      }else if( tolower(method)=="looping"){
-        samples$ids <- rep_len(settings$run$inputs[[tolower(input)]]$path %>% seq_along(), length.out=settings$ensemble$size)
-      }
-    #using the sample ids
-    samples$samples<-settings$run$inputs[[tolower(input)]]$path[samples$ids]
-
-
-
+  #
+  if (is.null(method)) return(NULL)
+  # parameter is exceptional it needs to be handled spearatly
+  if (input=="parameters") return(NULL)
+  #-- assing the sample ids based on different scenarios
+  if(!is.null(parent_ids)) {
+    samples$ids<-parent_ids$ids  
+    out.of.sample.size <- sample$ids[samples$ids > settings$run$inputs[[tolower(input)]]$path %>% length]
+    #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
+    samples$ids[samples$ids%in%out.of.sample.size] <- samples(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
+                                                              out.of.sample.size,
+                                                              replace = T)
+  }else if( tolower(method)=="sampling") {
+    samples$ids <- sample(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
+                          settings$ensemble$size,
+                          replace = T)  
+  }else if( tolower(method)=="looping"){
+    samples$ids <- rep_len(settings$run$inputs[[tolower(input)]]$path %>% seq_along(), length.out=settings$ensemble$size)
+  }
+  #using the sample ids
+  samples$samples<-settings$run$inputs[[tolower(input)]]$path[samples$ids]
+  
+  
+  
   return(samples)
 }
