@@ -18,7 +18,6 @@ prepare.settings <- function(settings, force=FALSE) {
   settings <- fix.deprecated.settings(settings, force=force)
   settings <- addSecrets(settings, force=force)
   settings <- update.settings(settings, force=force)
-
   settings <- check.settings(settings, force=force)  
   return(settings)
 }
