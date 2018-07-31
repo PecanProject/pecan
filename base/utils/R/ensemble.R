@@ -184,7 +184,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
 ##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
 ##' @details Resatrt functionality here is developed using model specific functions called write_restart.modelname . You need to make sure first that this function is already exsit for your dersired model.
-##' `new state` is mainly a dataframe with a different column for different variables for n rows and n sample size. `new.params` also has similar structure to ensemble.samples which is sent as an argument.
+##' new state is mainly a dataframe with a different column for different variables for n rows and n sample size. new.params also has similar structure to ensemble.samples which is sent as an argument.
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
@@ -273,7 +273,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       })
     # if no ensemble piece was in the xml I replicare n times the first element in params
     if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, settings$ensemble$size) , ])
-    # This where we handle the parameters - `ensemble.samples` is already generated in run.write.config and it's sent to this function as arg - 
+    # This where we handle the parameters - ensemble.samples is already generated in run.write.config and it's sent to this function as arg - 
     if ( is.null(samples$parameters$samples) ) samples$parameters$samples <- ensemble.samples
     #------------------------End of generating ensembles-----------------------------------
     # find all inputs that have an id
@@ -355,7 +355,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     new.params<-restart$new.params
     new.state<-restart$new.state
     ensemble.id<-restart$ensemble.id
-    
+    # stop and start time are required by bc we are wrtting them down into job.sh
     for (i in seq_len(settings$ensemble$size)) {
       do.call(my.write_restart, 
               args =  list(outdir = settings$host$outdir, 
@@ -387,12 +387,14 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
 #' @param parent_ids This is basically the order of the paths that the parent is sampled.See Details.
 #'
-#' @return
+#' @return For a given input/tag in the pecan xml and a method, this function returns a list with $id showing the order of sampling and $samples with samples of that input.
 #' @details If for example met was a parent and it's sampling method resulted in choosing the first, third and fourth samples, these are the ids that need to be sent as
 #' parent_ids to this function.
 #' @export
 #'
 #' @examples
+#' \dontrun{input.ens.gen(settings,"met","sampling")}
+#'  
 input.ens.gen<-function(settings,input,method="sampling",parent_ids=NULL){
 
   #-- reading the dots and exposing them to the inside of the function

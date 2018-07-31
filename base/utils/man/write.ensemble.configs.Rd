@@ -32,7 +32,7 @@ Given a pft.xml object, a list of lists as supplied by get.sa.samples,
 a name to distinguish the output files, and the directory to place the files.
 
 Resatrt functionality here is developed using model specific functions called write_restart.modelname . You need to make sure first that this function is already exsit for your dersired model.
-`new state` is mainly a dataframe with a different column for different variables for n rows and n sample size. `new.params` also has similar structure to ensemble.samples which is sent as an argument.
+new state is mainly a dataframe with a different column for different variables for n rows and n sample size. new.params also has similar structure to ensemble.samples which is sent as an argument.
 }
 \author{
 David LeBauer, Carl Davidson, Hamze Dokoohaki

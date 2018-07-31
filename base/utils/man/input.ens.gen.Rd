@@ -13,10 +13,17 @@ input.ens.gen(settings, input, method = "sampling", parent_ids = NULL)
 
 \item{parent_ids}{This is basically the order of the paths that the parent is sampled.See Details.}
 }
+\value{
+For a given input/tag in the pecan xml and a method, this function returns a list with $id showing the order of sampling and $samples with samples of that input.
+}
 \description{
 Function for reurning the met ensuble based on sampling method, parent or etc
 }
 \details{
 If for example met was a parent and it's sampling method resulted in choosing the first, third and fourth samples, these are the ids that need to be sent as
 parent_ids to this function.
+}
+\examples{
+\dontrun{input.ens.gen(settings,"met","sampling")}
+ 
 }
