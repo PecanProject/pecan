@@ -31,8 +31,11 @@ Writes config files for use in meta-analysis and returns a list of run ids.
 Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 a name to distinguish the output files, and the directory to place the files.
 
-Resatrt functionality here is developed using model specific functions called write_restart.modelname . You need to make sure first that this function is already exsit for your dersired model.
-new state is mainly a dataframe with a different column for different variables for n rows and n sample size. new.params also has similar structure to ensemble.samples which is sent as an argument.
+The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/master/pecan-models.html}
+new state is a dataframe with a different column for each state variable. The number of the rows in this dataframe needs to be the same as the ensemble size.
+State variables that you can use for setting up the intial conditions differs for different models. You may check the documentation of the write_restart.modelname your model.
+
+new.params also has similar structure to ensemble.samples which is sent as an argument.
 }
 \author{
 David LeBauer, Carl Davidson, Hamze Dokoohaki

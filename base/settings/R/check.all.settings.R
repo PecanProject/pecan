@@ -244,6 +244,7 @@ check.settings <- function(settings, force=FALSE) {
   on.exit(options(scipen=scipen))
   options(scipen=12)
   
+
   settings <- check.database.settings(settings)
   #checking the ensemble tag in settings
   settings <- check.ensemble.settings(settings)
@@ -874,6 +875,7 @@ check.database.settings <- function(settings) {
 ##' @param settings settings file
 ##' @export check.ensemble.settings
 check.ensemble.settings <- function(settings) {
+
   #Old version of pecan xml files which they don't have a sampling space or it's just sampling space and nothing inside it.
   if (is.null(settings$ensemble$samplingspace) | !is.list(settings$ensemble$samplingspace)){
     PEcAn.logger::logger.info("We are updating the ensemble tag inside the xml file.")

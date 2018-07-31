@@ -177,10 +177,10 @@ Only if this section is defined an ensemble analysis is done.
   <end.year>1999</end.year>
   <samplingspace>
   <parameters>
-      <method>lhc</method>
+    <method>lhc</method>
   </parameters>
   <met>
-      <method>sampling</method>
+    <method>sampling</method>
   </met>
   </samplingspace>
 </ensemble>
