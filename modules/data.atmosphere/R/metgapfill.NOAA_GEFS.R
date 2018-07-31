@@ -4,8 +4,7 @@
 ##'Temperature and Percipitation are gapfilled with spline; other data sources are gapfilled with
 ##'using linear models fitted to other fitted data.
 ##'
-##'@param in.data.file A NOAA_GEFS nc file which contains information for gapfilling.
-##'@param in.prefix prefix for input and output files (usually the name of the met product).
+##'@param in.prefix the met file name
 ##'@param in.path The location of the file
 ##'@param outfolder The place to write the output file to
 ##'@param start_date The start date of the contents of the file
@@ -15,7 +14,7 @@
 ##'@export
 ##'
 ##'@author Luke Dramko
-metgapfill.NOAA_GEFS <- function(in.data.file, in.prefix, in.path, outfolder, start_date, end_date,
+metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_date,
                                  overwrite = FALSE, verbose = FALSE, ...) {
   
   # These are the variables cf NOAA_GEFS uses
@@ -27,24 +26,24 @@ metgapfill.NOAA_GEFS <- function(in.data.file, in.prefix, in.path, outfolder, st
                       "air_pressure", "eastward_wind", "northward_wind")
   
   
-  escaped <- gsub("(\\W)", "\\\\\\1", in.data.file) # The file name may contain special characters that could mess up the regular expression.
+  escaped <- gsub("(\\W)", "\\\\\\1", in.prefix) # The file name may contain special characters that could mess up the regular expression.
   matching_files <- grep(escaped, list.files(in.path), value=TRUE) 
   if (length(matching_files) == 0) {
-    PEcAn.logger::logger.severe(paste0("No files found matching ", in.data.file, "; cannot process data."))
+    PEcAn.logger::logger.severe(paste0("No files found matching ", in.prefix, "; cannot process data."))
   }
   
   # This function is supposed to process netcdf files, so we'll search for files the the extension .nc and use those first.
   nc_file = grep("\\.nc$", matching_files)
   if (length(nc_file) > 0) {
-    in.data.file <- matching_files[1]
+    in.prefix <- matching_files[1]
   } else { # no .nc files found... it could be that the extension was left off, or some other problem
     PEcAn.logger::logger.warn("No files found with extension '.nc'.  Using the first file in the list below:")
     PEcAn.logger::logger.warn(matching_files)
-    in.data.file <- matching_files[1]
+    in.prefix <- matching_files[1]
   }
   
   # Attach the path.  The above procedure doesn't require the path, but acutally opening the file does.
-  full.data.file <- file.path(in.path, in.data.file)
+  full.data.file <- file.path(in.path, in.prefix)
   
   if (!file.exists(full.data.file)) {
     PEcAn.logger::logger.warn(paste0("File ", full.data.file, " not found.  Unable to perform gapfilling."))
@@ -150,17 +149,17 @@ metgapfill.NOAA_GEFS <- function(in.data.file, in.prefix, in.path, outfolder, st
   print(fitted.data)
   
   # Extract ensemble information from file name
-  ensemble <- regmatches(in.data.file, regexpr("NOAA_GEFS\\.[^.]*\\.[0-9]*\\.", in.data.file))
+  ensemble <- regmatches(in.prefix, regexpr("NOAA_GEFS\\.[^.]*\\.[0-9]*\\.", in.prefix))
   ensemble <- regmatches(ensemble, regexpr("[0-9]+$", ensemble))
   
   # Each ensemble gets its own folder to keep things organized
-  out.data.file <- file.path(outfolder, paste0(in.prefix, ensemble))
+  out.data.file <- file.path(outfolder, paste0("NOAA_GEFS", ensemble))
   if (!dir.exists(out.data.file)) {
     dir.create(out.data.file, recursive=TRUE, showWarnings = FALSE)
   }
   
   # The file names are the same, but the data is in a different directory.
-  out.data.file <- file.path(out.data.file, in.data.file)
+  out.data.file <- file.path(out.data.file, in.prefix)
   
   # Write new, gapfilled file
   if (!file.exists(out.data.file) || overwrite) {

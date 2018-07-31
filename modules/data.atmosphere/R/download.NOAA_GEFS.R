@@ -250,7 +250,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
     #Object references in R work differently than in other languages. When adding an item to a list, R creates a copy of it
     #for you instead of just inserting the object reference, so this works.
     results$file <- flname
-    results$dbfile.name <- paste0("NOAA_GEFS.", i)
+    results$dbfile.name <- flname
     results_list[[i]] <- results
     
     if (!file.exists(flname) | overwrite) {
