@@ -236,12 +236,12 @@ if (isset($modelinfo['revision'])) {
       <input type="text" name="variables" id="variables" value="<?php echo "NPP"; ?>" onChange="validate();"/>
       <div class="spacer"></div>
       <label>Parameter's sampling method<sup>*</sup></label>
-      <select name="parm_method" id="parm_method">
-      <option value="uniform">Uniform</option>
-      <option value="halton">Halton</option>
-      <option value="sobol">Sobol</option>
-      <option value="torus">Torus</option>
-      <option value="lhc">Latin hypercube</option>
+      <select name="parm_method" id="parm_method" onChange="validate();">
+      <option value="<?php echo "uniform"; ?>">Uniform</option>
+      <option value="<?php echo "halton"; ?>">Halton</option>
+      <option value="<?php echo "sobol"; ?>">Sobol</option>
+      <option value="<?php echo "torus"; ?>">Torus</option>
+      <option value="<?php echo "lhc"; ?>">Latin hypercube</option>
      </select>
       <div class="spacer"></div>
 
