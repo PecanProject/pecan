@@ -154,7 +154,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
 } # run.write.configs
 
 
-
+#' @export
 runModule.run.write.configs <- function(settings, overwrite = TRUE) {
   .Deprecated("PEcAn.workflow::runModule.run.write.configs")
   if (PEcAn.settings::is.MultiSettings(settings)) {
