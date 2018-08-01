@@ -313,7 +313,7 @@ if (!empty($runs)){
 	fwrite($fh, "   </parameters>" . PHP_EOL);
 	fwrite($fh, "   <met>" . PHP_EOL);
 	fwrite($fh, "    <method>sampling</method>" . PHP_EOL);
-    fwrite($fh, " </met>" . PHP_EOL);
+    	fwrite($fh, " 	</met>" . PHP_EOL);
 	fwrite($fh, "   </samplingspace>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 } else {
@@ -326,7 +326,7 @@ if (!empty($runs)){
 	fwrite($fh, "     </parameters>" . PHP_EOL);
 	fwrite($fh, "     <met>" . PHP_EOL);
 	fwrite($fh, "       <method>sampling</method>" . PHP_EOL);
-    fwrite($fh, "   </met>" . PHP_EOL);
+   	 fwrite($fh, "    </met>" . PHP_EOL);
 	fwrite($fh, "    </samplingspace>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 }
