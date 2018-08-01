@@ -2,9 +2,6 @@
                                start_date, end_date, host, overwrite = FALSE, ensemble_name = NULL) {
   PEcAn.logger::logger.info("Gapfilling")  # Does NOT take place on browndog!
   
-  ###
-  source("~/pecan/base/utils/R/convert.input.R")
-  
   input.id   <- cf.id[1]
   outfolder  <- file.path(dir, paste0(met, "_CF_gapfill_site_", str_ns))
   pkg        <- "PEcAn.data.atmosphere"
@@ -42,7 +39,7 @@
                             ensemble = !is.null(register$ensemble) && as.logical(register$ensemble),
                             ensemble_name = ensemble_name)
   
-  print(ready.id) # Not a debugging statement
+  print(ready.id)
   
   PEcAn.logger::logger.info("Finished Gapfilling Met")
   
