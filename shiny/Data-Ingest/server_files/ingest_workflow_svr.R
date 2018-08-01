@@ -178,8 +178,9 @@ format_vars_entry <- tibble::tibble(
                                 column_number = input$col_num
                               )
 
-Shared.data$format_vars_df <- rbind(format_vars_entry, format_vars_df)
+Shared.data$format_vars_df <- rbind(format_vars_entry, Shared.data$format_vars_df)
+output$format_vars_df <- DT::renderDT(datatable({Shared.data$format_vars_df}, escape = FALSE, selection = 'single', options = list(ordering = F, dom = 'tp')))
 })
 
-output$format_vars_df <- DT::renderDT(datatable({Shared.data$format_vars_df}, escape = FALSE, selection = 'single', options = list(ordering = F, dom = 'tp')))
+
 

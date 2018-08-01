@@ -130,33 +130,34 @@ column(3)), # Empty Space
   hr(),
   verbatimTextOutput("summInputs"),
   verbatimTextOutput("input_record_df")
-  ),
-## 4. Formats-Variables
-  box(title = h2("3. Formats-Variables"), width = 4, solidHeader = TRUE, status = "success", collapsible = TRUE, collapsed = FALSE,
-      div(id = "add_var_action_button", 
-          actionButton("add_variable", label = "Add New Variable")
-          ),
-      shinyjs::hidden(
-        div(id = "formats_vars_inputs",
-        selectizeInput("pecan_var", choices = NULL, label = "Variable",
-                       options = list(
-                         placeholder = 'Please search or select a site below',
-                         onInitialize = I('function() { this.setValue(""); }')
-                       )
-        ),
-        splitLayout(
-          textInput("var_name", label = "Name"),
-          textInput("var_unit", label = "Unit")
-        ),
-        splitLayout(
-          textInput("storage_type", label = "Storage Type"),
-          textInput("col_num", label = "Column Number"),
-          actionButton("register_variable", label = "Add Variable")
-        )
-      )
-    ),
-    DT::DTOutput("format_vars_df")
   )
-  #formats.varsUI("format_vars_mod")
-)#End Fluid Row
+),#End Fluid Row
+fluidRow(
+  ## 4. Formats-Variables
+  box(title = h2("3. Formats-Variables"), width = 12, solidHeader = TRUE, status = "success", collapsible = TRUE, collapsed = FALSE,
+      fluidRow(column(3,
+                      selectizeInput("pecan_var", choices = NULL, label = "Variable",
+                                     options = list(
+                                       placeholder = 'Please search or select a site below',
+                                       onInitialize = I('function() { this.setValue(""); }')
+                                     )
+                      )
+      ),
+      column(3,
+             textInput("var_name", label = "Name")
+      ),
+      column(2,
+             textInput("var_unit", label = "Unit")
+      ),
+      column(2,
+             textInput("storage_type", label = "Storage Type")
+      ),
+      column(2,
+             textInput("col_num", label = "Column Number")
+      )
+      ),
+      actionButton("register_variable", label = "Add Variable"),
+      DT::DTOutput("format_vars_df")
+  )
+)
 )# End Fluid Page
