@@ -80,6 +80,13 @@ observeEvent(input$createInput, {
   ## Mimetype (should I find the ID as well?)##
   inputsList$Mimetype <<- input$MimetypeNameCurrent
   
+  inputsList$StartTime_sub <<- trimws(base::sub("[0-9]{4}[.-][0-9]{2}[.-][0-9]{2}[ \t]", "", input$StartTimeInput))
+  inputsList$EndTime_sub <<- trimws(base::sub("[0-9]{4}[.-][0-9]{2}[.-][0-9]{2}[ \t]", "", input$EndTimeInput))
+  
+  inputsList$StartDateTime <<- trimws(paste(input$InputStartDate, inputsList$StartTime_sub, " "))
+  inputsList$EndDateTime <<- trimws(paste(input$InputEndDate, inputsList$EndTime_sub, " "))
+  
+  
 
   ## Other Info
   inputsList$Method <<- input$inputMethod
@@ -96,13 +103,12 @@ observeEvent(input$createInput, {
   output$summInputs <- renderPrint({inputsList})
 })
 
-
 observeEvent(input$testBety, {
   Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
                                                                 in.prefix = inputsList$Name,
                                                                 siteid =   inputsList$siteID,
-                                                                startdate = inputsList$StartDate,
-                                                                enddate =   inputsList$EndDate,
+                                                                startdate = inputsList$StartDateTime,
+                                                                enddate =   inputsList$EndDateTime,
                                                                 mimetype = inputsList$Mimetype,
                                                                 formatname = inputsList$formatName,
                                                                 # parentid = inputsList$parentID,
