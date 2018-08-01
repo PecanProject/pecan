@@ -57,7 +57,6 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
     )
   }
   
-  
    #Test if skip is an integer
   if(!is.numeric(skip)){
   PEcAn.logger::logger.error(
@@ -80,31 +79,33 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
   }
   
   ######## Formats-Variables tests ###############
-  if(!is.null(formats_variables_df)){
-    if(!is.numeric(formats_variables_df[,"variable_id"])){
-      PEcAn.logger::logger.error(
-        "variable_id must be an integer"
-      )
-    }
-    if(!is.character(formats_variables_df[,"name"])&!is.na(formats_variables_df[,"name"])){
-      PEcAn.logger::logger.error(
-        "Variable name must be of type character or NA"
-      )
-    }
-    if(!is.character(formats_variables_df[,"unit"])&!is.na(formats_variables_df[,"unit"])){
-      PEcAn.logger::logger.error(
-        "Units must be of type character or NA"
-      )
-    }
-    if(!is.character(formats_variables_df[,"storage_type"])&!is.na(formats_variables_df[,"storage_type"])){
-      PEcAn.logger::logger.error(
-        "storage_type name must be of type character or NA"
-      )
-    }
-    if(!is.character(formats_variables_df[,"column_number"])&!is.na(formats_variables_df[,"column_number"])){
-      PEcAn.logger::logger.error(
-        "column_number name must be of type character or NA"
-      )
+  if(!is.null(formats_variables)){
+    for(i in 1:nrow(formats_variables)){
+      if(!is.numeric(formats_variables[[i,"variable_id"]])){
+        PEcAn.logger::logger.error(
+          "variable_id must be an integer"
+        )
+      }
+      if(!is.character(formats_variables[[i, "name"]])&!is.na(formats_variables[[i, "name"]])){
+        PEcAn.logger::logger.error(
+          "Variable name must be of type character or NA"
+        )
+      }
+      if(!is.character(formats_variables[[i, "unit"]])&!is.na(formats_variables[[i, "unit"]])){
+        PEcAn.logger::logger.error(
+          "Units must be of type character or NA"
+        )
+      }
+      if(!is.character(formats_variables[[i, "storage_type"]])&!is.na(formats_variables[[i, "storage_type"]])){
+        PEcAn.logger::logger.error(
+          "storage_type name must be of type character or NA"
+        )
+      }
+      if(!is.character(formats_variables[[i, "column_number"]])&!is.na(formats_variables[[i, "column_number"]])){
+        PEcAn.logger::logger.error(
+          "column_number name must be of type character or NA"
+        )
+      }
     }
   }
   
