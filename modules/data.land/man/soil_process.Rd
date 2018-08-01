@@ -4,7 +4,8 @@
 \alias{soil_process}
 \title{Module for managing soil texture extraction}
 \usage{
-soil_process(settings, input, dbfiles, overwrite = FALSE, run.local = TRUE)
+soil_process(settings, input, dbfiles, overwrite = FALSE,
+  run.local = TRUE)
 }
 \arguments{
 \item{settings}{PEcAn settings list}

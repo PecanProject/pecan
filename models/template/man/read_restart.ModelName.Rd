@@ -4,7 +4,8 @@
 \alias{read_restart.ModelName}
 \title{Read restart template for SDA}
 \usage{
-read_restart.ModelName(outdir, runid, stop.time, settings, var.names, params)
+read_restart.ModelName(outdir, runid, stop.time, settings, var.names,
+  params)
 }
 \arguments{
 \item{outdir}{Output directory}

@@ -9,6 +9,9 @@ summarize.GP(gp, pdf_file = NULL, txt_file = NULL)
 \arguments{
 \item{txt_file}{}
 }
+\description{
+summarize.GP
+}
 \author{
 Michael Dietze
 }

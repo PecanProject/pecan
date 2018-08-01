@@ -6,3 +6,6 @@
 \usage{
 is.accepted(ycurr, ynew, format = "lin")
 }
+\description{
+is.accepted
+}
