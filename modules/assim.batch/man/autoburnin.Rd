@@ -15,6 +15,9 @@ samples (as list). Default = FALSE.}
 \item{...}{Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 
 and \code{gelman.diag}.}
 }
+\description{
+Automatically calculate and apply burnin value
+}
 \examples{
      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
      z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))

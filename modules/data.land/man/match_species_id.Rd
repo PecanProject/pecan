@@ -2,7 +2,6 @@
 % Please edit documentation in R/match_species_id.R, R/match_species_id_OLD.R
 \name{match_species_id}
 \alias{match_species_id}
-\alias{match_species_id}
 \title{Match BETY species ID.}
 \usage{
 match_species_id(input_codes, format_name = "custom", bety = NULL,

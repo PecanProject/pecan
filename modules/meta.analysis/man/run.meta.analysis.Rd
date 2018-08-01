@@ -9,8 +9,8 @@ This will use the following items from setings:
 - settings$database$dbfiles
 - settings$meta.analysis$update}
 \usage{
-run.meta.analysis(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles,
-  database)
+run.meta.analysis(pfts, iterations, random = TRUE, threshold = 1.2,
+  dbfiles, database)
 }
 \arguments{
 \item{pfts}{the list of pfts to get traits for}

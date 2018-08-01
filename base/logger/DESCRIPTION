@@ -4,10 +4,9 @@ Version: 1.5.3
 Author: Rob Kooper, Alexey Shiklomanov
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: Special logger functions for tracking execution status and the environment.
-Depends: R
 Suggests: testthat
 License: FreeBSD + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Roxygen: list(markdown = TRUE)

@@ -6,6 +6,9 @@
 \usage{
 estimate_mode(x, adjust = 0.1)
 }
+\description{
+estimate_mode
+}
 \author{
 Mike Dietze
 
