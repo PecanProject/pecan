@@ -159,6 +159,8 @@ get.parameter.samples <- function(settings,
       ## run at median if only one run in ensemble
       ensemble.samples <- get.sa.sample.list(pft = trait.samples, env = env.samples, 
                                              quantiles = 0.5)
+      #if it's not there it's one probably
+      if (is.null(settings$ensemble$size)) settings$ensemble$size<-1
     } else if (settings$ensemble$size > 1) {
       
       ## subset the trait.samples to ensemble size using Halton sequence
