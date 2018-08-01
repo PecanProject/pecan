@@ -9,6 +9,9 @@ metric_RMSE(dat, ...)
 \arguments{
 \item{dat}{dataframe}
 }
+\description{
+Root Mean Square Error
+}
 \author{
 Betsy Cowdery
 }

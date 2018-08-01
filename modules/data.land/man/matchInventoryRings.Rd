@@ -7,3 +7,6 @@
 matchInventoryRings(trees, rings, extractor = "TreeCode", nyears = 30,
   coredOnly = TRUE)
 }
+\description{
+matchInventoryRings
+}
