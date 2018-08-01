@@ -9,7 +9,16 @@ The second section will create the actual model executor. This will leverage the
 
 It is important that the `MODEL_TYPE` and `MODEL_VERSION` match what is in the BETY database. The PEcAn code will use what is in the BETY database to send out a message to a specfic worker queue, if you do not set these variables correctly your model executor will pick up messages for the wrong model.
 
-Once this has build correctly you should be able to add the image to the `docker-compose.yml` file you use to run PEcAn and be able to use this model in the web interface.
+To build the docker image, we use a Dockerfile (see example below) and run the following command. This command will expect the Dockerfile.ed2 to live in the current folder. It will also copy the content of the current folder and make it available to the build process (in this example we do not need any additional files). The image will be named pecan/model-ed2, since we do not specify the exact version it will be atomically be named `pecan/model-ed2:latest`.
+
+````bash
+docker build \
+	--tag pecan/model-ed2 \
+	--file Dockerfile.ed2 \
+	.
+````
+
+Example of a Dockerfile, in this case to build the ED2 model.
 
 ```dockerfile
 # ----------------------------------------------------------------------
@@ -71,6 +80,32 @@ ENV APPLICATION="./job.sh" \
 
 # COPY model binary
 COPY --from=model-binary /src/ED2/ED/build/ed_2.1-opt /usr/local/bin/ed2.${MODEL_VERSION}
+```
+
+Once the model has build and is working we can add it to the PEcAn stack and be able to use this model in the web interface. There are two methods to start this new model. First, we can add it to the `docker-compose.yml` file and start the container using `docker-compose -p pecan -d up`.
+
+```yaml
+  sipnet:
+    image: pecan/model-ed2
+    networks:
+      - pecan
+    volumes:
+      - pecan:/data
+    depends_on:
+       - rabbitmq
+    restart: unless-stopped
+```
+
+Alternatively we can start the container manually using the following command.
+
+```bash
+docker run \
+	--detach \
+	--rm \
+	--name pecan-ed2 \
+	--networks pecan_pecan \
+	--volume pecan_pecan:/data
+	pecan/model-ed2
 ```
 
 ## Common problems
