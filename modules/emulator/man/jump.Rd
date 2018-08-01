@@ -2,7 +2,6 @@
 % Please edit documentation in R/jump.R, R/zzz.R
 \name{jump}
 \alias{jump}
-\alias{jump}
 \title{jump}
 \usage{
 jump(ic = 0, rate = 0.4, ...)
