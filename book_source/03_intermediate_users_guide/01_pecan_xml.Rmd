@@ -165,20 +165,36 @@ Only if this section is defined an ensemble analysis is done.
 
 #### functions: 
 
-`write.configs()`, `run.ensemble.analysis()`
+`write.configs()`,`write.ensemble.configs`, `run.ensemble.analysis()`
 
 #### tags
 
 ```xml
 <ensemble>
-	<size>5</size>
+  <size>5</size>
   <variable>GPP</variable>
-  <variable>NPP</variable>
+  <start.year>1995</start.year>
+  <end.year>1999</end.year>
+  <samplingspace>
+  <parameters>
+    <method>lhc</method>
+  </parameters>
+  <met>
+    <method>sampling</method>
+  </met>
+  </samplingspace>
 </ensemble>
 ```
 
 * **size** : [required] the number of runs in the ensemble.
 * **variable**: [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
+* **samplingspace**:[optional] Contains tags for defining how the ensembles will be generated.
+
+Each piece in the sampling space can potentially have a method tag and a parent tag. Method refers to the sampling method and parent refers to the cases where we need to link the samples of two components. When no tag is defined for one component, one sample will be generated and used for all the ensembles. This allows for partitioning/studying different sources of uncertainties. For example, if no met tag is defined then, one met path will be used for all the ensembles and as a result the outpus's uncertainty will come from the variability in the parameters. At the moment no sampling method is implemented for soil and vegetation.
+Available sampling methods for `parameters` can be found in the documentation of the `get.ensemble.samples` function in `PEcAn.utils` package.
+For the cases where we need simulations with a predefined set of parameters, met and initial condition we can use the restart argument. Restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble ids), start.time and stop.time.
+
+The restart functionality is developed using model specific functions by called write_restart.modelname. You need to make sure first that this function is already exist for your desired model.
 
 Note: if the ensemble size is set to 1, PEcAn will select the **posterior median** parameter values rather than taking a single random draw from the posterior
 

@@ -24,9 +24,9 @@
 ##'    files within this workflow, to avoid confusion).
 ##'
 ##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
-##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
+##' @export
 run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
@@ -60,6 +60,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   model <- settings$model$type
   scipen <- getOption("scipen")
   options(scipen = 12)
+  #sample from parameters used for both sensitivity analysis and Ens
   get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
   
@@ -154,7 +155,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
 } # run.write.configs
 
 
-##' @export
+#' @export
 runModule.run.write.configs <- function(settings, overwrite = TRUE) {
   .Deprecated("PEcAn.workflow::runModule.run.write.configs")
   if (PEcAn.settings::is.MultiSettings(settings)) {
@@ -165,8 +166,10 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
     return(PEcAn.settings::papply(settings, runModule.run.write.configs, overwrite = FALSE))
   } else if (PEcAn.settings::is.Settings(settings)) {
     write <- settings$database$bety$write
-    ens.sample.method <- settings$ensemble$method
-    return(run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
+    # double check making sure we have method for parameter sampling
+    if (is.null(settings$ensemble$samplingspace$parameters$method)) settings$ensemble$samplingspace$parameters$method <- "uniform"
+    ens.sample.method <-  settings$ensemble$samplingspace$parameters$method
+    return(PEcAn.workflow:run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")
   }

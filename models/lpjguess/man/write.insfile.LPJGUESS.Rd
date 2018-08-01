@@ -20,6 +20,9 @@ write.insfile.LPJGUESS(settings, trait.values, rundir, outdir, run.id)
 \value{
 settings Updated list
 }
+\description{
+Write LPJ-GUESS instruction script
+}
 \author{
 Istem Fer
 }

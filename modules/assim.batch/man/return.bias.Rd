@@ -22,6 +22,9 @@ return.bias(settings, isbias, model.out, inputs, prior.list.bias,
 
 \item{pass2bias}{if this is another round, this is re-sampled MCMC samples, will go with the rest of model params}
 }
+\description{
+return.bias
+}
 \author{
 Istem Fer
 }

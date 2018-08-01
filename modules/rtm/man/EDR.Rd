@@ -5,8 +5,8 @@
 \title{ED radiative transfer module (EDR) wrapper function}
 \usage{
 EDR(img_path, ed2in_path, spectra_list, trait.values,
-  soil_reflect_path = system.file("extdata", "soil_reflect_par.dat", package =
-  "PEcAnRTM"), wood_reflect_path = system.file("extdata",
+  soil_reflect_path = system.file("extdata", "soil_reflect_par.dat",
+  package = "PEcAnRTM"), wood_reflect_path = system.file("extdata",
   "wood_reflect_par.dat", package = "PEcAnRTM"), par.wl = 400:2499,
   nir.wl = 2500, edr_exe_path = NULL,
   output.path = dirname(normalizePath(ed2in_path, mustWork = TRUE)),

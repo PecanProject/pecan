@@ -4,8 +4,8 @@
 \alias{write.ma.model}
 \title{write.ma.model}
 \usage{
-write.ma.model(modelfile, outfile, reg.model, pr.dist, pr.param.a, pr.param.b,
-  n, trt.n, site.n, ghs.n, tauA, tauB)
+write.ma.model(modelfile, outfile, reg.model, pr.dist, pr.param.a,
+  pr.param.b, n, trt.n, site.n, ghs.n, tauA, tauB)
 }
 \arguments{
 \item{modelfile}{model template file (ma.model.template.R)}
