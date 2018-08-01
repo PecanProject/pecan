@@ -62,6 +62,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   
 - pecan/base/db
   - New File: `input.format.vars.R`. This function registers the format and the (optional) formats_variables record using `db_merge_into`. 
+
+- `data.atmosphere`
+	- `check_met_input_file` -- Check that target met file conforms to PEcAn meteorology data standard.
+	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame`
+
   
 ### Removed
   - pecan.worldmap function no longer used, dropped from visualization package
