@@ -10,6 +10,9 @@ metric_residual_plot(metric_dat, var, filename = NA,
 \arguments{
 \item{draw.plot}{}
 }
+\description{
+Residual Plot
+}
 \author{
 Betsy Cowdery
 }

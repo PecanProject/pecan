@@ -6,3 +6,6 @@
 \usage{
 bounded(xnew, rng)
 }
+\description{
+bounded
+}

@@ -305,13 +305,29 @@ fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 if (!empty($runs)){
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
-	fwrite($fh, "    <size>${runs}</size>" . PHP_EOL);
-	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "   <size>${runs}</size>" . PHP_EOL);
+	fwrite($fh, "   <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "   <samplingspace>" . PHP_EOL);
+	fwrite($fh, "   <parameters>" . PHP_EOL);
+	fwrite($fh, "    <method>${parm_method}</method>" . PHP_EOL);
+	fwrite($fh, "   </parameters>" . PHP_EOL);
+	fwrite($fh, "   <met>" . PHP_EOL);
+	fwrite($fh, "    <method>sampling</method>" . PHP_EOL);
+    	fwrite($fh, " 	</met>" . PHP_EOL);
+	fwrite($fh, "   </samplingspace>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 } else {
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
 	fwrite($fh, "    <size>1</size>" . PHP_EOL);
 	fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
+	fwrite($fh, "    <samplingspace>" . PHP_EOL);
+	fwrite($fh, "     <parameters>" . PHP_EOL);
+	fwrite($fh, "       <method>uniform</method>" . PHP_EOL);
+	fwrite($fh, "     </parameters>" . PHP_EOL);
+	fwrite($fh, "     <met>" . PHP_EOL);
+	fwrite($fh, "       <method>sampling</method>" . PHP_EOL);
+   	 fwrite($fh, "    </met>" . PHP_EOL);
+	fwrite($fh, "    </samplingspace>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 }
 
