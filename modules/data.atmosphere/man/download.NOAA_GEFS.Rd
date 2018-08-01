@@ -5,8 +5,9 @@
 \title{Download NOAA GEFS Weather Data}
 \usage{
 download.NOAA_GEFS(outfolder, lat.in, lon.in, sitename,
-  start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz = "UTC") +
-  lubridate::days(16)), overwrite = FALSE, verbose = FALSE, ...)
+  start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz =
+  "UTC") + lubridate::days(16)), overwrite = FALSE, verbose = FALSE,
+  ...)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}
@@ -28,6 +29,9 @@ download.NOAA_GEFS(outfolder, lat.in, lon.in, sitename,
 \value{
 A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
 data frame contains information about one file.
+}
+\description{
+Download NOAA GEFS Weather Data
 }
 \section{Information on Units}{
 

@@ -6,7 +6,8 @@
 \usage{
 query.data(trait, spstr,
   extra.columns = "ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ",
-  con = NULL, store.unconverted = FALSE, ids_are_cultivars = FALSE, ...)
+  con = NULL, store.unconverted = FALSE, ids_are_cultivars = FALSE,
+  ...)
 }
 \arguments{
 \item{trait}{trait to query from the database}
