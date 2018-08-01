@@ -17,6 +17,8 @@
 metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_date,
                                  overwrite = FALSE, verbose = FALSE, ...) {
   
+  PEcAn.logger::logger.info("Starting metgapfill.NOAA_GEFS")
+  
   # These are the variables cf NOAA_GEFS uses
   cf_var_names = c("air_temperature", "air_pressure", "specific_humidity", "surface_downwelling_longwave_flux_in_air", 
                    "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", "eastward_wind", "northward_wind")
@@ -51,18 +53,6 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
   }
   
   flptr = ncdf4::nc_open(full.data.file)
-  
-  print("Dimensions")
-  print(flptr$dim$time$vals)
-  print(flptr$dim$time$units)
-  print("-----------------------")
-  
-  for (n in cf_var_names) {
-    var = ncdf4::ncvar_get(flptr, n)
-    print(n)
-    print(var)
-    print("**********************")
-  }
   
   # Put data into a matrix
   var <- ncdf4::ncvar_get(flptr, "air_temperature")
@@ -101,9 +91,6 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
   
   fitted.data <- data.frame(air_temperature = air_temperature,
                             precipitation_flux = precipitation_flux)
-  
-  print("allvars")
-  print(allvars)
   
   # This loop does the gapfilling of the other variables, based on air_temperature and precipitation_flux.
   # It does so in the following way:
@@ -146,8 +133,6 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
     }
   }
   
-  print(fitted.data)
-  
   # Extract ensemble information from file name
   ensemble <- regmatches(in.prefix, regexpr("NOAA_GEFS\\.[^.]*\\.[0-9]*", in.prefix))
   ensemble <- regmatches(ensemble, regexpr("[0-9]+$", ensemble))
@@ -183,7 +168,6 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
     }
     
     # Open file
-    print(out.data.file)
     nc_flptr = ncdf4::nc_create(out.data.file, nc_var_list, verbose=verbose)
     
     # Write data to file

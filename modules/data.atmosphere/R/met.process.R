@@ -25,11 +25,6 @@
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
-  
-  source("~/pecan/modules/data.atmosphere/R/download.raw.met.module.R")
-  source("~/pecan/modules/data.atmosphere/R/metgapfill.module.R")
-  source("~/pecan/modules/data.atmosphere/R/met2model.module.R")
-
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
@@ -255,9 +250,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
     } # End for loop
     ready.id = list(input.id = NULL, dbfile.id = NULL)
     
-    print("************* standardize_result ***************")
-    print(standardize_result)
-    
     for (i in 1:length(standardize_result)) {
       ready.id$input.id <- c(ready.id$input.id, standardize_result[[i]]$input.id)
       ready.id$dbfile.id <- c(ready.id$dbfile.id, standardize_result[[i]]$dbfile.id)
@@ -274,11 +266,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
     ## Get Model Registration
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
-    
-    print("********* ready.id **********")
-    print(ready.id)
-    print("-------")
-    print(input_met$id)
     
     met2model.result = list()
     for (i in 1:length(ready.id[[1]])) {
@@ -304,17 +291,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
     model.file.info = list()
     model.file = list()
     
-    print("********** met2model.result *************")
-    print(met2model.result)
-    
     for (i in 1:length(met2model.result)) {
       model.id[[i]]  <- met2model.result[[i]]$model.id
       model.file.info[[i]] <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id[[i]]$dbfile.id), con)
       model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
-      print("^^^^^^^^^^^^^^^^^^^^^")
-      print(model.file.info[[i]]$file_path)
-      print(model.file.info[[i]]$file_name)
-      print("vvvvvvvvvvvvvvvvvvvvv")
     }
     
     

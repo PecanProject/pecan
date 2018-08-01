@@ -13,10 +13,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           forecast = FALSE, ensemble = FALSE, ensemble_name = NULL, ...) {
   input.args <- list(...)
   
-  ###
-  print("----------------------------- START convert.input --------------------------------------")
-  source("~/pecan/base/db/R/dbfiles.R")
-  
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
@@ -75,12 +71,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       filename_pattern = paste0(filename_pattern, "\\.")
       
-      print("Query Arguments")
-      print(paste0("mimetype = ", mimetype, "; formatname = ", formatname, "; parentid = ", input.id,
-                   "; start_date = ", start_date, "; enddate" = end_date, "; hostname = ", host$name,
-                   "; pattern = ", filename_pattern))
-      
-      existing.dbfile[[i]] <- dbfile.input.check(siteid = site.id, ###PEcAn.DB::
+      existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
                                                              formatname = formatname, 
                                                              parentid = input.id, 
@@ -90,10 +81,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                              hostname = host$name, 
                                                              exact.dates = TRUE,
                                                              pattern = filename_pattern)
-      
-      print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-      print(existing.dbfile[[i]])
-      print("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
       
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
@@ -655,9 +642,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       }
       
     } #End for loop
-    
-    ### Debugging
-    print("----------------------------- END convert.input --------------------------------------")
     
     successful <- TRUE
     return(newinput)
