@@ -11,36 +11,45 @@ box(
 
 ### 2. Inputs
 box(
-  title = h2("2. Input Record"), width = 4, collapsible = TRUE, solidHeader = TRUE, status = "success",
+  title = h2("2. Input Record"), width = 8, collapsible = TRUE, solidHeader = TRUE, status = "success",
+  fluidRow(column(6,
   selectizeInput("InputSiteName", label = "Site *", choices = NULL,
                  options = list(
                    placeholder = 'Please search or select a site below',
                    onInitialize = I('function() { this.setValue(""); }')
                  )
+  )
   ),
+  column(6,
   selectizeInput("InputParentName", label = "Parent *", choices = NULL,
                  options = list(
                    placeholder = 'Please search inputs by name or site',
                    onInitialize = I('function() { this.setValue(""); }')
                  )
-  ),
+  )
+  )),
 #  hr(),
   textInput("InputName",
             label = "Name *",
             placeholder = ""),
   #verbatimTextOutput("autoname"),
   hr(),
+  fluidRow(column(6,
   selectizeInput("InputFormatName", label = "Format *", choices = NULL,
                  options = list(
                    placeholder = 'Please search Formats by name',
                    onInitialize = I('function() { this.setValue(""); }')
                  )
+  )
   ),
+  column(6,
   selectizeInput("MimetypeNameCurrent", label = "Corresponding Mimetype *", choices = NULL,
                options = list(
                  placeholder = 'Please search mimetypes by name',
                  onInitialize = I('function() { this.setValue(""); }')
                )
+  )
+  )
   ),
   p("or"),
   shinyWidgets::dropdownButton(circle = FALSE, label = "Create New Format", width = '350px',
@@ -78,35 +87,43 @@ box(
     )
     ),
   hr(),
-splitLayout(
+fluidRow(column(6,
   dateInput(
     "InputStartDate",
     label = "Start Date",
     format = "yyyy-mm-dd",
     startview = "decade"
+  )
   ),
+  column(3,
   shinyTime::timeInput("StartTimeInput",
                        label = "Start Time (HH-MM)",
-                       seconds = FALSE),
+                       seconds = FALSE)
+  ),
+  column(3,
   textInput("Timezone",
             label = "Timezone",
             placeholder = "")
+  )
   ),
-  splitLayout(
+fluidRow(column(6,
   dateInput(
     'InputEndDate',
     label = 'End Date',
     format = 'yyyy-mm-dd',
     startview = 'decade'
+  )
   ),
+  column(3,
   shinyTime::timeInput("EndTimeInput",
                        label = "End Time (HH-MM)",
                        seconds = FALSE)
   ),
+column(3)), # Empty Space
   hr(),
   textAreaInput("InputNotes",
                 label = "Notes",
-                height = '75px'),
+                height = '50px'),
   actionButton("createInput", label = "Create Input"),
   actionButton("testBety", label = "Test Bety"),
   p("* Denotes a Required Field"),
