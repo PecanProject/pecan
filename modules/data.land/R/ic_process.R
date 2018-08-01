@@ -170,8 +170,9 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # Fill settings
   if (!is.null(putveg.id)) {
     
-    settings_inputs <- lapply(seq_along(putveg.id), function(x) settings$run$inputs)
-    names(settings_inputs) <- paste0("ens", seq_along(putveg.id))
+    # extend the inputs list for ensemble members
+    settings_inputs <- lapply(seq_along(settings$run$inputs), function(x) rep(settings$run$inputs[[x]], length((putveg.id))))
+    names(settings_inputs) <- names(settings$run$inputs)
     
     for(i in seq_along(putveg.id)){
       
@@ -180,13 +181,13 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
       # now that we don't have multipasses, convert.input only inserts 1st filename
       # do we want to change it in convert.inputs such that it loops over the dbfile.insert?
       path_to_settings <- file.path(model_file[["file_path"]], model_file[["file_name"]])
-      settings_inputs[[i]][[input$output]][['path']] <- path_to_settings
+      settings_inputs[[input$output]][[i]][['path']] <- path_to_settings
       
       # NOTE : THIS BIT IS SENSITIVE TO THE ORDER OF TAGS IN PECAN.XML
       # this took care of "css" only, others have the same prefix
       if(input$output == "css"){  
-        settings_inputs[[i]][["pss"]][['path']]  <- gsub("css","pss", path_to_settings)
-        settings_inputs[[i]][["site"]][['path']] <- gsub("css","site", path_to_settings)
+        settings_inputs[["pss"]][[i]][['path']]  <- gsub("css","pss", path_to_settings)
+        settings_inputs[["site"]][[i]][['path']] <- gsub("css","site", path_to_settings)
         
         # IF: For now IC workflow is only working for ED and it's the only case for copying to remote
         # but this copy to remote might need to go out of this if-block and change
@@ -198,19 +199,19 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
           remote_dir <- file.path(settings$host$folder, folder_dir)
           
           # copies css
-          css_file <- settings_inputs[[i]][["css"]][['path']]
+          css_file <- settings_inputs[["css"]][[i]][['path']]
           PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = css_file, host = settings$host, con = con)
-          settings_inputs[[i]][["css"]][['path']] <- file.path(remote_dir, basename(css_file))
+          settings_inputs[["css"]][[i]][['path']] <- file.path(remote_dir, basename(css_file))
           
           # pss 
-          pss_file <- settings_inputs[[i]][["pss"]][['path']]
+          pss_file <- settings_inputs[["pss"]][[i]][['path']]
           PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = pss_file, host = settings$host, con = con)
-          settings_inputs[[i]][["pss"]][['path']] <- file.path(remote_dir, basename(pss_file))
+          settings_inputs[["pss"]][[i]][['path']] <- file.path(remote_dir, basename(pss_file))
           
           # site
-          site_file <- settings_inputs[[i]][["site"]][['path']]
+          site_file <- settings_inputs[["site"]][[i]][['path']]
           PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = site_file, host = settings$host, con = con)
-          settings_inputs[[i]][["site"]][['path']] <- file.path(remote_dir, basename(site_file))
+          settings_inputs[["site"]][[i]][['path']] <- file.path(remote_dir, basename(site_file))
           
         }
       }
