@@ -3,7 +3,6 @@
 \name{load.pda.data}
 \alias{load.pda.data}
 \alias{load.L2Ameriflux.cf}
-\alias{load.pda.data}
 \title{Load Ameriflux L2 Data From NetCDF}
 \usage{
 load.L2Ameriflux.cf(file.in)

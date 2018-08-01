@@ -4,8 +4,8 @@
 \alias{load_data}
 \title{load_data}
 \usage{
-load_data(data.path, format, start_year = NA, end_year = NA, site = NA,
-  vars.used.index = NULL, ...)
+load_data(data.path, format, start_year = NA, end_year = NA,
+  site = NA, vars.used.index = NULL, ...)
 }
 \arguments{
 \item{data.path}{character}
@@ -17,6 +17,9 @@ load_data(data.path, format, start_year = NA, end_year = NA, site = NA,
 \item{end_year}{numeric}
 
 \item{site}{list}
+}
+\description{
+load_data
 }
 \author{
 Betsy Cowdery, Istem Fer, Joshua Mantooth

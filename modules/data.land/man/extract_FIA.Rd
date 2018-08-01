@@ -6,6 +6,9 @@
 \usage{
 extract_FIA(lon, lat, start_date, end_date, gridres = 0.075, dbparms)
 }
+\description{
+extract_FIA
+}
 \author{
 Istem Fer
 }
