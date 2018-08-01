@@ -11,7 +11,7 @@
 #' db_merge_into(iris[1:12,], "iris", irisdb)
 #' dplyr::tbl(irisdb, "iris") %>% dplyr::count()
 db_merge_into <- function(values, table, con, by = NULL, drop = FALSE, ...) {
-  values_fixed <- match_dbcols(values, table, con, drop = drop)
+  values_fixed <- match_dbcols(values, table, con, drop = FALSE)
   if (is.null(by)) {
     by <- match_colnames(values, table, con)
   }
@@ -25,5 +25,5 @@ db_merge_into <- function(values, table, con, by = NULL, drop = FALSE, ...) {
     insert <- insert_table(values_merge, table, con, ...)
   }
   dplyr::tbl(con, table) %>%
-    dplyr::inner_join(values_fixed, by = by, copy = TRUE , suffix = c("", ".local"))
+    dplyr::inner_join(values_fixed, copy = TRUE)
 }
