@@ -26,6 +26,7 @@
 ##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
 ##'
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
+##' @export
 run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
