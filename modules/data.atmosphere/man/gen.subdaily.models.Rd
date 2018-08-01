@@ -68,3 +68,4 @@ Other tdm - Temporally Downscale Meteorology: \code{\link{lm_ensemble_sims}},
 \author{
 Christy Rollinson, James Simkins
 }
+\concept{tdm - Temporally Downscale Meteorology}
