@@ -118,29 +118,36 @@ output$input_record_df <- renderPrint({Shared.data$input_record_df})
 
 
 ######### Formats Svr #############
-
-## Output List ##
-FormatRecordList <- list()
-
 output$autoname <- renderPrint({Shared.data$selected_row}) #_local
 
 ######### Mimetype Name ##################
 updateSelectizeInput(session, "MimetypeName", choices = mimetypes, server = TRUE)
 
 observeEvent(input$createFormatRecord, {
+  ## Output List ##
+  FormatRecordList <<- list()
+  
   ## MimetypeID
-  FormatRecordList$mimetypeName <- input$MimetypeName
-  FormatRecordList$mimetypeID <- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$mimetypeName) %>% pull(id)
+  FormatRecordList$MimetypeName <- input$MimetypeName
+  FormatRecordList$NewmimetypeID <- ifelse((input$MimetypeName == ""), "", mimetype_sub %>% dplyr::filter(type_string %in% input$MimetypeName) %>% pull(id))
   
   ## Everything else
-  FormatRecordList$NewMimeType <- input$NewMimeType
   FormatRecordList$NewFormatName <- input$NewFormatName
-  FormatRecordList$HeaderBoolean <- input$HeaderBoolean
+  FormatRecordList$HeaderBoolean <- ifelse((input$HeaderBoolean == "Yes"), "TRUE", "FALSE")
   FormatRecordList$SkipLines <- input$SkipLines #This should appear only if header = TRUE
   FormatRecordList$FormatNotes <- input$FormatNotes
   
+  ## Print format record for testing
   output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
-  
+
+  ## Insert Format Record
+  PEcAn.DB::insert.format.vars(con = bety$con, 
+                               header = FormatRecordList$HeaderBoolean, 
+                               skip = FormatRecordList$SkipLines, 
+                               mimetype_id = FormatRecordList$NewmimetypeID, 
+                               format_name = FormatRecordList$NewFormatName,
+                               format_notes = FormatRecordList$FormatNotes, 
+                               formats_variables_df = NULL)
 })
 
 
