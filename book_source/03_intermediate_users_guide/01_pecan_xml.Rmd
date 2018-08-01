@@ -171,9 +171,9 @@ Only if this section is defined an ensemble analysis is done.
 
 ```xml
 <ensemble>
-	<size>5</size>
-	<variable>GPP</variable>
-	<start.year>1995</start.year>
+  <size>5</size>
+  <variable>GPP</variable>
+  <start.year>1995</start.year>
   <end.year>1999</end.year>
   <samplingspace>
   <parameters>
