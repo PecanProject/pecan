@@ -4,13 +4,13 @@
 \alias{insert.format.vars}
 \title{Insert Format and Format-Variable Records}
 \usage{
-insert.format.vars(con, name, mimetype_id, notes = NULL, header = TRUE,
-  skip = 0, formats_variables_df = NULL)
+insert.format.vars(con, format_name, mimetype_id, notes = NULL,
+  header = TRUE, skip = 0, formats_variables = NULL)
 }
 \arguments{
 \item{con}{SQL connection to BETYdb}
 
-\item{name}{The name of the format. Type: character string.}
+\item{format_name}{The name of the format. Type: character string.}
 
 \item{mimetype_id}{The id associated with the mimetype of the format. Type: integer.}
 
@@ -20,7 +20,7 @@ insert.format.vars(con, name, mimetype_id, notes = NULL, header = TRUE,
 
 \item{skip}{Integer that indicates the number of lines to skip in the header. Defaults to 0.}
 
-\item{formats_variables_df}{A 'data.frame' consisting of entries that correspond to columns in the formats-variables table. See Details for further information.}
+\item{formats_variables}{A 'tibble' consisting of entries that correspond to columns in the formats-variables table. See Details for further information.}
 }
 \value{
 format_id
@@ -28,28 +28,18 @@ format_id
 \description{
 Insert Format and Format-Variable Records
 }
-\details{
-It is very important that the formats_variables_df 'data.frame' be structured in a specific format so that the SQL query functions properly. First, all arguments should be passed as vectors so that each entry will correspond with a specific row.
-\describe{
-\item{variable_id}{(Required) Vector of integers.}
-\item{name}{(Optional) Vector of character strings. Need only be specified if the} 
-\item{unit}{(Optional) Vector of character strings. }
-\item{storage_type}{(Optional) Vector of character strings}
-\item{column_number}{(Optional) Vector of integers that determines the} 
-}
-}
 \examples{
 \dontrun{
-bety <- betyConnect
+bety <- betyConnect()
 
-formats_variables_df <- tibble::tibble(
-       variable_id = c(327, 2.98e+02), # integer 
-       name = c("New Name", "Other New Name"), # 
-       unit = c("Yoonits", "Other Units"),
-       storage_type = c("\%j", "\%Y"),
-       column_number = c(as.integer(22), as.integer(24)),
+formats_variables_tibble <- tibble::tibble(
+       variable_id = c(411, 135, 382), # integer 
+       name = c("NPP", NA, "YEAR"), # 
+       unit = c("g C m-2 yr-1", NA, NA),
+       storage_type = c(NA, NA, "\%Y"),
+       column_number = c(NA, NA, NA),
  )
-  insert.format.vars(con = bety$con, format_notes = "Info about format", format_name = "New Format", header = TRUE, skip = 2, mimetype_id = 1090, formats_variables_df)
+  insert.format.vars(con = bety$con, name = "LTER-HFR-103", mimetype_id = 1090, notes = "NPP from Harvard Forest.", header = FALSE, skip = 0, formats_variables = formats_variables_tibble)
 }
 }
 \author{

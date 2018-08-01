@@ -1,49 +1,133 @@
 #' Insert Format and Format-Variable Records 
 #'
 #' @param con SQL connection to BETYdb
-#' @param name The name of the format. Type: character string.
+#' @param format_name The name of the format. Type: character string.
 #' @param notes Additional description of the format: character string.
 #' @param header Boolean that indicates the presence of a header in the format. Defaults to "TRUE".
 #' @param skip Integer that indicates the number of lines to skip in the header. Defaults to 0. 
 #' @param mimetype_id The id associated with the mimetype of the format. Type: integer. 
-#' @param formats_variables_df A 'data.frame' consisting of entries that correspond to columns in the formats-variables table. See Details for further information. 
-#' @details It is very important that the formats_variables_df 'data.frame' be structured in a specific format so that the SQL query functions properly. First, all arguments should be passed as vectors so that each entry will correspond with a specific row.
+#' @param formats_variables A 'tibble' consisting of entries that correspond to columns in the formats-variables table. See Details for further information. 
+#' @details The formats_variables argument must be a 'tibble' and be structured in a specific format so that the SQL query functions properly. All arguments should be passed as vectors so that each entry will correspond with a specific row. All empty values should be specified as NA.  
 #' \describe{
 #' \item{variable_id}{(Required) Vector of integers.}
-#' \item{name}{(Optional) Vector of character strings. Need only be specified if the} 
-#' \item{unit}{(Optional) Vector of character strings. }
-#' \item{storage_type}{(Optional) Vector of character strings}
-#' \item{column_number}{(Optional) Vector of integers that determines the} 
+#' \item{name}{(Optional) Vector of character strings. Needs only be specified if it differs from the BETY variable name.} 
+#' \item{unit}{(Optional) Vector of type character string. Should be in a format parseable by the udunits library and need only be secified if they differ from the BETY standard.}
+#' \item{storage_type}{(Optional) Vector of character strings. Storage type need only be specified if the variable is stored in a format other than would be expected (e.g. if numeric values are stored as quoted character strings). Additionally, storage_type stores POSIX codes that are used to store any time variables (e.g. a column with a 4-digit year would be %Y). See also}
+#' \code{\link[BASE:strptime]{strptime}}
+#' \item{column_number}{Vector of integers that list the column numbers associated with variables in a dataset. Required for text files that lack headers.} 
 #' }
 #' @author Liam Burke (liam.burke24@gmail.com)
 #' @return format_id
 #' @export
 #' @examples
 #' \dontrun{
-#' bety <- betyConnect
+#' bety <- betyConnect()
 #' 
-#' formats_variables_df <- tibble::tibble(
-#'        variable_id = c(327, 2.98e+02), # integer 
-#'        name = c("New Name", "Other New Name"), # 
-#'        unit = c("Yoonits", "Other Units"),
-#'        storage_type = c("%j", "%Y"),
-#'        column_number = c(as.integer(22), as.integer(24)),
+#' formats_variables_tibble <- tibble::tibble(
+#'        variable_id = c(411, 135, 382), # integer 
+#'        name = c("NPP", NA, "YEAR"), # 
+#'        unit = c("g C m-2 yr-1", NA, NA),
+#'        storage_type = c(NA, NA, "%Y"),
+#'        column_number = c(NA, NA, NA),
 #'  )
-#'   insert.format.vars(con = bety$con, format_notes = "Info about format", format_name = "New Format", header = TRUE, skip = 2, mimetype_id = 1090, formats_variables_df)
+#'   insert.format.vars(con = bety$con, name = "LTER-HFR-103", mimetype_id = 1090, notes = "NPP from Harvard Forest.", header = FALSE, skip = 0, formats_variables = formats_variables_tibble)
 #' }
-insert.format.vars <- function(con, name, mimetype_id, notes = NULL, header = TRUE, skip = 0, formats_variables_df = NULL){
- 
-   #Test if skip is an integer
-  if(!is.integer(skip)){
-  PEcAn.logger::logger.error(
-    "Skip must be an Integer"
-  )}
+insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, header = TRUE, skip = 0, formats_variables = NULL){
   
-  #Test if header is a Boolean
-  if(!rapportools::is.boolean("ghe")){
+  # Test if name is a character string
+  if(!is.character(name)){
     PEcAn.logger::logger.error(
-      "Header must be a Boolean"
-  )}
+      "Name must be a character string"
+    )
+  }
+  # Test if format name already exists
+  format_name <- "FACE 12"
+  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select(id, name) %>% dplyr::filter(name %in% format_name) %>% pull(name)
+  if(!is.null(name_test)){
+    PEcAn.logger::logger.error(
+      "Name already exists"
+    )
+  }
+ 
+  # Test if mimetype_id is an integer
+  if(!is.numeric(mimetype_id)){
+    PEcAn.logger::logger.error(
+      "mimetype_id must be of type integer"
+    )
+  }
+  
+   #Test if skip is an integer
+  if(!is.numeric(skip)){
+  PEcAn.logger::logger.error(
+    "Skip must be of type integer"
+    )
+  }
+  
+  # Test if header is a Boolean
+  if(!is.logical(header)){
+    PEcAn.logger::logger.error(
+      "Header must be of type Boolean"
+    )
+  }
+  
+  # Test if notes are a character string
+  if(!is.character(notes)&!is.null(notes)){
+    PEcAn.logger::logger.error(
+      "Notes must be of type character"
+    )
+  }
+  
+  ######## Formats-Variables tests ###############
+  if(!is.null(formats_variables_df)){
+    if(!is.numeric(formats_variables_df[,"variable_id"])){
+      PEcAn.logger::logger.error(
+        "variable_id must be an integer"
+      )
+    }
+    if(!is.character(formats_variables_df[,"name"])&!is.na(formats_variables_df[,"name"])){
+      PEcAn.logger::logger.error(
+        "Variable name must be of type character or NA"
+      )
+    }
+    if(!is.character(formats_variables_df[,"unit"])&!is.na(formats_variables_df[,"unit"])){
+      PEcAn.logger::logger.error(
+        "Units must be of type character or NA"
+      )
+    }
+    if(!is.character(formats_variables_df[,"storage_type"])&!is.na(formats_variables_df[,"storage_type"])){
+      PEcAn.logger::logger.error(
+        "storage_type name must be of type character or NA"
+      )
+    }
+    if(!is.character(formats_variables_df[,"column_number"])&!is.na(formats_variables_df[,"column_number"])){
+      PEcAn.logger::logger.error(
+        "column_number name must be of type character or NA"
+      )
+    }
+  }
+  
+  ## convert NA to "" for inserting into db ##
+   formats_variables[is.na(formats_variables)] <- ""
+   
+  ###  udunit tests ###
+  for(i in 1:nrow(formats_variables)){
+    u1 <- formats_variables[1,"unit"]
+    u2 <- dplyr::tbl(con, "variables") %>% dplyr::select(id, units) %>% dplyr::filter(id %in% formats_variables[[1, "variable_id"]]) %>% pull(units)
+    
+    if(!udunits2::ud.is.parseable(u1)){
+      PEcAn.logger::logger.error(
+        "Units not parseable. Please enter a unit that is parseable by the udunits library."
+      )
+    }
+    # Grab the bety units and 
+    if(!udunits2::ud.are.convertible(u1, u2)){
+      PEcAn.logger::logger.error(
+        "Units are not convertable."
+      )
+    }
+    
+  }
+  
   
     formats_df <- tibble::tibble(
       header = as.character(header),
@@ -58,17 +142,17 @@ insert.format.vars <- function(con, name, mimetype_id, notes = NULL, header = TR
     inserted_formats <- db_merge_into(formats_df, "formats", con = con, by = c("name", "mimetype_id")) ## Make sure to include a 'by' argument
     format_id <- dplyr::pull(inserted_formats, id)
     
-  if(!is.null(formats_variables_df)){
+  if(!is.null(formats_variables)){
     ## Insert format_id into 
-    n <- nrow(formats_variables_df)
+    n <- nrow(formats_variables)
     format_id_df <- matrix(data = format_id, nrow = n, ncol = 1)
     colnames(format_id_df) <- "format_id"
     
     ## Make query data.frame
-    formats_variables_input <- cbind(format_id_df, formats_variables_df) 
+    formats_variables_input <- cbind(format_id_df, formats_variables) 
     
     ## Insert Format-Variable record
-    inserted_formats_variables <- db_merge_into(formats_variables_input, "formats_variables", con = con,  by = c("variable_id", "name"))
+    inserted_formats_variables <- db_merge_into(formats_variables_input, "formats_variables", con = con,  by = c("variable_id"))
   }
     return(format_id)
     
