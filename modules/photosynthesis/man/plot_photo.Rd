@@ -7,6 +7,9 @@
 plot_photo(data, out, curve = c("ACi", "AQ"), tol = 0.05,
   byLeaf = TRUE)
 }
+\description{
+plot_photo
+}
 \author{
 Mike Dietze
 }

@@ -29,6 +29,9 @@ write_restart.ED2(outdir, runid, start.time, stop.time, settings,
 \value{
 TRUE if successful
 }
+\description{
+Write ED2 restart file from SDA results
+}
 \author{
 Alexey Shiklomanov, Istem Fer
 }

@@ -21,6 +21,9 @@ gelman_diag_mw(x, width_fraction = 0.1, width = ceiling(coda::niter(x)
 \value{
 Gelman Diagnostic 3D array. First dim -- mean (1) and 95% confidence (2). Second dim -- iteration
 }
+\description{
+Calculate Gelman diagnostic on moving window
+}
 \author{
 Alexey Shiklomanov
 }

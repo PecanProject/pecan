@@ -28,6 +28,9 @@ Units for datetime field are the lubridate function that will be used to parse t
 
 \item{nc_verbose}{logical: run ncvar_add in verbose mode?}
 }
+\description{
+met2CF.csv
+}
 \examples{
 \dontrun{
 bety <- list(user='bety', password='bety', host='localhost',

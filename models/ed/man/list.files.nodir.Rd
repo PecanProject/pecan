@@ -12,6 +12,9 @@ list.files.nodir(path, ...)
     expansion (see \code{\link{path.expand}}) is performed.  Missing
     values will be ignored.}
 }
+\description{
+List only files in a directory
+}
 \author{
 Alexey Shiklomanov
 }

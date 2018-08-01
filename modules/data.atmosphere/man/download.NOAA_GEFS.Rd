@@ -30,6 +30,9 @@ download.NOAA_GEFS(outfolder, lat.in, lon.in, sitename,
 A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
 data frame contains information about one file.
 }
+\description{
+Download NOAA GEFS Weather Data
+}
 \section{Information on Units}{
 
 Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, but is converted at the station and downlaoded

@@ -10,6 +10,11 @@ jump(ic = 0, rate = 0.4, ...)
 \arguments{
 \item{rate}{}
 }
+\description{
+jump
+
+setClass jump
+}
 \author{
 Michael Dietze
 

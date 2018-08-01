@@ -18,6 +18,9 @@ load_data(data.path, format, start_year = NA, end_year = NA,
 
 \item{site}{list}
 }
+\description{
+load_data
+}
 \author{
 Betsy Cowdery, Istem Fer, Joshua Mantooth
 Generic function to convert input files containing observational data to 

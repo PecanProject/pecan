@@ -11,6 +11,9 @@ InventoryGrowthFusionDiagnostics(jags.out, combined = NULL)
 
 \item{combined}{data output from matchInventoryRings}
 }
+\description{
+InventoryGrowthFusionDiagnostics
+}
 \author{
 Michael Dietze
 }

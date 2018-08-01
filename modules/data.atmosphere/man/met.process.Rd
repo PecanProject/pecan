@@ -37,6 +37,9 @@ met.process(site, input_met, start_date, end_date, model,
 
        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)}
 }
+\description{
+met.process
+}
 \author{
 Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 }
