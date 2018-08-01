@@ -12,16 +12,14 @@
 #' \item{variable_id}{(Required) Vector of integers.}
 #' \item{name}{(Optional) Vector of character strings. Needs only be specified if it differs from the BETY variable name.} 
 #' \item{unit}{(Optional) Vector of type character string. Should be in a format parseable by the udunits library and need only be secified if they differ from the BETY standard.}
-#' \item{storage_type}{(Optional) Vector of character strings. Storage type need only be specified if the variable is stored in a format other than would be expected (e.g. if numeric values are stored as quoted character strings). Additionally, storage_type stores POSIX codes that are used to store any time variables (e.g. a column with a 4-digit year would be %Y). See also}
-#' \code{\link[BASE:strptime]{strptime}}
-#' \item{column_number}{Vector of integers that list the column numbers associated with variables in a dataset. Required for text files that lack headers.} 
-#' }
+#' \item{storage_type}{(Optional) Vector of character strings. Storage type need only be specified if the variable is stored in a format other than would be expected (e.g. if numeric values are stored as quoted character strings). Additionally, storage_type stores POSIX codes that are used to store any time variables (e.g. a column with a 4-digit year would be \%Y). See also \code{[base::strptime]}}
+#' \item{column_number}{Vector of integers that list the column numbers associated with variables in a dataset. Required for text files that lack headers.}}
 #' @author Liam Burke (liam.burke24@gmail.com)
 #' @return format_id
 #' @export
 #' @examples
 #' \dontrun{
-#' bety <- betyConnect()
+#' bety <- PEcAn.DB::betyConnect()
 #' 
 #' formats_variables_tibble <- tibble::tibble(
 #'        variable_id = c(411, 135, 382), # integer 
@@ -40,21 +38,25 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
       "Name must be a character string"
     )
   }
+  
   # Test if format name already exists
-  format_name <- "FACE 12"
-  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select(id, name) %>% dplyr::filter(name %in% format_name) %>% pull(name)
-  if(!is.null(name_test)){
+  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select(id, name) %>% dplyr::filter(name %in% format_name) %>% collect()
+  name_test_df <- as.data.frame(name_test)
+  if(!is.null(name_test_df[1,1])){
     PEcAn.logger::logger.error(
       "Name already exists"
     )
   }
  
-  # Test if mimetype_id is an integer
-  if(!is.numeric(mimetype_id)){
+  # Test if format name already exists
+  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select(id, name) %>% dplyr::filter(name %in% format_name) %>% collect()
+  name_test_df <- as.data.frame(name_test)
+  if(!is.null(name_test_df[1,1])){
     PEcAn.logger::logger.error(
-      "mimetype_id must be of type integer"
+      "Name already exists"
     )
   }
+  
   
    #Test if skip is an integer
   if(!is.numeric(skip)){
