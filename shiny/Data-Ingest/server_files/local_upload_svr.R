@@ -1,4 +1,4 @@
-output$contents <- renderTable({
+observe({
   inFile <- input$file
   n <- length(inFile$name)
   names <- inFile$name
@@ -20,8 +20,19 @@ output$contents <- renderTable({
     base::file.rename(oldpath[i], file.path(temp, "local_tempdir", inFile[i, "name"])) # rename the file to include the original filename
     base::unlink(dirname(oldpath[i]), recursive = TRUE) # remove the file with the userhostile name
   }
-  return(list.files(file.path(temp, "local_tempdir"))) 
+  uploaded_local <- as.data.frame(list.files(file.path(temp, "local_tempdir")))
+  names(uploaded_local) <- "Available Files"
+  Shared.data$local_files <- uploaded_local 
+ 
 })
+
+output$dtfiles <- DT::renderDT({Shared.data$local_files}, selection = 'single', options = list(ordering = F, dom = 'tp'))
+
+observe({
+  Shared.data$selected_row <- as.character(Shared.data$local_files[input$dtfiles_rows_selected,]) #_local
+})
+
+output$test <- renderPrint({Shared.data$selected_row}) #_local
 
 # Move files to correct dbfiles location (make a custom function for this?)
 observeEvent(input$LocalFinishButton, {
@@ -38,3 +49,4 @@ observeEvent(input$LocalFinishButton, {
   }
   output$LocaldbfilesPath <- renderText({paste0(PEcAn_path, local_dirname)}) # Print path to dbfiles
 })
+

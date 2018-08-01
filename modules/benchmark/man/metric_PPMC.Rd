@@ -9,6 +9,9 @@ metric_PPMC(metric_dat, ...)
 \arguments{
 \item{metric_dat}{dataframe}
 }
+\description{
+Pearson Product Moment Correlation
+}
 \author{
 Betsy Cowdery
 }

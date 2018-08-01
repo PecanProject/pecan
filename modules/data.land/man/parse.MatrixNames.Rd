@@ -16,6 +16,9 @@ parse.MatrixNames(w, pre = "x", numeric = FALSE)
 \value{
 matrix
 }
+\description{
+parse.MatrixNames
+}
 \author{
 Michael Dietze
 }

@@ -43,3 +43,4 @@ Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
 \author{
 Christy Rollinson, James Simkins
 }
+\concept{tdm - Temporally Downscale Meteorology}

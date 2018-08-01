@@ -5,7 +5,8 @@
 \title{Download CRUNCEP data}
 \usage{
 download.CRUNCEP(outfolder, start_date, end_date, site_id, lat.in, lon.in,
-  overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2, ...)
+  overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2,
+  ...)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}

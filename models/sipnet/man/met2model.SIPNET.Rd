@@ -5,7 +5,8 @@
 \title{met2model.SIPNET}
 \usage{
 met2model.SIPNET(in.path, in.prefix, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, ...)
+  overwrite = FALSE, verbose = FALSE, year.fragment = FALSE,
+  in.data.file = NULL, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}
@@ -21,7 +22,15 @@ met2model.SIPNET(in.path, in.prefix, outfolder, start_date, end_date,
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{year.fragment}{the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).}
+
+\item{in.data.file}{a data file to use for input - default behavior is to use all MET.year.nc files within the start and end year 
+range in the directory in.path.  If not null, overrides default behavior.}
 }
 \description{
 met2model wrapper for SIPNET
+}
+\author{
+Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
 }

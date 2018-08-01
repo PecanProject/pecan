@@ -9,6 +9,9 @@ model2netcdf.dvmdostem(outdir, runstart, runend)
 \arguments{
 \item{outdir}{Location of dvmdostem model output}
 }
+\description{
+Code to convert dvmdostem netcdf output into into CF standard
+}
 \examples{
  
 \dontrun{
