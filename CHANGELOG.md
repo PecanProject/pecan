@@ -58,7 +58,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Selected files now autofill name value in input record workflow
   - Store inputs in the global environment
   - "Test BETY" button allows users create a record in BETY with `dbfile.input.insert`
-
+- `data.atmosphere`
+	- `check_met_input_file` -- Check that target met file conforms to PEcAn meteorology data standard.
+	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame`
   
 ### Removed
   - pecan.worldmap function no longer used, dropped from visualization package
