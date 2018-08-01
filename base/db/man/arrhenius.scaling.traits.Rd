@@ -4,8 +4,8 @@
 \alias{arrhenius.scaling.traits}
 \title{Apply Arrhenius scaling to 25 degC for temperature-dependent traits}
 \usage{
-arrhenius.scaling.traits(data, covariates, temp.covariates, new.temp = 25,
-  missing.temp = 25)
+arrhenius.scaling.traits(data, covariates, temp.covariates,
+  new.temp = 25, missing.temp = 25)
 }
 \arguments{
 \item{data}{data frame of data to scale, as returned by query.data()}

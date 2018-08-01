@@ -4,8 +4,8 @@
 \alias{write.sa.configs}
 \title{Write sensitivity analysis configs}
 \usage{
-write.sa.configs(defaults, quantile.samples, settings, model, clean = FALSE,
-  write.to.db = TRUE)
+write.sa.configs(defaults, quantile.samples, settings, model,
+  clean = FALSE, write.to.db = TRUE)
 }
 \arguments{
 \item{quantile.samples}{}

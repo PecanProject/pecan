@@ -6,6 +6,9 @@
 \usage{
 groupid(x)
 }
+\description{
+groupid
+}
 \author{
 Michael Dietze
 }

@@ -6,13 +6,14 @@
 \alias{write_ed2in.default}
 \title{Write ED2IN list to file}
 \usage{
-write_ed2in(ed2in, filename, custom_header = character(), barebones = FALSE)
+write_ed2in(ed2in, filename, custom_header = character(),
+  barebones = FALSE)
 
 \method{write_ed2in}{ed2in}(ed2in, filename, custom_header = character(),
   barebones = FALSE)
 
-\method{write_ed2in}{default}(ed2in, filename, custom_header = character(),
-  barebones = FALSE)
+\method{write_ed2in}{default}(ed2in, filename,
+  custom_header = character(), barebones = FALSE)
 }
 \arguments{
 \item{ed2in}{Named list of ED2IN tag-value pairs. See \link{read_ed2in}.}
