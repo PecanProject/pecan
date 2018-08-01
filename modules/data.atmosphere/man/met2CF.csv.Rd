@@ -5,7 +5,8 @@
 \title{met2CF.csv}
 \usage{
 met2CF.csv(in.path, in.prefix, outfolder, start_date, end_date, format,
-  lat = NULL, lon = NULL, nc_verbose = FALSE, overwrite = FALSE, ...)
+  lat = NULL, lon = NULL, nc_verbose = FALSE, overwrite = FALSE,
+  ...)
 }
 \arguments{
 \item{format}{data frame or list with elements as described below

@@ -4,7 +4,8 @@
 \alias{download.url}
 \title{Download file from the url.}
 \usage{
-download.url(url, file, timeout = 600, .opts = list(), retry404 = TRUE)
+download.url(url, file, timeout = 600, .opts = list(),
+  retry404 = TRUE)
 }
 \arguments{
 \item{url}{the url of the file to download}

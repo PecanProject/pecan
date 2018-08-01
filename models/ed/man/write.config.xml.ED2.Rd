@@ -4,7 +4,8 @@
 \alias{write.config.xml.ED2}
 \title{Write ED2 config.xml file}
 \usage{
-write.config.xml.ED2(settings, trait.values, defaults = settings$constants)
+write.config.xml.ED2(settings, trait.values,
+  defaults = settings$constants)
 }
 \arguments{
 \item{settings}{PEcAn settings file. Settings required for this script are: model$revision, model$config.header, constants}

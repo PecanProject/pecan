@@ -4,8 +4,9 @@
 \alias{run.write.configs}
 \title{Write model-specific run scripts and configuration files}
 \usage{
-run.write.configs(settings, write = TRUE, ens.sample.method = "uniform",
-  posterior.files = rep(NA, length(settings$pfts)), overwrite = TRUE)
+run.write.configs(settings, write = TRUE,
+  ens.sample.method = "uniform", posterior.files = rep(NA,
+  length(settings$pfts)), overwrite = TRUE)
 }
 \arguments{
 \item{settings}{a PEcAn settings list}
