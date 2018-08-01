@@ -149,7 +149,7 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
   print(fitted.data)
   
   # Extract ensemble information from file name
-  ensemble <- regmatches(in.prefix, regexpr("NOAA_GEFS\\.[^.]*\\.[0-9]*\\.", in.prefix))
+  ensemble <- regmatches(in.prefix, regexpr("NOAA_GEFS\\.[^.]*\\.[0-9]*", in.prefix))
   ensemble <- regmatches(ensemble, regexpr("[0-9]+$", ensemble))
   
   # Each ensemble gets its own folder to keep things organized
