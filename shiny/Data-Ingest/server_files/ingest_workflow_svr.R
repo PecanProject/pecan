@@ -137,17 +137,49 @@ observeEvent(input$createFormatRecord, {
   FormatRecordList$SkipLines <- input$SkipLines #This should appear only if header = TRUE
   FormatRecordList$FormatNotes <- input$FormatNotes
   
+  ## Make 'data.frame' for format record query 
+  FormatsRecord_df <- data.frame(
+    header = FormatRecordList$HeaderBoolean,
+    skip = FormatRecordList$SkipLines,
+    mimetype_id = FormatRecordList$NewmimetypeID,
+    notes = FormatRecordList$FormatNotes,
+    name = FormatRecordList$NewFormatName
+  )
   ## Print format record for testing
   output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
 
   ## Insert Format Record
-  PEcAn.DB::insert.format.vars(con = bety$con, 
-                               header = FormatRecordList$HeaderBoolean, 
-                               skip = FormatRecordList$SkipLines, 
-                               mimetype_id = FormatRecordList$NewmimetypeID, 
-                               format_name = FormatRecordList$NewFormatName,
-                               format_notes = FormatRecordList$FormatNotes, 
-                               formats_variables_df = NULL)
+  PEcAn.DB::insert.format.vars(con = bety$con, formats_df = FormatsRecord_df, formats_variables_df = NULL)
 })
 
+###### Formats Vars Server ##############
+##Output list 
+FormatVars <- list()
+
+## Machine Name ##
+updateSelectizeInput(session = getDefaultReactiveDomain(), "pecan_var", choices = variables, server = TRUE)
+
+#### Show inputs on click only ####
+observeEvent(input$add_variable,{
+    show("formats_vars_inputs")
+    hide("add_var_action_button")
+})
+
+### Create empty matrix with headers to store infinite entries ###
+Shared.data$format_vars_df <- matrix(data = NA, nrow = 1, ncol = 5, dimnames = list(c(), c("variable", "name", "unit", "storage_type", "column_number")))
+
+### Store inputs in a data.frame ###
+observeEvent(input$register_variable, {
+format_vars_entry <- tibble::tibble(
+                                variable = input$pecan_var,
+                                name = input$var_name, 
+                                unit = input$var_unit, 
+                                storage_type = input$storage_type,
+                                column_number = input$col_num
+                              )
+
+Shared.data$format_vars_df <- rbind(format_vars_entry, format_vars_df)
+})
+
+output$format_vars_df <- DT::renderDT(datatable({Shared.data$format_vars_df}, escape = FALSE, selection = 'single', options = list(ordering = F, dom = 'tp')))
 
