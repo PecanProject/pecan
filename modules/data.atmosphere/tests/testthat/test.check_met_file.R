@@ -7,15 +7,15 @@ test_that(
       "tests/testthat/data/urbana_daily_test.nc",
       package = "PEcAn.data.atmosphere"
     )
-    expect_error(
-      check_met_input_file(urbana_daily_met),
-      regexp = "nc, \"time\", \"units\".* does not match"
-    )
-    urbana_daily_results <- check_met_input_file(urbana_daily_met, throw_error = FALSE)
+    urbana_daily_results <- check_met_input_file(urbana_daily_met)
     expect_s3_class(urbana_daily_results, "data.frame")
     expect_true(
+      all(c("correct dimensions", "required variable present", "variable has correct units") %in%
+            urbana_daily_results[["test_type"]])
+    )
+    expect_true(
       all(urbana_daily_results %>%
-            dplyr::filter(test_type == "var format and units") %>%
+            dplyr::filter(test_type == "variable has correct units") %>%
             dplyr::pull(test_passed))
     )
     expect_false(
@@ -23,28 +23,18 @@ test_that(
             dplyr::filter(target_variable %in% c("dimensions", "air_pressure", "eastward_wind")) %>%
             dplyr::pull(test_passed))
     )
+
     urbana_subdaily_met <- system.file(
       "tests/testthat/data/urbana_subdaily_test.nc",
       package = "PEcAn.data.atmosphere"
     )
-    nn <- ncdf4::nc_open(urbana_subdaily_met)
-    expect_error(
-      check_met_input_file(urbana_subdaily_met),
+    urbana_subdaily_results <- check_met_input_file(urbana_subdaily_met)
+    urbana_subdaily_dims <- urbana_subdaily_results %>%
+      dplyr::filter(target_variable == "dimensions")
+    expect_false(urbana_subdaily_dims[["test_passed"]])
+    expect_match(
+      urbana_subdaily_dims[["test_error_message"]],
       regexp = "length\\(dimensions\\) not equal to 3"
-    )
-  }
-)
-
-test_that(
-  "Check that lower-level checking functions detect errors",
-  {
-    nc_vars <- c("a", "b", "c")
-    expect_true(
-      check_has_required_variable(nc_vars, "b")
-    )
-    expect_s3_class(
-      check_has_required_variable(nc_vars, "d"),
-      "error"
     )
   }
 )
