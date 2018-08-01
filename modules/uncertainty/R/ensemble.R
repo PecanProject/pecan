@@ -289,16 +289,17 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       if (!is.null(con)) {
         paramlist <- paste("ensemble=", i, sep = "")
         # inserting this into the table and getting an id back
-        run.qu<-tibble::tibble(model_id = settings$model$id %>% as.numeric(),
-                               site_id = settings$run$site$id %>% as.numeric(),
-                               start_time = settings$run$start.date %>% as.POSIXct(),
-                               finish_time = settings$run$end.date %>% as.POSIXct(),
-                               outdir = ifelse(!is.null(settings$run$outdir), settings$run$outdir, settings$outdir),
-                               ensemble_id = ensemble.id%>%as.numeric(),
-                               parameter_list=paramlist )
-        
-        run.id <- db_merge_into (run.qu, 'runs', con= con, by = c('ensemble_id')) %>%
-                  pull(id)
+        run.id <- PEcAn.DB::db.query(paste0(
+          "INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
+          "values ('", 
+          settings$model$id, "', '", 
+          settings$run$site$id, "', '", 
+          settings$run$start.date, "', '", 
+          settings$run$end.date, "', '", 
+          settings$run$outdir, "', ", 
+          ensemble.id, ", '", 
+          paramlist, "') ",
+          "RETURNING id"), con = con)[['id']]
         # associate inputs with runs
         if (!is.null(inputs)) {
           for (x in inputs) {
