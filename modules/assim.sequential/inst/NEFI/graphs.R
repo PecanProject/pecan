@@ -123,11 +123,11 @@ qledf <- data.frame(time = time, lower = qlelower95, means = qlemeans, upper = q
 #qledf <- data.frame(time = time,
 #                    qle = qle)
 # Grab real data
-source("~/NEFI_tools/pecan_scripts/download.wcr.R")
-real_data <- download.wcr(workflow$start_date, workflow$end_date)
+real_data <- PEcAn.data.atmosphere::download.US_WCr(workflow$start_date, workflow$end_date)
 needf$real_nee <- real_data$nee
 qledf$real_qle <- real_data$qle
-# Create better plots
+
+# Create plots
 neeplot <- ggplot(needf) + 
   # geom_ribbon(aes(x=time, ymin=neemins, ymax=neemaxes, fill="Spread of data (excluding outliers)"), alpha = 0.7) +
   geom_ribbon(aes(x = time, ymin=neelower95, ymax=neeupper95, fill="95% confidence interval"), alpha = 0.4) + 
