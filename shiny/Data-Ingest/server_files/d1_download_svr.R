@@ -37,6 +37,27 @@ observe({
   Shared.data$selected_row <- as.character(Shared.data$downloaded[input$identifier_rows_selected, 1])
 })
 
+# Move files to correct dbfiles location (make a custom function for this?)
+observeEvent(input$complete_ingest_d1, {
+  tryCatch({
+  # create the new directory in /dbfiles
+  dir.create(paste0(PEcAn_path, d1_dirname))
+  
+  n <- length(list_of_d1_files) 
+  for (i in 1:n){
+    base::file.copy(file.path(newdir_D1, list_of_d1_files[i]), file.path(PEcAn_path, d1_dirname, list_of_d1_files[i]))
+  }
+  output$D1dbfilesPath <- renderText({paste0(PEcAn_path, d1_dirname)}) # Print path to data
+  },
+  error = function(e){
+    toastr_error(title = "Error in Select DataONE Files", conditionMessage(e))
+  },
+  warning = function(e){
+    toastr_warning(title = "Warning in Select DataONE Files", conditionMessage(e))
+  }
+  )
+})
+
 output$rowSelection <- renderPrint({Shared.data$selected_row})
 
 observeEvent(input$nextFromD1, {
