@@ -5,8 +5,9 @@
 \title{Download NARR time series for a single site}
 \usage{
 download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
-  overwrite = FALSE, verbose = FALSE, progress = TRUE, parallel = FALSE,
-  ncores = if (parallel) parallel::detectCores() else NULL, ...)
+  overwrite = FALSE, verbose = FALSE, progress = TRUE,
+  parallel = FALSE, ncores = if (parallel) parallel::detectCores() else
+  NULL, ...)
 }
 \arguments{
 \item{outfolder}{Target directory for storing output}
@@ -32,7 +33,11 @@ download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
 Download NARR time series for a single site
 }
 \examples{
+
+\dontrun{
 download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
+}
+
 
 }
 \author{

@@ -31,7 +31,6 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
 
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
-
   # values that will be used for updating other states deterministically depending on the SDA states
   IC_extra <- data.frame(t(new.params$restart))
   

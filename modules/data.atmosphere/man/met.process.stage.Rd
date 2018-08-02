@@ -9,6 +9,9 @@ met.process.stage(input.id, raw.id, con)
 \arguments{
 \item{raw.id}{}
 }
+\description{
+met.process.stage
+}
 \author{
 Elizabeth Cowdery
 }

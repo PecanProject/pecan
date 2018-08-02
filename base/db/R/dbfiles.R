@@ -48,6 +48,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     create = TRUE,
     dates = TRUE
   )
+  
 
   # setup parent part of query if specified
   if (is.na(parentid)) {
@@ -120,9 +121,17 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
         "'" , parent, ";"
       ),
       con = con
-    )[['id']]
+    )$id
   }
-
+  
+  if (length(inputid) > 1) {
+    PEcAn.logger::logger.warn(paste0("Multiple input files found matching parameters format_id = ", formatid, 
+                                     ", startdate = ", startdate, ", enddate = ", enddate, ", parent = ", parent, ".  Selecting the", 
+                                     " last input file.  This is normal for when an entire ensemble is inserted iteratively, but ", 
+                                     " is likely an error otherwise."))
+    inputid = inputid[length(inputid)]
+  }
+  
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname)
 
@@ -132,6 +141,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       PEcAn.logger::logger.warn("Multiple dbfiles found. Using last.")
       dbfile <- dbfile[nrow(dbfile),]
     }
+    
     if (dbfile$file_name != in.prefix || dbfile$file_path != in.path) {
       print(dbfile, digits = 10)
       PEcAn.logger::logger.error(paste0(
@@ -143,6 +153,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     } else {
       dbfileid <- dbfile[['id']]
     }
+    
   } else {
     #insert dbfile & return dbfile id
     dbfileid <- dbfile.insert(in.path = in.path, in.prefix = in.prefix, type = 'Input', id = inputid,
@@ -177,15 +188,17 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA,
                                con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL) {
+  
   hostname <- default_hostname(hostname)
-
+  
   mimetypeid <- get.id(table = 'mimetypes', colnames = 'type_string', values = mimetype, con = con)
   if (is.null(mimetypeid)) {
     return(invisible(data.frame()))
   }
-
+  
   # find appropriate format
   formatid <- get.id(table = 'formats', colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
+  
   if (is.null(formatid)) {
     invisible(data.frame())
   }
@@ -237,7 +250,6 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
 
     if (length(inputs$id) > 1) {
       PEcAn.logger::logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
-
       print(inputs)
       #      ni = length(inputs$id)
       #      dbfile = list()

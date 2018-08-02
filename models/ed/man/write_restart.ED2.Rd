@@ -4,18 +4,34 @@
 \alias{write_restart.ED2}
 \title{Write ED2 restart file from SDA results}
 \usage{
-write_restart.ED2(outdir, runid, start.time, stop.time, settings, new.state)
+write_restart.ED2(outdir, runid, start.time, stop.time, settings,
+  new.state, RENAME = TRUE, new.params, inputs)
 }
 \arguments{
+\item{outdir}{outout directory}
+
+\item{runid}{run id}
+
 \item{start.time}{Time of current assimilation step}
 
 \item{stop.time}{Time of next assimilation step}
 
+\item{settings}{pecan settings list}
+
 \item{new.state}{Analysis state matrix returned by \code{sda.enkf}}
+
+\item{RENAME}{flag to either rename output file or not}
+
+\item{new.params}{optional, additionals params to pass write.configs that are deterministically related to the parameters updated by the analysis}
+
+\item{inputs}{new input paths updated by the SDA workflow, will be passed to write.configs}
 }
 \value{
 TRUE if successful
 }
+\description{
+Write ED2 restart file from SDA results
+}
 \author{
-Alexey Shiklomanov
+Alexey Shiklomanov, Istem Fer
 }

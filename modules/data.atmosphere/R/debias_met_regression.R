@@ -159,7 +159,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       # rain.train <- met.bias[met.bias$dataset==dat.train.orig,]
       rainless <- vector()
       cons.wet <- vector()
-      for(y in min(train.data$time$Year):max(train.data$time$Year)){
+      for(y in unique(train.data$time$Year)){
         for(i in 1:ncol(train.data$precipitation_flux)){
           rain.now <- train.data$precipitation_flux[train.data$time$Year==y, i]
           
@@ -185,6 +185,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       
       # Hard-coding in some sort of max for precipitaiton
       rain.max <- max(train.data$precipitation_flux) + sd(train.data$precipitation_flux)
+      rainless.min <- ifelse(min(rainless)-sd(rainless)>=0, min(rainless)-sd(rainless), max(min(rainless)-sd(rainless)/2, 0))
+      rainless.max <- ifelse(max(rainless)+sd(rainless)<=365, max(rainless)+sd(rainless), min(max(rainless)+sd(rainless)/2, 365))
     }
     # -------------
     
@@ -850,19 +852,22 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
               dry <- rows.yr[which(sim1[rows.yr,j] < 0)] # update our dry days
             }
             
+            # n.now = number of rainless days for this sim
             n.now <- round(rnorm(1, mean(rainless, na.rm=T), sd(rainless, na.rm=T)), 0) 
-        
+            if(n.now < rainless.min) n.now <- rainless.min # Make sure we don't have negative or no rainless days
+            if(n.now > rainless.max) n.now <- rainless.max # Make sure we have at least one day with rain
+            
             # We're having major seasonality issues, so lets randomly redistribute our precip
-            # Pull twice what we need and randomly select from that so that we don't have such clean cuttoffs
+            # Pull ~twice what we need and randomly select from that so that we don't have such clean cuttoffs
             # set.seed(12)
             cutoff <- quantile(sim1[rows.yr, j], min(n.now/366*2.5, max(0.75, n.now/366)), na.rm=T)
             if(length(which(sim1[rows.yr,j]>0)) < n.now){
-              # if we need to re-distribute our rain, use the inverse of the cutoff
+              # if we need to re-distribute our rain (make more rainy days), use the inverse of the cutoff
               # cutoff <- 1-cutoff
               dry1 <- rows.yr[which(sim1[rows.yr,j] > cutoff)]
               dry <- sample(dry1, 365-n.now, replace=T)
               
-              wet <- sample(rows.yr[!rows.yr %in% dry], length(dry), replace=F)
+              wet <- sample(rows.yr[!rows.yr %in% dry], length(dry), replace=T)
               
               # Go through and randomly redistribute the precipitation to days we're not designating as rainless
               # Note, if we don't loop through, we might lose some of our precip
@@ -879,7 +884,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
               # too few rainless days because of only slight redistribution (r+1) or buildup 
               # towards the end of the year (random day that hasn't happened)
               dry1 <- rows.yr[which(sim1[rows.yr,j] < cutoff)]
-              dry <- sample(dry1, n.now, replace=F)
+              dry <- sample(dry1, min(n.now, length(dry1)), replace=F)
 
               dry1 <- dry1[!dry1 %in% dry]
               # dry <- dry[order(dry)]

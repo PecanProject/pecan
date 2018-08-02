@@ -41,6 +41,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
   is_local <- is.localhost(settings$host)
   is_qsub <- !is.null(settings$host$qsub)
+  is_rabbitmq <- !is.null(settings$host$rabbitmq)
   is_modellauncher <- !is.null(settings$host$modellauncher)
 
   # loop through runs and either call start run, or launch job on remote machine
@@ -75,7 +76,14 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     }
 
     # check to see if we use the model launcer
-    if (is_modellauncher) {
+    if (is_rabbitmq) {
+      run_id_string <- format(run, scientific = FALSE)
+      folder <- file.path(settings$rundir, run_id_string)
+      out <- start_rabbitmq(folder, settings$host$rabbitmq$uri, settings$host$rabbitmq$queue)
+      PEcAn.logger::logger.debug("JOB.SH submit status:", out)
+      jobids[run] <- folder
+
+    } else if (is_modellauncher) {
       # set up launcher script if we use modellauncher
       if (is.null(firstrun)) {
         firstrun <- run
@@ -85,36 +93,35 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       writeLines(c(file.path(settings$host$rundir, run_id_string)), con = jobfile)
       pbi <- pbi + 1
 
+    } else if (is_qsub) {
+      out <- start_qsub(run = run, qsub_string = settings$host$qsub, rundir = settings$rundir,
+                        host = settings$host,  host_rundir = settings$host$rundir, host_outdir = settings$host$outdir,
+                        stdout_log = "stdout.log", stderr_log = "stderr.log", job_script = "job.sh")
+      PEcAn.logger::logger.debug("JOB.SH submit status:", out)
+      jobids[run] <- qsub_get_jobid(out = out, qsub.jobid = settings$host$qsub.jobid, stop.on.error = stop.on.error)
+
     } else {
-      if (is_qsub) {
-        out <- start_qsub(run = run, qsub_string = settings$host$qsub, rundir = settings$rundir,
-                          host = settings$host,  host_rundir = settings$host$rundir, host_outdir = settings$host$outdir,
-                          stdout_log = "stdout.log", stderr_log = "stderr.log", job_script = "job.sh")
-        PEcAn.logger::logger.debug("JOB.SH submit status:", out)
-        jobids[run] <- qsub_get_jobid(out = out, qsub.jobid = settings$host$qsub.jobid, stop.on.error = stop.on.error)
+      # if qsub option is not invoked.  just start model runs in serial.
+      out <- start_serial(run = run, host = settings$host, rundir = settings$rundir, host_rundir = settings$host$rundir, job_script = "job.sh")
 
-      } else {
-        # if qsub option is not invoked.  just start model runs in serial.
-        out <- start_serial(run = run, host = settings$host, rundir = settings$rundir, host_rundir = settings$host$rundir, job_script = "job.sh")
+      # check output to see if an error occurred during the model run
+      check_model_run(out = out, stop.on.error = stop.on.error)
 
-        # check output to see if an error occurred during the model run
-        check_model_run(out = out, stop.on.error = stop.on.error)
-
-        if (!is_local) {
-          # copy data back to local
-          PEcAn.remote::remote.copy.from(settings$host, file.path(settings$host$outdir, run_id_string), settings$modeloutdir)
-        }
-
-        # write finished time to database
-        stamp_finished(con = dbcon, run = run)
-
-        pbi <- pbi + 1
-        setTxtProgressBar(pb, pbi)
+      if (!is_local) {
+        # copy data back to local
+        PEcAn.remote::remote.copy.from(settings$host, file.path(settings$host$outdir, run_id_string), settings$modeloutdir)
       }
+
+      # write finished time to database
+      stamp_finished(con = dbcon, run = run)
+
+      pbi <- pbi + 1
+      setTxtProgressBar(pb, pbi)
     }
   } # end loop over runs
   close(pb)
 
+  # need to actually launch the model launcher
   if (is_modellauncher) {
     close(jobfile)
 
@@ -151,7 +158,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     }
   }
 
-  # wait for all qsub jobs to finish
+  # wait for all jobs to finish
   if (length(jobids) > 0) {
     PEcAn.logger::logger.debug("Waiting for the following jobs:", unlist(jobids, use.names = FALSE))
   }
@@ -160,8 +167,14 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     Sys.sleep(10)
     for (run in names(jobids)) {
       run_id_string <- format(run, scientific = FALSE)
+
       # check to see if job is done
-      job_finished <- qsub_run_finished(run = jobids[run], host = settings$host, qstat = settings$host$qstat)
+      job_finished <- FALSE
+      if (is_rabbitmq) {
+        job_finished <- file.exists(file.path(jobids[run], "rabbitmq.out"))
+      } else if (is_qsub) {
+        job_finished <- qsub_run_finished(run = jobids[run], host = settings$host, qstat = settings$host$qstat)
+      }
 
       if (job_finished) {
         jobids[run] <- NULL
@@ -169,8 +182,8 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         # Copy data back to local
         if (!is_local) {
           PEcAn.remote::remote.copy.from(host = settings$host,
-                           src = file.path(settings$host$outdir, run_id_string),
-                           dst = settings$modeloutdir)
+                                         src = file.path(settings$host$outdir, run_id_string),
+                                         dst = settings$modeloutdir)
         }
 
         # TODO check output log
@@ -188,12 +201,11 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
           pbi <- pbi + 1
         }
         setTxtProgressBar(pb, pbi)
-      } # End check if job finished
+      } # End job finished
     }  # end loop over runs
   }  # end while loop checking runs
 
 } # start.model.runs
-
 
 ##' @export
 runModule.start.model.runs <- function(settings,stop.on.error=TRUE) {

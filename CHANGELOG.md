@@ -9,21 +9,71 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- The following functions were deprecated from utils package and were moved to uncertainty package: read.ensemble.output, get.ensemble.samples, write.ensemble.configs, input.ens.gen.
+- Fixed issue #1939 which corrects output time vector for FATES output
+- Update to read.output to look for and read only PEcAn formatted .nc output based on the pecan standard filename format of YYYY.nc.  Solves issues with models such as FATES and dvm-dos-tem where the original model output is also in .nc file format and was not ignored by read.output, causing errors with output parsing and plotting with Shiny. Removed deprecated function convert.outputs
 - PEcAn.data.atmosphere: 
     - download.Geostreams is pickier about formatting start/end datess, for fewer surprises in result timestamps
     - Fixed swapped lat/lon in met2CF.Geostreams
     - download.GFDL now records reference date in time units field, as required by the CF met standard
     - Reduced download.GFDL network load by not preloading dimension data
+    - Fixed spurious `No geonamesUsername set` warning by updating geonames package to development version
 - ED:
     - Change all history parameter files to have zero storage respiration
+- missing_port_bety    
+- dataone_download.R:
+
+    - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget. 
+- Could not specify the port for BETY in config.php. Can now use `db_bety_port` to specify port.
+
+    - Added functionality that spoofs our user address to prevent authentication errors with downloading files via wget.
+    
+- Data_Ingest_App:
+    - use `updateSelectizeInput` to populate `selectizeInput` with choices from BETYdb. This instantly loads the inputfields where other methods take minutes to load. 
+
     
 ### Added
 
+-You can now generate ensembles for parameters and met separatly and using different methods. 
+- Soil process is now capable of reading in soil data from gSSURGO databse.
+- In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs
+- Shiny/Dependency explorer 
+- Explore the interdependencies between pecan packages/functions.
 - From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
+- Experimental support for docker (#1028)
 
+- dataone_download.R:
+  - Added progress messages to indicate that the function is working during longer downloads via PEcAn logger. 
+  - Store path to downloaded data as newdir_D1 so that the download app can call this path. 
+  
+- shiny/Data-Ingest 
+  - Download data from DataONE to a temporary directory, display the contents of that directory, and then move files from the temporary directory to dbfiles
+  - Upload files from local machines (via drag and drop on some browsers), display files, and then move these files to a directory in dbfiles.
+  - Spinner displays when class "shiny-busy" is invoked during the dataONE download process. In this way, users can be sure that the app is live and is processing their request. 
+  - Users can now input the name of the destination directory that they wish to create within dbfiles. 
+  - Updated Travis.yml to include librdf0-dev so that it can download redland, datapack, and dataone. 
+  - Added Data-Ingest UI (inputs, dbfiles, and formats record UI and some basic server side functionality are online)
+  - Modularized input record, format record, and dbfiles record into shiny modules. This allows the app to be greatly simplified to two, single-page workflows. These functions can also be used "plug-and-play" style elsewhere in PEcAn shiny apps to load in data. 
+  - Replaced modularized input, format and dbfiles records with static "Ingest Workflow" page. On this page, the user can select either importing from dataONE or Uploading from local files. If creating a new format is necessary, the user can click "Create New Format" and a dropdown menu will walk them through this process. 
+  - Selected files now autofill name value in input record workflow
+  - Store inputs and formats in the global environment
+  - "Test BETY" button allows users create a record in BETY with `dbfile.input.insert`
+  - Added `input.format.vars` to query the BETYdb
+  
+- pecan/base/db
+  - New File: `input.format.vars.R`. This function registers the format and the (optional) formats_variables record using `db_merge_into`. 
+
+- `data.atmosphere`
+	- `check_met_input_file` -- Check that target met file conforms to PEcAn meteorology data standard.
+	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame`
+
+  
 ### Removed
+  - pecan.worldmap function no longer used, dropped from visualization package
 
 ### Changed
+- PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
+
 
 ## [1.5.3] - 2018-05-15
 

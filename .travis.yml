@@ -8,12 +8,12 @@ language: r
 r:
   - 3.4
 
-r:
-  - 3.4
-
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
-sudo: false
+sudo: required
+
+env:
+  - PGHOST=localhost
 
 cache: 
   - directories:
@@ -24,32 +24,30 @@ cache:
   - packages
 
 addons:
-  postgresql: 9.6
   apt:
     sources:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
+      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
     packages:
-      - libnetcdf-dev
-      - liblapack-dev
-      - libcurl4-openssl-dev
-      - jags
-      - libudunits2-dev
-      - python-dev 
-      - postgresql-9.6-postgis-2.3
-      - postgresql-9.6-postgis-2.3-scripts
-      - netcdf-bin
       - bc
       - curl
-      - udunits-bin 
+      - gdal-bin
+      - jags
+      - libcurl4-openssl-dev
+      - libgdal-dev
       - libgmp-dev
+      - libhdf5-dev
+      - liblapack-dev
+      - libnetcdf-dev
       - libproj-dev
+      - libudunits2-dev
+      - netcdf-bin
       - pandoc
+      - python-dev
       - tcl
       - tcl-dev
-      - libhdf5-dev
-      - libgdal-dev
-      - gdal-bin
+      - udunits-bin
       # R package binaries from c2d4u
       - r-bioc-biocinstaller
       - r-cran-ape
@@ -62,10 +60,10 @@ addons:
       - r-cran-lme4
       - r-cran-matrixstats
       - r-cran-mcmcpack
-      - r-cran-mcmcpack
       - r-cran-raster
       - r-cran-rcpp
       - r-cran-rcurl
+      - r-cran-redland
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-shiny
@@ -73,24 +71,10 @@ addons:
       - r-cran-tidyverse
       - r-cran-xml
       - r-cran-xml2
-      # need to compile documentation
-      # BROKEN MISSING FONT
-      #- texinfo
-      #- texlive-latex-base
-      #- texlive-latex-recommended
-      #- texlive-latex-extra
-      #- texlive-fonts-recommended
-      #- texlive-fonts-extra
 
   
 ## notifications should go to gitter
 notifications:
-  webhooks:
-    urls:
-      - secure: "gL81TwDOcK/32Hxxl2BcY7pioyrtyV4y1f+D/vGEpQz8mYL+M+55tUkhHJF53779XSUdQdML/gsr8JZVtApJdLIBysFU67GVYXm1s7x/b8J61CkMfDgsmposEWK4NFYHfeIRj32ioeajrQ+RKi1I6chjzYT7gLyl70gtPelRJ4s="
-    on_success: always
-    on_failure: always
-    on_start: always
   slack:
     # Slack token created by Chris Black, 2018-02-17
     secure: "DHHSNmiCf71SLa/FFSqx9oOnJjJt2GHYk7NsFIBb9ZY10RvQtIPfaoNxkPjqu9HLyZWJSFtg/uNKKplEHc6W80NoXyqoTvwOxTPjMaViXaCNqsmzjjR/JaCWT/oWGXyAw0VX3S8cwuIexlKQGgZwJpIzoVOZqUrDrHI/O17kZoM="
@@ -100,7 +84,7 @@ notifications:
 
 ## list of services to be running
 services:
-  - postgresql
+  - docker
 
 install:
   - pushd $HOME
@@ -111,6 +95,14 @@ install:
   - popd
 
 before_script:
+  - sudo service postgresql stop
+  - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine
+  - echo -n "Waiting for Postgres to start...";
+    until psql -U postgres -c 'select 1' >/dev/null 2>&1;
+      do echo -n ".";
+      sleep 1;
+    done;
+    echo " OK"
   - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
   - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
@@ -122,12 +114,20 @@ before_script:
 
 script:
   - set -e
-  # - scripts/build.sh --no-git --tests --name travis
   - echo 'Installing PEcAn packages'
-  - make
+  # TODO: Would be nice to add `-Otarget` after `-j` below,
+  # but not supported in Make 3.x.
+  # When Travis updates, check for Make 4 and add -O if available.
+  - make # TODO: add -j2 here after #1976 closed
   - echo 'Testing PEcAn packages'
-  - make test
-  - make document
+  - make -j2 test
+  - make -j2 document
+  # Skip modules with known broken checks
+  - mkdir -p .check/modules # only needed for `touch` below
+  - touch .check/modules/benchmark # delete when #1978 closed
+  - touch .check/modules/data.land # delete when #1977 closed
+  - touch .check/modules/rtm # delete when #1976 closed
+  - make -j2 check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 

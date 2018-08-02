@@ -4,7 +4,8 @@
 \alias{write_ed_metheader}
 \title{Write ED meteorlogy header}
 \usage{
-write_ed_metheader(ed_metheader, filename, header_line = shQuote("header"))
+write_ed_metheader(ed_metheader, filename,
+  header_line = shQuote("header"))
 }
 \arguments{
 \item{ed_metheader}{ED meteorlogy header object (see \link{read_ed_metheader})}

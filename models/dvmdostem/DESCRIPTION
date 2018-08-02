@@ -8,6 +8,7 @@ Maintainer: Tobey Carman <tcarman2@alaska.edu>, Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to link the dvmdostem model to
     PEcAn.
 Imports:
+	ncdf4,
     PEcAn.utils (>= 1.4.8),
     rjson
 Suggests:
@@ -18,4 +19,5 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.0

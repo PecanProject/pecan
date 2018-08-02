@@ -1,97 +1,93 @@
-library(shiny)
-library(PEcAn.data.land)
-library(PEcAn.utils)
-library(shinydashboard)
-library(dataone)
+ library(PEcAn.data.land)
+ library(PEcAn.visualization)
+ library(PEcAn.utils)
+ library(PEcAn.DB)
+ library(shinydashboard)
+ library(dataone)
+ library(stringr)
+ library(DT)
+ library(shiny)
+ library(shinyjs)
+ library(shinyWidgets)
+ 
+ source("ui_utils.R", local = TRUE)
+ 
+ ##### Bety Calls ######
+ bety <- betyConnect()
+ 
+ sites <- dplyr::tbl(bety, "sites") %>% dplyr::select(sitename, id) %>% dplyr::arrange(sitename)
+ sitenames <- sites %>% pull(sitename)
+ 
+ inputs <- dplyr::tbl(bety, "inputs") %>% dplyr::select(name, id) %>% dplyr::arrange(name)
+ input_names <- inputs %>% pull(name)
+ 
+ formats <- dplyr::tbl(bety, "formats") %>% distinct(name) %>% dplyr::arrange(name) %>% pull(name)
+ formats_sub <- dplyr::tbl(bety, "formats") %>% dplyr::select(name, id) %>% dplyr::arrange(name)
+ 
+ # machines <- dplyr::tbl(bety, "machines") %>% distinct(hostname) %>% dplyr::arrange(hostname)%>% pull(hostname)
+ # machines_sub <- dplyr::tbl(bety, "machines") %>% dplyr::select(hostname, id) %>% dplyr::arrange(hostname)
+ 
+ mimetypes <- dplyr::tbl(bety, "mimetypes") %>% distinct(type_string) %>% dplyr::arrange(type_string) %>% pull(type_string)
+ mimetype_sub <- dplyr::tbl(bety, "mimetypes") %>% dplyr::select(type_string, id) %>% dplyr::arrange(type_string)
 
 
-# Define UI for application
+#############################################################################
+################################## UI #######################################
+#############################################################################
 
 ui <- dashboardPage(
-  
-  dashboardHeader(title = "Data Ingest"),
-  dashboardSidebar(
-    sidebarMenu(
-      menuItem("Import Data", tabName = "importData", icon = icon("file")),
-      menuItem("Step 2 -- dbfiles record", tabName = "step2", icon = icon("cog")),
-      menuItem("Step 3 -- format record", tabName = "step3", icon = icon("cog")),
-      menuItem("Step 4 -- etc.", tabName = "step4", icon = icon("cog"))
-    )
+  dashboardHeader(title = "Data Ingest Workflow", titleWidth = '215px'), 
+  dashboardSidebar(width = '215px',
+    source_ui("ui_files", "sidebar_ui.R")
   ),
   dashboardBody(
+    useShinyjs(), #Include shinyjs
     tabItems(
-      tabItem(tabName = "importData",
-              fluidRow( 
-                box(
-                  textInput("id", label = h3("Import From DataONE"), placeholder = "Enter doi or id here"),
-                  actionButton(inputId = "D1Button", label = "Upload"),
-                  hr(),
-                  fluidRow(column(12, verbatimTextOutput("identifier"))) 
-                ),
-                
-                box(
-                  # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
-                  fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE, placeholder = "Drag and drop files here"),
-                  p("This is a placeholder and is not yet functional"),
-                  tableOutput("contents")
-                )
-              )
-      ),
-      
-      tabItem(tabName = "step2",
-              h2("under construction")
-      ),
-      
-      tabItem(tabName = "step3",
-              h2("under construction")
-      ),
-      
-      tabItem(tabName = "step4",
-              h2("under construction")
-      )
-      
-      
-    )
-  )
+    ## Tab 1 -- Landing Page
+    tabItem(tabName = "Home",
+            source_ui("ui_files", "homepage_ui.R")
+            ),
+    ## Tab 4 -- Ingest Workflow
+    tabItem(tabName = "ingestWorkflow",
+            source_ui("ui_files", "ingest_workflow_ui.R")
+            )
+  )),
+  title = "PEcAn Data Ingest",
+  skin =  "green"
 )
+####################################################################################
+################################ SERVER ############################################
+####################################################################################
 
-server <- function(input, output) {
-  options(shiny.maxRequestSize=30*1024^2) #maximum file input size
+server <- function(input, output, session) {
+  options(shiny.maxRequestSize = 100 * 1024 ^ 2) #maximum file input size
   
-   path <- PEcAn.utils::read_web_config("../../web/config.php")
-    
-   d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id, filepath = path) }) #run dataone_download with input from id on click
+  ## Setup ##
+  Shared.data <- reactiveValues(downloaded = NULL, selected_row = NULL, 
+                                local_files = NULL, selected_row_local = NULL, 
+                                new_format = NULL, input_record_df = NULL, format_record = NULL)
   
-  output$identifier <- renderText({
-    d1d()
-  })
+  temp <- tempdir() 
+  PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
   
+  ## Create two sub-directories in the tempfile ##
+  d1_tempdir <<- file.path(temp, "d1_tempdir")
+  dir.create(d1_tempdir, showWarnings = F)
+  local_tempdir <<- file.path(temp, "local_tempdir")
+  dir.create(local_tempdir, showWarnings = F)
   
-###### FileInput <-- Will add this functionality shortly
-#  output$contents <- renderTable({
-    # input$file1 will be NULL initially. After the user selects
-    # and uploads a file, it will be a data frame with 'name',
-    # 'size', 'type', and 'datapath' columns. The 'datapath'
-    # column will contain the local filenames where the data can
-    # be found.
-#    inFile <- input$file
-    
-#    if (is.null(inFile))
-#      return(NULL)
-#    read.csv(inFile$datapath, header = TRUE)
-    
-#  })
+  ##################### DataONE Download #####################
+  source("server_files/d1_download_svr.R", local = TRUE)
 
-
-
-    #file.copy(inFile$datapath, header = input$header)
-
-
+  ######### FileInput ########################################
+  source("server_files/local_upload_svr.R", local = TRUE)
   
-
+  ######### Ingest Workflow ##############################
+  source("server_files/ingest_workflow_svr.R", local = TRUE)
+  
 }
 
-# Run the application 
+# Run the application
 shinyApp(ui = ui, server = server)
 
-# example data: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87
+# example data: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87, doi:10.6073-pasta-f31b28b912e6051bf1d383ff1ef18987

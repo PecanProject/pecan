@@ -244,7 +244,10 @@ check.settings <- function(settings, force=FALSE) {
   on.exit(options(scipen=scipen))
   options(scipen=12)
   
+
   settings <- check.database.settings(settings)
+  #checking the ensemble tag in settings
+  settings <- check.ensemble.settings(settings)
   
   if(!is.null(settings$database$bety)) {
     dbcon <- PEcAn.DB::db.open(settings$database$bety)
@@ -491,64 +494,7 @@ check.run.settings <- function(settings, dbcon=NULL) {
     }
   }
   
-  # check ensemble
-  if (!is.null(settings$ensemble)) {
-    if (is.null(settings$ensemble$variable)) {
-      if (is.null(settings$sensitivity.analysis$variable)) {
-        PEcAn.logger::logger.severe("No variable specified to compute ensemble for.")
-      }
-      PEcAn.logger::logger.info("Setting ensemble variable to the same as sensitivity analysis variable [", settings$sensitivity.analysis$variable, "]")
-      settings$ensemble$variable <- settings$sensitivity.analysis$variable
-    }
-    
-    if (is.null(settings$ensemble$size)) {
-      PEcAn.logger::logger.info("Setting ensemble size to 1.")
-      settings$ensemble$size <- 1
-    }
-    
-    if(is.null(settings$ensemble$start.year)) {
-      if(!is.null(settings$run$start.date)) {
-        settings$ensemble$start.year <- lubridate::year(settings$run$start.date) 
-        PEcAn.logger::logger.info("No start date passed to ensemble - using the run date (", 
-                    settings$ensemble$start.year, ").")
-      } else if(!is.null(settings$sensitivity.analysis$start.year)) {
-        settings$ensemble$start.year <- settings$sensitivity.analysis$start.year 
-        PEcAn.logger::logger.info("No start date passed to ensemble - using the sensitivity.analysis date (",
-                    settings$ensemble$start.year, ").")
-      } else {
-        PEcAn.logger::logger.info("No start date passed to ensemble, and no default available.")
-      }
-    }
-    
-    if(is.null(settings$ensemble$end.year)) {
-      if(!is.null(settings$run$end.date)) {
-        settings$ensemble$end.year <- lubridate::year(settings$run$end.date) 
-        PEcAn.logger::logger.info("No end date passed to ensemble - using the run date (", 
-                    settings$ensemble$end.year, ").")
-      } else if(!is.null(settings$sensitivity.analysis$end.year)){ 
-        settings$ensemble$end.year <- settings$sensitivity.analysis$end.year 
-        PEcAn.logger::logger.info("No end date passed to ensemble - using the sensitivity.analysis date (",  
-                    settings$ensemble$end.year, ").")
-      } else {
-        PEcAn.logger::logger.info("No end date passed to ensemble, and no default available.")
-      }
-    }
-    
-    # check start and end dates
-    if (exists("startdate") && !is.null(settings$ensemble$start.year) &&
-        lubridate::year(startdate) > settings$ensemble$start.year) {
-      PEcAn.logger::logger.severe("Start year of ensemble should come after the start.date of the run")
-    }
-    if (exists("enddate") && !is.null(settings$ensemble$end.year) &&
-        lubridate::year(enddate) < settings$ensemble$end.year) {
-      PEcAn.logger::logger.severe("End year of ensemble should come before the end.date of the run")
-    }
-    if (!is.null(settings$ensemble$start.year) && !is.null(settings$ensemble$end.year) &&
-        settings$ensemble$start.year > settings$ensemble$end.year) {
-      PEcAn.logger::logger.severe("Start year of ensemble should come before the end year of the ensemble")
-    }
-  }
-  
+
   # check sensitivity analysis
   if (!is.null(settings$sensitivity.analysis)) {
     if (is.null(settings$sensitivity.analysis$variable)) {
@@ -864,6 +810,81 @@ check.database.settings <- function(settings) {
     }
   } else {
     PEcAn.logger::logger.warn("No BETY database information specified; not using database.")
+  }
+  return(settings)
+}
+
+##' @title Check ensemble Settings
+##' @param settings settings file
+##' @export check.ensemble.settings
+check.ensemble.settings <- function(settings) {
+  # check ensemble
+  if (!is.null(settings$ensemble)) {
+    if (is.null(settings$ensemble$variable)) {
+      if (is.null(settings$sensitivity.analysis$variable)) {
+        PEcAn.logger::logger.severe("No variable specified to compute ensemble for.")
+      }
+      PEcAn.logger::logger.info("Setting ensemble variable to the same as sensitivity analysis variable [", settings$sensitivity.analysis$variable, "]")
+      settings$ensemble$variable <- settings$sensitivity.analysis$variable
+    }
+    
+    if (is.null(settings$ensemble$size)) {
+      PEcAn.logger::logger.info("Setting ensemble size to 1.")
+      settings$ensemble$size <- 1
+    }
+    
+    if(is.null(settings$ensemble$start.year)) {
+      if(!is.null(settings$run$start.date)) {
+        settings$ensemble$start.year <- lubridate::year(settings$run$start.date) 
+        PEcAn.logger::logger.info("No start date passed to ensemble - using the run date (", 
+                                  settings$ensemble$start.year, ").")
+      } else if(!is.null(settings$sensitivity.analysis$start.year)) {
+        settings$ensemble$start.year <- settings$sensitivity.analysis$start.year 
+        PEcAn.logger::logger.info("No start date passed to ensemble - using the sensitivity.analysis date (",
+                                  settings$ensemble$start.year, ").")
+      } else {
+        PEcAn.logger::logger.info("No start date passed to ensemble, and no default available.")
+      }
+    }
+    
+    if(is.null(settings$ensemble$end.year)) {
+      if(!is.null(settings$run$end.date)) {
+        settings$ensemble$end.year <- lubridate::year(settings$run$end.date) 
+        PEcAn.logger::logger.info("No end date passed to ensemble - using the run date (", 
+                                  settings$ensemble$end.year, ").")
+      } else if(!is.null(settings$sensitivity.analysis$end.year)){ 
+        settings$ensemble$end.year <- settings$sensitivity.analysis$end.year 
+        PEcAn.logger::logger.info("No end date passed to ensemble - using the sensitivity.analysis date (",  
+                                  settings$ensemble$end.year, ").")
+      } else {
+        PEcAn.logger::logger.info("No end date passed to ensemble, and no default available.")
+      }
+    }
+    
+    # check start and end dates
+    if (exists("startdate") && !is.null(settings$ensemble$start.year) &&
+        lubridate::year(startdate) > settings$ensemble$start.year) {
+      PEcAn.logger::logger.severe("Start year of ensemble should come after the start.date of the run")
+    }
+    if (exists("enddate") && !is.null(settings$ensemble$end.year) &&
+        lubridate::year(enddate) < settings$ensemble$end.year) {
+      PEcAn.logger::logger.severe("End year of ensemble should come before the end.date of the run")
+    }
+    if (!is.null(settings$ensemble$start.year) && !is.null(settings$ensemble$end.year) &&
+        settings$ensemble$start.year > settings$ensemble$end.year) {
+      PEcAn.logger::logger.severe("Start year of ensemble should come before the end year of the ensemble")
+    }
+  }
+  #Old version of pecan xml files which they don't have a sampling space or it's just sampling space and nothing inside it.
+  if (is.null(settings$ensemble$samplingspace) | !is.list(settings$ensemble$samplingspace)){
+    PEcAn.logger::logger.info("We are updating the ensemble tag inside the xml file.")
+    #I try to put ensemble method in older versions into the parameter space - If I fail (when no method is defined) I just set it as uniform
+    settings$ensemble$samplingspace$parameters$method <- settings$ensemble$method
+    if (is.null(settings$ensemble$samplingspace$parameters$method)) {
+      settings$ensemble$samplingspace$parameters$method <- "uniform"
+    }
+    #putting something simple in the met
+    settings$ensemble$samplingspace$met$method <- "sampling"
   }
   return(settings)
 }

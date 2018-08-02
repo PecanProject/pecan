@@ -55,10 +55,11 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   
   iplot <- 1
   nyear <- length(year)
+  max.ind <- 1500
+  plat <- abs(as.numeric(settings$run$site$lat))
+  
   bgs <- 120
   egs <- 273
-  max.ind <- 15000
-  plat <- abs(as.numeric(settings$run$site$lat))
   
   texture <- read.csv(system.file("texture.csv", package = "PEcAn.LINKAGES"))
   
@@ -81,7 +82,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), 
                       con = dbcon)
     
-    soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100)
+    soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100, silt = 100 - soils$sand_pct - soils$clay_pct)
     
     fc <- soil.dat$volume_fraction_of_water_in_soil_at_field_capacity * 100
     dry <- soil.dat$volume_fraction_of_condensed_water_in_soil_at_wilting_point * 100
@@ -96,10 +97,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   
   climate_file <- settings$run$inputs$met$path
   load(climate_file)
-  #temp.mat <- temp.mat[start.year:end.year - start.year + 1, ]
-  temp.mat <- temp.mat[which(temp.mat[,13]%in%start.year:end.year),]
-  precip.mat <- precip.mat[which( precip.mat[,13]%in%start.year:end.year),]
-  #precip.mat <- precip.mat[start.year:end.year - start.year + 1, ]
+  
+  temp.mat <- temp.mat[which(rownames(temp.mat)%in%start.year:end.year),]
+  precip.mat <- precip.mat[which(rownames(precip.mat)%in%start.year:end.year),]
   
   basesc <- 74
   basesn <- 1.64
@@ -156,8 +156,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("AGEMX" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
           }
-          if ("Gmax" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
+          if ("G" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$G <- vals$G
           }
           if ("SPRTND" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND
@@ -175,7 +175,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
             spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
           }
           if ("FROST" %in% names(vals)) {
-             spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
+            spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
           }
           if ("CM1" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1

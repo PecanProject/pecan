@@ -19,9 +19,11 @@ License: FreeBSD + file LICENSE
 Imports:
 	PEcAn.DB,
 	PEcAn.logger,
-	PEcAn.settings
+	PEcAn.settings,
+	PEcAn.utils
 Suggests:
 	testthat,
     mockery
 Copyright: Authors
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.0

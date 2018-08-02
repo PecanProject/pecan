@@ -4,8 +4,8 @@
 \alias{download.FACE}
 \title{download.FACE}
 \usage{
-download.FACE(sitename, outfolder, start_date, end_date, overwrite = FALSE,
-  method, ...)
+download.FACE(sitename, outfolder, start_date, end_date,
+  overwrite = FALSE, method, ...)
 }
 \arguments{
 \item{method}{Optional. Passed to download.file() function.  Use this to set custom programs such as ncftp to use when

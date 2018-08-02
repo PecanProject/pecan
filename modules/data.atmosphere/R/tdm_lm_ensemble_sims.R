@@ -235,7 +235,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         # rows.beta[i] <- betas.tem
       # }
       # rows.beta <- as.numeric(rows.beta)
-      n.new <- round(n.ens/2)+1
+      n.new <- n.ens
       cols.redo <- 1:n.new
       sane.attempt=0
       betas_nc <- ncdf4::nc_open(file.path(path.model, v, paste0("betas_", v, "_", day.now, ".nc")))
@@ -249,7 +249,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         
         # If we're starting from scratch, set up the prediction matrix
         if(sane.attempt==0){
-          dat.pred <- matrix(nrow=nrow(dat.temp), ncol=n.new)
+          dat.pred <- matrix(nrow=nrow(dat.temp), ncol=n.ens)
         }
         
         dat.pred[,cols.redo] <- subdaily_pred(newdata = dat.temp, model.predict = mod.save, 
@@ -408,7 +408,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
       # If we ran out of attempts, but want to foce sanity, do so now
       if(force.sanity & n.new>0){
         # If we're still struggling, but we have at least some workable columns, lets just duplicate those:
-        if(n.new<(round(n.ens/2)+1)){
+        if(n.new<n.ens){
           cols.safe <- 1:ncol(dat.pred)
           cols.safe <- cols.safe[!(cols.safe %in% cols.redo)]
           dat.pred[,cols.redo] <- dat.pred[,sample(cols.safe, n.new, replace=T)]
