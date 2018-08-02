@@ -22,7 +22,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
 
   ### WRITE *.clim
-  template.clim <- settings$run$inputs$met$path$path1     ## read from settings #typo in inputs? Fixed.
+  template.clim <- settings$run$inputs$met$path$path1
   
   if (!is.null(inputs) && ("met" %in% names(inputs))) { ## override if specified in inputs
     template.clim <- inputs$met$path
