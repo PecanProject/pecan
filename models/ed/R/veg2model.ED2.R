@@ -40,27 +40,27 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # for FIA these steps are unnecessary, it already has the pss info
   if(source != "FIA"){
     if(!is.null(pss$time)){
-      time <- pss$time
+      time <- as.numeric(pss$time)
     }else{
       time <- start_year
     }
     if(!is.null(pss$n.patch)){
-      n.patch <- pss$n.patch
+      n.patch <- as.numeric(pss$n.patch)
     }else{
       n.patch <- 1
     }
     if(!is.null(pss$trk)){
-      trk <- pss$trk
+      trk <- as.numeric(pss$trk)
     }else{
       trk <- 1
     }
     if(!is.null(pss$age)){
-      age <- pss$age
+      age <- as.numeric(pss$age)
     }else{
       age <- 100
     }
     if(!is.null(pss$area)){
-      area <- pss$area
+      area <- as.numeric(pss$area)
     }else{
       area <- 1000 # m2
     }
