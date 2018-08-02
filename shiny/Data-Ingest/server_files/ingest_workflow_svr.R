@@ -81,10 +81,8 @@ observeEvent(input$nextFromInput, {
   ## FormatID
   if(input$InputFormatName == ""){
     inputsList$formatName <<- ""
-    inputsList$formatID <<- ""
   }else{
     inputsList$formatName <<- input$InputFormatName
-   # inputsList$formatID <<- formats_sub %>% dplyr::filter(name %in% input$InputFormatName) %>% pull(id) IF Format ID is necessary, I need to redesign this line. 
   }
 
   ## Mimetype (should I find the ID as well?)##
@@ -110,7 +108,7 @@ observeEvent(input$nextFromInput, {
   inputsList$Notes <<- input$InputNotes
   
   ## Print List
-  output$summInputs <- renderPrint({inputsList})
+  #output$summInputs <- renderPrint({inputsList})
 })
 
 output$input_record_df <- renderPrint({Shared.data$input_record_df})
@@ -144,7 +142,7 @@ observeEvent(input$FormatRecordDone, {
     name = FormatRecordList$NewFormatName
   )
   ## Print format record for testing
-  output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
+  #output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
 
 })
 

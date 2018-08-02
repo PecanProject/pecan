@@ -12,6 +12,7 @@
  
  source("ui_utils.R", local = TRUE)
  
+ 
  ##### Bety Calls ######
  bety <- betyConnect()
  
