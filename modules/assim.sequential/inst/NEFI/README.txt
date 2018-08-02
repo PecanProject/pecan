@@ -1,6 +1,6 @@
 Author: Luke Dramko
 
-This collection of R scripts utilize the PEcAn workflow to iteratively run forecasts and do state data assimilation.
+This collection of R scripts utilizes the PEcAn workflow to iteratively run forecasts and do state data assimilation.
 
 run.gefs.sipnet.sh, generate.gefs.xml.R, and gefs.sipnet.source.xml work in tandem
 to run PEcAn's SIPNET model with current NOAA GEFS data.  This system can be put
@@ -45,7 +45,10 @@ Several other scripts are included to make gathering and interpeting data easier
 Generates a graph of NEE and LE calculated via a run with a 95% confidence interval
 vs. observed data.  Can be called with either a date
 or a workflow ID as a command line argument.
-Note that the directory ./graphs/ must exist.
+By default, this script places all graphs in ./graphs/.  If you want a different directory, change the graphs_dir
+file path at the start of the file.
+
+graphs.R is not intended to be a part of the PEcAn workflow; it is an independent script.
 
 -- last12days.R --
 This is a simple and very specific script that runs NOAA GEFS for the last 12
@@ -57,5 +60,3 @@ These scripts are useful for modifying the database.  Because everything NOAA_GE
 does is repeated 21 times (1 for each ensemble member) it is impractical to 
 clean the database via the web interface, where only one file can be removed at
 a time. 
-
-
