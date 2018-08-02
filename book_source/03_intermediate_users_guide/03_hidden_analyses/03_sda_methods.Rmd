@@ -1,12 +1,6 @@
----
-title: "SDA_Methods"
-author: "Ann Raiho"
-date: "11/16/2017"
-output:
-  word_document: default
-  pdf_document: default
-  html_document: default
----
+## SDA_Methods
+
+*By Ann Raiho*
 
 ```{r setup_sda, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)

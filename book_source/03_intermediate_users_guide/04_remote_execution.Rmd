@@ -290,9 +290,10 @@ almost the same (example for ED2):
 devtools::install_github("pecanproject/pecan", subdir = 'models/ed')
 ```
 
-This should install dependencies required. Following are some
-notes on how to install the model specifics on different HPC
-clusters.
+This should install dependencies required. 
+
+* The following are some notes on how to install the model specifics on different HPC
+clusters*
 
 ### geo.bu.edu
 
