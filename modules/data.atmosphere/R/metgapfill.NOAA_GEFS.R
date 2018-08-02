@@ -1,7 +1,7 @@
 ##'@title Gapfill NOAA_GEFS weather data
 ##'@section Purpose:
 ##'This function uses simple methods to gapfill NOAA GEFS met data
-##'Temperature and Percipitation are gapfilled with spline; other data sources are gapfilled with
+##'Temperature and Precipitation are gapfilled with spline; other data sources are gapfilled with
 ##'using linear models fitted to other fitted data.
 ##'
 ##'@param in.prefix the met file name
