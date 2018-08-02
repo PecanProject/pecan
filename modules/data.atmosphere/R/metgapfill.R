@@ -16,24 +16,24 @@
 ##' @author Ankur Desai
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {
-  
+
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
-  
-  
-  
+
+
+
   sEddyProc             <- REddyProc::sEddyProc
   fCalcVPDfromRHandTair <- REddyProc::fCalcVPDfromRHandTair
-  
-  
+
+
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
   end_year  <- lubridate::year(end_date)
-  
+
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
-  
+
   rows <- end_year - start_year + 1
   results <- data.frame(file = character(rows),
                         host = character(rows),
@@ -43,18 +43,18 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
                         enddate = character(rows),
                         dbfile.name = in.prefix,
                         stringsAsFactors = FALSE)
-  
+
   for (year in start_year:end_year) {
     old.file <- file.path(in.path, paste(in.prefix, sprintf("%04d", year), "nc", sep = "."))
     new.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d", year), "nc", sep = "."))
-    
+
     # check if input exists
     if (!file.exists(old.file)) {
       PEcAn.logger::logger.warn("Missing input file ", old.file, " for year", sprintf("%04d", year),
-                                "in folder", in.path)
+                  "in folder", in.path)
       next
     }
-    
+
     # create array with results
     row <- year - start_year + 1
     results$file[row]       <- new.file
@@ -63,31 +63,31 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
     results$mimetype[row]   <- "application/x-netcdf"
     results$formatname[row] <- "CF (gapfilled)"
-    
+
     if (file.exists(new.file) && !overwrite) {
       PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
       next
     }
-    
+
     ## copy old file to new directory
     file.copy(old.file, new.file, overwrite = TRUE)
-    
+
     ## Let's start with reading a few variables
     nc <- ncdf4::nc_open(new.file, write = TRUE)
-    
+
     ## Should probably check for variable names (need to install ncdf4-helpers package)
-    
+
     # extract time, lat, lon
     time <- ncdf4::ncvar_get(nc = nc, varid = "time")
     lat  <- ncdf4::ncvar_get(nc = nc, varid = "latitude")
     lon  <- ncdf4::ncvar_get(nc = nc, varid = "longitude")
-    
+
     ## create time lat lon dimensions for adding new variables
     x <- ncdf4::ncdim_def("longitude", "degrees_east", lon)
     y <- ncdf4::ncdim_def("latitude", "degrees_north", lat)
     t <- ncdf4::ncdim_def("time", "days since 1700-01-01", time)
     xytdim <- list(x, y, t)
-    
+
     # extract elevation and timezone for radiation calculations
     elev  <- ncdf4::ncatt_get(nc = nc, varid = 0, "elevation")
     tzone <- ncdf4::ncatt_get(nc = nc, varid = "time", "units")
@@ -104,7 +104,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
         lst <- as.numeric(tdimunit[length(tdimunit)])  #extract timezone from file
       }
     }
-    
+
     ## Required to exist in file
     Tair <- try(ncdf4::ncvar_get(nc = nc, varid = "air_temperature"), silent = TRUE)
     if (!is.numeric(Tair)) {
@@ -115,32 +115,32 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (!is.numeric(precip)) {
       PEcAn.logger::logger.error("precipitation_flux not defined in met file for metgapfill")
     }
-    
+
     ## create an array of missing values for writing new variables prior to gap filling
     missingarr <- as.numeric(array(NA, length(Tair)))
-    
+
     ## One of these must exist, create the other one for gap-filling
     Rg <- try(ncdf4::ncvar_get(nc = nc, varid = "surface_downwelling_shortwave_flux_in_air"), silent = TRUE)
     if (!is.numeric(Rg)) {
       Rg <- missingarr
       myvar <- ncdf4::ncvar_def(name = "surface_downwelling_shortwave_flux_in_air",
-                                units = "W m-2",
-                                dim = xytdim)
+                         units = "W m-2",
+                         dim = xytdim)
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    
+
     PAR <- try(ncdf4::ncvar_get(nc = nc, varid = "surface_downwelling_photosynthetic_photon_flux_in_air"),
                silent = TRUE)
     if (!is.numeric(PAR)) {
       PAR <- missingarr
       myvar <- ncdf4::ncvar_def(name = "surface_downwelling_photosynthetic_photon_flux_in_air",
-                                units = "mol m-2 s-1",
-                                dim = xytdim)
+                         units = "mol m-2 s-1",
+                         dim = xytdim)
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    
+
     # check to see if we have Rg values
     if (length(which(is.na(Rg))) == length(Rg)) {
       if (length(which(is.na(PAR))) == length(PAR)) {
@@ -148,7 +148,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       }
       Rg <- PAR * 1e+06 / 2.1
     }
-    
+
     ## Use Rg and PAR to gap fill
     badPAR       <- is.na(PAR)
     badRg        <- is.na(Rg)
@@ -156,7 +156,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     Rg[badRg]    <- 1e+06 * PAR[badRg]/2.1
     Rg[Rg < 0]   <- 0
     PAR[PAR < 0] <- 0
-    
+
     ## make night dark - based on met2model.ED2.R in models/ed/R First: calculate potential radiation
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
@@ -164,9 +164,9 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     diy <- PEcAn.utils::days_in_year(year)
     doy <- rep(seq_len(diy), each = 86400 / dt)
     hr <- rep(seq(0, length = 86400 / dt, by = 24 * dt / 86400), diy)
-    
+
     cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
-    
+
     rpot <- 1366 * cosz  #in UTC
     tz <- as.numeric(lst)
     if(is.na(tz)){
@@ -185,19 +185,19 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     Rg[rpot == 0] <- 0
     PAR[rpot == 0] <- 0
     ## we could add Rg[Rg>rpot] <- rpot, but probably should bias correct first?
-    
+
     ## If these don't exist, create blank ones that will be filled with default values, or imputed from
     ## other vars
     co2 <- try(ncdf4::ncvar_get(nc = nc, varid = "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
     if (!is.numeric(co2)) {
       co2 <- missingarr
       myvar <- ncdf4::ncvar_def(name = "mole_fraction_of_carbon_dioxide_in_air",
-                                units = "mol mol-1",
-                                dim = xytdim)
+                         units = "mol mol-1",
+                         dim = xytdim)
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    
+
     press <- try(ncdf4::ncvar_get(nc = nc, varid = "air_pressure"), silent = TRUE)
     if (!is.numeric(press)) {
       press <- missingarr
@@ -211,17 +211,17 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (length(which(is.na(press))) == length(press)) {
       press[is.na(press)] <- standard_pressure
     }
-    
+
     Lw <- try(ncdf4::ncvar_get(nc = nc, varid = "surface_downwelling_longwave_flux_in_air"), silent = TRUE)
     if (!is.numeric(Lw)) {
       Lw <- missingarr
       myvar <- ncdf4::ncvar_def(name = "surface_downwelling_longwave_flux_in_air",
-                                units = "W m-2",
-                                dim = xytdim)
+                         units = "W m-2",
+                         dim = xytdim)
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    
+
     Ts1 <- try(ncdf4::ncvar_get(nc = nc, varid = "soil_temperature"), silent = TRUE)
     if (!is.numeric(Ts1)) {
       Lw <- missingarr
@@ -229,7 +229,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    
+
     ## one of these must exist, create the others
     rH <- try(ncdf4::ncvar_get(nc = nc, varid = "relative_humidity"), silent = TRUE)
     if (!is.numeric(rH)) {
@@ -252,7 +252,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    
+
     ## Fill these variables from each other
     if ((all(is.na(VPD))) & (!all(is.na(rH)))) {
       VPD <- as.numeric(fCalcVPDfromRHandTair(rH, Tair_degC)) * 100
@@ -277,7 +277,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if ((all(is.na(VPD))) & (!all(is.na(rH)))) {
       VPD <- as.numeric(fCalcVPDfromRHandTair(rH, Tair_degC)) * 100
     }
-    
+
     # now fill partial missing values of each
     badrH <- is.na(rH)
     if ((any(badrH)) & (!all(is.na(sHum)))) {
@@ -298,17 +298,17 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if ((any(badVPD)) & (!all(is.na(rH)))) {
       VPD[badVPD] <- as.numeric(fCalcVPDfromRHandTair(rH[badVPD], Tair_degC[badVPD])) * 100
     }
-    
+
     ##Once all are filled, do one more consistency check
     es <- get.es(Tair_degC) * 100
-    
+
     rH[rH < 0] <- 0
     rH[rH > 100] <- 100
     VPD[VPD < 0] <- 0
-    
+
     badVPD_es <- which(VPD > es)  
     VPD[badVPD_es] <- es[badVPD_es]  
-    
+
     sHum[sHum < 0] <- 0
     
     ## one set of these must exist (either wind_speed or east+north wind)
@@ -333,9 +333,9 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)
     }
-    
+
     # Rn <- ncdf4::ncvar_get(nc=nc,varid='Rn') Ts2 <-ncdf4::ncvar_get(nc=nc,varid='TS2')
-    
+
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair, Rg, rH, PAR, precip, sHum, Lw, Ts1,
                              VPD, ws, co2, press, east_wind, north_wind)
@@ -343,10 +343,10 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     EddyData.F[["Tair"]] <- EddyData.F[["Tair"]]
     EddyData.F[["Ts1"]] <- udunits2::ud.convert(EddyData.F[["Ts1"]], "K", "degC")
     EddyData.F[["VPD"]] <- udunits2::ud.convert(EddyData.F[["VPD"]], "Pa", "kPa")
-    
+
     ## Optional need:
     ## Compute VPD EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
-    
+
     ## Estimate number of good values, don't gap fill if no gaps or all gaps
     n_Tair   <- sum(is.na(EddyData.F[["Tair"]]))
     n_Rg     <- sum(is.na(EddyData.F[["Rg"]]))
@@ -364,7 +364,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     n_press  <- sum(is.na(EddyData.F[["press"]]))
     n_east_wind  <- sum(is.na(EddyData.F[["east_wind"]]))
     n_north_wind <- sum(is.na(EddyData.F[["north_wind"]]))
-    
+
     # figure out datetime of nc file and convert to POSIX
     nelem <- length(time)
     tunit <- ncdf4::ncatt_get(nc = nc, varid = "time", attname = "units", verbose = verbose)
@@ -379,12 +379,12 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       time <- 60 * 60 + time
       DTS.n <- 24
     }
-    
+
     # if (length(time) > 10000) {
     #  DTS.n <- 48 time <- 30*60 + time
     # } else { time <- 60*60 + time DTS.n <- 24 }
     EddyData.F <- cbind(EddyData.F, DateTime = time)
-    
+
     ## Create EddyProc object
     EddyProc.C <- sEddyProc$new("Site",
                                 EddyData.F,
@@ -393,10 +393,10 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
                                   "press", "east_wind", "north_wind"),
                                 DTS.n = DTS.n)
     maxbad <- nelem / 2
-    
+
     ## Gap fill with default (see below for examples of advanced options) Have to do Rg, Tair, VPD
     ## first
-    
+
     ## First, define filled variable and do some simple gap filling where possible
     Rg_f     <- Rg
     Tair_f   <- Tair
@@ -417,7 +417,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     east_wind_f[is.na(east_wind_f)] <- 0
     north_wind_f <- north_wind
     north_wind_f[is.na(north_wind_f)] <- ws_f[is.na(north_wind_f)]
-    
+
     if (n_Rg > 0 && n_Rg < maxbad) {
       EddyProc.C$sMDSGapFill("Rg", FillAll.b = FALSE, V1.s = "Rg", V2.s = "VPD", V3.s = "Tair",
                              Verbose.b = verbose)
@@ -474,11 +474,11 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       EddyProc.C$sMDSGapFill("north_wind", FillAll.b = FALSE, V1.s = "Rg", V2.s = "VPD", V3.s = "Tair",
                              Verbose.b = verbose)
     }
-    
+
     ## Extract filled variables into data frame print('Extracting dataframe elements and writing back
     ## to nc file')
     Extracted <- EddyProc.C$sExportResults()
-    
+
     ## Write back to NC file, convert air T to Kelvin
     error <- c()
     if (("Tair_f" %in% colnames(Extracted))) {
@@ -488,7 +488,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "air_temperature")
     }
     ncdf4::ncvar_put(nc, varid = "air_temperature", vals = Tair_f)
-    
+
     if (("Rg_f" %in% colnames(Extracted))) {
       Rg_f <- Extracted[, "Rg_f"]
     }
@@ -496,7 +496,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "surface_downwelling_shortwave_flux_in_air")
     }
     ncdf4::ncvar_put(nc, varid = "surface_downwelling_shortwave_flux_in_air", vals = Rg_f)
-    
+
     if (("rH_f" %in% colnames(Extracted))) {
       rH_f <- Extracted[, "rH_f"]
       rH_f[rH_f < 0] <- 0
@@ -506,7 +506,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "relative_humidity")
     }
     ncdf4::ncvar_put(nc, varid = "relative_humidity", vals = rH_f)
-    
+
     if (("PAR_f" %in% colnames(Extracted))) {
       PAR_f <- Extracted[, "PAR_f"]
     }
@@ -514,7 +514,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "surface_downwelling_photosynthetic_photon_flux_in_air")
     }
     ncdf4::ncvar_put(nc, varid = "surface_downwelling_photosynthetic_photon_flux_in_air", vals = PAR_f)
-    
+
     if (("precip_f" %in% colnames(Extracted))) {
       precip_f <- Extracted[, "precip_f"]
     }
@@ -522,7 +522,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "precipitation_flux")
     }
     ncdf4::ncvar_put(nc, varid = "precipitation_flux", vals = precip_f)
-    
+
     if (("sHum_f" %in% colnames(Extracted))) {
       sHum_f <- Extracted[, "sHum_f"]
       sHum_f[sHum_f < 0] <- 0
@@ -533,7 +533,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "specific_humidity")
     }
     ncdf4::ncvar_put(nc, varid = "specific_humidity", vals = sHum_f)
-    
+
     if (("Lw_f" %in% colnames(Extracted))) {
       Lw_f <- Extracted[, "Lw_f"]
     }
@@ -542,7 +542,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "surface_downwelling_longwave_flux_in_air")
     }
     ncdf4::ncvar_put(nc, varid = "surface_downwelling_longwave_flux_in_air", vals = Lw_f)
-    
+
     if (("Ts1_f" %in% colnames(Extracted))) {
       Ts1_f <- udunits2::ud.convert(Extracted[, "Ts1_f"], "degC", "K")
     }
@@ -559,28 +559,28 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "soil_temperature")
     }
     ncdf4::ncvar_put(nc, varid = "soil_temperature", vals = Ts1_f)
-    
+
     if (("VPD_f" %in% colnames(Extracted))) {
       VPD_f <- udunits2::ud.convert(Extracted[, "VPD_f"], "kPa", "Pa")
       VPD_f[VPD_f < 0] <- 0
       if (("Tair_f" %in% colnames(Extracted))) {
         Tair_f_degC <- udunits2::ud.convert(Tair_f, "K", "degC")
         es <- get.es(Tair_f_degC) * 100
-        
+
         badVPD_f <- which(VPD_f > es) 
         VPD_f[badVPD_f] <- es[badVPD_f] 
-        
+
       }
     }
     if (length(which(is.na(VPD_f))) > 0) {
       error <- c(error, "water_vapor_saturation_deficit")
     }
     ncdf4::ncvar_put(nc, varid = "water_vapor_saturation_deficit", vals = VPD_f)
-    
+
     if (("ws_f" %in% colnames(Extracted))) {
       ws_f <- Extracted[, "ws_f"]
     }
-    
+
     if (("co2_f" %in% colnames(Extracted))) {
       co2_f <- Extracted[, "co2_f"]
     }
@@ -590,7 +590,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "mole_fraction_of_carbon_dioxide_in_air")
     }
     ncdf4::ncvar_put(nc, varid = "mole_fraction_of_carbon_dioxide_in_air", vals = co2_f)
-    
+
     if (("press_f" %in% colnames(Extracted))) {
       press_f <- Extracted[, "press_f"]
     }
@@ -601,7 +601,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "air_pressure")
     }
     ncdf4::ncvar_put(nc, varid = "air_pressure", vals = press_f)
-    
+
     if (("east_wind_f" %in% colnames(Extracted))) {
       east_wind_f <- Extracted[, "east_wind_f"]
     }
@@ -609,7 +609,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "eastward_wind")
     }
     ncdf4::ncvar_put(nc, varid = "eastward_wind", vals = east_wind_f)
-    
+
     if (("north_wind_f" %in% colnames(Extracted))) {
       north_wind_f <- Extracted[, "north_wind_f"]
     }
@@ -619,24 +619,24 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       error <- c(error, "northward_wind")
     }
     ncdf4::ncvar_put(nc, varid = "northward_wind", vals = north_wind_f)
-    
+
     ws_f[is.na(ws_f)] <- sqrt(north_wind_f[is.na(ws_f)] ^ 2 + east_wind_f[is.na(ws_f)] ^ 2)
     if (length(which(is.na(ws_f))) > 0) {
       error <- c(error, "wind_speed")
     }
     ncdf4::ncvar_put(nc, varid = "wind_speed", vals = ws_f)
-    
+
     ncdf4::nc_close(nc)
-    
+
     if (length(error) > 0) {
       fail.file <- file.path(outfolder,
                              paste(in.prefix, sprintf("%04d", year), "failure", "nc", sep = "."))
       file.rename(from = new.file, to = fail.file)
       PEcAn.logger::logger.severe("Could not do gapfill, results are in", fail.file, ".",
-                                  "The following variables have NA's:", paste(error, sep = ", "))
+                    "The following variables have NA's:", paste(error, sep = ", "))
     }
   }  # end loop
-  
+
   #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # Extra: Examples of extended usage for advanced users
   #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -654,7 +654,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
   #  Result_Step1.F <- EddyTest.C$sFillLUT(3, 'Rg',50, 'rH',30, 'Tair',2.5, 'Tsoil',2, 'Step',0.5)
   #  Result_Step2.F <- EddyTest.C$sFillLUT(6, 'Tair',2.5, 'VPD',3, 'Step',0.5)
   #  Result_Step3.F <- EddyTest.C$sFillMDC(3)
-  
+
   ## NARR BASED downscaling - future funtcionality
   ## Step 2. Determine if gaps need filling - if not, skip to step 7
   ## Step 3. Read fill file (reanalysis - NARR or CFSR)
@@ -677,6 +677,6 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
   ## 5b. May need to have an edge case for precipitation
   ## Step 6.Replace gaps with debiased time series (perhaps store statistics of fit somewhere as a measure of uncertainty?)
   ## Step 7. Write to outfolder the new NetCDF file
-  
+
   return(invisible(results))
 } # metgapfill
