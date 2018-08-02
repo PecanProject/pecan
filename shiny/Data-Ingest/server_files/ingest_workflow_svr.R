@@ -206,6 +206,5 @@ observeEvent(input$complete_ingest, {
                                                                #hostname = localhost #?, #default to localhost for now
                                                                #allow.conflicting.dates#? #default to FALSE for now
                                                                )
-  #3. Move files to dbfiles 
   
 })

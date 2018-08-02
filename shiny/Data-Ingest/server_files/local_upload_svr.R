@@ -35,7 +35,7 @@ observe({
 output$test <- renderPrint({Shared.data$selected_row}) #_local
 
 # Move files to correct dbfiles location (make a custom function for this?)
-observeEvent(input$LocalFinishButton, {
+observeEvent(input$complete_ingest, {
   # create the new directory in /dbfiles
   local_dirname <- gsub(" ", "_", input$new_local_filename) # Are there any other types of breaking chatacters that I should avoid with directory naming? 
   dir.create(file.path(PEcAn_path, local_dirname))
