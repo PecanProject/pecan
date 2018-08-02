@@ -8,7 +8,7 @@ tagList(
     p("Copy and Paste the following example data sets:"),
     p("doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87"),
     p("doi:10.6073-pasta-f31b28b912e6051bf1d383ff1ef18987"),
-    actionButton(inputId = "D1Button", label = "Download"),
+    actionBttn(inputId = "D1Button", label = "Download", size = "sm", color = "success"),
     #  actionButton(inputId = "CancelD1Download", label = "Cancel Download"), This is WAY tricky. Not sure if I can add this functionality... 
     hr(),
     conditionalPanel(condition="$('html').hasClass('shiny-busy')",

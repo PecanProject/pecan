@@ -176,16 +176,27 @@ div(id = "formats.vars_box",
       DT::DTOutput("format_vars_df")
   )
 ),
-div(id = "finishButton",
+div(id = "finishButton_d1",
   fluidRow(
     column(10),
     column(2,
-           actionBttn("complete_ingest", 
-                      label = "Complete Ingest", 
+           actionBttn("complete_ingest_d1", 
+                      label = "Complete Ingest of DataONE Files", 
                       color = "success", 
                       size = "md")
     )
   )
+),
+div(id = "finishButton_lcl",
+    fluidRow(
+      column(10),
+      column(2,
+             actionBttn("complete_ingest_lcl", 
+                        label = "Complete Ingest of Local Files", 
+                        color = "success", 
+                        size = "md")
+      )
+    )
 )
 )
 )

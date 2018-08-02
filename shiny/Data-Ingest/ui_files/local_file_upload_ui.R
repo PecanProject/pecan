@@ -15,7 +15,6 @@ div(id = "lcl_ui",
         label = "Set Destination Directory (for testing only)",
         placeholder = "Enter New Directory Name Here"
       ),
-      actionButton(inputId = "LocalFinishButton", label = "Finish Download"),
      fluidRow(
        column(8),
        column(4,
