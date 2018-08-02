@@ -78,7 +78,7 @@ download.US_WCr <- function(start_date, end_date, timestep = 1) {
   out_le = NULL
   
   PEcAn.logger::logger.info("Starting at row (nonconverted) ")
-  PEcAn.logger::logger.info(new.flux[start_row,])
+  print(new.flux[start_row,]) #print gives a much more interpretable output than pasting in the logger call.
   
   for (d in seq(start_row, end_row, by=timestep)) {
     row = new.flux[d,]
@@ -100,4 +100,4 @@ download.US_WCr <- function(start_date, end_date, timestep = 1) {
 } # download.wcr.R
 
 # This line is great for testing.
-# download.wcr('2018-07-23 06:00', '2018-08-08 06:00')
+# download.US_WCr('2018-07-23 06:00', '2018-08-08 06:00')
