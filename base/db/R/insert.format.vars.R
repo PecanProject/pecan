@@ -78,8 +78,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
           "variable_id must be an integer"
         )
       }
-<<<<<<< HEAD
-=======
+
       if(suppress == FALSE){
       ## Test if variable_id already exists ##
       var_id_test <- dplyr::tbl(con, "variables") %>% dplyr::select(id) %>% dplyr::filter(id %in% formats_variables[[i, "variable_id"]]) %>% dplyr::collect(id)
@@ -89,8 +88,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
         )
       }
       }
-      
->>>>>>> 9db3fc4f337e30260327060aa73e0e4c91506a8a
+
       if(!is.character(formats_variables[[i, "name"]])&!is.na(formats_variables[[i, "name"]])){
         PEcAn.logger::logger.error(
           "Variable name must be of type character or NA"
