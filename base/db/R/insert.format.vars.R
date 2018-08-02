@@ -34,7 +34,7 @@
 insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, header = TRUE, skip = 0, formats_variables = NULL, suppress = TRUE){
   
   # Test if name is a character string
-  if(!is.character(name)){
+  if(!is.character(format_name)){
     PEcAn.logger::logger.error(
       "Name must be a character string"
     )
