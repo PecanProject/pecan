@@ -6,10 +6,10 @@
 sample_met <- function(settings, nens=1){
 
   # path where ensemble met folders are
-  if(!is.null(settings$run$inputs$met[["path"]])){
+  if(length(settings$run$inputs$met[["path"]]) == 1){
     path <- settings$run$inputs$met[["path"]]
-  }else if(!is.null(settings$run$inputs[[1]]$met[["path"]])){ # this function will be deprecated soon anyway
-    path <- settings$run$inputs[[1]]$met[["path"]]
+  }else if(!is.null(settings$run$inputs$met[["path"]])){ # this function will be deprecated soon anyway
+    path <- settings$run$inputs$met[["path"]][[1]]
   }else{
     PEcAn.logger::logger.error("Met path not found in settings.")
   }

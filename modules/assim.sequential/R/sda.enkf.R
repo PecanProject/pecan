@@ -95,7 +95,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     
     if(no_split){ # currently this is only for ED2, ensemble generator + refactoring will change these soon anyway
       # note that write configs accepts one "settings" for now, so I'll use the inputs arg to pass IC ensembles
-      inputs[[i]]     <- settings$run$inputs[[i]]
+      inputs[[i]]  <- lapply(settings$run$inputs, function(x) {
+             return( x %>% purrr::map(function(inputs){return((inputs%>%unlist)[i])}))
+      })
       inputs[[i]]$met <- ens.inputs[[i]]$met 
     }else{
       ### get only necessary ensemble inputs. Do not change in analysis
