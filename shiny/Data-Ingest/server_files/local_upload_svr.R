@@ -34,22 +34,6 @@ observe({
 
 output$test <- renderPrint({Shared.data$selected_row}) #_local
 
-# Move files to correct dbfiles location (make a custom function for this?)
-observeEvent(input$complete_ingest, {
-  # create the new directory in /dbfiles
-  local_dirname <- gsub(" ", "_", input$new_local_filename) # Are there any other types of breaking chatacters that I should avoid with directory naming? 
-  dir.create(file.path(PEcAn_path, local_dirname))
-  
-  path_to_local_tempdir <- file.path(local_tempdir)
-  list_of_local_files <- list.files(path_to_local_tempdir) 
-  
-  n <- length(list_of_d1_files)
-  for (i in 1:n){
-    base::file.copy(file.path(path_to_local_tempdir, list_of_local_files[i]), file.path(PEcAn_path, local_dirname, list_of_local_files[i]))
-  }
-  output$LocaldbfilesPath <- renderText({paste0(PEcAn_path, local_dirname)}) # Print path to dbfiles
-})
-
 observeEvent(input$nextFromLocal, {
   show("input_record_box")
   hide("nextFromLocal_div")

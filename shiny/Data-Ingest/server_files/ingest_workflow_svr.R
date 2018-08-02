@@ -182,27 +182,74 @@ output$format_vars_df <- DT::renderDT(datatable({Shared.data$format_vars_df}, es
 
 observeEvent(input$complete_ingest, {
   # 1. Create Format and the format variable records
-  PEcAn.DB::insert.format.vars(con = bety$con, 
-                               format_name = FormatRecordList$NewFormatName, 
-                               mimetype_id = FormatRecordList$NewmimetypeID, 
-                               header = FormatRecordList$HeaderBoolean,
-                               skip = FormatRecordList$SkipLines,
-                               notes = FormatRecordList$FormatNotes,
-                               formats_variables = Shared.data$format_vars_df
-                               )
+  tryCatch({
+  # PEcAn.DB::insert.format.vars(con = bety$con, 
+  #                              format_name = FormatRecordList$NewFormatName, 
+  #                              mimetype_id = FormatRecordList$NewmimetypeID, 
+  #                              header = FormatRecordList$HeaderBoolean,
+  #                              skip = FormatRecordList$SkipLines,
+  #                              notes = FormatRecordList$FormatNotes,
+  #                              formats_variables = Shared.data$format_vars_df
+  #                              )
+  #   toastr_success("Successfully Created Format Record")
+  # 
+  #3. Move files to correct dbfiles location 
+  observe({
+    if(input$inputMethod == "DataONE"){ #Only run this chunk at the end IF DataONE is the selected input method
+      # observeEvent(input$complete_ingest, {
+      #   
+      #   # create the new directory in /dbfiles
+      #   dir.create(paste0(PEcAn_path, d1_dirname))
+      #   
+      #   n <- length(list_of_d1_files)
+      #   for (i in 1:n){
+      #     base::file.copy(file.path(newdir_D1, list_of_d1_files[i]), file.path(PEcAn_path, d1_dirname, list_of_d1_files[i]))
+      #   }
+      #   toastr_success("Successfully moved DataONE file(s) to BETYdb")
+      #   output$D1dbfilesPath <- renderText({paste0(PEcAn_path, d1_dirname)}) # Print path to data
+      # })
+    }else{
+      observeEvent(input$complete_ingest, {
+        # create the new directory in /dbfiles
+        local_dirname <- gsub(" ", "_", input$new_local_filename) # Are there any other types of breaking chatacters that I should avoid with directory naming?
+        dir.create(file.path(PEcAn_path, local_dirname))
+        
+        path_to_local_tempdir <- file.path(local_tempdir)
+        list_of_local_files <- list.files(path_to_local_tempdir)
+        
+        n <- length(list_of_d1_files)
+        for (i in 1:n){
+          base::file.copy(file.path(path_to_local_tempdir, list_of_local_files[i]), file.path(PEcAn_path, local_dirname, list_of_local_files[i]))
+        }
+        toastr_success("Successfully uploaded local file(s) to BETYdb")
+        output$LocaldbfilesPath <- renderText({paste0(PEcAn_path, local_dirname)}) # Print path to dbfiles
+        
+      })
+    }
+  })
   
-  #2. Create the Inputs Record and dbfiles record
-  Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
-                                                               in.prefix = inputsList$Name,
-                                                               siteid =   inputsList$siteID,
-                                                               startdate = inputsList$StartDateTime,
-                                                               enddate =   inputsList$EndDateTime,
-                                                               mimetype = inputsList$Mimetype,
-                                                               formatname = inputsList$formatName,
-                                                               parentid = inputsList$parentID,
-                                                               con = bety$con
-                                                               #hostname = localhost #?, #default to localhost for now
-                                                               #allow.conflicting.dates#? #default to FALSE for now
-                                                               )
+  },
+  error = function(e){
+    toastr_error(title = "Error in creating Format Record", conditionMessage(e))
+  },
+  warning = function(e){
+    toastr_warning(title = "Database Warning", conditionMessage(e))
+  }
+  )
   
+  # 
+  # #2. Create the Inputs Record and dbfiles record
+  # Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
+  #                                                              in.prefix = inputsList$Name,
+  #                                                              siteid =   inputsList$siteID,
+  #                                                              startdate = inputsList$StartDateTime,
+  #                                                              enddate =   inputsList$EndDateTime,
+  #                                                              mimetype = inputsList$Mimetype,
+  #                                                              formatname = inputsList$formatName,
+  #                                                              parentid = inputsList$parentID,
+  #                                                              con = bety$con
+  #                                                              #hostname = localhost #?, #default to localhost for now
+  #                                                              #allow.conflicting.dates#? #default to FALSE for now
+  #                                                              )
+  # 
 })

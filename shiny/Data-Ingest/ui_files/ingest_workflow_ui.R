@@ -2,7 +2,7 @@ fluidPage(
 fluidRow(
 ## 1. D1 Download or Local Upload
 box(
-  title = h3("1. Select Files"), width = 4, solidHeader = TRUE, status = "success", collapsible = TRUE,
+  title = h2("1. Select Files"), width = 4, solidHeader = TRUE, status = "success", collapsible = TRUE,
   shinyWidgets::radioGroupButtons("inputMethod", label = "Select Input Method", 
                                  choices = c("DataONE", "Local Files"), status = "success", selected = NULL),
   shinyjs::hidden(source_ui("d1_download_ui.R")),

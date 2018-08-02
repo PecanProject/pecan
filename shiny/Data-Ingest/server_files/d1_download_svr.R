@@ -39,18 +39,6 @@ observe({
 
 output$rowSelection <- renderPrint({Shared.data$selected_row})
 
-# Move files to correct dbfiles location (make a custom function for this?)
-observeEvent(input$complete_ingest, {
-  # create the new directory in /dbfiles
-  dir.create(paste0(PEcAn_path, d1_dirname))
-  
-  n <- length(list_of_d1_files) 
-  for (i in 1:n){
-    base::file.copy(file.path(newdir_D1, list_of_d1_files[i]), file.path(PEcAn_path, d1_dirname, list_of_d1_files[i]))
-  }
-  output$D1dbfilesPath <- renderText({paste0(PEcAn_path, d1_dirname)}) # Print path to data
-})
-
 observeEvent(input$nextFromD1, {
   show("input_record_box")
   hide("nextFromD1_div")
