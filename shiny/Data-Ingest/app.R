@@ -68,7 +68,8 @@ server <- function(input, output, session) {
   ## Setup ##
   Shared.data <- reactiveValues(downloaded = NULL, selected_row = NULL, 
                                 local_files = NULL, selected_row_local = NULL, 
-                                new_format = NULL, input_record_df = NULL, format_vars_df = NULL)
+                                new_format = NULL, input_record_df = NULL, 
+                                format_vars_df = NULL)
   
   Shared.data$variables_rd <- variables
   

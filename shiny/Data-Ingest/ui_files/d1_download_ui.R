@@ -18,7 +18,14 @@ tagList(
     DT::DTOutput("identifier"),
     # p("Selected Row (For Testing Purposes)"),
     # verbatimTextOutput("rowSelection"), ## For testing only
-    actionButton(inputId = "D1FinishButton", label = "Finish Download"),
+    div(id = "nextFromD1_div",
+    fluidRow(
+      column(8),
+      column(4,
+        actionBttn(inputId = "nextFromD1", label = "Next Step", size = "sm", color = "success")
+        )
+      )
+    ),
     hr(),
     p("Location of Downloaded files:"),
     verbatimTextOutput("D1dbfilesPath")

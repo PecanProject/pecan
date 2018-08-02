@@ -59,7 +59,7 @@ observeEvent(input$FormatRecordDone,{
 
 ####### Make Inputs List ##########
 
-observeEvent(input$createInput, {
+observeEvent(input$nextFromInput, {
   ## siteID
   if(input$InputSiteName == ""){
     inputsList$siteName <<- ""
@@ -113,25 +113,7 @@ observeEvent(input$createInput, {
   output$summInputs <- renderPrint({inputsList})
 })
 
-observeEvent(input$testBety, {
-  Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
-                                                                in.prefix = inputsList$Name,
-                                                                siteid =   inputsList$siteID,
-                                                                startdate = inputsList$StartDateTime,
-                                                                enddate =   inputsList$EndDateTime,
-                                                                mimetype = inputsList$Mimetype,
-                                                                formatname = inputsList$formatName,
-                                                                # parentid = inputsList$parentID,
-                                                                con = bety$con
-                                                                #hostname = localhost #?,
-                                                                #allow.conflicting.dates#?
-  )
-  
-  inputs_updated <<- dplyr::tbl(bety, "inputs") %>% collect()
-  
-})
 output$input_record_df <- renderPrint({Shared.data$input_record_df})
-
 
 ######### Formats Svr #############
 output$autoname <- renderPrint({Shared.data$selected_row}) #_local
@@ -177,13 +159,13 @@ FormatVars <- list()
 updateSelectizeInput(session = getDefaultReactiveDomain(), "pecan_var", choices = variables, server = TRUE)
 
 #### Show inputs on click only ####
-observeEvent(input$add_variable,{
-    show("formats_vars_inputs")
-    hide("add_var_action_button")
+observeEvent(input$nextFromInput,{
+    show("formats.vars_box")
+    show("finishButton")
 })
 
 ### Create empty matrix with headers to store infinite entries ###
-Shared.data$format_vars_df <- matrix(data = NA, nrow = 1, ncol = 5, dimnames = list(c(), c("variable", "name", "unit", "storage_type", "column_number")))
+Shared.data$format_vars_df <- matrix(data = NA, nrow = 0, ncol = 5, dimnames = list(c(), c("variable", "name", "unit", "storage_type", "column_number")))
 
 ### Store inputs in a data.frame ###
 observeEvent(input$register_variable, {
@@ -200,4 +182,30 @@ output$format_vars_df <- DT::renderDT(datatable({Shared.data$format_vars_df}, es
 })
 
 
-
+observeEvent(input$complete_ingest, {
+  # 1. Create Format and the format variable records
+  PEcAn.DB::insert.format.vars(con = bety$con, 
+                               format_name = FormatRecordList$NewFormatName, 
+                               mimetype_id = FormatRecordList$NewmimetypeID, 
+                               header = FormatRecordList$HeaderBoolean,
+                               skip = FormatRecordList$SkipLines,
+                               notes = FormatRecordList$FormatNotes,
+                               formats_variables = Shared.data$format_vars_df
+                               )
+  
+  #2. Create the Inputs Record and dbfiles record
+  Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
+                                                               in.prefix = inputsList$Name,
+                                                               siteid =   inputsList$siteID,
+                                                               startdate = inputsList$StartDateTime,
+                                                               enddate =   inputsList$EndDateTime,
+                                                               mimetype = inputsList$Mimetype,
+                                                               formatname = inputsList$formatName,
+                                                               parentid = inputsList$parentID,
+                                                               con = bety$con
+                                                               #hostname = localhost #?, #default to localhost for now
+                                                               #allow.conflicting.dates#? #default to FALSE for now
+                                                               )
+  #3. Move files to dbfiles 
+  
+})

@@ -50,3 +50,7 @@ observeEvent(input$LocalFinishButton, {
   output$LocaldbfilesPath <- renderText({paste0(PEcAn_path, local_dirname)}) # Print path to dbfiles
 })
 
+observeEvent(input$nextFromLocal, {
+  show("input_record_box")
+  hide("nextFromLocal_div")
+})

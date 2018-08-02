@@ -10,7 +10,9 @@ box(
 ),
 
 ### 2. Inputs
-box(
+shinyjs::hidden(
+  div(id = "input_record_box",
+  box(
   title = h2("2. Input Record"), width = 8, collapsible = TRUE, solidHeader = TRUE, status = "success",
   fluidRow(column(6,
   selectizeInput("InputSiteName", label = "Site *", choices = NULL,
@@ -28,7 +30,6 @@ box(
                  )
   )
   )),
-#  hr(),
   textInput("InputName",
             label = "Name *",
             placeholder = ""),
@@ -126,16 +127,29 @@ column(3)), # Empty Space
   textAreaInput("InputNotes",
                 label = "Notes",
                 height = '50px'),
-  actionButton("createInput", label = "Create Input"),
-  actionButton("testBety", label = "Test Bety"),
+fluidRow(
+  column(10),
+  column(2,
+         actionBttn("nextFromInput", 
+                    label = "Next Step", 
+                    color = "success", 
+                    size = "sm")
+  )
+),
+  #actionBttn("createInput", label = "Create Input Record", color = "success", size = "sm"),
+  #actionButton("testBety", label = "Test Bety"),
   p("* Denotes a Required Field"),
   hr(),
   verbatimTextOutput("summInputs"),
   verbatimTextOutput("input_record_df")
   )
+)
+)
 ),#End Fluid Row
 fluidRow(
   ## 4. Formats-Variables
+shinyjs::hidden(  
+div(id = "formats.vars_box",  
   box(title = h2("3. Formats-Variables"), width = 12, solidHeader = TRUE, status = "success", collapsible = TRUE, collapsed = FALSE,
       fluidRow(column(3,
                       selectizeInput("pecan_var", choices = NULL, label = "Variable",
@@ -161,5 +175,18 @@ fluidRow(
       actionButton("register_variable", label = "Add Variable"),
       DT::DTOutput("format_vars_df")
   )
+),
+div(id = "finishButton",
+  fluidRow(
+    column(10),
+    column(2,
+           actionBttn("complete_ingest", 
+                      label = "Complete Ingest", 
+                      color = "success", 
+                      size = "md")
+    )
+  )
+)
+)
 )
 )# End Fluid Page

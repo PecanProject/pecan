@@ -40,7 +40,7 @@ observe({
 output$rowSelection <- renderPrint({Shared.data$selected_row})
 
 # Move files to correct dbfiles location (make a custom function for this?)
-observeEvent(input$D1FinishButton, {
+observeEvent(input$complete_ingest, {
   # create the new directory in /dbfiles
   dir.create(paste0(PEcAn_path, d1_dirname))
   
@@ -51,4 +51,8 @@ observeEvent(input$D1FinishButton, {
   output$D1dbfilesPath <- renderText({paste0(PEcAn_path, d1_dirname)}) # Print path to data
 })
 
+observeEvent(input$nextFromD1, {
+  show("input_record_box")
+  hide("nextFromD1_div")
+})
 
