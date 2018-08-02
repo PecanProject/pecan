@@ -39,7 +39,7 @@
                                write = TRUE, 
                                overwrite = overwrite, 
                                # fcn specific args 
-                               new_site = new.site,
+                               new_site = new_site,
                                gridres = input_veg$gridres, dbparms = dbparms,
                                machine_host = machine.host, input_veg = input, 
                                source = input_veg$source)
