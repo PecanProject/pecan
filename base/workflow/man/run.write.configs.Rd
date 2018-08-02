@@ -2,34 +2,39 @@
 % Please edit documentation in R/run.write.configs.R
 \name{run.write.configs}
 \alias{run.write.configs}
-\title{Run model specific write configuration functions}
+\title{Write model-specific run scripts and configuration files}
 \usage{
 run.write.configs(settings, write = TRUE,
   ens.sample.method = "uniform", posterior.files = rep(NA,
   length(settings$pfts)), overwrite = TRUE)
 }
 \arguments{
-\item{write}{should the runs be written to the database}
+\item{settings}{a PEcAn settings list}
+
+\item{write}{should the runs be written to the database?}
 
 \item{ens.sample.method}{how to sample the ensemble members('halton' sequence or 'uniform' random)}
 
 \item{posterior.files}{Filenames for posteriors for drawing samples for ensemble and sensitivity
-analysis (e.g. post.distns.Rdata, or prior.distns.Rdata). Defaults to NA, in which case the 
-most recent posterior or prior (in that order) for the workflow is used. Should be a vector, 
-with one entry for each PFT. File name only; PFT outdirs will be appended (this forces use of only
-files within this workflow, to avoid confusion).}
+analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)}
 
-\item{model}{the ecosystem model to generate the configuration files for}
+\item{overwrite}{logical: Replace output files that already exist?}
 }
 \value{
 an updated settings list, which includes ensemble IDs for SA and ensemble analysis
 }
 \description{
-Main driver function to call the ecosystem model specific (e.g. ED, SiPNET) 
-run and configuration file scripts
+Generates run scripts and configuration files for all analyses specified
+in the provided settings. Most of the heavy lifting is done by the
+\code{write.config.*} function for your specific ecosystem model
+(e.g. write.config.ED2, write.config.SIPNET).
 }
 \details{
-DEPRECATED: This function has been moved to the PEcAn.workflow package and will be removed from PEcAn.utils.
+The default value for \code{posterior.files} is NA, in which case the
+   most recent posterior or prior (in that order) for the workflow is used.
+   When specified, \code{posterior.files} should be a vector of filenames with one entry for each PFT.
+   Specify filenames with no path; PFT outdirs will be appended. This forces use of only
+   files within this workflow, to avoid confusion.
 }
 \author{
 David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
