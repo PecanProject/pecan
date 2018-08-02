@@ -15,6 +15,9 @@ load_rds(data.path, format, site, vars = NULL)
 
 \item{vars}{}
 }
+\description{
+load_rds
+}
 \author{
 Istem Fer
 }

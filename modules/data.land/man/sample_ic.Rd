@@ -7,6 +7,9 @@
 sample_ic(in.path, in.name, start_date, end_date, outfolder, n.ensemble,
   machine_host, source = input_veg$source, ...)
 }
+\description{
+sample_ic
+}
 \author{
 Istem Fer
 }
