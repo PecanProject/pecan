@@ -26,7 +26,8 @@
  formats <- dplyr::tbl(bety, "formats") %>% distinct(name) %>% dplyr::arrange(name) %>% pull(name)
  formats_sub <- dplyr::tbl(bety, "formats") %>% dplyr::select(name, id) %>% dplyr::arrange(name)
  
- variables <- dplyr::tbl(bety, "variables") %>% distinct(name) %>% dplyr::arrange(name)%>% pull(name)
+ variables_ids <- dplyr::tbl(bety, "variables") %>% dplyr::select(id, name) %>% dplyr::arrange(name)
+ variables <- variables_ids %>% pull(name)
   
  # machines <- dplyr::tbl(bety, "machines") %>% distinct(hostname) %>% dplyr::arrange(hostname)%>% pull(hostname)
  # machines_sub <- dplyr::tbl(bety, "machines") %>% dplyr::select(hostname, id) %>% dplyr::arrange(hostname)
@@ -72,7 +73,7 @@ server <- function(input, output, session) {
   Shared.data <- reactiveValues(downloaded = NULL, selected_row = NULL, 
                                 local_files = NULL, selected_row_local = NULL, 
                                 new_format = NULL, input_record_df = NULL, 
-                                format_vars_df = NULL)
+                                format_vars_df = NULL, input_method = NULL)
   
   Shared.data$variables_rd <- variables
   

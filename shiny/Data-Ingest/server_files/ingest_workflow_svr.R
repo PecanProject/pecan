@@ -142,7 +142,7 @@ observeEvent(input$FormatRecordDone, {
     name = FormatRecordList$NewFormatName
   )
   ## Print format record for testing
-  #output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
+#  output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
 
 })
 
@@ -153,26 +153,31 @@ observeEvent(input$FormatRecordDone, {
 ##Output list 
 FormatVars <- list()
 
-## Machine Name ##
+## Variable Name ##
 updateSelectizeInput(session = getDefaultReactiveDomain(), "pecan_var", choices = variables, server = TRUE)
 
 #### Show inputs on click only ####
 observeEvent(input$nextFromInput,{
     show("formats.vars_box")
-    show("finishButton")
+    if(input$inputMethod == "DataONE"){
+      show("finishButton_d1")
+      }else{
+        show("finishButton_lcl")
+      }
 })
 
 ### Create empty matrix with headers to store infinite entries ###
-Shared.data$format_vars_df <- matrix(data = NA, nrow = 0, ncol = 5, dimnames = list(c(), c("variable", "name", "unit", "storage_type", "column_number")))
+Shared.data$format_vars_df <- matrix(data = NA, nrow = 0, ncol = 6, dimnames = list(c(), c("BETY_variable_name", "variable_id", "name", "unit", "storage_type", "column_number")))
 
 ### Store inputs in a data.frame ###
 observeEvent(input$register_variable, {
 format_vars_entry <- tibble::tibble(
-                                variable = input$pecan_var,
+                                var_name = input$pecan_var, 
+                                variable_id = variables_ids %>% dplyr::filter(name %in% input$pecan_var) %>% pull(id),
                                 name = input$var_name, 
                                 unit = input$var_unit, 
                                 storage_type = input$storage_type,
-                                column_number = input$col_num
+                                column_number = as.numeric(input$col_num)
                               )
 
 Shared.data$format_vars_df <- rbind(format_vars_entry, Shared.data$format_vars_df)
@@ -180,76 +185,98 @@ output$format_vars_df <- DT::renderDT(datatable({Shared.data$format_vars_df}, es
 })
 
 
-observeEvent(input$complete_ingest, {
+observeEvent(input$complete_ingest_d1, {
+  # Drop var_name column from format_vars_df
+  Shared.data$format_vars_df <- Shared.data$format_vars_df %>% select(-one_of("var_name"))
+  
   # 1. Create Format and the format variable records
   tryCatch({
-  # PEcAn.DB::insert.format.vars(con = bety$con, 
-  #                              format_name = FormatRecordList$NewFormatName, 
-  #                              mimetype_id = FormatRecordList$NewmimetypeID, 
-  #                              header = FormatRecordList$HeaderBoolean,
-  #                              skip = FormatRecordList$SkipLines,
-  #                              notes = FormatRecordList$FormatNotes,
-  #                              formats_variables = Shared.data$format_vars_df
-  #                              )
-  #   toastr_success("Successfully Created Format Record")
-  # 
-  #3. Move files to correct dbfiles location 
-  observe({
-    if(input$inputMethod == "DataONE"){ #Only run this chunk at the end IF DataONE is the selected input method
-      # observeEvent(input$complete_ingest, {
-      #   
-      #   # create the new directory in /dbfiles
-      #   dir.create(paste0(PEcAn_path, d1_dirname))
-      #   
-      #   n <- length(list_of_d1_files)
-      #   for (i in 1:n){
-      #     base::file.copy(file.path(newdir_D1, list_of_d1_files[i]), file.path(PEcAn_path, d1_dirname, list_of_d1_files[i]))
-      #   }
-      #   toastr_success("Successfully moved DataONE file(s) to BETYdb")
-      #   output$D1dbfilesPath <- renderText({paste0(PEcAn_path, d1_dirname)}) # Print path to data
-      # })
-    }else{
-      observeEvent(input$complete_ingest, {
-        # create the new directory in /dbfiles
-        local_dirname <- gsub(" ", "_", input$new_local_filename) # Are there any other types of breaking chatacters that I should avoid with directory naming?
-        dir.create(file.path(PEcAn_path, local_dirname))
-        
-        path_to_local_tempdir <- file.path(local_tempdir)
-        list_of_local_files <- list.files(path_to_local_tempdir)
-        
-        n <- length(list_of_d1_files)
-        for (i in 1:n){
-          base::file.copy(file.path(path_to_local_tempdir, list_of_local_files[i]), file.path(PEcAn_path, local_dirname, list_of_local_files[i]))
-        }
-        toastr_success("Successfully uploaded local file(s) to BETYdb")
-        output$LocaldbfilesPath <- renderText({paste0(PEcAn_path, local_dirname)}) # Print path to dbfiles
-        
-      })
-    }
-  })
-  
+  PEcAn.DB::insert.format.vars(con = bety$con, 
+                               format_name = input$NewFormatName, 
+                               mimetype_id = ifelse((input$MimetypeName == ""), "", mimetype_sub %>% dplyr::filter(type_string %in% input$MimetypeName) %>% pull(id)),
+                               header = ifelse((input$HeaderBoolean == "Yes"), TRUE, FALSE),
+                               skip = input$SkipLines,
+                               notes = input$FormatNotes,
+                               formats_variables = Shared.data$format_vars_df
+                               )
+    toastr_success("Successfully Created Format Record")
   },
   error = function(e){
-    toastr_error(title = "Error in creating Format Record", conditionMessage(e))
+    toastr_error(title = "Error in Creating Format & Format Variable Record", conditionMessage(e))
   },
   warning = function(e){
-    toastr_warning(title = "Database Warning", conditionMessage(e))
+    toastr_warning(title = "Format & Format-Variable Warning", conditionMessage(e))
   }
   )
-  
-  # 
-  # #2. Create the Inputs Record and dbfiles record
-  # Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
-  #                                                              in.prefix = inputsList$Name,
-  #                                                              siteid =   inputsList$siteID,
-  #                                                              startdate = inputsList$StartDateTime,
-  #                                                              enddate =   inputsList$EndDateTime,
-  #                                                              mimetype = inputsList$Mimetype,
-  #                                                              formatname = inputsList$formatName,
-  #                                                              parentid = inputsList$parentID,
-  #                                                              con = bety$con
-  #                                                              #hostname = localhost #?, #default to localhost for now
-  #                                                              #allow.conflicting.dates#? #default to FALSE for now
-  #                                                              )
-  # 
+  tryCatch({
+    #2. Create the Inputs Record and dbfiles record
+    Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
+                                                                 in.prefix = inputsList$Name,
+                                                                 siteid =   inputsList$siteID,
+                                                                 startdate = inputsList$StartDateTime,
+                                                                 enddate =   inputsList$EndDateTime,
+                                                                 mimetype = inputsList$Mimetype,
+                                                                 formatname = inputsList$formatName,
+                                                                 parentid = inputsList$parentID,
+                                                                 con = bety$con
+                                                                 #hostname = localhost #?, #default to localhost for now
+                                                                 #allow.conflicting.dates#? #default to FALSE for now
+    )
+    toastr_success("Successfully Created Input Record")
+  },
+  error = function(e){
+    toastr_error(title = "Error in Completing Input Record", conditionMessage(e))
+  },
+  warning = function(e){
+    toastr_warning(title = "Input Record Warning", conditionMessage(e))
+  }
+)
+
+})
+
+observeEvent(input$complete_ingest_lcl, {
+  # Drop var_name column from format_vars_df
+  Shared.data$format_vars_df <- Shared.data$format_vars_df %>% select(-one_of("var_name"))
+  # 1. Create Format and the format variable records
+  tryCatch({
+    PEcAn.DB::insert.format.vars(con = bety$con, 
+                                 format_name = input$NewFormatName, 
+                                 mimetype_id = ifelse((input$MimetypeName == ""), "", mimetype_sub %>% dplyr::filter(type_string %in% input$MimetypeName) %>% pull(id)),
+                                 header = ifelse((input$HeaderBoolean == "Yes"), TRUE, FALSE),
+                                 skip = input$SkipLines,
+                                 notes = input$FormatNotes,
+                                 formats_variables = Shared.data$format_vars_df
+    )
+    toastr_success("Successfully Created Format Record")
+  },
+  error = function(e){
+    toastr_error(title = "Error in Creating Format & Format-Variable Record", conditionMessage(e))
+  },
+  warning = function(e){
+    toastr_warning(title = "Format & Format-Variable Record Warning", conditionMessage(e))
+  }
+  )
+  tryCatch({
+    #2. Create the Inputs Record and dbfiles record
+    Shared.data$input_record_df <- PEcAn.DB::dbfile.input.insert(in.path = inputsList$Path,
+                                                                 in.prefix = inputsList$Name,
+                                                                 siteid =   inputsList$siteID,
+                                                                 startdate = inputsList$StartDateTime,
+                                                                 enddate =   inputsList$EndDateTime,
+                                                                 mimetype = inputsList$Mimetype,
+                                                                 formatname = inputsList$formatName,
+                                                                 parentid = inputsList$parentID,
+                                                                 con = bety$con
+                                                                 #hostname = localhost #?, #default to localhost for now
+                                                                 #allow.conflicting.dates#? #default to FALSE for now
+    )
+    toastr_success("Successfully Created Input Record")
+  },
+  error = function(e){
+    toastr_error(title = "Error in Creating Input Record", conditionMessage(e))
+  },
+  warning = function(e){
+    toastr_warning(title = "Input Record Warning", conditionMessage(e))
+  }
+  )
 })
