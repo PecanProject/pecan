@@ -104,9 +104,9 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
           "storage_type must be of type character or NA"
         )
       }
-      if(!is.character(formats_variables[[i, "column_number"]])&!is.na(formats_variables[[i, "column_number"]])){
+      if(!is.numeric(formats_variables[[i, "column_number"]])&!is.na(formats_variables[[i, "column_number"]])){
         PEcAn.logger::logger.error(
-          "column_number must be of type character or NA"
+          "column_number must be of type numeric or NA"
         )
       }
     }
