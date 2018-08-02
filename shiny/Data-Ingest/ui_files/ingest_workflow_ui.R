@@ -100,10 +100,12 @@ fluidRow(column(6,
                        label = "Start Time (HH-MM)",
                        seconds = FALSE)
   ),
-  column(3,
-  textInput("Timezone",
-            label = "Timezone",
-            placeholder = "")
+  column(3 ## Now I'm not sure if we need timezone since sites are known
+   # selectizeInput("Timezone", label = "Timezone *", choices = NULL,
+   #                options = list(
+   #                  placeholder = 'Please search inputs by name or site',
+   #                  onInitialize = I('function() { this.setValue(""); }')
+   #                ))
   )
   ),
 fluidRow(column(6,

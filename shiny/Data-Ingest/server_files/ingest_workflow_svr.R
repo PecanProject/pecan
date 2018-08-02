@@ -47,6 +47,9 @@ observe({
 updateTextInput(session, "InputName", value = Shared.data$selected_row)
 })
 
+# ####### Update Selectize Input for Timezone ########### Not sure if Timezone is a necessary input
+# updateSelectizeInput(session, "Timezone", choices = timezones, server = TRUE)
+
 ####### Make Inputs List ##########
 
 observeEvent(input$createInput, {
