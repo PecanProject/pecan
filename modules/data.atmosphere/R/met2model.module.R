@@ -41,7 +41,7 @@
     fcn <- paste0("met2model.", model)
     lst <- site.lst(site.id=site$id, con=con)
     
-    model.id <- convert.input(input.id = input.id,  ###PEcAn.utils::
+    model.id <- PEcAn.utils::convert.input(input.id = input.id,
                               outfolder = outfolder,
                               formatname = formatname, mimetype = mimetype, 
                               site.id = site$id, 
