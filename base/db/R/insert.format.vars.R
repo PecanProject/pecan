@@ -23,13 +23,13 @@
 #' bety <- PEcAn.DB::betyConnect()
 #' 
 #' formats_variables_tibble <- tibble::tibble(
-#'        variable_id = c(411, 135, 382), # integer 
-#'        name = c("NPP", NA, "YEAR"), # 
+#'        variable_id = c(411, 135, 382), 
+#'        name = c("NPP", NA, "YEAR"),  
 #'        unit = c("g C m-2 yr-1", NA, NA),
 #'        storage_type = c(NA, NA, "%Y"),
 #'        column_number = c(2, NA, 4),
 #'  )
-#'   insert.format.vars(con = bety$con, name = "LTER-HFR-103", mimetype_id = 1090, notes = "NPP from Harvard Forest.", header = FALSE, skip = 0, formats_variables = formats_variables_tibble)
+#'   insert.format.vars(con = bety$con, format_name = "LTER-HFR-103", mimetype_id = 1090, notes = "NPP from Harvard Forest.", header = FALSE, skip = 0, formats_variables = formats_variables_tibble)
 #' }
 insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, header = TRUE, skip = 0, formats_variables = NULL, suppress = TRUE){
   
@@ -80,13 +80,13 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
       }
 
       if(suppress == FALSE){
-      ## Test if variable_id already exists ##
-      var_id_test <- dplyr::tbl(con, "variables") %>% dplyr::select(id) %>% dplyr::filter(id %in% formats_variables[[i, "variable_id"]]) %>% dplyr::collect(id)
-      if(!is.null(var_id_test[1,1])){
-        PEcAn.logger::logger.error(
-          "variable_id already exists"
-        )
-      }
+        ## Test if variable_id already exists ##
+        var_id_test <- dplyr::tbl(con, "variables") %>% dplyr::select(id) %>% dplyr::filter(id %in% formats_variables[[i, "variable_id"]]) %>% dplyr::collect(id)
+        if(!is.null(var_id_test[1,1])){
+          PEcAn.logger::logger.error(
+            "variable_id already exists"
+          )
+        }
       }
 
       if(!is.character(formats_variables[[i, "name"]])&!is.na(formats_variables[[i, "name"]])){
@@ -101,12 +101,12 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
       }
       if(!is.character(formats_variables[[i, "storage_type"]])&!is.na(formats_variables[[i, "storage_type"]])){
         PEcAn.logger::logger.error(
-          "storage_type name must be of type character or NA"
+          "storage_type must be of type character or NA"
         )
       }
       if(!is.character(formats_variables[[i, "column_number"]])&!is.na(formats_variables[[i, "column_number"]])){
         PEcAn.logger::logger.error(
-          "column_number name must be of type character or NA"
+          "column_number must be of type character or NA"
         )
       }
     }
@@ -137,7 +137,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
       header = as.character(header),
       skip = skip,
       mimetype_id = mimetype_id,
-      notes = format_notes,
+      notes = notes,
       name = format_name,
       stringsAsFactors = FALSE
     )
