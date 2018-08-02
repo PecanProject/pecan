@@ -1,5 +1,12 @@
 ## Using Git
 
+This document describes the steps required to download PEcAn, make changes to code, and submit your changes.
+
+* If you are new to GitHub or to PEcAn, start with the one-time set-up instructions under [Before any work is done]. Also see the excellent tutorials and references in the [Git]) section right below this list and at the bootom in [References].
+* To make trivial changes, see [Quick and Easy].
+* To make a few changes to the code, start with the [Basic Workflow]. 
+* To make substantial changes and/or if plan to contribute over time see [Recommended Workflow: A new branch for each change].                                             
+
 ### Git
 
 Git is a free & open source, distributed version control system designed
@@ -23,10 +30,6 @@ git. You can use either https or git to clone a repository and write to
 it. The git protocol is read-only.
 This document describes the steps required to download PEcAn, make changes to code, and submit your changes.
 
-* If you are new to GitHub or to PEcAn, start with the one-time set-up instructions under [Before any work is done]. Also see the excellent tutorials and references in the [References]) section at the the bottom of this page.
-* To make trivial changes, see [Quick and Easy].
-* To make a few changes to the code, start with the [Basic Workflow]. 
-* To make substantial changes and/or plan to contribute over see [Recommended Workflow: A new branch for each change].                                             
 
 ### PEcAn Project and Github
                                                                                                                                                                 * Organization Repository: https://github.com/organizations/PecanProject                                                                                        * PEcAn source code: https://github.com/PecanProject/pecan.git                                                                                                  * BETYdb source code: https://github.com/PecanProject/bety.git
