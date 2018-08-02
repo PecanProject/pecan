@@ -30,7 +30,10 @@ Depends:
     RPostgreSQL,
     dplyr,
     dbplyr,
-    plotly
+    plotly,
+    shinydashboard,
+    shinyFiles,
+    shinycssloaders
 Imports:
     PEcAn.logger,
     lubridate (>= 1.6.0),
@@ -47,4 +50,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

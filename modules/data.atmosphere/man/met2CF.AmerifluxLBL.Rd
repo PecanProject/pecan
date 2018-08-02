@@ -4,8 +4,8 @@
 \alias{met2CF.AmerifluxLBL}
 \title{met2CF.AmerifluxLBL}
 \usage{
-met2CF.AmerifluxLBL(in.path, in.prefix, outfolder, start_date, end_date, format,
-  overwrite = FALSE, verbose = FALSE, ...)
+met2CF.AmerifluxLBL(in.path, in.prefix, outfolder, start_date, end_date,
+  format, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}

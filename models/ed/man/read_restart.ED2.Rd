@@ -19,6 +19,9 @@ read_restart.ED2(outdir, runid, stop.time, settings, var.names, params)
 
 \item{params}{Any parameters required for state calculations}
 }
+\description{
+State data assimilation read-restart for ED2
+}
 \examples{
 \dontrun{
   outdir <- "~/sda-hackathon/outputs"

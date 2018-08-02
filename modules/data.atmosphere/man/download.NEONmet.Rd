@@ -4,8 +4,8 @@
 \alias{download.NEONmet}
 \title{Download NEON Site Met CSV files}
 \usage{
-download.NEONmet(sitename, outfolder, start_date, end_date, overwrite = FALSE,
-  verbose = FALSE, ...)
+download.NEONmet(sitename, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{sitename}{the NEON ID of the site to be downloaded, used as file name prefix. 
@@ -28,5 +28,7 @@ download.NEONmet
 Uses NEON v0 API to download met data from NEON towers and convert to CF NetCDF
 }
 \examples{
+\dontrun{
 result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
+}
 }

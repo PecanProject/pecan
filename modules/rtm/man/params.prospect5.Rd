@@ -8,4 +8,7 @@
 \usage{
 params.prospect5
 }
+\description{
+PROSPECT 5 parameters
+}
 \keyword{datasets}

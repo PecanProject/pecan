@@ -5,7 +5,8 @@
 \title{Download Ameriflux LBL CSV files}
 \usage{
 download.AmerifluxLBL(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, username = "pecan", method, ...)
+  overwrite = FALSE, verbose = FALSE, username = "pecan", method,
+  ...)
 }
 \arguments{
 \item{sitename}{the Ameriflux ID of the site to be downloaded, used as file name prefix. 
@@ -32,7 +33,9 @@ download.AmerifluxLBL
 Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
 }
 \examples{
+\dontrun{
 result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
+}
 
 }
 \author{
