@@ -124,15 +124,9 @@ qledf <- data.frame(time = time, lower = qlelower95, means = qlemeans, upper = q
 #qledf <- data.frame(time = time,
 #                    qle = qle)
 # Grab real data
-real_data <- PEcAn.data.atmosphere::download.US_WCr(workflow$start_date, workflow$end_date, timestep=12)
+real_data <- PEcAn.data.atmosphere::download.US_WCr(workflow$start_date, workflow$end_date, timestep=6)
 needf$real_nee <- real_data$nee
 qledf$real_qle <- real_data$qle
-
-print(length(needf$real_nee))
-print(length(qledf$real_qle))
-print(length(time))
-print(length(neelower95))
-print(length(neeupper95))
 
 # Create plots
 neeplot <- ggplot(needf) + 
