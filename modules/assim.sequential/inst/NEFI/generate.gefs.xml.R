@@ -6,9 +6,7 @@
 ##' Rounds a date to the previous 6 hours (0:00, 6:00, 12:00, or 18:00).
 ##' 
 ##' @author Luke Dramko
-##'                                  DON'T MESS WITH THE FIRST lubridate::hours!!!!!
 round.to.six.hours <- function(date = Sys.time() - lubridate::hours(2)) {
-  # date = "2018-07-14 00:00"
   if (is.character(date)) {
     date <- as.POSIXct(date, tz="UTC")
   }
