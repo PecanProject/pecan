@@ -80,7 +80,7 @@ box(
         label = "Notes",
         height = '75px'
       ),
-      actionButton("createFormatRecord", label = "Create Format Record"),
+      actionBttn("FormatRecordDone", label = "Done", color = "warning", size = "sm"),
       p("* Denotes a Required Field"),
       hr(),
       verbatimTextOutput("FormatRecordOut")

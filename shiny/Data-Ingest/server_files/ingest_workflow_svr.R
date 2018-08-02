@@ -47,6 +47,13 @@ observe({
 updateTextInput(session, "InputName", value = Shared.data$selected_row)
 })
 
+####### Update Selections of Format and Corresponding Mimetype ############
+observeEvent(input$FormatRecordDone,{
+  updateSelectizeInput(session, "InputFormatName", choices = c(input$NewFormatName), selected = c(input$NewFormatName), server = TRUE)
+  updateSelectizeInput(session, "MimetypeNameCurrent", choices = c(input$MimetypeName), selected = c(input$MimetypeName), server = TRUE)
+})
+
+
 # ####### Update Selectize Input for Timezone ########### Not sure if Timezone is a necessary input
 # updateSelectizeInput(session, "Timezone", choices = timezones, server = TRUE)
 
@@ -79,7 +86,7 @@ observeEvent(input$createInput, {
     inputsList$formatName <<- input$InputFormatName
    # inputsList$formatID <<- formats_sub %>% dplyr::filter(name %in% input$InputFormatName) %>% pull(id) IF Format ID is necessary, I need to redesign this line. 
   }
-  
+
   ## Mimetype (should I find the ID as well?)##
   inputsList$Mimetype <<- input$MimetypeNameCurrent
   
@@ -132,7 +139,7 @@ output$autoname <- renderPrint({Shared.data$selected_row}) #_local
 ######### Mimetype Name ##################
 updateSelectizeInput(session, "MimetypeName", choices = mimetypes, server = TRUE)
 
-observeEvent(input$createFormatRecord, {
+observeEvent(input$FormatRecordDone, {
   ## Output List ##
   FormatRecordList <<- list()
   
@@ -157,9 +164,10 @@ observeEvent(input$createFormatRecord, {
   ## Print format record for testing
   output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
 
-  ## Insert Format Record
-  PEcAn.DB::insert.format.vars(con = bety$con, formats_df = FormatsRecord_df, formats_variables_df = NULL)
 })
+
+# ## Insert Format Record
+# PEcAn.DB::insert.format.vars(con = bety$con, formats_df = FormatsRecord_df, formats_variables_df = NULL)
 
 ###### Formats Vars Server ##############
 ##Output list 

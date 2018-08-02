@@ -12,9 +12,6 @@
  
  source("ui_utils.R", local = TRUE)
  
- ## Modules ##
- source("modules/formats_variables_module.R")
- 
  ##### Bety Calls ######
  bety <- betyConnect()
  
