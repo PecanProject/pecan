@@ -9,6 +9,7 @@
  library(shiny)
  library(shinyjs)
  library(shinyWidgets)
+ library(shinytoastr)
  
  source("ui_utils.R", local = TRUE)
  
@@ -44,6 +45,7 @@ ui <- dashboardPage(
     source_ui("sidebar_ui.R")
   ),
   dashboardBody(
+    useToastr(), # Call error handling package
     useShinyjs(), #Include shinyjs
     tabItems(
     ## Tab 1 -- Ingest Workflow
@@ -92,8 +94,6 @@ server <- function(input, output, session) {
   ######### Ingest Workflow ##############################
   source("server_files/ingest_workflow_svr.R", local = TRUE)
   
-  ######### Formats-Variables Module #####################
- # callModule(formats.vars, "formats_vars_mod", session = getDefaultReactiveDomain())
   
 }
 
