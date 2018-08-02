@@ -2,16 +2,17 @@
 #'
 #' @param con SQL connection to BETYdb
 #' @param format_name The name of the format. Type: character string.
-#' @param notes Additional description of the format: character string.
+#' @param mimetype_id The id associated with the mimetype of the format. Type: integer. 
 #' @param header Boolean that indicates the presence of a header in the format. Defaults to "TRUE".
 #' @param skip Integer that indicates the number of lines to skip in the header. Defaults to 0. 
-#' @param mimetype_id The id associated with the mimetype of the format. Type: integer. 
 #' @param formats_variables A 'tibble' consisting of entries that correspond to columns in the formats-variables table. See Details for further information. 
+#' @param notes Additional description of the format: character string.
+#' @param suppress Boolean that suppresses or allows a test for an existing variable id. This test is inconvenient in applications where the variable_ids are already known. 
 #' @details The formats_variables argument must be a 'tibble' and be structured in a specific format so that the SQL query functions properly. All arguments should be passed as vectors so that each entry will correspond with a specific row. All empty values should be specified as NA.  
 #' \describe{
 #' \item{variable_id}{(Required) Vector of integers.}
-#' \item{name}{(Optional) Vector of character strings. Needs only be specified if it differs from the BETY variable name.} 
-#' \item{unit}{(Optional) Vector of type character string. Should be in a format parseable by the udunits library and need only be secified if they differ from the BETY standard.}
+#' \item{name}{(Optional) Vector of character strings. The variable name in the imported data need only be specified if it differs from the BETY variable name.} 
+#' \item{unit}{(Optional) Vector of type character string. Should be in a format parseable by the udunits library and need only be secified if the units of the data in the file differ from the BETY standard.}
 #' \item{storage_type}{(Optional) Vector of character strings. Storage type need only be specified if the variable is stored in a format other than would be expected (e.g. if numeric values are stored as quoted character strings). Additionally, storage_type stores POSIX codes that are used to store any time variables (e.g. a column with a 4-digit year would be \%Y). See also \code{[base::strptime]}}
 #' \item{column_number}{Vector of integers that list the column numbers associated with variables in a dataset. Required for text files that lack headers.}}
 #' @author Liam Burke (liam.burke24@gmail.com)
@@ -26,11 +27,11 @@
 #'        name = c("NPP", NA, "YEAR"), # 
 #'        unit = c("g C m-2 yr-1", NA, NA),
 #'        storage_type = c(NA, NA, "%Y"),
-#'        column_number = c(NA, NA, NA),
+#'        column_number = c(2, NA, 4),
 #'  )
 #'   insert.format.vars(con = bety$con, name = "LTER-HFR-103", mimetype_id = 1090, notes = "NPP from Harvard Forest.", header = FALSE, skip = 0, formats_variables = formats_variables_tibble)
 #' }
-insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, header = TRUE, skip = 0, formats_variables = NULL){
+insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, header = TRUE, skip = 0, formats_variables = NULL, suppress = TRUE){
   
   # Test if name is a character string
   if(!is.character(name)){
@@ -39,15 +40,6 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
     )
   }
   
-  # Test if format name already exists
-  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select(id, name) %>% dplyr::filter(name %in% format_name) %>% collect()
-  name_test_df <- as.data.frame(name_test)
-  if(!is.null(name_test_df[1,1])){
-    PEcAn.logger::logger.error(
-      "Name already exists"
-    )
-  }
- 
   # Test if format name already exists
   name_test <- dplyr::tbl(con, "formats") %>% dplyr::select(id, name) %>% dplyr::filter(name %in% format_name) %>% collect()
   name_test_df <- as.data.frame(name_test)
@@ -86,6 +78,19 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
           "variable_id must be an integer"
         )
       }
+<<<<<<< HEAD
+=======
+      if(suppress == FALSE){
+      ## Test if variable_id already exists ##
+      var_id_test <- dplyr::tbl(con, "variables") %>% dplyr::select(id) %>% dplyr::filter(id %in% formats_variables[[i, "variable_id"]]) %>% dplyr::collect(id)
+      if(!is.null(var_id_test[1,1])){
+        PEcAn.logger::logger.error(
+          "variable_id already exists"
+        )
+      }
+      }
+      
+>>>>>>> 9db3fc4f337e30260327060aa73e0e4c91506a8a
       if(!is.character(formats_variables[[i, "name"]])&!is.na(formats_variables[[i, "name"]])){
         PEcAn.logger::logger.error(
           "Variable name must be of type character or NA"
@@ -107,30 +112,28 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
         )
       }
     }
-  }
-  
-  ## convert NA to "" for inserting into db ##
-   formats_variables[is.na(formats_variables)] <- ""
-   
-  ###  udunit tests ###
-  for(i in 1:nrow(formats_variables)){
-    u1 <- formats_variables[1,"unit"]
-    u2 <- dplyr::tbl(con, "variables") %>% dplyr::select(id, units) %>% dplyr::filter(id %in% formats_variables[[1, "variable_id"]]) %>% pull(units)
     
-    if(!udunits2::ud.is.parseable(u1)){
-      PEcAn.logger::logger.error(
-        "Units not parseable. Please enter a unit that is parseable by the udunits library."
-      )
-    }
-    # Grab the bety units and 
-    if(!udunits2::ud.are.convertible(u1, u2)){
-      PEcAn.logger::logger.error(
-        "Units are not convertable."
-      )
-    }
+    ## convert NA to "" for inserting into db ##
+    formats_variables[is.na(formats_variables)] <- ""
     
+    ###  udunit tests ###
+    for(i in 1:nrow(formats_variables)){
+      u1 <- formats_variables[1,"unit"]
+      u2 <- dplyr::tbl(con, "variables") %>% dplyr::select(id, units) %>% dplyr::filter(id %in% formats_variables[[1, "variable_id"]]) %>% dplyr::pull(units)
+      
+      if(!udunits2::ud.is.parseable(u1)){
+        PEcAn.logger::logger.error(
+          "Units not parseable. Please enter a unit that is parseable by the udunits library."
+        )
+      }
+      # Grab the bety units and 
+      if(!udunits2::ud.are.convertible(u1, u2)){
+        PEcAn.logger::logger.error(
+          "Units are not convertable."
+        )
+      }
+    }
   }
-  
   
     formats_df <- tibble::tibble(
       header = as.character(header),

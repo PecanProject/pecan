@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- The following functions were deprecated from utils package and were moved to uncertainty package: read.ensemble.output, get.ensemble.samples, write.ensemble.configs, input.ens.gen.
 - Fixed issue #1939 which corrects output time vector for FATES output
 - Update to read.output to look for and read only PEcAn formatted .nc output based on the pecan standard filename format of YYYY.nc.  Solves issues with models such as FATES and dvm-dos-tem where the original model output is also in .nc file format and was not ignored by read.output, causing errors with output parsing and plotting with Shiny. Removed deprecated function convert.outputs
 - PEcAn.data.atmosphere: 
@@ -32,11 +33,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
     
 ### Added
+
+-You can now generate ensembles for parameters and met separatly and using different methods. 
 - Soil process is now capable of reading in soil data from gSSURGO databse.
 - In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs
 - Shiny/Dependency explorer 
-  - Explore the interdependencies between pecan packages/functions.
-
+- Explore the interdependencies between pecan packages/functions.
 - From history you can now select an old run and show the curl command to re-execute this run. This only works with runs submitted through web interface right now.
 - Experimental support for docker (#1028)
 
@@ -60,6 +62,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   
 - pecan/base/db
   - New File: `input.format.vars.R`. This function registers the format and the (optional) formats_variables record using `db_merge_into`. 
+
+- `data.atmosphere`
+	- `check_met_input_file` -- Check that target met file conforms to PEcAn meteorology data standard.
+	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame`
+
   
 ### Removed
   - pecan.worldmap function no longer used, dropped from visualization package

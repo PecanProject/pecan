@@ -24,7 +24,6 @@
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, end.year, 
                                  variable, ens.run.ids = NULL) {
-  .Deprecated("PEcAn.uncertainty::read.ensemble.output")
   if (is.null(ens.run.ids)) {
     samples.file <- file.path(pecandir, "samples.Rdata")
     if (file.exists(samples.file)) {
@@ -78,7 +77,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @author David LeBauer, Istem Fer
 get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
                                  method = "uniform", param.names = NULL, ...) {
-  .Deprecated("PEcAn.uncertainty::get.ensemble.samples")
+  
   if (is.null(method)) {
     PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
     method <- "uniform"
@@ -193,7 +192,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
                                    clean = FALSE, write.to.db = TRUE,restart=NULL) {
-  .Deprecated("PEcAn.uncertainty::write.ensemble.configs")
+  
   my.write.config <- paste("write.config.", model, sep = "")
   my.write_restart <- paste0("write_restart.", model)
   
@@ -401,7 +400,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #' \dontrun{input.ens.gen(settings,"met","sampling")}
 #'  
 input.ens.gen<-function(settings,input,method="sampling",parent_ids=NULL){
-  .Deprecated("PEcAn.uncertainty::input.ens.gen")
+  
   #-- reading the dots and exposing them to the inside of the function
   samples<-list()
   samples$ids<-c()
