@@ -1,4 +1,17 @@
-.get.veg.module <- function(input_veg, 
+##' Load/extract + match species module
+##' 
+##' @param input_veg list, this is a sublist of settings$run$inputs that has info about source, id, metadata of the requested IC file
+##' @param outfolder path to where the processed files will be written
+##' @param start_date date in "YYYY-MM-DD" format, in case of source==FIA it's the settings$run$start.date, otherwise start_date of the IC file in DB
+##' @param end_date date in "YYYY-MM-DD" format, in case of source==FIA it's the settings$run$end.date, otherwise end_date of the IC file in DB
+##' @param dbparms list, settings$database info reqired for opening a connection to DB
+##' @param new_site data frame, id/lat/lon/name info about the site
+##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
+##' @param machine_host local machine hostname, e.g. "pecan2.bu.edu"
+##' @param overwrite logical flag for convert.input
+##' 
+##' @author Istem Fer
+get_veg_module <- function(input_veg, 
                             outfolder,
                             start_date, end_date,
                             dbparms,
@@ -41,7 +54,7 @@
                                # fcn specific args 
                                new_site = new_site,
                                gridres = input_veg$gridres, dbparms = dbparms,
-                               machine_host = machine.host, input_veg = input, 
+                               machine_host = machine_host, input_veg = input, 
                                source = input_veg$source)
   
     
@@ -70,7 +83,7 @@
                                source_id = source.id,
                                format_name = input_veg$match.format,
                                dbparms = dbparms,
-                               machine_host = machine.host,
+                               machine_host = machine_host,
                                source = input_veg$source,
                                ##  any metadata passed via settings to be used in the IC files (in veg2model)
                                ##  if different than defaults, e.g.:

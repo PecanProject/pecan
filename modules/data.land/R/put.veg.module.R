@@ -1,4 +1,22 @@
-.put.veg.module <- function(getveg.id, dbparms, 
+##' Match species to PFTs + veg2model module
+##' 
+##' @param getveg.id list, input.id and dbfile.id of the IC file in intermediate pecan standard
+##' @param dbparms list, settings$database info reqired for opening a connection to DB
+##' @param input_veg list, this is a sublist of settings$run$inputs that has info about source, id, metadata of the requested IC file
+##' @param pfts list, same as settings$pfts
+##' @param outfolder path to where the processed files will be written
+##' @param n.ensemble integer, ensemble member number
+##' @param dir dir path to dbfiles on local machine
+##' @param machine data frame, DB info regarding localhost machine id/hostname etc.
+##' @param model model name, e.g. "ED2"
+##' @param start_date date in "YYYY-MM-DD" format, in case of source==FIA it's the settings$run$start.date, otherwise start_date of the IC file in DB
+##' @param end_date date in "YYYY-MM-DD" format, in case of source==FIA it's the settings$run$end.date, otherwise end_date of the IC file in DB
+##' @param new_site data frame, id/lat/lon/name info about the site
+##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
+##' @param overwrite logical flag for convert.input
+##' 
+##' @author Istem Fer
+put_veg_module <- function(getveg.id, dbparms, 
                             input_veg, pfts,
                             outfolder, n.ensemble,
                             dir, machine, model,
