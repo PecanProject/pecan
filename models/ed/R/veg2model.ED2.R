@@ -42,27 +42,31 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     if(!is.null(pss$time)){
       time <- as.numeric(pss$time)
     }else{
+      PEcAn.logger::logger.info("No year info passed via metadata, using start year: ", start_year)
       time <- start_year
     }
     if(!is.null(pss$n.patch)){
       n.patch <- as.numeric(pss$n.patch)
     }else{
+      PEcAn.logger::logger.info("No patch number info passed via metadata, assuming 1 patch.")
       n.patch <- 1
     }
     if(!is.null(pss$trk)){
       trk <- as.numeric(pss$trk)
     }else{
+      PEcAn.logger::logger.info("No trk info passed via metadata, assuming 1.")
       trk <- 1
     }
     if(!is.null(pss$age)){
       age <- as.numeric(pss$age)
     }else{
+      PEcAn.logger::logger.info("No stand age info passed via metadata, assuming 100.")
       age <- 100
     }
     if(!is.null(pss$area)){
       area <- as.numeric(pss$area)
     }else{
-      area <- 1000 # m2
+      PEcAn.logger::logger.severe("No area info passed via metadata, please provide area of your plot in m2 under 'settings$run$inputs$css$metadata$area'.")
     }
     
     pss <- data.frame(time = rep(time, n.patch), patch = seq_len(n.patch), trk = rep(trk, n.patch), age = rep(age, n.patch))
