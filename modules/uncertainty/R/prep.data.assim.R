@@ -56,6 +56,3 @@ prep.data.assim <- function(settings) {
   ### suspend function call until function works to this point
   # PEcAn.assim.sequential::sda.enkf(settings, obs.cov = obs.cov, obs.mean = obs.mean)
 } # prep.data.assim
-
-settings = list(run = list(start_date = '2018-07-19', end_date = '2018-07-30'))
-prep.data.assim(settings)
