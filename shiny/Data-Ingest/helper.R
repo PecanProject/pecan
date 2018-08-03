@@ -12,15 +12,12 @@
 #' auto.name.directory(format_name = "LTER-hf-103", site_id = 1000004955)
 auto.name.directory <- function(format_name, site_id){
   
-  # Split the format_name by the first non-alphanumeric character
-  splits <- base::strsplit("LTER-hf-103", "[^a-zA-Z0-9 :]")
-  
-  # Grab first split
-  basename <- splits[[1]][1]
+  # replace all non-alphanumeric characters with "_"
+  basename <- base::gsub("[^a-zA-Z0-9 :]", "_", format_name)
   
   ## Convert site_id into shorter format
   long_id <- as.numeric(site_id) # convert scientific notation to numeric
-  new_id <- base::sub('(?<=.{1}).+0', "-", long_id, perl = TRUE) # Replace all 0's with "-"
+  new_id <- paste0(long_id %/% 1e+09, "-", long_id %% 1e+09) 
   
   # Combine
   autoDirName <- paste(basename, "site", new_id, sep = "_")
