@@ -37,7 +37,7 @@ prep.data.assim <- function(settings) {
     
     obs.mean[[i]] <- cumsum(field_data[[i]])
     
-    applied <- apply(random_mat, 1, sum)
+    applied <- apply(random_mat, 1, mean)
     print(sums)
     print(nrow(sums))
     print("------------------------")
