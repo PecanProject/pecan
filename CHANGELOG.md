@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- write.ensemble.configs function was fixed to be compatible with all the models after the change in ensemble generator.
 - The following functions were deprecated from utils package and were moved to uncertainty package: read.ensemble.output, get.ensemble.samples, write.ensemble.configs, input.ens.gen.
 - Fixed issue #1939 which corrects output time vector for FATES output
 - Update to read.output to look for and read only PEcAn formatted .nc output based on the pecan standard filename format of YYYY.nc.  Solves issues with models such as FATES and dvm-dos-tem where the original model output is also in .nc file format and was not ignored by read.output, causing errors with output parsing and plotting with Shiny. Removed deprecated function convert.outputs
