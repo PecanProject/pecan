@@ -987,7 +987,7 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   
   # commonly used vars
   if(is.null(pecan_names)) pecan_names <- c("AGB", "AbvGrndWood", "GWBI", "DBH")
-
+  
   ed_varnames <- pecan_names
   
   # TODO: ed.var lookup function can also return deterministically related variables
@@ -1000,7 +1000,8 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   ed_units     <- trans_out$units # might use
   
   # List of vars to extract includes the requested one, plus others needed below 
-  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT","DAGB_DT", "BDEAD", "DBH", "BSTORAGE")
+  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT","DAGB_DT", "BDEAD", "DBH", 
+                "BSTORAGE", "BALIVE", "BLEAF", "BROOT", "BSEEDS_CO", "BSAPWOODA", "BSAPWOODB")
   vars <- c(ed_varnames, add_vars) 
   
   # list to collect outputs
@@ -1009,7 +1010,7 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   nc <- ncdf4::nc_open(file.path(outdir, sfile))
   allvars <- names(nc$var)
   if(!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
-    
+  
   for(j in seq_along(allvars)){
     ed.dat[[j]] <- list()
     ed.dat[[j]] <- ncdf4::ncvar_get(nc, allvars[j])
@@ -1017,8 +1018,8 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   names(ed.dat) <- allvars
   
   ncdf4::nc_close(nc)
-
-
+  
+  
   # for now this function does not read any ED variable that has soil as a dimension
   soil.check <- grepl("soil", pft_names)
   if(any(soil.check)){
@@ -1035,18 +1036,18 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
     out[[varname]] <- array(NA, npft)
   }
   
-
+  
   # Get cohort-level variables 
   pft        <- ed.dat$PFT
   plant_dens <- ed.dat$NPLANT  # Cohort stem density -- plant/m2
   dbh        <- ed.dat$DBH # used in allometric eqns -- dbh
-    
+  
   # Get patch areas. In general patches aren't the same area, so this is needed to area-weight when averaging up to site level. Requires minor finnagling to convert patch-level AREA to a cohort-length variable. 
   patch_area  <- ed.dat$AREA    # unitless, a proportion of total site area  -- one entry per patch (always add up to 1)
   paco_n      <- ed.dat$PACO_N  # number of cohorts per patch
   
   patch_index <- rep(1:length(paco_n), times = paco_n)
- 
+  
   # read xml to extract allometric coeffs later
   configfile <- paste0(gsub("/out/", "/run/", outdir), "/config.xml")
   pars <- XML::xmlToList(XML::xmlParse(configfile))
@@ -1108,11 +1109,11 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
       
     }# per-pft or not
   } #l-loop
-
+  
   
   # pass everything, unaggregated
   out$restart <- ed.dat
-    
+  
   
   return(out)
   
