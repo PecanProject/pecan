@@ -34,7 +34,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     
 ### Added
 
--You can now generate ensembles for parameters and met separatly and using different methods. 
+- IC workflow now has functionality to generate ensembles.
+- You can now generate ensembles for parameters and met separatly and using different methods. 
 - Soil process is now capable of reading in soil data from gSSURGO databse.
 - In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs
 - Shiny/Dependency explorer 
