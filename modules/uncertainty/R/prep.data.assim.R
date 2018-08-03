@@ -23,19 +23,21 @@ prep.data.assim <- function(settings) {
   print(field_data)
   
   for (i in 1:length(field_data)) {
-    print("Good.")
     uncertainty_vals[[i]] <- PEcAn.uncertainty::flux.uncertainty(field_data[[i]], QC = rep(0, length(field_data[[i]])))
     numvals <- 10;
     
-    print("uncertainty_vals[[i]]")
-    print(uncertainty_vals)
-
-    print("Better")    
     # Create proxy row for rbinding
     random_mat <- matrix(rep(0, numvals), nrow = 1, ncol = numvals)
     for(j in 1:length(field_data[[i]])) {
-      print(paste0("This seq? ", j))
-      random_range = seq(min(uncertainty_vals[[i]]$err, na.rm=TRUE), max(uncertainty_vals[[i]]$err, na.rm=TRUE), by=abs(mean(uncertainty_vals[[i]]$mag))/100)
+      maxerr <- max(uncertainty_vals[[i]]$err, na.rm=TRUE)
+      real <- field_data[[i]][j]
+      random_range = seq(real - maxerr, real + maxerr, by = real / 100)
+      
+      print("--- Analysis of random stuff ---")
+      print(paste0("Real = ", real))
+      print("Random range")
+      print(random_range)
+      
       row <- sample(random_range, numvals, replace=TRUE)
       random_mat <- rbind(random_mat, row)
     }
