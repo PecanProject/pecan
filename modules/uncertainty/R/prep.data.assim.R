@@ -8,7 +8,9 @@
 ##'@author Luke Dramko
 prep.data.assim <- function(settings) {
   # Obtain real data from the site
-  field_data <- PEcAn.data.atmosphere::download.US_WCr(settings$run$start_date, settings$run$end_date, timestep = 0.5)
+  source("~/pecan/modules/data.atmosphere/R/download.US_WCr.R")
+  
+  field_data <- download.US_WCr(settings$run$start_date, settings$run$end_date, timestep = 0.5)
   
   uncertainty_vals <- list()
   
@@ -18,13 +20,21 @@ prep.data.assim <- function(settings) {
   # Will be one vector per variable.  Each variable is its own list entry.
   obs.mean <- NULL
   
+  print(field_data)
+  
   for (i in 1:length(field_data)) {
+    print("Good.")
     uncertainty_vals[[i]] <- PEcAn.uncertainty::flux.uncertainty(field_data[[i]], QC = rep(0, length(field_data[[i]])))
     numvals <- 10;
     
+    print("uncertainty_vals[[i]]")
+    print(uncertainty_vals)
+
+    print("Better")    
     # Create proxy row for rbinding
     random_mat <- matrix(rep(0, numvals), nrow = 1, ncol = numvals)
     for(j in 1:length(field_data[[i]])) {
+      print(paste0("This seq? ", j))
       random_range = seq(min(uncertainty_vals[[i]]$err, na.rm=TRUE), max(uncertainty_vals[[i]]$err, na.rm=TRUE), by=abs(mean(uncertainty_vals[[i]]$mag))/100)
       row <- sample(random_range, numvals, replace=TRUE)
       random_mat <- rbind(random_mat, row)
@@ -33,7 +43,7 @@ prep.data.assim <- function(settings) {
     #Strip away proxy row
     random_mat <- random_mat[-1,]
     
-    obs.mean <- c(obs.mean, mean(field_data[[i]]))
+    obs.mean <- c(obs.mean, mean(field_data[[i]], na.rm = TRUE))
     
     applied <- apply(random_mat, 1, mean)
     
@@ -41,13 +51,14 @@ prep.data.assim <- function(settings) {
   } ### cumsum produces a matrix instead of a vector.
   
   # strip away proxy row
-  sums = sums[-1,]
+  sums = sums[,-1]
   
   ### Note that this will mean obs.cov will have length 1, while obs.mean will have a length equal to the number of variables
   obs.cov <- list(cov(sums))
   
   names(obs.mean) <- names(field_data)
-  obs.mean <- list()[[settings$run$end_date]]
+  obs.mean <- list(obs.mean)
+  names(obs.mean) <- settings$run$end_date
   
   print("mean")
   print(obs.mean)
@@ -58,3 +69,6 @@ prep.data.assim <- function(settings) {
   ### suspend function call until function works to this point
   # PEcAn.assim.sequential::sda.enkf(settings, obs.cov = obs.cov, obs.mean = obs.mean)
 } # prep.data.assim
+
+settings <- list(run = list(start_date='2018-07-14', end_date='2018-07-30'))
+prep.data.assim(settings)
