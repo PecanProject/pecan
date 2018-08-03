@@ -23,7 +23,7 @@
     fcn <- "metgapfill.NOAA_GEFS"
   }
   
-  ready.id <- convert.input(input.id = input.id, ### PEcAn.utils::
+  ready.id <- PEcAn.utils::convert.input(input.id = input.id,
                             outfolder = outfolder, 
                             formatname = formatname, 
                             mimetype =  mimetype, 

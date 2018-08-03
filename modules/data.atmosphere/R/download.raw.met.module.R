@@ -38,7 +38,7 @@
     
   } else if (register$scale == "site") {
     # Site-level met
-    raw.id <- convert.input(input.id = NA,  ### PEcAn.utils::
+    raw.id <- PEcAn.utils::convert.input(input.id = NA,
                             outfolder = outfolder, 
                             formatname = register$format$name, 
                             mimetype = register$format$mimetype,
