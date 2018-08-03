@@ -56,11 +56,17 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Modularized input record, format record, and dbfiles record into shiny modules. This allows the app to be greatly simplified to two, single-page workflows. These functions can also be used "plug-and-play" style elsewhere in PEcAn shiny apps to load in data. 
   - Replaced modularized input, format and dbfiles records with static "Ingest Workflow" page. On this page, the user can select either importing from dataONE or Uploading from local files. If creating a new format is necessary, the user can click "Create New Format" and a dropdown menu will walk them through this process. 
   - Selected files now autofill name value in input record workflow
-  - Store inputs in the global environment
+  - Store inputs and formats in the global environment
   - "Test BETY" button allows users create a record in BETY with `dbfile.input.insert`
+  - Added `input.format.vars` to query the BETYdb
+  
+- pecan/base/db
+  - New File: `input.format.vars.R`. This function registers the format and the (optional) formats_variables record using `db_merge_into`. 
+
 - `data.atmosphere`
 	- `check_met_input_file` -- Check that target met file conforms to PEcAn meteorology data standard.
 	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame`
+
   
 ### Removed
   - pecan.worldmap function no longer used, dropped from visualization package
