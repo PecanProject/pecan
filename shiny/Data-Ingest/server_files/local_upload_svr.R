@@ -35,7 +35,7 @@ observe({
 observeEvent(input$complete_ingest_lcl, {
   tryCatch({
   # create the new directory in /dbfiles
-  local_dirname <- gsub(" ", "_", input$new_local_filename) # Are there any other types of breaking chatacters that I should avoid with directory naming? 
+  local_dirname <- auto.name.directory(format_name = input$InputFormatName, site_id = inputsList$siteID) # Create name from format and site_id 
   dir.create(file.path(PEcAn_path, local_dirname))
   
   path_to_local_tempdir <- file.path(local_tempdir)
@@ -54,7 +54,6 @@ observeEvent(input$complete_ingest_lcl, {
     toastr_warning(title = "Warning in Select Local Files", conditionMessage(e))
   }
   )
-  
 })
 
 output$test <- renderPrint({Shared.data$selected_row}) #_local
