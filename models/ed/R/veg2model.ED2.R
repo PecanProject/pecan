@@ -119,7 +119,6 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
 
     
   if(is.null(css$n)){ 
-    # if area was NULL this will default to 0.001
     css$n <- 1/area
   }
   
