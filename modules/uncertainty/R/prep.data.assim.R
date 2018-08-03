@@ -105,6 +105,8 @@ prep.data.assim <- function(settings) {
   # strip away proxy row
   sums = sums[,-1]
   
+  print("sums")
+  
   ### Note that this will mean obs.cov will have length 1, while obs.mean will have a length equal to the number of variables
   obs.cov <- list(cov(sums))
   
