@@ -8,7 +8,8 @@ convert.input(input.id, outfolder, formatname, mimetype, site.id,
   start_date, end_date, pkg, fcn, con = con, host, browndog,
   write = TRUE, format.vars, overwrite = FALSE, exact.dates = FALSE,
   allow.conflicting.dates = TRUE, insert.new.file = FALSE,
-  pattern = NULL, forecast = FALSE, ensemble = FALSE, ...)
+  pattern = NULL, forecast = FALSE, ensemble = FALSE,
+  ensemble_name = NULL, ...)
 }
 \description{
 Convert input by applying fcn and insert new record into database

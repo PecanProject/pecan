@@ -10,7 +10,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
                           format.vars, overwrite = FALSE, exact.dates = FALSE, 
                           allow.conflicting.dates = TRUE, insert.new.file = FALSE, pattern = NULL,
-                          forecast = FALSE, ensemble = FALSE,...) {
+                          forecast = FALSE, ensemble = FALSE, ensemble_name = NULL, ...) {
   input.args <- list(...)
   
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
@@ -60,10 +60,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # site.id, a regex placeholder is used instead.
       
       filename_pattern = pattern #pattern is always the name of the meteorological data product (met).
-      if (!is.null(input.args$sitename)) {
+      if (!is.null(input.args$sitename) || !is.null(site.id)) {
         filename_pattern = paste(filename_pattern, "[^.]*", sep="\\.") #double backslash for regex
       }
-      if (ensemble > 1) {
+      if (!is.null(ensemble_name)) {
+        filename_pattern = paste(filename_pattern, ensemble_name, sep="\\.")
+      } else if (ensemble > 1) {
         filename_pattern = paste(filename_pattern, i, sep = "\\.")
       } 
       
@@ -523,8 +525,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     if (forecast && !is.null(input.id) && !is.na(input.id)) { # for met2model coversion, arguments will be extraneous otherwise.
       fcn.args$year.fragment = TRUE
-      parent.inputfile.name <- PEcAn.DB::db.query(paste0("SELECT name FROM inputs WHERE id =", input.id), con)
-      fcn.args$in.data.file = parent.inputfile.name$name #Sends the file name (minus the extension)
+      if (grepl("NOAA_GEFS\\.[0-9]+", fcn.args$in.prefix)) { # Protects legacy database entries.
+        # Older NOAA_GEFS database entries have NOAA_GEFS.i as their dbfile names; this corrects that.
+        # Can be deleted if old NOAA_GEFS data is discarded or database is updated with new values.
+        parent.input <- PEcAn.DB::db.query(paste0("SELECT name FROM inputs WHERE id =", input.id), con)
+        fcn.args$in.prefix = parent.input$name #Sends the file name (minus the extension)
+      }
     }
     
     arg.string <- listToArgString(fcn.args)
@@ -592,13 +598,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       if (overwrite) {
         # A bit hacky, but need to make sure that all fields are updated to expected
         # values (i.e., what they'd be if convert.input was creating a new record)
-        if (exists("existing.input") && nrow(existing.input) > 0) {
+        if (exists("existing.input") && nrow(existing.input[[i]]) > 0) {
             PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
                                       "' WHERE id=", existing.input[[i]]$id), con)
           
         }
         
-        if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
+        if (exists("existing.dbfile") && nrow(existing.dbfile[[i]]) > 0) {
             PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
                                       "', ", "file_name='", result[[i]]$dbfile.name[1], 
                                       "' WHERE id=", existing.dbfile[[i]]$id), con)
