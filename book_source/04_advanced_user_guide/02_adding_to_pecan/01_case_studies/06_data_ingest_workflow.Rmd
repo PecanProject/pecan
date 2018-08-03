@@ -15,7 +15,7 @@ The Data-Ingest application is capable of loading data from the DataONE data fed
 
 The DataONE download feature allows the user to download data at a given doi or DataONE specific package id. To do so, enter the doi or identifier in the box entitled `Import From DataONE` and select `download`. The download process may take a couple of minutes to run depending on the number of files in the dataONE package. This may be a convenient option if the user does not wish to download files directly to their local machine. Once the files have been successfully downloaded from DataONE, they are displayed in a table. Before proceeding to the next step, the user can select a file to ingest by clicking on the corresponding row in the data table. 
 
-![Choose_File_for_Ingest](images/data-ingest/D1Ingest-2.gif)
+![Choose FIle for Ingest](images/data-ingest/D1Ingest-2.gif)
 <br> 
 ## Local Upload Example 
 <br>
@@ -23,4 +23,5 @@ To upload local files, the user should first select the `Local Files` button. Fr
 After this step, the workflow is identical for either method. However, please note that if it becomes necessary to switch from loading data via `DataONE` to uploading local files after the first step, please restart the application. 
 
 # 2. Creating an Input Record
+![Create Input Record](images/data-ingest/D1Ingest-3.gif)
 
