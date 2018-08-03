@@ -7,8 +7,6 @@
 ##'@export
 ##'@author Luke Dramko
 prep.data.assim <- function(settings) {
-  fcn <- "download.US-WCr"
-  
   # Obtain real data from the site
   field_data <- PEcAn.data.atmosphere::download.US_WCr(settings$run$start_date, settings$run$end_date, timestep = 0.5)
   
@@ -18,7 +16,7 @@ prep.data.assim <- function(settings) {
   sums <- matrix(rep(0, length(field_data[[1]])), nrow = length(field_data[[1]]), ncol = 1)
   
   # Will be one vector per variable.  Each variable is its own list entry.
-  obs.mean <- list()
+  obs.mean <- NULL
   
   for (i in 1:length(field_data)) {
     uncertainty_vals[[i]] <- PEcAn.uncertainty::flux.uncertainty(field_data[[i]], QC = rep(0, length(field_data[[i]])))
@@ -35,16 +33,11 @@ prep.data.assim <- function(settings) {
     #Strip away proxy row
     random_mat <- random_mat[-1,]
     
-    obs.mean[[i]] <- cumsum(field_data[[i]])
+    obs.mean <- c(obs.mean, mean(field_data[[i]]))
     
     applied <- apply(random_mat, 1, mean)
-    print(sums)
-    print(nrow(sums))
-    print("------------------------")
-    print(applied)
-    print(length(applied))
     
-    sums = cbind(sums, apply(random_mat, 1, sum))  ### cumsum?
+    sums = cbind(sums, apply(random_mat, 1, mean))  ### cumsum?
   } ### cumsum produces a matrix instead of a vector.
   
   # strip away proxy row
@@ -52,6 +45,15 @@ prep.data.assim <- function(settings) {
   
   ### Note that this will mean obs.cov will have length 1, while obs.mean will have a length equal to the number of variables
   obs.cov <- list(cov(sums))
+  
+  names(obs.mean) <- names(field_data)
+  obs.mean <- list()[[settings$run$end_date]]
+  
+  print("mean")
+  print(obs.mean)
+  
+  print("covarience")
+  print(obs.cov)
   
   ### suspend function call until function works to this point
   # PEcAn.assim.sequential::sda.enkf(settings, obs.cov = obs.cov, obs.mean = obs.mean)
