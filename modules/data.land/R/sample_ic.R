@@ -1,9 +1,19 @@
 ##' @name sample_ic
 ##' @title sample_ic
+##' 
+##' @param in.path path to folder of the file to be sampled
+##' @param in.name file name of the file to be sampled
+##' @param start_date date in "YYYY-MM-DD" format
+##' @param end_date date in "YYYY-MM-DD" format
+##' @param outfolder dir path, whete to write the file
+##' @param n.ensemble integer, ensemble member number
+##' @param machine_host localhost name, e.g. "pecan2.bu.edu"
+##' @param source string to appear in file names, e.g. "PalEON"
+##' 
 ##' @export
 ##' @author Istem Fer
 sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
-                      n.ensemble, machine_host, source = input_veg$source, ...){
+                      n.ensemble, machine_host, source, ...){
   
   
   #--------------------------------------------------------------------------------------------------#

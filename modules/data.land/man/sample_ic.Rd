@@ -5,7 +5,24 @@
 \title{sample_ic}
 \usage{
 sample_ic(in.path, in.name, start_date, end_date, outfolder, n.ensemble,
-  machine_host, source = input_veg$source, ...)
+  machine_host, source, ...)
+}
+\arguments{
+\item{in.path}{path to folder of the file to be sampled}
+
+\item{in.name}{file name of the file to be sampled}
+
+\item{start_date}{date in "YYYY-MM-DD" format}
+
+\item{end_date}{date in "YYYY-MM-DD" format}
+
+\item{outfolder}{dir path, whete to write the file}
+
+\item{n.ensemble}{integer, ensemble member number}
+
+\item{machine_host}{localhost name, e.g. "pecan2.bu.edu"}
+
+\item{source}{string to appear in file names, e.g. "PalEON"}
 }
 \description{
 sample_ic
