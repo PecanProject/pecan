@@ -63,7 +63,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     end_date   <- settings$run$end.date
   }else{
     
-   query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
+   query      <- paste0("SELECT * FROM inputs where id = ", input$id)
    input_file <- db.query(query, con = con) 
    start_date <- input_file$start_date
    end_date   <- input_file$end_date
@@ -108,7 +108,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
 
     getveg.id <- list()
 
-    for(i in 1:nsource){
+    for(i in seq_len(nsource)){
       getveg.id[[i]] <-.get.veg.module(input_veg = input, 
                                        outfolder = outfolder, 
                                        start_date = start_date, end_date = end_date,
