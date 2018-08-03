@@ -40,8 +40,9 @@ ameriflux <- c("TA(C)","" ,"" , "PRESS (KPa)","CO2","","TS1(NOT DONE)",
 
 in_tab<-cbind(names,units,bety,isimip,cruncep,narr,ameriflux)
 colnames(in_tab)<- c("CF standard-name","units","BETY","Isimip","CRUNCEP","NARR", "Ameriflux")
-
-DT::datatable(in_tab, escape = FALSE,
+install.packages("DT")
+library(DT)
+datatable(in_tab, escape = FALSE,
               extensions = 'FixedColumns',
               options = list(
                 dom = 't',
