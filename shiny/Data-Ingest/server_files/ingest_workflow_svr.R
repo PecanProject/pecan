@@ -239,8 +239,8 @@ observeEvent(input$complete_ingest_lcl, {
   Shared.data$format_vars_df <- Shared.data$format_vars_df %>% select(-one_of("var_name"))
   # 1. Create Format and the format variable records
   tryCatch({
-    PEcAn.DB::insert.format.vars(con = bety$con, 
-                                 format_name = input$NewFormatName, 
+    PEcAn.DB::insert.format.vars(con = bety$con,
+                                 format_name = input$NewFormatName,
                                  mimetype_id = ifelse((input$MimetypeName == ""), "", mimetype_sub %>% dplyr::filter(type_string %in% input$MimetypeName) %>% pull(id)),
                                  header = ifelse((input$HeaderBoolean == "Yes"), TRUE, FALSE),
                                  skip = input$SkipLines,

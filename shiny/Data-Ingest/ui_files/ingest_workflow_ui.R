@@ -33,7 +33,6 @@ shinyjs::hidden(
   textInput("InputName",
             label = "Name *",
             placeholder = ""),
-  #verbatimTextOutput("autoname"),
   hr(),
   fluidRow(column(6,
   selectizeInput("InputFormatName", label = "Format *", choices = NULL,
@@ -57,7 +56,7 @@ shinyjs::hidden(
       box(width = '350px', solidHeader = TRUE, status = "warning",
         selectizeInput("MimetypeName", label = "Mimetype *", choices = NULL,
                      options = list(
-                       placeholder = 'Please search inputs by name or site',
+                       placeholder = 'Please search formats by name or site',
                        onInitialize = I('function() { this.setValue(""); }')
                      )),
       p("or"),
@@ -82,9 +81,7 @@ shinyjs::hidden(
         height = '75px'
       ),
       actionBttn("FormatRecordDone", label = "Done", color = "warning", size = "sm"),
-      p("* Denotes a Required Field"),
-      hr(),
-      verbatimTextOutput("FormatRecordOut")
+      p("* Denotes a Required Field")
     )
     ),
   hr(),
@@ -136,12 +133,7 @@ fluidRow(
                     size = "sm")
   )
 ),
-  #actionBttn("createInput", label = "Create Input Record", color = "success", size = "sm"),
-  #actionButton("testBety", label = "Test Bety"),
-  p("* Denotes a Required Field"),
-  hr(),
-  verbatimTextOutput("summInputs"),
-  verbatimTextOutput("input_record_df")
+  p("* Denotes a Required Field")
   )
 )
 )
@@ -154,7 +146,7 @@ div(id = "formats.vars_box",
       fluidRow(column(3,
                       selectizeInput("pecan_var", choices = NULL, label = "Variable",
                                      options = list(
-                                       placeholder = 'Please search or select a site below',
+                                       placeholder = 'Please search for a variable in PEcAn',
                                        onInitialize = I('function() { this.setValue(""); }')
                                      )
                       )
@@ -166,7 +158,7 @@ div(id = "formats.vars_box",
              textInput("var_unit", label = "Unit")
       ),
       column(2,
-             textInput("storage_type", label = "Storage Type")
+             textInput("storage_type", label = "Storage Type", placeholder = "e.g. POSIX code")
       ),
       column(2,
              textInput("col_num", label = "Column Number")
