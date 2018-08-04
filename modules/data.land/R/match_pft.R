@@ -37,7 +37,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
       bety_pft <- traits::betydb_query(name = pft$name, table = 'pfts', user = 'bety', pwd = 'bety')
       # query species id
       bety_species <- traits::betydb_query(pft_id = bety_pft$id, table = 'pfts_species', user = 'bety', pwd = 'bety')
-      bety_list[[pft$name]] <- bety_species$pfts_species.specie_id
+      bety_list[[pft$name]] <- bety_species$specie_id
     }
     tmp <- lapply(seq_along(bety_list), function(x){
         data.frame(pft = rep(names(bety_list)[x], length(bety_list[[x]])),

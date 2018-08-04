@@ -190,32 +190,33 @@ First, you'll need to create a input record in BETY that will have a file record
 
 Once you have created an input record you must take note of the input id of your record. An easy way to take note of this is in the URL of the BETY webpage that shows your input record. In this example we use an input record with the id `1000013064` which can be found at this url: https://psql-pecan.bu.edu/bety/inputs/1000013064# . Note that this is the Boston University BETY database. If you are on a different machine, your url will be different.
 
-With the input id  in hand you can now edit a pecan XML so that the PEcAn function `ic.process` will know where to look in order to process your data. The `inputs` section of your pecan XML will look like this. As of now ic.process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `source.ic` flag.
+With the input id  in hand you can now edit a pecan XML so that the PEcAn function `ic.process` will know where to look in order to process your data. The `inputs` section of your pecan XML will look like this. As of now ic.process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `useic` flag.
 ```
 <inputs>
       <css>
         <source>FFT</source>
         <output>css</output>
         <username>pecan</username>
-        <source.id>1000013064</source.id>
+        <id>1000013064</id>
         <useic>TRUE</useic>
-        <meta>
+        <metadata>
           <trk>1</trk>
           <age>70</age>
-        </meta>
+          <area>400</area>
+        </metadata>
       </css>
       <pss>
         <source>FFT</source>
         <output>pss</output>
         <username>pecan</username>
-        <source.id>1000013064</source.id>
+        <id>1000013064</id>
         <useic>TRUE</useic>
       </pss>
       <site>
         <source>FFT</source>
         <output>site</output>
         <username>pecan</username>
-        <source.id>1000013064</source.id>
+        <id>1000013064</id>
         <useic>TRUE</useic>
       </site>
       <met>
@@ -235,6 +236,56 @@ With the input id  in hand you can now edit a pecan XML so that the PEcAn functi
         <id>296</id>
       </veg>
     </inputs>
+```
+
+This IC workflow also supports generating ensembles of initial conditions from posterior estimates of DBH. To do this the tags below can be inserted to the pecan.xml:
+```
+       <css>
+        <source>PalEON</source>
+        <output>css</output>
+        <id>1000015682</id>
+        <useic>TRUE</useic>
+        <ensemble>20</ensemble>
+        <metadata>
+          <area>1256.637</area>
+          <n.patch>3</n.patch>
+        </metadata>
+      </css>
+```
+Here the `id` should point to a file that has MCMC samples to generate the ensemble from. The number between the `<ensemble>` tag defines the number of ensembles requested. The workflow will populate the settings list `run$inputs` tag with ensemble member information. E.g.:
+```
+  <inputs>
+   <css>
+    <path1>...</path1>
+    <path2>...</path2>
+    <path3>...</path3>
+    ...
+    <pathN>...</pathN>
+   </css>
+   <pss>
+    <path>
+     <path1>...</path1>
+     <path2>...</path2>
+     <path3>...</path3>
+      ...
+     <pathN>...</pathN>
+    </path>
+   </pss>
+   <site>
+    <path>
+     <path1>...</path1>
+     <path2>...</path2>
+     <path3>...</path3>
+      ...
+     <pathN>...</pathN>
+    </path>
+   </site>
+   <met>...</met>
+   <lu>...</lu>
+   <soil>...</soil>
+   <thsum>...</thsum>
+   <veg>...</veg>
+  </inputs>
 ```
 
 Once you edit your PEcAn.xml you can than create a settings object using PEcAn functions. Your `pecan.xml` must be in your working directory.

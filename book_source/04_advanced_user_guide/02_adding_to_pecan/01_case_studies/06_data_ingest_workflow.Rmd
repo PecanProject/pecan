@@ -1,0 +1,27 @@
+# Pecan Data Ingest via Web Interface 
+
+This tutorial explains the process of ingesting data into PEcAn via our Data-Ingest Application. This process consists of a few main steps. First, users select data that they wish to upload. Then, they enter metadata required to help PEcAn parse and load the data into the main PEcAn workflow. Note that it is also possible to load data directly to PEcAn's BETY database, although a much less intuitive process.  
+
+LIST STEPS: 1,2,3
+
+# 1. Loading Data
+
+## Selecting Ingest Method
+The Data-Ingest application is capable of loading data from the DataONE data federation and from the user's local machine. The first step in the workflow is therefore to select a method. The application defaults to uploading from DataONE. To instead upload data from a local device, simply select the radio button titled `Local Files `. 
+
+### DataONE Upload Example 
+![Select Method](images/data-ingest/D1Ingest-1.gif)
+
+
+The DataONE download feature allows the user to download data at a given doi or DataONE specific package id. To do so, enter the doi or identifier in the box entitled `Import From DataONE` and select `download`. The download process may take a couple of minutes to run depending on the number of files in the dataONE package. This may be a convenient option if the user does not wish to download files directly to their local machine. Once the files have been successfully downloaded from DataONE, they are displayed in a table. Before proceeding to the next step, the user can select a file to ingest by clicking on the corresponding row in the data table. 
+
+![Choose FIle for Ingest](images/data-ingest/D1Ingest-2.gif)
+<br> 
+## Local Upload Example 
+<br>
+To upload local files, the user should first select the `Local Files` button. From there, the user can upload files from their local machines by selecting `Browse` or by dragging and dropping files into the text box. The files will begin uploading automatically. From there, the user should select a file to ingest and then select the `Next Step` button. 
+After this step, the workflow is identical for either method. However, please note that if it becomes necessary to switch from loading data via `DataONE` to uploading local files after the first step, please restart the application. 
+
+# 2. Creating an Input Record
+![Create Input Record](images/data-ingest/D1Ingest-3.gif)
+
