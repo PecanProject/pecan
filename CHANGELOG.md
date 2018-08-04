@@ -60,17 +60,27 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Store inputs and formats in the global environment
   - "Test BETY" button allows users create a record in BETY with `dbfile.input.insert`
   - Added `input.format.vars` to query the BETYdb
+  - New File: `helper.R`
+  - New Function: `auto.name.directory` This function uses the format_name and the site_id for a given input to create a directory name in the style of other dbfiles names. 
+  - `Next Step` buttons progress workflow programmatically
+  - New formats-variables UI allows user to create a table of formats-variable records before completing the ingest process
+  - Two separate complete Ingest buttons are rendered at the end of the workflow to trigger actions specific to local upload or dataONE download workflows. These buttons are rendered programmatically depending on the state of the selectInputMethod radio button.
+  - Converted time inputs to properly merge startDate and startTime with EndDate and EndTime so they can be inserted into the start_date and end_date columns in BETYdb.
+  - Error handling introduced using `shinytoastr` package
+  - DESCRIPTION: `Depends`: PEcAn.visualization, shinytoastr, shinyWidgets, shinyjs
   
 - pecan/base/db
   - New File: `input.format.vars.R`. This function registers the format and the (optional) formats_variables record using `db_merge_into`. 
 
 - `data.atmosphere`
 	- `check_met_input_file` -- Check that target met file conforms to PEcAn meteorology data standard.
-	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame`
+	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame` 
+
 
   
 ### Removed
   - pecan.worldmap function no longer used, dropped from visualization package
+  - shiny/Data-Ingest/DESCRIPTION no longer `DEPENDS` on `shinyFiles` or `shinycssloaders`
 
 ### Changed
 - PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
