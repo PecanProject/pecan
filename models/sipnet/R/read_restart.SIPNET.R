@@ -37,7 +37,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   print("The GWBI part")
   print(ens$GWBI)
   
-  last <- length(ens$AbvGrndWood)  ### last <- length(ens$GWBI) HACKING THINGS
+  last <- length(ens$[1,])
   
   forecast <- list()
   
