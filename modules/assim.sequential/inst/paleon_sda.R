@@ -61,6 +61,7 @@ colnames(state)<-c('AbvGrndWood','GWBI')
 IC <- sample.IC.SIPNET(ne, state = state)
 status.end()
 
+
 #develop/debug
 if(FALSE){
   obs.mean = obs.list$obs.mean
