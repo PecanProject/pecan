@@ -129,7 +129,7 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
 ```
 
 
-#### Vegetation Data
+### Vegetation Data
 
 Vegetation data will be required to parameterize your model. In these examples we will go over how to produce a standard initial condition file.
 
@@ -234,7 +234,7 @@ pool_ic_list2netcdf(input = input, outdir = outdir, siteid = siteid)
 
 You should now have a netcdf file with initial conditions.
 
-#### Soil Data
+### Soil Data
 
 ###### Example 1: Converting Data in hand 
 

@@ -7,6 +7,7 @@
 
 ### Input Standards
 
+####Meterology Standards
 ##### Dimensions:
 
 
@@ -64,6 +65,17 @@ For example, in the [MsTMIP-CRUNCEP](https://www.betydb.org/inputs/280) data, th
 We want to standardize the units as well as part of the `met2CF.<product>` step. I believe we want to use the CF "canonical" units but retain the MsTMIP units any time CF is ambiguous about the units.
 
 The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
+
+#### Soils and Vegetation Inputs
+
+##### Soil Data 
+
+Check out the [Soil Data] section on more into on creating a standard soil data file.
+
+##### Vegetation Data
+
+Check Out the [Vegetation Data] section on more info on creating a standard vegetation data file
+
 
 
 ### Output Standards
