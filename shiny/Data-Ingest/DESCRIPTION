@@ -9,10 +9,12 @@ Depends:
     shiny,
     PEcAn.data.land,
     PEcAn.utils,
+    PEcAn.visualization,
     shinydashboard,
     dataone,
     stringr,
-    shinyFiles,
     DT,
-    shinycssloaders
-RoxygenNote: 6.0.1
+    shinytoastr,
+    shinyWidgets,
+    shinyjs
+RoxygenNote: 6.1.0

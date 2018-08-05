@@ -4,13 +4,15 @@
 \alias{remote.copy.update}
 \title{Copy to remote and update DB}
 \usage{
-remote.copy.update(input_id, remote_dir, remote_file_name = NULL, host,
-  con)
+remote.copy.update(input_id, remote_dir, local_file_path,
+  remote_file_name = NULL, host, con)
 }
 \arguments{
 \item{input_id}{Input ID, as a numeric or character}
 
 \item{remote_dir}{remote folder path}
+
+\item{local_file_path}{full path name to local file that needs to be copied, e.g. "/fs/data1/dbfiles/.../.../*.css"}
 
 \item{remote_file_name}{remote file name, no need to provide if it's the same as local}
 
