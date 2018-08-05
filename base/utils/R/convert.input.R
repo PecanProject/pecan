@@ -523,14 +523,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     fcn.args$start_date <- start_date
     fcn.args$end_date   <- end_date
     
-    if (forecast && !is.null(input.id) && !is.na(input.id)) { # for met2model coversion, arguments will be extraneous otherwise.
-      fcn.args$year.fragment = TRUE
-      if (grepl("NOAA_GEFS\\.[0-9]+", fcn.args$in.prefix)) { # Protects legacy database entries.
-        # Older NOAA_GEFS database entries have NOAA_GEFS.i as their dbfile names; this corrects that.
-        # Can be deleted if old NOAA_GEFS data is discarded or database is updated with new values.
-        parent.input <- PEcAn.DB::db.query(paste0("SELECT name FROM inputs WHERE id =", input.id), con)
-        fcn.args$in.prefix = parent.input$name #Sends the file name (minus the extension)
-      }
+    if (forecast && !is.null(input.id) && !is.na(input.id)) { # for downstream code adapted to handle forecast file conventions
+      fcn.args$year.fragment = TRUE                           # such as met2model conversions; arguments will be extraneous otherwise.
     }
     
     arg.string <- listToArgString(fcn.args)
