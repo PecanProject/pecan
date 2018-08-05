@@ -12,7 +12,7 @@ This is the main ensemble Kalman filter and generalized filter code. Originally,
 
 ### **sda.enkf.R Arguments**
 
-* settings - (required) [pecan.SDA.xml][State Data Assimilation Tags Example] settings object
+* settings - (required) [State Data Assimilation Tags Example] settings object
 
 * obs.mean - (required) a list of observation means named with dates in YYYY/MM/DD format
 
@@ -25,7 +25,7 @@ This is the main ensemble Kalman filter and generalized filter code. Originally,
 ### State Data Assimilation Workflow
 Before running sda.enkf, these tasks must be completed (in no particular order),
 
-* Read in a [pecan.SDA.xml][State Data Assimilation Tags Example] settings file with tags listed below. i.e. read.settings('pecan.SDA.xml')
+* Read in a [State Data Assimilation Tags Example] settings file with tags listed below. i.e. read.settings('pecan.SDA.xml')
 
 * Load data means (obs.mean) and covariances (obs.cov) as lists with PEcAn naming and unit conventions. Each observation must have a date in YYYY/MM/DD format  (optional time) associated with it. If there are missing data, the date must still be represented in the list with an NA as the list object.
 
