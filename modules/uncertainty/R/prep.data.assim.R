@@ -7,22 +7,23 @@
 ##'@export
 ##'@author Luke Dramko
 prep.data.assim <- function(settings) {
+  print("Preping data assimilation.")
+  
   # Obtain real data from the site
   timestep <- 0.5 # Every half hour = 0.5
   
-  field_data <- PEcAn.data.atmosphere::download.US_WCr(settings$run$start_date, settings$run$end_date, timestep = timestep)
+  field_data <- PEcAn.data.atmosphere::download.US_WCr(settings$run$start.date, settings$run$end.date, timestep = timestep)
   
-  uncertainty_vals <- list()
-  
+  names(field_data) <- c("NEE", "LE")
   # Creates a proxy row for rbinding
   sums <- NULL
+  numvals <- 10;
   
   # One vector holds the mean for each variable.
   obs.mean <- NULL
   
   for (i in 1:length(field_data)) {
     AMF.params <- PEcAn.uncertainty::flux.uncertainty(field_data[[i]], QC = rep(0, length(field_data[[i]])))
-    numvals <- 10;
     
     # Create proxy row for rbinding
     random_mat = NULL
@@ -67,16 +68,17 @@ prep.data.assim <- function(settings) {
   sums = sums[complete.cases(sums), ]
   
   obs.cov <- list(cov(sums))
-  names(obs.cov) <- settings$run$end_date
+  names(obs.cov) <- as.character(settings$run$end_date)
   
   names(obs.mean) <- names(field_data)
   obs.mean <- list(obs.mean)
-  names(obs.mean) <- settings$run$end_date
+  names(obs.mean) <- as.character(settings$run$end_date)
   
   PEcAn.logger::logger.info("Calcualted obs.mean")
   print(obs.mean)
   PEcAn.logger::logger.info("Calcualted obs.cov")
   print(obs.cov)
   
-  PEcAn.assim.sequential::sda.enkf(settings, obs.cov = obs.cov, obs.mean = obs.mean)
+  source("~/pecan/modules/assim.sequential/R/sda.enkf.R")
+  sda.enkf(settings, obs.cov = obs.cov, obs.mean = obs.mean) ###PEcAn.
 } # prep.data.assim
