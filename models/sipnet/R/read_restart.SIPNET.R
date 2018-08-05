@@ -33,7 +33,11 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
                      end.year = lubridate::year(stop.time),
                      variables = var.names)
   
-  last <- length(ens$GWBI)
+  print(ens)
+  print("The GWBI part")
+  print(ens$GWBI)
+  
+  last <- length(ens$AbvGrndWood)  ### last <- length(ens$GWBI) HACKING THINGS
   
   forecast <- list()
   
@@ -44,9 +48,20 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("GWBI")
   }
   
+  print("forecast")
+  print(forecast)
+  
   if ("AbvGrndWood" %in% var.names) {
+    print("AbvGrndWood call information")
+    print(last)
+    print(ens$AbvGrndWood)
     forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
+    print("forecast 2")
+    print(forecast)
+    
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
+    print("forecast 3")
+    print(forecast)
     
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]

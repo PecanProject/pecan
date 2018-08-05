@@ -52,12 +52,29 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwri
     
     
   dat <- read.table(met, header = FALSE)
+  
+  print("dat is")
+  print(dat)
+  
+  print("Start")
+  print(start.year)
+  print(start.day)
+  print("End")
+  print(end.year)
+  print(end.day)
 
   ###### Find Correct Met
   sel1 <- which(dat[, 2] == as.numeric(start.year) & dat[, 3] == as.numeric(start.day))[1]
   sel2 <- which(dat[, 2] == as.numeric(end.year) & 
                   dat[, 3] == as.numeric(end.day))[length(which(dat[, 2] == as.numeric(end.year) & 
                                                                   dat[, 3] == as.numeric(end.day)))]
+  print("sels")
+  print(sel1)
+  print(sel2)
+  
+  ### THIS IS A HACK
+  sel1 <- 1
+  sel2 <- nrow(dat)
   
   ###### Write Met to file
 

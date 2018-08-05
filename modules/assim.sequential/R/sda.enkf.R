@@ -22,6 +22,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   
   library(nimble)
   
+  ###
+  source("~/pecan/modules/assim.sequential/R/met_filtering_helpers.R")
+  
   ymd_hms <- lubridate::ymd_hms
   hms     <- lubridate::hms
   second  <- lubridate::second
@@ -47,7 +50,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
                              USE.NAMES = FALSE), 
                       use.names = FALSE)
   names(var.names) <- NULL
-  dir.create(rundir,recursive=TRUE) # remote will give warning
+  if (!dir.exists(rundir)) {
+    dir.create(rundir,recursive=TRUE) # remote will give warning 
+  }
   
   ###-------------------------------------------------------------------###
   ### get model specific functions                                      ###
@@ -102,7 +107,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       inputs[[i]] <- do.call(my.split_inputs, 
                              args = list(settings = settings, 
                                          start.time = settings$run$start.date, 
-                                         stop.time = as.Date(names(obs.mean)[1]),#settings$run$end.date,
+                                         stop.time = settings$run$end.date, #as.Date(names(obs.mean)[1]),  ### These have been switched
                                          inputs = ens.inputs[[i]]))#,
       #                                       outpath = file.path(rundir,paste0("met",i))))
     }
@@ -179,7 +184,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     # cumulative_ensemble_samples <- numeric(0)
     # 
     # repeat{ # temporary SIPNET hack, I want to make sure sum <1 for SIPNET
-      get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
+     PEcAn.uncertainty::get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
       load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
     #   cumulative_ensemble_samples <- rbind(cumulative_ensemble_samples,ensemble.samples$temperate.deciduous_SDA)
     #   tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(20, 25,27)],1,sum) < 1

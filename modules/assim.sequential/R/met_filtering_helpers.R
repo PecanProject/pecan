@@ -6,18 +6,22 @@
 sample_met <- function(settings, nens=1){
 
   # path where ensemble met folders are
-  path <- settings$run$inputs$met[["path"]]
+  path <- settings$run$inputs$met$path$path1
+  
+  path <- dirname(path)
+  print(path)
 
   if(settings$host$name == "localhost"){
     ens_members <- list.files(path, recursive = TRUE)
+    ens_members <- ens_members[grepl(format(as.POSIXct(settings$run$start.date), "%Y-%m-%dT%H:%M"), ens_members)]
   }else{
     # remote
     ens_members <- PEcAn.remote::remote.execute.cmd(host, paste0('ls -d -1 ', path, "/*.*"))
   }
   
 
-  start_date <- as.POSIXlt(strptime(settings$run$site$met.start, "%Y/%m/%d"))
-  end_date   <- as.POSIXlt(strptime(settings$run$site$met.end, "%Y/%m/%d"))
+  start_date <- as.POSIXlt(strptime(settings$run$site$met.start, "%Y/%m/%d %H:%M"))
+  end_date   <- as.POSIXlt(strptime(settings$run$site$met.end, "%Y/%m/%d %H:%M"))
   start_date$zone <- end_date$zone <- NULL
   
   # only the original (not-splitted) file has start and end date only
@@ -35,7 +39,6 @@ sample_met <- function(settings, nens=1){
   }else if(settings$model$type == "SIPNET"){
     ens_ind <- unlist(sapply(paste0(member_names, ".clim"), grep, tmp_members))
   }
-  
 
   # ens_members[ens_ind]
   ens_input <- list()
@@ -44,6 +47,7 @@ sample_met <- function(settings, nens=1){
     ens_input[[i]]$met$path <- file.path(path, ens_members[sample(ens_ind, 1)])
   }
   names(ens_input) <- rep("met",length=nens)
+  
   return(ens_input)
 }
 
