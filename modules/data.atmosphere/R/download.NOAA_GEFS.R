@@ -133,6 +133,20 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
     noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1:increments, forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
   }
   
+  #Fills in data with NaNs if there happens to be missing columns.
+  for (i in 1:length(noaa_var_names)) {
+    if (!is.null(ncol(noaa_data[[i]]))) { # Is a matrix
+      nans <- rep(NaN, nrow(noaa_data[[i]]))
+      while (ncol(noaa_data[[i]]) < increments) {
+        noaa_data[[i]] <- cbind(noaa_data[[i]], nans)
+      }
+    } else {   # Is a vector
+      while (length(noaa_data[[i]]) < increments) {
+        noaa_data[[i]] <- c(noaa_data[[i]], NaN);
+      }
+    }
+  }
+  
   ###################################################
   # Not all NOAA data units match the cf data standard.  In this next section, data are processed to
   # confirm with the standard when necessary.
@@ -236,7 +250,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
     #Object references in R work differently than in other languages. When adding an item to a list, R creates a copy of it
     #for you instead of just inserting the object reference, so this works.
     results$file <- flname
-    results$dbfile.name <- paste0("NOAA_GEFS.", i)
+    results$dbfile.name <- flname
     results_list[[i]] <- results
     
     if (!file.exists(flname) | overwrite) {

@@ -1,0 +1,35 @@
+# Template MODEL page
+
+| Model Information ||
+| -- | -- |
+| Home Page | |
+| Source Code | |
+| License |  |
+| Authors | |
+| PEcAn Integration | |
+
+**Introduction**
+
+Introduction about model
+
+**PEcAn configuration file additions**
+
+Should list the model specific additions to the PEcAn file here
+
+**Model specific input files**
+
+List of inputs required by model, such as met, etc.
+
+**Model configuration files**
+
+MODEL is configured using 3 files which are placed in the run folder, as well as a symbolic link to the met file.
+
+* **file1** : template for this file is located at models/MODEL/inst/file1 and is not modified.  
+* **file2** : template for this file is located at models/MODEL/inst/file2 and is not modified.  
+* **file3** : template for this file is in models/MODEL/inst/file3 or it is specified in the \<model\> section as \<template\>. The values in this template are replaced by those computed in the earlier stages of PEcAN.
+
+**Installation notes**
+
+This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
+
+**VM**

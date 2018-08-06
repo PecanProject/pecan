@@ -17,54 +17,7 @@ Current Meteorological products that are coupled to PEcAn can be found in our [A
 
 Note: Unless you are also adding a new model, you will not need to write a script to convert from PEcAn standard to PEcAn models. Those conversion scripts are written when a model is added and can be found within each model's PEcAn directory.
 
-##### Dimensions:
-
-
-|CF standard-name | units |
-|:------------------------------------------|:------|
-| time | days since 1700-01-01 00:00:00 UTC|
-| longitude | degrees_east|
-| latitude |degrees_north|
-
-General Note: dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
-
-
-##### The variable names should be `standard_name`
-
-| CF standard-name                          | units | bety         | isimip       | cruncep | narr  | ameriflux |
-|:------------------------------------------|:------|:-------------|:-------------|:--------|:------|:----------|
-| **air_temperature**                       | K     | airT         | tasAdjust    | tair    | air   | TA (C)    |
-| air_temperature_max                       | K     |              | tasmaxAdjust | NA      | tmax  |           |
-| air_temperature_min                       | K     |              | tasminAdjust | NA      | tmin  |           |
-| **air_pressure**                          | Pa    | air_pressure |              |         |       | PRESS (KPa) |
-| mole_fraction_of_carbon_dioxide_in_air    | mol/mol |            |              |         |       | CO2       |
-| moisture_content_of_soil_layer            | kg m-2 |             |              |         |       |           |
-| soil_temperature                          | K     | soilT        |              |         |       | TS1 *(NOT DONE)* |
-| relative_humidity                         | % | relative_humidity | rhurs       | NA      | rhum  | RH        |
-| **specific_humidity**                     | 1 | specific_humidity | NA          | qair    | shum  | CALC(RH)  |
-| water_vapor_saturation_deficit            | Pa    | VPD          |              |         |       | VPD *(NOT DONE)*     |
-| **surface_downwelling_longwave_flux_in_air** | W m-2 | same      | rldsAdjust   | lwdown  | dlwrf | Rgl       |
-| **surface_downwelling_shortwave_flux_in_air**| W m-2 |solar_radiation|rsdsAdjust| swdown  | dswrf | Rg        |
-| surface_downwelling_photosynthetic_photon_flux_in_air | mol m-2 s-1 | PAR |     |         |       | PAR *(NOT DONE)*          |
-| **precipitation_flux**                    |  kg m-2 s-1 | cccc   | prAdjust     | rain    | acpc  | PREC (mm/s)          |
-|                                           | degrees | wind_direction |          |         |       | WD        |
-| wind_speed                                | m/s   | Wspd         |              |         |       | WS        |
-| **eastward_wind**                         | m/s   | eastward_wind |             |         |       | CALC(WS+WD) |
-| **northward_wind**                        | m/s   | northward_wind |            |         |       | CALC(WS+WD) |
-
-* preferred variables indicated in bold
-* wind_direction has no CF equivalent and should not be converted, instead the met2CF functions should convert wind_direction and wind_speed to eastward_wind and northward_wind
-* standard_name is CF-convention standard names
-* units can be converted by udunits, so these can vary (e.g. the time denominator may change with time frequency of inputs)
-* soil moisture for the full column, rather than a layer, is soil_moisture_content
-* A full list of PEcAn standard variable names, units and dimensions can be found here: https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv
-
-
-For example, in the [MsTMIP-CRUNCEP](https://www.betydb.org/inputs/280) data, the variable `rain` should be `precipitation_rate`.
-We want to standardize the units as well as part of the `met2CF.<product>` step. I believe we want to use the CF "canonical" units but retain the MsTMIP units any time CF is ambiguous about the units.
-
-The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
-
+*Standards dimesion, names, nad units can be found here:* [Input Standards]
 ##### Adding Single-Site Specific Meteorological Data
 
 Perhaps you have meteorological data specific to one site, with a unique format that you would like to add to PEcAn. Your steps would be to:
@@ -176,7 +129,7 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
 ```
 
 
-#### Vegetation Data
+### Vegetation Data
 
 Vegetation data will be required to parameterize your model. In these examples we will go over how to produce a standard initial condition file.
 
@@ -190,32 +143,33 @@ First, you'll need to create a input record in BETY that will have a file record
 
 Once you have created an input record you must take note of the input id of your record. An easy way to take note of this is in the URL of the BETY webpage that shows your input record. In this example we use an input record with the id `1000013064` which can be found at this url: https://psql-pecan.bu.edu/bety/inputs/1000013064# . Note that this is the Boston University BETY database. If you are on a different machine, your url will be different.
 
-With the input id  in hand you can now edit a pecan XML so that the PEcAn function `ic.process` will know where to look in order to process your data. The `inputs` section of your pecan XML will look like this. As of now ic.process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `source.ic` flag.
+With the input id  in hand you can now edit a pecan XML so that the PEcAn function `ic.process` will know where to look in order to process your data. The `inputs` section of your pecan XML will look like this. As of now ic.process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `useic` flag.
 ```
 <inputs>
       <css>
         <source>FFT</source>
         <output>css</output>
         <username>pecan</username>
-        <source.id>1000013064</source.id>
+        <id>1000013064</id>
         <useic>TRUE</useic>
-        <meta>
+        <metadata>
           <trk>1</trk>
           <age>70</age>
-        </meta>
+          <area>400</area>
+        </metadata>
       </css>
       <pss>
         <source>FFT</source>
         <output>pss</output>
         <username>pecan</username>
-        <source.id>1000013064</source.id>
+        <id>1000013064</id>
         <useic>TRUE</useic>
       </pss>
       <site>
         <source>FFT</source>
         <output>site</output>
         <username>pecan</username>
-        <source.id>1000013064</source.id>
+        <id>1000013064</id>
         <useic>TRUE</useic>
       </site>
       <met>
@@ -235,6 +189,56 @@ With the input id  in hand you can now edit a pecan XML so that the PEcAn functi
         <id>296</id>
       </veg>
     </inputs>
+```
+
+This IC workflow also supports generating ensembles of initial conditions from posterior estimates of DBH. To do this the tags below can be inserted to the pecan.xml:
+```
+       <css>
+        <source>PalEON</source>
+        <output>css</output>
+        <id>1000015682</id>
+        <useic>TRUE</useic>
+        <ensemble>20</ensemble>
+        <metadata>
+          <area>1256.637</area>
+          <n.patch>3</n.patch>
+        </metadata>
+      </css>
+```
+Here the `id` should point to a file that has MCMC samples to generate the ensemble from. The number between the `<ensemble>` tag defines the number of ensembles requested. The workflow will populate the settings list `run$inputs` tag with ensemble member information. E.g.:
+```
+  <inputs>
+   <css>
+    <path1>...</path1>
+    <path2>...</path2>
+    <path3>...</path3>
+    ...
+    <pathN>...</pathN>
+   </css>
+   <pss>
+    <path>
+     <path1>...</path1>
+     <path2>...</path2>
+     <path3>...</path3>
+      ...
+     <pathN>...</pathN>
+    </path>
+   </pss>
+   <site>
+    <path>
+     <path1>...</path1>
+     <path2>...</path2>
+     <path3>...</path3>
+      ...
+     <pathN>...</pathN>
+    </path>
+   </site>
+   <met>...</met>
+   <lu>...</lu>
+   <soil>...</soil>
+   <thsum>...</thsum>
+   <veg>...</veg>
+  </inputs>
 ```
 
 Once you edit your PEcAn.xml you can than create a settings object using PEcAn functions. Your `pecan.xml` must be in your working directory.
@@ -281,7 +285,7 @@ pool_ic_list2netcdf(input = input, outdir = outdir, siteid = siteid)
 
 You should now have a netcdf file with initial conditions.
 
-#### Soil Data
+### Soil Data
 
 ###### Example 1: Converting Data in hand 
 

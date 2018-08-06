@@ -15,19 +15,22 @@
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
                                 restart = NULL, spinup = NULL) {
+  
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package = "PEcAn.SIPNET")
   config.text <- readLines(con = template.in, n = -1)
   writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
 
   ### WRITE *.clim
-  template.clim <- settings$run$input$met$path  ## read from settings #typo in inputs?
+  template.clim <- settings$run$inputs$met$path  ## read from settings
   if (!is.null(inputs)) {
     ## override if specified in inputs
     if ("met" %in% names(inputs)) {
       template.clim <- inputs$met$path
     }
   }
+  
+  PEcAn.logger::logger.info(paste0("Writing SIPNET configs with input ", template.clim))
 
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, as.character(run.id))
