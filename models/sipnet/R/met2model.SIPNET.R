@@ -18,42 +18,42 @@
 ##' @title met2model.SIPNET
 ##' @export
 ##' @param in.path location on disk where inputs are stored
-##' @param in.prefix prefix of input and output files
+##' @param in.prefix prefix of input and output files OR the full file name if year.fragment = TRUE
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @param year.fragment the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).
-##' @param in.data.file a data file to use for input - default behavior is to use all MET.year.nc files within the start and end year 
+##' @param in.prefix a data file to use for input - default behavior is to use all MET.year.nc files within the start and end year 
 ##' range in the directory in.path.  If not null, overrides default behavior.
 ##' @author Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
-                             overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, in.data.file = NULL, ...) {
+                             overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, ...) {
   
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  if (is.character(in.data.file)) { # in.data.file is not guaranteed to contain the file extension.
-    escaped <- gsub("(\\W)", "\\\\\\1", in.data.file) # The file name may contain special characters that could mess up the regular expression.
+  if (year.fragment) { # in.prefix is not guaranteed to contain the file extension.
+    escaped <- gsub("(\\W)", "\\\\\\1", in.prefix) # The file name may contain special characters that could mess up the regular expression.
     matching_files <- grep(escaped, list.files(in.path), value=TRUE) 
     if (length(matching_files) == 0) {
-      PEcAn.logger::logger.severe(paste0("No files found matching ", in.data.file, "; cannot process data."))
+      PEcAn.logger::logger.severe(paste0("No files found matching ", in.prefix, "; cannot process data."))
     }
     
     # This function is supposed to process netcdf files, so we'll search for files the the extension .nc and use those first.
     nc_file = grep("\\.nc$", matching_files)
     if (length(nc_file) > 0) {
-      if (grepl("\\.nc$", in.data.file)) {
-        out.file <- sub("\\.nc$", ".clim", in.data.file)
+      if (grepl("\\.nc$", in.prefix)) {
+        out.file <- sub("\\.nc$", ".clim", in.prefix)
       } else {
-        out.file <- paste0(in.data.file, ".clim")
-        in.data.file <- paste0(in.data.file, ".nc")
+        out.file <- paste0(in.prefix, ".clim")
+        in.prefix <- paste0(in.prefix, ".nc")
       }
     } else { # no .nc files found... it could be that the extension was left off, or some other problem
       PEcAn.logger::logger.warn("No files found with extension '.nc'.  Using the first file in the list below:")
       PEcAn.logger::logger.warn(matching_files)
-      in.data.file <- matching_files[i]
+      in.prefix <- matching_files[i]
     }
   } else { # Default behavior
     out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
@@ -92,7 +92,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   start_year <- lubridate::year(start_date)
   if (year.fragment) {
     end_year <- lubridate::year(start_date) # Start year is listed twice because there's only one file. start_year and end_year only control
-                                            # the loop and file name, which are overriden for year.fragment/in.data.file
+                                            # the loop and file name, which are overriden for year.fragment
   } else {
     end_year <- lubridate::year(end_date)
   }
@@ -105,10 +105,10 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
 
     diy <- PEcAn.utils::days_in_year(year)
     
-    if (!is.character(in.data.file)) { # default behavior
+    if (!year.fragment) { # default behavior
         old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
     } else { # Use the supplied file name
-        old.file <- file.path(in.path, in.data.file)
+        old.file <- file.path(in.path, in.prefix)
     }
 
     if (file.exists(old.file)) {
