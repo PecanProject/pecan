@@ -222,9 +222,12 @@ neeplot <- ggplot(needf) +
   scale_color_manual(name='Legend', values=c("mean"="lightskyblue1", "observed data"="orange2")) + 
   scale_fill_manual(name='Legend', values=c("95% confidence interval" = "blue3")) +
   scale_y_continuous(name="LE (W m-2 s-1)", limits = c(qle_lower, qle_upper))
+  
+if (!dir.exists(outfolder)) {
+  dir.create(outfolder, recursive = TRUE)
+}
 
 print("Saving plots")
-save(neeplot, file="plot.Rdata")
 if (graph_for == "LE") {
   pdf(file.path(outfolder, format(workflow$start_date, "%Y-%m-%dT%H:%M:%SLE.pdf")), width = 12, height = 6)
   plot(qleplot)
