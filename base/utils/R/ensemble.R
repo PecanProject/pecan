@@ -341,13 +341,16 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
           "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
           file = file.path(settings$rundir, run.id, "README.txt"))
       
+      #changing the structure of input met to what the models are expecting
+      settings$run$inputs$met$path <- samples$met$samples[[i]]
+      
       do.call(my.write.config, args = list( defaults = defaults, 
                                             trait.values = lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i), # this is the params
                                             settings = settings, 
-                                            run.id = run.id,
-                                            inputs = list(met=list(path=samples$met$samples[[i]]))
+                                            run.id = run.id
+                                              )
       )
-      )
+      
       cat(run.id, file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
      
     }

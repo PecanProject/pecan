@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- write.ensemble.configs function was fixed to be compatible with all the models after the change in ensemble generator.
 - The following functions were deprecated from utils package and were moved to uncertainty package: read.ensemble.output, get.ensemble.samples, write.ensemble.configs, input.ens.gen.
 - Fixed issue #1939 which corrects output time vector for FATES output
 - Update to read.output to look for and read only PEcAn formatted .nc output based on the pecan standard filename format of YYYY.nc.  Solves issues with models such as FATES and dvm-dos-tem where the original model output is also in .nc file format and was not ignored by read.output, causing errors with output parsing and plotting with Shiny. Removed deprecated function convert.outputs
@@ -34,7 +35,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     
 ### Added
 
--You can now generate ensembles for parameters and met separatly and using different methods. 
+- IC workflow now has functionality to generate ensembles.
+- You can now generate ensembles for parameters and met separatly and using different methods. 
 - Soil process is now capable of reading in soil data from gSSURGO databse.
 - In modules/rtm new function foursail()  to interface with the 4SAIL Fortran code. To enable the use of 4SAIL with any version of PROSPECT (i.e. 4, 5, 5b, D) and custom soil/background reflectance inputs
 - Shiny/Dependency explorer 
@@ -59,17 +61,27 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Store inputs and formats in the global environment
   - "Test BETY" button allows users create a record in BETY with `dbfile.input.insert`
   - Added `input.format.vars` to query the BETYdb
+  - New File: `helper.R`
+  - New Function: `auto.name.directory` This function uses the format_name and the site_id for a given input to create a directory name in the style of other dbfiles names. 
+  - `Next Step` buttons progress workflow programmatically
+  - New formats-variables UI allows user to create a table of formats-variable records before completing the ingest process
+  - Two separate complete Ingest buttons are rendered at the end of the workflow to trigger actions specific to local upload or dataONE download workflows. These buttons are rendered programmatically depending on the state of the selectInputMethod radio button.
+  - Converted time inputs to properly merge startDate and startTime with EndDate and EndTime so they can be inserted into the start_date and end_date columns in BETYdb.
+  - Error handling introduced using `shinytoastr` package
+  - DESCRIPTION: `Depends`: PEcAn.visualization, shinytoastr, shinyWidgets, shinyjs
   
 - pecan/base/db
   - New File: `input.format.vars.R`. This function registers the format and the (optional) formats_variables record using `db_merge_into`. 
 
 - `data.atmosphere`
 	- `check_met_input_file` -- Check that target met file conforms to PEcAn meteorology data standard.
-	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame`
+	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame` 
+
 
   
 ### Removed
   - pecan.worldmap function no longer used, dropped from visualization package
+  - shiny/Data-Ingest/DESCRIPTION no longer `DEPENDS` on `shinyFiles` or `shinycssloaders`
 
 ### Changed
 - PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
