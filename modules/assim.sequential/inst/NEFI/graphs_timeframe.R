@@ -7,6 +7,7 @@
 library("ggplot2")
 
 args = commandArgs(trailingOnly = TRUE)
+outfolder = "./graphs"  # Where output graphs are put
 
 # These variables control the start and end dates of the x axis.
 frame_start <- as.POSIXct('2018-07-13 00:00')
@@ -27,8 +28,23 @@ if (is.na(args[1])) {
 # Validate date
 start_date <- tryCatch(as.POSIXct(args[1]), error = function(e) {NULL} )
 
+in_wid = 0
 if (is.null(start_date)) {
   in_wid <- as.integer(args[1])
+}
+
+if (is.na(in_wid)) {
+  print("First argument must be a date or workflow id")
+  quit("no")
+}
+
+graph_for = "NEE"
+if (!is.na(args[2]) && args[2] == "LE") {
+  graph_for = "LE"
+} else if (!is.na(args[2]) && args[2] == "NEE") {
+  graph_for = "NEE"
+} else {
+  print("Invalid second argument, must be NEE or LE.  Defaulting to NEE.")
 }
 
 # Set up database connection
@@ -190,7 +206,7 @@ neeplot <- ggplot(needf) +
   geom_line(aes(x=Time, y=neemeans, color="predicted mean")) +
   geom_point(aes(x=Time, y=real_nee, color="observed data")) +
   ggtitle(paste0("Net Ecosystem Exchange for ", workflow$start_date, " to ", workflow$end_date, ", Willow Creek, Wisconson")) +
-  scale_x_continuous(name="Time") + xlim(frame_start, frame_end) +
+  xlim(frame_start, frame_end) +
   theme(axis.text.x=element_text(angle=60, hjust=1)) +
   scale_colour_manual(name='Legend', values=c("predicted mean"="lightskyblue1", "observed data"="orange1")) +
   scale_fill_manual(name='Legend', values=c("Spread of data (excluding outliers)"="azure4", "95% confidence interval" = "blue3", "mean"="lightskyblue1")) +
@@ -201,7 +217,7 @@ neeplot <- ggplot(needf) +
   geom_line(aes(x=Time, y=qlemeans, color="mean")) +
   geom_point(aes(x=Time, y=real_qle, color="observed data")) +
   ggtitle(paste0("Latent Energy for ", workflow$start_date, " to ", workflow$end_date, ", Summary of All Ensembles")) + 
-  scale_x_continuous(name="Time", limits=c(frame_start, frame_end)) + xlim(frame_start, frame_end) +
+  xlim(frame_start, frame_end) +
   theme(axis.text.x=element_text(angle=60, hjust=1)) +
   scale_color_manual(name='Legend', values=c("mean"="lightskyblue1", "observed data"="orange2")) + 
   scale_fill_manual(name='Legend', values=c("95% confidence interval" = "blue3")) +
@@ -209,7 +225,11 @@ neeplot <- ggplot(needf) +
 
 print("Saving plots")
 save(neeplot, file="plot.Rdata")
-pdf(paste0(format(workflow$start_date, "./graphs/%Y-%m-%dT%H:%M:%SLE"), ".pdf"), width = 12, height = 6)
-plot(neeplot)
-plot(qleplot)
+if (graph_for == "LE") {
+  pdf(file.path(outfolder, format(workflow$start_date, "%Y-%m-%dT%H:%M:%SLE.pdf")), width = 12, height = 6)
+  plot(qleplot)
+} else {
+  pdf(file.path(outfolder, format(workflow$start_date, "%Y-%m-%dT%H:%M:%SNEE.pdf")), width = 12, height = 6)
+  plot(neeplot)
+}
 dev.off()
