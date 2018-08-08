@@ -124,8 +124,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         filename_pattern = paste0(filename_pattern, ensemble_name, "($|\\.)")
       } else if (ensemble > 1) {
         filename_pattern = paste0(filename_pattern, i, "($|\\.)")
-      } 
-
+      }
       
       existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
