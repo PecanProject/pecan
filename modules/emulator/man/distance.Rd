@@ -12,6 +12,9 @@ distance(x, power = 1)
 \value{
 dst
 }
+\description{
+distance
+}
 \author{
 Michael Dietze
 }

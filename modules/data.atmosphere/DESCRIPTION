@@ -22,6 +22,7 @@ Imports:
     dplyr,
     geonames,
     ggplot2,
+    glue,
     httr,
     jsonlite,
     lubridate (>= 1.6.0),
@@ -43,6 +44,7 @@ Imports:
     rnoaa,
     sp,
     stringr (>= 1.1.0),
+    testthat (>= 2.0.0),
     tibble,
     tidyr,
     truncnorm,
@@ -54,8 +56,7 @@ Suggests:
     foreach,
     parallel,
     progress,
-    rlang (>= 0.2.0),
-    testthat (>= 2.0.0)
+    rlang (>= 0.2.0)
 Remotes:
     github::ropensci/geonames,
     github::ropenscilabs/nneo,
@@ -65,4 +66,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

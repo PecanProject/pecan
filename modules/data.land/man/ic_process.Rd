@@ -13,6 +13,9 @@ ic_process(settings, input, dir, overwrite = FALSE)
 
 \item{dbfiles}{where to write files}
 }
+\description{
+ic_process
+}
 \author{
 Istem Fer
 }

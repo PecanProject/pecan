@@ -6,6 +6,9 @@
 \usage{
 db.site.lat.lon(site.id, con)
 }
+\description{
+db.site.lat.lon
+}
 \author{
 Betsy Cowdery
 }

@@ -5,7 +5,8 @@
 \title{download_packages}
 \usage{
 download_package_rm(resource_map, directory, CNode = "PROD",
-  download_format = "application/bagit-097", overwrite_directory = TRUE)
+  download_format = "application/bagit-097",
+  overwrite_directory = TRUE)
 }
 \arguments{
 \item{resource_map}{the resource map that corresponds to the given data package}
