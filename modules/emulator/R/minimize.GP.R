@@ -211,12 +211,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   }
   
   # get SS
-  repeat {
-    currSS <- get_ss(gp, x0, pos.check)
-    if (currSS != -Inf) {
-      break
-    }
-  }
+  currSS <- get_ss(gp, x0, pos.check)
   
   
   currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
@@ -329,8 +324,8 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
     }
     samp[g, ] <- unlist(xcurr)
     par[g, ]  <- pcurr
-
-    if(g %% 500 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
+    
+    if(g %% 1000 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
     # print(p(jmp)) jmp <- update(jmp,samp)
   }
   

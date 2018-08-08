@@ -15,12 +15,6 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
   
   input.info <- settings$assim.batch$inputs
   
-  # per pft check
-  if(!is.null(settings$assim.batch$perpft)){
-    perpft <- as.logical(settings$assim.batch$perpft)
-  }else{
-    perpft <- FALSE
-  } 
   start.year <- strftime(settings$run$start.date,"%Y")
   end.year <- strftime(settings$run$end.date,"%Y")
   
@@ -74,18 +68,11 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     # We also want 'time' from model outputs for aligning step
     vars <- c("time", vars.used)  
     
-    # If this is perpft PDA there should be more than one input (ie. n.input > 1)
-    # for now I made up a tag called usepft to let the code know which pft data this is
-    # but this might not be necessary depending on how load.data() will behave
-    if(perpft){
-      pft.name <- input.info[[k]]$usepft 
-    }else{
-      pft.name <- NULL
-    }
+    
     
     # read model output
     model.raw <- as.data.frame(read.output(run.id, outdir = file.path(settings$modeloutdir, run.id),
-                                           start.year, end.year, variables = vars, pft.name = pft.name))
+                                           start.year, end.year, variables = vars))
     
     if(length(model.raw) == 0 | all(is.na(model.raw))) {   # Probably indicates model failed entirely
       out <- list()
