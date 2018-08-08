@@ -51,13 +51,13 @@
 ##' @param exact.dates Ignore time-span appending and enforce exact start and end dates on the database input file? (logical)
 ##' @param allow.conflicting.dates Should overlapping years ignore time-span appending and exist as separate input files? (logical)
 ##' @param insert.new.file Logical: force creation of a new database record even if one already exists?
-##' @param pattern A regular expression to search 
+##' @param pattern A regular expression, passed to \code{PEcAn.DB::dbfile.input.check}, used to match the name of the input file.
 ##' @param forecast Logical: Is the data product a forecast?
 ##' @param ensemble An integer representing the number of ensembles, or FALSE if it data product is not an ensemble.
 ##' @param ensemble_name If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.
 ##' @param ... Additional arguments, passed unchanged to \code{fcn}
 ##'
-##' @return A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.
+##' @return A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.  Each id may be a vector of ids if the function is processing an entire ensemble at once.
 ##'
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
