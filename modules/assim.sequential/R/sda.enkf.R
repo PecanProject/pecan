@@ -1311,14 +1311,14 @@ for(t in seq_len(nt)) { #
       library(corrplot)
       pdf('process.var.plots.pdf')
       
-      cor.mat <- cov2cor(aqq[t,,] / bqq[t])
+      cor.mat <- cov2cor(solve(enkf.params[[t]]$q.bar))
       colnames(cor.mat) <- colnames(X)
       rownames(cor.mat) <- colnames(X)
       par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
       corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
       
       par(mfrow=c(1,1))   
-      plot(as.Date(obs.times[t1:t]), bqq[t1:t],
+      plot(as.Date(obs.times[t1:t]), unlist(lapply(enkf.params,'[[','n')),
            pch = 16, cex = 1,
            ylab = "Degrees of Freedom", xlab = "Time")
       
