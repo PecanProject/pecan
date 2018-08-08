@@ -23,7 +23,9 @@ Depends:
     gridExtra
 Imports:
     coda (>= 0.18),
-    plyr (>= 1.8.4)
+    dplyr,
+    plyr (>= 1.8.4),
+    purrr
 Suggests:
     testthat (>= 1.0.2),
 License: FreeBSD + file LICENSE
