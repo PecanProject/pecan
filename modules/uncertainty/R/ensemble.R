@@ -45,7 +45,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
     PEcAn.logger::logger.info("reading ensemble output from run id: ", run.id)
     
     for(var in seq_along(variables)){
-      out.tmp <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
+      out.tmp <- PEcAn.utils::read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
       assign(variables[var], out.tmp[[variables[var]]])
     }
     
@@ -91,7 +91,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
   if (ensemble.size <= 0) {
     ans <- NULL
   } else if (ensemble.size == 1) {
-    ans <- get.sa.sample.list(pft.samples, env.samples, 0.5)
+    ans <- PEcAn.utils::get.sa.sample.list(pft.samples, env.samples, 0.5)
   } else {
     pft.samples[[length(pft.samples) + 1]] <- env.samples
     names(pft.samples)[length(pft.samples)] <- "env"
@@ -246,11 +246,12 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     #-------------------------generating met/param/soil/veg/... for all ensumbles----
     if (!is.null(con)){
       #-- lets first find out what tags are required for this model
-      tbl(con,'models')%>%
-      filter(id==settings$model$id%>%as.numeric())%>%
-      inner_join(tbl(con, "modeltypes_formats"),by=c('modeltype_id'))%>% collect%>%
-      filter(required==T)%>%
-      pull(tag)->required_tags
+      required_tags <- dplyr::tbl(con, 'models') %>%
+        dplyr::filter(id == as.numeric(settings$model$id)) %>%
+        dplyr::inner_join(dplyr::tbl(con, "modeltypes_formats"), by = c('modeltype_id')) %>%
+        dplyr::collect() %>%
+        dplyr::filter(required == TRUE) %>%
+        dplyr::pull(tag)
     }else{
       required_tags<-c("met","parameters")
     }
@@ -317,7 +318,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         }
         
       } else {
-        run.id <- get.run.id("ENS", left.pad.zeros(i, 5))
+        run.id <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5))
       }
       runs[i, "id"] <- run.id
       
