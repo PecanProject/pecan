@@ -7,7 +7,7 @@
 prep.data.assim(settings)
 }
 \arguments{
-\item{settings}{the PEcAn settings object}
+\item{settings}{the PEcAn settings object (a collection of nested lists)}
 }
 \value{
 None
