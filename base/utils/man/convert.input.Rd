@@ -2,7 +2,7 @@
 % Please edit documentation in R/convert.input.R
 \name{convert.input}
 \alias{convert.input}
-\title{convert.input}
+\title{Convert between met formats, reusing existing files where possible}
 \usage{
 convert.input(input.id, outfolder, formatname, mimetype, site.id,
   start_date, end_date, pkg, fcn, con = con, host, browndog,
@@ -30,39 +30,43 @@ convert.input(input.id, outfolder, formatname, mimetype, site.id,
 
 \item{fcn}{The function to be executed if records of the output file aren't found in the database. (as a string)}
 
+\item{con}{Database connection object}
+
+\item{host}{Named list identifying the machine where conversion should be performed.
+Currently only \code{host$name} is used by \code{convert.input}, but whole list is passed to other functions}
+
 \item{browndog}{List of information related to browndog conversion.  NULL if browndog is not to be used for conversion}
 
-\item{write}{Write new file records to the database? (logical)}
+\item{write}{Logical: Write new file records to the database?}
 
-\item{overwrite}{If a file already exists, create a fresh copy? (logical). Passed allong to fcn.}
+\item{format.vars}{Passed on as arguments to \code{fcn}}
+
+\item{overwrite}{Logical: If a file already exists, create a fresh copy? Passed along to fcn.}
 
 \item{exact.dates}{Ignore time-span appending and enforce exact start and end dates on the database input file? (logical)}
 
 \item{allow.conflicting.dates}{Should overlapping years ignore time-span appending and exist as separate input files? (logical)}
 
-\item{insert.new.file}{}
+\item{insert.new.file}{Logical: force creation of a new database record even if one already exists?}
 
 \item{pattern}{A regular expression to search}
 
-\item{forecast}{Is the data product a forecast? (logical)}
+\item{forecast}{Logical: Is the data product a forecast?}
 
 \item{ensemble}{An integer representing the number of ensembles, or FALSE if it data product is not an ensemble.}
 
 \item{ensemble_name}{If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.}
+
+\item{...}{Additional arguments, passed unchanged to \code{fcn}}
+}
+\value{
+A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.
 }
 \description{
-convert.input
+\code{convert.input} is a relatively generic function that applies the function \code{fcn} and inserts a record of it into the database. It is primarily designed for converting meteorological data between formats and can be used on observed data, forecasts, and ensembles of forecasts.
+To minimize downloading and storing duplicate data, it first checks to see if a given file is already in the
+database before applying \code{fcn}.
 }
-\section{Description}{
-
-convert.input is a relatively generic function that applies the function fcn and inserts a record of it into the database.
-
-In order to minimize downloading and storing duplicate data, convert.input first checks to see if a given file is already in the
-database before applying the function fcn.
-
-convert.input handles forecast data as well as observed data.  In addition, convert.input handles forecasts that are ensembles.
-}
-
 \section{Executing the function}{
 
 convert.input executes the function fcn in package pkg via PEcAn.remote::remote.execute.R.  All additional arguments passed to

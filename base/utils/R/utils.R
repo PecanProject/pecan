@@ -180,6 +180,7 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL) {
 ##' @title Zero Bounded Density
 ##' @param x data, as a numeric vector
 ##' @param bw The smoothing bandwidth to be used. See 'bw.nrd'
+##' @param n number of points to use in kernel density estimate. See \code{\link[stats]{density}}
 ##' @return data frame with back-transformed log density estimate
 ##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
