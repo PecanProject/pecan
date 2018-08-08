@@ -5,8 +5,96 @@
 * New formats can be defined on the ['formats' page of BETYdb](http://betydb.org/formats)
 * After creating a new format, the contents should be defined by specifying the BETYdb variable name and the name used in the file/
 
-### Outputs
+### Input Standards
+
+####Meterology Standards
+##### Dimensions:
+
+
+|CF standard-name | units |
+|:------------------------------------------|:------|
+| time | days since 1700-01-01 00:00:00 UTC|
+| longitude | degrees_east|
+| latitude |degrees_north|
+
+General Note: dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
+
+
+##### The variable names should be `standard_name`
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
+names<-c("<b>air_temperature</b>", "air_temperature_max", "air_temperature_min", "<b>air_pressure</b>", 
+         "mole_fraction_of_carbon_dioxide_in_air", "moisture_content_of_soil_layer", "soil_temperature ",
+         "relative_humidity", "<b>specific_humidity</b>", "water_vapor_saturation_deficit","<b>surface_downwelling_longwave_flux_in_air</b>",
+         "<b>surface_downwelling_shortwave_flux_in_air</b>", "surface_downwelling_photosynthetic_photon_flux_in_air",
+         "<b>precipitation_flux</b>", "  ","wind_speed","<b>eastward_wind</b>", "<b>northward_wind</b>")
+
+units <-c("K","K","K","Pa","mol/mol","kg m-2","K","%","1","Pa","W m-2","W m-2","mol m-2 s-1", "kg m-2 s-1", "degrees", "m/s", "m/s", "m/s")
+
+bety <- c("airT", "","", "air_pressure","","","soilT","relative_humidity","specific_humidity","VPD", "same","solar_radiation","PAR",
+          "cccc", "wind_direction", "Wspd", "eastward_wind", "northward_wind")
+
+isimip <-c("tasAdjust", "tasmaxAdjust", "tasminAdjust","" ,"" ,"" ,"" ,"rhurs","NA", "","rldsAdjust","rsdsAdjust","", "prAdjust","","","","")
+cruncep <- c("tair","NA","NA","","","","","NA","qair","","lwdown","swdown","","rain","","","","")
+narr <- c("air","tmax","tmin","","","","","rhum","shum","","dlwrf","dswrf","","acpc","","","","")
+ameriflux <- c("TA(C)","" ,"" , "PRESS (KPa)","CO2","","TS1(NOT DONE)",
+               "RH","CALC(RH)","VPD(NOT DONE)","Rgl","Rg","PAR(NOT DONE)","PREC","WD","WS","CALC(WS+WD)","CALC(WS+WD)")
+
+in_tab<-cbind(names,units,bety,isimip,cruncep,narr,ameriflux)
+colnames(in_tab)<- c("CF standard-name","units","BETY","Isimip","CRUNCEP","NARR", "Ameriflux")
+install.packages("DT")
+library(DT)
+datatable(in_tab, escape = FALSE,
+              extensions = 'FixedColumns',
+              options = list(
+                dom = 't',
+                scrollX = TRUE,
+                fixedColumns = TRUE
+              ))
+
+```
+
+* preferred variables indicated in bold
+* wind_direction has no CF equivalent and should not be converted, instead the met2CF functions should convert wind_direction and wind_speed to eastward_wind and northward_wind
+* standard_name is CF-convention standard names
+* units can be converted by udunits, so these can vary (e.g. the time denominator may change with time frequency of inputs)
+* soil moisture for the full column, rather than a layer, is soil_moisture_content
+* A full list of PEcAn standard variable names, units and dimensions can be found here: https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv
+
+
+For example, in the [MsTMIP-CRUNCEP](https://www.betydb.org/inputs/280) data, the variable `rain` should be `precipitation_rate`.
+We want to standardize the units as well as part of the `met2CF.<product>` step. I believe we want to use the CF "canonical" units but retain the MsTMIP units any time CF is ambiguous about the units.
+
+The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
+
+#### Soils and Vegetation Inputs
+
+##### Soil Data 
+
+Check out the [Soil Data] section on more into on creating a standard soil data file.
+
+##### Vegetation Data
+
+Check Out the [Vegetation Data] section on more info on creating a standard vegetation data file
+
+
+
+### Output Standards
 
 * created by `model2netcdf` functions
 * based on format used by [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml)
-* Can be seen at [Model Variables]
+* Can be seen at HERE
+
+We originally used the [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) conventions. Since then, we've added the PaLEON variable conventions to our standard as well. If a variable isn't in one of those two, we stick to the CF conventions.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
+data("standard_vars", package = "PEcAn.utils")
+install.packages("DT")
+library(DT)
+DT::datatable(standard_vars,
+          extensions = 'FixedColumns',
+            options = list(
+            dom = 't',
+            scrollX = TRUE,
+            fixedColumns = TRUE
+          ))
+```

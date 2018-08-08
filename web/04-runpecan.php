@@ -96,6 +96,10 @@ $variables = "NPP";
 if (isset($_REQUEST['variables'])) {
   $variables = $_REQUEST['variables'];
 }
+$parm_method = "uniform";
+if (isset($_REQUEST['parm_method'])) {
+  $parm_method = $_REQUEST['parm_method'];
+}
 $notes_xml = "";
 $notes_db = "";
 if (isset($_REQUEST['notes'])) {

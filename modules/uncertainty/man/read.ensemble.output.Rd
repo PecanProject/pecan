@@ -18,7 +18,10 @@ read.ensemble.output(ensemble.size, pecandir, outdir, start.year, end.year,
 
 \item{end.year}{last year to include in ensemble analysis}
 
-\item{variables}{target variables for ensemble analysis}
+\item{variable}{target variables for ensemble analysis}
+
+\item{ens.run.ids}{dataframe. Must contain a column named "id" giving the run IDs to be read.
+If NULL, will attempt to read IDs from a file named "samples.Rdata" in \code{pecandir}}
 }
 \value{
 a list of ensemble model output

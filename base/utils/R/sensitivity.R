@@ -78,13 +78,14 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
 ##' Write sensitivity analysis config files
 ##'
 ##' Writes config files for use in sensitivity analysis.
-##' @title Write sensitivity analysis configs
-##' @param pft pft id used to query PEcAn database
-##' @param quantile.samples 
+##'
+##' @param defaults named list with default parameter values
+##' @param quantile.samples list of lists supplied by \link{get.sa.samples}
 ##' @param settings list of settings
-##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
-##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
-##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
+##' @param model name of model to be run
+##' @param clean logical: Delete any existing contents of the directory specified by \code{settings$rundir} before writing to it?
+##' @param write.to.db logical: Record this run to BETY? If TRUE, uses connection settings specified in \code{settings$database}
+##'
 ##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson

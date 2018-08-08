@@ -29,6 +29,11 @@ Reads output from model ensemble
 \details{
 Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} 
 and \code{end.year}
+
+DEPRECATED: This function has been moved to the \code{PEcAn.uncertainty} package.
+The version in \code{PEcAn.utils} is deprecated, will not be updated to add any new features,
+and will be removed in a future release of PEcAn.
+Please use \code{PEcAn.uncertainty::read.ensemble.output} instead.
 }
 \author{
 Ryan Kelly, David LeBauer, Rob Kooper
