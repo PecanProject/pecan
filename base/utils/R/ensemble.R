@@ -11,6 +11,12 @@
 ##'
 ##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} 
 ##' and \code{end.year}
+##'
+##' DEPRECATED: This function has been moved to the \code{PEcAn.uncertainty} package.
+##' The version in \code{PEcAn.utils} is deprecated, will not be updated to add any new features,
+##' and will be removed in a future release of PEcAn.
+##' Please use \code{PEcAn.uncertainty::read.ensemble.output} instead.
+##'
 ##' @title Read ensemble output
 ##' @return a list of ensemble model output 
 ##' @param ensemble.size the number of ensemble members run
@@ -24,6 +30,15 @@
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, end.year, 
                                  variable, ens.run.ids = NULL) {
+
+  .Deprecated(
+    new = "PEcAn.uncertainty::read.ensemble.output",
+    msg = paste(
+      "read.ensemble.output has been moved to PEcAn.uncertainty and is deprecated from PEcAn.utils.",
+      "Please use PEcAn.uncertainty::read.ensemble.output instead.",
+      "PEcAn.utils::read.ensemble.output will not be updated and will be removed from a future version of PEcAn.",
+      sep = "\n"))
+
   if (is.null(ens.run.ids)) {
     samples.file <- file.path(pecandir, "samples.Rdata")
     if (file.exists(samples.file)) {
@@ -59,6 +74,11 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 
 ##' Get parameter values used in ensemble
 ##'
+##' DEPRECATED: This function has been moved to the \code{PEcAn.uncertainty} package.
+##' The version in \code{PEcAn.utils} is deprecated, will not be updated to add any new features,
+##' and will be removed in a future release of PEcAn.
+##' Please use \code{PEcAn.uncertainty::get.ensemble.samples} instead.
+
 ##' Returns a matrix of randomly or quasi-randomly sampled trait values 
 ##' to be assigned to traits over several model runs.
 ##' given the number of model runs and a list of sample distributions for traits
@@ -78,6 +98,14 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
                                  method = "uniform", param.names = NULL, ...) {
   
+  .Deprecated(
+    new = "PEcAn.uncertainty::get.ensemble.samples",
+    msg = paste(
+      "get.ensemble.samples has been moved to PEcAn.uncertainty and is deprecated from PEcAn.utils.",
+      "Please use PEcAn.uncertainty::get.ensemble.samples instead.",
+      "PEcAn.utils::get.ensemble.samples will not be updated and will be removed from a future version of PEcAn.",
+      sep = "\n"))
+
   if (is.null(method)) {
     PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
     method <- "uniform"
@@ -173,6 +201,11 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 
 ##' Write ensemble config files
 ##'
+##' DEPRECATED: This function has been moved to the \code{PEcAn.uncertainty} package.
+##' The version in \code{PEcAn.utils} is deprecated, will not be updated to add any new features,
+##' and will be removed in a future release of PEcAn.
+##' Please use \code{PEcAn.uncertainty::write.ensemble.configs} instead.
+##'
 ##' Writes config files for use in meta-analysis and returns a list of run ids.
 ##' Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 ##' a name to distinguish the output files, and the directory to place the files.
@@ -188,6 +221,14 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
                                    clean = FALSE, write.to.db = TRUE) {
   
+  .Deprecated(
+    new = "PEcAn.uncertainty::write.ensemble.configs",
+    msg = paste(
+      "write.ensemble.configs has been moved to PEcAn.uncertainty and is deprecated from PEcAn.utils.",
+      "Please use PEcAn.uncertainty::write.ensemble.configs instead.",
+      "PEcAn.utils::write.ensemble.configs will not be updated and will be removed from a future version of PEcAn.",
+      sep = "\n"))
+
   my.write.config <- paste("write.config.", model, sep = "")
   
   if (is.null(ensemble.samples)) {
