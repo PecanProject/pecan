@@ -122,7 +122,8 @@ qledf <- data.frame(time = time, lower = qlelower95, means = qlemeans, upper = q
 #needf <- data.frame(time = time,
 #                    nee = nee)
 #qledf <- data.frame(time = time,
-#                    qle = qle)
+#                     qle = qle)
+
 # Grab real data
 real_data <- PEcAn.data.atmosphere::download.US_WCr(workflow$start_date, workflow$end_date, timestep=6)
 needf$real_nee <- real_data$nee
@@ -154,7 +155,6 @@ if (!dir.exists(graph_dir)) {
 print("Saving plots")
 # save(neeplot, file="plot.Rdata")
 pdf(file.path(graph_dir, paste0(format(workflow$start_date, "%Y-%m-%dT%H:%M:%SNEE"), ".pdf")), width = 6, height = 3)
-# pdf("test.pdf")
 plot(neeplot)
 plot(qleplot)
 dev.off()
