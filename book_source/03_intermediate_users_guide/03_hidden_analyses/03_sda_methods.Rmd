@@ -1,16 +1,6 @@
----
-title: "SDA_Methods"
-author: "Ann Raiho"
-date: "11/16/2017"
-output:
-  word_document: default
-  pdf_document: default
-  html_document: default
----
+## SDA_Methods
 
-```{r setup_sda, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+*By Ann Raiho*
 
 Our goal is build a fully generalizable state data assimilation (SDA) workflow that will assimilate multiple types of data and data products into ecosystem models within PEcAn temporally and spatially. But, during development, specifically with PalEON goals in mind, we have been focusing on assimilating tree ring estimated NPP and AGB and pollen derived fractional composition into two ecosystem models, SIPNET and LINKAGES, at Harvard Forest. This methodology will soon be expanded to include the PalEON sites listed on the [state data assimilation wiki page](https://paleon.geography.wisc.edu/doku.php/working_groups;state_data_assimilation).
 
@@ -36,7 +26,7 @@ w = D * (N / ESS)
 
 where D is the length of the time step. In our case D = 100. N is the number of time steps. In our case N = 11. and ESS is the effective sample size. The ESS is calculated with the following function where ntimes is the same as N above and sims is a matrix with the dimensions number of MCMC samples by number of state variables.
 
-```{ESS, include = TRUE}
+```
 ESS_calc <- function(ntimes, sims){
         # center based on mean at each time to remove baseline temporal correlation 
         # (we want to estimate effective sample size effect from correlation of the errors)
@@ -82,7 +72,7 @@ The general sequential data assimilation framework consists of three steps at ea
 ### EnKF
 There are two ways to implement sequential state data assimilation at this time. The first is the Ensemble Kalman Filter (EnKF). EnKF has an analytical solution, so the kalman gain, analysis mean vector, and analysis covariance matrix can be calculated directly:
 
-```{enkf, include=TRUE}
+```
        
         K <- Pf %*% t(H) %*% solve((R + H %*% Pf %*% t(H))) ## Kalman Gain
         
@@ -100,7 +90,7 @@ The generalized ensemble filter follows generally the three steps of sequential 
 #### Mapping Ensemble Output to Tobit Space
 There are some instances when we have right or left censored variables from the model forecast. For example, a model estimating species level biomass may have several ensemble members that produce zero biomass for a given species. We are considering this case a left censored state variable that needs to be mapped to normal space using a tobit model. We do this by creating two matrices with dimensions number of ensembles by state variable. The first matrix is a matrix of indicator variables (y.ind), and the second is a matrix of censored variables (y.censored). When the indicator variable is 0 the state variable (j) for ensemble member (i) is sampled. This allows us to impute a normal distribution for each state variable that contains 'missing' forecasts or forecasts of zero. 
 
-```{tobit2space,include=TRUE}
+```
 tobit2space.model <- nimbleCode({
     for(i in 1:N){
       y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
@@ -121,7 +111,7 @@ tobit2space.model <- nimbleCode({
 #### Generalized Ensemble Filter Model Description
 Below is the BUGS code for the full analysis model. The forecast mean an covariance are calculated from the tobit2space model above. We use a tobit likelihood in this model because there are instances when the data may be left or right censored. Process variance is included by adding a latent model state (X) with a process precision matrix (q). We update our prior on q at each time step using our estimate of q from the previous time step. 
 
-```{tobitBase, include = TRUE}
+```
   tobit.model <- nimbleCode({ 
     
     q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
@@ -153,7 +143,7 @@ Below is the BUGS code for the full analysis model. The forecast mean an covaria
 ### Ensemble Adjustment
 Each ensemble member has a different set of species parameters. We adjust the updated state variables by using an ensemble adjustment. The ensemble adjustment weights the ensemble members based on their likelihood during the analysis step.  
 
-```{adjustment, include=TRUE}
+```
       S_f  <- svd(Pf)
       L_f  <- S_f$d
       V_f  <- S_f$v

@@ -82,7 +82,7 @@ through UI libraries, hardcopy on David’s bookshelf)\
 
 #### Ideally, non-trivial code changes will be linked to an issue and a commit.
 
-This requires creating issues for each task, making small commits, and referencing the issue within your commit message. Issues can be created [on GitHub](https://github.com/PecanProject/pecan/issues/new). These issues can be linked to commits by adding text such as `fixes gh-5` (see [[Using Git During Development|Using-Git#during-development]]).
+This requires creating issues for each task, making small commits, and referencing the issue within your commit message. Issues can be created [on GitHub](https://github.com/PecanProject/pecan/issues/new). These issues can be linked to commits by adding text such as `fixes gh-5`).
 
 Rationale: This workflow is a small upfront investment that reduces error and time spent re-creating and debugging errors. Associating issues and commits, makes it easier to identify why a change was made, and potential bugs that could arise when the code is changed. In addition, knowing which issue you are working on clarifies the scope and objectives of your current task. 
 

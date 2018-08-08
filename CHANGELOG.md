@@ -84,6 +84,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - shiny/Data-Ingest/DESCRIPTION no longer `DEPENDS` on `shinyFiles` or `shinycssloaders`
 
 ### Changed
+
+- Fixed Git instructions and remote execution instructions.
 - PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
 
 
