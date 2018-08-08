@@ -115,17 +115,17 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # regular expression specific special characters and site-specific identification is already present through
       # site.id, a regex placeholder is used instead.
       
-      filename_pattern = pattern #pattern is always the name of the meteorological data product (met).
-      if (!is.null(input.args$sitename) || !is.null(site.id)) {
-        filename_pattern = paste(filename_pattern, "[^.]*", sep="\\.") #double backslash for regex
-      }
-      if (!is.null(ensemble_name)) {
-        filename_pattern = paste(filename_pattern, ensemble_name, sep="\\.")
+      #pattern is always the name of the meteorological data product (met).
+      filename_pattern = paste0(pattern, "\\.([^.]*\\.)?") #double backslash for regex
+      
+      if (!is.null(ensemble_name)) { # Specify ensemble name/number
+        filename_pattern = paste0(filename_pattern, ensemble_name)
       } else if (ensemble > 1) {
-        filename_pattern = paste(filename_pattern, i, sep = "\\.")
+        filename_pattern = paste0(filename_pattern, i)
       } 
       
-      filename_pattern = paste0(filename_pattern, "\\.")
+      # Add termination sequence to ensure each number is recognized uniquely (e.g. 12 is not recognized as 1).
+      filename_pattern = paste0(filename_pattern, "($|\\.)")
       
       existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
