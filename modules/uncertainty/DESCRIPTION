@@ -15,7 +15,6 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Depends:
-    PEcAn.logger,
     PEcAn.utils,
     PEcAn.priors,
     ggplot2,
@@ -24,8 +23,13 @@ Depends:
 Imports:
     coda (>= 0.18),
     dplyr,
+    PEcAn.DB,
+    PEcAn.emulator,
+    PEcAn.logger,
     plyr (>= 1.8.4),
-    purrr
+    purrr,
+    randtoolbox,
+    udunits2
 Suggests:
     testthat (>= 1.0.2),
 License: FreeBSD + file LICENSE
