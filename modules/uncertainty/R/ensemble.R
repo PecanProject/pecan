@@ -18,7 +18,9 @@
 ##' @param outdir directory with model output to use in ensemble analysis
 ##' @param start.year first year to include in ensemble analysis
 ##' @param end.year last year to include in ensemble analysis
-##' @param variables target variables for ensemble analysis
+##' @param variable target variables for ensemble analysis
+##' @param ens.run.ids dataframe. Must contain a column named "id" giving the run IDs to be read.
+##'   If NULL, will attempt to read IDs from a file named "samples.Rdata" in \code{pecandir}
 ##' @export
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
@@ -71,6 +73,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @param env.samples env samples
 ##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
 ##' @param param.names a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently
+##' @param ... Other arguments passed on to the sampling method
 ##' 
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
