@@ -2,7 +2,7 @@
 % Please edit documentation in R/ensemble.R
 \name{write.ensemble.configs}
 \alias{write.ensemble.configs}
-\title{Write ensemble configs}
+\title{Write ensemble config files}
 \usage{
 write.ensemble.configs(defaults, ensemble.samples, settings, model,
   clean = FALSE, write.to.db = TRUE, restart = NULL)
@@ -14,23 +14,23 @@ write.ensemble.configs(defaults, ensemble.samples, settings, model,
 
 \item{settings}{list of PEcAn settings}
 
+\item{model}{name of model to be run, e.g. "ED2" or "SIPNET"}
+
 \item{clean}{remove old output first?}
 
-\item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.}
+\item{write.to.db}{logical: Record this run in BETY?}
 
-\item{write.config}{a model-specific function to write config files, e.g. \link{write.config.ED}}
+\item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.}
 }
 \value{
 list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
 }
 \description{
-Write ensemble config files
-}
-\details{
 Writes config files for use in meta-analysis and returns a list of run ids.
 Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 a name to distinguish the output files, and the directory to place the files.
-
+}
+\details{
 The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/master/pecan-models.html}
 new state is a dataframe with a different column for each state variable. The number of the rows in this dataframe needs to be the same as the ensemble size.
 State variables that you can use for setting up the intial conditions differs for different models. You may check the documentation of the write_restart.modelname your model.

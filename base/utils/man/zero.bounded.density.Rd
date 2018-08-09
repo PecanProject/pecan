@@ -10,6 +10,8 @@ zero.bounded.density(x, bw = "SJ", n = 1001)
 \item{x}{data, as a numeric vector}
 
 \item{bw}{The smoothing bandwidth to be used. See 'bw.nrd'}
+
+\item{n}{number of points to use in kernel density estimate. See \code{\link[stats]{density}}}
 }
 \value{
 data frame with back-transformed log density estimate

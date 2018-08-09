@@ -25,6 +25,10 @@ matrix of (quasi-)random samples from trait distributions
 Get parameter values used in ensemble
 }
 \details{
+DEPRECATED: This function has been moved to the \code{PEcAn.uncertainty} package.
+The version in \code{PEcAn.utils} is deprecated, will not be updated to add any new features,
+and will be removed in a future release of PEcAn.
+Please use \code{PEcAn.uncertainty::get.ensemble.samples} instead.
 Returns a matrix of randomly or quasi-randomly sampled trait values 
 to be assigned to traits over several model runs.
 given the number of model runs and a list of sample distributions for traits
