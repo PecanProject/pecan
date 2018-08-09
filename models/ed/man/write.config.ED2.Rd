@@ -5,7 +5,7 @@
 \title{Write ED configuration files}
 \usage{
 write.config.ED2(trait.values, settings, run.id,
-  defaults = settings$constants, check = FALSE)
+  defaults = settings$constants, check = FALSE, ...)
 }
 \arguments{
 \item{trait.values}{Named list of trait values, with names corresponding to PFT}
@@ -28,5 +28,5 @@ model. Requires a pft xml object, a list of trait values for a single model
 run, and the name of the file to create
 }
 \author{
-David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
+David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov, Istem Fer
 }

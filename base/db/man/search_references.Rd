@@ -20,5 +20,5 @@ search_references(queries, ...)
 `data.frame` containing crossref information converted to match bety citations table.
 }
 \description{
-Perform crossref search for a list of references
+Requires the `rcrossref` package.
 }

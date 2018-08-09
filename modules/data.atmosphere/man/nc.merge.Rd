@@ -4,8 +4,8 @@
 \alias{nc.merge}
 \title{nc.merge}
 \usage{
-nc.merge(outfolder, in.path, in.prefix, start_date, end_date, upscale = FALSE,
-  overwrite = FALSE, verbose = FALSE, ...)
+nc.merge(outfolder, in.path, in.prefix, start_date, end_date,
+  upscale = FALSE, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output will be stored}
@@ -20,9 +20,10 @@ nc.merge(outfolder, in.path, in.prefix, start_date, end_date, upscale = FALSE,
 
 \item{upscale}{- Upscale can either be set for FALSE (leave alone) or to the temporal resolution you want to aggregate to}
 
-\item{lat.in}{- latitude as numeric}
+\item{overwrite}{logical: replace output file if it already exists?}
 
-\item{lon.in}{- longitude as numeric}
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+functions print debugging information as they run?}
 }
 \description{
 This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function
@@ -46,3 +47,4 @@ Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
 \author{
 James Simkins, Christy Rollinson
 }
+\concept{tdm - Temporally Downscale Meteorology}

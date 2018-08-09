@@ -1,8 +1,8 @@
 Package: PEcAn.MAAT
 Type: Package
 Title: PEcAn package for integration of the MAAT model
-Version: 1.5.2
-Date: 2017-12-04
+Version: 1.5.3
+Date: 2018-04-26
 Author: Shawn Serbin, Anthony Walker
 Maintainer: Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to link the MAAT to PEcAn.
@@ -24,4 +24,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

@@ -2,8 +2,8 @@ Package: PEcAn.workflow
 Type: Package
 Title: PEcAn functions used for ecological forecasts and
     reanalysis
-Version: 1.5.2
-Date: 2017-09-25
+Version: 1.5.3
+Date: 2018-04-26
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang,
     Mike Dietze, Carl Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -19,9 +19,11 @@ License: FreeBSD + file LICENSE
 Imports:
 	PEcAn.DB,
 	PEcAn.logger,
-	PEcAn.settings
+	PEcAn.settings,
+	PEcAn.utils
 Suggests:
 	testthat,
     mockery
 Copyright: Authors
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.0

@@ -6,6 +6,9 @@
 \usage{
 calcSpatialCov(x, ...)
 }
+\description{
+calcSpatialCov
+}
 \author{
 Michael Dietze
 }

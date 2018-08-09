@@ -60,7 +60,10 @@ without having to do do giant runs at once; if NULL will be numbered 1:n.ens}
 
 \item{n.cores}{- (experimental) how many cores to use in parallelization *Not implemented yet}
 
-\item{overwrite}{- overwrite existing files?}
+\item{overwrite}{- overwrite existing files? Currently ignored}
+
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+functions print debugging information as they run?}
 }
 \description{
 This script debiases one dataset (e.g. GCM, re-analysis product) given another higher 
@@ -77,3 +80,4 @@ Other debias - Debias & Align Meteorology Datasets into continuous time series: 
 \author{
 Christy Rollinson
 }
+\concept{debias - Debias & Align Meteorology Datasets into continuous time series}

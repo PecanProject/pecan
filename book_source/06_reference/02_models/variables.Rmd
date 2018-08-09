@@ -1,8 +1,0 @@
-## Model Output Variables
-
-Note: initial table derived from [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) 
-
-```{r, echo=FALSE}
-data("mstmip_vars", package = "PEcAn.utils")
-knitr::kable(mstmip_vars, align = "c" , booktabs = TRUE)
-```

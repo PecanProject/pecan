@@ -123,11 +123,14 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     # ----- put values to nc_var list   
     nc_var <- list()
     for(i in seq_along(out_list)){
-      rflag <- ed.res.flag[i]
-      fcnx  <- paste0("put_", gsub("-", "", rflag), "_values")
-      fcn   <- match.fun(fcnx)
-      nc_var <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], lat = lat, lon = lon, 
+      rflag   <- ed.res.flag[i]
+      fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
+      fcn     <- match.fun(fcnx)
+      put_out <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], lat = lat, lon = lon, 
                     begins = begins, ends = ends, pft_names)
+      
+      nc_var            <- put_out$nc_var
+      out_list[[rflag]] <- put_out$out
     }
     
     # SLZ specific hack until I figure that out
@@ -658,7 +661,6 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   # ----- fill list
   
   out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
-  nc_var[[s+1]] <- PEcAn.utils::to_ncvar("AbvGrndWood", dims)
   nc_var[[s+1]] <- ncdf4::ncvar_def("AbvGrndWood", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Above ground woody biomass")
   out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
@@ -759,7 +761,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   nc_var[[s+47]]<- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Soil Respiration")
   
-  return(nc_var)
+  return(list(nc_var = nc_var, out = out))
   
 } # put_T_values
 
@@ -963,7 +965,156 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
   nc_var[[s+4]]<- ncdf4::ncvar_def("PFT", units = "", dim = list(p),  
                                    longname = paste(pft_names, collapse=",")) 
   
-  return(nc_var)
+  return(list(nc_var = nc_var, out = out))
   
 } # put_E_values
 
+
+
+
+#' S-file contents are not written to standard netcdfs but are used by read_restart
+#' from SDA's perspective it doesn't make sense to write and read to ncdfs because ED restarts from history files
+#' 
+#' @param sfile history file name e.g. "history-S-1961-01-01-000000-g01.h5"
+#' @param outdir path to run outdir, where the -S- file is
+#' @param pft_names string vector, names of ED2 pfts in the run, e.g. c("temperate.Early_Hardwood", "temperate.Late_Conifer")
+#' @param pecan_names string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")
+#' 
+#' @export
+read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
+  
+  PEcAn.logger::logger.info(paste0("*** Reading -S- file ***"))
+  
+  # commonly used vars
+  if(is.null(pecan_names)) pecan_names <- c("AGB", "AbvGrndWood", "GWBI", "DBH")
+  
+  ed_varnames <- pecan_names
+  
+  # TODO: ed.var lookup function can also return deterministically related variables
+  
+  # translate pecan vars to ED vars
+  trans_out    <- translate_vars_ed(ed_varnames)
+  ed_varnames  <- trans_out$vars  # variables to read from history files
+  ed_derivs    <- trans_out$expr  # derivations to obtain pecan standard variables
+  add_vars     <- trans_out$addvars # these are the vars -if there are any- that won't be updated by analysis, but will be used in write_restart
+  ed_units     <- trans_out$units # might use
+  
+  # List of vars to extract includes the requested one, plus others needed below 
+  add_vars <- c(add_vars, "PFT", "AREA", "PACO_N", "NPLANT","DAGB_DT", "BDEAD", "DBH", 
+                "BSTORAGE", "BALIVE", "BLEAF", "BROOT", "BSEEDS_CO", "BSAPWOODA", "BSAPWOODB")
+  vars <- c(ed_varnames, add_vars) 
+  
+  # list to collect outputs
+  ed.dat <- list()
+  
+  nc <- ncdf4::nc_open(file.path(outdir, sfile))
+  allvars <- names(nc$var)
+  if(!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
+  
+  for(j in seq_along(allvars)){
+    ed.dat[[j]] <- list()
+    ed.dat[[j]] <- ncdf4::ncvar_get(nc, allvars[j])
+  }
+  names(ed.dat) <- allvars
+  
+  ncdf4::nc_close(nc)
+  
+  
+  # for now this function does not read any ED variable that has soil as a dimension
+  soil.check <- grepl("soil", pft_names)
+  if(any(soil.check)){
+    # for now keep soil out
+    pft_names <- pft_names[!(soil.check)]
+  }
+  
+  npft <- length(pft_names)
+  data(pftmapping, package = "PEcAn.ED2")
+  pft_nums <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
+  
+  out <- list()
+  for(varname in pecan_names) {
+    out[[varname]] <- array(NA, npft)
+  }
+  
+  
+  # Get cohort-level variables 
+  pft        <- ed.dat$PFT
+  plant_dens <- ed.dat$NPLANT  # Cohort stem density -- plant/m2
+  dbh        <- ed.dat$DBH # used in allometric eqns -- dbh
+  
+  # Get patch areas. In general patches aren't the same area, so this is needed to area-weight when averaging up to site level. Requires minor finnagling to convert patch-level AREA to a cohort-length variable. 
+  patch_area  <- ed.dat$AREA    # unitless, a proportion of total site area  -- one entry per patch (always add up to 1)
+  paco_n      <- ed.dat$PACO_N  # number of cohorts per patch
+  
+  patch_index <- rep(1:length(paco_n), times = paco_n)
+  
+  # read xml to extract allometric coeffs later
+  configfile <- paste0(gsub("/out/", "/run/", outdir), "/config.xml")
+  pars <- XML::xmlToList(XML::xmlParse(configfile))
+  # remove non-pft sublists
+  pars[names(pars)!="pft"] <- NULL
+  # pass pft numbers as sublist names
+  names(pars) <- pft_nums
+  
+  # Aggregate
+  for(l in seq_along(pecan_names)) {
+    
+    variable <- convert.expr(ed_derivs[l])  # convert
+    expr <- variable$variable.eqn$expression
+    
+    sapply(variable$variable.eqn$variables, function(x) assign(x, ed.dat[[x]], envir = .GlobalEnv))
+    tmp.var <- eval(parse(text = expr)) # parse
+    
+    if(ed_units[l] %in% c("kg/m2")){ # does this always mean this is a patch-level variable w/o per-pft values?
+      out[[pecan_names[l]]] <- NA
+      out[[pecan_names[l]]] <- sum(tmp.var*patch_area, na.rm = TRUE)
+      
+    }else{# per-pft vars
+      for(k in seq_len(npft)) {
+        ind <- (pft == pft_nums[k])
+        
+        if(any(ind)) {
+          # check for different variables/units?
+          if(pecan_names[l] == "GWBI"){
+            # use allometric equations to calculate GWBI from DDBH_DT
+            ddbh_dt <- tmp.var
+            ddbh_dt[!ind] <- 0
+            dagb_dt <- ed.dat$DAGB_DT
+            dagb_dt[!ind] <- 0
+            
+            # get b1Bl/b2Bl/dbh_adult from xml
+            # these are in order so you can use k, but you can also extract by pft
+            small   <- dbh <= as.numeric(pars[[k]]$dbh_adult)
+            ddbh_dt[small]  <- as.numeric(pars[[k]]$b1Bl_small) / 2 * ddbh_dt[small]  ^ as.numeric(pars[[k]]$b2Bl_small)
+            ddbh_dt[!small] <- as.numeric(pars[[k]]$b1Bl_large) / 2 * ddbh_dt[!small] ^ as.numeric(pars[[k]]$b2Bl_large)
+            gwbi_ch <- dagb_dt - ddbh_dt
+            #     kgC/m2/yr = kgC/plant/yr  *   plant/m2  
+            plant2cohort <- gwbi_ch * plant_dens
+            cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), sum, na.rm = TRUE)
+            out[[pecan_names[l]]][k] <- sum(cohort2patch*patch_area, na.rm = TRUE)
+            
+          }else if(ed_units[l] %in% c("kgC/plant")){
+            pft.var <- tmp.var
+            pft.var[!ind] <- 0
+            #     kgC/m2 = kgC/plant  *   plant/m2  
+            plant2cohort <- pft.var * plant_dens
+            # sum cohorts to aggrete to patches
+            cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), sum, na.rm = TRUE)
+            # scale up to site-level 
+            out[[pecan_names[l]]][k] <- sum(cohort2patch*patch_area, na.rm = TRUE)
+            
+          }
+        }  #any(ind)-if SHOULD THERE BE AN ELSE? DOES ED2 EVER DRIVES SOME PFTs TO EXTINCTION? 
+      } #k-loop
+      
+    }# per-pft or not
+  } #l-loop
+  
+  
+  # pass everything, unaggregated
+  out$restart <- ed.dat
+  
+  
+  return(out)
+  
+} # read_S_files

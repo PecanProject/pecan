@@ -1,8 +1,8 @@
 Package: PEcAn.data.remote
 Type: Package
 Title: PEcAn functions used for remote sensing
-Version: 1.5.2
-Date: 2017-12-04
+Version: 1.5.3
+Date: 2018-04-26
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: PEcAn module for processing remote data
@@ -16,4 +16,5 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.0

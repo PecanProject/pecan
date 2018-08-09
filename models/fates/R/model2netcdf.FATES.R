@@ -53,6 +53,7 @@ model2netcdf.FATES <- function(outdir) {
     files <- dir(outdir, "*clm2.h0.*.nc", full.names = TRUE)
     file.dates <- as.Date(sub(".nc", "", sub(".*clm2.h0.", "", files)))
     years <- lubridate::year(file.dates)
+    init_year <- unique(years)[1]
 
     ## Loop over years
     for (year in unique(years)) {
@@ -84,11 +85,11 @@ model2netcdf.FATES <- function(outdir) {
         sitelat <- ncdf4::ncvar_get(ncin,"lat")
         sitelon <- ncdf4::ncvar_get(ncin,"lon")
         ## time variable based on internal calc, nc$dim$time is the FATES output time
-        t <- ncdim_def(name = "time", units = paste0("days since ", year, "-01-01 00:00:00"),
-                       vals = as.vector(time), calendar = "standard", 
+        t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", init_year, "-01-01 00:00:00"),
+                       vals = as.vector(time), calendar = "noleap", 
                        unlim = TRUE)  # a direct analog of internal FATES output dim "time"
-        lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "coordinate_latitude")
-        lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "coordinate_longitude")
+        lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "coordinate_latitude")
+        lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "coordinate_longitude")
         xyt <- list(lon, lat, t)
         
         ### build netCDF data

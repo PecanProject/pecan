@@ -1,8 +1,8 @@
 Package: PEcAn.JULES
 Type: Package
 Title: PEcAn package for integration of the JULES model
-Version: 1.5.2
-Date: 2017-12-04
+Version: 1.5.3
+Date: 2018-04-26
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link the (JULES) to PEcAn.
@@ -22,4 +22,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

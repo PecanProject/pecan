@@ -1,7 +1,7 @@
 Package: PEcAn.remote
 Type: Package
 Title: PEcAn model execution utilities
-Version: 1.5.2
+Version: 1.5.3
 Author: Alexey Shiklomanov, Rob Kooper, Shawn Serbin, David LeBauer
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains utilities for communicating with and executing code on local and remote hosts.
@@ -9,10 +9,11 @@ Description: This package contains utilities for communicating with and executin
 Imports:
     PEcAn.logger
 Suggests:
+    testthat,
     tools,
     getPass
 License: FreeBSD + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

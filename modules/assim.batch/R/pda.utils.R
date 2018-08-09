@@ -487,7 +487,7 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
     ## write config
     do.call(my.write.config, args = list(defaults = settings$pfts, 
                                          trait.values = lapply(params, 
-                                                               function(x, n) { x[n, ] },
+                                                               function(x, n) { as.data.frame(x[n, , drop=FALSE]) },
                                                                n = i), 
                                          settings = settings, 
                                          run.id = run.ids[i]))
@@ -668,20 +668,50 @@ pda.generate.sf <- function(n.knot, sf, prior.list){
 
 
 ##' @title return.bias
+##' @param settings settings list
+##' @param isbias bias variable index
+##' @param model.out model output list
+##' @param inputs inputs list
+##' @param prior.list.bias prior list, bias prior to be added
+##' @param run.round extension flag
+##' @param pass2bias if this is another round, this is re-sampled MCMC samples, will go with the rest of model params
+##' 
 ##' @author Istem Fer
 ##' @export
-return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.round = FALSE, prev.bias = NULL){
+return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, run.round = FALSE, pass2bias = NULL){
+  
+  # how many bias parameters per dataset requested
+  nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
+                  as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
+
+  prev.bias <- settings$assim.batch$bias.path
+  
+  # to store priors
+  bprior <- data.frame(distn  = rep(NA,length(isbias)),
+                       parama = rep(NA,length(isbias)),
+                       paramb = rep(NA,length(isbias)),
+                       n      = rep(NA,length(isbias)))
+  for(b in seq_along(isbias)){
+    # any prior passed via settings?
+    if(!is.null(settings$assim.batch$inputs[[isbias]]$bprior)){
+      bprior$distn[b]  <- settings$assim.batch$inputs[[isbias[b]]]$bprior$distn
+      bprior$parama[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$parama
+      bprior$paramb[b] <- settings$assim.batch$inputs[[isbias[b]]]$bprior$paramb
+    }else{ # assume log-normal(0,1)
+      PEcAn.logger::logger.info(paste0("No prior is defined for the bias parameter, assuming standard log-normal"))
+      bprior$distn[b]  <- "lnorm"
+      bprior$parama[b] <- 0
+      bprior$paramb[b] <- 1
+    }
+  }
+  bias.prior <- bprior
   
   # there can be more than one multiplicative Gaussian requested
   ibias <- length(isbias)
   
   # to store bias parameters and probabilitied
   bias.params <- bias.probs <- list()
-  # to store priors
-  bias.prior <- data.frame(distn = rep("unif", ibias), 
-                           parama = rep(NA, ibias), 
-                           paramb = rep(NA, ibias),  
-                           n =rep(NA, ibias), stringsAsFactors=FALSE)
+
   prior.names <- rep(NA, ibias)
   
   for(i in seq_along(isbias)){
@@ -702,39 +732,22 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
       }
     }
     
-    bias.prior$parama[i] <- min(bias.params[[i]], na.rm = TRUE) - sd(bias.params[[i]], na.rm = TRUE)
-    bias.prior$paramb[i] <- max(bias.params[[i]], na.rm = TRUE) + sd(bias.params[[i]], na.rm = TRUE)
-    
     prior.names[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
     names(bias.params)[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
   }
   
   rownames(bias.prior) <- prior.names
   prior.list.bias[[(length(prior.list.bias)+1)]] <- bias.prior
-  
-  # convert params to probs for GPfit 
-  # note: there can be new parameters out of previous min/max if this is a round extension
-  bias.probs <- lapply(seq_along(isbias), 
-                       function(b) punif(bias.params[[b]], 
-                                         prior.list.bias[[length(prior.list.bias)]]$parama[b], 
-                                         prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
-  
-  
+
   # if this is another round, use the first priors
   if(run.round){
     load(prev.bias)
     prior.list.bias <- prior.list
-    
-    # convert params to probs for GPfit 
-    # note: there can be new parameters out of previous min/max if this is a round extension
-    bias.probs <- lapply(seq_along(isbias), 
-                         function(b) punif(bias.params[[b]], 
-                                           prior.list.bias[[length(prior.list.bias)]]$parama[b], 
-                                           prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
-    
+    # TODO: implementation for multiple bias params, this requires multiple changes int he PDA workflow
+    bias.params[[1]][(nrow(bias.params[[1]])-length(pass2bias)+1):nrow(bias.params[[1]]), 1] <- pass2bias
   }
   
-  return(list(bias.params = bias.params, bias.probs = bias.probs, prior.list.bias = prior.list.bias))
+  return(list(bias.params = bias.params, prior.list.bias = prior.list.bias, nbias = nbias))
   
 } # return.bias
 
@@ -754,7 +767,7 @@ return_hyperpars <- function(assim.settings, inputs){
     for(k in seq_along(assim.settings$inputs)){
       hyper.pars[[k]] <- list()
       hyper.pars[[k]]$parama <- 0.001
-      hyper.pars[[k]]$paramb <- 0.001 * mean(inputs[[k]]$data[,1], na.rm = TRUE) ^ 2
+      hyper.pars[[k]]$paramb <- 0.001 * var(inputs[[k]]$data[,1], na.rm = TRUE)
     }
     
   }else{
@@ -765,7 +778,7 @@ return_hyperpars <- function(assim.settings, inputs){
       if(is.null(check.hypers[[k]])){
         hyper.pars[[k]] <- list()
         hyper.pars[[k]]$parama <- 0.001
-        hyper.pars[[k]]$paramb <- 0.001 * mean(inputs[[k]]$data[,1], na.rm = TRUE) ^ 2
+        hyper.pars[[k]]$paramb <- 0.001 * var(inputs[[k]]$data[,1], na.rm = TRUE)
       }else{
         hyper.pars[[k]] <- list()
         hyper.pars[[k]]$parama <- as.numeric(assim.settings$inputs[[k]]$hyper.pars$parama)
@@ -778,3 +791,99 @@ return_hyperpars <- function(assim.settings, inputs){
   
   return(hyper.pars)
 } # return_hyperpars
+
+
+##' Helper function to sample from previous MCMC chain while proposing new knots
+##' 
+##' @param mcmc_path path to previous emulator mcmc samples object
+##' @param n.param.orig vector, number of parameters targeted in each (pft) sublist
+##' @param prior.ind.orig list, actual indices of parameters targeted in each (pft) sublist
+##' @param n.post.knots number of new samples requested
+##' @param knots.params.temp list of parameter samples proposed from the original PDA-prior
+##' @param prior.list PDA-prior list
+##' @param prior.fn list for parameter d/r/q/p functions
+##' @param sf SF parameter names
+##' @param sf.samp SF parameters MCMC samples
+##' 
+##' @author Istem Fer
+##' @export
+sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, knots.params.temp, 
+                        prior.list, prior.fn, sf, sf.samp){
+  
+  PEcAn.logger::logger.info("Sampling from previous round's MCMC")
+  
+  load(mcmc_path)
+  
+  mcmc.param.list <- params.subset <- list()
+  ind <- 0
+  for (i in seq_along(n.param.orig)) {
+    mcmc.param.list[[i]] <- lapply(mcmc.samp.list, function(x) x[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE])
+    ind <- ind + n.param.orig[i]
+  }
+  
+  
+  burnins <- rep(NA, length(mcmc.param.list))
+  for (i in seq_along(mcmc.param.list)) {
+    params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
+    
+    burnin     <- getBurnin(params.subset[[i]], method = "gelman.plot")
+    burnins[i] <- max(burnin, na.rm = TRUE)
+  }
+  maxburn <- max(burnins)
+  
+  if(maxburn ==1){ # if no convergence focus last bit
+    maxburn <- 0.9*nrow(params.subset[[1]][[1]])
+  }
+  
+  collect_samples <- list()
+  for (i in seq_along(mcmc.samp.list)) {
+    collect_samples[[i]] <- window(mcmc.samp.list[[i]], start = maxburn)
+  }
+  
+  mcmc_samples <- do.call(rbind, collect_samples)
+  
+ 
+  get_samples <- sample(1:nrow(mcmc_samples), n.post.knots)
+  new_knots <- mcmc_samples[get_samples,]
+  pass2bias <- new_knots[, ncol(new_knots)] # if there is bias param, it will be the last col
+  # if there is no bias param this won't be used anyway
+  # the rest of the code is not ready for bias params for multiple variables
+    
+  # when using sf, need to sample from sf mcmc samples and calculate back actual parameter values
+  if(!is.null(sf.samp)){
+    
+    sf_samples <- list()
+    for (i in seq_along(sf.samp)) {
+      sf_samples[[i]] <- window(sf.samp[[i]], start = maxburn)
+    }
+    sf_samples <- do.call(rbind, sf_samples)
+    
+    sf_knots    <- sf_samples[get_samples,]
+    
+    ind <- 0
+    for(i in seq_along(n.param.orig)){
+      if(all(sf %in% rownames(prior.list[[i]]))){
+        temp.knots <- sapply(seq_along(prior.ind.orig[[i]]), function(z){
+          eval(prior.fn[[i]]$qprior[prior.ind.orig[[i]]][[z]], list(p = sf_knots[,z]))
+        })
+        new_knots[, (ind + 1):(ind + n.param.orig[i])] <- temp.knots
+      }
+      ind <- ind + n.param.orig[i]
+    }
+    
+  }else{
+    sf_knots <- NULL
+  }
+  
+  # now replace with new knots
+  ind <- 0
+  for(i in seq_along(n.param.orig)){
+    sub_knots <- new_knots[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE]
+    knots.params.temp[[i]][, prior.ind.orig[[i]]] <- sub_knots
+
+    ind <- ind + n.param.orig[i]
+  }
+  
+  return(list(knots.params.temp = knots.params.temp, sf_knots = sf_knots, pass2bias = pass2bias))
+  
+}
