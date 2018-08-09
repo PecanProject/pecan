@@ -3,10 +3,11 @@
 ##'This function sets up a call to PEcAn.assim.sequential::sda.enkf()
 ##'
 ##'@param settings the PEcAn settings object (a collection of nested lists)
+##'@param numvals number of simulated data points for each time point
 ##'@return None
 ##'@export
 ##'@author Luke Dramko
-prep.data.assim <- function(settings) {
+prep.data.assim <- function(settings, numvals) {
   # Obtain real data from the site
   timestep <- 0.5 # Every half hour = 0.5
   
@@ -22,7 +23,6 @@ prep.data.assim <- function(settings) {
   
   for (i in 1:length(field_data)) {
     AMF.params <- PEcAn.uncertainty::flux.uncertainty(field_data[[i]], QC = rep(0, length(field_data[[i]])))
-    numvals <- 10;
     
     # Create proxy row for rbinding
     random_mat = NULL
