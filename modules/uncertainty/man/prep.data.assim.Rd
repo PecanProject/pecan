@@ -4,10 +4,12 @@
 \alias{prep.data.assim}
 \title{prep.data.assim}
 \usage{
-prep.data.assim(settings)
+prep.data.assim(settings, numvals)
 }
 \arguments{
 \item{settings}{the PEcAn settings object (a collection of nested lists)}
+
+\item{numvals}{number of simulated data points for each time point}
 }
 \value{
 None
