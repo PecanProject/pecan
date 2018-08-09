@@ -11,7 +11,7 @@ prep.data.assim <- function(settings, numvals) {
   # Obtain real data from the site
   timestep <- 0.5 # Every half hour = 0.5
   
-  field_data <- PEcAn.data.atmosphere::download.US_WCr(settings$run$start_date, settings$run$end_date, timestep = timestep)
+  field_data <- PEcAn.data.atmosphere::download.US_WCr(settings$run$start.date, settings$run$end.date, timestep = timestep)
   
   uncertainty_vals <- list()
   
