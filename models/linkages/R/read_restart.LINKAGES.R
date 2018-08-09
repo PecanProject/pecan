@@ -28,8 +28,8 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   ens <- read.output(runid = runid, 
                      outdir = file.path(outdir, runid), 
                      start.year = lubridate::year(stop.time), 
-                     end.year = lubridate::year(stop.time), 
-                     variables = var.names)  # change to just 'AGB' for plot level biomass
+                     end.year = lubridate::year(stop.time),
+                     variables = var.names,pft.name = lapply(settings$pfts,'[[','name'))  # change to just 'AGB' for plot level biomass
   if(!is.na(ens)){
   # Add PFT name to variable if applicable
   pft.names <- numeric(length(settings$pfts))
@@ -48,7 +48,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   
   if ("AGB.pft" %in% var.names) {
     forecast[[length(forecast)+1]] <- ens$AGB.pft #already has C  #* unit.conv 
-    names(forecast[[length(forecast)+1]]) <- paste0('AGB.pft.',pft.names)
+    names(forecast[[length(forecast)]]) <- paste0('AGB.pft.',pft.names)
   }
     
   if ("TotSoilCarb" %in% var.names) {
@@ -70,5 +70,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   }
   # Put forecast into vector
   print(runid)
-  unlist(forecast)
+  X_tmp <- list(X = unlist(forecast), params = params)
+  
+  return(X_tmp)
 }
