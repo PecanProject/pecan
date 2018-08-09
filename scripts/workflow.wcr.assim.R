@@ -130,7 +130,7 @@ if ('state.data.assimilation' %in% names(settings)) {
   print("Entering SDA section")
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    settings <- PEcAn.uncertainty::prep.data.assim(settings)
+    settings <- PEcAn.uncertainty::prep.data.assim(settings, 5000) # Not sure where the numvals argument is going to be coming from
     PEcAn.utils::status.end()
   }
 }
