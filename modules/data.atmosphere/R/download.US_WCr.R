@@ -32,11 +32,23 @@ download.US_WCr <- function(start_date, end_date, timestep = 1) {
   # Data is found here
   # Original url: http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek2018_flux.txt
   base_url <- "http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
-  url <- paste0(base_url, format(start_date, "%Y"), "_flux.txt")
   
-  # Read data from source
-  flux <- read.table(url, sep="", header=FALSE)
+  flux = NULL;
   
+  for (year in as.integer(format(start_date, "%Y")):as.integer(format(end_date, "%Y"))) {
+    url <- paste0(base_url, year, "_flux.txt") #Build proper url
+    PEcAn.logger::logger.info(paste0("Reading data for year ", year))
+    print(url)
+    influx <- tryCatch(read.table(url, sep="", header=FALSE), error=function(e) {NULL}, warning=function(e) {NULL})
+    if (is.null(influx)) { #Error encountered in data fetching.
+      PEcAn.logger::logger.warn(paste0("Data not avaliable for year ", year, ". All values for ", year, " will be NA."))
+      # Determine the number of days in the year
+      rows_in_year <- udunits2::ud.convert(lubridate::as.duration(lubridate::interval(as.POSIXct(paste0(year, "-01-01")), as.POSIXct(paste0(year + 1, "-01-01")))), "s", "day")
+      rows_in_year = rows_in_year * 48 # 48 measurements per day, one every half hour.
+      influx <- matrix(rep(-999, rows_in_year * 13), nrow=rows_in_year, ncol = 13)
+    }
+    flux <- rbind(flux, influx)
+  }
   PEcAn.logger::logger.info("Flux data has been read.")
   
   # Contains only the data needed in a data frame
@@ -100,4 +112,4 @@ download.US_WCr <- function(start_date, end_date, timestep = 1) {
 } # download.wcr.R
 
 # This line is great for testing.
-# download.US_WCr('2018-07-23 06:00', '2018-08-08 06:00')
+# download.US_WCr('2018-07-23 06:00', '2018-08-08 06:00', timestep=12)
