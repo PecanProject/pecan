@@ -1,7 +1,11 @@
 .download.raw.met.module <- function(dir, met, register, machine, start_date, end_date, str_ns,
                                      con, input_met, site.id, lat.in, lon.in, host, site, username, overwrite = FALSE) {
   
-  outfolder <- file.path(dir,paste0(met, "_site_", str_ns))
+  if(register$scale == "regional"){
+    outfolder <- file.path(dir,paste0(met, "_site"))
+  } else {
+    outfolder <- file.path(dir,paste0(met, "_site_", str_ns))
+  }
   
   pkg <- "PEcAn.data.atmosphere"
   fcn <- paste0("download.", met)
