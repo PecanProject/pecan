@@ -34,7 +34,6 @@ prep.data.assim <- function(settings, numvals) {
     # k: the row number
     for (j in 1:numvals) { # number of random numbers
       obs <- field_data[[i]][!is.na(field_data[[i]])]
-      plot(obs)
       pos <- obs >= 0
       
       res <- obs
