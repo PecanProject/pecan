@@ -26,7 +26,8 @@ Imports:
     traits,
     dplyr,
     dbplyr,
-    magrittr
+    magrittr,
+    purrr
 Suggests:
     fields,
     rgdal,
