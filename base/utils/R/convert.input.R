@@ -115,6 +115,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # regular expression specific special characters and site-specific identification is already present through
       # site.id, a regex placeholder is used instead.
       
+      # This regular expression identifies a particular ensemble from input$name
+      # It can recognize the following components:
+      # name of the data product, followed by a dot, and optionally a site name followed by a dot, then
+      # the ensemble number/name, followed either by a dot or a termination of the string.
+      # This last dot/string terminator matcher is required so that the regex does not recognize 12, 13, etc. as 1.
+      # Example: NOAA_GEFS.Willow Creek(US-WCr).3.<additional text>
+      # Met product name: NOAA_GEFS, site name: Willow Creek(US-WCr), ensemble number: 3
+      # The regular expression does not have to match the entire file name.
+      
       #pattern is always the name of the meteorological data product (met).
       filename_pattern = paste0(pattern, "\\.([^.]*\\.)?") #double backslash for regex
       
