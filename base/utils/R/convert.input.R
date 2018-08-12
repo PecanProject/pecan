@@ -1,4 +1,4 @@
-##' Convert between met formats, reusing existing files where possible
+##' Convert between formats, reusing existing files where possible
 ##'
 ##' \code{convert.input} is a relatively generic function that applies the function \code{fcn} and inserts a record of it into the database. It is primarily designed for converting meteorological data between formats and can be used on observed data, forecasts, and ensembles of forecasts.
 ##' To minimize downloading and storing duplicate data, it first checks to see if a given file is already in the
@@ -16,7 +16,7 @@
 ##' than one dbfile for a given input file.
 ##' 
 ##' @section Time-span appending:
-##' By default, convert.input tries to optimize the download of most data products by only downloading the years of data present on 
+##' By default, convert.input tries to optimize the download of most data products by only downloading the years of data not present on 
 ##' the current machine.  (For example, if files for 2004-2008 exist for a given data product exist on this machine and the user requests
 ##' 2006-2010, the function will only download data for 2009 and 2010).  In year-long data files, each year exists as a separate file.
 ##' The database input file contains records of the bounds of the range stored by those years.  The data optimization can be turned off
@@ -51,13 +51,13 @@
 ##' @param exact.dates Ignore time-span appending and enforce exact start and end dates on the database input file? (logical)
 ##' @param allow.conflicting.dates Should overlapping years ignore time-span appending and exist as separate input files? (logical)
 ##' @param insert.new.file Logical: force creation of a new database record even if one already exists?
-##' @param pattern A regular expression to search 
+##' @param pattern A regular expression, passed to \code{PEcAn.DB::dbfile.input.check}, used to match the name of the input file.
 ##' @param forecast Logical: Is the data product a forecast?
 ##' @param ensemble An integer representing the number of ensembles, or FALSE if it data product is not an ensemble.
 ##' @param ensemble_name If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.
 ##' @param ... Additional arguments, passed unchanged to \code{fcn}
 ##'
-##' @return A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.
+##' @return A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.  Each id may be a vector of ids if the function is processing an entire ensemble at once.
 ##'
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
@@ -115,17 +115,25 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # regular expression specific special characters and site-specific identification is already present through
       # site.id, a regex placeholder is used instead.
       
-      filename_pattern = pattern #pattern is always the name of the meteorological data product (met).
-      if (!is.null(input.args$sitename) || !is.null(site.id)) {
-        filename_pattern = paste(filename_pattern, "[^.]*", sep="\\.") #double backslash for regex
-      }
-      if (!is.null(ensemble_name)) {
-        filename_pattern = paste(filename_pattern, ensemble_name, sep="\\.")
-      } else if (ensemble > 1) {
-        filename_pattern = paste(filename_pattern, i, sep = "\\.")
-      } 
+      # This regular expression identifies a particular ensemble from input$name
+      # It can recognize the following components:
+      # name of the data product, followed by a dot, and optionally a site name followed by a dot, then
+      # the ensemble number/name, followed either by a dot or a termination of the string.
+      # This last dot/string terminator matcher is required so that the regex does not recognize 12, 13, etc. as 1.
+      # Example: NOAA_GEFS.Willow Creek(US-WCr).3.<additional text>
+      # Met product name: NOAA_GEFS, site name: Willow Creek(US-WCr), ensemble number: 3
+      # The regular expression does not have to match the entire file name.
       
-      filename_pattern = paste0(filename_pattern, "\\.")
+      # pattern is the name of the data product
+      filename_pattern = paste0(pattern, "\\.([^.]*\\.)?") #double backslash for regex
+      
+      # Specify ensemble name/number and add termination sequence to ensure each number is recognized uniquely (e.g. 
+      # 12 is not recognized as 1).
+      if (!is.null(ensemble_name)) {
+        filename_pattern = paste0(filename_pattern, ensemble_name, "($|\\.)")
+      } else if (ensemble > 1) {
+        filename_pattern = paste0(filename_pattern, i, "($|\\.)")
+      }
       
       existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
