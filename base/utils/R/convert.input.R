@@ -1,4 +1,4 @@
-##' Convert between met formats, reusing existing files where possible
+##' Convert between formats, reusing existing files where possible
 ##'
 ##' \code{convert.input} is a relatively generic function that applies the function \code{fcn} and inserts a record of it into the database. It is primarily designed for converting meteorological data between formats and can be used on observed data, forecasts, and ensembles of forecasts.
 ##' To minimize downloading and storing duplicate data, it first checks to see if a given file is already in the
@@ -124,7 +124,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # Met product name: NOAA_GEFS, site name: Willow Creek(US-WCr), ensemble number: 3
       # The regular expression does not have to match the entire file name.
       
-      #pattern is always the name of the meteorological data product (met).
+      # pattern is the name of the data product
       filename_pattern = paste0(pattern, "\\.([^.]*\\.)?") #double backslash for regex
       
       # Specify ensemble name/number and add termination sequence to ensure each number is recognized uniquely (e.g. 
