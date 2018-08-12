@@ -2,7 +2,7 @@
 % Please edit documentation in R/convert.input.R
 \name{convert.input}
 \alias{convert.input}
-\title{Convert between met formats, reusing existing files where possible}
+\title{Convert between formats, reusing existing files where possible}
 \usage{
 convert.input(input.id, outfolder, formatname, mimetype, site.id,
   start_date, end_date, pkg, fcn, con = con, host, browndog,
