@@ -303,8 +303,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   if(is.null(restart)){
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
   }
-  save(list = ls(envir = environment(), all.names = TRUE), 
-       file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
 
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
@@ -476,10 +474,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   
+  save(list = ls(envir = environment(), all.names = TRUE), 
+       file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
+  
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------### 
-  
 
 for(t in seq_len(nt)) { #
     if(t == 1){
