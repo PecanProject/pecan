@@ -95,8 +95,13 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   clat <- read.csv(system.file("clat.csv", package = "linkages"), header = FALSE)
   load(system.file("switch.mat.Rdata", package = "linkages"))
   
-  climate_file <- settings$run$inputs$met$path
-  load(climate_file)
+  if(!is.null(inputs)){
+    climate_file <- inputs$met$path
+    load(climate_file)
+  }else{
+    climate_file <- settings$run$inputs$met$path
+    load(climate_file) 
+  }
   
   temp.mat <- temp.mat[which(rownames(temp.mat)%in%start.year:end.year),]
   precip.mat <- precip.mat[which(rownames(precip.mat)%in%start.year:end.year),]
@@ -122,9 +127,17 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
         
       } else {
         ## copy values
-        if (!is.null(trait.values[[group]])) {
-          vals <- as.data.frame(trait.values[[group]])
+          # IF: not sure what's going on here but I had to have this hack to overwrite params below
+          # should come back to this
+          if(is.null(dim(trait.values[[group]]))){
+            vals <- as.data.frame(t(trait.values[[group]]))
+          }else{
+            vals <- as.data.frame(trait.values[[group]])
+          }
           
+          if ("SLA" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*10000
+            }
           
           # replace defaults with traits
           #new.params.locs <- which(names(spp.params) %in% names(vals))
@@ -156,8 +169,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("AGEMX" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
           }
-          if ("G" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$G <- vals$G
+
+          if ("Gmax" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
           }
           if ("SPRTND" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND
@@ -210,7 +224,6 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
         }
       }
     }
-  }
   
   switch.mat <- switch.mat[spp.params.save, ]
   
@@ -281,6 +294,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     jobsh <- gsub("@RESTARTFILE@", restartfile, jobsh)
   }
   
+  pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
+  pft_names <- paste0("pft_names = c('", paste(pft_names, collapse = "','"), "')")
+  jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 } # write.config.LINKAGES
