@@ -29,7 +29,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
                      outdir = file.path(outdir, runid), 
                      start.year = lubridate::year(stop.time), 
                      end.year = lubridate::year(stop.time),
-                     variables = var.names,pft.name = lapply(settings$pfts,'[[','name'))  # change to just 'AGB' for plot level biomass
+                     variables = var.names,pft.name = unlist(sapply(settings$pfts,[[, "name")))  # change to just 'AGB' for plot level biomass
   if(!is.na(ens)){
   # Add PFT name to variable if applicable
   pft.names <- numeric(length(settings$pfts))

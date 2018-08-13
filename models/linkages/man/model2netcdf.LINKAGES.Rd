@@ -17,8 +17,6 @@ model2netcdf.LINKAGES(outdir, sitelat, sitelon, start_date = NULL,
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
-
-\item{overwrite}{Flag for overwriting nc files or not}
 }
 \description{
 Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)

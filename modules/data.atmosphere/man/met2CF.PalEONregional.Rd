@@ -2,7 +2,6 @@
 % Please edit documentation in R/met2CF.ALMA.R
 \name{met2CF.PalEONregional}
 \alias{met2CF.PalEONregional}
-\alias{met2CF.PalEONregional}
 \title{met2CF.PalEONregional}
 \usage{
 met2CF.PalEONregional(in.path, in.prefix, outfolder, start_date, end_date,
