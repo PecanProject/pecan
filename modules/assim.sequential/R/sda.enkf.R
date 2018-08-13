@@ -918,14 +918,6 @@ for(t in seq_len(nt)) { #
         X.new <- X
       }
       
-      S_f  <- svd(Pf)
-      L_f  <- S_f$d
-      V_f  <- S_f$v
-      
-      S_f  <- svd(Pf)
-      L_f  <- S_f$d
-      V_f  <- S_f$v
-      
       ## normalize
       Z <- X*0
       
@@ -935,18 +927,6 @@ for(t in seq_len(nt)) { #
         }else{
           Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
         }
-      }
-      Z[is.na(Z)]<-0
-      
-      ## analysis
-      S_a  <- svd(Pa)
-      L_a  <- S_a$d
-      V_a  <- S_a$v
-      
-      ## analysis ensemble
-      X_a <- X*0
-      for(i in seq_len(nrow(X))){
-        X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
       }
       Z[is.na(Z)]<-0
       

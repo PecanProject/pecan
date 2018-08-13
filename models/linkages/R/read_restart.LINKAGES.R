@@ -43,7 +43,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
 
   if ("Fcomp" %in% var.names) {
     forecast[[length(forecast)+1]] <- ens$AGB.pft #already has C  #* unit.conv 
-    names(forecast[[length(forecast)+1]]) <- paste0('Fcomp.',pft.names)
+    names(forecast[[length(forecast)]]) <- paste0('Fcomp.',pft.names)
   }
   
   if ("AGB.pft" %in% var.names) {
@@ -53,7 +53,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
     
   if ("TotSoilCarb" %in% var.names) {
     forecast[[length(forecast)+1]] <- ens$TotSoilCarb #udunits2::ud.convert(ens$TotSoilCarb, "kg/m^2", "Mg/ha") #* unit.conv 
-    names(forecast[[length(forecast)+1]]) <- c("TotSoilCarb")
+    names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
   }else{
