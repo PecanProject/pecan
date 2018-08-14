@@ -26,6 +26,7 @@ Imports:
     dplyr,
     dbplyr,
     magrittr,
+    rlang,
     XML (>= 3.98-1.4)
 Suggests:
     fields,
