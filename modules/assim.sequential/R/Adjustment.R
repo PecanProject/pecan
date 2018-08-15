@@ -4,7 +4,7 @@
 ##' 
 ##' @param Pf  A cov matrix of forecast state variables.  
 ##' @param X   Dataframe or matrix of forecast state variables for different ensembles.
-##' @param X.new
+##' @param X.new Dataframe or matrix of forecast state variables for different ensembles. When processvar is TRUE.
 ##' @param mu.f A vector with forecast mean estimates of state variables.
 ##' @param mu.a A vector with analysis mean estimates of state variables.
 ##' @param Pa The state estimate cov matrix of analysis.

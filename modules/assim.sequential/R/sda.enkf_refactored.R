@@ -143,15 +143,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
                           as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
   rownames(state.interval) <- var.names
-  
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
   load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-
-  ###-------------------------------------------------------------------###
-  ### If this is a restart - Picking up were we left last time          ###
-  ###-------------------------------------------------------------------###---- 
   #reformatting params
   params <- list()
   for (i in seq_len(nens)) {
@@ -159,7 +154,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       x[i, ] }, n = i)
   } 
   new.params <- params
-  
+
+  ###-------------------------------------------------------------------###
+  ### If this is a restart - Picking up were we left last time          ###
+  ###-------------------------------------------------------------------###----   
   if (restart){
     load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #--- Updating the nt and etc
@@ -220,7 +218,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       restart.arg<-NULL
       new.params <- params
     }
-  #-------------------------- Writting the config/ Running the model and reading the outputs for each ensemble
+  #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
     write.ensemble.configs(defaults = settings$pfts, 
                            ensemble.samples = ensemble.samples, 
                            settings = settings,
@@ -264,7 +262,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###---- 
     if (any(obs)) {
       #Hamze: used agrep instead of charmatch to take advantage of fuzzy matching
-      #there might be little typo/mistake in names, now this would not be a problem
+      #there might be little typo/mistake in the names, now this would not be a problem
       #choose <- na.omit(charmatch(colnames(X),names(obs.mean[[t]])))
       choose <-sapply(colnames(X),agrep,x=names(obs.mean[[t]]),max=1,USE.NAMES = F)%>%unlist
       
@@ -377,7 +375,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
     save(t, FORECAST, ANALYSIS, enkf.params,new.state,new.params,run.id,ensemble.id,ensemble.samples,inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    #wrtting down the image - either you asked for it or nor :)
+    #writing down the image - either you asked for it or nor :)
     post.alaysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
     
   } ### end loop over time
