@@ -25,6 +25,7 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.id, 
                                   restart = NULL, spinup = FALSE, inputs = NULL, IC = NULL) {
+
   # 850-869 repeated to fill 1000 years
   if (is.null(restart)) {
     restart <- FALSE # why not have restart default to FALSE above?
@@ -95,8 +96,13 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   clat <- read.csv(system.file("clat.csv", package = "linkages"), header = FALSE)
   load(system.file("switch.mat.Rdata", package = "linkages"))
   
-  climate_file <- settings$run$inputs$met$path
-  load(climate_file)
+  if(!is.null(inputs)){
+    climate_file <- inputs$met$path
+    load(climate_file)
+  }else{
+    climate_file <- settings$run$inputs$met$path
+    load(climate_file) 
+  }
   
   temp.mat <- temp.mat[which(rownames(temp.mat)%in%start.year:end.year),]
   precip.mat <- precip.mat[which(rownames(precip.mat)%in%start.year:end.year),]
@@ -122,91 +128,99 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
         
       } else {
         ## copy values
-        if (!is.null(trait.values[[group]])) {
+        # IF: not sure what's going on here but I had to have this hack to overwrite params below
+        # should come back to this
+        if(is.null(dim(trait.values[[group]]))){
+          vals <- as.data.frame(t(trait.values[[group]]))
+        }else{
           vals <- as.data.frame(trait.values[[group]])
-          
-          
-          # replace defaults with traits
-          #new.params.locs <- which(names(spp.params) %in% names(vals))
-          #new.vals.locs <- which(names(vals) %in% names(spp.params))
-          #spp.params[which(spp.params$Spp_Name == group), new.params.locs] <- vals[new.vals.locs]
-          
-          # conversion of some traits to match what LINKAGES needs Going to have to look up this paper
-          # Botkin 1972 Some Ecological Consequences of a computer model of forest growth
-          if ("HTMAX" %in% names(vals) & "DBHMAX" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$B2 <- 2 * (((vals$HTMAX * 100) - 137) / 
-                                                                    (vals$DBHMAX * 100))
-            spp.params[spp.params$Spp_Name == group, ]$B3 <- (vals$HTMAX * 100 - 137) / (vals$DBHMAX * 100^2)
-          }
-          
-          if ("root2shoot" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$RTST <- vals$root2shoot
-          }
-          
-          # if ("leaf_longevity" %in% names(vals)) {
-          #   spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$leaf_longevity
-          # }
-          
-          if ("DMAX" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$DMAX <- vals$DMAX
-          }
-          if ("DMIN" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$DMIN <- vals$DMIN
-          }
-          if ("AGEMX" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
-          }
-          if ("G" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$G <- vals$G
-          }
-          if ("SPRTND" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND
-          }
-          if ("SPRTMN" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$SPRTMN <- vals$SPRTMN
-          }
-          if ("SPRTMX" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$SPRTMX <- vals$SPRTMX
-          }
-          if ("MPLANT" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$MPLANT <- vals$MPLANT
-          }
-          if ("D3" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
-          }
-          if ("FROST" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
-          }
-          if ("CM1" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1
-          }
-          if ("CM2" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$CM2 <- vals$CM2
-          }
-          if ("CM3" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$CM3 <- vals$CM3
-          }
-          if ("CM4" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$CM4 <- vals$CM4
-          }
-          if ("CM5" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$CM5 <- vals$CM5
-          }
-          if ("FWT" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FWT <- vals$FWT
-          }
-          if ("SLTA" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$SLTA <- vals$SLTA
-          }
-          if ("SLTB" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$SLTB <- vals$SLTB
-          }
-          if ("FRT" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$FRT
-          }
-          if ("TL" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$TL <- ceiling(vals$TL)
-          }
+        }
+ 
+        if ("SLA" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*10000
+        }
+        
+        # replace defaults with traits
+        #new.params.locs <- which(names(spp.params) %in% names(vals))
+        #new.vals.locs <- which(names(vals) %in% names(spp.params))
+        #spp.params[which(spp.params$Spp_Name == group), new.params.locs] <- vals[new.vals.locs]
+        
+        # conversion of some traits to match what LINKAGES needs Going to have to look up this paper
+        # Botkin 1972 Some Ecological Consequences of a computer model of forest growth
+        if ("HTMAX" %in% names(vals) & "DBHMAX" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$B2 <- 2 * (((vals$HTMAX * 100) - 137) / 
+                                                                  (vals$DBHMAX * 100))
+          spp.params[spp.params$Spp_Name == group, ]$B3 <- (vals$HTMAX * 100 - 137) / (vals$DBHMAX * 100^2)
+        }
+        
+        if ("root2shoot" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$RTST <- vals$root2shoot
+        }
+        
+        # if ("leaf_longevity" %in% names(vals)) {
+        #   spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$leaf_longevity
+        # }
+        
+        if ("DMAX" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$DMAX <- vals$DMAX
+        }
+        if ("DMIN" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$DMIN <- vals$DMIN
+        }
+        if ("AGEMX" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
+        }
+        
+        if ("Gmax" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
+        }
+        if ("SPRTND" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND
+        }
+        if ("SPRTMN" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$SPRTMN <- vals$SPRTMN
+        }
+        if ("SPRTMX" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$SPRTMX <- vals$SPRTMX
+        }
+        if ("MPLANT" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$MPLANT <- vals$MPLANT
+        }
+        if ("D3" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
+        }
+        if ("FROST" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
+        }
+        if ("CM1" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1
+        }
+        if ("CM2" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$CM2 <- vals$CM2
+        }
+        if ("CM3" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$CM3 <- vals$CM3
+        }
+        if ("CM4" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$CM4 <- vals$CM4
+        }
+        if ("CM5" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$CM5 <- vals$CM5
+        }
+        if ("FWT" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$FWT <- vals$FWT
+        }
+        if ("SLTA" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$SLTA <- vals$SLTA
+        }
+        if ("SLTB" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$SLTB <- vals$SLTB
+        }
+        if ("FRT" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$FRT
+        }
+        if ("TL" %in% names(vals)) {
+          spp.params[spp.params$Spp_Name == group, ]$TL <- ceiling(vals$TL)
         }
       }
     }
@@ -281,6 +295,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     jobsh <- gsub("@RESTARTFILE@", restartfile, jobsh)
   }
   
+  pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
+  pft_names <- paste0("pft_names = c('", paste(pft_names, collapse = "','"), "')")
+  jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 } # write.config.LINKAGES
