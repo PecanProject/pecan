@@ -1,5 +1,24 @@
-#' @export
+##' @title adj.ens
+##' @name  adj.ens
+##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
+##' 
+##' @param Pf  A cov matrix of forecast state variables.  
+##' @param X   Dataframe or matrix of forecast state variables for different ensembles.
+##' @param X.new
+##' @param mu.f A vector with forecast mean estimates of state variables.
+##' @param mu.a A vector with analysis mean estimates of state variables.
+##' @param Pa The state estimate cov matrix of analysis.
+##' @param processvar Boolean flag for indicating if process variance is used in the analysis. If TRUE then X.new needs to be supplied.
+##’ @details
+##’  
+##' 
+##' @description This functions gives weights to different ensemble members based on their likelihood during the analysis step. Then it adjusts the analysis mean estimates of state variables based on the estimated weights.
+##' 
+##' @return Returns a vector of adjusted analysis mean estimates of state variables.
+##' @export
+
 adj.ens<-function(Pf,X,X.new,mu.f,mu.a,Pa,processvar){
+
   S_f  <- svd(Pf)
   L_f  <- S_f$d
   V_f  <- S_f$v
@@ -25,15 +44,10 @@ adj.ens<-function(Pf,X,X.new,mu.f,mu.a,Pa,processvar){
   ## analysis ensemble
   X_a <- X*0
   for(i in seq_len(nrow(X))){
-    # she decomposed Pa - then it's putting it back together but with a different Z which comes from the liklihood of that ens
-    X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
+    # she decomposed Pa - then it's putting it back together but with a different Z which comes from the likelihood of that ens    X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
   }
   
-  # # calculate likelihoods
-  #      for(i in seq_len(nens)){
-  #        wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,], mu.a, solve(Pa), log = TRUE)
-  #      }
-  
+
   if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
   if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
   

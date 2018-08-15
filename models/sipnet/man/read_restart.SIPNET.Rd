@@ -4,14 +4,7 @@
 \alias{read_restart.SIPNET}
 \title{Read restart function for SDA with SIPNET}
 \usage{
-read_restart.SIPNET(outdir, runid, stop.time, settings, var.names, params,
-  var.map = list(c("leaf_carbon_content", "litter_carbon_content",
-  "TotSoilCarb", "SoilMoistFrac", "SWE", "GWBI", "AbvGrndWood", "AGB"),
-  c("LeafC", "Litter", "TotSoilCarb", "SoilMoistFrac", "SWE", "GWBI",
-  "AbvGrndWood", "AGB"), c("", "", "", "", "", "kg/m^2/s", "kg/m^2", ""),
-  c("", "", "", "", "", "Mg/ha/yr", "Mg/ha", ""), c("", "", "", "", "",
-  mean, "", "")), timez = "UTC", When = NULL, control = list(trace =
-  F), ...)
+read_restart.SIPNET(outdir, runid, stop.time, settings, var.names, params)
 }
 \arguments{
 \item{outdir}{Output directory}
@@ -33,5 +26,5 @@ X.vec      vector of forecasts
 Read Restart for SIPNET
 }
 \author{
-Ann Raiho \email{araiho@nd.edu}, Hamze Dokoohaki \email{hamzed@bu.edu}
+Ann Raiho \email{araiho@nd.edu}
 }

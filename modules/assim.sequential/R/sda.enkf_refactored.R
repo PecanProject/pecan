@@ -1,20 +1,32 @@
+#' @title sda.enkf
+#' @name  sda.enkf
+#' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
+#' 
+#' @param settings    PEcAn settings object
+#' @param obs.mean    list of observations of the means of state variable (time X nstate)
+#' @param obs.cov     list of observations of covariance matrices of state variables (time X nstate X nstate)
+#' @param Q           process covariance matrix given if there is no data to estimate it
+#' @param restart     Used for iterative updating previous forecasts. When the restart is TRUE it read the obejct in SDA folder writen from previous SDA.
+#' @param control    List of flags controling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for ploting the outcomes after each step, 
+#' TimeseriesPlot for post analysis examination, BiasPlot for plotting ..., plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.
+#'
+#’ @details
+#’ Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast), a new workflow folder is created and the previous forecast for the start_time is copied over. During restart the initial run before the loop is skipped, with the info being populated from the previous run. The function then dives right into the first Analysis, then continues on like normal.
+#' 
+#' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble kalman file=ter
+#' 
+#' @return NONE
+#' @import nimble
 #' @export
-sda.enkf.refactored <- function(settings,
-                                obs.mean,
-                                obs.cov,
-                                Q = NULL,
-                                restart=F,
-                                control=list(trace=T,
-                                             interactivePlot=T,
-                                             TimeseriesPlot=T,
-                                             BiasPlot=F,
-                                             plot.title=NULL,
-                                             debug=FALSE
-                                             ),...) {
-  # My personal notes -----------------------
-  # Two analysis function was initially developed into this:
-  # 1-EnKF
-  # 2-Generalized Ensubmle Filter: -tobit / -wish
+#' 
+
+sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F, 
+                     control=list(trace=T,
+                                  interactivePlot=T,
+                                  TimeseriesPlot=T,
+                                  BiasPlot=F,
+                                  plot.title=NULL,
+                                  debug=FALSE),...) {
   #------------- Some important variables  
   # muf/Pf - forcast mean and covariance
   # Y/R    - Observed data and covariance

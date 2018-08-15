@@ -5,9 +5,7 @@
 \title{read_restart.LINKAGES}
 \usage{
 read_restart.LINKAGES(outdir, runid, stop.time, settings,
-  var.names = NULL, params = NULL, var.map = list(c("AGB.pft",
-  "TotSoilCarb"), c("AGB.pft", "TotSoilCarb"), c("", ""), c("", ""), c("",
-  "")), timez = "UTC", When = NULL, ...)
+  var.names = NULL, params = NULL)
 }
 \arguments{
 \item{outdir}{output directory}
@@ -27,5 +25,5 @@ X.vec      vector of forecasts
 Read Restart for LINKAGES
 }
 \author{
-Ann Raiho \email{araiho@nd.edu} & Hamze Dokoohaki \email{hamzed@bu.edu}
+Ann Raiho \email{araiho@nd.edu}
 }

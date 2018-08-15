@@ -1,33 +1,60 @@
-#' @export
+##' @title Analysis.sda
+##' @name  Analysis.sda
+##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
+##' 
+##' @param settings  pecan standard settings list.  
+##' @param FUN   A Function for performing the analysis step. Two available options are: 1-EnKF and 2-GEF.
+##' @param Forecast A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
+##' Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
+##' @param ... Extra argument sent to the analysis function.
+##’ @details
+##’  
+##' 
+##' @description This functions uses the FUN to perform the analysis. EnKF function is developed inside the PEcAn.assim.sequential package which can be sent to this function to perform the Ensemble Kalman Filter. 
+##' The other option is GEF function inside the same package allowing to perform Generalized Ensemble kalman Filter.
+##' 
+##' If you're using an arbitrary function you can use the ... to send any other variables to your desired analysis function.
+##' 
+##' @return Returns whatever the FUN is returning. In case of EnKF and GEF, this function returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
+##' @export
+
 Analysis.sda<-function(settings,
                        FUN,
                        Forcast=list(Pf=NULL,mu.f=NULL,Q=NULL,X=NULL),
                        Observed=list(R=NULL,Y=NULL),
                        ...
-                       ){
+){
   if (is.null(FUN)) stop('Analysis function needs to be defined !')
   FUN(settings,Forcast,Observed,...)
-
+  
 }
 
-#' @export
+##' @title EnKF
+##' @name  EnKF
+##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
+##' 
+##' @param settings  pecan standard settings list.  
+##' @param Forecast A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
+##' Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
+##' @param ... Extra argument sent to the analysis function.
+##’ @details
+##’  
+##' 
+##' @description Given the Forecast and Observed this function performs the Ensemble Kalamn Filter. 
+##' 
+##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
+##' @export
 EnKF<-function(setting,Forcast,Observed,...){
-
+  
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
   for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
- 
 
-  #General
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                             function(x) {
-                               x$variable.name
-                             }, 
-                             USE.NAMES = FALSE), 
-                      use.names = FALSE)
-  #Forcast inputs 
+    #Forcast inputs 
   Q<-Forcast$Q # process error
   Pf<-Forcast$Pf # forcast precision
   mu.f<-Forcast$mu.f #mean forcast
@@ -58,7 +85,23 @@ EnKF<-function(setting,Forcast,Observed,...){
   Pa   <- (diag(ncol(X)) - K %*% H) %*% Pf
   return(list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa))
 }
-#' @export
+
+##' @title GEF
+##' @name  GEF
+##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
+##' 
+##' @param settings  pecan standard settings list.  
+##' @param Forecast A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
+##' Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
+##' @param ... Extra argument sent to the analysis function.
+##’ @details
+##’  
+##' 
+##' @description Given the Forecast and Observed this function performs the Generalized Ensemble Kalamn Filter. The generalized ensemble filter follows generally the three steps of sequential state data assimilation. But, in the generalized ensemble filter we add a latent state vector that accounts for added process variance. Furthermore, instead of solving the analysis analytically like the EnKF, we have to estimate the mean analysis vector and covariance matrix with MCMC.
+##' 
+##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
+##' @export
 GEF<-function(setting,Forcast,Observed,...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
@@ -71,7 +114,8 @@ GEF<-function(setting,Forcast,Observed,...){
                              }, 
                              USE.NAMES = FALSE), 
                       use.names = FALSE)
-  
+  #Loading nimbles functions
+  load_nimble()
   #Forcast inputs 
   Q<-Forcast$Q # process error
   Pf<-Forcast$Pf # forcast precision
@@ -84,7 +128,7 @@ GEF<-function(setting,Forcast,Observed,...){
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
   }
   
-   #----------------------------------- GEF-----------------------------------------------------
+  #----------------------------------- GEF-----------------------------------------------------
   # Taking care of censored data ------------------------------    
   ### create matrix the describes the support for each observed state variable at time t
   path.to.models <- file.path(settings$outdir,"SDA","GEF")
@@ -95,7 +139,6 @@ GEF<-function(setting,Forcast,Observed,...){
   intervalX <- matrix(NA, ncol(X), 2)
   rownames(intervalX) <- colnames(X)
   outdir     <- settings$modeloutdir
-  source('/fs/data3/hamzed/pecan/modules/assim.sequential/R/Nimble_codes.R') # bringing in the library and the functions.
   #TO DO: Not working for fcomp
   for(i in 1:length(var.names)){
     intervalX[which(startsWith(rownames(intervalX),
@@ -113,7 +156,7 @@ GEF<-function(setting,Forcast,Observed,...){
       x.censored[n,j] <- as.numeric(ifelse(X[n,j] > intervalX[j,2], 0, X[n,j])) #
     }
   }
-
+  
   if(t == 1){
     #The purpose of this step is to impute data for mu.f 
     #where there are zero values so that 
@@ -131,8 +174,8 @@ GEF<-function(setting,Forcast,Observed,...){
     #set.seed(0)
     #ptm <- proc.time()
     tobit2space_pred <<- nimbleModel(tobit2space.model, data = data.tobit2space,
-                                    constants = constants.tobit2space, inits = inits.tobit2space,
-                                    name = 'space')
+                                     constants = constants.tobit2space, inits = inits.tobit2space,
+                                     name = 'space')
     ## Adding X.mod,q,r as data for building model.
     conf_tobit2space <<- configureMCMC(tobit2space_pred, thin = 10, print=TRUE)
     conf_tobit2space$addMonitors(c("pf", "muf","y.censored")) 
@@ -163,19 +206,8 @@ GEF<-function(setting,Forcast,Observed,...){
       ## indicator variable is set to 0, which specifies *not* to sample
       valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
     }
-
-    #------------------Saving some of the objects that we need later on and on the next assimilation steps
-    if(!dir.exists(path.to.models)) dir.create(path.to.models)
-    #save(Cmodel_tobit2space, Cmcmc_tobit2space, conf_tobit2space, file = file.path(path.to.models, "GEF.nimbel.models.Rdata"))
-  }else{
     
-    #use the model that was develop in the first time step
-    if(file.exists(file.path(path.to.models, "GEF.nimbel.models.Rdata"))){
-      #load(file.path(path.to.models, "GEF.nimbel.models.Rdata"))
-    }else{
-      #PEcAn.logger::logger.severe('The nimble model was not found.')
-    }
-      
+  }else{
     
     Cmodel_tobit2space$y.ind <- x.ind
     Cmodel_tobit2space$y.censored <- x.censored
@@ -210,7 +242,7 @@ GEF<-function(setting,Forcast,Observed,...){
   
   X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
   
- # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
+  # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
   
   ###-------------------------------------------------------------------###
   # Generalized Ensemble Filter                                       ###-----
