@@ -1,5 +1,15 @@
+#internal functions for plotting SDA outputs. Interactive, bias plots as well as post analysis time series both in base plotting and ggplot
+##' @param settings  pecan standard settings list.  
+##' @param t current time - int number giving the position of the current time in obs.time. 
+##' @param obs.time vector of dates of measurements
+##' @param obs.mean list of vectors of the means of observed data named by the measured date.
+##' @param obs.cov list of cov matrices of the observed data named by the measured date.
+##' @param obs list containing the mean and cov object
+##' @param X  dataframe of state variables for each ensemble
+##' @param FORECAST dataframe of state variables for each ensemble
+##' @param ANALYSIS  vector of mean of state variable after analysis
+##' @param plot.title character giving the title for post visualization ggplots
 
-#' @export
 interactive.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
   #Defining some colors
   t1         <- 1
@@ -101,7 +111,6 @@ interactive.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,F
   }
 }
 
-#' @export
 postana.timeser.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
   #Defining some colors
   t1         <- 1
@@ -208,7 +217,7 @@ postana.timeser.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs
   dev.off()
   
 }
-#' @export
+
 postana.bias.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
   #Defining some colors
   t1         <- 1
@@ -283,7 +292,7 @@ postana.bias.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,
   dev.off()
   
 }
-#' @export
+
 postana.bias.plotting.sda<-function(t,obs.times,X,aqq,bqq){
   #Defining some colors
   t1         <- 1
@@ -316,7 +325,6 @@ postana.bias.plotting.sda<-function(t,obs.times,X,aqq,bqq){
   dev.off()
 }
 
-#'@export
 post.alaysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
 
   #Defining some colors
@@ -427,8 +435,6 @@ post.alaysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORE
   
 }
 
-
-#'@export
 post.alaysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
   
   #Defining some colors

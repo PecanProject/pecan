@@ -46,7 +46,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
     
 ### Added
-
+- sda.enk function inside the `PEcAn.assim.sequential` package was replaced with the refactored version, while the original sda function can be found in the same package with the name of sda.enkf.original.
 - PEcAn.undertainty gains one new function (input.ens.gen) and three functions moved from PEcAn.utils (see "Changed" below)
 - IC workflow now has functionality to generate ensembles.
 - You can now generate ensembles for parameters and met separatly and using different methods. 
