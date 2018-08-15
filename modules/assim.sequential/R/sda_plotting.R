@@ -352,7 +352,7 @@ post.alaysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORE
   #Analysis & Forcast cleaning and STAT
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
   
-  c('FORECAST','ANALYSIS')%>%
+  ready.FA <- c('FORECAST','ANALYSIS')%>%
     purrr::map_df(function(listFA){
       All.my.data[[listFA]]%>%
         purrr::map_df(function(state.vars){
@@ -370,12 +370,12 @@ post.alaysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORE
                     Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length())
         )
       
-    })->ready.FA
+    })
   
   
   #Observed data
   #first merging mean and conv based on the day
-  ready.to.plot<-names(obs.mean)%>%
+  ready.to.plot <- names(obs.mean)%>%
     purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
                  setNames(c('means','covs','Date')))%>%
     setNames(names(obs.mean))%>%
@@ -383,8 +383,8 @@ post.alaysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORE
       #CI
 
       purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
-                     function(sd,mean){
-                       data.frame(mean-(sd*1.96),mean+(sd*1.96))
+                     function(sd, mean){
+                       data.frame(mean-(sd*1.96), mean+(sd*1.96))
                        
                      })%>%
         mutate(Variables=names(one.day.data$means))%>%
@@ -426,11 +426,11 @@ post.alaysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORE
 
 
   pdf("SDA/SDA.pdf",width = 10,height = 8)
-  all.plots%>%purrr::map(~print(.x))
+  all.plots %>% purrr::map(~print(.x))
   dev.off()
 
   #saving plot data
-  save(all.plots,ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
+  save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
   
   
 }
@@ -461,7 +461,7 @@ post.alaysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs
 #rearranging the forcast and analysis data  
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
   
-  c('FORECAST','ANALYSIS')%>%
+  ready.FA <- c('FORECAST','ANALYSIS')%>%
     purrr::map_df(function(listFA){
       All.my.data[[listFA]]%>%
         purrr::map_df(function(state.vars){
@@ -471,19 +471,18 @@ post.alaysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs
         )
       
     })%>%
-    tidyr::gather(Variables,Value,-c(Type,Date))->ready.FA
-  
+    tidyr::gather(Variables, Value, -c(Type,Date)) 
   #Observed data
   #first merging mean and conv based on the day
   obs.df <- names(obs.mean)%>%
-    purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
+    purrr::map(~c(obs.mean[.x], obs.cov[.x], .x)%>%
                  setNames(c('means','covs','Date')))%>%
     setNames(names(obs.mean))%>%
     purrr::map_df(function(one.day.data){
       #CI
       purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
                      function(sd,mean){
-                       data.frame(mean-(sd*1.96),mean+(sd*1.96))
+                       data.frame(mean-(sd*1.96), mean+(sd*1.96))
                        
                      })%>%
         mutate(Variables=names(one.day.data$means))%>%
@@ -507,7 +506,6 @@ post.alaysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs
       unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
       if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
       #plotting
-      #plotting
       ready.FA%>%
         filter(Variables==vari)%>%
         ggplot(aes(Date,Value))+
@@ -525,12 +523,12 @@ post.alaysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs
       p
     })->all.plots
 
-  pdf("SDA/SDA.Violin.pdf",width = 10,height = 8, onefile = TRUE)
-  all.plots%>%purrr::map(~print(.x))
+  pdf("SDA/SDA.Violin.pdf", width = 10, height = 8, onefile = TRUE)
+  all.plots %>% purrr::map(~print(.x))
   dev.off()
   
   #saving plot data
-  save(all.plots,ready.FA,obs.df, file = file.path(settings$outdir,"SDA", "timeseries.violin.plot.data.Rdata"))
+  save(all.plots, ready.FA, obs.df, file = file.path(settings$outdir,"SDA", "timeseries.violin.plot.data.Rdata"))
   
 }
 

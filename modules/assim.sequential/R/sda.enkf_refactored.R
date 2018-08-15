@@ -66,9 +66,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                       use.names = FALSE)
   names(var.names) <- NULL
   #filtering obs data based on years specifited in setting > state.data.assimilation
-  assimyears<- year(settings$state.data.assimilation$start.date):year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
-  obs.mean<-obs.mean[sapply(year(names(obs.mean)),function(obs.year) obs.year%in%(assimyears))]
-  obs.cov<-obs.cov[sapply(year(names(obs.cov)),function(obs.year) obs.year%in%(assimyears))]
+  assimyears <- year(settings$state.data.assimilation$start.date) : year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
+  obs.mean <- obs.mean[sapply(year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
+  obs.cov <- obs.cov[sapply(year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
   # dir address based on the end date
   if(!dir.exists("SDA")) dir.create("SDA",showWarnings = F)
   #--get model specific functions
@@ -180,7 +180,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     t<-t+1
     # do we have obs for this time - what year is it ?
     obs <- which(!is.na(obs.mean[[t]]))
-    obs.year<-year(names(obs.mean)[t])
+    obs.year <- year(names(obs.mean)[t])
     ###-------------------------------------------------------------------------###
     ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
     ###-------------------------------------------------------------------------###-----  
@@ -215,7 +215,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                         ensemble.id=ensemble.id)
    
     }else{
-      restart.arg<-NULL
+      restart.arg <- NULL
       new.params <- params
     }
   #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
@@ -227,9 +227,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                            restart = restart.arg)->outconfig
 
 
-    run.id<-outconfig$runs$id
-    ensemble.id<-outconfig$ensemble.id
-   if(t==1) inputs<-outconfig$samples$met # for any time after t==1 the met is the splitted met
+    run.id <- outconfig$runs$id
+    ensemble.id <- outconfig$ensemble.id
+   if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     #------------------------------------------- Reading the output
@@ -264,7 +264,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       #Hamze: used agrep instead of charmatch to take advantage of fuzzy matching
       #there might be little typo/mistake in the names, now this would not be a problem
       #choose <- na.omit(charmatch(colnames(X),names(obs.mean[[t]])))
-      choose <-sapply(colnames(X),agrep,x=names(obs.mean[[t]]),max=1,USE.NAMES = F)%>%unlist
+      choose <- sapply(colnames(X),agrep,x=names(obs.mean[[t]]),max=1,USE.NAMES = F)%>%unlist
       
       Y <- unlist(obs.mean[[t]][choose])
       Y[is.na(Y)] <- 0 
@@ -282,7 +282,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###----
       if(processvar == FALSE){an.method<-EnKF  }else{    an.method<-GEF   }  
       #-analysis function
-        enkf.params[[t]] <-Analysis.sda(settings,
+        enkf.params[[t]] <- Analysis.sda(settings,
                                         FUN=an.method,
                                         Forcast=list(Pf=Pf,mu.f=mu.f,Q=Q,X=X),
                                         Observed=list(R=R,Y=Y),
@@ -293,8 +293,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                         extraArg=list(aqq=aqq,bqq=bqq,t=t)
                                         )
 
-      Pa<- enkf.params[[t]]$Pa
-      mu.a<- enkf.params[[t]]$mu.a
+      Pa <- enkf.params[[t]]$Pa
+      mu.a <- enkf.params[[t]]$mu.a
       #extracting extra outputs
       if (processvar) {
         CI.X1[, t] <- enkf.params[[t]]$CIX1
