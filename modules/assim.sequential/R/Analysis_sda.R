@@ -26,7 +26,7 @@ Analysis.sda<-function(settings,
                        ...
 ){
   if (is.null(FUN)) stop('Analysis function needs to be defined !')
-  FUN(settings,Forcast,Observed,...)
+  FUN(settings, Forcast, Observed,...)
   
 }
 
@@ -55,13 +55,13 @@ EnKF<-function(setting,Forcast,Observed,...){
   for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
 
     #Forcast inputs 
-  Q<-Forcast$Q # process error
-  Pf<-Forcast$Pf # forcast precision
-  mu.f<-Forcast$mu.f #mean forcast
-  X<-Forcast$X # states 
+  Q <- Forcast$Q # process error
+  Pf <- Forcast$Pf # forcast precision
+  mu.f <- Forcast$mu.f #mean forcast
+  X <- Forcast$X # states 
   #Observed inputs
-  R<-Observed$R
-  Y<-Observed$Y
+  R <- Observed$R
+  Y <- Observed$Y
   # Enkf---------------------------------------------------
   ## design matrix
   H <- matrix(0, length(Y), ncol(X)) #H maps true state to observed data
@@ -117,13 +117,13 @@ GEF<-function(setting,Forcast,Observed,...){
   #Loading nimbles functions
   load_nimble()
   #Forcast inputs 
-  Q<-Forcast$Q # process error
-  Pf<-Forcast$Pf # forcast precision
-  mu.f<-Forcast$mu.f #mean forcast
-  X<-Forcast$X # states 
+  Q <- Forcast$Q # process error
+  Pf <- Forcast$Pf # forcast precision
+  mu.f <- Forcast$mu.f #mean forcast
+  X <- Forcast$X # states 
   #Observed inputs
-  R<-Observed$R
-  Y<-Observed$Y
+  R <- Observed$R
+  Y <- Observed$Y
   wish.df <- function(Om, X, i, j, col) {
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
   }
@@ -132,10 +132,10 @@ GEF<-function(setting,Forcast,Observed,...){
   # Taking care of censored data ------------------------------    
   ### create matrix the describes the support for each observed state variable at time t
   path.to.models <- file.path(settings$outdir,"SDA","GEF")
-  aqq<-extraArg$aqq
-  bqq<-extraArg$bqq
-  interval<-NULL
-  t<-extraArg$t
+  aqq <- extraArg$aqq
+  bqq <- extraArg$bqq
+  interval <- NULL
+  t <- extraArg$t
   intervalX <- matrix(NA, ncol(X), 2)
   rownames(intervalX) <- colnames(X)
   outdir     <- settings$modeloutdir
