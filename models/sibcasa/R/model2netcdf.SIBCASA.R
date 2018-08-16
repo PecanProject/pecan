@@ -40,27 +40,29 @@ model2netcdf.SIBCASA <- function(outdir, sitelat, sitelon, start_date, end_date)
       nc_file <- ncdf4::nc_open(fname)
       
       #Check lat and lon
-      lat <- ncdf4::ncvar_get(nc_file,"latindex")
-      lon <- ncdf4::ncvar_get(nc_file,"lonindex")
+      lat_ind <- ncdf4::ncvar_get(nc_file,"latindex")
+      lon_ind <- ncdf4::ncvar_get(nc_file,"lonindex")
+      
+      lat <- nc_file$dim$latitude$vals[lat_ind]
+      lon <- nc_file$dim$longitude$vals[lon_ind]
       
       ## Read in variables 
      
       gpp <- ncdf4::ncvar_get(nc_file,"gpp")  #micromoles/m^2/s
       nee1 <- ncdf4::ncvar_get(nc_file,"NEE_1") #micromoles/m^2/s (resp_tot - GPP)
-      nee2 <- ncdf4::ncvar_get(nc_file,"NEE_2") #micromoles/m^2/s (conductance-based carbon flux)
+      #nee2 <- ncdf4::ncvar_get(nc_file,"NEE_2") #micromoles/m^2/s (conductance-based carbon flux)
       npp <- ncdf4::ncvar_get(nc_file,"npp") #micromol/m^2/s
-      carb_tot <- ncdf4::ncvar_get(nc_file,"carb_tot") #moles/m^2 (Total)
-      
+
       #Unit Conversions
       
       mole2kg_C <- 0.01201071000000  # mole of carbon to kilogram of carbon
       micromole2kg_C <- 0.0000120107 #micromoles of carbon to kilogram of carbon
       
       output <- list()
-      output[[1]] <- gpp * micromole2kg_C/ second
+      output[[1]] <- gpp * micromole2kg_C
       output[[2]] <- nee1 * micromole2kg_C
       output[[3]] <- npp * micromole2kg_C
-      output[[4]] <  carb_tot * mole2kg_C
+   
       ####
       ## SIBCASA Time
       month         <- ncdf4::ncvar_get(nc_file, "month")
@@ -68,20 +70,22 @@ model2netcdf.SIBCASA <- function(outdir, sitelat, sitelon, start_date, end_date)
       hour          <- ncdf4::ncvar_get(nc_file, "HOD")
       second        <- ncdf4::ncvar_get(nc_file, "seconds")
       
-      time <- day + sec / 86400
-      nt <- length(time)
-      nc.time <- ncin$dim$time$vals             # days since "start_date"
+      month_days<-cumsum(day_in_month)
+      #time <- day + sec / 86400
+      #nt <- length(time)
+      #nc.time <- ncin$dim$time$vals             # days since "start_date"
      
       
       ## Build Standard netCDF files
       
       t <- ncdf4::ncdim_def(name = "time", 
                             units = paste0("days since ", year, "-01-01 00:00:00"), 
-                            vals = , 
+                            month_days,
                             calendar = "standard", 
                             unlim = TRUE)
       lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
       lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+      
       
       for (i in seq_along(output)) {
         if (length(output[[i]]) == 0) 
@@ -98,10 +102,12 @@ model2netcdf.SIBCASA <- function(outdir, sitelat, sitelon, start_date, end_date)
       nc_var[[3]]  <- ncdf4::ncvar_def("NPP", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999,
                                        longname = "Net Primary Production")
 
+      
+
       ## Write out File
       ### Output netCDF data
-      nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
-      varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+      nc      <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), nc_var)
+      varfile <- file(file.path(outdir, paste(year, "nc", "var", sep = ".")), "w")
       for (i in seq_along(nc_var)) {
         # print(i)
         ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
