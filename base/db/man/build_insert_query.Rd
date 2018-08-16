@@ -10,6 +10,8 @@ build_insert_query(values, table, .con)
 \item{values}{`data.frame` of values to write to SQL database}
 
 \item{table}{Name of target SQL table, as character}
+
+\item{.con}{[\code{DBIConnection}]:A DBI connection object obtained from \code{DBI::dbConnect()}.}
 }
 \description{
 Build query to insert R data frame into SQL table
