@@ -38,13 +38,11 @@ SOURCES = \
     RTM/modules/dataSpec/dataSpec_sun.f90 \
     RTM/modules/dataSpec/dataSpec_prospect4.f90
 
-OBJECTS = \
+NON_MODULE_OBJECTS = \
     RTM/pro2s/pro52s.o \
     RTM/pro2s/pro5B2s.o \
     RTM/pro2s/pro42s.o \
-    RTM/twostream/mod_biggamma.o \
     RTM/twostream/meador.o \
-    RTM/twostream/mod_hapke_soil.o \
     RTM/twostream/gamma.functions.o \
     RTM/twostream/two.stream.o \
     RTM/prosail/prosail.main.o \
@@ -63,6 +61,8 @@ OBJECTS = \
     RTM/prospect/prospect.tav.o \
     RTM/prospect/prospect.expint.o \
     RTM/prospect/prospect.gpm.o \
+
+MODULE_OBJECTS = \
     RTM/modules/mod_types.o \
     RTM/modules/dataSpec/dataSpec_prospect5b.o \
     RTM/modules/dataSpec/dataSpec_soil.o \
@@ -70,26 +70,32 @@ OBJECTS = \
     RTM/modules/dataSpec/dataSpec_prospectd.o \
     RTM/modules/dataSpec/dataSpec_wavelength.o \
     RTM/modules/dataSpec/dataSpec_sun.o \
-    RTM/modules/dataSpec/dataSpec_prospect4.o
+    RTM/modules/dataSpec/dataSpec_prospect4.o \
+    RTM/twostream/mod_biggamma.o \
+    RTM/twostream/mod_hapke_soil.o
 
-all : modules $(SHLIB)
+OBJECTS = $(MODULE_OBJECTS) $(NON_MODULE_OBJECTS)
+
+MODULES_NEEDING_WAVELENGTH = \
+    RTM/modules/dataSpec/dataSpec_prospect4.o \
+    RTM/modules/dataSpec/dataSpec_prospect5b.o \
+    RTM/modules/dataSpec/dataSpec_prospectd.o \
+    RTM/modules/dataSpec/dataSpec_refractive.o \
+    RTM/modules/dataSpec/dataSpec_soil.o
+
+.PHONY: all modules clean
+
+all : $(SHLIB)
+
+$(SHLIB): modules
 
 clean :
 	rm -f $(OBJECTS) *.mod RTM/*.mod *.so *.o symbols.rds
 
-md = RTM/modules
+$(MODULES_NEEDING_WAVELENGTH) : RTM/modules/dataSpec/dataSpec_wavelength.o
 
-m1 : $(md)/mod_types.o
+RTM/twostream/mod_hapke_soil.o : RTM/modules/dataSpec/dataSpec_soil.o
 
-m2 : m1 \
-    $(md)/dataSpec/dataSpec_wavelength.o
+modules : $(MODULE_OBJECTS)
 
-modules : m2 \
-    $(md)/dataSpec/dataSpec_sun.o \
-    $(md)/dataSpec/dataSpec_refractive.o \
-    $(md)/dataSpec/dataSpec_prospectd.o \
-    $(md)/dataSpec/dataSpec_prospect5b.o \
-    $(md)/dataSpec/dataSpec_prospect4.o \
-    $(md)/dataSpec/dataSpec_soil.o \
-    RTM/twostream/mod_hapke_soil.o \
-    RTM/twostream/mod_biggamma.o
+$(NON_MODULE_OBJECTS) : modules
