@@ -41,7 +41,7 @@ adj.ens<-function(Pf,X,X.new,mu.f,mu.a,Pa,processvar){
   L_a  <- S_a$d
   V_a  <- S_a$v
   
-  ## analysis ensemble
+  ## analysis ensemble 
   X_a <- X*0
   for(i in seq_len(nrow(X))){
     # she decomposed Pa - then it's putting it back together but with a different Z which comes from the likelihood of that ens    X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
