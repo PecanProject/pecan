@@ -102,12 +102,12 @@ convert.samples.ED <- function(trait.samples) {
 ##' @param defaults list of defaults to process. Default=settings$constants
 ##' @param check Logical. If `TRUE`, check ED2IN validity before running and 
 ##' throw an error if anything is wrong (default = `FALSE`)
-##' @param inputs updated input paths coming from SDA workflow, will modify ED2IN
+##' 
 ##' @return configuration file and ED2IN namelist for given run
 ##' @export
-##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
+##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov, Istem Fer
 ##-------------------------------------------------------------------------------------------------#
-write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE, inputs = NULL, ...) {
+write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE, ...) {
   
   
   jobsh <- write.config.jobsh.ED2(settings = settings, run.id = run.id)
@@ -151,12 +151,6 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   metend <- tryCatch(format(as.Date(settings$run$site$met.end), "%Y"), 
                      error = function(e) settings$run$site$met.end)
   
-  if (!is.null(inputs)) {
-    ## override if specified in inputs
-    if ("met" %in% names(inputs)) {
-      settings$run$inputs$met$path <- inputs$met$path
-    }
-  }
 
   ed2in.text <- modify_ed2in(
     ed2in.text,
@@ -236,6 +230,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   # Assumes pattern 'DIR/PREFIX.lat<REMAINDER OF FILENAME>'
   # Slightly overcomplicated to avoid error if path name happened to contain .lat'
   
+  
   # when pss or css not exists, case 0
   if (is.null(settings$run$inputs$pss$path) | is.null(settings$run$inputs$css$path)) {
     ed2in.text <- modify_ed2in(
@@ -279,6 +274,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       check_paths = check
     )
   }
+  
 
   thsum <- settings$run$inputs$thsum$path
   if (!grepl("/$", thsum)) {

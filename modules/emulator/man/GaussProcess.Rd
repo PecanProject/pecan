@@ -18,6 +18,9 @@ GaussProcess(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes",
 
 \item{exclude}{}
 }
+\description{
+GaussProcess
+}
 \author{
 Michael Dietze
 }

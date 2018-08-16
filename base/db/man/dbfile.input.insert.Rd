@@ -4,9 +4,9 @@
 \alias{dbfile.input.insert}
 \title{Insert file into tables}
 \usage{
-dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate, mimetype,
-  formatname, parentid = NA, con, hostname = PEcAn.remote::fqdn(),
-  allow.conflicting.dates = FALSE)
+dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate,
+  mimetype, formatname, parentid = NA, con,
+  hostname = PEcAn.remote::fqdn(), allow.conflicting.dates = FALSE)
 }
 \arguments{
 \item{in.path}{path to the directory containing the file to be inserted}

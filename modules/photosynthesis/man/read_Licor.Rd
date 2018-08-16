@@ -13,6 +13,9 @@ read_Licor(filename, sep = "\\t", ...)
 
 \item{...}{optional arguements forwarded to read.table}
 }
+\description{
+read_Licor
+}
 \author{
 Mike Dietze
 }

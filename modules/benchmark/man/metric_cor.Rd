@@ -9,6 +9,9 @@ metric_cor(dat, ...)
 \arguments{
 \item{dat}{dataframe}
 }
+\description{
+Correlation Coefficient
+}
 \author{
 Mike Dietze
 }

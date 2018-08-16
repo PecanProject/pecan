@@ -6,3 +6,4 @@ AuthorUrl: http://www.ncsa.illinois.edu/assets/php/directory/contact.php?contact
 Tags: PEcAn
 DisplayMode: showcase
 Depends: DT
+RoxygenNote: 6.1.0

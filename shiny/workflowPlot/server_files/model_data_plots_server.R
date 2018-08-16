@@ -1,4 +1,4 @@
-# Renders ggplotly 
+# Renders ggplotly
 
 output$modelDataPlot <- renderPlotly({
   validate(
@@ -9,8 +9,8 @@ output$modelDataPlot <- renderPlotly({
     need(length(input$all_input_id) == 1, 'Select only ONE Input ID'),
     need(input$load_data > 0, 'Select Load External Data')
   )
-  plt <- ggplot(data.frame(x = 0, y = 0), aes(x,y)) + 
-    annotate("text", x = 0, y = 0, label = "You are ready to plot!", 
+  plt <- ggplot(data.frame(x = 0, y = 0), aes(x,y)) +
+    annotate("text", x = 0, y = 0, label = "You are ready to plot!",
              size = 10, color = "grey")
 })
 
@@ -42,48 +42,97 @@ observeEvent(input$ex_plot_modeldata,{
   output$modelDataPlot <- renderPlotly({
     input$ex_plot_modeldata
     isolate({
-      
+
       var = input$var_name_modeldata
-      
-      model_data <- dplyr::filter(load.model(), var_name == var) 
+
+      model_data <- dplyr::filter(load.model(), var_name == var)
 
       updateSliderInput(session,"smooth_n_modeldata", min = 0, max = nrow(model_data))
       title <- unique(model_data$title)
       xlab  <- unique(model_data$xlab)
       ylab  <- unique(model_data$ylab)
-      
+
       model_data <- model_data %>% dplyr::select(posix = dates, !!var := vals)
       external_data <- load.model.data()
       aligned_data = PEcAn.benchmark::align_data(
-        model.calc = model_data, obvs.calc = external_data, 
-        var = var, align_method = "mean_over_larger_timestep") %>% 
-        dplyr::select(everything(), 
-                      model = matches("[.]m"), 
-                      observations = matches("[.]o"), 
+        model.calc = model_data, obvs.calc = external_data,
+        var = var, align_method = "mean_over_larger_timestep") %>%
+        dplyr::select(everything(),
+                      model = matches("[.]m"),
+                      observations = matches("[.]o"),
                       Date = posix)
-      
+
       print(head(aligned_data))
       # Melt dataframe to plot two types of columns together
       aligned_data <- tidyr::gather(aligned_data, variable, value, -Date)
-      
+
       unit <- ylab
       if(input$units_modeldata != unit & udunits2::ud.are.convertible(unit, input$units_modeldata)){
         aligned_data$value <- udunits2::ud.convert(aligned_data$value,unit,input$units_modeldata)
         ylab <- input$units_modeldata
       }
-      
-      
+
+
       data_geom <- switch(input$plotType_modeldata, point = geom_point, line = geom_line)
-      
-      plt <- ggplot(aligned_data, aes(x=Date, y=value, color=variable)) 
+
+      plt <- ggplot(aligned_data, aes(x=Date, y=value, color=variable))
       plt <- plt + data_geom()
-      plt <- plt + labs(title=title, x=xlab, y=ylab) 
+      plt <- plt + labs(title=title, x=xlab, y=ylab)
       plt <- plt + geom_smooth(n=input$smooth_n_modeldata)
       ply <- ggplotly(plt)
-      
-      
+
+
     })
-  })  
+  })
+  output$modelDataPlotStatic <- renderPlotly({
+    input$ex_plot_modeldata
+    isolate({
+
+      var = input$var_name_modeldata
+
+      model_data <- dplyr::filter(load.model(), var_name == var)
+
+      updateSliderInput(session,"smooth_n_modeldata", min = 0, max = nrow(model_data))
+      title <- unique(model_data$title)
+      xlab  <- unique(model_data$xlab)
+      ylab  <- unique(model_data$ylab)
+
+      model_data <- model_data %>% dplyr::select(posix = dates, !!var := vals)
+      external_data <- load.model.data()
+      aligned_data = PEcAn.benchmark::align_data(
+        model.calc = model_data, obvs.calc = external_data,
+        var = var, align_method = "mean_over_larger_timestep") %>%
+        dplyr::select(everything(),
+                      model = matches("[.]m"),
+                      observations = matches("[.]o"),
+                      Date = posix)
+
+      print(head(aligned_data))
+      # Melt dataframe to plot two types of columns together
+      aligned_data <- tidyr::gather(aligned_data, variable, value, -Date)
+
+      unit <- ylab
+      if(input$units_modeldata != unit & udunits2::ud.are.convertible(unit, input$units_modeldata)){
+        aligned_data$value <- udunits2::ud.convert(aligned_data$value,unit,input$units_modeldata)
+        ylab <- input$units_modeldata
+      }
+
+
+      data_geom <- switch(input$plotType_modeldata, point = geom_point, line = geom_line)
+
+      plt <- ggplot(aligned_data, aes(x=Date, y=value, color=variable))
+      plt <- plt + data_geom()
+      plt <- plt + labs(title=title, x=xlab, y=ylab)
+      plt <- plt + geom_smooth(n=input$smooth_n_modeldata)
+      ply <- ggplotly(plt)
+      ply <- plotly::config(ply, collaborate = F, doubleClick = F, displayModeBar = F, staticPlot = T)
+    })
+  })
+})
+
+observeEvent(input$model_data_toggle_plot,{
+  toggleElement("model_data_plot_interactive")
+  toggleElement("model_data_plot_static")
 })
 
 
@@ -96,13 +145,13 @@ observeEvent(input$ex_plot_modeldata,{
 #       annotate("text", x = 0, y = 0, label = annotate_text,
 #                size = 10, color = "grey")
 #   })
-# })  
+# })
 
 
 
 # observeEvent(input$ex_modelData_plot,{
-# 
-# # Renders ggplotly 
+#
+# # Renders ggplotly
 # output$modelDataPlot <- renderPlotly({
 #   # Load data
 #   masterDF <- load.model()
@@ -126,7 +175,7 @@ observeEvent(input$ex_plot_modeldata,{
 #   # ggplot function for scatter plots.
 #   plt <- ggplot(df, aes(x=dates, y=vals, color=run_id))
 #   # model_geom <- switch(input$plotType, scatterPlot = geom_point, lineChart = geom_line)
-#   # plt <- plt + model_geom() 
+#   # plt <- plt + model_geom()
 #   # Toggle chart type using switch
 #   switch(input$plotType,
 #          "scatterPlot"  = {
@@ -150,13 +199,13 @@ observeEvent(input$ex_plot_modeldata,{
 #       # No need for subsetting though as align data returns for now only the provided variable name
 #       # externalData <- externalData %>% dplyr::select(posix,dplyr::one_of(input$variable_name))
 #       var = input$variable_name
-#       df = df %>% select(posix = dates, vals) 
-#       colnames(df)[which(colnames(df) == "vals")] <- var 
+#       df = df %>% select(posix = dates, vals)
+#       colnames(df)[which(colnames(df) == "vals")] <- var
 #       aligned_data = PEcAn.benchmark::align_data(model.calc = df, obvs.calc = externalData, var =var, align_method = "mean_over_larger_timestep")
 #       colnames(aligned_data)[grep("[.]m", colnames(aligned_data))] <- "model"
 #       colnames(aligned_data)[grep("[.]o", colnames(aligned_data))] <- "observations"
 #       colnames(aligned_data)[which(colnames(aligned_data) == "posix")] <- "Date"
-#       
+#
 #       # Melt dataframe to plot two types of columns together
 #       aligned_data <- reshape2::melt(aligned_data, "Date")
 #       data_geom <- switch(input$data_geom, point = geom_point, line = geom_line)
@@ -188,7 +237,7 @@ observeEvent(input$ex_plot_modeldata,{
 #   # Not able to add icon over ggplotly
 #   # add_icon()
 # })
-#   
+#
 # })
 
 

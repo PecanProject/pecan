@@ -37,7 +37,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
         files <- PEcAn.DB::dbfile.check("Posterior",
                               settings$pfts[[i]]$posteriorid, 
-                              con, settings$host$name)
+                              con, settings$host$name, return.all = TRUE)
         pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
         if (length(pid) == 0) {
           pid <- grep("prior.distns.Rdata", files$file_name)  ## is there a prior file?
@@ -54,7 +54,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   model <- settings$model$type
   scipen <- getOption("scipen")
   options(scipen = 12)
-  PEcAn.utils::get.parameter.samples(settings, posterior.files, ens.sample.method)
+  PEcAn.uncertainty::get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
   
   ## remove previous runs.txt
@@ -116,7 +116,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   
   ### Write ENSEMBLE
   if ("ensemble" %in% names(settings)) {
-    ens.runs <- PEcAn.utils::write.ensemble.configs(defaults = settings$pfts,
+    ens.runs <- PEcAn.uncertainty::write.ensemble.configs(defaults = settings$pfts,
                                        ensemble.samples = ensemble.samples, 
                                        settings = settings,
                                        model = model, 

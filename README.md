@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/PecanProject/pecan.svg?branch=master)](https://travis-ci.org/PecanProject/pecan)
 [![Slack](https://img.shields.io/badge/slack-login-green.svg)](https://pecanproject.slack.com/) 
-[![Slack](https://img.shields.io/badge/slack-join_chat-green.svg)](https://publicslack.com/slacks/pecanproject/invites/new) 
+[![Slack](https://img.shields.io/badge/slack-join_chat-green.svg)](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE)
 [![DOI](https://zenodo.org/badge/4469/PecanProject/pecan.svg)](https://zenodo.org/badge/latestdoi/4469/PecanProject/pecan)
 
 

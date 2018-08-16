@@ -9,6 +9,9 @@ metric_run(settings)
 \arguments{
 \item{settings}{list}
 }
+\description{
+Model Run Check
+}
 \author{
 Betsy Cowdery
 }
