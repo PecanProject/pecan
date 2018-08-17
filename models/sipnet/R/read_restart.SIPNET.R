@@ -47,7 +47,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   if ("AbvGrndWood" %in% var.names) {
     forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
-    
+   
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
     abvGrndWoodFrac <- ens$AbvGrndWood[last]  / wood_total_C
