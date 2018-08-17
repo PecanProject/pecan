@@ -46,6 +46,7 @@ convert.samples.MAAT <- function(trait.samples, runid) {
   trait.names[trait.names == "stomatal_slope.g1"]           <- "g1_medlyn"
   trait.names[trait.names == "stomatal_slope.BB"]           <- "g1_ball"
   trait.names[trait.names == "f_frac"]                      <- "f"
+  trait.names[trait.names == "theta"]                       <- "theta_j"    # curvature of J quadratic in Farqhuar & Wong 1984       (unitless)
   colnames(trait.samples) <- trait.names
   
   ### Conversions -- change to only use if Collatz, should also provide standard Rd oputput
@@ -101,53 +102,85 @@ convert.samples.MAAT <- function(trait.samples, runid) {
 ##' @return configuration file for MAAT for given run
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker, Rob Kooper
-##' @importFrom XML saveXML addChildren
+##'
 write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
   
-  ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs changed to below as
-  # !! NEED TO UDATE TO READ modobj from pecan xml file and insert where I have hard-coded "leaf"
+  ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs --- May need to revise this with 
+  ### lastest MAAT v1.0 and changes within.  This script no longer completely fits within the PEcAn logic.  May be better
+  ### to manually move/link needed script files within PEcAn and not use any built-in MAAT bash scripts.
+  maat_mod_obj <- as.character(settings$model$config$mod_obj)
+  settings$model$config$mod_obj <- NULL  # remove from final MAAT *_user_static.xml MAAT file
   system2(file.path(settings$model$binary, "run_scripts/setup_MAAT_project.bs"), 
-          c("leaf", rundir, file.path(settings$model$binary, "run_scripts"), 
+          c(maat_mod_obj, rundir, file.path(settings$model$binary, "run_scripts"), 
             file.path(settings$model$binary, "src")))
+  # below is now required given that MAAT logic no longer moves or links to the run_MAAT.R script file
+  run_maat_script <- file.path(settings$model$binary, "src", "run_MAAT.R")
   
   ### Parse config options to XML
   if (!is.null(settings$model$config$mod_mimic)) {
     PEcAn.logger::logger.info(paste0("Running with model mimic: ",settings$model$config$mod_mimic))
     mod_mimic <- as.character(settings$model$config$mod_mimic)
     settings$model$config$mod_mimic <- NULL
-    xml <- listToXml(settings$model$config, "default")
+    xml <- PEcAn.settings::listToXml(settings$model$config, "default")
   } else {
     PEcAn.logger::logger.info("*** Model mimic not selected ***")
     mod_mimic <- 'NULL'
-    xml <- listToXml(settings$model$config, "default")
+    xml <- PEcAn.settings::listToXml(settings$model$config, "default")
   }
   
   ### Run rename and conversion function on PEcAn trait values
+  PEcAn.logger::logger.info("*** Convert input trait values to MAAT parameters and units ***")
   traits <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]],runid=run.id)
   # below for debugging
   #save(traits, file = file.path(settings$host$outdir,run.id,'trait.samples.converted.Rdata'))
   
   ### Convert traits to list
-  traits.list <- as.list(traits)
+  # with MAAT v1.0 we need to generate nested lists  - !!this is not elegant, must be a better way!!
+  PEcAn.logger::logger.info("*** Setup MAAT parameter XMLs ***")
+  PEcAn.logger::logger.info(ls())           # for debugging
+  PEcAn.logger::logger.info(environment())  # for debugging
+  if (any(grepl("Ha.*", names(traits)))) {
+    tnames <- gsub("Ha.","",names(traits)[grep("Ha.*", names(traits))])
+    vals <- traits[grep("Ha.*", names(traits))]
+    names(vals) <- tnames
+    Ha_traits_list <- c(Ha=list(vals))
+  }; rm(tnames,vals)
+  if (any(grepl("Hd.*", names(traits)))) {
+    tnames <- gsub("Hd.","",names(traits)[grep("Hd.*", names(traits))])
+    vals <- traits[grep("Hd.*", names(traits))]
+    names(vals) <- tnames
+    Hd_traits_list <- c(Hd=list(vals))
+  }; rm(tnames,vals)
+  if (any(grepl("atref.*", names(traits)))) {
+    tnames <- gsub("atref.","",names(traits)[grep("atref.*", names(traits))])
+    vals <- traits[grep("atref.*", names(traits))]
+    names(vals) <- tnames
+    atref_traits_list <- c(atref=list(vals))
+  }; rm(tnames,vals)
+  # get all non-nested parameters
+  sub_traits_list <- as.list(traits[-grep("\\.", names(traits))])
+  
+  # create full nested list and convert to MAAT XML format
+  traits.list <- as.list(c(sub_traits_list,Ha_traits_list,Hd_traits_list,atref_traits_list)) # hard-coded example, do not use
+  #traits.list <- lapply(ls()[grep("*_traits_list", ls())], get)  # use this when you get it working
+  #traits.list <- unlist(traits.list, recursive=FALSE)  # clean up and prep for conversion to XML, use this when you get it working
   traits.xml <- PEcAn.settings::listToXml(traits.list, "pars")
-  
+
   ### Finalize XML
-  xml[[1]] <- addChildren(xml[[1]], traits.xml)
+  xml[[1]] <- XML::addChildren(xml[[1]], traits.xml)
   
-  ### Write out new XML _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML saveXML(xml, file =
-  ### file.path(settings$rundir, run.id, 'leaf_default.xml'), indent=TRUE, prefix = PREFIX_XML)
-  saveXML(xml, 
+  ### Save final XML stack as a properly formatted MAAT parameter/option XML file
+  XML::saveXML(xml, 
           file = file.path(settings$rundir, run.id, "leaf_user_static.xml"), 
           indent = TRUE, 
           prefix = PREFIX_XML)
-  #saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_default.xml"), indent=TRUE, prefix = PREFIX_XML)
   if (is.null(settings$run$inputs$met)) {
     PEcAn.logger::logger.info("-- No met selected. Running without a met driver --")
-    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," "," ","\"xml<-T","\""," ","\"uq<-F","\""," ",
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",run_maat_script," "," ","\"xml<-T","\""," ","\"uq<-F","\""," ",
                     "\"factorial<-F","\""," ","\"mod_mimic<-",mod_mimic,"\""," ",
                     "\"odir <- ","'",outdir,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
@@ -173,9 +206,10 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
     
     PEcAn.logger::logger.info("-- Met selected. Running with a met driver --")
     PEcAn.logger::logger.info(paste0("Running with met: ",met.file))
-    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ","\"srcdir <- ","'",file.path(settings$model$binary, "src"),"'","\""," ",
-		    "\"pdir <- ","'",rundir,"'","\""," ","\"mod_obj<-leaf","\""," ",
-		    "\"xml<-T","\""," ","\"uq<-F","\""," ",
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",run_maat_script," ",
+                    "\"srcdir <- ","'",file.path(settings$model$binary, "src"),"'","\""," ",
+                    "\"pdir <- ","'",rundir,"'","\""," ","\"mod_obj <- ","'",maat_mod_obj,"'","\""," ",
+                    "\"xml<-T","\""," ","\"uq<-F","\""," ",
                     "\"factorial<-F","\""," ","\"mod_mimic<-",mod_mimic,"\""," ",
                     "\"odir <- ","'",outdir,"'","\""," ","\"mdir <- ","'",met.dir,"'",
                     "\""," ","\"metdata <- ","'",met.file,"'","\""," > ",rundir,
