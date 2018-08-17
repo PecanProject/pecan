@@ -17,7 +17,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
-
+- Small change to modules/data.atmosphere/R/download.NARR_site.R to set parallel=TRUE to match documentation and sub-function calls
 
 
 ## [1.6.0] - Not yet
