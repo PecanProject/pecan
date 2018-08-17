@@ -109,8 +109,9 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   outdir <- file.path(settings$host$outdir, run.id)
   
   ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs changed to below as
+  # !! NEED TO UDATE TO READ modobj from pecan xml file and insert where I have hard-coded "leaf"
   system2(file.path(settings$model$binary, "run_scripts/setup_MAAT_project.bs"), 
-          c(rundir, file.path(settings$model$binary, "run_scripts"), 
+          c("leaf", rundir, file.path(settings$model$binary, "run_scripts"), 
             file.path(settings$model$binary, "src")))
   
   ### Parse config options to XML
@@ -172,7 +173,9 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
     
     PEcAn.logger::logger.info("-- Met selected. Running with a met driver --")
     PEcAn.logger::logger.info(paste0("Running with met: ",met.file))
-    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ","\"xml<-T","\""," ","\"uq<-F","\""," ",
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ","\"srcdir <- ","'",file.path(settings$model$binary, "src"),"'","\""," ",
+		    "\"pdir <- ","'",rundir,"'","\""," ","\"mod_obj<-leaf","\""," ",
+		    "\"xml<-T","\""," ","\"uq<-F","\""," ",
                     "\"factorial<-F","\""," ","\"mod_mimic<-",mod_mimic,"\""," ",
                     "\"odir <- ","'",outdir,"'","\""," ","\"mdir <- ","'",met.dir,"'",
                     "\""," ","\"metdata <- ","'",met.file,"'","\""," > ",rundir,
