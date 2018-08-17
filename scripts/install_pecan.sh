@@ -18,8 +18,10 @@ SETUP_VM=""
 SETUP_PALEON=""
 REBUILD=""
 
-RSTUDIO_SERVER="1.1.442"
-SHINY_SERVER="1.5.6.875"
+PECAN_BRANCH=""
+
+RSTUDIO_SERVER="1.1.456"
+SHINY_SERVER="1.5.7.907"
 
 if [ -e $(dirname $0)/install_pecan.config ]; then
   . $(dirname $0)/install_pecan.config
@@ -84,14 +86,14 @@ case "$OS_VERSION" in
     setsebool -P httpd_can_network_connect 1
     ;;
   Ubuntu)
-    if [ ! -e /etc/apt/sources.list.d/R.list ]; then
-      sudo sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu `lsb_release -s -c`/" > /etc/apt/sources.list.d/R.list'
-      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv E084DAB9
-    fi
-    if [ ! -e /etc/apt/sources.list.d/ruby.list ]; then
-      sudo sh -c 'echo "deb http://ppa.launchpad.net/brightbox/ruby-ng/ubuntu trusty main" > /etc/apt/sources.list.d/ruby.list'
-      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv C3173AA6
-    fi
+    # if [ ! -e /etc/apt/sources.list.d/R.list ]; then
+    #   sudo sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu `lsb_release -s -c`/" > /etc/apt/sources.list.d/R.list'
+    #   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv E084DAB9
+    # fi
+    #if [ ! -e /etc/apt/sources.list.d/ruby.list ]; then
+    #  sudo sh -c 'echo "deb http://ppa.launchpad.net/brightbox/ruby-ng/ubuntu trusty main" > /etc/apt/sources.list.d/ruby.list'
+    #  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv C3173AA6
+    #fi
     if [ ! -e /etc/apt/sources.list.d/pgdg.list ]; then
       sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt `lsb_release -s -c`-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
       wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
@@ -123,15 +125,15 @@ case "$OS_VERSION" in
     sudo yum install -y httpd php php-pgsql php-xml expect expectk
     ;;
   Ubuntu)
-    sudo apt-get -y install build-essential gfortran git r-base-core jags liblapack-dev libnetcdf-dev netcdf-bin bc libcurl4-gnutls-dev curl udunits-bin libudunits2-dev libgmp-dev python-dev libgdal1-dev libproj-dev expect
+    sudo apt-get -y install build-essential gfortran git r-base-core jags liblapack-dev libnetcdf-dev netcdf-bin bc libcurl4-gnutls-dev curl udunits-bin libudunits2-dev libgmp-dev python-dev libgdal-dev libproj-dev expect librdf0-dev
     sudo apt-get -y install openmpi-bin libopenmpi-dev
     sudo apt-get -y install libgsl0-dev libssl-dev
     # for maeswrap
     sudo apt-get -y install r-cran-rgl
     # for R doc
     sudo apt-get -y install texinfo texlive-latex-base texlive-latex-extra texlive-fonts-recommended
-    # ruby
-    sudo apt-get -y install ruby2.1 ruby2.1-dev
+    # BETY
+    sudo apt-get -y install ruby ruby-dev nodejs
     # for LPJ-GUESS
     sudo apt-get -y install cmake
     # for PostgreSQL
@@ -226,12 +228,9 @@ echo "ED"
 echo "######################################################################"
 if [ ! -e ${HOME}/ED2 ]; then
   cd
-  git clone https://github.com/rykelly/ED2.git
-  cd ED2
-  git checkout modularize
-  sed -i 's/-a ${USE_GIT}/-a ${USE_GIT} == "true"/' ${HOME}/ED2/ED/build/install.sh
+  git clone https://github.com/EDmodel/ED2.git
   cd ${HOME}/ED2/ED/build
-  curl -o make/include.mk.opt.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
+  curl -o make/include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
   if [ "$OS_VERSION" == "RH_6" ]; then
     sed -i 's/ -fno-whole-file//' make/include.mk.opt.VM
   fi
@@ -355,6 +354,9 @@ if [ ! -e ${HOME}/pecan ]; then
 fi
 cd ${HOME}/pecan
 git pull
+if [ "${PECAN_BRANCH}" != "" ]; then
+  git checkout ${PECAN_BRANCH}
+fi
 make
 
 sudo curl -o /var/www/html/pecan.pdf https://www.gitbook.com/download/pdf/book/pecan/pecan-documentation
@@ -391,7 +393,7 @@ if [ ! -e ${HOME}/bety ]; then
 fi
 cd ${HOME}/bety
 git pull
-sudo gem2.1 install bundler
+sudo gem install bundler
 bundle install --without development:test:javascript_testing:debug --path vendor/bundle
 
 if [ ! -e paperclip/files ]; then
@@ -409,7 +411,7 @@ if [ ! -e log ]; then
   chmod 0666 log/production.log
 fi
 
-chmod go+w public/javascripts/cache/
+# chmod go+w public/javascripts/cache/
 
 if [ ! -e config/database.yml ]; then
   cat > config/database.yml << EOF
@@ -428,7 +430,8 @@ if [ ! -e ${HTTP_CONF}/bety.conf ]; then
   cat > /tmp/bety.conf << EOF
 RailsEnv production
 RailsBaseURI /bety
-PassengerRuby /usr/bin/ruby2.1
+PassengerRuby /usr/bin/ruby
+SetEnv SECRET_KEY_BASE $(bundle exec rake secret)
 <Directory /var/www/html/bety>
   Options +FollowSymLinks
   Require all granted
@@ -438,9 +441,11 @@ EOF
   rm /tmp/bety.conf
   sudo ln -s $HOME/bety/public /var/www/html/bety
 
-  sudo sh -c "echo '\n## BETY secret key\nexport SECRET_KEY_BASE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 120 | head -n 1)' >> /etc/apache2/envvars"
-  cp $HOME/bety/public/javascripts/cache/all.js-sample $HOME/bety/public/javascripts/cache/all.js
+  # sudo sh -c "echo '\n## BETY secret key\nexport SECRET_KEY_BASE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 120 | head -n 1)' >> /etc/apache2/envvars"
+  # cp $HOME/bety/public/javascripts/cache/all.js-sample $HOME/bety/public/javascripts/cache/all.js
 fi
+
+bundle exec rake assets:precompile RAILS_ENV=production RAILS_RELATIVE_URL_ROOT=/bety
 
 echo "######################################################################"
 echo "DATA"
@@ -521,7 +526,7 @@ fi
 sudo rm -rf ${HOME}/output
 mkdir ${HOME}/output
 chmod 2777 ${HOME}/output
-sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -g -m 99 -r 0 -c -u -w https://ebi-forecast.igb.illinois.edu/pecan/dumpall/bety.tar.gz
+sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -g -m 99 -r 0 -c -u -w https://ebi-forecast.igb.illinois.edu/pecan/dump/all//bety.tar.gz
 ${HOME}/pecan/scripts/add.models.sh
 ${HOME}/pecan/scripts/add.data.sh
 
@@ -566,6 +571,7 @@ echo "SHINY SERVER"
 echo "######################################################################"
 if [ "${SHINY_SERVER}" != "" -a $( uname -m ) == "x86_64" ]; then
   sudo su - -c "R -e \"install.packages(c('rmarkdown', 'shiny'), repos='https://cran.rstudio.com/')\""
+  R -e "install.packages(c('shinythemes', 'shiny'), repos='https://cran.rstudio.com/')"
 
   case "$OS_VERSION" in
     RH_*)
@@ -575,12 +581,9 @@ if [ "${SHINY_SERVER}" != "" -a $( uname -m ) == "x86_64" ]; then
       ;;
     Ubuntu)
       sudo apt-get -y install gdebi-core
-      curl -s -o shiny.deb https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-${SHINY_SERVER}-amd64.deb
-      if [ $( uname -m ) == "x86_64" ]; then
-        curl -s -o shiny.deb https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-${SHINY_SERVER}-amd64.deb
-        sudo gdebi -q -n shiny.deb
-        rm shiny.deb
-      fi
+      curl -s -o shiny.deb https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-${SHINY_SERVER}-amd64.deb
+      sudo gdebi -q -n shiny.deb
+      rm shiny.deb
       ;;
   esac
 
