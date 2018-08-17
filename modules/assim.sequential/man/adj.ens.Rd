@@ -11,6 +11,8 @@ adj.ens(Pf, X, X.new, mu.f, mu.a, Pa, processvar)
 
 \item{X}{Dataframe or matrix of forecast state variables for different ensembles.}
 
+\item{X.new}{Dataframe or matrix of forecast state variables for different ensembles. When processvar is TRUE.}
+
 \item{mu.f}{A vector with forecast mean estimates of state variables.}
 
 \item{mu.a}{A vector with analysis mean estimates of state variables.}
