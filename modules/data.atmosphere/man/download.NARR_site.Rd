@@ -6,7 +6,7 @@
 \usage{
 download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
   overwrite = FALSE, verbose = FALSE, progress = TRUE,
-  parallel = FALSE, ncores = if (parallel) parallel::detectCores() else
+  parallel = TRUE, ncores = if (parallel) parallel::detectCores() else
   NULL, ...)
 }
 \arguments{
@@ -24,7 +24,7 @@ download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
 
 \item{verbose}{Turn on verbose output? Default=FALSE}
 
-\item{parallel}{Download in parallel? Default = TRUE.}
+\item{parallel}{Download in parallel? Default = TRUE}
 
 \item{ncores}{Number of cores for parallel download. Default is 
 `parallel::detectCores()`}
