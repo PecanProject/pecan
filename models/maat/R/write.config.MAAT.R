@@ -101,9 +101,21 @@ convert.samples.MAAT <- function(trait.samples, runid) {
 ##' @param run.id id of run
 ##' @return configuration file for MAAT for given run
 ##' @export
-##' @author Shawn Serbin, Anthony Walker, Rob Kooper
+##' @author Shawn Serbin, Anthony Walker, Rob Kooper, Chris Black
 ##'
 write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
+  
+  # function needed to nest parameters in the appropriately the output MAAT XML.  See below
+  nest_entries <- function(x, pattern, new_name = pattern){ 
+    matches <- grepl(pattern, names(x))
+    if(!any(matches)){
+      return(x)
+    }
+    nested <- setNames(x[matches], gsub(pattern, "", names(x[matches])))
+    x <- x[!matches]
+    x[[new_name]] <- nested
+    x
+  }
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
@@ -139,35 +151,10 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   #save(traits, file = file.path(settings$host$outdir,run.id,'trait.samples.converted.Rdata'))
   
   ### Convert traits to list
-  # with MAAT v1.0 we need to generate nested lists  - !!this is not elegant, must be a better way!!
-  PEcAn.logger::logger.info("*** Setup MAAT parameter XMLs ***")
-  PEcAn.logger::logger.info(ls())           # for debugging
-  PEcAn.logger::logger.info(environment())  # for debugging
-  if (any(grepl("Ha.*", names(traits)))) {
-    tnames <- gsub("Ha.","",names(traits)[grep("Ha.*", names(traits))])
-    vals <- traits[grep("Ha.*", names(traits))]
-    names(vals) <- tnames
-    Ha_traits_list <- c(Ha=list(vals))
-  }; rm(tnames,vals)
-  if (any(grepl("Hd.*", names(traits)))) {
-    tnames <- gsub("Hd.","",names(traits)[grep("Hd.*", names(traits))])
-    vals <- traits[grep("Hd.*", names(traits))]
-    names(vals) <- tnames
-    Hd_traits_list <- c(Hd=list(vals))
-  }; rm(tnames,vals)
-  if (any(grepl("atref.*", names(traits)))) {
-    tnames <- gsub("atref.","",names(traits)[grep("atref.*", names(traits))])
-    vals <- traits[grep("atref.*", names(traits))]
-    names(vals) <- tnames
-    atref_traits_list <- c(atref=list(vals))
-  }; rm(tnames,vals)
-  # get all non-nested parameters
-  sub_traits_list <- as.list(traits[-grep("\\.", names(traits))])
-  
-  # create full nested list and convert to MAAT XML format
-  traits.list <- as.list(c(sub_traits_list,Ha_traits_list,Hd_traits_list,atref_traits_list)) # hard-coded example, do not use
-  #traits.list <- lapply(ls()[grep("*_traits_list", ls())], get)  # use this when you get it working
-  #traits.list <- unlist(traits.list, recursive=FALSE)  # clean up and prep for conversion to XML, use this when you get it working
+  # with MAAT v1.0 we need to generate nested lists
+  # create full nested list and convert to MAAT XML format - need to put in all possible nesting here or map an
+  # index of all possible combination to nest_entries() above
+  traits.list <- as.list(traits) %>% nest_entries("Ha.", "Ha") %>% nest_entries("Hd.","Hd") %>% nest_entries("atref.","atref")
   traits.xml <- PEcAn.settings::listToXml(traits.list, "pars")
 
   ### Finalize XML
