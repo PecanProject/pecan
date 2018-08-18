@@ -14,7 +14,7 @@ sudo: required
 
 env:
   global:
-    # TODO: `-j2` interleaves output lines from simultaneous processes.
+    # TODO: `make -j2` interleaves output lines from simultaneous processes.
     # Would be nice to fix by adding `-Otarget`, but not supported in Make 3.x.
     # When Travis updates, check for Make 4 and add -O if available.
     - MAKEFLAGS="-j2"
