@@ -83,19 +83,17 @@ MODULES_NEEDING_WAVELENGTH = \
     RTM/modules/dataSpec/dataSpec_refractive.o \
     RTM/modules/dataSpec/dataSpec_soil.o
 
-.PHONY: all modules clean
+.PHONY: all clean
 
 all : $(SHLIB)
 
-$(SHLIB): modules
+$(SHLIB): $(OBJECTS)
 
 clean :
 	rm -f $(OBJECTS) *.mod RTM/*.mod *.so *.o symbols.rds
 
+$(NON_MODULE_OBJECTS) : $(MODULE_OBJECTS)
+
 $(MODULES_NEEDING_WAVELENGTH) : RTM/modules/dataSpec/dataSpec_wavelength.o
 
 RTM/twostream/mod_hapke_soil.o : RTM/modules/dataSpec/dataSpec_soil.o
-
-modules : $(MODULE_OBJECTS)
-
-$(NON_MODULE_OBJECTS) : modules
