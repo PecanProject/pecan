@@ -284,7 +284,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       #-analysis function
         enkf.params[[t]] <- Analysis.sda(settings,
                                         FUN=an.method,
-                                        Forcast=list(Pf=Pf,mu.f=mu.f,Q=Q,X=X),
+                                        Forecast=list(Pf=Pf,mu.f=mu.f,Q=Q,X=X),
                                         Observed=list(R=R,Y=Y),
                                         choose=choose,
                                         nt=nt,
@@ -376,14 +376,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###---- 
     save(t, FORECAST, ANALYSIS, enkf.params,new.state,new.params,run.id,ensemble.id,ensemble.samples,inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
-    post.alaysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
+    post.analysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
     
   } ### end loop over time
   ###-------------------------------------------------------------------###
   ### time series plots                                                 ###
   ###-------------------------------------------------------------------###----- 
   #post.alaysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
-  if(control$TimeseriesPlot) post.alaysis.ggplot.violin(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
+  if(control$TimeseriesPlot) post.analysis.ggplot.violin(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
   #if(control$TimeseriesPlot) postana.timeser.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
   ###-------------------------------------------------------------------###
   ### bias diagnostics                                                  ###

@@ -337,7 +337,7 @@ postana.bias.plotting.sda<-function(t,obs.times,X,aqq,bqq){
 ##' @param ANALYSIS  vector of mean of state variable after analysis
 ##' @param plot.title character giving the title for post visualization ggplots
 ##' @export
-post.alaysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
+post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
 
   #Defining some colors
   t1         <- 1
@@ -447,7 +447,7 @@ post.alaysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORE
   
 }
 
-post.alaysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
+post.analysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
   
   #Defining some colors
   t1         <- 1

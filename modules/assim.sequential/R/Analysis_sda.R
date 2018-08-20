@@ -21,12 +21,13 @@
 
 Analysis.sda<-function(settings,
                        FUN,
-                       Forcast=list(Pf=NULL,mu.f=NULL,Q=NULL,X=NULL),
+                       Forecast=list(Pf=NULL,mu.f=NULL,Q=NULL,X=NULL),
                        Observed=list(R=NULL,Y=NULL),
                        ...
 ){
-  if (is.null(FUN)) stop('Analysis function needs to be defined !')
-  FUN(settings, Forcast, Observed,...)
+  
+  if (is.null(FUN)) PEcAn.logger::logger.severe('Analysis function needs to be defined !')
+  FUN(settings, Forecast, Observed,...)
   
 }
 
@@ -46,7 +47,7 @@ Analysis.sda<-function(settings,
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF<-function(setting,Forcast,Observed,...){
+EnKF<-function(setting,Forecast,Observed,...){
   
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
@@ -102,18 +103,13 @@ EnKF<-function(setting,Forcast,Observed,...){
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-GEF<-function(setting,Forcast,Observed,...){
+GEF<-function(setting,Forecast,Observed,...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
   #General
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                             function(x) {
-                               x$variable.name
-                             }, 
-                             USE.NAMES = FALSE), 
-                      use.names = FALSE)
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #Loading nimbles functions
   load_nimble()
   #Forcast inputs 
@@ -384,7 +380,7 @@ GEF<-function(setting,Forcast,Observed,...){
               q.bar = q.bar,
               n = n,
               X.new=X.new,
-              CIX1=quantile(dat[, iX[2]], c(0.025, 0.5, 0.975)),  #7
+              CIX1=quantile(dat[, iX[1]], c(0.025, 0.5, 0.975)),  #7
               CIX2=quantile(dat[, iX[2]], c(0.025, 0.5, 0.975)),  #8
               aqq=aqq,
               bqq=bqq
