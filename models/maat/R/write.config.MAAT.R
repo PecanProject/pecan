@@ -152,11 +152,25 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   
   ### Convert traits to list
   # with MAAT v1.0 we need to generate nested lists
-  # create full nested list and convert to MAAT XML format - need to put in all possible nesting here or map an
-  # index of all possible combination to nest_entries() above
-  traits.list <- as.list(traits) %>% nest_entries("Ha.", "Ha") %>% nest_entries("Hd.","Hd") %>% nest_entries("atref.","atref")
+  # create full nested list and convert to MAAT XML format
+  traits <- as.list(traits)
+  traits.list <- list()
+  maat_param_prefix_list <- list(param=c("Ha.","Hd.","atref.","reftemp.","Topt.","deltaS.","a_deltaS_t.","b_deltaS_t.","q10.","a_q10_t.",
+                                         "b_q10_t.","tupp_cox.","tlow_cox.","exp_cox."),
+                                 xml=c("Ha","Hd","atref","reftemp","Topt","deltaS","a_deltaS_t","b_deltaS_t","q10","a_q10_t",
+                                       "b_q10_t","tupp_cox","tlow_cox","exp_cox"))
+  q <- 1
+  for (p in seq(seq_along(1:length(maat_param_prefix_list$param)))) {
+    if (q==1) {
+      traits.list <- nest_entries(traits, paste0(maat_param_prefix_list$param[p]), paste0(maat_param_prefix_list$xml[p]))
+    } else {
+      traits.list <- nest_entries(traits.list, paste0(maat_param_prefix_list$param[p]), paste0(maat_param_prefix_list$xml[p]))
+    }
+    q <- q+1
+  }
   traits.xml <- PEcAn.settings::listToXml(traits.list, "pars")
-
+  rm(p,q)
+  
   ### Finalize XML
   xml[[1]] <- XML::addChildren(xml[[1]], traits.xml)
   
