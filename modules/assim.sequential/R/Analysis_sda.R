@@ -63,12 +63,14 @@ EnKF<-function(setting,Forcast,Observed,...){
   R <- Observed$R
   Y <- Observed$Y
   # Enkf---------------------------------------------------
+
   ## design matrix
   H <- matrix(0, length(Y), ncol(X)) #H maps true state to observed data
   #linear
   for (i in choose) {
     H[i, i] <- 1
   }
+  browser()
   #non-linear fcomp
   # for (i in choose) {
   #   H[i, i] <- 1/sum(mu.f) #? this seems to get us on the right track. mu.f[i]/sum(mu.f) doesn't work. 
