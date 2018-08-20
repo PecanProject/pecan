@@ -571,7 +571,7 @@ echo "SHINY SERVER"
 echo "######################################################################"
 if [ "${SHINY_SERVER}" != "" -a $( uname -m ) == "x86_64" ]; then
   sudo su - -c "R -e \"install.packages(c('rmarkdown', 'shiny'), repos='https://cran.rstudio.com/')\""
-  R -e "install.packages(c('shinythemes', 'shiny'), repos='https://cran.rstudio.com/')"
+  R -e "install.packages(c('shinythemes', 'Shinytoaster', 'shiny'), repos='https://cran.rstudio.com/')"
 
   case "$OS_VERSION" in
     RH_*)
