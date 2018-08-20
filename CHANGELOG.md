@@ -17,7 +17,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
-
+- Updated models/maat/R/model2netcdf.MAAT.R to work with the release version of the MAAT model. Other small MAAT wrapper code cleanup
+- Small change to modules/data.atmosphere/R/download.NARR_site.R to set parallel=TRUE to match documentation and sub-function calls
 
 
 ## [1.6.0] - Not yet
