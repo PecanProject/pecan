@@ -55,11 +55,11 @@ EnKF<-function(setting,Forecast,Observed,...){
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
   for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
 
-    #Forcast inputs 
-  Q <- Forcast$Q # process error
-  Pf <- Forcast$Pf # forcast precision
-  mu.f <- Forcast$mu.f #mean forcast
-  X <- Forcast$X # states 
+    #Forecast inputs 
+  Q <- Forecast$Q # process error
+  Pf <- Forecast$Pf # Forecast precision
+  mu.f <- Forecast$mu.f #mean Forecast
+  X <- Forecast$X # states 
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
@@ -112,11 +112,11 @@ GEF<-function(setting,Forecast,Observed,...){
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #Loading nimbles functions
   load_nimble()
-  #Forcast inputs 
-  Q <- Forcast$Q # process error
-  Pf <- Forcast$Pf # forcast precision
-  mu.f <- Forcast$mu.f #mean forcast
-  X <- Forcast$X # states 
+  #Forecast inputs 
+  Q <- Forecast$Q # process error
+  Pf <- Forecast$Pf # Forecast precision
+  mu.f <- Forecast$mu.f #mean Forecast
+  X <- Forecast$X # states 
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
