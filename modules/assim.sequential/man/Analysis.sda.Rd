@@ -4,7 +4,7 @@
 \alias{Analysis.sda}
 \title{Analysis.sda}
 \usage{
-Analysis.sda(settings, FUN, Forcast = list(Pf = NULL, mu.f = NULL, Q =
+Analysis.sda(settings, FUN, Forecast = list(Pf = NULL, mu.f = NULL, Q =
   NULL, X = NULL), Observed = list(R = NULL, Y = NULL), ...)
 }
 \arguments{
@@ -12,12 +12,12 @@ Analysis.sda(settings, FUN, Forcast = list(Pf = NULL, mu.f = NULL, Q =
 
 \item{FUN}{A Function for performing the analysis step. Two available options are: 1-EnKF and 2-GEF.}
 
+\item{Forecast}{A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
+Q (process variance) and X (a dataframe of forcats state variables for different ensemble)}
+
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
 \item{...}{Extra argument sent to the analysis function.}
-
-\item{Forecast}{A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-Q (process variance) and X (a dataframe of forcats state variables for different ensemble)}
 }
 \value{
 Returns whatever the FUN is returning. In case of EnKF and GEF, this function returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .

@@ -4,17 +4,17 @@
 \alias{EnKF}
 \title{EnKF}
 \usage{
-EnKF(setting, Forcast, Observed, ...)
+EnKF(setting, Forecast, Observed, ...)
 }
 \arguments{
+\item{Forecast}{A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
+Q (process variance) and X (a dataframe of forcats state variables for different ensemble)}
+
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
 \item{...}{Extra argument sent to the analysis function.}
 
 \item{settings}{pecan standard settings list.}
-
-\item{Forecast}{A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-Q (process variance) and X (a dataframe of forcats state variables for different ensemble)}
 }
 \value{
 It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
