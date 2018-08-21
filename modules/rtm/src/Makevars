@@ -60,7 +60,7 @@ NON_MODULE_OBJECTS = \
     RTM/prospect/prospect.5B.o \
     RTM/prospect/prospect.tav.o \
     RTM/prospect/prospect.expint.o \
-    RTM/prospect/prospect.gpm.o \
+    RTM/prospect/prospect.gpm.o
 
 MODULE_OBJECTS = \
     RTM/modules/mod_types.o \
@@ -87,7 +87,7 @@ MODULES_NEEDING_WAVELENGTH = \
 
 all : $(SHLIB)
 
-$(SHLIB): $(OBJECTS)
+$(SHLIB): $(OBJECTS) $(SOURCES)
 
 clean :
 	rm -f $(OBJECTS) *.mod RTM/*.mod *.so *.o symbols.rds
