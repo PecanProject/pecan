@@ -87,7 +87,9 @@ MODULES_NEEDING_WAVELENGTH = \
 
 all : $(SHLIB)
 
-$(SHLIB): $(OBJECTS) $(SOURCES)
+$(SHLIB) : $(OBJECTS)
+
+$(OBJECTS) :  $(SOURCES)
 
 clean :
 	rm -f $(OBJECTS) *.mod RTM/*.mod *.so *.o symbols.rds
