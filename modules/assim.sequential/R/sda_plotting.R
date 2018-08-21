@@ -394,7 +394,6 @@ post.alaysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORE
     setNames(names(obs.mean))%>%
     purrr::map_df(function(one.day.data){
       #CI
-
       purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
                      function(sd, mean){
                        data.frame(mean-(sd*1.96), mean+(sd*1.96))
@@ -545,3 +544,123 @@ post.alaysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs
   
 }
 
+
+post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
+  
+  #Defining some colors
+  t1         <- 1
+  pink       <- col2rgb("deeppink")
+  purple     <- col2rgb("purple")
+  blue       <- col2rgb("blue")
+  green      <- col2rgb("green")
+  brown      <- col2rgb("brown")
+  
+  alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
+  alphagreen <- rgb(green[1], green[2], green[3], 75, max = 255)
+  alphablue  <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
+  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
+  alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
+  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
+                              function(x) { x })[2, ], use.names = FALSE)
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
+  site.ids <- attr(FORECAST[[1]], 'Site')
+
+
+  #Analysis & Forcast cleaning and STAT
+  All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
+  
+  ready.FA <- c('FORECAST','ANALYSIS')%>%
+    purrr::map_df(function(listFA){
+      All.my.data[[listFA]]%>%
+        purrr::map_df(function(state.vars){
+         
+          #finding the mean and Ci for all the state variables
+          site.ids %>% unique() %>%
+            map_df(function(site){
+              (state.vars)[,which(site.ids  %in% site)] %>% 
+                as.data.frame %>% 
+                mutate(Site=site)
+            }) %>%
+            tidyr::gather(Variable, Value, -c(Site)) %>%
+            group_by(Site,Variable) %>%
+            summarise(
+              Means=mean(Value, na.rm=T),
+              Lower=quantile(Value,0.025, na.rm=T),
+              Upper=quantile(Value,0.975, na.rm=T))
+          
+        })%>%mutate(Type=listFA,
+                    Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids)))
+        )
+    
+    })
+      
+    #})
+  
+  
+  #Observed data
+  #first merging mean and conv based on the day
+  ready.to.plot <- names(obs.mean)%>%
+    purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
+                 setNames(c('means','covs','Date')))%>%
+    setNames(names(obs.mean))%>%
+    purrr::map_df(function(one.day.data){
+      one.day.data$means %>% 
+        map_dfr(~.x) %>% 
+        mutate(Site=names(one.day.data$means)) %>% 
+        tidyr::gather(Variable,Means,-c(Site)) %>%
+        right_join(one.day.data$covs %>% 
+                     map_dfr(~ t(sqrt(diag(.x))) %>% 
+                               data.frame %>% `colnames<-`(c(var.names))) %>%
+                     mutate(Site=names(one.day.data$covs)) %>% 
+                     tidyr::gather(Variable,Sd,-c(Site)),
+                   by=c('Site','Variable')) %>%
+        mutate(Upper=Means+(Sd*1.96),
+               Lower=Means+(Sd*1.96))%>%
+        mutate(Type="Data",
+               Date=one.day.data$Date%>%as.POSIXct())
+      
+      
+    })%>% 
+    select(-Sd) %>%
+    bind_rows(ready.FA)
+  
+  #for each site  and for each variable
+  all.plots<-ready.to.plot$Site%>%unique() %>%
+    purrr::map(function(site){
+      ready.to.plot$Variable%>%unique()%>%
+        purrr::map(function(vari){
+          varin<-vari
+          unit<-""
+          if (substr(vari,1,8)=="AGB.pft.") varin <- "AGB.pft"
+          #finding the unit
+          unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
+          if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
+          #plotting
+          ready.to.plot%>%
+            filter(Variable==vari, Site==site)%>%
+            ggplot(aes(x=Date))+
+            geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
+            geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
+            geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
+            scale_fill_manual(values = c(alphapink,alphagreen,alphablue),name="")+
+            scale_color_manual(values = c(alphapink,alphagreen,alphablue),name="")+
+            theme_bw(base_size = 17)+
+            labs(y=paste(vari,'(',unit,')'), subtitle=paste0("Site: ",site))+
+            theme(legend.position = "top",
+                  strip.background = element_blank())->p
+          if (!is.null(plot.title)) p <- p + labs(title=plot.title)
+          p
+        })
+    })
+  
+  
+  
+  pdf("SDA/SDA.pdf",width = 10,height = 8)
+  all.plots %>% purrr::map(~print(.x))
+  dev.off()
+  
+  #saving plot data
+  save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
+  
+  
+}

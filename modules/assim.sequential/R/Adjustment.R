@@ -44,12 +44,14 @@ adj.ens<-function(Pf,X,X.new,mu.f,mu.a,Pa,processvar){
   ## analysis ensemble 
   X_a <- X*0
   for(i in seq_len(nrow(X))){
-    # she decomposed Pa - then it's putting it back together but with a different Z which comes from the likelihood of that ens    X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
+    # she decomposed Pa - then it's putting it back together but with a different Z which comes from the likelihood of that ens    
+    X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
   }
-  
+
 
   if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
-  if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
+  #!!!!!!!!!!!!!!!!!!!! @Hamze I changed this to 15 and -15 from 5 and -5
+  if(sum(diag(Pa) - diag(cov(X_a))) > 15 | sum(diag(Pa) - diag(cov(X_a))) < -15) logger.warn('Problem with ensemble adjustment (2)')
   
   analysis <- as.data.frame(X_a)
 

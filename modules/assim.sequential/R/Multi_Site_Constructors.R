@@ -1,3 +1,14 @@
+##' @title Contruct.Pf
+##' @name  Contruct.Pf
+##' @author Hamze Dokoohaki
+##' 
+##' @param Pf  A cov matrix of forecast state variables.  
+##’  
+##' 
+##' @description This functions gives weights to different ensemble members based on their likelihood during the analysis step. Then it adjusts the analysis mean estimates of state variables based on the estimated weights.
+##' 
+##' @return Returns a vector of adjusted analysis mean estimates of state variables.
+##' @export
 
 Contruct.Pf <- function(site.ids, var.names, X) {
   
@@ -24,10 +35,10 @@ Contruct.Pf <- function(site.ids, var.names, X) {
     rows.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,1])
     cols.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,2])
     #estimated between these two sites
-    two.site.cov<- cov( X [, c(rows.in.matrix, cols.in.matrix)] )[(nvariable+1):(2*nvariable),1:nvariable]
+    two.site.cov <- cov( X [, c(rows.in.matrix, cols.in.matrix)] )[(nvariable+1):(2*nvariable),1:nvariable]
     # this is something we can pplay around with - I'm setting the off diag to zero 
     #here is where we do the localoziation
-    two.site.cov [which(lower.tri(two.site.cov, diag = FALSE),T)%>% rbind (which(upper.tri(two.site.cov,F),T))] <- 0
+    two.site.cov [which(lower.tri(two.site.cov, diag = FALSE),T) %>% rbind (which(upper.tri(two.site.cov,F),T))] <- 0
   
     #putting it back to the main matrix
     pf.matrix [rows.in.matrix, cols.in.matrix] <- two.site.cov
@@ -37,10 +48,40 @@ Contruct.Pf <- function(site.ids, var.names, X) {
 
 }
 
-#
-Construct.R<-function(){
+##' @title Construct.R
+##' @name  Construct.R
+##' @author Hamze Dokoohaki
+##' 
+##' @param Pf  A cov matrix of forecast state variables.  
+##’  
+##' 
+##' @description This functions gives weights to different ensemble members based on their likelihood during the analysis step. Then it adjusts the analysis mean estimates of state variables based on the estimated weights.
+##' 
+##' @return Returns a vector of adjusted analysis mean estimates of state variables.
+##' @export
+
+Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
+
+  Y<-c()
+  nsite <- length(site.ids)
+  nvariable <- length(var.names)
+  # I will make a big cov matrixand then I will populate it when cov of each site
+  R <-matrix(0,(nsite*nvariable),(nsite*nvariable))
   
-  
-  
-  
+  for (site in site.ids){
+   
+    choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = F) %>% unlist
+    #forach site let's get the obs
+    Y <- c(Y, unlist(obs.t.mean[[site]][choose]))
+    pos <- which(site.ids %in% site)
+    startp <- (pos-1)*(nvariable)+1
+    endp <- startp+nvariable-1
+    
+    R.site<- as.matrix(obs.t.cov[[site]][choose,choose])
+    R.site[is.na(R.site)]<-0
+   
+    R[startp:endp, startp:endp] <- R.site
+  }
+
+  return(list(Y=Y, R=R))
 }
