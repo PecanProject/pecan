@@ -143,7 +143,7 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 	echo `date` > $@
 
 .check/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
-	$(call check_R_pkg, $(subst .check/,,$@))
+	+ $(call check_R_pkg, $(subst .check/,,$@))
 	echo `date` > $@
 
 .test/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
