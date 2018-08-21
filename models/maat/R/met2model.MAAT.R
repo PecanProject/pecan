@@ -103,11 +103,30 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       lat  <- ncdf4::ncvar_get(nc, "latitude")
       lon  <- ncdf4::ncvar_get(nc, "longitude")
       Tair <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
+      Tair_C <- udunits2::ud.convert(Tair, "K", "degC") ## in degC
       Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")  ## 'kg/m^2/s'
 
       # get humidity vars (NOTE:later add VPD here!!)
       RH_perc <- ncdf4::ncvar_get(nc, "relative_humidity")  ## RH Percentage
+      Qair <-ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
+      SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
+      VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
+      if (!is.numeric(VPD)) {
+        VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, Tair_C))
+        PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
+      }
+      VPD_kPa <- udunits2::ud.convert(VPD, "Pa", "kPa")
+      e_a <- SVP - VPD  # AirVP
 
+      # get windspeed
+      ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
+      if (!is.numeric(ws)) {
+        U <- ncdf4::ncvar_get(nc, "eastward_wind")
+        V <- ncdf4::ncvar_get(nc, "northward_wind")
+        ws <- sqrt(U ^ 2 + V ^ 2)
+        PEcAn.logger::logger.info("wind_speed absent; calculated from eastward_wind and northward_wind")
+      }
+      
       # get radiation
       SW <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
       PAR <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air") * 1e+06)  ## mol/m2/s to umols/m2/s
@@ -172,11 +191,12 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
                             HOUR = hr[1:n],
                             FRAC_DAY = frac.day[1:n],
                             TIMESTEP = rep(dt/86400, n),
-                            # TODO: Add VPD, etc
+                            # TODO: Add VPD, Atm_press, wind, etc
                             CO2 = CO2,
-                            Tair_degC = Tair - 273.15,  # convert to celsius
+                            Tair_degC = Tair_C,
                             Prec_mm = Rain * dt,  # converts from mm/s to mm umols/m2/s
                             RH_perc = RH_perc,
+                            VPD_kPa = VPD_kPa,
                             PAR_umols_m2_s = PAR)
 
     ## quick error check, sometimes get a NA in the last hr ?? NEEDED?
@@ -212,7 +232,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
     # Create leaf_user_met.xml
     # TODO: make this dynamic with names above!
     # TODO: add the additional met variables, make dynamic
-    leaf_user_met_list <- list(leaf = list(env = list(time = "'Time'", temp = "'Tair_degC'", par = "'PAR_umols_m2_s'")))
+    leaf_user_met_list <- list(leaf = list(env = list(time = "'Time'", temp = "'Tair_degC'", par = "'PAR_umols_m2_s'",vpd="'VPD_kPa'")))
     leaf_user_met_xml <- PEcAn.settings::listToXml(leaf_user_met_list, "met_data_translator")
 
     # output XML file
