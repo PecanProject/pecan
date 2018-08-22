@@ -1,0 +1,47 @@
+---
+  title: "PEcAn: Generating met drivers for the MAAT model using AmerifluxLBL tower observations"
+author: "Shawn Serbin"
+date: "2018/08/22"
+output: html_document
+---
+
+# Overview
+This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP), gapfilling the CF driver data, and converting to model-specific drivers for the MAAT model. These variables are defined in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/available-meteorological-drivers.html).
+
+In this example we will download 6 years of met data from the [Willow Creek Eddy Covariance tower site (US-WCr)](http://ameriflux.lbl.gov/sites/siteinfo/US-WCr). It has an Ameriflux `SITE_ID` of `US-WCr`
+
+The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
+
+```{r}
+library(knitr)
+library(ggplot2)
+library(ggthemes)
+library(PEcAn.data.atmosphere)
+
+```
+
+```{r echo=FALSE}
+
+knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE, 
+                      fig.height= 3, fig.width = 8)
+
+```
+
+## Connect to BETY database and retrieve appropriate format for AmerifluxLBL datasets [TODO: Update to work with R-OpenSci traits BETY]
+```{r}
+bety <- list(user='bety', password='bety', host='localhost',
+             dbname='bety', driver='PostgreSQL',write=TRUE)
+con <- PEcAn.DB::db.open(bety)
+bety$con <- con
+format.id <- 5000000002
+format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+format$time_zone <- "America/Chicago"
+```
+
+## Download AmerifluxLBL data for selected site and dates (US-WCr, 2000 to 2005)
+```{r download}
+download.AmerifluxLBL(sitename = "US-WCr", outfolder = "~/scratch/met2model_testing", 
+                   start_date = "2000-01-01", end_date = "2005-12-31", overwrite = TRUE, verbose = TRUE)
+```
+
+
