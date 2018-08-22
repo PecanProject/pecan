@@ -23,7 +23,7 @@ Imports:
     dbplyr,
     SimilarityMeasures
 Suggests:
-    testthat (>= 1.0.2)
+    testthat (>= 2.0.0)
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
