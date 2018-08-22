@@ -44,4 +44,28 @@ download.AmerifluxLBL(sitename = "US-WCr", outfolder = "~/scratch/met2model_test
                    start_date = "2000-01-01", end_date = "2005-12-31", overwrite = TRUE, verbose = TRUE)
 ```
 
+## Convert downloaded AmerifluxLBL data to CF format
+```{r met2cf}
+met2CF.AmerifluxLBL(in.path = "~/scratch/met2model_testing/", in.prefix = "AMF_US-WCr", outfolder = "~/scratch/met2model_testing/CF/", 
+                 start_date = "2000-01-01", end_date = "2005-12-31",format=format)
+```
 
+## Gapfill CF met drivers
+```{r metgapfill}
+metgapfill(in.path = "~/scratch/met2model_testing/CF/", in.prefix = "AMF_US-WCr_BASE_HH_14-5", 
+           outfolder = "~/scratch/met2model_testing/CF/gapfill/", start_date = "2000-01-01", end_date = "2005-12-31")
+```
+
+## Create MAAT model-specific met drivers
+```{r met2model}
+in.path <- "~/scratch/met2model_testing/CF/gapfill/"
+in.prefix <- "AMF_US-WCr_BASE_HH_14-5"
+outfolder <- "~/scratch/met2model_testing/CF/gapfill/maat_drivers/"
+start_date <- "2000-01-01"
+end_date <- "2005-12-31"
+overwrite <- TRUE
+verbose <- TRUE
+leap_year = TRUE
+PEcAn.MAAT::met2model.MAAT(in.path, in.prefix, outfolder, start_date, end_date,
+                           overwrite = overwrite, verbose = verbose)
+```
