@@ -13,10 +13,18 @@ sserbin@bnl.gov <br>
 Follow the instructions found here: https://github.com/walkeranthonyp/MAAT/blob/master/README.md <br>
 
 ## MAAT module installation
+R dependencies: PEcAn packages - PEcAn.logger, PEcAn.remote, PEcAn.settings, PEcAn.utils. Additional dependencies: lubridate, ncdf4, udunits2, XML, and those within each package <br>
+
+--ncdf4 requires netCDF installed at the system level 
+
 Easiest way to install is via `install_github` from the `devtools` package. <br>
 
 ```R
 library(devtools)
+install_github("PecanProject/pecan", subdir="base/logger")
+install_github("PecanProject/pecan", subdir="base/remote")
+install_github("PecanProject/pecan", subdir="base/settings")
+install_github("PecanProject/pecan", subdir="base/utils")
 install_github("PecanProject/pecan", subdir="models/maat")
 ```
 
