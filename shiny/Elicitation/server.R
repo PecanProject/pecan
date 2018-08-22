@@ -1,7 +1,15 @@
-library(shiny)
-library(PEcAn.DB)
-library(ggplot2)
+lapply(c( "shiny",
+          "ggplot"
+          ),function(pkg){
+            if (!(pkg %in% installed.packages()[,1])){
+              install.packages(pkg)}
+            library(pkg,character.only = TRUE,quietly = TRUE)
+          })
+if(!("SHELF" %in% install.packages()[,1])) devtools::install_github('OakleyJ/SHELF')
+
 library(SHELF)
+library(PEcAn.DB)
+
 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
