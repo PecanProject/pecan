@@ -1,5 +1,5 @@
 ---
-  title: "PEcAn: Generating met drivers for the MAAT model using AmerifluxLBL tower observations"
+title: "PEcAn: Generating met drivers for the MAAT model using AmerifluxLBL tower observations"
 author: "Shawn Serbin"
 date: "2018/08/22"
 output: html_document
