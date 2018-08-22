@@ -1,8 +1,13 @@
 # The Multi-Assumption Architecture and Testbed (MAAT) modelling system PEcAn module
-**Corresponding author**
-Shawn Serbin
-Environmental and Climate Sciences Department
-Brookhaven National Laboratory
-sserbin@bnl.gov
+**Corresponding author** <br>
+Shawn Serbin <br>
+Environmental and Climate Sciences Department <br>
+Brookhaven National Laboratory <br>
+sserbin@bnl.gov <br>
 
-## Installation
+## MAAT Installation and usage
+Follow the instructions found here: https://github.com/walkeranthonyp/MAAT <br>
+
+## MAAT module installation
+library(devtools) <br>
+install_github("PecanProject/pecan", subdir="models/maat") <br>
