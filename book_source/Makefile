@@ -1,7 +1,11 @@
-all: build deploy 
+.PHONY: all bkdcheck build clean deploy
 
-build:
+all: bkdcheck build deploy
+
+bkdcheck:
 	./check_bkd_pkg.R
+
+build: bkdcheck
 	Rscript -e 'bookdown::render_book("index.Rmd", "bookdown::gitbook")'
 	
 clean:
@@ -10,6 +14,5 @@ clean:
 deploy:
 	./deploy.sh
 	
-pdf:
-	./check_bkd_pkg.R
+pdf: bkdcheck
 	Rscript -e 'bookdown::render_book("index.Rmd", "bookdown::pdf_book")'
