@@ -77,6 +77,18 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame` 
 
 
+- docker:
+  - Added updated docker container builds
+    - Use docker.sh to create docker images
+    - Use release.sh to push released images to push to docker registry (hub.docker.com by default)
+  - Create pecan/depends docker image that holds all PEcAn dependencies
+    - Needs to build seperatly, not part of the docker.sh build process to speed things up
+    - Build using `(cd docker ; docker build -t pecan/depends:latest -f Dockerfile.depends .)`
+  - docker-compose.yml file to bring up full PEcAn stack using docker
+    - First time to start requires to install BETY database (see documentation)
+  - SIPNET docker image which works with PEcAn docker stack
+  - Data container that will download and install demo data in /data folder
+
   
 ### Removed
   - pecan.worldmap function no longer used, dropped from visualization package
