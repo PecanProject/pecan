@@ -571,7 +571,11 @@ echo "SHINY SERVER"
 echo "######################################################################"
 if [ "${SHINY_SERVER}" != "" -a $( uname -m ) == "x86_64" ]; then
   sudo su - -c "R -e \"install.packages(c('rmarkdown', 'shiny'), repos='https://cran.rstudio.com/')\""
-  R -e "install.packages(c('shinythemes', 'Shinytoaster', 'SHELF', 'graph', 'CodeDepends', 'shiny'), repos='https://cran.rstudio.com/')"
+
+  R -e "install.packages(c('https://www.bioconductor.org/packages/release/bioc/src/contrib/BiocGenerics_0.26.0.tar.gz', 'http://www.bioconductor.org/packages/release/bioc/src/contrib/graph_1.58.0.tar.gz'), repos=NULL)"
+  R -e "devtools::install_github('duncantl/CodeDepends')"
+  R -e "devtools::install_github('OakleyJ/SHELF')"
+  R -e "install.packages(c('shinythemes', 'shinytoastr', 'SHELF', 'shiny'), repos='https://cran.rstudio.com/')"
 
   case "$OS_VERSION" in
     RH_*)
