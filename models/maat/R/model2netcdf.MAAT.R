@@ -32,6 +32,9 @@
 ##'
 model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
 
+  # setup constants
+  day_secs <- udunits2::ud.convert(1, "day", "seconds")
+  
   ## TODO !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!
 
   ### Read in model output in MAAT format
@@ -40,38 +43,38 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
   maat.output.dims <- dim(maat.output)
 
   ### Determine number of years and output timestep
-  days <- as.Date(start_date):as.Date(end_date)
-  year <- strftime(as.Date(days, origin = "1970-01-01"), "%Y")
-  num.years <- length(unique(year))
-  #maat.dates <- as.Date(maat.output$time, format = "%m/%d/%y")
-  #maat.dates <- strptime(maat.output$time, format = "%m/%d/%y %H:%M:%S", tz="UTC")
-  maat.dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz="UTC")
-  #dims <- dim(subset(maat.output,
-  #                   as.Date(time, format = "%m/%d/%y") == seq(as.Date(start_date), by = "days", length = 1)))
-  dims <- dim(subset(maat.output,
-                     strptime(time, format = "%Y-%m-%d", tz="UTC") == 
-                       seq(strptime(start_date, format = "%Y-%m-%d", tz="UTC"), by = "days", length = 1)))
-  timestep.s <- 86400 / dims[1]
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
+  num_years <- length(start_year:end_year)
+  # ** maat.dates assumes UTC, is this correct? what if input met is in a local TZ??  need to revist this **
+  timezone <- "UTC"  # should be set based on met drivers and what time units they are in.  Ugh
+  maat_run_start_date <- format(lubridate::as_datetime(maat.output$time, 
+                                                       origin = lubridate::origin, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
+  maat_dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz=timezone)  
   
   ### Setup outputs for netCDF file in appropriate units
-  for (y in unique(year)) {
-    if (file.exists(file.path(outdir, paste(y, "nc", sep = ".")))) {
+  for (year in start_year:end_year) {
+    if (file.exists(file.path(outdir, paste(year, "nc", sep = "."))) ) {
       next  ## skip, model output already present.
     }
     
-    print(paste("---- Processing year: ", y))  # turn on for debugging
+    PEcAn.logger::logger.info(paste("---- Processing MAAT output year: ", year))
     
     ## Subset data for processing
-    sub.maat.output <- subset(maat.output, format(maat.dates, "%Y") == y)
-    sub.maat.dates <- as.Date(sub.maat.output$time, format = "%Y-%m-%d")
+    sub.maat.output <- subset(maat.output, lubridate::year(maat_dates) == year)
+    sub.maat.dates <- lubridate::as_date(sub.maat.output$time)
     sub.maat.doy <- lubridate::yday(sub.maat.dates)
     sub.maat.output.dims <- dim(sub.maat.output)
+    dims <- dim(subset(sub.maat.output,
+                       strptime(time, format = "%Y-%m-%d", tz=timezone) == 
+                         seq(strptime(sub.maat.dates[1], format = "%Y-%m-%d", tz=timezone), by = "days", length = 1)))
+    timestep.s <- day_secs / dims[1] # e.g. 1800 = 30 minute timesteps
     dayfrac <- 1 / dims[1]
     day.steps <- seq(0, 0.99, 1 / dims[1])
     
     ### Parse MAAT output
     output      <- list()  # create empty output
-    out.year    <- as.numeric(rep(y, sub.maat.output.dims[1]))
+    out.year    <- as.numeric(rep(year, sub.maat.output.dims[1]))
     output[[1]] <- out.year  # Simulation year
     output[[2]] <- sub.maat.doy + day.steps  # Fractional day
     output[[3]] <- (sub.maat.output$A)  # assimilation in umols C/m2/s
@@ -80,17 +83,9 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
 
     #******************** Declare netCDF variables ********************#
-    ## This version doesn't provide enough output timesteps when running with met data that has
-    ## a step greater than 1 per day
-    #t <- ncdf4::ncdim_def(name = "time",
-    #               units = paste0("days since ", y, "-01-01 00:00:00"),
-    #               vals = as.numeric(strptime(end_date, "%Y-%m-%d %H:%M:%S")-strptime(start_date, "%Y-%m-%d %H:%M:%S"),units="days"),
-    #               calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
-    
-    ## Something like this works for mult timesteps per day
-    t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"),
+    t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
                    vals = sub.maat.doy + day.steps, calendar = "standard", 
-                   unlim = TRUE)
+                   unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
@@ -130,10 +125,10 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
                                      longname = "Leaf Stomatal Conductance")
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
-    varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+    nc <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), nc_var)
+    varfile <- file(file.path(outdir, paste(year, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
-      print(i)  # just on for debugging
+      #PEcAn.logger::logger.info(paste0("nc file: ",i))  # just on for debugging
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }  ## netCDF loop
