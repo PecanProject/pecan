@@ -129,6 +129,10 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   system2(file.path(settings$model$binary, "run_scripts/setup_MAAT_project.bs"), 
           c(maat_mod_obj, rundir, file.path(settings$model$binary, "run_scripts"), 
             file.path(settings$model$binary, "src")))
+  # remove leaf_user_dynamic.xml from rundir since PEcAn is not currently using dynamic variables (for now, revist later as-needed)
+  # see: https://github.com/walkeranthonyp/MAAT/issues/8 for reference
+  unlink(file.path(rundir,"leaf_user_dynamic.xml"), recursive = FALSE)
+
   # below is now required given that MAAT logic no longer moves or links to the run_MAAT.R script file
   run_maat_script <- file.path(settings$model$binary, "src", "run_MAAT.R")
   

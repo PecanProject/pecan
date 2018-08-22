@@ -75,8 +75,8 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     output[[1]] <- out.year  # Simulation year
     output[[2]] <- sub.maat.doy + day.steps  # Fractional day
     output[[3]] <- (sub.maat.output$A)  # assimilation in umols C/m2/s
-    output[[4]] <- (sub.maat.output$respiration)  # respiration in umols C/m2/s
-    output[[5]] <- (sub.maat.output$gs)  # stomatal conductance in mol H2O m-2 s-1
+    output[[4]] <- (sub.maat.output$rd)  # respiration in umols C/m2/s
+    output[[5]] <- (1/(sub.maat.output$rs))  # stomatal conductance in mol H2O m-2 s-1
     ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
 
     #******************** Declare netCDF variables ********************#
