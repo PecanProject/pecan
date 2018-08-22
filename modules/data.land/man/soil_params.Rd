@@ -4,7 +4,8 @@
 \alias{soil_params}
 \title{Estimate soil parameters from texture class or sand/silt/clay}
 \usage{
-soil_params(soil_type, sand, silt, clay, bulk)
+soil_params(soil_type = NULL, sand = NULL, silt = NULL,
+  clay = NULL, bulk = NULL)
 }
 \arguments{
 \item{soil_type}{USDA Soil Class. See Details}
@@ -18,7 +19,7 @@ soil_params(soil_type, sand, silt, clay, bulk)
 \item{bulk}{soil bulk density (optional, kg m-3)}
 }
 \value{
-table of soil hydraulic and thermal parmeters
+list of soil hydraulic and thermal parameters
 }
 \description{
 Estimate soil parameters from texture class or sand/silt/clay
@@ -34,7 +35,7 @@ Estimate soil parameters from texture class or sand/silt/clay
 * Hydraulics based on Cosby et al 1984, using table 4 and equation 1 (which is incorrect it should be saturated moisture potential over moisture potential)
 }
 \examples{
-sand <- c(0.3,0.4,0.5)
-clay <- c(0.3,0.3,0.3)
+sand <- c(0.3, 0.4, 0.5)
+clay <- c(0.3, 0.3, 0.3)
 soil_params(sand=sand,clay=clay)
 }

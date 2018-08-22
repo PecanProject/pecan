@@ -125,7 +125,6 @@ script:
   # Skip modules with known broken checks
   - mkdir -p .check/modules # only needed for `touch` below
   - touch .check/modules/benchmark # delete when #1978 closed
-  - touch .check/modules/data.land # delete when #1977 closed
   - touch .check/modules/rtm # delete when #1976 closed
   - make -j2 check
   - echo 'Testing Integration'
