@@ -5,16 +5,4 @@ Date: 2018-08-20
 Author: Liam Burke liam.burke24@gmail.com
 Tags: PEcAn
 DisplayMode: showcase 
-Depends:
-    shiny,
-    PEcAn.data.land,
-    PEcAn.utils,
-    PEcAn.visualization,
-    shinydashboard,
-    dataone,
-    stringr,
-    DT,
-    shinytoastr,
-    shinyWidgets,
-    shinyjs
 RoxygenNote: 6.1.0
