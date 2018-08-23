@@ -17,13 +17,15 @@
 #' * Hydraulics based on Cosby et al 1984, using table 4 and equation 1 (which is incorrect it should be saturated moisture potential over moisture potential)
 #' 
 #'
-#' @return table of soil hydraulic and thermal parmeters
+#' @return list of soil hydraulic and thermal parameters
 #' @export
+#' @importFrom rlang %||%
+    # null-filling operator: A %||% B == "B if A is null, A in all other cases"
 #' @examples 
-#' sand <- c(0.3,0.4,0.5)
-#' clay <- c(0.3,0.3,0.3)
+#' sand <- c(0.3, 0.4, 0.5)
+#' clay <- c(0.3, 0.3, 0.3)
 #' soil_params(sand=sand,clay=clay)
-soil_params <- function(soil_type,sand,silt,clay,bulk){
+soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NULL){
   ## load soil parameters
   load(system.file("data/soil_class.RData",package = "PEcAn.data.land"))
   mysoil <- list()
@@ -31,43 +33,48 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
   #---------------------------------------------------------------------------------------#
   #     Find soil class and sand, silt, and clay fractions.                               #
   #---------------------------------------------------------------------------------------#
-  if ((missing(sand)||is.null(sand)) & (missing(clay)|is.null(clay))){
+  if (sum(is.null(sand), is.null(silt), is.null(clay)) > 1) {
     ## insufficient texture data, infer from soil_type
-    if(missing(soil_type)) PEcAn.logger::logger.error("insufficient arguments")
+    if (is.null(soil_type)) {
+      PEcAn.logger::logger.severe(
+        "Insufficient arguments:",
+        "Must specify either soil_type or at least 2 of sand, silt, clay")
+    }
     mysoil$soil_type <- soil_type
     mysoil$soil_n <- which(toupper(soil.name) == toupper(soil_type))
-#    mysoil$key   <- soil.key [mysoil$soil_n]   ## turning off these abreviations since they lack a CF equivalent
-    mysoil$fraction_of_sand_in_soil <- xsand.def[soil_type]
-    mysoil$fraction_of_clay_in_soil <- xclay.def[soil_type]
-    mysoil$fraction_of_silt_in_soil <- 1. - mysoil$fraction_of_sand_in_soil - mysoil$fraction_of_clay_in_soil
+    sand <- xsand.def[soil_type]
+    clay <- xclay.def[soil_type]
+
   } else {
-    if(missing(sand)|is.null(sand)){
-      sand <- 1-silt-clay
-    }else if(missing(silt)|is.null(silt)){
-      silt <- 1-sand-clay
-    }else if(missing(clay)|is.null(clay)){
-      clay <- 1-sand-silt
-    } else {
-      #not missing anything else, normalize
 
-      stot <- sand+silt+clay
-
-      if(any(stot > 2)) stot <- stot*100 ## assume values reported in % not proportion
-      sand <- sand/stot
-      silt <- silt/stot
-      clay <- clay/stot
+    if (any(c(sand, silt, clay) > 2)) {
+      # assume values reported in % not proportion
+      sand <- if (is.null(sand)) { NULL } else { sand / 100 }
+      silt <- if (is.null(silt)) { NULL } else { silt / 100 }
+      clay <- if (is.null(clay)) { NULL } else { clay / 100 }
     }
-    
+
+    # compute up to one missing value (>1 missing was handled above)
+    sand <- sand %||% (1-silt-clay)
+    silt <- silt %||% (1-sand-clay)
+    clay <- clay %||% (1-sand-silt)
+
+    #normalize
+    stot <- sand + silt + clay
+    sand <- sand / stot
+    silt <- silt / stot
+    clay <- clay / stot
+
     mysoil$soil_n <- sclass(sand,clay)
     mysoil$soil_type  <- soil.name[mysoil$soil_n]
-#    mysoil$key   <- soil.key [mysoil$soil_n]
-    mysoil$fraction_of_sand_in_soil <- sand
-    mysoil$fraction_of_clay_in_soil <- clay
-    mysoil$fraction_of_silt_in_soil <- 1. - mysoil$fraction_of_sand_in_soil - mysoil$fraction_of_clay_in_soil
   }
+  # mysoil$key   <- soil.key [mysoil$soil_n] # turning off these abreviations since they lack a CF equivalent
+  mysoil$fraction_of_sand_in_soil <- sand
+  mysoil$fraction_of_clay_in_soil <- clay
+  mysoil$fraction_of_silt_in_soil <- 1. - mysoil$fraction_of_sand_in_soil - mysoil$fraction_of_clay_in_soil
   #---------------------------------------------------------------------------------------#
   
-  if(!missing(bulk)) mysoil$soil_bulk_density = bulk
+  if(!is.null(bulk)) mysoil$soil_bulk_density = bulk
   
   #---------------------------------------------------------------------------------------#
   #       Set up primary properties.                                                      #
@@ -191,13 +198,13 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
   ## final values to look up
   for(z in which(!(mysoil$soil_n <= 13))){
     mysoil$soil_albedo[z] <- texture$albdry[mysoil$soil_n[z]]
-    if(missing(bulk))  mysoil$soil_bulk_density[z] <- texture$xrobulk[mysoil$soil_n[z]]
+    if(is.null(bulk))  mysoil$soil_bulk_density[z] <- texture$xrobulk[mysoil$soil_n[z]]
     mysoil$slden[z]       <- texture$slden[mysoil$soil_n[z]]
   }
   for(z in which(!(mysoil$soil_n > 13))){
     ## if lack class-specific values, use across-soil average
     mysoil$soil_albedo[z] <- median(texture$albdry)
-    if(missing(bulk)) mysoil$soil_bulk_density[z] <- median(texture$xrobulk)
+    if(is.null(bulk)) mysoil$soil_bulk_density[z] <- median(texture$xrobulk)
     mysoil$slden[z]       <- median(texture$slden)
   }
     

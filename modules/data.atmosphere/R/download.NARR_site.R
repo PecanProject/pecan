@@ -7,7 +7,7 @@
 #' @param lon.in Site longitude coordinate
 #' @param overwrite Overwrite existing files?  Default=FALSE
 #' @param verbose Turn on verbose output? Default=FALSE
-#' @param parallel Download in parallel? Default = TRUE.
+#' @param parallel Download in parallel? Default = TRUE
 #' @param ncores Number of cores for parallel download. Default is 
 #' `parallel::detectCores()`
 #'
@@ -27,7 +27,7 @@ download.NARR_site <- function(outfolder,
                                overwrite = FALSE,
                                verbose = FALSE,
                                progress = TRUE,
-                               parallel = FALSE,
+                               parallel = TRUE,
                                ncores = if (parallel) parallel::detectCores() else NULL,
                                ...) {
 
