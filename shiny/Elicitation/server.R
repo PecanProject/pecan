@@ -2,9 +2,11 @@ lapply(c( "shiny",
           "ggplot"
           ),function(pkg){
             if (!(pkg %in% installed.packages()[,1])){
-              install.packages(pkg)}
+                install.packages(pkg)
+              }
             library(pkg,character.only = TRUE,quietly = TRUE)
-          })
+          }
+       )
 if(!("SHELF" %in% install.packages()[,1])) devtools::install_github('OakleyJ/SHELF')
 
 library(SHELF)

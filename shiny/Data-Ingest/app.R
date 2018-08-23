@@ -8,16 +8,19 @@ lapply(c( "shiny",
           "shinyWidgets",
           "shinyjs"),function(pkg){
             if (!(pkg %in% installed.packages()[,1])){
-            install.packages(pkg)}
-            library(pkg,character.only = TRUE,quietly = TRUE)
-          })
+                  install.packages(pkg)
+              }
+                  library(pkg,character.only = TRUE,quietly = TRUE)
+            }
+      )
 
 lapply(c( "PEcAn.data.land",
           "PEcAn.visualization",
           "PEcAn.utils",
           "PEcAn.DB"),function(pkg){
             library(pkg,character.only = TRUE,quietly = TRUE)
-          })
+          }
+       )
 
 
  

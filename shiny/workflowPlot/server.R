@@ -6,7 +6,7 @@ lapply(c("PEcAn.visualization",
          "PEcAn.utils"),function(pkg){
            library(pkg,character.only = TRUE,quietly = TRUE)
          }
-)
+      )
 
 
 # Shiny and plotting packages
@@ -23,9 +23,11 @@ lapply(c( "shiny",
           "shinythemes"
           ),function(pkg){
             if (!(pkg %in% installed.packages()[,1])){
-                 install.packages(pkg)}
+                  install.packages(pkg)
+               }
                 library(pkg,character.only = TRUE,quietly = TRUE)
-})
+            }
+      )
 
 
 # Maximum size of file allowed to be uploaded: 100MB

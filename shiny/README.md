@@ -23,7 +23,10 @@ Elicitation
     SHELF,
     ggplot
 BrownDog
-    leaflet
+    leaflet,
+    RPostgreSQL,
+    PEcAn.DB,
+    PEcAn.visualization
 WorkflowPlot
     shiny,
     ggplot2,

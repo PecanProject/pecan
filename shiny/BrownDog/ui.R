@@ -1,10 +1,6 @@
-lapply(c( "shiny",
-          "leaflet"
-),function(pkg){
-  if (!(pkg %in% installed.packages()[,1])){
-    install.packages(pkg)}
-  library(pkg,character.only = TRUE,quietly = TRUE)
-})
+## load packages
+library(shiny)
+library(leaflet)
 
 # Define UI
 ui <- shinyUI(fluidPage(
