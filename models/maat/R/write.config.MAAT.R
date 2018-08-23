@@ -183,9 +183,14 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
           file = file.path(settings$rundir, run.id, "leaf_user_static.xml"), 
           indent = TRUE, 
           prefix = PREFIX_XML)
+  
+  ### Setup job.sh script to run MAAT model
   if (is.null(settings$run$inputs$met)) {
     PEcAn.logger::logger.info("-- No met selected. Running without a met driver --")
-    jobsh <- paste0("#!/bin/bash\n","Rscript ",run_maat_script," "," ","\"xml<-T","\""," ","\"uq<-F","\""," ",
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",run_maat_script," ",
+                    "\"srcdir <- ","'",file.path(settings$model$binary, "src"),"'","\""," ",
+                    "\"pdir <- ","'",rundir,"'","\""," ","\"mod_obj <- ","'",maat_mod_obj,"'","\""," ",
+                    "\"xml<-T","\""," ","\"uq<-F","\""," ",
                     "\"factorial<-F","\""," ","\"mod_mimic<-",mod_mimic,"\""," ",
                     "\"odir <- ","'",outdir,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
@@ -196,9 +201,8 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
                     settings$run$start.date,"', '",
                     settings$run$end.date,"') ",
                     '" | R --vanilla')
-
+    
     # Run with met drivers 
-    # !!Need to update for running with met, needs to paste mdir (met dir) to command !!
   } else if (!is.null(settings$run$inputs$met)) {
     met.dir <- dirname(settings$run$inputs$met$path)
     met.file <- basename(settings$run$inputs$met$path)

@@ -35,8 +35,36 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
   # setup constants
   day_secs <- udunits2::ud.convert(1, "day", "seconds")
   
-  ## TODO !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!
-
+  # setup helper function
+  #        var_update("A","GPP","kgC m-2 s-1")
+  var_update <- function(data, out, oldname, newname, oldunits, newunits=NULL, missval=-999, longname, ncdims) {
+    ## define variable
+    if(is.null(newunits)) newunits = oldunits
+    newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = ncdims, missval=missval, longname=longname)
+    ## convert data
+    dat <- data
+    if (newname %in% c("Year","FracJulianDay")) {
+      PEcAn.logger::logger.info(paste0("Skipping conversion for: ", newname))
+      dat.new <- dat
+    } else {
+      dat.new <- try(PEcAn.utils::misc.convert(dat,oldunits,newunits),silent = TRUE)
+    }
+    ## prep for writing
+    if(is.null(out)) {
+      out <- list(var <- list(),dat <- list())
+      out$var[[1]] <- newvar
+      out$dat[[1]] <- dat.new
+    } else {
+      i <- length(out$var) + 1
+      out$var[[i]] <- newvar
+      out$dat[[i]] <- dat.new
+    }
+    return(out)
+  }
+  
+  ## TODO: Clean up and make this function more elegant.  In particular, refactor such that its easier to 
+  ## manage output variables when running with/without met drivers vs have two separate processing paths below
+  
   ### Read in model output in MAAT format
   maat.out.file <- file.path(outdir, list.files(outdir,'*.csv$')) # updated to handle mod_mimic runs
   maat.output <- utils::read.csv(maat.out.file, header = TRUE, sep = ",")
@@ -46,11 +74,19 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   num_years <- length(start_year:end_year)
-  # ** maat.dates assumes UTC, is this correct? what if input met is in a local TZ??  need to revist this **
   timezone <- "UTC"  # should be set based on met drivers and what time units they are in.  Ugh
-  maat_run_start_date <- format(lubridate::as_datetime(maat.output$time, 
-                                                       origin = lubridate::origin, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
-  maat_dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz=timezone)  
+  
+  if (!is.null(settings$run$inputs$met)) {
+    # ** maat.dates assumes UTC, is this correct? what if input met is in a local TZ??  need to revist this **
+    maat_run_start_date <- format(lubridate::as_datetime(maat.output$time, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
+    maat_dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz=timezone)  
+  } else {
+    maat_run_start_date <- format(lubridate::as_datetime(start_date, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
+  }
+  
+  ### setup nc file lat/long
+  lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+  lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
   
   ### Setup outputs for netCDF file in appropriate units
   for (year in start_year:end_year) {
@@ -60,80 +96,70 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     
     PEcAn.logger::logger.info(paste("---- Processing MAAT output year: ", year))
     
-    ## Subset data for processing
-    sub.maat.output <- subset(maat.output, lubridate::year(maat_dates) == year)
-    sub.maat.dates <- lubridate::as_date(sub.maat.output$time)
-    sub.maat.doy <- lubridate::yday(sub.maat.dates)
-    sub.maat.output.dims <- dim(sub.maat.output)
-    dims <- dim(subset(sub.maat.output,
-                       strptime(time, format = "%Y-%m-%d", tz=timezone) == 
-                         seq(strptime(sub.maat.dates[1], format = "%Y-%m-%d", tz=timezone), by = "days", length = 1)))
-    timestep.s <- day_secs / dims[1] # e.g. 1800 = 30 minute timesteps
-    dayfrac <- 1 / dims[1]
-    day.steps <- seq(0, 0.99, 1 / dims[1])
-    
-    ### Parse MAAT output
-    output      <- list()  # create empty output
-    out.year    <- as.numeric(rep(year, sub.maat.output.dims[1]))
-    output[[1]] <- out.year  # Simulation year
-    output[[2]] <- sub.maat.doy + day.steps  # Fractional day
-    output[[3]] <- (sub.maat.output$A)  # assimilation in umols C/m2/s
-    output[[4]] <- (sub.maat.output$rd)  # respiration in umols C/m2/s
-    output[[5]] <- (1/(sub.maat.output$rs))  # stomatal conductance in mol H2O m-2 s-1
-    ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
+    if (!is.null(settings$run$inputs$met)) {
+      # setup netCDF time variable for year
+      t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
+                            vals = sub.maat.doy + day.steps, calendar = "standard", 
+                            unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
+      
+      ## Subset data for processing
+      sub.maat.output <- subset(maat.output, lubridate::year(maat_dates) == year)
+      sub.maat.dates <- lubridate::as_date(sub.maat.output$time)
+      sub.maat.doy <- lubridate::yday(sub.maat.dates)
+      sub.maat.output.dims <- dim(sub.maat.output)
+      dims <- dim(subset(sub.maat.output,
+                        strptime(time, format = "%Y-%m-%d", tz=timezone) == 
+                          seq(strptime(sub.maat.dates[1], format = "%Y-%m-%d", tz=timezone), by = "days", length = 1)))
+      timestep.s <- day_secs / dims[1] # e.g. 1800 = 30 minute timesteps
+      dayfrac <- 1 / dims[1]
+      day.steps <- seq(0, 0.99, 1 / dims[1])
+      
+      ### Parse MAAT output
+      #output      <- list()  # create empty output
+      output <- NULL
+      ncdims <- list(lon, lat, t)
+      out.year <- as.numeric(rep(year, sub.maat.output.dims[1]))
+      output <- var_update(out.year, output, "Year", "Year", oldunits='YYYY', newunits=NULL, missval=-999, 
+                           longname="Simulation Year", ncdims=ncdims)
+      output <- var_update(sub.maat.doy + day.steps, output, "FracJulianDay", "FracJulianDay", oldunits='Frac DOY', newunits=NULL, missval=-999, 
+                           longname="Fraction of Julian Date", ncdims=ncdims)
+      output <- var_update(sub.maat.output$A, output, "A", "GPP", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
+                           longname="Gross Primary Productivity", ncdims=ncdims)
+      output <- var_update(sub.maat.output$rd, output, "rd", "leaf_respiration", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
+                           longname="Leaf Respiration Rate", ncdims=ncdims)
+      output <- var_update((1/(sub.maat.output$rs)), output, "gs", "stomatal_conductance", oldunits="mol H2O m-2 s-1", 
+                           newunits="kg H2O m-2 s-1", missval=-999, longname="Leaf Stomatal Conductance", ncdims=ncdims)
+      output <- var_update(sub.maat.output$ci, output, "ci", "Ci", oldunits="Pa", 
+                           newunits="Pa", missval=-999, longname="Leaf Internal CO2 Concentration", ncdims=ncdims)
+      output <- var_update(sub.maat.output$cc, output, "cc", "Cc", oldunits="Pa", 
+                           newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
+      ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
 
-    #******************** Declare netCDF variables ********************#
-    t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
-                   vals = sub.maat.doy + day.steps, calendar = "standard", 
-                   unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
-    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
-    
-    for (i in seq_along(output)) {
-      if (length(output[[i]]) == 0) 
-        output[[i]] <- rep(-999, length(t$vals))
+    } else {
+
+      #t <- ncdf4::ncdim_def() since running without met time/day is irrelevant, I dont think we need this variable
+      
+      #t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
+      #                      vals = 1, calendar = "standard", 
+      #                      unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
+      
     }
     
-    ### Find/replace missing and convert outputs to standardized BETYdb units
-    output[[3]] <- ifelse(output[[3]] == -999, -999, 
-                          PEcAn.utils::misc.convert(output[[3]],
-                                              "umol C m-2 s-1",
-                                              "kg C m-2 s-1"))  # convert A/GPP to kgC/m2/s
-    output[[4]] <- ifelse(output[[4]] == -999, -999, 
-                          PEcAn.utils::misc.convert(output[[4]],
-                                       "umol C m-2 s-1",
-                                       "kg C m-2 s-1"))  # convert leaf resp to kgC/m2/s
-    output[[5]][output[[5]]=="Inf"] <- -999
-    output[[5]][output[[5]]=="-Inf"] <- -999
-    output[[5]] <- ifelse(output[[5]] == -999, -999, 
-                          PEcAn.utils::misc.convert(output[[5]], 
-                                              "mol H2O m-2 s-1",
-                                              "kg H2O m-2 s-1"))  # stomatal_conductance in kg H2O m2 s1
-
-    ### Put output into netCDF format
-    dims <- list(lon = lon, lat = lat, time = t) # set dims for netCDF file - REDUNDANT. can be deprecated
-    nc_var       <- list()
-    nc_var[[1]]  <- ncdf4::ncvar_def("Year", units = "YYYY", dim=list(lat, lon, t), missval = -999, 
-                                     longname = "Simulation Year")
-    nc_var[[2]]  <- ncdf4::ncvar_def("FracJulianDay", units = "Frac DOY", dim=list(lat, lon, t), missval = -999, 
-                                     longname = "Fraction of Julian Date")
-    nc_var[[3]]  <- ncdf4::ncvar_def("GPP", units = "kg C m-2 s-1", dim=list(lat, lon, t), missval = -999, 
-                                     longname = "Gross Primary Productivity")
-    nc_var[[4]]  <- ncdf4::ncvar_def("leaf_respiration", units = "kg C m-2 s-1", dim=list(lat, lon, t), missval = -999, 
-                                     longname = "Leaf Respiration Rate")
-    nc_var[[5]]  <- ncdf4::ncvar_def("stomatal_conductance", units = "kg H2O m-2 s-1", dim=list(lat, lon, t), missval = -999, 
-                                     longname = "Leaf Stomatal Conductance")
+    ## write netCDF data
+    ncout <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")),output$var)
+    for (i in seq_along(output$var)) {
+      ncdf4::ncvar_put(ncout, output$var[[i]], output$dat[[i]])
+    }
     
-    ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), nc_var)
-    varfile <- file(file.path(outdir, paste(year, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(nc_var)) {
-      #PEcAn.logger::logger.info(paste0("nc file: ",i))  # just on for debugging
-      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
-      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
-    }  ## netCDF loop
-    close(varfile)
-    ncdf4::nc_close(nc)
+    ## extract variable and long names to VAR file for PEcAn vis
+    write.table(sapply(ncout$var, function(x) { x$longname }), 
+                file = file.path(outdir, paste(year, "var", sep = ".")), 
+                col.names = FALSE, 
+                row.names = TRUE, 
+                quote = FALSE)
+    
+    # close netCDF file
+    try(ncdf4::nc_close(ncout))
     
   }  ## Year loop
 } # model2netcdf.MAAT
