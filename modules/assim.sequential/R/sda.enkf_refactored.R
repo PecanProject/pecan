@@ -140,8 +140,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ##### interval is remade everytime depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
   interval    <- NULL
-  state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
-                          as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
+  state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables, '[[', 'min_value')),
+                          as.numeric(lapply(settings$state.data.assimilation$state.variables, '[[', 'max_value')))
   rownames(state.interval) <- var.names
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
@@ -219,12 +219,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       new.params <- params
     }
   #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
-    write.ensemble.configs(defaults = settings$pfts, 
+    outconfig <- write.ensemble.configs(defaults = settings$pfts, 
                            ensemble.samples = ensemble.samples, 
                            settings = settings,
                            model = settings$model$type, 
                            write.to.db = settings$database$bety$write,
-                           restart = restart.arg)->outconfig
+                           restart = restart.arg)
 
 
     run.id <- outconfig$runs$id
@@ -376,7 +376,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###---- 
     save(t, FORECAST, ANALYSIS, enkf.params,new.state,new.params,run.id,ensemble.id,ensemble.samples,inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
-    post.analysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
+    post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
   } ### end loop over time
   ###-------------------------------------------------------------------###
