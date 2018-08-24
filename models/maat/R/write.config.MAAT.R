@@ -209,8 +209,18 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
     
     # Run with met drivers 
   } else if (!is.null(settings$run$inputs$met)) {
-    met.dir <- dirname(settings$run$inputs$met$path)
-    met.file <- basename(settings$run$inputs$met$path)
+    # --- debugging lines
+    #PEcAn.logger::logger.info(paste0("Running with met drivers: ", dirname(settings$run$inputs$met$path)))
+    #PEcAn.logger::logger.info(paste0("Running with met drivers: ", settings$run$inputs$met$path))
+    #PEcAn.logger::logger.info(str(settings$run$inputs$met$path))
+    # ---
+    
+    ## temporary fix for #2064
+    #met.dir <- dirname(settings$run$inputs$met$path)
+    met.dir <- dirname(as.character(settings$run$inputs$met$path))
+    #met.file <- basename(settings$run$inputs$met$path)
+    met.file <- basename(as.character(settings$run$inputs$met$path))
+    
     file.copy(file.path(met.dir, list.files(met.dir, "*.xml")), 
               rundir, 
               overwrite = TRUE, 
