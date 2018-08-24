@@ -133,6 +133,11 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   # see: https://github.com/walkeranthonyp/MAAT/issues/8 for reference
   unlink(file.path(rundir,"leaf_user_dynamic.xml"), recursive = FALSE)
 
+  # remove leaf_user_met.xml file if running without met drivers. Look for this file during model2netCDF step to select processing path
+  if (is.null(settings$run$inputs$met)) {
+    unlink(file.path(rundir,"leaf_user_met.xml"), recursive = FALSE)
+  }
+
   # below is now required given that MAAT logic no longer moves or links to the run_MAAT.R script file
   run_maat_script <- file.path(settings$model$binary, "src", "run_MAAT.R")
   
@@ -195,7 +200,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
                     "\"odir <- ","'",outdir,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
                     ' library(PEcAn.MAAT); model2netcdf.MAAT(',
-                    "'",outdir,"',",
+                    "'",rundir,"',","'",outdir,"',",
                     settings$run$site$lat,",",
                     settings$run$site$lon,", '",
                     settings$run$start.date,"', '",
@@ -224,7 +229,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
                     "\""," ","\"metdata <- ","'",met.file,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
                     ' library(PEcAn.MAAT); model2netcdf.MAAT(',
-                    "'",outdir,"',",
+                    "'",rundir,"',","'",outdir,"',",
                     settings$run$site$lat,",",
                     settings$run$site$lon,", '",
                     settings$run$start.date,"', '",

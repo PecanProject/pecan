@@ -14,6 +14,8 @@
 ##' Converts all output contained in a folder to netCDF.
 ##' @name model2netcdf.MAAT
 ##' @title Function to convert MAAT model output to standard netCDF format
+##' @param rundir Location of MAAT model run (i.e. MAAT project) directory with all required model run inputs.
+##' This is needed to identify model runs with and without met drivers and control the model output conversion process
 ##' @param outdir Location of MAAT model output
 ##' @param sitelat Latitude of the site
 ##' @param sitelon Longitude of the site
@@ -23,20 +25,19 @@
 ##' @examples
 ##' \dontrun{
 ##' example.output <- system.file("out.csv",package="PEcAn.MAAT")
-##' model2netcdf.MAAT(outdir="~/",sitelat=9.154,sitelon=-79.848,start_date="2014-01-01 00:00:00",
+##' model2netcdf.MAAT(rundir="~/scratch/run/", outdir="~/", sitelat=9.154, sitelon=-79.848, start_date="2014-01-01 00:00:00",
 ##' end_date="2014-12-31 00:00:00")
 ##' }
 ##' 
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
 ##'
-model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
+model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
 
   # setup constants
   day_secs <- udunits2::ud.convert(1, "day", "seconds")
   
   # setup helper function
-  #        var_update("A","GPP","kgC m-2 s-1")
   var_update <- function(data, out, oldname, newname, oldunits, newunits=NULL, missval=-999, longname, ncdims) {
     ## define variable
     if(is.null(newunits)) newunits = oldunits
@@ -62,6 +63,9 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     return(out)
   }
   
+  ### look for leaf_user_met.xml file
+  met_exists <- file.exists(file.path(rundir,"leaf_user_met.xml"))
+
   ## TODO: Clean up and make this function more elegant.  In particular, refactor such that its easier to 
   ## manage output variables when running with/without met drivers vs have two separate processing paths below
   
@@ -76,7 +80,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
   num_years <- length(start_year:end_year)
   timezone <- "UTC"  # should be set based on met drivers and what time units they are in.  Ugh
   
-  if (!is.null(settings$run$inputs$met)) {
+  if (met_exists) {
     # ** maat.dates assumes UTC, is this correct? what if input met is in a local TZ??  need to revist this **
     maat_run_start_date <- format(lubridate::as_datetime(maat.output$time, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
     maat_dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz=timezone)  
@@ -96,11 +100,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     
     PEcAn.logger::logger.info(paste("---- Processing MAAT output year: ", year))
     
-    if (!is.null(settings$run$inputs$met)) {
-      # setup netCDF time variable for year
-      t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
-                            vals = sub.maat.doy + day.steps, calendar = "standard", 
-                            unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
+    if (met_exists) {
       
       ## Subset data for processing
       sub.maat.output <- subset(maat.output, lubridate::year(maat_dates) == year)
@@ -113,6 +113,11 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
       timestep.s <- day_secs / dims[1] # e.g. 1800 = 30 minute timesteps
       dayfrac <- 1 / dims[1]
       day.steps <- seq(0, 0.99, 1 / dims[1])
+      
+      # setup netCDF time variable for year
+      t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
+                            vals = sub.maat.doy + day.steps, calendar = "standard", 
+                            unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
       
       ### Parse MAAT output
       #output      <- list()  # create empty output
@@ -136,13 +141,22 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
       ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
 
     } else {
-
-      #t <- ncdf4::ncdim_def() since running without met time/day is irrelevant, I dont think we need this variable
-      
-      #t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
-      #                      vals = 1, calendar = "standard", 
-      #                      unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
-      
+      t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
+                            vals = 1, calendar = "standard", 
+                            unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
+      output <- NULL
+      ncdims <- list(lon, lat, t) 
+      output <- var_update(maat.output$A, output, "A", "GPP", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999,
+                           longname="Gross Primary Productivity", ncdims=ncdims)
+      output <- var_update(maat.output$rd, output, "rd", "leaf_respiration", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999,
+                           longname="Leaf Respiration Rate", ncdims=ncdims)
+      output <- var_update((1/(maat.output$rs)), output, "gs", "stomatal_conductance", oldunits="mol H2O m-2 s-1",
+                           newunits="kg H2O m-2 s-1", missval=-999, longname="Leaf Stomatal Conductance", ncdims=ncdims)
+      output <- var_update(maat.output$ci, output, "ci", "Ci", oldunits="Pa",
+                           newunits="Pa", missval=-999, longname="Leaf Internal CO2 Concentration", ncdims=ncdims)
+      output <- var_update(maat.output$cc, output, "cc", "Cc", oldunits="Pa",
+                           newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
+      ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##  
     }
     
     ## write netCDF data
