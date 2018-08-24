@@ -36,17 +36,18 @@ convert.samples.MAAT <- function(trait.samples, runid) {
   trait.names[trait.names == "leaf_respiration_rate_m2"]    <- "atref.rd"
   trait.names[trait.names == "Vcmax"]                       <- "atref.vcmax"
   trait.names[trait.names == "Jmax"]                        <- "atref.jmax"
-  trait.names[trait.names == "Ev_Arrhenius"]                <- "Ha.vcmax"  # Arrhenius activation energy
-  trait.names[trait.names == "Ej_Arrhenius"]                <- "Ha.jmax"  # Arrhenius activation energy
-  trait.names[trait.names == "Ha_Modified_Arrhenius_Vcmax"] <- "Ha.vcmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "Hd_Modified_Arrhenius_Vcmax"] <- "Hd.vcmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"]  <- "Ha.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"]  <- "Hd.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Ev_Arrhenius"]                <- "Ha.vcmax"   # Arrhenius activation energy
+  trait.names[trait.names == "Ej_Arrhenius"]                <- "Ha.jmax"    # Arrhenius activation energy
+  trait.names[trait.names == "Ha_Modified_Arrhenius_Vcmax"] <- "Ha.vcmax"   # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Hd_Modified_Arrhenius_Vcmax"] <- "Hd.vcmax"   # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"]  <- "Ha.jmax"    # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"]  <- "Hd.jmax"    # !!TODO: Allow for the same prior to update both Vcmax and Jmax
   trait.names[trait.names == "stomatal_slope"]              <- "g1_leuning"
   trait.names[trait.names == "stomatal_slope.g1"]           <- "g1_medlyn"
   trait.names[trait.names == "stomatal_slope.BB"]           <- "g1_ball"
   trait.names[trait.names == "f_frac"]                      <- "f"
   trait.names[trait.names == "theta"]                       <- "theta_j"    # curvature of J quadratic in Farqhuar & Wong 1984       (unitless)
+  trait.names[trait.names == "leaf_respiration Q10"]        <- "q10.rd"     # Q10 of Rd (unitless)
   colnames(trait.samples) <- trait.names
   
   ### Conversions -- change to only use if Collatz, should also provide standard Rd oputput
@@ -76,6 +77,10 @@ convert.samples.MAAT <- function(trait.samples, runid) {
     trait.samples[["a"]] <- leaf_abs
     remove <- which(colnames(trait.samples)=="leaf_trans_vis" | colnames(trait.samples)=="leaf_reflect_vis")
     trait.samples <- trait.samples[,-remove]
+  }
+  if ("leaf_width" %in% names(trait.samples)) {
+    ## Convert from mm to m
+    trait.samples <- transform(trait.samples, leaf_width = udunits2::ud.convert(leaf_width, "mm", "m"))
   }
 
   # for debugging conversions 
