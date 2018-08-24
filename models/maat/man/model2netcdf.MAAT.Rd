@@ -4,10 +4,13 @@
 \alias{model2netcdf.MAAT}
 \title{Function to convert MAAT model output to standard netCDF format}
 \usage{
-model2netcdf.MAAT(outdir, sitelat = -999, sitelon = -999,
+model2netcdf.MAAT(rundir, outdir, sitelat = -999, sitelon = -999,
   start_date = NULL, end_date = NULL)
 }
 \arguments{
+\item{rundir}{Location of MAAT model run (i.e. MAAT project) directory with all required model run inputs.
+This is needed to identify model runs with and without met drivers and control the model output conversion process}
+
 \item{outdir}{Location of MAAT model output}
 
 \item{sitelat}{Latitude of the site}
@@ -27,8 +30,8 @@ Converts all output contained in a folder to netCDF.
 \examples{
 \dontrun{
 example.output <- system.file("out.csv",package="PEcAn.MAAT")
-model2netcdf.MAAT(outdir="~/",sitelat=9.154,sitelon=-79.848,start_date="2014-01-01 00:00:00",
-end_date="2014-12-31 00:00:00")
+model2netcdf.MAAT(rundir="~/scratch/run/", outdir="~/", sitelat=9.154, sitelon=-79.848, 
+start_date="2014-01-01 00:00:00", end_date="2014-12-31 00:00:00")
 }
 
 }

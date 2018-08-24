@@ -111,7 +111,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
     if(!any(matches)){
       return(x)
     }
-    nested <- setNames(x[matches], gsub(pattern, "", names(x[matches])))
+    nested <- stats::setNames(x[matches], gsub(pattern, "", names(x[matches])))
     x <- x[!matches]
     x[[new_name]] <- nested
     x

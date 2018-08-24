@@ -25,8 +25,8 @@
 ##' @examples
 ##' \dontrun{
 ##' example.output <- system.file("out.csv",package="PEcAn.MAAT")
-##' model2netcdf.MAAT(rundir="~/scratch/run/", outdir="~/", sitelat=9.154, sitelon=-79.848, start_date="2014-01-01 00:00:00",
-##' end_date="2014-12-31 00:00:00")
+##' model2netcdf.MAAT(rundir="~/scratch/run/", outdir="~/", sitelat=9.154, sitelon=-79.848, 
+##' start_date="2014-01-01 00:00:00", end_date="2014-12-31 00:00:00")
 ##' }
 ##' 
 ##' @export
@@ -166,7 +166,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
     }
     
     ## extract variable and long names to VAR file for PEcAn vis
-    write.table(sapply(ncout$var, function(x) { x$longname }), 
+    utils::write.table(sapply(ncout$var, function(x) { x$longname }), 
                 file = file.path(outdir, paste(year, "var", sep = ".")), 
                 col.names = FALSE, 
                 row.names = TRUE, 
