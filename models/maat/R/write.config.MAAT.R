@@ -47,7 +47,7 @@ convert.samples.MAAT <- function(trait.samples, runid) {
   trait.names[trait.names == "stomatal_slope.BB"]           <- "g1_ball"
   trait.names[trait.names == "f_frac"]                      <- "f"
   trait.names[trait.names == "theta"]                       <- "theta_j"    # curvature of J quadratic in Farqhuar & Wong 1984       (unitless)
-  trait.names[trait.names == "leaf_respiration Q10"]        <- "q10.rd"     # Q10 of Rd (unitless)
+  trait.names[trait.names == "leaf_respiration_Q10"]        <- "q10.rd"     # Q10 of Rd (unitless)
   colnames(trait.samples) <- trait.names
   
   ### Conversions -- change to only use if Collatz, should also provide standard Rd oputput
