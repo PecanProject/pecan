@@ -9,7 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
-
+- Fixed issue #2064 which sends one met path to write.sa.config.
 - `PEcAn.data.land::soil_params` now accepts any 2 out of 3 texture components as documented, and correctly converts percentages to proportion (#2043).
 
 ### Added
@@ -96,6 +96,18 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 	- `get_cf_variables_table` -- Retrieve CF variables table as a `data.frame` 
 
 
+- docker:
+  - Added updated docker container builds
+    - Use docker.sh to create docker images
+    - Use release.sh to push released images to push to docker registry (hub.docker.com by default)
+  - Create pecan/depends docker image that holds all PEcAn dependencies
+    - Needs to build seperatly, not part of the docker.sh build process to speed things up
+    - Build using `(cd docker ; docker build -t pecan/depends:latest -f Dockerfile.depends .)`
+  - docker-compose.yml file to bring up full PEcAn stack using docker
+    - First time to start requires to install BETY database (see documentation)
+  - SIPNET docker image which works with PEcAn docker stack
+  - Data container that will download and install demo data in /data folder
+
   
 ### Removed
   - pecan.worldmap function no longer used, dropped from visualization package
@@ -107,7 +119,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Five functions from PEcAn.utils functions have been moved to other packages. The versions in PEcAn.utils are deprecated, will not be updated with any new features, and will be removed in a future release.
   - run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow 
   - read.ensemble.output, get.ensemble.samples and write.ensemble.configs have been moved to PEcAn.uncertainty
-    
+- Change the way packages are checked for and called in SHINY apps. DESCRIPTION files in SHINY apps are not the place to declare pacakge dpendencies.    
 
 
 ## [1.5.3] - 2018-05-15

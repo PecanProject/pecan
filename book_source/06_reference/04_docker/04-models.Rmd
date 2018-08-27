@@ -1,58 +1,160 @@
 
 # Dockerfiles for Models
 
-**THIS IS EXPERIMENTAL DO NOT USE THIS IN PRODUCTION SUBJECT TO CHANGE**
+In general we try to minimize the size of the images. To be able to do this we split the process of creating the building of the model images into two pieces (or leverage of an image that exists from the original model developers). If you look at the example Dockerfile you will see that there are 2 sections, the first section will build the model binary, the second section will build the actual PEcAn model, which copies the binary from the first section.
 
-Each model will be disitrbuted as a docker container. These docker containers will contain the model, as well as some additional code to convert the output from the model to the standard PEcAn output, and code to connect to the message bus and receive messages.
+This is an example of how the ED2 model is build. This will install all the packages needed to build ED2 model, gets the latest version from GitHub and builds the model.
 
-Most of these dockerfiles will be the same and will compile the model in one container, copy the resulting binary and any additional files needed to a second container and add all PEcAn pieces needed. This process will reduce the size of the final image.
+The second section will create the actual model executor. This will leverage the PEcAn executor image that has PEcAn already installed as well as the python code to listen for messages and run the actual model code. This will install some additional packages needed by the model binary (more about that below) as well as set the `MODEL_TYPE` and `MODEL_VERSION` variables. These variables will be used to specify the queue that the model will listen on for any execution requests.
 
-Each of these docker images will be ready to run the model given an input file and produce outputs that conform to PEcAn. Each container will contain a small script that will execute the binary, check the model exit code, convert the model output to PEcAn output and quit. The conversion from the model specific output to the PEcAn output is done by calling the  model2netcdf. This code will assume the site is located at lat=0, lon=0. To set this you can start the docker process with `-e "SITE_LAT=35.9782" -e "SITE_LON=-79.0942"`. The following variables can be set:
+It is important that the `MODEL_TYPE` and `MODEL_VERSION` match what is in the BETY database. The PEcAn code will use what is in the BETY database to send out a message to a specfic worker queue, if you do not set these variables correctly your model executor will pick up messages for the wrong model.
 
-- `SITE_LAT`  : Latitutude of the site, written in output files, default is 0
-- `SITE_LON` : Longitude of the site, written in output files, default is 0
-- `START_DATE` : Start date of the model to be executed.
-- `END_DATE`  : End date of the model to be executed.
-- `DELETE_RAW` : Should the model output be deleted, default is no.
-- `OVERWRITE`  : Should any results be overwritten
+To build the docker image, we use a Dockerfile (see example below) and run the following command. This command will expect the Dockerfile.ed2 to live in the current folder. It will also copy the content of the current folder and make it available to the build process (in this example we do not need any additional files). The image will be named pecan/model-ed2, since we do not specify the exact version it will be atomically be named `pecan/model-ed2:latest`.
 
-Following environment variables are only for information purpose and should not be changed:
-- `MODEL` : The name of the model, used in the script to run the model
-- `BINARY` : Location of the acutual binary, used in the script to run the model
-- `OUTDIR` : Location where data is, in this case /work
-- `PECAN_VERSION` : Version of PEcAn used to compile, default is develop
-
-## SIPNET
-
-The folllowing command will build sipnet v136 for PEcAn using the branch that is currently checked out.
-
-```bash
+````bash
 docker build \
-	--build-arg MODEL_VERSION=136 \
-	--build-arg PECAN_VERSION=$(git rev-parse --abbrev-ref HEAD) \
-	--tag pecan/pecan-sipnet:136 \
-	--file docker/Dockerfile.sipnet \
+	--tag pecan/model-ed2 \
+	--file Dockerfile.ed2 \
 	.
+````
+
+Example of a Dockerfile, in this case to build the ED2 model.
+
+```dockerfile
+# ----------------------------------------------------------------------
+# FIRST STAGE : BUILD MODEL BINARY
+# ----------------------------------------------------------------------
+FROM debian:testing as model-binary
+
+# Some variables that can be used to set control the docker build
+ARG MODEL_VERSION=git
+
+# install dependencies
+RUN apt-get update \
+    && apt-get install -y \
+       build-essential \
+       curl \
+       gfortran \
+       git \
+       libhdf5-dev \
+       libopenmpi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# download, unzip and build ed2
+WORKDIR /src
+RUN git clone https://github.com/EDmodel/ED2.git \
+    && cd ED2/ED/build \
+    && curl -o make/include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.Linux \
+    && if [ "${MODEL_VERSION}" != "git" ]; then git checkout ${MODEL_VERSION}; fi \
+    && ./install.sh -g -p VM
+
+########################################################################
+
+# ----------------------------------------------------------------------
+# SECOND STAGE : BUILD PECAN FOR MODEL
+# ----------------------------------------------------------------------
+FROM pecan/executor:latest
+
+# ----------------------------------------------------------------------
+# INSTALL MODEL SPECIFIC PIECES
+# ----------------------------------------------------------------------
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       libgfortran5 \
+       libopenmpi3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# ----------------------------------------------------------------------
+# SETUP FOR SPECIFIC MODEL
+# ----------------------------------------------------------------------
+
+# Some variables that can be used to set control the docker build
+ARG MODEL_VERSION=git
+
+# variables to store in docker image
+ENV APPLICATION="./job.sh" \
+    MODEL_TYPE="ED2" \
+    MODEL_VERSION="${MODEL_VERSION}" \
+    RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
+
+# COPY model binary
+COPY --from=model-binary /src/ED2/ED/build/ed_2.1-opt /usr/local/bin/ed2.${MODEL_VERSION}
 ```
 
-Once the process is finished you can push (upload) the created image to docker hub. It will use the tag to place the image. In this case the image will be placed in the pecan project as the pecan-sipnet repository and tagged with 136. To do this you can use:
+Once the model has build and is working we can add it to the PEcAn stack and be able to use this model in the web interface. There are two methods to start this new model. First, we can add it to the `docker-compose.yml` file and start the container using `docker-compose -p pecan -d up`.
+
+```yaml
+  sipnet:
+    image: pecan/model-ed2
+    networks:
+      - pecan
+    volumes:
+      - pecan:/data
+    depends_on:
+       - rabbitmq
+    restart: unless-stopped
+```
+
+Alternatively we can start the container manually using the following command.
 
 ```bash
-# do this only once
-docker login
-# push image
-docker push pecan/pecan-sipnet:136
+docker run \
+	--detach \
+	--rm \
+	--name pecan-ed2 \
+	--networks pecan_pecan \
+	--volume pecan_pecan:/data
+	pecan/model-ed2
 ```
 
-Once the image is pushed to dockerhub anybody can run the model. If you have not already downloaded the docker container the run command will download the image. Next it will run the image and will execute either the default command or the comman line given to the container. In the following example the default command is executed which will run the model and generate the PEcAn output files.
+## Common problems
+
+Following are some solutions for common problems that you might encounter when building the docker images for a model.
+
+### Debugging missing libraries
+
+When building the model binary it might require specific libraries to be installed. In the second stage the model binary is copied into a new image, which could result in the binary missing specific libraries. In the case of the ED2 model the following was used to find the libraries that are needed to be installed (libgfortran5 and libopenmpi3).
+
+The first step is to build the model using the Dockerfile (in this case the ap-get install was missing in the second stage).
+
+
+```
+Step 5/9 : RUN git clone https://github.com/EDmodel/ED2.git     && cd ED2/ED/build     && curl -o make/include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`     && if [ "${MODEL_VERSION}" != "git" ]; then git checkout ${MODEL_VERSION}; fi     && ./install.sh -g -p VM
+... LOTS OF OUTPUT ...
+make[1]: Leaving directory '/src/ED2/ED/build/bin-opt-E'
+Installation Complete.
+Removing intermediate container a53eba9a8fc1
+ ---> 7f23c6302130
+Step 6/9 : FROM pecan/executor:latest
+ ---> f19d81b739f5
+... MORE OUTPUT ...
+Step 9/9 : COPY --from=model-binary /src/ED2/ED/build/ed_2.1-opt /usr/local/bin/ed2.${MODEL_VERSION}
+ ---> 07ac841be457
+Successfully built 07ac841be457
+Successfully tagged pecan/pecan-ed2:latest
+```
+
+At this point we have created a docker image with the binary and all PEcAn code that is needed to run the model. Some models (especially those build as native code) might be missing additional packages that need to be installed in the docker image. To see if all libraries are installed for the binary.
 
 ```bash
-# get test data (only need to do this once)
-curl -o sipnet.data.zip http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet.data.zip
-unzip sipnet.data.zip
-# cleanup if you rerun
-rm -f sipnet.data/{*.nc*,DONE,ERROR,sipnet.out,std*.log}
-# run the actual model
-docker run -t -i --rm -v ${PWD}/sipnet.data:/work pecan/pecan-sipnet:136
+> docker run -ti --rm pecan/pecan-ed2 /bin/bash
+root@8a95ee8b6b47:/work# ldd /usr/local/bin/ed2.git  | grep "not found"
+    libmpi_usempif08.so.40 => not found
+    libmpi_usempi_ignore_tkr.so.40 => not found
+    libmpi_mpifh.so.40 => not found
+    libmpi.so.40 => not found
+    libgfortran.so.5 => not found
 ```
 
+Start the build container again (this is the number before the line FROM pecan/executor:latest, 7f23c6302130 in the example), and find the missing libraries listed above (for example libmpi_usempif08.so.40):
+
+```bash
+> docker run --rm -ti 7f23c6302130
+root@e716c63c031f:/src# dpkg -S libmpi_usempif08.so.40
+libopenmpi3:amd64: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_usempif08.so.40.10.1
+libopenmpi3:amd64: /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so.40.10.1
+libopenmpi3:amd64: /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so.40
+```
+
+This shows the pages is libopenmpi3 that needs to be installed, do this for all missing packages, modify the Dockerfile and rebuild. Next time you run the ldd command there should be no more packages being listed.
