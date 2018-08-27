@@ -14,7 +14,7 @@ Contruct.Pf <- function(site.ids, var.names, X) {
   
   nsite <- length(site.ids)
   nvariable <- length(var.names)
-  # I will make a big cov matrixand then I will populate it when cov of each site
+  # I will make a big cov matrix and then I will populate it with cov of each site
   pf.matrix <-matrix(0,(nsite*nvariable),(nsite*nvariable))
   
   ## This makes the diagnol of our big matrix - first filters out each site, estimates the cov and puts it where it needs to go.

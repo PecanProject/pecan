@@ -17,7 +17,7 @@ Contruct.Pf(site.ids, var.names, X)
 It returns the var-cov matrix of state variables at multiple sites.
 }
 \description{
-The argument X needs to have an atrribute poiting the state variables to their corresponding site. This atrribute needs to be called `Site`.
+The argument X needs to have an atrribute pointing the state variables to their corresponding site. This atrribute needs to be called `Site`.
 At the moment, the cov between state variables at block defining the cov between two sites are assumed zero.
 }
 \author{
