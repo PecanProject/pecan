@@ -5,7 +5,7 @@
 ##' @param site.ids a vector name of site ids  
 ##' @param var.names vector names of state variable names
 ##' @param X a matrix of state variables. In this matrix rows represent ensembles, while columns show the variables for different sites.
-##' @description The argument X needs to have an atrribute poiting the state variables to their corresponding site. This atrribute needs to be called `Site`.
+##' @description The argument X needs to have an atrribute pointing the state variables to their corresponding site. This atrribute needs to be called `Site`.
 ##' At the moment, the cov between state variables at block defining the cov between two sites are assumed zero.
 ##' @return It returns the var-cov matrix of state variables at multiple sites.
 ##' @export
@@ -17,7 +17,7 @@ Contruct.Pf <- function(site.ids, var.names, X) {
   # I will make a big cov matrixand then I will populate it when cov of each site
   pf.matrix <-matrix(0,(nsite*nvariable),(nsite*nvariable))
   
-  
+  ## This makes the diagnol of our big matrix - first filters out each site, estimates the cov and puts it where it needs to go.
   for (site in site.ids){
     #let's find out where this cov (for the current site needs to go in the main cov matrix)
     pos.in.matrix <- which(attr(X,"Site") %in% site)
