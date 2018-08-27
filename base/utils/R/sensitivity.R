@@ -296,6 +296,15 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               file = file.path(settings$rundir, run.id, "README.txt"), 
               sep = "")
           
+          # I check to make sure the path under the met is a list. if it's specified what met needs to be used in 'met.id' under sensitivity analysis of pecan xml we used that otherwise, I use the first met.
+          if (is.list(settings$run$inputs$met$path)){
+            if (is.null(settings$sensitivity.analysis$met.id))  settings$sensitivity.analysis$met.id <- 1
+            settings$run$inputs$met$path <- settings$run$inputs$met$path [settings$sensitivity.analysis$met.id]
+            
+          }
+          
+          
+          
           # write configuration
           do.call(my.write.config, args = list(defaults = defaults,
                                                trait.values = trait.samples, 
