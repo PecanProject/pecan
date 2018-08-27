@@ -14,7 +14,7 @@ Contruct.Pf <- function(site.ids, var.names, X) {
   
   nsite <- length(site.ids)
   nvariable <- length(var.names)
-  # I will make a big cov matrix and then I will populate it with cov of each site
+  # I will make a big cov matrix and then I will populate it withgit status cov of each site
   pf.matrix <-matrix(0,(nsite*nvariable),(nsite*nvariable))
   
   ## This makes the diagnol of our big matrix - first filters out each site, estimates the cov and puts it where it needs to go.
@@ -37,7 +37,7 @@ Contruct.Pf <- function(site.ids, var.names, X) {
     #estimated between these two sites
     two.site.cov <- cov( X [, c(rows.in.matrix, cols.in.matrix)] )[(nvariable+1):(2*nvariable),1:nvariable]
     # this is something we can pplay around with - I'm setting the off diag to zero 
-    #here is where we do the localoziation
+    #here is where we do the localization
     two.site.cov [which(lower.tri(two.site.cov, diag = FALSE),T) %>% rbind (which(upper.tri(two.site.cov,F),T))] <- 0
   
     #putting it back to the main matrix
