@@ -301,7 +301,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
             # This checks for met.id tag in the settings under sensitivity analysis - if it's not there it creates it. Then it's gonna use what it created.
             if (is.null(settings$sensitivity.analysis$met.id))  settings$sensitivity.analysis$met.id <- 1
              
-              settings$run$inputs$met$path <- settings$run$inputs$met$path[settings$sensitivity.analysis$met.id]
+              settings$run$inputs$met$path <- settings$run$inputs$met$path[[settings$sensitivity.analysis$met.id]]
             
           }
           
