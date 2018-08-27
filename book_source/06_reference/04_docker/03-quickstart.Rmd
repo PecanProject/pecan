@@ -6,7 +6,7 @@ This is a short documentation on how to start with Docker and PEcAn. This will n
 
 You will need to install docker first. See https://www.docker.com/community-edition#/download
 
-##Running PEcAn
+## Running PEcAn
 
 We will use a yaml file to describe the containers that we make up, This yaml file is called [docker-compose.yml](https://github.com/PecanProject/pecan/blob/master/docker-compose.yml). Before you get started you will need to download this file first. Place this file somewhere on your machine and cd to the folder that contains this file.
 
