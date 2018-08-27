@@ -36,7 +36,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
 
   ### Read in model output in MAAT format
   maat.out.file <- file.path(outdir, list.files(outdir,'*.csv$')) # updated to handle mod_mimic runs
-  maat.output <- read.csv(maat.out.file, header = TRUE, sep = ",")
+  maat.output <- utils::read.csv(maat.out.file, header = TRUE, sep = ",")
   maat.output.dims <- dim(maat.output)
 
   ### Determine number of years and output timestep

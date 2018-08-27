@@ -1,5 +1,6 @@
 ## Some global environment variables
-.wd <- "/home/ldramko/NEFI_tools/pecan_scripts/"
+.wd <- getwd() # Set this to whatever you want the working directory to be.  If this is run off a cron job, 
+               # you probably do not want the working directory to be cron's working directory, which is what getwd will return.
 
 
 ##'

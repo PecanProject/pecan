@@ -1,6 +1,6 @@
 Author: Luke Dramko
 
-This collection of R scripts utilizes the PEcAn workflow to iteratively run forecasts and do state data assimilation.
+This collection of R scripts utilizes the PEcAn workflow to iteratively run forecasts.
 
 run.gefs.sipnet.sh, generate.gefs.xml.R, and gefs.sipnet.source.xml work in tandem
 to run PEcAn's SIPNET model with current NOAA GEFS data.  This system can be put
@@ -23,7 +23,8 @@ These paths are listed as variables at the top of the file; simply change them t
 -- gefs.sipnet.source.xml --
 This is the basis xml file from which all workflows are based.  generate.gefs.xml.R
 uses this as its basis.  Aside from the fields which generate.gefs.xml.R changes,
-all changes to the xml file are conserved between runs.
+all changes to the xml file are conserved between runs.  This xml contains settings
+for state data assimilation; change remove these if SDA is not to be used.
 
 -- generate.gefs.xml.R --
 This script overwrites gefs.sipnet.source xml with fresh values for any given run.
@@ -43,12 +44,21 @@ Several other scripts are included to make gathering and interpeting data easier
 
 -- graphs.R --
 Generates a graph of NEE and LE calculated via a run with a 95% confidence interval
-vs. observed data.  Can be called with either a date
-or a workflow ID as a command line argument.
+vs. observed data.  Can be called with either a date or a workflow ID as a command line argument.
 By default, this script places all graphs in ./graphs/.  If you want a different directory, change the graphs_dir
 file path at the start of the file.
 
 graphs.R is not intended to be a part of the PEcAn workflow; it is an independent script.
+
+-- graphs_timeframe.R --
+graphs_timeframe.R is intended to be used to make frames for a gif or other video format.  It locks the x and y axes,
+leading to consistent axes values between runs.  (graphs.R uses ggplot2's default x and y axes, which fit themselves to the
+data).  graphs_timeframe.R will graph only NEE or LE; this is because when both are graphed, the pdf device puts
+them into a single file.  graphs_timeframe.R accepts a second command line argument telling it which to run for.
+graphs_timeframe.R pads the data with NA's in order to properly place the data in the appropriate
+time span in the graph.  Otherwise, it works like graphs.R.
+
+Like graphs.R, graphs_timeframe.R is not intended to be part of the PEcAn workflow; it is an independent script.
 
 -- last12days.R --
 This is a simple and very specific script that runs NOAA GEFS for the last 12

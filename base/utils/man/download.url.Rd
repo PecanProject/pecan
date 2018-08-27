@@ -14,10 +14,10 @@ download.url(url, file, timeout = 600, .opts = list(),
 
 \item{timeout}{number of seconds to wait for file (default 600)}
 
-\item{retry404}{retry on a 404, this is used by Brown Dog}
-
-\item{list}{of options for curl, for example to download from a
+\item{.opts}{list of options for curl, for example to download from a
 protected site use list(userpwd=userpass, httpauth = 1L)}
+
+\item{retry404}{retry on a 404, this is used by Brown Dog}
 }
 \value{
 returns name of file if successful or NA if not.

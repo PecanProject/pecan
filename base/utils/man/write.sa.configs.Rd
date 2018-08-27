@@ -2,31 +2,28 @@
 % Please edit documentation in R/sensitivity.R
 \name{write.sa.configs}
 \alias{write.sa.configs}
-\title{Write sensitivity analysis configs}
+\title{Write sensitivity analysis config files}
 \usage{
 write.sa.configs(defaults, quantile.samples, settings, model,
   clean = FALSE, write.to.db = TRUE)
 }
 \arguments{
-\item{quantile.samples}{}
+\item{defaults}{named list with default parameter values}
+
+\item{quantile.samples}{list of lists supplied by \link{get.sa.samples}}
 
 \item{settings}{list of settings}
 
-\item{pft}{pft id used to query PEcAn database}
+\item{model}{name of model to be run}
 
-\item{write.config}{a model-specific function to write config files, e.g. \link{write.config.ED}}
+\item{clean}{logical: Delete any existing contents of the directory specified by \code{settings$rundir} before writing to it?}
 
-\item{convert.samples}{a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED}}
-
-\item{ensemble.samples}{list of lists supplied by \link{get.sa.samples}}
+\item{write.to.db}{logical: Record this run to BETY? If TRUE, uses connection settings specified in \code{settings$database}}
 }
 \value{
 list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 }
 \description{
-Write sensitivity analysis config files
-}
-\details{
 Writes config files for use in sensitivity analysis.
 }
 \author{
