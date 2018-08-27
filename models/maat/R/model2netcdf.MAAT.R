@@ -128,8 +128,8 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
                            longname="Simulation Year", ncdims=ncdims)
       output <- var_update(sub.maat.doy + day.steps, output, "FracJulianDay", "FracJulianDay", oldunits='Frac DOY', newunits=NULL, missval=-999, 
                            longname="Fraction of Julian Date", ncdims=ncdims)
-      output <- var_update(sub.maat.output$A, output, "A", "GPP", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
-                           longname="Gross Primary Productivity", ncdims=ncdims)
+      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
+                           longname="Leaf assimilation rate", ncdims=ncdims)
       output <- var_update(sub.maat.output$rd, output, "rd", "leaf_respiration", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
                            longname="Leaf Respiration Rate", ncdims=ncdims)
       output <- var_update((1/(sub.maat.output$rs)), output, "gs", "stomatal_conductance", oldunits="mol H2O m-2 s-1", 
@@ -146,8 +146,8 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
                             unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
       output <- NULL
       ncdims <- list(lon, lat, t) 
-      output <- var_update(maat.output$A, output, "A", "GPP", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999,
-                           longname="Gross Primary Productivity", ncdims=ncdims)
+      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
+                           longname="Leaf assimilation rate", ncdims=ncdims)
       output <- var_update(maat.output$rd, output, "rd", "leaf_respiration", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999,
                            longname="Leaf Respiration Rate", ncdims=ncdims)
       output <- var_update((1/(maat.output$rs)), output, "gs", "stomatal_conductance", oldunits="mol H2O m-2 s-1",

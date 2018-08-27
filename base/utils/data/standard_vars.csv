@@ -63,7 +63,7 @@ Root carbon content, optionally by size class; alternatively specify fine_ and c
 "Qh",NA,"W m-2","Sensible heat","Energy Fluxes","real","lon","lat","time",NA,"Sensible heat flux into the boundary layer (positive into atmosphere)"
 "Qle",NA,"W m-2","Latent heat","Energy Fluxes","real","lon","lat","time",NA,"Latent heat flux into the boundary layer (positive into atmosphere)"
 "Qg",NA,"W m-2","Ground heat","Energy Fluxes","real","lon","lat","time",NA,"Ground heat flux; ED2 output variable"
-"stomatal_conductance",NA,"kg m-2 s-1","Stomatal Conductance","Energy Fluxes","real","lon","lat","time",NA,"MAAT output variable"
+"stomatal_conductance",NA,"kg m-2 s-1","Stomatal Conductance","Energy Fluxes","real","lon","lat","time",NA,"Rate of leaf conductance of water vapor from the leaf sub-stomatal cavities to the atmosphere"
 "Evap",NA,"kg m-2 s-1","Total Evaporation","Energy Fluxes","real","lon","lat","time",NA,"Sum of all evaporation sources (positive into atmosphere)"
 "TVeg",NA,"kg m-2 s-1","Transpiration","Deprecated","real","lon","lat","time",NA,"Deprecated, to be replaced by Transp. Total Plant transpiration (always positive)"
 "Transp",NA,"kg m-2 s-1","Total transpiration","Energy Fluxes","real","lon","lat","time","pft","Total transpiration of each PFT within each grid cell"
@@ -110,3 +110,4 @@ Root carbon content, optionally by size class; alternatively specify fine_ and c
 "Estab",NA,"1 ha-1","New Individuals","Diversity","real","lon","lat","time","pft","New Individuals"
 "Mort",NA,"1 ha-1","Mortality","Diversity","real","lon","lat","time","pft","Individuals lost through death"
 "SoilDepth",NA,"m","Soil Depth Layer","Deprecated","real","depth",NA,NA,NA,"Depth to the bottom of each model-defined soil layer"
+"assimilation_rate",NA,"kg C m-2 s-1","Leaf assimilation rate","Carbon Fluxes","real","lon","lat","time",NA,"Rate of leaf photosynthesis / carbon assimilation"
