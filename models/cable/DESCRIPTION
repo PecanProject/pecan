@@ -1,8 +1,8 @@
 Package: PEcAn.CABLE
 Type: Package
 Title: PEcAn package for integration of the CABLE model
-Version: 1.5.3
-Date: 2018-04-26
+Version: 1.6.0
+Date: 2018-08-20
 Author: Kaitlin Ragosta
 Maintainer: Anthony Gardella <tonygard@bu.edu>
 Description: This module provides functions to link the (CABLE) to PEcAn.
