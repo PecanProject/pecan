@@ -2,12 +2,12 @@
 ##' @name  Contruct.Pf
 ##' @author Hamze Dokoohaki
 ##' 
-##' @param Pf  A cov matrix of forecast state variables.  
-##’  
-##' 
-##' @description This functions gives weights to different ensemble members based on their likelihood during the analysis step. Then it adjusts the analysis mean estimates of state variables based on the estimated weights.
-##' 
-##' @return Returns a vector of adjusted analysis mean estimates of state variables.
+##' @param site.ids a vector name of site ids  
+##' @param var.names vector names of state variable names
+##' @param X a matrix of state variables. In this matrix rows represent ensembles, while columns show the variables for different sites.
+##' @description The argument X needs to have an atrribute poiting the state variables to their corresponding site. This atrribute needs to be called `Site`.
+##' At the moment, the cov between state variables at block defining the cov between two sites are assumed zero.
+##' @return It returns the var-cov matrix of state variables at multiple sites.
 ##' @export
 
 Contruct.Pf <- function(site.ids, var.names, X) {
@@ -52,12 +52,15 @@ Contruct.Pf <- function(site.ids, var.names, X) {
 ##' @name  Construct.R
 ##' @author Hamze Dokoohaki
 ##' 
-##' @param Pf  A cov matrix of forecast state variables.  
+##' @param site.ids a vector name of site ids  
+##' @param var.names vector names of state variable names
+##' @param obs.t.mean list of vector of means for the time t for different sites.
+##' @param obs.t.cov list of list of cov for the time for different sites.
 ##’  
 ##' 
-##' @description This functions gives weights to different ensemble members based on their likelihood during the analysis step. Then it adjusts the analysis mean estimates of state variables based on the estimated weights.
+##' @description Make sure that both lists are named with siteids.
 ##' 
-##' @return Returns a vector of adjusted analysis mean estimates of state variables.
+##' @return This function returns a list with Y and R ready to be sent to the analysis functions.
 ##' @export
 
 Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
@@ -75,7 +78,7 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
     Y <- c(Y, unlist(obs.t.mean[[site]][choose]))
     pos <- which(site.ids %in% site)
     startp <- (pos-1)*(nvariable)+1
-    endp <- startp+nvariable-1
+    endp <- startp + nvariable - 1
     
     R.site<- as.matrix(obs.t.cov[[site]][choose,choose])
     R.site[is.na(R.site)]<-0
