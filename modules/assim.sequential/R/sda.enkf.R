@@ -930,10 +930,15 @@ for(t in seq_len(nt)) { #
       }
       Z[is.na(Z)]<-0
       
+      S_f  <- svd(Pf)
+      L_f  <- S_f$d
+      V_f  <- S_f$v
+      
       ## analysis
       S_a  <- svd(Pa)
       L_a  <- S_a$d
       V_a  <- S_a$v
+      
       
       ## analysis ensemble
       X_a <- X*0
