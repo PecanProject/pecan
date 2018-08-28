@@ -28,12 +28,28 @@ devtools::install_github("PecanProject/pecan", ref = "develop", subdir= "base/re
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/utils")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/settings")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "modules/data.atmosphere")
-devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "models/ed")
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "models/maat")
 
 library(PEcAn.MAAT)
 ```
 
 ## MAAT XML configuration
-
+```{xml maat}
+<config>
+  <mod_obj>leaf</mod_obj>
+  <leaf>
+    <fnames>
+      <vcmax>'f_vcmax_constant'</vcmax>
+      <jmax>'f_jmax_constant'</jmax>
+      <rs>'f_rs_ball1987'</rs>
+      <etrans>'f_j_farquharwong1984'</etrans>
+     </fnames>
+  
+  
+    <env>
+    </env>
+  </leaf>
+</config>
+```
 
 
