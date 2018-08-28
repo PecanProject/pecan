@@ -13,8 +13,7 @@ knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE,
 ```
 
 # Overview
-TO ADD INFO HERE
-
+A simple example to show how to setup and run MAAT simulations within the PEcAn framework.
 
 ## MAAT Installation and usage
 **MAAT model source:** https://github.com/walkeranthonyp/MAAT <br>
@@ -34,22 +33,125 @@ library(PEcAn.MAAT)
 ```
 
 ## MAAT XML configuration
-```{xml maat}
+
+### E.g. Running without met drivers and using user-specified met conditions
+```{xml maat_nomet}
 <config>
   <mod_obj>leaf</mod_obj>
   <leaf>
     <fnames>
       <vcmax>'f_vcmax_constant'</vcmax>
       <jmax>'f_jmax_constant'</jmax>
+      <rd>'f_rd_constant'</rd>
       <rs>'f_rs_ball1987'</rs>
       <etrans>'f_j_farquharwong1984'</etrans>
      </fnames>
-  
-  
-    <env>
-    </env>
+     <env>
+      <ca_conc>400</ca_conc>
+      <temp>30</temp>
+      <o2_conc>0.21</o2_conc>
+      <par>1500</par>
+      <water_l>0</water_l>
+      <sphag_l>0</sphag_l>
+      <vpd>1</vpd>
+      <rh>0</rh>
+      <atm_press>101325</atm_press>
+      <wind>1</wind>
+     </env>
   </leaf>
 </config>
 ```
 
+### E.g. Running with met drivers
+```{xml maat_met}
+<config>
+  <mod_obj>leaf</mod_obj>
+  <leaf>
+    <fnames>
+      <vcmax>'f_vcmax_constant'</vcmax>
+      <jmax>'f_jmax_constant'</jmax>
+      <rd>'f_rd_constant'</rd>
+      <rs>'f_rs_ball1987'</rs>
+      <etrans>'f_j_farquharwong1984'</etrans>
+     </fnames>
+  </leaf>
+</config>
+```
 
+## Full PEcAn XML configuration with MAAT options
+
+### E.g. pecan.xml file with MAAT configuration options.
+```{xml pecan_xml}
+<?xml version="1.0"?>
+<pecan>
+  <outdir>~/scratch/maat_pecan_test_run/</outdir>
+  
+  <database>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
+     </bety>
+  </database>
+
+  <pfts>
+    <pft>
+      <name>temperate.deciduous</name>
+    </pft>
+  </pfts>
+  
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>TRUE</update>
+  </meta.analysis>
+  
+  <ensemble>
+      <size>80</size>
+      <variable>assimilation_rate</variable>
+  </ensemble>
+  
+  <sensitivity.analysis>
+      <quantiles>
+          <sigma>-3</sigma>
+          <sigma>-2</sigma>
+          <sigma>-1</sigma>
+          <sigma>0</sigma>
+          <sigma>1</sigma>
+          <sigma>2</sigma>
+          <sigma>3</sigma>
+      </quantiles>
+      <variable>assimilation_rate</variable>
+  </sensitivity.analysis>
+  
+  <model>
+    <type>MAAT</type>
+      <id>2000000010</id>
+      <config>
+        <mod_obj>leaf</mod_obj>
+        <leaf>
+          <fnames>
+            <vcmax>'f_vcmax_constant'</vcmax>
+            <jmax>'f_jmax_constant'</jmax>
+            <rd>'f_rd_constant'</rd>
+            <rs>'f_rs_ball1987'</rs>
+            <etrans>'f_j_farquharwong1984'</etrans>
+            <tcor_asc>
+              <vcmax>'f_tcor_asc_Arrhenius'</vcmax>
+              <jmax>'f_tcor_asc_Arrhenius'</jmax>
+              <rd>'f_tcor_asc_Q10'</rd>
+              <tpu>'f_tcor_asc_Arrhenius'</tpu>
+            </tcor_asc>
+            <tcor_des>
+              <vcmax>'f_tcor_des_modArrhenius'</vcmax>
+              <jmax>'f_tcor_des_modArrhenius'</jmax>
+              <rd>'f_tcor_des_cox2001'</rd>
+           </tcor_des>
+          </fnames>
+        </leaf>
+</config>
+```
