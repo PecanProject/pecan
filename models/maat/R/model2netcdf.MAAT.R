@@ -24,9 +24,23 @@
 ##' 
 ##' @examples
 ##' \dontrun{
-##' example.output <- system.file("out.csv",package="PEcAn.MAAT")
-##' model2netcdf.MAAT(rundir="~/scratch/run/", outdir="~/", sitelat=9.154, sitelon=-79.848, 
-##' start_date="2014-01-01 00:00:00", end_date="2014-12-31 00:00:00")
+##' run_dir <- "~/scratch/run/"
+##' if (! file.exists(run_dir)) dir.create(run_dir,recursive=TRUE)
+##' output_dir <- "~/scratch/out/"
+##' if (! file.exists(output_dir)) dir.create(output_dir,recursive=TRUE)
+##' met_xml <- system.file("leaf_user_met.xml",package="PEcAn.MAAT")
+##' file.copy(from = met_xml, to = run_dir, overwrite = TRUE)
+##' example_output_file <- system.file("out.csv",package="PEcAn.MAAT")
+##' file.copy(from = example_output_file, to = output_dir, overwrite = TRUE)
+##' PEcAn.MAAT::model2netcdf.MAAT(run_dir, output_dir, sitelat=39.9712, sitelon=-74.4346, 
+##'                              start_date="2005/01/01", end_date="2005/12/31")
+##' ncfile <- ncdf4::nc_open(file.path(output_dir,"2005.nc"), write = TRUE)
+##' dat <- PEcAn.utils::misc.convert(ncdf4::ncvar_get(ncfile,"assimilation_rate"),"kg C m-2 s-1", "umol C m-2 s-1")
+##' try(ncdf4::nc_close(ncfile))
+##' x_axis <- seq(as.Date("2005/01/01"), as.Date("2005/12/31"), length.out=length(dat))
+##' dev.new(width=14, height=8, unit="in")
+##' plot(x_axis,dat,xlab="Time", ylab="Assimilation_Rate (umol/m2/s)",type="l")
+##' dev.off()
 ##' }
 ##' 
 ##' @export
