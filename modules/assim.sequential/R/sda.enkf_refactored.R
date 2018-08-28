@@ -186,8 +186,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------------###-----  
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
     if (t>1){
-      #removing old simulations
-      unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
+     #removing old simulations - why 2 ? because it's just the first run that make nc for every other years from the second round on ncs are made just for that year.
+     if (t==2)  unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- list()
       for(i in seq_len(nens)){

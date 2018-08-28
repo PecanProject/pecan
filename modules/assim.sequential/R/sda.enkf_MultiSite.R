@@ -276,11 +276,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                              var.names = var.names, 
                                                              params = params[[i]])
                               )
-          # states will be in X, but we also want to carry some deterministic relationships to write_restart
-          # these will be stored in params
-          #X[[i]]      <- X_tmp[[i]]$X
-          #if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
-          
+
         }
         return(X_tmp)
       })->reads
@@ -298,24 +294,27 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     # But therer is an attribute called site which tells yout what column is for what site id - check out attr (X,"Site")
     if (multi.site.flag)
     X <- X %>%
-          map_dfc(~.x)%>%as.matrix() %>%
-          `colnames<-`(c(rep(var.names,length(X)))) %>%
-          `attr<-`('Site',c(rep(site.ids,each=length(X))))
+          map_dfc(~.x) %>% 
+          as.matrix() %>%
+          `colnames<-`(c(rep(var.names, length(X)))) %>%
+          `attr<-`('Site',c(rep(site.ids, each=length(X))))
     
     
  
     #X <- do.call(rbind, X)
     FORECAST[[t]] <- X
     mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE)) %>%
-            `attr<-`('Site',c(rep(site.ids,each=length(site.ids))))
+            `attr<-`('Site', c(rep(site.ids, each=length(site.ids))))
     # I make the Pf in a separate function
     if(multi.site.flag & length(site.ids)>1){
+      # This the function and makes the Pf by creating blocks in it for different sites
+      # We can also send a localization functions to this 
+      # for extra argumnets like distance matrix for localization use elipsis
       Pf <- Contruct.Pf (site.ids, var.names, X)
     }else{
       Pf <- cov(X) 
     }
-    
-    
+
     #diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
@@ -328,14 +327,13 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       
       Y <- Obs.cons$Y
       R <- Obs.cons$R
-      #browser()
-     
-      
+
       if (length(obs.mean[[t]]) > 1) {
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
       }
       # !!!!!!!! This needs a lot of more work and attention . this sets up the H
+      # what if one site doesn't have a data just for one time step, how does stuff need to change.
       choose <- 1:length(Y)
       if (control$debug) browser()
       ###-------------------------------------------------------------------###

@@ -4,16 +4,20 @@
 \alias{Local.support}
 \title{Local.support}
 \usage{
-Local.support(Pf)
+Local.support(Pf, distance.mat, scalef = 1)
 }
 \arguments{
 \item{Pf}{Forecast error coveriance matrix}
+
+\item{distance.mat}{is matrix of distances between state variables and sites with the same dimension of Pf.}
+
+\item{scalef}{scalef is a numeric value that requires tunning and it controls the shape of the corrolation function}
 }
 \value{
 It returns a localized covariance matrix by taking a Schur product between Pf and a corrolation function
 }
 \description{
-Local.support
+distance.mat matrix doesn't need to be just the physical distance, however it represent a measure of similarity between state variables in different sites.
 }
 \author{
 Hamze Dokoohaki

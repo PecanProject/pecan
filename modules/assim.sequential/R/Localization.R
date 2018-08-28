@@ -19,3 +19,5 @@ Local.support <-function(Pf, distance.mat, scalef=1){
   
   return(Pf*rho)
 }
+
+
