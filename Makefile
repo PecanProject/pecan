@@ -86,7 +86,7 @@ $(call depends,modules/data.remote): | .install/base/remote
 $(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/settings .install/modules/priors
 $(call depends,modules/priors): | .install/base/utils
 $(call depends,modules/rtm): | .install/modules/assim.batch .install/base/utils .install/models/ed
-$(call depends,modules/uncertainty): | .install/base/utils .install/modules/priors
+$(call depends,modules/uncertainty): | .install/base/utils .install/base/db .install/modules/priors .install/modules/emulator
 $(call depends,models/biocro): | .install/mockery .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land .install/base/remote
 $(call depends,models/cable): | .install/base/utils
 $(call depends,models/clm45): | .install/base/utils
@@ -109,19 +109,19 @@ clean:
 	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools: | .install
-	time Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	+ time Rscript -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
 .install/roxygen2: | .install
-	time Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	+ time Rscript -e "if(!requireNamespace('roxygen2', quietly = TRUE)) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
 .install/testthat: | .install
-	time Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	+ time Rscript -e "if(!requireNamespace('testthat', quietly = TRUE)) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
 .install/mockery: | .install
-	time Rscript -e "if(!require('mockery')) install.packages('mockery', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	+ time Rscript -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
 depends_R_pkg = time Rscript -e "devtools::install_deps('$(strip $(1))', threads = ${NCPUS}, dependencies = TRUE);"
@@ -134,16 +134,16 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 
 .SECONDEXPANSION:
 .doc/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
-	$(call depends_R_pkg, $(subst .doc/,,$@))
+	+ $(call depends_R_pkg, $(subst .doc/,,$@))
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	echo `date` > $@
 
 .install/%: $$(wildcard %/**/*) $$(wildcard %/*) .doc/% | $$(@D)
-	$(call install_R_pkg, $(subst .install/,,$@))
+	+ $(call install_R_pkg, $(subst .install/,,$@))
 	echo `date` > $@
 
 .check/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
-	$(call check_R_pkg, $(subst .check/,,$@))
+	+ $(call check_R_pkg, $(subst .check/,,$@))
 	echo `date` > $@
 
 .test/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
