@@ -5,12 +5,13 @@
 ##' @param site.ids a vector name of site ids  
 ##' @param var.names vector names of state variable names
 ##' @param X a matrix of state variables. In this matrix rows represent ensembles, while columns show the variables for different sites.
+##' @param localization.FUN This is function that performs the localization of the Pf matrix and it returns a localized matrix with the same dimensions.
 ##' @description The argument X needs to have an atrribute pointing the state variables to their corresponding site. This atrribute needs to be called `Site`.
 ##' At the moment, the cov between state variables at block defining the cov between two sites are assumed zero.
 ##' @return It returns the var-cov matrix of state variables at multiple sites.
 ##' @export
 
-Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL) {
+Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL,...) {
   
   nsite <- length(site.ids)
   nvariable <- length(var.names)
@@ -44,7 +45,7 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL) {
     
   }
   # if I see that there is a localization function passed to this - I run it by the function.
-  if (!is.null(localization.FUN)) pf.matrix <- localization.FUN (pf.matrix)
+  if (!is.null(localization.FUN)) pf.matrix <- localization.FUN (pf.matrix,...)
   
   return(pf.matrix)
 

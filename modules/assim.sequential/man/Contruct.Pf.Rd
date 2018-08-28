@@ -4,7 +4,7 @@
 \alias{Contruct.Pf}
 \title{Contruct.Pf}
 \usage{
-Contruct.Pf(site.ids, var.names, X, localization.FUN = NULL)
+Contruct.Pf(site.ids, var.names, X, localization.FUN = NULL, ...)
 }
 \arguments{
 \item{site.ids}{a vector name of site ids}
@@ -12,6 +12,8 @@ Contruct.Pf(site.ids, var.names, X, localization.FUN = NULL)
 \item{var.names}{vector names of state variable names}
 
 \item{X}{a matrix of state variables. In this matrix rows represent ensembles, while columns show the variables for different sites.}
+
+\item{localization.FUN}{This is function that performs the localization of the Pf matrix and it returns a localized matrix with the same dimensions.}
 }
 \value{
 It returns the var-cov matrix of state variables at multiple sites.
