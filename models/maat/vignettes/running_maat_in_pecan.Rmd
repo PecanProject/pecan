@@ -111,7 +111,7 @@ library(PEcAn.MAAT)
   </meta.analysis>
   
   <ensemble>
-      <size>80</size>
+      <size>10</size>
       <variable>assimilation_rate</variable>
   </ensemble>
   
@@ -153,5 +153,29 @@ library(PEcAn.MAAT)
            </tcor_des>
           </fnames>
         </leaf>
-</config>
+    </config>
+  </model>
+  
+  <run>
+    <site>
+      <id>1000000146</id>
+        <met.start>2005/01/01</met.start>
+        <met.end>2006/12/31</met.end>
+     </site>
+      <inputs>
+        <met>
+          <source>AmerifluxLBL</source>
+            <output>MAAT</output>
+            <username>pecan</username>
+        </met>
+      </inputs>
+      <start.date>2005/01/01</start.date>
+      <end.date>2006/12/31</end.date>
+  </run>
+  
+  <host>
+    <name>localhost</name>
+  </host>
+  
+</pecan>
 ```
