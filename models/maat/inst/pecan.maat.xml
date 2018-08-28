@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>/data/sserbin/Modeling/maat/maat_test/</outdir>
-
+  <outdir>~/scratch/maat_pecan_test_run/</outdir>
+  
   <database>
     <bety>
       <driver>PostgreSQL</driver>
@@ -10,15 +10,15 @@
       <host>localhost</host>
       <dbname>bety</dbname>
       <write>FALSE</write>
-    </bety>
+     </bety>
   </database>
 
   <pfts>
     <pft>
-      <name>maat.all.plants</name> 
+      <name>temperate.deciduous</name>
     </pft>
   </pfts>
-
+  
   <meta.analysis>
     <iter>3000</iter>
     <random.effects>FALSE</random.effects>
@@ -27,46 +27,70 @@
   </meta.analysis>
 
   <ensemble>
-    <size>1</size>
-    <notes/>
-    <variable>GPP</variable>
+      <size>10</size>
+      <variable>assimilation_rate</variable>
   </ensemble>
-
+  
   <sensitivity.analysis>
-    <quantiles>
-      <sigma>-3</sigma>
-      <sigma>-2</sigma>
-      <sigma>-1</sigma>
-      <sigma>0</sigma>
-      <sigma>1</sigma>
-      <sigma>2</sigma>
-      <sigma>3</sigma>
-    </quantiles>
-    <variable>GPP</variable>
+      <quantiles>
+          <sigma>-3</sigma>
+          <sigma>-2</sigma>
+          <sigma>-1</sigma>
+          <sigma>0</sigma>
+          <sigma>1</sigma>
+          <sigma>2</sigma>
+          <sigma>3</sigma>
+      </quantiles>
+      <variable>assimilation_rate</variable>
   </sensitivity.analysis>
 
   <model>
-     <id>2000000006</id>
-     <type>MAAT</type>
-     <config>
-       <leaf>	
-         <fnames>
-           <vcmax>'f_constant_vcmax'</vcmax>
-           <jmax>'f_constant_jmax'</jmax>
-        </fnames>
-       </leaf>
-     </config>
+    <type>MAAT</type>
+      <id>2000000010</id>
+      <config>
+        <mod_obj>leaf</mod_obj>
+        <leaf>
+          <fnames>
+            <vcmax>'f_vcmax_constant'</vcmax>
+            <jmax>'f_jmax_constant'</jmax>
+            <rd>'f_rd_constant'</rd>
+            <rs>'f_rs_ball1987'</rs>
+            <etrans>'f_j_farquharwong1984'</etrans>
+            <tcor_asc>
+              <vcmax>'f_tcor_asc_Arrhenius'</vcmax>
+              <jmax>'f_tcor_asc_Arrhenius'</jmax>
+              <rd>'f_tcor_asc_Q10'</rd>
+              <tpu>'f_tcor_asc_Arrhenius'</tpu>
+            </tcor_asc>
+            <tcor_des>
+              <vcmax>'f_tcor_des_modArrhenius'</vcmax>
+              <jmax>'f_tcor_des_modArrhenius'</jmax>
+              <rd>'f_tcor_des_cox2001'</rd>
+           </tcor_des>
+          </fnames>
+        </leaf>
+    </config>
   </model>
 
   <run>
     <site>
-      <id>772</id>
-    </site>
-    <start.date>2005-07-15 00:00:00</start.date>
-    <end.date>2005-07-16 00:00:00</end.date>
-    <host> 
-      <name>localhost</name>
-    </host>
+      <id>1000000146</id>
+        <met.start>2005/01/01</met.start>
+        <met.end>2006/12/31</met.end>
+     </site>
+      <inputs>
+        <met>
+          <source>AmerifluxLBL</source>
+            <output>MAAT</output>
+            <username>pecan</username>
+        </met>
+      </inputs>
+      <start.date>2005/01/01</start.date>
+      <end.date>2006/12/31</end.date>
   </run>
-
+  
+  <host>
+    <name>localhost</name>
+  </host>
+  
 </pecan>
