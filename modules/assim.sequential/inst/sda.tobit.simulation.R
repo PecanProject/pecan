@@ -189,12 +189,12 @@ for(j in seq_along(mu.f)){
 }
 
 
-wts <- matrix(NA,20,50)
-for(i in 1:20){
-  wts[i,] <- sample(size = 50,x=1:50,replace = F)
+wts <- matrix(NA,nens,nens)
+for(i in 1:nens){
+  wts[i,] <- sample(size = nens,x=1:nens,replace = F)
 }
 
-wts <- rep(1,50)
+wts <- rep(1,nens)
 
 constants.tobit2space = list(N = nrow(X),
                              J = length(mu.f))
