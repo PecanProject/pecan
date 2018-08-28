@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>~/scratch/maat_pecan_test_run/</outdir>
+  <outdir>scratch/maat_pecan_test_run/</outdir>
   
   <database>
     <bety>
@@ -27,22 +27,9 @@
   </meta.analysis>
 
   <ensemble>
-      <size>10</size>
+      <size>5</size>
       <variable>assimilation_rate</variable>
   </ensemble>
-  
-  <sensitivity.analysis>
-      <quantiles>
-          <sigma>-3</sigma>
-          <sigma>-2</sigma>
-          <sigma>-1</sigma>
-          <sigma>0</sigma>
-          <sigma>1</sigma>
-          <sigma>2</sigma>
-          <sigma>3</sigma>
-      </quantiles>
-      <variable>assimilation_rate</variable>
-  </sensitivity.analysis>
 
   <model>
     <type>MAAT</type>
