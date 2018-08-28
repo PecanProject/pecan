@@ -21,11 +21,11 @@ Easiest way to install is via `install_github` from the `devtools` package. <br>
 
 ```R
 library(devtools)
-install_github("PecanProject/pecan", subdir="base/logger")
-install_github("PecanProject/pecan", subdir="base/remote")
-install_github("PecanProject/pecan", subdir="base/settings")
-install_github("PecanProject/pecan", subdir="base/utils")
-install_github("PecanProject/pecan", subdir="models/maat")
+install_github("PecanProject/pecan", ref = "develop", subdir="base/logger")
+install_github("PecanProject/pecan", ref = "develop", subdir="base/remote")
+install_github("PecanProject/pecan", ref = "develop", subdir="base/settings")
+install_github("PecanProject/pecan", ref = "develop", subdir="base/utils")
+install_github("PecanProject/pecan", ref = "develop", subdir="models/maat")
 ```
 
 If you want a specific branch, do `install_github(..., ref="<branch>")`.

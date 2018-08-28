@@ -1,7 +1,7 @@
 ---
 title: "PEcAn: Generating met drivers for the MAAT model using AmerifluxLBL tower observations"
 author: "Shawn Serbin"
-date: "2018/08/22"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
@@ -11,6 +11,11 @@ This is a demonstration of the PEcAn utilities for downloading met data, convert
 In this example we will download 6 years of met data from the [Willow Creek Eddy Covariance tower site (US-WCr)](http://ameriflux.lbl.gov/sites/siteinfo/US-WCr). It has an Ameriflux `SITE_ID` of `US-WCr`
 
 The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
+
+First make sure you have the nescessary PEcAn package for processing met data
+```{r install}
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "modules/data.atmosphere")
+```
 
 ```{r}
 library(knitr)
