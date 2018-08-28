@@ -126,7 +126,6 @@ script:
   - NCPUS=2 make -j1
   - echo 'Testing PEcAn packages'
   - make test
-  - make document
   - make check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
