@@ -13,7 +13,12 @@ dist: trusty
 sudo: required
 
 env:
-  - PGHOST=localhost
+  global:
+    # TODO: `make -j2` interleaves output lines from simultaneous processes.
+    # Would be nice to fix by adding `-Otarget`, but not supported in Make 3.x.
+    # When Travis updates, check for Make 4 and add -O if available.
+    - MAKEFLAGS="-j2"
+    - PGHOST=localhost
 
 cache: 
   - directories:
@@ -115,17 +120,13 @@ before_script:
 script:
   - set -e
   - echo 'Installing PEcAn packages'
-  # TODO: Would be nice to add `-Otarget` after `-j` below,
-  # but not supported in Make 3.x.
-  # When Travis updates, check for Make 4 and add -O if available.
-  - make # TODO: add -j2 here after #1976 closed
+  # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
+  # but many dependency compilations seem not parallel-safe.
+  # More debugging needed.
+  - NCPUS=2 make -j1
   - echo 'Testing PEcAn packages'
-  - make -j2 test
-  - make -j2 document
-  # Skip modules with known broken checks
-  - mkdir -p .check/modules # only needed for `touch` below
-  - touch .check/modules/rtm # delete when #1976 closed
-  - make -j2 check
+  - make test
+  - make check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 
