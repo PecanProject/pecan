@@ -244,6 +244,8 @@ if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.end()
 }
 
+PEcAn.logger::logger.info("*** Wait for model runs to finish. Since this is a serial execution of MAAT, it will take a few minutes ***")
+
 # Get results of model runs
 if (PEcAn.utils::status.check("OUTPUT") == 0) {
   PEcAn.utils::status.start("OUTPUT")
@@ -275,5 +277,33 @@ if (PEcAn.utils::status.check("FINISHED") == 0) {
 
 db.print.connections()
 print("---------- PEcAn Workflow Complete ----------")
+
+print(" ")
+print(" ")
+
+print("---------- Simple ensemble plot ----------")
+# create a simple timeseries plot of the ensemble output
+
+# get output and calculate some stats
+ensemble_output <- list.files(path = settings$outdir, pattern = "ensemble.ts.NOENSEMBLEID.*Rdata")
+load(file.path(settings$outdir,ensemble_output))
+timeseries_stats <- apply(ensemble.ts$assimilation_rate,2,quantile,probs=c(0.025,0.5,0.975))
+
+# create timeseries X axis
+x_axis <- seq(as.Date(settings$run$start.date), as.Date(settings$run$end.date), length.out=dim(timeseries_stats)[2])
+
+# create a new plot window
+dev.new(width=14, height=8, unit="in")
+
+# create plot
+plot(x_axis, PEcAn.utils::misc.convert(timeseries_stats[2,],"kg C m-2 s-1","umol C m-2 s-1"), type="l",cex=0.00001, col="white",
+     xlab="Time", ylab="Assimilation_rate (umol/m2/s)")
+polygon(c(x_axis ,rev(x_axis)),c(PEcAn.utils::misc.convert(timeseries_stats[3,],"kg C m-2 s-1","umol C m-2 s-1"), 
+                                 rev(PEcAn.utils::misc.convert(timeseries_stats[1,],"kg C m-2 s-1","umol C m-2 s-1"))),
+        col="#99CC99",border="#99CC99")
+lines(x_axis,PEcAn.utils::misc.convert(timeseries_stats[2,],"kg C m-2 s-1","umol C m-2 s-1"),lwd=1, lty=1, col="light grey")
+
+# close plot
+dev.off()
 
 ```
