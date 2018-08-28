@@ -4,10 +4,12 @@
 \alias{hop_test}
 \title{hop_test}
 \usage{
-hop_test(settings, ens.runid = NULL)
+hop_test(settings, ens.runid = NULL, nyear)
 }
 \arguments{
 \item{settings}{SDA PEcAn settings object}
+
+\item{nyear}{number of years to run hop test over}
 }
 \value{
 NONE
