@@ -1,0 +1,39 @@
+---
+title: "Running MAAT in PEcAn"
+author: "Shawn Serbin"
+date: "2018-08-28"
+output: html_document
+---
+
+```{r echo=FALSE}
+
+knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE, 
+                      fig.height= 3, fig.width = 8)
+
+```
+
+# Overview
+TO ADD INFO HERE
+
+
+## MAAT Installation and usage
+**MAAT model source:** https://github.com/walkeranthonyp/MAAT <br>
+Follow the instructions found here: https://github.com/walkeranthonyp/MAAT/blob/master/README.md <br>
+
+## Installing the R packages
+
+```{r install, eval = -(1:5)}
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/logger")
+devtools::install_github("PecanProject/pecan", ref = "develop", subdir= "base/remote")
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/utils")
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/settings")
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "modules/data.atmosphere")
+devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "models/ed")
+
+library(PEcAn.MAAT)
+```
+
+## MAAT XML configuration
+
+
+

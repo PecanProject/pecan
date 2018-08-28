@@ -1,7 +1,7 @@
 ---
 title: "PEcAn: Generating met drivers for the MAAT model using AmerifluxLBL tower observations"
 author: "Shawn Serbin"
-date: "`r Sys.Date()`"
+date: "2018-08-28"
 output: html_document
 ---
 
@@ -33,7 +33,7 @@ knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE,
 ```
 
 ## Connect to BETY database and retrieve appropriate format for AmerifluxLBL datasets [TODO: Update to work with R-OpenSci traits BETY]
-```{r}
+```{r bety}
 bety <- list(user='bety', password='bety', host='localhost',
              dbname='bety', driver='PostgreSQL',write=TRUE)
 con <- PEcAn.DB::db.open(bety)
