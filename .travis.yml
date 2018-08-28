@@ -127,10 +127,7 @@ script:
   - echo 'Testing PEcAn packages'
   - make test
   - make document
-  # Skip modules with known broken checks
-  - mkdir -p .check/modules # only needed for `touch` below
-  - touch .check/modules/benchmark # delete when #1978 closed
-  - make check
+  - make -j2 check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 

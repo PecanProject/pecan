@@ -393,9 +393,9 @@ for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${CHECK_TABLES} ${MANY_TABLES}; do
     if [ "${QUIET}" != "YES" ]; then
       if [ "$DEL" != "0" -o "$ADD" != "0" ]; then
         if [ "$DIFF" != "0" ]; then
-          printf "Updated  %-25s : %6d (%+d)\n" "${T}" ${ADD} ${DIFF}
+          printf "Updated  %-25s : %11d (%+d)\n" "${T}" ${ADD} ${DIFF}
         else
-          printf "Updated  %-25s : %6d\n" "${T}" ${ADD}
+          printf "Updated  %-25s : %11d\n" "${T}" ${ADD}
         fi
       fi
     fi

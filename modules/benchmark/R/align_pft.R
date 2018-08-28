@@ -26,7 +26,7 @@
 #' In the second case, must be passable to match_species_id. 
 #' @param format_one The output of query.format.vars() of observation one of the form output$vars$bety_names
 #' @param format_two The output of query.format.vars() of observation two of the form output$vars$bety_names
-#' @param subset_are_ok When aligning two species lists, this allows for alignement when species lists aren't identical. 
+#' @param subset_is_ok When aligning two species lists, this allows for alignement when species lists aren't identical. 
 #' set to FALSE by default. 
 #' @return \code{list} containing the following columns:
 #' \describe{
@@ -35,8 +35,9 @@
 #'  \item{\code{species}}{{Where possible, will return a vector of observation_two's pft's/species in the order of observation_one}}
 #'  \item{\code{$bety_species_id}}{Where possible, will return the bety_species_id's for one or both observations}
 #' }
+#'
 #' @author Tempest McCabe
-#' @examples
+#' @examples \dontrun{
 #' 
 #' 
 #' #------------ A species to PFT alignment -----------
@@ -54,10 +55,10 @@
 #' 
 #' aligned<-align_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
 #' format_one = format_one, format_two = format_two, custom_table = table)
-#' 
+#' }
 #' 
 #' @export
-align_pft<-function(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE, comparison_type="data_to_data", ...){
+align_pft<-function(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_is_ok=FALSE, comparison_type="data_to_data", ...){
 
   if(comparison_type == "data_to_model"){
     
@@ -67,7 +68,7 @@ align_pft<-function(con, observation_one, observation_two, custom_table=NULL, fo
     
   }else if (comparison_type == "data_to_data"){
     
-    align_data_to_data_pft(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE)
+    align_data_to_data_pft(con, observation_one, observation_two, custom_table, format_one, format_two, subset_is_ok=FALSE)
     
   }else if (comparison_type == "model_to_model"){
     
