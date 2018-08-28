@@ -1,19 +1,21 @@
 #install what we need
-lapply(c('dplyr','shinyWidgets','CodeDepends','visNetwork','ggplot2'),function(pkg){
-  if (!(pkg %in% installed.packages()[,1])) install.packages(pkg)
-})
+lapply(c('dplyr',
+         'shinyWidgets',
+         'CodeDepends',
+         'visNetwork',
+         'ggplot2',
+         'XML',
+         'shinydashboard'),function(pkg){
+    if (!(pkg %in% installed.packages()[,1])){
+          install.packages(pkg)
+          }
+           library(pkg,character.only = TRUE,quietly = TRUE)
+    }
+)
 
 if (!('DependenciesGraphs' %in% installed.packages()[,1])) devtools::install_github("datastorm-open/DependenciesGraphs")
 
 
-require(XML)
-require(shinydashboard)
-require(DependenciesGraphs)
-library(dplyr)
-library(shinyWidgets)
-library(CodeDepends)
-library(visNetwork)
-library(ggplot2)
 curentd2 <<- NULL
 curentd1 <<- NULL
 curentd3 <<- NULL
