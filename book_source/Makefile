@@ -11,7 +11,7 @@ build: bkdcheck
 clean:
 	rm -rf ../book/*
 
-deploy:
+deploy: build
 	./deploy.sh
 	
 pdf: bkdcheck
