@@ -34,5 +34,3 @@ From there, you should be able to load the package in your typical R session.
 
 ## MAAT-PEcAn run examples
 See [vignettes](vignettes/)
-
-Work in progress - check back later for example XML and scripts for running in PEcAn
