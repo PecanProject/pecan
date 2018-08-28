@@ -21,7 +21,7 @@ Follow the instructions found here: https://github.com/walkeranthonyp/MAAT/blob/
 
 ## Installing the R packages
 
-```{r install, eval = -(1:5)}
+```{r install, eval = -(1:6)}
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/logger")
 devtools::install_github("PecanProject/pecan", ref = "develop", subdir= "base/remote")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/utils")
