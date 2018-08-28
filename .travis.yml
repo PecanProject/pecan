@@ -127,7 +127,7 @@ script:
   - echo 'Testing PEcAn packages'
   - make test
   - make document
-  - make -j2 check
+  - make check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 
