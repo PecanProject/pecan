@@ -1,4 +1,4 @@
-.get.test.settings = function() {
+.get.test.settings = function(outdir=NULL) {
   settings <- NULL
   try({
     if(PEcAn.remote::fqdn() == "pecan2.bu.edu") {
@@ -11,6 +11,9 @@
   
   if(is.null(settings)) {
     skip("Can't get a valid test Settings right now. Skipping test. ")
+  }
+  if(!is.null(outdir)){
+    settings$outdir <- outdir
   }
   return(settings)
 }
