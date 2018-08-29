@@ -77,7 +77,7 @@ $(call depends,base/workflow): | .install/base/db .install/base/settings
 $(call depends,modules/allometry): | .install/base/db
 $(call depends,modules/assim.batch): | .install/base/utils .install/base/db .install/base/settings .install/base/remote .install/modules/meta.analysis
 $(call depends,modules/assim.sequential): | .install/base/remote
-$(call depends,modules/benchmark): | .install/base/remote .install/base/settings
+$(call depends,modules/benchmark): | .install/base/db .install/base/remote .install/base/settings .install/base/utils .install/modules/data.land
 $(call depends,modules/data.atmosphere): | .install/base/utils .install/base/remote .install/base/db
 $(call depends,modules/data.hydrology): | .install/base/utils
 $(call depends,modules/data.land): | .install/base/db .install/base/utils .install/base/settings .install/base/remote
