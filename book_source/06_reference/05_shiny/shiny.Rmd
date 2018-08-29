@@ -1,0 +1,20 @@
+# SHINY
+
+### Debugging Shiny Apps
+
+When developing shiny apps you can run the application from rstudio and place breakpoints int he code. To do this you will need to do the following steps first (already done on the VM) before starting rstudio:
+- echo "options(shiny.port = 6438)" >> ${HOME}/.Rprofile
+- echo "options(shiny.launch.browser = 'FALSE')" >> ${HOME}/.Rprofile
+
+Next you will need to create a tunnel for port 6438 to the VM, which will be used to open the shiny app, the following command will creat this tunnel: `ssh -l carya -p 6422 -L 6438:localhost:6438 localhost`.
+
+Now you can from rstudio run your application using `shiny::runApp()` and it will show the output from the application in your console. You can now place breakpoints and evaluate the output.
+
+#### Checking Log Files
+To create Log files on the VM, execute the following: 
+```
+sudo -s
+echo "preserve_logs true;" >> /etc/shiny-server/shiny-server.conf
+service shiny-server restart
+```
+Then within the directory `/var/log/shiny-server` you will see log files for your specific shiny apps.
