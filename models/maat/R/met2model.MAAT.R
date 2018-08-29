@@ -30,9 +30,7 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @param verbose should the function be very verbose
 ##' @export
 ##' @author Shawn P. Serbin
-##' @importFrom udunits2 ud.convert
-##' @importFrom ncdf4 ncvar_get
-##' @importFrom XML saveXML
+##'
 met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
                            overwrite = FALSE, verbose = FALSE, ...) {
 
@@ -94,7 +92,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       ## convert time to seconds
       sec <- nc$dim$time$vals
       frac.day <- nc$dim$time$vals
-      sec <- ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
 
       dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
 
@@ -102,23 +100,23 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       dt    <- 86400 / tstep
 
       ## extract required MAAT driver variables names(nc$var)
-      lat  <- ncvar_get(nc, "latitude")
-      lon  <- ncvar_get(nc, "longitude")
-      Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
-      Rain <- ncvar_get(nc, "precipitation_flux")  ## 'kg/m^2/s'
+      lat  <- ncdf4::ncvar_get(nc, "latitude")
+      lon  <- ncdf4::ncvar_get(nc, "longitude")
+      Tair <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
+      Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")  ## 'kg/m^2/s'
 
       # get humidity vars (NOTE:later add VPD here!!)
-      RH_perc <- ncvar_get(nc, "relative_humidity")  ## RH Percentage
+      RH_perc <- ncdf4::ncvar_get(nc, "relative_humidity")  ## RH Percentage
 
       # get radiation
-      SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
-      PAR <- try(ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air") * 1e+06)  ## mol/m2/s to umols/m2/s
+      SW <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
+      PAR <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air") * 1e+06)  ## mol/m2/s to umols/m2/s
       if (!is.numeric(PAR)) {
         PAR <- SW * 2.114  #W/m2 TO umol/m2/s
       }
 
       # get CO2 (if exists)
-      CO2 <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+      CO2 <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
       useCO2 <- is.numeric(CO2)
       if (useCO2) {
         CO2 <- CO2 * 1e+06  ## convert from mole fraction (kg/kg) to ppm
@@ -198,7 +196,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
 
     ## write met csv output
     # write.table(out,out.file.full,quote = FALSE,sep='\t',row.names=FALSE,col.names=FALSE)
-    write.csv(out, out.file.full, row.names = FALSE)
+    utils::write.csv(out, out.file.full, row.names = FALSE)
 
     # write out leaf_user_met.xml - example
     #<met_data_translator>
@@ -218,7 +216,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
     leaf_user_met_xml <- PEcAn.settings::listToXml(leaf_user_met_list, "met_data_translator")
 
     # output XML file
-    saveXML(leaf_user_met_xml,
+    XML::saveXML(leaf_user_met_xml,
             file = file.path(outfolder, "leaf_user_met.xml"),
             indent = TRUE,
             prefix = PREFIX_XML)
