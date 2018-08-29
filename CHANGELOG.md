@@ -6,7 +6,7 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 
-## [Unreleased]
+## [1.6.0] - 2018-09-01
 
 ### Fixes
 - Fixed issue #2064 which sends one met path to write.sa.config.
