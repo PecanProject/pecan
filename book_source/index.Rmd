@@ -24,7 +24,7 @@ link-citations: yes
 
 [PEcAn Website](http://pecanproject.github.io/)
 
-[Public Chat Room](https://gitter.im/PecanProject/pecan)
+[Public Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE)
 
 [Github Repository](https://github.com/PecanProject/pecan)
 
