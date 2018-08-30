@@ -309,5 +309,6 @@ lines(x_axis,PEcAn.utils::misc.convert(timeseries_stats[2,],"kg C m-2 s-1","umol
 dev.off()
 
 ```
+Example output MAAT assimilation rate from the five PEcAn model esemble simulations.  The green shaded area represents the ensemble spread and the grey line shows the mean simulation.  
 
-![Example output MAAT assimilation rate from five PEcAn model esemble simulations](graphics/example_assimilation_rate.png)
+![Example output MAAT assimilation rate from the five PEcAn model esemble simulations](graphics/example_assimilation_rate.png)
