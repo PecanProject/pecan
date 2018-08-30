@@ -55,7 +55,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     new.state <- new.state.save[grep("AGB.pft", names(new.state.save))]
     new.state.other <- new.state.save[grep("AGB.pft", names(new.state.save), invert = TRUE)]
   }
-  
+
   variables <- names(new.state)
   ### Going to need to change this... ### Get some expert opinion
   N <- length(new.state)
@@ -65,27 +65,27 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   }
   diag(distance.matrix) <- 0
   
-  
   if(FALSE){
-    distance.matrix <- rbind(c(0, 1, 4, 3, 2, 6, 5, 8, 7, 9, 10, 11, 12, 13, 14), 
-                             c(5, 0, 3, 4, 8, 1, 2, 7, 6, 9, 10, 11, 12, 13, 14), 
-                             c(5, 3, 0, 1, 8, 4, 2, 7, 6, 9, 10, 11, 12, 13, 14), 
-                             c(6, 2, 1, 0, 8, 4, 3, 7, 5, 9, 10, 11, 12, 13, 14), 
-                             c(2, 7, 5, 4, 0, 8, 6, 1, 3, 9, 10, 11, 12, 13, 14), 
-                             c(6, 1, 3, 4, 8, 0, 2, 7, 5, 9, 10, 11, 12, 13, 14), 
-                             c(5, 3, 1, 2, 8, 6, 0, 7, 4, 9, 10, 11, 12, 13, 14), 
-                             c(3, 6, 4, 5, 1, 7, 8, 0, 2, 9, 10, 11, 12, 13, 14), 
-                             c(1, 5, 3, 2, 7, 6, 4, 8, 0, 9, 10, 11, 12, 13, 14), 
-                             c(3, 6, 4, 5, 1, 7, 8, 9, 2, 0, 10, 11, 12, 13, 14), 
-                             c(3, 6, 4, 5, 1, 7, 8, 10, 2, 9, 0, 11, 12, 13, 14), 
-                             c(3, 6, 4, 5, 1, 7, 8, 11, 2, 9, 10, 0, 12, 13, 14), 
-                             c(3, 6, 4, 5, 1, 7, 8, 12, 2, 9, 10, 11, 0, 13, 14), 
-                             c(3, 6, 4, 5, 1, 7, 8, 13, 2, 9, 10, 11, 12, 0, 14), 
-                             c(3, 6, 4, 5, 1, 7, 8, 14, 2, 9, 10, 11, 12, 13, 0))
-    
+  distance.matrix <- rbind(c(0, 1, 4, 3, 2, 6, 5, 8, 7, 9, 10, 11, 12, 13, 14), 
+                           c(5, 0, 3, 4, 8, 1, 2, 7, 6, 9, 10, 11, 12, 13, 14), 
+                           c(5, 3, 0, 1, 8, 4, 2, 7, 6, 9, 10, 11, 12, 13, 14), 
+                           c(6, 2, 1, 0, 8, 4, 3, 7, 5, 9, 10, 11, 12, 13, 14), 
+                           c(2, 7, 5, 4, 0, 8, 6, 1, 3, 9, 10, 11, 12, 13, 14), 
+                           c(6, 1, 3, 4, 8, 0, 2, 7, 5, 9, 10, 11, 12, 13, 14), 
+                           c(5, 3, 1, 2, 8, 6, 0, 7, 4, 9, 10, 11, 12, 13, 14), 
+                           c(3, 6, 4, 5, 1, 7, 8, 0, 2, 9, 10, 11, 12, 13, 14), 
+                           c(1, 5, 3, 2, 7, 6, 4, 8, 0, 9, 10, 11, 12, 13, 14), 
+                           c(3, 6, 4, 5, 1, 7, 8, 9, 2, 0, 10, 11, 12, 13, 14), 
+                           c(3, 6, 4, 5, 1, 7, 8, 10, 2, 9, 0, 11, 12, 13, 14), 
+                           c(3, 6, 4, 5, 1, 7, 8, 11, 2, 9, 10, 0, 12, 13, 14), 
+                           c(3, 6, 4, 5, 1, 7, 8, 12, 2, 9, 10, 11, 0, 13, 14), 
+                           c(3, 6, 4, 5, 1, 7, 8, 13, 2, 9, 10, 11, 12, 0, 14), 
+                           c(3, 6, 4, 5, 1, 7, 8, 14, 2, 9, 10, 11, 12, 13, 0))
+
   }
   distance.matrix <- rbind(c(0,3,1,2), c(3,0,2,1), c(1,2,0,3), c(2,1,3,0))
-  
+
+
   ## HACK
   spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages"))  #default spp.params
   nspec <- length(settings$pfts)
@@ -307,7 +307,6 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     
     b_calc1[s] <- sum(biomass_function(dbh.temp[nl:nu],
                                        spp.biomass.params = spp.biomass.params)) * (1 / 833) * 0.48
-    
     nl <- nu + 1
   }
   

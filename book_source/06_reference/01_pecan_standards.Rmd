@@ -91,10 +91,13 @@ data("standard_vars", package = "PEcAn.utils")
 install.packages("DT")
 library(DT)
 DT::datatable(standard_vars,
-          extensions = 'FixedColumns',
+          extensions = c('FixedColumns',"Buttons"),
             options = list(
-            dom = 't',
+            dom = 'Bfrtip',
             scrollX = TRUE,
-            fixedColumns = TRUE
-          ))
+            fixedColumns = TRUE,
+            buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+            
+          )
+)
 ```

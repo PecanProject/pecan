@@ -1,23 +1,34 @@
 # Load PEcAn specific packages, does this need to be so specific?
-library(PEcAn.visualization)
-library(PEcAn.DB)
-library(PEcAn.settings)
-library(PEcAn.benchmark)
-library(PEcAn.utils)
+lapply(c("PEcAn.visualization",
+         "PEcAn.DB",
+         "PEcAn.settings",
+         "PEcAn.benchmark",
+         "PEcAn.utils"),function(pkg){
+           library(pkg,character.only = TRUE,quietly = TRUE)
+         }
+      )
+
 
 # Shiny and plotting packages
-library(shiny)
-library(ggplot2)
-library(plotly)
-library(shinyjs)
+lapply(c( "shiny",
+          "ggplot2",
+          "plotly",
+          "shinyjs",
+          "dplyr",
+          "reshape2",
+          "purrr",
+          "ncdf4",
+          "scales",
+          "lubridate",
+          "shinythemes"
+          ),function(pkg){
+            if (!(pkg %in% installed.packages()[,1])){
+                  install.packages(pkg)
+               }
+                library(pkg,character.only = TRUE,quietly = TRUE)
+            }
+      )
 
-# Data management
-library(dplyr)
-library(reshape2)
-library(purrr)
-library(ncdf4)
-library(scales)
-library(lubridate)
 
 # Maximum size of file allowed to be uploaded: 100MB
 options(shiny.maxRequestSize=100*1024^2)
