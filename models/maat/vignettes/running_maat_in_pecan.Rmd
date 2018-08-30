@@ -309,3 +309,5 @@ lines(x_axis,PEcAn.utils::misc.convert(timeseries_stats[2,],"kg C m-2 s-1","umol
 dev.off()
 
 ```
+
+![Example output MAAT assimilation rate from five PEcAn model esemble simulations](graphics/example_assimilation_rate.png)
