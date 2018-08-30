@@ -1,15 +1,28 @@
- library(PEcAn.data.land)
- library(PEcAn.visualization)
- library(PEcAn.utils)
- library(PEcAn.DB)
- library(shinydashboard)
- library(dataone)
- library(stringr)
- library(DT)
- library(shiny)
- library(shinyjs)
- library(shinyWidgets)
- library(shinytoastr)
+lapply(c( "shiny",
+          "shinydashboard",
+          "dataone",
+          "stringr",
+          "DT",
+          "shiny",
+          "shinytoastr",
+          "shinyWidgets",
+          "shinyjs"),function(pkg){
+            if (!(pkg %in% installed.packages()[,1])){
+                  install.packages(pkg)
+              }
+                  library(pkg,character.only = TRUE,quietly = TRUE)
+            }
+      )
+
+lapply(c( "PEcAn.data.land",
+          "PEcAn.visualization",
+          "PEcAn.utils",
+          "PEcAn.DB"),function(pkg){
+            library(pkg,character.only = TRUE,quietly = TRUE)
+          }
+       )
+
+
  
  source("ui_utils.R", local = TRUE)
  source("helper.R", local = TRUE)

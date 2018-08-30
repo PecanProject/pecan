@@ -13,13 +13,13 @@
 #'
 #'
 #' @param con database connection
-#' @param observation_one a vector of plant fucntional types, or species
-#' @param observation_two another vector of plant fucntional types, or species
-#' @param custom_table a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
+#' @param observation_one a vector of plant functional types, or species
+#' @param observation_two another vector of plant functional types, or species
+#' @param custom_table a table that either maps two pft's to one another or maps custom species codes to bety id codes.
 #' In the second case, must be passable to match_species_id. 
 #' @param format_one The output of query.format.vars() of observation one of the form output$vars$bety_names
 #' @param format_two The output of query.format.vars() of observation two of the form output$vars$bety_names
-#' @param subset_are_ok When aligning two species lists, this allows for alignement when species lists aren't identical. 
+#' @param subset_is_ok When aligning two species lists, this allows for alignment when species lists aren't identical.
 #' set to FALSE by default. 
 #' @return \code{list} containing the following columns:
 #' \describe{
@@ -30,7 +30,7 @@
 #'  \item{\code{$bety_species_intersection}}{Where possible, will return the intersection of two aligned lists of species. subset_is_ok must be set to TRUE.}
 #' }
 #' @author Tempest McCabe
-#' @examples
+#' @examples \dontrun{
 #' 
 #' observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
 #' observation_two<-c("a", "b", "a", "a")
@@ -43,8 +43,12 @@
 #' format_one<-"species_USDA_symbol"
 #' format_two<-"plant_functional_type"
 #' 
-#' aligned<-align_data_to_data_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
-#' format_one = format_one, format_two = format_two, custom_table = table)
+#' aligned <- align_data_to_data_pft(
+#'  con = con,
+#'  observation_one = observation_one, observation_two = observation_two,
+#'  format_one = format_one, format_two = format_two,
+#'  custom_table = table)
+#' }
 #' @export
 
 align_data_to_data_pft<-function(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_is_ok=FALSE){
@@ -56,7 +60,7 @@ align_data_to_data_pft<-function(con, observation_one, observation_two, custom_t
   
   if(check_if_species_list(format_one) && check_if_species_list(format_two)){  #Both are lists of species
     
-    if (get_species_list_standard(format_one) == "custom" | get_species_list_standard(format_two) == "custom"){tanslation_table<-custom_table}
+    if (get_species_list_standard(format_one) == "custom" | get_species_list_standard(format_two) == "custom"){translation_table<-custom_table}
     
     bety_codes_one<-PEcAn.data.land::match_species_id(input_codes=observation_one, format_name= get_species_list_standard(format_one),translation_table = translation_table, bety=con)
     bety_codes_two<-PEcAn.data.land::match_species_id(input_codes=observation_two, format_name= get_species_list_standard(format_two), translation_table = translation_table,bety=con)
@@ -80,7 +84,7 @@ align_data_to_data_pft<-function(con, observation_one, observation_two, custom_t
       
       
     }else{
-      PEcAn.logger::logger.warn("These observations cannot be aligned, as they have different species lists. Returning NULL. Check species lists, or  set 'subset_are_ok' to TRUE. ")
+      PEcAn.logger::logger.warn("These observations cannot be aligned, as they have different species lists. Returning NULL. Check species lists, or  set 'subset_is_ok' to TRUE. ")
       return(NULL)
     }
     
@@ -90,16 +94,16 @@ align_data_to_data_pft<-function(con, observation_one, observation_two, custom_t
       
       PEcAn.logger::logger.severe("Please provide custom_table")
       
-      }else if (!is.null(custom_table)){
+    }else if (!is.null(custom_table)){
         
       if(check_if_legal_table(custom_table, observation_one, observation_two)){
         
-        if (get_species_list_standard(format_one)=="custom"){tanslation_table<-custom_table}
+        if (get_species_list_standard(format_one)=="custom"){translation_table<-custom_table}
         
         bety_codes_one<-PEcAn.data.land::match_species_id(input_codes=observation_one, format_name= get_species_list_standard(format_one),translation_table = translation_table, bety=con)
         
         aligned_by_one<-align_by_first_observation(observation_one,observation_two, custom_table)
-        aligned_by_one<-align_by_first_observation(observation_two,observation_one, custom_table)
+        aligned_by_two<-align_by_first_observation(observation_two,observation_one, custom_table)
         
         
       }else{
@@ -114,7 +118,7 @@ align_data_to_data_pft<-function(con, observation_one, observation_two, custom_t
       if(check_if_legal_table(custom_table, observation_one, observation_two)){
         
         if (get_species_list_standard(format_two)=="custom"){
-          tanslation_table<-custom_table
+          translation_table<-custom_table
         }
           
         bety_codes_two<-PEcAn.data.land::match_species_id(input_codes=observation_two, format_name= get_species_list_standard(format_two),translation_table = translation_table,bety=con)

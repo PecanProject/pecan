@@ -128,103 +128,103 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
         
       } else {
         ## copy values
-        # IF: not sure what's going on here but I had to have this hack to overwrite params below
-        # should come back to this
-        if(is.null(dim(trait.values[[group]]))){
-          vals <- as.data.frame(t(trait.values[[group]]))
-        }else{
-          vals <- as.data.frame(trait.values[[group]])
-        }
- 
-        if ("SLA" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*10000
-        }
-        
-        # replace defaults with traits
-        #new.params.locs <- which(names(spp.params) %in% names(vals))
-        #new.vals.locs <- which(names(vals) %in% names(spp.params))
-        #spp.params[which(spp.params$Spp_Name == group), new.params.locs] <- vals[new.vals.locs]
-        
-        # conversion of some traits to match what LINKAGES needs Going to have to look up this paper
-        # Botkin 1972 Some Ecological Consequences of a computer model of forest growth
-        if ("HTMAX" %in% names(vals) & "DBHMAX" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$B2 <- 2 * (((vals$HTMAX * 100) - 137) / 
-                                                                  (vals$DBHMAX * 100))
-          spp.params[spp.params$Spp_Name == group, ]$B3 <- (vals$HTMAX * 100 - 137) / (vals$DBHMAX * 100^2)
-        }
-        
-        if ("root2shoot" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$RTST <- vals$root2shoot
-        }
-        
-        # if ("leaf_longevity" %in% names(vals)) {
-        #   spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$leaf_longevity
-        # }
-        
-        if ("DMAX" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$DMAX <- vals$DMAX
-        }
-        if ("DMIN" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$DMIN <- vals$DMIN
-        }
-        if ("AGEMX" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
-        }
-        
-        if ("Gmax" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
-        }
-        if ("SPRTND" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND
-        }
-        if ("SPRTMN" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$SPRTMN <- vals$SPRTMN
-        }
-        if ("SPRTMX" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$SPRTMX <- vals$SPRTMX
-        }
-        if ("MPLANT" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$MPLANT <- vals$MPLANT
-        }
-        if ("D3" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
-        }
-        if ("FROST" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
-        }
-        if ("CM1" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1
-        }
-        if ("CM2" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$CM2 <- vals$CM2
-        }
-        if ("CM3" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$CM3 <- vals$CM3
-        }
-        if ("CM4" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$CM4 <- vals$CM4
-        }
-        if ("CM5" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$CM5 <- vals$CM5
-        }
-        if ("FWT" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$FWT <- vals$FWT
-        }
-        if ("SLTA" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$SLTA <- vals$SLTA
-        }
-        if ("SLTB" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$SLTB <- vals$SLTB
-        }
-        if ("FRT" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$FRT
-        }
-        if ("TL" %in% names(vals)) {
-          spp.params[spp.params$Spp_Name == group, ]$TL <- ceiling(vals$TL)
+          # IF: not sure what's going on here but I had to have this hack to overwrite params below
+          # should come back to this
+          if(is.null(dim(trait.values[[group]]))){
+            vals <- as.data.frame(t(trait.values[[group]]))
+          }else{
+            vals <- as.data.frame(trait.values[[group]])
+          }
+          
+          if ("SLA" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*10000
+            }
+          
+          # replace defaults with traits
+          #new.params.locs <- which(names(spp.params) %in% names(vals))
+          #new.vals.locs <- which(names(vals) %in% names(spp.params))
+          #spp.params[which(spp.params$Spp_Name == group), new.params.locs] <- vals[new.vals.locs]
+          
+          # conversion of some traits to match what LINKAGES needs Going to have to look up this paper
+          # Botkin 1972 Some Ecological Consequences of a computer model of forest growth
+          if ("HTMAX" %in% names(vals) & "DBHMAX" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$B2 <- 2 * (((vals$HTMAX * 100) - 137) / 
+                                                                    (vals$DBHMAX * 100))
+            spp.params[spp.params$Spp_Name == group, ]$B3 <- (vals$HTMAX * 100 - 137) / (vals$DBHMAX * 100^2)
+          }
+          
+          if ("root2shoot" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$RTST <- vals$root2shoot
+          }
+          
+          # if ("leaf_longevity" %in% names(vals)) {
+          #   spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$leaf_longevity
+          # }
+          
+          if ("DMAX" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$DMAX <- vals$DMAX
+          }
+          if ("DMIN" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$DMIN <- vals$DMIN
+          }
+          if ("AGEMX" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
+          }
+
+          if ("Gmax" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
+          }
+          if ("SPRTND" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND
+          }
+          if ("SPRTMN" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$SPRTMN <- vals$SPRTMN
+          }
+          if ("SPRTMX" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$SPRTMX <- vals$SPRTMX
+          }
+          if ("MPLANT" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$MPLANT <- vals$MPLANT
+          }
+          if ("D3" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
+          }
+          if ("FROST" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
+          }
+          if ("CM1" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1
+          }
+          if ("CM2" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$CM2 <- vals$CM2
+          }
+          if ("CM3" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$CM3 <- vals$CM3
+          }
+          if ("CM4" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$CM4 <- vals$CM4
+          }
+          if ("CM5" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$CM5 <- vals$CM5
+          }
+          if ("FWT" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$FWT <- vals$FWT
+          }
+          if ("SLTA" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$SLTA <- vals$SLTA
+          }
+          if ("SLTB" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$SLTB <- vals$SLTB
+          }
+          if ("FRT" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$FRT
+          }
+          if ("TL" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$TL <- ceiling(vals$TL)
+          }
         }
       }
     }
-  }
   
   switch.mat <- switch.mat[spp.params.save, ]
   
