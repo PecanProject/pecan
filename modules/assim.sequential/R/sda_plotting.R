@@ -121,6 +121,7 @@ interactive.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,F
   }
 }
 
+##' @export
 postana.timeser.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
   #Defining some colors
   generate_colors_sda()
@@ -214,6 +215,7 @@ postana.timeser.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs
   
 }
 
+##' @export
 postana.bias.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
   #Defining some colors
   generate_colors_sda()
@@ -280,7 +282,8 @@ postana.bias.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,
   
 }
 
-postana.bias.plotting.sda<-function(t,obs.times,X,aqq,bqq){
+##' @export
+postana.bias.plotting.sda.corr<-function(t,obs.times,X,aqq,bqq){
   
   t1         <- 1
   #Defining some colors
@@ -412,6 +415,8 @@ post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FOR
   
 }
 
+
+##' @export
 post.analysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
   
   #Defining some colors

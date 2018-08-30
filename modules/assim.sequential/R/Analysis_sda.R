@@ -111,7 +111,8 @@ GEF<-function(setting,Forecast,Observed,...){
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #Loading nimbles functions
-  load_nimble()
+  PEcAn.assim.sequential:::load_nimble()
+  #load_nimble()
   #Forecast inputs 
   Q <- Forecast$Q # process error
   Pf <- Forecast$Pf # Forecast precision
@@ -340,7 +341,7 @@ GEF<-function(setting,Forecast,Observed,...){
     }
     
   }
-  
+
   set.seed(0)
   dat <- runMCMC(Cmcmc, niter = 50000)
   
@@ -370,9 +371,12 @@ GEF<-function(setting,Forecast,Observed,...){
     n <- length(mu.f)
   }
   V <- solve(q.bar) * n
-  
-  aqq[t + 1, , ]   <- V
-  bqq[t + 1]       <- n
+ 
+  if (t<nt){
+   aqq[t + 1, , ]   <- V
+   bqq[t + 1]       <- n
+  }
+
   return(list(mu.f = mu.f,
               Pf = Pf,
               mu.a = mu.a,

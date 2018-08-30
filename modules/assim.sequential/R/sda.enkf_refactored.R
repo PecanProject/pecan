@@ -172,6 +172,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
   while(t<nt){
+   
     t<-t+1
     # do we have obs for this time - what year is it ?
     obs <- which(!is.na(obs.mean[[t]]))
@@ -369,7 +370,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
-    save(t, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id, ensemble.id, ensemble.samples, aqq, bqq, inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    save(t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id, ensemble.id, ensemble.samples, inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
     post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
@@ -378,15 +379,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### time series plots                                                 ###
   ###-------------------------------------------------------------------###----- 
   #post.alaysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
-  if(control$TimeseriesPlot) post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
+  if(control$TimeseriesPlot) PEcAn.assim.sequential:::post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
   #if(control$TimeseriesPlot) postana.timeser.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
   ###-------------------------------------------------------------------###
   ### bias diagnostics                                                  ###
   ###-------------------------------------------------------------------###----
-  if(control$BiasPlot)   postana.bias.plotting.sda(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
+  if(control$BiasPlot)   PEcAn.assim.sequential:::postana.bias.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
   ###-------------------------------------------------------------------###
   ### process variance plots                                            ###
   ###-------------------------------------------------------------------###----- 
-  if (processvar) postana.bias.plotting.sda(t,obs.times,X,aqq,bqq)
+  if (processvar) postana.bias.plotting.sda.corr(t,obs.times,X,aqq,bqq)
   
 } # sda.enkf
