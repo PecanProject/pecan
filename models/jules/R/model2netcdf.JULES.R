@@ -32,7 +32,7 @@ model2netcdf.JULES <- function(outdir) {
                 row.names = TRUE,
                 quote = FALSE)
     
-    vars <- nc.get.variable.list(nc)
+    vars <- ncdf4.helpers::nc.get.variable.list(nc)
     # Check that frac is reported
     if("frac_grid" %in% vars){
       frac <- ncdf4::ncvar_get(nc, "frac_grid")
@@ -78,7 +78,7 @@ model2netcdf.JULES <- function(outdir) {
         nc_close(nc)
         nc <- ncdf4::nc_open(fname, write = TRUE)
         # Check did the variable get deleted 
-        if(!(var %in% nc.get.variable.list(nc))){
+        if(!(var %in% ncdf4.helpers::nc.get.variable.list(nc))){
           PEcAn.logger::logger.debug(var, "successfully removed from", fname)
         }
         dim = list(time = nc$dim$time, x = nc$dim$x, y = nc$dim$y)
