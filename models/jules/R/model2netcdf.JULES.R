@@ -40,11 +40,11 @@ model2netcdf.JULES <- function(outdir) {
       PEcAn.logger::logger.warn("Surface type fraction is not an output and thus other outputs may not be parseable")
     }
     
-    base_dims <- nc.get.dim.names(nc, "GPP") # This isn't the best example, except that GPP is the default with read.output (and it is not reported by surface type)
+    base_dims <- ncdf.helpers::nc.get.dim.names(nc, "GPP") # This isn't the best example, except that GPP is the default with read.output (and it is not reported by surface type)
     for(i in seq_along(vars)){
       var <- vars[i]
       nonstd_var <- nrow(PEcAn.utils::standard_vars[which(PEcAn.utils::standard_vars$Variable.Name == var),]) == 0  
-      dims <- nc.get.dim.names(nc, var)
+      dims <- ncdf.helpers::nc.get.dim.names(nc, var)
       diff_dims <- setdiff(dims,base_dims)
       if(length(diff_dims) > 0){# ie more than just x, y, time
         PEcAn.logger::logger.warn("Variable", vars[i], "has additional dimension", diff_dims, "attempting to aggregate and/or select appropriate data")
