@@ -13,7 +13,9 @@ knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE,
 ```
 
 # Overview
-A simple example to show how to setup and run MAAT simulations within the PEcAn framework.
+A simple example to show how to setup and run MAAT simulations within the PEcAn framework. Running the MAAT model within PEcAn provides access to additional tools such as the PEcAn met process functions that enable the creation of model-specific met driver files using various sources such as reanalysis products such as CRU-NCEP and NARR, as well as site-level tower observations from AmerifluxLBL and FLUXNET.  In addition, the PEcAn framework provides the ability to define custom plant functional types (PFTs) for MAAT simulation and conduct multi-ensemble simulations using observationally-constrained MAAT parameter distributions based on a hierarchical Bayesian meta-analysis approach linked to the BETYdb trait database (betydb.org).
+
+Presently the full MAAT process representation, functionality and tools are not yet fully enabled in the PEcAn framework but adding in more the MAAT functionality is planned in future updates to the PEcAn wrapper code.
 
 ## MAAT Installation and usage
 **MAAT model source:** https://github.com/walkeranthonyp/MAAT <br>
