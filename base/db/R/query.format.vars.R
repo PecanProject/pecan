@@ -9,7 +9,7 @@
 ##'
 query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
-  if(is.na(input.id) & is.na(format.id)){
+  if ((is.null(input.id)||is.na(input.id)) & (is.null(format.id)||is.na(format.id))){
     PEcAn.logger::logger.error("Must specify input id or format id")
   }
 
