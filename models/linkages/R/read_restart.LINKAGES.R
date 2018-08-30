@@ -74,3 +74,4 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   X_tmp <- list(X = unlist(forecast), params = params)
   
   return(X_tmp)
+}

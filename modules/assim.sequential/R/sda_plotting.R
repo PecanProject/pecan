@@ -1,3 +1,22 @@
+#' @title generate_colors_sda
+#' @name  generate_colors_sda
+#' @author Ann Raiho 
+#' @description This function generates a series of colors in its parents enviroment. This is mainly used in assim.sequential package.
+#' @export
+generate_colors_sda <-function(){
+  pink       <<- col2rgb("deeppink")
+  alphapink  <<- rgb(pink[1], pink[2], pink[3], 180, max = 255)
+  green      <<- col2rgb("green")
+  alphagreen <<- rgb(green[1], green[2], green[3], 75, max = 255)
+  blue       <<- col2rgb("blue")
+  alphablue  <<- rgb(blue[1], blue[2], blue[3], 75, max = 255)
+  purple       <<- col2rgb("purple")
+  alphapurple <<- rgb(purple[1], purple[2], purple[3], 75, max = 255)
+  brown       <<- col2rgb("brown")
+  alphabrown <<- rgb(brown[1], brown[2], brown[3], 75, max = 255)
+}
+
+
 #internal functions for plotting SDA outputs. Interactive, bias plots as well as post analysis time series both in base plotting and ggplot
 ##' @param settings  pecan standard settings list.  
 ##' @param t current time - int number giving the position of the current time in obs.time. 
@@ -12,17 +31,8 @@
 ##' @export
 interactive.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
   #Defining some colors
+  generate_colors_sda()
   t1         <- 1
-  pink       <- col2rgb("deeppink")
-  alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
-  green      <- col2rgb("green")
-  alphagreen <- rgb(green[1], green[2], green[3], 75, max = 255)
-  blue       <- col2rgb("blue")
-  alphablue  <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
-  purple       <- col2rgb("purple")
-  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
-  brown       <- col2rgb("brown")
-  alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
   var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                              function(x) {
                                x$variable.name
@@ -113,25 +123,11 @@ interactive.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,F
 
 postana.timeser.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
   #Defining some colors
+  generate_colors_sda()
   t1         <- 1
-  pink       <- col2rgb("deeppink")
-  alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
-  green      <- col2rgb("green")
-  alphagreen <- rgb(green[1], green[2], green[3], 75, max = 255)
-  blue       <- col2rgb("blue")
-  alphablue  <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
-  purple       <- col2rgb("purple")
-  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
-  brown       <- col2rgb("brown")
-  alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                             function(x) {
-                               x$variable.name
-                             }, 
-                             USE.NAMES = FALSE), 
-                      use.names = FALSE)
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
   pdf(file.path(settings$outdir,"SDA", "sda.enkf.time-series.pdf"))
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -220,17 +216,8 @@ postana.timeser.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs
 
 postana.bias.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
   #Defining some colors
+  generate_colors_sda()
   t1         <- 1
-  pink       <- col2rgb("deeppink")
-  alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
-  green      <- col2rgb("green")
-  alphagreen <- rgb(green[1], green[2], green[3], 75, max = 255)
-  blue       <- col2rgb("blue")
-  alphablue  <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
-  purple       <- col2rgb("purple")
-  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
-  brown       <- col2rgb("brown")
-  alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -294,18 +281,10 @@ postana.bias.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,
 }
 
 postana.bias.plotting.sda<-function(t,obs.times,X,aqq,bqq){
-  #Defining some colors
+  
   t1         <- 1
-  pink       <- col2rgb("deeppink")
-  alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
-  green      <- col2rgb("green")
-  alphagreen <- rgb(green[1], green[2], green[3], 75, max = 255)
-  blue       <- col2rgb("blue")
-  alphablue  <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
-  purple       <- col2rgb("purple")
-  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
-  brown       <- col2rgb("brown")
-  alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
+  #Defining some colors
+  generate_colors_sda()
 
   #---
   library(corrplot)
@@ -339,27 +318,13 @@ postana.bias.plotting.sda<-function(t,obs.times,X,aqq,bqq){
 ##' @export
 post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
 
-  #Defining some colors
+
   t1         <- 1
-  pink       <- col2rgb("deeppink")
-  purple     <- col2rgb("purple")
-  blue       <- col2rgb("blue")
-  green      <- col2rgb("green")
-  brown      <- col2rgb("brown")
-  
-  alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
-  alphagreen <- rgb(green[1], green[2], green[3], 75, max = 255)
-  alphablue  <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
-  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
-  alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
+  #Defining some colors
+  generate_colors_sda()
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                             function(x) {
-                               x$variable.name
-                             }, 
-                             USE.NAMES = FALSE), 
-                      use.names = FALSE)
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
   #Analysis & Forcast cleaning and STAT
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
@@ -451,24 +416,10 @@ post.analysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,ob
   
   #Defining some colors
   t1         <- 1
-  pink       <- col2rgb("deeppink")
-  alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
-  green      <- col2rgb("green")
-  alphagreen <- rgb(green[1], green[2], green[3], 75, max = 255)
-  blue       <- col2rgb("blue")
-  alphablue  <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
-  purple       <- col2rgb("purple")
-  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
-  brown       <- col2rgb("brown")
-  alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
+  generate_colors_sda()
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                             function(x) {
-                               x$variable.name
-                             }, 
-                             USE.NAMES = FALSE), 
-                      use.names = FALSE)
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
 
 #rearranging the forcast and analysis data  
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)

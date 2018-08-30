@@ -58,12 +58,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
   processvar <- settings$state.data.assimilation$process.variance
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                             function(x) {
-                               x$variable.name
-                             }, 
-                             USE.NAMES = FALSE), 
-                      use.names = FALSE)
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
   #filtering obs data based on years specifited in setting > state.data.assimilation
   assimyears <- year(settings$state.data.assimilation$start.date) : year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
