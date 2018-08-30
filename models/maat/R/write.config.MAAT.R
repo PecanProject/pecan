@@ -214,11 +214,6 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
     
     # Run with met drivers 
   } else if (!is.null(settings$run$inputs$met)) {
-    # --- debugging lines
-    #PEcAn.logger::logger.info(paste0("Running with met drivers: ", dirname(settings$run$inputs$met$path)))
-    #PEcAn.logger::logger.info(paste0("Running with met drivers: ", settings$run$inputs$met$path))
-    #PEcAn.logger::logger.info(str(settings$run$inputs$met$path))
-    # ---
     
     ## temporary fix for #2064
     #met.dir <- dirname(settings$run$inputs$met$path)

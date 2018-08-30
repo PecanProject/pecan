@@ -36,9 +36,6 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
                            overwrite = FALSE, verbose = FALSE, leap_year = TRUE, ...) {
 
-  ## MAAT driver format (.csv):
-  ## Time (POSIX),  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
-
   PEcAn.logger::logger.info("START met2model.MAAT")
 
   start_date <- as.POSIXlt(start_date, tz = "GMT")
