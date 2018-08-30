@@ -75,7 +75,7 @@ model2netcdf.JULES <- function(outdir) {
         # and add it over again because the dimensions have changed
         cmd <- sprintf("ncks -O -x -v %s %s %s", var, fname, fname)
         system(cmd)
-        nc_close(nc)
+        ncdf4::nc_close(nc)
         nc <- ncdf4::nc_open(fname, write = TRUE)
         # Check did the variable get deleted 
         if(!(var %in% ncdf4.helpers::nc.get.variable.list(nc))){
