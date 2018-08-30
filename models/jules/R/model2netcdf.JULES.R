@@ -91,7 +91,7 @@ model2netcdf.JULES <- function(outdir) {
           nc_var <- PEcAn.utils::to_ncvar(var, dim)
         }
         
-        ncvar_add(nc, nc_var)
+        ncdf4::ncvar_add(nc, nc_var)
         ncdf4::nc_close(nc)
         nc <- ncdf4::nc_open(fname, write = TRUE) # Why do I have to close and reopen it?
         ncdf4::ncvar_put(nc, nc_var, x)
