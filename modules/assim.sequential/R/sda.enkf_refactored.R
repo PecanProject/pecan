@@ -369,7 +369,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
-    save(t, FORECAST, ANALYSIS, enkf.params,new.state,new.params,run.id,ensemble.id,ensemble.samples,inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    save(t, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id, ensemble.id, ensemble.samples, inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
     post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
