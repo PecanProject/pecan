@@ -77,7 +77,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
   register <- XML::xmlToList(XML::xmlParse(register.xml))
   no_split <- !as.logical(register$exact.dates)
-
+  
   if (!exists(my.split_inputs)  &  !no_split) {
     PEcAn.logger::logger.warn(my.split_inputs, "does not exist")
     PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
@@ -91,11 +91,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ### model specific split inputs
       
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
-                                        args = list(settings = settings, 
-                                                    start.time = ymd_hms(settings$state.data.assimilation$start.date,truncated = 3), 
-                                                    stop.time = settings$state.data.assimilation$end.date,
-                                                    inputs =  settings$run$inputs$met$path[[i]],
-                                                    overwrite=F)) 
+                                                  args = list(settings = settings, 
+                                                              start.time = ymd_hms(settings$state.data.assimilation$start.date,truncated = 3), 
+                                                              stop.time = settings$state.data.assimilation$end.date,
+                                                              inputs =  settings$run$inputs$met$path[[i]],
+                                                              overwrite=F)) 
       
     }
   }
@@ -105,7 +105,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###-------------------------------------------------------------------###----  
   obs.times <- names(obs.mean)
   obs.times.POSIX <- ymd_hms(obs.times)
-
+  
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
       if (is.na(lubridate::ymd(obs.times[i]))) {
@@ -149,7 +149,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       x[i, ] }, n = i)
   } 
   new.params <- params
-
+  
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###----   
@@ -160,14 +160,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     # finding/moving files to it's end year dir
     files.last.sda<-list.files.nodir(file.path(settings$outdir,"SDA"))
     #copying
-       file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
-                 file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda))
-                 )
-       params<-new.params
+    file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
+              file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda))
+    )
+    params<-new.params
   }else{
     t<-0
   }
-
+  
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
@@ -187,18 +187,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       inputs.split <- list()
       for(i in seq_len(nens)){
         if(!no_split){ 
-     #---------------- model specific split inputs
+          #---------------- model specific split inputs
           inputs.split$samples[i] <-do.call(my.split_inputs, 
-                                      args = list(settings = settings, 
-                                                  start.time = (ymd_hms(obs.times[t-1],truncated = 3) + second(hms("00:00:01"))), 
-                                                  stop.time = obs.times[t],
-                                                  inputs = inputs$samples[[i]])) 
+                                            args = list(settings = settings, 
+                                                        start.time = (ymd_hms(obs.times[t-1],truncated = 3) + second(hms("00:00:01"))), 
+                                                        stop.time = obs.times[t],
+                                                        inputs = inputs$samples[[i]])) 
           
         }else{
           inputs.split<-inputs
-          }
+        }
       }
-    #---------------- setting up the restart argument
+      #---------------- setting up the restart argument
       restart.arg<-list(runid = run.id, 
                         start.time = strptime(obs.times[t-1],format="%Y-%m-%d %H:%M:%S"),
                         stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
@@ -208,45 +208,45 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                         inputs = inputs.split, 
                         RENAME = TRUE,
                         ensemble.id=ensemble.id)
-   
+      
     }else{
       restart.arg <- NULL
       new.params <- params
     }
-  #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
+    #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
     outconfig <- write.ensemble.configs(defaults = settings$pfts, 
-                           ensemble.samples = ensemble.samples, 
-                           settings = settings,
-                           model = settings$model$type, 
-                           write.to.db = settings$database$bety$write,
-                           restart = restart.arg)
-
-
+                                        ensemble.samples = ensemble.samples, 
+                                        settings = settings,
+                                        model = settings$model$type, 
+                                        write.to.db = settings$database$bety$write,
+                                        restart = restart.arg)
+    
+    
     run.id <- outconfig$runs$id
     ensemble.id <- outconfig$ensemble.id
-   if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+    if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     #------------------------------------------- Reading the output
     X_tmp <- vector("list", 2) 
     X <- list()
     for (i in seq_len(nens)) {
-
+      
       X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
                                                          runid = run.id[i], 
                                                          stop.time = obs.times[t], 
                                                          settings = settings, 
                                                          var.names = var.names, 
                                                          params = params[[i]]
-                                                         )
-                            )
+      )
+      )
       # states will be in X, but we also want to carry some deterministic relationships to write_restart
       # these will be stored in params
       X[[i]]      <- X_tmp[[i]]$X
       if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
-        
+      
     }
-   
+    
     X <- do.call(rbind, X)
     FORECAST[[t]] <- X
     mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
@@ -272,22 +272,22 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
       }
       if (control$debug) browser()
-    ###-------------------------------------------------------------------###
-    ### Analysis                                                          ###
-    ###-------------------------------------------------------------------###----
+      ###-------------------------------------------------------------------###
+      ### Analysis                                                          ###
+      ###-------------------------------------------------------------------###----
       if(processvar == FALSE){an.method<-EnKF  }else{    an.method<-GEF   }  
       #-analysis function
-        enkf.params[[t]] <- Analysis.sda(settings,
-                                        FUN=an.method,
-                                        Forecast=list(Pf=Pf,mu.f=mu.f,Q=Q,X=X),
-                                        Observed=list(R=R,Y=Y),
-                                        choose=choose,
-                                        nt=nt,
-                                        obs.mean=obs.mean,
-                                        obs.cov=obs.cov,
-                                        extraArg=list(aqq=aqq,bqq=bqq,t=t)
-                                        )
-
+      enkf.params[[t]] <- Analysis.sda(settings,
+                                       FUN=an.method,
+                                       Forecast=list(Pf=Pf,mu.f=mu.f,Q=Q,X=X),
+                                       Observed=list(R=R,Y=Y),
+                                       choose=choose,
+                                       nt=nt,
+                                       obs.mean=obs.mean,
+                                       obs.cov=obs.cov,
+                                       extraArg=list(aqq=aqq,bqq=bqq,t=t)
+      )
+      
       Pa <- enkf.params[[t]]$Pa
       mu.a <- enkf.params[[t]]$mu.a
       #extracting extra outputs
@@ -319,10 +319,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         cat ("\n ------------------------------------------------------\n")
       }
       if (control$debug) browser()
-      } else {
-    ###-------------------------------------------------------------------###
-    ### No Observations --                                                ###----
-    ###-----------------------------------------------------------------### 
+    } else {
+      ###-------------------------------------------------------------------###
+      ### No Observations --                                                ###----
+      ###-----------------------------------------------------------------### 
       ### no process variance -- forecast is the same as the analysis ###
       if (processvar==FALSE) {
         mu.a <- mu.f
@@ -337,11 +337,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         Pa   <- Pf + solve(q.bar)
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
-      }
+    }
     ###-------------------------------------------------------------------###
     ### adjustement/update state matrix                                   ###
     ###-------------------------------------------------------------------###---- 
-
+    
     if(adjustment == TRUE){
       analysis <-adj.ens(Pf,X,X.new,mu.f,mu.a,Pa,processvar)
     }else{
@@ -358,7 +358,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         analysis[analysis[,i] > int.save[2],i] <- int.save[2]
       }
     }
- 
+    
     ## in the future will have to be separated from analysis
     new.state  <- as.data.frame(analysis)
     ANALYSIS[[t]] <- analysis
@@ -369,7 +369,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
-    save(t, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id, ensemble.id, ensemble.samples, inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    save(t, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id, ensemble.id, ensemble.samples, aqq, bqq, inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
     post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
@@ -378,15 +378,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### time series plots                                                 ###
   ###-------------------------------------------------------------------###----- 
   #post.alaysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
-  if(control$TimeseriesPlot) post.analysis.ggplot.violin(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
+  if(control$TimeseriesPlot) post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
   #if(control$TimeseriesPlot) postana.timeser.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
   ###-------------------------------------------------------------------###
   ### bias diagnostics                                                  ###
   ###-------------------------------------------------------------------###----
-   if(control$BiasPlot)   postana.bias.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
+  if(control$BiasPlot)   postana.bias.plotting.sda(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
   ###-------------------------------------------------------------------###
   ### process variance plots                                            ###
   ###-------------------------------------------------------------------###----- 
   if (processvar) postana.bias.plotting.sda(t,obs.times,X,aqq,bqq)
-
+  
 } # sda.enkf
