@@ -60,6 +60,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
   processvar <- settings$state.data.assimilation$process.variance
+  Localization.FUN <- settings$state.data.assimilation$Localization.FUN
   var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                              function(x) {
                                x$variable.name
