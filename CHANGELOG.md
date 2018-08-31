@@ -17,6 +17,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added a first vignette to models/maat with the plan to add more examples
 
 ### Removed
+- Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 
 ### Changed
 - Updated models/maat/R/write.config.MAAT.R to improve flow, remove bugs, and to work with the release version of the MAAT model.
