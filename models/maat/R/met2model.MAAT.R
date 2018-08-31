@@ -112,7 +112,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       Atm_press <- ncdf4::ncvar_get(nc,"air_pressure") ## in Pa
 
       # get humidity vars
-      RH_perc <- ncdf4::ncvar_get(nc, "relative_humidity")  ## RH Percentage
+      RH_perc <- try(ncdf4::ncvar_get(nc, "relative_humidity"), silent = TRUE)  ## RH Percentage
       Qair <- try(ncdf4::ncvar_get(nc, "specific_humidity"), silent = TRUE)  #humidity (kg/kg)
       SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
       VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"), silent = TRUE)  ## in Pa
@@ -122,6 +122,9 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       }
       VPD_kPa <- udunits2::ud.convert(VPD, "Pa", "kPa")
       e_a <- SVP - VPD  # AirVP
+      if (!is.numeric(RH_perc)) {
+         RH_perc <- PEcAn.data.atmosphere::qair2rh(Qair, Tair_C,Atm_press)
+      }
 
       # get windspeed
       ws <- try(ncdf4::ncvar_get(nc, "wind_speed"), silent = TRUE)
