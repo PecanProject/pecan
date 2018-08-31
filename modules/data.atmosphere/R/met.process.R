@@ -77,8 +77,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
     if (i < length(overwrite.check) && 
         overwrite.check[i] == TRUE && 
         !all(overwrite.check[(i + 1):length(overwrite.check)])) {
-      print(overwrite)
-     PEcAn.logger::logger.error(paste0("If overwriting any stage of met.process, ", "all subsequent stages need to be overwritten too. Please correct."))
+      PEcAn.logger::logger.debug(overwrite)
+      PEcAn.logger::logger.error(
+        "If overwriting any stage of met.process, ",
+        "all subsequent stages need to be overwritten too. Please correct.")
     }
   }
   
@@ -134,7 +136,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     assign(stage$id.name, list(inputid = input_met$id,
                                dbfileid = PEcAn.DB::dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
   }
-  print(stage)
+  PEcAn.logger::logger.debug(stage)
   
   if(is.null(model)){
     stage$model <- FALSE
