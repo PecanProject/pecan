@@ -93,7 +93,6 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
                              clean = FALSE, write.to.db = TRUE) {
   scipen <- getOption("scipen")
   options(scipen = 12)
-  browser()
   my.write.config <- paste("write.config.", model, sep = "")
   
   if (write.to.db) {
