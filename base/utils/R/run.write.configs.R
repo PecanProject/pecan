@@ -99,10 +99,6 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   if ("sensitivity.analysis" %in% names(settings)) {
     
     ### Write out SA config files
-    if (!exists("cnt")) {
-      cnt <- 0
-      assign("cnt", cnt, .GlobalEnv)
-    }
     PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
     sa.runs <- write.sa.configs(defaults = settings$pfts, 
                                 quantile.samples = sa.samples, 
@@ -169,7 +165,7 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
     # double check making sure we have method for parameter sampling
     if (is.null(settings$ensemble$samplingspace$parameters$method)) settings$ensemble$samplingspace$parameters$method <- "uniform"
     ens.sample.method <-  settings$ensemble$samplingspace$parameters$method
-    return(PEcAn.workflow:run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
+    return(run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")
   }
