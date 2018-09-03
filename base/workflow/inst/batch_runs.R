@@ -68,20 +68,26 @@ create_exec_test_xml <- function(run_list){
   saveXML(listToXml(settings, "pecan"), file=paste0(outdir,"/","pecan.xml"))
   file.copy(paste0(config.list$pecan_home,"web/","workflow.R"),to = outdir)
   setwd(outdir)
+  ##Name log file
+  sink(file = "run_out.txt",type = c("output","message"), split =TRUE)
   source("workflow.R")
-  
+  sink(file=NULL)
 }
 
 
 
 
 ##Create Run Args
-pecan_path <- "~/pecan"
+pecan_path <- "/fs/data3/tonygard/work/pecan"
 config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.php"))
 bety <- betyConnect(paste0(pecan_path,"/web/config.php"))
 con <- bety$con
-machineid <- 99000000001 #ID of the VM
-model_ids <- tbl(bety, "dbfiles") %>% filter(machine_id == machineid) %>% 
+
+## Find name of Machine R is running on
+mach_name <- Sys.info()[[4]]
+mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(id)
+  
+model_ids <- tbl(bety, "dbfiles") %>% filter(machine_id == mach_id) %>% 
   filter(container_type == "Model")%>% select(container_id) %>% collect()
 
 
