@@ -264,6 +264,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       #there might be little typo/mistake in the names, now this would not be a problem
       #choose <- na.omit(charmatch(colnames(X),names(obs.mean[[t]])))
       choose <- sapply(colnames(X), agrep, x=names(obs.mean[[t]]), max=1, USE.NAMES = F)%>%unlist
+      browser()
+      #droping the ones that their means are zero 
+      na.obs.mean <- which(is.na(unlist(obs.mean[[t]][choose])))
+      if (length(na.obs.mean)>0) choose <- choose [-na.obs.mean]
+      
       
       Y <- unlist(obs.mean[[t]][choose])
       Y[is.na(Y)] <- 0 
