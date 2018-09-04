@@ -12,8 +12,9 @@ link-citations: yes
 **Ecosystem science, policy, and management informed by the best available data and models**
 
 ```{r, echo=FALSE,out.height= "90%", out.width="90%"}
-  knitr::include_graphics(rep("figures/PecanLogo.png"))
+knitr::include_graphics(rep("figures/PecanLogo.png"))
 ```
+
 
 **Our Mission:**
 
@@ -28,3 +29,11 @@ link-citations: yes
 
 [Github Repository](https://github.com/PecanProject/pecan)
 
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.page-inner{max-width:80% !important;}
+</style>
+</head>
+</html> 
