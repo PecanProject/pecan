@@ -1,19 +1,24 @@
 ## Function to Create and execute pecan xml
 create_exec_test_xml <- function(run_list){
+  library(PEcAn.DB)
+  library(dplyr)
+  library(PEcAn.utils)
+  library(XML)
+  library(PEcAn.settings)
+  model_id <- run_list[[1]]
+  met <- run_list[[2]]
+  site_id<- run_list[[3]]
+  start_date<- run_list[[4]]
+  end_date<- run_list[[5]]
+  pecan_path<- run_list[[6]]
+  user_id<- NA
+  pft_name<- NA
   
-  model_id <- run_list[1]
-  met <- run_list[2]
-  site_id<- run_list[3]
-  start_date<- run_list[4]
-  end_date<- run_list[5]
-  pecan_path<- run_list[6]
-  user_id<- run_list[7]
-  pft_name<- run_list[8]
-  
-  config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.php"))
+  config.list <-read_web_config(paste0(pecan_path,"/web/config.php"))
   bety <- betyConnect(paste0(pecan_path,"/web/config.php"))
   con <- bety$con
   settings <- list()
+  
   # Info
   settings$info$notes <- paste0("Test_Run")
   settings$info$userid <- user_id
@@ -22,7 +27,10 @@ create_exec_test_xml <- function(run_list){
   #Outdir
   model.new <- tbl(bety, "models") %>% filter(model_id == id) %>% collect()
   outdir_base<-config.list$output_folder
-  outdir_pre <- paste(model.new$model_name,format(as.Date(start_date), "%Y-%m"),format(as.Date(end_date), "%Y-%m"),met,site_id,"_test_runs",sep="",collapse =NULL)
+  outdir_pre <- paste(model.new$model_name,format(as.Date(start_date), "%Y-%m"),
+                      format(as.Date(end_date), "%Y-%m"),
+                      met,site_id,"_test_runs",
+                      sep="",collapse =NULL)
   outdir <-  paste0(outdir_base,outdir_pre)
   dir.create(outdir)
   settings$outdir <- outdir
@@ -69,9 +77,11 @@ create_exec_test_xml <- function(run_list){
   file.copy(paste0(config.list$pecan_home,"web/","workflow.R"),to = outdir)
   setwd(outdir)
   ##Name log file
-  sink(file = "run_out.txt",type = c("output","message"), split =TRUE)
+  log <- file("workflow.Rout", open = "wt")
+  sink(log)
+  sink(log, type = "message")
   source("workflow.R")
-  sink(file=NULL)
+  sink()
 }
 
 
@@ -88,19 +98,23 @@ mach_name <- Sys.info()[[4]]
 mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(id)
   
 model_ids <- tbl(bety, "dbfiles") %>% filter(machine_id == mach_id) %>% 
-  filter(container_type == "Model")%>% select(container_id) %>% collect()
+              filter(container_type == "Model") %>% pull(container_id)
 
 
-models <- model_ids$container_id
+
+models <- model_ids
 met_name <- c("CRUNCEP","AmerifluxLBL")
 site_id <- "772"
 startdate<-"2004/01/01"
 enddate<-"2004/12/31"
 
 #Create permutations of arg combinations
-run_table <- expand.grid(models,met_name,site_id, startdate,enddate,pecan_path,scientific =FALSE)
+options(scipen = 999)
+run_table <- expand.grid(models,met_name,site_id, startdate,enddate,pecan_path,stringsAsFactors = FALSE)
+#Execute function to spit out a table with a clomn of NA or success
 
-#Apply function by row of run_table. Return NA if error occurs
-apply(run_table,MARGIN = 1,FUN = purrr::possibly(create_exec_test_xml,otherwise = NA))
-
+tab <-run_table %>% mutate(outcome = purrr::pmap(.,purrr:::possibly(function(...){
+                                                      create_exec_test_xml(list(...))
+                                                   },otherwise =NA))
+                          )
 
