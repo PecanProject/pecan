@@ -5,9 +5,10 @@
 ##' @param settings  pecan standard settings list.  
 ##' @param FUN   A Function for performing the analysis step. Two available options are: 1-EnKF and 2-GEF.
 ##' @param Forecast A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-##' Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param ... Extra argument sent to the analysis function.
+##' @param ... Extra argument sent to the analysis function. In case you're using the `GEF` function, this function requires an extra argument called `extraArg` that needs to be passed through ellipsis.
+##' This argument is a list containing aqq, bqq and t.
 ##’ @details
 ##’  
 ##' 
@@ -23,11 +24,12 @@ Analysis.sda<-function(settings,
                        FUN,
                        Forecast=list(Pf=NULL,mu.f=NULL,Q=NULL,X=NULL),
                        Observed=list(R=NULL,Y=NULL),
+                       H,
                        ...
 ){
   
   if (is.null(FUN)) PEcAn.logger::logger.severe('Analysis function needs to be defined !')
-  FUN(settings, Forecast, Observed,...)
+  FUN(settings, Forecast, Observed, H, ...)
   
 }
 
@@ -47,7 +49,7 @@ Analysis.sda<-function(settings,
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF<-function(setting,Forecast,Observed,...){
+EnKF<-function(setting, Forecast, Observed, H, ...){
   
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
@@ -64,16 +66,6 @@ EnKF<-function(setting,Forecast,Observed,...){
   R <- Observed$R
   Y <- Observed$Y
   # Enkf---------------------------------------------------
-  ## design matrix
-  H <- matrix(0, length(Y), ncol(X)) #H maps true state to observed data
-  #linear
-  for (i in choose) {
-    H[i, i] <- 1
-  }
-  #non-linear fcomp
-  # for (i in choose) {
-  #   H[i, i] <- 1/sum(mu.f) #? this seems to get us on the right track. mu.f[i]/sum(mu.f) doesn't work. 
-  # }
   ## process error
   if (!is.null(Q)) {
     Pf <- Pf + Q
@@ -103,7 +95,7 @@ EnKF<-function(setting,Forecast,Observed,...){
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-GEF<-function(setting,Forecast,Observed,...){
+GEF<-function(setting,Forecast,Observed, H, ...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
@@ -390,4 +382,31 @@ GEF<-function(setting,Forecast,Observed,...){
               bqq=bqq
   )
   )
+}
+
+
+
+##' @title Construc_H
+##' @name  Construc_H
+##' @author Hamze Dokoohaki
+##' 
+##' @param choose  
+##' @param Y vector of observations
+##' @param X Dataframe or matrix of forecast state variables for different ensembles.
+##’ @details
+##’  
+##' 
+##' @description This function creates a mtrix mapping obsereved data to their forecast state variable.
+##' 
+##' @return This returns a mtrix specifying which observation go with which state variables.
+##' @export
+Construc_H <- function(choose, Y, X){
+  ## design matrix
+  H <- matrix(0, length(Y), ncol(X)) #H maps true state to observed data
+  #linear
+  for (i in choose) {
+    H[i, i] <- 1
+  }
+  
+  return(H)
 }

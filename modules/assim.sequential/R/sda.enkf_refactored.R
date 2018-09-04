@@ -261,19 +261,22 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       #Hamze: used agrep instead of charmatch to take advantage of fuzzy matching
       #there might be little typo/mistake in the names, now this would not be a problem
       #choose <- na.omit(charmatch(colnames(X),names(obs.mean[[t]])))
-      choose <- sapply(colnames(X),agrep,x=names(obs.mean[[t]]),max=1,USE.NAMES = F)%>%unlist
+      choose <- sapply(colnames(X), agrep, x=names(obs.mean[[t]]), max=1, USE.NAMES = F)%>%unlist
       
       Y <- unlist(obs.mean[[t]][choose])
       Y[is.na(Y)] <- 0 
       
       R <- as.matrix(obs.cov[[t]][choose,choose])
-      R[is.na(R)]<-0
+      R[is.na(R)]<-0.1
       
       if (length(obs.mean[[t]]) > 1) {
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
       }
       if (control$debug) browser()
+      
+      # making the mapping matrix
+      H <- Construc_H(choose, Y, X)
       ###-------------------------------------------------------------------###
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
@@ -287,7 +290,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                        nt=nt,
                                        obs.mean=obs.mean,
                                        obs.cov=obs.cov,
-                                       extraArg=list(aqq=aqq,bqq=bqq,t=t)
+                                       extraArg=list(aqq=aqq, bqq=bqq, t=t)
       )
       
       Pa <- enkf.params[[t]]$Pa
@@ -305,20 +308,20 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ###-------------------------------------------------------------------###----      
       #-- writing Trace--------------------
       if(control$trace) {
-        cat ("\n --------------------------- ",obs.year," ---------------------------\n")
-        cat ("\n --------------Obs mean----------- \n")
+        PEcAn.logger::logger.info ("\n --------------------------- ",obs.year," ---------------------------\n")
+        PEcAn.logger::logger.info ("\n --------------Obs mean----------- \n")
         print(Y)
-        cat ("\n --------------Obs Cov ----------- \n")
+        PEcAn.logger::logger.info ("\n --------------Obs Cov ----------- \n")
         print(R)
-        cat ("\n --------------Forecast mean ----------- \n")
+        PEcAn.logger::logger.info ("\n --------------Forecast mean ----------- \n")
         print(enkf.params[[t]]$mu.f)
-        cat ("\n --------------Forecast Cov ----------- \n")
+        PEcAn.logger::logger.info ("\n --------------Forecast Cov ----------- \n")
         print(enkf.params[[t]]$Pf)
-        cat ("\n --------------Analysis mean ----------- \n")
+        PEcAn.logger::logger.info ("\n --------------Analysis mean ----------- \n")
         print(t(enkf.params[[t]]$mu.a))
-        cat ("\n --------------Analysis Cov ----------- \n")
+        PEcAn.logger::logger.info ("\n --------------Analysis Cov ----------- \n")
         print(enkf.params[[t]]$Pa)
-        cat ("\n ------------------------------------------------------\n")
+        PEcAn.logger::logger.info ("\n ------------------------------------------------------\n")
       }
       if (control$debug) browser()
     } else {
@@ -334,7 +337,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         mu.a <- mu.f
         if(is.null(q.bar)){
           q.bar <- diag(ncol(X))
-          print('Process variance not estimated. Analysis has been given uninformative process variance')
+          PEcAn.logger::logger.info('Process variance not estimated. Analysis has been given uninformative process variance')
         } 
         Pa   <- Pf + solve(q.bar)
       }
@@ -345,7 +348,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###---- 
     
     if(adjustment == TRUE){
-      analysis <-adj.ens(Pf,X,X.new,mu.f,mu.a,Pa,processvar)
+      #if we have process var then x is x.new
+      if (processvar) X <- X.new
+      analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
     }else{
       analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
     }
