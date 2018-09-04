@@ -182,6 +182,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
     ###-------------------------------------------------------------------------###-----  
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
+    # Why t>1 is different ? Because the ensemble.write.config would be different. It has the restart argument and it needs it's own setup.
+    # plus in t>1 we split the met data for the models that they need that.
     if (t>1){
       #removing old simulations
       unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
@@ -351,8 +353,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     
     if(adjustment == TRUE){
       #if we have process var then x is x.new
-      if (processvar) X <- X.new
-      analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
+      if (processvar) {X.adj.arg <- X.new }else{ X.adj.arg <- X }
+      analysis <-adj.ens(Pf, X.adj.arg, mu.f, mu.a, Pa)
     }else{
       analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
     }
