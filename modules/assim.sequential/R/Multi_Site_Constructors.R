@@ -11,7 +11,7 @@
 ##' @return It returns the var-cov matrix of state variables at multiple sites.
 ##' @export
 
-Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL,...) {
+Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, ...) {
   
   nsite <- length(site.ids)
   nvariable <- length(var.names)
@@ -95,10 +95,17 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
 
 
 Create_blocked_matrix <- function(nsite, nvar, Matrix.value.diag=0,offdiag=NA){
+  #create an empty matrix and then populate it
   outmatrix <- matrix(offdiag, nsite*nvar, nsite*nvar )
-  positions <- seq(1,(nsite*nvar),by=nvar) 
+  # where are the positions of my blocks in my output matrix 
+  positions <- seq(1,(nsite*nvar),by=nvar)
+  # if one value is sent for diag repeat that for each site
+  if (length(Matrix.value.diag)==1) Matrix.value.diag<-rep(Matrix.value.diag,nsite)
+  # put down the blocks in my matrix 
+  i<-1
   for (pos in positions){
-    outmatrix[pos:(pos+nvar-1), pos:(pos+nvar-1)] <- matrix(Matrix.value.diag,nvar, nvar)
+    outmatrix[pos:(pos+nvar-1), pos:(pos+nvar-1)] <- matrix(Matrix.value.diag[i],nvar, nvar)
+    i<-i+1
   }
   outmatrix
   

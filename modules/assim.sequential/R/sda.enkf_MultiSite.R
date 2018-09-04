@@ -61,6 +61,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   nens       <- as.numeric(settings$ensemble$size)
   processvar <- settings$state.data.assimilation$process.variance
   Localization.FUN <- settings$state.data.assimilation$Localization.FUN
+  scalef <- settings$state.data.assimilation$Localization.FUN
   var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                              function(x) {
                                x$variable.name
@@ -317,7 +318,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       # This the function and makes the Pf by creating blocks in it for different sites
       # We can also send a localization functions to this 
       # for extra argumnets like distance matrix for localization use elipsis
-      Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)))
+      Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)), dis.matrix, scalef)
     }else{
       Pf <- cov(X) 
     }
