@@ -277,7 +277,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       R[is.na(R)]<-0.1
       
       if (length(obs.mean[[t]]) > 1) {
-        PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrix respectively.")
+        PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
         
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
