@@ -9,6 +9,7 @@
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
 ##' @param ... Extra argument sent to the analysis function. In case you're using the `GEF` function, this function requires an extra argument called `extraArg` that needs to be passed through ellipsis.
 ##' This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.
+##' ##' In addition to `extraArg` this function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.
 ##’ @details
 ##’  
 ##' 
@@ -89,7 +90,8 @@ EnKF<-function(setting, Forecast, Observed, H, ...){
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
 ##' @param ... Extra argument sent to the analysis function. This function requires an extra argument called `extraArg` that needs to be passed through ellipsis.
 ##' This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.
-##’ @details
+##' In addition to `extraArg` this function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.
+##’ 
 ##’  
 ##' 
 ##' @description Given the Forecast and Observed this function performs the Generalized Ensemble Kalamn Filter. The generalized ensemble filter follows generally the three steps of sequential state data assimilation. But, in the generalized ensemble filter we add a latent state vector that accounts for added process variance. Furthermore, instead of solving the analysis analytically like the EnKF, we have to estimate the mean analysis vector and covariance matrix with MCMC.

@@ -18,7 +18,8 @@ Q (process variance) and X (a dataframe of forecasts state variables for differe
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
 \item{...}{Extra argument sent to the analysis function. In case you're using the `GEF` function, this function requires an extra argument called `extraArg` that needs to be passed through ellipsis.
-This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.}
+This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.
+##' In addition to `extraArg` this function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.}
 }
 \value{
 Returns whatever the FUN is returning. In case of EnKF and GEF, this function returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
