@@ -34,12 +34,14 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
     dat$start_time <- lubridate::parse_date_time(dat$start_time, orders = "ymdHMSz", tz = "UTC")
     dat$end_time <- lubridate::parse_date_time(dat$end_time, orders = "ymdHMSz", tz = "UTC")
     if (year == lubridate::year(start_date) & start_date < min(dat$start_time)) {
-    PEcAn.logger::logger.severe("Requested start date is", start_date,
-                   "but", year, "data begin on", min(dat$start_time))
+      PEcAn.logger::logger.severe(
+        "Requested start date is", start_date,
+        "but", year, "data begin on", min(dat$start_time))
     }
     if (year == lubridate::year(end_date) & end_date > max(dat$end_time)) {
-    PEcAn.logger::logger.severe("Requested end date is", end_date,
-                   "but", year, "data end on", max(dat$end_time))
+      PEcAn.logger::logger.severe(
+        "Requested end date is", end_date,
+        "but", year, "data end on", max(dat$end_time))
     }
 
     dat$mid_time <- dat$start_time + (dat$end_time - dat$start_time)/2

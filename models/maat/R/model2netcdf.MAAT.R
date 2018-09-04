@@ -129,7 +129,8 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       day.steps <- seq(0, 0.99, 1 / dims[1])
       
       # setup netCDF time variable for year
-      t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
+      maat_run_start_by_year <- format(lubridate::as_datetime(sub.maat.dates, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
+      t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_by_year),
                             vals = sub.maat.doy + day.steps, calendar = "standard", 
                             unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
       
