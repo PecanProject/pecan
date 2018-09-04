@@ -391,7 +391,7 @@ GEF<-function(setting,Forecast,Observed, H, ...){
 ##' @name  Construc_H
 ##' @author Hamze Dokoohaki
 ##' 
-##' @param choose  
+##' @param choose  a vector of observations indices oredered based on their appearances in the list of state variable names.
 ##' @param Y vector of observations
 ##' @param X Dataframe or matrix of forecast state variables for different ensembles.
 ##’ @details

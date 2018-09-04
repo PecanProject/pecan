@@ -7,7 +7,7 @@
 Construc_H(choose, Y, X)
 }
 \arguments{
-\item{choose}{}
+\item{choose}{a vector of observations indices oredered based on their appearances in the list of state variable names.}
 
 \item{Y}{vector of observations}
 
