@@ -312,6 +312,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
             `attr<-`('Site', c(rep(site.ids, each=length(site.ids))))
     # I make the Pf in a separate function
     if(multi.site.flag & length(site.ids)>1){
+      browser()
       #Distance matrix - blockwise
       dis.matrix <- Create_blocked_matrix(length(site.ids), length(var.names),0 ,0)
       
