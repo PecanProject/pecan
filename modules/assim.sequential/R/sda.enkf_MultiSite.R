@@ -69,6 +69,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                       use.names = FALSE)
   names(var.names) <- NULL
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
+  #------------------------------Multi - site specific - settings
   #Here i'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
     conf.settings<-settings
@@ -76,6 +77,8 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   }else{
     conf.settings<-list(settings)
   }
+  
+
   #filtering obs data based on years specifited in setting > state.data.assimilation
   assimyears <- year(settings$state.data.assimilation$start.date) : year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
   obs.mean <- obs.mean[sapply(year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
@@ -308,10 +311,13 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
             `attr<-`('Site', c(rep(site.ids, each=length(site.ids))))
     # I make the Pf in a separate function
     if(multi.site.flag & length(site.ids)>1){
+      #Distance matrix - blockwise
+      dis.matrix <- Create_blocked_matrix(length(site.ids), length(var.names),0 ,0)
+      
       # This the function and makes the Pf by creating blocks in it for different sites
       # We can also send a localization functions to this 
       # for extra argumnets like distance matrix for localization use elipsis
-      Pf <- Contruct.Pf (site.ids, var.names, X)
+      Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)))
     }else{
       Pf <- cov(X) 
     }

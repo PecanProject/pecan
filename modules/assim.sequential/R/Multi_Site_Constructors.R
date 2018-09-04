@@ -91,3 +91,15 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
 
   return(list(Y=Y, R=R))
 }
+
+
+
+Create_blocked_matrix <- function(nsite, nvar, Matrix.value.diag=0,offdiag=NA){
+  outmatrix <- matrix(offdiag, nsite*nvar, nsite*nvar )
+  positions <- seq(1,(nsite*nvar),by=nvar) 
+  for (pos in positions){
+    outmatrix[pos:(pos+nvar-1), pos:(pos+nvar-1)] <- matrix(Matrix.value.diag,nvar, nvar)
+  }
+  outmatrix
+  
+}
