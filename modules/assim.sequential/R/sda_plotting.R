@@ -33,15 +33,9 @@ interactive.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,F
   #Defining some colors
   generate_colors_sda()
   t1         <- 1
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                             function(x) {
-                               x$variable.name
-                             }, 
-                             USE.NAMES = FALSE), 
-                      use.names = FALSE)
-  #----
-  t1 <- 1
+  var.names <- var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
+  
   Ybar <- t(sapply(obs.mean[t1:t], function(x) {
     tmp <- rep(NA, length(names.y))
     names(tmp) <- names.y
@@ -72,11 +66,11 @@ interactive.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,F
   colmax<-2
   for (i in 1:ncol(FORECAST[[t]])) { #
     
-    Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i]/rowSums(x[,1:colmax]), na.rm = TRUE) })
-    Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i]/rowSums(x[,1:colmax]), c(0.025, 0.975), na.rm = TRUE) })
+    Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+    Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
     
-    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i]/rowSums(x[,1:colmax]), na.rm = TRUE) })
-    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i]/rowSums(x[,1:colmax]), c(0.025, 0.975), na.rm = TRUE) })
+    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
     
     ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                                 function(x) { x })[2, ], use.names = FALSE)
