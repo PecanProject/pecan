@@ -4,7 +4,7 @@
 \alias{GEF}
 \title{GEF}
 \usage{
-GEF(setting, Forecast, Observed, ...)
+GEF(setting, Forecast, Observed, H, ...)
 }
 \arguments{
 \item{Forecast}{A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
@@ -12,7 +12,8 @@ Q (process variance) and X (a dataframe of forcats state variables for different
 
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
-\item{...}{Extra argument sent to the analysis function.}
+\item{...}{Extra argument sent to the analysis function. This function requires an extra argument called `extraArg` that needs to be passed through ellipsis.
+This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.}
 
 \item{settings}{pecan standard settings list.}
 }

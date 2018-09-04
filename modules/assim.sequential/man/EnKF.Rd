@@ -4,7 +4,7 @@
 \alias{EnKF}
 \title{EnKF}
 \usage{
-EnKF(setting, Forecast, Observed, ...)
+EnKF(setting, Forecast, Observed, H, ...)
 }
 \arguments{
 \item{Forecast}{A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),

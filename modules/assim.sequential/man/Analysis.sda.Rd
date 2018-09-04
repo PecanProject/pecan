@@ -5,7 +5,7 @@
 \title{Analysis.sda}
 \usage{
 Analysis.sda(settings, FUN, Forecast = list(Pf = NULL, mu.f = NULL, Q =
-  NULL, X = NULL), Observed = list(R = NULL, Y = NULL), ...)
+  NULL, X = NULL), Observed = list(R = NULL, Y = NULL), H, ...)
 }
 \arguments{
 \item{settings}{pecan standard settings list.}
@@ -13,11 +13,12 @@ Analysis.sda(settings, FUN, Forecast = list(Pf = NULL, mu.f = NULL, Q =
 \item{FUN}{A Function for performing the analysis step. Two available options are: 1-EnKF and 2-GEF.}
 
 \item{Forecast}{A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-Q (process variance) and X (a dataframe of forcats state variables for different ensemble)}
+Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)}
 
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
-\item{...}{Extra argument sent to the analysis function.}
+\item{...}{Extra argument sent to the analysis function. In case you're using the `GEF` function, this function requires an extra argument called `extraArg` that needs to be passed through ellipsis.
+This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.}
 }
 \value{
 Returns whatever the FUN is returning. In case of EnKF and GEF, this function returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
