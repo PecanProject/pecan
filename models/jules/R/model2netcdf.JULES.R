@@ -32,7 +32,7 @@ model2netcdf.JULES <- function(outdir) {
                 row.names = TRUE,
                 quote = FALSE)
     
-    vars <- nc.get.variable.list(nc)
+    vars <- ncdf4.helpers::nc.get.variable.list(nc)
     # Check that frac is reported
     if("frac_grid" %in% vars){
       frac <- ncdf4::ncvar_get(nc, "frac_grid")
@@ -40,11 +40,11 @@ model2netcdf.JULES <- function(outdir) {
       PEcAn.logger::logger.warn("Surface type fraction is not an output and thus other outputs may not be parseable")
     }
     
-    base_dims <- nc.get.dim.names(nc, "GPP") # This isn't the best example, except that GPP is the default with read.output (and it is not reported by surface type)
+    base_dims <- ncdf4.helpers::nc.get.dim.names(nc, "GPP") # This isn't the best example, except that GPP is the default with read.output (and it is not reported by surface type)
     for(i in seq_along(vars)){
       var <- vars[i]
       nonstd_var <- nrow(PEcAn.utils::standard_vars[which(PEcAn.utils::standard_vars$Variable.Name == var),]) == 0  
-      dims <- nc.get.dim.names(nc, var)
+      dims <- ncdf4.helpers::nc.get.dim.names(nc, var)
       diff_dims <- setdiff(dims,base_dims)
       if(length(diff_dims) > 0){# ie more than just x, y, time
         PEcAn.logger::logger.warn("Variable", vars[i], "has additional dimension", diff_dims, "attempting to aggregate and/or select appropriate data")
@@ -75,10 +75,10 @@ model2netcdf.JULES <- function(outdir) {
         # and add it over again because the dimensions have changed
         cmd <- sprintf("ncks -O -x -v %s %s %s", var, fname, fname)
         system(cmd)
-        nc_close(nc)
+        ncdf4::nc_close(nc)
         nc <- ncdf4::nc_open(fname, write = TRUE)
         # Check did the variable get deleted 
-        if(!(var %in% nc.get.variable.list(nc))){
+        if(!(var %in% ncdf4.helpers::nc.get.variable.list(nc))){
           PEcAn.logger::logger.debug(var, "successfully removed from", fname)
         }
         dim = list(time = nc$dim$time, x = nc$dim$x, y = nc$dim$y)
@@ -91,7 +91,7 @@ model2netcdf.JULES <- function(outdir) {
           nc_var <- PEcAn.utils::to_ncvar(var, dim)
         }
         
-        ncvar_add(nc, nc_var)
+        ncdf4::ncvar_add(nc, nc_var)
         ncdf4::nc_close(nc)
         nc <- ncdf4::nc_open(fname, write = TRUE) # Why do I have to close and reopen it?
         ncdf4::ncvar_put(nc, nc_var, x)
