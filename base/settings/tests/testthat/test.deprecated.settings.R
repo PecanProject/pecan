@@ -11,8 +11,6 @@ PEcAn.logger::logger.setQuitOnSevere(FALSE)
 PEcAn.logger::logger.setLevel("OFF")
 context("fix.deprecated.settings")
 
-source('get.test.settings.R')
-
 test_that("deprecated jobtemplate settings handled correctly", {
   settings <- .get.test.settings()
   settings$run$jobtemplate = "somefile"

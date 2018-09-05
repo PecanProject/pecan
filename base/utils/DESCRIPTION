@@ -16,7 +16,6 @@ Description: The Predictive Ecosystem Carbon Analyzer
     investigation.
 Imports:
     data.table,
-    getPass,
     ggplot2,
     PEcAn.logger,
     PEcAn.remote,
@@ -39,7 +38,6 @@ Suggests:
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.emulator,
-    PEcAn.priors,
     PEcAn.settings,
     PEcAn.DB,
     MASS,
