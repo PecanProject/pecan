@@ -113,7 +113,7 @@ options(scipen = 999)
 run_table <- expand.grid(models,met_name,site_id, startdate,enddate,pecan_path,stringsAsFactors = FALSE)
 #Execute function to spit out a table with a clomn of NA or success
 
-tab <-run_table %>% mutate(outcome = purrr::pmap(.,purrr:::possibly(function(...){
+tab <-run_table %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
                                                       create_exec_test_xml(list(...))
                                                    },otherwise =NA))
                           )
