@@ -60,14 +60,9 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
   processvar <- settings$state.data.assimilation$process.variance
-  Localization.FUN <- settings$state.data.assimilation$Localization.FUN
-  scalef <- settings$state.data.assimilation$Localization.FUN
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                             function(x) {
-                               x$variable.name
-                             }, 
-                             USE.NAMES = FALSE), 
-                      use.names = FALSE)
+  Localization.FUN <- settings$state.data.assimilation$Localization.FUN # localization function
+  scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
   #------------------------------Multi - site specific - settings
@@ -75,6 +70,11 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   if(multi.site.flag){
     conf.settings<-settings
     site.ids <- conf.settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
+    # a matrix ready to be sent to spDistsN1 in sp package - first col is the long second is the lat and row names are the site ids
+    site.locs <- conf.settings %>% map(~.x[['run']] ) %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
+        t %>%
+      `colnames<-`(c("Lon","Lat")) %>%
+        `rownames<-`(site.ids)
   }else{
     conf.settings<-list(settings)
   }
@@ -313,8 +313,10 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     # I make the Pf in a separate function
     if(multi.site.flag & length(site.ids)>1){
       browser()
+      distances <- spDists(site.locs+rnorm(4,0,1))
+      between.site.dis <- distances[upper.tri(distances)]
       #Distance matrix - blockwise
-      dis.matrix <- Create_blocked_matrix(length(site.ids), length(var.names),0 ,0)
+      dis.matrix <- Create_blocked_matrix(length(site.ids), length(var.names),  0 ,  0)
       
       # This the function and makes the Pf by creating blocks in it for different sites
       # We can also send a localization functions to this 

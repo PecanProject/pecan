@@ -93,20 +93,50 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
 }
 
 
-
-Create_blocked_matrix <- function(nsite, nvar, Matrix.value.diag=0,offdiag=NA){
-  #create an empty matrix and then populate it
-  outmatrix <- matrix(offdiag, nsite*nvar, nsite*nvar )
-  # where are the positions of my blocks in my output matrix 
-  positions <- seq(1,(nsite*nvar),by=nvar)
-  # if one value is sent for diag repeat that for each site
-  if (length(Matrix.value.diag)==1) Matrix.value.diag<-rep(Matrix.value.diag,nsite)
-  # put down the blocks in my matrix 
-  i<-1
-  for (pos in positions){
-    outmatrix[pos:(pos+nvar-1), pos:(pos+nvar-1)] <- matrix(Matrix.value.diag[i],nvar, nvar)
-    i<-i+1
+##' @title block_matrix
+##' @name  block_matrix
+##' @author Guy J. Abel
+##' 
+##' @param x Vector of numbers to identify each block.
+##' @param b Numeric value for the size of the blocks within the matrix ordered depending on byrow
+##' @param byrow ogical value. If FALSE (the default) the blocks are filled by columns, otherwise the blocks in the matrix are filled by rows.
+##' @param dimnames Character string of name attribute for the basis of the blcok matrix. If NULL a vector of the same length of b provides the basis of row and column names.#'.
+##’  
+##' 
+##' @description This function is adopted from migest package.
+##' 
+##' @return Returns a matrix with block sizes determined by the b argument. Each block is filled with the same value taken from x.
+##' @export
+block_matrix <- function (x = NULL, b = NULL, byrow = FALSE, dimnames = NULL) {
+  n <- length(b)
+  bb <- rep(1:n, times = b)
+  dn <- NULL
+  if (is.null(dimnames)) {
+    dn <- rep(1:n, times = b)
+    dd <- unlist(sapply(b, seq, from = 1))
+    dn <- paste0(dn, dd)
+    dn <- list(dn, dn)
   }
-  outmatrix
-  
+  if (!is.null(dimnames)) {
+    dn <- dimnames
+  }
+  xx <- matrix(NA, nrow = sum(b), ncol = sum(b), dimnames = dn)
+  k <- 1
+  if (byrow == TRUE) {
+    for (i in 1:n) {
+      for (j in 1:n) {
+        xx[i == bb, j == bb] <- x[k]
+        k <- k + 1
+      }
+    }
+  }
+  if (byrow == FALSE) {
+    for (j in 1:n) {
+      for (i in 1:n) {
+        xx[i == bb, j == bb] <- x[k]
+        k <- k + 1
+      }
+    }
+  }
+  return(xx)
 }
