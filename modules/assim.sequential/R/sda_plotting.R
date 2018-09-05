@@ -544,8 +544,9 @@ post.alaysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs
   
 }
 
-
+##' @export
 post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
+
   
   #Defining some colors
   t1         <- 1

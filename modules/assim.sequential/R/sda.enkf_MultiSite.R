@@ -312,16 +312,16 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
             `attr<-`('Site', c(rep(site.ids, each=length(site.ids))))
     # I make the Pf in a separate function
     if(multi.site.flag & length(site.ids)>1){
-      browser()
-      distances <- spDists(site.locs+rnorm(4,0,1))
-      between.site.dis <- distances[upper.tri(distances)]
-      #Distance matrix - blockwise
-      dis.matrix <- Create_blocked_matrix(length(site.ids), length(var.names),  0 ,  0)
-      
+  
+      #Finding the dis between sites
+      distances <- spDists(site.locs+rnorm(4,0,1),longlat=T)
+      #turn that into a blocked matrix format
+      blocked.dis<-block_matrix(distances%>%as.numeric(), rep(length(var.names), length(site.ids)))
+
       # This the function and makes the Pf by creating blocks in it for different sites
       # We can also send a localization functions to this 
       # for extra argumnets like distance matrix for localization use elipsis
-      Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)), dis.matrix, scalef)
+      Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)), blocked.dis, scalef)
     }else{
       Pf <- cov(X) 
     }
