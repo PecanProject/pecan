@@ -32,10 +32,17 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   ### Determine number of years and output timestep
   start.day <- sipnet.output$day[1]
   num.years <- length(unique(sipnet.output$year))
+  # quick consistency check
+  if (length(lubridate::year(end_date):lubridate::year(start_date))!=num.years) {
+    PEcAn.logger::logger.severe("Date range specified in model2netcdf.SIPNET() function call and total number of years in SIPNET output are not equal")
+  }
   years <- unique(sipnet.output$year)
+  # check that specified years and output years match
+  if (any(is.na(match(years,lubridate::year(start_date):lubridate::year(end_date))))) {
+    PEcAn.logger::logger.severe("Years selected for model run and SIPNET output years do not match ")
+  }
   out.day <- length(which(sipnet.output$year == years[1] & sipnet.output$day == start.day))
   timestep.s <- 86400 / out.day
-
 
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in years) {
@@ -102,7 +109,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     # ******************** Declare netCDF variables ********************#
     t <- ncdf4::ncdim_def(name = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
-                   vals = sub.sipnet.output$day - 1 + (sub.sipnet.output$time/24),
+                   vals = sub.sipnet.output$day + (sub.sipnet.output$time/out.day),
                    calendar = "standard",
                    unlim = TRUE)
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
