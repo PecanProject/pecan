@@ -27,18 +27,18 @@ sda.enkf(settings, obs.mean, obs.cov, Q = NULL, restart = F,
 
 \item{restart}{Used for iterative updating previous forecasts. This is a list that includes ens.inputs, the list of inputs by ensemble member, params, the parameters, and old_outdir, the output directory from the previous workflow. These three things are needed to ensure that if a new workflow is started that ensemble members keep there run-specific met and params. See Details}
 
-\item{control}{List of flags controling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for ploting the outcomes after each step, 
+\item{control}{List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 TimeseriesPlot for post analysis examination, BiasPlot for plotting ..., plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.}
 
 \item{settings}{PEcAn settings object}
 
-\item{obs.mean}{list of observations of the means of state variable (time X nstate)}
+\item{obs.mean}{List of vectors of observation means, named with observation datetime.}
 
-\item{obs.cov}{list of observations of covariance matrices of state variables (time X nstate X nstate)}
+\item{obs.cov}{List of covariance matrices of state variables , named with observation datetime.}
 
-\item{Q}{process covariance matrix given if there is no data to estimate it}
+\item{Q}{Process covariance matrix given if there is no data to estimate it.}
 
-\item{restart}{Used for iterative updating previous forecasts. When the restart is TRUE it read the obejct in SDA folder writen from previous SDA.}
+\item{restart}{Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.}
 }
 \value{
 NONE
@@ -48,7 +48,7 @@ NONE
 \description{
 State Variable Data Assimilation: Ensemble Kalman Filter
 
-State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble kalman file=ter
+State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
 }
 \author{
 Michael Dietze and Ann Raiho \email{dietze@bu.edu}

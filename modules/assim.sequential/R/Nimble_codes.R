@@ -1,3 +1,9 @@
+##' @title load_nimble
+##' @name  load_nimble
+##' @author Ann Raiho
+##' 
+##' @description This functions is used internally to register load nimble library and required functions.
+##' 
 #' @import nimble
 load_nimble <- function(){
     #y_star_create-------------------------------------------------------------------------------------------------------

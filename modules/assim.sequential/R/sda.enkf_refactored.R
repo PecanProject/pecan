@@ -69,13 +69,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###-------------------------------------------------------------------###
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
+
    if(!no_split){ 
       for(i in seq_along(settings$run$inputs$met$path)){
       ### model specific split inputs
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
-                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date,truncated = 3), 
-                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date),
+                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3), 
+                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
                                                               inputs =  settings$run$inputs$met$path[[i]],
                                                               overwrite=F)) 
     }
@@ -122,7 +123,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
-  if(!file.path(settings$outdir, "samples.Rdata")) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
+  if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
   load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
   #reformatting params
   new.params <- list()
@@ -177,9 +178,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                         stop.time = obs.times[t],
                                                         inputs = inputs$samples[[i]])) 
           
-        }else{
-          inputs.split<-inputs
-        }
+       
+        } 
+      }else{
+        inputs.split<-inputs
       }
       #---------------- setting up the restart argument
       restart.arg<-list(runid = run.id, 
@@ -248,12 +250,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       R <- as.matrix(obs.cov[[t]][choose,choose])
       R[is.na(R)]<-0.1
       
-      if (length(obs.mean[[t]]) > 1) {
-        PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
-        
-        diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
-      }
       if (control$debug) browser()
       
       # making the mapping matrix
@@ -265,7 +261,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
                                        FUN=an.method,
-                                       Forecast=list(Pf=Pf, mu.f=mu.f, Q=Q, X=X),
+                                       Forecast=list(Q=Q, X=X),
                                        Observed=list(R=R, Y=Y),
                                        H=H,
                                        extraArg=list(aqq=aqq, bqq=bqq, t=t),

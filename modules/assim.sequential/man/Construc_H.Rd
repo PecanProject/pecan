@@ -2,9 +2,10 @@
 % Please edit documentation in R/Analysis_sda.R
 \name{Construc_H}
 \alias{Construc_H}
+\alias{Construct_H}
 \title{Construc_H}
 \usage{
-Construc_H(choose, Y, X)
+Construct_H(choose, Y, X)
 }
 \arguments{
 \item{choose}{a vector of observations indices oredered based on their appearances in the list of state variable names.}
