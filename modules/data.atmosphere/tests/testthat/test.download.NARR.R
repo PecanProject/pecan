@@ -15,7 +15,7 @@ test_that(
   {
 
     r <- download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
-                            progress = TRUE, parallel = TRUE)
+                            progress = TRUE, parallel = TRUE, ncores = 2)
 
     expect_equal(nrow(r), 1)
     expect_true(file.exists(r$file[1]))
