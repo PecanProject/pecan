@@ -209,6 +209,13 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
   if (parallel) {
+    if (!requireNamespace("parallel", quietly = TRUE)
+        || !requireNamespace("doParallel", quietly = TRUE)) {
+      PEcAn.logger::logger.severe(
+        "Could not find all packages needed for simultaneous NARR downloads. ",
+        "Either run `install.packages(c(\"parallel\", \"doParallel\"))`, ",
+        "or call get_NARR_thredds with `parallel = FALSE`.")
+    }
 
     # Load in parallel
     PEcAn.logger::logger.info("Downloading in parallel")
