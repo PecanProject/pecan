@@ -2,18 +2,18 @@
 #' @name  sda.enkf
 #' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 #' 
-#' @param settings    PEcAn settings object
-#' @param obs.mean    list of observations of the means of state variable (time X nstate)
-#' @param obs.cov     list of observations of covariance matrices of state variables (time X nstate X nstate)
-#' @param Q           process covariance matrix given if there is no data to estimate it
-#' @param restart     Used for iterative updating previous forecasts. When the restart is TRUE it read the obejct in SDA folder writen from previous SDA.
-#' @param control    List of flags controling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for ploting the outcomes after each step, 
+#' @param settings  PEcAn settings object
+#' @param obs.mean  List of vectors of observation means, named with observation datetime.
+#' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
+#' @param Q         Process covariance matrix given if there is no data to estimate it.
+#' @param restart   Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.
+#' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 #' TimeseriesPlot for post analysis examination, BiasPlot for plotting ..., plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.
 #'
 #’ @details
 #’ Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast), a new workflow folder is created and the previous forecast for the start_time is copied over. During restart the initial run before the loop is skipped, with the info being populated from the previous run. The function then dives right into the first Analysis, then continues on like normal.
 #' 
-#' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble kalman file=ter
+#' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
 #' 
 #' @return NONE
 #' @import nimble
@@ -27,25 +27,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                   BiasPlot=F,
                                   plot.title=NULL,
                                   debug=FALSE),...) {
-  #------------- Some important variables  
-  # muf/Pf - forecast mean and covariance
-  # Y/R    - Observed data and covariance
-  # mu.a/Pa  - after analysis - new mean and covariance
-  # nt is the length of observed  
-  # When processvar == FALSE it means we are doing EnKF and when it's TRUE Generalized Ensemble Filter
-  # Generalized Ensemble Filter NEEDS process variance to avoid filter divergence and it does not
-  # have analytical solution - needs MCMC
-  # X stores IC of state variables and then collects state variables in each loop
-  # Y stores the observed mean
-  # Assimilation is done for start:end setting assimilation section - if it's a continuation of another sda (restart)
-  # then start date in the second xml should be the same as the first pecan xml
-  # Models that they wanna be added for SDA their read_restart needs to be in a certain format. look into read_restart_SIPNET
-  #-------------------------------------------------------------------------------
-  
-  ymd_hms <- lubridate::ymd_hms
-  hms     <- lubridate::hms
-  second  <- lubridate::second
-  year <- lubridate::year
+
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -61,14 +43,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   processvar <- settings$state.data.assimilation$process.variance
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
-  #filtering obs data based on years specifited in setting > state.data.assimilation
-  assimyears <- year(settings$state.data.assimilation$start.date) : year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
-  obs.mean <- obs.mean[sapply(year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
-  obs.cov <- obs.cov[sapply(year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
+  # filtering obs data based on years specifited in setting > state.data.assimilation
+  assimyears <- lubridate::year(settings$state.data.assimilation$start.date) : lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
+  obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
+  obs.cov <- obs.cov[sapply(lubridate::year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
   # dir address based on the end date
   if(!dir.exists("SDA")) dir.create("SDA",showWarnings = F)
   #--get model specific functions
-  do.call("require", list(paste0("PEcAn.", model)))
+  do.call("library", list(paste0("PEcAn.", model)))
   my.write_restart <- paste0("write_restart.", model)
   my.read_restart <- paste0("read_restart.", model)
   my.split_inputs  <- paste0("split_inputs.", model)
@@ -82,22 +64,20 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   if (!exists(my.split_inputs)  &  !no_split) {
     PEcAn.logger::logger.warn(my.split_inputs, "does not exist")
     PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
+    #PEcAn.logger::logger.warn(my.split_inputs, "does not exist")
   }
   ###-------------------------------------------------------------------###
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
-  
-  for(i in seq_along(settings$run$inputs$met$path)){
-    if(!no_split){ 
+   if(!no_split){ 
+      for(i in seq_along(settings$run$inputs$met$path)){
       ### model specific split inputs
-      
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
-                                                              start.time = ymd_hms(settings$state.data.assimilation$start.date,truncated = 3), 
-                                                              stop.time = settings$state.data.assimilation$end.date,
+                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date,truncated = 3), 
+                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date),
                                                               inputs =  settings$run$inputs$met$path[[i]],
                                                               overwrite=F)) 
-      
     }
   }
   
@@ -105,17 +85,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###----  
   obs.times <- names(obs.mean)
-  obs.times.POSIX <- ymd_hms(obs.times)
+  obs.times.POSIX <- lubridate::ymd_hms(obs.times)
   
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
       if (is.na(lubridate::ymd(obs.times[i]))) {
-        print("Error: no dates associated with observations")
+        PEcAn.logger::logger.warn("Error: no dates associated with observations")
       } else {
         ### Data does not have time associated with dates 
         ### Adding 12:59:59PM assuming next time step starts one second later
-        print("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
-        obs.times.POSIX[i] <- ymd_hms(paste(obs.times[i], "23:59:59"))
+        PEcAn.logger::logger.warn("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
+        obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
       }
     }
   }
@@ -124,7 +104,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###-----  
   nt          <- length(obs.times)
-  if (nt==0) stop('There has to at least one Obs')
+  if (nt==0)     PEcAn.logger::logger.severe('There has to be at least one Obs')
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
   aqq         <- NULL
@@ -142,19 +122,20 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
+  if(!file.path(settings$outdir, "samples.Rdata")) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
   load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
   #reformatting params
-  params <- list()
+  new.params <- list()
   for (i in seq_len(nens)) {
-    params[[i]] <- lapply(ensemble.samples, function(x, n) {
+    new.params[[i]] <- lapply(ensemble.samples, function(x, n) {
       x[i, ] }, n = i)
   } 
-  new.params <- params
-  
+
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###----   
   if (restart){
+    if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
     load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #--- Updating the nt and etc
     if(!dir.exists(file.path(settings$outdir,"SDA",assimyears[t]))) dir.create(file.path(settings$outdir,"SDA",assimyears[t]))
@@ -164,7 +145,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
               file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda))
     )
-    params<-new.params
   }else{
     t<-0
   }
@@ -173,13 +153,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
   while(t<nt){
-   
     t<-t+1
     # do we have obs for this time - what year is it ?
     obs <- which(!is.na(obs.mean[[t]]))
-    obs.year <- year(names(obs.mean)[t])
+    obs.year <- lubridate::year(names(obs.mean)[t])
     ###-------------------------------------------------------------------------###
-    ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
+    ###  Taking care of Forecast. Splitting / Writting / running / reading back ###
     ###-------------------------------------------------------------------------###-----  
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
     # Why t>1 is different ? Because the ensemble.write.config would be different. It has the restart argument and it needs it's own setup.
@@ -189,12 +168,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- list()
-      for(i in seq_len(nens)){
-        if(!no_split){ 
+      if(!no_split){
+        for(i in seq_len(nens)){
           #---------------- model specific split inputs
           inputs.split$samples[i] <-do.call(my.split_inputs, 
                                             args = list(settings = settings, 
-                                                        start.time = (ymd_hms(obs.times[t-1],truncated = 3) + second(hms("00:00:01"))), 
+                                                        start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + lubridate::second(hms("00:00:01"))), 
                                                         stop.time = obs.times[t],
                                                         inputs = inputs$samples[[i]])) 
           
@@ -215,7 +194,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       
     }else{
       restart.arg <- NULL
-      new.params <- params
     }
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
     outconfig <- write.ensemble.configs(defaults = settings$pfts, 
@@ -241,31 +219,25 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                          stop.time = obs.times[t], 
                                                          settings = settings, 
                                                          var.names = var.names, 
-                                                         params = params[[i]]
-      )
-      )
+                                                         params = new.params[[i]]
+                                                         )
+                            )
       # states will be in X, but we also want to carry some deterministic relationships to write_restart
       # these will be stored in params
       X[[i]]      <- X_tmp[[i]]$X
       if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
       
     }
-    
     X <- do.call(rbind, X)
     FORECAST[[t]] <- X
-    mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
-    Pf <- cov(X)
-    diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
     ###-------------------------------------------------------------------###---- 
     if (any(obs)) {
-      #Hamze: used agrep instead of charmatch to take advantage of fuzzy matching
-      #there might be little typo/mistake in the names, now this would not be a problem
-      #choose <- na.omit(charmatch(colnames(X),names(obs.mean[[t]])))
-      choose <- sapply(colnames(X), agrep, x=names(obs.mean[[t]]), max=1, USE.NAMES = F)%>%unlist
-      browser()
-      #droping the ones that their means are zero 
+      # finding obs data 
+      choose <- sapply(colnames(X), agrep, x=names(obs.mean[[t]]), max=1, USE.NAMES = F) %>% unlist
+
+      # droping the ones that their means are zero 
       na.obs.mean <- which(is.na(unlist(obs.mean[[t]][choose])))
       if (length(na.obs.mean)>0) choose <- choose [-na.obs.mean]
       
@@ -285,7 +257,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       if (control$debug) browser()
       
       # making the mapping matrix
-      H <- Construc_H(choose, Y, X)
+      H <- Construct_H(choose, Y, X)
       ###-------------------------------------------------------------------###
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
@@ -296,14 +268,21 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                        Forecast=list(Pf=Pf, mu.f=mu.f, Q=Q, X=X),
                                        Observed=list(R=R, Y=Y),
                                        H=H,
+                                       extraArg=list(aqq=aqq, bqq=bqq, t=t),
                                        nt=nt,
                                        obs.mean=obs.mean,
-                                       obs.cov=obs.cov,
-                                       extraArg=list(aqq=aqq, bqq=bqq, t=t)
+                                       obs.cov=obs.cov
+                                       
       )
-      
+      #Reading back mu.f/Pf and mu.a/Pa
+      #Forecast
+      mu.f <- enkf.params[[t]]$mu.f
+      Pf <- enkf.params[[t]]$Pf
+      #Analysis
       Pa <- enkf.params[[t]]$Pa
       mu.a <- enkf.params[[t]]$mu.a
+      
+      diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
       #extracting extra outputs
       if (processvar) {
         CI.X1[, t] <- enkf.params[[t]]$CIX1

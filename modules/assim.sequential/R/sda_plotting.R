@@ -279,7 +279,7 @@ postana.bias.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,
 ##' @export
 postana.bias.plotting.sda.corr<-function(t,obs.times,X,aqq,bqq){
   
-  t1         <- 1
+  t1<- 1
   #Defining some colors
   generate_colors_sda()
 
