@@ -38,12 +38,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   }
   years <- unique(sipnet.output$year)
   # check that specified years and output years match
-  if (any(is.na(match(years,lubridate::year(start_date):lubridate::year(end_date))))) {
+  if (!all(years %in% lubridate::year(start_date):lubridate::year(end_date))) {
     PEcAn.logger::logger.severe("Years selected for model run and SIPNET output years do not match ")
   }
-  out.day <- length(which(sipnet.output$year == years[1] & sipnet.output$day == start.day))
+  out.day <- length(which(sipnet.output$year == years[1] & sipnet.output$day == unique(sipnet.output$day)[2])) # switched to day 2 in case first day is partial
   timestep.s <- 86400 / out.day
-
+  
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in years) {
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
@@ -56,7 +56,17 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     sub.sipnet.output.dims <- dim(sub.sipnet.output)
     dayfrac <- 1 / out.day
     step <- seq(0, 0.99, dayfrac)
-
+    
+    # get the run dates based on the sipnet output.  we assume that even if the run is partial, the origin is still day 1 of the subset year
+    sub_dates <- lubridate::as_date(base::as.Date(sub.sipnet.output$day+(sub.sipnet.output$time/out.day),origin=paste0(y,"-01-01")))
+    jdates <- lubridate::yday(sub_dates)  # create new julian dates based on output cal dates
+    tvals <- jdates+step # create netCDF time vector
+    # create netCDF time.bounds variable
+    bounds <- array(data=NA, dim=c(length(tvals),2))
+    bounds[,1] <- tvals-1
+    bounds[,2] <- bounds[,1]+dayfrac
+    #head(bounds); tail(bounds)
+    
     ## Setup outputs for netCDF file in appropriate units
     output       <- list()
     output[[1]]  <- (sub.sipnet.output$gpp * 0.001) / timestep.s  # GPP in kgC/m2/s
@@ -107,15 +117,21 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[22]] <- (sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC) * 0.001 # Total aboveground biomass kgC/m2
     
     # ******************** Declare netCDF variables ********************#
+
     t <- ncdf4::ncdim_def(name = "time",
+                   longname = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
-                   vals = sub.sipnet.output$day + (sub.sipnet.output$time/out.day),
+                   vals = tvals-1,
                    calendar = "standard",
                    unlim = TRUE)
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     dims <- list(lon = lon, lat = lat, time = t)
-
+    nb <- ncdf4::ncdim_def(name = "nb",vals =2, units='')
+    bdims <- list(time=t,nb)
+    nc_time_bounds <- ncdf4::ncvar_def(name="time_bounds", units=paste0("days since ", y, "-01-01 00:00:00"), 
+                                       longname = "time_bounds", dim=bdims, prec = "double")
+    
     ## ***** Need to dynamically update the UTC offset here *****
 
     for (i in seq_along(output)) {
@@ -164,7 +180,14 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     }
     close(varfile)
     ncdf4::nc_close(nc)
-
+    
+    nc <- ncdf4::nc_open(file.path(outdir, paste(y, "nc", sep = ".")), write = TRUE)
+    ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA, verbose=FALSE,
+               definemode=FALSE )
+    #ncdf4::ncvar_put(nc, nc_time_bounds, bounds)
+    ncdf4::ncvar_add( nc, nc_time_bounds, verbose=FALSE, indefine=FALSE )
+    ncdf4::nc_close(nc)
+    
   }  ### End of year loop
 
   ## Delete raw output, if requested
