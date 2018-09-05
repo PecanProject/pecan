@@ -2,7 +2,7 @@
 ##' @name  load_nimble
 ##' @author Ann Raiho
 ##' 
-##' @description This functions is used internally to register load nimble library and required functions.
+##' @description This functions is used internally to register a series of nimble functions and load the nimble library and required functions.
 ##' 
 #' @import nimble
 load_nimble <- function(){
