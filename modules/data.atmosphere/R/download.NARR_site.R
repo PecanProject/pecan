@@ -459,6 +459,10 @@ latlon2narr <- function(nc, lat.in, lon.in) {
 #' @inheritParams get_NARR_thredds
 #' @return `sp::SpatialPoints` object containing transformed x and y 
 #' coordinates, in km, which should match NARR coordinates
+#' @importFrom rgdal checkCRSArgs
+  # ^not used directly here, but needed by sp::CRS.
+  # sp lists rgdal in Suggests rather than Imports,
+  # so importing it here to ensure it's available at run time
 #' @author Alexey Shiklomanov
 #' @export
 latlon2lcc <- function(lat.in, lon.in) {
