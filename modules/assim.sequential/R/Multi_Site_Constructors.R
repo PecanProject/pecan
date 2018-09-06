@@ -68,28 +68,24 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, ...) {
 
 Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
 
-  Y<-c()
+  # keeps Hs of sites
+  site.specific.Rs <-list()
+  #
   nsite <- length(site.ids)
+  #
   nvariable <- length(var.names)
-  # I will make a big cov matrixand then I will populate it when cov of each site
-  R <-matrix(0, (nsite*nvariable), (nsite*nvariable))
+  Y<-c()
   
   for (site in site.ids){
-   
     choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = F) %>% unlist
-    #forach site let's get the obs
     Y <- c(Y, unlist(obs.t.mean[[site]][choose]))
-    pos <- which(site.ids %in% site)
-    startp <- (pos-1)*(nvariable)+1
-    endp <- startp + nvariable - 1
-    
-    R.site<- as.matrix(obs.t.cov[[site]][choose,choose])
-    R.site[is.na(R.site)]<-0
-   
-    R[startp:endp, startp:endp] <- R.site
+    # collecting them
+    site.specific.Rs <- c(site.specific.Rs, list(as.matrix(obs.t.cov[[site]][choose,choose])) )
   }
+  #make block matrix out of our collection
+  R <- Matrix::bdiag(site.specific.Rs) %>% as.matrix()
 
-  return(list(Y=Y, R=R))
+    return(list(Y=Y, R=R))
 }
 
 
@@ -160,13 +156,17 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   nsite <- length(site.ids)
   #
   nvariable <- length(var.names)
+  
+  obs.names <- names(obs.t.mean[[1]])
 
   for (site in site.ids){
-    choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = F) %>% unlist
+    choose.col <- sapply(obs.names, agrep, x=var.names, max=1, USE.NAMES = F) %>% unlist
+    choose.row <- sapply(var.names, agrep, x=obs.names, max=1, USE.NAMES = F) %>% unlist
+  
     # empty matrix for this site
-    H.this.site <- matrix(0, nvariable, nsite)
+    H.this.site <- matrix(0, length(choose), nvariable)
     # fill in the ones based on choose
-    for(i in choose) H.this.site [i,i] <-1
+    H.this.site [choose.row, choose.col] <- 1
     # collecting them
     site.specific.Hs <- c(site.specific.Hs, list(H.this.site) )
   }

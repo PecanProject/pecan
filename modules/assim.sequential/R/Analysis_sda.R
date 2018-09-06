@@ -26,6 +26,7 @@ Analysis.sda<-function(settings,
                        H,
                        ...
 ){
+  
   if (is.null(FUN)) stop('Analysis function needs to be defined !')
   FUN(settings, Forcast, Observed, H, ...)
   
