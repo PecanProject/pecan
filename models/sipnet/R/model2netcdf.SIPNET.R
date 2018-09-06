@@ -63,8 +63,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     tvals <- jdates+step # create netCDF time vector
     # create netCDF time.bounds variable
     bounds <- array(data=NA, dim=c(length(tvals),2))
-    bounds[,1] <- tvals-1
-    bounds[,2] <- bounds[,1]+dayfrac
+    bounds[,1] <- tvals-1; bounds[,2] <- bounds[,1]+dayfrac; bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
     
     ## Setup outputs for netCDF file in appropriate units
     output       <- list()
@@ -126,8 +125,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     dims <- list(lon = lon, lat = lat, time = t)
-    time_interval <- ncdf4::ncdim_def(name = "time_interval", longname = "output time interval endpoints", 
-                                      vals = as.integer(1:2), units='')
+    time_interval <- ncdf4::ncdim_def(name = 'hist_interval', longname='history time interval endpoint dimensions', vals = 1:2, units='')
     
     ## ***** Need to dynamically update the UTC offset here *****
 
@@ -138,8 +136,9 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
     mstmipvar <- PEcAn.utils::mstmipvar
     nc_var <- list()
-    nc_var[[1]] <- ncdf4::ncvar_def(name="time_bounds", units=paste0("days since ", y, "-01-01 00:00:00"), 
-                        longname = "output time bounds", dim=list(time_interval,time = t), prec = "double")
+    nc_var[[1]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
+                        longname = "history time interval endpoints", dim=list(time_interval,time = t), 
+                        prec = "double")
     nc_var[[2]]  <- PEcAn.utils::to_ncvar("GPP", dims)
     nc_var[[3]]  <- PEcAn.utils::to_ncvar("NPP", dims)
     nc_var[[4]]  <- PEcAn.utils::to_ncvar("TotalResp", dims)
