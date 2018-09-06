@@ -5,7 +5,7 @@
 \title{Analysis.sda}
 \usage{
 Analysis.sda(settings, FUN, Forcast = list(Pf = NULL, mu.f = NULL, Q =
-  NULL, X = NULL), Observed = list(R = NULL, Y = NULL), ...)
+  NULL, X = NULL), Observed = list(R = NULL, Y = NULL), H, ...)
 }
 \arguments{
 \item{settings}{pecan standard settings list.}

@@ -72,7 +72,7 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
   nsite <- length(site.ids)
   nvariable <- length(var.names)
   # I will make a big cov matrixand then I will populate it when cov of each site
-  R <-matrix(0,(nsite*nvariable),(nsite*nvariable))
+  R <-matrix(0, (nsite*nvariable), (nsite*nvariable))
   
   for (site in site.ids){
    
@@ -139,4 +139,34 @@ block_matrix <- function (x = NULL, b = NULL, byrow = FALSE, dimnames = NULL) {
     }
   }
   return(xx)
+}
+
+##' @title Construct.H.multisite
+##' @name  Construct.H.multisite
+##' @author Hamze
+##' 
+##' @param site.ids a vector name of site ids  
+##' @param var.names vector names of state variable names
+##' @param obs.t.mean list of vector of means for the time t for different sites. 
+##' 
+##' @description This function is makes the blocked mapping function.
+##' 
+##' @return Returns a matrix with block sizes determined by the b argument. Each block is filled with the same value taken from x.
+##' @export
+Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
+  # keeps Hs of sites
+  site.specific.Hs <-list()
+  #
+  nsite <- length(site.ids)
+  #
+  nvariable <- length(var.names)
+
+  for (site in site.ids){
+    print(site)
+    choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = F) %>% unlist
+    print(choose)
+    site.specific.Hs <- c(site.specific.Hs, list(diag(choose %>% length)) )
+  }
+
+  bdiag(site.specific.Hs) %>% as.matrix()
 }

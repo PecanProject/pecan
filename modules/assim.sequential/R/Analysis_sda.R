@@ -23,10 +23,11 @@ Analysis.sda<-function(settings,
                        FUN,
                        Forcast=list(Pf=NULL,mu.f=NULL,Q=NULL,X=NULL),
                        Observed=list(R=NULL,Y=NULL),
+                       H,
                        ...
 ){
   if (is.null(FUN)) stop('Analysis function needs to be defined !')
-  FUN(settings, Forcast, Observed,...)
+  FUN(settings, Forcast, Observed, H, ...)
   
 }
 
@@ -46,7 +47,7 @@ Analysis.sda<-function(settings,
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF<-function(setting,Forcast,Observed,...){
+EnKF<-function(setting, Forcast, Observed, H, ...){
   
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
@@ -64,12 +65,6 @@ EnKF<-function(setting,Forcast,Observed,...){
   Y <- Observed$Y
   # Enkf---------------------------------------------------
 
-  ## design matrix
-  H <- matrix(0, length(Y), ncol(X)) #H maps true state to observed data
-  #linear
-  for (i in choose) {
-    H[i, i] <- 1
-  }
 
   #non-linear fcomp
   # for (i in choose) {
@@ -104,7 +99,7 @@ EnKF<-function(setting,Forcast,Observed,...){
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-GEF<-function(setting,Forcast,Observed,...){
+GEF<-function(setting,Forcast,Observed, H, ...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)

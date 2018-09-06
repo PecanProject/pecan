@@ -314,9 +314,9 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     if(multi.site.flag & length(site.ids)>1){
   
       #Finding the dis between sites
-      distances <- spDists(site.locs+rnorm(4,0,1),longlat=T)
+      distances <- sp::spDists(site.locs+rnorm(4,0,1),longlat=T)
       #turn that into a blocked matrix format
-      blocked.dis<-block_matrix(distances%>%as.numeric(), rep(length(var.names), length(site.ids)))
+      blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
 
       # This the function and makes the Pf by creating blocks in it for different sites
       # We can also send a localization functions to this 
@@ -343,9 +343,8 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
       }
-      # !!!!!!!! This needs a lot of more work and attention . this sets up the H
-      # what if one site doesn't have a data just for one time step, how does stuff need to change.
-      choose <- 1:length(Y)
+      # making the mapping oprator
+      H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
       if (control$debug) browser()
       ###-------------------------------------------------------------------###
       ### Analysis                                                          ###
@@ -356,6 +355,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                        FUN=an.method,
                                        Forcast=list(Pf=Pf,mu.f=mu.f,Q=Q,X=X),
                                        Observed=list(R=R,Y=Y),
+                                       H,
                                        choose=choose,
                                        nt=nt,
                                        obs.mean=obs.mean,

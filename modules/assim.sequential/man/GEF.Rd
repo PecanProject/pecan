@@ -4,7 +4,7 @@
 \alias{GEF}
 \title{GEF}
 \usage{
-GEF(setting, Forcast, Observed, ...)
+GEF(setting, Forcast, Observed, H, ...)
 }
 \arguments{
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
