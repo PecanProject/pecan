@@ -36,17 +36,18 @@ convert.samples.MAAT <- function(trait.samples, runid) {
   trait.names[trait.names == "leaf_respiration_rate_m2"]    <- "atref.rd"
   trait.names[trait.names == "Vcmax"]                       <- "atref.vcmax"
   trait.names[trait.names == "Jmax"]                        <- "atref.jmax"
-  trait.names[trait.names == "Ev_Arrhenius"]                <- "Ha.vcmax"  # Arrhenius activation energy
-  trait.names[trait.names == "Ej_Arrhenius"]                <- "Ha.jmax"  # Arrhenius activation energy
-  trait.names[trait.names == "Ha_Modified_Arrhenius_Vcmax"] <- "Ha.vcmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "Hd_Modified_Arrhenius_Vcmax"] <- "Hd.vcmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"]  <- "Ha.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"]  <- "Hd.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Ev_Arrhenius"]                <- "Ha.vcmax"   # Arrhenius activation energy
+  trait.names[trait.names == "Ej_Arrhenius"]                <- "Ha.jmax"    # Arrhenius activation energy
+  trait.names[trait.names == "Ha_Modified_Arrhenius_Vcmax"] <- "Ha.vcmax"   # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Hd_Modified_Arrhenius_Vcmax"] <- "Hd.vcmax"   # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"]  <- "Ha.jmax"    # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"]  <- "Hd.jmax"    # !!TODO: Allow for the same prior to update both Vcmax and Jmax
   trait.names[trait.names == "stomatal_slope"]              <- "g1_leuning"
   trait.names[trait.names == "stomatal_slope.g1"]           <- "g1_medlyn"
   trait.names[trait.names == "stomatal_slope.BB"]           <- "g1_ball"
   trait.names[trait.names == "f_frac"]                      <- "f"
   trait.names[trait.names == "theta"]                       <- "theta_j"    # curvature of J quadratic in Farqhuar & Wong 1984       (unitless)
+  trait.names[trait.names == "leaf_respiration_Q10"]        <- "q10.rd"     # Q10 of Rd (unitless)
   colnames(trait.samples) <- trait.names
   
   ### Conversions -- change to only use if Collatz, should also provide standard Rd oputput
@@ -76,6 +77,10 @@ convert.samples.MAAT <- function(trait.samples, runid) {
     trait.samples[["a"]] <- leaf_abs
     remove <- which(colnames(trait.samples)=="leaf_trans_vis" | colnames(trait.samples)=="leaf_reflect_vis")
     trait.samples <- trait.samples[,-remove]
+  }
+  if ("leaf_width" %in% names(trait.samples)) {
+    ## Convert from mm to m
+    trait.samples <- transform(trait.samples, leaf_width = udunits2::ud.convert(leaf_width, "mm", "m"))
   }
 
   # for debugging conversions 
@@ -111,7 +116,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
     if(!any(matches)){
       return(x)
     }
-    nested <- setNames(x[matches], gsub(pattern, "", names(x[matches])))
+    nested <- stats::setNames(x[matches], gsub(pattern, "", names(x[matches])))
     x <- x[!matches]
     x[[new_name]] <- nested
     x
@@ -129,6 +134,15 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   system2(file.path(settings$model$binary, "run_scripts/setup_MAAT_project.bs"), 
           c(maat_mod_obj, rundir, file.path(settings$model$binary, "run_scripts"), 
             file.path(settings$model$binary, "src")))
+  # remove leaf_user_dynamic.xml from rundir since PEcAn is not currently using dynamic variables (for now, revist later as-needed)
+  # see: https://github.com/walkeranthonyp/MAAT/issues/8 for reference
+  unlink(file.path(rundir,"leaf_user_dynamic.xml"), recursive = FALSE)
+
+  # remove leaf_user_met.xml file if running without met drivers. Look for this file during model2netCDF step to select processing path
+  if (is.null(settings$run$inputs$met)) {
+    unlink(file.path(rundir,"leaf_user_met.xml"), recursive = FALSE)
+  }
+
   # below is now required given that MAAT logic no longer moves or links to the run_MAAT.R script file
   run_maat_script <- file.path(settings$model$binary, "src", "run_MAAT.R")
   
@@ -179,25 +193,34 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
           file = file.path(settings$rundir, run.id, "leaf_user_static.xml"), 
           indent = TRUE, 
           prefix = PREFIX_XML)
+  
+  ### Setup job.sh script to run MAAT model
   if (is.null(settings$run$inputs$met)) {
     PEcAn.logger::logger.info("-- No met selected. Running without a met driver --")
-    jobsh <- paste0("#!/bin/bash\n","Rscript ",run_maat_script," "," ","\"xml<-T","\""," ","\"uq<-F","\""," ",
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",run_maat_script," ",
+                    "\"srcdir <- ","'",file.path(settings$model$binary, "src"),"'","\""," ",
+                    "\"pdir <- ","'",rundir,"'","\""," ","\"mod_obj <- ","'",maat_mod_obj,"'","\""," ",
+                    "\"xml<-T","\""," ","\"uq<-F","\""," ",
                     "\"factorial<-F","\""," ","\"mod_mimic<-",mod_mimic,"\""," ",
                     "\"odir <- ","'",outdir,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
                     ' library(PEcAn.MAAT); model2netcdf.MAAT(',
-                    "'",outdir,"',",
+                    "'",rundir,"',","'",outdir,"',",
                     settings$run$site$lat,",",
                     settings$run$site$lon,", '",
                     settings$run$start.date,"', '",
                     settings$run$end.date,"') ",
                     '" | R --vanilla')
-
+    
     # Run with met drivers 
-    # !!Need to update for running with met, needs to paste mdir (met dir) to command !!
   } else if (!is.null(settings$run$inputs$met)) {
-    met.dir <- dirname(settings$run$inputs$met$path)
-    met.file <- basename(settings$run$inputs$met$path)
+    
+    ## temporary fix for #2064
+    #met.dir <- dirname(settings$run$inputs$met$path)
+    met.dir <- dirname(as.character(settings$run$inputs$met$path))
+    #met.file <- basename(settings$run$inputs$met$path)
+    met.file <- basename(as.character(settings$run$inputs$met$path))
+    
     file.copy(file.path(met.dir, list.files(met.dir, "*.xml")), 
               rundir, 
               overwrite = TRUE, 
@@ -216,7 +239,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
                     "\""," ","\"metdata <- ","'",met.file,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
                     ' library(PEcAn.MAAT); model2netcdf.MAAT(',
-                    "'",outdir,"',",
+                    "'",rundir,"',","'",outdir,"',",
                     settings$run$site$lat,",",
                     settings$run$site$lon,", '",
                     settings$run$start.date,"', '",
