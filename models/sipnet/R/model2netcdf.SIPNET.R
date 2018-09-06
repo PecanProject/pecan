@@ -128,9 +128,6 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     dims <- list(lon = lon, lat = lat, time = t)
     time_interval <- ncdf4::ncdim_def(name = "time_interval", longname = "output time interval endpoints", 
                                       vals = as.integer(1:2), units='')
-    #nc_time_bounds <- ncdf4::ncvar_def(name="time_bounds", units=paste0("days since ", y, "-01-01 00:00:00"), 
-    #                                   longname = "output time interval endpoints", dim=list(time_interval, time = t), 
-    #                                   prec = "float")
     
     ## ***** Need to dynamically update the UTC offset here *****
 
@@ -182,19 +179,6 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     }
     close(varfile)
     ncdf4::nc_close(nc)
-    
-    #nc <- ncdf4::nc_open(file.path(outdir, paste(y, "nc", sep = ".")), write = TRUE)
-    
-    #ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA, verbose=FALSE,
-    #           definemode=FALSE )
-    ##ncdf4::ncatt_put(nc, "time", "time_bounds", bounds, prec="double", verbose=FALSE,
-    ##          definemode=FALSE )
-    #ncdf4::ncatt_put(nc, "time", "time_bounds", nc_time_bounds, prec="double", verbose=FALSE,
-    #                 definemode=FALSE )
-    #ncdf4::ncvar_put(nc, nc_time_bounds, bounds)
-    #ncdf4::ncvar_add( nc, nc_time_bounds, verbose=FALSE, indefine=FALSE )
-    #ncdf4::nc_close(nc)
-    
   }  ### End of year loop
 
   ## Delete raw output, if requested
