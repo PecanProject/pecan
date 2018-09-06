@@ -12,7 +12,7 @@ build_cf_variables_table_url(version,
 
 \item{url_format_string}{A format string passed to [sprintf]. This
 should contain the entire target URL with the version number
-replaced by `"%d"`, and _no other string substitutions_.}
+replaced by `"\%d"`, and _no other string substitutions_.}
 }
 \value{
 Complete URL, as a string

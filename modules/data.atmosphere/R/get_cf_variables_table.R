@@ -30,7 +30,7 @@ get_cf_variables_table <- function(cf_url = build_cf_variables_table_url(57)) {
 #' @param version CF variables table version number (integer/numeric)
 #' @param url_format_string A format string passed to [sprintf]. This
 #'   should contain the entire target URL with the version number
-#'   replaced by `"%d"`, and _no other string substitutions_.
+#'   replaced by `"\%d"`, and _no other string substitutions_.
 #' @return Complete URL, as a string
 #' @author Alexey Shiklomanov
 #' @export

@@ -72,7 +72,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##' @title prior.fn 
 ##' @param parms target for optimization
 ##' @param x vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency 
-##' @param alpha quantile at which lcl/ucl are estimated (e.g. for a 95% CI, alpha = 0.5)
+##' @param alpha quantile at which lcl/ucl are estimated (e.g. for a 95\% CI, alpha = 0.5)
 ##' @param distn named distribution, one of 'lnorm', 'gamma', 'weibull', 'beta'; support for other distributions not currently implemented 
 ##' @param central.tendency one of 'mode', 'median', and 'mean' 
 ##' @param trait name of trait, can be used for exceptions (currently used for trait == 'q')

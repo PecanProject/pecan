@@ -29,7 +29,7 @@ vwReg(formula, data, title = "", B = 1000, shade = TRUE,
 
 \item{show.lm:}{should the linear regresison line be plotted?}
 
-\item{show.CI:}{should the 95% CI limits be plotted?}
+\item{show.CI:}{should the 95\% CI limits be plotted?}
 
 \item{show.median:}{should the median smoother be plotted?}
 

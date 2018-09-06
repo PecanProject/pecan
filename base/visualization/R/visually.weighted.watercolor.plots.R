@@ -49,7 +49,7 @@
 ##' @param spag.color: color of spaghetti lines
 ##' @param mweight: should the median smoother be visually weighted?
 ##' @param show.lm: should the linear regresison line be plotted?
-##' @param show.CI: should the 95% CI limits be plotted?
+##' @param show.CI: should the 95\% CI limits be plotted?
 ##' @param show.median: should the median smoother be plotted?
 ##' @param median.col: color of the median smoother
 ##' @param shape: shape of points
