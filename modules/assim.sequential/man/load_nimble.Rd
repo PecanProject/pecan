@@ -7,7 +7,7 @@
 load_nimble()
 }
 \description{
-This functions is used internally to register load nimble library and required functions.
+This functions is used internally to register a series of nimble functions and load the nimble library and required functions.
 }
 \author{
 Ann Raiho

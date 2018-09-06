@@ -7,8 +7,7 @@
 EnKF(setting, Forecast, Observed, H, extraArg = NULL, ...)
 }
 \arguments{
-\item{Forecast}{A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)}
+\item{Forecast}{A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)}
 
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
