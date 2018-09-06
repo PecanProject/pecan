@@ -146,15 +146,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
               file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda))
     )
-  }else{
-    t<-0
   }
   
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
-  while(t<nt){
-    t<-t+1
+  for(t in seq_len(nt)){
     # do we have obs for this time - what year is it ?
     obs <- which(!is.na(obs.mean[[t]]))
     obs.year <- lubridate::year(names(obs.mean)[t])
