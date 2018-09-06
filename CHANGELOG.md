@@ -9,7 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
-- Updated model2netcdf.SIPNET() to address fix issue #2094
+- Updated model2netcdf.SIPNET() to address issue #2094
 - Running tests for PEcAn.settings package no longer leaves empty temp directories in test folder (#2075)
 - Fixed issue #2064 which sends one met path to write.sa.config.
 - `PEcAn.data.land::soil_params` now accepts any 2 out of 3 texture components as documented, and correctly converts percentages to proportion (#2043).
