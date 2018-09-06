@@ -168,5 +168,5 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
     site.specific.Hs <- c(site.specific.Hs, list(diag(choose %>% length)) )
   }
 
-  bdiag(site.specific.Hs) %>% as.matrix()
+  Matrix::bdiag(site.specific.Hs) %>% as.matrix()
 }
