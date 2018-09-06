@@ -447,7 +447,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     save(t, FORECAST, ANALYSIS, enkf.params,new.state,new.params,out.configs,ensemble.samples,inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
     
-
+    post.analysis.multisite.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
   } ### end loop over time
-  post.analysis.multisite.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
+  
 } # sda.enkf

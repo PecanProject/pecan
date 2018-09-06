@@ -162,11 +162,14 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   nvariable <- length(var.names)
 
   for (site in site.ids){
-    print(site)
     choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = F) %>% unlist
-    print(choose)
-    site.specific.Hs <- c(site.specific.Hs, list(diag(choose %>% length)) )
+    # empty matrix for this site
+    H.this.site <- matrix(0, nvariable, nsite)
+    # fill in the ones based on choose
+    for(i in choose) H.this.site [i,i] <-1
+    # collecting them
+    site.specific.Hs <- c(site.specific.Hs, list(H.this.site) )
   }
-
+  #make block matrix out of our collection
   Matrix::bdiag(site.specific.Hs) %>% as.matrix()
 }
