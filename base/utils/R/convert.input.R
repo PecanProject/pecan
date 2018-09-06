@@ -618,6 +618,18 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   }
   
   #--------------------------------------------------------------------------------------------------#
+  # Check if result has empty or missing files
+  
+  result_sizes <- result %>% purrr::map(~ .x$file) %>% map(~ .x %>% file.size) %>% as.data.frame() %>% 
+    `colnames<-`(c("file_size")) %>%
+    mutate(missing = ifelse(is.na(file_size),NA,TRUE)) %>%
+    mutate( empty = ifelse(file_size==0,"EMPTY",TRUE))
+  
+  if( NA %in% result_sizes$missing | "EMTPY" %in% result_sizes$empty){
+    
+    PEcAn.logger::logger.severe(msg = paste0("Files Processed with function: ", fcn," have resulted in empty or missing files."))
+  }
+  
   # Insert into Database
   outlist <- unlist(strsplit(outname, "_"))
   
