@@ -194,7 +194,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
               #---------------- model specific split inputs
               inputs.split$samples[i] <- do.call(my.split_inputs, 
                                                  args = list(settings = settings, 
-                                                            start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + second(lubridate::hms("00:00:01"))), 
+                                                            start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))), 
                                                             stop.time = obs.times[t],
                                                             inputs = inputs$samples[[i]]))
             }else{
