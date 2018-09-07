@@ -9,13 +9,14 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
-- Updated model2netcdf.SIPNET() to address issue #2094
+- Updated model2netcdf.SIPNET() to address issue #2094. Revised netCDF time to be from 0-364./365. (if leap) so time would be properly parsed by R and python
 - Running tests for PEcAn.settings package no longer leaves empty temp directories in test folder (#2075)
 - Fixed issue #2064 which sends one met path to write.sa.config.
 - `PEcAn.data.land::soil_params` now accepts any 2 out of 3 texture components as documented, and correctly converts percentages to proportion (#2043).
 - Added missing ncdf4 library calls in model2netcdf.JULES
 
 ### Added
+- Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
 - Added a first vignette to models/maat with the plan to add more examples
 
 ### Removed
