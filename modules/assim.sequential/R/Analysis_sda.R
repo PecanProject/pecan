@@ -4,10 +4,11 @@
 ##' 
 ##' @param settings  pecan standard settings list.  
 ##' @param FUN   A Function for performing the analysis step. Two available options are: 1-EnKF and 2-GEF.
-##' @param Forecast A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-##' Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param ... Extra argument sent to the analysis function.
+##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
+##' @param extraArg This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.
+##' @param ... Extra argument sent to the analysis function. In case you're using the `GEF` function, this function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.
 ##’ @details
 ##’  
 ##' 
@@ -21,14 +22,15 @@
 
 Analysis.sda<-function(settings,
                        FUN,
-                       Forcast=list(Pf=NULL,mu.f=NULL,Q=NULL,X=NULL),
+                       Forecast=list(Pf=NULL,mu.f=NULL,Q=NULL,X=NULL),
                        Observed=list(R=NULL,Y=NULL),
                        H,
+                       extraArg,
                        ...
 ){
   
-  if (is.null(FUN)) stop('Analysis function needs to be defined !')
-  FUN(settings, Forcast, Observed, H, ...)
+  if (is.null(FUN)) PEcAn.logger::logger.severe('Analysis function needs to be defined !')
+  FUN(settings, Forecast, Observed, H, extraArg ,...)
   
 }
 
@@ -37,9 +39,9 @@ Analysis.sda<-function(settings,
 ##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
 ##' 
 ##' @param settings  pecan standard settings list.  
-##' @param Forecast A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-##' Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
+##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
 ##' @param ... Extra argument sent to the analysis function.
 ##’ @details
 ##’  
@@ -48,29 +50,34 @@ Analysis.sda<-function(settings,
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF<-function(setting, Forcast, Observed, H, ...){
+EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
   for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
-
-    #Forcast inputs 
-  Q <- Forcast$Q # process error
-  Pf <- Forcast$Pf # forcast precision
-  mu.f <- Forcast$mu.f #mean forcast
-  X <- Forcast$X # states 
+  
+  #Forecast inputs 
+  Q <- Forecast$Q # process error
+  X <- Forecast$X # states 
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
+  
   # Enkf---------------------------------------------------
-
-
-  #non-linear fcomp
-  # for (i in choose) {
-  #   H[i, i] <- 1/sum(mu.f) #? this seems to get us on the right track. mu.f[i]/sum(mu.f) doesn't work. 
-  # }
+  mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
+  Pf <- cov(X)
+  diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
+  
+  # for those elements with zero value
+  if (length(Y) > 1) {
+    
+    PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
+    diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+    diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
+  }
+  
   ## process error
   if (!is.null(Q)) {
     Pf <- Pf + Q
@@ -89,36 +96,34 @@ EnKF<-function(setting, Forcast, Observed, H, ...){
 ##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
 ##' 
 ##' @param settings  pecan standard settings list.  
-##' @param Forecast A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-##' Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param ... Extra argument sent to the analysis function.
-##’ @details
+##' @param extraArg This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.
+##' @param nitr Number of iterations to run each MCMC chain.
+##' @param nburnin 	Number of initial, pre-thinning, MCMC iterations to discard.
+##' @param ... This function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.
+##’ @details 
 ##’  
 ##' 
 ##' @description Given the Forecast and Observed this function performs the Generalized Ensemble Kalamn Filter. The generalized ensemble filter follows generally the three steps of sequential state data assimilation. But, in the generalized ensemble filter we add a latent state vector that accounts for added process variance. Furthermore, instead of solving the analysis analytically like the EnKF, we have to estimate the mean analysis vector and covariance matrix with MCMC.
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-GEF<-function(setting,Forcast,Observed, H, ...){
+GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000, ...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
   #General
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                             function(x) {
-                               x$variable.name
-                             }, 
-                             USE.NAMES = FALSE), 
-                      use.names = FALSE)
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #Loading nimbles functions
-  load_nimble()
-  #Forcast inputs 
-  Q <- Forcast$Q # process error
-  Pf <- Forcast$Pf # forcast precision
-  mu.f <- Forcast$mu.f #mean forcast
-  X <- Forcast$X # states 
+  PEcAn.assim.sequential:::load_nimble()
+  #load_nimble()
+  #Forecast inputs 
+  Q <- Forecast$Q # process error
+  Pf <- Forecast$Pf # Forecast precision
+  mu.f <- Forecast$mu.f #mean Forecast
+  X <- Forecast$X # states 
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
@@ -221,7 +226,7 @@ GEF<-function(setting,Forcast,Observed, H, ...){
     }
     
   }
-  set.seed(0)
+  
   dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 50000, progressBar=TRUE)
   
   # pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
@@ -272,7 +277,7 @@ GEF<-function(setting,Forcast,Observed, H, ...){
   y.ind <- as.numeric(Y > interval[,1])
   y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
   
-  if(t == 1){ #TO DO need to make something that works to pick weather to compile or not
+  if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
     constants.tobit = list(N = ncol(X), YN = length(y.ind))
     dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
                             Q = c(length(mu.f),length(mu.f)))
@@ -343,11 +348,9 @@ GEF<-function(setting,Forcast,Observed, H, ...){
     
   }
   
-  set.seed(0)
-  dat <- runMCMC(Cmcmc, niter = 50000)
+  dat <- runMCMC(Cmcmc, niter = nitr, nburnin=nburnin)
   
   ## update parameters
-  dat  <- dat[10000:50000, ]
   iq   <- grep("q", colnames(dat))
   iX   <- grep("X[", colnames(dat), fixed = TRUE)
   mu.a <- colMeans(dat[, iX])
@@ -373,8 +376,11 @@ GEF<-function(setting,Forcast,Observed, H, ...){
   }
   V <- solve(q.bar) * n
   
-  aqq[t + 1, , ]   <- V
-  bqq[t + 1]       <- n
+  if (t<nt){
+    aqq[t + 1, , ]   <- V
+    bqq[t + 1]       <- n
+  }
+  
   return(list(mu.f = mu.f,
               Pf = Pf,
               mu.a = mu.a,
@@ -382,10 +388,37 @@ GEF<-function(setting,Forcast,Observed, H, ...){
               q.bar = q.bar,
               n = n,
               X.new=X.new,
-              CIX1=quantile(dat[, iX[2]], c(0.025, 0.5, 0.975)),  #7
+              CIX1=quantile(dat[, iX[1]], c(0.025, 0.5, 0.975)),  #7
               CIX2=quantile(dat[, iX[2]], c(0.025, 0.5, 0.975)),  #8
               aqq=aqq,
               bqq=bqq
   )
   )
+}
+
+
+
+##' @title Construc_H
+##' @name  Construc_H
+##' @author Hamze Dokoohaki
+##' 
+##' @param choose  a vector of observations indices oredered based on their appearances in the list of state variable names.
+##' @param Y vector of observations
+##' @param X Dataframe or matrix of forecast state variables for different ensembles.
+##’ @details
+##’  
+##' 
+##' @description This function creates a mtrix mapping obsereved data to their forecast state variable.
+##' 
+##' @return This returns a mtrix specifying which observation go with which state variables.
+##' @export
+Construct_H <- function(choose, Y, X){
+  ## design matrix
+  H <- matrix(0, length(Y), ncol(X)) #H maps true state to observed data
+  #linear
+  for (i in choose) {
+    H[i, i] <- 1
+  }
+  
+  return(H)
 }

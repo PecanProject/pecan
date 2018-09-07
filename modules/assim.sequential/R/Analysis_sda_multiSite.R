@@ -1,0 +1,70 @@
+##' @title EnKF
+##' @name  EnKF
+##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
+##' 
+##' @param settings  pecan standard settings list.  
+##' @param Forecast A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
+##' Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
+##' @param ... Extra argument sent to the analysis function.
+##' @details This function is different than EnKF in terms of how it creates the Pf matrix.
+##'  
+##' 
+##' @description Given the Forecast and Observed this function performs the Ensemble Kalamn Filter. 
+##' 
+##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
+##' @export
+EnKF.MultiSite<-function(setting, Forcast, Observed, H, ...){
+  
+  #------------------------------Setup
+  Localization.FUN <- settings$state.data.assimilation$Localization.FUN # localization function
+  scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
+  #-- reading the dots and exposing them to the inside of the function
+  dots<-list(...)
+  if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
+  for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
+
+    #Forcast inputs 
+  Q <- Forcast$Q # process error
+  X <- Forcast$X # states 
+  #Observed inputs
+  R <- Observed$R
+  Y <- Observed$Y
+
+  # Enkf---------------------------------------------------
+  mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE)) %>%
+    `attr<-`('Site', c(rep(site.ids, each=length(site.ids))))
+  # I make the Pf in a separate function
+  if(multi.site.flag & length(site.ids)>1){
+    
+    #Finding the dis between sites
+    distances <- sp::spDists(site.locs+rnorm(4,0,1),longlat=T)
+    #turn that into a blocked matrix format
+    blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
+    
+    # This the function and makes the Pf by creating blocks in it for different sites
+    # We can also send a localization functions to this 
+    # for extra argumnets like distance matrix for localization use elipsis
+    Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)), blocked.dis, scalef)
+  }else{
+    PEcAn.logger::logger.severe("You need to send this function a multisetting object containing multiple sites/runs.")
+  }
+  ## process error
+  if (!is.null(Q)) {
+    Pf <- Pf + Q
+  }
+  
+  
+  if (length(obs.mean[[t]]) > 1) {
+    diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+    diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
+  }
+  
+  ## Kalman Gain
+  K <- Pf %*% t(H) %*% solve((R + H %*% Pf %*% t(H)))
+  # Analysis
+  mu.a <- mu.f + K %*% (Y - H %*% mu.f)
+  Pa   <- (diag(ncol(X)) - K %*% H) %*% Pf
+  return(list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa))
+}

@@ -304,65 +304,42 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
           `colnames<-`(c(rep(var.names, length(X)))) %>%
           `attr<-`('Site',c(rep(site.ids, each=length(X))))
     
-    
- 
-    #X <- do.call(rbind, X)
     FORECAST[[t]] <- X
-    mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE)) %>%
-            `attr<-`('Site', c(rep(site.ids, each=length(site.ids))))
-    # I make the Pf in a separate function
-    if(multi.site.flag & length(site.ids)>1){
-  
-      #Finding the dis between sites
-      distances <- sp::spDists(site.locs+rnorm(4,0,1),longlat=T)
-      #turn that into a blocked matrix format
-      blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
-
-      # This the function and makes the Pf by creating blocks in it for different sites
-      # We can also send a localization functions to this 
-      # for extra argumnets like distance matrix for localization use elipsis
-      Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)), blocked.dis, scalef)
-    }else{
-      Pf <- cov(X) 
-    }
-
-    #diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
     ###-------------------------------------------------------------------###---- 
     if (any(obs)) {
-      #Hamze: used agrep instead of charmatch to take advantage of fuzzy matching
-      #there might be little typo/mistake in the names, now this would not be a problem
-      #choose <- na.omit(charmatch(colnames(X),names(obs.mean[[t]])))
+      #Making R and Y
       Obs.cons <-Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
       
       Y <- Obs.cons$Y
       R <- Obs.cons$R
 
-      if (length(obs.mean[[t]]) > 1) {
-        diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
-      }
       # making the mapping oprator
       H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
       if (control$debug) browser()
       ###-------------------------------------------------------------------###
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
-      if(processvar == FALSE){an.method<-EnKF  }else{    an.method<-GEF   }  
+      an.method<-EnKF.MultiSite 
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
                                        FUN=an.method,
-                                       Forcast=list(Pf=Pf,mu.f=mu.f,Q=Q,X=X),
-                                       Observed=list(R=R,Y=Y),
+                                       Forcast=list(Q=Q, X=X),
+                                       Observed=list(R=R, Y=Y),
                                        H,
+                                       extraArg=list(aqq=aqq, bqq=bqq, t=t),
                                        choose=choose,
                                        nt=nt,
                                        obs.mean=obs.mean,
                                        obs.cov=obs.cov,
-                                       extraArg=list(aqq=aqq,bqq=bqq,t=t)
+                                       site.ids,
+                                       site.locs
       )
-      
+      #Forecast
+      mu.f <- enkf.params[[t]]$mu.f
+      Pf <- enkf.params[[t]]$Pf
+      #Analysis
       Pa <- enkf.params[[t]]$Pa
       mu.a <- enkf.params[[t]]$mu.a
       #extracting extra outputs

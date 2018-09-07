@@ -4,17 +4,23 @@
 \alias{GEF}
 \title{GEF}
 \usage{
-GEF(setting, Forcast, Observed, H, ...)
+GEF(setting, Forecast, Observed, H, extraArg, nitr = 50000,
+  nburnin = 10000, ...)
 }
 \arguments{
+\item{Forecast}{A list containing the forecasts variables including Q (process variance) and X (a dataframe of forcats state variables for different ensemble)}
+
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
-\item{...}{Extra argument sent to the analysis function.}
+\item{extraArg}{This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.}
+
+\item{nitr}{Number of iterations to run each MCMC chain.}
+
+\item{nburnin}{Number of initial, pre-thinning, MCMC iterations to discard.}
+
+\item{...}{This function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.}
 
 \item{settings}{pecan standard settings list.}
-
-\item{Forecast}{A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-Q (process variance) and X (a dataframe of forcats state variables for different ensemble)}
 }
 \value{
 It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
