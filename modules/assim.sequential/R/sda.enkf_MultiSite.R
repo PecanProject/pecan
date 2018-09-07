@@ -20,33 +20,13 @@
 #' @export
 #' 
 sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F, 
-                     control=list(trace=T,
-                                  interactivePlot=T,
-                                  TimeseriesPlot=T,
-                                  BiasPlot=F,
-                                  plot.title=NULL,
-                                  debug=FALSE),...) {
-  #------------- Some important variables
-  # out.configs is a list of all the configs after write.condfig.ens
-  # conf.settings this keeps a list of setting either multi sites or not allowing to run map/loop for everything
-  # params.list  list of params per settings
-  # inputs.split list of inputs per settings
-  # muf/Pf - forecast mean and covariance
-  # Y/R    - Observed data and covariance
-  # mu.a/Pa  - after analysis - new mean and covariance
-  # nt is the length of observed  
-  # When processvar == FALSE it means we are doing EnKF and when it's TRUE Generalized Ensemble Filter
-  # Generalized Ensemble Filter NEEDS process variance to avoid filter divergence and it does not
-  # have analytical solution - needs MCMC
-  # X stores IC of state variables and then collects state variables in each loop
-  # Y stores the observed mean
-  # Assimilation is done for start:end setting assimilation section - if it's a continuation of another sda (restart)
-  # then start date in the second xml should be the same as the first pecan xml
-  # Models that they wanna be added for SDA their read_restart needs to be in a certain format. look into read_restart_SIPNET
-  #-------------------------------------------------------------------------------
-  ymd_hms <- lubridate::ymd_hms
-  hms     <- lubridate::hms
-  second  <- lubridate::second
+                               control=list(trace=T,
+                                            interactivePlot=T,
+                                            TimeseriesPlot=T,
+                                            BiasPlot=F,
+                                            plot.title=NULL,
+                                            debug=FALSE),
+                               ...) {
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -112,7 +92,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
-                                                              start.time = ymd_hms(settings$state.data.assimilation$start.date,truncated = 3), 
+                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date,truncated = 3), 
                                                               stop.time = settings$state.data.assimilation$end.date,
                                                               inputs =  settings$run$inputs$met$path[[i]],
                                                               overwrite=F)) 
@@ -124,7 +104,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###----  
   obs.times <- names(obs.mean)
-  obs.times.POSIX <- ymd_hms(obs.times)
+  obs.times.POSIX <- lubridate::ymd_hms(obs.times)
   
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
@@ -134,7 +114,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         ### Data does not have time associated with dates 
         ### Adding 12:59:59PM assuming next time step starts one second later
         print("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
-        obs.times.POSIX[i] <- ymd_hms(paste(obs.times[i], "23:59:59"))
+        obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
       }
     }
   }
@@ -214,7 +194,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
               #---------------- model specific split inputs
               inputs.split$samples[i] <- do.call(my.split_inputs, 
                                                  args = list(settings = settings, 
-                                                            start.time = (ymd_hms(obs.times[t-1],truncated = 3) + second(hms("00:00:01"))), 
+                                                            start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + second(lubridate::hms("00:00:01"))), 
                                                             stop.time = obs.times[t],
                                                             inputs = inputs$samples[[i]]))
             }else{
@@ -325,16 +305,16 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
                                        FUN=an.method,
-                                       Forcast=list(Q=Q, X=X),
+                                       Forecast=list(Q=Q, X=X),
                                        Observed=list(R=R, Y=Y),
-                                       H,
+                                       H=H,
                                        extraArg=list(aqq=aqq, bqq=bqq, t=t),
                                        choose=choose,
                                        nt=nt,
                                        obs.mean=obs.mean,
                                        obs.cov=obs.cov,
-                                       site.ids,
-                                       site.locs
+                                       site.ids=site.ids,
+                                       site.locs=site.locs
       )
       #Forecast
       mu.f <- enkf.params[[t]]$mu.f

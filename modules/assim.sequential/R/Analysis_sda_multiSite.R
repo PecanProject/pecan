@@ -1,11 +1,11 @@
-##' @title EnKF
-##' @name  EnKF
+##' @title EnKF.MultiSite
+##' @name  EnKF.MultiSite
 ##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
 ##' 
 ##' @param settings  pecan standard settings list.  
-##' @param Forecast A list containing the forecasts variables including Pf (cov of forecast state variables), mu.f (vector of estimated mean of forecast state variables),
-##' Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
+##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
 ##' @param ... Extra argument sent to the analysis function.
 ##' @details This function is different than EnKF in terms of how it creates the Pf matrix.
 ##'  
@@ -14,8 +14,7 @@
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF.MultiSite<-function(setting, Forcast, Observed, H, ...){
-  
+EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   #------------------------------Setup
   Localization.FUN <- settings$state.data.assimilation$Localization.FUN # localization function
   scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
@@ -26,8 +25,8 @@ EnKF.MultiSite<-function(setting, Forcast, Observed, H, ...){
   for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
 
     #Forcast inputs 
-  Q <- Forcast$Q # process error
-  X <- Forcast$X # states 
+  Q <- Forecast$Q # process error
+  X <- Forecast$X # states 
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
@@ -36,7 +35,7 @@ EnKF.MultiSite<-function(setting, Forcast, Observed, H, ...){
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE)) %>%
     `attr<-`('Site', c(rep(site.ids, each=length(site.ids))))
   # I make the Pf in a separate function
-  if(multi.site.flag & length(site.ids)>1){
+  if(length(site.ids)>1){
     
     #Finding the dis between sites
     distances <- sp::spDists(site.locs+rnorm(4,0,1),longlat=T)
@@ -56,7 +55,7 @@ EnKF.MultiSite<-function(setting, Forcast, Observed, H, ...){
   }
   
   
-  if (length(obs.mean[[t]]) > 1) {
+  if (length(Y) > 1) {
     diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
     diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
   }
