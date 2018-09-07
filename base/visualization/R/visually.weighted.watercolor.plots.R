@@ -115,7 +115,6 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   }
   
   # compute median and CI limits of bootstrap
-  library(reshape2)
   CI.boot <- plyr::adply(l0.boot, 1, function(x) {
     quantile(x, prob = c(0.025, 0.5, 0.975,
                          pnorm(c(-3, -2, -1, 0, 1, 2, 3))), 
@@ -130,7 +129,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   CI.boot$w3 <- 1 - (CI.boot$w2 / max(CI.boot$w2))
   
   # convert bootstrapped spaghettis to long format
-  b2 <- melt(l0.boot)
+  b2 <- reshape2::melt(l0.boot)
   b2$x <- newx[, 1]
   colnames(b2) <- c("index", "B", "value", "x")
   
@@ -184,7 +183,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
     if (quantize == "SD") {
       ## Polygon approach
       
-      SDs <- melt(CI.boot[, c("x", paste0("SD", 1:7))], id.vars = "x")
+      SDs <- reshape2::melt(CI.boot[, c("x", paste0("SD", 1:7))], id.vars = "x")
       count <- 0
       d3 <- data.frame()
       col <- c(1, 2, 3, 3, 2, 1)
