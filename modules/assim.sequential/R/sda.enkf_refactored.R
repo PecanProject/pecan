@@ -105,7 +105,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###-----  
   nt          <- length(obs.times)
-  if (nt==0)     PEcAn.logger::logger.severe('There has to be at least one Obs')
+  if (nt==0)     PEcAn.logger::logger.severe('There has to be at least one observation, before you can start the SDA code.')
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
   aqq         <- NULL
