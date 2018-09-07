@@ -55,15 +55,27 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     sub.sipnet.output <- subset(sipnet.output, year == y)
     sub.sipnet.output.dims <- dim(sub.sipnet.output)
     dayfrac <- 1 / out.day
-    step <- seq(0, 0.99, dayfrac)
+    step <- seq(0, 0.99, dayfrac)  ## probably dont want to use hard-coded "step" because leap years may not contain all "steps", or
+                                   ## if model run doesnt start at 00:00:00
     
     # get the run dates based on the sipnet output.  we assume that even if the run is partial, the origin is still day 1 of the subset year
-    sub_dates <- lubridate::as_date(base::as.Date(sub.sipnet.output$day+(sub.sipnet.output$time/out.day),origin=paste0(y,"-01-01")))
-    jdates <- lubridate::yday(sub_dates)  # create new julian dates based on output cal dates
-    tvals <- jdates+step # create netCDF time vector
+    start_month <- lubridate::month(as.Date(sub.sipnet.output$day[1], origin = paste0(y,"-01-01"))) # gets month
+    ## using this approach to attempt to deal with inconsistent start index 0/1
+    model_start_date <- base::as.Date(paste0(y,"-",start_month,"-",ifelse(sub.sipnet.output$day[1]==0,1,sub.sipnet.output$day[1])))  
+    sub_date_range <- seq(model_start_date, by = "day", length.out = length(unique(sub.sipnet.output$day))) ## create new date range in POSIX format
+    # this catches the fact that the number of outputs per day may be different at the end of the year with leap years, if day starts at 1
+    day_repeats <- as.vector(base::table(sub.sipnet.output$day))  
+    # replicate each date based on previously determined day_repeats
+    sub_dates <- rep(sub_date_range,times=day_repeats)  ## expand new date range to match length of model subset subset and steps per day (out.day)
+    jdates <- lubridate::yday(sub_dates)  # create vector of julian days from start to end by year, based on refomatted output dates
+
     # create netCDF time.bounds variable
+    #tvals <- (jdates+step)-1 ## convert to 0 index
+    tvals <- (jdates+(sub.sipnet.output$time/24))-1  # for some reason, some years dont have a complete number of steps on the last date
+    #head(base::as.Date(tvals, origin = paste0(y,"-01-01"))); tail(base::as.Date(tvals, origin = paste0(y,"-01-01")))
     bounds <- array(data=NA, dim=c(length(tvals),2))
-    bounds[,1] <- tvals-1; bounds[,2] <- bounds[,1]+dayfrac; bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
+    bounds[,1] <- tvals; bounds[,2] <- bounds[,1]+dayfrac; bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
+    #head(bounds); tail(bounds)
     
     ## Setup outputs for netCDF file in appropriate units
     output       <- list()
@@ -119,7 +131,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     t <- ncdf4::ncdim_def(name = "time",
                    longname = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
-                   vals = tvals-1,
+                   vals = tvals,
                    calendar = "standard",
                    unlim = TRUE)
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
@@ -134,6 +146,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
         output[[i]] <- rep(-999, length(t$vals))
     }
 
+    # ******************** Declare netCDF variables ********************#
     mstmipvar <- PEcAn.utils::mstmipvar
     nc_var <- list()
     nc_var[[1]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
@@ -165,14 +178,14 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                      longname = "Gross Woody Biomass Increment")
     nc_var[[23]] <- ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                      longname = "Total aboveground biomass")
-    # ******************** Declare netCDF variables ********************#
-
+    
+    # ******************** Create netCDF and output variables ********************#
     ### Output netCDF data
     nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
-      # print(i)
+      #print(i)
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
