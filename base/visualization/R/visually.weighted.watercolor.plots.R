@@ -160,7 +160,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       }
       
       # vertical cross-sectional density estimate
-      d2 <- plyr::ddply(b2[, c("x", "value")], .(x), function(df) {
+      d2 <- plyr::ddply(b2[, c("x", "value")], "x", function(df) {
         res <- data.frame(density(df$value, 
                                   na.rm = TRUE,
                                   n = slices, 
