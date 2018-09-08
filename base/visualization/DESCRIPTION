@@ -24,16 +24,9 @@ Depends:
     data.table,
     earth,
     XML,
-    shiny,
-    shinyjs,
     PEcAn.DB,
-    RPostgreSQL,
     dplyr,
-    dbplyr,
-    plotly,
-    shinydashboard,
-    shinyFiles,
-    shinycssloaders
+    dbplyr
 Imports:
     PEcAn.logger,
     lubridate (>= 1.6.0),
