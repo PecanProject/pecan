@@ -29,6 +29,7 @@ Depends:
     dbplyr
 Imports:
     PEcAn.logger,
+    PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
     plyr (>= 1.8.4),
