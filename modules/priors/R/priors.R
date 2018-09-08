@@ -80,12 +80,15 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##' @return parms
 ##' @author David LeBauer
 ##' @examples
-##' DEoptim(fn = prior.fn, 
-##'                 lower = c(0, 0), 
-##'                 upper = c(1000, 1000), 
-##'                 x=c(2, 6, 3.3), 
-##'                 alpha = 0.05, 
-##'                 distn = 'lnorm')$optim$bestmem
+##' \dontrun{
+##'   DEoptim(fn = prior.fn,
+##'           lower = c(0, 0),
+##'           upper = c(1000, 1000),
+##'           x=c(2, 6, 3.3),
+##'           alpha = 0.05,
+##'           distn = 'lnorm')$optim$bestmem
+##' }
+##'
 prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NULL) {
   if (!distn %in% c("lnorm", "gamma", "weibull", "beta")) {
     stop(paste(distn, "not currently supported by prior.fn"))

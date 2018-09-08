@@ -32,12 +32,15 @@ This function is not very robust; currently it needs to be tweaked when distribu
 require starting values (e.g. beta, f)
 }
 \examples{
-DEoptim(fn = prior.fn, 
-                lower = c(0, 0), 
-                upper = c(1000, 1000), 
-                x=c(2, 6, 3.3), 
-                alpha = 0.05, 
-                distn = 'lnorm')$optim$bestmem
+\dontrun{
+  DEoptim(fn = prior.fn,
+          lower = c(0, 0),
+          upper = c(1000, 1000),
+          x=c(2, 6, 3.3),
+          alpha = 0.05,
+          distn = 'lnorm')$optim$bestmem
+}
+
 }
 \author{
 David LeBauer
