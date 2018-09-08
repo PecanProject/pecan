@@ -133,9 +133,6 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   b2$x <- newx[, 1]
   colnames(b2) <- c("index", "B", "value", "x")
   
-  library(ggplot2)
-  library(RColorBrewer)
-  
   # Construct ggplot All plot elements are constructed as a list, so they can be added to
   # an existing ggplot
   
