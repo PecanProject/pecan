@@ -43,24 +43,24 @@
 ##' 
 ##' @title PEcAn worldmap
 ##' @param B = number bootstrapped smoothers
-##' @param shade: plot the shaded confidence region?
-##' @param shade.alpha: should the CI shading fade out at the edges? (by reducing alpha; 0 = no alpha decrease, 0.1 = medium alpha decrease, 0.5 = strong alpha decrease)
-##' @param spag: plot spaghetti lines?
-##' @param spag.color: color of spaghetti lines
-##' @param mweight: should the median smoother be visually weighted?
-##' @param show.lm: should the linear regresison line be plotted?
-##' @param show.CI: should the 95\% CI limits be plotted?
-##' @param show.median: should the median smoother be plotted?
-##' @param median.col: color of the median smoother
-##' @param shape: shape of points
-##' @param method: the fitting function for the spaghettis; default: loess
+##' @param shade plot the shaded confidence region?
+##' @param shade.alpha should the CI shading fade out at the edges? (by reducing alpha; 0 = no alpha decrease, 0.1 = medium alpha decrease, 0.5 = strong alpha decrease)
+##' @param spag plot spaghetti lines?
+##' @param spag.color color of spaghetti lines
+##' @param mweight should the median smoother be visually weighted?
+##' @param show.lm should the linear regresison line be plotted?
+##' @param show.CI should the 95\% CI limits be plotted?
+##' @param show.median should the median smoother be plotted?
+##' @param median.col color of the median smoother
+##' @param shape shape of points
+##' @param method the fitting function for the spaghettis; default: loess
 ##' @param bw = TRUE: define a default b&w-palette
-##' @param slices: number of slices in x and y direction for the shaded region. Higher numbers make a smoother plot, but takes longer to draw. I wouldn'T go beyond 500
-##' @param palette: provide a custom color palette for the watercolors
-##' @param ylim: restrict range of the watercoloring
-##' @param quantize: either 'continuous', or 'SD'. In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)
-##' @param add: if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)
-##' @param ...: further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''
+##' @param slices number of slices in x and y direction for the shaded region. Higher numbers make a smoother plot, but takes longer to draw. I wouldn'T go beyond 500
+##' @param palette provide a custom color palette for the watercolors
+##' @param ylim restrict range of the watercoloring
+##' @param quantize either 'continuous', or 'SD'. In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)
+##' @param add if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)
+##' @param ... further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''
 ##' @return NULL plot as side effect
 ##' @author Felix Schönbrodt
 ##' @export
