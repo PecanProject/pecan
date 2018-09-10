@@ -227,7 +227,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     
   }
 
-  dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 50000, progressBar=TRUE)
+  dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr, nburnin=nburnin,  progressBar=TRUE)
   
   # pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
   # 
@@ -235,7 +235,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   # dev.off()
   
   ## update parameters
-  dat.tobit2space  <- dat.tobit2space[1000:5000, ]
+  #dat.tobit2space  <- dat.tobit2space[1000:5000, ]
   imuf   <- grep("muf", colnames(dat.tobit2space))
   mu.f <- colMeans(dat.tobit2space[, imuf])
   iPf   <- grep("pf", colnames(dat.tobit2space))
