@@ -46,7 +46,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   names(var.names) <- NULL
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
   #------------------------------Multi - site specific - settings
-  #Here i'm trying to make a temp config list name and put it into map to iterate
+  #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
     conf.settings<-settings
     site.ids <- conf.settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
@@ -59,9 +59,8 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     conf.settings<-list(settings)
   }
   
-
   #filtering obs data based on years specifited in setting > state.data.assimilation
-  assimyears <- year(settings$state.data.assimilation$start.date) : year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
+  assimyears <- lubridate::year(settings$state.data.assimilation$start.date) : lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
   obs.mean <- obs.mean[sapply(year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
   obs.cov <- obs.cov[sapply(year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
   # dir address based on the end date
@@ -90,7 +89,6 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   if (!no_split) {
     for (i in seq_along(settings$run$inputs$met$path)) {
       ### model specific split inputs
-      
       settings$run$inputs$met$path[[i]] <- do.call(
         my.split_inputs,
         args = list(
