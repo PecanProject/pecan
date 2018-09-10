@@ -1,19 +1,19 @@
-#' @title sda.enkf
-#' @name  sda.enkf
-#' @author Michael Dietze\email{dietze@@bu.edu}, Ann Raiho, Istem fer, Hamze Dokoohaki
+#' @title sda.enkf.multisite
+#' @name  sda.enkf.multisite
+#' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}, Hamze Dokoohaki
 #' 
-#' @param settings    PEcAn multi-settings object
-#' @param obs.mean    list of observations of the means of state variable (time X nstate). For each date there has to be a list of means for all sites named by the siteid.
-#' @param obs.cov     list of observations of covariance matrices of state variables (time X nstate X nstate). For each date there has to be a list of cov for all sites named by the siteid.
-#' @param Q           process covariance matrix given if there is no data to estimate it.
-#' @param restart     Used for iterative updating previous forecasts. When the restart is TRUE it read the obejct in SDA folder writen from previous SDA.
-#' @param control    List of flags controling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for ploting the outcomes after each step, 
+#' @param settings  PEcAn settings object
+#' @param obs.mean  List of vectors of observation means, named with observation datetime.
+#' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
+#' @param Q         Process covariance matrix given if there is no data to estimate it.
+#' @param restart   Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.
+#' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 #' TimeseriesPlot for post analysis examination, BiasPlot for plotting ..., plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.
 #'
 #’ @details
 #’ Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast), a new workflow folder is created and the previous forecast for the start_time is copied over. During restart the initial run before the loop is skipped, with the info being populated from the previous run. The function then dives right into the first Analysis, then continues on like normal.
 #' 
-#' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble kalman file=ter
+#' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
 #' 
 #' @return NONE
 #' @import nimble
@@ -67,7 +67,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   # dir address based on the end date
   if(!dir.exists("SDA")) dir.create("SDA",showWarnings = F)
   #--get model specific functions
-  do.call("require", list(paste0("PEcAn.", model)))
+  do.call("library", list(paste0("PEcAn.", model)))
   my.write_restart <- paste0("write_restart.", model)
   my.read_restart <- paste0("read_restart.", model)
   my.split_inputs  <- paste0("split_inputs.", model)
@@ -81,21 +81,27 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   if (!exists(my.split_inputs)  &  !no_split) {
     PEcAn.logger::logger.warn(my.split_inputs, "does not exist")
     PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
+    PEcAn.logger::logger.warn(my.split_inputs, "If your model does not need the split function you can specify that in register.Model.xml in model's inst folder by adding <exact.dates>FALSE</exact.dates> tag.")
+    
   }
   ###-------------------------------------------------------------------###
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
-  
-  for(i in seq_along(settings$run$inputs$met$path)){
-    if(!no_split){ 
+  if (!no_split) {
+    for (i in seq_along(settings$run$inputs$met$path)) {
       ### model specific split inputs
       
-      settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
-                                                  args = list(settings = settings, 
-                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date,truncated = 3), 
-                                                              stop.time = settings$state.data.assimilation$end.date,
-                                                              inputs =  settings$run$inputs$met$path[[i]],
-                                                              overwrite=F)) 
+      settings$run$inputs$met$path[[i]] <- do.call(
+        my.split_inputs,
+        args = list(
+          settings = settings,
+          start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3),
+          stop.time = settings$state.data.assimilation$end.date,
+          inputs =  settings$run$inputs$met$path[[i]],
+          overwrite =
+            F
+        )
+      )
       
     }
   }
@@ -109,11 +115,11 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
       if (is.na(lubridate::ymd(obs.times[i]))) {
-        print("Error: no dates associated with observations")
+        PEcAn.logger::logger.warn("Error: no dates associated with observations")
       } else {
         ### Data does not have time associated with dates 
         ### Adding 12:59:59PM assuming next time step starts one second later
-        print("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
+        PEcAn.logger::logger.warn("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
         obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
       }
     }
@@ -123,7 +129,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###-----  
   nt          <- length(obs.times)
-  if (nt==0) stop('There has to at least one Obs')
+  if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
   aqq         <- NULL
@@ -140,20 +146,23 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   rownames(state.interval) <- var.names
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
+  
+  if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
   #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
   load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
   #reformatting params
-  params <- list()
+  new.params <- list()
   for (i in seq_len(nens)) {
-    params[[i]] <- lapply(ensemble.samples, function(x, n) {
+    new.params[[i]] <- lapply(ensemble.samples, function(x, n) {
       x[i, ] }, n = i)
   } 
-  new.params <- params
-  
+
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###----   
   if (restart){
+    
+    if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
     load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #--- Updating the nt and etc
     if(!dir.exists(file.path(settings$outdir,"SDA",assimyears[t]))) dir.create(file.path(settings$outdir,"SDA",assimyears[t]))
@@ -171,9 +180,8 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
-  while(t<nt){
-   
-    t<-t+1
+  for(t in seq_len(nt)){
+
     # do we have obs for this time - what year is it ?
     obs <- which(!is.na(obs.mean[[t]]))
     obs.year <- year(names(obs.mean)[t])
@@ -184,22 +192,25 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     if (t>1){
    
       #removing old simulations
-      unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
+      unlink(list.files(outdir, "*.nc", recursive = T, full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
-        purrr::map2(inputs,function(settings,inputs){
+        purrr::map2(inputs, function(settings, inputs) {
           inputs.split <- list()
-          for(i in seq_len(nens)){
-            if(!no_split){ 
+          if (!no_split) {
+            for (i in seq_len(nens)) {
               #---------------- model specific split inputs
-              inputs.split$samples[i] <- do.call(my.split_inputs, 
-                                                 args = list(settings = settings, 
-                                                            start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))), 
-                                                            stop.time = obs.times[t],
-                                                            inputs = inputs$samples[[i]]))
-            }else{
-              inputs.split<-inputs
+              inputs.split$samples[i] <- do.call(
+                my.split_inputs,
+                args = list(
+                  settings = settings,
+                  start.time =(lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
+                  stop.time =   lubridate::ymd_hms(obs.times[t], truncated = 3),
+                  inputs = inputs$samples[[i]])
+            )
             }
+          } else{
+            inputs.split <- inputs
           }
           inputs.split
         })
@@ -222,49 +233,46 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       
     }else{
       restart.list <- vector("list",length(conf.settings))
-      new.params <- params
     }
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
 
-    conf.settings %>%
-      purrr::map2(restart.list,function(settings,restart.arg){
+    out.configs <- conf.settings %>%
+      purrr::map2(restart.list, function(settings, restart.arg) {
+        # wrtting configs for each settings - this does not make a difference with the old code
+        write.ensemble.configs(
+          defaults = settings$pfts,
+          ensemble.samples = ensemble.samples,
+          settings = settings,
+          model = settings$model$type,
+          write.to.db = settings$database$bety$write,
+          restart = restart.arg
+        )
+      })
     
-        # wrtting configs for each settings - this does not make a difference with the old code 
-        write.ensemble.configs(defaults = settings$pfts, 
-                               ensemble.samples = ensemble.samples, 
-                               settings = settings,
-                               model = settings$model$type, 
-                               write.to.db = settings$database$bety$write,
-                               restart = restart.arg)
-      })->out.configs
-    
-     
-  
-    #run.id <- outconfig$runs$id
-    #ensemble.id <- outconfig$ensemble.id
     if(t==1)  inputs<-out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
-   
     #-------------------------------------------- RUN
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     #------------------------------------------- Reading the output
-    out.configs %>%
-      purrr::map(function(configs){
-        
-        X_tmp <- vector("list", 2) 
+    reads <- out.configs %>%
+      purrr::map(function(configs) {
+        X_tmp <- vector("list", 2)
         
         for (i in seq_len(nens)) {
+          X_tmp[[i]] <- do.call(
+            my.read_restart,
+            args = list(
+              outdir = outdir,
+              runid = configs$runs$id[i],
+              stop.time = obs.times[t],
+              settings = settings,
+              var.names = var.names,
+              params = new.params[[i]]
+            )
+          )
           
-          X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
-                                                             runid = configs$runs$id[i], 
-                                                             stop.time = obs.times[t], 
-                                                             settings = settings, 
-                                                             var.names = var.names, 
-                                                             params = params[[i]])
-                              )
-
         }
         return(X_tmp)
-      })->reads
+      })
     
   
     #let's read the parameters of each site/ens
@@ -276,7 +284,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     # this matrix looks like this
     #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
     #[1,]  3.872521     37.2581  3.872521     37.2581
-    # But therer is an attribute called site which tells yout what column is for what site id - check out attr (X,"Site")
+    # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
     if (multi.site.flag)
     X <- X %>%
           map_dfc(~.x) %>% 
@@ -335,20 +343,20 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ###-------------------------------------------------------------------###----      
       #-- writing Trace--------------------
       if(control$trace) {
-        cat ("\n --------------------------- ",obs.year," ---------------------------\n")
-        cat ("\n --------------Obs mean----------- \n")
+        PEcAn.logger::logger.warn ("\n --------------------------- ",obs.year," ---------------------------\n")
+        PEcAn.logger::logger.warn ("\n --------------Obs mean----------- \n")
         print(Y)
-        cat ("\n --------------Obs Cov ----------- \n")
+        PEcAn.logger::logger.warn ("\n --------------Obs Cov ----------- \n")
         print(R)
-        cat ("\n --------------Forcast mean ----------- \n")
+        PEcAn.logger::logger.warn ("\n --------------Forecast mean ----------- \n")
         print(enkf.params[[t]]$mu.f)
-        cat ("\n --------------Forcast Cov ----------- \n")
+        PEcAn.logger::logger.warn ("\n --------------Forecast Cov ----------- \n")
         print(enkf.params[[t]]$Pf)
-        cat ("\n --------------Analysis mean ----------- \n")
+        PEcAn.logger::logger.warn ("\n --------------Analysis mean ----------- \n")
         print(t(enkf.params[[t]]$mu.a))
-        cat ("\n --------------Analysis Cov ----------- \n")
+        PEcAn.logger::logger.warn ("\n --------------Analysis Cov ----------- \n")
         print(enkf.params[[t]]$Pa)
-        cat ("\n ------------------------------------------------------\n")
+        PEcAn.logger::logger.warn ("\n ------------------------------------------------------\n")
       }
       if (control$debug) browser()
     } else {
@@ -364,7 +372,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         mu.a <- mu.f
         if(is.null(q.bar)){
           q.bar <- diag(ncol(X))
-          print('Process variance not estimated. Analysis has been given uninformative process variance')
+          PEcAn.logger::logger.warn('Process variance not estimated. Analysis has been given uninformative process variance')
         } 
         Pa   <- Pf + solve(q.bar)
       }
