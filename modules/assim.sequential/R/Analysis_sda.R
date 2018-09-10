@@ -121,16 +121,15 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   #load_nimble()
   #Forecast inputs 
   Q <- Forecast$Q # process error
-  Pf <- Forecast$Pf # Forecast precision
-  mu.f <- Forecast$mu.f #mean Forecast
   X <- Forecast$X # states 
+  Pf = cov(X) # Cov Forecast - This is used as an initial condition
+  mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
   wish.df <- function(Om, X, i, j, col) {
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
   }
-  
   #----------------------------------- GEF-----------------------------------------------------
   # Taking care of censored data ------------------------------    
   ### create matrix the describes the support for each observed state variable at time t
@@ -161,6 +160,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   }
   
   if(t == 1){
+
     #The purpose of this step is to impute data for mu.f 
     #where there are zero values so that 
     #mu.f is in 'tobit space' in the full model
@@ -172,7 +172,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
                             mu_0 = rep(0,length(mu.f)),
                             lambda_0 = diag(10,length(mu.f)),
                             nu_0 = 3)#some measure of prior obs
-    
+
     inits.tobit2space <<- list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
     #set.seed(0)
     #ptm <- proc.time()
