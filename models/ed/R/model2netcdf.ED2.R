@@ -103,18 +103,21 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
                                outdir, start_date, end_date, 
                                pft_names)
     }
-    
+    #length(out_list[["-T-"]]); length(out_list[["-E-"]])
     
     if (y == strftime(start_date, "%Y")) {
-      begins <- as.numeric(strftime(start_date, "%j")) - 1
+      #begins <- as.numeric(strftime(start_date, "%j")) - 1  # get rid of -1 here?
+      begin_date <- as.Date(strftime(start_date))
     } else {
-      begins <- 0
+      #begins <- 0
+      begin_date <- base::as.Date(paste0(y,"-01-01"))
     }
+    #PEcAn.logger::logger.info(begin_date)
     
     if (y == strftime(end_date, "%Y")) {
       ends <- as.numeric(strftime(end_date, "%j"))
     } else {
-      ends <- as.numeric(strftime(paste0(y, "-12-31"), "%j")) 
+      ends <- as.numeric(strftime(paste0(y, "-12-31"), "%j"))
     }
     
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
@@ -127,16 +130,18 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
       fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
       fcn     <- match.fun(fcnx)
       put_out <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], lat = lat, lon = lon, 
-                    begins = begins, ends = ends, pft_names)
+                    begins = begin_date, ends = ends, pft_names)
       
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
     }
+    #length(out_list[["-T-"]]); length(out_list[["-E-"]])
     
-    # SLZ specific hack until I figure that out
-    if(!is.null(out_list[["-T-"]]$SLZ)){
-      out_list[["-T-"]]$SLZ <- NULL
-    }
+    # SLZ specific hack until I figure that out - moved into put_T_* function since we need to have correct length of out/nc_var objects
+    #if(!is.null(out_list[["-T-"]]$SLZ)){
+    #  out_list[["-T-"]]$SLZ <- NULL
+    #}
+    #length(out_list[["-T-"]]); length(out_list[["-E-"]])
     
     # ----- write ncdf files
     
@@ -144,8 +149,12 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     
     out <- unlist(out_list, recursive = FALSE)
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
+    ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
+    ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec=NA)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
+      #print(i)
+      #PEcAn.logger::logger.info(nc_var[[i]])
       ncdf4::ncvar_put(nc, nc_var[[i]], out[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
@@ -643,11 +652,25 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   
   
   # ----- define ncdf dimensions
-  
+  # setup output time and time bounds
+  sub_date_range <- seq(begins, by = "day", length.out = length(lubridate::yday(begins):ends))
+  sub_jdates <- lubridate::yday(lubridate::floor_date(seq(sub_date_range[1], sub_date_range[length(sub_date_range)],length.out= length(out[[1]]))))
+  iter_per_day <- length(sub_jdates[sub_jdates==lubridate::yday(sub_date_range[2])])  # look at day 2 to determine iterations per day (i.e. model timestep)
+  #iter_per_day <- length(out[[1]])/ends    ### does not work for part of a year!!
+  rm(sub_jdates)
+  step <- seq(0, 0.99, 1/iter_per_day)
+  sub_dates <- rep(sub_date_range,each=iter_per_day)
+  jdates <- lubridate::yday(sub_dates)
+  day_repeats <- as.vector(base::table(jdates)) # number of model outputs per day, e.g. 48 for half-hourly
+  tvals <- (jdates+step)-1
+  bounds <- array(data=NA, dim=c(length(tvals),2))
+  bounds[,1] <- tvals; bounds[,2] <- bounds[,1]+(1/iter_per_day); bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
+  #head(bounds); tail(bounds)
+  #
   t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", yr, "-01-01 00:00:00"), 
-                        vals = seq(begins, ends, length.out = length(out[[1]])), 
+                        vals = tvals, 
                         calendar = "standard", unlim = TRUE)
-  
+  time_interval <- ncdf4::ncdim_def(name = 'hist_interval', longname='history time interval endpoint dimensions', vals = 1:2, units='')
   
   slzdata <- out$SLZ
   dz <- diff(slzdata)
@@ -657,7 +680,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   
   dims  <- list(lon = lon, lat = lat, time = t)
   dimsz <- list(lon = lon, lat = lat, time = t, nsoil = zg)
-  
+
   # ----- fill list
   
   out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
@@ -760,7 +783,15 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   out <- conversion(47, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
   nc_var[[s+47]]<- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Soil Respiration")
-  
+  # SLZ specific hack until I figure that out - need to remove SLZ from out
+  if(!is.null(out$SLZ)){
+    out$SLZ <- NULL
+  }
+  out_length <- length(out)
+  out[[out_length+1]] <- c(rbind(bounds[,1], bounds[,2]))
+  nc_var[[s+(out_length+1)]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
+                                    longname = "history time interval endpoints", dim=list(time_interval,time = t), 
+                                    prec = "double")
   return(list(nc_var = nc_var, out = out))
   
 } # put_T_values
@@ -940,9 +971,23 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
   
   # ----- fill list
   
+  # setup output time and time bounds
+  sub_dates <- seq(lubridate::floor_date(begins,"month"), by = "month", length.out = dim(out[[1]])[1] )
+  days_per_month <- as.vector(lubridate::days_in_month(sub_dates))
+  if (lubridate::yday(begins)!=lubridate::yday(sub_dates[1])) {
+    temp <- days_per_month[1] - ((lubridate::yday(begins)-lubridate::yday(sub_dates[1])))
+    days_per_month[1] = temp
+    sub_dates[1]=begins
+  }
+  jdates <- lubridate::yday(sub_dates)
+  dtvals <- jdates-1 # convert to 0 index
+  bounds <- array(data=NA, dim=c(length(dtvals),2))
+  bounds[,1] <- dtvals; bounds[,2] <- bounds[,1]+days_per_month; bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
+  head(bounds); tail(bounds)
+  #
   t <- ncdf4::ncdim_def(name = "dtime", units = paste0("days since ", yr, "-01-01 00:00:00"), 
-                        vals = seq(begins, ends, length.out = dim(out[[1]])[1]), 
-                        calendar = "standard", unlim = TRUE)
+                        vals = dtvals, calendar = "standard", unlim = TRUE)
+  time_interval <- ncdf4::ncdim_def(name = 'hist_interval', longname='history time interval endpoint dimensions', vals = 1:2, units='')
   
   p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts, longname = "Plant Functional Type", unlim = TRUE)
   
