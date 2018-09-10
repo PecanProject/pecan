@@ -153,8 +153,6 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec=NA)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
-      #print(i)
-      #PEcAn.logger::logger.info(nc_var[[i]])
       ncdf4::ncvar_put(nc, nc_var[[i]], out[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
@@ -983,7 +981,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
   dtvals <- jdates-1 # convert to 0 index
   bounds <- array(data=NA, dim=c(length(dtvals),2))
   bounds[,1] <- dtvals; bounds[,2] <- bounds[,1]+days_per_month; bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
-  head(bounds); tail(bounds)
+  #head(bounds); tail(bounds)
   #
   t <- ncdf4::ncdim_def(name = "dtime", units = paste0("days since ", yr, "-01-01 00:00:00"), 
                         vals = dtvals, calendar = "standard", unlim = TRUE)
@@ -1009,7 +1007,11 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
   # so that read.output has a way of accessing PFT names
   nc_var[[s+4]]<- ncdf4::ncvar_def("PFT", units = "", dim = list(p),  
                                    longname = paste(pft_names, collapse=",")) 
-  
+  out_length <- length(out)
+  out[[out_length+1]] <- c(rbind(bounds[,1], bounds[,2]))
+  nc_var[[s+5]] <- ncdf4::ncvar_def(name="dtime_bounds", units='', 
+                                                 longname = "monthly history time interval endpoints", dim=list(time_interval,dtime = t), 
+                                                 prec = "double")
   return(list(nc_var = nc_var, out = out))
   
 } # put_E_values
