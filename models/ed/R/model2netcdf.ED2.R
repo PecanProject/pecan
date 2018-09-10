@@ -106,13 +106,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     #length(out_list[["-T-"]]); length(out_list[["-E-"]])
     
     if (y == strftime(start_date, "%Y")) {
-      #begins <- as.numeric(strftime(start_date, "%j")) - 1  # get rid of -1 here?
       begin_date <- as.Date(strftime(start_date))
     } else {
-      #begins <- 0
       begin_date <- base::as.Date(paste0(y,"-01-01"))
     }
-    #PEcAn.logger::logger.info(begin_date)
     
     if (y == strftime(end_date, "%Y")) {
       ends <- as.numeric(strftime(end_date, "%j"))
