@@ -1,23 +1,41 @@
 # The PEcAn XML {#pecanXML}
 
 The PEcAn system is configured using a xml file, often called settings.xml. The configuration file contains the following sections:
+1. [Info]
+2. [PEcAn Folders]
+3. [Database Access]
+4. [BETY Configuration](#bety-database-configuration)
+5. [Brown Dog](#brown-dog-configuration)
+6. [PFT Selection](#pft-selection)
+7. [Meta Analysis](#meta-analysis)
+8. [Ensemble Runs](#ensemble-runs)
+9. [Sensitivity Runs](#sensitivity-runs)
+10. [Model Setup](#model-setup)
+11. [Run Setup](#run-setup)
+12. [State Data Assimilation](#state-data-assimilation-tags)
+13. [Parameter Data Assimilation]
+14. [Benchmarking]
 
-1. [PEcAn Folders](#pecan-folders)
-2. [Database Access](#database-access)
-3. [BETY Configuration](#bety-database-configuration)
-4. [Brown Dog](#brown-dog-configuration)
-5. [PFT Selection](#pft-selection)
-6. [Meta Analysis](#meta-analysis)
-7. [Ensemble Runs](#ensemble-runs)
-8. [Sensitivity Runs](#sensitivity-runs)
-9. [Model Setup](#model-setup)
-10. [Run Setup](#run-setup)
-11. [State Data Assimilation](#state-data-assimilation-tags)
-12. [Parameter Data Assimilation]
-13. [Benchmarking]
+## Info
+The information section, tagged `info`, contains information specific to your run. They are not critical settings, so any missing values will not break your run. 
 
+An example of this section looks like:
+```xml
+<info>
+  <notes>Test_Run</notes>
+  <userid>99000000036</userid>
+  <username>guestuser</username>
+  <date>2018/09/05 16:21:45 +0000</date>
+ </info>
+```
 
-## PEcAn folders
+The `<notes></notes>` tag will be filled in by the web GUI if you provide notes, or you can add notes yourself within these tags. We suggest adding notes that help identify your run and a brief description of what the run is for.
+
+The `<userid></userid>` and `<username></username>` section is filled in from the GUI if you are signed in. If you are not using the GUI, add the user name and ID you are associated with that exists within the BETY database.
+
+The `<date></date>` tag is filled automatically at the time of your run from the GUI. If you are not using the GUI, add the date you execute the run. This tag is not the tag for the dates you would like to run your model simulation.
+
+## PEcAn Folders
 
 The following are the tags that can be used to configure the folders used by PEcAn. All of these are optional.
 
