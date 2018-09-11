@@ -631,7 +631,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       )
     })
   
-  if (any(result_sizes[[i]]$missing) || any(result_sizes[[i]]$empty)){
+  if (any(result_sizes$missing) || any(result_sizes$empty)){
     log_format_df = function(df){
       df  %>%
         format() %>%
