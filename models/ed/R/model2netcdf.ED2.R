@@ -26,7 +26,8 @@
 ## refactored by Istem Fer on 03/2018
 ## further modified by S. Serbin 09/2018
 ##'
-model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft_names = NULL) {
+model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, 
+                             end_date, pft_names = NULL) {
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date) 
@@ -44,13 +45,13 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     PEcAn.logger::logger.warn("WARNING: No output files found for :", outdir)
     return(NULL)
     
-  }else{ 
+  } else {
     
     # which output files are there
     ed.res.flag <- names(flist)[file.check]
     
     # extract year info from the file names
-    ylist <-lapply(ed.res.flag, function(f) {
+    ylist <- lapply(ed.res.flag, function(f) {
       yr <- rep(NA, length(flist[[f]]))
       for (i in seq_along(flist[[f]])) {
         index <- gregexpr(f, flist[[f]][i])[[1]]
@@ -69,23 +70,26 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
 
   # if run failed there might be less years, no output case is handled above
   # we can process whatever is there
-  # but of course this upsets ensemble.ts because the outputs are not of same length now
+  # but of course this upsets ensemble.ts because the outputs are not of 
+  # same length now
   # two options:
   # (i)  don't process anything
   #      return(NULL)
-  # (ii) check whether this is an ensemble run, then return null, otherwise process whatever there is
-  #      for now I'm going with this, do failed runs also provide information on parameters?
+  # (ii) check whether this is an ensemble run, then return null, otherwise 
+  # process whatever there is
+  # for now I'm going with this, do failed runs also provide information 
+  # on parameters?
        year.check <- unique(unlist(ylist))
-       if(max(year.check) < end_year){
+       if (max(year.check) < end_year) {
           PEcAn.logger::logger.info("Run failed with some outputs.")
           rundir <- gsub("/out/", "/run/", outdir)
           readme <- file(paste0(rundir,"/README.txt"))
           runtype <- readLines(readme, n=1)
           close(readme)
-          if(grepl("ensemble", runtype)){
+          if (grepl("ensemble", runtype)) {
              PEcAn.logger::logger.info("This is an ensemble run. Not processing anything.")
              return(NULL)
-          }else{
+          } else {
             PEcAn.logger::logger.info("This is not an ensemble run. Processing existing outputs.")
              end_year <- max(year.check)
           }
@@ -129,8 +133,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
       rflag   <- ed.res.flag[i]
       fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
       fcn     <- match.fun(fcnx)
-      put_out <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], lat = lat, lon = lon, 
-                    begins = begin_date, ends = ends, pft_names)
+      put_out <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], 
+                     lat = lat, lon = lon, begins = begin_date, 
+                     ends = ends, pft_names)
       
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
@@ -140,13 +145,15 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     PEcAn.logger::logger.info("*** Writing netCDF file ***")
     
     out <- unlist(out_list, recursive = FALSE)
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), 
+                           nc_var)
     ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
     ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec=NA)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
       ncdf4::ncvar_put(nc, nc_var[[i]], out[[i]])
-      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, 
+          sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)
@@ -649,7 +656,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   model_timestep_s <- length(output_date_vector)/length(out[[1]])
   iter_per_day <- round(1/model_timestep_s) ## e.g. 48
   ## Create a timesteps vector (e.g. 0.00000000 0.02083333 0.04166667 0.06250000 0.08333333 0.10416667 ...)
-  timesteps <- seq(0, 0.99, 1/iter_per_day)
+  timesteps <- head(seq(0, 1, by = 1/iter_per_day), -1)
   ## Create a new date vector where each day is repeated by iter_per_day 
   ## (e.g. "2001-07-15" "2001-07-15" "2001-07-15" "2001-07-15" "2001-07-15" ...)
   sub_dates <- rep(output_date_vector,each=iter_per_day)
@@ -1177,3 +1184,5 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   return(out)
   
 } # read_S_files
+##-------------------------------------------------------------------------------------------------#
+### EOF
