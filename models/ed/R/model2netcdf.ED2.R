@@ -24,6 +24,8 @@
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 ## refactored by Istem Fer on 03/2018
+## further modified by S. Serbin 09/2018
+##'
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft_names = NULL) {
 
   start_year <- lubridate::year(start_date)
@@ -103,8 +105,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
                                outdir, start_date, end_date, 
                                pft_names)
     }
-    #length(out_list[["-T-"]]); length(out_list[["-E-"]])
     
+    # generate start/end dates for processing
     if (y == strftime(start_date, "%Y")) {
       begin_date <- as.Date(strftime(start_date))
     } else {
@@ -117,6 +119,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
       ends <- as.numeric(strftime(paste0(y, "-12-31"), "%j"))
     }
     
+    # create lat/long nc variables
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east",  vals = as.numeric(sitelon), longname = "station_longitude")
     
@@ -132,16 +135,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
     }
-    #length(out_list[["-T-"]]); length(out_list[["-E-"]])
-    
-    # SLZ specific hack until I figure that out - moved into put_T_* function since we need to have correct length of out/nc_var objects
-    #if(!is.null(out_list[["-T-"]]$SLZ)){
-    #  out_list[["-T-"]]$SLZ <- NULL
-    #}
-    #length(out_list[["-T-"]]); length(out_list[["-E-"]])
     
     # ----- write ncdf files
-    
     PEcAn.logger::logger.info("*** Writing netCDF file ***")
     
     out <- unlist(out_list, recursive = FALSE)
@@ -157,7 +152,6 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     ncdf4::nc_close(nc)
     
   } # end year-loop
-
 
 } # model2netcdf.ED2
 ##-------------------------------------------------------------------------------------------------#
@@ -647,21 +641,31 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   
   
   # ----- define ncdf dimensions
-  # setup output time and time bounds
-  sub_date_range <- seq(begins, by = "day", length.out = length(lubridate::yday(begins):ends))
-  sub_jdates <- lubridate::yday(lubridate::floor_date(seq(sub_date_range[1], sub_date_range[length(sub_date_range)],length.out= length(out[[1]]))))
-  iter_per_day <- length(sub_jdates[sub_jdates==lubridate::yday(sub_date_range[2])])  # look at day 2 to determine iterations per day (i.e. model timestep)
-  #iter_per_day <- length(out[[1]])/ends    ### does not work for part of a year!!
-  rm(sub_jdates)
-  step <- seq(0, 0.99, 1/iter_per_day)
-  sub_dates <- rep(sub_date_range,each=iter_per_day)
+  #### setup output time and time bounds
+  ## Create a date vector that contains each day of the model run for each output year (e.g. "2001-07-15", "2001-07-16"....)
+  ## and which is the correct length for each full or partial year
+  output_date_vector <- seq(begins, by = "day", length.out = length(lubridate::yday(begins):ends))
+  ## Calculate model output frequency per day (e.g. 0.02083333)
+  model_timestep_s <- length(output_date_vector)/length(out[[1]])
+  iter_per_day <- round(1/model_timestep_s) ## e.g. 48
+  ## Create a timesteps vector (e.g. 0.00000000 0.02083333 0.04166667 0.06250000 0.08333333 0.10416667 ...)
+  timesteps <- seq(0, 0.99, 1/iter_per_day)
+  ## Create a new date vector where each day is repeated by iter_per_day 
+  ## (e.g. "2001-07-15" "2001-07-15" "2001-07-15" "2001-07-15" "2001-07-15" ...)
+  sub_dates <- rep(output_date_vector,each=iter_per_day)
+  ## Generate a vector of julian dates from sub_dates (e.g. 196 196 196 196 196 196 ...)
   jdates <- lubridate::yday(sub_dates)
-  day_repeats <- as.vector(base::table(jdates)) # number of model outputs per day, e.g. 48 for half-hourly
-  tvals <- (jdates+step)-1
+  ## Create a fractional DOY vector using jdates, subtract by 1 to be 0 index
+  ## (e.g. 195.0000 195.0208 195.0417 195.0625 195.0833 195.1042)
+  ## which yields, e.g. as.Date(195.0000,origin="2001-01-01"), "2001-07-15" 
+  tvals <- (jdates+timesteps)-1
+  ## Create time bounds to populate time_bounds variable
   bounds <- array(data=NA, dim=c(length(tvals),2))
-  bounds[,1] <- tvals; bounds[,2] <- bounds[,1]+(1/iter_per_day); bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
-  #head(bounds); tail(bounds)
-  #
+  bounds[,1] <- tvals 
+  bounds[,2] <- bounds[,1]+(1/iter_per_day) 
+  bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
+  ####
+  
   t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", yr, "-01-01 00:00:00"), 
                         vals = tvals, 
                         calendar = "standard", unlim = TRUE)
@@ -778,17 +782,18 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   out <- conversion(47, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
   nc_var[[s+47]]<- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Soil Respiration")
-  # SLZ specific hack until I figure that out - need to remove SLZ from out
-  if(!is.null(out$SLZ)){
-    out$SLZ <- NULL
+  # Remove SLZ from output before finalizing list.  replace with time_bounds
+  if(!is.null(out[["SLZ"]])){
+    out[["SLZ"]] <- NULL
   }
   out_length <- length(out)
   out[[out_length+1]] <- c(rbind(bounds[,1], bounds[,2]))
   nc_var[[s+(out_length+1)]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
                                     longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                     prec = "double")
-  return(list(nc_var = nc_var, out = out))
   
+  return(list(nc_var = nc_var, out = out))
+
 } # put_T_values
 
 
@@ -966,20 +971,30 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
   
   # ----- fill list
   
-  # setup output time and time bounds
-  sub_dates <- seq(lubridate::floor_date(begins,"month"), by = "month", length.out = dim(out[[1]])[1] )
-  days_per_month <- as.vector(lubridate::days_in_month(sub_dates))
-  if (lubridate::yday(begins)!=lubridate::yday(sub_dates[1])) {
-    temp <- days_per_month[1] - ((lubridate::yday(begins)-lubridate::yday(sub_dates[1])))
-    days_per_month[1] = temp
-    sub_dates[1]=begins
+  ##### setup output time and time bounds
+  ## Create a date vector that contains each month of the model run (e.g. "2001-07-01" "2001-08-01" "2001-09-01"....)
+  ## and which is the correct length for each full or partial year
+  output_date_vector <- seq(lubridate::floor_date(begins,"month"), by = "month", length.out = dim(out[[1]])[1] )
+  ## Create a vector of the number of days in each month by year
+  ## (e.g. 31 31 30 31 30 31)
+  num_days_per_month <- as.vector(lubridate::days_in_month(output_date_vector))
+  ## Update num_days_per_month and output_date_vector if model run did not start on the first day of a month
+  ## e.g. "2001-07-15" "2001-08-01", 17 31
+  if (lubridate::yday(begins)!=lubridate::yday(output_date_vector[1])) {
+    temp <- num_days_per_month[1] - ((lubridate::yday(begins)-lubridate::yday(output_date_vector[1])))
+    num_days_per_month[1] <- temp
+    output_date_vector[1]=begins
   }
-  jdates <- lubridate::yday(sub_dates)
+  ## Create a vector of output month julian dates (e.g. 196 213 244 274 305 335)
+  jdates <- lubridate::yday(output_date_vector)
+  ## Create a 0 index dtime variable 
   dtvals <- jdates-1 # convert to 0 index
+  ## Create monthly time bounds to populate dtime_bounds variable
   bounds <- array(data=NA, dim=c(length(dtvals),2))
-  bounds[,1] <- dtvals; bounds[,2] <- bounds[,1]+days_per_month; bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
-  #head(bounds); tail(bounds)
-  #
+  bounds[,1] <- dtvals 
+  bounds[,2] <- bounds[,1]+num_days_per_month 
+  bounds <- round(bounds,4) # create time bounds for each timestep in t, t+1; t+1, t+2... format
+  #####
   t <- ncdf4::ncdim_def(name = "dtime", units = paste0("days since ", yr, "-01-01 00:00:00"), 
                         vals = dtvals, calendar = "standard", unlim = TRUE)
   time_interval <- ncdf4::ncdim_def(name = 'hist_interval', longname='history time interval endpoint dimensions', vals = 1:2, units='')
