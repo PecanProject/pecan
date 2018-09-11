@@ -621,7 +621,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   # Check if result has empty or missing files
   
   result_sizes <- result %>%
-    map(function(x) {
+    map_dfr(function(x) {
       x %>% mutate(
         file_size = purrr::map_dbl(file, function(x) {
           file.size(x)
@@ -629,7 +629,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         missing = is.na(file_size),
         empty = file_size == 0,
       )
-    }) %>% ldply(data.frame)
+    })
   
   if (any(result_sizes[[i]]$missing) || any(result_sizes[[i]]$empty)){
     log_format_df = function(df){
