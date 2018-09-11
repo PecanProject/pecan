@@ -25,39 +25,50 @@
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, overwrite = FALSE) {
 
   ### Read in model output in SIPNET format
-  sipnet.out.file <- file.path(outdir, "sipnet.out")
-  sipnet.output <- read.table(sipnet.out.file, header = T, skip = 1, sep = "")
-  sipnet.output.dims <- dim(sipnet.output)
+  sipnet_out_file <- file.path(outdir, "sipnet.out")
+  sipnet_output <- read.table(sipnet_out_file, header = T, skip = 1, sep = "")
+  #sipnet_output_dims <- dim(sipnet_output)
 
   ### Determine number of years and output timestep
-  start.day <- sipnet.output$day[1]
-  num.years <- length(unique(sipnet.output$year))
+  #start.day <- sipnet_output$day[1]
+  num_years <- length(unique(sipnet_output$year))
+  simulation_years <- unique(sipnet_output$year)
+  
   # quick consistency check
-  if (length(lubridate::year(end_date):lubridate::year(start_date))!=num.years) {
-    PEcAn.logger::logger.severe("Date range specified in model2netcdf.SIPNET() function call and total number of years in SIPNET output are not equal")
+  year_seq <- seq(lubridate::year(start_date), lubridate::year(end_date))
+  if (length(year_seq) != num_years) {
+    PEcAn.logger::logger.severe("Date range specified in model2netcdf.SIPNET() function call and 
+                                total number of years in SIPNET output are not equal")
   }
-  years <- unique(sipnet.output$year)
+
   # check that specified years and output years match
-  if (!all(years %in% lubridate::year(start_date):lubridate::year(end_date))) {
+  if (!all(simulation_years %in% year_seq)) {
     PEcAn.logger::logger.severe("Years selected for model run and SIPNET output years do not match ")
   }
-  out.day <- length(which(sipnet.output$year == years[1] & sipnet.output$day == unique(sipnet.output$day)[2])) # switched to day 2 in case first day is partial
-  timestep.s <- 86400 / out.day
+  
+  # get number of model timesteps per day
+  out_day <- sum(sipnet_output$year == simulation_years[1] & 
+                   sipnet_output$day == unique(sipnet_output$day)[2], 
+                 na.rm = TRUE) # switched to day 2 in case first day is partial
+  timestep.s <- 86400 / out_day
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
-  for (y in years) {
+  for (y in simulation_years) {
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
       next
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
 
     ## Subset data for processing
-    sub.sipnet.output <- subset(sipnet.output, year == y)
+    sub.sipnet.output <- subset(sipnet_output, year == y)
     sub.sipnet.output.dims <- dim(sub.sipnet.output)
-    dayfrac <- 1 / out.day
-    step <- seq(0, 0.99, dayfrac)  ## probably dont want to use hard-coded "step" because leap years may not contain all "steps", or
-                                   ## if model run doesnt start at 00:00:00
-    
+    dayfrac <- 1 / out_day
+    step <- head(seq(0, 1, by = dayfrac), -1)   ## probably dont want to use
+                                                ## hard-coded "step" because 
+                                                ## leap years may not contain 
+                                                ## all "steps", or
+                                                ## if model run doesnt start 
+                                                ## at 00:00:00
     # get the run dates based on the sipnet output.  we assume that even if the run is partial, the origin is still day 1 of the subset year
     start_month <- lubridate::month(as.Date(sub.sipnet.output$day[1], origin = paste0(y,"-01-01"))) # gets month
     ## using this approach to attempt to deal with inconsistent start index 0/1
@@ -70,12 +81,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     jdates <- lubridate::yday(sub_dates)  # create vector of julian days from start to end by year, based on refomatted output dates
 
     # create netCDF time.bounds variable
-    #tvals <- (jdates+step)-1 ## convert to 0 index
     tvals <- (jdates+(sub.sipnet.output$time/24))-1  # for some reason, some years dont have a complete number of steps on the last date
-    #head(base::as.Date(tvals, origin = paste0(y,"-01-01"))); tail(base::as.Date(tvals, origin = paste0(y,"-01-01")))
     bounds <- array(data=NA, dim=c(length(tvals),2))
-    bounds[,1] <- tvals; bounds[,2] <- bounds[,1]+dayfrac; bounds <- round(bounds,4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
-    #head(bounds); tail(bounds)
+    bounds[,1] <- tvals
+    bounds[,2] <- bounds[,1]+dayfrac
+    # create time bounds for each timestep in t, t+1; t+1, t+2... format
+    bounds <- round(bounds,4) 
     
     ## Setup outputs for netCDF file in appropriate units
     output       <- list()
@@ -134,10 +145,14 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                    vals = tvals,
                    calendar = "standard",
                    unlim = TRUE)
-    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), 
+                            longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), 
+                            longname = "station_longitude")
     dims <- list(lon = lon, lat = lat, time = t)
-    time_interval <- ncdf4::ncdim_def(name = 'hist_interval', longname='history time interval endpoint dimensions', vals = 1:2, units='')
+    time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
+                                      longname="history time interval endpoint dimensions",
+                                      vals = 1:2, units="")
     
     ## ***** Need to dynamically update the UTC offset here *****
 
@@ -185,7 +200,6 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
-      #print(i)
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
@@ -195,7 +209,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
   ## Delete raw output, if requested
   if (delete.raw) {
-    file.remove(sipnet.out.file)
+    file.remove(sipnet_out_file)
   }
 } # model2netcdf.SIPNET
 #--------------------------------------------------------------------------------------------------#
