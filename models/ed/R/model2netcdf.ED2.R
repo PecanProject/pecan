@@ -108,7 +108,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
     
     # generate start/end dates for processing
     if (y == strftime(start_date, "%Y")) {
-      begin_date <- as.Date(strftime(start_date))
+      begin_date <- base::as.Date(strftime(start_date))
     } else {
       begin_date <- base::as.Date(paste0(y,"-01-01"))
     }
