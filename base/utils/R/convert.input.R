@@ -620,14 +620,31 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   #--------------------------------------------------------------------------------------------------#
   # Check if result has empty or missing files
   
-  result_sizes <- result %>% purrr::map(~ .x$file) %>% purrr::tmap(~ .x %>% file.size) %>% as.data.frame() %>% 
-    `colnames<-`(c("file_size")) %>%
-    mutate(missing = ifelse(is.na(file_size),NA,TRUE)) %>%
-    mutate( empty = ifelse(file_size==0,"EMPTY",TRUE))
+  result_sizes <- result %>%
+    map(function(x) {
+      x %>% mutate(
+        file_size = purrr::map_dbl(file, function(x) {
+          file.size(x)
+        }),
+        missing = is.na(file_size),
+        empty = file_size == 0,
+      )
+    }) %>% ldply(data.frame)
   
-  if( NA %in% result_sizes$missing | "EMTPY" %in% result_sizes$empty){
+  if (any(result_sizes[[i]]$missing) || any(result_sizes[[i]]$empty))){
+    log_format_df = function(df){
+      df  %>%
+        format() %>%
+        rbind(colnames(.), .) %>%
+        purrr::reduce( paste, sep=" ") %>%
+        paste(collapse="\n")
+    }
     
-    PEcAn.logger::logger.severe(msg = paste0("Files Processed with function: ", fcn," have resulted in empty or missing files."))
+    PEcAn.logger::logger.severe(
+      "Requested Processing produced empty files or Nonexistant files :\n",
+      log_format_df(result_sizes[,c(1,8,9,10)]),
+      "\n Table of results printed above.",
+      wrap = FALSE)
   }
   
   # Insert into Database
