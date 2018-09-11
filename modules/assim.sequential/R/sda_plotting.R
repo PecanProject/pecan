@@ -547,7 +547,7 @@ post.alaysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs
 ##' @export
 post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
 
-  
+
   #Defining some colors
   t1         <- 1
   pink       <- col2rgb("deeppink")
@@ -597,7 +597,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
       
     #})
   
-  
+  obs.var.names <- (obs.mean[[1]])[[1]] %>% colnames()
   #Observed data
   #first merging mean and conv based on the day
   ready.to.plot <- names(obs.mean)%>%
@@ -611,7 +611,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
         tidyr::gather(Variable,Means,-c(Site)) %>%
         right_join(one.day.data$covs %>% 
                      map_dfr(~ t(sqrt(diag(.x))) %>% 
-                               data.frame %>% `colnames<-`(c(var.names))) %>%
+                               data.frame %>% `colnames<-`(c(obs.var.names))) %>%
                      mutate(Site=names(one.day.data$covs)) %>% 
                      tidyr::gather(Variable,Sd,-c(Site)),
                    by=c('Site','Variable')) %>%

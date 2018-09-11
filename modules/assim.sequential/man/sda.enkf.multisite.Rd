@@ -6,7 +6,7 @@
 \usage{
 sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL, restart = F,
   control = list(trace = T, interactivePlot = T, TimeseriesPlot = T,
-  BiasPlot = F, plot.title = NULL, debug = FALSE), ...)
+  BiasPlot = F, plot.title = NULL, debug = FALSE, pause = F), ...)
 }
 \arguments{
 \item{settings}{PEcAn settings object}

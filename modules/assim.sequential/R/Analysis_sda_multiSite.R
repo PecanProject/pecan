@@ -38,14 +38,14 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   if(length(site.ids)>1){
     
     #Finding the dis between sites
-    distances <- sp::spDists(site.locs+rnorm(4,0,1),longlat=T)
+    distances <- sp::spDists(site.locs,longlat=T)
     #turn that into a blocked matrix format
     blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
     
     # This the function and makes the Pf by creating blocks in it for different sites
     # We can also send a localization functions to this 
     # for extra argumnets like distance matrix for localization use elipsis
-    Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)), blocked.dis, scalef)
+    Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)), t=extraArg$t, blocked.dis, scalef)
   }else{
     PEcAn.logger::logger.severe("You need to send this function a multisetting object containing multiple sites/runs.")
   }

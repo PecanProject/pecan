@@ -11,8 +11,8 @@
 ##' @return It returns the var-cov matrix of state variables at multiple sites.
 ##' @export
 
-Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, ...) {
-  
+Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, blocked.dis=NULL, ...) {
+  #setup
   nsite <- length(site.ids)
   nvariable <- length(var.names)
   # I will make a big cov matrix and then I will populate it withgit status cov of each site
@@ -44,10 +44,24 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, ...) {
     pf.matrix [rows.in.matrix, cols.in.matrix] <- two.site.cov
     
   }
-  # if I see that there is a localization function passed to this - I run it by the function.
-  if (!is.null(localization.FUN)) pf.matrix <- localization.FUN (pf.matrix,...)
   
-  return(pf.matrix)
+  
+  # if I see that there is a localization function passed to this - I run it by the function.
+  if (!is.null(localization.FUN)) {
+    pf.matrix.out <- localization.FUN (pf.matrix, blocked.dis, ...)
+  } else{
+    pf.matrix.out <- pf.matrix
+  }
+  
+  #------------- Plotting Localization
+  pdf(paste0("SDA/Localization_",t,".pdf"), width=8.5, height=4,onefile=T)
+  par(mfrow=c(1,3))
+  plsgenomics::matrix.heatmap(pf.matrix, main="Pf")
+  plsgenomics::matrix.heatmap(blocked.dis, main="Distance")
+  plsgenomics::matrix.heatmap(pf.matrix.out, main=paste0("rho - scalef="))
+  dev.off()
+  
+  return(pf.matrix.out)
 
 }
 

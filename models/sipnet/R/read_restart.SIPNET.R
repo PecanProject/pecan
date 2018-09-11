@@ -22,7 +22,6 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   prior.sla <- params[[which(!names(params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   
   forecast <- list()
-  
   # additional varnames, because we need these deterministic relationships
   var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
   
