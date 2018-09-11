@@ -984,7 +984,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...
   output_date_vector <- seq(lubridate::floor_date(begins,"month"), by = "month", length.out = dim(out[[1]])[1] )
   ## Create a vector of the number of days in each month by year
   ## (e.g. 31 31 30 31 30 31)
-  num_days_per_month <- as.vector(lubridate::days_in_month(output_date_vector))
+  num_days_per_month <- lubridate::days_in_month(output_date_vector)
   ## Update num_days_per_month and output_date_vector if model run did not start on the first day of a month
   ## e.g. "2001-07-15" "2001-08-01", 17 31
   if (lubridate::yday(begins)!=lubridate::yday(output_date_vector[1])) {
