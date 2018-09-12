@@ -15,6 +15,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added missing ncdf4 library calls in model2netcdf.JULES
 
 ### Added
+- Added download.AGB function in modules/data.remote
 - Added a first vignette to models/maat with the plan to add more examples
 
 ### Removed
