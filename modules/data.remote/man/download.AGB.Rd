@@ -28,10 +28,21 @@ download.AGB(outdir, product_dates = NULL,
 
 \item{overwrite}{Logical. Overwrite existing files and replace with new versions}
 
-\item{generate_plots}{Optional. Create output diagnostic plots in outdir?}
+\item{generate_plots}{Optional. Create output diagnostic plots in outdir? --- ACTUALLY PUT THIS IN extract_ABG}
 }
 \description{
 download.AGB
+}
+\examples{
+\dontrun{
+outdir <- "~/scratch"
+product_dates <- c(1990,1991)
+product_source = "OSU"
+prodcut_version = "v1"
+PEcAn.data.remote::download.AGB(outdir=outdir, product_dates = product_dates, 
+prodcut_version = prodcut_version)
+}
+
 }
 \author{
 Shawn Serbin
