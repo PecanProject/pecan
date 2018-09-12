@@ -54,11 +54,11 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   }
   
   #------------- Plotting Localization
-  pdf(paste0("SDA/Localization_",t,".pdf"), width=8.5, height=4,onefile=T)
+  pdf(paste0("SDA/Localization_",t,".pdf"), width=14.5, height=6, onefile=T)
   par(mfrow=c(1,3))
   plsgenomics::matrix.heatmap(pf.matrix, main="Pf")
   plsgenomics::matrix.heatmap(blocked.dis, main="Distance")
-  plsgenomics::matrix.heatmap(pf.matrix.out, main=paste0("rho - scalef="))
+  plsgenomics::matrix.heatmap(pf.matrix.out, main=paste0("Localized Pf"))
   dev.off()
   
   return(pf.matrix.out)

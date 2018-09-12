@@ -565,7 +565,8 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
                               function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   site.ids <- attr(FORECAST[[1]], 'Site')
-
+  site.names <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('name') %>% unlist() %>% as.character()
+  
 
   #Analysis & Forcast cleaning and STAT
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
@@ -654,10 +655,55 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
         })
     })
   
+  #------ map
+  site.locs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
+    t %>%
+    as.data.frame()%>%
+    `colnames<-`(c("Lon","Lat")) %>%
+    mutate(Site=site.ids %>% unique(),
+           Name=site.names)
   
+  
+  map.plot <- ggplot(map_data("state")) +
+    geom_polygon(
+      aes(x = long, y = lat, group = group),
+      fill = "#517394",
+      color = "#7b99b7",
+      lwd = 0.01
+    ) +
+    geom_point(data = site.locs,
+               aes(x = Lon, y = Lat),
+               color = "#cc0000",
+               size = 3) +
+    geom_text(
+      data = site.locs,
+      aes(
+        x = Lon,
+        y = Lat,
+        label = paste0(Site, "\n", Name)
+      ),
+      vjust = 1.5,
+      color = "#cc0000",
+      size = 4,
+      check_overlap = T
+    ) +
+    #coord_fixed(1.3)+
+    coord_map("ortho", orientation = c(30,-100, 0)) +
+    theme_minimal() +
+    labs(x = "", y = "") +
+    guides(color = TRUE) +
+    theme(
+      plot.background = element_rect(fill = "#f1f2f3"),
+      panel.grid.major = element_line(color = "#BDC3c7"),
+      axis.text = element_text(color = "#6a757c")
+    ) 
+  
+  #----- Reordering the plots
+  all.plots.print <-list(map.plot)
+  for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
   
   pdf("SDA/SDA.pdf",width = 10,height = 8)
-  all.plots %>% purrr::map(~print(.x))
+  all.plots.print %>% purrr::map(~print(.x))
   dev.off()
   
   #saving plot data
