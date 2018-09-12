@@ -55,8 +55,7 @@ download.AGB <- function(outdir, product_dates = NULL, temporal_resolution = "an
   if (is.null(product_dates)) {
     PEcAn.logger::logger.severe("*** No products dates provided. Please provide dates to process ***")
   } else {
-    # force seq or allow entering of discontinous dates?  Might need to take these explicitly instead
-    target_download_years <- seq(product_dates[1],product_dates[2], 1)  # sort so that if dates are entered out of order?
+    target_download_years <- sort(as.vector(product_dates))
     PEcAn.logger::logger.info("Downloading dates: ")
     PEcAn.logger::logger.info(target_download_years)
   }
@@ -84,9 +83,11 @@ download.AGB <- function(outdir, product_dates = NULL, temporal_resolution = "an
     file_ext <- ".zip"
     obs_files <- paste0(target_dataset,"_",target_download_years,"_median",file_ext)  # hard-coded name matching source
     err_files <- paste0(target_dataset,"_",target_download_years,"_stdv",file_ext)    # hard-coded name matching source
+    files_to_download <- c(obs_files,err_files)
     
     prod_obs_urls <- paste(URL,prodcut_version,target_dataset,"median",obs_files,sep="/")
     prod_err_urls <- paste(URL,prodcut_version,target_dataset,"stdv",err_files,sep="/")
+    download_urls <- c(prod_obs_urls,prod_err_urls)
     
     ## set flag
     compressed <- TRUE
@@ -104,17 +105,12 @@ download.AGB <- function(outdir, product_dates = NULL, temporal_resolution = "an
     
     # making assumptions here that may not hold for other data products. When adding other 
     # products will need to work on generalizing this download function
-    foreach::foreach(i=1:length(prod_obs_urls)) %dopar% try(download.file(prod_obs_urls[i], 
-                                                                          file.path(outdir,
-                                                                                    obs_files[i])))
-    foreach::foreach(j=1:length(prod_err_urls)) %dopar% try(download.file(prod_err_urls[j], 
-                                                                                     file.path(outdir, 
-                                                                                               err_files[j])))
+    foreach::foreach(i=1:length(files_to_download)) %dopar% try(download.file(download_urls[i], 
+                                                                          file.path(outdir,files_to_download[i])))
   } else {
     PEcAn.logger::logger.info("Caution, downloading in serial. 
                               Could take an extended period to finish") # needed?
-    Map(function(u, d) download.file(u, d), prod_obs_urls, file.path(outdir,obs_files))
-    Map(function(u, d) download.file(u, d), prod_err_urls, file.path(outdir,err_files))
+    Map(function(u, d) download.file(u, d), download_urls, file.path(outdir,files_to_download))
     
   }
   PEcAn.logger::logger.info("*** Downloading complete ***")
@@ -123,7 +119,6 @@ download.AGB <- function(outdir, product_dates = NULL, temporal_resolution = "an
   if (compressed) {
     PEcAn.logger::logger.info("*** Unpacking compressed files ***")
     ## unpack files
-    
     # check type - there is a better way to do this
     if (file_ext==".zip") {
       zip_files <- list.files(file.path(outdir), pattern = "*.zip", full.names = TRUE)
@@ -133,6 +128,8 @@ download.AGB <- function(outdir, product_dates = NULL, temporal_resolution = "an
                                                                        exdir = file.path(path.expand(outdir)),
                                                                        unzip = getOption("unzip"), 
                                                                        setTimes = FALSE))
+      PEcAn.logger::logger.info("*** Removing compressed files ***")
+      unlink(zip_files)
     }
     
   }
