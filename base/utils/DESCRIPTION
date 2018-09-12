@@ -34,7 +34,10 @@ Imports:
     ncdf4 (>= 1.15),
     plyr (>= 1.8.4),
     PeriodicTable,
-    udunits2 (>= 0.11)
+    udunits2 (>= 0.11),
+    magrittr,
+    dplyr,
+    purrr
 Suggests:
     PEcAn.data.atmosphere,
     PEcAn.data.land,
