@@ -9,7 +9,8 @@ Description: PEcAn module for processing remote data
 Imports:
     PEcAn.logger,
     PEcAn.remote,
-    stringr(>= 1.1.0)
+    stringr(>= 1.1.0),
+    foreach
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
