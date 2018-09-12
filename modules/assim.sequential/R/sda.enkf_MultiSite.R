@@ -218,12 +218,12 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       #---------------- setting up the restart argument for each site separatly and keeping them in a list
       restart.list <- purrr::pmap(list(out.configs, conf.settings, params.list, inputs.split), 
                                   function(configs, settings, new.params, inputs){
-                                
+                            
                                     list(runid = configs$runs$id, 
                                          start.time = strptime(obs.times[t-1],format="%Y-%m-%d %H:%M:%S"),
                                          stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
                                          settings = settings,
-                                         new.state = new.state, #!!!!!!!!!!
+                                         new.state = new.state[,which(attr(X,"Site")%in%settings$run$site$id)], #!!!!!!!!!!
                                          new.params = new.params, 
                                          inputs = inputs, 
                                          RENAME = TRUE,

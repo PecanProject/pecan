@@ -616,7 +616,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
                      tidyr::gather(Variable,Sd,-c(Site)),
                    by=c('Site','Variable')) %>%
         mutate(Upper=Means+(Sd*1.96),
-               Lower=Means+(Sd*1.96))%>%
+               Lower=Means-(Sd*1.96))%>%
         mutate(Type="Data",
                Date=one.day.data$Date%>%as.POSIXct())
       
@@ -624,7 +624,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
     })%>% 
     select(-Sd) %>%
     bind_rows(ready.FA)
-  
+
   #for each site  and for each variable
   all.plots<-ready.to.plot$Site%>%unique() %>%
     purrr::map(function(site){
