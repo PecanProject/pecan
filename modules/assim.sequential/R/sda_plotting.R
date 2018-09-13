@@ -667,7 +667,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
   map.plot <- ggplot(map_data("world")) +
     geom_polygon(
       aes(x = long, y = lat, group = group),
-      fill = "#517394",
+      fill = "#008744",
       color = "#7b99b7",
       lwd = 0.01
     ) +
@@ -683,7 +683,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
         label = paste0(Site, "\n", Name)
       ),
       vjust = 1.5,
-      color = "#cc0000",
+      color = "#d62d20",
       size = 4,
       check_overlap = T
     ) +
