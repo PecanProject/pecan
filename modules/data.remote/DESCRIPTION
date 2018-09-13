@@ -10,7 +10,8 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     stringr(>= 1.1.0),
-    foreach
+    foreach,
+    purrr
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
