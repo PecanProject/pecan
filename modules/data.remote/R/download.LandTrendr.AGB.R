@@ -1,0 +1,196 @@
+#
+##' @title download.LandTrendr.AGB
+##' @name  download.LandTrendr.AGB
+##' 
+##' @param outdir Where to place output
+##' @param product_dates What dates to download and extract
+##' @param prodcut_version Optional. For some products (e.g. OSU) there are multiple versions.  
+##' @param con Optional database connection. If specified then the code will check to see 
+## if the file already exists in PEcAn before downloading, and will also create a database 
+## entry for new downloads
+##' @param run_parallel Logical. Download and extract files in parallel?
+##' @param ncores Optional. If run_parallel=TRUE how many cores to use?  If left as NULL will select max number -1
+##' @param generate_plots Optional. Create output diagnostic plots in outdir? --- ACTUALLY PUT THIS IN extract_ABG
+##' @param overwrite Logical. Overwrite existing files and replace with new versions
+##' 
+##' @return data.frame summarize the results of the function call
+##' 
+##' @examples
+##' \dontrun{
+##' outdir <- "~/scratch"
+##' product_dates <- c(1990,1991)
+##' product_dates2 <- seq(1992,1995,1)
+##' prodcut_version = "v1"
+##' 
+##' PEcAn.data.remote::download.AGB(outdir=outdir, product_dates = product_dates, 
+##' prodcut_version = prodcut_version)
+##' 
+##' PEcAn.data.remote::download.AGB(outdir=outdir, product_dates = product_dates2, 
+##' prodcut_version = prodcut_version)
+##' }
+##' 
+##' @export
+##' @author Shawn Serbin
+##'
+download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_version = NULL, con = NULL, 
+                                    run_parallel = TRUE, ncores = NULL, overwrite = FALSE) {
+  
+  # steps to implement:
+  # determine which product the user wants - presently only 1 option but in the future this function could expand to include all ABG products
+  # by using sub functions for each?  Could have a main driver section first that calls product sub functions
+  # check if files exist locally, also are they valid?  Check DB for file location
+  # check if files exist remotely, get file size? Is that relevant as remote files are likely .zip
+  # confirm function achieves desired results. does it have everything it needs? too much? too complicated?
+  # confirm all params make sense and are useful, prune any that are not
+  # avoid redundancy / duplication
+  # possible issue, making assumption that products will be structured as obs product / error product, may not always be the case,
+  # as such will need to work on generalizing such that the download step is simple and each url is prepped beforehand
+  # 
+  # ...
+  # add extract_ABG function below to pull out the pixel value of ABG
+  
+  ## before doing anything, check if the files already exists on this host
+  # -- to implement.  break/return out of function if nothing to do, else below
+
+  ## setup output folder
+  if (! file.exists(outdir)) dir.create(outdir,recursive=TRUE)
+  
+  ## get target year range
+  if (is.null(product_dates)) {
+    PEcAn.logger::logger.severe("*** No products dates provided. Please provide dates to process ***")
+  } else {
+    target_download_years <- sort(as.vector(product_dates))
+    PEcAn.logger::logger.info("Downloading dates: ")
+    PEcAn.logger::logger.info(target_download_years)
+  }
+
+  ## setup parallel
+  if (run_parallel) {
+    if (!is.null(ncores)) {
+      ncores <- ncores
+    } else {
+      ncores <- parallel::detectCores() -1
+    }
+    PEcAn.logger::logger.info(paste0("Running in parallel with: ", ncores))
+  }
+  
+  ## setup
+  PEcAn.logger::logger.info("*** Downloading LandTrendr ABG data products ***")
+  URL <- "ftp://islay.ceoas.oregonstate.edu/cms"
+  
+  # put in default product version if missing - can we make this dynamic and "find" latest version on FTP?
+  if (is.null(prodcut_version)) {
+    prodcut_version <- "v1"
+    PEcAn.logger::logger.info(paste0("No product version selected, using version: ", prodcut_version))
+  }
+  
+  # setup product defaults
+  target_dataset <- "biomassfiaald"
+  file_ext <- ".zip"
+  obs_files <- paste0(target_dataset,"_",target_download_years,"_median",file_ext)  # hard-coded name matching source
+  err_files <- paste0(target_dataset,"_",target_download_years,"_stdv",file_ext)    # hard-coded name matching source
+  files_to_download <- c(obs_files,err_files)
+  local_files <- file.path(outdir,gsub(".zip", ".tif",files_to_download))
+  
+  prod_obs_urls <- paste(URL,prodcut_version,target_dataset,"median",obs_files,sep="/")
+  prod_err_urls <- paste(URL,prodcut_version,target_dataset,"stdv",err_files,sep="/")
+  download_urls <- c(prod_obs_urls,prod_err_urls)
+  
+  # identify these are compressed files
+  compressed <- TRUE
+
+  ## download data
+  # before downloading check that the remote FTP contains the desired years - a little clunky, clean up
+  # if we keep this, will need to check this works with other data sources/products
+  check_urls <- paste0(unique(dirname(download_urls), fromLast = TRUE),"/")
+  remote_filenames <- Map(function(p) RCurl::getURL(p, ftp.use.epsv = FALSE, 
+                                                    ftplistonly = TRUE, crlf = TRUE), check_urls)
+  remote_filenames_list <- strsplit(paste(as.vector(unlist(remote_filenames)), 
+                                          collapse = ''), "\r*\n")[[1]]
+  if (sum(basename(download_urls) %in% remote_filenames_list, na.rm=T)!=length(download_urls)) { 
+    `%not_in%` <- purrr::negate(`%in%`)
+    missing <- which(basename(download_urls) %not_in% remote_filenames_list)
+    download_urls[missing]
+    PEcAn.logger::logger.severe(paste("Files missing from source: ", download_urls[missing]))
+  }
+  
+  ## check for local files exist - do we want to do this?  Or use DB? Or both?
+  # use this to subset the files that need to be downloaded. Check file size first?
+  # ok to do this in one shot or need to check file by file....think this is OK
+  if (file.exists(local_files) && !isTRUE(overwrite)) {
+    files_to_download_final <- files_to_download[!file.exists(local_files)]
+    download_urls_final <- download_urls[!file.exists(local_files)]
+  } else {
+    files_to_download_final <- files_to_download
+    download_urls_final <- download_urls
+  }
+
+  # setup download
+  if (length(files_to_download_final)<1) {
+    PEcAn.logger::logger.info("*** Requested files already exist on this host, providing file paths ***")
+  } else {
+    `%dopar%` <- foreach::`%dopar%`
+    PEcAn.logger::logger.info("*** Downloading AGB data ***")
+    if (run_parallel) {
+      cl <- parallel::makeCluster(ncores)
+      doParallel::registerDoParallel(cl)
+      foreach::foreach(i=1:length(files_to_download_final)) %dopar% try(download.file(download_urls_final[i], 
+                                                                                      file.path(outdir,
+                                                                                                files_to_download_final[i])))
+    } else {
+      PEcAn.logger::logger.info("Caution, downloading in serial. 
+                                Could take an extended period to finish") # needed?
+      Map(function(u, d) download.file(u, d), download_urls_final, file.path(outdir,
+                                                                             files_to_download_final))
+    }
+    # let user know downloading is complete
+    PEcAn.logger::logger.info("*** Downloading complete ***")
+    
+    if (compressed) {
+      PEcAn.logger::logger.info("*** Unpacking compressed files ***")
+      ## unpack files
+      # check type - there is a better way to do this
+      if (file_ext==".zip") {
+        zip_files <- list.files(file.path(outdir), pattern = "*.zip", full.names = TRUE)
+        foreach::foreach(k=1:length(zip_files)) %dopar% try(utils::unzip(file.path(zip_files[k]),
+                                                                         files = NULL, list = FALSE, overwrite = TRUE,
+                                                                         junkpaths = FALSE, 
+                                                                         exdir = file.path(path.expand(outdir)),
+                                                                         unzip = getOption("unzip"), 
+                                                                         setTimes = FALSE))
+        PEcAn.logger::logger.info("*** Removing compressed files ***")
+        unlink(zip_files)
+      }
+    }
+  }
+
+  ## Prepare results - clunky, need to refine this
+  downloaded_files <- file.path(outdir,gsub(".zip", ".tif",files_to_download)) 
+  downloaded_years <- unlist(regmatches(downloaded_files, 
+                                        gregexpr("\\d{4}", downloaded_files)))
+  total_rows <- length(downloaded_files)
+  med_rows <- length(grep(pattern = "median", downloaded_files))
+  sdev_rows <- length(grep(pattern = "stdv", downloaded_files))
+  out_formats <- c(rep("LandTrendr_AGB_median", times=med_rows),
+                   rep("LandTrendr_AGB_stdev", times=sdev_rows))
+
+  results <- data.frame(file = character(total_rows), 
+                            host = character(total_rows), 
+                            mimetype = "image/tiff", 
+                            formatname = character(total_rows), 
+                            startdate = character(total_rows), 
+                            enddate = character(total_rows), 
+                            dbfile.name = "LandTrendr", 
+                            stringsAsFactors = FALSE)
+
+  for (i in seq_len(total_rows)) { 
+    results$file[i] <- downloaded_files[i]
+    results$host[i] <- PEcAn.remote::fqdn()
+    results$startdate[i] <- paste0(downloaded_years[i], "-01-01 00:00:00")
+    results$enddate[i] <- paste0(downloaded_years[i], "-12-31 23:59:59")
+    results$formatname[i] <- out_formats[i]
+  }
+  
+  return(results)
+}
+#
