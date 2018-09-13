@@ -28,7 +28,7 @@ Imports:
     PEcAn.remote,
     PeriodicTable,
     plyr (>= 1.8.4),
-    purrr
+    purrr,
     randtoolbox,
     raster,
     RCurl,
