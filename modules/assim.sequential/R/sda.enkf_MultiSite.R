@@ -88,24 +88,29 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###-------------------------------------------------------------------###
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
-  if (!no_split) {
-    for (i in seq_along(settings$run$inputs$met$path)) {
-      ### model specific split inputs
-      settings$run$inputs$met$path[[i]] <- do.call(
-        my.split_inputs,
-        args = list(
-          settings = settings,
-          start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3),
-          stop.time = settings$state.data.assimilation$end.date,
-          inputs =  settings$run$inputs$met$path[[i]],
-          overwrite =
-            F
-        )
-      )
-      
-    }
-  }
-  
+  conf.settings %>%
+    purrr::walk(function(settings) {
+      inputs.split <- list()
+      if (!no_split) {
+        for (i in length(settings$run$inputs$met$path)) {
+          #---------------- model specific split inputs
+          ### model specific split inputs
+          settings$run$inputs$met$path[[i]] <- do.call(
+            my.split_inputs,
+            args = list(
+              settings = settings,
+              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3),
+              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
+              inputs =  settings$run$inputs$met$path[[i]],
+              overwrite =F
+            )
+          )
+        }
+      } else{
+        inputs.split <- inputs
+      }
+      inputs.split
+    })
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###----  

@@ -664,7 +664,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
            Name=site.names)
   
   
-  map.plot <- ggplot(map_data("state")) +
+  map.plot <- ggplot(map_data("world")) +
     geom_polygon(
       aes(x = long, y = lat, group = group),
       fill = "#517394",
@@ -693,11 +693,12 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
     labs(x = "", y = "") +
     guides(color = TRUE) +
     theme(
-      plot.background = element_rect(fill = "#f1f2f3"),
+      #plot.background = element_rect(fill = "#f1f2f3"),
       panel.grid.major = element_line(color = "#BDC3c7"),
       axis.text = element_text(color = "#6a757c")
     ) 
   
+  map.plot
   #----- Reordering the plots
   all.plots.print <-list(map.plot)
   for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
