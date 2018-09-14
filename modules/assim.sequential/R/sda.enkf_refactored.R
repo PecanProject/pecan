@@ -3,12 +3,12 @@
 #' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 #' 
 #' @param settings  PEcAn settings object
-#' @param obs.mean  List of vectors of observation means, named with observation datetime.
+#' @param obs.mean  List of dataframe of observation means, named with observation datetime.
 #' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
 #' @param Q         Process covariance matrix given if there is no data to estimate it.
 #' @param restart   Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.
 #' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
-#' TimeseriesPlot for post analysis examination, BiasPlot for plotting ..., plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.
+#' TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.
 #'
 #’ @details
 #’ Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast), a new workflow folder is created and the previous forecast for the start_time is copied over. During restart the initial run before the loop is skipped, with the info being populated from the previous run. The function then dives right into the first Analysis, then continues on like normal.
@@ -108,11 +108,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   if (nt==0)     PEcAn.logger::logger.severe('There has to be at least one observation, before you can start the SDA code.')
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
+  #The aqq and bqq are shape parameters estimated over time for the proccess covariance. #see GEF help
   aqq         <- NULL
   bqq         <- numeric(nt + 1)
-  CI.X1       <- matrix(0, 3, nt) # it was taken care of
-  CI.X2       <- CI.X1            # it was taken care of
-  #q.bar        <- NULL #default process covariance matrix
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
@@ -240,9 +238,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       na.obs.mean <- which(is.na(unlist(obs.mean[[t]][choose])))
       if (length(na.obs.mean)>0) choose <- choose [-na.obs.mean]
       
-      
       Y <- unlist(obs.mean[[t]][choose])
-      Y[is.na(Y)] <- 0 
       
       R <- as.matrix(obs.cov[[t]][choose,choose])
       R[is.na(R)]<-0.1
@@ -278,8 +274,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
       #extracting extra outputs
       if (processvar) {
-        CI.X1[, t] <- enkf.params[[t]]$CIX1
-        CI.X2[, t] <- enkf.params[[t]]$CIX2
         aqq<-enkf.params[[t]]$aqq
         bqq<-enkf.params[[t]]$bqq
         X.new<-enkf.params[[t]]$X.new

@@ -7,8 +7,8 @@
 load_nimble()
 }
 \description{
-This functions is used internally to register a series of nimble functions inside GEF function.
+This functions is internally used to register a series of nimble functions inside GEF analysis function.
 }
 \author{
-Ann Raiho
+Ann Raiho, Hamze Dokoohaki
 }
