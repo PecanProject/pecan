@@ -647,7 +647,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
             scale_fill_manual(values = c(alphapink,alphagreen,alphablue),name="")+
             scale_color_manual(values = c(alphapink,alphagreen,alphablue),name="")+
             theme_bw(base_size = 17)+
-            labs(y=paste(vari,'(',unit,')'), subtitle=paste0("Site: ",site))+
+            labs(y=paste(vari,'(',unit,')'), subtitle=paste0("Site id: ",site))+
             theme(legend.position = "top",
                   strip.background = element_blank())->p
           if (!is.null(plot.title)) p <- p + labs(title=plot.title)
@@ -664,28 +664,28 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
            Name=site.names)
   
   
-  map.plot <- ggplot(map_data("world")) +
+  map.plot <- ggplot(map_data("state")) +
     geom_polygon(
       aes(x = long, y = lat, group = group),
-      fill = "#008744",
-      color = "#7b99b7",
+      fill = "#122f3d",
+      color = "#34738f",
       lwd = 0.01
     ) +
     geom_point(data = site.locs,
                aes(x = Lon, y = Lat),
-               color = "#cc0000",
+               color = "orange",
                size = 3) +
-    geom_text(
+    geom_label(
       data = site.locs,
       aes(
         x = Lon,
         y = Lat,
         label = paste0(Site, "\n", Name)
       ),
-      vjust = 1.5,
-      color = "#d62d20",
-      size = 4,
-      check_overlap = T
+      vjust = 1.2,
+      fontface = "bold",
+      color = "#be3e2b",
+      size = 3.5
     ) +
     #coord_fixed(1.3)+
     coord_map("ortho", orientation = c(30,-100, 0)) +
@@ -693,12 +693,12 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
     labs(x = "", y = "") +
     guides(color = TRUE) +
     theme(
-      #plot.background = element_rect(fill = "#f1f2f3"),
-      panel.grid.major = element_line(color = "#BDC3c7"),
-      axis.text = element_text(color = "#6a757c")
+      plot.background = element_rect(fill = "#f2f2f2"),
+      panel.grid.major = element_line(color = "#34738f",size=0.1),
+      axis.text = element_text(color = "#4f372d")
+      
     ) 
-  
-  map.plot
+
   #----- Reordering the plots
   all.plots.print <-list(map.plot)
   for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
