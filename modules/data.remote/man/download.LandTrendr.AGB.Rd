@@ -38,10 +38,10 @@ product_dates <- c(1990,1991)
 product_dates2 <- seq(1992,1995,1)
 prodcut_version = "v1"
 
-PEcAn.data.remote::download.AGB(outdir=outdir, product_dates = product_dates, 
+PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates, 
 prodcut_version = prodcut_version)
 
-PEcAn.data.remote::download.AGB(outdir=outdir, product_dates = product_dates2, 
+PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates2, 
 prodcut_version = prodcut_version)
 }
 
