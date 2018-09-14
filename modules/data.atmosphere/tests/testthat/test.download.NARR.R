@@ -5,14 +5,18 @@ end_date <- "2012-03-05"
 ntime <- as.numeric(difftime(end_date, start_date) + 1) * 24 / 3 + 1
 lat.in <- 43.3724
 lon.in <- -89.9071
-outfolder <- tempdir()
 
-r <- download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
-                        progress = TRUE, parallel = TRUE)
+outfolder <- tempfile()
+dir.create(outfolder)
+teardown(unlink(outfolder, recursive = TRUE, force = TRUE))
 
 test_that(
   "NARR download works as expected",
   {
+
+    r <- download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
+                            progress = TRUE, parallel = TRUE, ncores = 2)
+
     expect_equal(nrow(r), 1)
     expect_true(file.exists(r$file[1]))
     nc <- ncdf4::nc_open(r$file)
@@ -23,5 +27,3 @@ test_that(
     ncdf4::nc_close(nc)
   }
 )
-
-unlink(outfolder, recursive = TRUE, force = TRUE)
