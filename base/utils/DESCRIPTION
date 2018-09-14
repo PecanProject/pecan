@@ -38,7 +38,6 @@ Imports:
     udunits2 (>= 0.11),
     xtable,
     XML
-
 Suggests:
     MASS,
     PEcAn.data.atmosphere,
@@ -48,7 +47,6 @@ Suggests:
     PEcAn.settings,
     PEcAn.DB,
     testthat (>= 2.0.0)
-    
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyData: true
