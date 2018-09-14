@@ -41,7 +41,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
-      PEcAn.logger::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
+      
+      # Check if met path is in the database, correct format, and on right machine 
+      check_path_in_db(con, input_met$path, model, machine)
       
       # Additional layer of list depth added for consistancy with other return statements.
       temp_path = input_met$path

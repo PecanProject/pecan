@@ -142,8 +142,7 @@ check_path_in_db <- function(con, path, model, machine) {
       tbl(con, "dbfiles") %>% filter(grepl(path, file_path) &
                                        machine$id == machine_id) %>%
         select("id", "file_name", "file_path", "container_id") %>% collect(),
-      error = function(err)
-        "Does not Exist"
+      error = function(err)"Does not Exist"
     )
   
   input_check <- tryCatch(
@@ -151,8 +150,7 @@ check_path_in_db <- function(con, path, model, machine) {
       filter(path_check$container_id == id) %>%
       collect()
     ,
-    error = function(err)
-      NULL
+    error = function(err)NULL
   )
   
   
@@ -167,8 +165,7 @@ check_path_in_db <- function(con, path, model, machine) {
         filter(input_check$format_id == format_id) %>%
         filter("met" == tag) %>%
         collect(),
-      error = function(err)
-        "Wrong Format"
+      error = function(err)"Wrong Format"
     )
   
   
@@ -201,7 +198,7 @@ check_message <- function(check) {
       If this file will be used by a model, please associate it with an input"
       ,
       wrap = TRUE
-    )
+    ),
     "WRONG FORMAT" = PEcAn.logger::logger.severe(
       "Met path provided exists in database but does not match format required for model.
       Please change pecan.xml met section and
