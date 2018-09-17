@@ -54,12 +54,23 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   }
   
   #------------- Plotting Localization
-  pdf(paste0("SDA/Localization_",t,".pdf"), width=14.5, height=6, onefile=T)
-  par(mfrow=c(1,3))
-  plsgenomics::matrix.heatmap(pf.matrix, main="Pf")
-  plsgenomics::matrix.heatmap(blocked.dis, main="Distance")
-  plsgenomics::matrix.heatmap(pf.matrix.out, main=paste0("Localized Pf"))
-  dev.off()
+  dat <- melt(pf.matrix) %>%
+    mutate(Type="Pf")%>%
+    bind_rows(melt(pf.matrix.out %>% `rownames<-`(c()) %>%
+                     `colnames<-`(c()))%>%
+                mutate(Type="Pf.Localized")) 
+  
+  p <- ggplot(dat, aes(x=Var1, y=Var2, fill=value)) +
+    geom_tile(colour="grey20") +
+    scale_fill_gradientn(colours = c("#FFFFFF","#ffffcc","#41b6c4","#225ea8"))+
+    scale_y_reverse()+
+    facet_wrap(.~Type,scales = "free")+
+    theme_minimal()
+  
+  
+  
+  ggsave(paste0("SDA/Localization_",t,".pdf"), plot=p, height=6, width=11)
+  
   
   return(pf.matrix.out)
 

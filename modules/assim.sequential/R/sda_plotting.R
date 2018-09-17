@@ -626,17 +626,12 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
     select(-Sd) %>%
     bind_rows(ready.FA)
 
-  
-  browser()
   if (facetg) {
+    filew <- 14
+    fileh <- 10
     #for each site  and for each variable
     all.plots<-ready.to.plot$Site%>%unique() %>%
       purrr::map(function(site){
-            unit<-""
-            if (substr(vari,1,8)=="AGB.pft.") varin <- "AGB.pft"
-            #finding the unit
-            unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
-            if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
             #plotting
             ready.to.plot%>%
               filter(Site==site)%>%
@@ -647,15 +642,17 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
               scale_fill_manual(values = c(alphapink,alphagreen,alphablue),name="")+
               scale_color_manual(values = c(alphapink,alphagreen,alphablue),name="")+
               theme_bw(base_size = 17)+
-              labs(y=paste(vari,'(',unit,')'), subtitle=paste0("Site id: ",site))+
+              labs(y="", subtitle=paste0("Site id: ",site))+
               theme(legend.position = "top",
                     strip.background = element_blank())->p
             if (!is.null(plot.title)) p <- p + labs(title=plot.title)
-            p <- p + facet_wrap(~Variable,ncol=2)
-            p
+            p <- p + facet_wrap(~Variable, ncol=2, scales = "free_y")
+            list(p)
       
       })
   }else{
+    filew <- 10
+    fileh <- 8
     #for each site  and for each variable
     all.plots<-ready.to.plot$Site%>%unique() %>%
       purrr::map(function(site){
@@ -735,7 +732,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
   all.plots.print <-list(map.plot)
   for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
   
-  pdf("SDA/SDA.pdf",width = 10,height = 8)
+  pdf("SDA/SDA.pdf",width = filew, height = fileh)
   all.plots.print %>% purrr::map(~print(.x))
   dev.off()
   
