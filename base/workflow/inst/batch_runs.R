@@ -104,9 +104,38 @@ model_ids <- tbl(bety, "dbfiles") %>% filter(machine_id == mach_id) %>%
 
 models <- model_ids
 met_name <- c("CRUNCEP","AmerifluxLBL")
-site_id <- "772"
 startdate<-"2004/01/01"
 enddate<-"2004/12/31"
+
+## Find Sites
+## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
+site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
+  inner_join(tbl(bety, "sitegroups_sites")
+             %>% filter(sitegroup_id == 1),
+             by = c("id" = "site_id")) %>%
+  dplyr::select("id.x", "notes", "sitename") %>%
+  dplyr::filter(grepl("TOWER_BEGAN", notes))  %>% collect()  %>%
+  dplyr::mutate(
+    start_year = stringi::stri_extract_first_regex(notes, "[0-9]+"),
+    end_year = if_else(
+      stringi::stri_extract_last_regex(notes, "[0-9]+") == start_year,
+      as.character(lubridate::year(Sys.Date())),
+      stringi::stri_extract_last_regex(notes, "[0-9]+")
+    ),
+    contains_run = if_else(
+      between(lubridate::year(startdate), start_year, end_year),
+      "TRUE",
+      "FALSE"
+    ),
+    len = as.integer(end_year) - as.integer(start_year)
+  ) %>%
+  filter(contains_run == TRUE) %>%
+  filter(str_length(end_year) == 4) %>%
+  filter(len == max(len)) %>%
+  select("id.x")
+
+
+site_id <- "772"
 
 #Create permutations of arg combinations
 options(scipen = 999)
