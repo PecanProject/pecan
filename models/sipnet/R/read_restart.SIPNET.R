@@ -68,7 +68,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$TotSoilCarb[last],  "kg/m^2", "Mg/ha")  
+    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
