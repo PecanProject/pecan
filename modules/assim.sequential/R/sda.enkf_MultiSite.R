@@ -279,7 +279,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         return(X_tmp)
       })
     
-  
+
     #let's read the parameters of each site/ens
     params.list <- reads %>% map(~.x %>% map("params"))
     # Now let's read the state variables of site/ens
@@ -295,7 +295,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
           map_dfc(~.x) %>% 
           as.matrix() %>%
           `colnames<-`(c(rep(var.names, length(X)))) %>%
-          `attr<-`('Site',c(rep(site.ids, each=length(X))))
+          `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
     
     FORECAST[[t]] <- X
     ###-------------------------------------------------------------------###

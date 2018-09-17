@@ -33,7 +33,7 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 
   # Enkf---------------------------------------------------
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE)) %>%
-    `attr<-`('Site', c(rep(site.ids, each=length(site.ids))))
+    `attr<-`('Site', c(rep(site.ids, each=length(var.names))))
   # I make the Pf in a separate function
   if(length(site.ids)>1){
     

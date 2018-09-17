@@ -36,7 +36,6 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   forecast <- list()
 
-  
   #### PEcAn Standard Outputs
   if ("GWBI" %in% var.names) {
     forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
@@ -69,7 +68,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
+    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$TotSoilCarb[last],  "kg/m^2", "Mg/ha")  
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
@@ -81,6 +80,11 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   if ("SWE" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SWE[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("SWE")
+  }
+  
+  if ("TotLivBiom" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$TotLivBiom[last],  "kg/m^2", "Mg/ha")
+    names(forecast[[length(forecast)]]) <- c("TotLivBiom")
   }
   
   print(runid)
