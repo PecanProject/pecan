@@ -30,6 +30,8 @@ There are two ways of using PEcAn, via the web interface and directly within R. 
 
 8. To launch the PEcAn web interface, make sure that the VM is running somewhere in the background on your machine. Then, open any web browser on the same machine and navigate to `localhost:6480/pecan` to start the PEcAn workflow.
 
+* To ssh into the VM, open up a terminal on your machine and execute `ssh -l carya -p 6422 localhost`. Username and password are the same as when you log into the machine.
+
 
 ## Using AmazonWeb Services (AWS) {#awsvm}
 
@@ -70,7 +72,7 @@ Select the default drive volume type and click Next
 
 
 ```{r, echo=FALSE,fig.align='center'}
-  knitr::include_graphics(rep("../figures/pic3.jpg"))
+  knitr::include_graphics(rep("figures/pic3.jpg"))
 ```
 
 9.	Instances
