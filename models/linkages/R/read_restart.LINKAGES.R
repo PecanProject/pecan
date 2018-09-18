@@ -56,6 +56,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
+
   }else{
     forecast <- list()
     if ("AGB.pft" %in% var.names) {
