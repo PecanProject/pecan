@@ -11,7 +11,9 @@ Imports:
     PEcAn.remote,
     stringr(>= 1.1.0),
     foreach,
-    purrr
+    purrr,
+    raster,
+    rgdal
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
