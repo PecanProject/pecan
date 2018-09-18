@@ -65,7 +65,7 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     scale_fill_gradientn(colours = c("#FFFFFF","#ffffcc","#41b6c4","#225ea8"))+
     scale_y_reverse()+
     facet_wrap(.~Type,scales = "free")+
-    theme_minimal()
+    theme_minimal(base_size = 15)
   
   
   

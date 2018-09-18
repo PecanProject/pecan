@@ -11,9 +11,6 @@
 ##' @export
 
 Local.support <-function(Pf, distance.mat, scalef=1){
-  # they need to be with the same dimension because there is gonna be an Schur product which is elementwise
-  if (!all(dim(Pf) == dim(distance.mat))) PEcAn.logger::logger.severe("The dimensions of the Pf and the distance matrix needs to be the same.")
-  
   #making a matrix as the size of the Pf
   rho <- exp((-1*distance.mat^2)/(2*scalef^2))
   

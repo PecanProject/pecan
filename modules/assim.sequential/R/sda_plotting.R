@@ -567,7 +567,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
   site.ids <- attr(FORECAST[[1]], 'Site')
   site.names <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('name') %>% unlist() %>% as.character()
   
-
+  #------------------------------------------------Data prepration
   #Analysis & Forcast cleaning and STAT
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
   
@@ -625,7 +625,23 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
     })%>% 
     select(-Sd) %>%
     bind_rows(ready.FA)
+  
+  #Adding the units to the variables
+  ready.to.plot$Variable %>% unique() %>% 
+    walk(function(varin){
+      #find the unit
+    unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
+    if (length(unitp)>0) {
+        unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
+   
+        #replace it in the dataframe
+        ready.to.plot$Variable[ready.to.plot$Variable==varin] <<- paste(varin,"(",unit,")")
+    }
 
+  })
+  
+  
+  #------------------------------------------- Time series plots
   if (facetg) {
     filew <- 14
     fileh <- 10
@@ -684,7 +700,7 @@ post.analysis.multisite.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov
   }
 
   
-  #------ map
+  #------------------------------------------------ map
   site.locs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
     t %>%
     as.data.frame()%>%

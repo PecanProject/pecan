@@ -6,6 +6,7 @@
 ##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
 ##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
+##' @param extraArg This argument is NOT used inside this function but it is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.
 ##' @param ... Extra argument sent to the analysis function.
 ##' @details This function is different than EnKF in terms of how it creates the Pf matrix.
 ##'  
@@ -56,6 +57,7 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   
   
   if (length(Y) > 1) {
+    PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
     diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
     diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
   }

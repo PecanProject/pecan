@@ -42,6 +42,7 @@ Analysis.sda<-function(settings,
 ##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
 ##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
+##' @param extraArg This argument is NOT used inside this function but it is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.
 ##' @param ... Extra argument sent to the analysis function.
 ##’ @details
 ##’  
@@ -96,7 +97,7 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 ##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
 ##' 
 ##' @param settings  pecan standard settings list.  
-##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forcats state variables for different ensemble)
+##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecats state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
 ##' @param extraArg This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.
 ##' @param nitr Number of iterations to run each MCMC chain.
@@ -121,16 +122,15 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   #load_nimble()
   #Forecast inputs 
   Q <- Forecast$Q # process error
-  Pf <- Forecast$Pf # Forecast precision
-  mu.f <- Forecast$mu.f #mean Forecast
   X <- Forecast$X # states 
+  Pf = cov(X) # Cov Forecast - This is used as an initial condition
+  mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
   wish.df <- function(Om, X, i, j, col) {
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
   }
-  
   #----------------------------------- GEF-----------------------------------------------------
   # Taking care of censored data ------------------------------    
   ### create matrix the describes the support for each observed state variable at time t
@@ -161,6 +161,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   }
   
   if(t == 1){
+    
     #The purpose of this step is to impute data for mu.f 
     #where there are zero values so that 
     #mu.f is in 'tobit space' in the full model
@@ -227,7 +228,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     
   }
   
-  dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 50000, progressBar=TRUE)
+  dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr, nburnin=nburnin,  progressBar=TRUE)
   
   # pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
   # 
@@ -235,7 +236,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   # dev.off()
   
   ## update parameters
-  dat.tobit2space  <- dat.tobit2space[1000:5000, ]
+  #dat.tobit2space  <- dat.tobit2space[1000:5000, ]
   imuf   <- grep("muf", colnames(dat.tobit2space))
   mu.f <- colMeans(dat.tobit2space[, imuf])
   iPf   <- grep("pf", colnames(dat.tobit2space))
@@ -388,8 +389,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
               q.bar = q.bar,
               n = n,
               X.new=X.new,
-              CIX1=quantile(dat[, iX[1]], c(0.025, 0.5, 0.975)),  #7
-              CIX2=quantile(dat[, iX[2]], c(0.025, 0.5, 0.975)),  #8
               aqq=aqq,
               bqq=bqq
   )
