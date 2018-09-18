@@ -48,6 +48,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
+    
     abvGrndWoodFrac <- ens$AbvGrndWood[last]  / wood_total_C
     coarseRootFrac  <- ens$coarse_root_carbon_content[last] / wood_total_C
     fineRootFrac    <- ens$fine_root_carbon_content[last]   / wood_total_C

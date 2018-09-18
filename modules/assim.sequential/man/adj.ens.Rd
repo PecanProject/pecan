@@ -4,22 +4,18 @@
 \alias{adj.ens}
 \title{adj.ens}
 \usage{
-adj.ens(Pf, X, X.new, mu.f, mu.a, Pa, processvar)
+adj.ens(Pf, X, mu.f, mu.a, Pa)
 }
 \arguments{
 \item{Pf}{A cov matrix of forecast state variables.}
 
 \item{X}{Dataframe or matrix of forecast state variables for different ensembles.}
 
-\item{X.new}{Dataframe or matrix of forecast state variables for different ensembles. When processvar is TRUE.}
-
 \item{mu.f}{A vector with forecast mean estimates of state variables.}
 
 \item{mu.a}{A vector with analysis mean estimates of state variables.}
 
 \item{Pa}{The state estimate cov matrix of analysis.}
-
-\item{processvar}{Boolean flag for indicating if process variance is used in the analysis. If TRUE then X.new needs to be supplied.}
 }
 \value{
 Returns a vector of adjusted analysis mean estimates of state variables.

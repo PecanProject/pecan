@@ -8,7 +8,7 @@ GEF(setting, Forecast, Observed, H, extraArg, nitr = 50000,
   nburnin = 10000, ...)
 }
 \arguments{
-\item{Forecast}{A list containing the forecasts variables including Q (process variance) and X (a dataframe of forcats state variables for different ensemble)}
+\item{Forecast}{A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecats state variables for different ensemble)}
 
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
