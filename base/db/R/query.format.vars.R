@@ -97,7 +97,6 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
     # Fill in CF vars
     # This will ultimately be useful when looking at met variables where CF != Bety
-    # met <- read.csv(system.file("/data/met.lookup.csv", package= "PEcAn.data.atmosphere"), header = T, stringsAsFactors=FALSE)
 
     #Fill in MstMIP vars
     #All PEcAn output is in MstMIP variables

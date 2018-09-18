@@ -18,7 +18,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Added
 - Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
-
+- Added scaling to documentation
 ### Removed
 - Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 
