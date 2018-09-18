@@ -194,3 +194,92 @@ download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_versio
   return(results)
 }
 #
+
+#
+##' @title extract.LandTrendr.AGB
+##' @name  extract.LandTrendr.AGB
+##' 
+##' @param coords vector of BETYdb site IDs or a data frame containing elements 'lon' and 'lat'
+##' @param buffer Optional. operate over desired buffer area
+##' @param fun Optional function to apply to buffer area.  Default - mean
+##' @param data_dir  directory where input data is located. Can be NUL if con is specified
+##' @param con connection to PEcAn database. Can be NULL if data_dir is specified
+##' @param output_file Path to save LandTrendr_AGB_output.RData file containing the output extraction list (see return)
+##' 
+##' @return list of two containing the median AGB values per pixel and the corresponding standard deviation values (uncertainties)
+##' 
+##' ##' @examples
+##' \dontrun{
+##' bety <- list(user='bety', password='bety', host='localhost',
+##' dbname='bety', driver='PostgreSQL',write=TRUE)
+##' con <- PEcAn.DB::db.open(bety)
+##' bety$con <- con
+##' 
+##' data_dir <- "~/scratch/
+##' coords <- c(2000000023,1000025731)  # US-CZ3, US-SSH
+##' 
+##' coords <- data.frame(lon=c(-90.8,91.8), lat=c(42.5,43.5))
+##' 
+##' }
+##' 
+##' @export
+##' @author Shawn Serbin
+##' 
+extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir = NULL, con = NULL, 
+                                   output_file = NULL, ...) {
+  
+  ## Site ID vector or long/lat data.frame?
+  if (is.null(names(coords))) {
+    coords_info <- list(PEcAn.DB::query.site(coords[1],con),PEcAn.DB::query.site(coords[2],con))  # need to make this work for a vector of 1+ site IDs!!
+    site_ID <- coords  # use the requested DBfile as the site ID
+  } else {
+    coords_info <- coords  # update!!
+    
+    #site_ID <- c(coords) # have this create a vector of lat/lon pairs as the site_ID
+  }
+
+  
+  ## prepare site coordinates for extraction  -- NEED TO MAKE THIS WORK FOR Site IDs and data frame
+  coords_LL <- NULL
+  j <- 1
+  for (i in seq_along(1:length(coords_info))) {
+    if (j==1) {
+      coords_latlong <- data.frame(cbind(coords_info[[i]]$lon,coords_info[[i]]$lat))
+      names(coords_latlong) <- c("Longitude","Latitude")
+    } else {
+      coords_latlong[j,] <- rbind(coords_info[[i]]$lon,coords_info[[i]]$lat)
+    }
+    j <- j+1
+  }
+  coords_latlong <- sp::SpatialPoints(coords_latlong)
+  sp::proj4string(coords_latlong) <- sp::CRS("+init=epsg:4326")
+  
+  ## load gridded AGB data
+  biomass_median <- lapply(list.files(file.path(data_dir), pattern = "*median.tif$", full.names = TRUE), raster::raster)
+  biomass_stdv <- lapply(list.files(file.path(data_dir), pattern = "*stdv.tif$", full.names = TRUE), raster::raster)
+  
+  ## reproject Lat/Long site coords to AGB Albers Equal-Area
+  coords_AEA <- sp::spTransform(coords_latlong,raster::crs(raster::raster(biomass_median[[1]])))
+  
+  ## prepare product for extraction - stack requested years, need to make this work for 1 or 2+ years
+  biomass_median_stack <- raster::stack(biomass_median)
+  biomass_stdv_stack <- raster::stack(biomass_stdv)
+  
+  ## extract
+  agb_median_pixel <- raster::extract(x = biomass_median_stack, y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
+  agb_median_pixel <- data.frame(site_ID, agb_median_pixel)
+  agb_stdv_pixel <- raster::extract(x = biomass_stdv_stack, y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
+  agb_stdv_pixel <- data.frame(site_ID, agb_stdv_pixel)
+  
+  ## output list
+  point_list <- list(median_AGB=list(agb_median_pixel), stdv_AGB=list(agb_stdv_pixel))
+  
+  ## save output to a file?
+  if (!is.null(output_file)) {
+    save("point_list",file = file.path(output_file,'LandTrendr_AGB_output.RData'))
+    
+  }
+  
+  ## return output list
+  return(point_list)
+}
