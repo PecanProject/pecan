@@ -1,3 +1,9 @@
+##' @title load_nimble
+##' @name  load_nimble
+##' @author Ann Raiho, Hamze Dokoohaki
+##' 
+##' @description This functions is internally used to register a series of nimble functions inside GEF analysis function.
+##' 
 #' @import nimble
 load_nimble <- function(){
     #y_star_create-------------------------------------------------------------------------------------------------------
