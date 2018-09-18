@@ -174,7 +174,7 @@ check_path_in_db <- function(con, path, model, machine) {
       purrr::is_bare_character(path_check) ~ "DOESN'T EXIST",
       purrr::is_null(input_check) ~ "NO INPUT",
       purrr::is_bare_character(format_check) ~ "WRONG FORMAT",
-      purrr::is_tibble(format_check) ~ "EXISTS"
+      tibble::is_tibble(format_check) ~ "EXISTS"
     )
   
   check_message(check)
