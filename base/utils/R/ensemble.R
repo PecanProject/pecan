@@ -11,6 +11,12 @@
 ##'
 ##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} 
 ##' and \code{end.year}
+##'
+##' DEPRECATED: This function has been moved to the \code{PEcAn.uncertainty} package.
+##' The version in \code{PEcAn.utils} is deprecated, will not be updated to add any new features,
+##' and will be removed in a future release of PEcAn.
+##' Please use \code{PEcAn.uncertainty::read.ensemble.output} instead.
+##'
 ##' @title Read ensemble output
 ##' @return a list of ensemble model output 
 ##' @param ensemble.size the number of ensemble members run
@@ -24,6 +30,15 @@
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, end.year, 
                                  variable, ens.run.ids = NULL) {
+
+  .Deprecated(
+    new = "PEcAn.uncertainty::read.ensemble.output",
+    msg = paste(
+      "read.ensemble.output has been moved to PEcAn.uncertainty and is deprecated from PEcAn.utils.",
+      "Please use PEcAn.uncertainty::read.ensemble.output instead.",
+      "PEcAn.utils::read.ensemble.output will not be updated and will be removed from a future version of PEcAn.",
+      sep = "\n"))
+
   if (is.null(ens.run.ids)) {
     samples.file <- file.path(pecandir, "samples.Rdata")
     if (file.exists(samples.file)) {
@@ -59,6 +74,11 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 
 ##' Get parameter values used in ensemble
 ##'
+##' DEPRECATED: This function has been moved to the \code{PEcAn.uncertainty} package.
+##' The version in \code{PEcAn.utils} is deprecated, will not be updated to add any new features,
+##' and will be removed in a future release of PEcAn.
+##' Please use \code{PEcAn.uncertainty::get.ensemble.samples} instead.
+
 ##' Returns a matrix of randomly or quasi-randomly sampled trait values 
 ##' to be assigned to traits over several model runs.
 ##' given the number of model runs and a list of sample distributions for traits
@@ -70,12 +90,22 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain  
 ##' @param env.samples env samples
 ##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
+##' @param param.names a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently
+##' 
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
-##' @author David LeBauer
+##' @author David LeBauer, Istem Fer
 get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
-                                 method = "uniform", ...) {
+                                 method = "uniform", param.names = NULL, ...) {
   
+  .Deprecated(
+    new = "PEcAn.uncertainty::get.ensemble.samples",
+    msg = paste(
+      "get.ensemble.samples has been moved to PEcAn.uncertainty and is deprecated from PEcAn.utils.",
+      "Please use PEcAn.uncertainty::get.ensemble.samples instead.",
+      "PEcAn.utils::get.ensemble.samples will not be updated and will be removed from a future version of PEcAn.",
+      sep = "\n"))
+
   if (is.null(method)) {
     PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
     method <- "uniform"
@@ -95,8 +125,10 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       pft2col <- c(pft2col, rep(i, length(pft.samples[[i]])))
     }
     
+
     total.sample.num <- sum(sapply(pft.samples, length))
     random.samples <- NULL
+    
     
     if (method == "halton") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
@@ -130,15 +162,32 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
                                total.sample.num)
     }
     
+    
     ensemble.samples <- list()
+    
     
     col.i <- 0
     for (pft.i in seq(pft.samples)) {
       ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
+      
+      # meaning we want to keep MCMC samples together
+      if(length(pft.samples[[pft.i]])>0 & !is.null(param.names)){ 
+        # TODO: for now we are sampling row numbers uniformly
+        # stop if other methods were requested 
+        if(method != "uniform"){
+          PEcAn.logger::logger.severe("Only uniform sampling is available for joint sampling at the moment. Other approaches are not implemented yet.")
+        }
+        same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
+      }
+      
       for (trait.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
-        ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],
-                                                         random.samples[, col.i])
+        if(names(pft.samples[[pft.i]])[trait.i] %in% param.names[[pft.i]]){ # keeping samples
+          ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
+        }else{
+          ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],
+                                                                  random.samples[, col.i])
+        }
       }  # end trait
       ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
       colnames(ensemble.samples[[pft.i]]) <- names(pft.samples[[pft.i]])
@@ -151,6 +200,11 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 
 
 ##' Write ensemble config files
+##'
+##' DEPRECATED: This function has been moved to the \code{PEcAn.uncertainty} package.
+##' The version in \code{PEcAn.utils} is deprecated, will not be updated to add any new features,
+##' and will be removed in a future release of PEcAn.
+##' Please use \code{PEcAn.uncertainty::write.ensemble.configs} instead.
 ##'
 ##' Writes config files for use in meta-analysis and returns a list of run ids.
 ##' Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
@@ -167,6 +221,14 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
                                    clean = FALSE, write.to.db = TRUE) {
   
+  .Deprecated(
+    new = "PEcAn.uncertainty::write.ensemble.configs",
+    msg = paste(
+      "write.ensemble.configs has been moved to PEcAn.uncertainty and is deprecated from PEcAn.utils.",
+      "Please use PEcAn.uncertainty::write.ensemble.configs instead.",
+      "PEcAn.utils::write.ensemble.configs will not be updated and will be removed from a future version of PEcAn.",
+      sep = "\n"))
+
   my.write.config <- paste("write.config.", model, sep = "")
   
   if (is.null(ensemble.samples)) {

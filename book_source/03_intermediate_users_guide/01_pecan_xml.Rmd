@@ -1,25 +1,43 @@
 # The PEcAn XML {#pecanXML}
 
 The PEcAn system is configured using a xml file, often called settings.xml. The configuration file contains the following sections:
+1. [Info]
+2. [PEcAn Folders]
+3. [Database Access]
+4. [BETY Configuration](#bety-database-configuration)
+5. [Brown Dog](#brown-dog-configuration)
+6. [PFT Selection](#pft-selection)
+7. [Meta Analysis](#meta-analysis)
+8. [Ensemble Runs](#ensemble-runs)
+9. [Sensitivity Runs](#sensitivity-runs)
+10. [Model Setup](#model-setup)
+11. [Run Setup](#run-setup)
+12. [State Data Assimilation](#state-data-assimilation-tags)
+13. [Parameter Data Assimilation]
+14. [Benchmarking]
 
-1. [PEcAn Folders](#pecan-folders)
-2. [Database Access](#database-access)
-3. [BETY Configuration](#bety-database-configuration)
-4. [Brown Dog](#brown-dog-configuration)
-5. [PFT Selection](#pft-selection)
-6. [Meta Analysis](#meta-analysis)
-7. [Ensemble Runs](#ensemble-runs)
-8. [Sensitivity Runs](#sensitivity-runs)
-9. [Model Setup](#model-setup)
-10. [Run Setup](#run-setup)
-11. [State Data Assimilation](#state-data-assimilation-tags)
-12. [Parameter Data Assimilation]
-13. [Benchmarking]
+## Info
+The information section, tagged `info`, contains information specific to your run. They are not critical settings, so any missing values will not break your run. 
 
+An example of this section looks like:
+```xml
+<info>
+  <notes>Test_Run</notes>
+  <userid>99000000036</userid>
+  <username>guestuser</username>
+  <date>2018/09/05 16:21:45 +0000</date>
+ </info>
+```
 
-## PEcAn folders
+The `<notes></notes>` tag will be filled in by the web GUI if you provide notes, or you can add notes yourself within these tags. We suggest adding notes that help identify your run and a brief description of what the run is for.
 
-The following are the tags that can be used to configure the folders used by PEcAn. All of these are optional.
+The `<userid></userid>` and `<username></username>` section is filled in from the GUI if you are signed in. If you are not using the GUI, add the user name and ID you are associated with that exists within the BETY database.
+
+The `<date></date>` tag is filled automatically at the time of your run from the GUI. If you are not using the GUI, add the date you execute the run. This tag is not the tag for the dates you would like to run your model simulation.
+
+## PEcAn Folders
+
+The following tag is used to configure the output folder used by PEcAn.
 
 ```xml
 <outdir>/home/carya/testrun.pecan</outdir>
@@ -36,15 +54,16 @@ The connection to the BETY database is configured using this section. In this se
 
 `db.open()`, and thus by `db.query()` and `db.check()`.
 
-New format (starting with PEcAn 1.3.6)
+New format (starting with PEcAn 1.5.3)
 ```xml
 <database>
 	<bety>
-		<dbname>bety</dbname>
-		<username>bety</username>
-		<password>bety</password>
-		<host>localhost</host>
-		<write>true</write>
+		<user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>true</write>
 	</bety>
 	<fia>
 		<dbname>fia5data</dbname>
@@ -62,10 +81,13 @@ The connection information under bety will be used by most of the PEcAn system, 
 * **user** : [optional] the username to connect to the database (was userid), default value is the username of the current user logged in (PostgreSQL uses user for this field).
 * **password** : [optional] the password to connect to the database (was passwd), if not specified no password is used.  
 * **host** : [optional] the name of the host to connect to, default value is localhost.  
-* **write** : [optional] should any results be written back to the database, setting this to TRUE (the default) will write any results back into the database. (since PEcAn 1.3.6)
+* **write** : [optional] should any results be written back to the database, setting this to TRUE (the default) will write any results back into the database. (since PEcAn 1.5.3)
+
+For first time installers, check your `config.php` in the web directory of pecan. These settings are derived from there. If you are editing the pecan.xml by hand, check the `config.php` file for settings.
 
 For other database drivers these parameters will change. See the driver documentation in R for the right parameters.
 
+The fia tag correspond to connecting to the FIA database through PEcAn. Stability not ensured as of 1.5.3.
 
 ## BETY Database Configuration
 
@@ -165,20 +187,36 @@ Only if this section is defined an ensemble analysis is done.
 
 #### functions: 
 
-`write.configs()`, `run.ensemble.analysis()`
+`write.configs()`,`write.ensemble.configs`, `run.ensemble.analysis()`
 
 #### tags
 
 ```xml
 <ensemble>
-	<size>5</size>
+  <size>5</size>
   <variable>GPP</variable>
-  <variable>NPP</variable>
+  <start.year>1995</start.year>
+  <end.year>1999</end.year>
+  <samplingspace>
+  <parameters>
+    <method>lhc</method>
+  </parameters>
+  <met>
+    <method>sampling</method>
+  </met>
+  </samplingspace>
 </ensemble>
 ```
 
 * **size** : [required] the number of runs in the ensemble.
 * **variable**: [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
+* **samplingspace**:[optional] Contains tags for defining how the ensembles will be generated.
+
+Each piece in the sampling space can potentially have a method tag and a parent tag. Method refers to the sampling method and parent refers to the cases where we need to link the samples of two components. When no tag is defined for one component, one sample will be generated and used for all the ensembles. This allows for partitioning/studying different sources of uncertainties. For example, if no met tag is defined then, one met path will be used for all the ensembles and as a result the outpus's uncertainty will come from the variability in the parameters. At the moment no sampling method is implemented for soil and vegetation.
+Available sampling methods for `parameters` can be found in the documentation of the `get.ensemble.samples` function in `PEcAn.utils` package.
+For the cases where we need simulations with a predefined set of parameters, met and initial condition we can use the restart argument. Restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble ids), start.time and stop.time.
+
+The restart functionality is developed using model specific functions by called write_restart.modelname. You need to make sure first that this function is already exist for your desired model.
 
 Note: if the ensemble size is set to 1, PEcAn will select the **posterior median** parameter values rather than taking a single random draw from the posterior
 

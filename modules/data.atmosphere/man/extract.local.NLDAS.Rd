@@ -4,8 +4,8 @@
 \alias{extract.local.NLDAS}
 \title{extract.local.NLDAS}
 \usage{
-extract.local.NLDAS(outfolder, in.path, start_date, end_date, site_id, lat.in,
-  lon.in, overwrite = FALSE, verbose = FALSE, ...)
+extract.local.NLDAS(outfolder, in.path, start_date, end_date, site_id,
+  lat.in, lon.in, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output files will be stored}

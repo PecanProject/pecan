@@ -13,7 +13,9 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose makes the function output more text
 ##' @examples 
+##' \dontrun{
 ##' result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
+##' }
 download.NEONmet <- function(sitename, outfolder, start_date, end_date, 
                                   overwrite = FALSE, verbose = FALSE,  ...) {
 

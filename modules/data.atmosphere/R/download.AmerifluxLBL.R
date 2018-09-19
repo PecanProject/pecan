@@ -16,7 +16,9 @@
 ##' @param method Optional. download.file() function option.  Use this to set custom programs such as ncftp
 ##'
 ##' @examples
+##' \dontrun{
 ##' result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
+##' }
 ##' 
 ##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
 download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, 

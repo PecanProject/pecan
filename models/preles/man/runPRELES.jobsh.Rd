@@ -18,6 +18,9 @@ runPRELES.jobsh(met.file, outdir, parameters, sitelat, sitelon, start.date,
 
 \item{end_date}{End time of the simulation}
 }
+\description{
+Function to process ncdf file, run PRELES model, and convert output .nc file in CF standard
+}
 \author{
 Tony Gardella, Michael Dietze
 }

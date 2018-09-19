@@ -1,0 +1,46 @@
+The Following Packages are Dependencies called from PEcAn Shiny Apps:
+Data-Ingest
+    PEcAn.data.land,
+    PEcAn.utils,
+    PEcAn.visualization,
+    shinydashboard,
+    dataone,
+    stringr,
+    DT,
+    shinytoastr,
+    shinyWidgets,
+    shinyjs
+PEcAn.Depends
+    dplyr,
+    shinyWidgets,
+    CodeDepends,
+    visNetwork,
+    ggplot2,
+    XML,
+    shinydashboard,
+    DependenciesGraphs
+Elicitation
+    SHELF,
+    ggplot
+BrownDog
+    leaflet,
+    RPostgreSQL,
+    PEcAn.DB,
+    PEcAn.visualization
+WorkflowPlot
+    shiny,
+    ggplot2,
+    plotly,
+    shinyjs,
+    dplyr,
+    reshape2,
+    purrr,
+    ncdf4,
+    scales,
+    lubridate,
+    shiny.themes,
+    PEcAn.visualization,
+    PEcAn.DB,
+    PEcAn.settings,
+    PEcAn.benchmark,
+    PEcAn.utils

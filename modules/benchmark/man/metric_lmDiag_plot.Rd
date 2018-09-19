@@ -9,6 +9,9 @@ metric_lmDiag_plot(metric_dat, var, filename = NA, draw.plot = FALSE)
 \arguments{
 \item{metric_dat}{data.frame}
 }
+\description{
+Linear Regression Diagnostic Plot
+}
 \author{
 Betsy Cowdery
 }

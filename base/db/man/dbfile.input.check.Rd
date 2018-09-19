@@ -27,7 +27,7 @@ dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
 
 \item{exact.dates}{setting to include start and end date in input query}
 
-\item{pattern}{text to seach for in the file name (default NULL = no check). NOT YET IMPLEMENTED}
+\item{pattern}{text to seach for in the file name (default NULL = no check).}
 }
 \value{
 data.frame with the id, filename and pathname of the input that is requested

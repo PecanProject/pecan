@@ -15,19 +15,23 @@
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
                                 restart = NULL, spinup = NULL) {
+  
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package = "PEcAn.SIPNET")
   config.text <- readLines(con = template.in, n = -1)
   writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
 
   ### WRITE *.clim
-  template.clim <- settings$run$input$met$path  ## read from settings #typo in inputs?
+  template.clim <- settings$run$inputs$met$path  ## read from settings
+
   if (!is.null(inputs)) {
     ## override if specified in inputs
     if ("met" %in% names(inputs)) {
       template.clim <- inputs$met$path
     }
   }
+  
+  PEcAn.logger::logger.info(paste0("Writing SIPNET configs with input ", template.clim))
 
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, as.character(run.id))
@@ -376,12 +380,15 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }  ## end loop over PFTS
   ####### end parameter update
 
+
   #### write INITIAL CONDITIONS here ####
   if (!is.null(IC)) {
     ic.names <- names(IC)
     ## plantWoodInit gC/m2
     plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
     if (all(plant_wood_vars %in% ic.names)) {
+  
+      
       # reconstruct total wood C
       wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
       param[which(param[, 1] == "plantWoodInit"),  2] <- wood_total_C
@@ -465,7 +472,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }else{
     #some stuff about IC file that we can give in lieu of actual ICs
   }
-
+  
   write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
               quote = FALSE)
 } # write.config.SIPNET

@@ -91,6 +91,13 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
         # ----- generate the mod.out file
         if (parallel) {
           warning("Running model calculation in parallel.  This will probably crash if you do not have access to a LOT of memory!")
+          if (! requireNamespace("parallel", quietly = TRUE)) {
+            PEcAn.logger::logger.severe(
+              "Cannot find package 'parallel', ",
+              "which is needed for parallel model calculations. ",
+              "Either set parallel = FALSE, ",
+              "or run 'install.packages(\"parallel\")' and try again.")
+          }
           
           if (v == "surface_downwelling_shortwave_flux_in_air") {
               mod.out <- parallel::mclapply(dat.list, model.train, mc.cores = n.cores, 
