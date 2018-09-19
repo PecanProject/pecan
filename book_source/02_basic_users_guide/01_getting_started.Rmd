@@ -4,31 +4,28 @@
 
 PEcAn provides an interface to a variety of ecosystem models and attempts to standardize and automate the processes of model parameterization, execution, and analysis. First, you choose an ecosystem model, then the time and location of interest (a site), the plant community (or crop) that you are interested in simulating, and a source of atmospheric data from the BETY database (LeBauer et al, 2010). These are set in a "settings" file, commonly named `pecan.xml` which can be edited manually if desired. From here, PEcAn will take over and set up and execute the selected model using your settings. The key is that PEcAn uses models as-is, and all of the translation steps are done within PEcAn so no modifications are required of the model itself. Once the model is finished it will allow you to create graphs with the results of the simulation as well as download the results. It is also possible to see all past experiments and simulations.
 
-There are two ways of using PEcAn, via the web interface and directly within R. Even for users familiar with R, using the web interface is a good place to start because it provides a high level overview of the PEcAn workflow.The quickest way to get started is to download the virtual machine or use an AWS instance.
+There are two ways of using PEcAn, via the web interface and directly within R. Even for users familiar with R, using the web interface is a good place to start because it provides a high level overview of the PEcAn workflow. The quickest way to get started is to download the virtual machine or use an AWS instance.
 
 ## Download the PEcAn VM
 
-1. PEcAn consists of a set of scripts and code that is compiled within a Linux operating system and saved in a “virtual machine (VM)”. Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
+PEcAn consists of a set of scripts and code that is compiled within a Linux operating system and saved in a "virtual machine" (VM). Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
 
-2. To run the PEcAn VM you will need to install VirtualBox, the program that runs the virtual machine [http://www.virtualbox.org](http://www.virtualbox.org). On Windows you may see a warning about Logo testing, it is okay to ignore the warning.
+1. **Install VirtualBox** This is the software that runs the virtual machine. You can find the download link and instructions at [http://www.virtualbox.org](http://www.virtualbox.org). *NOTE: On Windows you may see a warning about Logo testing, it is okay to ignore the warning.*
 
-3. After you have Virtual Box installed you’ll need to download the PEcAn virtual machine: [http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN). The virtual machine is available under the "**Files**" header. Click the 32 or 64 bit ".ova" file and note that the download is ~5 GB so will take from several minutes to hours depending on the connection speed.
+2. **Download the PEcAn VM** You can find the download link at [http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN), under the "**Files**" header. Click the 32 or 64 bit (recommended) ".ova" file to begin the download. Note that the file is ~5 GB, so this download can take several minutes to hours depending on your connection speed.
 
-4. To open up the virtual machine you'll first want to open up VirtualBox.
+3. **Import the VM** Once the download is complete, open VirtualBox. In the VirtualBox menus, go to "File" → "Import Appliance" and locate the downloaded ".ova" file. 
+In the Appliance Import Settings, make sure you select "Reinitialize the MAC address of all network cards" (picture below). This is not selected by default and can result in networking issues since multiple machines might claim to have the same network MAC Address. (NOTE: If you experience network connection difficulties in the VM with this enabled, try re-importing the VM without this setting selected). Finally, click "Import" to build the Virtual Machine from its image.
 
-5. The first time you use the VM you'll want to use File → Import Appliance in VirtualBox in order to import the VM. This will create a virtual machine from the disk image. When asked about the Appliance Import Settings make sure you select "Reinitialize the MAC address of all network cards". This is not selected by default and can result in networking issues since multiple machines might claim to have the same network MAC Address. That said, users who have experienced network connection difficulties within the VM have sometimes had better luck after reinstalling without reinitializing.
-
-```{r, echo=FALSE,fig.align='center'}
+```{r, echo=FALSE, fig.align='center'}
   knitr::include_graphics(rep("figures/pic1.jpg"))
 ```
 
-6. Next, click “Import”. You only have to do this Import step once, in the future you can just skip to the next step. 	
-
-7. Start Pecan by double clicking on the icon for the VM. A terminal window will pop up showing the machine booting up which may take a minute. It is done booting when you get to the “pecan32 login:” prompt. You do not need to login as the VM behaves like a server that we will be accessing through you web browser. Feel free to minimize the VM window.
+4. **Launch PEcAn** Double click the icon for the PEcAn VM. A terminal window will pop up showing the machine booting up which may take a minute. It is done booting when you get to the `pecan32 login:` prompt. You do not need to login as the VM behaves like a server that we will be accessing through you web browser. Feel free to minimize the VM window.
 
 * If you _do_ want to login to the VM, the credentials are as follows: `username: carya`, `password: illinois` (after the pecan tree, [Carya illinoinensis][pecan-wikipedia]).
 
-8. To launch the PEcAn web interface, make sure that the VM is running somewhere in the background on your machine. Then, open any web browser on the same machine and navigate to `localhost:6480/pecan` to start the PEcAn workflow.
+5. **Open the PEcAn web interface** With the VM running in the background, open any web browser on the same machine and navigate to `localhost:6480/pecan/` to start the PEcAn workflow. (NOTE: The trailing backslash may be necessary depending on your browser)
 
 
 ## Using AmazonWeb Services (AWS) {#awsvm}
