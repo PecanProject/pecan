@@ -29,7 +29,6 @@ knitr::include_graphics(rep("figures/PecanLogo.png"))
 
 [Github Repository](https://github.com/PecanProject/pecan)
 
-<!DOCTYPE html>
 <html>
 <head>
 <style>
