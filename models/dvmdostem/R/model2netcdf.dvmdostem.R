@@ -9,8 +9,10 @@
 ##-------------------------------------------------------------------------------------------------#
 ##' @name model2netcdf.dvmdostem
 ##' @title Code to convert dvmdostem netcdf output into into CF standard
-##'
+##' 
 ##' @param outdir Location of dvmdostem model output
+##' @param runstart ??
+##' @param runend ??
 ##' 
 ##' @examples  
 ##' \dontrun{
