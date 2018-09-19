@@ -28,7 +28,7 @@ Analysis.sda<-function(settings,
                        extraArg,
                        ...
 ){
-  
+
   if (is.null(FUN)) PEcAn.logger::logger.severe('Analysis function needs to be defined !')
   FUN(settings, Forecast, Observed, H, extraArg ,...)
   
@@ -58,19 +58,17 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
   for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
-  
+
   #Forecast inputs 
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
-  
   # Enkf---------------------------------------------------
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
   Pf <- cov(X)
   diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
-  
   # for those elements with zero value
   if (length(Y) > 1) {
     
@@ -161,7 +159,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   }
   
   if(t == 1){
-    
     #The purpose of this step is to impute data for mu.f 
     #where there are zero values so that 
     #mu.f is in 'tobit space' in the full model
@@ -173,7 +170,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
                             mu_0 = rep(0,length(mu.f)),
                             lambda_0 = diag(10,length(mu.f)),
                             nu_0 = 3)#some measure of prior obs
-    
+
     inits.tobit2space <<- list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
     #set.seed(0)
     #ptm <- proc.time()
@@ -227,7 +224,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     }
     
   }
-  
+
   dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr, nburnin=nburnin,  progressBar=TRUE)
   
   # pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
@@ -348,7 +345,11 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     }
     
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> d5e6e88b0f9652be60187c1ed735ce2306fb86c2
   dat <- runMCMC(Cmcmc, niter = nitr, nburnin=nburnin)
   
   ## update parameters
@@ -376,12 +377,12 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     n <- length(mu.f)
   }
   V <- solve(q.bar) * n
-  
+
   if (t<nt){
     aqq[t + 1, , ]   <- V
     bqq[t + 1]       <- n
   }
-  
+
   return(list(mu.f = mu.f,
               Pf = Pf,
               mu.a = mu.a,

@@ -16,7 +16,7 @@
 ##' @export
 
 adj.ens<-function(Pf, X, mu.f, mu.a, Pa){
-  
+
   S_f  <- svd(Pf)
   L_f  <- S_f$d
   V_f  <- S_f$v
@@ -25,9 +25,9 @@ adj.ens<-function(Pf, X, mu.f, mu.a, Pa){
   Z <- X*0
   
   for(i in seq_len(nrow(X))){
-    
+
     Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
-    
+
   }
   Z[is.na(Z)]<-0
   

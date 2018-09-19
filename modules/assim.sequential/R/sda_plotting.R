@@ -29,7 +29,9 @@ generate_colors_sda <-function(){
 ##' @param ANALYSIS  vector of mean of state variable after analysis
 ##' @param plot.title character giving the title for post visualization ggplots
 ##' @export
+
 interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
   #Defining some colors
   generate_colors_sda()
   t1         <- 1
@@ -117,7 +119,9 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
 
 ##' @rdname interactive.plotting.sda
 ##' @export
+
 postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
   #Defining some colors
   generate_colors_sda()
   t1         <- 1
@@ -212,7 +216,9 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
 
 ##' @rdname interactive.plotting.sda
 ##' @export
+
 postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
   #Defining some colors
   generate_colors_sda()
   t1         <- 1
@@ -285,7 +291,7 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
   t1<- 1
   #Defining some colors
   generate_colors_sda()
-  
+
   #---
   library(corrplot)
   pdf('SDA/process.var.plots.pdf')
@@ -306,9 +312,9 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
 
 ##' @rdname interactive.plotting.sda
 ##' @export
+
 post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
-  
-  
+
   t1         <- 1
   #Defining some colors
   generate_colors_sda()
@@ -404,7 +410,9 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
 
 ##' @rdname interactive.plotting.sda
 ##' @export
+
 post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
+
   
   #Defining some colors
   t1         <- 1
@@ -412,8 +420,9 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
-  
-  #rearranging the forcast and analysis data  
+
+#rearranging the forcast and analysis data  
+
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
   
   ready.FA <- c('FORECAST','ANALYSIS')%>%

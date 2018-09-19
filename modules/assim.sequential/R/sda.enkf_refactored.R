@@ -27,7 +27,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                   BiasPlot=F,
                                   plot.title=NULL,
                                   debug=FALSE),...) {
-  
+
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -69,9 +69,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###-------------------------------------------------------------------###
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
-  
+
   if(!no_split){ 
     for(i in seq_along(settings$run$inputs$met$path)){
+
       ### model specific split inputs
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
@@ -129,7 +130,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     new.params[[i]] <- lapply(ensemble.samples, function(x, n) {
       x[i, ] }, n = i)
   } 
-  
+
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###----   
@@ -173,7 +174,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                         stop.time = obs.times[t],
                                                         inputs = inputs$samples[[i]])) 
           
-          
+
         } 
       }else{
         inputs.split<-inputs
@@ -217,8 +218,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                          settings = settings, 
                                                          var.names = var.names, 
                                                          params = new.params[[i]]
-      )
-      )
+                                                         )
+                            )
+
       # states will be in X, but we also want to carry some deterministic relationships to write_restart
       # these will be stored in params
       X[[i]]      <- X_tmp[[i]]$X
@@ -233,7 +235,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     if (any(obs)) {
       # finding obs data 
       choose <- sapply(colnames(X), agrep, x=names(obs.mean[[t]]), max=1, USE.NAMES = F) %>% unlist
-      
+
       # droping the ones that their means are zero 
       na.obs.mean <- which(is.na(unlist(obs.mean[[t]][choose])))
       if (length(na.obs.mean)>0) choose <- choose [-na.obs.mean]

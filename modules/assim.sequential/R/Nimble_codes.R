@@ -56,7 +56,7 @@ load_nimble <- function(){
     y_star[1:YN] <- y_star_create(X[1:YN])
     
     ## Analysis
-    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
+    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) 
     
     #don't flag y.censored as data, y.censored in inits
     #remove y.censored samplers and only assign univariate samplers on NAs

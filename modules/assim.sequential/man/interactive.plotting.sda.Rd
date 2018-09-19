@@ -8,6 +8,7 @@
 \alias{post.analysis.ggplot}
 \alias{post.analysis.ggplot.violin}
 \alias{post.analysis.multisite.ggplot}
+
 \title{Internal functions for plotting SDA outputs. Interactive, post analysis time-series and bias plots in base plotting system and ggplot}
 \usage{
 interactive.plotting.sda(settings, t, obs.times, obs.mean, obs.cov, obs, X,
@@ -29,6 +30,7 @@ post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs,
 
 post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov,
   obs, X, FORECAST, ANALYSIS, plot.title = NULL, facetg = F)
+
 }
 \arguments{
 \item{settings}{pecan standard settings list.}

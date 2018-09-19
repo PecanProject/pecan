@@ -222,6 +222,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("TL" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$TL <- ceiling(vals$TL)
           }
+
         }
       }
     }
