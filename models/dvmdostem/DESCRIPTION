@@ -1,14 +1,14 @@
 Package: PEcAn.dvmdostem
 Type: Package
 Title: PEcAn package for integration of the dvmdostem model
-Version: 1.5.3
-Date: 2018-04-26
+Version: 1.6.0
+Date: 2018-08-20
 Author: Tobey Carman, Shawn Serbin
 Maintainer: Tobey Carman <tcarman2@alaska.edu>, Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to link the dvmdostem model to
     PEcAn.
 Imports:
-	ncdf4,
+    ncdf4,
     PEcAn.utils (>= 1.4.8),
     rjson
 Suggests:
