@@ -13,7 +13,8 @@ Imports:
     foreach,
     purrr,
     raster,
-    rgdal
+    rgdal,
+    sp
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE

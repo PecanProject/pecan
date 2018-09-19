@@ -22,11 +22,11 @@
 ##' product_dates2 <- seq(1992,1995,1)
 ##' prodcut_version = "v1"
 ##' 
-##' PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates, 
-##' prodcut_version = prodcut_version)
+##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates, 
+##'            prodcut_version = prodcut_version)
 ##' 
-##' PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates2, 
-##' prodcut_version = prodcut_version)
+##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates2, 
+##'            prodcut_version = prodcut_version)
 ##' }
 ##' 
 ##' @export
@@ -200,58 +200,62 @@ download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_versio
 ##' @name  extract.LandTrendr.AGB
 ##' 
 ##' @param coords vector of BETYdb site IDs or a data frame containing elements 'lon' and 'lat'
-##' @param buffer Optional. operate over desired buffer area
+##' @param buffer Optional. operate over desired buffer area [not yet implemented]
 ##' @param fun Optional function to apply to buffer area.  Default - mean
 ##' @param data_dir  directory where input data is located. Can be NUL if con is specified
 ##' @param con connection to PEcAn database. Can be NULL if data_dir is specified
 ##' @param output_file Path to save LandTrendr_AGB_output.RData file containing the output extraction list (see return)
+##' @param plot_results Optional. Create a simple diagnostic plot showing results of data extraction by site/coordinate pair
 ##' 
 ##' @return list of two containing the median AGB values per pixel and the corresponding standard deviation values (uncertainties)
 ##' 
 ##' ##' @examples
 ##' \dontrun{
+##' # Database connection (optional)
 ##' bety <- list(user='bety', password='bety', host='localhost',
 ##' dbname='bety', driver='PostgreSQL',write=TRUE)
 ##' con <- PEcAn.DB::db.open(bety)
 ##' bety$con <- con
 ##' 
-##' data_dir <- "~/scratch/
-##' coords <- c(2000000023,1000025731)  # US-CZ3, US-SSH
-##' 
-##' coords <- data.frame(lon=c(-90.8,91.8), lat=c(42.5,43.5))
-##' 
+##' # Example 1 - using BETYdb site IDs to extract data
+##' data_dir <- "~/scratch/agb_data/"
+##' site_ID <- c(2000000023,1000025731,676,1000005149)  # US-CZ3, US-SSH, US-WCr, US-UMd
+##' results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=site_ID, data_dir = data_dir, con = con, 
+##'            output_file = file.path(data_dir))
+##'            
+##' # Example 2 - provide arbitrary lon/lat values
+##' coords <- data.frame(lon=c(-90.8,-91.8), lat=c(42.5,43.5))
+##' results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=coords, data_dir = data_dir,
+##'            output_file = file.path(data_dir)
 ##' }
 ##' 
 ##' @export
-##' @author Shawn Serbin
+##' @author Shawn Serbin, Alexey Shiklomanov
 ##' 
 extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir = NULL, con = NULL, 
-                                   output_file = NULL, ...) {
+                                   output_file = NULL, plot_results = FALSE, ...) {
+  
+  ## TODO - allow selection of specific years to process instead of just entire record?
   
   ## Site ID vector or long/lat data.frame?
   if (is.null(names(coords))) {
-    coords_info <- list(PEcAn.DB::query.site(coords[1],con),PEcAn.DB::query.site(coords[2],con))  # need to make this work for a vector of 1+ site IDs!!
-    site_ID <- coords  # use the requested DBfile as the site ID
+    site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})", 
+                               ids = site_ID, .con = con)
+    qry_results <- DBI::dbSendQuery(con,site_qry)
+    qry_results <- DBI::dbFetch(qry_results)
+    site_IDs <- qry_results$id
+    site_names <- qry_results$sitename
+    site_coords <- data.frame(cbind(qry_results$lon, qry_results$lat))
+    names(site_coords) <- c("Longitude","Latitude")
   } else {
-    coords_info <- coords  # update!!
-    
-    #site_ID <- c(coords) # have this create a vector of lat/lon pairs as the site_ID
+    site_IDs <- dplyr::mutate(coords, IDs = paste(lon, lat, sep=","))[[3]]
+    site_coords <- coords
+    names(site_coords) <- c("Longitude","Latitude")
+    site_names <- rep(NA,length=length(site_IDs))
   }
 
-  
-  ## prepare site coordinates for extraction  -- NEED TO MAKE THIS WORK FOR Site IDs and data frame
-  coords_LL <- NULL
-  j <- 1
-  for (i in seq_along(1:length(coords_info))) {
-    if (j==1) {
-      coords_latlong <- data.frame(cbind(coords_info[[i]]$lon,coords_info[[i]]$lat))
-      names(coords_latlong) <- c("Longitude","Latitude")
-    } else {
-      coords_latlong[j,] <- rbind(coords_info[[i]]$lon,coords_info[[i]]$lat)
-    }
-    j <- j+1
-  }
-  coords_latlong <- sp::SpatialPoints(coords_latlong)
+  ## apply coord info
+  coords_latlong <- sp::SpatialPoints(site_coords)
   sp::proj4string(coords_latlong) <- sp::CRS("+init=epsg:4326")
   
   ## load gridded AGB data
@@ -267,9 +271,16 @@ extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir
   
   ## extract
   agb_median_pixel <- raster::extract(x = biomass_median_stack, y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
-  agb_median_pixel <- data.frame(site_ID, agb_median_pixel)
+  processed_years <- unlist(regmatches(names(data.frame(agb_median_pixel)), 
+                                       gregexpr("\\d{4}", names(data.frame(agb_median_pixel)))))
+  agb_median_pixel <- data.frame(agb_median_pixel)
+  names(agb_median_pixel) <- paste0("Year_",processed_years)
+  agb_median_pixel <- data.frame(Site_ID=site_IDs, Site_Name=site_names, agb_median_pixel)
+
   agb_stdv_pixel <- raster::extract(x = biomass_stdv_stack, y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
-  agb_stdv_pixel <- data.frame(site_ID, agb_stdv_pixel)
+  agb_stdv_pixel <- data.frame(agb_stdv_pixel)
+  names(agb_stdv_pixel) <- paste0("Year_",processed_years)
+  agb_stdv_pixel <- data.frame(Site_ID=site_IDs, Site_Name=site_names, agb_stdv_pixel)
   
   ## output list
   point_list <- list(median_AGB=list(agb_median_pixel), stdv_AGB=list(agb_stdv_pixel))
@@ -277,6 +288,20 @@ extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir
   ## save output to a file?
   if (!is.null(output_file)) {
     save("point_list",file = file.path(output_file,'LandTrendr_AGB_output.RData'))
+  }
+  
+  if (plot_results) {
+    print("not yet")
+    
+    melted_med <- reshape::melt(agb_median_pixel, id.vars = c( 'Site_ID', 'Site_Name'))
+    melted_med$year <- rep(processed_years,each=length(site_IDs))
+    names(melted_med)[4] <- "AGB_med"
+    all <- data.frame(melted_med,AGB_sd=melted_sd$value)
+
+    ggplot2::ggplot(all, aes(x=year, y=AGB_med, group=Site_ID)) + geom_line(size=2) + 
+      facet_wrap(~Site_ID) + theme_bw() + 
+      geom_errorbar(aes(ymin=AGB_med-AGB_sd, ymax=AGB_med+AGB_sd), width=.2,
+                    position=position_dodge(0.05))
     
   }
   

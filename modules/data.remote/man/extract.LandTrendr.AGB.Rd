@@ -25,14 +25,19 @@ list of two containing the median AGB values per pixel and the corresponding sta
 
 ##' @examples
 \dontrun{
+# Database connection (optional)
 bety <- list(user='bety', password='bety', host='localhost',
 dbname='bety', driver='PostgreSQL',write=TRUE)
 con <- PEcAn.DB::db.open(bety)
 bety$con <- con
 
-data_dir <- "~/scratch/
+# Example 1
+data_dir <- "~/scratch/agb_data/"
 coords <- c(2000000023,1000025731)  # US-CZ3, US-SSH
-
+results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords, data_dir = data_dir, con = con, 
+           output_file = file.path(data_dir))
+           
+# Example 2           
 coords <- data.frame(lon=c(-90.8,91.8), lat=c(42.5,43.5))
 
 }
