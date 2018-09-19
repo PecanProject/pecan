@@ -9,19 +9,19 @@ This page is used to select the model to run and the site at which you would lik
 
 ### Selecting a model
 
-1. On the **Select Host** webpage **use the Host pull-down menu to select the server you want to run on**. PEcAn is designed to allow models to be run both locally and on remote high-performance computing (HPC) resources (i.e. clusters). We recommend that users start learning PEcAn with local runs. More information about connecting your PEcAn instance to a cluster can be found on the [Remote execution with PEcAn] page.
+1. On the **Select Host** webpage **use the Host pull-down menu to select the server you want to run on**. PEcAn is designed to allow models to be run both locally and on remote high-performance computing (HPC) resources (i.e. clusters). We recommend that users start with local runs. More information about connecting your PEcAn instance to a cluster can be found on the [Remote execution with PEcAn] page.
 
 2. Next, **select the model you want to run under the Model pull-down menu**. The list of models currently supported by PEcAn, along with information about these models, is available on the [PEcAn Models] page.
 
-    i) If a PEcAn-supported model is not listed, most likely it is because the model has not been installed on the server. The PEcAn team does not have permissions to redistribute all of the models that are coupled to the system and you may need to consult the PEcAn model listing for information about how to get a copy and install it on your machine. Once the model is installed and you have added the location of the model executable to the PEcAn database(instructions can be found on the [Adding An Ecosystem Model] page), your model should appear on the PEcAn **Select Host** page after your refresh the page.
+    i) If a PEcAn-supported model is not listed, this is most likely because the model has not been installed on the server. The PEcAn team does not have permissions to redistribute all of the models that are coupled to it, so you will have to install some PEcAn-compatible models yourself. Please consult the PEcAn model listing for information about obtaining and installing different models. Once the model is installed and you have added the location of the model executable to the PEcAn database (see [Adding An Ecosystem Model]), your model should appear on the PEcAn **Select Host** page after your refresh the page.
     
     ii) If you would like to add a new model to PEcAn please consult our guide for [Adding an Ecosystem Model] and contact the PEcAn team for assistance.
 
-3. If selecting your model causes your **site to disappear** from the Google Map then the site exists but there are no drivers for that site registered in the database. 
+3. If selecting your model causes your **site to disappear** from the Google Map, that means site exists but there are no drivers for that model-site combination registered in the database. 
 
-    i) Click on the "Conversion" checkbox. If your site reappears then PEcAn believes that I can generate the required inputs for this site on-the-fly using its input processing workflow.
+    i) Click the "Conversion" checkbox. If your site reappears, that means PEcAn should be able to automatically generate the required inputs for this site by converting from existing input files in other formats.
     
-    ii) If the site does not reappear, then inputs are required for a model that PEcAn cannot autogenerate. This may be because the model has unique input requirements or because it has not yet been fully coupled to the PEcAn input processing workflow. Go to the troubleshooting sectoin under [Selecting a site] for more info on diagnosing what drivers are missing.
+    ii) If the site still does not reappear, that means there are required input files for that model-site combination that PEcAn cannot autogenerate. This may be because the model has unique input requirements or because it has not yet been fully coupled to the PEcAn input processing workflow. Go to the troubleshooting section under [Selecting a site] for more information on diagnosing what drivers are missing.
 
 ### Selecting a site
 

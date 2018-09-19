@@ -1,9 +1,3 @@
 # Web workflow
 
-- Model and site selection
-- Run configuration
-- Run execution
-- Results
-- Interactive visualizations
-
-Note: We recommend that all new users begin with [PEcAn Hands-On Demo 01: Basic Run]. The documentation below assumes you are already familiar with how to navigate to PEcAn's interactive web interface for running models.
+We recommend that all new users begin with [PEcAn Hands-On Demo 01: Basic Run]. The documentation below assumes you are already familiar with how to navigate to PEcAn's interactive web interface for running models.
