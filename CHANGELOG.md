@@ -9,7 +9,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
-- Updated model2netcdf.SIPNET() to address issue #2094. Revised netCDF time to be from 0-364./365. (if leap) so time would be properly parsed by R and python
+- Updated model2netcdf.SIPNET() to address issue #2094. Revised netCDF time to be from 0-364./365. (if leap) so time would be properly parsed by R and python (cf tools)
+- Fixed output time variable in models/ed/R/model2netcdf.ED2.R to provide correct fractional DOY
 - Running tests for PEcAn.settings package no longer leaves empty temp directories in test folder (#2075)
 - Fixed issue #2064 which sends one met path to write.sa.config.
 - `PEcAn.data.land::soil_params` now accepts any 2 out of 3 texture components as documented, and correctly converts percentages to proportion (#2043).
@@ -17,8 +18,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
+- Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
-
+- Added scaling to documentation
 ### Removed
 - Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 
@@ -56,7 +58,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
     
 ### Added
-
+- sda.enkf function inside the `PEcAn.assim.sequential` package was replaced with the refactored version, while the original sda function can be found in the same package with the name of sda.enkf.original.
 - PEcAn.undertainty gains one new function (input.ens.gen) and three functions moved from PEcAn.utils (see "Changed" below)
 - IC workflow now has functionality to generate ensembles.
 - You can now generate ensembles for parameters and met separatly and using different methods. 
