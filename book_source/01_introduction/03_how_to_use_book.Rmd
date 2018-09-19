@@ -2,20 +2,15 @@
 
 This book serves as documentation for the PEcAn Project. It contains descriptions of topics necessary to inform a beginner and advanced user as well as requisite materials for developers. It does not contain low-level descriptions of functions within PEcAn. Our aim for this documentation is to educate you about the PEcAn software, the possibilities of its usage, and the standards,expectations, and core workflows for developers.
 
-
-### Main Topics
-
 This book is organized around these main topics:
 
-**Basic User Guide** - Brief explaination of PEcAn, how to obtain the PEcAn VM, and explanation of basic web interface functions
+**Basic User Guide** - Brief explanation of PEcAn, how to obtain the PEcAn VM, and explanation of basic web interface functions.
 
-**Intermediate Users Guide** - Explanation of more advanced customizations of PEcAn from the web interface. Includes explanation of PEcAn settings file, advanced web configuration, and handling remote execution of PEcAn.
-
-**Advanced User Guide - Cmd Line** - Full explanation of PEcAn, tools that are not integrated in the main workflow, and 
+**Intermediate Users Guide** - Explanation of more advanced PEcAn functionality from the web interface. Includes explanation of PEcAn settings file, advanced web configuration, and handling remote execution of PEcAn. (TODO: Also, command line tools?)
 
 **Developer Guide** - Explains what you need to know in order to contibute code to PEcAn.
 
-**Reference Materials** - Reference pages containing information about models, data, and other tools
+**Reference Materials** - Information about models, data, and other tools
 
 **Appendix** - Supplementary materials for the developer section.
 
@@ -35,7 +30,7 @@ If you wish to contribute to this book, we greatly welcome it! The same general 
 
 5. Use `git add changedfile.Rmd` to stage your changes and then commit ` git commit -m "your message"` your changes and push (`git push`) them to your fork.
 
-6. [Create a pull request](https://help.github.com/articles/creating-a-pull-request/), using github,  with a description of the changes you have made.
+6. [Create a pull request](https://help.github.com/articles/creating-a-pull-request/) using GitHub with a description of the changes you have made.
 
 
 
@@ -44,8 +39,8 @@ We want your ideas, thoughts, comments, and suggestions! This is an open-sourced
 to us in the following ways:
 
 **Github:** [https://github.com/PecanProject/pecan](https://github.com/PecanProject/pecan)
-Serving as the main hub of communication surrounding PEcAn development, check out the issues section to see what is coming down the pipeline. If there is anything you feel you can contribute to, leave a comment.
-​	
+This is the main hub of communication surrounding PEcAn development. Check out the issues section to see known bugs, upcoming features, and ideas for future development. Feel free to comment on existing issues or open new ones with questions, bug reports, feature requests, and/or ideas.
+
 **Slack:** [https://pecanproject.slack.com/](https://pecanproject.slack.com/)
 Slack serves as our day to day mode of communication. To join us in slack you will need to create an account first. This is done in 3 steps:
 
@@ -53,8 +48,7 @@ Slack serves as our day to day mode of communication. To join us in slack you wi
 2. <a id="slackreturn"></a>Check your inbox for an email from Slack with subject "Rob Kooper has invited you to join a Slack workspace". This email should have a link that you can click to join slack.
 3. When you click a webpage will open up that asks you to create an account, once that is done you can login into the slack chatrooms.
 
-
-**Email:** pecanproj[at]gmail.com
+**Email:** pecanproj@gmail.com
 If you do not wish your communication with the team to be public, send us an email at the  address above and we will get back to you as soon as possible.
 
 
