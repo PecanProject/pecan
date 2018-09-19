@@ -19,7 +19,7 @@
 ##' @return NONE
 ##' @export
 ##' 
-sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
+sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
   
   library(nimble)
   

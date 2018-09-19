@@ -1,6 +1,7 @@
 #' Retrieve the current CF variables table from `cfconventions.org`
 #' and convert it into a `data.frame`
 #'
+#' @md
 #' @param cf_url URL of CF variables table XML. See also [build_cf_variables_table_url].
 #' @return CF variables table, as a `tibble`
 #' @author Alexey Shiklomanov
@@ -27,10 +28,11 @@ get_cf_variables_table <- function(cf_url = build_cf_variables_table_url(57)) {
 #' This uses [sprintf] to construct the URL with the version number as
 #' the first argument.
 #'
+#' @md
 #' @param version CF variables table version number (integer/numeric)
 #' @param url_format_string A format string passed to [sprintf]. This
 #'   should contain the entire target URL with the version number
-#'   replaced by `"\%d"`, and _no other string substitutions_.
+#'   replaced by `"%d"`, and _no other string substitutions_.
 #' @return Complete URL, as a string
 #' @author Alexey Shiklomanov
 #' @export

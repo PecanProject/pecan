@@ -10,15 +10,15 @@ build_cf_variables_table_url(version,
 \arguments{
 \item{version}{CF variables table version number (integer/numeric)}
 
-\item{url_format_string}{A format string passed to [sprintf]. This
+\item{url_format_string}{A format string passed to \link{sprintf}. This
 should contain the entire target URL with the version number
-replaced by `"\%d"`, and _no other string substitutions_.}
+replaced by \code{"\%d"}, and \emph{no other string substitutions}.}
 }
 \value{
 Complete URL, as a string
 }
 \description{
-This uses [sprintf] to construct the URL with the version number as
+This uses \link{sprintf} to construct the URL with the version number as
 the first argument.
 }
 \author{
