@@ -17,7 +17,7 @@ This page is used to select the model to run and the site at which you would lik
     
     ii) If you would like to add a new model to PEcAn please consult our guide for [Adding an Ecosystem Model] and contact the PEcAn team for assistance.
 
-3. If selecting your model causes your **site to disappear** from the Google Map, that means site exists but there are no drivers for that model-site combination registered in the database. 
+3. If selecting your model causes your **site to disappear** from the Google Map, that means the site exists but there are no drivers for that model-site combination registered in the database. 
 
     i) Click the "Conversion" checkbox. If your site reappears, that means PEcAn should be able to automatically generate the required inputs for this site by converting from existing input files in other formats.
     
