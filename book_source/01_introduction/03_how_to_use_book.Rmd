@@ -19,7 +19,7 @@ If you wish to contribute to this book, we greatly welcome it! The same general 
 
 ### Editing the book yourself
 
-1. Navigate to the main [ PEcAn github repository: https://github.com/PecanProject/pecan](https://github.com/PecanProject/pecan) and fork the repository to your github account.
+1. Navigate to the main [PEcAn github repository](https://github.com/PecanProject/pecan) and fork the repository to your github account.
 
 2. Use `git clone` on the machine your are using to create a local copy of the repository. General instructions can be found [here](https://help.github.com/articles/cloning-a-repository/)
 
