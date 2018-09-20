@@ -8,6 +8,8 @@ This book is organized around these main topics:
 
 **Intermediate Users Guide** - Explanation of more advanced PEcAn functionality from the web interface. Includes explanation of PEcAn settings file, advanced web configuration, and handling remote execution of PEcAn. (TODO: Also, command line tools?)
 
+**Advanced User Guide** - Full explanation of PEcAn, including tools that are not integrated in the main workflow but are available as part of the PEcAn R packages.
+
 **Developer Guide** - Explains what you need to know in order to contibute code to PEcAn.
 
 **Reference Materials** - Information about models, data, and other tools
