@@ -11,9 +11,10 @@ download.LandTrendr.AGB(outdir, product_dates = NULL,
 \arguments{
 \item{outdir}{Where to place output}
 
-\item{product_dates}{What dates to download and extract}
+\item{product_dates}{What data product dates to download}
 
-\item{prodcut_version}{Optional. For some products (e.g. OSU) there are multiple versions.}
+\item{prodcut_version}{Optional. LandTrend AGB is provided with two versions, 
+v0 and v1 (latest version)}
 
 \item{con}{Optional database connection. If specified then the code will check to see}
 
@@ -33,15 +34,17 @@ download.LandTrendr.AGB
 }
 \examples{
 \dontrun{
-outdir <- "~/scratch"
+outdir <- "~/scratch/abg_data/"
 product_dates <- c(1990,1991)
 product_dates2 <- seq(1992,1995,1)
 prodcut_version = "v1"
 
-results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates, 
+results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
+           product_dates = product_dates, 
            prodcut_version = prodcut_version)
 
-results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates2, 
+results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
+           product_dates = product_dates2, 
            prodcut_version = prodcut_version)
 }
 

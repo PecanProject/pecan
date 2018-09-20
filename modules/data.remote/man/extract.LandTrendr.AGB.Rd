@@ -5,12 +5,13 @@
 \title{extract.LandTrendr.AGB}
 \usage{
 extract.LandTrendr.AGB(coords, buffer = NULL, fun = "mean",
-  data_dir = NULL, con = NULL, output_file = NULL, ...)
+  data_dir = NULL, con = NULL, product_dates = NULL,
+  output_file = NULL, plot_results = FALSE, ...)
 }
 \arguments{
 \item{coords}{vector of BETYdb site IDs or a data frame containing elements 'lon' and 'lat'}
 
-\item{buffer}{Optional. operate over desired buffer area}
+\item{buffer}{Optional. operate over desired buffer area [not yet implemented]}
 
 \item{fun}{Optional function to apply to buffer area.  Default - mean}
 
@@ -18,33 +19,47 @@ extract.LandTrendr.AGB(coords, buffer = NULL, fun = "mean",
 
 \item{con}{connection to PEcAn database. Can be NULL if data_dir is specified}
 
-\item{output_file}{Path to save LandTrendr_AGB_output.RData file containing the output extraction list (see return)}
+\item{product_dates}{Process and extract data only from selected years. Default behavior
+(product_dates = NULL) is to extract data from all availible years in BETYdb or data_dir}
+
+\item{output_file}{Path to save LandTrendr_AGB_output.RData file containing the 
+output extraction list (see return)}
+
+\item{plot_results}{Optional. Create a simple diagnostic plot showing results of 
+data extraction by site/coordinate pair}
 }
 \value{
-list of two containing the median AGB values per pixel and the corresponding standard deviation values (uncertainties)
+list of two containing the median AGB values per pixel and the corresponding 
+standard deviation values (uncertainties)
 
 ##' @examples
 \dontrun{
+
+# Example 1 - using BETYdb site IDs to extract data
 # Database connection (optional)
 bety <- list(user='bety', password='bety', host='localhost',
 dbname='bety', driver='PostgreSQL',write=TRUE)
 con <- PEcAn.DB::db.open(bety)
 bety$con <- con
 
-# Example 1
 data_dir <- "~/scratch/agb_data/"
-coords <- c(2000000023,1000025731)  # US-CZ3, US-SSH
-results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords, data_dir = data_dir, con = con, 
+site_ID <- c(2000000023,1000025731,676,1000005149) # BETYdb site IDs
+results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=site_ID, 
+           data_dir = data_dir, con = con, 
            output_file = file.path(data_dir))
            
-# Example 2           
-coords <- data.frame(lon=c(-90.8,91.8), lat=c(42.5,43.5))
 
+# Example 2 - provide arbitrary lon/lat values
+coords <- data.frame(lon=c(-90.8,-91.8), lat=c(42.5,43.5))
+product_dates <- c(1990,1991)
+results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=coords, 
+           data_dir = data_dir, product_dates = product_dates,
+           output_file = file.path(data_dir)
 }
 }
 \description{
 extract.LandTrendr.AGB
 }
 \author{
-Shawn Serbin
+Shawn Serbin, Alexey Shiklomanov
 }

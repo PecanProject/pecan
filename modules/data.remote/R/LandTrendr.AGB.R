@@ -3,8 +3,9 @@
 ##' @name  download.LandTrendr.AGB
 ##' 
 ##' @param outdir Where to place output
-##' @param product_dates What dates to download and extract
-##' @param prodcut_version Optional. For some products (e.g. OSU) there are multiple versions.  
+##' @param product_dates What data product dates to download
+##' @param prodcut_version Optional. LandTrend AGB is provided with two versions, 
+##' v0 and v1 (latest version)
 ##' @param con Optional database connection. If specified then the code will check to see 
 ## if the file already exists in PEcAn before downloading, and will also create a database 
 ## entry for new downloads
@@ -17,15 +18,17 @@
 ##' 
 ##' @examples
 ##' \dontrun{
-##' outdir <- "~/scratch"
+##' outdir <- "~/scratch/abg_data/"
 ##' product_dates <- c(1990,1991)
 ##' product_dates2 <- seq(1992,1995,1)
 ##' prodcut_version = "v1"
 ##' 
-##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates, 
+##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
+##'            product_dates = product_dates, 
 ##'            prodcut_version = prodcut_version)
 ##' 
-##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, product_dates = product_dates2, 
+##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
+##'            product_dates = product_dates2, 
 ##'            prodcut_version = prodcut_version)
 ##' }
 ##' 
@@ -36,19 +39,10 @@ download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_versio
                                     run_parallel = TRUE, ncores = NULL, overwrite = FALSE) {
   
   # steps to implement:
-  # determine which product the user wants - presently only 1 option but in the future this function could expand to include all ABG products
-  # by using sub functions for each?  Could have a main driver section first that calls product sub functions
   # check if files exist locally, also are they valid?  Check DB for file location
   # check if files exist remotely, get file size? Is that relevant as remote files are likely .zip
-  # confirm function achieves desired results. does it have everything it needs? too much? too complicated?
   # confirm all params make sense and are useful, prune any that are not
-  # avoid redundancy / duplication
-  # possible issue, making assumption that products will be structured as obs product / error product, may not always be the case,
-  # as such will need to work on generalizing such that the download step is simple and each url is prepped beforehand
-  # 
-  # ...
-  # add extract_ABG function below to pull out the pixel value of ABG
-  
+
   ## before doing anything, check if the files already exists on this host
   # -- to implement.  break/return out of function if nothing to do, else below
 
@@ -87,8 +81,8 @@ download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_versio
   # setup product defaults
   target_dataset <- "biomassfiaald"
   file_ext <- ".zip"
-  obs_files <- paste0(target_dataset,"_",target_download_years,"_median",file_ext)  # hard-coded name matching source
-  err_files <- paste0(target_dataset,"_",target_download_years,"_stdv",file_ext)    # hard-coded name matching source
+  obs_files <- paste0(target_dataset,"_",target_download_years,"_median",file_ext)  # hard-coded name matching source, OK?
+  err_files <- paste0(target_dataset,"_",target_download_years,"_stdv",file_ext)    # hard-coded name matching source, OK?
   files_to_download <- c(obs_files,err_files)
   local_files <- file.path(outdir,gsub(".zip", ".tif",files_to_download))
   
@@ -111,7 +105,8 @@ download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_versio
     `%not_in%` <- purrr::negate(`%in%`)
     missing <- which(basename(download_urls) %not_in% remote_filenames_list)
     download_urls[missing]
-    PEcAn.logger::logger.severe(paste("Files missing from source: ", download_urls[missing]))
+    PEcAn.logger::logger.severe(paste("Files missing from source: ", 
+                                      download_urls[missing]))
   }
   
   ## check for local files exist - do we want to do this?  Or use DB? Or both?
@@ -134,13 +129,13 @@ download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_versio
     if (run_parallel) {
       cl <- parallel::makeCluster(ncores)
       doParallel::registerDoParallel(cl)
-      foreach::foreach(i=1:length(files_to_download_final)) %dopar% try(download.file(download_urls_final[i], 
-                                                                                      file.path(outdir,
-                                                                                                files_to_download_final[i])))
+      foreach::foreach(i=1:length(files_to_download_final)) %dopar% 
+        try(PEcAn.utils::download.file(download_urls_final[i], file.path(outdir, 
+                                                            files_to_download_final[i])))
     } else {
       PEcAn.logger::logger.info("Caution, downloading in serial. 
                                 Could take an extended period to finish") # needed?
-      Map(function(u, d) download.file(u, d), download_urls_final, file.path(outdir,
+      Map(function(u, d) PEcAn.utils::download.file(u, d), download_urls_final, file.path(outdir,
                                                                              files_to_download_final))
     }
     # let user know downloading is complete
@@ -203,43 +198,58 @@ download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_versio
 ##' @param buffer Optional. operate over desired buffer area [not yet implemented]
 ##' @param fun Optional function to apply to buffer area.  Default - mean
 ##' @param data_dir  directory where input data is located. Can be NUL if con is specified
+##' @param product_dates Process and extract data only from selected years. Default behavior
+##' (product_dates = NULL) is to extract data from all availible years in BETYdb or data_dir
 ##' @param con connection to PEcAn database. Can be NULL if data_dir is specified
-##' @param output_file Path to save LandTrendr_AGB_output.RData file containing the output extraction list (see return)
-##' @param plot_results Optional. Create a simple diagnostic plot showing results of data extraction by site/coordinate pair
+##' @param output_file Path to save LandTrendr_AGB_output.RData file containing the 
+##' output extraction list (see return)
+##' @param plot_results Optional. Create a simple diagnostic plot showing results of 
+##' data extraction by site/coordinate pair
 ##' 
-##' @return list of two containing the median AGB values per pixel and the corresponding standard deviation values (uncertainties)
+##' @return list of two containing the median AGB values per pixel and the corresponding 
+##' standard deviation values (uncertainties)
 ##' 
 ##' ##' @examples
 ##' \dontrun{
+##' 
+##' # Example 1 - using BETYdb site IDs to extract data
 ##' # Database connection (optional)
 ##' bety <- list(user='bety', password='bety', host='localhost',
 ##' dbname='bety', driver='PostgreSQL',write=TRUE)
 ##' con <- PEcAn.DB::db.open(bety)
 ##' bety$con <- con
 ##' 
-##' # Example 1 - using BETYdb site IDs to extract data
 ##' data_dir <- "~/scratch/agb_data/"
-##' site_ID <- c(2000000023,1000025731,676,1000005149)  # US-CZ3, US-SSH, US-WCr, US-UMd
-##' results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=site_ID, data_dir = data_dir, con = con, 
+##' site_ID <- c(2000000023,1000025731,676,1000005149) # BETYdb site IDs
+##' results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=site_ID, 
+##'            data_dir = data_dir, con = con, 
 ##'            output_file = file.path(data_dir))
 ##'            
+##' 
 ##' # Example 2 - provide arbitrary lon/lat values
 ##' coords <- data.frame(lon=c(-90.8,-91.8), lat=c(42.5,43.5))
-##' results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=coords, data_dir = data_dir,
+##' product_dates <- c(1990,1991)
+##' results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=coords, 
+##'            data_dir = data_dir, product_dates = product_dates,
 ##'            output_file = file.path(data_dir)
 ##' }
 ##' 
 ##' @export
 ##' @author Shawn Serbin, Alexey Shiklomanov
 ##' 
-extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir = NULL, con = NULL, 
-                                   output_file = NULL, plot_results = FALSE, ...) {
+extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir = NULL, 
+                                   con = NULL, product_dates = NULL,
+                                   output_file = NULL, 
+                                   plot_results = FALSE, ...) {
   
-  ## TODO - allow selection of specific years to process instead of just entire record?
+  ## TODO - allow selection of specific years to process instead of just entire record? 
+  ## TODO - get file location info from BETYdb based on machine and format names, find all local file records
+  ## pass to variable data_dir for processing
   
   ## Site ID vector or long/lat data.frame?
   if (is.null(names(coords))) {
-    site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})", 
+    site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, 
+                               ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})", 
                                ids = site_ID, .con = con)
     qry_results <- DBI::dbSendQuery(con,site_qry)
     qry_results <- DBI::dbFetch(qry_results)
@@ -258,32 +268,60 @@ extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir
   coords_latlong <- sp::SpatialPoints(site_coords)
   sp::proj4string(coords_latlong) <- sp::CRS("+init=epsg:4326")
   
+  ## Subset list of years to process if requested by user
+  if (!is.null(product_dates)) {
+    agb_median_files <- list.files(file.path(data_dir), pattern = "*median.tif$", 
+                                   full.names = TRUE)
+    availible_years_med <- unlist(regmatches(agb_median_files, 
+                                         gregexpr("\\d{4}", agb_median_files)))
+    agb_median_files <- agb_median_files[availible_years_med %in% product_dates]
+    
+    
+    agb_sdev_files <- list.files(file.path(data_dir), pattern = "*stdv.tif$", 
+                                 full.names = TRUE)
+    availible_years_sd <- unlist(regmatches(agb_sdev_files, 
+                                             gregexpr("\\d{4}", agb_sdev_files)))
+    agb_sdev_files <- agb_sdev_files[availible_years_sd %in% product_dates]
+    
+  } else {
+    agb_median_files <- list.files(file.path(data_dir), pattern = "*median.tif$", 
+                                   full.names = TRUE)
+    agb_sdev_files <- list.files(file.path(data_dir), pattern = "*stdv.tif$", 
+                                 full.names = TRUE)
+  }
+
   ## load gridded AGB data
-  biomass_median <- lapply(list.files(file.path(data_dir), pattern = "*median.tif$", full.names = TRUE), raster::raster)
-  biomass_stdv <- lapply(list.files(file.path(data_dir), pattern = "*stdv.tif$", full.names = TRUE), raster::raster)
+  biomass_median <- lapply(agb_median_files, raster::raster)
+  biomass_stdv <- lapply(agb_sdev_files, raster::raster)
   
   ## reproject Lat/Long site coords to AGB Albers Equal-Area
-  coords_AEA <- sp::spTransform(coords_latlong,raster::crs(raster::raster(biomass_median[[1]])))
+  coords_AEA <- sp::spTransform(coords_latlong,
+                                raster::crs(raster::raster(biomass_median[[1]])))
   
-  ## prepare product for extraction - stack requested years, need to make this work for 1 or 2+ years
+  ## prepare product for extraction - stack requested years, 
+  #  need to make this work for 1 or 2+ years
   biomass_median_stack <- raster::stack(biomass_median)
   biomass_stdv_stack <- raster::stack(biomass_stdv)
   
   ## extract
-  agb_median_pixel <- raster::extract(x = biomass_median_stack, y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
+  agb_median_pixel <- raster::extract(x = biomass_median_stack, 
+                                      y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
   processed_years <- unlist(regmatches(names(data.frame(agb_median_pixel)), 
                                        gregexpr("\\d{4}", names(data.frame(agb_median_pixel)))))
   agb_median_pixel <- data.frame(agb_median_pixel)
   names(agb_median_pixel) <- paste0("Year_",processed_years)
   agb_median_pixel <- data.frame(Site_ID=site_IDs, Site_Name=site_names, agb_median_pixel)
 
-  agb_stdv_pixel <- raster::extract(x = biomass_stdv_stack, y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
+  agb_stdv_pixel <- raster::extract(x = biomass_stdv_stack, 
+                                    y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
   agb_stdv_pixel <- data.frame(agb_stdv_pixel)
   names(agb_stdv_pixel) <- paste0("Year_",processed_years)
-  agb_stdv_pixel <- data.frame(Site_ID=site_IDs, Site_Name=site_names, agb_stdv_pixel)
+  agb_stdv_pixel <- data.frame(Site_ID=site_IDs, Site_Name=site_names, 
+                               agb_stdv_pixel)
   
   ## output list
-  point_list <- list(median_AGB=list(agb_median_pixel), stdv_AGB=list(agb_stdv_pixel))
+  point_list <- list(median_AGB=list(agb_median_pixel), 
+                     stdv_AGB=list(agb_stdv_pixel))
   
   ## save output to a file?
   if (!is.null(output_file)) {
@@ -291,18 +329,28 @@ extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir
   }
   
   if (plot_results) {
-    print("not yet")
-    
+    ## plot results - needs cleanup, needs to be flexible to move to a new page if a large number of sites selected
     melted_med <- reshape::melt(agb_median_pixel, id.vars = c( 'Site_ID', 'Site_Name'))
     melted_med$year <- rep(processed_years,each=length(site_IDs))
     names(melted_med)[4] <- "AGB_med"
+    melted_sd <- reshape::melt(agb_stdv_pixel, id.vars = c( 'Site_ID', 'Site_Name'))
     all <- data.frame(melted_med,AGB_sd=melted_sd$value)
-
-    ggplot2::ggplot(all, aes(x=year, y=AGB_med, group=Site_ID)) + geom_line(size=2) + 
-      facet_wrap(~Site_ID) + theme_bw() + 
-      geom_errorbar(aes(ymin=AGB_med-AGB_sd, ymax=AGB_med+AGB_sd), width=.2,
-                    position=position_dodge(0.05))
+    all$AGB_kg_m2 <- all$AGB_med/10
+    all$AGBsd_kg_m2 <- all$AGB_sd/10
     
+    result_plot <- ggplot2::ggplot(all, ggplot2::aes(x=year, y=AGB_kg_m2, group=Site_ID)) + 
+      ggplot2::geom_line(size=2) + 
+      ggplot2::facet_wrap(~Site_ID) + ggplot2::theme_bw() + 
+      ggplot2::geom_errorbar(ggplot2::aes(ymin=AGB_kg_m2-AGBsd_kg_m2, ymax=AGB_kg_m2+AGBsd_kg_m2), 
+                             width=.2,position=ggplot2::position_dodge(0.05)) + 
+      ggplot2::labs(x="Year",
+           y="Aboveground Woody Biomass (kg / m2)") + 
+      ggplot2::theme(text = ggplot2::element_text(size=15), 
+                     panel.border = ggplot2::element_rect(linetype = "solid", size = 2) )
+
+    ggplot2::ggsave(filename=file.path(output_file,'LandTrendr_AGB_output.pdf'), 
+                    device = "pdf", plot=result_plot, w = 15, h = 13) # need to select h/w dynamically
+    grDevices::dev.off()  # keeps opening a blank device window and not sure why? so this makes sure that closes
   }
   
   ## return output list

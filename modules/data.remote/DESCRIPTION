@@ -7,16 +7,22 @@ Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: PEcAn module for processing remote data
 Imports:
+    PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
+    PEcAn.utils,
     stringr(>= 1.1.0),
+    dplyr,
     foreach,
+    glue,
     purrr,
     raster,
-    rgdal,
     sp
 Suggests:
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    ggplot2,
+    rgdal,
+    reshape
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
