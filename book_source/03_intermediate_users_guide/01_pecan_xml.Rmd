@@ -12,6 +12,7 @@ It contains the following major sections ("nodes"):
 	- [`meta.analysis`](#xml-meta-analysis) -- Trait meta analysis
 	- [`model`](#xml-model) -- Model configuration
 	- [`run`](#xml-run) -- Run setup
+	- [`host`](#xml-host) -- Host information for remote execution
 - [Advanced features](#xml-advanced)
 	- [`ensemble`](#xml-ensemble) -- Ensemble runs
 	- [`sensitivity.analysis`](#xml-sensitivity-analysis) -- Sensitivity analysis
@@ -343,89 +344,121 @@ Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includ
 
 ### `run`: Run Setup {#xml-run}
 
-#### tags
+This section provides detailed configuration for the model run, including the site and time period for the simulation and what input files will be used.
 
 ```xml
-<run>
-	<jobtemplate>/home/carya/path/to/template</jobtemplate>
-	<start.date>2002-01-01 00:00:00</start.date>
-	<end.date>2005-12-31 00:00:00</end.date>
-	</dbfiles>/home/carya/.pecan/dbfiles</dbfiles>
-	<site>
-		<id>772</id>
-		<name>Niwot Ridge Forest/LTER NWT1 (US-NR1)</name>
-		<lat>40.032900</lat>
-		<lon>-105.546000</lon>
-		<met.start>2002/01/01</met.start>
-		<met.end>2005/12/31</met.end>
-	</site>
-	<inputs>
-          <met>
-             <id>10000000001</id>
-             <path>/fs/data1/pecan.data/input/</path>
-             <source>Ameriflux</source>
-             <username>carya</username>
-          </met>
-	</inputs>
-</run>
-<host>
-		<name>localhost</name>
-		<rundir>/home/carya/testrun.pecan/run/</rundir>
-		<outdir>/home/carya/testrun.pecan/out/</outdir>
+  <run>
+    <site>
+      <id>1000000098</id>
+      <met.start>2004/01/01</met.start>
+      <met.end>2004/12/31</met.end>
+    </site>
+    <inputs>
+      <met>
+        <source>CRUNCEP</source>
+        <output>SIPNET</output>
+      </met>
+    </inputs>
+    <start.date>2004/01/01</start.date>
+    <end.date>2004/12/31</end.date>
+  </run>
+```
+
+#### `site`: Where to run the model {#xml-run-site}
+
+This contains the following tags:
+
+- `id` -- This is the numeric ID of the site in Bety (table `sites`, column `id`). PEcAn can automatically fill in other relevant information for the site (e.g. `name`, `lat`, `lon`) using the site ID, so those fields are optional if ID is provided.
+- `name` -- The name of the site, as a string.
+- `lat`, `lon` -- The latitude and longitude coordinates of the site, as decimals.
+- `met.start`, `met.end` -- ???
+
+#### `inputs`: Model inputs {#xml-run-inputs}
+
+Models require several different types of inputs to run.
+Exact requirements differ from model to model, but common inputs include meteorological/climate drivers, site initial conditions (e.g. vegetation composition, carbon pools), and land use drivers.
+
+In general, all inputs should have the following tags:
+
+* `id`:  Numeric ID of the input in Bety (table `inputs`, column `id`). If not specified, PEcAn will try to figure this out based on the `source` tag (described below).
+* `path`: The file path of the input. Usually, PEcAn will set this automatically based on the `id` (which, in turn, is determined from the `source`). However, this can be set manually for data that PEcAn does not know about (e.g. data that you have processed yourself and have not registered with Bety).
+* `source`: The input data type. This tag name needs to match the names in the corresponding conversion functions. If you are using PEcAn's automatic input processing, this is the only field you need to set. However, this field is ignored if `id` and/or `path` are provided.
+* `output`: ???
+
+The following are the most common types of inputs, along with their corresponding tags:
+
+##### `met`: Meteorological inputs {#xml-run-inputs-met}
+
+(Under construction. See the `PEcAn.data.atmosphere` package, located in `modules/data.atmosphere`, for more details.)
+
+##### (Experimental) `soil`: Soil inputs {#xml-run-inputs-soil}
+
+(Under construction. See the `PEcAn.data.land` package, located in `modules/data.land`, for more details).
+
+##### (Experimental) `veg`: Vegetation initial conditions {#xml-run-inputs-veg}
+
+(Under construction. Follow developments in the `PEcAn.data.land` package, located in `modules/data.land` in the source code).
+
+#### `start.date` and `end.date`
+
+The start and end date for the run, in a format parseable by R (e.g. `YYYY/MM/DD` or `YYYY-MM-DD`).
+These dates are inclusive; in other words, they refer to the first and last days of the run, respectively.
+
+NOTE: Any time-series inputs (e.g. meteorology drivers) must contain all of these dates.
+PEcAn tries to detect and throw informative errors when dates are out of bounds inputs, but it may not know about some edge cases.
+
+#### Other tags
+
+The following tags are optional run settings that apply to any model: 
+
+* `jobtemplate`: the template used when creating a `job.sh` file, which is used to launch the actual model. Each model has its own default template  in the `inst` folder of the corresponding R package (for instance, here is the one for [ED2](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/template.job)). The following variables can be used: `@SITE_LAT@`, `@SITE_LON@`, `@SITE_MET@`, `@START_DATE@`, `@END_DATE@`, `@OUTDIR@`, `@RUNDIR@` which all come variables in the `pecan.xml` file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : `@SCRATCH_COPY@`, `@SCRATCH_CLEAR@`.
+* `dbfiles`: location where pecan should write files that will be stored in the database. The default is store them in `${HOME}/.pecan/dbfiles`
+
+In addition, the following tags can be used for the ED2 model:
+
+* `pss`: [required] location of patch file
+* `css`: [required] location of cohort file
+* `site`: [optional] location of site file
+* `lu`: [required] location of land use file
+* `thsums`: [required] location of thermal sums file
+* `veg`: [required] location of vegetation data
+* `soil`: [required] location of soil data
+
+Other model types will have different model specific inputs.  PEcAn will find the location of the file on the host you run PEcAn on.
+
+### `host`: Host information for remote execution {#xml-host}
+
+This section provides settings for remote model execution, i.e. any execution that happens on a machine (including "virtual" machines, like Docker containers) different from the one on which the main PEcAn workflow is running.
+A common use case for this section is to submit model runs as jobs to a high-performance computing cluster.
+If no `host` tag is provided, PEcAn assumes models are run on `localhost`, a.k.a. the same machine as PEcAn itself.
+
+**NOTE**: Any paths specified in the `pecan.xml` refer to paths on the `host` specified in this section, /not/ the machine on which PEcAn is running (unless models are running on `localhost` or this section is omitted).
+
+```xml
+	<host>
+		<name>pecan2.bu.edu</name>
+		<rundir>/fs/data3/guestuser/pecan/testworkflow/run</rundir>
+		<outdir>/fs/data3/guestuser/pecan/testworkflow/out</outdir>
 		<scratchdir>/tmp/carya</scratchdir>
 		<clearscratch>TRUE</clearscratch>
 		<qsub>qsub -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub>
 		<qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
 		<qstat>qstat -j @JOBID@ &> /dev/null || echo DONE</qstat>
 		<job.sh>module load udunits R/R-3.0.0_gnu-4.4.6</job.sh>
-</host>
+	</host>
 ```
 
-* **jobtemplate** : [optional] the template used when creating a job.sh file which is used to launch the actual model. Each model has it's own [template](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/template.job) in the inst folder of the module. The following variables can e used: @SITE_LAT@, @SITE_LON@, @SITE_MET@, @START_DATE@, @END_DATE@, @OUTDIR@, @RUNDIR@ which all come variables in the pecan.xml file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : @SCRATCH_COPY@, @SCRATCH_CLEAR@ .
-* **start.date** : [required] the first day of the simulation  
-* **end.date** : [required] the last day of the simulation
-* **dbfiles** : [optional] location where pecan should write files that will be stored in the database. The default is store them in `${HOME}/.pecan/dbfiles`
+The `host` section has the following tags:
 
-Site specific information is specified in the `<site>` subsection. Either `<id>` or `<name>`, `<lat>` and `<lon>` should be specified. If id and any of the others are specified the values will be compared with those from BETYdb.
- 
-* **id** : [optional/required] id of the site in the BETY database, see above.  
-* **name** : [optional/required] site name, see above.  
-* **lat** : [optional/required] site latitude, see above.  
-* **lon** : [optional/required] site longitude, see above.  
-
-Inputs specific information for each model type is specified in the `<inputs>` subsection. 
-Each input will have three tags:
-* **id** :  [optional/required] An id that points to the input if already in the database.
-* **path** : [optional/required] The path to the dataset if already downloaded.
-* **source** : [optional/required] The input data type. This tag name needs to match the names in the conversion functions. 
-In general, the path should be filled in by PEcAn and not by the user.
-If PEcAn is processing all the input, id is not required. Alternatively, if you're using data processed by hand, source is not required. 
-
-
-One common input will be the weather data, often specified in `<met>`.
-
-Other model types will have different model specific inputs.  PEcAn will find the location of the file on the host you run PEcAn on.
-
-* **met** : [model type specific] most models will have a met tag to specify location of the weather data.
-* **pss** : [ED2, required] location of patch file
-* **css** : [ED2, required] location of cohort file
-* **site** : [ED2, optional] location of site file
-* **lu** : [ED2, required] location of land use file
-* **thsums** : [ED2, required] location of thermal sums file
-* **veg** : [ED2, required] location of vegetation data
-* **soil** : [ED2, required] location of soil data
-
-Host on which the simulation will run is specified in the `<host>` subsection. If this section is not specified it is assumed the simulation will run on localhost. If qsub is specified (can be empty in which case the defaults will be used) the models will be executed using qsub.
-
-* **name** : [optional] name of host server where model is located and executed, if not specified localhost is assumed.  
-* **rundir** : [optional/required] location where all the configuration files are written. For localhost this is optional (`<outdir>/run` is the default), for any other host this is required.  
-* **outdir** : [optional/required] location where all the outputs of the model are written. For localhost this is optional (`<outdir>/out` is the default), for any other host this is required.
-* **scratchdir** : [optional] location where output is written. If specified the output from the model is written to this folder and copied to the outdir when the model is finished, this could significantly speed up the model execution (by using local or ram disk).
-* **clearscratch** : [optional] if set to TRUE the scratchfolder is cleaned up after copying the results to the outdir, otherwise the folder will be left. The default is to clean up after copying.
-* **qsub** : [optional] the command to submit a job to the queuing system. There are 3 parameters you can use when specifying the qsub command, you can add additional values for your specific setup (for example -l walltime to specify the walltime, etc). You can specify @NAME@ the pretty name, @STDOUT@ where to write stdout and @STDERR@, where to write stderr. You can specify an empty element (<qsub/>) in which case it will use the default value is "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -s /bin/bash".
-* **qsub.jobid** : [optional] the regular expression used to find the jobid returned from qsub. If not specified (and qsub is) it will use the default value is "Your job ([0-9]+) .*"
-* **qstat** : [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take @JOBID@ which is the id of the job as returned by qsub.jobid. If not specified (and qsub is) it will use the default value is "qstat -j @JOBID@ || echo DONE"
-* **job.sh** : [optional] additional options to add to the job.sh at the top  
+* `name`: [optional] name of host server where model is located and executed, if not specified localhost is assumed.
+* `rundir`: [optional/required] location where all the configuration files are written. For localhost this is optional (`<outdir>/run` is the default), for any other host this is required.
+* `outdir`: [optional/required] location where all the outputs of the model are written. For localhost this is optional (`<outdir>/out` is the default), for any other host this is required.
+* `scratchdir`: [optional] location where output is written. If specified the output from the model is written to this folder and copied to the outdir when the model is finished, this could significantly speed up the model execution (by using local or ram disk).
+* `clearscratch`: [optional] if set to TRUE the scratchfolder is cleaned up after copying the results to the outdir, otherwise the folder will be left. The default is to clean up after copying.
+* `qsub`: [optional] the command to submit a job to the queuing system. There are 3 parameters you can use when specifying the qsub command, you can add additional values for your specific setup (for example -l walltime to specify the walltime, etc). You can specify @NAME@ the pretty name, @STDOUT@ where to write stdout and @STDERR@, where to write stderr. You can specify an empty element (`<qsub/>`) in which case it will use the default value is `qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -s /bin/bash`.
+* `qsub.jobid`: [optional] the regular expression used to find the `jobid` returned from `qsub`. If not specified (and `qsub` is) it will use the default value is `Your job ([0-9]+) .*`
+* `qstat`: [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take `@JOBID@` which is the ID of the job as returned by `qsub.jobid`. If not specified (and qsub is) it will use the default value is `qstat -j @JOBID@ || echo DONE`
+* `job.sh`: [optional] additional options to add to the job.sh at the top.
 
 ## Advanced features {#xml-advanced}
 
