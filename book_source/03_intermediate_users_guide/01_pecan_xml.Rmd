@@ -12,15 +12,14 @@ It contains the following major sections ("nodes"):
 	- [`meta.analysis`](#xml-meta-analysis) -- Trait meta analysis
 	- [`model`](#xml-model) -- Model configuration
 	- [`run`](#xml-run) -- Run setup
-- [Stable advanced features](#xml-stable-advanced)
+- [Advanced features](#xml-advanced)
 	- [`ensemble`](#xml-ensemble) -- Ensemble runs
 	- [`sensitivity.analysis`](#xml-sensitivity-analysis) -- Sensitivity analysis
-- [Experimental features](#xml-experimental)
-	- [`browndog`](#xml-browndog) -- Brown Dog configuration
-	- [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
 	- [`parameter.data.assimilation`](#xml-parameter-data-assimilation) -- Parameter data assimilation
-	- [`benchmarking`](#xml-benchmarking) -- Benchmarking
-
+	- (experimental) [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
+	- (experimental) [`browndog`](#xml-browndog) -- Brown Dog configuration
+	- (experimental) [`benchmarking`](#xml-benchmarking) -- Benchmarking
+	
 A basic example looks like this:
 
 ```xml
@@ -434,7 +433,7 @@ Host on which the simulation will run is specified in the `<host>` subsection. I
 * **qstat** : [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take @JOBID@ which is the id of the job as returned by qsub.jobid. If not specified (and qsub is) it will use the default value is "qstat -j @JOBID@ || echo DONE"
 * **job.sh** : [optional] additional options to add to the job.sh at the top  
 
-## Stable advanced features {#xml-stable-advanced}
+## Advanced features {#xml-advanced}
 
 ### `ensemble`: Ensemble Runs {#xml-ensemble}
 
@@ -530,29 +529,15 @@ This information is currently used by the following PEcAn workflow functions:
 - `write.configs()` - ???
 - `run.sensitivity.analysis()` - ???
 
-## Experimental features
+### Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
-### Brown Dog {#xml-browndog}
+The following tags can be used for state data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](pda.documentation.md)
 
-This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This facilitates processing and conversions of data (currently only meteorological input data).
+#### tags
 
-```xml
-  <browndog>
-	<url>...</url>
-	<username>...</username>
-	<password>...</password>
-  </browndog>
-```
+Coming soon...
 
-* `url`: (required) endpoint for Brown Dog to be used.
-* `username`: (optional) username to be used with the endpoint for Brown Dog.
-* `password`: (optional) password to be used with the endpoint for Brown Dog.
-
-This information is currently used by the following R functions:
-
-- `PEcAn.data.atmosphere::met.process` -- Generic function for processing meteorological input data.
-
-### State Data Assimilation {#xml-state-data-assimilation}
+### (experimental) State Data Assimilation {#xml-state-data-assimilation}
 
 The following tags can be used for state data assimilation. More detailed information can be found here: [State Data Assimilation Documentation](sda.documentation.md)
 
@@ -585,15 +570,27 @@ The following tags can be used for state data assimilation. More detailed inform
 * **end.date** : [required?] end date of the state data assimilation (in YYYY/MM/DD format)
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
 
-### Parameter Data Assimilation {#xml-parameter-data-assimilation}
+### (experimental) Brown Dog {#xml-browndog}
 
-The following tags can be used for state data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](pda.documentation.md)
+This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This facilitates processing and conversions of data (currently only meteorological input data).
 
-#### tags
+```xml
+  <browndog>
+	<url>...</url>
+	<username>...</username>
+	<password>...</password>
+  </browndog>
+```
 
-Coming soon...
+* `url`: (required) endpoint for Brown Dog to be used.
+* `username`: (optional) username to be used with the endpoint for Brown Dog.
+* `password`: (optional) password to be used with the endpoint for Brown Dog.
 
-### Benchmarking {#xml-benchmarking}
+This information is currently used by the following R functions:
+
+- `PEcAn.data.atmosphere::met.process` -- Generic function for processing meteorological input data.
+
+### (experimental) Benchmarking {#xml-benchmarking}
 
 Coming soon...
 
