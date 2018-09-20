@@ -27,7 +27,7 @@ linkages('@INPUT@','@OUTDIR@','@RESTART@','@RESTARTFILE@')
  
   # convert to MsTMIP
   echo "require (PEcAn.LINKAGES)
-model2netcdf.LINKAGES('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+model2netcdf.LINKAGES('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @PFT_NAMES@)
 " | R --vanilla
 fi
 

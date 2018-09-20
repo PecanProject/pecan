@@ -4,7 +4,8 @@
 \alias{read_ed_veg}
 \title{Read ED2 vegetation inputs}
 \usage{
-read_ed_veg(path_prefix, latitude = NULL, longitude = NULL, check = TRUE)
+read_ed_veg(path_prefix, latitude = NULL, longitude = NULL,
+  check = TRUE)
 }
 \arguments{
 \item{path_prefix}{Full path and prefix to initial condition files.}

@@ -1,0 +1,55 @@
+# ----------------------------------------------------------------------
+# PECAN FOR MODEL BASE IMAGE
+# ----------------------------------------------------------------------
+FROM r-base
+MAINTAINER Rob Kooper <kooper@illinois.edu>
+
+# ----------------------------------------------------------------------
+# SETUP 
+# ----------------------------------------------------------------------
+WORKDIR /work
+
+# ----------------------------------------------------------------------
+# INSTALL DEVTOOLS
+# ----------------------------------------------------------------------
+
+# INSTALL DEVTOOLS
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libcurl4-gnutls-dev \
+        libssh2-1-dev \
+        libssl-dev \
+        libxml2-dev \
+    && Rscript --vanilla -e "install.packages('devtools', repos='http://cran.rstudio.com/'); q(status=as.integer(!'devtools' %in% installed.packages()))" \
+    && Rscript --vanilla -e "install.packages('testthat', repos='http://cran.rstudio.com/'); q(status=as.integer(!'testthat' %in% installed.packages()))" \
+    && Rscript --vanilla -e "install.packages('roxygen2', repos='http://cran.rstudio.com/'); q(status=as.integer(!'roxygen2' %in% installed.packages()))" \
+    && Rscript --vanilla -e "devtools::install_github('cran/RAtmosphere'); q(status=as.integer(!'RAtmosphere' %in% installed.packages()))"
+
+# ----------------------------------------------------------------------
+# INSTALL PECAN
+# ----------------------------------------------------------------------
+
+RUN apt-get install -y --no-install-recommends \ 
+        jags \
+        libgdal-dev \
+        libnetcdf-dev \
+        libpq-dev \
+        libudunits2-dev \
+        time
+
+# copy folders
+COPY Makefile /pecan/
+COPY base     /pecan/base/
+COPY modules  /pecan/modules/
+COPY models   /pecan/models/
+
+RUN cd /pecan && make
+
+# COPY WORKFLOW
+COPY web/workflow.R /work/
+
+# CLEANUP
+RUN rm -rf /var/lib/apt/lists/*
+
+# COMMAND TO RUN
+CMD Rscript --vanilla workflow.R | tee workflow.Rout

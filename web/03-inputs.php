@@ -383,7 +383,6 @@ $stmt->closeCursor();
         <input name="userok" type="hidden" value="on">
 <?php } ?>
 <?php foreach($_REQUEST as $key => $value){
-		file_put_contents('php://stderr', print_r('key top ' + $key, TRUE));
         if(is_array($value)) {
           foreach($value as $v) {
             echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";

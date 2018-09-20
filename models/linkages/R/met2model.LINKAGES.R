@@ -65,7 +65,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   nyear <- length(year)  # number of years to simulate
 
   month_matrix_precip <- matrix(NA, nyear, 12)
-  DOY_vec_hr <- c(1, c(32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365) * 4)
+  DOY_vec_hr <- c(1, c(32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365) * 24)
 
   if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
 
@@ -112,6 +112,8 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
 
   precip.mat <- month_matrix_precip
   temp.mat <- month_matrix_temp_mean
+  rownames(temp.mat) <- start_year:end_year
+  rownames(precip.mat) <- start_year:end_year
   save(precip.mat, temp.mat, file = out.file)
   return(invisible(results))
 } # met2model.LINKAGES

@@ -1,5 +1,5 @@
 .metgapfill.module <- function(cf.id, register, dir, met, str_ns, site, new.site, con, 
-                               start_date, end_date, host, overwrite = FALSE) {
+                               start_date, end_date, host, overwrite = FALSE, ensemble_name = NULL) {
   PEcAn.logger::logger.info("Gapfilling")  # Does NOT take place on browndog!
   
   input.id   <- cf.id[1]
@@ -11,7 +11,19 @@
   mimetype   <- "application/x-netcdf"
   lst        <- site.lst(site.id=site$id, con=con)
   
-  ready.id <- PEcAn.utils::convert.input(input.id = input.id, 
+  if (!is.null(register$forecast)) {
+    forecast <- isTRUE(as.logical(register$forecast))
+  } else {
+    forecast <- FALSE
+  }
+  
+  # met products requiring special gapfilling functions (incompatable with metgapfill)
+  # Overrides default value of "fcn"
+  if (met %in% c("NOAA_GEFS")) {
+    fcn <- "metgapfill.NOAA_GEFS"
+  }
+  
+  ready.id <- PEcAn.utils::convert.input(input.id = input.id,
                             outfolder = outfolder, 
                             formatname = formatname, 
                             mimetype =  mimetype, 
@@ -21,7 +33,11 @@
                             write = TRUE, 
                             lst = lst, 
                             overwrite = overwrite,
-                            exact.dates = FALSE)
+                            exact.dates = FALSE,
+                            forecast = forecast,
+                            pattern = met,
+                            ensemble = !is.null(register$ensemble) && as.logical(register$ensemble),
+                            ensemble_name = ensemble_name)
   
   print(ready.id)
   

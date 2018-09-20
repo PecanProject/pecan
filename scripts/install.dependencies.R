@@ -38,11 +38,6 @@ if (length(new.packages)) {
   warning("If Maeswrap Package download fails, please refer to PEcAn documentation for download instructions")
 }
 
-# install packages from forge
-if (!("REddyProc" %in% installed.packages()[, "Package"])) {
-  install.packages("REddyProc", repos = "http://R-Forge.R-project.org", type = "source")
-}
-
 # install packages from github
 if (!("BioCro" %in% installed.packages()[, "Package"])) {
   devtools::install_github("ebimodeling/biocro")

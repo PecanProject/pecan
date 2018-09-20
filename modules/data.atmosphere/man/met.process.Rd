@@ -4,8 +4,9 @@
 \alias{met.process}
 \title{met.process}
 \usage{
-met.process(site, input_met, start_date, end_date, model, host = "localhost",
-  dbparms, dir, browndog = NULL, spin = NULL, overwrite = FALSE)
+met.process(site, input_met, start_date, end_date, model,
+  host = "localhost", dbparms, dir, browndog = NULL, spin = NULL,
+  overwrite = FALSE)
 }
 \arguments{
 \item{site}{Site info from settings file}
@@ -35,6 +36,9 @@ met.process(site, input_met, start_date, end_date, model, host = "localhost",
        *except* raw met downloads. I.e., it corresponds to:
 
        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)}
+}
+\description{
+met.process
 }
 \author{
 Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly

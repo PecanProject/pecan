@@ -7,13 +7,17 @@
 #' @param lon.in Site longitude coordinate
 #' @param overwrite Overwrite existing files?  Default=FALSE
 #' @param verbose Turn on verbose output? Default=FALSE
-#' @param parallel Download in parallel? Default = TRUE.
+#' @param parallel Download in parallel? Default = TRUE
 #' @param ncores Number of cores for parallel download. Default is 
 #' `parallel::detectCores()`
-#' 
+#'
 #' @examples
-#' download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 #' 
+#' \dontrun{
+#' download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
+#' }
+#' 
+#'
 #' @export
 #'
 #' @author Alexey Shiklomanov
@@ -23,7 +27,7 @@ download.NARR_site <- function(outfolder,
                                overwrite = FALSE,
                                verbose = FALSE,
                                progress = TRUE,
-                               parallel = FALSE,
+                               parallel = TRUE,
                                ncores = if (parallel) parallel::detectCores() else NULL,
                                ...) {
 
@@ -205,6 +209,13 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
   if (parallel) {
+    if (!requireNamespace("parallel", quietly = TRUE)
+        || !requireNamespace("doParallel", quietly = TRUE)) {
+      PEcAn.logger::logger.severe(
+        "Could not find all packages needed for simultaneous NARR downloads. ",
+        "Either run `install.packages(c(\"parallel\", \"doParallel\"))`, ",
+        "or call get_NARR_thredds with `parallel = FALSE`.")
+    }
 
     # Load in parallel
     PEcAn.logger::logger.info("Downloading in parallel")
@@ -448,6 +459,10 @@ latlon2narr <- function(nc, lat.in, lon.in) {
 #' @inheritParams get_NARR_thredds
 #' @return `sp::SpatialPoints` object containing transformed x and y 
 #' coordinates, in km, which should match NARR coordinates
+#' @importFrom rgdal checkCRSArgs
+  # ^not used directly here, but needed by sp::CRS.
+  # sp lists rgdal in Suggests rather than Imports,
+  # so importing it here to ensure it's available at run time
 #' @author Alexey Shiklomanov
 #' @export
 latlon2lcc <- function(lat.in, lon.in) {

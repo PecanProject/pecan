@@ -6,8 +6,9 @@
 \usage{
 gen.subdaily.models(outfolder, path.train, yrs.train,
   direction.filter = "forward", in.prefix, n.beta, day.window,
-  seed = Sys.time(), resids = FALSE, parallel = FALSE, n.cores = NULL,
-  overwrite = TRUE, verbose = FALSE, print.progress = FALSE)
+  seed = Sys.time(), resids = FALSE, parallel = FALSE,
+  n.cores = NULL, overwrite = TRUE, verbose = FALSE,
+  print.progress = FALSE)
 }
 \arguments{
 \item{outfolder}{- directory where models will be stored *** storage required varies by size of training dataset, but prepare for >10 GB}
@@ -67,3 +68,4 @@ Other tdm - Temporally Downscale Meteorology: \code{\link{lm_ensemble_sims}},
 \author{
 Christy Rollinson, James Simkins
 }
+\concept{tdm - Temporally Downscale Meteorology}

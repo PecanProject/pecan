@@ -7,12 +7,17 @@ The infrastructure for remote execution lives in the `PEcAn.remote` package (`ba
 
 This section describes the following:
 
-- Basics of command line SSH
-- SSH authentication with keys and passwords
-- Basics of SSH tunnels, and how they are used in PEcAn
-- Basic remote exectuion R functions in `PEcAn.remote`
-- Remote model execution configuration in the `pecan.xml` and `config.php`
-- Additional information about preparing remote servers for execution
+1. Checking capabilities to connect to the remote machine correctly:
++ Basics of command line SSH
++ SSH authentication with keys and passwords
++ Basics of SSH tunnels, and how they are used in PEcAn
+
+2. Description of PEcAn related tools that control remote execution
++ Basic remote execution R functions in `PEcAn.remote`
+
+3. SETUP- Configuration Files and settings
++ Remote model execution configuration in the `pecan.xml` and `config.php`
++ Additional information about preparing remote servers for execution
 
 
 ## Basics of SSH
@@ -31,7 +36,7 @@ For instance, my connection to the BU shared computing cluster looks like:
 ssh ashiklom@geo.bu.edu
 ```
 
-...which will prompt me for my BU password, and, if successful, will drop me into a login shell on the remote machine.
+It will prompt me for my BU password, and, if successful, will drop me into a login shell on the remote machine.
 
 Alternatively to the login shell, `ssh` can be used to execute arbitrary code, whose output will be returned exactly as it would if you ran the command locally.
 For example, the following:
@@ -40,7 +45,7 @@ For example, the following:
 ssh ashiklom@geo.bu.edu pwd
 ```
 
-...will run the `pwd` command, and return the path to my home directory on the BU SCC.
+will run the `pwd` command, and return the path to my home directory on the BU SCC.
 The more advanced example below will run some simple R code on the BU SCC and return the output as if it was run locally.
 
 ```sh
@@ -224,8 +229,10 @@ Documentation for using the model launcher is currently unavailable.
 ### Configuration for PEcAn web interface
 
 The `config.php` has a few variables that will control where the web
-interface can run jobs, and how to run those jobs. These variables
-are `$hostlist`, `$qsublist`, `$qsuboptions`, and `$SSHtunnel`. In
+interface can run jobs, and how to run those jobs. It is located in the `/web` directory and if you have not touched it yet it will
+be named as `config.example.php`. Rename it to 'config.php` and edit by folowing the following directions.
+
+These variables are `$hostlist`, `$qsublist`, `$qsuboptions`, and `$SSHtunnel`. In
 the near future `$hostlist`, `$qsublist`, `$qsuboptions` will be
 combined into a single list.
 
@@ -248,7 +255,7 @@ that jobs on the local machine should use qsub to run the models.
 
 `$qsuboptions` : is an array that lists options for each machine.
 Currently it support the following options (see also
-[PEcAn-Configuration](PEcAn-Configuration.md#run_setup))
+[Run Setup] and look at the tags)
 
 ```
 array("geo.bu.edu" =>
@@ -266,28 +273,27 @@ are additional entries to add to the job.sh file generated to
 run the model. This can be used to make sure modules are loaded
 on the HPC cluster before running the actual model.
 
-## Running PEcAn code for modules remotely
+## Running PEcAn code for remotely
 
-You can compile and install the model specific code pieces of
+You do not need to download PEcAn fully on your remote machine. You can compile and install the model specific code pieces of
 PEcAn on the cluster easily without having to install the
-full code base of PEcAn (and all OS dependencies). All of the
-code pieces depend on PEcAn.utils to install this you can
-run the following on the cluster:
+full code base of PEcAn (and all OS dependencies). Use the `git clone ` command to:
 
 ```
-devtools::install_github("pecanproject/pecan", subdir = 'utils')
+devtools::install_github("pecanproject/pecan", subdir = 'base/utils')
 ```
 
 Next we need to install the model specific pieces, this is done
-almost the same:
+almost the same (example for ED2):
 
 ```
 devtools::install_github("pecanproject/pecan", subdir = 'models/ed')
 ```
 
-This should install dependencies required. Following are some
-notes on how to install the model specifics on different HPC
-clusters.
+This should install dependencies required. 
+
+* The following are some notes on how to install the model specifics on different HPC
+clusters*
 
 ### geo.bu.edu
 
@@ -309,7 +315,7 @@ install.packages(c('udunits2', 'lubridate'),
 Finally to install support for both ED and SIPNET:
 
 ```
-devtools::install_github("pecanproject/pecan", subdir = 'utils')
+devtools::install_github("pecanproject/pecan", subdir = 'base/utils')
 devtools::install_github("pecanproject/pecan", subdir = 'models/sipnet')
 devtools::install_github("pecanproject/pecan", subdir = 'models/ed')
 ```
