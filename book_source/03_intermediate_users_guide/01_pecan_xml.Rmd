@@ -282,17 +282,7 @@ This information is currently used by the following PEcAn workflow function:
 
 ### `model`: Model configuration {#xml-model}
 
-This section is required and tells PEcAn what model to run. This section should either specify `<id>` or both `<name>` and `<binary>`  of the model. If both id and name and/or binary are specified the id is used to check the specified name and/or binary.
-
-As of version 1.3.7 the `<name>` tag has been renamed `<type>`. The `<type>` tag refers to the "type" of model and is used for a) identifying appropriate pfts and b) identifying whether appropriate inputs (i.e. met data) are available for the given site and model (or if they can be created). 
-
-To ensure compatability, the code will automatically convert from `<name>` to `<type>`.
-
-#### functions: 
-
-`write.configs()`, `run.models()`
-
-#### tags
+This section describes which model PEcAn should run and some instructions for how to run it.
 
 ```xml
 <model>
@@ -306,12 +296,16 @@ To ensure compatability, the code will automatically convert from `<name>` to `<
 </model>
 ```
 
-* **id** : [optional/required] id in the models database table, see above.  
-* **name** : **OBSOLETE** name of the model, use type from version 1.3.7
-* **type** : [optional/required] type of model, see above.
-* **binary** : [optional/required] path to the model executable, see above.  
-* **job.sh** : [optional] additional options to add to the job.sh at the top  
-* **config.headers** : [optional] XML that will appear at the start of generated config files.
+Some important tags are as follows:
+
+- `id` -- The unique numeric ID of the model in the Bety `models` table. If this is present, then `type` and `binary` are optional since they can be determined from Bety.
+- `type` -- The model "type", matching the Bety `modeltypes` table `name` column. This also refers to which PEcAn model-specific package will be used. In PEcAn, a "model" refers to a specific version (e.g. release, git commit) of a specific model, and "model type" is used to link different releases of the same model. Model "types" also have specific PFT definitions and other requirements associated with them (e.g. the ED2 model "type" requires a global land cover database).
+- `binary` -- The file path to the model executable. If omitted, PEcAn will use whatever path is registered in Bety for the current machine. 
+- `job.sh` -- Additional options added to the `job.sh` script, which is used to execute the model. This is useful for setting specific environment variables, load modules, etc.
+
+This information is currently used by the following PEcAn workflow function:
+
+`write.configs()`, `run.models()`
 
 #### Model-specific configuration {#xml-model-specific}
 
