@@ -50,7 +50,7 @@ Slack serves as our day to day mode of communication. To join us in slack you wi
 2. <a id="slackreturn"></a>Check your inbox for an email from Slack with subject "Rob Kooper has invited you to join a Slack workspace". This email should have a link that you can click to join slack.
 3. When you click a webpage will open up that asks you to create an account, once that is done you can login into the slack chatrooms.
 
-**Email:** pecanproj@gmail.com
+**Email:** pecanproj[at]gmail.com
 If you do not wish your communication with the team to be public, send us an email at the  address above and we will get back to you as soon as possible.
 
 
