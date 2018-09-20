@@ -3,21 +3,23 @@
 The PEcAn system is configured using a XML file, often called `pecan.xml`.
 It contains the following major sections ("nodes"):
 
-- [Top level structure](#xml-structure)
-- [`info`](#xml-info) -- Run metadata
-- [`outdir`](#xml-outdir) -- Output directory
-- [`database`](#xml-database) -- Bety and other database settings
-- [`browndog`](#xml-browndog) -- Brown dog configuration
-- [`pft`](#xml-pft) -- Plant functional type selection
-- [`meta.analysis`](#xml-meta-analysis) -- Trait meta analysis
-- [`ensemble`](#xml-ensemble) -- Ensemble runs
-- [`sensitivity.analysis`](#xml-sensitivity-analysis) -- Sensitivity analysis
-- [`model`](#xml-model) -- Model configuration
-- [`run`](#xml-run) -- Run setup
-- [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
-- [`parameter.data.assimilation`](#xml-parameter-data-assimilation) -- Parameter data assimilation
-- [`benchmarking`](#xml-benchmarking) -- Benchmarking
-- [Model-specific configuration](#xml-model-specific)
+- [Core configuration](#xml-core-config)
+	- [Top level structure](#xml-structure)
+	- [`info`](#xml-info) -- Run metadata
+	- [`outdir`](#xml-outdir) -- Output directory
+	- [`database`](#xml-database) -- Bety and other database settings
+	- [`pft`](#xml-pft) -- Plant functional type selection
+	- [`meta.analysis`](#xml-meta-analysis) -- Trait meta analysis
+	- [`model`](#xml-model) -- Model configuration
+	- [`run`](#xml-run) -- Run setup
+- [Stable advanced features](#xml-stable-advanced)
+	- [`ensemble`](#xml-ensemble) -- Ensemble runs
+	- [`sensitivity.analysis`](#xml-sensitivity-analysis) -- Sensitivity analysis
+- [Experimental features](#xml-experimental)
+	- [`browndog`](#xml-browndog) -- Brown Dog configuration
+	- [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
+	- [`parameter.data.assimilation`](#xml-parameter-data-assimilation) -- Parameter data assimilation
+	- [`benchmarking`](#xml-benchmarking) -- Benchmarking
 
 A basic example looks like this:
 
@@ -99,7 +101,9 @@ A basic example looks like this:
 
 In the following sections, we step through each of these sections in detail.
 
-## Top-level structure {#xml-structure}
+## Core configuration {#xml-core-config}
+
+### Top-level structure {#xml-structure}
 
 The first line of the XML file should contain version and encoding information. 
 
@@ -115,7 +119,7 @@ The rest of the XML file should be surrounded by `<pecan>...</pecan>` tags.
 </pecan>
 ```
 
-## `info`: Run metadata {#xml-info}
+### `info`: Run metadata {#xml-info}
 
 This section contains run metadata.
 This information is not essential to a successful model run, but is useful for tracking run provenance. 
@@ -135,7 +139,7 @@ The `<userid>` and `<username>` section is filled in from the GUI if you are sig
 
 The `<date></date>` tag is filled automatically at the time of your run from the GUI. If you are not using the GUI, add the date you execute the run. This tag is not the tag for the dates you would like to run your model simulation.
 
-## `outdir`: Output directory {#xml-outdir}
+### `outdir`: Output directory {#xml-outdir}
 
 The `<outdir>` tag is used to configure the output folder used by PEcAn.
 This is the directory where all model input and output files will be stored.
@@ -146,9 +150,9 @@ If no `outdir` is specified, PEcAn defaults to the working directory from which 
   <outdir>/data/workflows/PEcAn_99000000006</outdir>
 ```
 
-## `database`: Bety and other database settings {#xml-database}
+### `database`: Bety and other database settings {#xml-database}
 
-### `bety`: Bety configuration {#xml-bety}
+#### `bety`: Bety configuration {#xml-bety}
 
 The `bety` tag defines the driver to use to connect to the database (in 99.9% of 
 cases, this should be `PostgreSQL`, the default) and parameters required to connect to the database. Note that connection parameters are passed *exactly* as entered to the underlying R database driver, and any invalid or extra parameters will result in an error.
@@ -199,7 +203,7 @@ Key R functions using these parameters are as follows:
 
 - `PEcAn.DB::db.open` -- Open a Bety connection and create a connection object, which is used by many other functions for communicating with Bety.
 
-### `dbfiles`: Location of database files {#xml-dbfiles}
+#### `dbfiles`: Location of database files {#xml-dbfiles}
 
 The `dbfiles` is a path to the local location of files needed to run models using PEcAn, including model executables and inputs.
 
@@ -211,7 +215,7 @@ The `dbfiles` is a path to the local location of files needed to run models usin
   </database>
 ```
 
-### (Experimental) `fia`: FIA database connection parameters {#xml-fia}
+#### (Experimental) `fia`: FIA database connection parameters {#xml-fia}
 
 If a version of the FIA database is available, it can be configured using `<fia>` node, whose syntax is identical to that of the `<bety>` node.
 
@@ -231,27 +235,7 @@ If a version of the FIA database is available, it can be configured using `<fia>
 Currently, this is only used for extraction of specific site vegetation information (notably, for ED2 `css`, `pss`, and `site` files).
 Stability not ensured as of 1.5.3.
 
-## Brown Dog Configuration {#xml-browndog}
-
-This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This facilitates processing and conversions of data (currently only meteorological input data).
-
-```xml
-  <browndog>
-	<url>...</url>
-	<username>...</username>
-	<password>...</password>
-  </browndog>
-```
-
-* `url`: (required) endpoint for Brown Dog to be used.
-* `username`: (optional) username to be used with the endpoint for Brown Dog.
-* `password`: (optional) password to be used with the endpoint for Brown Dog.
-
-This information is currently used by the following R functions:
-
-- `PEcAn.data.atmosphere::met.process` -- Generic function for processing meteorological input data.
-
-## `pft`: Plant functional type selection {#xml-pft}
+### `pft`: Plant functional type selection {#xml-pft}
 
 The PEcAn system requires at least 1 plant functional type (PFT) to be specified inside the `<pfts>` section. 
 
@@ -274,7 +258,7 @@ This information is currently used by the following PEcAn workflow function:
 
 - `get.traits` - ??????
 
-## `meta.analysis`: Trait Meta Analysis {#xml-meta-analysis}
+### `meta.analysis`: Trait Meta Analysis {#xml-meta-analysis}
 
 The section meta.analysis needs to exists for a meta.analysis to be executed, even though all tags inside are optional.
 Conversely, if you do not want to do a trait meta-analysis (e.g. if you want to manually set all parameters), you should omit this node.
@@ -297,101 +281,7 @@ This information is currently used by the following PEcAn workflow function:
 
 - `PEcAn.MA::run.meta.analysis` - ???
 
-## `ensemble`: Ensemble Runs {#xml-ensemble}
-
-As with `meta.analysis`, if this section is missing, then PEcAn will not do an ensemble analysis.
-
-```xml
-  <ensemble>
-   <size>1</size>
-   <variable>NPP</variable>
-   <samplingspace>
-   <parameters>
-    <method>uniform</method>
-   </parameters>
-   <met>
-    <method>sampling</method>
- 	</met>
-   </samplingspace>
-  </ensemble>
-```
-
-An alternative configuration is as follows:
-
-```xml
-<ensemble>
-  <size>5</size>
-  <variable>GPP</variable>
-  <start.year>1995</start.year>
-  <end.year>1999</end.year>
-  <samplingspace>
-  <parameters>
-    <method>lhc</method>
-  </parameters>
-  <met>
-    <method>sampling</method>
-  </met>
-  </samplingspace>
-</ensemble>
-```
-
-* `size` : (required) the number of runs in the ensemble.
-* `variable`: (optional) name of one (or more) variables the analysis should be run for. If not specified, `sensitivity.analysis` variable is used, otherwise default is GPP (Gross Primary Productivity).
-* `samplingspace`: (optional) Contains tags for defining how the ensembles will be generated.
-
-Each piece in the sampling space can potentially have a method tag and a parent tag. Method refers to the sampling method and parent refers to the cases where we need to link the samples of two components. When no tag is defined for one component, one sample will be generated and used for all the ensembles. This allows for partitioning/studying different sources of uncertainties. For example, if no met tag is defined then, one met path will be used for all the ensembles and as a result the output uncertainty will come from the variability in the parameters. At the moment no sampling method is implemented for soil and vegetation.
-Available sampling methods for `parameters` can be found in the documentation of the `PEcAn.utils::get.ensemble.samples` function.
-For the cases where we need simulations with a predefined set of parameters, met and initial condition we can use the restart argument. Restart needs to be a list with name tags of `runid`, `inputs`, `new.params` (parameters), `new.state` (initial condition), `ensemble.id` (ensemble ids), `start.time`, and `stop.time`.
-
-The restart functionality is developed using model specific functions by called `write_restart.modelname`. You need to make sure first that this function is already exist for your desired model.
-
-Note: if the ensemble size is set to 1, PEcAn will select the **posterior median** parameter values rather than taking a single random draw from the posterior
-
-This information is currently used by the following PEcAn workflow functions:
-
-- `write.configs` - ???
-- `write.ensemble.configs` - ???
-- `run.ensemble.analysis()` - ???
-
-## `sensitivity.analysis`: Sensitivity analysis {#xml-sensitivity-analysis}
-
-Only if this section is defined a sensitivity analysis is done. This section will have `<quantile>` or `<sigma>` nodes. If neither are given, the default is to use the median +/- [1 2 3] x sigma (e.g. the 0.00135 0.0228 0.159 0.5 0.841 0.977 0.999 quantiles); If the 0.5 (median) quantile is omitted, it will be added in the code.
-
-#### tags
-
-```xml
-<sensitivity.analysis>
-	<quantiles>
-		<quantile></quantile>
-		<sigma>-3</sigma>
-		<sigma>-2</sigma>
-		<sigma>-1</sigma>
-		<sigma>1</sigma>
-		<sigma>2</sigma>
-		<sigma>3</sigma>
-	</quantiles>
-  <variable>GPP</variable>
-  <perpft>TRUE</perpft>
-	<start.year>2004</start.year>
-	<end.year>2006</end.year>
-</sensitivity.analysis>
-```
-
-* `quantiles` : [optional] Quantiles of parameter distributions at which the model should be evaluated when running sensitivity analysis. Values greater than 0 and less than 1 can be used.
-* `sigma` : [optional] Any real number can be used to indicate the quantiles to be used in units of normal probability.
-* `quantile` : [optional] Which quantile should be used.
-* `start.date` : [required?] start date of the sensitivity analysis (in YYYY/MM/DD format) 
-* `end.date` : [required?] end date of the sensitivity analysis (in YYYY/MM/DD format)
-* **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
-*  `variable` : [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
-* `perpft` : [optional] if `TRUE` a sensitivity analysis on PFT-specific outputs will be run. This is only possible if your model provides PFT-specific outputs for the `variable` requested. This tag only affects the output processing, not the number of samples proposed for the analysis nor the model execution.
-
-This information is currently used by the following PEcAn workflow functions:
-
-- `write.configs()` - ???
-- `run.sensitivity.analysis()` - ???
-
-## `model`: Model configuration {#xml-model}
+### `model`: Model configuration {#xml-model}
 
 This section is required and tells PEcAn what model to run. This section should either specify `<id>` or both `<name>` and `<binary>`  of the model. If both id and name and/or binary are specified the id is used to check the specified name and/or binary.
 
@@ -424,6 +314,14 @@ To ensure compatability, the code will automatically convert from `<name>` to `<
 * **job.sh** : [optional] additional options to add to the job.sh at the top  
 * **config.headers** : [optional] XML that will appear at the start of generated config files.
 
+#### Model-specific configuration {#xml-model-specific}
+
+See the following:
+
+* [ED2][ED2 Configuration]
+* [SIPNET][SIPNET Configuration]
+* [BIOCRO][BioCro Configuration]
+
 #### ED2 specific tags {#xml-ed}
 
 Following variables are ED specific and are used in the [ED2 Configuration](ED2-Configuration).
@@ -437,7 +335,7 @@ Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includ
 			<lai_min>0.01</lai_min>
 		</radiation>
 		<ed_misc>
-			<output_month>12</output_month>      
+			<output_month>12</output_month>
 		</ed_misc> 
 	</config.header>
 	<phenol.scheme>0</phenol.scheme>
@@ -445,13 +343,12 @@ Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includ
 
   
 * **edin** : [required] template used to write ED2IN file
-* **veg** : **OBSOLETE** [required] location of VEG database, now part of `<run><inputs>
-* **soil** : **OBSOLETE** [required] location of soild database, now part of `<run><inputs>
+* **veg** : **OBSOLETE** [required] location of VEG database, now part of `<run><inputs>`
+* **soil** : **OBSOLETE** [required] location of soild database, now part of `<run><inputs>`
 * **psscss** : **OBSOLETE** [required] location of site inforation, now part of `<run><inputs>`. Should be specified as `<pss>`, `<css>` and `<site>`.
 * **inputs** : **OBSOLETE** [required] location of additional input files (e.g. data assimilation data), now part of `<run><inputs>`. Should be specified as `<lu>` and `<thsums>`.
 
-
-## `run`: Run Setup {#xml-run}
+### `run`: Run Setup {#xml-run}
 
 #### tags
 
@@ -537,8 +434,125 @@ Host on which the simulation will run is specified in the `<host>` subsection. I
 * **qstat** : [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take @JOBID@ which is the id of the job as returned by qsub.jobid. If not specified (and qsub is) it will use the default value is "qstat -j @JOBID@ || echo DONE"
 * **job.sh** : [optional] additional options to add to the job.sh at the top  
 
+## Stable advanced features {#xml-stable-advanced}
 
-## State Data Assimilation Tags {#xml-state-data-assimilation}
+### `ensemble`: Ensemble Runs {#xml-ensemble}
+
+As with `meta.analysis`, if this section is missing, then PEcAn will not do an ensemble analysis.
+
+```xml
+  <ensemble>
+   <size>1</size>
+   <variable>NPP</variable>
+   <samplingspace>
+   <parameters>
+    <method>uniform</method>
+   </parameters>
+   <met>
+    <method>sampling</method>
+ 	</met>
+   </samplingspace>
+  </ensemble>
+```
+
+An alternative configuration is as follows:
+
+```xml
+<ensemble>
+  <size>5</size>
+  <variable>GPP</variable>
+  <start.year>1995</start.year>
+  <end.year>1999</end.year>
+  <samplingspace>
+  <parameters>
+    <method>lhc</method>
+  </parameters>
+  <met>
+    <method>sampling</method>
+  </met>
+  </samplingspace>
+</ensemble>
+```
+
+* `size` : (required) the number of runs in the ensemble.
+* `variable`: (optional) name of one (or more) variables the analysis should be run for. If not specified, `sensitivity.analysis` variable is used, otherwise default is GPP (Gross Primary Productivity).
+* `samplingspace`: (optional) Contains tags for defining how the ensembles will be generated.
+
+Each piece in the sampling space can potentially have a method tag and a parent tag. Method refers to the sampling method and parent refers to the cases where we need to link the samples of two components. When no tag is defined for one component, one sample will be generated and used for all the ensembles. This allows for partitioning/studying different sources of uncertainties. For example, if no met tag is defined then, one met path will be used for all the ensembles and as a result the output uncertainty will come from the variability in the parameters. At the moment no sampling method is implemented for soil and vegetation.
+Available sampling methods for `parameters` can be found in the documentation of the `PEcAn.utils::get.ensemble.samples` function.
+For the cases where we need simulations with a predefined set of parameters, met and initial condition we can use the restart argument. Restart needs to be a list with name tags of `runid`, `inputs`, `new.params` (parameters), `new.state` (initial condition), `ensemble.id` (ensemble ids), `start.time`, and `stop.time`.
+
+The restart functionality is developed using model specific functions by called `write_restart.modelname`. You need to make sure first that this function is already exist for your desired model.
+
+Note: if the ensemble size is set to 1, PEcAn will select the **posterior median** parameter values rather than taking a single random draw from the posterior
+
+This information is currently used by the following PEcAn workflow functions:
+
+- `write.configs` - ???
+- `write.ensemble.configs` - ???
+- `run.ensemble.analysis()` - ???
+
+### `sensitivity.analysis`: Sensitivity analysis {#xml-sensitivity-analysis}
+
+Only if this section is defined a sensitivity analysis is done. This section will have `<quantile>` or `<sigma>` nodes. If neither are given, the default is to use the median +/- [1 2 3] x sigma (e.g. the 0.00135 0.0228 0.159 0.5 0.841 0.977 0.999 quantiles); If the 0.5 (median) quantile is omitted, it will be added in the code.
+
+#### tags
+
+```xml
+<sensitivity.analysis>
+	<quantiles>
+		<quantile></quantile>
+		<sigma>-3</sigma>
+		<sigma>-2</sigma>
+		<sigma>-1</sigma>
+		<sigma>1</sigma>
+		<sigma>2</sigma>
+		<sigma>3</sigma>
+	</quantiles>
+  <variable>GPP</variable>
+  <perpft>TRUE</perpft>
+	<start.year>2004</start.year>
+	<end.year>2006</end.year>
+</sensitivity.analysis>
+```
+
+* `quantiles` : [optional] Quantiles of parameter distributions at which the model should be evaluated when running sensitivity analysis. Values greater than 0 and less than 1 can be used.
+* `sigma` : [optional] Any real number can be used to indicate the quantiles to be used in units of normal probability.
+* `quantile` : [optional] Which quantile should be used.
+* `start.date` : [required?] start date of the sensitivity analysis (in YYYY/MM/DD format) 
+* `end.date` : [required?] end date of the sensitivity analysis (in YYYY/MM/DD format)
+* **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
+*  `variable` : [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
+* `perpft` : [optional] if `TRUE` a sensitivity analysis on PFT-specific outputs will be run. This is only possible if your model provides PFT-specific outputs for the `variable` requested. This tag only affects the output processing, not the number of samples proposed for the analysis nor the model execution.
+
+This information is currently used by the following PEcAn workflow functions:
+
+- `write.configs()` - ???
+- `run.sensitivity.analysis()` - ???
+
+## Experimental features
+
+### Brown Dog {#xml-browndog}
+
+This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This facilitates processing and conversions of data (currently only meteorological input data).
+
+```xml
+  <browndog>
+	<url>...</url>
+	<username>...</username>
+	<password>...</password>
+  </browndog>
+```
+
+* `url`: (required) endpoint for Brown Dog to be used.
+* `username`: (optional) username to be used with the endpoint for Brown Dog.
+* `password`: (optional) password to be used with the endpoint for Brown Dog.
+
+This information is currently used by the following R functions:
+
+- `PEcAn.data.atmosphere::met.process` -- Generic function for processing meteorological input data.
+
+### State Data Assimilation {#xml-state-data-assimilation}
 
 The following tags can be used for state data assimilation. More detailed information can be found here: [State Data Assimilation Documentation](sda.documentation.md)
 
@@ -571,7 +585,7 @@ The following tags can be used for state data assimilation. More detailed inform
 * **end.date** : [required?] end date of the state data assimilation (in YYYY/MM/DD format)
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
 
-## Parameter Data Assimilation {#xml-parameter-data-assimilation}
+### Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
 The following tags can be used for state data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](pda.documentation.md)
 
@@ -579,14 +593,7 @@ The following tags can be used for state data assimilation. More detailed inform
 
 Coming soon...
 
-## Benchmarking {#xml-benchmarking}
+### Benchmarking {#xml-benchmarking}
 
 Coming soon...
 
-## Model-specific configuration {#xml-model-specific}
-
-See the following:
-
-* [ED2][ED2 Configuration]
-* [SIPNET][SIPNET Configuration]
-* [BIOCRO][BioCro Configuration]
