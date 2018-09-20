@@ -1,6 +1,24 @@
 # The PEcAn XML {#pecanXML}
 
 The PEcAn system is configured using a XML file, often called `pecan.xml`.
+It contains the following major sections ("nodes"):
+
+- [Top level structure](#xml-structure)
+- [`info`](#xml-info) -- Run metadata
+- [`outdir`](#xml-outdir) -- Output directory
+- [`database`](#xml-database) -- Bety and other database settings
+- [`browndog`](#xml-browndog) -- Brown dog configuration
+- [`pft`](#xml-pft) -- Plant functional type selection
+- [`meta.analysis`](#xml-meta-analysis) -- Trait meta analysis
+- [`ensemble`](#xml-ensemble) -- Ensemble runs
+- [`sensitivity.analysis`](#xml-sensitivity-analysis) -- Sensitivity analysis
+- [`model`](#xml-model) -- Model configuration
+- [`run`](#xml-run) -- Run setup
+- [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
+- [`parameter.data.assimilation`](#xml-parameter-data-assimilation) -- Parameter data assimilation
+- [`benchmarking`](#xml-benchmarking) -- Benchmarking
+- [Model-specific configuration](#xml-model-specific)
+
 A basic example looks like this:
 
 ```xml
@@ -81,7 +99,7 @@ A basic example looks like this:
 
 In the following sections, we step through each of these sections in detail.
 
-## Top-level structure
+## Top-level structure {#xml-structure}
 
 The first line of the XML file should contain version and encoding information. 
 
@@ -97,7 +115,7 @@ The rest of the XML file should be surrounded by `<pecan>...</pecan>` tags.
 </pecan>
 ```
 
-## `info`: Run metadata
+## `info`: Run metadata {#xml-info}
 
 This section contains run metadata.
 This information is not essential to a successful model run, but is useful for tracking run provenance. 
@@ -117,7 +135,7 @@ The `<userid>` and `<username>` section is filled in from the GUI if you are sig
 
 The `<date></date>` tag is filled automatically at the time of your run from the GUI. If you are not using the GUI, add the date you execute the run. This tag is not the tag for the dates you would like to run your model simulation.
 
-## `outdir`: Output directory
+## `outdir`: Output directory {#xml-outdir}
 
 The `<outdir>` tag is used to configure the output folder used by PEcAn.
 This is the directory where all model input and output files will be stored.
@@ -128,9 +146,9 @@ If no `outdir` is specified, PEcAn defaults to the working directory from which 
   <outdir>/data/workflows/PEcAn_99000000006</outdir>
 ```
 
-## `database`: Bety and other database settings
+## `database`: Bety and other database settings {#xml-database}
 
-### `bety`: Bety configuration
+### `bety`: Bety configuration {#xml-bety}
 
 The `bety` tag defines the driver to use to connect to the database (in 99.9% of 
 cases, this should be `PostgreSQL`, the default) and parameters required to connect to the database. Note that connection parameters are passed *exactly* as entered to the underlying R database driver, and any invalid or extra parameters will result in an error.
@@ -181,7 +199,7 @@ Key R functions using these parameters are as follows:
 
 - `PEcAn.DB::db.open` -- Open a Bety connection and create a connection object, which is used by many other functions for communicating with Bety.
 
-### `dbfiles`: Location of database files
+### `dbfiles`: Location of database files {#xml-dbfiles}
 
 The `dbfiles` is a path to the local location of files needed to run models using PEcAn, including model executables and inputs.
 
@@ -193,7 +211,7 @@ The `dbfiles` is a path to the local location of files needed to run models usin
   </database>
 ```
 
-### (Experimental) `fia`: FIA database connection parameters
+### (Experimental) `fia`: FIA database connection parameters {#xml-fia}
 
 If a version of the FIA database is available, it can be configured using `<fia>` node, whose syntax is identical to that of the `<bety>` node.
 
@@ -213,7 +231,7 @@ If a version of the FIA database is available, it can be configured using `<fia>
 Currently, this is only used for extraction of specific site vegetation information (notably, for ED2 `css`, `pss`, and `site` files).
 Stability not ensured as of 1.5.3.
 
-## Brown Dog Configuration
+## Brown Dog Configuration {#xml-browndog}
 
 This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This facilitates processing and conversions of data (currently only meteorological input data).
 
@@ -233,7 +251,7 @@ This information is currently used by the following R functions:
 
 - `PEcAn.data.atmosphere::met.process` -- Generic function for processing meteorological input data.
 
-## `pft`: Plant functional type selection
+## `pft`: Plant functional type selection {#xml-pft}
 
 The PEcAn system requires at least 1 plant functional type (PFT) to be specified inside the `<pfts>` section. 
 
@@ -256,7 +274,7 @@ This information is currently used by the following PEcAn workflow function:
 
 - `get.traits` - ??????
 
-## `meta.analysis`: Trait Meta Analysis
+## `meta.analysis`: Trait Meta Analysis {#xml-meta-analysis}
 
 The section meta.analysis needs to exists for a meta.analysis to be executed, even though all tags inside are optional.
 Conversely, if you do not want to do a trait meta-analysis (e.g. if you want to manually set all parameters), you should omit this node.
@@ -279,7 +297,7 @@ This information is currently used by the following PEcAn workflow function:
 
 - `PEcAn.MA::run.meta.analysis` - ???
 
-## `ensemble`: Ensemble Runs
+## `ensemble`: Ensemble Runs {#xml-ensemble}
 
 As with `meta.analysis`, if this section is missing, then PEcAn will not do an ensemble analysis.
 
@@ -335,7 +353,7 @@ This information is currently used by the following PEcAn workflow functions:
 - `write.ensemble.configs` - ???
 - `run.ensemble.analysis()` - ???
 
-## `sensitivity.analysis`: Sensitivity analysis
+## `sensitivity.analysis`: Sensitivity analysis {#xml-sensitivity-analysis}
 
 Only if this section is defined a sensitivity analysis is done. This section will have `<quantile>` or `<sigma>` nodes. If neither are given, the default is to use the median +/- [1 2 3] x sigma (e.g. the 0.00135 0.0228 0.159 0.5 0.841 0.977 0.999 quantiles); If the 0.5 (median) quantile is omitted, it will be added in the code.
 
@@ -373,7 +391,7 @@ This information is currently used by the following PEcAn workflow functions:
 - `write.configs()` - ???
 - `run.sensitivity.analysis()` - ???
 
-## `model`: Model configuration
+## `model`: Model configuration {#xml-model}
 
 This section is required and tells PEcAn what model to run. This section should either specify `<id>` or both `<name>` and `<binary>`  of the model. If both id and name and/or binary are specified the id is used to check the specified name and/or binary.
 
@@ -406,7 +424,7 @@ To ensure compatability, the code will automatically convert from `<name>` to `<
 * **job.sh** : [optional] additional options to add to the job.sh at the top  
 * **config.headers** : [optional] XML that will appear at the start of generated config files.
 
-#### ED2 specific tags
+#### ED2 specific tags {#xml-ed}
 
 Following variables are ED specific and are used in the [ED2 Configuration](ED2-Configuration).
 
@@ -433,7 +451,7 @@ Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includ
 * **inputs** : **OBSOLETE** [required] location of additional input files (e.g. data assimilation data), now part of `<run><inputs>`. Should be specified as `<lu>` and `<thsums>`.
 
 
-## Run Setup
+## `run`: Run Setup {#xml-run}
 
 #### tags
 
@@ -520,7 +538,7 @@ Host on which the simulation will run is specified in the `<host>` subsection. I
 * **job.sh** : [optional] additional options to add to the job.sh at the top  
 
 
-## State Data Assimilation Tags
+## State Data Assimilation Tags {#xml-state-data-assimilation}
 
 The following tags can be used for state data assimilation. More detailed information can be found here: [State Data Assimilation Documentation](sda.documentation.md)
 
@@ -553,7 +571,7 @@ The following tags can be used for state data assimilation. More detailed inform
 * **end.date** : [required?] end date of the state data assimilation (in YYYY/MM/DD format)
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
 
-## Parameter Data Assimilation
+## Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
 The following tags can be used for state data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](pda.documentation.md)
 
@@ -561,11 +579,11 @@ The following tags can be used for state data assimilation. More detailed inform
 
 Coming soon...
 
-## Benchmarking
+## Benchmarking {#xml-benchmarking}
 
 Coming soon...
 
-## Model-specific configuration
+## Model-specific configuration {#xml-model-specific}
 
 See the following:
 
