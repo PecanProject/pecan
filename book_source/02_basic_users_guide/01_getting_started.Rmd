@@ -8,7 +8,7 @@ There are two ways of using PEcAn, via the web interface and directly within R. 
 
 ## Installing and running PEcAn
 
-### Using the Virtual Machine
+### Using the Virtual Machine {#basicvm}
 
 PEcAn consists of a set of scripts and code that is compiled within a Linux operating system and saved in a "virtual machine" (VM). Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
 
