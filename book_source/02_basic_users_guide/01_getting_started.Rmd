@@ -23,7 +23,7 @@ In the Appliance Import Settings, make sure you select "Reinitialize the MAC add
   knitr::include_graphics(rep("figures/pic1.jpg"))
 ```
 
-4. **Launch PEcAn** Double click the icon for the PEcAn VM. A terminal window will pop up showing the machine booting up which may take a minute. It is done booting when you get to the `pecan32 login:` prompt. You do not need to login as the VM behaves like a server that we will be accessing through you web browser. Feel free to minimize the VM window.
+4. **Launch PEcAn** Double click the icon for the PEcAn VM. A terminal window will pop up showing the machine booting up which may take a minute. It is done booting when you get to the `pecan login:` prompt. You do not need to login as the VM behaves like a server that we will be accessing through you web browser. Feel free to minimize the VM window.
 
 * If you _do_ want to login to the VM, the credentials are as follows: `username: carya`, `password: illinois` (after the pecan tree, [Carya illinoinensis][pecan-wikipedia]).
 
