@@ -7,7 +7,7 @@ It contains the following major sections ("nodes"):
 	- [Top level structure](#xml-structure)
 	- [`info`](#xml-info) -- Run metadata
 	- [`outdir`](#xml-outdir) -- Output directory
-	- [`database`](#xml-database) -- Bety and other database settings
+	- [`database`](#xml-database) -- PEcAn database settings
 	- [`pft`](#xml-pft) -- Plant functional type selection
 	- [`meta.analysis`](#xml-meta-analysis) -- Trait meta analysis
 	- [`model`](#xml-model) -- Model configuration
@@ -133,9 +133,9 @@ This information is not essential to a successful model run, but is useful for t
   </info>
 ```
 
-The `<notes>` tag will be filled in by the web GUI if you provide notes, or you can add notes yourself within these tags. We suggest adding notes that help identify your run and a brief description of what the run is for. Because these notes are searchable within Bety and the PEcAn web interface, they can be a useful way to distinguish between similar runs.
+The `<notes>` tag will be filled in by the web GUI if you provide notes, or you can add notes yourself within these tags. We suggest adding notes that help identify your run and a brief description of what the run is for. Because these notes are searchable within the PEcAn database and web interface, they can be a useful way to distinguish between similar runs.
 
-The `<userid>` and `<username>` section is filled in from the GUI if you are signed in. If you are not using the GUI, add the user name and ID you are associated with that exists within the BETY database.
+The `<userid>` and `<username>` section is filled in from the GUI if you are signed in. If you are not using the GUI, add the user name and ID you are associated with that exists within the PEcAn database.
 
 The `<date></date>` tag is filled automatically at the time of your run from the GUI. If you are not using the GUI, add the date you execute the run. This tag is not the tag for the dates you would like to run your model simulation.
 
@@ -150,12 +150,11 @@ If no `outdir` is specified, PEcAn defaults to the working directory from which 
   <outdir>/data/workflows/PEcAn_99000000006</outdir>
 ```
 
-### `database`: Bety and other database settings {#xml-database}
+### `database`: PEcAn database settings {#xml-database}
 
-#### `bety`: Bety configuration {#xml-bety}
+#### `bety`: PEcAn database (Bety) configuration {#xml-bety}
 
-The `bety` tag defines the driver to use to connect to the database (in 99.9% of 
-cases, this should be `PostgreSQL`, the default) and parameters required to connect to the database. Note that connection parameters are passed *exactly* as entered to the underlying R database driver, and any invalid or extra parameters will result in an error.
+The `bety` tag defines the driver to use to connect to the database (the only driver we support, and the default, is `PostgreSQL`) and parameters required to connect to the database. Note that connection parameters are passed *exactly* as entered to the underlying R database driver, and any invalid or extra parameters will result in an error.
 
 In other words, this configuration...
 
@@ -193,7 +192,7 @@ Common parameters are described as follows:
 * `dbname`: The name of the database (formerly `name`), corresponding to the `-d` argument to `psql`. In most cases, this should be set to `bety`, and will only be different if you named your Bety instance something else (e.g. if you have multiple instances running at once). If unset, it will default to the user name of the current user, which is usually wrong!
 * `user`: The username to connect to the database (formerly `userid`), corresponding to the `-U` argument to `psql`. default value is the username of the current user logged in (PostgreSQL uses user for this field).
 * `password`: The password to connect to the database (was `passwd`), corresponding to the `-p` argument to `psql`. If unspecified, no password is used. On standard PEcAn installations, the username and password are both `bety` (all lowercase).
-* `host`: The hostname of the `bety` database, corresponding to the `-h` argument to `psql`. On the VM, this will be `localhost` (the default). If using `docker`, this will be the name of the PostgreSQL container, which is `postgres` if using our standard `docker-compose`. If connecting to bety on a remote server (e.g. `psql-pecan.bu.edu`), this should be the same as the hostname used for `ssh` access.
+* `host`: The hostname of the `bety` database, corresponding to the `-h` argument to `psql`. On the VM, this will be `localhost` (the default). If using `docker`, this will be the name of the PostgreSQL container, which is `postgres` if using our standard `docker-compose`. If connecting to the PEcAn database on a remote server (e.g. `psql-pecan.bu.edu`), this should be the same as the hostname used for `ssh` access.
 * `write`: Logical. If `true` (the default), write results to the database. If `false`, PEcAn will run but will not store any information to `bety`.
 
 When using the web interface, this section is configured by the `web/config.php` file.
@@ -201,7 +200,7 @@ The default `config.php` settings on any given platform (VM, Docker, etc.) or in
 
 Key R functions using these parameters are as follows:
 
-- `PEcAn.DB::db.open` -- Open a Bety connection and create a connection object, which is used by many other functions for communicating with Bety.
+- `PEcAn.DB::db.open` -- Open a database connection and create a connection object, which is used by many other functions for communicating with the PEcAn database.
 
 #### `dbfiles`: Location of database files {#xml-dbfiles}
 
@@ -250,7 +249,7 @@ The PEcAn system requires at least 1 plant functional type (PFT) to be specified
   </pfts>
 ```
 
-* `name` : (required) the name of the PFT, which must *exactly* match the name in Bety.
+* `name` : (required) the name of the PFT, which must *exactly* match the name in the PEcAn database.
 * `outdir`: (optional) Directory path in which PFT-specific output will be stored during meta-analysis and sensitivity analysis. If not specified (recommended), it will be written into `<outdir>/<pftname>`.
 * `contants`: (optional) this section contains information that will be written directly into the model specific configuration files. For example, some models like ED2 use PFT numbers instead of names for PFTs, and those numbers can be specified here. See documentation for model-specific code for details.
 
@@ -299,9 +298,9 @@ This section describes which model PEcAn should run and some instructions for ho
 
 Some important tags are as follows:
 
-- `id` -- The unique numeric ID of the model in the Bety `models` table. If this is present, then `type` and `binary` are optional since they can be determined from Bety.
-- `type` -- The model "type", matching the Bety `modeltypes` table `name` column. This also refers to which PEcAn model-specific package will be used. In PEcAn, a "model" refers to a specific version (e.g. release, git commit) of a specific model, and "model type" is used to link different releases of the same model. Model "types" also have specific PFT definitions and other requirements associated with them (e.g. the ED2 model "type" requires a global land cover database).
-- `binary` -- The file path to the model executable. If omitted, PEcAn will use whatever path is registered in Bety for the current machine. 
+- `id` -- The unique numeric ID of the model in the PEcAn database `models` table. If this is present, then `type` and `binary` are optional since they can be determined from the PEcAn database.
+- `type` -- The model "type", matching the PEcAn database `modeltypes` table `name` column. This also refers to which PEcAn model-specific package will be used. In PEcAn, a "model" refers to a specific version (e.g. release, git commit) of a specific model, and "model type" is used to link different releases of the same model. Model "types" also have specific PFT definitions and other requirements associated with them (e.g. the ED2 model "type" requires a global land cover database).
+- `binary` -- The file path to the model executable. If omitted, PEcAn will use whatever path is registered in the PEcAn database for the current machine. 
 - `job.sh` -- Additional options added to the `job.sh` script, which is used to execute the model. This is useful for setting specific environment variables, load modules, etc.
 
 This information is currently used by the following PEcAn workflow function:
@@ -368,7 +367,7 @@ This section provides detailed configuration for the model run, including the si
 
 This contains the following tags:
 
-- `id` -- This is the numeric ID of the site in Bety (table `sites`, column `id`). PEcAn can automatically fill in other relevant information for the site (e.g. `name`, `lat`, `lon`) using the site ID, so those fields are optional if ID is provided.
+- `id` -- This is the numeric ID of the site in the PEcAn database (table `sites`, column `id`). PEcAn can automatically fill in other relevant information for the site (e.g. `name`, `lat`, `lon`) using the site ID, so those fields are optional if ID is provided.
 - `name` -- The name of the site, as a string.
 - `lat`, `lon` -- The latitude and longitude coordinates of the site, as decimals.
 - `met.start`, `met.end` -- ???
@@ -380,8 +379,8 @@ Exact requirements differ from model to model, but common inputs include meteoro
 
 In general, all inputs should have the following tags:
 
-* `id`:  Numeric ID of the input in Bety (table `inputs`, column `id`). If not specified, PEcAn will try to figure this out based on the `source` tag (described below).
-* `path`: The file path of the input. Usually, PEcAn will set this automatically based on the `id` (which, in turn, is determined from the `source`). However, this can be set manually for data that PEcAn does not know about (e.g. data that you have processed yourself and have not registered with Bety).
+* `id`:  Numeric ID of the input in the PEcAn database (table `inputs`, column `id`). If not specified, PEcAn will try to figure this out based on the `source` tag (described below).
+* `path`: The file path of the input. Usually, PEcAn will set this automatically based on the `id` (which, in turn, is determined from the `source`). However, this can be set manually for data that PEcAn does not know about (e.g. data that you have processed yourself and have not registered with the PEcAn database).
 * `source`: The input data type. This tag name needs to match the names in the corresponding conversion functions. If you are using PEcAn's automatic input processing, this is the only field you need to set. However, this field is ignored if `id` and/or `path` are provided.
 * `output`: ???
 
