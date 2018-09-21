@@ -90,6 +90,11 @@ If you find any bug please report it.
 
 [pecan-wikipedia]: https://en.wikipedia.org/wiki/Pecan
 
+### (Advanced) Installing by hand
+
+Although we recommend using one of the above methods for setting up PEcAn, all PEcAn components use open-source tools and can be installed "manually".
+Detailed instructions for manual installation of PEcAn on some common systems are available [here](#pecan-manual-setup).
+
 ## PEcAn Demos
 
 Once you have a running version of PEcAn, we recommend working through some of the following demos and vignettes to explore PEcAn's many capabilities:

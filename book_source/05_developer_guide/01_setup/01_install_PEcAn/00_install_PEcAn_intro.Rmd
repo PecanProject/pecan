@@ -1,4 +1,4 @@
-## Install PEcAn by hand
+## Install PEcAn by hand {#pecan-manual-setup}
 
 These instructions are provided to document how to install PEcAn on different Operating Systems.
 
