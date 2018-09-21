@@ -1,4 +1,4 @@
-## Site and model selection
+## Site and model selection {#web-site-model}
 
 This page is used to select the model to run and the site at which you would like to run that model.
 
