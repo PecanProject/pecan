@@ -27,26 +27,31 @@ model2netcdf.FATES <- function(outdir) {
     # currently only works for xyt variables, need to expand to work for cohort-level outputs, 
     # age bins, soils, etc
     var_update <- function(out,oldname,newname,newunits=NULL,long_name=NULL){
-      
-      ## define variable
-      oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
-      if (oldunits=="gC/m^2/s") oldunits <- "gC m-2 s-1"
-      if(is.null(newunits)) newunits = oldunits
-      newvar <- ncdf4::ncvar_def(name = newname, units = newunits, longname=long_name, dim = xyt)
-      
-      ## convert data
-      dat <- ncdf4::ncvar_get(ncin,oldname)
-      dat.new <- PEcAn.utils::misc.convert(dat,oldunits,newunits)
-      
-      ## prep for writing
-      if(is.null(out)) {
-        out <- list(var <- list(),dat <- list())
-        out$var[[1]] <- newvar
-        out$dat[[1]] <- dat.new
+      if (oldname %in% ncin_names) {
+        ## define variable
+        oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
+        if (oldunits=="gC/m^2/s") oldunits <- "gC m-2 s-1"
+        if (oldname=="TLAI" && oldunits=="none") oldunits <- "m2 m-2"
+        if(is.null(newunits)) newunits = oldunits
+        newvar <- ncdf4::ncvar_def(name = newname, units = newunits, longname=long_name, dim = xyt)
+        
+        ## convert data
+        dat <- ncdf4::ncvar_get(ncin,oldname)
+        dat.new <- PEcAn.utils::misc.convert(dat,oldunits,newunits)
+        
+        ## prep for writing
+        if(is.null(out)) {
+          out <- list(var <- list(),dat <- list())
+          out$var[[1]] <- newvar
+          out$dat[[1]] <- dat.new
+        } else {
+          i <- length(out$var) + 1
+          out$var[[i]] <- newvar
+          out$dat[[i]] <- dat.new
+        }
       } else {
-        i <- length(out$var) + 1
-        out$var[[i]] <- newvar
-        out$dat[[i]] <- dat.new
+        ## correct way to "skip" and output variables that may be missing in the HLM-FATES output?
+        PEcAn.logger::logger.info(paste0("HLM-FATES variable: ", oldname," not present. Skipping conversion"))
       }
       return(out)
     }
@@ -68,6 +73,8 @@ model2netcdf.FATES <- function(outdir) {
         oname <- file.path(dirname(fname), paste0(year, ".nc"))
         PEcAn.logger::logger.info(paste("model2netcdf.FATES - Converting:",  fname, "to", oname))
         ncin <- ncdf4::nc_open(fname, write = TRUE)
+        ncin_names <- names(ncin$var)                               # get netCDF variable names in HLM-FATES output
+        
         
         ## FATES time is in multiple columns, create 'time'
         mcdate <- ncdf4::ncvar_get(ncin, "mcdate")                  # current date (YYYYMMDD)
@@ -121,15 +128,19 @@ model2netcdf.FATES <- function(outdir) {
         out <- var_update(out,"FSDS","SWdown","W m-2","Surface incident shortwave radiation")
         out <- var_update(out,"TBOT","Tair","K","Near surface air temperature") # not certain these are equivelent yet
         out <- var_update(out,"QBOT","Qair","kg kg-1","Near surface specific humidity") # not certain these are equivelent yet
+        out <- var_update(out,"RH","RH","%","Relative Humidity") 
         out <- var_update(out,"WIND","Wind","m s-1","Near surface module of the wind") # not certain these are equivelent yet
         out <- var_update(out,"EFLX_LH_TOT","Qle","W m-2","Latent heat")
         out <- var_update(out,"QVEGT","Transp","mm s-1","Total Transpiration") ## equiv to std of kg m-2 s but don't trust udunits to get right
-        out <- var_update(out,"ED_biomass","AbvGrndWood","kgC m-2","Above ground woody biomass")
-        out <- var_update(out,"ED_bleaf","CarbPools","kgC m-2","Size of each carbon pool")
-        #out <- var_update(out,"TLAI","LAI","m2 m-2","Leaf Area Index") # turned off for now since TLAI units in FATES is presently "none"
+        out <- var_update(out,"ED_balive","TotLivBiom","kgC m-2","Total living biomass")
+        out <- var_update(out,"ED_biomass","AbvGrndWood","kgC m-2","Above ground woody biomass")  # not actually correct, need to update
+        out <- var_update(out,"AGB","AGB","kgC m-2","Total aboveground biomass") # not actually correct, need to update
+        out <- var_update(out,"ED_bleaf","leaf_carbon_content","kgC m-2","Leaf Carbon Content")
+        out <- var_update(out,"TLAI","LAI","m2 m-2","Leaf Area Index")
         out <- var_update(out,"TSOI_10CM","SoilTemp","K","Average Layer Soil Temperature at 10cm")
         
         ## put in time_bounds before writing out new nc file
+        length(out$var)
         out$var[[length(out$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
                                                            longname = "history time interval endpoints", 
                                                            dim=list(time_interval,time = t), 
