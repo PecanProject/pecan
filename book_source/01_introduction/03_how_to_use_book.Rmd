@@ -6,9 +6,9 @@ This book is organized around these main topics:
 
 **Basic User Guide** - Brief explanation of PEcAn, how to obtain the PEcAn VM, and explanation of basic web interface functions.
 
-**Intermediate Users Guide** - Explanation of more advanced PEcAn functionality from the web interface. Includes explanation of PEcAn settings file, advanced web configuration, and handling remote execution of PEcAn. (TODO: Also, command line tools?)
+**Intermediate Users Guide** - Explanation of more advanced PEcAn functionality from the web interface. Includes explanation of PEcAn settings file, advanced web configuration, and handling remote execution of PEcAn.
 
-**Advanced User Guide** - Full explanation of PEcAn, including tools that are not integrated in the main workflow but are available as part of the PEcAn R packages.
+**Advanced User Guide** - Full explanation of PEcAn, including tools that are not integrated in the main workflow but are available as part of the PEcAn R packages and command-line interface.
 
 **Developer Guide** - Explains what you need to know in order to contibute code to PEcAn.
 
