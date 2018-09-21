@@ -5,13 +5,12 @@ all: bkdcheck build deploy
 bkdcheck:
 	./check_bkd_pkg.R
 
-# ANS: This is a hack to get around the fact that the because the
-# Demos are symlinked into the book_source directory, their relative
-# paths to figures break. This gets around that by copying any
-# external files from tutorials in the `documentation/tutorials`
-# folder into the `book_source/extfiles` folder. That way,
-# `extfiles/image.jpg` works in both the original Rmd file and the
-# compiled book.
+# ANS: This is a hack to get around the fact that because the Demos
+# are symlinked into the book_source directory, their relative paths
+# to figures break. This gets around that by copying any external
+# files from tutorials in the `documentation/tutorials` folder into
+# the `book_source/extfiles` folder. That way, `extfiles/image.jpg`
+# works in both the original Rmd file and the compiled book.
 #
 # Any other demos outside the `book_source` folder relying on external
 # files will have to use a similar hack. The convention is to stick
