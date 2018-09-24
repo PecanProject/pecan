@@ -459,16 +459,16 @@ As with `meta.analysis`, if this section is missing, then PEcAn will not do an e
 
 ```xml
   <ensemble>
-   <size>1</size>
-   <variable>NPP</variable>
-   <samplingspace>
-   <parameters>
-    <method>uniform</method>
-   </parameters>
-   <met>
-    <method>sampling</method>
- 	</met>
-   </samplingspace>
+    <size>1</size>
+    <variable>NPP</variable>
+    <samplingspace>
+      <parameters>
+        <method>uniform</method>
+      </parameters>
+      <met>
+        <method>sampling</method>
+      </met>
+    </samplingspace>
   </ensemble>
 ```
 
