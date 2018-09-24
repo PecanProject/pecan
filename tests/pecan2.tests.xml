@@ -3,14 +3,8 @@
  <outdir>/home/ecowdery/met_process_tests/</outdir>
 
  <browndog>
-   <!--
-   <url>http://dap.ncsa.illinois.edu:8184/convert/</url>
-   <username>browndog.user</username>
-   <password>GritGin3</password>
-   -->
-   <url>http://dap-dev.ncsa.illinois.edu:8184/convert/</url>
-   <username>browndog.user</username>
-   <password>twonkIv8</password>   
+   <url>https://bd-api-dev.ncsa.illinois.edu</url>
+   <token>8ba6c4ad-ea4d-43e4-bd6d-8d41161eaf2d</toiken> 
  </browndog>
  
  <database>

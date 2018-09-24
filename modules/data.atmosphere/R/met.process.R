@@ -364,7 +364,7 @@ db.site.lat.lon <- function(site.id, con) {
 ##' @description Use browndog to get the met data for a specific model
 ##' @title get met data from browndog
 ##' @export
-##' @param browndog, list with url, username and password to connect to browndog
+##' @param browndog, list with url, token to connect to browndog
 ##' @param source, the source of the met data, currently only NARR an Ameriflux is supported
 ##' @param site, site information should have id, lat, lon and name (ameriflux id)
 ##' @param start_date, start date for result
@@ -459,13 +459,12 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                     "<model>", model, "</model>", 
                     "</input>")
   
-  userpass <- paste(browndog$username, browndog$password, sep = ":")
-  curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
-  result <- RCurl::postForm(paste0(browndog$url, formatname, "/"),
-                     fileData = RCurl::fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
-  url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
-  PEcAn.logger::logger.info("browndog download url :", url)
-  downloadedfile <- PEcAn.utils::download.url(url, outputfile, 600, curloptions)
+  pecanxml <- tempfile("pecan.xml")
+  write(xmldata, pecanxml)
+  result.url <- BrownDog::convert_file(browndog$url, pecanxml, formatname, "./", browndog$token, download=FALSE)
+  PEcAn.logger::logger.info("browndog download url :", result.url)
+  downloadedfile <- PEcAn.utils::download.url(result.url, outputfile, 600, curloptions)
+  unlink(pecanxml)
   
   # fix returned data
   if (model == "ED2") {
