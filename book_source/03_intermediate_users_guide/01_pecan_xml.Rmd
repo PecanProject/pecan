@@ -491,8 +491,11 @@ An alternative configuration is as follows:
 </ensemble>
 ```
 
+Tags in this block can be broken down into two categories: Those used for setup (which determine how the ensemble analysis runs) and those used for post-hoc analysis and visualization (i.e. which do not affect how the ensemble is generated).
+
+Tags related to ensemble setup are:
+
 * `size` : (required) the number of runs in the ensemble.
-* `variable`: (optional) name of one (or more) variables the analysis should be run for. If not specified, `sensitivity.analysis` variable is used, otherwise default is GPP (Gross Primary Productivity).
 * `samplingspace`: (optional) Contains tags for defining how the ensembles will be generated.
 
 Each piece in the sampling space can potentially have a method tag and a parent tag. Method refers to the sampling method and parent refers to the cases where we need to link the samples of two components. When no tag is defined for one component, one sample will be generated and used for all the ensembles. This allows for partitioning/studying different sources of uncertainties. For example, if no met tag is defined then, one met path will be used for all the ensembles and as a result the output uncertainty will come from the variability in the parameters. At the moment no sampling method is implemented for soil and vegetation.
@@ -503,11 +506,17 @@ The restart functionality is developed using model specific functions by called 
 
 Note: if the ensemble size is set to 1, PEcAn will select the **posterior median** parameter values rather than taking a single random draw from the posterior
 
+Tags related to post-hoc analysis and visualization are:
+
+* `variable`: (optional) name of one (or more) variables the analysis should be run for. If not specified, `sensitivity.analysis` variable is used, otherwise default is GPP (Gross Primary Productivity).
+
+(NOTE: This static visualization functionality will soon be deprecated as PEcAn moves towards interactive visualization tools based on Shiny and htmlwidgets).
+
 This information is currently used by the following PEcAn workflow functions:
 
-- `write.configs` - ???
-- `write.ensemble.configs` - ???
-- `run.ensemble.analysis()` - ???
+- `PEcAn.<MODEL>::write.config.<MODEL>` - Write model-specific configuration files
+- `PEcAn.uncertainty::write.ensemble.configs` - Write configuration files for ensemble analysis
+- `PEcAn.uncertainty::run.ensemble.analysis` - Run ensemble analysis
 
 ### `sensitivity.analysis`: Sensitivity analysis {#xml-sensitivity-analysis}
 
