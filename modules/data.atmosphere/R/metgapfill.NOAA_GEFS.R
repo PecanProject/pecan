@@ -138,7 +138,7 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
   ensemble <- regmatches(ensemble, regexpr("[0-9]+$", ensemble))
   
   # Each ensemble gets its own folder to keep things organized
-  out.data.file <- file.path(outfolder, paste0("NOAA_GEFS", ensemble))
+  out.data.file <- file.path(outfolder, paste0("NOAA_GEFS.", ensemble))
   if (!dir.exists(out.data.file)) {
     dir.create(out.data.file, recursive=TRUE, showWarnings = FALSE)
   }

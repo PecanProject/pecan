@@ -2,7 +2,7 @@
 % Please edit documentation in R/convert.input.R
 \name{convert.input}
 \alias{convert.input}
-\title{Convert between met formats, reusing existing files where possible}
+\title{Convert between formats, reusing existing files where possible}
 \usage{
 convert.input(input.id, outfolder, formatname, mimetype, site.id,
   start_date, end_date, pkg, fcn, con = con, host, browndog,
@@ -49,7 +49,7 @@ Currently only \code{host$name} is used by \code{convert.input}, but whole list 
 
 \item{insert.new.file}{Logical: force creation of a new database record even if one already exists?}
 
-\item{pattern}{A regular expression to search}
+\item{pattern}{A regular expression, passed to \code{PEcAn.DB::dbfile.input.check}, used to match the name of the input file.}
 
 \item{forecast}{Logical: Is the data product a forecast?}
 
@@ -60,7 +60,7 @@ Currently only \code{host$name} is used by \code{convert.input}, but whole list 
 \item{...}{Additional arguments, passed unchanged to \code{fcn}}
 }
 \value{
-A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.
+A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.  Each id may be a vector of ids if the function is processing an entire ensemble at once.
 }
 \description{
 \code{convert.input} is a relatively generic function that applies the function \code{fcn} and inserts a record of it into the database. It is primarily designed for converting meteorological data between formats and can be used on observed data, forecasts, and ensembles of forecasts.
@@ -84,7 +84,7 @@ than one dbfile for a given input file.
 
 \section{Time-span appending}{
 
-By default, convert.input tries to optimize the download of most data products by only downloading the years of data present on 
+By default, convert.input tries to optimize the download of most data products by only downloading the years of data not present on 
 the current machine.  (For example, if files for 2004-2008 exist for a given data product exist on this machine and the user requests
 2006-2010, the function will only download data for 2009 and 2010).  In year-long data files, each year exists as a separate file.
 The database input file contains records of the bounds of the range stored by those years.  The data optimization can be turned off

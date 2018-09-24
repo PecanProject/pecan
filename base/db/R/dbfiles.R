@@ -178,7 +178,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param exact.dates setting to include start and end date in input query
-##' @param pattern text to seach for in the file name (default NULL = no check). NOT YET IMPLEMENTED
+##' @param pattern text to seach for in the file name (default NULL = no check).
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
 ##' @author Rob Kooper, Tony Gardella

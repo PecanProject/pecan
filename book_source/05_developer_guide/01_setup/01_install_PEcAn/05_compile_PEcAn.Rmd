@@ -23,6 +23,7 @@ git clone https://github.com/PecanProject/pecan.git
 cd pecan
 make
 ```
+For more information on the capabilities of the PEcAn Makefile, check out our section on [Updating PEcAn].
 
 Following will run a small script to setup some hooks to prevent people from using the pecan demo user account to check in any code.
 

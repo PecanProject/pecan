@@ -1,8 +1,8 @@
 Package: PEcAn.PRELES
 Type: Package
 Title: PEcAn package for integration of the PRELES model
-Version: 1.5.3
-Date: 2018-04-26
+Version: 1.6.0
+Date: 2018-08-20
 Author: Tony Gardella, Mike Dietze
 Maintainer: Tony Gardella <tonygard@bu.edu>
 Description: This module provides functions to run the PREdict Light use
@@ -24,7 +24,7 @@ Imports:
 Suggests:
     testthat (>= 1.0.2),
     Rpreles
-SystemRequirements: preles
+Remotes: MikkoPeltoniemi/Rpreles
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors
