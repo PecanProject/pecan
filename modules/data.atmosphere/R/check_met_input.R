@@ -123,3 +123,94 @@ check_unit <- function(variable, nc, variable_table, warn_unknown = TRUE) {
     glue::glue("NetCDF unit '{ncvar_unit}' not equivalent to expected unit '{var_correct_unit}'.")
   ))
 }
+
+##' @export
+##' @author Tony Gardella
+##'
+##' @param con  SQL connection object to BETY database
+##' @param path string containing path to file
+##' @param model string containing model type name, not specific version name
+##' @param machine dataframe containing all columns from machine table for speifci hostname
+##' @return executes a logger statement. Either exits workflow with statement explaining why the path provided is not valid or allows things to continue
+##'
+##' @description This is a function that takes in a path, model type name, and information about the machine
+##' and checks if the path is on the machine and matches the format the model needs.
+##'
+check_path_in_db <- function(con, path, model, machine) {
+  
+  path_check <- tryCatch(
+      tbl(con, "dbfiles") %>% filter(grepl(path, file_path) &
+                                       machine$id == machine_id) %>%
+        select("id", "file_name", "file_path", "container_id") %>% collect(),
+      error = function(err)"Does not Exist"
+    )
+  
+  input_check <- tryCatch(
+    tbl(con, "inputs") %>%
+      filter(path_check$container_id == id) %>%
+      collect()
+    ,
+    error = function(err)NULL
+  )
+  
+  
+  format_check <-
+    tryCatch(
+      inner_join(
+        tbl(con, "modeltypes"),
+        tbl(con, "modeltypes_formats"),
+        by = c("id" = "modeltype_id")
+      ) %>%
+        filter(grepl(model, name)) %>%
+        filter(input_check$format_id == format_id) %>%
+        filter("met" == tag) %>%
+        collect(),
+      error = function(err)"Wrong Format"
+    )
+  
+  
+  check <-
+    dplyr::case_when(
+      purrr::is_bare_character(path_check) ~ "DOESN'T EXIST",
+      purrr::is_null(input_check) ~ "NO INPUT",
+      purrr::is_bare_character(format_check) ~ "WRONG FORMAT",
+      tibble::is_tibble(format_check) ~ "EXISTS"
+    )
+  
+  check_message(check)
+}
+
+#' Execute a message statement based on 
+#'
+#' @param check Character string saying 
+#' @return Executes a logger statement dependant on 
+#' @author Tony Gardella
+check_message <- function(check) {
+  switch(
+    check,
+    "EXISTS" = PEcAn.logger::logger.info(
+      "Met path provided exists in database and format matches model. Proceeding with provided Met."
+      ,
+      wrap = TRUE
+    ),
+    "NO INPUT" = PEcAn.logger::logger.severe(
+      "File provided by path exists within the database but is not associated with an Input.
+      If this file will be used by a model, please associate it with an input"
+      ,
+      wrap = TRUE
+    ),
+    "WRONG FORMAT" = PEcAn.logger::logger.severe(
+      "Met path provided exists in database but does not match format required for model.
+      Please change pecan.xml met section and
+      select an input a source to process data from."
+      ,
+      wrap = TRUE
+    ),
+    "DOESN'T EXIST" =  PEcAn.logger::logger.severe(
+      "Met path provided does not match any records in the database.
+      Please add it to the database or select a source of met to process."
+      ,
+      wrap = TRUE
+    ),
+  )
+}

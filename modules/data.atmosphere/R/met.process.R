@@ -25,10 +25,25 @@
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
+  
+  # set up connection and host information
+  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
+                              host     = dbparms$host, 
+                              user     = dbparms$user, 
+                              password = dbparms$password)
+  
+  con <- bety$con
+  on.exit(PEcAn.DB::db.close(con))
+  username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
+  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
+  machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
+  
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
-      PEcAn.logger::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
+      
+      # Check if met path is in the database, correct format, and on right machine 
+      check_path_in_db(con, input_met$path, model, machine)
       
       # Additional layer of list depth added for consistancy with other return statements.
       temp_path = input_met$path
@@ -84,17 +99,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
     }
   }
   
-  # set up connection and host information
-  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
-                       host     = dbparms$host, 
-                       user     = dbparms$user, 
-                       password = dbparms$password)
-  
-  con <- bety$con
-  on.exit(PEcAn.DB::db.close(con))
-  username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
-  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-  machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
 
   # special case Brown Dog
   if (!is.null(browndog)) {
