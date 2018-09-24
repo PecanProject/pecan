@@ -540,14 +540,14 @@ Only if this section is defined a sensitivity analysis is done. This section wil
 </sensitivity.analysis>
 ```
 
-* `quantiles` : [optional] Quantiles of parameter distributions at which the model should be evaluated when running sensitivity analysis. Values must be between 0 and 1.
-* `sigma` : [optional] Any real number can be used to indicate the quantiles to be used in units of normal probability.
-* `quantile` : [optional] Which quantile should be used.
-* `start.date` : [required?] start date of the sensitivity analysis (in YYYY/MM/DD format) 
-* `end.date` : [required?] end date of the sensitivity analysis (in YYYY/MM/DD format)
-* **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
-*  `variable` : [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
-* `perpft` : [optional] if `TRUE` a sensitivity analysis on PFT-specific outputs will be run. This is only possible if your model provides PFT-specific outputs for the `variable` requested. This tag only affects the output processing, not the number of samples proposed for the analysis nor the model execution.
+- `quantiles` : [optional] Quantiles of parameter distributions at which the model should be evaluated when running sensitivity analysis. Values must be between 0 and 1.
+- `sigma` : [optional] The number of standard deviations (i.e. "Z-score") to use in the analysis. Basically, this is an alternative way to specify quantiles. For instance, `<sigma>1</sigma>` corresponds to the quantile associated with 1 standard deviation greater than the mean (i.e. 0.681). Note that we _do not automatically add the quantile associated with `-sigma`_ -- i.e. if you want +/- 1 standard deviation, then you must include both `<sigma>1</sigma>` _and_ `<sigma>-1</sigma>`.
+- `quantile` : [optional] Which quantile should be used.
+- `start.date` : [required?] start date of the sensitivity analysis (in YYYY/MM/DD format) 
+- `end.date` : [required?] end date of the sensitivity analysis (in YYYY/MM/DD format)
+  - **_NOTE:_** `start.date` and `end.date` are distinct from values set in the run tag because this analysis can be done over a subset of the run.
+-  `variable` : [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
+- `perpft` : [optional] if `TRUE` a sensitivity analysis on PFT-specific outputs will be run. This is only possible if your model provides PFT-specific outputs for the `variable` requested. This tag only affects the output processing, not the number of samples proposed for the analysis nor the model execution.
 
 This information is currently used by the following PEcAn workflow functions:
 
