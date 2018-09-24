@@ -611,6 +611,7 @@ This section describes how to connect to [Brown Dog](http://browndog.ncsa.illino
 This information is currently used by the following R functions:
 
 - `PEcAn.data.atmosphere::met.process` -- Generic function for processing meteorological input data.
+- `PEcAn.benchmark::load_data` -- Generic, versatile function for loading data in various formats.
 
 ### (experimental) Benchmarking {#xml-benchmarking}
 
