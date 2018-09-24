@@ -412,17 +412,7 @@ The following tags are optional run settings that apply to any model:
 
 * `jobtemplate`: the template used when creating a `job.sh` file, which is used to launch the actual model. Each model has its own default template  in the `inst` folder of the corresponding R package (for instance, here is the one for [ED2](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/template.job)). The following variables can be used: `@SITE_LAT@`, `@SITE_LON@`, `@SITE_MET@`, `@START_DATE@`, `@END_DATE@`, `@OUTDIR@`, `@RUNDIR@` which all come variables in the `pecan.xml` file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : `@SCRATCH_COPY@`, `@SCRATCH_CLEAR@`.
 
-In addition, the following tags can be used for the ED2 model:
-
-* `pss`: [required] location of patch file
-* `css`: [required] location of cohort file
-* `site`: [optional] location of site file
-* `lu`: [required] location of land use file
-* `thsums`: [required] location of thermal sums file
-* `veg`: [required] location of vegetation data
-* `soil`: [required] location of soil data
-
-Other model types will have different model specific inputs.  PEcAn will find the location of the file on the host you run PEcAn on.
+Some models also have model-specific tags, which are described in the [PEcAn Models](#pecan-models) section.
 
 ### `host`: Host information for remote execution {#xml-host}
 
