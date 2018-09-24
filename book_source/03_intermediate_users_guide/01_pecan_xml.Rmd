@@ -594,7 +594,7 @@ The following tags can be used for state data assimilation. More detailed inform
 
 ### (experimental) Brown Dog {#xml-browndog}
 
-This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This facilitates processing and conversions of data (currently only meteorological input data).
+This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This facilitates processing and conversions of data.
 
 ```xml
   <browndog>
