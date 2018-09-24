@@ -411,7 +411,6 @@ PEcAn tries to detect and throw informative errors when dates are out of bounds 
 The following tags are optional run settings that apply to any model: 
 
 * `jobtemplate`: the template used when creating a `job.sh` file, which is used to launch the actual model. Each model has its own default template  in the `inst` folder of the corresponding R package (for instance, here is the one for [ED2](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/template.job)). The following variables can be used: `@SITE_LAT@`, `@SITE_LON@`, `@SITE_MET@`, `@START_DATE@`, `@END_DATE@`, `@OUTDIR@`, `@RUNDIR@` which all come variables in the `pecan.xml` file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : `@SCRATCH_COPY@`, `@SCRATCH_CLEAR@`.
-* `dbfiles`: location where pecan should write files that will be stored in the database. The default is store them in `${HOME}/.pecan/dbfiles`
 
 In addition, the following tags can be used for the ED2 model:
 
