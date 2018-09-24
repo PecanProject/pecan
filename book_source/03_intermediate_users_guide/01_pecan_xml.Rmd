@@ -522,8 +522,6 @@ This information is currently used by the following PEcAn workflow functions:
 
 Only if this section is defined a sensitivity analysis is done. This section will have `<quantile>` or `<sigma>` nodes. If neither are given, the default is to use the median +/- [1 2 3] x sigma (e.g. the 0.00135 0.0228 0.159 0.5 0.841 0.977 0.999 quantiles); If the 0.5 (median) quantile is omitted, it will be added in the code.
 
-#### tags
-
 ```xml
 <sensitivity.analysis>
 	<quantiles>
@@ -542,7 +540,7 @@ Only if this section is defined a sensitivity analysis is done. This section wil
 </sensitivity.analysis>
 ```
 
-* `quantiles` : [optional] Quantiles of parameter distributions at which the model should be evaluated when running sensitivity analysis. Values greater than 0 and less than 1 can be used.
+* `quantiles` : [optional] Quantiles of parameter distributions at which the model should be evaluated when running sensitivity analysis. Values must be between 0 and 1.
 * `sigma` : [optional] Any real number can be used to indicate the quantiles to be used in units of normal probability.
 * `quantile` : [optional] Which quantile should be used.
 * `start.date` : [required?] start date of the sensitivity analysis (in YYYY/MM/DD format) 
