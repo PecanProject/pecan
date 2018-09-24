@@ -557,15 +557,11 @@ This information is currently used by the following PEcAn workflow functions:
 
 ### Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
-The following tags can be used for state data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](pda.documentation.md)
-
-#### tags
-
-Coming soon...
+The following tags can be used for parameter data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](#pda)
 
 ### (experimental) State Data Assimilation {#xml-state-data-assimilation}
 
-The following tags can be used for state data assimilation. More detailed information can be found here: [State Data Assimilation Documentation](sda.documentation.md)
+The following tags can be used for state data assimilation. More detailed information can be found here: [State Data Assimilation Documentation](#sda)
 
 ```xml
 <state.data.assimilation>
