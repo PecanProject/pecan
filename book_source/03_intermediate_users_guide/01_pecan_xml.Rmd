@@ -305,7 +305,8 @@ Some important tags are as follows:
 
 This information is currently used by the following PEcAn workflow function:
 
-`write.configs()`, `run.models()`
+- `PEcAn.<MODEL>::write.config.<MODEL>` -- Write model-specific configuration files {#pecan-write-configs}
+- `PEcAn.remote::start.model.runs` -- Begin model run execution
 
 #### Model-specific configuration {#xml-model-specific}
 
@@ -514,7 +515,7 @@ Tags related to post-hoc analysis and visualization are:
 
 This information is currently used by the following PEcAn workflow functions:
 
-- `PEcAn.<MODEL>::write.config.<MODEL>` - Write model-specific configuration files
+- `PEcAn.<MODEL>::write.config.<MODEL>` - See [above](#pecan-write-configs).
 - `PEcAn.uncertainty::write.ensemble.configs` - Write configuration files for ensemble analysis
 - `PEcAn.uncertainty::run.ensemble.analysis` - Run ensemble analysis
 
@@ -551,8 +552,8 @@ Only if this section is defined a sensitivity analysis is done. This section wil
 
 This information is currently used by the following PEcAn workflow functions:
 
-- `write.configs()` - ???
-- `run.sensitivity.analysis()` - ???
+- `PEcAn.<MODEL>::write.configs.<MODEL>` -- See [above](#pecan-write-configs)
+- `PEcAn.uncertainty::run.sensitivity.analysis` -- Executes the uncertainty analysis
 
 ### Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
