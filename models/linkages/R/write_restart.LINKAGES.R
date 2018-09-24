@@ -46,11 +46,16 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   new.state.save <- new.state
   
-  if(grep('Fcomp',names.keep)){
+  if(any(grep('Fcomp',names.keep))){
     new.state <- new.state.save[grep("Fcomp", names(new.state.save))]
     new.state.other <- new.state.save[grep("Fcomp", names(new.state.save), invert = TRUE)]
   }
   
+  if(any(grep('AGB.pft',names.keep))){
+    new.state <- new.state.save[grep("AGB.pft", names(new.state.save))]
+    new.state.other <- new.state.save[grep("AGB.pft", names(new.state.save), invert = TRUE)]
+  }
+
   variables <- names(new.state)
   ### Going to need to change this... ### Get some expert opinion
   N <- length(new.state)
@@ -60,6 +65,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   }
   diag(distance.matrix) <- 0
   
+  if(FALSE){
   distance.matrix <- rbind(c(0, 1, 4, 3, 2, 6, 5, 8, 7, 9, 10, 11, 12, 13, 14), 
                            c(5, 0, 3, 4, 8, 1, 2, 7, 6, 9, 10, 11, 12, 13, 14), 
                            c(5, 3, 0, 1, 8, 4, 2, 7, 6, 9, 10, 11, 12, 13, 14), 
@@ -75,9 +81,11 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
                            c(3, 6, 4, 5, 1, 7, 8, 12, 2, 9, 10, 11, 0, 13, 14), 
                            c(3, 6, 4, 5, 1, 7, 8, 13, 2, 9, 10, 11, 12, 0, 14), 
                            c(3, 6, 4, 5, 1, 7, 8, 14, 2, 9, 10, 11, 12, 13, 0))
-  
-  # distance.matrix <- rbind(c(0,3,1,2), c(3,0,2,1), c(1,2,0,3), c(2,1,3,0))
-  
+
+  }
+  distance.matrix <- rbind(c(0,3,1,2), c(3,0,2,1), c(1,2,0,3), c(2,1,3,0))
+
+
   ## HACK
   spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages"))  #default spp.params
   nspec <- length(settings$pfts)
@@ -88,23 +96,23 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   spp.params <- spp.params.default[spp.params.save, ]
   biomass_spp_params <- function(new.params, default.params, pft) {
-    if ("SLTA" %in% names(new.params)) {
-      slta <- new.params$pft$SLTA
+    if ("SLTA" %in% names(new.params[[as.character(pft)]])) {
+      slta <- new.params[[as.character(pft)]]$SLTA
     } else {
       slta <- default.params[default.params$Spp_Name == pft, ]$SLTA
     }
-    if ("SLTB" %in% names(new.params)) {
-      sltb <- new.params$pft$SLTB
+    if ("SLTB" %in% names(new.params[[as.character(pft)]])) {
+      sltb <- new.params[[as.character(pft)]]$SLTB
     } else {
       sltb <- default.params[default.params$Spp_Name == pft, ]$SLTB
     }
-    if ("FWT" %in% names(new.params)) {
-      fwt <- new.params$pft$FWT
+    if ("SLA" %in% names(new.params[[as.character(pft)]])) {
+      fwt <- (1 / new.params[[as.character(pft)]]$SLA) * 10000
     } else {
       fwt <- default.params[default.params$Spp_Name == pft, ]$FWT
     }
-    if ("FRT" %in% names(new.params)) {
-      frt <- new.params$pft$FRT
+    if ("FRT" %in% names(new.params[[as.character(pft)]])) {
+      frt <- new.params[[as.character(pft)]]$FRT
     } else {
       frt <- default.params[default.params$Spp_Name == pft, ]$FRT
     }
@@ -168,7 +176,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   dbh <- dbh[large.trees]
   iage <- iage[large.trees]
   nogro <- nogro[large.trees]
-  
+ 
   new.ntrees <- numeric(length(settings$pfts))
   
   print(paste0("ntrees (large trees) =", ntrees))  #these are the large trees
@@ -193,11 +201,12 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   data2 <- data.frame(ind.biomass = ind.biomass,
                       n.index = n.index)
   mean.biomass.spp <- aggregate(ind.biomass ~ n.index, mean, data = data2)   # calculate mean individual biomass for each species
-  
+  #browser()
   # calculate number of individuals needed to match new.state
   for (s in seq_along(settings$pfts)) {
+
     if (ntrees[s] > 0) {
-      fix <- new.state[s]/mean.biomass.spp[mean.biomass.spp[, 1] == s, 2]  # number of individuals needed to agree with new.state      
+      fix_adjust <- new.state[s]/mean.biomass.spp[mean.biomass.spp[, 1] == s, 2]  # number of individuals needed to agree with new.state      
     } else {
       for (r in 1:(length(settings$pfts) - 1)) {
         s.select <- which(distance.matrix[s, ] == r)  # select a new spp. to clone from
@@ -205,9 +214,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
           break
         }
       }
-      fix <- new.state[s] / mean.biomass.spp[mean.biomass.spp[, 1] == s.select, 2]
+      fix_adjust <- new.state[s] / mean.biomass.spp[mean.biomass.spp[, 1] == s.select, 2]
     }
-    new.ntrees[s] <- as.numeric(ceiling(fix))  #new number of ind. of each species
+    new.ntrees[s] <- as.numeric(ceiling(fix_adjust-.01))  #new number of ind. of each species
     if(new.ntrees[s]>100&!is.na(new.ntrees[s])){
       new.ntrees[s] = sample(size = 1, x = 50:150)
     } 
@@ -215,7 +224,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   #making sure to stick with density dependence rules in linkages (< 198 trees per 800/m^2)
   #someday we could think about estimating this parameter from data
-  if(sum(new.ntrees) > 98) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,95,98))
+  if(sum(new.ntrees,na.rm = T) > 98) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,95,98))
   
   print(paste0("new.ntrees =", new.ntrees))
   
@@ -296,8 +305,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
                               spp.biomass.params = spp.biomass.params)$minimum
     }
     
-    b_calc1[s] <- sum(biomass_function(dbh.temp[nl:nu], 
-                                       spp.biomass.params = spp.biomass.params)) * (1 / 883) * 0.48
+    b_calc1[s] <- sum(biomass_function(dbh.temp[nl:nu],
+                                       spp.biomass.params = spp.biomass.params)) * (1 / 833) * 0.48
     nl <- nu + 1
   }
   
@@ -335,7 +344,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     C.mat[C.mat[1:ncohrt, 5], 1] <- C.mat[C.mat[1:ncohrt, 5], 1] * as.numeric(soil.corr)
     C.mat[is.na(C.mat[1:ncohrt,1]),1] <- 0
     C.mat[C.mat[1:ncohrt,1] < 0,1] <- 0
-    }
+  }
   
   if (RENAME) {
     file.rename(file.path(settings$rundir, runid, "linkages.restart.Rdata"), 
@@ -353,7 +362,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   do.call(write.config.LINKAGES, 
           args = list(trait.values = new.params, settings = settings, run.id = runid, 
-                      restart = TRUE, spinup = FALSE))
+                      restart = TRUE, spinup = FALSE, inputs = inputs))
   
   # save original output
   if (RENAME) {

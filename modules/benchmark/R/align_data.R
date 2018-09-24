@@ -56,9 +56,9 @@ align_data <- function(model.calc, obvs.calc, var, align_method = "match_timeste
   # Special case for annual timestep
   if(setequal(c(365,366), compare$diff_days[coarse]) | setequal(c(365), compare$diff_days[coarse]) | 
      setequal(c(366), compare$diff_days[coarse])){
-    rng_dat <- year(rng_dat)
-    model.calc$round.posix <- year(model.calc$round.posix)
-    obvs.calc$round.posix  <- year(obvs.calc$round.posix)
+    rng_dat <- lubridate::year(rng_dat)
+    model.calc$round.posix <- lubridate::year(model.calc$round.posix)
+    obvs.calc$round.posix  <- lubridate::year(obvs.calc$round.posix)
   }
   
   
