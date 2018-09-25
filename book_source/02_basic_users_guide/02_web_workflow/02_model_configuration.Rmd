@@ -1,4 +1,4 @@
-## Model configuration
+## Model configuration {#web-model-config}
 
 This page is used for basic model configuration, including when your model will run and what input data it will use.
 

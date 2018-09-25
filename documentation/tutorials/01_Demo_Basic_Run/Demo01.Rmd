@@ -17,27 +17,28 @@ We will begin by exploring a set of web-based tools that are designed to run sin
 In the following demo, **URL** is the web address of a PEcAn server and will refer to one of the following:
 
 *	If you are doing a live demo with the PEcAn team, **URL was provided**
-*	If you followed instructions in [Download the PEcAn VM] , **URL = localhost:6480**
-*	If you running PEcAn [Using AmazonWeb Services], **URL is the Public IP**
+*	If you are running the PEcAn [virtual machine](#basicvm): **URL = localhost:6480**
+*	If you are running PEcAn using [Amazon Web Services (AWS)](#awsvm), **URL is the Public IP**
+*   If you are running PEcAn using [Docker](#dockervm), **URL is localhost:8000/pecan/** (trailing backslash is important!)
 *	If you followed instructions found in [Install PEcAn by hand], **URL is your server’s IP**
 
 
 ## Basic Run
 
-### Start PEcAn:  
+### Start PEcAn:
 
 1. **Enter URL in your web browser**
 2. **Click “Run Models”**
 3. **Click the ‘Next’ button** to move to the “Site Selection” page.
 
 ```{r startpecan}
-knitr::include_graphics('startpecan.jpg')
+knitr::include_graphics('extfiles/startpecan.jpg')
 ```
 
 ### Site Selection
 
 ```{r mapmodel}
-knitr::include_graphics('mapmodel.png')
+knitr::include_graphics('extfiles/mapmodel.png')
 ```
 
 ### Host
@@ -70,7 +71,7 @@ Once you are finished with the above steps, **click "Next"**.
 #### Run Specification
 
 ```{r runspec}
-knitr::include_graphics('runspec.png')
+knitr::include_graphics('extfiles/runspec.png')
 ```
 
 Next we will specify settings required to run the model. Be aware that the inputs required for any particular model may vary somewhat so there may be addition optional or required input selections available for other models.
@@ -115,7 +116,7 @@ If you get an error in your run as part of a live demo or class activity, it is 
 ### Model Run Workflow
 
 ```{r execstatus}
-knitr::include_graphics('execstatus.jpg')
+knitr::include_graphics('extfiles/execstatus.jpg')
 ```
 
 #### MET Process:
@@ -179,7 +180,7 @@ FYI, [adding a new model](https://pecanproject.github.io/pecan-documentation/mas
 1. **Click on Open SHINY**, which will open a new browser window. The shiny app will automatically access your run’s output files and allow you to visualize all output variables as a function of time. 
 
 ```{r workflowshiny}
-knitr::include_graphics('workflowshiny.png')
+knitr::include_graphics('extfiles/workflowshiny.png')
 ```
 
 2. Use the pull down menu under **Variable Name** to choose whichever output variable you wish to plot.
