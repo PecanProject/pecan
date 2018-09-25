@@ -41,14 +41,17 @@ The PEcAn project is supported financially by the following:
   - NNX14AH65G
   - NNX16AO13H
   - 80NSSC17K0711
+- Department of Defense, Strategic Environmental Research and Development Program (DOD-SERDP), grant [RC2636](https://www.serdp-estcp.org/Program-Areas/Resource-Conservation-and-Resiliency/Infrastructure-Resiliency/Vulnerability-and-Impact-Assessment/RC-2636/RC-2636)
 - Energy Biosciences Institute, University of Illinois
 - Department of Earth & Environment, Boston University
+- Amazon Web Services (AWS)
+- [Google Summer of Code](https://summerofcode.withgoogle.com/organizations/4612291316678656/)
 
 BETY-db is a product of the Energy Biosciences Institute at the University of Illinois at Urbana-Champaign. We gratefully acknowledge the great effort of other researchers who generously made their own data available for further study.
 
 PEcAn is a collaboration among research groups at the Department of Earth And Environment at Boston University, the Energy Biosciences Institute at the University of Illinois, the Image Spatial Data Analysis group at NCSA, the Department of Atmospheric & Oceanic Sciences at the University Wisconsin-Madison, the Terrestrial Ecosystem Science & Technology (TEST) Group at Brookhaven National Laboratory, and the Joint Global Change Research Institute (JGCRI) at the Pacific Northwest National Laboratory.
 
-Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the NSF, NASA, Boston University, University of Illinois, Brookhaven National Lab, Pacific National Lab, Battelle, or the US Department of Energy. 
+Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the NSF, NASA, Boston University, University of Illinois, Brookhaven National Lab, Pacific National Lab, Battelle, the US Department of Defense, or the US Department of Energy. 
 
 **PEcAn Publications**
 
