@@ -6,9 +6,10 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 
-## [Unreleased]
+## [1.6.0] - 2018-09-01
 
 ### Fixes
+- Updated model2netcdf.SIPNET() to address issue #2094. Revised netCDF time to be from 0-364./365. (if leap) so time would be properly parsed by R and python (cf tools)
 - Fixed output time variable in models/ed/R/model2netcdf.ED2.R to provide correct fractional DOY
 - Running tests for PEcAn.settings package no longer leaves empty temp directories in test folder (#2075)
 - Fixed issue #2064 which sends one met path to write.sa.config.
@@ -17,6 +18,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - Added download.LandTrendr.AGB and extract.LandTrendr.AGB functions in modules/data.remote
+- Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
 - Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
 - Added scaling to documentation
