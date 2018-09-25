@@ -85,3 +85,5 @@ shiny/BenchmarkReport/*
 base/qaqc/tests/testthat/Rplots.pdf
 build.*.log
 /book_source/extfiles
+docker/base/build.*.log
+docker/models/build.*.log
