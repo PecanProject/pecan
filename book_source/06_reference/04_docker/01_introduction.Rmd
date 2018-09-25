@@ -88,7 +88,7 @@ docker stop postgresql
 
 Containers that are running in the foreground (without the `--detach`) can be stopped by pressing `Ctrl-C`. Any containers running in the background (with `--detach`) will continue running until the machine is restarted or the container is stopped using `docker stop`.
 
-### `docker-compose`
+### `docker-compose` {#docker-compose}
 
 For a quick introduction to `docker-compose`, we recommend the following YouTube video: [Docker Compose in 12 Minutes](https://www.youtube.com/watch?v=Qw9zlE3t8Ko).
 
