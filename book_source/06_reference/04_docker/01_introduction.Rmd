@@ -74,7 +74,7 @@ To see a list of all running containers you can use the following command:
 docker ps
 ```
 
-To see the log files of this container you use the following command (you can either use their name or id as returned by `docker ps`). The -f flag will follow the stdout/stderr from the container, use Ctrl-C to stop following the stdout/stderr.
+To see the log files of this container you use the following command (you can either use their name or id as returned by `docker ps`). The `-f` flag will follow the `stdout`/`stderr` from the container, use `Ctrl-C` to stop following the `stdout`/`stderr`.
 
 ```bash
 docker logs -f postgresql
@@ -86,11 +86,17 @@ To stop a running container use:
 docker stop postgresql
 ```
 
-Containers that are started without the `--detach` can be stopped by pressing Ctrl-C, if you have started containers in the background they will keep on running until the machine is restarted or the container is stopped using `docker stop`
+Containers that are running in the foreground (without the `--detach`) can be stopped by pressing `Ctrl-C`. Any containers running in the background (with `--detach`) will continue running until the machine is restarted or the container is stopped using `docker stop`.
 
-### Working with docker-compose
+### `docker-compose`
 
-In the case of PEcAn we have multiple docker containers that we want to work together. To help with this we can use docker-compose. This will take a file as input that lists all the containers that make up the application and the dependencies between these containers. For example in the case of BETY we need the postgres container as well as the BETY container. 
+For a quick introduction to `docker-compose`, we recommend the following YouTube video: [Docker Compose in 12 Minutes](https://www.youtube.com/watch?v=Qw9zlE3t8Ko).
+
+The complete `docker-compose` references can be found on the [Docker documentation website](https://docs.docker.com/compose/).
+
+`docker-compose` provides a convenient way to configure and run a multi-container Docker stack.
+Basically, a `docker-compose` setup consists of a list of containers and their configuration parameters, which are then internally converted into a bunch of `docker` commands.
+To configure BETY as described above, we can use a `docker-compose.yml` file like the following:
 
 ```yaml
 version: "3"
@@ -105,7 +111,7 @@ services:
 
 This simple file allows us to bring up a full BETY application with both database and BETY application. The BETY app will not be brought up until the database container has started.
 
-You can now start this application using:
+You can now start this application by changing into the same directory as the `docker-compose.yml` file (`cd /path/to/file`) and then running:
 
 ```
 docker-compose up
