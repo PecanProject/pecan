@@ -43,7 +43,6 @@ The PEcAn project is supported financially by the following:
   - 80NSSC17K0711
 - Department of Defense, Strategic Environmental Research and Development Program (DOD-SERDP), grant [RC2636](https://www.serdp-estcp.org/Program-Areas/Resource-Conservation-and-Resiliency/Infrastructure-Resiliency/Vulnerability-and-Impact-Assessment/RC-2636/RC-2636)
 - Energy Biosciences Institute, University of Illinois
-- Department of Earth & Environment, Boston University
 - Amazon Web Services (AWS)
 - [Google Summer of Code](https://summerofcode.withgoogle.com/organizations/4612291316678656/)
 
