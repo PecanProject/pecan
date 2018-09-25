@@ -3,7 +3,9 @@
 ### What is Docker?
 
 For a quick and accessible introduction to Docker, we suggest this YouTube video: [Learn Docker in 12 Minutes](https://www.youtube.com/watch?v=YFl2mCHdv24).
+
 For more comprehensive Docker documentation, we refer you to the [Docker documentation website](https://docs.docker.com/).
+
 For a useful analogy for Docker containerization, we refer you to the webcomic [xkcd](https://xkcd.com/1988/). 
 
 Docker is a technology for encapsulating software in "containers", somewhat similarly to virtual machines.
@@ -61,9 +63,6 @@ The following options were used:
 - `mdillon/postgis:9.6-alpine` is the actual image that will be run, in this case it comes from the group/person mdillon, the container is postgis and the version 9.6-alpine (version 9.6 build on alpine linux).
 
 Other options that might be used:
-
-- `--link` makes it such that two containers can see each other.
-
 
 - `--tty` allocate a pseudo-TTY to send stdout and stderr back to the console.
 - `--interactive` keeps stdin open so the user can interact with the application running.
