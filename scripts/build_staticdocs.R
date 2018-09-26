@@ -2,6 +2,7 @@
 
 library(devtools)
 library(pkgdown)
+library(magrittr)
 
 pkg_list<- list.dirs(path = ".", full.names = FALSE, recursive = TRUE) %>%
            grep("man$",., value = TRUE) %>%
@@ -29,7 +30,6 @@ lapply(pkg_list, function(x){
 }
 )
 
-
-links <- unlist(lapply(pkgs, function(x) paste0("* [", x, "](", file.path("https://pecanproject.github.io/pecan/", x, "inst/web/index.htmlg)"))))
+links <- unlist(lapply(pkg_list, function(x) paste0("* [", x, "](", file.path("https://pecanproject.github.io/pecan/", x, "docs/index.html)"))))
 writeLines("## Documentation:\n \n", paste(links, collapse = "\n"), con = "index.md")
-system2("pandoc index.md -o index.html")
+system("pandoc index.md -o index.html")
