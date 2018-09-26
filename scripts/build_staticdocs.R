@@ -13,7 +13,7 @@ lapply(pkg_list, function(x){
   print(x)
   tryCatch(
     {
-      pkgdown::build_site(x)
+      pkgdown::build_site(x,examples = FALSE)
     },
     error = function(e){print(conditionMessage(e))
     }
