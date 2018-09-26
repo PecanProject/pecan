@@ -1,0 +1,120 @@
+## Introduction to Docker? {#docker-intro}
+
+### What is Docker?
+
+For a quick and accessible introduction to Docker, we suggest this YouTube video: [Learn Docker in 12 Minutes](https://www.youtube.com/watch?v=YFl2mCHdv24).
+
+For more comprehensive Docker documentation, we refer you to the [Docker documentation website](https://docs.docker.com/).
+
+For a useful analogy for Docker containerization, we refer you to the webcomic [xkcd](https://xkcd.com/1988/). 
+
+Docker is a technology for encapsulating software in "containers", somewhat similarly to virtual machines.
+Like virtual machines, Docker containers facilitate software distribution by bundling the software with all of its dependencies in a single location.
+Unlike virtual machines, Docker containers are meant to only run a single service or process and are build on top of existing services provided by the host OS (such as disk access, networking, memory management etc.).
+
+In Docker, an **image** refers to a binary snapshot of a piece of software and all of its dependencies.
+A **container** refers to a running instance of a particular image.
+A good rule of thumb is that each container should be responsible for no more than one running process.
+A software **stack** refers to a collection of containers, each responsible for its own process, working together to power a particular application.
+Docker makes it easy to run multiple software stacks at the same time in parallel on the same machine.
+Stacks can be given a unique name, which is passed along as a prefix to all their containers.
+Inside these stacks, containers can communicate using generic names not prefixed with the stack name, making it easy to deploy multiple stacks with the same internal configuration.
+Containers within the same stack communicate with each other via a common **network**.
+Like virtual machines or system processes, Docker stacks can also be instructed to open specific ports to facilitate communication with the host and other machines.
+
+The PEcAn database BETY provides an instructive case-study.
+BETY is comprised of two core processes -- a PostgreSQL database, and a web-based front-end to that database (Apache web server with Ruby on Rails).
+Running BETY as a "Dockerized" application therefore involves two containers -- one for the PostgreSQL database, and one for the web server.
+We could build these containers ourselves by starting from a container with nothing but the essentials of a particular operating system, but we can save some time and effort by starting with an [existing image for PostgreSQL](https://hub.docker.com/_/postgres/) from Docker Hub.
+When starting a Dockerized BETY, we start the PostgreSQL container first, then start the BETY container telling it how to communicate with the PostgreSQL container.
+To upgrade an existing BETY instance, we stop the BETY container, download the latest version, tell it to upgrade the database, and re-start the BETY container.
+There is no need to install new dependencies for BETY since they are all shipped as part of the container.
+
+The PEcAn Docker architecture is designed to facilitate installation and maintenance on a variety of systems by eliminating the need to install and maintain complex system dependencies (such as PostgreSQL, Apache web server, and Shiny server).
+Furthermore, using separate Docker containers for each ecosystem model helps avoid clashes between different software version requirements of different models (e.g. some models require GCC <5.0, while others may require GCC >=5.0).
+
+The full PEcAn Docker stack is described in more detail in the [next section](#pecan-docker).
+
+### Working with Docker
+
+To run an image, you can use the Docker command line interface.
+For example, the following runs a PostgreSQL image based on the [pre-existing PostGIS image](https://hub.docker.com/r/mdillon/postgis/) by `mdillon`:
+
+```bash
+docker run \
+	--detach \
+	--rm \
+	--name postgresql \
+	--network pecan \
+	--publish 9876:5432 \
+	--volume ${PWD}/postgres:/var/lib/postgresql/data \
+	mdillon/postgis:9.6-alpine
+```
+
+This will start the PostgreSQL+PostGIS container.
+The following options were used:
+
+- `--detach` makes the container run in the background. 
+- `--rm` removes the container when it is finished (make sure to use the volume below).
+- `--name` the name of the container, also the hostname of the container which can be used by other docker containers in the same network inside docker.
+- `--network pecan` the network that the container should be running in, this leverages of network isolation in docker and allows this container to be connected to by others using the postgresql hostname.
+- `--publish` exposes the port to the outside world, this is like ssh, and maps port 9876 to port 5432 in the docker container
+- `--volume` maps a folder on your local machine to the machine in the container. This allows you to save data on your local machine. 
+- `mdillon/postgis:9.6-alpine` is the actual image that will be run, in this case it comes from the group/person mdillon, the container is postgis and the version 9.6-alpine (version 9.6 build on alpine linux).
+
+Other options that might be used:
+
+- `--tty` allocate a pseudo-TTY to send stdout and stderr back to the console.
+- `--interactive` keeps stdin open so the user can interact with the application running.
+- `--env` sets environment variables, these are often used to change the behavior of the docker container.
+
+To see a list of all running containers you can use the following command:
+
+```bash
+docker ps
+```
+
+To see the log files of this container you use the following command (you can either use their name or id as returned by `docker ps`). The `-f` flag will follow the `stdout`/`stderr` from the container, use `Ctrl-C` to stop following the `stdout`/`stderr`.
+
+```bash
+docker logs -f postgresql
+```
+
+To stop a running container use:
+
+```
+docker stop postgresql
+```
+
+Containers that are running in the foreground (without the `--detach`) can be stopped by pressing `Ctrl-C`. Any containers running in the background (with `--detach`) will continue running until the machine is restarted or the container is stopped using `docker stop`.
+
+### `docker-compose`
+
+For a quick introduction to `docker-compose`, we recommend the following YouTube video: [Docker Compose in 12 Minutes](https://www.youtube.com/watch?v=Qw9zlE3t8Ko).
+
+The complete `docker-compose` references can be found on the [Docker documentation website](https://docs.docker.com/compose/).
+
+`docker-compose` provides a convenient way to configure and run a multi-container Docker stack.
+Basically, a `docker-compose` setup consists of a list of containers and their configuration parameters, which are then internally converted into a bunch of `docker` commands.
+To configure BETY as described above, we can use a `docker-compose.yml` file like the following:
+
+```yaml
+version: "3"
+services:
+  postgres:
+    image: mdillon/postgis:9.5
+  bety:
+    image: pecan/bety
+    depends_on:
+      - postgres
+```
+
+This simple file allows us to bring up a full BETY application with both database and BETY application. The BETY app will not be brought up until the database container has started.
+
+You can now start this application by changing into the same directory as the `docker-compose.yml` file (`cd /path/to/file`) and then running:
+
+```
+docker-compose up
+```
+
+This will start the application, and you will see the log files for the 2 different containers.
