@@ -1,0 +1,22 @@
+# ----------------------------------------------------------------------
+# PECAN FOR MODEL BASE IMAGE
+# ----------------------------------------------------------------------
+FROM pecan/base
+MAINTAINER Rob Kooper <kooper@illinois.edu>
+
+# variables to store in docker image
+ENV RABBITMQ_URI=amqp://guest:guest@rabbitmq/%2F \
+    RABBITMQ_QEUEUE="pecan" \
+    APPLICATION="R CMD BATCH workflow.R"
+
+# ----------------------------------------------------------------------
+# SETUP FOR PYTHON CODE
+# ----------------------------------------------------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3-pip \
+    && pip3 install pika \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /work
+COPY docker/receiver.py docker/sender.py /work/
+CMD python3 /work/receiver.py

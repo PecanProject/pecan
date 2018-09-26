@@ -5,71 +5,62 @@
 \title{Inversion with automatic convergence checking}
 \usage{
 invert.auto(observed, invert.options, return.samples = TRUE,
-  save.samples = NULL, quiet = FALSE, ...)
+  save.samples = NULL, quiet = FALSE, parallel = TRUE,
+  parallel.cores = NULL, parallel.output = "/dev/null")
 }
 \arguments{
-\item{observed}{Matrix of observed values. Must line up with output of 
-'model'.}
+\item{observed}{Vector, matrix, or data frame (coerced to matrix) of
+observed values. For spectral data, wavelengths are rows and spectra are
+columns. Dimensions must align with the output of \code{model}.}
 
-\item{invert.options}{R list object containing the following elements:
+\item{invert.options}{Parameters related to inversion.}
 
-inits Vector of initial values of model parameters to be inverted.
+\item{return.samples}{Include full samples list in output. Default = \code{TRUE.}}
 
-ngibbs Number of MCMC iterations
+\item{save.samples}{Save samples to file as the inversion proceeds (useful
+for debugging). If \code{NULL}, do not save samples. Default = \code{NULL}.}
 
-prior.function Function for use as prior. Should take a vector of parameters 
-as input and return a single value -- the sum of their log-densities -- as 
-output.
+\item{quiet}{Suppress progress bar and status messages. Default=FALSE}
 
-param.mins Vector of minimum values for inversion parameters
+\item{parallel}{Logical. Whether or not to run multiple chains in parallel
+on multiple cores (default = \code{TRUE}).}
 
-model The model to be inverted. This should be an R function that takes 
-`params` as input and returns one column of `observed` (nrows should be the 
-same). Constants should be implicitly included here.
+\item{parallel.cores}{Number of cores to use for parallelization. If
+\code{NULL} (default), allocate one fewer than detected number of cores.}
 
-adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' 
-steps). Default=100
-adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
-0.1.
-
-target Target acceptance rate. Default=0.234, based on recommendation for 
-multivariate block sampling in Haario et al. 2001
-
-do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
-outputs to initialize Metropolis Hastings. This may improve mixing time, but 
-risks getting caught in a local minimum.  Default=FALSE
-
-nchains Number of independent chains.
-
-inits.function Function for randomly generating initial conditions.
-burnin Number of samples to burn-in before computing Gelman 
-Diagnostic. Default = 0.8 * ngibbs.
-
-n.tries Number of attempted runs before giving up. Default = 5
-
-do.lsq.first Initialize using least-squares optimization on first 
-try. Default = FALSE.
-
-do.lsq.after Number of tries before starting initialization using 
-least-squares optimization. Default = TRUE.
-
-target.adj Amount by which to adjust target acceptance rate every 
-attempt. Default = 0.8}
-
-\item{return.samples}{Include full samples list in output. Default = TRUE.}
-
-\item{save.samples}{Filename for saving samples after each iteration. If 
-'NULL', do not save samples. Default = NULL.}
-
-\item{...}{Other arguments to `check.convergence`}
+\item{parallel.output}{Filename (or '' for stdout) for printing parallel
+outputs. Use with caution. Default = \code{'/dev/null'}.}
 }
 \value{
-List of "results" (summary statistics and Gelman Diagnostic) and 
-"samples"(mcmc.list object, or "NA" if return.samples=FALSE)
+List including \code{results} (summary statistics), \code{samples}
+(\code{mcmc.list} object, or \code{NA} if \code{return.samples=FALSE}), and other
+information.
+}
+\description{
+Inversion with automatic convergence checking
 }
 \details{
-Performs an inversion via the `invert.custom` function with 
-multiple chains and automatic convergence checking. Convergence checks are 
+Performs an inversion via the \code{invert.custom} function with
+multiple chains and automatic convergence checking.  Convergence checks are
 performed using the multivariate Gelman-Rubin diagnostic.
-}
 
+Parameters specific to \code{invert.auto} are described here.
+For the remaining parameters, see \code{\link[=invert.custom]{invert.custom()}}.
+\itemize{
+\item \code{model} -- The model to be inverted. This should be an R function that
+takes \code{params} as input and returns one column of \code{observed}
+(nrows should be the same). Constants should be implicitly included here.
+\item \code{nchains} -- Number of independent chains.
+\item \code{inits.function} -- Function for generating initial conditions.
+\item \code{ngibbs.max} -- Maximum number of total iterations (per chain). DEFAULT = 5e6
+\item \code{ngibbs.min} -- Minimum number of total iterations (per chain). DEFAULT = 5000.
+\item \code{ngibbs.step} -- Number of iterations between convergence checks. Default = 1000.
+\item \code{run_first} -- Function to run before running sampling. Takes parallel
+inputs list containing runID, initial values, and resume (NULL) as an
+argument.
+\item \code{calculate.burnin} -- If \code{TRUE}, use \code{PEcAn.assim.batch::autoburin}
+function to calculate burnin. Otherwise, assume burnin is \code{min(niter/2, iter_conv_check)}.
+\item \code{threshold} -- Maximum value of the Gelman-Rubin diagnostic for
+determining convergence. Default = 1.1
+}
+}

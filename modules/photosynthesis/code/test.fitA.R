@@ -9,12 +9,12 @@
   
   ## Read Photosynthetic gas exchange data
   filenames <- list.files(in.folder,pattern=pattern, full.names=TRUE)
-  master = lapply(filenames, read.Licor)
+  master = lapply(filenames, read_Licor)
   save(master,file="master.RData")
 
   ## run QA/QC checks
   for(i in 1:length(master)){
-    master[[i]] = Licor.QC(master[[i]])
+    master[[i]] = Licor_QC(master[[i]])
     save(master,file="master.RData")
   }
   
@@ -49,5 +49,5 @@ summary(fit$params) ## parameter estimates
   abline(0,1,col=2,lwd=2)
   
   
-plot.photo(dat,fit)
+plot_photo(dat,fit)
   

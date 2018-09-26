@@ -19,7 +19,7 @@ import netCDF4
 
 DEBUG_PRINTING=True
 
-defaultURL='http://daac.ornl.gov/cgi-bin/MODIS/GLBVIZ_1_Glb_subset/MODIS_webservice.wsdl'
+defaultURL='https://daacmodis.ornl.gov/cgi-bin/MODIS/GLBVIZ_1_Glb_subset/MODIS_webservice.wsdl'
 
 class modisData( object ):
 
@@ -174,7 +174,7 @@ def printModisData( m ):
 	print 'dates:', m.dateStr
 
 	print 'QA:', m.QA
-	print m.data
+	print 'data:',m.data
 
 
 def __debugPrint( o ):
@@ -188,6 +188,7 @@ def modisGetQA( m, QAname, client=None, chunkSize=8 ):
 
 	startDate=m.dateInt[0]
 	endDate=m.dateInt[-1]
+
 
 	q = modisClient( client, product=m.product, band=QAname, lat=m.latitude, lon=m.longitude, 
 			startDate=startDate, endDate=endDate, chunkSize=chunkSize, kmAboveBelow=m.kmAboveBelow, kmLeftRight=m.kmLeftRight )
@@ -204,7 +205,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 
 	m=modisData()
 
-	m.kmABoveBelow=kmAboveBelow
+	m.kmAboveBelow=kmAboveBelow
 	m.kmLeftRight=kmLeftRight
 	
 	if client==None:
@@ -287,12 +288,12 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		requestEnd=dateList[i+j-1]
 		i=i+j-1
 		
-		#print >> sys.stderr, requestStart, requestEnd
-		
+		__debugPrint('start date = %s, end date = %s'%(requestStart, requestEnd))
 		data = client.service.getsubset( lat, lon, product, band, requestStart, requestEnd, kmAboveBelow, kmLeftRight )
-		
+		__debugPrint("Passed download step")	
 		
 		# now fill up the data structure with the returned data...
+		#__debugPrint( data.subset.__len__() )
 
 		if n == 0:
 		
@@ -303,14 +304,17 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 			m.units=data.units         
 			m.yllcorner=data.yllcorner
 			m.xllcorner=data.xllcorner  	
-
+			
+			m.nrows = int(m.nrows)
+			m.ncols = int(m.ncols)
 			m.data=np.zeros( (nDates,m.nrows*m.ncols) )
 
+		
 		for j in xrange( data.subset.__len__( ) ):
 			kn=0
 			__debugPrint( data.subset	)		
 			for k in data.subset[j].split(",")[5:]:
-				__debugPrint( k )
+				#__debugPrint( k )
 				try:
 					m.data[ n*chunkSize+j,kn] = int( k )
 				except ValueError:
@@ -336,19 +340,41 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 #	m_data[:] = data
 #	rootgrp.close()
 
+def dateInt_to_posix(date):
+	import datetime
+	temp =datetime.datetime.strptime(date, '%Y%j')
+	return temp.strftime('%Y-%m-%d')
 
-def m_data_to_netCDF(filename, m, k):
-	rootgrp = netCDF4.Dataset(filename, 'w', format='NETCDF3_64BIT')
-	rootgrp.createDimension('ncol', m.data.shape[1])
-	rootgrp.createDimension('nrow', m.data.shape[0])
-	rootgrp.createDimension('dates', len(m.dateInt))
-	m_data = rootgrp.createVariable('LAI', 'f8', ('nrow', 'ncol'))
-	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol'))
-	m_date = rootgrp.createVariable('Dates', 'i7', ('dates'))
+def m_data_to_netCDF(filename, m, k, kmLR, kmAB):
+	import datetime
+
+	rootgrp = netCDF4.Dataset(filename, 'w', format='NETCDF4')
+	nrow = 1 + 2*kmAB
+	ncol = 1 + 2*kmLR	
+	rootgrp.createDimension('northing', nrow)
+#	m_north = rootgrp.createVariable('northing', 'i8', ('northing'))
+# 	m_north.units = "km north of lowest point in grid")
+	rootgrp.createDimension('easting', ncol)
+	rootgrp.createDimension('time', len(m.dateInt))
+
+	m_date = rootgrp.createVariable('time', 'i8', ('time'))
+	start=str(m.dateInt[0])
+	startDate = datetime.datetime.strptime(start, '%Y%j')
+	year = startDate.year
+	m_date.units = 'days since %d-01-01 00:00:00.0'%(year)
+
+	m_data = rootgrp.createVariable('LAI', 'f8', ('time', 'northing', 'easting'))
+	m_std = rootgrp.createVariable('LAIStd', 'f8', ('time', 'northing', 'easting'))
+
+	str_dates = [str(d) for d in m.dateInt]
+	datetimes = [(datetime.datetime.strptime(d, '%Y%j')- datetime.datetime(year,1,1)).days+1 for d in str_dates]	
+	m_date[:] = datetimes 
+	__debugPrint( "populated dates in netcdf" )
 	m_data[:] = m.data
+	__debugPrint( "populated LAI data in netcdf" )
 	if k is not None:
         	m_std[:] = 0.1*k.data
-	m_date[:] = m.dateInt
+		__debugPrint( "populated LAIstd data in netcdf" )
 	rootgrp.close()
 
 #def m_date_to_netCDF(filename, varname, data):
@@ -361,8 +387,11 @@ def m_data_to_netCDF(filename, m, k):
 #	rootgrp.close()
 
 
-def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, kmLR=0, fname='m_data.nc',product='MOD15A2',band='Lai_1km',qcband='FparLai_QC',sdband='LaiStdDev_1km'):
+def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, kmLR=0, fname='m_data.nc',product='MOD15A2',band='Lai_1km',qcband='FparLai_QC',sdband='LaiStdDev_1km',debug=True):
 
+	global DEBUG_PRINTING 
+	DEBUG_PRINTING = debug
+ 
 	client=setClient( )
 
 	prodList = modisClient( client )
@@ -381,18 +410,24 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 	date = m.dateInt
 	m.applyScale()
         if qcband is not None:
+		__debugPrint( "getting QA (quality assurance) from qcband" )
         	modisGetQA(m, qcband, client=client )
+	#	printModisData(m)
+		__debugPrint( "filter QA" ) 
         	m.filterQA( range(0,2**16,2), fill=-1 )
 
         if sdband is not None:
+		__debugPrint( "getting sdband" )
         	k = modisClient( client, product=product, band=sdband, lat=la, lon=lo, startDate=start_date, endDate=end_date, kmAboveBelow=kmAB, kmLeftRight=kmLR)
         	if qcband is not None:
+			__debugPrint( "getting QA band for sdband" )
                         modisGetQA(k, qcband, client=client )
         else:
                 k = None
-		
+	if DEBUG_PRINTING:		
+		printModisData( m )
 
-	m_data_to_netCDF(fname, m, k)	
+	m_data_to_netCDF(fname, m, k, kmLR, kmAB)	
 
 #	print(len(m.data))
 #	print(len(k.data))

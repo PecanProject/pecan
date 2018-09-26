@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<Fluxnet2015>
+  <scale>site</scale>
+  <format>
+    <id>5000000001</id>
+    <name>FLUXNET2015_SUBSET_HH</name>
+    <mimetype>text/csv</mimetype>
+    <inputtype>csv</inputtype>
+  </format>
+</Fluxnet2015>

@@ -22,4 +22,3 @@ Generic function for the elasticity
 \details{
 Given the sensitivity, samples, and outputs for a single trait, return elasticity
 }
-

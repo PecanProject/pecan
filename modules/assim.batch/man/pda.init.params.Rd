@@ -4,7 +4,7 @@
 \alias{pda.init.params}
 \title{Initialise Parameter Matrix for PDA}
 \usage{
-pda.init.params(settings, con, pname, n.param.all)
+pda.init.params(settings, chain, pname, n.param.all)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
@@ -20,4 +20,3 @@ Initialise Parameter Matrix for PDA
 \author{
 Ryan Kelly
 }
-

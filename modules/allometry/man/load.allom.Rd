@@ -9,8 +9,8 @@ load.allom(object)
 \arguments{
 \item{object}{Allometry model object. Option includes
 \itemize{
-  \item{"vector of file paths"}{ - path(s) to AllomAve RData files}
-  \item{"directory where files are located}{ - }
+  \item{'vector of file paths'}{ - path(s) to AllomAve RData files}
+  \item{'directory where files are located}{ - }
 }}
 }
 \value{
@@ -22,7 +22,7 @@ loads allom files
 \examples{
 
 \dontrun{
-  object = "~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/"
+  object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
   allom.mcmc = load.allom(object)
   
 }
@@ -31,4 +31,3 @@ loads allom files
 \author{
 Michael Dietze
 }
-

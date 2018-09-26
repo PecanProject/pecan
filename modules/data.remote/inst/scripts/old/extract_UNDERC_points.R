@@ -5,13 +5,9 @@
 
 ##load required pkgs and libraries
 require(rgdal)
-require(proj4)
-require(raster)
-library(sp)
-library(rgdal)
 library(proj4)
-library(spatstat)
-library(maptools)
+library(raster)
+library(sp)
 
 scn_metadata <- read.table(file="/home/bhardima/pecan/modules/data.remote/output/metadata/output_metadata.csv", header=T, sep="\t")
 

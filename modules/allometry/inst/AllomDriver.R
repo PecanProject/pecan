@@ -7,10 +7,10 @@ if(interactive()){
   settings.file <- Sys.getenv("PECANSETTINGS")
 }
 library(XML)
-settings.xml <- xmlParse(settings.file)
-settings <- xmlToList(settings.xml)
+settings.xml <- XML::xmlParse(settings.file)
+settings <- XML::xmlToList(settings.xml)
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-#require(PECAn)
+#library(PECAn)
 
 ## libraries & database connection
 library(mvtnorm)

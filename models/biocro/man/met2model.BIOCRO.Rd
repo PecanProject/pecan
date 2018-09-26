@@ -4,25 +4,31 @@
 \alias{met2model.BIOCRO}
 \title{Write BioCro met files}
 \usage{
-met2model.BIOCRO(in.path, in.prefix, outfolder, overwrite = FALSE, ...)
+met2model.BIOCRO(in.path, in.prefix, outfolder, overwrite = FALSE, lat,
+  lon, start_date, end_date, ...)
 }
 \arguments{
 \item{in.path}{path on disk where CF file lives}
 
 \item{in.prefix}{prefix for each file}
 
-\item{outfolder}{location where model specific output is written.}
+\item{outfolder}{location where model specific output is written}
 
-\item{...}{can pass lat, lon, start.date and end.date}
+\item{overwrite}{logical: Write over any existing file of the same name? If FALSE, leaves the existing file untouched and skips to the next year.}
+
+\item{lat, lon}{Site latitude and longitude}
+
+\item{start_date, end_date}{Date range to convert. Each year will be written to a separate file}
+
+\item{...}{other arguments passed from PEcAn, currently ignored}
 }
 \value{
-OK if everything was succesful.
+a dataframe of information about the written file
 }
 \description{
 Converts a met CF file to a model specific met file. The input
-files are calld <in.path>/<in.prefix>.YYYY.cf
+files are called <in.path>/<in.prefix>.YYYY.cf
 }
 \author{
 Rob Kooper, David LeBauer
 }
-

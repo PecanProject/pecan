@@ -1,29 +1,35 @@
 Package: PEcAn.BIOCRO
 Type: Package
 Title: PEcAn package for integration of the BioCro model
-Version: 1.4.5
-Date: 2016-03-03
-Author: David LeBauer, Deepak Jaiswal
+Version: 1.6.0
+Date: 2018-08-20
+Author: David LeBauer, Deepak Jaiswal, Christopher Black
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: This module provides functions to link BioCro to PEcAn.
 Imports:
+    PEcAn.logger,
+    PEcAn.remote,
     PEcAn.utils,
     PEcAn.settings,
     PEcAn.data.atmosphere,
     PEcAn.data.land,
-    PEcAn.DB,
-    udunits2,
-    ncdf4,
-    lubridate,
+    udunits2 (>= 0.11),
+    ncdf4 (>= 1.15),
+    lubridate (>= 1.7.0),
     data.table,
+    dplyr,
     XML
 Suggests:
     BioCro,
-    testthat,
-    RPostgreSQL,
-    RNCEP
+    testthat (>= 2.0.0),
+    mockery (>= 0.3.0),
+    PEcAn.DB,
+    RPostgreSQL
+Remotes:
+    github::ebimodeling/biocro
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE
-RoxygenNote: 5.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.0

@@ -4,8 +4,8 @@
 \alias{met2model.LPJGUESS}
 \title{met2model.LPJGUESS}
 \usage{
-met2model.LPJGUESS(in.path, in.prefix, outfolder, start_date, end_date, ...,
-  overwrite = FALSE, verbose = FALSE)
+met2model.LPJGUESS(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}
@@ -28,4 +28,3 @@ met2model wrapper for LPJ-GUESS
 \author{
 Istem Fer
 }
-

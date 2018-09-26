@@ -32,4 +32,3 @@ Extracts PFT- and component-specific data and allometeric equations from the spe
 This code also estimates the standard error from R-squared, 
 which is required to simulate pseudodata from the allometric eqns.
 }
-

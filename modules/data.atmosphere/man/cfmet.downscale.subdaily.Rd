@@ -12,7 +12,7 @@ cfmet.downscale.subdaily(subdailymet, output.dt = 1)
 \item{output.dt}{output timestep. default is one hour}
 }
 \value{
-weather file for input to BioGro and related crop growth functions
+weather file with subdaily met variables rescaled to output time step
 }
 \description{
 Subdaily to hourly (or less) downscaling
@@ -24,4 +24,3 @@ for variables with no clear diurnal pattern. For all variables except temperatur
 \author{
 David LeBauer
 }
-

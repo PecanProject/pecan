@@ -10,18 +10,20 @@ burnin.thin(samples, target = 5000, burnin.ratio = 2, auto = TRUE,
 \arguments{
 \item{samples}{Matrix of MCMC samples}
 
-\item{target}{Target number of samples (default = 5000). Only applicable if 
+\item{target}{Target number of samples (default = 5000). Only applicable if
 auto=TRUE.}
 
-\item{burnin.ratio}{Fraction of samples to burn-in; i.e. 2 means to remove 
-first 1/2 of samples, 3 means 1/3, etc. (default = 2). Only applicable if 
+\item{burnin.ratio}{Fraction of samples to burn-in; i.e. 2 means to remove
+first 1/2 of samples, 3 means 1/3, etc. (default = 2). Only applicable if
 auto=TRUE.}
 
-\item{auto}{Whether or not to perform automatic burnin and thin based on 
+\item{auto}{Whether or not to perform automatic burnin and thin based on
 target number of samples.}
 
 \item{burnin}{Number of samples to discard as burnin (auto must be FALSE)}
 
 \item{thin}{Thinning interval (auto must be FALSE)}
 }
-
+\description{
+Burn-in and thinning of MCMC samples
+}

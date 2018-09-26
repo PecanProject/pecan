@@ -4,17 +4,10 @@
 \alias{get.ncvector}
 \title{Get time series vector from netCDF file}
 \usage{
-get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates, met.nc)
+get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates,
+  met.nc)
 }
 \arguments{
-\item{var}{}
-
-\item{lati}{}
-
-\item{loni}{}
-
-\item{run.dates}{}
-
 \item{met.nc}{netcdf file with CF variable names}
 }
 \value{
@@ -31,4 +24,3 @@ with CF-compliant variable names
 \author{
 David Shaner LeBauer
 }
-

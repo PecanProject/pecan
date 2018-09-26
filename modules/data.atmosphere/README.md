@@ -10,6 +10,7 @@ Current list of input meteorological formats supported, functions are named `dow
 * Ameriflux
 * FACE
 * ALMA
+* NOAA GEFS
 * arbitrary csv files 
 
 
@@ -30,7 +31,7 @@ The PEcAn.data.atmosphere package is 'standalone'.
 
 ## PEcAn variable names
 
-See https://github.com/PecanProject/pecan/wiki/Adding-an-Input-Converter#met-data
+See https://pecanproject.github.io/pecan-documentation/master/met-data.html
 
 General Note: dates in the database should be datatime (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXlt.
 

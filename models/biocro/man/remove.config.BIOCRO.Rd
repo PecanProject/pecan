@@ -20,4 +20,3 @@ Clear out previous config and parameter files.
 \author{
 Shawn Serbin, David LeBauer
 }
-

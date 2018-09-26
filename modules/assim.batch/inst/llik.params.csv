@@ -1,0 +1,7 @@
+"likelihood","parameter","distn","parama","paramb"
+"Gaussian","sd","gamma",0.001,0.001
+"multipGauss","sd","gamma",0.001,0.001
+"multipGauss","bias","normal",0.001,0.001
+"Laplace","alpha1","norm",0.2,0.01
+"Laplace","beta1","norm",-0.2,0.01
+

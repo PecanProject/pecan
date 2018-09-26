@@ -23,7 +23,7 @@
 # } 
 # 
 # settings.xml <- xmlParse(settings.file)
-# settings <- xmlToList(settings.xml)
+# settings <- XML::xmlToList(settings.xml)
 
 ### TODO:  Update this code to work within new PEcAn organization.  Remove hard coded paths to source. Fix ensemble.Rdata and sensitivity.Rdata filenames to include ensemble id.
 
@@ -31,7 +31,7 @@ get.model.output.ed <- function(){
   
   # This should no longer be needed. Depreciate.
   #if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
-  if(settings$run$host$name == 'localhost'){
+  if(settings$host$name == 'localhost'){
     send.files <- function(x){
       file.copy(from = x,
                 to   = settings$outdir,
@@ -45,19 +45,19 @@ get.model.output.ed <- function(){
   } else { ## if not on localhost
     send.files <- function(filename){
       rsync(from = filename,
-            to   = paste(settings$run$host$name, ':',settings$run$host$outdir, sep = ''))
+            to   = paste(settings$host$name, ':',settings$host$outdir, sep = ''))
     }
     lapply(c(paste(settings$outdir, 'samples.Rdata ', sep = ''),
              paste(settings$pecanDir, c('R/utils.R',
                                         'R/model.specific.R',
                                         'rscripts/read.output.R'),sep = '')),
            send.files)
-    system(paste("ssh -T", settings$run$host$name, "'",
-                 "cd", settings$run$host$outdir, "; R --vanilla < read.output.R'"))
+    system(paste("ssh -T", settings$host$name, "'",
+                 "cd", settings$host$outdir, "; R --vanilla < read.output.R'"))
     
-    rsync(from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'ensemble.Rdata', sep=''),
+    rsync(from = paste(settings$host$name, ':', settings$host$outdir, 'ensemble.Rdata', sep=''),
           to = settings$outdir)
-    rsync(from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'sensitivity.Rdata', sep=''),
+    rsync(from = paste(settings$host$name, ':', settings$host$outdir, 'sensitivity.Rdata', sep=''),
           to = settings$outdir)
     }
 }

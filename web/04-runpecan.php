@@ -8,6 +8,7 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 require("common.php");
+
 open_database();
 if ($authentication) {
   if (!check_login()) {
@@ -20,6 +21,20 @@ if ($authentication) {
         close_database();
         exit;
     }
+}
+
+# tunnel options
+if (isset($_REQUEST['username'])) {
+  $tunnel_username = $_REQUEST['username'];
+  unset($_REQUEST['username']);
+} else {
+  $tunnel_username = "";
+}
+if (isset($_REQUEST['password'])) {
+  $tunnel_password = $_REQUEST['password'];
+  unset($_REQUEST['password']);
+} else {
+  $tunnel_password = "";
 }
 
 # boolean parameters
@@ -53,7 +68,7 @@ $hostoptions = $hostlist[$hostname];
 if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
 }
-$pft=$_REQUEST['pft'];
+$pft=array_unique($_REQUEST['pft']);
 
 # dates
 if (!isset($_REQUEST['start'])) {
@@ -81,6 +96,10 @@ $variables = "NPP";
 if (isset($_REQUEST['variables'])) {
   $variables = $_REQUEST['variables'];
 }
+$parm_method = "uniform";
+if (isset($_REQUEST['parm_method'])) {
+  $parm_method = $_REQUEST['parm_method'];
+}
 $notes_xml = "";
 $notes_db = "";
 if (isset($_REQUEST['notes'])) {
@@ -105,10 +124,12 @@ if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
 }
 
 // Set user and runtime
-$runtime = date('Y/m/d H:i:s O'); 
+$runtime = gmdate('Y/m/d H:i:s O'); 
+$metstart2 = date("Y/m/d", strtotime($metstart));
+$metend2   = date("Y/m/d", strtotime($metend));
 
 // check input dates to make sure they agree with the dates from the weather data
-if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
+if (!$userok && ($startdate < $metstart2 || $enddate > $metend2)) {
 	$params = "userok=on";
 	foreach($_REQUEST as $k => $v) {
 		if (is_array($v)) {
@@ -124,7 +145,7 @@ if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
 		  }
 		}
 	}
-	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.";
+	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.  START: ${startdate} ${metstart2}   END: ${enddate} ${metend2}";
 	header("Location: checkfailed.php?${params}");
 	exit();
 }
@@ -153,7 +174,7 @@ $q->bindParam(':notes', $notes_db, PDO::PARAM_STR);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
 $q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
-$q->bindParam(':params', $params, PDO::PARAM_STR);
+$q->bindParam(':params', trim($params), PDO::PARAM_STR);
 if ($userid != -1) {
   $q->bindParam(':userid', $userid, PDO::PARAM_INT);
 }
@@ -188,15 +209,23 @@ umask(0002);
 
 # create the folder(s)
 if (!mkdir($folder)) {
-    die('Can\'t create output folder [${folder}]');
+    die("Can't create output folder [${folder}]");
 }
 if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0777, true)) {
-    die('Can\'t create output folder [${dbfiles_folder}]');
+    die("Can't create output folder [${dbfiles_folder}]");
 }
 if ($hostname != $fqdn) {
     $tunnel_folder = $folder . DIRECTORY_SEPARATOR . "tunnel";
     if (!mkdir($tunnel_folder)) {
-        die('Can\'t create output folder [${tunnel_folder}]');
+        die("Can't create output folder [${tunnel_folder}]");
+    }
+    
+    ## data tunnel
+    if(isset($hostoptions['data_hostname'])){
+        $data_tunnel_folder = $tunnel_folder . DIRECTORY_SEPARATOR . "data"; 
+        if (!mkdir($data_tunnel_folder)) {
+            die("Can't create output folder [${data_tunnel_folder}]");
+        }
     }
 }
 
@@ -220,6 +249,9 @@ fwrite($fh, "    <bety>" . PHP_EOL);
 fwrite($fh, "      <user>${db_bety_username}</user>" . PHP_EOL);
 fwrite($fh, "      <password>${db_bety_password}</password>" . PHP_EOL);
 fwrite($fh, "      <host>${db_bety_hostname}</host>" . PHP_EOL);
+if (isset($db_bety_port)) {
+        fwrite($fh, "      <port>${db_bety_port}</port>" . PHP_EOL);
+}
 fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
 if ($db_bety_type == "mysql") {
 	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
@@ -234,6 +266,9 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 	fwrite($fh, "      <user>${db_fia_username}</user>" . PHP_EOL);
 	fwrite($fh, "      <password>${db_fia_password}</password>" . PHP_EOL);
 	fwrite($fh, "      <host>${db_fia_hostname}</host>" . PHP_EOL);
+        if (isset($db_fia_port)) {
+                fwrite($fh, "      <port>${db_fia_port}</port>" . PHP_EOL);
+        }
 	fwrite($fh, "      <dbname>${db_fia_database}</dbname>" . PHP_EOL);
 	if ($db_fia_type == "mysql") {
 		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
@@ -243,6 +278,7 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 	fwrite($fh, "    </fia>" . PHP_EOL);
 }
 
+fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 if ($browndog) {
@@ -273,13 +309,29 @@ fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 if (!empty($runs)){
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
-	fwrite($fh, "    <size>${runs}</size>" . PHP_EOL);
-	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "   <size>${runs}</size>" . PHP_EOL);
+	fwrite($fh, "   <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "   <samplingspace>" . PHP_EOL);
+	fwrite($fh, "   <parameters>" . PHP_EOL);
+	fwrite($fh, "    <method>${parm_method}</method>" . PHP_EOL);
+	fwrite($fh, "   </parameters>" . PHP_EOL);
+	fwrite($fh, "   <met>" . PHP_EOL);
+	fwrite($fh, "    <method>sampling</method>" . PHP_EOL);
+    	fwrite($fh, " 	</met>" . PHP_EOL);
+	fwrite($fh, "   </samplingspace>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 } else {
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
 	fwrite($fh, "    <size>1</size>" . PHP_EOL);
 	fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
+	fwrite($fh, "    <samplingspace>" . PHP_EOL);
+	fwrite($fh, "     <parameters>" . PHP_EOL);
+	fwrite($fh, "       <method>uniform</method>" . PHP_EOL);
+	fwrite($fh, "     </parameters>" . PHP_EOL);
+	fwrite($fh, "     <met>" . PHP_EOL);
+	fwrite($fh, "       <method>sampling</method>" . PHP_EOL);
+   	 fwrite($fh, "    </met>" . PHP_EOL);
+	fwrite($fh, "    </samplingspace>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 }
 
@@ -309,7 +361,16 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
 if (isset($hostoptions['models']) && isset($hostoptions['models'][$modeltype])) {
-  fwrite($fh, "    <job.sh>" . toXML($hostoptions['models'][$modeltype]) . "</job.sh>" . PHP_EOL);      
+  if (is_array($hostoptions['models'][$modeltype])) {
+    if (isset($hostoptions['models'][$modeltype]['prerun'])) {
+      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]['prerun']) . "</prerun>" . PHP_EOL);      
+    }
+    if (isset($hostoptions['models'][$modeltype]['postrun'])) {
+      fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$modeltype]['postrun']) . "</postrun>" . PHP_EOL);      
+    }
+  } else {
+    fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]) . "</prerun>" . PHP_EOL);      
+  }
 }
 fwrite($fh, "  </model>" . PHP_EOL);
 fwrite($fh, "  <workflow>" . PHP_EOL);
@@ -333,49 +394,77 @@ foreach($_REQUEST as $key => $val) {
     $parts=explode(".", $val, 2);
     fwrite($fh, "        <source>${parts[0]}</source>" . PHP_EOL);
     fwrite($fh, "        <output>${parts[1]}</output>" . PHP_EOL);
+    if (isset($_REQUEST['fluxusername'])) {
+      fwrite($fh, "      <username>${_REQUEST['fluxusername']}</username>" . PHP_EOL);
+    }
   }
   fwrite($fh, "      </${tag}>" . PHP_EOL);
 }
 fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
-fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
-fwrite($fh, "    <host>" . PHP_EOL);
+fwrite($fh, "  </run>" . PHP_EOL);
+
+fwrite($fh, "  <host>" . PHP_EOL);
 if ($hostname == $fqdn) {
-  fwrite($fh, "      <name>localhost</name>" . PHP_EOL);
+  fwrite($fh, "    <name>localhost</name>" . PHP_EOL);
 } else {
-  fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
+  fwrite($fh, "    <name>${hostname}</name>" . PHP_EOL);
 }
-if (isset($_REQUEST['username'])) {
-  fwrite($fh, "      <user>${_REQUEST['username']}</user>" . PHP_EOL);
+if ($tunnel_username != "") {
+  fwrite($fh, "    <user>${tunnel_username}</user>" . PHP_EOL);
 }
 if (isset($hostoptions['folder'])) {
   $remote = $hostoptions['folder'];
-  if (isset($_REQUEST['username'])) {
-    $remote = $remote . "/" . $_REQUEST['username'];
+  if ($tunnel_username != "") {
+    $remote = $remote . "/" . $tunnel_username;
   }
-  fwrite($fh, "      <folder>" . toXML($remote) . "</folder>" . PHP_EOL);
+  fwrite($fh, "    <folder>" . toXML($remote) . "</folder>" . PHP_EOL);
+}
+if (isset($hostoptions['scratchdir'])) {
+  fwrite($fh, "    <scratchdir>" . toXML($hostoptions['scratchdir']) . "</scratchdir>" . PHP_EOL);
+}
+if (isset($hostoptions['prerun'])) {
+  fwrite($fh, "    <prerun>" . toXML($hostoptions['prerun']) . "</prerun>" . PHP_EOL);
+}
+if (isset($hostoptions['postrun'])) {
+  fwrite($fh, "    <postrun>" . toXML($hostoptions['postrun']) . "</postrun>" . PHP_EOL);
 }
 if (isset($hostoptions['qsub'])) {
-  fwrite($fh, "      <qsub>" . toXML($hostoptions['qsub']) . "</qsub>" . PHP_EOL);
+  fwrite($fh, "    <qsub>" . toXML($hostoptions['qsub']) . "</qsub>" . PHP_EOL);
 }
 if (isset($hostoptions['jobid'])) {
-  fwrite($fh, "      <qsub.jobid>" . toXML($hostoptions['jobid']) . "</qsub.jobid>" . PHP_EOL);
+  fwrite($fh, "    <qsub.jobid>" . toXML($hostoptions['jobid']) . "</qsub.jobid>" . PHP_EOL);
 }
 if (isset($hostoptions['qstat'])) {
-  fwrite($fh, "      <qstat>" . toXML($hostoptions['qstat']) . "</qstat>" . PHP_EOL);
+  fwrite($fh, "    <qstat>" . toXML($hostoptions['qstat']) . "</qstat>" . PHP_EOL);
+}
+if (isset($hostoptions['Rbinary'])) {
+  fwrite($fh, "    <Rbinary>" . toXML($hostoptions['Rbinary']) . "</Rbinary>" . PHP_EOL);
 }
 if (isset($hostoptions['job.sh'])) {
-  fwrite($fh, "      <job.sh>" . toXML($hostoptions['job.sh']) . "</job.sh>" . PHP_EOL);
+  fwrite($fh, "    <job.sh>" . toXML($hostoptions['job.sh']) . "</job.sh>" . PHP_EOL);
 }
 if ($hostname != $fqdn) {
-  fwrite($fh, "      <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
+  fwrite($fh, "    <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
+  if(isset($hostoptions['data_hostname'])){
+    fwrite($fh, "    <data_tunnel>" . $data_tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</data_tunnel>" . PHP_EOL);
+    fwrite($fh, "    <data_hostname>" . toXML($hostoptions['data_hostname']) . "</data_hostname>" . PHP_EOL);
+  }
 }
-fwrite($fh, "    </host>" . PHP_EOL);
-fwrite($fh, "  </run>" . PHP_EOL);
+if ($rabbitmq_host != "") {
+  $rabbitmq_uri = "amqp://" . $rabbitmq_username . ":" . $rabbitmq_password . "@" . $rabbitmq_host . ":" . $rabbitmq_port . "/" . urlencode($rabbitmq_vhost);
+  $rabbitmq_model_queue = $modeltype . "_" . $revision;
+
+  fwrite($fh, "    <rabbitmq>" . PHP_EOL);
+  fwrite($fh, "      <uri>" . $rabbitmq_uri . "</uri>" . PHP_EOL);
+  fwrite($fh, "      <queue>" . $rabbitmq_model_queue . "</queue>" . PHP_EOL);
+  fwrite($fh, "    </rabbitmq>" . PHP_EOL);
+}
+fwrite($fh, "  </host>" . PHP_EOL);
 
 if ($email != "") {
-	$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
+	$url = isset($_SERVER['HTTPS']) ? "https://" : "http://";
 	$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
 	$url .= str_replace("04-runpecan.php", "08-finished.php", $_SERVER["SCRIPT_NAME"]);
 	if ($offline) {
@@ -384,8 +473,8 @@ if ($email != "") {
 		$url .= "?workflowid=${workflowid}";
 	}
 	fwrite($fh, "  <email>" . PHP_EOL);
-	fwrite($fh, "    <to>${email}</to>" . PHP_EOL);
-	fwrite($fh, "    <url>${url}</url>" . PHP_EOL);
+  fwrite($fh, "    <to>${email}</to>" . PHP_EOL);
+  fwrite($fh, "    <url>${url}</url>" . PHP_EOL);
 	fwrite($fh, "  </email>" . PHP_EOL);
 }
 fwrite($fh, "</pecan>" . PHP_EOL);
@@ -398,11 +487,23 @@ copy("workflow.R", "${folder}/workflow.R");
 if ($hostname != $fqdn) {
     # write pasword
     $fh = fopen($tunnel_folder . DIRECTORY_SEPARATOR . "password", 'w');
-    fwrite($fh, $_REQUEST['password'] . PHP_EOL);
+    fwrite($fh, $tunnel_password . PHP_EOL);
     fclose($fh);
 
     # start tunnel
-    pclose(popen("${SSHtunnel} ${hostname} ${_REQUEST['username']} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
+    pclose(popen("${SSHtunnel} ${hostname} ${tunnel_username} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
+    
+    ## data tunnel
+    if(isset($hostoptions['data_hostname'])){
+        # write password
+        $fh = fopen($data_tunnel_folder . DIRECTORY_SEPARATOR . "password", 'w');
+        fwrite($fh, $tunnel_password . PHP_EOL);
+        fclose($fh);
+
+        # start tunnel
+        pclose(popen("${SSHtunnel} ${hostoptions['data_hostname']} ${tunnel_username} ${data_tunnel_folder} > ${data_tunnel_folder}/log &", 'r'));
+    
+    }
 }
 
 # redirect to the right location
@@ -415,14 +516,54 @@ if ($pecan_edit) {
     $path .= "&offline=offline";
   }
   header("Location: ${path}");
+} else if ($rabbitmq_host != "") {
+
+  # create connection and queue
+  $connection = new AMQPConnection();
+  $connection->setHost($rabbitmq_host);
+  $connection->setPort($rabbitmq_port);
+  $connection->setVhost($rabbitmq_vhost);
+  $connection->setLogin($rabbitmq_username);
+  $connection->setPassword($rabbitmq_password);
+  $connection->connect();
+  $channel = new AMQPChannel($connection);
+  $exchange = new AMQPExchange($channel);
+
+  # create the queue
+  $queue = new AMQPQueue($channel);
+  $queue->setName($rabbitmq_queue);
+  $queue->setFlags(AMQP_DURABLE);
+  $queue->declareQueue();
+
+  # create the message
+  $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"}';
+
+  # send the message
+  $exchange->publish($message, $rabbitmq_queue);
+
+  # cleanup
+  $connection->disconnect();
+
+  #done
+  $path = "05-running.php?workflowid=$workflowid";
+  if ($pecan_edit) {
+    $path .= "&pecan_edit=pecan_edit";
+  }
+  if ($model_edit) {
+    $path .= "&model_edit=model_edit";
+  }
+  if ($offline) {
+    $path .= "&offline=offline";
+  }
+  header("Location: ${path}");
 } else {
   # start the actual workflow
   chdir($folder);
 
   if ($model_edit) {
-    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r'));
+    pclose(popen('R_LIBS_USER="' . $R_library_path . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r'));
   } else {
-    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r'));
+    pclose(popen('R_LIBS_USER="' . $R_library_path . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r'));
   }
 
   #done

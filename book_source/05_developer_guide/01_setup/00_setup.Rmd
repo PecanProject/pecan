@@ -1,0 +1,11 @@
+# PEcAn Setup
+
+## Installing the PEcAn VM 
+
+We recommend that new users download the [PEcAn VM](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) instead of creating from one from scratch. 
+
+
+Additional Setup
+- AWS
+- Shiny
+- Thredds

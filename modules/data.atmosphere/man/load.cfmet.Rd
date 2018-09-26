@@ -13,9 +13,9 @@ load.cfmet(met.nc, lat, lon, start.date, end.date)
 
 \item{lon}{numeric value of longitude}
 
-\item{start.date}{format is "YYYY-MM-DD"}
+\item{start.date}{format is 'YYYY-MM-DD'}
 
-\item{end.date}{format is "YYYY-MM-DD"}
+\item{end.date}{format is 'YYYY-MM-DD'}
 }
 \value{
 data.table of met data
@@ -29,4 +29,3 @@ subsets a PEcAn formatted met driver file and converts to a data.table / data.fr
 \author{
 David LeBauer
 }
-

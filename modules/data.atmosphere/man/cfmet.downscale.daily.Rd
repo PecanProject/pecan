@@ -14,7 +14,7 @@ cfmet.downscale.daily(dailymet, output.dt = 1, lat)
 \item{lat}{latitude (for calculating solar radiation)}
 }
 \value{
-weather file for input to BioGro and related crop / ecosystem models
+weather file with subdaily timesteps
 }
 \description{
 Simple, Fast Daily to Hourly Climate Downscaling
@@ -22,10 +22,9 @@ Simple, Fast Daily to Hourly Climate Downscaling
 \details{
 Based on weach family of functions but 5x faster than weachNEW,
 and requiring metric units (temperature in celsius, windspeed in kph,
-precip in mm, relative humidity as fraction). 
+precip in mm, relative humidity as fraction).
 Derived from the weachDT function in the BioCro package.
 }
 \author{
 David LeBauer
 }
-

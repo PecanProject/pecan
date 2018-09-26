@@ -11,9 +11,10 @@ generate.noise(n = 2101, sigma = 1e-04, fw = 201, fsd = 6)
 
 \item{sigma}{Gaussian noise standard deviation (default=1e-4)}
 
-\item{fw}{Filter width. Will be coerced to an odd number if even (default = 
-201).}
+\item{fw}{Filter width. Will be coerced to an odd number if even (default = 201).}
 
 \item{fsd}{Scaling factor for filter standard deviation (default = 6)}
 }
-
+\description{
+Generate autocorrelated spectral noise
+}

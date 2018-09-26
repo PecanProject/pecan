@@ -4,10 +4,9 @@
 \alias{generate.rsr.all}
 \title{Generate RSR matrices for all sensors and return as list}
 \usage{
-generate.rsr.all()
+generate.rsr.all(path.to.licor = NULL)
 }
 \description{
-Only needs to be called when updating these funcitons with new 
+Only needs to be called when updating these funcitons with new
 data
 }
-

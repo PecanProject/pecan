@@ -11,4 +11,3 @@ wrapper around read.tucson that loads a whole directory of tree ring files
 and calls a 'clean' function that removes redundant records 
 (WinDendro can sometimes create duplicate records when editing)
 }
-

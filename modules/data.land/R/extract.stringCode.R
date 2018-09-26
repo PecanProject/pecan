@@ -1,51 +1,50 @@
 ##' @name extract.stringCode
 ##' @title extract.string.code
 ##' @export
-extract.stringCode <- function(x,extractor=from.TreeCode){
+extract.stringCode <- function(x, extractor = from.TreeCode) {
   return(extractor(x))
-}
+} # extract.stringCode
 
 ##' @name from.TreeCode
 ##' @title from.TreeCode
 ##' @export
-from.TreeCode <- function(x){
-  SITE = substr(x,1,1)
-  PLOT = substr(x,2,2)
-  SUBPLOT = substr(x,3,3)
-  TAG = substr(x,4,1000000L)
-  return(data.frame(SITE,PLOT,SUBPLOT,TAG))
-}
+from.TreeCode <- function(x) {
+  SITE <- substr(x, 1, 1)
+  PLOT <- substr(x, 2, 2)
+  SUBPLOT <- substr(x, 3, 3)
+  TAG <- substr(x, 4, 1000000L)
+  return(data.frame(SITE, PLOT, SUBPLOT, TAG))
+} # from.TreeCode
 
 ##' @name to.TreeCode
 ##' @title to.TreeCode
 ##' @export
-to.TreeCode <- function(SITE,PLOT,SUBPLOT,TAG=NULL){
-  SITE = as.character(SITE)
-  PLOT = as.character(PLOT)
-  SUBPLOT = as.character(SUBPLOT)
-  TAG = as.character(TAG)
-  x = paste(SITE,PLOT,SUBPLOT,sep="")
-  if(!is.null(x)){
-    x = paste(x,TAG,sep="")
+to.TreeCode <- function(SITE, PLOT, SUBPLOT, TAG = NULL) {
+  SITE <- as.character(SITE)
+  PLOT <- as.character(PLOT)
+  SUBPLOT <- as.character(SUBPLOT)
+  TAG <- as.character(TAG)
+  x <- paste0(SITE, PLOT, SUBPLOT)
+  if (!is.null(x)) {
+    x <- paste0(x, TAG)
   }
   return(x)
-}
+} # to.TreeCode
 
 ##' @name from.Tag
 ##' @title from.Tag
 ##' @export
-from.Tag <- function(x){
-  miss = rep(NA,length(x))
-  return(data.frame(SITE=miss,PLOT=miss,SUBPLOT=miss,TAG=x))
-}
+from.Tag <- function(x) {
+  miss <- rep(NA, length(x))
+  return(data.frame(SITE = miss, PLOT = miss, SUBPLOT = miss, TAG = x))
+} # from.Tag
 
 ##' @name to.Tag
 ##' @title to.Tag
 ##' @export
-to.Tag <- function(SITE,PLOT,SUBPLOT,TAG=NULL){
-  SITE = as.character(SITE)
-  PLOT = as.character(PLOT)
-  SUBPLOT = as.character(SUBPLOT)
-  TAG = as.character(TAG)
-  return(TAG)
-}
+to.Tag <- function(SITE, PLOT, SUBPLOT, TAG = NULL) {
+  SITE <- as.character(SITE)
+  PLOT <- as.character(PLOT)
+  SUBPLOT <- as.character(SUBPLOT)
+  return(as.character(TAG))
+} # to.Tag

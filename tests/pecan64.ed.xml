@@ -19,6 +19,13 @@
     </pft>
   </pfts>
 
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>AUTO</update>
+  </meta.analysis>
+
   <ensemble>
     <variable>NPP</variable>
   </ensemble>
@@ -34,9 +41,9 @@
 -->
 
   <model>
-    <binary>/usr/local/bin/ed2.r82</binary>
+    <binary>/usr/local/bin/ed2.git</binary>
     <type>ED2</type>
-    <revision>82</revision>
+    <revision>git</revision>
     <config.header>
       <radiation>
         <lai_min>0.01</lai_min>

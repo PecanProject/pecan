@@ -8,6 +8,12 @@ model2netcdf.BIOCRO(result, genus = NULL, outdir, lat = -9999,
   lon = -9999)
 }
 \arguments{
+\item{result}{a dataframe of model output to be converted}
+
+\item{genus}{character: What kind of plant was being simulated?
+Used to correct for some genus-specific differences in model output;
+Eventually that will be handled inside BioCro and this argument will be removed.}
+
 \item{outdir}{Location of model output}
 
 \item{lat}{Latitude of the site}
@@ -24,4 +30,3 @@ Modified from on model2netcdf.SIPNET and model2netcdf.ED2 by
 \author{
 David LeBauer, Deepak Jaiswal, Rob Kooper
 }
-

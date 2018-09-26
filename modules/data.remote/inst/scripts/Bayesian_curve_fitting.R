@@ -2,7 +2,7 @@
 bayes.curve.fit<-function(outpath,coord.set,fia,n.reps,n.chain){
   
 library(rjags)
-require(R2HTML)
+library(R2HTML)
 
 dat48<-read.csv(file=paste(outpath,"/",coord.set[fia+1],"_dat48.csv",sep=""),header=T,sep=",")
 dir.create(file.path(outpath,"model_output"))
@@ -360,12 +360,12 @@ for(i in 1:length(yvars)){ #loop over HH and HV pol bands
                                    paste("xy_pairs",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".csv",sep="_")),
               row.names=FALSE)
     
-    gelman.diag(jags.out)
+    coda::gelman.diag(jags.out)
     summary(jags.out)
     ##Save model output summary
     saveRDS(summary(jags.out),file=file.path(outpath4,
                                              paste("Jags_Out",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".Rdata",sep="_")))
-    saveRDS(gelman.diag(jags.out),file=file.path(outpath4,
+    saveRDS(coda::gelman.diag(jags.out),file=file.path(outpath4,
                                                  paste("Gelman_Diag",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".Rdata",sep="_")))
     
     
@@ -376,8 +376,8 @@ for(i in 1:length(yvars)){ #loop over HH and HV pol bands
     plot(jags.out)
     pairs(out)
     
-    #autocorr.plot(jags.out)
-    gelman.plot(jags.out)
+    #coda::autocorr.plot(jags.out)
+    coda::gelman.plot(jags.out)
     
     #plot data
     par(mfrow=c(1,1))

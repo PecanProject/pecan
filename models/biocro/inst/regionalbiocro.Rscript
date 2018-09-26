@@ -39,6 +39,12 @@ latlon <- expand.grid(lat = lat, lon = lon)
 
 annual.result <- NULL
 biocro_result <- NULL
+
+require(foreach)
+require(doMC)
+registerDoMC(20)
+
+#foreach(point=1:nrow(latlon))%dopar%{
 for(point in 1:nrow(latlon)){
   lat <- latlon$lat[point]
   lon <- latlon$lon[point]
@@ -46,23 +52,23 @@ for(point in 1:nrow(latlon)){
   annual.result <- rbind(annual.result, out$annually)
   save(annual.result, file = file.path(outdir, "annual.result.RData"))
   
-  point.outdir <- file.path(outdir, paste0(lat, 'x', lon))
-  dir.create(point.outdir, showWarnings = FALSE)
+  #point.outdir <- file.path(outdir, paste0(lat, 'x', lon))
+  #dir.create(point.outdir, showWarnings = FALSE)
 
-  hourly <- out$hourly
+  #hourly <- out$hourly
   daily <- out$daily
   #save(hourly, file = file.path(point.outdir, 'hourly.result.RData'))
-  save(daily, file = file.path(point.outdir, 'daily.result.RData'))
+  #save(daily, file = file.path(point.outdir, 'daily.result.RData'))
   
   biocro_result <- rbind(biocro_result, data.table(lat = lat, lon = lon, daily))
-
-  model2netcdf.BIOCRO(result = hourly, genus = config$pft$type$genus, outdir = point.outdir, 
-                      lat = lat, lon = lon)
-  rm(hourly)
+  save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
+  #model2netcdf.BIOCRO(result = hourly, genus = config$pft$type$genus, outdir = point.outdir, 
+  #                    lat = lat, lon = lon)
+  #rm(hourly)
   rm(daily)
 }
 
-save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
+
 
 ## this would work if model2netcdf could process regionally
 #model2netcdf.BIOCRO(resultDT = biocro_result, 

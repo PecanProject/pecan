@@ -5,9 +5,12 @@
 \title{download.Ameriflux}
 \usage{
 download.Ameriflux(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE)
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
+\item{sitename}{the FLUXNET ID of the site to be downloaded, used as file name prefix. 
+The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
+
 \item{outfolder}{location on disk where outputs will be stored}
 
 \item{start_date}{the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)}
@@ -17,14 +20,10 @@ download.Ameriflux(sitename, outfolder, start_date, end_date,
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
-
-\item{site}{the FLUXNET ID of the site to be downloaded, used as file name prefix. 
-The "SITE_ID" field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
 }
 \description{
 Download Ameriflux L2 netCDF files
 }
 \author{
-Josh Mantooth, Rob Kooper
+Josh Mantooth, Rob Kooper, Ankur Desai
 }
-

@@ -4,7 +4,8 @@
 \alias{pda.generate.knots}
 \title{Generate Parameter Knots for PDA Emulator}
 \usage{
-pda.generate.knots(n.knot, n.param.all, prior.ind, prior.fn, pname)
+pda.generate.knots(n.knot, sf, probs.sf, n.param.all, prior.ind, prior.fn,
+  pname)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
@@ -18,4 +19,3 @@ Generate Parameter Knots for PDA Emulator
 \author{
 Ryan Kelly, Istem Fer
 }
-

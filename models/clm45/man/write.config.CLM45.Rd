@@ -24,4 +24,3 @@ Writes config files for use with the Community Land Model model.
 \author{
 Mike Dietze
 }
-

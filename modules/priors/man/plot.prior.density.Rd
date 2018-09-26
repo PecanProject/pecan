@@ -25,10 +25,9 @@ Plots a prior density from a parameterized probability distribution
 plot.prior.density(pr.dens('norm', 0, 1))
 }
 }
-\author{
-David LeBauer
-}
 \seealso{
 \code{\link{pr.dens}}
 }
-
+\author{
+David LeBauer
+}

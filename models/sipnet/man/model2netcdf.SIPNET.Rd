@@ -4,7 +4,8 @@
 \alias{model2netcdf.SIPNET}
 \title{Function to convert SIPNET model output to standard netCDF format}
 \usage{
-model2netcdf.SIPNET(outdir, sitelat, sitelon, start_date, end_date, delete.raw)
+model2netcdf.SIPNET(outdir, sitelat, sitelon, start_date, end_date,
+  delete.raw, revision, overwrite = FALSE)
 }
 \arguments{
 \item{outdir}{Location of SIPNET model output}
@@ -16,6 +17,10 @@ model2netcdf.SIPNET(outdir, sitelat, sitelon, start_date, end_date, delete.raw)
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
+
+\item{revision}{model revision}
+
+\item{overwrite}{Flag for overwriting nc files or not}
 }
 \description{
 Convert SIPNET output to netCDF
@@ -26,4 +31,3 @@ Converts all output contained in a folder to netCDF.
 \author{
 Shawn Serbin, Michael Dietze
 }
-

@@ -4,8 +4,9 @@
 \alias{met2model.DALEC}
 \title{met2model.DALEC}
 \usage{
-met2model.DALEC(in.path, in.prefix, outfolder, start_date, end_date, ...,
-  overwrite = FALSE, verbose = FALSE)
+met2model.DALEC(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, spin_nyear = NULL,
+  spin_nsample = NULL, spin_resample = NULL, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}
@@ -25,4 +26,3 @@ met2model.DALEC(in.path, in.prefix, outfolder, start_date, end_date, ...,
 \description{
 met2model for DALEC
 }
-

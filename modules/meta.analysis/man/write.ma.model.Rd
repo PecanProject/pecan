@@ -4,8 +4,8 @@
 \alias{write.ma.model}
 \title{write.ma.model}
 \usage{
-write.ma.model(modelfile, outfile, reg.model, pr.dist, pr.param.a, pr.param.b,
-  n, trt.n, site.n, ghs.n, tauA, tauB)
+write.ma.model(modelfile, outfile, reg.model, pr.dist, pr.param.a,
+  pr.param.b, n, trt.n, site.n, ghs.n, tauA, tauB)
 }
 \arguments{
 \item{modelfile}{model template file (ma.model.template.R)}
@@ -44,4 +44,3 @@ Writes a meta-analysis model based on available data and prior specification. Ad
 \author{
 David LeBauer and Mike Dietze, based on original work on the \code{write.model} function in the \code{R2WinBUGS} package by Jouni Kerman and Uwe Ligges.
 }
-

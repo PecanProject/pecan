@@ -19,6 +19,13 @@
     </pft>
   </pfts>
 
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>AUTO</update>
+  </meta.analysis>
+
   <ensemble>
     <variable>NPP</variable>
   </ensemble>

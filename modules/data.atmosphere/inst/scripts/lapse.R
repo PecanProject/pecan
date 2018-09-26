@@ -1,4 +1,3 @@
-library(XML,lib.loc="~/lib/R")
 library(ed21,lib.loc="~/lib/R")
 
 ### Load data

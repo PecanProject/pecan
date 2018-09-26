@@ -6,14 +6,16 @@
 \usage{
 site_from_tag(sitename, tag)
 }
+\description{
+site_from_tag
+}
 \author{
 Betsy Cowdery
 
 Function to find the site code for a specific tag
 Example:
-  sitename = "Rhinelander Aspen FACE Experiment (FACE-RHIN)"
-  tag = "FACE"
-  site_from_tag(sitename,tag) = "RHIN"
+  sitename = 'Rhinelander Aspen FACE Experiment (FACE-RHIN)'
+  tag = 'FACE'
+  site_from_tag(sitename,tag) = 'RHIN'
 Requires that site names be set up specifically with (tag-sitecode) - this may change
 }
-

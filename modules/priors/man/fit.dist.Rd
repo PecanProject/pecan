@@ -21,4 +21,3 @@ Fit a distribution to data
 \author{
 David LeBauer
 }
-

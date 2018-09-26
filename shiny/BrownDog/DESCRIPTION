@@ -1,0 +1,8 @@
+Type: Shiny
+Title: Workflow Output
+License: FreeBSD + file LICENSE
+Author: Yan Zhao <yanzhao3@illinois.edu>
+AuthorUrl: https://github.com/yan130
+Tags: PEcAn
+DisplayMode: Normal
+RoxygenNote: 6.1.0

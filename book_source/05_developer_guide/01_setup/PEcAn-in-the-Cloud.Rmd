@@ -1,0 +1,108 @@
+## AWS Setup 
+
+### Porting VM to AWS
+
+The following are Mike's rough notes from a first attempt to port the PEcAn VM to the AWS. This was done on a Mac
+
+These notes are based on following the instructions [here](http://www.rittmanmead.com/2014/09/obiee-sampleapp-in-the-cloud-importing-virtualbox-machines-to-aws-ec2/)
+
+
+#### Convert PEcAn VM
+
+AWS allows upload of files as VMDK but the default PEcAn VM is in OVA format
+
+1. If you haven't done so already, download the [PEcAn VM](http://isda.ncsa.illinois.edu/download/index.php?project=PEcAn&sort=category)
+
+2. Split the OVA file into OVF and VMDK files
+
+```
+tar xf <ovafile>
+```
+
+#### Set up an account on [AWS](http://aws.amazon.com/)
+
+After you have an account you need to set up a user and save your [access key and secret key](http://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingCredentials.html)
+
+In my case I created a user named 'carya'
+
+Note: the key that ended up working had to be made at [https://console.aws.amazon.com/iam/home#security_credential](https://console.aws.amazon.com/iam/home#security_credential), not the link above.
+
+#### Install [EC2 command line tools](http://docs.aws.amazon.com/AWSEC2/latest/CommandLineReference/set-up-ec2-cli-linux.html)
+
+```
+wget http://s3.amazonaws.com/ec2-downloads/ec2-api-tools.zip
+
+sudo mkdir /usr/local/ec2
+
+sudo unzip ec2-api-tools.zip -d /usr/local/ec2
+```
+
+If need be, download and install [JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+
+```
+export JAVA_HOME=$(/usr/libexec/java_home)
+
+export EC2_HOME=/usr/local/ec2/ec2-api-tools-<version>
+
+export PATH=$PATH:$EC2_HOME/bin
+```
+
+
+Then set your user credentials as environment variables:
+
+`export AWS_ACCESS_KEY=xxxxxxxxxxxxxx`
+
+`export AWS_SECRET_KEY=xxxxxxxxxxxxxxxxxxxxxx`
+
+Note: you may want to add all the variables set in the above EXPORT commands above into your .bashrc or equivalent.
+
+#### Create an AWS S3 'bucket' to upload VM to
+
+Go to [https://console.aws.amazon.com/s3](https://console.aws.amazon.com/s3) and click "Create Bucket"
+
+In my case I named the bucket 'pecan'
+
+
+#### Upload
+
+In the code below, make sure to change the PEcAn version, the name of the bucket, and the name of the region. Make sure that the PEcAn version matches the one you downloaded.
+
+Also, you may want to choose a considerably larger instance type. The one chosen below is that corresponding to the AWS Free Tier
+
+```
+ec2-import-instance PEcAn_1.2.6-disk1.vmdk --instance-type t2.micro --format VMDK --architecture x86_64 --platform Linux --bucket pecan --region us-east-1 --owner-akid $AWS_ACCESS_KEY --owner-sak $AWS_SECRET_KEY
+```
+
+Make sure to note the ID of the image since you'll need it to check the VM status.  Once the image is uploaded it will take a while (typically about an hour) for Amazon to convert the image to one it can run. You can check on this progress by running
+
+```
+ec2-describe-conversion-tasks <image.ID>
+```
+
+#### Configuring the VM
+
+On the EC2 management webpage, [https://console.aws.amazon.com/ec2](https://console.aws.amazon.com/ec2), if you select **Instances** on the left hand side (LHS) you should be able to see your new PEcAn image as an option under Launch Instance.
+
+Before launching, you will want to update the firewall to open up additional ports that PEcAn needs -- specifically port 80 for the webpage. Port 22 (ssh/sftp) should be open by default.  Under "Security Groups" select "Inbound" then "Edit" and then add "HTTP".
+
+Select "Elastic IPs" on the LHS, and "Allocate New Address" in order to create a public IP for your VM. 
+
+Next, select "Network Interfaces" on the LHS and then under Actions select "Associate Addresses" then choose the Elastic IP you just created.
+
+See also http://docs.aws.amazon.com/AmazonVPC/latest/GettingStartedGuide/GetStarted.html
+
+### Set up multiple instances (optional)
+
+For info on setting up multiple instances with load balancing see: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/gs-ec2VPC.html
+
+Select "Load Balancers" on the LHS, click on "Create Load Balancer", follow Wizard keeping defaults.
+
+To be able to launch multiple VMs: Under "Instances" convert VM to an Image. When done, select Launch, enable multiple instances, and associate with the previous security group. Once running, go back to "Load Balancers" and add the instances to the load balancer. Each instance can be accessed individually by it's own public IP, but external users should access the system more generally via the Load Balancers DNS.
+
+#### Booting the VM
+
+Return to "Instances" using the menu on the LHS.
+
+To boot the VM select "Actions" then "Instance State" then "Start". In the future, once you have the VM loaded and configured this last step is the only one you will need to repeat to turn your VM on and off.
+
+The menu provided should specify the Public IP where the VM has launched

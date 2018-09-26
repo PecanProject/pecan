@@ -4,8 +4,8 @@
 \alias{met2model.LINKAGES}
 \title{Write LINKAGES met files}
 \usage{
-met2model.LINKAGES(in.path, in.prefix, outfolder, start_date, end_date, ...,
-  overwrite = FALSE, verbose = FALSE)
+met2model.LINKAGES(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{path on disk where CF file lives}
@@ -24,4 +24,3 @@ files are calld <in.path>/<in.prefix>.YYYY.cf
 \author{
 Ann Raiho, Betsy Cowdery
 }
-

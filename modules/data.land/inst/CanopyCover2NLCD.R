@@ -17,11 +17,11 @@
 
 library (data.table)
 cls <- c("numeric", "character", rep("numeric", 8))
-filelist = list.files("/home/apourmok/My scripts/",pattern = "sitefiles.radius 0.075.*.css", full.names = TRUE)
-#filelist = list.files(".",pattern = "sitefiles.radius 0.075.*.css", full.names = TRUE)
+filelist = list.files("/home/apourmok/My scripts/",pattern = "sitefiles.radius_0.075.*.css", full.names = TRUE)
+#filelist = list.files(".",pattern = "sitefiles.radius_0.075.*.css", full.names = TRUE)
 
 #loop over all files
-#filelist = list.files("/home/apourmok/pecan/modules/data.land/R/~/",pattern = "sitefiles.radius 0.075.*.css", full.names = TRUE)
+#filelist = list.files("/home/apourmok/pecan/modules/data.land/R/~/",pattern = "sitefiles.radius_0.075.*.css", full.names = TRUE)
 #for (k in 1:20){
   #mydata = fread(filelist[i], header=TRUE, colClasses = cls)
 #}

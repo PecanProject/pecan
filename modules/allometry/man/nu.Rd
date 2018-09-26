@@ -12,4 +12,3 @@ nu(x)
 \description{
 converts factors to numeric
 }
-

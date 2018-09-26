@@ -4,7 +4,7 @@
 \alias{read.ensemble.ts}
 \title{Reads an ensemble time-series from PEcAn for the selected target variable}
 \usage{
-read.ensemble.ts(model, ensemble.id = NULL, variable = NULL,
+read.ensemble.ts(settings, ensemble.id = NULL, variable = NULL,
   start.year = NULL, end.year = NULL)
 }
 \value{
@@ -16,4 +16,3 @@ Reads ensemble time-series from PEcAn for the selected target variable
 \author{
 Michael Dietze, Ryan Kelly
 }
-

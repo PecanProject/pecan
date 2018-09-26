@@ -18,4 +18,3 @@ Adjust PDA blcok MCMC jump size
 \author{
 Ryan Kelly
 }
-

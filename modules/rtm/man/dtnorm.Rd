@@ -18,10 +18,9 @@ dtnorm(x, mu, sd, MIN)
 \value{
 Numeric; log density of the distribution, or -1e15 if the x < MIN
 }
-\details{
+\description{
 Calculates the log density of a univariate truncated normal variable
 }
 \author{
 Alexey Shiklomanov
 }
-

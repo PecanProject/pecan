@@ -8,8 +8,9 @@ output: html_document
 ## install package from Github
 
 Only needs to be done the first time
-```{r}
+```{r, eval=FALSE}
 library(devtools)
+install_github("PecanProject/pecan",subdir="base/logger")
 install_github("PecanProject/pecan",subdir="modules/allometry")
 ```
 

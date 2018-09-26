@@ -2,7 +2,7 @@
 ##Author Brady S. Hardiman
 ##January 24, 2014
 
-require(maps)
+library(maps)
 
 ##FIGURE 1: Map of Wisc and MI-UP with FIA plots (points) and PALSAR scenes (bboxes)
 cheascoords.spatial <- as.data.frame(cheas.coords)

@@ -5,36 +5,32 @@ exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
 # host specific setup
-@HOSTSPECIFIC@
+@HOST_SETUP@
 
 # create output folder
 mkdir -p "@OUTDIR@"
 
 # see if application needs running
-if [ ! -e "@OUTDIR@/.dat" ]; then
+if [ ! -e "@OUTDIR@/.csv" ]; then
   cd "@RUNDIR@"
-  # For now, pecan doesn't handle inputs for G'day, so specific run input files will need to be fed to G'day.
-  #Point to example input files through symbolic link or copy the actual input files to run directory.
-   #this "cp" would copy example input files to the rundirectory where model will be executed.
-  cp -r  path/to/where/example/input/files/are  "@RUNDIR@"
-
+  
   # This will execute the model
-  "@BINARY@" 
+  python3 run_simulations.py
+  
   # Move ouput files to output folder.
-    # EDIT: If Gday doesn't produce .dat files, then edit accordingly
-  mv *.dat "@OUTDIR@"
+  mv *.csv "@OUTDIR@"
   STATUS=$?
 
   # check the status
   if [ $STATUS -ne 0 ]; then
-    echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+    echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
     exit $STATUS
   fi
 
   # convert to MsTMIP. Uncomment this code once model2netcdf is written
-  #echo "require (PEcAn.GDAY)
-#model2netcdf.GDAY('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
-#" | R --vanilla
+  echo "require (PEcAn.GDAY)
+model2netcdf.GDAY('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+" | R --vanilla
 fi
 
 
@@ -43,5 +39,8 @@ cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables
 
+# host specific teardown
+@HOST_TEARDOWN@
+
 # all done
-echo -e "MODEL FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3

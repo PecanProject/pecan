@@ -4,7 +4,7 @@
 \alias{run.biocro}
 \title{Run BioCro at a point}
 \usage{
-run.biocro(lat, lon, met.nc = met.nc, soil.nc = NULL, config = config,
+run.biocro(lat, lon, metpath, soil.nc = NULL, config = config,
   coppice.interval = 1)
 }
 \arguments{
@@ -12,13 +12,14 @@ run.biocro(lat, lon, met.nc = met.nc, soil.nc = NULL, config = config,
 
 \item{lon}{longitude in decimal degrees}
 
-\item{met.nc}{full path and name of a netCDF file in PEcAn-CF format with meteorological driver data}
+\item{metpath}{full path and name prefix of a csv file with hourly data in BioCro format,
+e.g. `/dir/met` if the files to be used are `/dir/met.2004.csv` and `dir/met.2005.csv'}
 
 \item{soil.nc}{full path and name of a netCDF file with soil data}
 
 \item{config}{full path and name of a config.xml file containing parameter values and configuration information for BioCro}
 
-\item{coppice.interval}{numeric, number of years between cuttings for coppice plant or perinneal grass (default 1)}
+\item{coppice.interval}{numeric, number of years between cuttings for coppice plant or perennial grass. Only used with BioCro 0.9; ignored when using later versions.}
 }
 \value{
 output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
@@ -29,4 +30,3 @@ Run BioCro at a point
 \author{
 David LeBauer
 }
-

@@ -4,14 +4,16 @@
 \alias{InventoryGrowthFusionDiagnostics}
 \title{InventoryGrowthFusionDiagnostics}
 \usage{
-InventoryGrowthFusionDiagnostics(jags.out, combined)
+InventoryGrowthFusionDiagnostics(jags.out, combined = NULL)
 }
 \arguments{
 \item{jags.out}{output mcmc.list from InventoryGrowthFusion}
 
 \item{combined}{data output from matchInventoryRings}
 }
+\description{
+InventoryGrowthFusionDiagnostics
+}
 \author{
 Michael Dietze
 }
-

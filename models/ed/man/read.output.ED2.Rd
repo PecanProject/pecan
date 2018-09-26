@@ -14,7 +14,7 @@ read.output.ED2(run.id, outdir, start.year = NA, end.year = NA,
 
 \item{start.year}{}
 
-\item{output.type}{type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT}
+\item{output.type}{type of output file to read, can be '-Y-' for annual output, '-M-' for monthly means, '-D-' for daily means, '-T-' for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I\link{DMYT}OUTPUT}
 }
 \value{
 vector of output variable for all runs within ensemble
@@ -28,4 +28,3 @@ This function applies \link{read.output.file.ed} to a list of files from a singl
 \author{
 David LeBauer, Carl Davidson
 }
-

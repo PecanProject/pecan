@@ -42,4 +42,3 @@ DEoptim(fn = prior.fn,
 \author{
 David LeBauer
 }
-

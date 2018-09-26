@@ -1,9 +1,8 @@
-subroutine gpm(k,N,RT)
+subroutine gpm(k,refractive,N,RT)
     use MOD_dataSpec_wavelength
-    use MOD_dataSpec_refractive
     implicit none
 
-    real*8, intent(in) :: k(nw), N
+    real*8, intent(in) :: k(nw), refractive(nw), N
     real*8, intent(out) :: RT(nw,2)
 
     real*8 :: theta1, theta2
