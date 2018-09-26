@@ -56,7 +56,7 @@ through UI libraries, hardcopy on David’s bookshelf)\
  1.  Bob is at www.mysite.edu/maps
  2.  map of the the region (based on user location, e.g. US, Asia, etc)
  3.  option to “use current location” is provided, if clicked, map zooms in to, e.g. state or county level
- 4.  for site kkrun:
+ 4.  for site run:
         1.  option to select existing site or specify point by lat/lon
         2.  option to specify a bounding box and grid resolution in
             either lat/lon or polar stereographic.
