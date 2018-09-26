@@ -1,12 +1,12 @@
-# Quickstart for Docker and PEcAn {#docker-quickstart}
+## Quickstart for Docker and PEcAn {#docker-quickstart}
 
 This is a short documentation on how to start with Docker and PEcAn. This will not go into much detail about about how to use docker.
 
-## Install Docker
+### Install Docker
 
 You will need to install docker first. See https://www.docker.com/community-edition#/download
 
-## Running PEcAn
+### Running PEcAn
 
 We will use a yaml file to describe the containers that we make up, This yaml file is called [docker-compose.yml](https://github.com/PecanProject/pecan/blob/master/docker-compose.yml). Before you get started you will need to download this file first. Place this file somewhere on your machine and cd to the folder that contains this file.
 
@@ -39,7 +39,7 @@ This will start all the containers marked green in the architecture diagram. Onc
 | http://localhost:8000/       | RabbitMQ (username guest, password guest)             |
 | http://localhost:8001/       | Træfik, webserver shows mapping from url to container |
 
-## Testing PEcAn
+### Testing PEcAn
 
 To test PEcAn you can use the following curl statement, or use the webpage to submit a request:
 
@@ -74,5 +74,4 @@ To see what is happening behind the scenes you can use look at the log file of t
 
 This shows that the executor connects to RabbitMQ, waits for messages. Once it picks up a message it will print the message, and execute the workflow in the folder passed in with the message. Once the workflow (including any model executions) is finished it will print Finished. The log file for `pecan_sipnet_1` is very similar, in this case it runs the `job.sh` in the run folder.
 
-To run multiple executors in parallel you can duplicate the executor section in the docker-compose file and just rename it from executor to executor1 and executor2 for example. The same can be done for the models. To make this easier it helps to deploy the containers using kubernetes allowing to easily scale up and down the containers.
-
+To run multiple executors in parallel you can duplicate the executor section in the docker-compose file and just rename it from executor to executor1 and executor2 for example. The same can be done for the models. To make this easier it helps to deploy the containers using Kubernetes allowing to easily scale up and down the containers.
