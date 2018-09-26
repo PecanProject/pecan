@@ -2,6 +2,9 @@
 <pecan>
  <outdir>/home/ecowdery/met_process_tests/</outdir>
  <browndog>
+   <!--
+     token expire after 24 hours
+   -->
    <url>https://bd-api-dev.ncsa.illinois.edu</url>
    <token>8ba6c4ad-ea4d-43e4-bd6d-8d41161eaf2d</toiken> 
  </browndog>

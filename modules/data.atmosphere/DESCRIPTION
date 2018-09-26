@@ -15,6 +15,7 @@ Depends:
     methods
 Imports:
     abind (>= 1.4.5),
+    BrownDog,
     car,
     data.table,
     dplyr,
