@@ -1,7 +1,13 @@
 #!/usr/bin/env Rscript
 
 library(devtools)
-library(staticdocs)
+library(pkgdown)
+
+pkg_list<- list.dirs(path = ".", full.names = FALSE, recursive = TRUE) %>%
+           grep("R$",., value = TRUE) %>%
+           dirname(.)
+        
+        
 
 pkgs <- list( "db", "settings", "utils","visualization",
               "modules/allometry","modules/assim.batch",
@@ -21,13 +27,14 @@ pkgs <- list( "db", "settings", "utils","visualization",
               "all")
  
 lapply(pkgs, function(x) dir.create(file.path(x, "inst/staticdocs"), recursive = TRUE))
+
 build.doc <- function(x){
-  setwd(file.path("~/pecan", x))
   y <- basename(x)
-  build_site(file.path("../", y))
+  pkgdown::build_site(file.path("../", y))
 }
 start = 1
-for(i in start:length(pkgs)){
+
+for(i in seq_along(pkgs)){
   print(i)
   build.doc(pkgs[[i]])
 }
