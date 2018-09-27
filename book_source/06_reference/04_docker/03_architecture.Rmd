@@ -56,6 +56,7 @@ For instance, regardless of the "project" name passed to `docker-compose up`, th
 The services comprising the PEcAn application are described below.
 
 - `networks` -- This is a list of networks used by the application.
+Containers can only communicate with each other (via ports and hostnames) if they are on the same Docker network, and containers on different networks can only communicate through ports exposed by the host machine.
 We just provide the network name (`pecan`) and resort to Docker's default network configuration.
 Note that the services we want connected to this network include a `networks: ... - pecan` tag.
 For more details on Docker networks, see the [official documentation](https://docs.docker.com/network/).
