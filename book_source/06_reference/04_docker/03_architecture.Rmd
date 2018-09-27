@@ -147,7 +147,8 @@ yaml::write_yaml(dc_yaml$services["rabbitmq"], stdout())
 
 Note that the `traefik.frontend.rule` indicates that browsing to http://localhost:8000 (with no further tags) leads to the RabbitMQ management console.
 
-(Further details in the works...)
+By default, the RabbitMQ management console has username/password `guest/guest`, which is highly insecure.
+For production instances of PEcAn, we highly recommend changing these credentials to something more secure, and removing access to the RabbitMQ management console via Traefik.
 
 #### `bety` {#pecan-dc-bety}
 
