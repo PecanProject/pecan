@@ -65,6 +65,9 @@ For more details on Docker networks, see the [official documentation](https://do
 Briefly, in Docker, volumes are directories containing files that are meant to be shared across containers.
 Each volume corresponds to a directory, which can be mounted at a specific location by different containers.
 For example, syntax like `volumes: ... - pecan:/data` in a service definition means to mount the `pecan` "volume" (including its contents) in the `/data` directory of that container.
+Volumes also allow data to persist on containers between restarts, as normally, any data created by a container during its execution is lost when the container is re-launched.
+For example, using a volume for the database allows data to be saved between different runs of the database container.
+Without volumes, we would start with a blank database every time we restart the containers. 
 For more details on Docker volumes, see the [official documentation](https://docs.docker.com/storage/volumes/).
 Here, we define three volumes:
 
