@@ -86,7 +86,28 @@ LINE 1: SELECT count(*) FROM formats WHERE ...
 Error: Relation `formats` does not exist
 ```
 
-Successful execution of this command should take some time because it involves downloading and copying reasonably large amounts of data and performing a number of database operations.
+**If the above command fails**, you can try to fix things interactively by first opening a shell inside the container...
+
+```
+docker run -ti --rm --network pecan_pecan pecan/bety:latest /bin/bash
+```
+
+...and then running the following commands, which emulate the functionality of the `entrypoint.sh` with the `initialize` argument.
+
+```bash
+# Create the bety role in the postgresql database
+psql -h postgres -p 5432 -U postgres -c "CREATE ROLE bety WITH LOGIN CREATEDB NOSUPERUSER NOCREATEROLE PASSWORD 'bety'"
+
+# Initialize the bety database itself, and set to be owned by role bety
+psql -h postgres -p 5432 -U postgres -c "CREATE DATABASE bety WITH OWNER bety"
+
+# If either of these fail with a "role/database bety already exists",
+# that's fine. You can safely proceed to the next command.
+
+# Load the actual bety database tables and values
+./load.bety.sh -a "postgres" -d "bety" -p "-h postgres -p 5432" -o bety -c -u -g -m ${LOCAL_SERVER} -r 0 -w https://ebi-forecast.igb.illinois.edu/pecan/dump/all/bety.tar.gz
+```
+
 Once the command has finished successfully, proceed with the next step:
 
 ```bash
@@ -98,6 +119,8 @@ The breakdown of this command is as follows:
 - `docker run -ti --rm --network pecan_pecan` -- Same as [above](#docker-run-init).
 - `--volume pecan_pecan:/data` -- This mounts the data from the subsequent container (`pecan/data:develop`) onto the current project volume, called `pecan_pecan` (as with the network, the project name `pecan` is the prefix, and the volume name also happens to be `pecan` as specified in the `docker-compose.yml` file).
 - `pecan/data:develop` -- As above, this is the target image to run. Since there is no argument after the image name, this command will run the default command ([`CMD`](https://docs.docker.com/engine/reference/builder/#cmd)) specified for this docker container. In this case, it is the [`docker/add_data.sh`](https://github.com/PecanProject/pecan/blob/develop/docker/add-data.sh) script from the PEcAn repository.
+
+Successful execution of this command should take some time because it involves downloading and copying reasonably large amounts of data and performing a number of database operations.
 
 #### Start PEcAn
 
