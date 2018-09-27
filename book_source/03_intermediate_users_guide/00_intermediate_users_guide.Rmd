@@ -9,7 +9,7 @@ This section will provide information to those wanting to take advantage of PEcA
     - [Brown Dog]
     - [Sensitivity and ensemble analyses][Advanced Setup]
     - [Editing model configurations]
-* [Hidden analyses] - Analyses only available from the PEcAn XML
+* [Settings-configured analyses] - Analyses only available by manually editing `pecan.xml`
     - [Parameter data assimilation (PDA)]
     - [State data assimilation (SDA)]
 * [Remote execution with PEcAn] - Running analyses and generally working with external machines (HPC) in the context of PEcAn.

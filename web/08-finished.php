@@ -533,7 +533,7 @@ foreach ($status as $line) {
 <p>
   <a href="https://pecanproject.github.io/pecan-documentation/master/" target="_blank">Documentation</a>
   <br>
-  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
   <br>
   <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
 </p>

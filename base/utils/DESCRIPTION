@@ -15,32 +15,36 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Imports:
+    abind (>= 1.4.5),
+    coda (>= 0.18),
     data.table,
+    dplyr,
+    getPass,
     ggplot2,
+    lubridate (>= 1.6.0),
+    magrittr,
+    ncdf4 (>= 1.15),
     PEcAn.logger,
     PEcAn.remote,
+    PeriodicTable,
+    plyr (>= 1.8.4),
+    purrr,
     randtoolbox,
     raster,
     RCurl,
     rjags,
     sp,
     stringi,
+    udunits2 (>= 0.11),
     xtable,
-    XML,
-    abind (>= 1.4.5),
-    coda (>= 0.18),
-    lubridate (>= 1.6.0),
-    ncdf4 (>= 1.15),
-    plyr (>= 1.8.4),
-    PeriodicTable,
-    udunits2 (>= 0.11)
+    XML
 Suggests:
+    MASS,
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.emulator,
     PEcAn.settings,
     PEcAn.DB,
-    MASS,
     testthat (>= 2.0.0)
 License: FreeBSD + file LICENSE
 Copyright: Authors
