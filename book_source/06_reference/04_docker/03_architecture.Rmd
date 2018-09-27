@@ -103,7 +103,8 @@ yaml::write_yaml(dc_yaml$services["traefik"], stdout())
 
 #### `minio` {#pecan-dc-minio}
 
-[Minio](https://github.com/minio/minio) is a browser-based file manager that facilitates exploration of PEcAn files without the need for CLI tools.
+[Minio](https://github.com/minio/minio) is a service that provides access to the a folder on disk through a variety of protocols, including S3 buckets and web-based access.
+We mainly use Minio to facilitate access to PEcAn data using a web browser without the need for CLI tools.
 
 Our current configuration is as follows:
 
