@@ -1,5 +1,4 @@
-
-# Dockerfiles for Models
+## Dockerfiles for Models {#model-docker}
 
 In general we try to minimize the size of the images. To be able to do this we split the process of creating the building of the model images into two pieces (or leverage of an image that exists from the original model developers). If you look at the example Dockerfile you will see that there are 2 sections, the first section will build the model binary, the second section will build the actual PEcAn model, which copies the binary from the first section.
 
@@ -108,11 +107,11 @@ docker run \
 	pecan/model-ed2
 ```
 
-## Common problems
+### Common problems
 
 Following are some solutions for common problems that you might encounter when building the docker images for a model.
 
-### Debugging missing libraries
+#### Debugging missing libraries
 
 When building the model binary it might require specific libraries to be installed. In the second stage the model binary is copied into a new image, which could result in the binary missing specific libraries. In the case of the ED2 model the following was used to find the libraries that are needed to be installed (libgfortran5 and libopenmpi3).
 

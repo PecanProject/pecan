@@ -6,9 +6,10 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 
-## [Unreleased]
+## [1.6.0] - 2018-09-01
 
 ### Fixes
+- Updated model2netcdf.SIPNET() to address issue #2094. Revised netCDF time to be from 0-364./365. (if leap) so time would be properly parsed by R and python (cf tools)
 - Fixed output time variable in models/ed/R/model2netcdf.ED2.R to provide correct fractional DOY
 - Running tests for PEcAn.settings package no longer leaves empty temp directories in test folder (#2075)
 - Fixed issue #2064 which sends one met path to write.sa.config.
@@ -16,6 +17,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added missing ncdf4 library calls in model2netcdf.JULES
 
 ### Added
+- Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
 - Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
 - Added scaling to documentation
@@ -23,7 +25,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 
 ### Changed
-- models/fates/R/model2netcdf.FATES.R to increase supported model outputs. Added longname to nc file variables
+- Updated models/fates/R/model2netcdf.FATES.R to increase supported model outputs. Added longname to nc file variables
+- Updated models/dalec/R/model2netcdf.DALEC.R to add time_bounds variable
 - Updated models/maat/R/write.config.MAAT.R to improve flow, remove bugs, and to work with the release version of the MAAT model.
 - Minor update to modules/data.atmosphere/R/met2CF.csv.R to include recursive=TRUE for outfolder.  Seemed to work better
 - Updated models/maat/R/met2model.MAAT.R to include additional output variables, fix a bug, and conduct overall cleanup. Updated docs
