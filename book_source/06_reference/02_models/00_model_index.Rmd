@@ -1,4 +1,4 @@
-# PEcAn Models
+# PEcAn Models {#pecan-models}
 
 This section will contain information about all models and output variables that are supported by PEcAn.
 
