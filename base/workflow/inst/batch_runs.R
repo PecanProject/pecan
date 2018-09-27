@@ -11,6 +11,10 @@ create_exec_test_xml <- function(run_list){
   start_date<- run_list[[4]]
   end_date<- run_list[[5]]
   pecan_path<- run_list[[6]]
+  out.var<- run_list[[7]]
+  ensemble<- run_list[[8]]
+  ens_size<- run_list[[9]]
+  sensitivity<- run_list[[10]]
   user_id<- NA
   pft_name<- NA
   
@@ -54,10 +58,26 @@ create_exec_test_xml <- function(run_list){
   settings$meta.analysis$iter <- 3000
   settings$meta.analysis$random.effects <- FALSE
   #Ensemble
-  settings$ensemble$size <- 1
-  settings$ensemble$variable <- "GPP"
-  settings$ensemble$samplingspace$met$method <- "sampling"
-  settings$ensemble$samplingspace$parameters$method <- "uniform"
+  if(ensemble){
+    settings$ensemble$size <- ens_size
+    settings$ensemble$variable <- out.var
+    settings$ensemble$samplingspace$met$method <- "sampling"
+    settings$ensemble$samplingspace$parameters$method <- "uniform"
+  }else{
+    settings$ensemble$size <- 1
+    settings$ensemble$variable <- out.var
+    settings$ensemble$samplingspace$met$method <- "sampling"
+    settings$ensemble$samplingspace$parameters$method <- "uniform"
+  }
+  #Sensitivity
+  if(sensitivity){
+    settings$sensitivity.analysis$quantiles <-
+      settings$sensitivity.analysis$quantiles$sigma1 <--2
+    settings$sensitivity.analysis$quantiles$sigma2 <--1
+    settings$sensitivity.analysis$quantiles$sigma3 <- 1
+    settings$sensitivity.analysis$quantiles$sigma4 <- 2
+    names(settings$sensitivity.analysis$quantiles) <-c("sigma","sigma","sigma","sigma")
+  }
   #Model
   settings$model$id <- model.new$id
   #Worflow
@@ -96,9 +116,9 @@ con <- bety$con
 ## Find name of Machine R is running on
 mach_name <- Sys.info()[[4]]
 mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(id)
-  
+
 model_ids <- tbl(bety, "dbfiles") %>% filter(machine_id == mach_id) %>% 
-              filter(container_type == "Model") %>% pull(container_id)
+  filter(container_type == "Model") %>% pull(container_id)
 
 
 
@@ -106,7 +126,10 @@ models <- model_ids
 met_name <- c("CRUNCEP","AmerifluxLBL")
 startdate<-"2004/01/01"
 enddate<-"2004/12/31"
-
+out.var <- "NPP"
+ensemble <- TRUE
+ens_size <- 100
+sensitivity <- TRUE
 ## Find Sites
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
 site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
@@ -139,11 +162,12 @@ site_id <- "772"
 
 #Create permutations of arg combinations
 options(scipen = 999)
-run_table <- expand.grid(models,met_name,site_id, startdate,enddate,pecan_path,stringsAsFactors = FALSE)
+run_table <- expand.grid(models,met_name,site_id, startdate, enddate, 
+                         pecan_path,out.var, ensemble, ens_size, sensitivity, stringsAsFactors = FALSE)
 #Execute function to spit out a table with a clomn of NA or success
 
 tab <-run_table %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
-                                                      create_exec_test_xml(list(...))
-                                                   },otherwise =NA))
-                          )
+  create_exec_test_xml(list(...))
+},otherwise =NA))
+)
 
