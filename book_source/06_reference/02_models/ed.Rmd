@@ -34,7 +34,15 @@ The following sections of the PEcAn XML are relevant to the ED model:
 - `run/site`
   - `lat` -- Latitude coordinate of site
   - `lon` -- Longitude coordinate of site
-- `inputs/met/path` -- Path to ED_MET_DRIVER_HEADER file
+- `inputs`
+	- `met/path` -- Path to ED_MET_DRIVER_HEADER file
+	- `pss`: [required] location of patch file
+	- `css`: [required] location of cohort file
+	- `site`: [optional] location of site file
+	- `lu`: [required] location of land use file
+	- `thsums`: [required] location of thermal sums file
+	- `veg`: [required] location of vegetation data
+	- `soil`: [required] location of soil data
 
 ### Model specific input files
 
