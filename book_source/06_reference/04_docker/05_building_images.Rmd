@@ -1,0 +1,141 @@
+### Building and modifying images {#docker-build-images}
+
+For general use, it is sufficient to use the pre-built PEcAn images hosted on [Docker Hub](https://hub.docker.com/r/pecan/).
+However, there are cases where it makes sense to re-build the Docker images locally.
+The following is a list of PEcAn-specific images and reasons why you would want to rebuild them locally: 
+
+- `pecan/depends` -- Rebuild if:
+  - You modify the `docker/base/Dockerfile.depends`
+  - You introduce new system dependencies (i.e. things that need to be installed with `apt-get`)
+  - You introduce new R package dependencies, and you want those R package installations to be cached during future builds. For packages with fast build times, it may be fine to let them be installed as part of PEcAn's standard build process (i.e. `make`).
+- `pecan/base` -- Rebuild if:
+  - You built a new version of `pecan/depends` (on which `pecan/base` depends)
+  - You modify the `docker/base/Dockerfile.base`
+  - You made changes to the PEcAn R package source code, the Makefile, or `web/workflow.R`.
+	- NOTE that changes to the web interface code affect `pecan/web`, _not_ `pecan/base`
+- `pecan/executor` -- Rebuild if:
+  - You built a new version of `pecan/base` (on which `pecan/executor` depends) and/or, `pecan/depends` (on which `pecan/base`)
+  - You modified the `docker/base/Dockerfile.executor`
+  - You modified the RabbitMQ Python scripts (e.g. `docker/receiver.py`, `docker/sender.py`)
+- `pecan/web` -- Rebuild if you modified any of the following:
+  - `docker/base/Dockerfile.web`
+  - The PHP/HTML/JavaScript code for the PEcAn web interface in `web/` (_except_ `web/workflow.R` -- that goes in `pecan/base`) 
+  - `docker/config.docker.php` (the `config.php` file for Docker web instances)
+  - `documentation/index_vm.html` (the documentation HTML website)
+  - NOTE: Because changes to this code are applied instantly (i.e. do not require compilation or installation), a more effective way to do local development is to mount the `web/` or other relevant folders as a volume onto the `pecan/web` container (see [local development guide below](#docker-local-devel)).
+
+To build an image locally, use the `docker build` command as described below.
+For more details, see `docker build --help` or the [online Docker build documentation](https://docs.docker.com/engine/reference/commandline/build/).
+
+First, in a terminal window, navigate (`cd`) into the PEcAn source code root directory.
+From there, the general syntax for building an image looks like the following:
+
+```bash
+docker build -t pecan/<image name>:<image version> -f docker/base/Dockerfile.<image name> .
+```
+
+For instance, to build a local version of the `pecan/depends:latest` image, you would run:
+
+```bash
+docker build -t pecan/depends:latest -f docker/base/Dockerfile.depends .
+```
+
+The breakdown of this command is as follows:
+
+- `docker build` -- This is the core command.
+The standard syntax is `docker build [OPTIONS] <PATH>`, where `<PATH>` refers to the directory to be used as the "build context".
+The "build context" is the working directory assumed by the Dockerfiles.
+In PEcAn, this is always the PEcAn source code root directory, which allows Dockerfiles to use instructions such as `COPY web/workflow.R /work/`.
+In this example, the `<PATH>` is set to the current working directory, i.e. `.` because we are already in the PEcAn root directory.
+If you were located in a different directory, you would have to provide a path to the PEcAn source code root directory.
+Also, by default, `docker build` will look for a Dockerfile located at `<PATH>/Dockerfile`, but this is modified by the `-f` option described below.
+
+- `-t pecan/depends:latest` -- The `-t/--tag` option specifies how the image will be labeled.
+By default, Docker only defines unique image IDs, which are hexidecimal strings that are unintuitive and hard to remember.
+Tags are useful for referring to specific images in a human-readable way.
+Note that the same unique image can have multiple tags associated with it, so it is possible for, e.g. `pecan/depends:latest`, `pecan/depends:custom`, and even `mypecan/somethingelse:20.0` to refer to the same exact image.
+To see a table of all local images, including their tags and IDs, run `docker image ls`.
+	- **NOTE**: PEcAn's `docker-compose.yml` can be configured via the `PECAN` environment variable to point at different versions of PEcAn images.
+	By default, it points to the `:latest` versions of all images.
+	However, if you wanted to, for instance, build `:local` images corresponding to your local source code and then run that version of PEcAn, you would run:
+	
+	```
+	PECAN=local docker-compose -p pecan up -d
+	```
+	
+	This is an effective way to do local development and testing of different PEcAn versions, as described [below](#docker-local-devel).
+
+- `-f docker/base/Dockerfile.depends` -- The `-f/--file` tag is used to provide an alternative location and file name for the Dockerfile.
+The convention in PEcAn is to put Dockerfiles for core PEcAn functionality in `docker/base/` and for specific models in `docker/models/`, and to name these files `Dockerfile.<image name>`.
+
+#### Local development and testing with Docker {#docker-local-devel}
+
+The following is an example of one possible workflow for developing and testing PEcAn using local Docker images.
+The basic idea is to build `:local` versions of the PEcAn containers from whatever version of the PEcAn code you currently have.
+NOTE: All commands assume you are working from the PEcAn source code root directory.
+
+1. (First time only) Create a "bleeding-edge" version of the `pecan/depends` image with all the latest R packages.
+
+   ```
+   docker build -t pecan/depends:local -f docker/base/Dockerfile.depends
+   ```
+
+   Alternatively, if you are satisfied with the package versions of an existing image, you can just re-tag an existing image by using `docker tag`, e.g.:
+   
+   ```
+   docker tag pecan/depends:latest pecan/depends:local
+   # Or, provide an image ID, e.g.
+   # docker tag 96cfcc388bc2 pecan/depends:local
+   # See `docker tag --help` for more details
+   ```
+
+2. (First time only) Build the `pecan/base` and `pecan/executor` images, setting the `IMAGE_VERSION` build argument to `local`.
+
+    ```
+    docker build -t pecan/base:local -f docker/base/Dockerfile.base --build-arg IMAGE_VERSION=local .
+    docker build -t pecan/executor:local -f docker/base/Dockerfile.executor --build-arg IMAGE_VERSION=local .
+    ```
+
+	To check that you have all the required images, you can run `docker image ls`.
+	Near the top of the table, you should see `pecan/executor local` and `pecan/base local` images.
+    To check that you have a working version of PEcAn, you can launch the PEcAn stack with the following (note the use of `PECAN=local` to specify the PEcAn image version):
+	
+	```
+	PECAN=local docker-compose -p pecan up -d
+	```
+	
+	...and open the PEcAn web interface by browsing to http://localhost:8000/pecan/
+
+3. Now, make some changes to the PEcAn R source code. Make sure the changes are saved, and then, build a new `pecan/base:local_develop` image based on the existing `pecan/base:local` image:
+
+   ```
+   docker build -t pecan/base:local_develop -f docker/base/Dockerfile.base --build-arg IMAGE_VERSION=local --build-arg FROM_IMAGE=base .
+   docker build -t pecan/executor:local_develop -f docker/base/Dockerfile.executor --build-arg IMAGE_VERSION=local_develop .
+   docker tag pecan/web:local pecan/web:local_develop
+   ```
+   
+   In the first two commands, the `FROM_IMAGE=base IMAGE_VERSION=local` indicates that, instead of building `pecan/base` off of `pecan/develop` (the default), we will build it on top of the existing `pecan/base:local` image.
+   This has the effect of only re-building PEcAn packages that have changed, similar to the standard behavior of `make`.
+   The last line is necessary because the `PECAN` variable also applies to the `pecan/web` image in the `docker-compose.yml`, so without it, `docker-compose` will look for `pecan/web:local_develop` but won't be able to find it.
+
+4. As before, launch the PEcAn stack with `docker-compose`, but this time with `PECAN=local_develop`:
+
+   ```
+   PECAN=local_develop docker-compose -p pecan up -d
+   ```
+   
+As long as you have a `pecan/depends:local` image, you can skip steps 1 and 2 and only do steps 3 and 4 while you are developing.
+To save some keystrokes if you do this frequently, you can combine steps 3 and 4 into a shell script:
+
+```bash
+#!/bin/bash
+
+# rebuild pecan/base
+docker build -t pecan/base:local_develop -f docker/base/Dockerfile.base --build-arg IMAGE_VERSION=local --build-arg FROM_IMAGE=base .
+
+# rebuild pecan/executor
+docker build -t pecan/executor:local_develop -f docker/base/Dockerfile.executor --build-arg IMAGE_VERSION=local_develop .
+
+# launch the PEcAn stack
+PECAN=local_develop docker-compose -p pecan up -d
+```
