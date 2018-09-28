@@ -38,6 +38,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 
 ### Changed
+- Updated models/dalec/R/model2netcdf.DALEC.R to add time_bounds variable
 - Updated models/maat/R/write.config.MAAT.R to improve flow, remove bugs, and to work with the release version of the MAAT model.
 - Minor update to modules/data.atmosphere/R/met2CF.csv.R to include recursive=TRUE for outfolder.  Seemed to work better
 - Updated models/maat/R/met2model.MAAT.R to include additional output variables, fix a bug, and conduct overall cleanup. Updated docs
