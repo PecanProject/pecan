@@ -1,0 +1,157 @@
+## Quickstart for Docker and PEcAn {#docker-quickstart}
+
+This is a short documentation on how to start with Docker and PEcAn. This will not go into much detail about about how to use docker.
+
+### Install Docker
+
+You will need to install docker first. See https://www.docker.com/community-edition#/download
+
+Once Docker is installed, make sure it is running.
+To test that Docker is installed and running, open a terminal and run the following commands:
+
+```bash
+docker run hello-world
+```
+
+If successful, this should return a message starting with `"Hello from Docker!"`.
+If this doesn't work, there is something wrong with your configuration.
+Refer to the Docker documentation for debugging.
+
+NOTE: Depending on how Docker is installed and configured, you may have to run this command as `sudo`.
+Try running the command without `sudo` first.
+If that fails, but running as `sudo` succeeds, see [these instructions](https://docs.docker.com/install/linux/linux-postinstall/) for steps to use Docker as a non-root user.
+
+### Setup PEcAn using docker-compose
+
+
+The PEcAn Docker stack is configured using a `docker-compose.yml` file (see also [`docker-compose`](#docker-compose)).
+If you cloned the PEcAn source from GitHub, you can find this file in the root directory of the repository.
+Alternatively, if you do not want to clone the PEcAn source, you can download just this file directly from GitHub [here](https://github.com/PecanProject/pecan/blob/develop/docker-compose.yml). (NOTE that this is the latest, `develop` branch version. If you want a specific release, you should change the branch accordingly.).
+
+The following instructions assume you are in the same directory as the file (if not, `cd` into it) and that the file is called `docker-compose.yml`.
+The `docker-compose` commands assume this.
+If you want to explicitly point `docker-compose` to a specific file, you can do so by calling all commands as `docker-compose -f /path/to/my-docker-compose.yml ...other options...`.
+(NOTE that this `-f` option must go _immediately_ after `docker-compose`. More generally, `docker-compose` options are very sensitive to their location relative to other commands in the same line -- that is, `docker-compose -f /my/docker-compose.yml -p pecan up -d postgres` is _not_ the same as `docker-compose -d postgres -p pecan up -f /my/docker-compose.yml`. If expected ever don't seem to be working, check that the arguments are in the right order.)
+
+#### Initialize the PEcAn database (first time only) {#pecan-docker-quickstart-init}
+
+The commands described in this section will set up the PEcAn database (BETY) and pre-load it with some common "default" data.
+
+```bash
+docker-compose -p pecan up -d postgres
+
+# If you have a custom docker-compose file:
+# docker-compose -f /path/to/my-docker-compose.yml -p pecan up -d postgres
+```
+
+The breakdown of this command is as follows:
+
+- `-p pecan` -- This tells `docker-compose` to do all of this as part of a "project" `-p` we'll call `pecan`. By default, the project name is set to the name of the current working directory. The project name will be used as a prefix to all containers started by this `docker-compose` instance (so, if we have a service called `postgres`, this will create a container called `pecan_postgres`).
+- `up -d` -- `up` is a command that initializes the containers. Initialization involves downloading and building the target containers and any containers they depend on, and then running them. Normally, this happens in the foreground, printing logs directly to `stderr`/`stdout` (meaning you would have to interrupt it with Ctrl-C), but the `-d` flag forces this to happen more quietly and in the background.
+- `postgres` -- This indicates that we only want to initialize the service called `postgres` (and its dependencies). If we omitted this, `docker-compose` would initialize all containers in the stack.
+
+The end result of this command is to initialize a "blank" PostGIS container that will run in the background.
+This container is not connected to any data (yet), and is basically analogous to just installing and starting PostgreSQL to your system.
+As a side effect, the above command will also create blank data ["volumes"](https://docs.docker.com/storage/volumes/) and a ["network"](https://docs.docker.com/network/) that containers will use to communicate with each other.
+Because our project is called `pecan` and `docker-compose.yml` describes a network called `pecan`, the resulting network is called `pecan_pecan`. 
+This is relevant to the following commands, which will actually initialize and populate the BETY database.
+
+Assuming the above ran successfully, next run the following:
+
+```bash
+docker run -ti --rm --network pecan_pecan pecan/bety:latest initialize
+```
+
+The breakdown of this command is as follows: {#docker-run-init}
+
+- `docker run` -- This says we will be running a specific command inside the target Docker container. See `docker run --help` and the [Docker run reference](https://docs.docker.com/engine/reference/run/) for more information.
+- `-ti` -- This is actually two flags, `-t` to allocate a pseudo-tty and `-i` to keep STDIN open even if detached. `-t` is necessary to ensure lower-level script commands run correctly. `-i` makes sure that the command output (`stdin`) is displayed.
+- `--rm` -- This automatically removes the resulting container once the specified command exits, as well as any volumes associated with the container. This is useful as a general "clean-up" flag for one-off commands (like this one) to make sure you don't leave any "zombie" containers or volumes around at the end.
+- `--network pecan_pecan` -- This indicates that the container will use the existing `pecan_pecan` network. This network is what ensures communication between the `postgres` container (which, recall, is _just_ a PostGIS installation, and has no data inside it) and the "volumes" where the actual data are persistently stored.
+- `pecan/bety:latest` -- This is the name of the image in which to run the specified command, in the form `repository/image:version`. This is interpreted as follows:
+  - First, it sees if there are any images called `pecan/bety:latest` available on your local machine. If there are, it uses that one.
+  - If that image version is _not_ available locally, it will next try to find the image online. By default, it searches [Docker Hub](https://hub.docker.com/), such that `pecan/bety` gets expanded to the container at `https://hub.docker.com/r/pecan/bety`. For custom repositories, a full name can be given, such as `hub.ncsa.illinois.edu/pecan/bety:latest`.
+  - If `:version` is omitted, Docker assumes `:latest`. NOTE that while online containers _should_ have a `:latest` version, not all of them do, and if a `:latest` version does not exist, Docker will be unable to find the image and will throw an error.
+- Everything after the image name (here, `pecan/bety:latest`) is interpreted as an argument to the image's specified [entrypoint](https://docs.docker.com/engine/reference/builder/#entrypoint). For the `pecan/bety` image, the entrypoint is the script [`docker/entrypoint.sh`](https://github.com/PecanProject/bety/blob/master/docker/entrypoint.sh) located in the BETY repository. Here, the `initialize` argument is parsed to mean "Create a new database", which first runs `psql` commands to create the `bety` role and database and then runs the `load.bety.sh` script. 
+  - NOTE: The entrypoint script that is used is the one copied into the Docker container at the time it was built, which, depending on the indicated image version and how often images are built on Docker Hub relative to updates to the source, may be older than whatever is in the source code.
+  - NOTE: The `load.bety.sh` script is, somewhat confusingly, located in the _PEcAn_ GitHub repository ([`scripts/load.bety.sh`](https://github.com/PecanProject/pecan/blob/develop/scripts/load.bety.sh)), _not_ in the BETY repository. As part of its build process, the BETY image downloads the latest `develop` version of `load.bety.sh` from the PEcAn repository and stores it in the root folder of the image. The relevant parts of the Dockerfile are [here](https://github.com/PecanProject/bety/blob/master/Dockerfile#L33-L36). As with `entrypoint.sh`, note that this script is only updated when the image is re-built, and because the origin is in a different repository, new versions are not built whenever `load.bety.sh` is updated. This is a [known issue](https://github.com/PecanProject/bety/issues/597).
+  
+The above command should produce a bunch of output, some of which may look like errors.
+Some of these errors are normal and should not stop the command from completing successfully.
+You will know you have encountered more serious errors if the command exits or hangs with output resembling the following:
+
+```
+LINE 1: SELECT count(*) FROM formats WHERE ...
+                             ^
+Error: Relation `formats` does not exist
+```
+
+Successful execution of this command should take some time because it involves downloading and copying reasonably large amounts of data and performing a number of database operations.
+Once the command has finished successfully, proceed with the next step:
+
+```bash
+docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop
+```
+
+The breakdown of this command is as follows:
+
+- `docker run -ti --rm --network pecan_pecan` -- Same as [above](#docker-run-init).
+- `--volume pecan_pecan:/data` -- This mounts the data from the subsequent container (`pecan/data:develop`) onto the current project volume, called `pecan_pecan` (as with the network, the project name `pecan` is the prefix, and the volume name also happens to be `pecan` as specified in the `docker-compose.yml` file).
+- `pecan/data:develop` -- As above, this is the target image to run. Since there is no argument after the image name, this command will run the default command ([`CMD`](https://docs.docker.com/engine/reference/builder/#cmd)) specified for this docker container. In this case, it is the [`docker/add_data.sh`](https://github.com/PecanProject/pecan/blob/develop/docker/add-data.sh) script from the PEcAn repository.
+
+#### Start PEcAn
+
+If you already completed the above steps, you can start the full stack by just running the following: 
+
+```bash
+docker-compose -p pecan up -d
+```
+
+This will build and start all containers required to run PEcAn.
+With the `-d` flag, this will run all of these containers quietly in the background, and show a nice architecture diagram with the name and status of each container while they are starting.
+Once this is done you have a working instance of PEcAn.
+
+If all of the containers started successfully, you should be able to access the various components from a browser via the following URLs:
+
+- PEcAn web interface (running models) -- http://localhost:8000/pecan/ (NOTE: The trailing backslash is necessary.)
+- BETY web interface -- http://localhost:8000/bety/
+- File browser (minio) -- http://localhost:8000/minio/
+- RabbitMQ management console (for managing queued processes) -- http://localhost:8000/
+- Traefik, webserver showing maps from URLs onto their respective containers -- http://localhost:8001/
+
+#### Start model runs using curl
+
+To test PEcAn you can use the following `curl` statement, or use the webpage to submit a request:
+
+```bash
+curl -v -X POST \
+    -F 'hostname=docker' \
+    -F 'modelid=5000000002' \
+    -F 'sitegroupid=1' \
+    -F 'siteid=772' \
+    -F 'sitename=Niwot Ridge Forest/LTER NWT1 (US-NR1)' \
+    -F 'pft[]=temperate.coniferous' \
+    -F 'start=2004/01/01' \
+    -F 'end=2004/12/31' \
+    -F 'input_met=5000000005' \
+    -F 'email=' \
+    -F 'notes=' \
+    'http://localhost:8000/pecan/04-runpecan.php'
+```
+
+This should return some text with in there `Location:` this is shows the workflow id, you can prepend http://localhost:8000/pecan/ to the front of this, for example: http://localhost:8000/pecan/05-running.php?workflowid=99000000001. Here you will be able to see the progress of the workflow.
+
+To see what is happening behind the scenes you can use look at the log file of the specific docker containers, once of interest are `pecan_executor_1` this is the container that will execute a single workflow and `pecan_sipnet_1` which executes the sipnet mode. To see the logs you use `docker logs pecan_executor_1` Following is an example output:
+
+```
+2018-06-13 15:50:37,903 [MainThread     ] INFO    : pika.adapters.base_connection - Connecting to 172.18.0.2:5672
+2018-06-13 15:50:37,924 [MainThread     ] INFO    : pika.adapters.blocking_connection - Created channel=1
+2018-06-13 15:50:37,941 [MainThread     ] INFO    : root -  [*] Waiting for messages. To exit press CTRL+C
+2018-06-13 19:44:49,523 [MainThread     ] INFO    : root - b'{"folder": "/data/workflows/PEcAn_99000000001", "workflowid": "99000000001"}'
+2018-06-13 19:44:49,524 [MainThread     ] INFO    : root - Starting job in /data/workflows/PEcAn_99000000001.
+2018-06-13 19:45:15,555 [MainThread     ] INFO    : root - Finished running job.
+```
+
+This shows that the executor connects to RabbitMQ, waits for messages. Once it picks up a message it will print the message, and execute the workflow in the folder passed in with the message. Once the workflow (including any model executions) is finished it will print Finished. The log file for `pecan_sipnet_1` is very similar, in this case it runs the `job.sh` in the run folder.
+
+To run multiple executors in parallel you can duplicate the executor section in the docker-compose file and just rename it from executor to executor1 and executor2 for example. The same can be done for the models. To make this easier it helps to deploy the containers using Kubernetes allowing to easily scale up and down the containers.
