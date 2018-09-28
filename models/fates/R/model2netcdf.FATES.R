@@ -78,6 +78,12 @@ model2netcdf.FATES <- function(outdir) {
         
         ## FATES time is in multiple columns, create 'time'
         mcdate <- ncdf4::ncvar_get(ncin, "mcdate")                  # current date (YYYYMMDD)
+        if (length(mcdate)==1) {
+          ## do we need to bother converting outputs where FATES provides only a single timepoint for a date?
+          ## usually happens when the model starts/finishes at the end/start of a new year
+          PEcAn.logger::logger.debug("*** Skipping conversion for output with only a single timepoint ***")
+          next
+        }
         cal_dates <- as.Date(as.character(mcdate),format="%Y%m%d")  # in standard YYYY-MM-DD format
         julian_dates <- lubridate::yday(cal_dates)                  # current year DOY values
         day  <- ncdf4::ncvar_get(ncin, "mdcur")                     # current day (from base day)
