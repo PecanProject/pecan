@@ -1,7 +1,9 @@
+ARG IMAGE_VERSION="latest"
+
 # ----------------------------------------------------------------------
 # PECAN FOR MODEL BASE IMAGE
 # ----------------------------------------------------------------------
-FROM pecan/base
+FROM pecan/base:${IMAGE_VERSION}
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 # variables to store in docker image
