@@ -289,14 +289,15 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     # Let's find the PFT based on site location, if it was found I will subset the ensemble.samples otherwise we're not affecting anything    
     if(!is.null(con)){
 
-      Pft_Site <- tbl(con, 'sites_cultivars')%>%
+      Pft_Site_df <- tbl(con, 'sites_cultivars')%>%
         dplyr::filter(site_id==settings$run$site$id) %>%
         dplyr::inner_join(dplyr::tbl(con, "cultivars_pfts"), by = c('cultivar_id')) %>%
         dplyr::inner_join(dplyr::tbl(con, "pfts"), by = c('pft_id'='id')) %>%
         dplyr::collect() 
       
+      site_pfts_names <- Pft_Site$name %>% unlist() %>% as.character()
       #-- if there is enough info to connect the site to pft
-      if (nrow(Pft_Site) > 0) ensemble.samples <- ensemble.samples [Pft_Site$name %>% unlist() %>% as.character()]
+      if ( nrow(Pft_Site) > 0 & (site_pfts_names %in% names(ensemble.samples)) ) ensemble.samples <- ensemble.samples [Pft_Site$name %>% unlist() %>% as.character()]
     }
 
 
