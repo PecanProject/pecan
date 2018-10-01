@@ -13,6 +13,7 @@ application    = os.getenv('APPLICATION',    'job.sh')
 
 # called for every message, this will start the program and ack message if all is ok.
 def callback(ch, method, properties, body):
+    body = body.decode('utf-8')
     logging.info(body)
     jbody = json.loads(body)
 
