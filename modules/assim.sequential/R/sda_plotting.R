@@ -661,18 +661,25 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     mutate(Site=site.ids %>% unique(),
            Name=site.names)
   
+
+  suppressMessages({
+      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-region.json", package = "PEcAn.assim.sequential"))
+  })
   
-  map.plot <- ggplot(map_data("state")) +
-    geom_polygon(
-      aes(x = long, y = lat, group = group),
-      fill = "#122f3d",
-      color = "#34738f",
-      lwd = 0.01
-    ) +
+  #transform site locs into new projection - UTM 2163
+  site.locs.sp<-site.locs
+  coordinates(site.locs.sp) <- c("Lon", "Lat")
+  proj4string(site.locs.sp) <- CRS("+proj=longlat +datum=WGS84")  ## for example
+  res <- spTransform(site.locs.sp, CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
+  site.locs[,c(1,2)] <-res@coords
+  
+  #plotting
+  map.plot<- ggplot() + 
+    geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.6,lwd=0.001)+
     geom_point(data = site.locs,
                aes(x = Lon, y = Lat),
-               color = "orange",
-               size = 3) +
+               color = "black",
+               size = 2) +
     geom_label(
       data = site.locs,
       aes(
@@ -684,18 +691,13 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       fontface = "bold",
       color = "#be3e2b",
       size = 3.5
-    ) +
-    #coord_fixed(1.3)+
-    coord_map("ortho", orientation = c(30,-100, 0)) +
-    theme_minimal() +
-    labs(x = "", y = "") +
-    guides(color = TRUE) +
-    theme(
-      plot.background = element_rect(fill = "#f2f2f2"),
-      panel.grid.major = element_line(color = "#34738f",size=0.1),
-      axis.text = element_text(color = "#4f372d")
-      
-    ) 
+    ) + 
+    #coord_sf(datum = sf::st_crs(2163),default = F)+
+    scale_fill_brewer(palette = "Paired",name="Eco-Region")+
+    theme_minimal()+
+    theme(axis.text = element_blank())
+  
+
 
   #----- Reordering the plots
   all.plots.print <-list(map.plot)

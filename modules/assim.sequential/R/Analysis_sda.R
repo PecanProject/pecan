@@ -345,11 +345,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     }
     
   }
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> d5e6e88b0f9652be60187c1ed735ce2306fb86c2
   dat <- runMCMC(Cmcmc, niter = nitr, nburnin=nburnin)
   
   ## update parameters

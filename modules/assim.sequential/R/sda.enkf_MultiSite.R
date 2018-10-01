@@ -1,5 +1,5 @@
-#' @title sda.enkf
-#' @name  sda.enkf
+#' @title sda.enkf.multisite
+#' @name  sda.enkf.multisite
 #' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 #' 
 #' @param settings  PEcAn settings object
@@ -391,7 +391,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###---- 
    
     if(adjustment == TRUE){
-      analysis <-adj.ens(Pf,X,X.new,mu.f,mu.a,Pa,processvar)
+      analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
     }else{
       analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
     }
@@ -418,8 +418,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###---- 
     save(t, FORECAST, ANALYSIS, enkf.params,new.state,new.params,out.configs,ensemble.samples,inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
-    if (t>1)
-    post.analysis.multisite.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title,facetg=control$facet.plots)
+    if (t%%2==0)  post.analysis.multisite.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title,facetg=control$facet.plots)
   } ### end loop over time
   
 } # sda.enkf
