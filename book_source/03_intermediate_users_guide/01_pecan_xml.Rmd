@@ -17,7 +17,7 @@ It contains the following major sections ("nodes"):
 	- [`ensemble`](#xml-ensemble) -- Ensemble runs
 	- [`sensitivity.analysis`](#xml-sensitivity-analysis) -- Sensitivity analysis
 	- [`parameter.data.assimilation`](#xml-parameter-data-assimilation) -- Parameter data assimilation
-	- [`multi.site`](#xml-multi-site) -- Multi Site Settings
+	- [`multi.settings`](#xml-multi-settings) -- Multi Site Settings
 	- (experimental) [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
 	- (experimental) [`browndog`](#xml-browndog) -- Brown Dog configuration
 	- (experimental) [`benchmarking`](#xml-benchmarking) -- Benchmarking
@@ -557,7 +557,8 @@ This information is currently used by the following PEcAn workflow functions:
 
 The following tags can be used for parameter data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](#pda)
 
-### Multi-site {#xml-multi-site}
+### Multi-Settings {#xml-multi-settings}
+
 Multi-settings allows you to do multiple runs across different sites that belong to the same site group. It takes your settings and applies the same settings, only changing the site level tags.
 
 To start, add the multisettings tag within the `<run></run>` section of your xml
@@ -588,6 +589,14 @@ Next you'll want to add the following tags to denote the group of sites you want
 If you add this tag, you must remove the `<site> </site>` tags from the `<run>` tag portion of your xml. 
 The id of your sitegroup can be found by lookig up your site group within BETY.
 
+Lastly change the top level tag to `<pecan.multi>`, meaning the top and bootom of your xml should look like this:
+
+```
+<?xml version="1.0"?>
+<pecan.multi>
+...
+</pecan.multi>
+```
 
 Once you have defined these tags, you can run PEcAn, but there may be further specifications needed if you know that different data sources have different dates available.
 
@@ -639,7 +648,7 @@ Once this section is run, you'll need to open `pecan.CHECKED.xml`. You will noti
 ```
 * The `...` replaces the rest of the site settings for however many sites are within the site group.
 
-Looking at the example above, take a close look at the `<met.start></met.start>` and `<met.end></met.end>`. You will notice that for both sites, the dates are different. In this example they were edited by hand to include the dates that are available for that site and source. You must know your source prior. Only the source CRUNCEP has a check that will tell you if your dates are outside the range available.
+Looking at the example above, take a close look at the `<met.start></met.start>` and `<met.end></met.end>`. You will notice that for both sites, the dates are different. In this example they were edited by hand to include the dates that are available for that site and source. You must know your source prior. Only the source CRUNCEP has a check that will tell you if your dates are outside the range available. PEcAn will automatically populate these dates across sites according the original setting of start and end dates.
 
 In addition, you will notice that the `<path></path>` section contains the model specific meteorological data file. You can add that in by hand or you can you can leave the normal tags that met process workflow will use to process the data into your model specific format:
 ```
