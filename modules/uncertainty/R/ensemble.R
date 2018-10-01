@@ -297,7 +297,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       
       site_pfts_names <- Pft_Site_df$name %>% unlist() %>% as.character()
       #-- if there is enough info to connect the site to pft
-      if ( nrow(Pft_Site) > 0 & all(site_pfts_names %in% names(ensemble.samples)) ) ensemble.samples <- ensemble.samples [Pft_Site$name %>% unlist() %>% as.character()]
+      if ( nrow(Pft_Site_df) > 0 & all(site_pfts_names %in% names(ensemble.samples)) ) ensemble.samples <- ensemble.samples [Pft_Site$name %>% unlist() %>% as.character()]
     }
 
 
