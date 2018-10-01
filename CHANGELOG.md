@@ -5,6 +5,18 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
+## Unreleased
+
+### Fixes
+
+### Added
+- Lots of new documentation for running PEcAn using Docker
+
+### Removed
+
+### Changed
+- Docker:
+  - Change base image for R code from `r-base` to `rocker/tidyverse:3.5.1`. This (1) saves build time (because many R packages and system dependencies are pre-installed), and (2) enhances reproducibility (because of the strict versioning rules of the `rocker` packages)
 
 ## [1.6.0] - 2018-09-01
 
@@ -21,6 +33,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
 - Added scaling to documentation
+
 ### Removed
 - Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 

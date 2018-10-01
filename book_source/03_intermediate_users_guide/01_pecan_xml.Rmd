@@ -17,6 +17,7 @@ It contains the following major sections ("nodes"):
 	- [`ensemble`](#xml-ensemble) -- Ensemble runs
 	- [`sensitivity.analysis`](#xml-sensitivity-analysis) -- Sensitivity analysis
 	- [`parameter.data.assimilation`](#xml-parameter-data-assimilation) -- Parameter data assimilation
+	- [`multi.site`](#xml-multi-site) -- Multi Site Settings
 	- (experimental) [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
 	- (experimental) [`browndog`](#xml-browndog) -- Brown Dog configuration
 	- (experimental) [`benchmarking`](#xml-benchmarking) -- Benchmarking
@@ -555,6 +556,18 @@ This information is currently used by the following PEcAn workflow functions:
 ### Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
 The following tags can be used for parameter data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](#pda)
+
+### Multi-site {#xml-multi-site}
+
+The following tags can be used to run a simulation at multiple sites. It leverages site groups, which are defined in BETY.
+
+```xml
+ <sitegroup>
+   <id>1000000012</id>
+ </sitegroup>
+````
+If you add this tag, you must remove the `<site> </site>` tags from the `<run>` tag portion of your xml. 
+The id of your sitegroup can be found by lookig up your site group within BETY.
 
 ### (experimental) State Data Assimilation {#xml-state-data-assimilation}
 
