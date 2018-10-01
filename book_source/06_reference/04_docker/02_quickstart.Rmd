@@ -33,7 +33,7 @@ The `docker-compose` commands assume this.
 If you want to explicitly point `docker-compose` to a specific file, you can do so by calling all commands as `docker-compose -f /path/to/my-docker-compose.yml ...other options...`.
 (NOTE that this `-f` option must go _immediately_ after `docker-compose`. More generally, `docker-compose` options are very sensitive to their location relative to other commands in the same line -- that is, `docker-compose -f /my/docker-compose.yml -p pecan up -d postgres` is _not_ the same as `docker-compose -d postgres -p pecan up -f /my/docker-compose.yml`. If expected ever don't seem to be working, check that the arguments are in the right order.)
 
-#### Initialize the PEcAn database (first time only)
+#### Initialize the PEcAn database (first time only) {#pecan-docker-quickstart-init}
 
 The commands described in this section will set up the PEcAn database (BETY) and pre-load it with some common "default" data.
 
