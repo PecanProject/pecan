@@ -558,16 +558,98 @@ This information is currently used by the following PEcAn workflow functions:
 The following tags can be used for parameter data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](#pda)
 
 ### Multi-site {#xml-multi-site}
+Multi-settings allows you to do multiple runs across different sites that belong to the same site group. It takes your settings and applies the same settings, only changing the site level tags.
 
-The following tags can be used to run a simulation at multiple sites. It leverages site groups, which are defined in BETY.
+To start, add the multisettings tag within the `<run></run>` section of your xml
+```
+<multisettings>
+  <multisettings>run</multisettings>
+<multisettings> 
+```
+Additional tags for this section exist and can fully be seen here:
+```
+ <multisettings>
+  <multisettings>assim.batch</multisettings>
+  <multisettings>ensemble</multisettings>
+  <multisettings>sensitivity.analysis</multisettings>
+  <multisettings>run</multisettings>
+ </multisettings>
+ ```
+These tags correspond to different pecan analysis that need to know that there will be multiple settings read in.
+ 
+ 
+Next you'll want to add the following tags to denote the group of sites you want to use. It leverages site groups, which are defined in BETY.
 
 ```xml
  <sitegroup>
-   <id>1000000012</id>
+   <id>1000000022</id>
  </sitegroup>
 ````
 If you add this tag, you must remove the `<site> </site>` tags from the `<run>` tag portion of your xml. 
 The id of your sitegroup can be found by lookig up your site group within BETY.
+
+
+Once you have defined these tags, you can run PEcAn, but there may be further specifications needed if you know that different data sources have different dates available.
+
+Run workflow.R up until
+```
+# Write pecan.CHECKED.xml
+PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
+```
+Once this section is run, you'll need to open `pecan.CHECKED.xml`. You will notice that it has expanded from your original `pecan.xml`.
+
+```xml
+ <run>
+  <settings.1>
+   <site>
+    <id>796</id>
+    <met.start>2005/01/01</met.start>
+    <met.end>2011/12/31</met.end>
+    <name>Bartlett Experimental Forest (US-Bar)</name>
+    <lat>44.06464</lat>
+    <lon>-71.288077</lon>
+   </site>
+   <start.date>2005/01/01</start.date>
+   <end.date>2011/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-796/AMF_US-Bar_BASE_HH_4-1.2005-01-01.2011-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.1>
+  <settings.2>
+   <site>
+    <id>767</id>
+    <met.start>2001/01/01</met.start>
+    <met.end>2014/12/31</met.end>
+    <name>Morgan Monroe State Forest (US-MMS)</name>
+    <lat>39.3231</lat>
+    <lon>-86.4131</lon>
+   </site>
+   <start.date>2001/01/01</start.date>
+   <end.date>2014/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-767/AMF_US-MMS_BASE_HR_8-1.2001-01-01.2014-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.2>
+....
+</run>
+```
+* The `...` replaces the rest of the site settings for however many sites are within the site group.
+
+Looking at the example above, take a close look at the `<met.start></met.start>` and `<met.end></met.end>`. You will notice that for both sites, the dates are different. In this example they were edited by hand to include the dates that are available for that site and source. You must know your source prior. Only the source CRUNCEP has a check that will tell you if your dates are outside the range available.
+
+In addition, you will notice that the `<path></path>` section contains the model specific meteorological data file. You can add that in by hand or you can you can leave the normal tags that met process workflow will use to process the data into your model specific format:
+```
+<met>
+  <source>AmerifluxLBL</source>
+  <output>SIPNET</output>
+  <username>pecan</username>
+</met>
+```
+
 
 ### (experimental) State Data Assimilation {#xml-state-data-assimilation}
 
