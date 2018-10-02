@@ -285,7 +285,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         if (is.null(samples[[r_tag]]) & r_tag!="parameters") samples[[r_tag]]$samples <<- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
       })
     
-    browser()
     # Let's find the PFT based on site location, if it was found I will subset the ensemble.samples otherwise we're not affecting anything    
     if(!is.null(con)){
       Pft_Site_df <- tbl(con, 'sites_cultivars')%>%
@@ -304,11 +303,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
     
     if(!is.null(site.pfts.vec)){
+      # find the name of pfts defined in the body of pecan.xml
       defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
-  
-      ensemble.samples <- ensemble.samples [site.pfts.vec[which(site.pfts.vec %in% defined.pfts)]]
-      #
-      if (length(which(!(site.pfts.vec %in% defined.pfts))>0) PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ",settings$run$site$id,"but they are not defined the as a pft in pecan.xml".
+      # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
+      ensemble.samples <- ensemble.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
+      # warn if there is a pft specified in the site but it's not defined in the pecan xml.
+      if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
+          PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
                                                                                                site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
     }
 
