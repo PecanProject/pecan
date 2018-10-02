@@ -21,7 +21,7 @@ The first step to adding a model is to create a new MODEL_TYPE, which defines th
 
 #### MACHINE
 
-The PEcAn design acknowledges that the same model executables and input files may exist on multiple computers. Therefore, we need to define the machine that that we are using. If you are running on the VM then the local machine is already defined as _pecan32_ or _pecan64_ for the 32-bit and 64-bit versions respectively. Otherwise, you will need to select Runs > Machines, click _New Machine_, and enter the URL of your server (e.g. pecan2.bu.edu).
+The PEcAn design acknowledges that the same model executables and input files may exist on multiple computers. Therefore, we need to define the machine that that we are using. If you are running on the VM then the local machine is already defined as _pecan_. Otherwise, you will need to select Runs > Machines, click _New Machine_, and enter the URL of your server (e.g. pecan2.bu.edu).
 
 #### MODEL
 

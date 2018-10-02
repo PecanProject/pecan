@@ -1,4 +1,4 @@
-# PEcAn Models
+# PEcAn Models {#pecan-models}
 
 This section will contain information about all models and output variables that are supported by PEcAn.
 
@@ -11,15 +11,20 @@ This section will contain information about all models and output variables that
 | FATES | No | Yes | | No|
 | [GDAY] | No | No | No| No |
 | [LINKAGES] | Yes | Yes | Yes| Yes |
-| [LPJ-GUESS]| Yes | Yes | No | No |
+| [LPJ-GUESS]| No | Yes | No | No |
 | [MAESPA]| Yes | Yes | No | No |
 | [PRELES] | Yes | Yes | Partially | No |
 | [Sipnet]| Yes | Yes | Yes| Yes |
 
+*Available in the VM* - Denotes if a model is publicly available with PEcAn.
+*Prescribed Inputs* - Denotes whether or not PEcAn can prescribe inputs.
+*Input Functions/Values* - Denotes whether or not PEcAn has functions to fully produce a model's Input values
+*Restart Function* - Denotes status of model data assimilation capabilities.
+
 
 **Output Variables**
 
-PEcAn converts all model outputs to a single [standard](Model Output Variables). This standard evolved out of MsTMIP project, which is itself based on NACP, LBA, and other model-intercomparison projects. This standard was expanded for the PalEON MIP and the needs of the PEcAn modeling community to support variables not in these standards.
+PEcAn converts all model outputs to a single [Output Standards]. This standard evolved out of MsTMIP project, which is itself based on NACP, LBA, and other model-intercomparison projects. This standard was expanded for the PalEON MIP and the needs of the PEcAn modeling community to support variables not in these standards.
 
 _Model developers_: do not add variables to your PEcAn output without first adding them to the PEcAn standard table! Also, do not create new variables equivalent to existing variables but just with different names or units. 
 

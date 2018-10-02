@@ -5,11 +5,50 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
+## Unreleased
+
+### Fixes
+
+### Added
+- Lots of new documentation for running PEcAn using Docker
+
+### Removed
+
+### Changed
+- Docker:
+  - Change base image for R code from `r-base` to `rocker/tidyverse:3.5.1`. This (1) saves build time (because many R packages and system dependencies are pre-installed), and (2) enhances reproducibility (because of the strict versioning rules of the `rocker` packages)
 
 ## [1.6.0] - 2018-09-01
 
 ### Fixes
+- Updated model2netcdf.SIPNET() to address issue #2094. Revised netCDF time to be from 0-364./365. (if leap) so time would be properly parsed by R and python (cf tools)
+- Fixed output time variable in models/ed/R/model2netcdf.ED2.R to provide correct fractional DOY
+- Running tests for PEcAn.settings package no longer leaves empty temp directories in test folder (#2075)
 - Fixed issue #2064 which sends one met path to write.sa.config.
+- `PEcAn.data.land::soil_params` now accepts any 2 out of 3 texture components as documented, and correctly converts percentages to proportion (#2043).
+- Added missing ncdf4 library calls in model2netcdf.JULES
+
+### Added
+- Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
+- Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
+- Added a first vignette to models/maat with the plan to add more examples
+- Added scaling to documentation
+
+### Removed
+- Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
+
+### Changed
+- Updated models/dalec/R/model2netcdf.DALEC.R to add time_bounds variable
+- Updated models/maat/R/write.config.MAAT.R to improve flow, remove bugs, and to work with the release version of the MAAT model.
+- Minor update to modules/data.atmosphere/R/met2CF.csv.R to include recursive=TRUE for outfolder.  Seemed to work better
+- Updated models/maat/R/met2model.MAAT.R to include additional output variables, fix a bug, and conduct overall cleanup. Updated docs
+- Updated models/maat/R/model2netcdf.MAAT.R to work with the release version of the MAAT model. Other small MAAT wrapper code cleanup
+- Small change to modules/data.atmosphere/R/download.NARR_site.R to set parallel=TRUE to match documentation and sub-function calls
+
+
+## [1.6.0] - Not yet
+
+### Fixes
 - Fixed issue #1939 which corrects output time vector for FATES output
 - Update to read.output to look for and read only PEcAn formatted .nc output based on the pecan standard filename format of YYYY.nc.  Solves issues with models such as FATES and dvm-dos-tem where the original model output is also in .nc file format and was not ignored by read.output, causing errors with output parsing and plotting with Shiny. Removed deprecated function convert.outputs
 - PEcAn.data.atmosphere: 
@@ -33,7 +72,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
     
 ### Added
-
+- sda.enkf function inside the `PEcAn.assim.sequential` package was replaced with the refactored version, while the original sda function can be found in the same package with the name of sda.enkf.original.
 - PEcAn.undertainty gains one new function (input.ens.gen) and three functions moved from PEcAn.utils (see "Changed" below)
 - IC workflow now has functionality to generate ensembles.
 - You can now generate ensembles for parameters and met separatly and using different methods. 

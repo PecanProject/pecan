@@ -1,0 +1,9 @@
+# Docker {#docker-index}
+
+This chapter describes the PEcAn Docker container infrastructure.
+It contains the following sections:
+
+- [Introduction to Docker](#docker-intro) -- Brief introduction to Docker and `docker-compose`
+- [Docker quickstart](#docker-quickstart) -- Brief tutorial for setting up a Docker-based PEcAn instance
+- [PEcAn Docker infrastructure](#pecan-docker) -- Detailed description of the containers comprising the PEcAn Docker-based infrastructure
+- [Dockerfiles for models](#model-docker) -- General guide for writing Dockerfiles for new models

@@ -43,7 +43,6 @@ Suggests:
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.emulator,
-    PEcAn.priors,
     PEcAn.settings,
     PEcAn.DB,
     testthat (>= 2.0.0)

@@ -24,7 +24,7 @@ Imports:
 Suggests:
     testthat (>= 1.0.2),
     Rpreles
-SystemRequirements: preles
+Remotes: MikkoPeltoniemi/Rpreles
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors

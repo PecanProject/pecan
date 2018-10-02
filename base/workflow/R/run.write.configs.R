@@ -92,10 +92,6 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   if ("sensitivity.analysis" %in% names(settings)) {
     
     ### Write out SA config files
-    if (!exists("cnt")) {
-      cnt <- 0
-      assign("cnt", cnt, .GlobalEnv)
-    }
     PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
     sa.runs <- PEcAn.utils::write.sa.configs(defaults = settings$pfts,
                                 quantile.samples = sa.samples, 
