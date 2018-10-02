@@ -8,7 +8,7 @@ MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 # variables to store in docker image
 ENV RABBITMQ_URI=amqp://guest:guest@rabbitmq/%2F \
-    RABBITMQ_QEUEUE="pecan" \
+    RABBITMQ_QUEUE="pecan" \
     APPLICATION="R CMD BATCH workflow.R"
 
 # ----------------------------------------------------------------------

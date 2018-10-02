@@ -55,5 +55,5 @@ ENV APPLICATION="./job.sh" \
     RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
 
 # COPY sipnet binary
-COPY --from=sipnet-binary /src/sipnet /usr/local/bin/sipnet.${SIPNET_VERSION}
+COPY --from=sipnet-binary /src/sipnet /usr/local/bin/sipnet.${MODEL_VERSION}
 
