@@ -21,8 +21,6 @@ COPY base     /pecan/base/
 COPY modules  /pecan/modules/
 COPY models   /pecan/models/
 
-RUN echo "options(repos = c(CRAN = 'https://cran.rstudio.org'))" >> /usr/local/lib/R/etc/Rprofile.site
-
 RUN cd /pecan && make
 
 # COPY WORKFLOW
