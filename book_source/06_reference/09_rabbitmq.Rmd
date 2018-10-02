@@ -122,3 +122,33 @@ ENV APPLICATION="./job.sh" \
     MODEL_VERSION="${MODEL_VERSION}" \
     RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
 ```
+
+## Case study: PEcAn web interface {#rabbitmq-case-study}
+
+The following describes in general terms what happens during a typical run of the PEcAn web interface with RabbitMQ.
+
+1. The user initializes all containers with `docker-compose up`.
+All the services that interact with RabbitMQ (`executor` and all models) run `receiver.py` in the foreground, waiting for messages to tell them what to do.
+
+2. The user browses to http://localhost:8000/pecan/ and steps through the web interface.
+All the pages up to the `04-runpecan.php` run on the `web` container, and are primarily for setting up the `pecan.xml` file.
+
+3. Once the user starts the PEcAn workflow at `04-runpecan.php`, the underlying PHP code connects to RabbitMQ (based on the URI provided in `config.php`) and posts the following message to the `pecan` queue:
+
+  ```json
+  {"folder": "/workflows/PEcAn_WORKFLOWID", "workflowid": "WORKFLOWID"}
+  ```
+  
+4. The `executor` service, which is listening on the `pecan` queue, hears this message and executes its `APPLICATION` (`R CMD BATCH workflow.R`) in the working directory specified in the message's `folder`.
+   The `executor` service then performs the pre-execution steps (e.g. trait meta-analysis, conversions) itself.
+   Then, to actually execute the model, `executor` posts the following message to the target model's queue:
+
+  ```json
+  {"folder": "/workflows/PEcAn_WORKFLOWID/run/RUNID"}
+  ```
+
+5. The target model service, which is listening on its dedicated queue, hears this message and runs its `APPLICATION`, which is `job.sh`, in the directory indicated by the message.
+   If model execution was successful, the model service posts an OK message to the `pecan` queue.
+   
+6. The `executor` container, meanwhile, is waiting to hear this OK message on its queue.
+   Once it hears this message, it advances to the post-execution parts of the workflow.
