@@ -14,7 +14,7 @@ The following is a list of PEcAn-specific images and reasons why you would want 
   - You made changes to the PEcAn R package source code, the Makefile, or `web/workflow.R`.
 	- NOTE that changes to the web interface code affect `pecan/web`, _not_ `pecan/base`
 - `pecan/executor` -- Rebuild if:
-  - You built a new version of `pecan/base` (on which `pecan/executor` depends) and/or, `pecan/depends` (on which `pecan/base`)
+  - You built a new version of `pecan/base` (on which `pecan/executor` depends) and/or, `pecan/depends` (on which `pecan/base` depends)
   - You modified the `docker/base/Dockerfile.executor`
   - You modified the RabbitMQ Python scripts (e.g. `docker/receiver.py`, `docker/sender.py`)
 - `pecan/web` -- Rebuild if you modified any of the following:
@@ -22,7 +22,7 @@ The following is a list of PEcAn-specific images and reasons why you would want 
   - The PHP/HTML/JavaScript code for the PEcAn web interface in `web/` (_except_ `web/workflow.R` -- that goes in `pecan/base`) 
   - `docker/config.docker.php` (the `config.php` file for Docker web instances)
   - `documentation/index_vm.html` (the documentation HTML website)
-  - NOTE: Because changes to this code are applied instantly (i.e. do not require compilation or installation), a more effective way to do local development is to mount the `web/` or other relevant folders as a volume onto the `pecan/web` container (see [local development guide below](#docker-local-devel)).
+  - NOTE: Because changes to this code are applied instantly (i.e. do not require compilation or installation), a more effective way to do local development may be to mount the `web/` or other relevant folders as a volume onto the `pecan/web` container.
 
 To build an image locally, use the `docker build` command as described below.
 For more details, see `docker build --help` or the [online Docker build documentation](https://docs.docker.com/engine/reference/commandline/build/).
