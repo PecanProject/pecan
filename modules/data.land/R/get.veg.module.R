@@ -1,9 +1,22 @@
-.get.veg.module <- function(input_veg, 
+##' Load/extract + match species module
+##' 
+##' @param input_veg list, this is a sublist of settings$run$inputs that has info about source, id, metadata of the requested IC file
+##' @param outfolder path to where the processed files will be written
+##' @param start_date date in "YYYY-MM-DD" format, in case of source==FIA it's the settings$run$start.date, otherwise start_date of the IC file in DB
+##' @param end_date date in "YYYY-MM-DD" format, in case of source==FIA it's the settings$run$end.date, otherwise end_date of the IC file in DB
+##' @param dbparms list, settings$database info reqired for opening a connection to DB
+##' @param new_site data frame, id/lat/lon/name info about the site
+##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
+##' @param machine_host local machine hostname, e.g. "pecan2.bu.edu"
+##' @param overwrite logical flag for convert.input
+##' 
+##' @author Istem Fer
+get_veg_module <- function(input_veg, 
                             outfolder,
                             start_date, end_date,
                             dbparms,
                             new_site, 
-                            host, machine_host,
+                            host, machine_host, 
                             overwrite){
 
   #--------------------------------------------------------------------------------------------------#
@@ -13,8 +26,7 @@
   lat       <- new_site$lat
   lon       <- new_site$lon
   site_id   <- new_site$id
-  site_name <- new_site$name   
-  
+  site_name <- new_site$name
   ## Prepare to call convert.inputs
   pkg  <- "PEcAn.data.land"
   bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
@@ -28,6 +40,34 @@
     
     fcn <- "extract_veg"
     
+    
+  getveg.id <- convert.input(input.id = NA,
+                               outfolder = outfolder, 
+                               formatname = "spp.info", 
+                               mimetype = "application/rds",
+                               site.id = site_id, 
+                               start_date = start_date, end_date = end_date, 
+                               pkg = pkg, fcn = fcn, 
+                               con = con, host = host, browndog = NULL, 
+                               write = TRUE, 
+                               overwrite = overwrite, 
+                               # fcn specific args 
+                               new_site = new_site,
+                               gridres = input_veg$gridres, dbparms = dbparms,
+                               machine_host = machine_host, input_veg = input, 
+                               source = input_veg$source)
+  
+    
+    return(getveg.id)
+    
+  }else{
+    
+    fcn <- "load_veg"
+    if(!is.null(input_veg$id)){
+      source.id <- input_veg$id
+    }else{
+      PEcAn.logger::logger.error("Must specify input id")
+    }
     getveg.id <- convert.input(input.id = NA,
                                outfolder = outfolder, 
                                formatname = "spp.info", 
@@ -40,49 +80,20 @@
                                overwrite = overwrite, 
                                # fcn specific args 
                                new_site = new.site,
-                               gridres = input_veg$gridres, dbparms = dbparms,
-                               machine_host = machine_host,
-                               source = input_veg$source)
-  
-    
-    return(getveg.id)
-    
-  }else{
-    
-    fcn <- "load_veg"
-    
-    if(!is.null(input_veg$source.id)){
-      source.id <- input_veg$source.id
-    }else{
-      PEcAn.logger::logger.error("Must specify input source.id")
-    }
-    
-    getveg.id <- convert.input(input.id = NA,
-                               outfolder = outfolder, 
-                               formatname = "spp.info", 
-                               mimetype = "application/rds",
-                               site.id = site_id, 
-                               start_date = start_date, end_date = end_date, 
-                               pkg = pkg, fcn = fcn, 
-                               con = con, host = host, browndog = NULL, 
-                               write = TRUE, 
-                               overwrite = overwrite, 
-                               # fcn specific args 
-                               new_site = new_site,
                                source_id = source.id,
                                format_name = input_veg$match.format,
                                dbparms = dbparms,
                                machine_host = machine_host,
                                source = input_veg$source,
-                               ##  any meta data passed via settings to be used in the IC files (in veg2model)
+                               ##  any metadata passed via settings to be used in the IC files (in veg2model)
                                ##  if different than defaults, e.g.:
                                ##
-                               ##  <meta>
+                               ##  <metadata>
                                ##   <trk>2</trk>
                                ##   <age>70</age>
-                               ##  </meta>
+                               ##  </metadata>
                                ##
-                               icmeta = input_veg$meta)
+                               icmeta = input_veg$metadata)
     
 
     return(getveg.id)

@@ -9,6 +9,9 @@ nderiv(x, y)
 \value{
 der
 }
+\description{
+nderiv
+}
 \author{
 Michael Dietze
 }

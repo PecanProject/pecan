@@ -24,11 +24,10 @@
 #' clay <- c(0.3,0.3,0.3)
 #' soil_params(sand=sand,clay=clay)
 soil_params <- function(soil_type,sand,silt,clay,bulk){
-
   ## load soil parameters
   load(system.file("data/soil_class.RData",package = "PEcAn.data.land"))
   mysoil <- list()
-  
+
   #---------------------------------------------------------------------------------------#
   #     Find soil class and sand, silt, and clay fractions.                               #
   #---------------------------------------------------------------------------------------#
@@ -50,7 +49,9 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
       clay <- 1-sand-silt
     } else {
       #not missing anything else, normalize
+
       stot <- sand+silt+clay
+
       if(any(stot > 2)) stot <- stot*100 ## assume values reported in % not proportion
       sand <- sand/stot
       silt <- silt/stot
@@ -124,7 +125,7 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
   #---------------------------------------------------------------------------------------#
   #      Calculate the derived properties in case this is not bedrock.                    #
   #---------------------------------------------------------------------------------------#
-  mysoil$slpotcp = mysoil$volume_fraction_of_condensed_water_in_dry_soil = mysoil$slpotwp = olume_fraction_of_condensed_water_in_soil_at_wilting_point = 0.0
+  mysoil$slpotcp = mysoil$volume_fraction_of_condensed_water_in_dry_soil = mysoil$slpotwp = mysoil$volume_fraction_of_condensed_water_in_soil_at_wilting_point = 0.0
   for(z in which(!(mysoil$soil_n == 13))){
     # Dry soil capacity (at -3.1MPa) [ m^3/m^3 ]
     mysoil$slpotcp[z]   <- - soilcp.MPa * 1000. / grav

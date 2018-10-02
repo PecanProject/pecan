@@ -78,13 +78,14 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
 ##' Write sensitivity analysis config files
 ##'
 ##' Writes config files for use in sensitivity analysis.
-##' @title Write sensitivity analysis configs
-##' @param pft pft id used to query PEcAn database
-##' @param quantile.samples 
+##'
+##' @param defaults named list with default parameter values
+##' @param quantile.samples list of lists supplied by \link{get.sa.samples}
 ##' @param settings list of settings
-##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
-##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
-##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
+##' @param model name of model to be run
+##' @param clean logical: Delete any existing contents of the directory specified by \code{settings$rundir} before writing to it?
+##' @param write.to.db logical: Record this run to BETY? If TRUE, uses connection settings specified in \code{settings$database}
+##'
 ##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
@@ -294,6 +295,17 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               "outdir      : ", file.path(settings$host$outdir, run.id), "\n", 
               file = file.path(settings$rundir, run.id, "README.txt"), 
               sep = "")
+          
+          # I check to make sure the path under the met is a list. if it's specified what met needs to be used in 'met.id' under sensitivity analysis of pecan xml we used that otherwise, I use the first met.
+          if (is.list(settings$run$inputs$met$path)){
+            # This checks for met.id tag in the settings under sensitivity analysis - if it's not there it creates it. Then it's gonna use what it created.
+            if (is.null(settings$sensitivity.analysis$met.id))  settings$sensitivity.analysis$met.id <- 1
+             
+              settings$run$inputs$met$path <- settings$run$inputs$met$path[[settings$sensitivity.analysis$met.id]]
+            
+          }
+          
+          
           
           # write configuration
           do.call(my.write.config, args = list(defaults = defaults,

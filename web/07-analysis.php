@@ -235,6 +235,15 @@ if (isset($modelinfo['revision'])) {
       <label>Variables<sup>*</sup></label></a>
       <input type="text" name="variables" id="variables" value="<?php echo "NPP"; ?>" onChange="validate();"/>
       <div class="spacer"></div>
+      <label>Sampling method for parameters<sup>*</sup></label>
+      <select name="parm_method" id="parm_method" onChange="validate();">
+      <option value="<?php echo "uniform"; ?>">Uniform</option>
+      <option value="<?php echo "halton"; ?>">Halton</option>
+      <option value="<?php echo "sobol"; ?>">Sobol</option>
+      <option value="<?php echo "torus"; ?>">Torus</option>
+      <option value="<?php echo "lhc"; ?>">Latin hypercube</option>
+     </select>
+      <div class="spacer"></div>
 
       <div class="spacer"></div>
       <label type="hidden">Sensitivity</label>
@@ -254,7 +263,7 @@ if (isset($modelinfo['revision'])) {
 <p>
   <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
   <br>
-  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
   <br>
   <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
 </p>

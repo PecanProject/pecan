@@ -1,6 +1,6 @@
 # lookup the site based on the site_id
 download.FluxnetLaThuile.site <- function(site_id) {
-  sites <- read.csv(system.file("data/FLUXNET.sitemap.csv", package = "PEcAn.data.atmosphere"), 
+  sites <- utils::read.csv(system.file("data/FLUXNET.sitemap.csv", package = "PEcAn.data.atmosphere"), 
                     stringsAsFactors = FALSE)
   sites$FLUX.id[which(sites$site.id == site_id)]
 } # download.FluxnetLaThuile.site
@@ -10,7 +10,7 @@ download.FluxnetLaThuile.site <- function(site_id) {
 ##' @name download.FluxnetLaThuile
 ##' @title download.FluxnetLaThuile
 ##' @export
-##' @param site the FLUXNET ID of the site to be downloaded, used as file name prefix. 
+##' @param sitename the FLUXNET ID of the site to be downloaded, used as file name prefix. 
 ##' The 'SITE_ID' field in \href{http://www.fluxdata.org/DataInfo/Dataset%20Doc%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
@@ -76,7 +76,7 @@ download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date,
     }
     
     file <- paste(baseurl, year, "synth.hourly.coreplusquality.csv", sep = ".")
-    download.file(file, outputfile)
+    PEcAn.utils::download.file(file, outputfile)
   }
   
   # return list of files downloaded

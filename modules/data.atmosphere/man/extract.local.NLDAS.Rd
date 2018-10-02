@@ -4,8 +4,8 @@
 \alias{extract.local.NLDAS}
 \title{extract.local.NLDAS}
 \usage{
-extract.local.NLDAS(outfolder, in.path, start_date, end_date, site_id, lat.in,
-  lon.in, overwrite = FALSE, verbose = FALSE, ...)
+extract.local.NLDAS(outfolder, in.path, start_date, end_date, site_id,
+  lat.in, lon.in, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output files will be stored}
@@ -23,6 +23,9 @@ extract.local.NLDAS(outfolder, in.path, start_date, end_date, site_id, lat.in,
 \item{lon.in}{site longitude in decimal degrees}
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
+
+\item{verbose}{logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
+to control printing of debug info}
 
 \item{...}{Other arguments, currently ignored}
 }

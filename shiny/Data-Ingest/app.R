@@ -1,97 +1,120 @@
-library(shiny)
-library(PEcAn.data.land)
-library(PEcAn.utils)
-library(shinydashboard)
-library(dataone)
+lapply(c( "shiny",
+          "shinydashboard",
+          "dataone",
+          "stringr",
+          "DT",
+          "shiny",
+          "shinytoastr",
+          "shinyWidgets",
+          "shinyjs",
+          "shinyTime",
+          "dplyr"),function(pkg){
+            if (!(pkg %in% installed.packages()[,1])){
+                  install.packages(pkg)
+              }
+                  library(pkg,character.only = TRUE,quietly = TRUE)
+            }
+      )
+
+lapply(c( "PEcAn.data.land",
+          "PEcAn.visualization",
+          "PEcAn.utils",
+          "PEcAn.DB"),function(pkg){
+            library(pkg,character.only = TRUE,quietly = TRUE)
+          }
+       )
 
 
-# Define UI for application
+ 
+ source("ui_utils.R", local = TRUE)
+ source("helper.R", local = TRUE)
+ 
+ 
+ ##### Bety Calls ######
+ bety <- betyConnect()
+ 
+ sites <- dplyr::tbl(bety, "sites") %>% dplyr::select(sitename, id) %>% dplyr::arrange(sitename)
+ sitenames <- sites %>% pull(sitename)
+ 
+ inputs <- dplyr::tbl(bety, "inputs") %>% dplyr::select(name, id) %>% dplyr::arrange(name)
+ input_names <- inputs %>% pull(name)
+ 
+ formats <- dplyr::tbl(bety, "formats") %>% distinct(name) %>% dplyr::arrange(name) %>% pull(name)
+ formats_sub <- dplyr::tbl(bety, "formats") %>% dplyr::select(name, id) %>% dplyr::arrange(name)
+ 
+ variables_ids <- dplyr::tbl(bety, "variables") %>% dplyr::select(id, name) %>% dplyr::arrange(name)
+ variables <- variables_ids %>% pull(name)
+  
+ # machines <- dplyr::tbl(bety, "machines") %>% distinct(hostname) %>% dplyr::arrange(hostname)%>% pull(hostname)
+ # machines_sub <- dplyr::tbl(bety, "machines") %>% dplyr::select(hostname, id) %>% dplyr::arrange(hostname)
+ 
+ mimetypes <- dplyr::tbl(bety, "mimetypes") %>% distinct(type_string) %>% dplyr::arrange(type_string) %>% pull(type_string)
+ mimetype_sub <- dplyr::tbl(bety, "mimetypes") %>% dplyr::select(type_string, id) %>% dplyr::arrange(type_string)
+
+
+#############################################################################
+################################## UI #######################################
+#############################################################################
 
 ui <- dashboardPage(
-  
-  dashboardHeader(title = "Data Ingest"),
-  dashboardSidebar(
-    sidebarMenu(
-      menuItem("Import Data", tabName = "importData", icon = icon("file")),
-      menuItem("Step 2 -- dbfiles record", tabName = "step2", icon = icon("cog")),
-      menuItem("Step 3 -- format record", tabName = "step3", icon = icon("cog")),
-      menuItem("Step 4 -- etc.", tabName = "step4", icon = icon("cog"))
-    )
+  dashboardHeader(title = "Data Ingest Workflow"), 
+  dashboardSidebar(collapsed = TRUE,
+    source_ui("sidebar_ui.R")
   ),
   dashboardBody(
+    useToastr(), # Call error handling package
+    useShinyjs(), #Include shinyjs
     tabItems(
-      tabItem(tabName = "importData",
-              fluidRow( 
-                box(
-                  textInput("id", label = h3("Import From DataONE"), placeholder = "Enter doi or id here"),
-                  actionButton(inputId = "D1Button", label = "Upload"),
-                  hr(),
-                  fluidRow(column(12, verbatimTextOutput("identifier"))) 
-                ),
-                
-                box(
-                  # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
-                  fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE, placeholder = "Drag and drop files here"),
-                  p("This is a placeholder and is not yet functional"),
-                  tableOutput("contents")
-                )
-              )
+    ## Tab 1 -- Ingest Workflow
+    tabItem(tabName = "ingestWorkflow",
+              source_ui("ingest_workflow_ui.R")
       ),
-      
-      tabItem(tabName = "step2",
-              h2("under construction")
-      ),
-      
-      tabItem(tabName = "step3",
-              h2("under construction")
-      ),
-      
-      tabItem(tabName = "step4",
-              h2("under construction")
-      )
-      
-      
-    )
-  )
+    ## Tab 2 -- About
+    tabItem(tabName = "About",
+            source_ui("homepage_ui.R")
+            )
+ 
+  )),
+  title = "PEcAn Data Ingest",
+  skin =  "green"
 )
+####################################################################################
+################################ SERVER ############################################
+####################################################################################
 
-server <- function(input, output) {
-  options(shiny.maxRequestSize=30*1024^2) #maximum file input size
+server <- function(input, output, session) {
+  options(shiny.maxRequestSize = 100 * 1024 ^ 2) #maximum file input size
   
-   path <- PEcAn.utils::read_web_config("../../web/config.php")
-    
-   d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id, filepath = path) }) #run dataone_download with input from id on click
+  ## Setup ##
+  Shared.data <- reactiveValues(downloaded = NULL, selected_row = NULL, 
+                                local_files = NULL, selected_row_local = NULL, 
+                                new_format = NULL, input_record_df = NULL, 
+                                format_vars_df = NULL, input_method = NULL)
   
-  output$identifier <- renderText({
-    d1d()
-  })
+  Shared.data$variables_rd <- variables
+  
+  temp <- tempdir() 
+  PEcAn_path <- PEcAn.utils::read_web_config("../../web/config.php")$dbfiles_folder
+  
+  ## Create two sub-directories in the tempfile ##
+  d1_tempdir <<- file.path(temp, "d1_tempdir")
+  dir.create(d1_tempdir, showWarnings = F)
+  local_tempdir <<- file.path(temp, "local_tempdir")
+  dir.create(local_tempdir, showWarnings = F)
+  
+  ##################### DataONE Download #####################
+  source("server_files/d1_download_svr.R", local = TRUE)
+
+  ######### FileInput ########################################
+  source("server_files/local_upload_svr.R", local = TRUE)
+  
+  ######### Ingest Workflow ##############################
+  source("server_files/ingest_workflow_svr.R", local = TRUE)
   
   
-###### FileInput <-- Will add this functionality shortly
-#  output$contents <- renderTable({
-    # input$file1 will be NULL initially. After the user selects
-    # and uploads a file, it will be a data frame with 'name',
-    # 'size', 'type', and 'datapath' columns. The 'datapath'
-    # column will contain the local filenames where the data can
-    # be found.
-#    inFile <- input$file
-    
-#    if (is.null(inFile))
-#      return(NULL)
-#    read.csv(inFile$datapath, header = TRUE)
-    
-#  })
-
-
-
-    #file.copy(inFile$datapath, header = input$header)
-
-
-  
-
 }
 
-# Run the application 
+# Run the application... = 
 shinyApp(ui = ui, server = server)
 
-# example data: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87
+# example data: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87, doi:10.6073-pasta-f31b28b912e6051bf1d383ff1ef18987

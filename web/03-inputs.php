@@ -383,7 +383,6 @@ $stmt->closeCursor();
         <input name="userok" type="hidden" value="on">
 <?php } ?>
 <?php foreach($_REQUEST as $key => $value){
-		file_put_contents('php://stderr', print_r('key top ' + $key, TRUE));
         if(is_array($value)) {
           foreach($value as $v) {
             echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
@@ -467,7 +466,7 @@ foreach($inputs as $input) {
 <p>
   <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
   <br>
-  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
   <br>
   <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
 </p>

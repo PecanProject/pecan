@@ -7,9 +7,9 @@
 get.rh(T, Td)
 }
 \arguments{
-\item{temp}{T in original equation}
+\item{T}{temperature}
 
-\item{dewpoint}{Td in original}
+\item{Td}{dewpoint}
 }
 \value{
 numeric vector

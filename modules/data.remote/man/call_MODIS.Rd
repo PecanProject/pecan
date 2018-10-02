@@ -4,9 +4,9 @@
 \alias{call_MODIS}
 \title{call_MODIS}
 \usage{
-call_MODIS(outfolder = ".", fname = "m_data.nc", start_date, end_date, lat,
-  lon, size = 0, product = "MOD15A2", band = "Lai_1km", qc_band = NA,
-  sd_band = NA, verbose = TRUE)
+call_MODIS(outfolder = ".", fname = "m_data.nc", start_date, end_date,
+  lat, lon, size = 0, product = "MOD15A2", band = "Lai_1km",
+  qc_band = NA, sd_band = NA, verbose = TRUE)
 }
 \arguments{
 \item{outfolder}{where the output file will be stored}
