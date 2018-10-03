@@ -18,7 +18,7 @@ NONE
 This function creates the required tags inside pecan.xml to link sites with pfts given a look up table. If the required tags are already defined in the pecan xml then they will be updated.
 }
 \examples{
-
+\dontrun{
 #setting up the Look up tables
 site.pft.links <-tribble(
  ~site, ~pft,
@@ -33,5 +33,5 @@ site.pft.links <-tribble(
 site.pft.linkage('pecan.xml',site.pft.links)
 # sending a multi- setting xml file to the function
 site.pft.linkage('pecan.SDA.4site.xml',site.pft.links)
-
+}
 }

@@ -11,7 +11,7 @@
 #' @export
 #' 
 #' @examples
-#' 
+#'\dontrun{
 #' #setting up the Look up tables
 #' site.pft.links <-tribble(
 #'  ~site, ~pft,
@@ -26,7 +26,7 @@
 #' site.pft.linkage('pecan.xml',site.pft.links)
 #' # sending a multi- setting xml file to the function
 #' site.pft.linkage('pecan.SDA.4site.xml',site.pft.links)
-#' 
+#'}
 site.pft.linkage <- function(pecan.xml.address='', site.pft.links){
   
   # checking the LUT 
