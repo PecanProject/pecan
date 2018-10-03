@@ -139,11 +139,13 @@
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'>## return the mean when stat = NA</span>
-<span class='fu'>take.samples</span>(<span class='kw'>summary</span> <span class='kw'>=</span> <span class='fu'>data.frame</span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>stat</span> <span class='kw'>=</span> <span class='fl'>NA</span>))</div><div class='output co'>#&gt; [1] 10</div><div class='input'><span class='co'>## return vector of length \code{sample.size} from N(mean,stat)</span>
-<span class='fu'>take.samples</span>(<span class='kw'>summary</span> <span class='kw'>=</span> <span class='fu'>data.frame</span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>stat</span> <span class='kw'>=</span> <span class='fl'>10</span>), <span class='kw'>sample.size</span> <span class='kw'>=</span> <span class='fl'>10</span>)</div><div class='output co'>#&gt;  [1] 22.6295428  6.7376664 23.2979926 22.7242932 14.1464143 -5.3995004
-#&gt;  [7]  0.7143297  7.0527955  9.9423283 34.0465339</div><div class='input'>
-</div></pre>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='co'>## return the mean when stat = NA</span>
+<span class='fu'>take.samples</span>(<span class='kw'>summary</span> <span class='kw'>=</span> <span class='fu'>data.frame</span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>stat</span> <span class='kw'>=</span> <span class='fl'>NA</span>))
+<span class='co'>## return vector of length \code{sample.size} from N(mean,stat)</span>
+<span class='fu'>take.samples</span>(<span class='kw'>summary</span> <span class='kw'>=</span> <span class='fu'>data.frame</span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>stat</span> <span class='kw'>=</span> <span class='fl'>10</span>), <span class='kw'>sample.size</span> <span class='kw'>=</span> <span class='fl'>10</span>)
+
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

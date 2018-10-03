@@ -1,7 +1,7 @@
 Map
 ========================================================
 
-```{r}
+```{r,eval=FALSE}
 require(raster)
 require(sp)
 require(ggplot2)
@@ -20,7 +20,7 @@ spplot(spdf)
 
 ### Plot all maps for BETYdb
 
-```{r}
+```{r,eval=FALSE}
 files <- dir("~/dev/bety/local/modelout", pattern="grid.csv", full.names=TRUE)
 yieldfiles <- files[!grepl("evapotranspiration", files)]
 etfiles <- files[grepl("evapotranspiration", files)]
@@ -43,7 +43,7 @@ for(file in etfiles){
 
 ### demo Regrid
 
-```{r fig.width=7, fig.height=6}
+```{r fig.width=7, fig.height=6,,eval=FALSE}
 latlon.data <- read.csv("~/dev/bety/public/temp_models/willow_yield_grid.csv",
                         skip = 1)
 
@@ -54,7 +54,7 @@ ggplot(data = regridded) + geom_tile(aes(lat, lon, fill = yield))
 ```
 
 ### Misc additional code
-```{r}
+```{r,eval=FALSE}
 # Make an evenly spaced raster, the same extent as original data
 e <- extent( spdf )
 
@@ -75,7 +75,7 @@ ggplot( NULL ) + geom_raster( data = rdf , aes( x , y , fill = layer ) )
 
 ```
 
-```{r}
+```{r,eval=FALSE}
 # from http://gis.stackexchange.com/a/20052/3218
 require(rgdal)
 proj4string(spdf) <- CRS("+init=epsg:4326")
@@ -92,7 +92,7 @@ plot(p2g)
 
 this was run in data from Willow manuscript. See [redmine issue 2387](https://ebi-forecast.igb.illinois.edu/redmine/issues/2387)
 
-```{r}
+```{r,eval=FALSE}
 files <- dir(".", pattern = ".txt")
 library(data.table)
 lat <- fread(files[1])[,list(lat = V2)]$lat

@@ -7,7 +7,7 @@ This is an quick script for cleaning up the database. For further documentation 
 
 **Step 1: set up an outdir and a connection to bety**
 The outdir is where temporary editing files will be written, and where a backup of bety will be stored. 
-```{r}
+```{r,eval=FALSE}
 con <- RPostgreSQL::dbConnect(RPostgreSQL::PostgreSQL(),
 dbname = "bety",
 password = 'bety',
@@ -21,7 +21,7 @@ options(scipen=999) #To view full id values
 
 **Step 2: Back up bety**
 Before any major deletion processes, it makes sense to make a back-up version of the database. Don't skip this step. 
-```{r}
+```{r,eval=FALSE}
 system('TODAY=$( date +"%d" )')
 backup_dir<-paste('pg_dump -U bety -d bety | gzip -9 > ', bety_backup_directory,'/bety-pre-culling${TODAY}.sql.gz', sep="")
 
@@ -29,7 +29,7 @@ system(backup_dir)
 ```
 
 **Step 3: find all of the entries that should be deleted ***
-```{r}
+```{r,eval=FALSE}
 
 formats<-find_formats_without_inputs(con=con, created_before = "2016-01-01", user_id = NULL, updated_after = "2016-01-01") #Ideally, date should be set to the date of the last release 
 
@@ -38,7 +38,7 @@ inputs<-find_inputs_without_formats(con=con, created_before = "2014-01-01",updat
 ```
 
 Since just a dump of every column can be hard to read, just choose the columns that are important. 
-```{r}
+```{r,eval=FALSE}
 column_names<-get_table_column_names(table = formats, con = con)
 column_names$formats
 
@@ -49,7 +49,7 @@ column_names
 ** Option 1: Edit an R object ***
 
 This is the most important step! Navigate to the written out table and *delete entries that should remain in the database*. 
-```{r}
+```{r,eval=FALSE}
 formats<-formats[colnames(formats) %in% column_names] #subset for easy viewing
 View(formats)
 
@@ -61,7 +61,7 @@ View(formats)
 
 This is also the most important step! Navigate to the written out table and *delete entries that should remain in the database*. If the tables are difficult to read, change what columns are retained by editing the "relevant_table_columns" parameter.
 
-```{r}
+```{r,eval=FALSE}
 write_out_table(table = formats, outdir = outdir, relevant_table_columns = column_names, table_name = "formats")
 write_out_table(table = inputs,outdir = outdir, relevant_table_columns =c("id", "created_at", "name"), table_name = "inputs")
 ```

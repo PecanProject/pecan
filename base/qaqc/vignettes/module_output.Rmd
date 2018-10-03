@@ -22,7 +22,7 @@ are inputs and outputs.
 To create this I used the trace functionality in R to capture the files
 saved/loaded
 
-```{r}
+```{r,eval =FALSE}
 trace(nc_open, quote(cat(c("LOAD : ", filename, "\n"), file="files.txt", append=TRUE)))
 trace(nc_create, quote(cat(c("SAVE : ", filename, "\n"), file="files.txt", append=TRUE)))
 trace(save, quote(cat(c("SAVE : ", file, "\n"), file="files.txt", append=TRUE)))

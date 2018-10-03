@@ -140,7 +140,8 @@ conditions.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>a</span> <span class='kw'>&lt;-</span> <span class='fl'>1</span>:<span class='fl'>5</span>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='no'>a</span> <span class='kw'>&lt;-</span> <span class='fl'>1</span>:<span class='fl'>5</span>
 <span class='no'>b</span> <span class='kw'>&lt;-</span> <span class='fu'>list</span>(<span class='fl'>6</span>, <span class='fl'>7</span>, <span class='fl'>8</span>)
 <span class='fu'>debugifnot</span>(<span class='st'>"By the way, something is not a list."</span>, <span class='fu'>is.list</span>(<span class='no'>a</span>), <span class='fu'>is.list</span>(<span class='no'>b</span>))
 <span class='fu'>infoifnot</span>(<span class='st'>"Something is not a list."</span>, <span class='fu'>is.list</span>(<span class='no'>a</span>), <span class='fu'>is.list</span>(<span class='no'>b</span>))
@@ -148,7 +149,8 @@ conditions.</p>
 <span class='fu'>errorifnot</span>(<span class='st'>"You should definitely use lists."</span>, <span class='fu'>is.list</span>(<span class='no'>a</span>), <span class='fu'>is.list</span>(<span class='no'>b</span>))
 <span class='fu'>try</span>({
   <span class='fu'>severeifnot</span>(<span class='st'>"I absolutely cannot deal with the fact that something is not a list."</span>, <span class='fu'>is.list</span>(<span class='no'>a</span>), <span class='fu'>is.list</span>(<span class='no'>b</span>))
-})</div></pre>
+})
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

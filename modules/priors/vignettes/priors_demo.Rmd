@@ -6,7 +6,7 @@ Fitting priors to data (point estimates, all grass species in GLOPNET).
 -------------------------
 
 ### Example: Specific Leaf Area based on all grasses
-```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE}
+```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE, eval=FALSE}
 library(PEcAn.priors)
 library(DEoptim)
 set.seed(1)
@@ -31,7 +31,7 @@ devtools::install_github("pecanproject/pecan/modules/priors")
 ```
 
 
-```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE, cache=TRUE}
+```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE, cache=TRUE, eval=FALSE}
 
 # devtools::install("pecanproject/pecan/modules/priors")
 glopnet.data <- read.csv('inst/extdata/glopnet.csv') # Wright et. al. 2004 supplementary file 
@@ -64,7 +64,7 @@ prior.figures[['leaf_turnover_rate']] <- priorfig(priordata = ttdata,
 The `fit.dist` function takes a vector of point estimates (in this case 125 observations of Specific Leaf Area from GLOPNET database are stored in `sladata`.
 
 First, it prints out the fits of a subset of distributions (the 'f' distribution could not be fit). Second, it prints the 
-```{r}
+```{r , eval=FALSE}
 dists =  c('gamma', 'lognormal','weibull', 'f')
 fit.dist(sladata, dists )
 
@@ -74,7 +74,7 @@ The `priorfig` function visualizes the chosen prior (line), with its mean and 95
 
 
 
-```{r fig.width=7, fig.height=3, results='markup'}
+```{r fig.width=7, fig.height=3, results='markup',eval=FALSE}
 ## priorfig(priordata = sladata, 
 ##                                                  priordensity = slaprior, 
 ##                                                  trait = 'SLA')
@@ -86,7 +86,7 @@ Fitting priors to data with uncertainty estimates (generating posterior predicti
 -------------------------
 ### Vcmax data from Wullschleger (1993)
 
-```{r}
+```{r,eval=FALSE}
 wullschleger.data <- read.csv('inst/extdata/wullschleger1993updated.csv')
 ```
 
@@ -107,7 +107,7 @@ write.csv(functional.data, 'inst/extdata/wullschleger_join_usdaplants.csv')
 
 Picking up with the Wullschleger dataset joined to USDA Plants functional type classifications ... 
 
-```{r pft_wullschleger}
+```{r pft_wullschleger, eval=FALSE}
 functional.data <- read.csv('inst/extdata/wullschleger_join_usdaplants.csv')
 
 subshrubs <- rownames(wullschleger.data) %in% c(grep('Shrub',wullschleger.data$GrowthHabit), grep('Subshrub', wullschleger.data$GrowthHabit))
@@ -174,7 +174,7 @@ wullschleger.vcmax <- ddply(wullschleger.data,
 
 Few measurements of Vcmax for C4 species were available. 
 ###### Miscanthus: Wang D, Maughan MW, Sun J, Feng X, Miguez FE, Lee DK, Dietze MC, 2011. Impact of canopy nitrogen allocation on growth and photosynthesis of miscanthus (Miscanthus x giganteus). Oecologia, in press
-```{r}
+```{r, eval=FALSE}
 dwang.vcmax <- c(19.73, 40.35, 33.02, 21.28, 31.45, 27.83, 9.69, 15.99, 18.88, 11.45, 15.81, 27.61, 13, 21.25, 22.01, 10.37, 12.37, 22.8, 12.24, 15.85, 21.93, 23.48, 31.51, 23.16, 18.55, 17.06, 20.27, 30.41)
 dwang.vcmax <- data.frame(Y = mean(dwang.vcmax), 
                           obs.prec = 1/sd(dwang.vcmax),
@@ -188,7 +188,7 @@ Kubien and Sage 2004. Low-temperature photosynthetic performance of a C4 grass a
 
 Data from figure 5 in Kubien and Sage (2004), average across plants grown at 14/10 degrees and 26/22 degrees 
 
-```{r}
+```{r, eval=FALSE}
 kubien.vcmax <- data.frame(Y = mean(23.4, 24.8), 
                            obs.prec = 1/sqrt(2.6^2 + 2.5^2), 
                            n = 8, 
@@ -200,7 +200,7 @@ kubien.vcmax <- data.frame(Y = mean(23.4, 24.8),
 Massad, Tuzet, Bethenod 2007. The effect of temperature on C4-type leaf photosynthesis parameters. Plant, Cell & Environment 30(9) 1191-1204. DOI: 10.1111/j.1365-3040.2007.01691.x
 
 data from fig 6a
-```{r}
+```{r, eval=FALSE}
 massad.vcmax.data <- data.frame(vcmax = c(17.1, 17.2, 17.6, 18, 18.3, 18.5, 20.4, 22.9, 22.9, 21.9, 21.8, 22.7, 22.3, 25.3, 24.4, 25.5, 25.5, 24.9, 31.2, 30.8, 31.6, 31.7, 32.5, 34.1, 34.2, 33.9, 35.4, 36, 36, 37.5, 38.2, 38.1, 37.4, 37.7, 25.2, 25.5), 
                                 temp = c(20.5, 24.6, 21, 19, 21.9, 15, 19.6, 14.3, 20.8, 23.4, 24.8, 25.9, 24.1, 22.8, 27.9, 31.7, 35.5, 39.3, 37.9, 42.4, 41.5, 48.7, 33.3, 33.3, 31.5, 39.1, 38.8, 43.3, 50, 38.4, 35.7, 34.4, 31.9, 33.9, 32.1, 33.7))
 massad.vcmax <- with(massad.vcmax.data, arrhenius.scaling(old.temp = temp, 
@@ -222,18 +222,18 @@ all.vcmax.data <- rbind(wullschleger.vcmax,
 
 ##### take a look at the raw data by functional type:
 
-```{r}
+```{r, eval=FALSE}
 qplot(data = all.vcmax.data, x = factor(ft), y = Y, geom = 'boxplot')
 ```
 ##### Add unobserved C4 species so JAGS calculates posterior predictive distribution
-```{r}
+```{r, eval=FALSE}
 vcmax.data <- rbind(all.vcmax.data, 
                     data.frame(Y = NA, obs.prec = NA, ft = 2, n = 1))
 ```
 
 ##### Write and Run Meta-analysis
 
-```{r}
+```{r, eval=FALSE}
 writeLines(con = "vcmax.prior.bug", 
            text =  "model{  
              for (k in 1:length(Y)){
@@ -303,7 +303,7 @@ Fitting priors to expert constraint ().
 -------------------------
 ### Example: Minimum temperature of Photosynthesis
 
-```{r }
+```{r, eval=FALSE}
 TBD
 ```
 
@@ -319,7 +319,7 @@ The [rriskDistributions](http://cran.r-project.org/web/packages/rriskDistributio
 
 as well as individual functions for each distribution such as `get.<somedist>.par` that provide nice diagnostic plots (e.g. compare chosen points to cdf) for example, to compute the parameters of a Gamma distribution that fits a median of 2.5 and has a 95%CI of [1, 10]:  
 
-```{r}
+```{r, eval=FALSE}
 library(rriskDistributions)
 get.gamma.par(p = c(0.025, 0.50, 0.975), q = c(1, 2.5, 10), tol = 0.1)
 ```

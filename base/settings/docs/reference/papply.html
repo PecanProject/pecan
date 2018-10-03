@@ -153,7 +153,8 @@ it directly.</p></li>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>f</span> <span class='kw'>=</span> <span class='kw'>function</span>(<span class='no'>settings</span>, <span class='no'>...</span>) {
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='no'>f</span> <span class='kw'>=</span> <span class='kw'>function</span>(<span class='no'>settings</span>, <span class='no'>...</span>) {
   <span class='co'># Here's how I envisioned a typical use case within a standard PEcAn function</span>
   <span class='kw'>if</span>(<span class='fu'>is.MultiSettings</span>(<span class='no'>settings</span>)) {
     <span class='fu'>return</span>(<span class='fu'>papply</span>(<span class='no'>settings</span>, <span class='no'>f</span>, <span class='no'>...</span>))
@@ -177,57 +178,10 @@ it directly.</p></li>
 <span class='no'>multiSettings</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='MultiSettings.html'>MultiSettings</a></span>(<span class='no'>settings1</span>, <span class='no'>settings2</span>)
 
 <span class='co'># The fucntion should add element $d = D to either a Settings, or each entry in a MultiSettings</span>
-<span class='fu'>f</span>(<span class='no'>settings1</span>, <span class='kw'>d</span><span class='kw'>=</span><span class='st'>"D"</span>)</div><div class='output co'>#&gt; $a
-#&gt; [1] "aa"
-#&gt; 
-#&gt; $b
-#&gt; [1] 1 2 3
-#&gt; 
-#&gt; $c
-#&gt; [1] "NA"
-#&gt; 
-#&gt; $d
-#&gt; [1] "D"
-#&gt; 
-#&gt; attr(,"class")
-#&gt; [1] "Settings" "SafeList" "list"    </div><div class='input'><span class='fu'>print</span>(<span class='fu'>f</span>(<span class='no'>multiSettings</span>, <span class='kw'>d</span><span class='kw'>=</span><span class='st'>"D"</span>), <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; $settings.1
-#&gt; $a
-#&gt; [1] "aa"
-#&gt; 
-#&gt; $b
-#&gt; [1] 1 2 3
-#&gt; 
-#&gt; $c
-#&gt; [1] "NA"
-#&gt; 
-#&gt; $d
-#&gt; [1] "D"
-#&gt; 
-#&gt; attr(,"class")
-#&gt; [1] "Settings" "SafeList" "list"    
-#&gt; 
-#&gt; $settings.2
-#&gt; $a
-#&gt; [1] "A"
-#&gt; 
-#&gt; $b
-#&gt; [1] 4 5
-#&gt; 
-#&gt; $c
-#&gt; function (..., sep = " ", collapse = NULL) 
-#&gt; .Internal(paste(list(...), sep, collapse))
-#&gt; &lt;bytecode: 0x933ad0&gt;
-#&gt; &lt;environment: namespace:base&gt;
-#&gt; 
-#&gt; $d
-#&gt; [1] "D"
-#&gt; 
-#&gt; attr(,"class")
-#&gt; [1] "Settings" "SafeList" "list"    
-#&gt; 
-#&gt; attr(,"class")
-#&gt; [1] "MultiSettings" "list"         </div><div class='input'>
-</div></pre>
+<span class='fu'>f</span>(<span class='no'>settings1</span>, <span class='kw'>d</span><span class='kw'>=</span><span class='st'>"D"</span>)
+<span class='fu'>print</span>(<span class='fu'>f</span>(<span class='no'>multiSettings</span>, <span class='kw'>d</span><span class='kw'>=</span><span class='st'>"D"</span>), <span class='fl'>TRUE</span>)
+
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

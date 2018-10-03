@@ -13,11 +13,11 @@ In this example we will download 6 years of met data from the [Willow Creek Eddy
 The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
 
 First make sure you have the nescessary PEcAn package for processing met data
-```{r install}
+```{r install,eval=FALSE}
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "modules/data.atmosphere")
 ```
 
-```{r}
+```{r,eval=FALSE}
 library(knitr)
 library(ggplot2)
 library(ggthemes)
@@ -25,7 +25,7 @@ library(PEcAn.data.atmosphere)
 
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE,eval=FALSE}
 
 knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE, 
                       fig.height= 3, fig.width = 8)
@@ -33,7 +33,7 @@ knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE,
 ```
 
 ## Connect to BETY database and retrieve appropriate format for AmerifluxLBL datasets [TODO: Update to work with R-OpenSci traits BETY]
-```{r bety}
+```{r bety,eval=FALSE}
 bety <- list(user='bety', password='bety', host='localhost',
              dbname='bety', driver='PostgreSQL',write=TRUE)
 con <- PEcAn.DB::db.open(bety)
@@ -44,25 +44,25 @@ format$time_zone <- "America/Chicago"
 ```
 
 ## Download AmerifluxLBL data for selected site and dates (US-WCr, 2000 to 2005)
-```{r download}
+```{r download,eval=FALSE}
 download.AmerifluxLBL(sitename = "US-WCr", outfolder = "~/scratch/met2model_testing", 
                    start_date = "2000-01-01", end_date = "2005-12-31", overwrite = TRUE, verbose = TRUE)
 ```
 
 ## Convert downloaded AmerifluxLBL data to CF format
-```{r met2cf}
+```{r met2cf,eval=FALSE}
 met2CF.AmerifluxLBL(in.path = "~/scratch/met2model_testing/", in.prefix = "AMF_US-WCr", outfolder = "~/scratch/met2model_testing/CF/", 
                  start_date = "2000-01-01", end_date = "2005-12-31",format=format)
 ```
 
 ## Gapfill CF met drivers
-```{r metgapfill}
+```{r metgapfill,eval=FALSE}
 metgapfill(in.path = "~/scratch/met2model_testing/CF/", in.prefix = "AMF_US-WCr_BASE_HH_14-5", 
            outfolder = "~/scratch/met2model_testing/CF/gapfill/", start_date = "2000-01-01", end_date = "2005-12-31")
 ```
 
 ## Create MAAT model-specific met drivers
-```{r met2model}
+```{r met2model,eval=FALSE}
 in.path <- "~/scratch/met2model_testing/CF/gapfill/"
 in.prefix <- "AMF_US-WCr_BASE_HH_14-5"
 outfolder <- "~/scratch/met2model_testing/CF/gapfill/maat_drivers/"

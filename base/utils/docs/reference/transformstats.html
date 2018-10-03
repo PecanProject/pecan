@@ -124,16 +124,13 @@
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>statdf</span> <span class='kw'>&lt;-</span> <span class='fu'>data.frame</span>(<span class='kw'>Y</span><span class='kw'>=</span><span class='fu'>rep</span>(<span class='fl'>1</span>,<span class='fl'>5</span>),
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='no'>statdf</span> <span class='kw'>&lt;-</span> <span class='fu'>data.frame</span>(<span class='kw'>Y</span><span class='kw'>=</span><span class='fu'>rep</span>(<span class='fl'>1</span>,<span class='fl'>5</span>),
                                <span class='kw'>stat</span><span class='kw'>=</span><span class='fu'>rep</span>(<span class='fl'>1</span>,<span class='fl'>5</span>),
                                <span class='kw'>n</span><span class='kw'>=</span><span class='fu'>rep</span>(<span class='fl'>4</span>,<span class='fl'>5</span>),
                                <span class='kw'>statname</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>'SD'</span>, <span class='st'>'MSE'</span>, <span class='st'>'LSD'</span>, <span class='st'>'HSD'</span>, <span class='st'>'MSD'</span>))
-<span class='fu'>transformstats</span>(<span class='no'>statdf</span>)</div><div class='output co'>#&gt;   Y       stat n statname
-#&gt; 1 1 0.50000000 4       SE
-#&gt; 2 1 0.50000000 4       SE
-#&gt; 3 1 0.12734031 4       SE
-#&gt; 4 1 0.07133262 4       SE
-#&gt; 5 1 1.15591705 4       SE</div></pre>
+<span class='fu'>transformstats</span>(<span class='no'>statdf</span>)
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

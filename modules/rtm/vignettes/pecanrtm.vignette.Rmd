@@ -33,7 +33,7 @@ Available radiative transfer models are called by passing a vector of their para
 
 The PROSPECT family of models returns the reflectance (column 1) and transmittance (column 2) for an individual leaf as a function of 4 to 6 parameters (depending on the version).
 
-```{r}
+```{r, eval=FALSE}
 library(PEcAnRTM)
 wl <- 400:2500
 params <- c(
@@ -48,20 +48,20 @@ p4
 Notice only the first and last few lines of the spectra are printed, and the wavelength is annotated on the side.
 This is is because all RTM simulations in this package are of a special matrix class `spectra`.
 
-```{r}
+```{r, eval=FALSE}
 class(p4)
 ```
 
 This class allows traditional subsetting via index with single brackets (`[]`), as well as subsetting by wavelength with double brackets.
 
-```{r}
+```{r, eval=FALSE}
 p4[1:50, 1]
 p4[[500:520, 2]]
 ```
 
 The package also provides special plotting (`plot`, `matplot`) and combining (`cbind`) methods. Note that the `cbind` method automatically matches wavelengths, which facilitates working with spectra with different wavelengths.
 
-```{r}
+```{r, eval=FALSE}
 p5 <- prospect(params[-4], version = 5)
 p5b <- prospect(params, version = "5B")
 p_multi <- cbind(p4, p5, p5b)
@@ -73,7 +73,7 @@ legend("top", c("4", "5", "5B"), lty = 1:3)
 
 The SAIL family of models returns the bidirectional (1), hemispherical directional (2), directional hemispherical (3), and bidirectional hemispherical (4) reflectance factors for a canopy with a given set of approximately 20 parameters. It is often coupled to the PROSPECT model as PRO4SAIL. (Again, note that the return type is a `spectra`, which leads `matplot` to automatically put wavelengths on the x axis.)
 
-```{r}
+```{r, eval=FALSE}
 sail.params <- defparam("pro4sail")
 print(sail.params)
 p4s <- pro4sail(sail.params)
@@ -83,7 +83,7 @@ legend("topright", as.character(1:4), col=1:4, lty=1:4)
 
 The above example illustrates the use of `defparam` to get the default parameters for a particular model. Similarly, `model.list` is a `data.frame` containing all currently available models.
 
-```{r}
+```{r, eval=FALSE}
 print(model.list)
 ```
 
@@ -98,19 +98,19 @@ A novel feature of this package is the ability to perform a Bayesian inversion o
 
 An inversion can be performed using the `invert.auto` function, which uses the Metropolis Hastings MCMC algorithm to invert an arbitrary model. There are a lot of configuration options to `invert.auto`, so the recommended way to perform an inversion is to start with a default settings list, provided by the package itself. In the following sample, we demonstrate the default inversion of the PROSPECT model.
 
-```{r}
+```{r, eval=FALSE}
 invert.options <- default.settings.prospect
 ```
 
 The model to be inverted is, in this case, just a one-line call to the PROSPECT 5 model with the params vector. It returns a vector of reflectance values. The requirement is that the "model" output be as long as the length (or number of rows) of the observation vector (or matrix). In this case, the PROSPECT model returns 2101 reflectance values, so our observation also has to have this many points.
 
-```{r}
+```{r, eval=FALSE}
 invert.options$model
 ```
 
 The recommended way to set settings is to start with a default object and modify it. For example, in the following block, we reduce the length of the run to make it go a little faster.
 
-```{r}
+```{r, eval=FALSE}
 invert.options$n.tries <- 1      # Number of attempts
 invert.options$nchains <- 2      # Number of MCMC chains
 invert.options$ngibbs <- 5000    # Number of iterations per chain
@@ -120,13 +120,13 @@ invert.options$do.lsq.first <- TRUE # Initialize with results from a fast least-
 
 The full list of inversion options is below. See the documentation for `invert.auto` for a full description of each of these.
 
-```{r}
+```{r, eval=FALSE}
 names(invert.options)
 ```
 
 Now, we load some test data (for _Acer rubrum_ leaves (`testspec_ACRU`, accessible through `data(testspec)`).
 
-```{r}
+```{r, eval=FALSE}
 data(testspec)
 observed <- testspec_ACRU[,1]
 plot(wl, observed, xlab="Wavelength", ylab="Reflectance", type='l')
@@ -134,7 +134,7 @@ plot(wl, observed, xlab="Wavelength", ylab="Reflectance", type='l')
 
 To perform an inversion, just pass the observation matrix and the inversion settings into `invert.auto` (NOTE: `quiet = TRUE` suppresses the progress bar, which is done here to clean up the knitted document. `threshold = ...` sets the maximum value of the multivariate Gelman Diagnostic used to assess convergence -- it defaults to 1.1, but we set it higher here for demosntrative purposes).
 
-```{r}
+```{r, eval=FALSE}
 if(file.exists("inversion.output.rds")){
     inversion.output <- readRDS("inversion.output.rds")
 } else {
@@ -148,7 +148,7 @@ if(file.exists("inversion.output.rds")){
 
 The output of `invert.auto` is a list of two objects: A list of summary statistics for each parameter and an `mcmc.list` object of the samples for diagnostic purposes or calculation of other summary statistics. 
 
-```{r}
+```{r, eval=FALSE}
 par(mfrow=c(2,1))
 plot(inversion.output$samples, auto.layout=FALSE)
 

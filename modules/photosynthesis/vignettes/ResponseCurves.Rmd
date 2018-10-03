@@ -41,7 +41,7 @@ The hierarchical version of this model is equivalent to the standard model excep
 
 You should only have to do this once, and you only have to do this if you are downloading just this package separate from the rest of PEcAn
 
-```{r}
+```{r,eval=FALSE}
 if (!require("PEcAn.photosynthesis", character.only = TRUE)) {
   devtools::install_github("PecanProject/pecan/modules/photosynthesis") 
 }
@@ -52,7 +52,7 @@ knitr::opts_chunk$set(cache = TRUE)
 
 In this example we are using a set of files that are built into the package, but you could easily replace _filenames_ with vector of your own filenames, for example using _list.files_ to look up all the files in a directory
 
-```{r}
+```{r,eval=FALSE}
 library(PEcAn.photosynthesis)
 
 ## Get list of LI-COR 6400 file names (ASCII not xls)
@@ -97,7 +97,7 @@ for(i in 1:length(master)){
 
 Once data been's checked we'll merge it into one large data frame
 
-```{r}
+```{r,eval=FALSE}
 dat <- do.call("rbind", master)
 
 ## if QC was done, remove both unchecked points and those that fail QC
@@ -119,7 +119,7 @@ fit1 <- fitA(master[[1]])
 
 Where the one required argument is the data frame of photosynthetic data. However, this code also allows use to fit the FvCB model to all of the data at once. 
 
-```{r}
+```{r,eval=FALSE}
 if(file.exists("fit.RData")){
   load("fit.RData")
 } else{
@@ -132,14 +132,14 @@ Because the MCMC can take a bit of time to run, in this example the code is writ
 
 The returned object is a list with two mcmc.lists, "params" and "predict", and the text of the JAGS model that was fit. We can look at this model below:
 
-```{r}
+```{r,eval=FALSE}
 writeLines(fit$model)
 ```
 Note that the lines beginning with # are comments. Some of these comments are followed by specific tags, such as RLEAF.V and RLEAF.A, which are bits of code that will get turned on when we specify leaf random effects (see below).
 
 The 'params' mcmc.list contains the parameter estimate MCMC chains, which we can do standard MCMC diagnositics on. 
 
-```{r}
+```{r,eval=FALSE}
 par(mfrow = c(2, 1))
 plot(fit$params, auto.layout = FALSE)    ## MCMC diagnostic plots
 summary(fit$params) ## parameter estimates  
@@ -150,7 +150,7 @@ gelman.diag(fit$params)
 
 The 'predict' object can be used to perform standard predictive diagnostics and to construct CI around curves
 
-```{r}
+```{r,eval=FALSE}
 ## predicted vs observed plot
 par(mfrow = c(1, 1))
 mstats <- summary(fit$predict)
@@ -168,7 +168,7 @@ plot_photo(dat, fit)
 
 Next, let's look at how to specify leaf-level random effects in the model. To do so we're going to add an extra arguement to the function, which is a list of model specifications.
 
-```{r}
+```{r,eval=FALSE}
 A.model <- list(a.fixed = NULL, a.random = "leaf", 
                 V.fixed = NULL, V.random = "leaf", 
                 n.iter = 5000, match = "fname")
@@ -178,7 +178,7 @@ In this list a refers to $\alpha$ and V refers to $V_\textrm{cmax}$. Fixed refer
 
 Once the model is specified, the fitting and diagnostics are the same as before.
 
-```{r}
+```{r,eval=FALSE}
 if(file.exists("fitI.RData")){
   load("fitI.RData")
 } else{
@@ -207,14 +207,14 @@ plot_photo(dat,fitI)
 
 Next, let's look at how to fit a model that includes covariates. To begin with let's load up some covariate data. In this specific case the covariate data, leaf % Nitrogen, is simulated because no covariates were actually measured for these leaves.
 
-```{r}
+```{r,eval=FALSE}
 cov.data = read.csv(system.file("extdata", "cov.csv", package = "PEcAn.photosynthesis"))
 knitr::kable(cov.data)
 ```
 
 To define this model we'll again define a list of model specifications. Specifically we are going to set $Vcmax$ to be linear functions of leaf N. To do this we'll set V.fixed "N" and we'll set V.random to NULL to turn off the leaf random effect. For this example we'll leave $\alpha$ as random.
 
-```{r}
+```{r,eval=FALSE}
 C.model <- list(a.fixed = NULL, a.random = "leaf", 
                 V.fixed= "N", V.random = NULL,
                 n.iter = 5000, match = "fname")
@@ -226,7 +226,7 @@ Also note that the rows in the photosynthesis data are matched to rows in the co
 
 To call the _fitA_ function we now have to pass not just the photosynthetic data and the model, but also the covariate data. Otherwise the fit and diagnostics are identical to before.
 
-```{r}
+```{r,eval=FALSE}
 if(file.exists("fitC.RData")){
   load("fitC.RData")
 } else{

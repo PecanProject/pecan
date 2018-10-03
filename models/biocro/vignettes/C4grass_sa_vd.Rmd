@@ -1,6 +1,6 @@
 
 
-```{r}
+```{r,eval=FALSE}
 library(PEcAn.all)
 logger.setQuitOnSevere(FALSE)
 

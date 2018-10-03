@@ -1,7 +1,8 @@
 Package: PEcAn.logger
 Title: Logger functions for PEcAn
 Version: 1.6.0
-Authors@R:
+Authors@R:c( person("Rob","Kooper"),
+             person("Alexey", "Shiklomanov"))
 Author: Rob Kooper, Alexey Shiklomanov
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: Special logger functions for tracking execution status and the environment.

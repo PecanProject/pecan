@@ -15,7 +15,7 @@ lapply(pkg_list, function(x){
     {
       pkgdown::build_site(x,examples = FALSE)
     },
-    error = function(e){print(conditionMessage(e))
+    error = function(e){print(c(x,conditionMessage(e)))
     }
   )
 }

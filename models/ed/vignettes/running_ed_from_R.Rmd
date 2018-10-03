@@ -17,7 +17,7 @@ This tutorial describes these utilites and provides examples of common use cases
 
 The `PEcAn.ED2` package and its PEcAn dependencies can be installed from GitHub as follows (all CRAN package dependencies should be installed automatically):
 
-```{r install, eval = -(1:5)}
+```{r install, eval = -(1:5),eval=FALSE}
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/logger")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/utils")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/settings")
@@ -45,7 +45,7 @@ ED requires a global land use database to determine its land-sea mask, as well a
 These can be customized to some extent, but this package provides a version of the most common inputs.
 These inputs, stored in an "EDI" directory, can be downloaded via the `download_edi` function:
 
-```{r get_edi}
+```{r get_edi,eval=FALSE}
 library(here)
 rundir <- here("vignettes", "ed_run_data")
 dir.create(rundir, showWarnings = FALSE)
@@ -66,7 +66,7 @@ ED meteorological data are typically stored in HDF5 format and are described by 
 To download the meteorological data, we'll use the `PEcAn.data.atmosphere` package.
 Here, we grab the data for the first week of July 2005 and Harvard Forest, for which we'll be running the simulation.
 
-```{r, download_met}
+```{r, download_met,eval=FALSE}
 start_date <- "2006-07-01"
 end_date <- "2006-07-08"
 latitude <- 42.53
@@ -84,7 +84,7 @@ raw_met <- PEcAn.data.atmosphere::download.CRUNCEP(
 
 Next, we convert this raw data to the ED-specific format.
 
-```{r, met2model}
+```{r, met2model,eval=FALSE}
 ed_met <- met2model.ED2(
   in.path = dirname(raw_met$file),
   in.prefix = "CRUNCEP",
@@ -121,7 +121,7 @@ A common way to initialize ED is through three interrelated vegetation initial c
 The package ships with simple functional examples of these objects (`example_css/pss/site`) and functions for quickly creating custom objects based on these examples (`create_css/pss/site`).
 Below, we create a `css` file with a single PFT with a specific DBH, but stick to the unmodified example `pss` and `site` files.
 
-```{r, veg_inputs}
+```{r, veg_inputs,eval=FALSE}
 css <- create_css(list(pft = 11, dbh = 18.00))
 pss <- example_pss
 site <- example_site
@@ -146,13 +146,13 @@ Now that all inputs are taken care of, the final step is to create the ED config
 
 First, read a `ED2IN` template file:
 
-```{r read_ed2in}
+```{r read_ed2in,eval=FALSE}
 ed2in_raw <- read_ed2in(system.file("ED2IN.rgit", package = "PEcAn.ED2"))
 ```
 
 Then, set up the `ED2IN` with the required components.
 
-```{r modify_ed2in}
+```{r modify_ed2in,eval=FALSE}
 ed2in <- modify_ed2in(
   ed2in_raw,
   veg_prefix = veg_prefix,
@@ -171,14 +171,14 @@ ed2in <- modify_ed2in(
 
 It is also a good idea to check the `ED2IN` file for internal consistency.
 
-```{r check_ed2in}
+```{r check_ed2in,eval=FALSE}
 check_ed2in(ed2in)
 ```
 
 Assuming the `ed2in` object is valid, you then write it to a file to a desired directory.
 This doesn't have to be the run directory (nor does the file have to be named `ED2IN`), but it's a good idea to keep the `ED2IN` file close to the run outputs, as it provides useful metadata for the run.
 
-```{r write_ed2in}
+```{r write_ed2in,eval=FALSE}
 ed2in_path <- file.path(rundir, "ED2IN")
 write_ed2in(ed2in, ed2in_path)
 ```

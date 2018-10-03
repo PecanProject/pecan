@@ -5,7 +5,7 @@ date: "2018-08-28"
 output: html_document
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE,eval =FALSE}
 
 knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE, 
                       fig.height= 3, fig.width = 8)
@@ -23,7 +23,7 @@ Follow the instructions found here: https://github.com/walkeranthonyp/MAAT/blob/
 
 ## Installing the R packages
 
-```{r install, eval = -(1:6)}
+```{r install, ,eval =FALSE}
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/logger")
 devtools::install_github("PecanProject/pecan", ref = "develop", subdir= "base/remote")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/utils")
@@ -187,7 +187,7 @@ In this example the MAAT model is configured for a temperate deciduous forest ba
 ## Simple MAAT run in PEcAn
 In this example we will run ten MAAT model ensembles in serial based on parameter values derived from the temperate.deciduous PFT in the BETYdb database (https://www.betydb.org/pfts/2000000044) and the PEcAn meta analysis step
 
-```{r run_maat}
+```{r run_maat,eval =FALSE}
 library(PEcAn.all)
 library(PEcAn.utils)
 library(RCurl)
