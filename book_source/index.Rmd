@@ -11,7 +11,7 @@ link-citations: yes
 
 **Ecosystem science, policy, and management informed by the best available data and models**
 
-```{r, echo=FALSE,out.height= "90%", out.width="90%"}
+```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
 knitr::include_graphics(rep("figures/PecanLogo.png"))
 ```
 
@@ -29,7 +29,6 @@ knitr::include_graphics(rep("figures/PecanLogo.png"))
 
 [Github Repository](https://github.com/PecanProject/pecan)
 
-<!DOCTYPE html>
 <html>
 <head>
 <style>

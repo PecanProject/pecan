@@ -11,7 +11,7 @@ prior.fn(parms, x, alpha, distn, central.tendency = NULL, trait = NULL)
 
 \item{x}{vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency}
 
-\item{alpha}{quantile at which lcl/ucl are estimated (e.g. for a 95% CI, alpha = 0.5)}
+\item{alpha}{quantile at which lcl/ucl are estimated (e.g. for a 95\% CI, alpha = 0.5)}
 
 \item{distn}{named distribution, one of 'lnorm', 'gamma', 'weibull', 'beta'; support for other distributions not currently implemented}
 
@@ -32,12 +32,15 @@ This function is not very robust; currently it needs to be tweaked when distribu
 require starting values (e.g. beta, f)
 }
 \examples{
-DEoptim(fn = prior.fn, 
-                lower = c(0, 0), 
-                upper = c(1000, 1000), 
-                x=c(2, 6, 3.3), 
-                alpha = 0.05, 
-                distn = 'lnorm')$optim$bestmem
+\dontrun{
+  DEoptim(fn = prior.fn,
+          lower = c(0, 0),
+          upper = c(1000, 1000),
+          x=c(2, 6, 3.3),
+          alpha = 0.05,
+          distn = 'lnorm')$optim$bestmem
+}
+
 }
 \author{
 David LeBauer
