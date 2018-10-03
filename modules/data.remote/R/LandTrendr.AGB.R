@@ -346,7 +346,8 @@ extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir
       ggplot2::labs(x="Year",
            y="Aboveground Woody Biomass (kg / m2)") + 
       ggplot2::theme(text = ggplot2::element_text(size=15), 
-                     panel.border = ggplot2::element_rect(linetype = "solid", size = 2) )
+                     panel.border = ggplot2::element_rect(linetype = "solid", size = 2), 
+                     axis.text.x=ggplot2::element_text(angle=90,hjust=1) )
 
     ggplot2::ggsave(filename=file.path(output_file,'LandTrendr_AGB_output.pdf'), 
                     device = "pdf", plot=result_plot, w = 15, h = 13) # need to select h/w dynamically
