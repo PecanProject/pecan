@@ -8,7 +8,6 @@
 #' @description This function creates the required tags inside pecan.xml to link sites with pfts given a look up table. If the required tags are already defined in the pecan xml then they will be updated.
 #' 
 #' @return NONE
-#' @import purrr
 #' @export
 #' 
 #' @examples
