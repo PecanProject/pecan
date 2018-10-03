@@ -1,6 +1,6 @@
 ## Building and modifying images {#docker-build-images}
 
-For general use, it is sufficient to use the pre-built PEcAn images hosted on [Docker Hub](https://hub.docker.com/r/pecan/).
+For general use, it is sufficient to use the pre-built PEcAn images hosted on [Docker Hub](https://hub.docker.com/r/pecan/) (see [Docker quickstart](#docker-quickstart)).
 However, there are cases where it makes sense to re-build the Docker images locally.
 The following is a list of PEcAn-specific images and reasons why you would want to rebuild them locally: 
 
