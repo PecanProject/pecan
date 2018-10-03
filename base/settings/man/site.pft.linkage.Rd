@@ -9,13 +9,13 @@ site.pft.linkage(pecan.xml.address = "", site.pft.links)
 \arguments{
 \item{pecan.xml.address}{character path to the pecan xml file.}
 
-\item{site.pft.links}{dataframe.Your look up table should have two columns of site and pft with site ids under site column and pft names under pft column.}
+\item{site.pft.links}{dataframe. Your look up table should have two columns of site and pft with site ids under site column and pft names under pft column.}
 }
 \value{
 NONE
 }
 \description{
-This function creates the required tags inside pecan.xml to link sites with pfts given a look up table. If the reguired tags are already defined in the pecan xml then they will be updated.
+This function creates the required tags inside pecan.xml to link sites with pfts given a look up table. If the required tags are already defined in the pecan xml then they will be updated.
 }
 \examples{
 
