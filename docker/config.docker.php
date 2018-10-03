@@ -90,7 +90,7 @@ $hostlist=array($fqdn =>
                               array("prerun"  => "module load hdf5"))));
 
 # Folder where PEcAn is installed
-$R_library_path="/home/carya/R/library";
+$R_library_path="/usr/local/lib/R/site-library";
 
 # Folder where the runs are stored
 $output_folder="/data/workflows";
