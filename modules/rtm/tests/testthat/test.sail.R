@@ -2,8 +2,6 @@
 library(PEcAnRTM)
 context("SAIL models")
 
-data(model.list)
-setkey(model.list, modname)
 p <- defparam("pro4sail")
 pout <- pro4sail(p)
 test.dim <- c(2101,4)

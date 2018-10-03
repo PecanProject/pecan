@@ -5,14 +5,14 @@
 \title{allom.predict}
 \usage{
 allom.predict(object, dbh, pft = NULL, component = NULL, n = NULL,
-  use = "Bg", interval = "prediction")
+  use = "Bg", interval = "prediction", single.tree = FALSE)
 }
 \arguments{
 \item{object}{Allometry model object. Option includes
 \itemize{
-  \item{"list of mcmc"}{ - mcmc outputs in a list by PFT then component}
-  \item{"vector of file paths"}{ - path(s) to AllomAve RData files}
-  \item{"directory where files are located}{ - }
+  \item{'list of mcmc'}{ - mcmc outputs in a list by PFT then component}
+  \item{'vector of file paths'}{ - path(s) to AllomAve RData files}
+  \item{'directory where files are located}{ - }
 }}
 
 \item{dbh}{Diameter at Breast Height (cm)}
@@ -23,20 +23,21 @@ allom.predict(object, dbh, pft = NULL, component = NULL, n = NULL,
 
 \item{n}{Number of Monte Carlo samples. Defaults to the same number as in the MCMC object}
 
-\item{use}{c("Bg","mu","best")}
+\item{use}{c('Bg','mu','best')}
 
-\item{interval}{c("none","confidence","prediction") default is prediction}
+\item{interval}{c('none','confidence','prediction') default is prediction}
 }
 \value{
 matrix of Monte Carlo predictions that has n rows and one column per DBH
 }
 \description{
-Function for making tree-level Monte Carlo predictions from allometric equations estimated from the PEcAn allometry module
+Function for making tree-level Monte Carlo predictions
+from allometric equations estimated from the PEcAn allometry module
 }
 \examples{
 
 \dontrun{
-  object = "~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/"
+  object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
   dbh = seq(10,50,by=5)
   mass = allom.predict(object,dbh,n=100)
   
@@ -46,4 +47,3 @@ Function for making tree-level Monte Carlo predictions from allometric equations
 \author{
 Michael Dietze, Christy Rollinson
 }
-

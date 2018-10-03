@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##-------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------------------------#
 ##' Convert MAESPA output into the NACP Intercomparison format (ALMA using netCDF)
 ##' 
 ##' @name model2netcdf.MAESPA
@@ -18,105 +18,76 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
+##' @param stem_density Number of trees/plotsize. Values in trees.dat
 ##' @export
 ##'
 ##' @author Tony Gardella
-model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date) {
+model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, stem_density) {
   
-  require(ncdf4)
-  library(lubridate)
-  
- 
-  ### Read in model output in MAESPA format
-  # All FILENAMES:
-  #hrflux.dat, Dayflx.dat, Maessarr.dat, watbal.dat,watbalday.dat,tutd.dat
-  #watballay.dat,watupt.dat,watsoit.dat,testflx.dat,layflx.day
-  
-  con <- file(paste(outdir,"/","Dayflx.dat",sep = ""), "r", blocking = FALSE)
-  Dayflx=readLines(con)
-  colnames.index=grep(pattern = "Columns",x = Dayflx)
-  colnames.raw=Dayflx[colnames.index]
-  colnames.list= unlist(strsplit(colnames.raw,split= " "))
-  remove=("")
-  varnames=colnames.list[!colnames.list %in% remove]
-  Dayflx.dat=read.table("Dayflx.dat",skip=colnames.index,col.names= varnames[-1])
 
+  ### Read in model output using Maeswrap. Dayflx.dat, watbalday.dat
+  dayflx.dataframe    <- Maeswrap::readdayflux(filename = "Dayflx.dat")
+  watbalday.dataframe <- Maeswrap::readwatbal(filename = "watbalday.dat")
   
-  con <- file(paste(outdir,"/","watbalday.dat",sep = ""), "r", blocking = FALSE)
-  watbalday=readLines("watbalday.dat")
-  colnames.index=grep(pattern = "Columns",x = watbalday)
-  colnames.raw=watbalday[colnames.index]
-  colnames.list= unlist(strsplit(colnames.raw,split= " "))
-  remove=("")
-  varnames=colnames.list[!colnames.list %in% remove]
-  watbalday.dat=read.table("watbalday.dat",skip=colnames.index,col.names= varnames[-1])
- 
+  # moles of Carbon to kilograms
+  mole2kg_C <- 0.0120107
+  # Seconds in a day
+  secINday <- 60 * 60 * 24
   
   ### Determine number of years and output timestep
-  num.years <- round((length(unique(watbalday.dat$day)))/365)
   start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date<- as.POSIXlt(end_date, tz = "GMT")
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   years <- start_year:end_year
-  out.day <- max(watbalday.dat$day)/366
-  timestep.s <- 86400/out.day
   
-  
-  for (y in years){
-    if (file.exists(file.path(outdir, paste(y,"nc", sep=".")))) {
+  for (y in years) {
+    if (file.exists(file.path(outdir, paste(y, "nc", sep = ".")))) {
       next
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
     
-
-    ## Setup outputs for netCDF file in appropriate units
+    ## Set up outputs for netCDF file in appropriate units
     output <- list()
-    output[[1]] <- (Dayflx.dat$totPs)       #(GPP) gross photosynthesis mol tree-1 d-1
-    output[[2]] <- (Dayflx.dat$netPs)       #(NPP) photosynthesis net of foliar resp mol tree-1 d-1
-    output[[3]] <- (watbalday.dat$et)         #(Tveg) modelled canopy transpiration   mm
-    output[[4]] <- (watbalday.dat$qh)        #(Qh) Sensible heeat flux MJ m-2 day-1
-    output[[5]] <- (watbalday.dat$qe)        #(Qle)latent Heat flux MJ m-2 day-1
+    output[[1]] <- (dayflx.dataframe$totPs) * mole2kg_C * stem_density  # (GPP) gross photosynthesis. mol tree-1 d-1 -> kg C m-2 s-1
+    output[[2]] <- (dayflx.dataframe$netPs) * mole2kg_C * stem_density  # (NPP) photosynthesis net of foliar resp mol tree-1 d-1 -> kg C m-2 s-1
+    output[[3]] <- (watbalday.dataframe$et)/secINday  # (Tveg) modeled canopy transpiration   mm -> kg m-2 s-1
+    output[[4]] <- (watbalday.dataframe$qh) * 1e+06  # (Qh) Sensible heat flux MJ m-2 day-1 -> W m-2
+    output[[5]] <- (watbalday.dataframe$qe) * 1e+06  # (Qle)latent Heat flux MJ m-2 day-1 -> W m-2
+    
+    # ******************** Declare netCDF variables ********************#
+    t <- ncdf4::ncdim_def(name = "time", 
+                   units = paste0("days since ", y, "-01-01 00:00:00"), 
+                   vals = (dayflx.dataframe$DOY), 
+                   calendar = "standard", 
+                   unlim = TRUE)
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    
+    for (i in seq_along(output)) {
+      if (length(output[[i]]) == 0) 
+        output[[i]] <- rep(-999, length(t$vals))
+    }
+    
+    dims <- list(lon = lon, lat = lat, time = t)
+    
+    var      <- list()
+    var[[1]] <- PEcAn.utils::to_ncvar("GPP", dims)
+    var[[2]] <- PEcAn.utils::to_ncvar("NPP",dims)
+    var[[3]] <- PEcAn.utils::to_ncvar("TVeg", dims)
+    var[[4]] <- PEcAn.utils::to_ncvar("Qh", dims)
+    var[[5]] <- PEcAn.utils::to_ncvar("Qle", dims)
+    
+    ### Output netCDF data
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+    for (i in seq_along(var)) {
+      # print(i)
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
+      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+    }
+    close(varfile)
+    ncdf4::nc_close(nc)
+  }  ### End of year loop
   
-    #******************** Declare netCDF variables ********************#
-    t <- ncdim_def(name = "time",
-                   units = paste0("days since ", y, "-01-01 00:00:00"),
-                   vals =  (Dayflx.dat$DOY),
-                   calendar = "standard", unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east",
-                     vals =  as.numeric(sitelat),
-                     longname = "station_latitude") 
-    lon <- ncdim_def("lon", "degrees_north",
-                     vals = as.numeric(sitelon),
-                     longname = "station_longitude")
-
-for(i in 1:length(output)){
-  if(length(output[[i]])==0) output[[i]] <- rep(-999,length(t$vals))
-}
-
-mstmipvar <- PEcAn.utils::mstmipvar
-var <- list()
-var[[1]]  <- mstmipvar("GPP", lat, lon, t, NA)
-var[[2]]  <- mstmipvar("NPP", lat, lon, t, NA)
-var[[3]]  <- mstmipvar("TVeg", lat, lon, t, NA)
-var[[4]]  <- mstmipvar("Qh", lat, lon, t, NA)
-var[[5]]  <- mstmipvar("Qle", lat, lon, t, NA)
-
-#******************** Declar netCDF variables ********************#
-
-
-### Output netCDF data
-nc <- nc_create(file.path(outdir, paste(y,"nc", sep=".")), var)
-varfile <- file(file.path(outdir, paste(y, "nc", "var", sep=".")), "w")
-for(i in 1:length(var)){
-  #print(i)
-  ncvar_put(nc,var[[i]],output[[i]])  
-  cat(paste(var[[i]]$name, var[[i]]$longname), file=varfile, sep="\n")
-}
-close(varfile)
-nc_close(nc)
-} ### End of year loop
-
-
-
-} ### End of function
+}  ### End of function  

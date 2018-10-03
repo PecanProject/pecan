@@ -11,15 +11,15 @@
 ##' @param tau spatial var
 ##' 
 ##' @author Michael Dietze
-`calcSpatialCov.list` <-
-function(d,psi,tau){
-  m <- length(d)
+calcSpatialCov.list <- function(d, psi, tau) {
+  m  <- length(d)
   nl <- nrow(d[[1]])
-  H <- matrix(0,nl,nl)
-  if(length(psi) == 1 && m > 1){
-    ##apply same psi to all directions
-    psi <- rep(psi,m)
+  H  <- matrix(0, nl, nl)
+  if (length(psi) == 1 && m > 1) {
+    ## apply same psi to all directions
+    psi <- rep(psi, m)
   }
+  
   #for(i in 1:nl){
   #  for(j in i:nl){
   #    tmp <- 0
@@ -27,9 +27,10 @@ function(d,psi,tau){
   #    H[i,j] <- tau*exp(tmp)
   #    H[j,i] <- H[i,j]
   #  }
-  #}
-  for(k in 1:m) H <- H - psi[k]*d[[k]]
-  H <- tau*exp(H)
-  return(H)
-}
-
+  #}  
+  
+  for (k in seq_len(m)) {
+    H <- H - psi[k] * d[[k]]
+  }
+  return(tau * exp(H))
+} # calcSpatialCov.list

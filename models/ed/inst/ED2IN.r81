@@ -1373,7 +1373,7 @@ $ED_NL
    NL%ISHUFFLE    = 0        ! 2. Randomly pick recycled years
    NL%METCYC1     = @MET_START@     ! First year of met data             
    NL%METCYCF     = @MET_END@     ! Last year of met data
-   NL%IMETAVG     = 0
+   NL%IMETAVG     = @MET_SOURCE@
    NL%IMETRAD     = 0
    NL%INITIAL_CO2 = 370.0    ! Initial value for CO2 in case no CO2 is provided at the
                              ! meteorological driver dataset

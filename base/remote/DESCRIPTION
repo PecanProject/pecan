@@ -1,0 +1,23 @@
+Package: PEcAn.remote
+Type: Package
+Title: PEcAn model execution utilities
+Version: 1.6.0
+Authors@R:c( person("David","LeBauer"),
+             person("Rob","Kooper"),
+             person("Shawn", "Serbin"),
+             person("Alexey", "Shiklomanov"))
+Author: Alexey Shiklomanov, Rob Kooper, Shawn Serbin, David LeBauer
+Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
+Description: This package contains utilities for communicating with and executing code on local and remote hosts.
+    In particular, it has PEcAn-specific utilities for starting ecosystem model runs.
+Imports:
+    PEcAn.logger
+Suggests:
+    testthat,
+    tools,
+    getPass
+License: FreeBSD + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.0

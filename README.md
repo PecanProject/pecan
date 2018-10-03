@@ -1,25 +1,36 @@
+[![Build Status](https://travis-ci.org/PecanProject/pecan.svg?branch=master)](https://travis-ci.org/PecanProject/pecan)
+[![Slack](https://img.shields.io/badge/slack-login-green.svg)](https://pecanproject.slack.com/) 
+[![Slack](https://img.shields.io/badge/slack-join_chat-green.svg)](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE)
+[![DOI](https://zenodo.org/badge/4469/PecanProject/pecan.svg)](https://zenodo.org/badge/latestdoi/4469/PecanProject/pecan)
+
+
+
+## Our Vision
+#### Ecosystem science, policy, and management informed by the best available data and models
+
+## Our Mission
+#### Develop and promote accessible tools for reproducible ecosystem modeling and forecasting
+
 
 ## What is PEcAn?
 
-[![Build Status](https://travis-ci.org/PecanProject/pecan.svg?branch=master)](https://travis-ci.org/PecanProject/pecan)[![Join the chat at https://gitter.im/PecanProject/pecan](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PecanProject/pecan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+The Predictive Ecosystem Analyzer (PEcAn) (see [pecanproject.org](http://pecanproject.org)) is an integrated ecological bioinformatics toolbox (Dietze et al 2013, LeBauer et al, 2013) that consists of: 1) a scientific workflow system to manage the immense amounts of publicly-available environmental data and 2) a Bayesian data assimilation system to synthesize this information within state-of-the-art ecosystems models. This project is motivated by the fact that many of the most pressing questions about global change are not necessarily limited by the need to collect new data as much as by our ability to synthesize existing data. This project seeks to improve this ability by developing a accessibe framework for integrating multiple data sources in a sensible manner.
 
-The Predictive Ecosystem Analyzer (PEcAn) (see [pecanproject.org](http://pecanproject.org)) is an integrated ecological bioinformatics toolbox (LeBauer et al, 2013) that consists of: 1) a scientific workflow system to manage the immense amounts of publicly-available environmental data and 2) a Bayesian data assimilation system to synthesize this information within state-of-the-art ecosystems models. This project is motivated by the fact that many of the most pressing questions about global change are not necessarily limited by the need to collect new data as much as by our ability to synthesize existing data. This project seeks to improve this ability by developing a framework for integrating multiple data sources in a sensible manner.
+The PEcAn workflow system allows ecosystem modeling to be more reproducible, automated, and transparent in terms of operations applied to data, and thus ultimately more comprehensible to both peers and the public. It reduces the redundancy of effort among modeling groups, facilitate collaboration, and makes models more accessible the rest of the research community.
 
-The output of the data assimilation system will be a regional-scale high-resolution estimate of both the terrestrial carbon cycle and plant biodiversity based on the best available data and with a robust accounting of the uncertainties involved. The workflow system will allow ecosystem modeling to be more reproducible, automated, and transparent in terms of operations applied to data, and thus ultimately more comprehensible to both peers and the public. It will reduce the redundancy of effort among modeling groups, facilitate collaboration, and make models more accessible the rest of the research community.
-
-PEcAn is not itself an ecosystem model, and it can be used to with a variety of different ecosystem models; integrating a model involves writing a wrapper to convert inputs and outputs to and from the standards used by PEcAn. Currently, PEcAn supports the Ecosystem Demography model (Medvigy et al 2009), SIPNET (Sacks et al 2005), and BioCro (Miguez et al 2009).
+PEcAn is not itself an ecosystem model, and it can be used to with a variety of different ecosystem models; integrating a model involves writing a wrapper to convert inputs and outputs to and from the standards used by PEcAn. Currently, PEcAn supports over a dozen ecosystem models, with more being added all the time (see the _models_ folder for the most up-to-date list)
 
 ## Documentation
 
-Consult our [Gitbook](https://pecan.gitbooks.io/pecan-documentation/content/)for full documentation of the PEcAn Project.
+Consult our [Documentation](https://pecanproject.github.io/pecan-documentation/) for full documentation of the PEcAn Project.
 
 ## Getting Started
 
-See ["Getting Started"](https://pecan.gitbooks.io/pecan-documentation/content/users_guide/basic_users_guide/Getting-started.html) on the PEcAn.
+See ["Getting Started"](https://pecanproject.github.io/pecan-documentation/getting-started.html) on the PEcAn.
 
 ### Installation
 
-Complete instructions on how to install PEcAn can be found in the [Gitbook Installation Page](https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Installing-PEcAn.html). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
+Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/appendix.html). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
 
 ### Website
 
@@ -38,17 +49,14 @@ The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have
 * Dietze, M.C., D.S LeBauer, and R. Kooper (2013). On improving the communication between models and data. Plant, Cell, & Environment [doi:10.1111/pce.12043](http://dx.doi.org/10.1111/pce.12043)
 * Dietze, Michael C., Shawn P. Serbin, Carl Davidson, Ankur R. Desai, Xiaohui Feng, Ryan Kelly, Rob Kooper et al. "A quantitative assessment of a terrestrial biosphere model's data needs across North American biomes." Journal of Geophysical Research: Biogeosciences 119, no. 3 (2014): 286-300.
 * Viskari, Toni, Brady Hardiman, Ankur R. Desai, and Michael C. Dietze. "Model-data assimilation of multiple phenological observations to constrain and predict leaf area index." (2015) [doi:10.1890/14-0497.1](http://dx.doi.org/10.1890/14-0497.1)
-
-
-## Other References
-
-* Medvigy, D., S. C. Wofsy, J. W. Munger, D. Y. Hollinger, and P. R. Moorcroft (2009). "Mechanistic scaling of ecosystem function and dynamics in space and time: Ecosystem Demography model version 2". Journal of Geophysical Research 114:121.
-* Miguez, F. E., Maughan, M., Bollero, G. A., & Long, S. P. (2012). Modeling spatial and dynamic variation in growth, yield, and yield stability of the bioenergy crops Miscanthus x giganteus and Panicum virgatum across the conterminous United States. GCB Bioenergy.
-* Sacks, W. J., Schimel, D. S., Monson, R. K., & Braswell, B. H. (2005). Model data synthesis of diurnal and seasonal CO2 fluxes at Niwot Ridge, Colorado. Global Change Biology, 12(2), 240-259.
+* Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. 2016 "Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion" Remote Sensing of the Environment 183: 226-238
+* LeBauer, David, Rob Kooper, Patrick Mulrooney, Scott Rohde, Dan Wang, Stephen P. Long, and Michael C. Dietze. "BETYdb: a yield, trait, and ecosystem service database applied to second‐generation bioenergy feedstock production." GCB Bioenergy (2017).
 
 ## Acknowledgements
 
-This material is based upon work supported by the Energy Biosciences Institute, the National Science Foundation under Grants No. 1062547 and 1062204, and the Department of Energy. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation. PEcAn is a collaboration among research groups at the Carl Woese Institute for Genomic Biology at the University of Illinois, the Department of Earth And Environment at Boston University, the Image Spatial Data Analysis group at the National Center for Supercomputing Applications, and the Department of Atmospheric & Oceanic Sciences at the University Wisconsin-Madison.
+The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA Terrestrial Ecosystems, the Energy Biosciences Institute, Department of Energy (ARPA-E awards #DE-AR0000594 and DE-AR0000598), and an Amazon AWS in Education Grant.
+
+Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation, NASA, or other federal agencies. PEcAn is a collaboration among research groups at the Department of Earth And Environment at Boston University, the Carl Woese Institute for Genomic Biology at the University of Illinois, the Image Spatial Data Analysis group at the National Center for Supercomputing Applications, the Department of Atmospheric & Oceanic Sciences at the University Wisconsin-Madison, and the Terrestrial Ecosystem Science & Technology group at Brookhaven National Lab.
 
 BETYdb is a product of the Energy Biosciences Institute at the University of Illinois at Urbana-Champaign. We gratefully acknowledge the great effort of other researchers who generously made their own data available for further study.
 

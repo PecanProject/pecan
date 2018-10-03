@@ -1,11 +1,11 @@
 require(rgdal)
-require(raster)
-require(sp)
-require(RgoogleMaps)
-require(maptools)
-require(ggplot2)
-require(car)
-require(spatstat)
+library(raster)
+library(sp)
+library(RgoogleMaps)
+library(maptools)
+library(ggplot2)
+library(car)
+library(spatstat)
 
 # coords<-data.frame(rbind(c(698996.57, 5091229.03),
 #                 c(699219.52, 5091258.81),

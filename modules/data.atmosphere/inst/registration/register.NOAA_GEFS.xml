@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<NOAA_GEFS>
+  <scale>site</scale>
+  <ensemble>21</ensemble>
+  <forecast>TRUE</forecast>
+  <format>
+    <id>33</id>
+    <name>CF Meteorology</name>
+    <mimetype>application/x-netcdf</mimetype>
+    <inputtype>nc</inputtype>
+  </format>
+</NOAA_GEFS>

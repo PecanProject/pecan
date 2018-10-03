@@ -1,0 +1,40 @@
+Example structure file
+
+&canopy					
+cshape = 'ROUND'					
+/					
+
+&lia		
+avgang = 77.			
+nalpha = 5					
+/	 
+
+&ladd
+jleaf = 0
+noagec = 1
+random = 1.0
+/					
+
+
+&aero
+extwind = 1.0
+/				
+
+&allom
+coefft = 91.4114
+expont = 1.741
+winterc = 0.0
+/
+
+&allomb
+bcoefft = 8.9126
+bexpont = 1.341
+binterc = 0.0
+/
+
+&allomr
+rcoefft = 20
+rexpont = 2.0
+rinterc = 0.0
+frfrac = 0.4
+/

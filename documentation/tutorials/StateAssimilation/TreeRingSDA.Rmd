@@ -1,0 +1,195 @@
+# State-Variable Data Assimilation
+
+
+## Objectives:
+* Assimilate tree ring estimated NPP & inventory AGB within the SIPNET model in order to:
+* Reconcile data and model NPP & AGB estimates
+* Constrain inferences about other ecosystem responses.
+
+## Overview:
+* Initial Run
+* Settings
+* Load and match plot and increment data
+* Estimate tree-level data uncertainties
+* Estimate allometric relationships
+* Estimate stand-level NPP
+* Sample initial conditions and parameters
+* Run Ensemble Kalman Filter
+
+### Initial Run
+
+Perform a site-level SIPNET run using the following settings
+
+* Site = UNDERC
+* Start = 01/01/1979
+* End = 12/31/2015
+* Met = NARR
+* Check **Brown Dog**
+* When the run is complete, open the pecan.xml and cut-and-paste the **outdir** for later use
+
+### Settings:
+
+* Open the PEcAn RStudio environment back up.
+
+* Set your working directory to the outdir from above ```setwd(outdir)``` and shift the file browser to that location (Files > More > Go To Working Directory)
+
+* Open up the latest settings file ```pecan.CONFIG.xml```. 
+
+* At the top of the file add the following tags to set the ensemble size
+
+```
+   <state.data.assimilation>
+   <n.ensemble>35</n.ensemble>
+   <process.variance>FALSE</process.variance>
+   <sample.parameters>TRUE</sample.parameters>
+   <data>
+    <format_id>1000000040</format_id>
+    <input.id>1000013298</input.id>
+  </data>
+   <state.variables>
+   <variable>
+   <variable.name>NPP</variable.name>
+   <unit>MgC/ha/yr</unit>
+        <min_value>-9999</min_value>
+        <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>AbvGrndWood</variable.name>
+       <unit>KgC/m^2</unit>
+       <min_value>0</min_value>
+       <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>TotSoilCarb</variable.name>
+      <unit>KgC/m^2</unit>
+      <min_value>0</min_value>
+      <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>LeafC</variable.name>
+         <unit>m^2/m^2</unit>
+         <min_value>0</min_value>
+         <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>SoilMoistFrac</variable.name>
+         <unit></unit>
+         <min_value>0</min_value>
+         <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>SWE</variable.name>
+         <unit>cm</unit>
+         <min_value>0</min_value>
+         <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>Litter</variable.name>
+         <unit>gC/m^2</unit>
+         <min_value>0</min_value>
+         <max_value>9999</max_value>
+   </variable>
+   </state.variables>
+   <forecast.time.step>year</forecast.time.step>
+  <start.date>1980/01/01</start.date>
+  <end.date>2015/12/31</end.date>
+  </state.data.assimilation>
+```
+
+* Delete the ```<pfts>`` block from the settings
+
+* In the PEcAn History, go to your PDA run and open ```pecan.pda[UNIQUEID].xml``` (the one PEcAn saved for you AFTER you finished the PDA)
+
+* Cut-and-paste the PDA ```<pfts>``` block into the SDA settings file
+
+* Save the file as ```pecan.SDA.xml```
+
+### Loading data
+
+* If you have not done so already, clone (new) or pull (update) the PalEON Camp2016 repository
+ + Open a shell under Tools > Shell
+ + ```cd`` to go to your home directory
+ + To clone: ```git clone git@github.com:PalEON-Project/Camp2016.git```
+ + To pull: ```cd Camp2016; git pull https://github.com/PalEON-Project/Camp2016.git master```
+
+* Open the tree-ring data assimilation workflow under Home > pecan > scripts > workflow.treering.R
+
+* Run the script from the start up through the LOAD DATA section
+
+
+### Estimating tree-level data uncertainties
+
+
+One thing that is critical for data assimilation, whether it is being used to estimate parameters or state variables, is the careful consideration and treatment of the uncertainties in the data itself. For this analysis we will be using a combination of forest plot and tree ring data in order to estimate stand-level productivity. The basic idea is that we will be using the plot-sample of measured DBHs as an estimate of the size structure of the forest, and will use the annual growth increments to project that forest backward in time. Tree biomass is estimated using empirical allometric equations relating DBH to aboveground biomass. There are a number of sources of uncertainty in this approach, and before moving you are encouraged to think about and write down a few:
+
+_______________________________________
+_______________________________________
+_______________________________________
+_______________________________________
+_______________________________________
+_______________________________________
+_______________________________________
+_______________________________________
+
+Today we will use a statistical model based on the model developed by Clark et al 2007 that partitions out a number of sources of variability and uncertainty in tree ring and plot data (Fig 1). This model is a Bayesian statespace model that treats the true diameters (D) and increments (X) as latent variables that are connected through a fairly simple mixed effects process model
+
+$$D_{ij,t+1} = D_{ij,t} + \mu + \alpha_{i} + \alpha_t + \epsilon_{ij,t}$$
+
+where i = individual, j = plot, t = time (year). Each of these terms are represented at normal distributions, where $\mu$ is a fixed effect (overall mean growth rate) and individual and year are random effects
+
+$$\mu \sim N(0.5,0.5)$$
+$$\alpha_{i} \sim N(0,\tau_{i})$$
+$$\alpha_{t} \sim N(0,\tau_{t})$$
+$$\epsilon_{ij,t} \sim N(0,\tau_{e})$$
+
+The connection between the true (latent) variable and the observations is also represented as normal with these variances representing measurement error:
+
+$$D_{ij,t}^O \sim N( D_{ij,t},\tau_D)$$
+$$X_{ij,t}^O \sim N( X_{ij,t},\tau_r)$$
+
+Finally, there are five gamma priors on the precisions, one for the residual process error ($\tau_{e}$), two for the random effects on individual ($\tau_{i}$) and time ($\tau_t$),
+and two measurement errors or DBH ($\tau_D$) and tree rings ($\tau_r$)
+
+$$\tau_{e} \sim Gamma(a_e,r_e)$$
+$$\tau_{i} \sim Gamma(a_i,r_i)$$
+$$\tau_{t} \sim Gamma(a_t,r_t)$$
+$$\tau_{D} \sim Gamma(a_D,r_D)$$
+$$\tau_{r} \sim Gamma(a_r,r_r)$$
+
+This model is encapsulated in the PEcAn function:
+
+```
+InventoryGrowthFusion(combined,n,iter)
+```
+
+where the first argument is the combined data set formatted for JAGS and the second is the number of MCMC interations. The model itself is written for JAGS and is embedded in the function. Running the above InventoryGrowthFusion will run a full MCMC algorithm, so it does take a while to run. The code returns the results as an mcmc.list object, and the next line in the script saves this to the outputs directory We then call the function InventoryGrowthFusionDiagnostics to print out a set of MCMC diagnostics and example time-series for growth and DBH.
+
+## Allometric equations
+
+Aboveground NPP is estimated as the increment in annual total aboveground biomass. This estimate is imperfect, but not unreasonable for demonstration purposes. As mentioned above, we will take an allometric approach of scaling from diameter to biomass: Biomass = b0 * DBH b1 We will generate the allometric equation on a PFT level using another Bayesian model that synthesizes across a database of species-level allometric equations (Jenkins et al 2004). This model has two steps within the overall MCMC loop. First it simulates data from each equation, including both parameter and residual uncertainties, and then it updated the parameters of a single allometric relationship across all observations. The code also fits a second model, which includes a random site effect, but for simplicity we will not be using output from this version. Prior to running the model we have to first query the species codes for our pfts. Next we pass this PFT list to the model, AllomAve, which saves the results to the output directory in addition to returning a summary of the parameters and covariances.
+
+## Estimate stand-level NPP
+
+If we have no uncertainty in our data or allometric equations, we could estimate the stand aboveground biomass (AGB) for every year by summing over the biomass of all the trees in the plot and then divide by the plot area. We would then estimate NPP by the difference in AGB between years. One approach to propagating uncertainties into NPP would be to transform the distribution of DBH for each individual tree and year into a distribution for biomass, then sum over those distributions to get a distribution for AGB and then subtract the distributions to get the distributions of NPP. However, if we do this we will greatly overestimate the uncertainty in NPP because we ignore the fact that our increment data has much lower uncertainty than our diameter data. In essence, if we take a random draw from a distribution of AGB in year and it comes back above average, the AGB is much more likely to also be above average the following year than if we were to do an independent draw from that distribution. Accounting for this covariance requires a fairly simple change in our approach and takes advantage of the nature of the MCMC output. The basic idea is that we are going to take a random draw from the full individual x year diameter matrix, as well as a random draw of allometric parameters, and perform the 'zero-error' calculation approach described above. We will then create a distribution of all the NPP estimates that comes out of repeated draws for the full diameter matrix. This approach is encapsulated in the function `plot2AGB`. The argument unit.conv is a factor that combines both the area of the plot and the unit conversion from tree biomass (kg/tree) to stand AGB (Mg/ha). There are two outputs from plot2AGB: a pdf depicting estimated NPP and AGB (mean and 95% CI) time series, with each page being a plot; and plot2AGB.Rdata, a binary record of the function output that is read into the data assimilation code. The latter is also returned from the fuction and assigned to the variable “state”. Finally, we calculate the mean and standard deviation of NPP and save this as obs.
+
+## Build Initial Conditions
+
+The function sample.IC.SIPNET uses the AGB estimate from the previous function in order to initialize the data assimilation routine. Specifically it samples n.ensemble values from the first time step of the AGB estimate. Embedded in this function are also a number of prior distributions for other state variables, which are also samples in order to create a full set of initial conditions for SIPNET.
+
+## Load Priors
+
+The function sample.parameters samples values from the most recent posterior parameter distributions. You can also specify a specific set of parameters so sample from by specifying the argument `<prior>` within `<assim.sequential>` as the posterior.id you want to use. This is useful to know if you want to go back and run with the Meta-analysis posteriors, or if you end up rerunning the meta-analysis and need to go back and specify the parameter data assimilation posteriors instead of the most recent.
+
+## Ensemble Kalman Filter
+
+The function `sda.enkf` will run SIPNET in Ensemble Kalman Filter mode. The output of this function will be all the of run outputs, a PDF of diagnostics, and an Rdata object that includes three lists:
+
+* FORECAST will be the ensemble forecasts for each year
+* ANALYSIS will be the updated ensemble sample given the NPP observations
+* enkf.params contains the prior and posterior mean vector and covariance matrix for each time step.
+
+If you look within this function you will find that much of the format is similar to the pda.mcmc function, but in general is much simpler. The function begins by setting parameters, opening a database connection, and generating workflow and ensemble ID's. Next we split the SIPNET clim meteorology file up into individual annual files since we will be running SIPNET for a year at a time between updates. Next we perform an initial set of runs starting from the initial states and parameters we described above. In doing so we create the run and output directories, the README file, and the runs.txt file that is read by start.model.runs. Worth noting is that the README and runs.txt don't need to be updated within the forecast loop. Given this initial run we then enter the forecast loop. Within this loop over years we perform four basic steps. First, we read the output from the latest runs. Second, we calculate the updated posterior state estimates based on the model ensemble prior and observation likelihood. Third, we resample the state estimates based on these posterior parameters. Finally, we start a new set of runs based on this sample. The sda.enfk function then ends by saving the outputs and generating some diagnostic figures. The first set of these shows the data, forecast, analysis. The second set shows pairs plots of the covariance structure for the Forecast and Analysis steps. The final set shows the time-series plots for the Analysis of the over state variables produced by SIPNET.
+
+## Finishing up
+
+The final bit of code in the script will register the workflow as complete in the database. After this is run you should be able to find all of the runs, and all of the outputs generated above, from within the PEcAn webpages.

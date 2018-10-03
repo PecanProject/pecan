@@ -1,0 +1,5 @@
+bookdown::gitbook:
+  split_by: chapter
+  config:
+    toc:
+      collapse: section

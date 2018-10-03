@@ -2,12 +2,12 @@
 % Please edit documentation in R/model2netcdf.CLM45.R
 \name{model2netcdf.CLM45}
 \alias{model2netcdf.CLM45}
-\title{Code to convert CLM4.5 output into netCDF format}
+\title{Code to convert CLM45 netcdf output into into CF standard}
 \usage{
 model2netcdf.CLM45(outdir, sitelat, sitelon, start_date, end_date)
 }
 \arguments{
-\item{outdir}{Location of ED model output}
+\item{outdir}{Location of CLM45 model output}
 
 \item{sitelat}{Latitude of the site}
 
@@ -17,7 +17,9 @@ model2netcdf.CLM45(outdir, sitelat, sitelon, start_date, end_date)
 
 \item{end_date}{End time of the simulation}
 }
+\description{
+Code to convert CLM45 netcdf output into into CF standard
+}
 \author{
 Michael Dietze
 }
-

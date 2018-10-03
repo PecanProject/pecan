@@ -5,11 +5,9 @@
 
 ##load required pkgs and libraries
 require(rgdal)
-require(proj4)
-require(raster)
-library(sp)
-library(rgdal)
 library(proj4)
+library(raster)
+library(sp)
 library(spatstat)
 library(maptools)
 

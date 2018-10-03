@@ -4,10 +4,11 @@
 \alias{download.PalEON}
 \title{download.PalEON}
 \usage{
-download.PalEON(sitename, outfolder, start_date, end_date, overwrite = FALSE)
+download.PalEON(sitename, outfolder, start_date, end_date,
+  overwrite = FALSE, ...)
 }
 \arguments{
-\item{end_year}{}
+\item{end_date}{}
 }
 \description{
 Download PalEON files
@@ -15,4 +16,3 @@ Download PalEON files
 \author{
 Betsy Cowdery
 }
-

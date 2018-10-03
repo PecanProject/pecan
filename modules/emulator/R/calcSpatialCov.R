@@ -3,6 +3,4 @@
 ##' @export
 ##'
 ##' @author Michael Dietze
-`calcSpatialCov` <-
-function(x,...) UseMethod("calcSpatialCov",x)
-
+calcSpatialCov <- function(x, ...) UseMethod("calcSpatialCov", x)

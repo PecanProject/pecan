@@ -5,7 +5,7 @@ exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
 # host specific setup
-@HOSTSPECIFIC@
+@HOST_SETUP@
 
 # create output folder
 mkdir -p "@OUTDIR@"
@@ -21,13 +21,13 @@ linkages('@INPUT@','@OUTDIR@','@RESTART@','@RESTARTFILE@')
   
   # check the status
   if [ $STATUS -ne 0 ]; then
-    echo -e "ERROR IN LINKAGES RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+    echo -e "ERROR IN LINKAGES RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
     exit $STATUS
   fi
  
   # convert to MsTMIP
   echo "require (PEcAn.LINKAGES)
-model2netcdf.LINKAGES('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+model2netcdf.LINKAGES('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @PFT_NAMES@)
 " | R --vanilla
 fi
 
@@ -36,5 +36,8 @@ cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables
 
+# host specific teardown
+@HOST_TEARDOWN@
+
 # all done
-echo -e "LINKAGES FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+echo -e "LINKAGES FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3

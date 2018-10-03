@@ -221,11 +221,11 @@ for(s in leaf.list){
 	j <- c3mcmc[[s]]$sims.list$Jmax
 	t <- c3mcmc[[s]]$sims.list$tau.FvCB
 
-	R <- mcmc(r)
-	V <- mcmc(v)
-	A <- mcmc(a)
-	J <- mcmc(j)
-	T <- mcmc(t)
+	R <- coda::mcmc(r)
+	V <- coda::mcmc(v)
+	A <- coda::mcmc(a)
+	J <- coda::mcmc(j)
+	T <- coda::mcmc(t)
 	n <- length(c3mcmc[[s]]$sims.list$R)
 
 	df <- data.frame(r,v,a,j,g,t)
@@ -237,11 +237,11 @@ for(s in leaf.list){
 	
 	## autocorrelation plots of each leaf
 	pdf(paste("Leaf_",s,"_FvCB_Vcmax_Autocorr.pdf",sep=""))
-	autocorr.plot(V)
+	coda::autocorr.plot(V)
 	dev.off()
 
 	pdf(paste("Leaf_",s,"_FvCB_Jmax_Autocorr.pdf",sep=""))
-	autocorr.plot(J)
+	coda::autocorr.plot(J)
 	dev.off()
 
 	## parameter correlation plots of each leaf

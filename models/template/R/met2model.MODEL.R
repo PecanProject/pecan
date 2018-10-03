@@ -20,6 +20,17 @@
 ##' @export
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
-met2model.MODEL <- function(in.path, in.prefix, outfolder, overwrite=FALSE) {
-  logger.severe("NOT IMPLEMENTED")
-}
+met2model.MODEL <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
+  PEcAn.logger::logger.severe("NOT IMPLEMENTED")
+
+  # Please follow the PEcAn style guide:
+  # https://pecanproject.github.io/pecan-documentation/master/coding-style.html
+  
+  # Note that `library()` calls should _never_ appear here; instead, put
+  # packages dependencies in the DESCRIPTION file, under "Imports:".
+  # Calls to dependent packages should use a double colon, e.g.
+  #    `packageName::functionName()`.
+  # Also, `require()` should be used only when a package dependency is truly
+  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
+  
+} # met2model.MODEL

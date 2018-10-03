@@ -4,10 +4,12 @@
 \alias{download.FACE}
 \title{download.FACE}
 \usage{
-download.FACE(sitename, outfolder, start_date, end_date, overwrite = FALSE)
+download.FACE(sitename, outfolder, start_date, end_date,
+  overwrite = FALSE, method, ...)
 }
 \arguments{
-\item{end_year}{}
+\item{method}{Optional. Passed to download.file() function.  Use this to set custom programs such as ncftp to use when
+downloading files from FTP sites}
 }
 \description{
 Download Raw FACE data from the internet
@@ -15,4 +17,3 @@ Download Raw FACE data from the internet
 \author{
 Betsy Cowdery
 }
-

@@ -1,0 +1,38 @@
+      <dataSource>
+         GENERIC
+      </dataSource>
+      <domainInfo>
+         <variableNames>
+            time    time
+            xc      lon
+            yc      lat
+            area    area
+            mask    mask
+         </variableNames>
+         <filePath>
+            @INDIR@/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516
+         </filePath>
+         <fileNames>
+            domain.lnd.360x720_gswp3.0v1.c170606.nc
+         </fileNames>
+      </domainInfo>
+      <fieldInfo>
+         <variableNames>
+            FLDS     FLDS
+            FSDS     FSDS
+            PRECTmms     PRECTmms
+            PSRF     PSRF
+            SHUM     SHUM
+            TBOT     TBOT
+            WIND     WIND
+         </variableNames>
+         <filePath>
+            @MET_PATH@
+         </filePath>
+         <fileNames>
+            @MET_FILES@
+         </fileNames>
+         <offset>
+            0
+         </offset>
+      </fieldInfo>

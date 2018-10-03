@@ -2,7 +2,7 @@
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the 
+ * are made available under the terms of the
  * University of Illinois/NCSA Open Source License
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
@@ -30,16 +30,17 @@ if ($authentication) {
 <!DOCTYPE html>
 <html>
 <head>
-<title>EBI Sites</title>
+<title>PEcAn</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
-<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
     function validate() {
         $("#error").html("");
     }
-        
+
     function prevStep() {
         $("#formprev").submit();
         }
@@ -70,10 +71,19 @@ if ($authentication) {
             <span id="error" class="small">&nbsp;</span>
             <input id="prev" type="button" value="History" onclick="prevStep();" />
             <input id="next" type="button" value="Next" onclick="nextStep();" />
-            
+
             <div class="spacer"></div>
         </form>
-<?php whoami(); ?>    
+<?php whoami(); ?>
+<p>
+  <a href="setups/" target="_blank">Basic Setup</a>
+<br>
+  <a href="https://pecanproject.github.io/pecan-documentation/master/" target="_blank">Documentation</a>
+<br>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
+<br>
+  <a href="setups/submitissues.php" target="_blank">Bug Report</a>
+</p>
     </div>
     <div id="output">
         <h1>Introduction</h1>
@@ -81,7 +91,7 @@ if ($authentication) {
         PEcAn worklflow. You will be able to always go back to a
         previous step to change inputs. However once the model is
         running it will continue to run until it finishes. You will
-        be able to use the history button to jump to existing 
+        be able to use the history button to jump to existing
         executions of PEcAn.</p>
         <p>The following webpages will help to setup the PEcAn
         workflow. You will be asked the following questions:</p>
@@ -96,7 +106,7 @@ if ($authentication) {
         PEcAn will execute the workflow.</li>
         <li><b>Results</b> After execution of the PEcAn workflow you
         will be presented with a page showing the results of the
-        PEcAn workflow.</li> 
+        PEcAn workflow.</li>
         </ol>
     </div>
     <div id="footer"><?php echo get_footer(); ?></div>

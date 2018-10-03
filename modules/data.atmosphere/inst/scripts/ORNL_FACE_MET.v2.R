@@ -7,7 +7,7 @@ dl <- c(0,32,61,92,122,153,183,214,245,275,306,336,367)
 month <- c("JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC")
 mon_num <- c("01","02","03","04","05","06","07","08","09","10","11","12")
 day2mo <- function(year,day){
-  leap <- (year %% 4 == 0)
+  leap <- lubridate::leap_year(year)
   mo <- rep(NA,length(day))
   mo[leap] <- findInterval(day[leap],dl)
   mo[!leap] <- findInterval(day[!leap],dm)
@@ -38,7 +38,7 @@ dat <- read.table(fname,header=TRUE)
   prateA <- num(dat$Rainf.)
   hgtA   <- rep(50,n)         # geopotential height [m]
   SW     <- num(dat$SWdown.)  #w/m2
-  shA    <- num(dat$Qair.) 
+  shA    <- num(dat$Qair.)
   dlwrfA <- num(dat$LWdown.)  # downward long wave radiation [W/m2]
   presA  <- num(dat$PSurf.)   # pressure [Pa]
 
@@ -49,27 +49,15 @@ dat <- read.table(fname,header=TRUE)
   doy <- num(dat$doy.)
   hr <- num(dat$hod.)
   mo <- day2mo(yr,doy)
-  
+
   ## calculate potential radiation
   ## in order to estimate diffuse/direct
-  f <- pi/180*(279.5+0.9856*doy)
-  et <- (-104.7*sin(f)+596.2*sin(2*f)+4.3*sin(4*f)-429.3*cos(f)-2.0*cos(2*f)+19.3*cos(3*f))/3600  #equation of time -> eccentricity and obliquity
-  merid <- floor(lon/15)*15
-  if(merid<0) merid <- merid+15
-  lc <- (lon-merid)*-4/60  ## longitude correction
-  tz <- merid/360*24 ## time zone
-  midbin <- 0.5*dt/86400*24 ## shift calc to middle of bin
-  t0 <- 12+lc-et-tz-midbin   ## solar time
-  h <- pi/12*(hr-t0)  ## solar hour
-  dec <- -23.45*pi/180*cos(2*pi*(doy+10)/365)  ## declination
+  cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 
-  cosz <- sin(lat*pi/180)*sin(dec)+cos(lat*pi/180)*cos(dec)*cos(h)
-  cosz[cosz<0] <- 0
-  
   rpot <- 1366*cosz
   rpot <- rpot[1:n]
   rpotL <-(rpot[c(9:n,1:8)])#rad in local time
-  
+
   SW[rpotL < SW] <- rpotL[rpotL<SW] ## ensure radiation < max
       ### this causes trouble at twilight bc of missmatch btw bin avergage and bin midpoint
   frac <- SW/rpotL
@@ -78,7 +66,7 @@ dat <- read.table(fname,header=TRUE)
   frac[is.na(frac)] <- 0.0
   frac[is.nan(frac)] <- 0.0
   SWd <- SW*(1-frac)  ## Diffuse portion of total short wave rad
-  
+
 ### convert to ED2.1 hdf met variables
   nbdsfA <- (SW - SWd) * 0.57 # near IR beam downward solar radiation [W/m2]
   nddsfA <- SWd * 0.48        # near IR diffuse downward solar radiation [W/m2]
@@ -105,7 +93,7 @@ for(i in 1:length(cname)){
   ELEV[ELEV > 700] <- 550
   AMB[AMB > 700] <- 360
 
-  
+
   sely = which(yr == cyr)
   for(m in unique(mo)){
     selm <- sely[which(mo[sely] == m)]-8
@@ -124,7 +112,7 @@ for(i in 1:length(cname)){
     sh    <- array(shA[selm],dim=dims)
     tmp   <- array(tmpA[selm],dim=dims)
 #    co2   <- array(co2A[selm],dim=dims)
-   
+
     ## grab & fill in other vars
 ##    ncep <- read.table(paste("ncep/",mon_num[m],year,".dat",sep=""))
 ##    dlwrf <- rep(ncep[,11],each=6)
@@ -150,14 +138,14 @@ for(i in 1:length(cname)){
     selcm[selcm < 1] <- 1
     ##ambient
     co2 <- array(AMB[selcm],dim=c(1,1,length(selcm)))
-    mout <- paste("NCDF/AMB_",year,month[m],".h5",sep="")    
+    mout <- paste("NCDF/AMB_",year,month[m],".h5",sep="")
     hdf5save(mout,"nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt"
              ,"ugrd","vgrd","sh","tmp","co2")
     ## elevated
     co2 <- array(ELEV[selcm],dim=c(1,1,length(selcm)))
-    mout <- paste("NCDF/ELEV_",year,month[m],".h5",sep="")    
+    mout <- paste("NCDF/ELEV_",year,month[m],".h5",sep="")
     hdf5save(mout,"nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt"
              ,"ugrd","vgrd","sh","tmp","co2")
-    
+
   }
 }

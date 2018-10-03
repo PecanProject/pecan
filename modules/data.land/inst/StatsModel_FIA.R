@@ -2,7 +2,7 @@
 library(rjags)
 
 #Reading in files
-PSS <- read.csv(file="/sitefiles.radius 0.075.lat 29.8848 lon -83.3542.pss.csv", head=TRUE, sep=",")
+PSS <- read.csv(file="/sitefiles.radius_0.075.lat_29.8848_lon_-83.3542.pss.csv", head=TRUE, sep=",")
 
 #Using NLCD thresholds to change PSS file to NLCD landcover.
 #Since all MANDIFORE points have at least 50% forest cover, I do not check for minimum vegetation cover

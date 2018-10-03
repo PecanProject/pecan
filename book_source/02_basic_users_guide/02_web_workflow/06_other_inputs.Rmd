@@ -1,0 +1,3 @@
+### Other model inputs
+
+Finally, any other model-specific inputs (e.g. N deposition, land use history, etc), should be met by [Creating a new Input record in BETY] or using files that have already been uploaded.

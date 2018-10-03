@@ -16,6 +16,5 @@ List of likelihood functions, one for each dataset to be assimilated against.
 Define PDA Likelihood Functions
 }
 \author{
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
-

@@ -20,4 +20,3 @@ Spline estimate of univariate relationship between parameter value and model out
 \details{
 Creates a spline function using the splinefun function that estimates univariate response of parameter input to model output
 }
-

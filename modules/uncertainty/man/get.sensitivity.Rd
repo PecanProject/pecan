@@ -22,4 +22,3 @@ This function evaluates the sensitivity of a model to a parameter.
 This is done by evaluating the first derivative of the univariate spline estimate
 of the model response at the parameter median.
 }
-

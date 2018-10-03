@@ -4,8 +4,8 @@
 \alias{write.config.LINKAGES}
 \title{Write LINKAGES configuration files}
 \usage{
-write.config.LINKAGES(defaults = NULL, trait.values = NULL, settings,
-  run.id)
+write.config.LINKAGES(defaults = NULL, trait.values, settings, run.id,
+  restart = NULL, spinup = FALSE, inputs = NULL, IC = NULL)
 }
 \arguments{
 \item{defaults}{list of defaults to process}
@@ -29,4 +29,3 @@ and the name of the file to create
 \author{
 Ann Raiho, Betsy Cowdery
 }
-

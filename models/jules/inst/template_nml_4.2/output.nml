@@ -1,0 +1,28 @@
+&jules_output
+nprofiles=1,
+output_dir='@OUTDIR@',
+run_id='@RUNID@',
+/
+&jules_output_profile
+file_period=-2,
+output_main_run=.true.,
+output_spinup=.false.,
+profile_name='STATIC',
+  nvars   = 29,
+  
+  var = 'cv', 'cs_gb', 'gpp_gb', 'resp_p_gb', 'resp_s_gb', 'npp_gb', 
+   'albedo_land','lw_net', 'sw_net', 'ftl_gb', 'latent_heat', 'lai', 'qbase', 
+   'snow_depth_gb', 'snow_mass_gb',
+   'smcl', 't_soil', 'lw_down', 'sw_down', 'precip', 'pstar', 'q1p5m_gb', 
+   't1p5m_gb', 'wind', 'ecan_gb', 'npp', 
+   'frac', 'lit_c', 'swet_tot',
+  
+  var_name = 'TotLivBio', 'TotSoilCarb', 'GPP', 'AutoResp', 'HeteroResp', 'NPP', 
+   'SW_albedo', 'LWnet', 'SWnet', 'Qh', 'Qle', 'LAI', 'Qs', 
+   'SnowDepth', 'SWE', 
+   'SoilMoist', 'SoilTemp', 'lwdown', 'swdown', 'precipf', 'psurf', 'qair', 
+   'tair', 'wind', 'Evap', 'NPP_PFT',
+   'frac_grid', 'LeafLitter', 'SoilMoistFrac'
+  
+  output_type = 29*'M',
+/

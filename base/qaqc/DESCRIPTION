@@ -1,0 +1,21 @@
+Package: PEcAn.qaqc
+Type: Package
+Title: QAQC
+Version: 1.6.0
+Date: 2018-08-20
+Authors@R:c( person("David","LeBauer"))
+Author: David LeBauer
+Maintainer: David LeBauer <dlebauer@illinois.edu>
+Description: PEcAn integration and model skill testing
+Depends:
+    plotrix
+Imports:
+    PEcAn.logger
+Suggests:
+	testthat
+License: FreeBSD + file LICENSE
+Copyright: Authors
+LazyLoad: yes
+LazyData: FALSE
+Encoding: UTF-8
+RoxygenNote: 6.1.0

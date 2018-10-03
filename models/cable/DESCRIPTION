@@ -1,0 +1,23 @@
+Package: PEcAn.CABLE
+Type: Package
+Title: PEcAn package for integration of the CABLE model
+Version: 1.6.0
+Date: 2018-08-20
+Authors@R: c(person("Kaitlin","Ragosta"),
+              person("Tony", "Gardella"))
+Author: Kaitlin Ragosta
+Maintainer: Anthony Gardella <tonygard@bu.edu>
+Description: This module provides functions to link the (CABLE) to PEcAn.
+Imports:
+    PEcAn.logger,
+    PEcAn.utils (>= 1.4.8)
+Suggests:
+    testthat (>= 1.0.2)
+SystemRequirements: CABLE
+OS_type: unix
+License: FreeBSD + file LICENSE
+Copyright: Authors
+LazyLoad: yes
+LazyData: FALSE
+Encoding: UTF-8
+RoxygenNote: 6.1.0

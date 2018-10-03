@@ -2,183 +2,151 @@
 #'
 #' @param lat latitude in decimal degrees
 #' @param lon longitude in decimal degrees
-#' @param met.nc full path and name of a netCDF file in PEcAn-CF format with meteorological driver data 
+#' @param metpath full path and name prefix of a csv file with hourly data in BioCro format,
+#' e.g. `/dir/met` if the files to be used are `/dir/met.2004.csv` and `dir/met.2005.csv'
 #' @param soil.nc full path and name of a netCDF file with soil data
-#' @param config full path and name of a config.xml file containing parameter values and configuration information for BioCro 
-#' @param coppice.interval numeric, number of years between cuttings for coppice plant or perinneal grass (default 1) 
+#' @param config full path and name of a config.xml file containing parameter values and configuration information for BioCro
+#' @param coppice.interval numeric, number of years between cuttings for coppice plant or perennial grass. Only used with BioCro 0.9; ignored when using later versions.
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
 #' @author David LeBauer
-run.biocro <- function(lat, lon, met.nc = met.nc, 
-                       soil.nc = NULL, 
-                       config = config,
-                       coppice.interval = 1,
-                       met.uncertainty = FALSE,
-		       irrigation = FALSE){
-  require(data.table)
-  require(lubridate)
-  start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")
-  end.date <- floor_date(as.POSIXct(config$simulationPeriod$dateofharvest), "day")
+run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1) {
+
+  start.date <- lubridate::date(config$run$start.date)
+  end.date   <- lubridate::date(config$run$end.date)
   genus <- config$pft$type$genus
+  years <- lubridate::year(start.date):lubridate::year(end.date)
 
-  ## Meteorology
-  
-  if(met.uncertainty == TRUE){
-    start.date <- "1979-01-01"
-    end.date <- "2010-12-31"
-    years <- sample(year(start.date):year(end.date), 
-                                 size = 15, replace = TRUE)
-    
+  if (!is.null(soil.nc)) {
+    soil <- PEcAn.data.land::get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
+    config$pft$soilControl$soilType <- ifelse(soil$usda_class %in% 1:10, 
+                                              soil$usda_class, 
+                                              10)
+    config$pft$soilControl$soilDepth <- soil$ref_depth
+  }
 
+  if (coppice.interval > 1) {
+    config$pft$coppice.interval = coppice.interval
+  }
+
+  if (utils::packageVersion('BioCro') >= 1.0) {
+    caller_fn <- call_biocro_1
   } else {
-    years <- year(start.date):year(end.date)
-  }
-  met <- load.cfmet(met.nc, lat = lat, lon = lon, 
-                    start.date = start.date, end.date = end.date)
-  if(met.uncertainty == TRUE){
-    met <- met[year %in% years]
+    caller_fn <- call_biocro_0.9
   }
 
-  dt <- as.numeric(mean(diff(met$date)))
-
-  if(dt > 1){
-    met <- cfmet.downscale.time(cfmet = met, output.dt = 1)
-  } 
-  if(irrigation) met$
-  biocro.met <- cf2biocro(met)
-
-  if(irrigation) biocro.met$precip
-
-  if(!is.null(soil.nc)){
-    soil <- get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
-    soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)  
-  } else {
-    soil.type <- NA
-  }
-  if(!is.na(soil.type)) {
-      config$pft$soilControl$soilType <- soil.type
-  }
-  soil.parms <- lapply(config$pft$soilControl, as.numeric)
-  
-  
-  for(i in 1:length(years)){
+  hourly.results <- list()
+  for (i in seq_along(years)) {
     yeari <- years[i]
-    yearindex <- i*10000 + yeari ## for use with met uncertainty
-    WetDat <- biocro.met[biocro.met$year == yeari, ]
+    metfile <- paste(metpath, yeari, "csv", sep = ".")
+    WetDat <- data.table::fread(metfile)
+    if(!all(sapply(WetDat, is.numeric))){
+      PEcAn.logger::logger.severe("Format error in weather file: All columns must be numeric, but got (", sapply(WetDat, class), ")")
+    }
 
-    ## day1 = last spring frost
-    ## dayn = first fall frost from Miguez et al 2009
-    if(as.numeric(config$location$latitude) > 0) {
-      day1 <-  as.numeric(as.data.table(WetDat)[doy < 180 & Temp < 0, list(day1 = max(doy))])
-      dayn <-  as.numeric(as.data.table(WetDat)[doy > 180 & Temp < 0, list(day1 = min(doy))])
-    } else if (as.numeric(config$location$latitude) < 0){
+    # Simulation for current year starts on the latest of:
+    # First day of whole model run, Jan 1 of current year, planting date, (last frost if planting date unset)
+    starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
+    endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
+    if (!is.null(config$simulationPeriod)) {
+      day1 <- lubridate::yday(config$simulationPeriod$dateofplanting)
+      dayn <- lubridate::yday(config$simulationPeriod$dateofharvest)
+    } else if (lat > 0) {
+      day1 <- max(WetDat[ (WetDat[,"doy"] < 180 & WetDat[,"Temp"] < -2), "doy"])
+      dayn <- min(WetDat[ (WetDat[,"doy"] > 180 & WetDat[,"Temp"] < -2), "doy"])
+      ## day1 = last spring frost dayn = first fall frost from Miguez et al 2009
+    } else {
       day1 <- NULL
       dayn <- NULL
     }
+    WetDat <- WetDat[
+      WetDat$doy >= max(day1, lubridate::yday(starti))
+      & WetDat$doy <= min(dayn, lubridate::yday(endi)), ]
 
     HarvestedYield <- 0
-    if(genus == "Saccharum") {
-      tmp.result<-caneGro(WetDat=WetDat, lat=lat, soilControl=soilP)
-      # Addin Rhizome an Grain to avoid error in subsequent script processing results
-      tmp.result$Rhizome <- 0
-      tmp.result$Grain <- 0
-    } else if (genus == "Salix") {
-      if(i == 1){
-        iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
-                               iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
-                               ifrLeaf = 0.0, ifrRoot = 0.0)
-      } else {
-      	iplant$iRhizome <- last(tmp.result$Rhizome)
-        iplant$iRoot <- last(tmp.result$Root)
-        iplant$iStem <- last(tmp.result$Stem)
 
-        if ((i - 1)  %% coppice.interval == 0) { # coppice when remainder = 0
-          HarvestedYield  <- round(last(tmp.result$Stem) * 0.95, 2)                
-        } else if ((i - 1)  %% coppice.interval == 1) { # year after coppice
-          iplant$iStem <- iplant$iStem * 0.05
-        } # else { # do nothing if neither coppice year nor year following
-      }
-      ## run willowGro
-      tmp.result <- willowGro(WetDat = WetDat,
-                              day1 = day1, dayn = dayn,
-                              soilControl = soilParms(soilType = soil.type),
-                              canopyControl = config$pft$canopyControl,
-                              willowphenoControl = config$pft$phenoParms,
-                              seneControl = config$pft$seneControl,
-                              iPlantControl = iplant,
-                              photoControl=config$pft$photoParms)
-      
-    } else if (genus == "Miscanthus"){
-      if(yeari == years[1]){
-        iRhizome <- config$pft$iPlantControl$iRhizome
-      } else {
-        iRhizome <- last(tmp.result$Rhizome)
-        HarvestedYield  <- round(last(tmp.result$Stem) * 0.95, 2)                
-      }
-      ## run BioGro
-      tmp.result <- BioGro(WetDat = WetDat,
-                           day1 = day1,
-                           dayn = dayn,
-                           soilControl = soil.parms,
-                           canopyControl = config$pft$canopyControl,
-                           phenoControl = phenoParms(),#config$pft$phenoParms,
-                           seneControl = config$pft$seneControl,
-                           iRhizome = as.numeric(iRhizome),
-                           photoControl=config$pft$photoParms)
-      
-    } else if (genus == "Sorghum"){
-      ## run BioGro
-      tmp.result <- BioGro(WetDat = WetDat,
-                           day1 = day1,
-                           dayn = dayn,
-                           soilControl = soil.parms,
-                           canopyControl = config$pft$canopyControl,
-                           phenoControl = phenoParms(),#config$pft$phenoParms,
-                           seneControl = config$pft$seneControl,
-                           photoControl=config$pft$photoParms)
-      
-    }
+    call_result <- caller_fn(
+      WetDat = WetDat,
+      genus = genus,
+      year_in_run = i,
+      config = config,
+      lat = lat, lon = lon,
+      tmp.result = tmp.result,
+      HarvestedYield = HarvestedYield)
+
+    tmp.result <- call_result$tmp.result
+    HarvestedYield <- call_result$HarvestedYield
+
     result.yeari.hourly <- with(tmp.result,
-                                data.table(yearindex = yearindex, 
-                                           year = yeari, 
-                                           doy = DayofYear, 
-                                           hour = Hour, ThermalT,
-                                           Stem, Leaf, Root, Rhizome, Grain, LAI,
-                                           SoilEvaporation, CanopyTrans, 
-                                           key = c("year", "doy", "hour")))
-    if(i == 1){
-      hourly.results <- result.yeari.hourly
-    } else if (i > 1){
-      hourly.results <- rbind(hourly.results, result.yeari.hourly)
-    }
+      data.table::data.table(
+        year = yeari,
+        doy, hour, ThermalT,
+        Stem, Leaf, Root,
+        AboveLitter, BelowLitter,
+        Rhizome, Grain, LAI,
+        SoilEvaporation, CanopyTrans,
+        key = c("year", "doy", "hour")))
+    result.yeari.withmet <- merge(x = result.yeari.hourly,
+                                  y = WetDat, by = c("year", "doy", "hour"))
+    hourly.results[[i]] <- result.yeari.withmet
   }
-  biocro.met.dt <- as.data.table(biocro.met)
-  setkeyv(biocro.met.dt, c("year", "doy", "hour"))
-  setkeyv(hourly.results, c("year", "doy", "hour"))
 
-  hourly.results <- merge(biocro.met.dt, hourly.results) ## right join
-  hourly.results <- hourly.results[order(yearindex, doy, hour)]
   
-  daily.results <- hourly.results[,list(Stem = max(Stem), Leaf = max(Leaf),
-                                        Root = max(Root), Rhizome = max(Rhizome),
-                                        SoilEvaporation = sum(SoilEvaporation),
-                                        CanopyTrans = sum(CanopyTrans),
-                                        Grain = max(Grain),
-                                        LAI = max(LAI),
-                                        tmax = max(Temp), tmin = min(Temp),
-                                        tavg = mean(Temp), precip = sum(precip)),
-                                  by = 'yearindex,doy']
+  hourly.results <- do.call("rbind", hourly.results)
+  hourly.results <- hourly.results[order(hourly.results$year, hourly.results$doy, hourly.results$hour),]
 
-  annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf),
-                                          Root = max(Root), Rhizome = max(Rhizome),
-                                          Grain = max(Grain),
-                                          SoilEvaporation = sum(SoilEvaporation),
-                                          CanopyTrans = sum(CanopyTrans),
-                                          map = sum(precip),
-                                          mat = mean(Temp)),
-                                          by = "yearindex"]
-  return(list(hourly = hourly.results,
-              daily = daily.results,
-              annually = data.table(lat = lat, lon = lon, annual.results)))
-}
+  # Compute daily and yearly results by taking max or sum as appropriate.
+  # This notation could be more compact if we used nonstandard evaluation
+  # with bare variable names, but this way works and ensures that
+  # `R CMD check` doesn't complain about undefined variables.
+  hourly_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars = c("year", "doy"))
+  daily.results <- dplyr::bind_cols(
+    dplyr::summarize_at(
+      .tbl = hourly_grp,
+      .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
+                "Rhizome", "Grain", "LAI", tmax = "Temp"),
+      .fun = max),
+    dplyr::summarize_at(
+      .tbl = hourly_grp,
+      .vars = c("SoilEvaporation", "CanopyTrans", "precip"),
+      .fun = sum),
+    dplyr::summarize_at(
+      .tbl = hourly_grp,
+      .vars = c(tmin = "Temp"),
+      .fun = min),
+    dplyr::summarize_at(
+      .tbl = hourly_grp,
+      .vars = c(tavg = "Temp"),
+      .fun = mean))
+  # bind_cols on 4 tables leaves 3 sets of duplicate year and day columns.
+  # Let's drop these.
+  col_order <- c("year", "doy", "Stem", "Leaf", "Root",
+                 "AboveLitter", "BelowLitter", "Rhizome",
+                 "SoilEvaporation", "CanopyTrans", "Grain", "LAI",
+                 "tmax", "tmin", "tavg", "precip")
+  daily.results <- daily.results[, col_order]
+  
+  daily_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars = "year")
+  annual.results <- dplyr::bind_cols(
+    dplyr::summarize_at(
+      .tbl = daily_grp,
+      .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
+                "Rhizome", "Grain"),
+      .fun = max),
+    dplyr::summarize_at(
+      .tbl = daily_grp,
+      .vars = c("SoilEvaporation", "CanopyTrans", map = "precip"),
+      .fun = sum),
+    dplyr::summarize_at(
+      .tbl = daily_grp,
+      .vars = c(mat = "Temp"),
+      .fun = mean))
+  col_order <- c("year", "Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
+                 "Rhizome", "Grain", "SoilEvaporation", "CanopyTrans",
+                 "map", "mat")
+  annual.results <- annual.results[, col_order]
 
+  return(list(hourly = hourly.results, 
+              daily = daily.results, 
+              annually = data.table::data.table(lat = lat, lon = lon, annual.results)))
+} # run.biocro

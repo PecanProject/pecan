@@ -4,7 +4,7 @@
 \alias{ensemble.ts}
 \title{Plots an ensemble time-series from PEcAn for the selected target variable}
 \usage{
-ensemble.ts(ensemble.ts, observations = NULL, window = 1)
+ensemble.ts(ensemble.ts, observations = NULL, window = 1, ...)
 }
 \value{
 nothing, generates an ensemble time-series plot
@@ -15,4 +15,3 @@ Plots an ensemble time-series from PEcAn for the selected target variable
 \author{
 Michael Dietze, Ryan Kelly
 }
-

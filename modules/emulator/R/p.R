@@ -2,6 +2,4 @@
 ##' @title p
 ##' @export
 ##' 
-`p` <-
-function(x,...) UseMethod("p",x)
-
+p <- function(x, ...) UseMethod("p", x)

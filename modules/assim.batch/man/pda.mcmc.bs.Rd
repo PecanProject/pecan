@@ -16,7 +16,7 @@ nothing. Diagnostic plots, MCMC samples, and posterior distributions
  are saved as files and db records.
 }
 \description{
-Paramater Data Assimilation using MCMC with block sampling
+Parameter Data Assimilation using MCMC with block sampling
 }
 \details{
 Brute-force, only to be used on simple models
@@ -26,4 +26,3 @@ Mike Dietze
 
 Ryan Kelly
 }
-

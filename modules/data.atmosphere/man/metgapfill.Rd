@@ -4,12 +4,12 @@
 \alias{metgapfill}
 \title{Take an Ameriflux NetCDF file
 Fill missing met values using MDS approach using MPI-BGC REddyProc library
-Currently 
+Currently
 Future version: Choose which variables to gap fill
 Future version will first downscale and fill with NARR, then REddyProc}
 \usage{
 metgapfill(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
-  overwrite = FALSE, verbose = FALSE)
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stord}
@@ -31,11 +31,10 @@ metgapfill(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
 \description{
 Take an Ameriflux NetCDF file
 Fill missing met values using MDS approach using MPI-BGC REddyProc library
-Currently 
+Currently
 Future version: Choose which variables to gap fill
 Future version will first downscale and fill with NARR, then REddyProc
 }
 \author{
 Ankur Desai
 }
-

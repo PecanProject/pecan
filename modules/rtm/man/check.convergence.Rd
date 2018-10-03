@@ -4,33 +4,25 @@
 \alias{check.convergence}
 \title{Check convergence of multiple MCMC chains}
 \usage{
-check.convergence(mcmc.samples.list, threshold = 1.1, verbose = TRUE,
-  autoburnin = FALSE, ...)
+check.convergence(jags_out, threshold = 1.1, verbose = TRUE, ...)
 }
 \arguments{
-\item{mcmc.samples.list}{mcmc.list object (from coda package) containing 
+\item{jags_out}{mcmc.list object (from coda package) containing
 samples from MCMC chains.}
 
 \item{threshold}{Gelman-Rubin diagnostic parameter threshold. Default = 1.1}
 
 \item{verbose}{If TRUE, print convergence result. Default = TRUE}
 
-\item{autoburnin}{Whether or not to automaticall perform burnin in 
-calculation of Gelman-Rubin diagnostic. Default = FALSE}
-
-\item{...}{Additional arguments to `gelman.diag` (from coda package)}
+\item{...}{Additional arguments to \code{gelman.diag} (from coda package)}
 }
 \value{
 List length 3 containing the following:
-
-     convergence: Logical. Whether or not convergence was achieved.
-
-     diagnostic: Numerical value of the Gelman-Rubin multivariate diagnostic
-
-     error: Logical. Whether or not an error occured in the Gelman-Rubin calculation.
+* convergence: Logical. Whether or not convergence was achieved.
+* diagnostics: Numerical value of Gelman-Rubin diagnostics for each parameter and multivariate diagnostic
+* error: Logical. Whether or not an error occured in the Gelman-Rubin calculation.
 }
-\details{
-Uses Gelman multivariate Gelman-Rubin diagnostic to check if 
+\description{
+Uses Gelman multivariate Gelman-Rubin diagnostic to check if
 multiple MCMC chains have converged
 }
-

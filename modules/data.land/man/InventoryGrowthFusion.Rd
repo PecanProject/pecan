@@ -4,12 +4,24 @@
 \alias{InventoryGrowthFusion}
 \title{InventoryGrowthFusion}
 \usage{
-InventoryGrowthFusion(data, n.iter, random = TRUE)
+InventoryGrowthFusion(data, cov.data = NULL, time_data = NULL,
+  n.iter = 5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000),
+  random = NULL, fixed = NULL, time_varying = NULL,
+  burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL,
+  save.state = TRUE, restart = NULL)
 }
 \arguments{
 \item{data}{list of data inputs}
 
+\item{n.chunk}{number of MCMC steps to evaluate at a time. Will only return LAST. If restarting, second number in vector is chunk to start from}
+
+\item{n.burn}{number of steps to automatically discard as burn-in}
+
 \item{random}{= whether or not to include random effects}
+
+\item{save.state}{whether or not to include inferred DBH in output (can be large). Enter numeric value to save.state periodically (in terms of n.chunk)}
+
+\item{restart}{final mcmc.list from previous execution. NULL for new run. TRUE to save final state for new run.}
 }
 \value{
 an mcmc.list object
@@ -21,4 +33,3 @@ for the same plots. Code is a rewrite of Clark et al 2007 Ecol Appl into JAGS
 \note{
 Requires JAGS
 }
-

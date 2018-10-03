@@ -1,0 +1,16 @@
+base
+methods
+datasets
+utils
+grDevices
+graphics
+stats
+knitr
+XML
+lattice
+MASS
+PEcAn.utils
+PEcAn.DB
+PEcAn.MA
+coda
+rjags

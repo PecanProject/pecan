@@ -19,7 +19,7 @@ single.MA(data, j.chains, j.iter, tauA, tauB, prior, jag.model.file,
 \item{tauB}{prior on variance parameters}
 
 \item{prior}{data.frame with columns named 'distn', 'parama', 'paramb'
-e.g. \code{prior <- data.frame(distn = "weibull", parama = 0.5, paramb = 10, n = 1)}}
+e.g. \code{prior <- data.frame(distn = 'weibull', parama = 0.5, paramb = 10, n = 1)}}
 
 \item{jag.model.file}{file to which model will be written}
 
@@ -39,4 +39,3 @@ full loop over traits and PFTs.
 \author{
 David LeBauer, Michael C. Dietze
 }
-

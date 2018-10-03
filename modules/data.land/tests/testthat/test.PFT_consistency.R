@@ -3,10 +3,11 @@
 # 
 # @author Anthony Cohen
 # ----------------------------------------------------------------------------------------------------------
-require(PEcAn.utils)
-require(PEcAn.settings)
-require(PEcAn.DB)
-require(RPostgreSQL)
+library(PEcAn.utils)
+library(PEcAn.settings)
+library(PEcAn.DB)
+library(RPostgreSQL)
+
 betyparms <- list(host = 'localhost', dbname = 'bety', 
                 user = 'bety', password = 'bety', driver = 'PostgreSQL', write = FALSE)
 fiaparms <- list(host = 'localhost', dbname = 'fia5data', 

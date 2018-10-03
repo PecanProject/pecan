@@ -22,10 +22,9 @@ Convert specific humidity to relative humidity
 \details{
 converting specific humidity into relative humidity
 NCEP surface flux data does not have RH
-from Bolton 1980 Teh computation of Equivalent Potential Temperature 
+from Bolton 1980 Teh computation of Equivalent Potential Temperature
 \url{http://www.eol.ucar.edu/projects/ceop/dm/documents/refdata_report/eqns.html}
 }
 \author{
 David LeBauer
 }
-

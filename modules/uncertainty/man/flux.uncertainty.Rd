@@ -22,7 +22,7 @@ time series, TRUE = use).}
 \item{minBin}{= minimum number of points allowed in a bin}
 }
 \value{
-List of parameters from the fitted uncertainty model
+return.list List of parameters from the fitted uncertainty model
 }
 \description{
 Calculate parameters for heteroskedastic flux uncertainty
@@ -30,4 +30,3 @@ Calculate parameters for heteroskedastic flux uncertainty
 \author{
 Mike Dietze, Carl Davidson
 }
-

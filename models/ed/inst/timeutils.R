@@ -17,45 +17,13 @@
 
 #==========================================================================================#
 #==========================================================================================#
-#      Function that determines whether the year is leap or not.                           #
-#------------------------------------------------------------------------------------------#
-is.leap = function(when){
-
-   if (is.chron(when)){
-      year = numyears(when)
-   }else{
-      year = when
-   }#end if
-
-   leaptf = year %% 400 == 0 | (year %% 4 == 0 & year %% 100 != 0)
-   return(leaptf)
-} #end function
-#==========================================================================================#
-#==========================================================================================#
-
-
-
-
-
-
-#==========================================================================================#
-#==========================================================================================#
 #      Function that determines the number of days in a given month.                       #
 #------------------------------------------------------------------------------------------#
-daymax = function(month,year){
-  mmm  = c(31,28,31,30,31,30,31,31,30,31,30,31)
-  mday = mmm[month]
-
-  addone       = month == 2 & is.leap(year)
-  mday[addone] = mday[addone] + 1
-
-  return(mday)
-} #end function
+daymax = function(month, year) {
+  as.integer(days_in_month(as.Date(paste(year, month, 1, sep='-'))))
+} # daymax
 #==========================================================================================#
 #==========================================================================================#
-
-
-
 
 
 
@@ -272,7 +240,7 @@ dayofyear = function(when){
    thisyear  = numyears (when)
    thisfrac  = hms2frac (when)
    
-   addone    = as.integer(thismonth > 2 & is.leap(when))
+   addone    = as.integer(thismonth > 2 & lubridate::leap_year(when))
 
    doy =  thisday + offdays[thismonth] + addone + thisfrac
    return(doy)

@@ -4,7 +4,7 @@
 \alias{pda.adjust.jumps}
 \title{Adjust PDA MCMC jump size}
 \usage{
-pda.adjust.jumps(settings, accept.rate, pnames = NULL)
+pda.adjust.jumps(settings, jmp.list, accept.rate, pnames = NULL)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
@@ -18,4 +18,3 @@ Adjust PDA MCMC jump size
 \author{
 Ryan Kelly
 }
-

@@ -8,23 +8,24 @@
 ##' @return dst
 ##'  
 ##' @author Michael Dietze
-`distance` <-
-function(x,power=1){
+distance <- function(x, power = 1) {
   dst <- list()
-  n <- nrow(x); if(is.null(n)) n <- length(x)
-  m <- ncol(x);
-  if(is.null(m)) {
-    m <- 1
-    x <- matrix(x,n,m)
+  n <- nrow(x)
+  if (is.null(n)) {
+    n <- length(x)
   }
-  for(k in 1:m){
-    dst[[k]] <- matrix(NA,n,n)
-    for(i in 1:n){
-      for(j in 1:n){
-        dst[[k]][i,j] <- (abs(x[i,k]-x[j,k]))^power
+  m <- ncol(x)
+  if (is.null(m)) {
+    m <- 1
+    x <- matrix(x, n, m)
+  }
+  for (k in seq_len(m)) {
+    dst[[k]] <- matrix(NA, n, n)
+    for (i in seq_len(n)) {
+      for (j in seq_len(n)) {
+        dst[[k]][i, j] <- (abs(x[i, k] - x[j, k]))^power
       }
     }
   }
-  dst
-}
-
+  return(dst)
+} # distance

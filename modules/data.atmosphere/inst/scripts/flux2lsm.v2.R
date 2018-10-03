@@ -115,15 +115,13 @@ AirDens <- function(pres, T, rv){
 firstday <- function(mo,yr){
   ldoy = c(0,31,60,91,121,152,182,213,244,274,305,335,366)  
   doy = c(0,31,59,90,120,151,181,212,243,273,304,334,365)  
-  if(yr%%4 == 0){return(ldoy[mo])}
-  return(doy[mo])
+  ifelse(lubridate::leap_year(yr), ldoy[mo], doy[mo])
 }
 
 nday <- function(mo,yr){
   lnday = c(31,29,31,30,31,30,31,31,30,31,30,31)  
   nday = c(31,28,31,30,31,30,31,31,30,31,30,31)  
-  if((yr-2000)%%4 == 0){return(lnday[mo])}
-  return(nday[mo])
+  ifelse(lubridate::leap_year(yr), lnday[mo], nday[mo])
 }
 
 

@@ -11,21 +11,20 @@ invert.lsq(observed, inits, model, lower = NULL, upper = NULL)
 
 \item{inits}{Vector of initial conditions for the parameters.}
 
-\item{model}{An R function that calls the RTM and returns the error to be 
+\item{model}{An R function that calls the RTM and returns the error to be
 minimized. Be sure to include constants here.}
 
 \item{lower}{Lower bounds on parameters (default=NULL, which means -Inf).}
 
 \item{uppper}{Upper bounds on parameters (default=NULL, which means +Inf).}
 }
-\details{
-Performs a least-squares inversion of an arbitrary radiative 
-transfer model (passed as an R function). The inversion attempts to minimize 
-the sum of residual least squares between modeled and observed spectra via 
-the Levenberg-Marquardt algorithm (`nls.lm` function from the `minpack.lm` 
+\description{
+Performs a least-squares inversion of an arbitrary radiative transfer model
+(passed as an R function). The inversion attempts to minimize the sum of
+residual least squares between modeled and observed spectra via the
+Levenberg-Marquardt algorithm (\code{nls.lm} function from the \code{minpack.lm}
 package).
 }
 \author{
 Alexey Shiklomanov
 }
-

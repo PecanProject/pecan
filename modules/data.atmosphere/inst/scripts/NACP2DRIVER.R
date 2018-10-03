@@ -9,8 +9,8 @@ dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
 dl <- c(0,32,61,92,122,153,183,214,245,275,306,336,367)
 month <- c("JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC")
 mon_num <- c("01","02","03","04","05","06","07","08","09","10","11","12")
-day2mo <- function(year,day){
-  leap <- (year %% 4 == 0)
+day2mo <- function(year, day){
+  leap <- lubridate::leap_year(year)
   mo <- rep(NA,length(day))
   mo[leap] <- findInterval(day[leap],dl)
   mo[!leap] <- findInterval(day[!leap],dm)
@@ -79,9 +79,9 @@ for(i in 33:34){#35:length(fname)){
   for(y in base.time+1:nyr-1){
     ytmp <- rep(y,365*86400/dt)
     dtmp <- rep(1:365,each=86400/dt)
-    if(y %% 4 == 0){  ## is leap
-      ytmp <- rep(y,366*86400/dt)
-      dtmp <- rep(1:366,each=86400/dt)
+    if(lubridate::leap_year(y)) {  ## is leap
+      ytmp <- rep(y, 366*86400 / dt)
+      dtmp <- rep(1: 366, each=86400 / dt)
     }
     if(is.null(yr)){
       yr <- ytmp

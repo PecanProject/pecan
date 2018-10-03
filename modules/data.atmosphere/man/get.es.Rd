@@ -22,4 +22,3 @@ plot(temp, get.es(temp))
 \author{
 David LeBauer
 }
-

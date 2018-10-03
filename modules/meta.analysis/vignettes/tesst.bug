@@ -1,0 +1,28 @@
+model
+{
+  for (k in 1:4){
+    Y[k] ~ dnorm( Z[k] , tau.y[k])
+    Z[k] <- beta.o 
+    tau.y[k] <- prec.y*n[k]
+    u1[k] <- n[k]/2                             
+    u2[k] <- n[k]/(2*prec.y)
+    obs.prec[k] ~ dgamma(u1[k], u2[k])
+  }
+  # beta.trt[1] <- 0
+  # for ( j in 2:1){
+  #  beta.trt[j] ~ dnorm(0, tau.trt)
+  # }
+  # for (g in 1:1){
+  #  beta.site[g] ~ dnorm(0, tau.site)
+  # }
+  # beta.ghs[1]  <- 0                               
+  # beta.ghs[2]  ~ dnorm(0, 0.01)
+  beta.o    ~ dnorm (0, 0.25)#BBB
+  # tau.site  ~ dgamma(0.001, 0.001)
+  # tau.trt   ~ dgamma(0.001, 0.001)
+  prec.y    ~ dgamma(0.001, 0.001)     
+  #prec.y    ~ dgamma(0.001, 0.001)     
+  # sd.site   <- 1 / sqrt(tau.site)
+  sd.y      <- 1 / sqrt(prec.y)       
+  # sd.trt    <- 1 / sqrt(tau.trt) 
+}

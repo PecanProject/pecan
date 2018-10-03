@@ -12,7 +12,7 @@ find.land(lat, lon, plot = FALSE)
 \item{lon}{vector of longitudes}
 }
 \value{
-data frame with numeric lat, lon and logical value "land"
+data frame with numeric lat, lon and logical value 'land'
 }
 \description{
 find land
@@ -23,4 +23,3 @@ extract terrestrial lat and lon coordinates from a grid
 \author{
 David LeBauer
 }
-

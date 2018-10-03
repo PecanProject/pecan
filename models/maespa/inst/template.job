@@ -5,7 +5,7 @@ exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
 # host specific setup
-@HOSTSPECIFIC@
+@HOST_SETUP@
 
 # create output folder
 mkdir -p "@OUTDIR@"
@@ -13,24 +13,22 @@ mkdir -p "@OUTDIR@"
 # see if application needs running
 if [ ! -e "@OUTDIR@/.dat" ]; then
   cd "@RUNDIR@"
-  cp -r  /fs/data5/pecan.models/maespa/inputfiles/example2 "@RUNDIR@"
-  cd example2
-  rm met.dat
   ln -s  @SITE_MET@ met.dat
+  
   "@BINARY@"
   mv *.dat "@OUTDIR@"
   STATUS=$?
   
   # check the status
   if [ $STATUS -ne 0 ]; then
-    echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+    echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
     exit $STATUS
   fi
 
   # convert to MsTMIP
-  cd @OUTDIR@
+  cd "@OUTDIR@"
   echo "require (PEcAn.MAESPA)
-model2netcdf.MAESPA('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+model2netcdf.MAESPA('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @STEM_DENS@)
 " | R --vanilla
 fi
 
@@ -38,7 +36,9 @@ fi
 # copy readme with specs to output
 cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
-# run getdata to extract right variables
+
+# host specific teardown
+@HOST_TEARDOWN@
 
 # all done
-echo -e "MODEL FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3

@@ -24,4 +24,3 @@ Convert raster to lat, lon, var
 \author{
 David LeBauer
 }
-

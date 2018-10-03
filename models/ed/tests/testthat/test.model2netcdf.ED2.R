@@ -1,12 +1,13 @@
 context("check output from model2netcdf.ED2")
 
-outdir <- file.path(tempdir(), "ed")
-dir.create(outdir, showWarnings = FALSE, recursive = TRUE) 
-file.copy(dir("data", pattern = "*.h5$", full.names = TRUE), outdir)
+# outdir <- file.path(tempdir(), "ed")
+# dir.create(outdir, showWarnings = FALSE, recursive = TRUE) 
+# file.copy(dir("data", pattern = "*.h5$", full.names = TRUE), outdir)
 
-model2netcdf.ED2(outdir, 40, -88.5, "2010-01-01", "2010-12-31")
+# model2netcdf.ED2(outdir, 40, -88.5, "2010-01-01", "2010-12-31")
 
 test_that("a valid .nc file is produced for each corresponding ED2 output", {
+  skip("tests are broken #1329")
   h5_T_files <- dir(outdir, pattern = "-T-.*.h5")
   nc_files <- dir(outdir, pattern = ".nc$")
   nc_var_files <- dir(outdir, pattern = ".nc.var$")
@@ -28,12 +29,13 @@ test_that("a valid .nc file is produced for each corresponding ED2 output", {
 #   expect_true(all(names(x) %in% vars))
 # })
 
-nc_files <- dir(outdir, pattern = ".nc$", full.names = TRUE)
-tmp.nc <- nc_open(nc_files[1])
-vars <- tmp.nc$var
-dims <- tmp.nc$dim
+# nc_files <- dir(outdir, pattern = ".nc$", full.names = TRUE)
+# tmp.nc <- nc_open(nc_files[1])
+# vars <- tmp.nc$var
+# dims <- tmp.nc$dim
 
 test_that("nc files have correct attributes",{
+  skip("tests are broken #1329")
   expect_equal(class(tmp.nc), "ncdf4")
   time <- ncvar_get(tmp.nc, "time")
   gpp  <- ncvar_get(tmp.nc, "GPP")
@@ -45,23 +47,23 @@ test_that("nc files have correct attributes",{
 
 
 test_that("dimenstions have MsTMIP standard units",{
+  skip("tests are broken #1329")
   
-  expect_equal(dims$lat$units, "degrees_east")
-  expect_equal(dims$lon$units, "degrees_north")
+  expect_equal(dims$lat$units, "degrees_north")
+  expect_equal(dims$lon$units, "degrees_east")
   expect_true(grepl("days since", dims$time$units))
 })
 
 test_that("variables have MsTMIP standard units",{
+  skip("tests are broken #1329")
+
   data(mstmip_vars, package = "PEcAn.utils")
-  
-  
-  
   for(var in vars){
     if(var$name %in% mstmip_vars$Variable.Name){
       ms.units <-  mstmip_vars[mstmip_vars$Variable.Name == var$name, "Units"]
       if(!(ms.units ==  var$units)) {
         ed.output.message <- paste(var$name, "units", var$units, "do not match MsTMIP Units", ms.units)
-        logger.warn(ed.output.message)
+        PEcAn.logger::logger.warn(ed.output.message)
       }
     }
   }
@@ -70,7 +72,4 @@ test_that("variables have MsTMIP standard units",{
   ##     expect_true(
   ##       var$units == mstmip_vars[mstmip_vars$Variable.Name == var$name, "Units"]
   ##       )
-  
-  
-  
 })

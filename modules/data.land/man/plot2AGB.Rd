@@ -21,4 +21,3 @@ convert composite ring & census data into AGB
 \author{
 Mike Dietze \email{dietze@bu.edu}
 }
-

@@ -18,4 +18,3 @@ Convert queried data to format required by JAGS meta-analysis model
 \author{
 David LeBauer
 }
-

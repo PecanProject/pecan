@@ -1,80 +1,98 @@
-# .travis.yml using container-based infrastructure
-# travis configuration file courtesy of Jan Tilly:
-# https://github.com/jtilly/R-travis-container-example
+# Follow instructions on:
+# https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
 
-# use c as catch-all language
-language: c
+# A few blocks in here can be removed when Travis updates its Ubuntu image past 
+# trusty. They are marked with TRUSTY for easy grepping.
 
-# use containers
-sudo: false
+language: r
+r:
+  - 3.4
 
-# only run for pushes to master branch
-#branches:
-#  only:
-#   - master
+# TRUSTY: Change version when 16.04 image is available.
+dist: trusty
+sudo: required
 
-# install R: use r-packages-precise (https://cran.r-project.org/bin/linux/ubuntu/precise/) 
-# as source which is white listed (https://github.com/travis-ci/apt-source-whitelist/)
+env:
+  global:
+    # TODO: `make -j2` interleaves output lines from simultaneous processes.
+    # Would be nice to fix by adding `-Otarget`, but not supported in Make 3.x.
+    # When Travis updates, check for Make 4 and add -O if available.
+    - MAKEFLAGS="-j2"
+    - PGHOST=localhost
+
+cache: 
+  - directories:
+    - .install
+    - .check
+    - .test
+    - .doc
+  - packages
+
 addons:
-  postgresql: 9.4
   apt:
     sources:
-      - r-packages-precise
+      - sourceline: 'ppa:marutter/c2d4u'
+      - sourceline: 'ppa:nschloe/hdf5-backports'
+      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
     packages:
-      - postgresql-9.4-postgis-2.1
-      - postgresql-9.4-postgis-2.1-scripts
+      - bc
+      - curl
+      - gdal-bin
       - jags
+      - libcurl4-openssl-dev
+      - libgdal-dev
+      - libgmp-dev
+      - libhdf5-dev
       - liblapack-dev
       - libnetcdf-dev
-      - netcdf-bin
-      - bc
-      - libcurl4-gnutls-dev
-      - curl
-      - udunits-bin 
-      - libudunits2-dev
-      - libgmp-dev
-      - python-dev 
       - libproj-dev
-      - r-base-dev
-      # need to compile documentation
-      # BROKEN MISSING FONT
-      #- texinfo
-      #- texlive-latex-base
-      #- texlive-latex-recommended
-      #- texlive-latex-extra
-      #- texlive-fonts-recommended
-      #- texlive-fonts-extra
+      - libudunits2-dev
+      - netcdf-bin
+      - pandoc
+      - python-dev
+      - tcl
+      - tcl-dev
+      - udunits-bin
+      # R package binaries from c2d4u
+      - r-bioc-biocinstaller
+      - r-cran-ape
+      - r-cran-curl
+      - r-cran-devtools
+      - r-cran-dplyr
+      - r-cran-ggplot2
+      - r-cran-httr
+      - r-cran-igraph
+      - r-cran-lme4
+      - r-cran-matrixstats
+      - r-cran-mcmcpack
+      - r-cran-raster
+      - r-cran-rcpp
+      - r-cran-rcurl
+      - r-cran-redland
+      - r-cran-rncl
+      - r-cran-roxygen2
+      - r-cran-shiny
+      - r-cran-testthat
+      - r-cran-tidyverse
+      - r-cran-xml
+      - r-cran-xml2
+
   
-# notifications should go to gitter
+## notifications should go to slack
 notifications:
-  webhooks:
-    urls:
-      - secure: "gL81TwDOcK/32Hxxl2BcY7pioyrtyV4y1f+D/vGEpQz8mYL+M+55tUkhHJF53779XSUdQdML/gsr8JZVtApJdLIBysFU67GVYXm1s7x/b8J61CkMfDgsmposEWK4NFYHfeIRj32ioeajrQ+RKi1I6chjzYT7gLyl70gtPelRJ4s="
-    on_success: always
-    on_failure: always
-    on_start: always
+  slack:
+    # Slack token created by Chris Black, 2018-02-17
+    secure: "DHHSNmiCf71SLa/FFSqx9oOnJjJt2GHYk7NsFIBb9ZY10RvQtIPfaoNxkPjqu9HLyZWJSFtg/uNKKplEHc6W80NoXyqoTvwOxTPjMaViXaCNqsmzjjR/JaCWT/oWGXyAw0VX3S8cwuIexlKQGgZwJpIzoVOZqUrDrHI/O17kZoM="
   email:
     on_success: always
     on_failure: always
 
-# cache local R libraries directory:
-cache:
-  - directories:
-    - $HOME/R/Library
-  - packages
-
-# list of services to be running
+## list of services to be running
 services:
-  - postgresql
+  - docker
 
-# environment variables
-env:
-  - R_LIBS_USER=$HOME/R/Library
-
-# install sipnet and clim file
 install:
-  - pushd .
-  - cd $HOME
+  - pushd $HOME
   - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
   - tar zxf sipnet_unk.tar.gz
   - cd sipnet_unk
@@ -82,9 +100,51 @@ install:
   - popd
 
 before_script:
-  - psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
-  - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
-  - scripts/load.bety.sh -a postgres -c -u
+  - sudo service postgresql stop
+  - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine
+  - echo -n "Waiting for Postgres to start...";
+    until psql -U postgres -c 'select 1' >/dev/null 2>&1;
+      do echo -n ".";
+      sleep 1;
+    done;
+    echo " OK"
+  - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
+  - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
+  - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
+  - psql -q -o /dev/null -U postgres < bety.sql
+  - rm bety.sql
+  - ./scripts/add.models.sh
+  - chmod +x book_source/deploy.sh
+  - chmod +x documentation/tutorials/deploy.sh
 
 script:
-  - scripts/build.sh --dependencies --no-git --check --no-manual --tests --name travis
+  - set -e
+  - echo 'Installing PEcAn packages'
+  # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
+  # but many dependency compilations seem not parallel-safe.
+  # More debugging needed.
+  - NCPUS=2 make -j1
+  - echo 'Testing PEcAn packages'
+  - make test
+  - make check
+  - echo 'Testing Integration'
+  - ./tests/integration.sh travis
+  - if [[ `git status -s` ]]; then 
+      echo "These files were changed by the build process:";
+      git status -s;
+      echo "Have you run devtools::check and commited any updated Roxygen outputs?";
+      exit 1; 
+    fi
+  - set +e
+
+after_script:
+  - set -e
+  - echo 'Building Book'
+  - pushd book_source
+  - make
+  - popd
+  - echo 'Building Tutorials'
+  - pushd documentation/tutorials
+  - make build deploy
+  - popd
+  - set +e

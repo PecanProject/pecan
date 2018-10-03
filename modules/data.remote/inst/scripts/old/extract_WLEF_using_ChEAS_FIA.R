@@ -6,13 +6,13 @@
 ## Load Required Packages
 ################################
 require(rgdal)
-require(raster)
-require(sp)
-require(RgoogleMaps)
-require(maptools)
-require(ggplot2)
-require(car)
-require(spatsta)
+library(raster)
+library(sp)
+library(RgoogleMaps)
+library(maptools)
+library(ggplot2)
+library(car)
+library(spatsta)
 
 ################################
 ## Options

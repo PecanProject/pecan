@@ -13,6 +13,5 @@ nothing, removes config files as side effect
 Clear out old config and ED model run files.
 }
 \author{
-Shawn Serbin, David LeBauer
+Shawn Serbin, David LeBauer, Alexey Shikomanov
 }
-
