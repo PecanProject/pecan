@@ -15,6 +15,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
+- Updated MAAT model model2netcdf.MAAT.R to reflect general changes to the netCDF time variable in PEcAn standard output. Added time_bounds attribute and variable.  Updated inst/ scripts for created MAAT drivers from NGEE-Tropics met sources (WIP)
 - Docker:
   - Change base image for R code from `r-base` to `rocker/tidyverse:3.5.1`. This (1) saves build time (because many R packages and system dependencies are pre-installed), and (2) enhances reproducibility (because of the strict versioning rules of the `rocker` packages)
 

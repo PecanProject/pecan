@@ -126,13 +126,20 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
                           seq(strptime(sub.maat.dates[1], format = "%Y-%m-%d", tz=timezone), by = "days", length = 1)))
       timestep.s <- day_secs / dims[1] # e.g. 1800 = 30 minute timesteps
       dayfrac <- 1 / dims[1]
-      day.steps <- seq(0, 0.99, 1 / dims[1])
+      day.steps <- head(seq(0, 1, by = dayfrac), -1)
       
       # setup netCDF time variable for year
       maat_run_start_by_year <- format(lubridate::as_datetime(sub.maat.dates, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
+      tvals <- (sub.maat.doy-1) + day.steps
+      bounds <- array(data=NA, dim=c(length(tvals),2))
+      bounds[,1] <- tvals
+      bounds[,2] <- bounds[,1]+dayfrac
       t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_by_year),
-                            vals = sub.maat.doy + day.steps, calendar = "standard", 
+                            vals = tvals, calendar = "standard", 
                             unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
+      time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
+                                        longname="history time interval endpoint dimensions",
+                                        vals = 1:2, units="")
       
       ### Parse MAAT output
       #output      <- list()  # create empty output
@@ -141,7 +148,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       out.year <- as.numeric(rep(year, sub.maat.output.dims[1]))
       output <- var_update(out.year, output, "Year", "Year", oldunits='YYYY', newunits=NULL, missval=-999, 
                            longname="Simulation Year", ncdims=ncdims)
-      output <- var_update(sub.maat.doy + day.steps, output, "FracJulianDay", "FracJulianDay", oldunits='Frac DOY', newunits=NULL, missval=-999, 
+      output <- var_update(tvals, output, "FracJulianDay", "FracJulianDay", oldunits='Frac DOY', newunits=NULL, missval=-999, 
                            longname="Fraction of Julian Date", ncdims=ncdims)
       output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
                            longname="Leaf assimilation rate", ncdims=ncdims)
@@ -153,12 +160,27 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
                            newunits="Pa", missval=-999, longname="Leaf Internal CO2 Concentration", ncdims=ncdims)
       output <- var_update(sub.maat.output$cc, output, "cc", "Cc", oldunits="Pa", 
                            newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
+      
+      ## put in time_bounds before writing out new nc file
+      #length(output$var)
+      output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
+                                                         longname = "history time interval endpoints", 
+                                                         dim=list(time_interval,time = t), 
+                                                         prec = "double")
+      output$dat[[length(output$dat) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
       ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
 
     } else {
       t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
                             vals = 1, calendar = "standard", 
                             unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
+      bounds <- array(data=NA, dim=c(1,2))
+      bounds[,1] <- 0
+      bounds[,2] <- 1
+      time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
+                                        longname="history time interval endpoint dimensions",
+                                        vals = 1:2, units="")
+      
       output <- NULL
       ncdims <- list(lon, lat, t) 
       output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
@@ -171,11 +193,19 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
                            newunits="Pa", missval=-999, longname="Leaf Internal CO2 Concentration", ncdims=ncdims)
       output <- var_update(maat.output$cc, output, "cc", "Cc", oldunits="Pa",
                            newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
+      
+      ## put in time_bounds before writing out new nc file
+      output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
+                                                               longname = "history time interval endpoints", 
+                                                               dim=list(time_interval,time = t), 
+                                                               prec = "double")
+      output$dat[[length(output$dat) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
       ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##  
     }
     
     ## write netCDF data
     ncout <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")),output$var)
+    ncdf4::ncatt_put(ncout, "time", "bounds", "time_bounds", prec=NA)
     for (i in seq_along(output$var)) {
       ncdf4::ncvar_put(ncout, output$var[[i]], output$dat[[i]])
     }
