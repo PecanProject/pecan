@@ -104,7 +104,7 @@ services:
 
   # PEcAn executor, executes jobs launched from web
   executor:
-    image: pecan/executor:${PECAN:-latest}
+    image: pecan/executor:${PECAN:-develop}
     networks:
       - pecan
     hostname: docker

@@ -86,7 +86,52 @@ LINE 1: SELECT count(*) FROM formats WHERE ...
 Error: Relation `formats` does not exist
 ```
 
-Successful execution of this command should take some time because it involves downloading and copying reasonably large amounts of data and performing a number of database operations.
+**If the above command fails**, you can try to fix things interactively by first opening a shell inside the container...
+
+```
+docker run -ti --rm --network pecan_pecan pecan/bety:latest /bin/bash
+```
+
+...and then running the following commands, which emulate the functionality of the `entrypoint.sh` with the `initialize` argument.
+
+```bash
+# Create the bety role in the postgresql database
+psql -h postgres -p 5432 -U postgres -c "CREATE ROLE bety WITH LOGIN CREATEDB NOSUPERUSER NOCREATEROLE PASSWORD 'bety'"
+
+# Initialize the bety database itself, and set to be owned by role bety
+psql -h postgres -p 5432 -U postgres -c "CREATE DATABASE bety WITH OWNER bety"
+
+# If either of these fail with a "role/database bety already exists",
+# that's fine. You can safely proceed to the next command.
+
+# Load the actual bety database tables and values
+./load.bety.sh -a "postgres" -d "bety" -p "-h postgres -p 5432" -o bety -c -u -g -m ${LOCAL_SERVER} -r 0 -w https://ebi-forecast.igb.illinois.edu/pecan/dump/all/bety.tar.gz
+```
+
+Note that this command may throw a bunch of errors related to functions and/or operators already existing.
+This is normal -- it just means that the PostGIS extension to PostgreSQL is already installed.
+The important thing is that you see output near the end like:
+
+```
+CREATED SCHEMA
+Loading  schema_migrations         : ADDED 61
+Started psql (pid=507)
+Updated  formats                   :     35 (+35)
+Fixed    formats                   : 46
+Updated  machines                  :     23 (+23)
+Fixed    machines                  : 24
+Updated  mimetypes                 :    419 (+419)
+Fixed    mimetypes                 : 1095
+...
+...
+...
+Added carya41 with access_level=4 and page_access_level=1 with id=323
+Added carya42 with access_level=4 and page_access_level=2 with id=325
+Added carya43 with access_level=4 and page_access_level=3 with id=327
+Added carya44 with access_level=4 and page_access_level=4 with id=329
+Added guestuser with access_level=4 and page_access_level=4 with id=331
+```
+
 Once the command has finished successfully, proceed with the next step:
 
 ```bash
@@ -98,6 +143,8 @@ The breakdown of this command is as follows:
 - `docker run -ti --rm --network pecan_pecan` -- Same as [above](#docker-run-init).
 - `--volume pecan_pecan:/data` -- This mounts the data from the subsequent container (`pecan/data:develop`) onto the current project volume, called `pecan_pecan` (as with the network, the project name `pecan` is the prefix, and the volume name also happens to be `pecan` as specified in the `docker-compose.yml` file).
 - `pecan/data:develop` -- As above, this is the target image to run. Since there is no argument after the image name, this command will run the default command ([`CMD`](https://docs.docker.com/engine/reference/builder/#cmd)) specified for this docker container. In this case, it is the [`docker/add_data.sh`](https://github.com/PecanProject/pecan/blob/develop/docker/add-data.sh) script from the PEcAn repository.
+
+Successful execution of this command should take some time because it involves downloading and copying reasonably large amounts of data and performing a number of database operations.
 
 #### Start PEcAn
 
