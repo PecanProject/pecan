@@ -1,0 +1,68 @@
+## Site and model selection {#web-site-model}
+
+This page is used to select the model to run and the site at which you would like to run that model.
+
+**NOTE:** If this page does not load for you, it may be related to a known Google Maps API key issue. See [issue #1269][issue-1269] for a possible solution.
+
+
+[issue-1269]: https://github.com/PecanProject/pecan/issues/1269
+
+### Selecting a model
+
+1. On the **Select Host** webpage **use the Host pull-down menu to select the server you want to run on**. PEcAn is designed to allow models to be run both locally and on remote high-performance computing (HPC) resources (i.e. clusters). We recommend that users start with local runs. More information about connecting your PEcAn instance to a cluster can be found on the [Remote execution with PEcAn] page.
+
+2. Next, **select the model you want to run under the Model pull-down menu**. The list of models currently supported by PEcAn, along with information about these models, is available on the [PEcAn Models] page.
+
+    i) If a PEcAn-supported model is not listed, this is most likely because the model has not been installed on the server. The PEcAn team does not have permissions to redistribute all of the models that are coupled to it, so you will have to install some PEcAn-compatible models yourself. Please consult the PEcAn model listing for information about obtaining and installing different models. Once the model is installed and you have added the location of the model executable to Bety (see [Adding An Ecosystem Model]), your model should appear on the PEcAn **Select Host** page after your refresh the page.
+    
+    ii) If you would like to add a new model to PEcAn please consult our guide for [Adding an Ecosystem Model] and contact the PEcAn team for assistance.
+
+3. If selecting your model causes your **site to disappear** from the Google Map, that means the site exists but there are no drivers for that model-site combination registered in the database. 
+
+    i) Click the "Conversion" checkbox. If your site reappears, that means PEcAn should be able to automatically generate the required inputs for this site by converting from existing input files in other formats.
+    
+    ii) If the site still does not reappear, that means there are required input files for that model-site combination that PEcAn cannot autogenerate. This may be because the model has unique input requirements or because it has not yet been fully coupled to the PEcAn input processing workflow. Go to the troubleshooting section under [Selecting a site] for more information on diagnosing what drivers are missing.
+
+### Selecting a site
+
+#### Site Groups
+
+1. PEcAn provides the option of organizing sites into groups to make them easier to find and easier to run as a group. We have pre-loaded a number of common research networks (e.g., FLUXNET, LTER, NEON), but you are free to create new site groups through Bety.
+
+2. If you are searching for a site that is not part of an existing site group, or you are unsure which site group it belongs to, select "All Sites" to see all sites in Bety. Note that this may take a while to render.
+
+#### Using existing sites
+
+1. **Find the site on the map** The simplest way of determining if a site exists in PEcAn is through the Google Map interface of the web-based workflow. You'll want to make sure that the "Site Group" is set to "All Sites" and the "Model" is set to "All Models". 
+
+2. **Find the site in BETY** If the site is not on the map, it may still be in Bety but with insufficient geographic information. To locate the site in Bety, first login to your local version of the BETY database. If using the VM, navigate to `localhost:6480/bety` and login with username `bety` and password `illinois`. Then, navigate to `Data > Sites` and use the "Search" box to search for your site. If you **do** find your site, click "Edit" and add geographic information so that the site will show up on the map. Also, note that the site ID number shows up in the URL for the "Show" or "Edit" pages. This ID is often useful to know, for example when editing a PEcAn settings file by hand. If you did not find you site, follow the instructions below to add a site.
+
+#### Adding a new site
+
+(TODO: Move most of this out)
+
+1. Log into Bety as described above.
+
+2. **Pick a citation for your site** Each site requires an associated "citation" that must be added before the site itself is added. First, navigate to "Data > Citations" and use the "Search" box to see if the relevant citation already exists. If it does, click the check mark under "Actions" to proceed to site creation.
+
+* **To create a new citation**, click the **New Citation** button, fill in the fields, and then click "Create". The "field URL" should contain the web address that takes you to this publication on the publisher's website. The "PDF" field should be the full web address to a PDF for this citation. 
+
+* Note that our definition of a citation is flexible, and a citation need not be a peer-reviewed publication. Most of the fields in "New Citation" can be left blank, but we recommend at least adding a descriptive title, such as "EBI Farm Field Data" and a relevant contact person as the "Author". 
+
+5. Once the Citation is created or selected this should automatically take you to the Sites page and list any Sites already associated with this citation. To create a new site click the **New Site** button.
+
+6. When creating a new site, the most important fields are the **Site name** and coordinates (**latitude** and **longitude**). The coordinates can be entered by hand or by clicking on the site location on the Google Map interface. All other information is optional, but can be useful for searching and indexing purposes.
+
+7. When you are done click **Create**. At this point, once the PEcAn site-level page is refreshed, the site should automatically appear.
+
+#### Troubleshooting
+
+##### My site shows up when I don't have any model selected, but disappears once I select the model I want to run
+
+Selecting a model will cause PEcAn to filter the available sites based on whether they possess the required Inputs for a given model (e.g. meteorology). To check what Inputs are missing for a site point your browser to the pecan/checksite.php webpage (e.g. localhost:6480/pecan/checksite.php). This page looks virtually identical to the site selection page, except that it has a *Check* button instead of *Prev* and *Next*. If you select a Machine, Model, and Site and then click *Check* the page should return a list of what Inputs are missing (listing both the name and the Format ID number). Don't forget that its possible for PEcAn to have required Inputs in its database, but just not have them for the Machine where you want to run.
+
+To see more about what Inputs a given model can accept, and which of those are required, take a look at the MODEL_TYPE table entry in the database (e.g. go to `localhost:6480/bety`; Select `Runs > Model Type`; and then click on the model you want to run).
+
+For information about loading missing Inputs into the database visit [Input records in BETY], and also read the rest of the pages under this section, which will provide important information about the specific classes of Inputs (e.g. meteorology, vegetation, etc).
+
+Finally, we are continually developing and refining workflows and standards for processing Input data in a model-agnostic way. The details about what Inputs can be processed automatically are discussed input-by-input in the sections below. For those looking to dive into the code or troubleshoot further, these conversions are ultimately handled under the `PEcAn.utils::do_conversions` workflow module.

@@ -1,0 +1,9 @@
+pandoc: 1.19.2.1
+pkgdown: 1.1.0
+pkgdown_sha: ~
+articles:
+  ameriflux_demo: ameriflux_demo.html
+  cfmet_downscaling: cfmet_downscaling.html
+  compare_narr_cruncep_met: compare_narr_cruncep_met.html
+  tdm_downscaling: tdm_downscaling.html
+

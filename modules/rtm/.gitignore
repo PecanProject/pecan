@@ -5,3 +5,17 @@
 *.rds
 *Rplots.pdf
 
+# Outputs produced by testthat
+tests/testthat/*.RData
+tests/testthat/*.pdf
+tests/testthat/*.png
+
+# R CMD check and build results
+check
+.tar.gz
+
+# R profile output
+*/Rprof.out
+**/Rprof.out
+
+**/.scratch.R

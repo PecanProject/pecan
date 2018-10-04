@@ -1,0 +1,130 @@
+# Simple Model-Data Comparisons
+ 
+### Author: Istem Fer, Tess McCabe
+
+In this tutorial we will compare model outputs to data outside of the PEcAn web interface. The goal of this is to demonstrate how to perform additional analyses using PEcAn’s outputs. To do this you can download each of the Output files, and then perform the analyses using whatever software you prefer, or you can perform analyses directly on the PEcAn server itself. Here we’ll be analyzing model outputs in R using a browser-based version of RStudio that’s installed on the server
+
+## Starting RStudio Server
+
+1. Open RStudio Server in a new window at **URL/rstudio** 
+ 
+2.	The username is carya and the password is illinois.
+
+3.	To open a new R script click File > New File > R Script
+
+4.	Use the Files browser on the lower right pane to find where your run(s) are located
+
+  + All PEcAn outputs are stored in the output folder. Click on this to open it up.
+
+  + Within the outputs folder, there will be one folder for each workflow execution. For example, click to open the folder PEcAn_99000000001 if that’s your workflow ID
+
+  + A workflow folder will have a few log and settings files (e.g. pecan.xml) and the following subfolders
+
+```  
+run		contains all the inputs for each run
+out		contains all the outputs from each run
+pft		contains the parameter information for each PFT
+```
+
+Within both the run and out folders there will be one folder for each unique model run, where the folder name is the run ID. Click to open the out folder. For our simple case we only did one run so there should be only one folder (e.g. 99000000001). Click to open this folder.
+
+  + Within this folder you will find, among other things, files of the format <year>.nc. Each of these files contains one year of model output in the standard PEcAn netCDF format. This is the model output that we will use to compare to data. 
+
+
+## Read in settings From an XML file
+
+
+```{r,eval=FALSE}
+## Read in the xml
+
+settings<-PEcAn.settings::read.settings("~/output/PEcAn_99000000001/pecan.CONFIGS.xml")
+
+## To read in the model output 
+runid<-as.character(read.table(paste(settings$outdir, "/run/","runs.txt", sep=""))[1,1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id 
+outdir<- paste(settings$outdir,"/out/",runid,sep= "")
+start.year<-as.numeric(lubridate::year(settings$run$start.date))
+end.year<-as.numeric(lubridate::year(settings$run$end.date))
+
+site.id<-settings$run$site$id
+File_path<-"~/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv"
+
+## Open up a connection to The Bety Database 
+bety <-dplyr::src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
+
+```
+
+## Read in model output from specific variables
+```{r, eval=FALSE}
+model_vars<-c("time", "NEE") #varibles being read
+model <- PEcAn.utils::read.output(runid,outdir,start.year, end.year, model_vars,dataframe=TRUE)
+```
+
+The arguments to read.output are the run ID, the folder where the run is located, the start year, the end year, and the variables being read. The README file in the Input file dropdown menu of any successful run lists the run ID, the output folder, and the start and end year. 
+
+##	Compare model to flux observations
+
+**First** _load up the observations_ and take a look at the contents of the file
+
+```{r,  eval=FALSE}
+File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
+
+site<-PEcAn.DB::query.site(site.id,bety$con) #This tells PEcAn where the data comes from
+
+observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
+```
+
+File_Path refers to where you stored your observational data. In this example the default file path is an Ameriflux dataset from Niwot Ridge. 
+
+File_format queries the database for the format your file is in. The defualt format ID "5000000002" is for csv files downloaded from the Ameriflux website.
+You could query for diffent kinds of formats that exist in bety or [make your own](https://pecanproject.github.io/pecan-documentation/adding-an-ecosystem-model.html#formats).
+
+Here 772 is the database site ID for Niwot Ridge Forest, which tells pecan where the data is from and what time zone to assign any time data read in. 
+
+**Second** _apply a conservative u* filter to observations_
+```{r,eval=FALSE}
+observations$NEE[observations$UST<0.2]<-NA
+```
+
+**Third** _align model output and observations_
+
+```{r, eval=FALSE}
+aligned_dat = PEcAn.benchmark::align_data(model.calc = model, obvs.calc = observations, var ="NEE", align_method = "match_timestep")
+
+```
+When we aligned the data, we got a dataframe with the variables we requested in a $NEE.m$ and a $NEE.o$ format. The $.o$ is for observations, and the $.m$ is for model. The posix column allows for easy plotting along a timeseries.  
+
+**Fourth**, _plot model predictions vs. observations_ and compare this to a 1:1 line 
+
+```{r,eval=FALSE}
+## predicted vs observed plot
+plot(aligned_dat$NEE.m, aligned_dat$NEE.o)
+abline(0,1,col="red")  ## intercept=0, slope=1
+```
+
+**Fifth**, _calculate the Root Mean Square Error (RMSE)_ between the model and the data
+
+```{r, eval=FALSE}
+rmse = sqrt(mean((aligned_dat$NEE.m-aligned_dat$NEE.o)^2,na.rm = TRUE))
+```
+*na.rm* makes sure we don’t include missing or screened values in either time series.
+
+**Finally**, _plot time-series_ of both the model and data together
+
+```{r, eval=FALSE}
+## plot aligned data
+plot(aligned_dat$posix, aligned_dat$NEE.o, type="l")
+lines(aligned_dat$posix,aligned_dat$NEE.m, col = "red")
+
+```
+
+**Bonus** _How would you compare aggregated data?_
+
+Try RMSE against monthly NEE instead of half-hourly. In this case, first average the values up to monthly in the observations. Then, use align_data to match the monthly timestep in model output.
+
+**NOTE**: Align_data uses two seperate alignment function, match_timestep and mean_over_larger_timestep. Match_timestep will use only that data that is present in both the model and the observation. This is helpful for sparse observations. Mean_over_larger_timestep aggregates the values over the largest timestep present. If you were to look at averaged monthly data, you would use mean_over_larger_timestep.
+
+```{r, eval = FALSE}
+monthlyNEEobs<-aggregate(observations, by= list(month(observations$posix)), simplify=TRUE, FUN =mean, na.rm= TRUE)
+plottable<-align_data(model.calc = model, obvs.calc = monthlyNEEobs, align_method = "mean_over_larger_timestep", var= "NEE")
+head(plottable)
+```

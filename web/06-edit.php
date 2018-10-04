@@ -72,10 +72,11 @@ $files = array_unique($files);
 <html>
 <head>
 <title>PEcAn Advanced Edit</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
-<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
 	var modified=false;
 
@@ -192,6 +193,13 @@ $files = array_unique($files);
 			<div class="spacer"></div>
 		</form>
 <?php whoami(); ?>    
+<p>
+  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
+  <br>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
 	</div>
 	<div id="output">
 		<textarea name="editor" id="editor" onKeyPress="modifiedFile();"></textarea><br/>

@@ -1,0 +1,10 @@
+pandoc: 1.19.2.1
+pkgdown: 1.1.0
+pkgdown_sha: ~
+articles:
+  Pre-release-database-cleanup: Pre-release-database-cleanup.html
+  compare_ED2: compare_ED2.html
+  function_relationships: function_relationships.html
+  lebauer2013ffb: lebauer2013ffb.html
+  module_output: module_output.html
+

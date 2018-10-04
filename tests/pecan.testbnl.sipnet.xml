@@ -19,21 +19,36 @@
     </pft>
   </pfts>
 
+  <meta.analysis>
+   <iter>3000</iter>
+   <random.effects>FALSE</random.effects>
+   <threshold>1.2</threshold>
+   <update>AUTO</update>
+  </meta.analysis>
+
   <ensemble>
+    <variable>NPP</variable>
+    <size>30</size>
     <variable>NPP</variable>
   </ensemble>
 
   <sensitivity.analysis>
     <quantiles>
+      <sigma>-3</sigma>
+      <sigma>-2</sigma>
       <sigma>-1</sigma>
+      <sigma>0</sigma>
       <sigma>1</sigma>
+      <sigma>2</sigma>
+      <sigma>3</sigma>
     </quantiles>
     <variable>NPP</variable>
   </sensitivity.analysis>
 
   <model>
-    <binary>/data/software/sipnet/sipnet</binary>
+    <id>10</id>
     <type>SIPNET</type>
+    <revision>unk</revision>
   </model>
 
   <run>
@@ -47,6 +62,9 @@
     <end.date>2005-12-31 00:00:00</end.date>
     <host>
       <name>localhost</name>
+      <qsub>qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub>
+      <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
+      <qstat>qstat @JOBID@ || echo DONE</qstat>
     </host>
     <dbfiles>pecan/dbfiles</dbfiles>
   </run>

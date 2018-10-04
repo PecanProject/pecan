@@ -1,0 +1,13 @@
+FROM ubuntu
+MAINTAINER Rob Kooper <kooper@illinois.edu>
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        postgresql-client \
+        unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /work
+COPY docker/add-data.sh scripts/add.util.sh /work/
+CMD bash /work/add-data.sh

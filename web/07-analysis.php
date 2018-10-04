@@ -105,10 +105,11 @@ if (isset($modelinfo['revision'])) {
 <html>
 <head>
 <title>PEcAn Parameter Selection</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
-<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="jquery-1.10.2.min.js"></script>
 <?php if (!$offline) {?>
 <script type="text/javascript" src="//www.google.com/jsapi"></script>
 <?php }?>
@@ -141,9 +142,14 @@ if (isset($modelinfo['revision'])) {
   $(document).ready(function () {
     validate();
   });
-<?php } else { ?>
-    google.load("maps", "3",  {other_params:"sensor=false"});
-    google.setOnLoadCallback(mapsLoaded);
+<?php
+} else {
+  $other_params = "sensor=false";
+  if (isset($googleMapKey) && $googleMapKey != "") {
+    $other_params .= "&key=$googleMapKey";
+  }
+  echo "  google.load('maps', '3', { other_params : '$other_params', callback: 'mapsLoaded'});"
+?>
     
     function mapsLoaded() {
     var latlng = new google.maps.LatLng(<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>);
@@ -221,11 +227,22 @@ if (isset($modelinfo['revision'])) {
       }
 ?>
       <div class="spacer"></div>
-      <label>Runs<sup>*</sup></label>
+      <span title="Number of runs in the Ensemble Analysis">
+      <label>Runs<sup>*</sup></label></span>
       <input type="text" name="runs" id="runs" value="<?php echo 1; ?>" onChange="validate();"/>
       <div class="spacer"></div>
-      <label>Variables<sup>*</sup></label>
+      <a href="https://pecanproject.github.io/pecan-documentation/master/model-output-variables.html" title="Model output variables to run analyses on. Link opens variable name table">
+      <label>Variables<sup>*</sup></label></a>
       <input type="text" name="variables" id="variables" value="<?php echo "NPP"; ?>" onChange="validate();"/>
+      <div class="spacer"></div>
+      <label>Sampling method for parameters<sup>*</sup></label>
+      <select name="parm_method" id="parm_method" onChange="validate();">
+      <option value="<?php echo "uniform"; ?>">Uniform</option>
+      <option value="<?php echo "halton"; ?>">Halton</option>
+      <option value="<?php echo "sobol"; ?>">Sobol</option>
+      <option value="<?php echo "torus"; ?>">Torus</option>
+      <option value="<?php echo "lhc"; ?>">Latin hypercube</option>
+     </select>
       <div class="spacer"></div>
 
       <div class="spacer"></div>
@@ -242,7 +259,14 @@ if (isset($modelinfo['revision'])) {
       <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>    
       <div class="spacer"></div>
     </form>
-<?php whoami(); ?>    
+<?php whoami(); ?>  
+<p>
+  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
+  <br>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
   </div>
   <div id="output">
     Name : <b><?php echo $siteinfo["sitename"]; ?></b><br/>

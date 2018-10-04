@@ -11,6 +11,7 @@
       <dbname>bety</dbname>
       <write>FALSE</write>
     </bety>
+    <dbfiles>pecan/dbfiles</dbfiles>
   </database>
 
   <pfts>
@@ -20,20 +21,28 @@
   </pfts>
 
   <ensemble>
-    <variable>StemBiom</variable>
+    <variable>AbvGrndWood</variable>
   </ensemble>
+
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>AUTO</update>
+  </meta.analysis>
 
   <sensitivity.analysis>
     <quantiles>
       <sigma>-1</sigma>
       <sigma>1</sigma>
     </quantiles>
-    <variable>StemBiom</variable>
+    <variable>AbvGrndWood</variable>
   </sensitivity.analysis>
 
   <model>
     <type>BIOCRO</type>
-    <binary>/home/carya/pecan/models/biocro/inst/pointbiocro.Rscript</binary>
+    <binary>/home/carya/pecan/models/biocro/inst/biocro.Rscript</binary>
+    <revision>0.95</revision>
   </model>
 
   <run>
@@ -43,14 +52,13 @@
     <inputs>
       <met>
         <output>BIOCRO</output>
-        <path>/home/carya/pecan/models/biocro/tests/testthat/data/US-Bo1.2004.nc</path>
+        <path>/home/carya/pecan/models/biocro/tests/testthat/data/US-Bo1</path>
       </met>
     </inputs>
       <start.date>2004/01/01</start.date>
-      <end.date>2004/12/31</end.date>
+      <end.date>2004/12/30</end.date>
     <host>
       <name>localhost</name>
     </host>
-    <dbfiles>pecan/dbfiles</dbfiles>
   </run>
 </pecan>

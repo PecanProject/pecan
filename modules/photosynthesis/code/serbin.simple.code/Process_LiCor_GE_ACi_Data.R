@@ -111,13 +111,7 @@ print(' ')
 ####################################################################################################
 
 
-#---------------- Load required libraries ---------------------------------------------------------#
-# Info: Loads required R libraries and warns if package is not availible.
-ok = require(DEoptim) ; if (! ok) 
-  stop("*** Package DEoptim is not available.  This is needed for model optimization ***")
-rm(ok)
-#--------------------------------------------------------------------------------------------------#
-
+library(DEoptim)
 
 #--------------------------------------------------------------------------------------------------#
 # Load utils and Farquhar functions for data QA/QC and optimization

@@ -44,5 +44,5 @@ done
 # update pecan version in web page
 if [ $# -eq 0 ]; then
   echo "Modifying : web/common.php"
-  sed -i.bak -e "s/PEcAn Version [0-9\.]*/PEcAn Version ${VERSION}/" web/common.php
+  sed -i.bak -e "s/PEcAn Version [0-9\.\-]*/PEcAn Version ${VERSION}/" web/common.php
 fi

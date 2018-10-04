@@ -1,7 +1,7 @@
-require(PEcAn.utils)
-require(PEcAn.DB)
-require(PEcAn.MA)
-require(RPostgreSQL)
+library(PEcAn.utils)
+library(PEcAn.DB)
+library(PEcAn.MA)
+library(RPostgreSQL)
 
 runmeta <- function(pftid, pftname, model, dbparam) {
   folder <- file.path(dbparam$dbfiles, "pfts", model, pftname)
@@ -25,7 +25,7 @@ testpft <- function(pftid, pftname, model, dbparam) {
            })
 }
 
-dbparam <- list(dbname="bety", user="bety", password="bety", host="localhost", dbfiles=full.path("testpfts"), write=FALSE, driver="PostgreSQL")
+dbparam <- list(dbname="bety", user="bety", password="bety", host="localhost", dbfiles=PEcAn.utils::full.path("testpfts"), write=FALSE, driver="PostgreSQL")
 pfts <- db.query("SELECT pfts.id AS id, pfts.name AS pft, modeltypes.name AS model FROM pfts, modeltypes WHERE pfts.modeltype_id=modeltypes.id ORDER BY id;", param=dbparam)
 
 options(scipen=12)
