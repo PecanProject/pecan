@@ -1,7 +1,0 @@
-# Ignore everything
-*
-
-# ...except these
-!.gitignore
-!*.R
-
