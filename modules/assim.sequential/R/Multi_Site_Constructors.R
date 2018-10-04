@@ -24,7 +24,7 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     #let's find out where this cov (for the current site needs to go in the main cov matrix)
     pos.in.matrix <- which(attr(X,"Site") %in% site)
    #forach site let's get the Xs
-    pf.matrix [pos.in.matrix, pos.in.matrix] <- cov( X [, pos.in.matrix] )
+    pf.matrix [pos.in.matrix, pos.in.matrix] <- cov( X [, pos.in.matrix] ,use="complete.obs")
   }
   
   
