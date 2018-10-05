@@ -43,24 +43,24 @@
 ##' 
 ##' @title PEcAn worldmap
 ##' @param B = number bootstrapped smoothers
-##' @param shade: plot the shaded confidence region?
-##' @param shade.alpha: should the CI shading fade out at the edges? (by reducing alpha; 0 = no alpha decrease, 0.1 = medium alpha decrease, 0.5 = strong alpha decrease)
-##' @param spag: plot spaghetti lines?
-##' @param spag.color: color of spaghetti lines
-##' @param mweight: should the median smoother be visually weighted?
-##' @param show.lm: should the linear regresison line be plotted?
-##' @param show.CI: should the 95% CI limits be plotted?
-##' @param show.median: should the median smoother be plotted?
-##' @param median.col: color of the median smoother
-##' @param shape: shape of points
-##' @param method: the fitting function for the spaghettis; default: loess
+##' @param shade plot the shaded confidence region?
+##' @param shade.alpha should the CI shading fade out at the edges? (by reducing alpha; 0 = no alpha decrease, 0.1 = medium alpha decrease, 0.5 = strong alpha decrease)
+##' @param spag plot spaghetti lines?
+##' @param spag.color color of spaghetti lines
+##' @param mweight should the median smoother be visually weighted?
+##' @param show.lm should the linear regresison line be plotted?
+##' @param show.CI should the 95\% CI limits be plotted?
+##' @param show.median should the median smoother be plotted?
+##' @param median.col color of the median smoother
+##' @param shape shape of points
+##' @param method the fitting function for the spaghettis; default: loess
 ##' @param bw = TRUE: define a default b&w-palette
-##' @param slices: number of slices in x and y direction for the shaded region. Higher numbers make a smoother plot, but takes longer to draw. I wouldn'T go beyond 500
-##' @param palette: provide a custom color palette for the watercolors
-##' @param ylim: restrict range of the watercoloring
-##' @param quantize: either 'continuous', or 'SD'. In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)
-##' @param add: if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)
-##' @param ...: further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''
+##' @param slices number of slices in x and y direction for the shaded region. Higher numbers make a smoother plot, but takes longer to draw. I wouldn'T go beyond 500
+##' @param palette provide a custom color palette for the watercolors
+##' @param ylim restrict range of the watercoloring
+##' @param quantize either 'continuous', or 'SD'. In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)
+##' @param add if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)
+##' @param ... further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''
 ##' @return NULL plot as side effect
 ##' @author Felix Schönbrodt
 ##' @export
@@ -115,7 +115,6 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   }
   
   # compute median and CI limits of bootstrap
-  library(reshape2)
   CI.boot <- plyr::adply(l0.boot, 1, function(x) {
     quantile(x, prob = c(0.025, 0.5, 0.975,
                          pnorm(c(-3, -2, -1, 0, 1, 2, 3))), 
@@ -130,12 +129,9 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   CI.boot$w3 <- 1 - (CI.boot$w2 / max(CI.boot$w2))
   
   # convert bootstrapped spaghettis to long format
-  b2 <- melt(l0.boot)
+  b2 <- reshape2::melt(l0.boot)
   b2$x <- newx[, 1]
   colnames(b2) <- c("index", "B", "value", "x")
-  
-  library(ggplot2)
-  library(RColorBrewer)
   
   # Construct ggplot All plot elements are constructed as a list, so they can be added to
   # an existing ggplot
@@ -160,7 +156,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       }
       
       # vertical cross-sectional density estimate
-      d2 <- plyr::ddply(b2[, c("x", "value")], .(x), function(df) {
+      d2 <- plyr::ddply(b2[, c("x", "value")], "x", function(df) {
         res <- data.frame(density(df$value, 
                                   na.rm = TRUE,
                                   n = slices, 
@@ -184,7 +180,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
     if (quantize == "SD") {
       ## Polygon approach
       
-      SDs <- melt(CI.boot[, c("x", paste0("SD", 1:7))], id.vars = "x")
+      SDs <- reshape2::melt(CI.boot[, c("x", paste0("SD", 1:7))], id.vars = "x")
       count <- 0
       d3 <- data.frame()
       col <- c(1, 2, 3, 3, 2, 1)

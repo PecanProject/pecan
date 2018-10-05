@@ -10,15 +10,20 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.mining data.remote emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
+SHINY := BenchmarkReport BrownDog Data-Ingest Elicitation Pecan.depend \
+				ViewMet global-sensitivity workflowPlot
+
 BASE := $(BASE:%=base/%)
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
+SHINY := $(SHINY:%=shiny/%)
 
 BASE_I := $(BASE:%=.install/%)
 MODELS_I := $(MODELS:%=.install/%)
 MODULES_I := $(MODULES:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
+SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
 
 BASE_C := $(BASE:%=.check/%)
 MODELS_C := $(MODELS:%=.check/%)
@@ -35,7 +40,7 @@ MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
-.PHONY: all install check test document
+.PHONY: all install check test document shiny
 
 all: install document
 
@@ -43,11 +48,12 @@ document: $(ALL_PKGS_D) .doc/base/all
 install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
 test: $(ALL_PKGS_T) .test/base/all
+shiny: $(SHINY_I)
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 # Make the timestamp directories if they don't exist yet
-.doc .install .check .test $(call depends,base) $(call depends,models) $(call depends,modules):
+.doc .install .check .test .shiny_depends $(call depends,base) $(call depends,models) $(call depends,modules):
 	mkdir -p $@
 
 ### Dependencies
@@ -150,3 +156,7 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 	$(call test_R_pkg, $(subst .test/,,$@))
 	echo `date` > $@
 
+# Install dependencies declared by Shiny apps
+.shiny_depends/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
+	Rscript scripts/install_shiny_deps.R $(subst .shiny_depends/,shiny/,$@)
+	echo `date` > $@

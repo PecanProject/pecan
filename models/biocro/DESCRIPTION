@@ -25,8 +25,8 @@ Suggests:
     mockery (>= 0.3.0),
     PEcAn.DB,
     RPostgreSQL
-Remotes:
-    github::ebimodeling/biocro
+# Remotes:
+#     github::ebimodeling/biocro
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes

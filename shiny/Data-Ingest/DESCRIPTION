@@ -5,4 +5,19 @@ Date: 2018-08-20
 Author: Liam Burke liam.burke24@gmail.com
 Tags: PEcAn
 DisplayMode: showcase 
-RoxygenNote: 6.1.0
+Imports:
+	dataone,
+	DT,
+	dplyr,
+	PEcAn.DB
+	PEcAn.data.land,
+	PEcAn.utils,
+	PEcAn.visualization,
+	shinydashboard,
+	shinyjs,
+	shinyTime,
+	shinytoastr,
+	shinyWidgets,
+	shinyjs,
+	stringr,
+	tibble
