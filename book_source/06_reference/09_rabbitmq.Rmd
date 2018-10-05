@@ -162,7 +162,8 @@ All the pages up to the `04-runpecan.php` run on the `web` container, and are pr
   ```
 
 5. The target model service, which is listening on its dedicated queue, hears this message and runs its `APPLICATION`, which is `job.sh`, in the directory indicated by the message.
-   If model execution was successful, the model service posts an OK message to the `pecan` queue.
+   Upon exiting (normally), the model service writes its status into a file called `rabbitmq.out` in the same directory.
    
-6. The `executor` container, meanwhile, is waiting to hear this OK message on its queue.
-   Once it hears this message, it advances to the post-execution parts of the workflow.
+6. The `executor` container continuously looks for the `rabbitmq.out` file as an indication of the model run's status.
+   Once it sees this file, it reads the status and proceeds with the post-execution parts of the workflow.
+   (NOTE that this isn't perfect. If the model running process exits abnormally, the `rabbitmq.out` file may not be created, which can cause the `executor` container to hang. If this happens, the solution is to restart the `executor` container with `docker-compose restart executor`).
