@@ -74,12 +74,26 @@ ARG MODEL_VERSION=git
 # variables to store in docker image
 ENV APPLICATION="./job.sh" \
     MODEL_TYPE="ED2" \
-    MODEL_VERSION="${MODEL_VERSION}" \
-    RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
+    MODEL_VERSION="${MODEL_VERSION}"
+
+ENV RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
 
 # COPY model binary
 COPY --from=model-binary /src/ED2/ED/build/ed_2.1-opt /usr/local/bin/ed2.${MODEL_VERSION}
 ```
+
+**WARNING**: Dockerfile environment variables set via `ENV` are assigned _all at once_; _they do not evaluate successively, left to right_.
+Consider the following block:
+
+```dockerfile
+# Don't do this!
+ENV MODEL_TYPE="SIPNET" \
+    MODEL_VERSION=136 \
+    RABBITMQ_QUEUE=${MODEL_TYPE}_${MODEL_VERSION}   # <- Doesn't know about MODEL_TYPE or MODEL_VERSION!
+```
+
+In this block, the expansion for setting `RABBITMQ_QUEUE` _is not aware_ of the current values of `MODEL_TYPE` or `MODEL_VERSION`, and will therefore be set incorrectly to just `_` (unless they have been set previously, in which case it will be aware only of their earlier values).
+As such, **variables depending on other variables must be set in a separate, subsequent `ENV` statement than the variables they depend on**.
 
 Once the model has build and is working we can add it to the PEcAn stack and be able to use this model in the web interface. There are two methods to start this new model. First, we can add it to the `docker-compose.yml` file and start the container using `docker-compose -p pecan -d up`.
 
