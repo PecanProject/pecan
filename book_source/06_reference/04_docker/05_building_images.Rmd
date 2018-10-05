@@ -23,6 +23,12 @@ The following is a list of PEcAn-specific images and reasons why you would want 
   - `docker/config.docker.php` (the `config.php` file for Docker web instances)
   - `documentation/index_vm.html` (the documentation HTML website)
   - NOTE: Because changes to this code are applied instantly (i.e. do not require compilation or installation), a more effective way to do local development may be to mount the `web/` or other relevant folders as a volume onto the `pecan/web` container.
+  
+The easiest way to quickly re-build all of the images is using the `docker.sh` script in the PEcAn source code root directory.
+This script will build all of the docker images locally on your machine, and tag them as `latest`.
+This will not build the `pecan/depends` image by default because that takes considerably longer.
+However, you can force the script to build `pecan/depends` as well by setting the `DEPEND` environment variable to 1 (i.e. `DEPEND=1 ./docker.sh`).
+The following instructions provide details on how to build each image individually.
 
 To build an image locally, use the `docker build` command as described below.
 For more details, see `docker build --help` or the [online Docker build documentation](https://docs.docker.com/engine/reference/commandline/build/).
