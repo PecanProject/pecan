@@ -50,10 +50,11 @@ ARG MODEL_VERSION=136
 
 # variables to store in docker image
 ENV APPLICATION="./job.sh" \
-    MODEL_TYPE="SIPNET_" \
-    MODEL_VERSION="${MODEL_VERSION}" \
-    RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
+    MODEL_TYPE="SIPNET" \
+    MODEL_VERSION="${MODEL_VERSION}"
+
+ENV RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
 
 # COPY sipnet binary
-COPY --from=sipnet-binary /src/sipnet /usr/local/bin/sipnet.${SIPNET_VERSION}
+COPY --from=sipnet-binary /src/sipnet /usr/local/bin/sipnet.${MODEL_VERSION}
 
