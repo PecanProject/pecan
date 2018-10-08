@@ -117,7 +117,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
-    image: pecan/model-sipnet:136
+    image: pecan/model-sipnet-136
     networks:
       - pecan
     volumes:
@@ -128,7 +128,7 @@ services:
 
   # PEcAn sipnet model runner
   ed2:
-    image: pecan/model-ed2:git
+    image: pecan/model-ed2-git
     networks:
       - pecan
     volumes:

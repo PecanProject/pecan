@@ -56,6 +56,7 @@ For instance, regardless of the "project" name passed to `docker-compose up`, th
 The services comprising the PEcAn application are described below.
 
 - `networks` -- This is a list of networks used by the application.
+Containers can only communicate with each other (via ports and hostnames) if they are on the same Docker network, and containers on different networks can only communicate through ports exposed by the host machine.
 We just provide the network name (`pecan`) and resort to Docker's default network configuration.
 Note that the services we want connected to this network include a `networks: ... - pecan` tag.
 For more details on Docker networks, see the [official documentation](https://docs.docker.com/network/).
@@ -64,6 +65,9 @@ For more details on Docker networks, see the [official documentation](https://do
 Briefly, in Docker, volumes are directories containing files that are meant to be shared across containers.
 Each volume corresponds to a directory, which can be mounted at a specific location by different containers.
 For example, syntax like `volumes: ... - pecan:/data` in a service definition means to mount the `pecan` "volume" (including its contents) in the `/data` directory of that container.
+Volumes also allow data to persist on containers between restarts, as normally, any data created by a container during its execution is lost when the container is re-launched.
+For example, using a volume for the database allows data to be saved between different runs of the database container.
+Without volumes, we would start with a blank database every time we restart the containers. 
 For more details on Docker volumes, see the [official documentation](https://docs.docker.com/storage/volumes/).
 Here, we define three volumes:
 
@@ -99,7 +103,8 @@ yaml::write_yaml(dc_yaml$services["traefik"], stdout())
 
 #### `minio` {#pecan-dc-minio}
 
-[Minio](https://github.com/minio/minio) is a browser-based file manager that facilitates exploration of PEcAn files without the need for CLI tools.
+[Minio](https://github.com/minio/minio) is a service that provides access to the a folder on disk through a variety of protocols, including S3 buckets and web-based access.
+We mainly use Minio to facilitate access to PEcAn data using a web browser without the need for CLI tools.
 
 Our current configuration is as follows:
 
@@ -142,7 +147,8 @@ yaml::write_yaml(dc_yaml$services["rabbitmq"], stdout())
 
 Note that the `traefik.frontend.rule` indicates that browsing to http://localhost:8000 (with no further tags) leads to the RabbitMQ management console.
 
-(Further details in the works...)
+By default, the RabbitMQ management console has username/password `guest/guest`, which is highly insecure.
+For production instances of PEcAn, we highly recommend changing these credentials to something more secure, and removing access to the RabbitMQ management console via Traefik.
 
 #### `bety` {#pecan-dc-bety}
 

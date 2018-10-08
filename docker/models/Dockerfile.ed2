@@ -56,8 +56,9 @@ ARG MODEL_VERSION=git
 # variables to store in docker image
 ENV APPLICATION="./job.sh" \
     MODEL_TYPE="ED2" \
-    MODEL_VERSION="${MODEL_VERSION}" \
-    RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
+    MODEL_VERSION="${MODEL_VERSION}"
+
+ENV RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
 
 # COPY model binary
 COPY --from=model-binary /src/ED2/ED/build/ed_2.1-opt /usr/local/bin/ed2.${MODEL_VERSION}
