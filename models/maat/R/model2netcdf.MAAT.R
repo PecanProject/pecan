@@ -53,6 +53,11 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
   
   # setup helper function
   var_update <- function(data, out, oldname, newname, oldunits, newunits=NULL, missval=-999, longname, ncdims) {
+    # ifelse is no longer working as expected, so now we have this function to deal with any Inf values
+    f_sort <- function(s) {
+      if (is.infinite(s)) -999
+      else try(PEcAn.utils::misc.convert(s, oldunits, newunits), silent = TRUE)
+    }
     ## define variable
     if(is.null(newunits)) newunits = oldunits
     newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = ncdims, missval=missval, longname=longname)
@@ -62,7 +67,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       PEcAn.logger::logger.info(paste0("Skipping conversion for: ", newname))
       dat.new <- dat
     } else {
-      dat.new <- try(PEcAn.utils::misc.convert(dat,oldunits,newunits),silent = TRUE)
+      dat.new <- apply(as.matrix(dat,length(dat),1),1,f_sort) # this is MUCH slower than ifelse but ifelse isnt working as expected
     }
     ## prep for writing
     if(is.null(out)) {
@@ -207,6 +212,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
     ncout <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")),output$var)
     ncdf4::ncatt_put(ncout, "time", "bounds", "time_bounds", prec=NA)
     for (i in seq_along(output$var)) {
+      #print(i)  # for debugging
       ncdf4::ncvar_put(ncout, output$var[[i]], output$dat[[i]])
     }
     
