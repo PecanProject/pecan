@@ -423,6 +423,7 @@ A common use case for this section is to submit model runs as jobs to a high-per
 If no `host` tag is provided, PEcAn assumes models are run on `localhost`, a.k.a. the same machine as PEcAn itself.
 
 For detailed instructions on remote execution, see the [Remote Execution](#pecan-remote) page.
+For detailed information on configuring this for RabbitMQ, see the [RabbitMQ](#rabbitmq-xml) page.
 The following provides a quick overview of XML tags related to remote execution.
 
 **NOTE**: Any paths specified in the `pecan.xml` refer to paths on the `host` specified in this section, /not/ the machine on which PEcAn is running (unless models are running on `localhost` or this section is omitted).
