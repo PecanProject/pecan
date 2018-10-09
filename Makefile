@@ -10,14 +10,13 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.mining data.remote emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
-SHINY := BenchmarkReport BrownDog Data-Ingest Elicitation Pecan.depend \
-				ViewMet global-sensitivity workflowPlot
+SHINY := $(dir $(wildcard shiny/*/.))
+SHINY := $(SHINY:%/=%)
 
 BASE := $(BASE:%=base/%)
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
-SHINY := $(SHINY:%=shiny/%)
 
 BASE_I := $(BASE:%=.install/%)
 MODELS_I := $(MODELS:%=.install/%)

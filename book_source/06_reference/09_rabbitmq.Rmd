@@ -1,0 +1,169 @@
+# RabbitMQ {#rabbitmq}
+
+This section provides additional details about how PEcAn uses RabbitMQ to manage communication between its Docker containers.
+
+In PEcAn, we use the Python [`pika`](http://www.rabbitmq.com/tutorials/tutorial-one-python.html) client to post and retrieve messages from RabbitMQ.
+As such, every Docker container that communicates with RabbitMQ contains two Python scripts: `sender.py` and `reciever.py`.
+Both are located in the `docker` directory in the PEcAn source code root.
+
+## Producer -- `sender.py` {#rabbitmq-basics-sender}
+
+The `sender.py` script is in charge of posting messages to RabbitMQ.
+In the RabbitMQ documentation, it is known as a "producer".
+It runs once for every message posted to RabbitMQ, and then immediately exits (unlike the `receiver.py`, which runs continuously -- see [below](#rabbitmq-basics-receiver)).
+
+Its usage is as follows:
+
+```bash
+python3 sender.py <URI> <queue> <message>
+```
+
+The arguments are:
+
+- `<URI>` -- The unique identifier of the RabbitMQ instance, similar to a URL.
+The format is `amqp://username:password@host/vhost`.
+By default, this is `amqp://guest:guest@rabbitmq/%2F` (the `%2F` here is the hexadecimal encoding for the `/` character).
+
+- `<queue>` -- The name of the queue on which to post the message.
+
+- `<message>` -- The contents of the message to post, in JSON format.
+A typical message posted by PEcAn looks like the following:
+  
+  ```json
+  { "folder" : "/path/to/PEcAn_WORKFLOWID", "workflow" : "WORKFLOWID" }
+  ```
+  
+The `PEcAn.remote::start_rabbitmq` function is a wrapper for this script that provides an easy way to post a `folder` message to RabbitMQ from R.
+
+## Consumer -- `receiver.py` {#rabbitmq-basics-receiver}
+
+Unlike `sender.py`, `receiver.py` runs like a daemon, constantly listening for messages.
+In the RabbitMQ documentation, it is known as a "consumer".
+In PEcAn, you can tell that it is ready to receive messages if the corresponding logs (e.g. `docker-compose logs executor`) show the following message:
+
+```
+[*] Waiting for messages. To exit press CTRL+C.
+```
+
+Our `reciever` is configured by three environment variables:
+
+- `RABBITMQ_URI` -- This defines the URI where RabbitMQ is running.
+See corresponding argument in the [producer](#rabbitmq-basics-sender)
+
+- `RABBITMQ_QUEUE` -- This is the name of the queue on which the consumer will listen for messages, just as in the [producer](#rabbitmq-basics-sender).
+
+- `APPLICATION` -- This specifies the name (including the path) of the executable to run when receiving a message.
+At the moment, it should be an executable that runs in the directory specified by the message's `folder` variable.
+In the case of PEcAn models, this is usually `./job.sh`, such that the `folder` corresponds to the `run` directory associated with a particular `runID` (i.e. where the `job.sh` is located).
+For the PEcAn workflow itself, this is set to `R CMD BATCH workflow.R`, such that the `folder` is the root directory of the workflow (in the `executor` Docker container, something like `/data/workflows/PEcAn_<workflowID>`).
+
+## RabbitMQ and the PEcAn web interface {#rabbitmq-web}
+
+RabbitMQ is configured by the following variables in `config.php`:
+
+- `$rabbitmq_host` -- The RabbitMQ server hostname (default: `rabbitmq`, because that is the name of the `rabbitmq` service in `docker-compose.yml`)
+- `$rabbitmq_port` -- The port on which RabbitMQ listens for messages (default: 5672)
+- `$rabbitmq_vhost` -- The path of the RabbitMQ [Virtual Host](https://www.rabbitmq.com/vhosts.html) (default: `/`).
+- `$rabbitmq_queue` -- The name of the RabbitMQ queue associated with the PEcAn workflow (default: `pecan`)
+- `$rabbitmq_username` -- The RabbitMQ username (default: `guest`)
+- `$rabbitmq_password` -- The RabbitMQ password (default: `guest`)
+
+In addition, for running models via RabbitMQ, you will also need to add an entry like the following to the `config.php` `$hostlist`:
+
+```php
+$hostlist=array($fqdn => array("rabbitmq" => "amqp://guest:guest@rabbitmq/%2F"), ...)
+```
+
+This will set the hostname to the name of the current machine (defined by the `$fqdn` variable earlier in the `config.php` file) to an array with one entry, whose key is `rabbitmq` and whose value is the RabbitMQ URI (`amqp://...`).
+
+These values are converted into the appropriate entries in the `pecan.xml` in `web/04-runpecan.php`.
+
+## RabbitMQ in the PEcAn XML {#rabbitmq-xml}
+
+RabbitMQ is a special case of remote execution, so it is configured by the `host` node.
+An example RabbitMQ configuration is as follows:
+
+```xml
+<host>
+  <rabbitmq>
+    <uri>amqp://guest:guest@rabbitmq/%2F</uri>
+	<queue>sipnet_136</queue>
+  </rabbitmq>
+</host>
+```
+
+Here, `uri` and `queue` have the same general meanings as described in ["producer"](#rabbitmq-basics-sender).
+Note that `queue` here refers to the target model.
+In PEcAn, RabbitMQ model queues are named as `MODELTYPE_REVISION`,
+so the example above refers to the SIPNET model version 136.
+Another example is `ED2_git`, referring to the latest `git` version of the ED2 model.
+
+## RabbitMQ configuration in Dockerfiles {#rabbitmq-dockerfile}
+
+As described in the ["consumer"](#rabbitmq-basics-receiver) section, our standard RabbitMQ receiver script is configured using three environment variables: `RABBITMQ_URI`, `RABBITMQ_QUEUE`, and `APPLICATION`.
+Therefore, configuring a container to work with PEcAn's RabbitMQ instance requires setting these three variables in the Dockerfile using an [`ENV`](https://docs.docker.com/engine/reference/builder/#env) statement.
+
+For example, this excerpt from `docker/base/Dockerfile.executor` (for the `pecan/executor` image responsible for the PEcAn workflow) sets these variables as follows:
+
+```dockerfile
+ENV RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F" \
+    RABBITMQ_QUEUE="pecan" \
+    APPLICATION="R CMD BATCH workflow.R"
+```
+
+Similarly, this excerpt from `docker/models/Dockerfile.sipnet` (which builds the SIPNET model image) is a typical example for a model image.
+Note the use of [`ARG`](https://docs.docker.com/engine/reference/builder/#arg) here to specify a default version model version of 136 while allowing this to be configurable (via `--build-arg MODEL_VERSION=X`) at build time:
+
+```dockerfile
+ARG MODEL_VERSION=136
+
+ENV APPLICATION="./job.sh" \
+    MODEL_TYPE="SIPNET" \
+    MODEL_VERSION="${MODEL_VERSION}"
+
+ENV RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
+```
+
+**WARNING**: Dockerfile environment variables set via `ENV` are assigned _all at once_; _they do not evaluate successively, left to right_.
+Consider the following block:
+
+```dockerfile
+# Don't do this!
+ENV MODEL_TYPE="SIPNET" \
+    MODEL_VERSION=136 \
+    RABBITMQ_QUEUE=${MODEL_TYPE}_${MODEL_VERSION}   # <- Doesn't know about MODEL_TYPE or MODEL_VERSION!
+```
+
+In this block, the expansion for setting `RABBITMQ_QUEUE` _is not aware_ of the current values of `MODEL_TYPE` or `MODEL_VERSION`, and will therefore be set incorrectly to just `_` (unless they have been set previously, in which case it will be aware only of their earlier values).
+As such, **variables depending on other variables must be set in a separate, subsequent `ENV` statement than the variables they depend on**.
+
+## Case study: PEcAn web interface {#rabbitmq-case-study}
+
+The following describes in general terms what happens during a typical run of the PEcAn web interface with RabbitMQ.
+
+1. The user initializes all containers with `docker-compose up`.
+All the services that interact with RabbitMQ (`executor` and all models) run `receiver.py` in the foreground, waiting for messages to tell them what to do.
+
+2. The user browses to http://localhost:8000/pecan/ and steps through the web interface.
+All the pages up to the `04-runpecan.php` run on the `web` container, and are primarily for setting up the `pecan.xml` file.
+
+3. Once the user starts the PEcAn workflow at `04-runpecan.php`, the underlying PHP code connects to RabbitMQ (based on the URI provided in `config.php`) and posts the following message to the `pecan` queue:
+
+  ```json
+  {"folder": "/workflows/PEcAn_WORKFLOWID", "workflowid": "WORKFLOWID"}
+  ```
+  
+4. The `executor` service, which is listening on the `pecan` queue, hears this message and executes its `APPLICATION` (`R CMD BATCH workflow.R`) in the working directory specified in the message's `folder`.
+   The `executor` service then performs the pre-execution steps (e.g. trait meta-analysis, conversions) itself.
+   Then, to actually execute the model, `executor` posts the following message to the target model's queue:
+
+  ```json
+  {"folder": "/workflows/PEcAn_WORKFLOWID/run/RUNID"}
+  ```
+
+5. The target model service, which is listening on its dedicated queue, hears this message and runs its `APPLICATION`, which is `job.sh`, in the directory indicated by the message.
+   Upon exiting (normally), the model service writes its status into a file called `rabbitmq.out` in the same directory.
+   
+6. The `executor` container continuously looks for the `rabbitmq.out` file as an indication of the model run's status.
+   Once it sees this file, it reads the status and proceeds with the post-execution parts of the workflow.
+   (NOTE that this isn't perfect. If the model running process exits abnormally, the `rabbitmq.out` file may not be created, which can cause the `executor` container to hang. If this happens, the solution is to restart the `executor` container with `docker-compose restart executor`).

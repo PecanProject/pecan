@@ -3,6 +3,7 @@ Type: Package
 Title: PEcAn functions used to estimate priors from data
 Version: 1.6.0
 Date: 2018-08-20
+Authors@R: c(person("David","LeBauer"))
 Author: David LeBauer
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: Functions to estimate priors from data.

@@ -8,6 +8,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Fixes
+- Fixed error in read_web_config which would filter out all variables.
 
 ### Added
 - Lots of new documentation for running PEcAn using Docker
