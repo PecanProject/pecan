@@ -17,6 +17,7 @@ It contains the following major sections ("nodes"):
 	- [`ensemble`](#xml-ensemble) -- Ensemble runs
 	- [`sensitivity.analysis`](#xml-sensitivity-analysis) -- Sensitivity analysis
 	- [`parameter.data.assimilation`](#xml-parameter-data-assimilation) -- Parameter data assimilation
+	- [`multi.site`](#xml-multi-site) -- Multi Site Settings
 	- (experimental) [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
 	- (experimental) [`browndog`](#xml-browndog) -- Brown Dog configuration
 	- (experimental) [`benchmarking`](#xml-benchmarking) -- Benchmarking
@@ -422,6 +423,7 @@ A common use case for this section is to submit model runs as jobs to a high-per
 If no `host` tag is provided, PEcAn assumes models are run on `localhost`, a.k.a. the same machine as PEcAn itself.
 
 For detailed instructions on remote execution, see the [Remote Execution](#pecan-remote) page.
+For detailed information on configuring this for RabbitMQ, see the [RabbitMQ](#rabbitmq-xml) page.
 The following provides a quick overview of XML tags related to remote execution.
 
 **NOTE**: Any paths specified in the `pecan.xml` refer to paths on the `host` specified in this section, /not/ the machine on which PEcAn is running (unless models are running on `localhost` or this section is omitted).
@@ -555,6 +557,18 @@ This information is currently used by the following PEcAn workflow functions:
 ### Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
 The following tags can be used for parameter data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](#pda)
+
+### Multi-site {#xml-multi-site}
+
+The following tags can be used to run a simulation at multiple sites. It leverages site groups, which are defined in BETY.
+
+```xml
+ <sitegroup>
+   <id>1000000012</id>
+ </sitegroup>
+````
+If you add this tag, you must remove the `<site> </site>` tags from the `<run>` tag portion of your xml. 
+The id of your sitegroup can be found by lookig up your site group within BETY.
 
 ### (experimental) State Data Assimilation {#xml-state-data-assimilation}
 

@@ -1,6 +1,6 @@
 Package: PEcAn.visualization
 Type: Package
-Title: PEcAn visualization functions.
+Title: PEcAn visualization functions
 Version: 1.6.0
 Date: 2018-08-20
 Authors@R: c(person("Mike","Dietze"),
@@ -33,21 +33,16 @@ Depends:
     data.table,
     earth,
     XML,
-    shiny,
-    shinyjs,
     PEcAn.DB,
-    RPostgreSQL,
     dplyr,
-    dbplyr,
-    plotly,
-    shinydashboard,
-    shinyFiles,
-    shinycssloaders
+    dbplyr
 Imports:
     PEcAn.logger,
+    PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
     plyr (>= 1.8.4),
+    reshape2,
     stringr(>= 1.1.0),
     udunits2 (>= 0.11)
 Suggests:
