@@ -264,17 +264,16 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         X_tmp <- vector("list", 2)
         
         for (i in seq_len(nens)) {
-          X_tmp[[i]] <- do.call(
-            my.read_restart,
-            args = list(
-              outdir = outdir,
-              runid = configs$runs$id[i],
-              stop.time = obs.times[t],
-              settings = settings,
-              var.names = var.names,
-              params = new.params[[i]]
-            )
-          )
+          X_tmp[[i]] <- do.call( my.read_restart,
+                                args = list(
+                                  outdir = outdir,
+                                  runid = configs$runs$id[i],
+                                  stop.time = obs.times[t],
+                                  settings = settings,
+                                  var.names = var.names,
+                                  params = new.params[[i]]
+                                )
+                              )
           
         }
         return(X_tmp)
@@ -418,7 +417,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###---- 
     save(t, FORECAST, ANALYSIS, enkf.params,new.state,new.params,out.configs,ensemble.samples,inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
-    if (t%%2==0)  post.analysis.multisite.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title,facetg=control$facet.plots)
+    if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title,facetg=control$facet.plots)
   } ### end loop over time
   
 } # sda.enkf

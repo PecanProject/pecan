@@ -37,7 +37,7 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     rows.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,1])
     cols.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,2])
     #estimated between these two sites
-    two.site.cov <- cov( X [, c(rows.in.matrix, cols.in.matrix)] )[(nvariable+1):(2*nvariable),1:nvariable]
+    two.site.cov <- cov( X [, c(rows.in.matrix, cols.in.matrix)],use="complete.obs" )[(nvariable+1):(2*nvariable),1:nvariable]
     # this is something we can pplay around with - I'm setting the off diag to zero 
     two.site.cov [which(lower.tri(two.site.cov, diag = FALSE),T) %>% rbind (which(upper.tri(two.site.cov,F),T))] <- 0
   
