@@ -1,14 +1,14 @@
 #'
 #' @title site.pft.linkage
 #' 
-#' @param pecan.xml.address character path to the pecan xml file.
+#' @param pecan.xml.address pecan settings list.
 #' @param site.pft.links dataframe. Your look up table should have two columns of site and pft with site ids under site column and pft names under pft column.
 #'
 #' 
 #' @description This function creates the required tags inside pecan.xml to link sites with pfts given a look up table. If the required tags are already defined in the pecan xml then they will be updated.
 #' 
 #' @return NONE
-#' @export
+#' @export site.pft.linkage
 #' 
 #' @examples
 #'\dontrun{
@@ -23,23 +23,20 @@
 #' )
 #'  
 #' # sending a single setting xml to the function
-#' site.pft.linkage('pecan.xml',site.pft.links)
+#' site.pft.linkage(settings,site.pft.links)
 #' # sending a multi- setting xml file to the function
-#' site.pft.linkage('pecan.SDA.4site.xml',site.pft.links)
+#' site.pft.linkage(settings,site.pft.links)
 #'}
-site.pft.linkage <- function(pecan.xml.address='', site.pft.links){
+site.pft.linkage <- function(settings, site.pft.links){
   
   # checking the LUT 
   if (is.null(site.pft.links) | ncol(site.pft.links) !=2) PEcAn.logger::logger.severe('Your look up table should have two columns of site and pft with site ids under site column and pft names under pft column.')
-  #finding the file name
-  filename<-strsplit(pecan.xml.address,'.xml$')[[1]]
-  #reading in the xml file
-  msetting<-read.settings(pecan.xml.address)
+
   # if it's not a multisetting put it still in a list
-  if(!is.MultiSettings(msetting)) msetting<- list(msetting) 
+  if(!is.MultiSettings(settings)) settings<- list(settings) 
   
   #for each site in this setting
-  new.mset <- msetting%>%
+  new.mset <- settings%>%
     purrr::map(function(site.setting){
       
       site.pft <- NULL
@@ -54,7 +51,7 @@ site.pft.linkage <- function(pecan.xml.address='', site.pft.links){
     })
   
   #putting it in the right format depending if it's multisetting or not 
-  if (is.MultiSettings(msetting)) {
+  if (is.MultiSettings(settings)) {
     new.mset <- MultiSettings(new.mset)
     outdir <-new.mset[[1]]$outdir
   } else{
@@ -62,6 +59,8 @@ site.pft.linkage <- function(pecan.xml.address='', site.pft.links){
     outdir <-new.mset$outdir
   }
   
-  write.settings(new.mset, paste0(filename,".site_pft.xml"), outdir)
+  write.settings(new.mset, paste0("pecan.site_pft.xml"), outdir)
+  
+  return(settings)
 }
 
