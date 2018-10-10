@@ -5,8 +5,9 @@
 #' @return pecan xml setting file
 #' @export site.pft.link.settings
 #'
-#' @examples
+#' @description This function reads in a pecan setting and check for the pft.site xml tag under run>inputs . If a path or a ID for the input is defined then, it will be used for linking sites with the pfts.
 site.pft.link.settings <-function(settings){
+  #lets see if there is the pft.site tag under run>inputs
   pft.site.info <- settings$run$inputs$pft.site
   # if it's not specified just let it go !
   if (is.null(pft.site.info)) return(settings)
