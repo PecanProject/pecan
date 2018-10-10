@@ -7,7 +7,7 @@
 #'
 #' @examples
 site.pft.link.settings <-function(settings){
-  pft.site.info <- settings$inputs$pft.site
+  pft.site.info <- settings$run$inputs$pft.site
   # if it's not specified just let it go !
   if (is.null(pft.site.info)) return(settings)
   
@@ -19,7 +19,7 @@ site.pft.link.settings <-function(settings){
   
   if (!is.null(pft.site.info$path)) {
     #lets read in the Look Up Table
-    LUT <- loadPath.sitePFT(pft.site.info$path)
+    LUT <- loadPath.sitePFT(settings,pft.site.info$path)
     # doing the real linkage and writing the setting down
     settings <- site.pft.linkage(settings, LUT)
   }

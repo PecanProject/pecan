@@ -4,12 +4,12 @@
 \alias{site.pft.linkage}
 \title{site.pft.linkage}
 \usage{
-site.pft.linkage(pecan.xml.address = "", site.pft.links)
+site.pft.linkage(settings, site.pft.links)
 }
 \arguments{
-\item{pecan.xml.address}{character path to the pecan xml file.}
-
 \item{site.pft.links}{dataframe. Your look up table should have two columns of site and pft with site ids under site column and pft names under pft column.}
+
+\item{pecan.xml.address}{pecan settings list.}
 }
 \value{
 NONE
@@ -30,8 +30,8 @@ site.pft.links <-tribble(
 )
  
 # sending a single setting xml to the function
-site.pft.linkage('pecan.xml',site.pft.links)
+site.pft.linkage(settings,site.pft.links)
 # sending a multi- setting xml file to the function
-site.pft.linkage('pecan.SDA.4site.xml',site.pft.links)
+site.pft.linkage(settings,site.pft.links)
 }
 }

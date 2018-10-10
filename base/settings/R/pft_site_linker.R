@@ -59,8 +59,8 @@ site.pft.linkage <- function(settings, site.pft.links){
     outdir <-new.mset$outdir
   }
   
-  write.settings(new.mset, paste0("pecan.site_pft.xml"), outdir)
+  #write.settings(new.mset, paste0("pecan.site_pft.xml"), outdir)
   
-  return(settings)
+  return(new.mset)
 }
 
