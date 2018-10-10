@@ -19,16 +19,16 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "ecowdery@bu.edu",
                      comment = c(ORCID = "0000-0002-6538-6296")),
              person("Ankur", "Desai", role = c("aut", "cre"),
-                     email = "desai@aos.wisc.edu"
+                     email = "desai@aos.wisc.edu",
                      comment = c(ORCID = "0000-0002-5226-6041")),
              person("Istem", "Fer", role = c("aut", "cre"),
-                     email = "istfer@bu.edu"
+                     email = "istfer@bu.edu",
                      comment = c(ORCID = "0000-0001-8236-303X")),
              person("Alexey", "Shiklomanov", role = c("aut", "cre"),
-                     email = "alexey.shiklomanov@pnnl.gov"
+                     email = "alexey.shiklomanov@pnnl.gov",
                      comment = c(ORCID = "0000-0003-4022-5979")),
              person("Tony", "Gardella", role = c("aut", "cre"),
-                     email = "tonygard@bu.edu"
+                     email = "tonygard@bu.edu",
                      comment = c(ORCID = "0000-0003-4380-3412")),
              person("Liam", "Burke", role = c("aut")),
              person("Ryan", "Kelly", role = c("aut")),
