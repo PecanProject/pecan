@@ -3,12 +3,12 @@ Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.6.0
 Date: 2018-08-20
-Authors@R: c(person("Mike", "Dietze", role = c("aut"),
-                     email = "dietze@bu.edu",
-                     comment = c(ORCID = "0000-0002-2324-2518")),
-             person("David", "LeBauer", role = c("aut", "cre"),
+Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu",
                      comment = c(ORCID = "0000-0001-7228-053X")),
+             person("Mike", "Dietze", role = c("aut"),
+                     email = "dietze@bu.edu",
+                     comment = c(ORCID = "0000-0002-2324-2518")),
              person("Rob", "Kooper", role = c("aut"),
                      email = "kooper@illinois.edu",
                      comment = c(ORCID = "0000-0002-5781-7287")),
