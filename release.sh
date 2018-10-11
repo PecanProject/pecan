@@ -13,8 +13,16 @@ VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
 VERSION=${VERSION} DEBUG=${DEBUG} DEPEND=${DEPEND} ./docker.sh
 
 # check branch and set version
+PECAN_GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 if [ "${PECAN_GIT_BRANCH}" = "master" ]; then
-    TAGS="${VERSION} latest"
+    TAGS="latest"
+    TMPVERSION="${VERSION}"
+    OLDVERSION=""
+    while [ "$OLDVERSION" != "$TMPVERSION" ]; do
+       TAGS="${TAGS} ${TMPVERSION}"
+       OLDVERSION="${TMPVERSION}"
+       TMPVERSION=$(echo ${OLDVERSION} | sed 's/\.[0-9]*$//')
+    done
 elif [ "${PECAN_GIT_BRANCH}" = "develop" ]; then
     TAGS="develop"
 fi
@@ -34,15 +42,6 @@ for i in depends base executor web data; do
 done
 
 # push model images
-for i in ls; do
-    for v in ${TAGS}; do
-        if [ "$v" != "latest" -o "$SERVER" != "" ]; then
-            ${DEBUG} docker tag pecan/${i}:latest ${SERVER}pecan/${i}:${v}
-        fi
-        ${DEBUG} docker push ${SERVER}pecan/${i}:${v}
-    done
-done
-
 for i in model-sipnet-136 model-ed2-git; do
     for v in ${TAGS}; do
         if [ "$v" != "latest" -o "$SERVER" != "" ]; then
