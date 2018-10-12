@@ -44,5 +44,5 @@ RUN for p in abind BayesianTools car coda dataone datapack data.table DBI dbplyr
       if(!'${p}' %in% rownames(installed.packages())) { \
         install.packages('${p}', repos='http://cran.rstudio.com/'); \
         q(status=as.integer(!'${p}' %in% rownames(installed.packages()))) \
-      }" || echo "FAILED TO INSTALL ${p}"; exit 1; \
+      }" || (echo "FAILED TO INSTALL ${p}"; exit 1); \
     done

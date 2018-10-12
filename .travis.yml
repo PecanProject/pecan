@@ -78,7 +78,7 @@ addons:
       - r-cran-xml2
 
   
-## notifications should go to gitter
+## notifications should go to slack
 notifications:
   slack:
     # Slack token created by Chris Black, 2018-02-17
