@@ -1,7 +1,7 @@
-##' @title download.US-WCr
+##' @title download.US-Syv
 ##' 
 ##' @section General Description:
-##' Obtains data from Ankur Desai's Willow Creek flux tower, and selects certain variables (NEE and LE) to return
+##' Obtains data from Ankur Desai's Sylvannia flux tower, and selects certain variables (NEE and LE) to return
 ##' Data is retruned at the given timestep in the given range.
 ##' 
 ##' This data includes information on a number of flux variables.
@@ -14,7 +14,7 @@
 ##' @param timestep How often to take data points from the file.  Must be a multiple of 0.5
 ##' @export
 ##' 
-##' @author Luke Dramko
+##' @author Luke Dramko and K Zarada
 download.US_Syv <- function(start_date, end_date, timestep = 1) {
   timestep = 2 * timestep #data is actually every half hour
   
