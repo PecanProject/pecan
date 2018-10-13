@@ -144,6 +144,8 @@ The breakdown of this command is as follows:
 - `--volume pecan_pecan:/data` -- This mounts the data from the subsequent container (`pecan/data:develop`) onto the current project volume, called `pecan_pecan` (as with the network, the project name `pecan` is the prefix, and the volume name also happens to be `pecan` as specified in the `docker-compose.yml` file).
 - `pecan/data:develop` -- As above, this is the target image to run. Since there is no argument after the image name, this command will run the default command ([`CMD`](https://docs.docker.com/engine/reference/builder/#cmd)) specified for this docker container. In this case, it is the [`docker/add_data.sh`](https://github.com/PecanProject/pecan/blob/develop/docker/add-data.sh) script from the PEcAn repository.
 
+Under the hood, this container runs the `docker/add-data.sh` script, which downloads a bunch of input files and registers them with the PEcAn database.
+
 Successful execution of this command should take some time because it involves downloading and copying reasonably large amounts of data and performing a number of database operations.
 
 #### Start PEcAn
