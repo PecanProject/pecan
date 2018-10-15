@@ -1,50 +1,46 @@
-##' @title download.US-Syv
+##' @title download.US_Wlef
 ##' 
 ##' @section General Description:
-##' Obtains data from Ankur Desai's Sylvannia flux tower, and selects certain variables (NEE and LE) to return
+##' Obtains data from Ankur Desai's WLEF/ Parks Fall flux tower, and selects certain variables (NEE and LE) to return
 ##' Data is retruned at the given timestep in the given range.
 ##' 
 ##' This data includes information on a number of flux variables.
 ##' 
-##' The timestep parameter is measured in hours, but is then converted to half hours because the data's timestep
-##' is every half hour.
 ##' 
 ##' @param start_date Start date/time data should be downloaded for
 ##' @param end_date End date/time data should be downloaded for
-##' @param timestep How often to take data points from the file.  Must be a multiple of 0.5
+##' @param timestep How often to take data points from the file.  Must be integer
 ##' @export
 ##' 
 ##' @author Luke Dramko and K Zarada
-download.US_Syv <- function(start_date, end_date, timestep = 1) {
-  timestep = 2 * timestep #data is actually every half hour
-  
+download.US_Wlef <- function(start_date, end_date, timestep = 1) {
+
   if (timestep != as.integer(timestep)) {
-    PEcAn.logger::logger.severe(paste0("Invalid timestep ", timestep/2, ". Timesteps must be at ",
-                                       "least every half hour (timestep = 0.5)."))
+    PEcAn.logger::logger.severe(paste0("Invalid timestep ",timestep, ". Timesteps must be integer"))
   }
   
   start_date <- as.POSIXct(start_date, tz="UTC")
   end_date <- as.POSIXct(end_date, tz="UTC")
   
-  nee_col = 10  # Column number of NEE
-  le_col = 15 # Column number of LE
+  nee_col = 7  # Column number of NEE
+  le_col = 8 # Column number of LE
   
   # Data is found here
   # Original url: http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek2018_flux.txt
-  base_url <- "http://flux.aos.wisc.edu/data/cheas/sylvania/flux/prelim/sylvania"
+  base_url <- "http://flux.aos.wisc.edu/data/cheas/wlef/flux/prelim/"
   
   flux = NULL;
   
   for (year in as.integer(format(start_date, "%Y")):as.integer(format(end_date, "%Y"))) {
-    url <- paste0(base_url, "flux_", year, ".txt") #Build proper url
+    url <- paste0(base_url, year,"/flux_", year, ".txt") #Build proper url
     PEcAn.logger::logger.info(paste0("Reading data for year ", year))
     print(url)
-    influx <- tryCatch(read.csv(url, skip = 20, header = F, sep = ","), error=function(e) {NULL}, warning=function(e) {NULL})
+    influx <- tryCatch(read.table(url, header = T, sep = ""), error=function(e) {NULL}, warning=function(e) {NULL})
     if (is.null(influx)) { #Error encountered in data fetching.
       PEcAn.logger::logger.warn(paste0("Data not avaliable for year ", year, ". All values for ", year, " will be NA."))
       # Determine the number of days in the year
       rows_in_year <- udunits2::ud.convert(lubridate::as.duration(lubridate::interval(as.POSIXct(paste0(year, "-01-01")), as.POSIXct(paste0(year + 1, "-01-01")))), "s", "day")
-      rows_in_year = rows_in_year * 48 # 24 measurements per day, one every hour.
+      rows_in_year = rows_in_year * 24 # 48 measurements per day, one every half hour.
       influx <- matrix(rep(-999, rows_in_year * 13), nrow=rows_in_year, ncol = 13)
     }
     flux <- rbind(flux, influx)
@@ -52,8 +48,8 @@ download.US_Syv <- function(start_date, end_date, timestep = 1) {
   PEcAn.logger::logger.info("Flux data has been read.")
   
   # Contains only the data needed in a data frame
-  new.flux <- data.frame(DOY = flux[,4], 
-                         HRMIN = flux[,5],
+  new.flux <- data.frame(DOY = flux[,5], 
+                         HR = flux[,4],
                          NEE = as.numeric(flux[,nee_col]),
                          LE = as.numeric(flux[,le_col]))
   
@@ -64,22 +60,16 @@ download.US_Syv <- function(start_date, end_date, timestep = 1) {
   days <- lubridate::as.duration(start_interval)  # Actually returns a number of seconds
   days <- udunits2::ud.convert(as.integer(days), "s", "day") # Days, including fractional part, if any.
   hours <- floor(udunits2::ud.convert(days - floor(days), "day", "hr"))  # Extract the hour component, round to the previous hour.
-  if (days - floor(days) >= 0.5) {  # Flux data is at half-hour precision
-    hours <- hours + 0.5
-  }
   days <- floor(days) # Extract the whole day component
   
-  start_row <- as.integer(days * 48 + hours * 2)
+  start_row <- as.integer(days * 24 + hours)
   
   data_interval <- lubridate::interval(start_date, end_date)
   days <- lubridate::as.duration(data_interval) # a number of seconds
   days <- udunits2::ud.convert(as.integer(days), "s", "day")
   hours <- floor(udunits2::ud.convert(as.integer(days - floor(days)), "day", "hr")) # Round down to the nearest half hour
-  if (days - floor(days) >= 0.5) {
-    hours <- hours + 0.5
-  }
   days <- floor(days)
-  end_row <- start_row + as.integer(days * 48 + hours * 2)
+  end_row <- start_row + as.integer(days * 24 + hours)
   
   # Calculations are one time point behind the actual start time; corrects the off-by-one error
   start_row = start_row + 1;
@@ -104,7 +94,7 @@ download.US_Syv <- function(start_date, end_date, timestep = 1) {
     
     # LE values
     val <- as.numeric(row$LE)
-    if (val == -9999) { val <- NA }
+    if (val == -999) { val <- NA }
     out_le <- c(out_le, val)
   }
   
@@ -112,4 +102,4 @@ download.US_Syv <- function(start_date, end_date, timestep = 1) {
 } # download.US_Syv.R
 
 # This line is great for testing.
-download.US_Syv('2018-07-23 06:00', '2018-08-08 06:00', timestep=12)
+download.US_Wlef('2018-07-23 06:00', '2018-08-08 06:00', timestep=12)

@@ -6,7 +6,7 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 
-## [Unreleased]
+## [1.6.0] - 2018-09-01
 
 ### Fixes
 - Running tests for PEcAn.settings package no longer leaves empty temp directories in test folder (#2075)

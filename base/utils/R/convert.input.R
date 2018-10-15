@@ -618,6 +618,34 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   }
   
   #--------------------------------------------------------------------------------------------------#
+  # Check if result has empty or missing files
+  
+  result_sizes <- purrr::map_dfr(
+    result,
+    ~ dplyr::mutate(
+      .,
+      file_size = purrr::map_dbl(file, file.size),
+      missing = is.na(file_size),
+      empty = file_size == 0
+    )
+  )
+  
+  if (any(result_sizes$missing) || any(result_sizes$empty)){
+    log_format_df = function(df){
+      df  %>%
+        format() %>%
+        rbind(colnames(.), .) %>%
+        purrr::reduce( paste, sep=" ") %>%
+        paste(collapse="\n")
+    }
+    
+    PEcAn.logger::logger.severe(
+      "Requested Processing produced empty files or Nonexistant files :\n",
+      log_format_df(result_sizes[,c(1,8,9,10)]),
+      "\n Table of results printed above.",
+      wrap = FALSE)
+  }
+  
   # Insert into Database
   outlist <- unlist(strsplit(outname, "_"))
   
@@ -681,7 +709,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                              in.prefix = result[[i]]$dbfile.name[1], 
                                              'Input', existing.input[[i]]$id, 
                                              con, reuse=TRUE, hostname = machine$hostname)
-        newinput$input.id  <- c(newinput$input.id, existing.input$id)
+        newinput$input.id  <- c(newinput$input.id, existing.input[[i]]$id)
         newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
       } else if (id_not_added) {
         new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
