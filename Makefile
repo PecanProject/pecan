@@ -2,7 +2,7 @@ NCPUS ?= 1
 
 BASE := logger utils db settings visualization qaqc remote workflow
 
-MODELS := biocro clm45 dalec ed fates gday jules linkages \
+MODELS := clm45 dalec ed fates gday jules linkages \
 				lpjguess maat maespa preles sipnet dvmdostem template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
@@ -87,7 +87,6 @@ $(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .i
 $(call depends,modules/priors): | .install/base/utils
 $(call depends,modules/rtm): | .install/modules/assim.batch .install/base/utils .install/models/ed
 $(call depends,modules/uncertainty): | .install/base/utils .install/base/db .install/modules/priors .install/modules/emulator
-$(call depends,models/biocro): | .install/mockery .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land .install/base/remote
 $(call depends,models/cable): | .install/base/utils
 $(call depends,models/clm45): | .install/base/utils
 $(call depends,models/dalec): | .install/base/remote

@@ -45,7 +45,7 @@ if (nrow(workflows) > 1) {
 }
 print(paste0("Using workflow ", workflow$id))
 wid <- workflow$id
-pecan_out_dir <- paste0("/fs/data3/ldramko/output/PEcAn_", wid, "/out/");
+pecan_out_dir <- paste0("/fs/data3/kzarada/output/PEcAn_", wid, "/out");
 pecan_out_dirs <- list.dirs(path = pecan_out_dir)
 if (is.na(pecan_out_dirs[1])) {
   print(paste0(pecan_out_dirs, " does not exist."))
@@ -54,7 +54,7 @@ if (is.na(pecan_out_dirs[1])) {
 neemat <- matrix(1:64, nrow=1, ncol=64) # Proxy row, will be deleted later.
 qlemat <- matrix(1:64, nrow=1, ncol=64) # Proxy row, will be deleted later.
 num_results <- 0;
-for (i in 1:length(pecan_out_dirs)) {
+for (i in 2:length(pecan_out_dirs)) {
   datafile <- file.path(pecan_out_dirs[i], format(workflow$start_date, "%Y.nc"))
   if (!file.exists(datafile)) {
     print(paste0("File ", datafile, " does not exist."))
@@ -134,16 +134,17 @@ neeplot <- ggplot(needf) +
   # geom_ribbon(aes(x=time, ymin=neemins, ymax=neemaxes, fill="Spread of data (excluding outliers)"), alpha = 0.7) +
   geom_ribbon(aes(x = time, ymin=neelower95, ymax=neeupper95, fill="95% confidence interval"), alpha = 0.4) + 
   geom_line(aes(x=time, y=neemeans, color="predicted mean")) +
-  geom_point(aes(x=time, y=real_data$nee, color="actual data")) +
+  geom_line(aes(x=time, y=real_data$nee, color="actual data")) +
   ggtitle(paste0("Net Ecosystem Exchange for ", workflow$start_date, " to ", workflow$end_date, "")) +
   scale_x_continuous(name="Time (hours)") + scale_y_continuous(name="NEE (kg C m-2 s-1)") + 
   scale_colour_manual(name='Legend', values=c("predicted mean"="lightskyblue1", "actual data"="darkorange3")) +
   scale_fill_manual(name='Legend', values=c("95% confidence interval" = "blue3", "mean"="lightskyblue1"))
+
   qleplot <- ggplot(qledf) +
  # geom_ribbon(aes(x=time, ymin=qlemins, ymax=qlemax, fill="Spread of data (excluding outliers)"), alpha=0.7) +
   geom_ribbon(aes(x=time, ymin=qlelower95, ymax=qleupper95, fill="95% confidence interval"), alpha = 0.4) +
   geom_line(aes(x=time, y=qlemeans, color="mean")) +
-  geom_point(aes(x=time, y=real_data$qle, color="actual data")) +
+  geom_line(aes(x=time, y=real_data$qle, color="actual data")) +
   ggtitle(paste0("LE for ", workflow$start_date, " to ", workflow$end_date, ", \nSummary of All Ensembles")) +
   scale_x_continuous(name="Time (hours)") + scale_y_continuous(name="LE (W m-2 s-1)") +
   scale_color_manual(name='Legend', values=c("mean"="lightskyblue1", "actual data"="darkorange3")) + 
