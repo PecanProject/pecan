@@ -306,6 +306,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       # find the name of pfts defined in the body of pecan.xml
       defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
       # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
+      if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
       ensemble.samples <- ensemble.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
       # warn if there is a pft specified in the site but it's not defined in the pecan xml.
       if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
