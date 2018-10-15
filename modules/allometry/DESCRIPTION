@@ -3,6 +3,7 @@ Type: Package
 Title: PEcAn allometry functions
 Version: 1.6.0
 Date: 2018-08-20
+Authors@R: c(person("Mike","Dietze"))
 Author: Mike Dietze <dietze@bu.edu>
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: Synthesize allometric equations or fit allometries to data

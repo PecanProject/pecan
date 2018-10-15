@@ -41,8 +41,7 @@ ameriflux <- c("TA(C)","" ,"" , "PRESS (KPa)","CO2","","TS1(NOT DONE)",
 
 in_tab<-cbind(names,units,bety,isimip,cruncep,narr,ameriflux)
 colnames(in_tab)<- c("CF standard-name","units","BETY","Isimip","CRUNCEP","NARR", "Ameriflux")
-install.packages("DT")
-library(DT)
+if (require("DT")){
 datatable(in_tab, escape = FALSE,
               extensions = 'FixedColumns',
               options = list(
@@ -50,6 +49,7 @@ datatable(in_tab, escape = FALSE,
                 scrollX = TRUE,
                 fixedColumns = TRUE
               ))
+}
 
 ```
 
@@ -88,8 +88,7 @@ We originally used the [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) con
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE}
 data("standard_vars", package = "PEcAn.utils")
-install.packages("DT")
-library(DT)
+if (require("DT")) {
 DT::datatable(standard_vars,
           extensions = c('FixedColumns',"Buttons"),
             options = list(
@@ -100,4 +99,5 @@ DT::datatable(standard_vars,
             
           )
 )
+}
 ```

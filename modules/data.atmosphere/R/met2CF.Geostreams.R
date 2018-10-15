@@ -15,9 +15,6 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
                     start_date, end_date, 
                     overwrite = FALSE, verbose = FALSE, ...) {
 
-  met.lookup = utils::read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
-                        header = TRUE, stringsAsFactors = FALSE)
-
   start_date <- as.POSIXct(start_date, tz="UTC")
   end_date <- as.POSIXct(end_date, tz="UTC")
 
@@ -76,10 +73,10 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
     }
 
     make_ncvar <- function(name){
-      if (! name %in% met.lookup$CF_standard_name) {
+      if (! name %in% pecan_standard_met_table$cf_standard_name) {
        PEcAn.logger::logger.severe("Don't know how to convert parameter", name, "to CF standard format")
       }
-      unit <- met.lookup[met.lookup$CF_standard_name == name, "units"]
+      unit <- pecan_standard_met_table[pecan_standard_met_table$cf_standard_name == name, "units"]
       ncdf4::ncvar_def(name = name,
                        units = unit,
                        dim = cf_dims,
