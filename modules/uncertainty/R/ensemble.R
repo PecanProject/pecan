@@ -85,7 +85,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
     PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
     method <- "uniform"
   }
-  
+
   ## force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
   if (ensemble.size <= 0) {

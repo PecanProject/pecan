@@ -30,7 +30,7 @@ site.pft.link.settings <-function(settings){
     
     new.pfts <-  pft.l%>%
       purrr::map(function(lut.pft) {
-        if (!(lut.pft %in% def.pfts)) return(list(name = lut.pft, constants = 1))
+        if (!(lut.pft %in% def.pfts)) return(list(name = lut.pft %>% as.character(), constants = 1))
       }) %>% setNames(rep("pft",length(pft.l)))
     
     #add them to the list
