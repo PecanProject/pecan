@@ -70,13 +70,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$Qle[last]  ## 
     names(forecast[[length(forecast)]]) <- c("Qle")
   }
-  
-  # Reading in NET Ecosystem Exchange for SDA - unit is kg C m-2 s-1 and the average is estimated
-  if ("NEE" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- mean(ens$NEE)  ## 
-    names(forecast[[length(forecast)]]) <- c("NEE")
-  }
-    
+
   if ("leaf_carbon_content" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$leaf_carbon_content[last]  ## kgC/m2*m2/kg*2kg/kgC
     names(forecast[[length(forecast)]]) <- c("LeafC")
