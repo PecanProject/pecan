@@ -38,7 +38,34 @@ settings$ensemble$end.year <- as.character(end_date, "%Y")
 #-- Setting the out dir
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
 #--------------------------- Preparing OBS  data
-#PEcAn.data.atmosphere::download.US_WCr()
+start.Date.obs <- Sys.Date()
+PEcAn.data.atmosphere::download.US_WCr(start.Date.obs-2,
+                                       start.Date.obs-1,
+                                       timestep = 1) ->obs.raw
+
+
+dir.info
+#--------- Making a plot
+obs.plot <- obs.raw %>%
+            purrr::map_dfc( ~ as.data.frame(.x)) %>%
+            setNames(names(obs.raw)) %>%
+            mutate(Date = seq(
+              from = as.POSIXct(start.Date.obs - 2, tz = "UTC"),
+              to = as.POSIXct(start.Date.obs - 1, tz = "UTC"),
+              by = "hour"
+            )[1:24]) %>%
+            tidyr::gather(Param, Value, -c(Date)) %>%
+            ggplot(aes(Date, Value)) +
+            geom_line(aes(color = Param), lwd = 1.1) +
+            facet_wrap( ~ Param, scales = "free") +
+            scale_color_brewer(palette = "Set1") +
+            theme_minimal(base_size = 15) +
+            labs(y = "") +
+            theme(legend.position = "none")
+
+# Make sure you have the premission - chmod is right
+ggsave(file.path(settings$outdir,"Obs_plot.png"),obs.plot)
+
 
 # ----------------------------------------------------------------------
 # PEcAn Workflow
