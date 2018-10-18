@@ -12,6 +12,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - Lots of new documentation for running PEcAn using Docker
+- Download method (`method`) argument for `data.atmosphere::download.CRUNCEP`, which defaults to `opendap` (as it was), but can be switched to the slower but more robust NetCDF subset (`ncss`).
 
 ### Removed
 
