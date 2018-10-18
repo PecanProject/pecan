@@ -40,21 +40,24 @@ settings$ensemble$end.year <- as.character(end_date, "%Y")
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
 #--------------------------- Preparing OBS  data
 start.Date.obs <- Sys.Date()
-obs.raw <- download_US_WCr(start.Date.obs-2,start.Date.obs-1)
+obs.raw <- download_US_WCr(start.Date.obs-1,start.Date.obs)
 
 #--------- Making a plot
 obs.plot <- obs.raw %>%
             tidyr::gather(Param, Value, -c(Date)) %>%
+            filter(!(Param %in% c("Fjday", "U"))) %>%
             ggplot(aes(Date, Value)) +
-            geom_line(aes(color = Param), lwd = 1.1) +
-            facet_wrap( ~ Param, scales = "free") +
+            geom_line(aes(color = Param), lwd = 1) +
+            geom_point(aes(color = Param), size = 3) +
+            facet_wrap( ~ Param, scales = "free",ncol = 2) +
             scale_color_brewer(palette = "Set1") +
             theme_minimal(base_size = 15) +
             labs(y = "") +
             theme(legend.position = "none")
-obs.plot
+#obs.plot
 # Make sure you have the premission - chmod is right
-ggsave(file.path(settings$outdir,"Obs_plot.png"),obs.plot)
+dir.create(settings$outdir)
+ggsave(file.path(settings$outdir,"Obs_plot.png"), obs.plot , width = 18, height = 9)
 
 
 # ----------------------------------------------------------------------
