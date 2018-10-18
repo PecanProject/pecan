@@ -7,11 +7,13 @@ library(RCurl)
 #------------------------------------------
 setwd("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek")
 source('Utils.R')
+outputPath <- "/fs/data3/hamzed/Projects/WillowCreek"
+xmlPath <-"/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml"
 #------------------------------------------------------ Preparing the pecan xml
 # Open and read in settings file for PEcAn run.
 args <- commandArgs(trailingOnly = TRUE)
 if (is.na(args[1])){
-  settings <- PEcAn.settings::read.settings("gefs.sipnet.template.xml") 
+  settings <- PEcAn.settings::read.settings(xmlPath) 
 } else {
   settings.file = args[1]
   settings <- PEcAn.settings::read.settings(settings.file)
@@ -32,6 +34,12 @@ settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 # and ensemble dates
 settings$ensemble$start.year <- format(start_date, "%Y")
 settings$ensemble$end.year <- as.character(end_date, "%Y")
+
+#-- Setting the out dir
+settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
+#--------------------------- Preparing OBS  data
+#PEcAn.data.atmosphere::download.US_WCr()
+
 # ----------------------------------------------------------------------
 # PEcAn Workflow
 # ----------------------------------------------------------------------
@@ -60,6 +68,7 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 }
 # Do conversions
 settings <- PEcAn.utils::do_conversions(settings)
+
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0){
   PEcAn.utils::status.start("TRAIT")
@@ -69,6 +78,8 @@ if (PEcAn.utils::status.check("TRAIT") == 0){
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
 }
+
+
 # Run the PEcAn meta.analysis
 if(!is.null(settings$meta.analysis)) {
   if (PEcAn.utils::status.check("META") == 0){
@@ -77,73 +88,77 @@ if(!is.null(settings$meta.analysis)) {
     PEcAn.utils::status.end()
   }
 }
+
+
 # Write model specific configs
 if (PEcAn.utils::status.check("CONFIG") == 0){
   PEcAn.utils::status.start("CONFIG")
-  settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+  settings <- runModule.run.write.configs(settings)
   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
 }
+print("---------- Wrtting Configs Completed ----------")
+
 if ((length(which(commandArgs() == "--advanced")) != 0) && (PEcAn.utils::status.check("ADVANCED") == 0)) {
   PEcAn.utils::status.start("ADVANCED")
   q();
 }
+
 # Start ecosystem model runs
 if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.start("MODEL")
   PEcAn.remote::runModule.start.model.runs(settings,stop.on.error=FALSE)
   PEcAn.utils::status.end()
 }
+print("---------- Model runs Completed ----------")
 # Get results of model runs
 if (PEcAn.utils::status.check("OUTPUT") == 0) {
   PEcAn.utils::status.start("OUTPUT")
   runModule.get.results(settings)
   PEcAn.utils::status.end()
 }
-print("Done reading stuff")
+
 # Run ensemble analysis on model output. 
-if (FALSE && 'ensemble' %in% names(settings) & PEcAn.utils::status.check("ENSEMBLE") == 0) {
+if ('ensemble' %in% names(settings) & PEcAn.utils::status.check("ENSEMBLE") == 0) {
   PEcAn.utils::status.start("ENSEMBLE")
   runModule.run.ensemble.analysis(settings, TRUE)    
   PEcAn.utils::status.end()
 }
-print("Past ensemble section")
+print("---------- Ensemble Completed ----------")
 # Run sensitivity analysis and variance decomposition on model output
-if (FALSE && 'sensitivity.analysis' %in% names(settings) & PEcAn.utils::status.check("SENSITIVITY") == 0) {
+if ('sensitivity.analysis' %in% names(settings) & PEcAn.utils::status.check("SENSITIVITY") == 0) {
   PEcAn.utils::status.start("SENSITIVITY")
   runModule.run.sensitivity.analysis(settings)
   PEcAn.utils::status.end()
 }
-PEcAn.settings::write.settings(settings, outputfile = "sa.xml", outputdir = "~/")
-print("past SA section")
+
 # Run parameter data assimilation
-if (FALSE && 'assim.batch' %in% names(settings)) {
+if ('assim.batch' %in% names(settings)) {
   if (PEcAn.utils::status.check("PDA") == 0) {
     PEcAn.utils::status.start("PDA")
     settings <- PEcAn.assim.batch::runModule.assim.batch(settings)
     PEcAn.utils::status.end()
   }
 }
-print("past pda section")
+
 # Run state data assimilation
 if ('state.data.assimilation' %in% names(settings)) {
-  print("Entering SDA section")
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    settings <- PEcAn.uncertainty::prep.data.assim(settings, 5000) # Not sure where the numvals argument is going to be coming from
+    settings <- PEcAn.assim.sequential::sda.enkf(settings,obs.list$obs.mean,obs.list$obs.cov)
     PEcAn.utils::status.end()
   }
 }
-print("past sda section")
+
 # Run benchmarking
-if("benchmarking" %in% names(settings) & "benchmark" %in% names(settings$benchmarking)){
+if("benchmarking" %in% names(settings)){
   PEcAn.utils::status.start("BENCHMARKING")
   results <- papply(settings, function(x) calc_benchmark(x, bety))
   PEcAn.utils::status.end()
 }
-print("past benchmarking")
+
 # Pecan workflow complete
 if (PEcAn.utils::status.check("FINISHED") == 0) {
   PEcAn.utils::status.start("FINISHED")
@@ -158,5 +173,6 @@ if (PEcAn.utils::status.check("FINISHED") == 0) {
   }
   PEcAn.utils::status.end()
 }
+
 db.print.connections()
 print("---------- PEcAn Workflow Complete ----------")

@@ -51,7 +51,7 @@
    <host>psql-pecan.bu.edu</host>
    <dbname>bety</dbname>
    <driver>PostgreSQL</driver>
-   <write>false</write>
+   <write>true</write>
   </bety>
   <dbfiles>/fs/data3/kzarada/pecan.data/dbfiles/</dbfiles>
  </database>
