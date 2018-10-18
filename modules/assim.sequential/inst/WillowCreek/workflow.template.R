@@ -7,6 +7,7 @@ library(RCurl)
 #------------------------------------------
 setwd("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek")
 source('Utils.R')
+source('Download_US_Wcr.R')
 outputPath <- "/fs/data3/hamzed/Projects/WillowCreek"
 xmlPath <-"/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml"
 #------------------------------------------------------ Preparing the pecan xml
@@ -39,21 +40,10 @@ settings$ensemble$end.year <- as.character(end_date, "%Y")
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
 #--------------------------- Preparing OBS  data
 start.Date.obs <- Sys.Date()
-PEcAn.data.atmosphere::download.US_WCr(start.Date.obs-2,
-                                       start.Date.obs-1,
-                                       timestep = 1) ->obs.raw
+obs.raw <- download_US_WCr(start.Date.obs-2,start.Date.obs-1)
 
-
-dir.info
 #--------- Making a plot
 obs.plot <- obs.raw %>%
-            purrr::map_dfc( ~ as.data.frame(.x)) %>%
-            setNames(names(obs.raw)) %>%
-            mutate(Date = seq(
-              from = as.POSIXct(start.Date.obs - 2, tz = "UTC"),
-              to = as.POSIXct(start.Date.obs - 1, tz = "UTC"),
-              by = "hour"
-            )[1:24]) %>%
             tidyr::gather(Param, Value, -c(Date)) %>%
             ggplot(aes(Date, Value)) +
             geom_line(aes(color = Param), lwd = 1.1) +
@@ -62,7 +52,7 @@ obs.plot <- obs.raw %>%
             theme_minimal(base_size = 15) +
             labs(y = "") +
             theme(legend.position = "none")
-
+obs.plot
 # Make sure you have the premission - chmod is right
 ggsave(file.path(settings$outdir,"Obs_plot.png"),obs.plot)
 

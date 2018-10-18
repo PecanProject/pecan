@@ -1,12 +1,14 @@
 
-
+# NEE is converted to kgC/m2s
 download_US_WCr <- function(start_date, end_date) {
   base_url <- "http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
   
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   
+  
   # Reading in the data
+  suppressWarnings(
   raw.data <- start_year:end_year %>%
     purrr::map_df(function(syear) {
       influx <-
@@ -28,6 +30,9 @@ download_US_WCr <- function(start_date, end_date) {
         )
     }) %>%
     mutate_all(funs(as.numeric))
+  )
+  # cleaning the -999 and replacing it with NA
+  raw.data[ which(raw.data==-999, TRUE) ] <- NA 
   
   #Constructing the date based on the columns we have
   raw.data$date <-as.POSIXct(paste0(raw.data$V1,"/",raw.data$V2,"/",raw.data$V3," ", raw.data$V4 %>% as.integer(), ":",(raw.data$V4-as.integer(raw.data$V4))*60),
@@ -35,18 +40,20 @@ download_US_WCr <- function(start_date, end_date) {
   # Some cleaning and filtering 
   raw.data <- raw.data %>% 
       select(-V1,-V2,-V3,-V4,-V5) %>%
-    filter(date <=end_date)
+    filter(date <=end_date, date >=start_date) %>%
+    `colnames<-`(c("Fjday", "SC", "FC", "NEE", "LE", "H", "U", "Flag", "Date"))
   
-  #Colnames changed
+  #Unit conversion
+  raw.data$NEE <- PEcAn.utils::misc.convert(raw.data$NEE, "umol C m-2 s-1", "kg C m-2 s-1")
   
   return(raw.data)
   }
-
-
-
-# start_date <- as.Date("2017-01-01")
-# end_date <- as.Date("2018-10-01")
 # 
-# download_US_WCr(start_date, end_date) ->pp
 # 
-# tail(pp)
+# 
+#  start_date <- as.Date("2017-01-01")
+#  end_date <- as.Date("2018-10-01")
+#  
+#  download_US_WCr(start_date, end_date) ->pp
+# # 
+#  tail(pp)
