@@ -28,7 +28,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
 
   if (is.null(method)) method <- "opendap"
   if (!method %in% c("opendap", "ncss")) {
-    PEcAn::logger.severe(glue::glue(
+    PEcAn.logger::logger.severe(glue::glue(
       "Bad method '{method}'. Currently, only 'opendap' or 'ncss' are supported."
     ))
   }
