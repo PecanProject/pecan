@@ -47,6 +47,8 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
                                         CRUNCEP_start, CRUNCEP_end))
   }
 
+  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+
   lat.in <- as.numeric(lat.in)
   lon.in <- as.numeric(lon.in)
 
@@ -115,8 +117,6 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     lat_grid <- 1
     lon_grid <- 1
   }
-
-  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
 
   ylist <- seq(start_year, end_year, by = 1)
   rows <- length(ylist)
