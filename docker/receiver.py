@@ -9,14 +9,24 @@ import pika
 
 rabbitmq_uri   = os.getenv('RABBITMQ_URI',   'amqp://guest:guest@rabbitmq/%2F')
 rabbitmq_queue = os.getenv('RABBITMQ_QUEUE', 'pecan')
-application    = os.getenv('APPLICATION',    'job.sh')
+
+default_application = os.getenv('APPLICATION', 'job.sh')
 
 # called for every message, this will start the program and ack message if all is ok.
 def callback(ch, method, properties, body):
     logging.info(body)
     jbody = json.loads(body)
 
-    logging.info("Starting job in %s." % jbody['folder'])
+    custom_application = jbody.get('custom_application')
+
+    if custom_application is not None:
+        application = custom_application
+    else:
+        logging.info("Running default command: %s" % default_application)
+        application = default_application
+
+    logging.info("Running command: %s" % application)
+    logging.info("Starting command in directory %s." % jbody['folder'])
     try:
         output = subprocess.check_output(application, stderr=subprocess.STDOUT, shell=True, cwd=jbody['folder'])
         status = 'OK'
