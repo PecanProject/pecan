@@ -55,7 +55,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
     forecast[[length(forecast)+1]] <- ens$TotSoilCarb #udunits2::ud.convert(ens$TotSoilCarb, "kg/m^2", "Mg/ha") #* unit.conv 
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
-  
+
 
   }else{
     forecast <- list()
@@ -75,3 +75,4 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   
   return(X_tmp)
 }
+

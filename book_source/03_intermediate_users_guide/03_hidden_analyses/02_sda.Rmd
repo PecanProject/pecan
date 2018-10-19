@@ -70,7 +70,7 @@ Create diagnostics
 
 ```
 <state.data.assimilation>
-  <n.ensemble>25</n.ensemble>
+  <adjustment>TRUE</adjustment>
   <process.variance>FALSE</process.variance>
   <sample.parameters>FALSE</sample.parameters>
    <state.variables>
@@ -199,3 +199,192 @@ $\boldsymbol{V}_{t+1}	=	n_{t}\bar{\boldsymbol{Q}}_{t}$
 $n_{t+1}	=	\frac{\sum_{i=1}^{I}\sum_{j=1}^{J}\frac{v_{ijt}^{2}+v_{iit}v_{jjt}}{Var(\boldsymbol{\bar{Q}}_{t})}}{I\times J}$
 
 where we calculate the mean of the process covariance matrix $\left(\bar{\boldsymbol{Q}_{t}}\right)$ from the posterior samples at time t. Degrees of freedom for the Wishart are typically calculated element by element where $v_{ij}$ are the elements of $\boldsymbol{V}_{t}$. $I$ and $J$ index rows and columns of $\boldsymbol{V}$. Here, we calculate a mean number of degrees of freedom for $t+1$ by summing over all the elements of the scale matrix $\left(\boldsymbol{V}\right)$ and dividing by the count of those elements $\left(I\times J\right)$. We fit this model sequentially through time in the R computing environment using R package 'rjags.'
+
+### Multi-site State data assimilation.
+`sda.enkf.multisite` function allows for assimilation of observed data at multiple sites at the same time. In order to run a multi-site SDA, one needs to send a multisettings pecan xml file to this function. This multisettings xml file needs to contain information required for running at least two sites under `run` tag. The code will automatically run the ensembles for all the sites and reformats the outputs matching the required formats for analysis step. 
+
+The observed mean and cov needs to be formatted as list of different dates with observations. For each element of this list also there needs to be a list with mean and cov matrices of different sites named by their siteid. This would look like something like this:
+```
+> obs.mean
+
+$`2010/12/31`
+$`2010/12/31`$`1000000650`
+   AbvGrndWood     GWBI
+    111.502    1.0746
+
+$`2010/12/31`$`1000000651`
+   AbvGrndWood     GWBI
+    114.302    1.574695
+```
+
+```
+> obs.cov
+
+$`2010/12/31`
+$`2010/12/31`$`1000000650`
+           [,1]        [,2]
+[1,] 19.7821691 0.213584319
+[2,]  0.5135843 0.005162113
+
+$`2010/12/31`$`1000000651`
+           [,1]        [,2]
+[1,] 15.2821691 0.513584319
+[2,]  0.1213583 0.001162113
+```
+An example of multi-settings pecan xml file also may look like below:
+```
+<?xml version="1.0"?>
+<pecan.multi>
+ <state.data.assimilation>
+   <process.variance>FALSE</process.variance>
+   <adjustment>TRUE</adjustment>
+   <data>
+    <format_id>
+    <format_id>1000000040</format_id>
+    </format_id>
+    <input.id>
+      <input.id>1000013298</input.id>
+    </input.id>
+  </data>
+   <state.variables>
+   <variable>
+      <variable.name>GWBI</variable.name>
+   <unit>KgC/m^2</unit>
+       <min_value>0</min_value>
+       <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>AbvGrndWood</variable.name>
+   <unit>KgC/m^2</unit>
+   <min_value>0</min_value>
+   <max_value>9999</max_value>
+   </variable>
+   </state.variables>
+   <forecast.time.step>year</forecast.time.step>
+  <start.date>1960/01/01</start.date>
+  <end.date>2000/12/31</end.date>
+  </state.data.assimilation>
+ <info>
+    <notes></notes>
+    <userid>-1</userid>
+    <username></username>
+    <date>2017/12/06 21:19:33 +0000</date>
+  </info>
+ <outdir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768</outdir>
+ <database>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>128.197.168.114</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>false</write>
+    </bety>
+    <dbfiles>/fs/data1/pecan.data/dbfiles/</dbfiles>
+  </database>
+ <pfts>
+  <pft>
+   <name>temperate.deciduous_SDA</name>
+   <constants>
+    <num>2</num>
+   </constants>
+   <outdir>/fs/data2/output//PEcAn_1000008768/pft/temperate.deciduous_SDA</outdir>
+   <posteriorid>1000008552</posteriorid>
+  </pft>
+ </pfts>
+ <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+ <ensemble>
+  <size>20</size>
+  <ensemble.id>1000016146</ensemble.id>
+  <start.year>1995</start.year>
+  <end.year>1999</end.year>
+  <samplingspace>
+  <parameters>
+    <method>uniform</method>
+  </parameters>
+  <met>
+    <method>sampling</method>
+  </met>
+  <soil>    
+  <parent>parameters</parent>
+  </soil>
+  <vegetation>
+  <parent>soil</parent>
+  </vegetation>
+  </samplingspace>
+ </ensemble>
+ <model>
+  <id>1000000022</id>
+  <default.param>/fs/data3/hamzed/output/paleon_sda_SIPNET-8768/Bartlett.param</default.param>
+  <type>SIPNET</type>
+  <revision>r136</revision>
+  <delete.raw>FALSE</delete.raw>
+  <binary>/fs/data5/pecan.models/SIPNET/trunk/sipnet_ssr</binary>
+ </model>
+ <workflow>
+    <id>1000008768</id>
+  </workflow>
+ <run>
+  <settings.1000000650>
+  <site>
+   <id>1000000650</id>
+   <met.start>1960/01/01</met.start>
+   <met.end>1965/12/31</met.end>
+   <name>Harvard Forest - Lyford Plots (PalEON PHA)</name>
+   <lat>42.53</lat>
+   <lon>-72.18</lon>
+  </site>
+  <inputs>
+   <met>
+    <source>CRUNCEP</source>
+    <output>SIPNET</output>
+    <path>
+    <path1>/fs/data1/pecan.data/dbfiles/CRUNCEP_SIPNET_site_0-758/CRUNCEP.1960-01-01.2010-12-31.clim</path1>
+    </path>
+   </met>
+  </inputs>
+  <start.date>1960/01/01</start.date>
+  <end.date>1980/12/31</end.date>
+  </settings.1000000650>
+  <settings.1000000651>
+  <site>
+   <id>1000000651</id>
+   <met.start>1960/01/01</met.start>
+   <met.end>1965/12/31</met.end>
+   <name>Harvard Forest - Lyford Plots (PalEON PHA)</name>
+   <lat>42.53</lat>
+   <lon>-72.18</lon>
+  </site>
+  <inputs>
+   <met>
+    <source>CRUNCEP</source>
+    <output>SIPNET</output>
+    <path>
+    <path1>/fs/data1/pecan.data/dbfiles/CRUNCEP_SIPNET_site_0-758/CRUNCEP.1960-01-01.2010-12-31.clim</path1>
+    </path>
+   </met>
+  </inputs>
+  <start.date>1960/01/01</start.date>
+  <end.date>1980/12/31</end.date>
+  </settings.1000000651>
+ </run>
+ <host>
+  <name>localhost</name>
+  <rundir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/run</rundir>
+  <outdir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/out</outdir>
+ </host>
+ <settings.info>
+  <deprecated.settings.fixed>TRUE</deprecated.settings.fixed>
+  <settings.updated>TRUE</settings.updated>
+  <checked>TRUE</checked>
+ </settings.info>
+ <rundir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/run</rundir>
+ <modeloutdir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/out</modeloutdir>
+ <multisettings>
+ <multisettings>run</multisettings>
+ </multisettings>
+</pecan.multi>
+```

@@ -350,7 +350,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         }
         
       } else {
-        run.id <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5))
+        run.id <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5),site.id=settings$run$site$id)
       }
       runs[i, "id"] <- run.id
       

@@ -159,14 +159,15 @@ vecpaste <- function(x) paste(paste0("'", x, "'"), collapse = ",")
 ##' ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis
 ##' @param trait name of trait being sampled (for sensitivity analysis)
 ##' @param pft.name name of PFT (value from pfts.names field in database)
+##' @param site.id site id . This is could be necessary for multisite write=false ensembles.
 ##' @return id representing a model run
 ##' @export
 ##' @examples
 ##' get.run.id('ENS', left.pad.zeros(1, 5))
 ##' get.run.id('SA', round(qnorm(-3),3), trait = 'Vcmax')
 ##' @author Carl Davidson, David LeBauer
-get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL) {
-  result <- paste(c(run.type, pft.name, trait, index), collapse = "-")
+get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL, site.id=NULL) {
+  result <- paste(c(run.type, pft.name, trait, index, site.id), collapse = "-")
   return(result)
 } # get.run.id
 

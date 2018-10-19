@@ -59,18 +59,16 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
   for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
 
-    #Forecast inputs 
+  #Forecast inputs 
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
-
   # Enkf---------------------------------------------------
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
   Pf <- cov(X)
   diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
-
   # for those elements with zero value
   if (length(Y) > 1) {
     
@@ -97,9 +95,9 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 ##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
 ##' 
 ##' @param settings  pecan standard settings list.  
-##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecast state variables for different ensemble)
+##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecats state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param extraArg This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the process covariance and t gives the time in terms of index of obs.list. See Details.
+##' @param extraArg This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.
 ##' @param nitr Number of iterations to run each MCMC chain.
 ##' @param nburnin 	Number of initial, pre-thinning, MCMC iterations to discard.
 ##' @param ... This function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.
@@ -161,7 +159,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   }
   
   if(t == 1){
-
     #The purpose of this step is to impute data for mu.f 
     #where there are zero values so that 
     #mu.f is in 'tobit space' in the full model
@@ -376,10 +373,10 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     n <- length(mu.f)
   }
   V <- solve(q.bar) * n
- 
+
   if (t<nt){
-   aqq[t + 1, , ]   <- V
-   bqq[t + 1]       <- n
+    aqq[t + 1, , ]   <- V
+    bqq[t + 1]       <- n
   }
 
   return(list(mu.f = mu.f,

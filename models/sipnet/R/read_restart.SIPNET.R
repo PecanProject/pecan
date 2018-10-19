@@ -22,7 +22,6 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   prior.sla <- params[[which(!names(params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   
   forecast <- list()
-  
   # additional varnames, because we need these deterministic relationships
   var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
   
@@ -37,7 +36,6 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   forecast <- list()
 
-  
   #### PEcAn Standard Outputs
   if ("GWBI" %in% var.names) {
     forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
@@ -50,6 +48,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
    
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
+    
     abvGrndWoodFrac <- ens$AbvGrndWood[last]  / wood_total_C
     coarseRootFrac  <- ens$coarse_root_carbon_content[last] / wood_total_C
     fineRootFrac    <- ens$fine_root_carbon_content[last]   / wood_total_C
@@ -70,7 +69,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
+    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
@@ -82,6 +81,11 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   if ("SWE" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SWE[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("SWE")
+  }
+  
+  if ("TotLivBiom" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$TotLivBiom[last],  "kg/m^2", "Mg/ha")
+    names(forecast[[length(forecast)]]) <- c("TotLivBiom")
   }
   
   print(runid)
