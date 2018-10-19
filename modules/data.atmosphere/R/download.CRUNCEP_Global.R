@@ -12,12 +12,26 @@
 ##'   to control printing of debug info
 ##' @param maxErrors Maximum times to re-try folloing an error accessing netCDF data through THREDDS
 ##' @param sleep Wait time between attempts following a THREDDS or other error
+##' @param method (string) Data access method. `opendap` (default)
+##'   attempts to directly access files via OpenDAP. `ncss` (NetCDF
+##'   subset) subsets the file on the server, downloads the subsetted
+##'   file to `tempfile` and then reads it locally. `opendap` is
+##'   faster when it works, but often fails because of server issues.
+##'   `ncss` can be much slower, but is more reliable.
 ##' @param ... Other arguments, currently ignored
 ##' @export
 ##'
-##' @author James Simkins, Mike Dietze
+##' @author James Simkins, Mike Dietze, Alexey Shiklomanov
 download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
-                             overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2, ...) {
+                             overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2,
+                             method = "opendap", ...) {
+
+  if (is.null(method)) method <- "opendap"
+  if (!method %in% c("opendap", "ncss")) {
+    PEcAn.logger::logger.severe(glue::glue(
+      "Bad method '{method}'. Currently, only 'opendap' or 'ncss' are supported."
+    ))
+  }
 
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
@@ -29,19 +43,22 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   CRUNCEP_end <- 2010
   if (start_year < CRUNCEP_start | end_year > CRUNCEP_end) {
     PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the CRUNCEP range (%d:%d)',
-                                       start_year, end_year,
-                                       CRUNCEP_start, CRUNCEP_end))
+                                        start_year, end_year,
+                                        CRUNCEP_start, CRUNCEP_end))
   }
-
-  site_id <- as.numeric(site_id)
-#  outfolder <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id %% 1e+09))
 
   lat.in <- as.numeric(lat.in)
   lon.in <- as.numeric(lon.in)
-  # Convert lat-lon to grid row and column
-  lat_grid <- floor(2 * (90 - lat.in)) + 1
-  lon_grid <- floor(2 * (lon.in + 180)) + 1
-  dap_base <- "https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_"
+
+  if (method == "opendap") {
+    # Convert lat-lon to grid row and column
+    lat_grid <- floor(2 * (90 - lat.in)) + 1
+    lon_grid <- floor(2 * (lon.in + 180)) + 1
+  } else if (method == "ncss") {
+    # Only downloading point data, so only one point
+    lat_grid <- 1
+    lon_grid <- 1
+  }
 
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
 
@@ -56,11 +73,17 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
                         dbfile.name = "CRUNCEP",
                         stringsAsFactors = FALSE)
 
-  var <- data.frame(DAP.name = c("tair", "lwdown", "press", "swdown", "uwind", "vwind", "qair", "rain"),
-                    CF.name = c("air_temperature", "surface_downwelling_longwave_flux_in_air", "air_pressure",
-                                "surface_downwelling_shortwave_flux_in_air", "eastward_wind", "northward_wind",
-                                "specific_humidity", "precipitation_flux"),
-                    units = c("Kelvin", "W/m2", "Pascal", "W/m2", "m/s", "m/s", "g/g", "kg/m2/s"))
+  var <- tibble::tribble(
+    ~DAP.name, ~CF.name, ~units,
+    "tair", "air_temperature", "Kelvin",
+    "lwdown", "surface_downwelling_longwave_flux_in_air", "W/m2",
+    "press", "air_pressure", "Pascal",
+    "swdown", "surface_downwelling_shortwave_flux_in_air", "W/m2",
+    "uwind", "eastward_wind", "m/s",
+    "vwind", "northward_wind", "m/s",
+    "qair", "specific_humidity", "g/g",
+    "rain", "precipitation_flux", "kg/m2/s"
+  )
 
   for (i in seq_len(rows)) {
     year <- ylist[i]
@@ -79,7 +102,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       next
     }
 
-    PEcAn.logger::logger.info(paste("Downloading",loc.file))
+    PEcAn.logger::logger.info(paste("Downloading", loc.file))
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
@@ -93,39 +116,69 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     var.list <- list()
     dat.list <- list()
 
+    file_name <- "mstmip_driver_global_hd_climate_%1$s_%2$d_v1.nc4"
     ## get data off OpenDAP
-    for (j in seq_len(nrow(var))) {
-      dap_file <- paste0(dap_base, var$DAP.name[j], "_", year, "_v1.nc4")
-      PEcAn.logger::logger.info(dap_file)
 
-      # This throws an error if file not found
-      #dap <- ncdf4::nc_open(dap_file, verbose=FALSE)
-      dap <- PEcAn.utils::retry.func(ncdf4::nc_open(dap_file, verbose=verbose), maxErrors=maxErrors, sleep=sleep)
-      
+    dap_base <- switch(
+      method,
+      opendap = paste0("https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/", file_name),
+      ncss = paste0("https://thredds.daac.ornl.gov/thredds/ncss/grid/ornldaac/1220/", file_name, "/dataset.html")
+    )
+
+    for (j in seq_len(nrow(var))) {
+      current_var <- var$DAP.name[j]
+      url <- sprintf(dap_base, current_var, year)
+      PEcAn.logger::logger.info("Attempting to access file at: ", url)
+      if (method == "opendap") {
+        dap <- PEcAn.utils::retry.func(ncdf4::nc_open(url, verbose=verbose), maxErrors=maxErrors, sleep=sleep)
+      } else if (method == "ncss") {
+        ncss_query <- glue::glue(
+          url, "?",
+          "var={current_var}&",
+          "south={lat.in}&",
+          "west={lon.in}&",
+          # Add tiny amount to latitude and longitude to satisfy
+          # non-point condition, but still be within grid cell.
+          "north={lat.in + 5e-6}&",
+          "east={lon.in + 5e-6}&",
+          # Year starts at 00:00:00 and ends at 21:00:00
+          "time_start={year}-01-01T00:00:00Z&",
+          "time_end={year}-12-31T21:00:00Z&",
+          "accept=netcdf"
+        )
+        tmp_file <- tempfile()
+        download.file(ncss_query, tmp_file)
+        dap <- ncdf4::nc_open(tmp_file)
+      }
+
       # confirm that timestamps match
       if (dap$dim$time$len != ntime) {
-       PEcAn.logger::logger.severe("Expected", ntime, "observations, but", dap_file,  "contained", dap$dim$time$len)
+        PEcAn.logger::logger.severe("Expected", ntime, "observations, but", url,  "contained", dap$dim$time$len)
       }
       dap_time <- udunits2::ud.convert(dap$dim$time$vals,
                                        dap$dim$time$units,
                                        time$units)
       if (!isTRUE(all.equal(dap_time, time$vals))){
-       PEcAn.logger::logger.severe("Timestamp mismatch.",
-                      "Expected", min(time$vals), '..', max(time$vals), time$units,
-                      "but got", min(dap_time), "..", max(dap_time))
+        PEcAn.logger::logger.severe("Timestamp mismatch.",
+                                    "Expected", min(time$vals), '..', max(time$vals), time$units,
+                                    "but got", min(dap_time), "..", max(dap_time))
       }
 
 
-      dat.list[[j]] <- PEcAn.utils::retry.func(ncdf4::ncvar_get(dap,
-                                 as.character(var$DAP.name[j]),
-                                 c(lon_grid, lat_grid, 1),
-                                 c(1, 1, ntime)), maxErrors=maxErrors, sleep=sleep)
+      dat.list[[j]] <- PEcAn.utils::retry.func(
+        ncdf4::ncvar_get(
+          dap,
+          as.character(var$DAP.name[j]),
+          c(lon_grid, lat_grid, 1),
+          c(1, 1, ntime)
+        ),
+        maxErrors=maxErrors, sleep=sleep)
 
       var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]),
-                                 units = as.character(var$units[j]),
-                                 dim = dim,
-                                 missval = -999,
-                                 verbose = verbose)
+                                        units = as.character(var$units[j]),
+                                        dim = dim,
+                                        missval = -999,
+                                        verbose = verbose)
       ncdf4::nc_close(dap)
     }
     ## change units of precip to kg/m2/s instead of 6 hour accumulated precip
