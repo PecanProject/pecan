@@ -47,7 +47,7 @@ site.pft.linkage <- function(settings, site.pft.links){
       if (site.id %in% site.pft.links$site) site.pft <-site.pft.links$pft[which(site.pft.links$site %in% site.id)]
       # if there was a pft associated with that
       if (!is.null(site.pft)) site.setting[['run']]$site$site.pft <- as.list(site.pft) %>% setNames(rep('pft.name', length(site.pft)))
-      site.setting
+      return(site.setting)
     })
   
   #putting it in the right format depending if it's multisetting or not 
