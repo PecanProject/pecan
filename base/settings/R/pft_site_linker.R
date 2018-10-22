@@ -1,7 +1,7 @@
 #'
 #' @title site.pft.linkage
 #' 
-#' @param pecan.xml.address pecan settings list.
+#' @param settings pecan settings list.
 #' @param site.pft.links dataframe. Your look up table should have two columns of site and pft with site ids under site column and pft names under pft column.
 #'
 #' 
