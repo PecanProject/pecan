@@ -399,7 +399,9 @@ The following are the most common types of inputs, along with their correspondin
 ##### (Experimental) `veg`: Vegetation initial conditions {#xml-run-inputs-veg}
 
 (Under construction. Follow developments in the `PEcAn.data.land` package, located in `modules/data.land` in the source code).
-##### `pft.site` If you're interested to use a specific PFT for your site/sites you can use the following tag to tell interanl functions, which PFT needs to be used for what site.
+##### `pft.site` Multi-site site / PFT mapping
+
+When performing multi-site runs, it is not uncommon to find that different sites need to be run with different PFTs, rather than running all PFTs at all sites. If you're interested to use a specific PFT for your site/sites you can use the following tag to tell PEcAn which PFT needs to be used for what site.
 ```
 <pft.site>
   <path>site_pft.csv</path>
