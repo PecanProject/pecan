@@ -15,10 +15,11 @@
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
+##' 
 ##' @return NONE
 ##' @export
 ##' 
-sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
+sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
   
   library(nimble)
   
@@ -77,24 +78,29 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ### load model specific input ensembles for initial runs              ###
   ###-------------------------------------------------------------------### 
   n.inputs <- max(table(names(settings$run$inputs)))
-  if(n.inputs > nens){
+  if(n.inputs >= nens){
     sampleIDs <- 1:nens
   }else{
     sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
   }
   
+  ens.inputs <- list()
+  inputs <- list()
 
   if(is.null(restart) & is.null(restart$ens.inputs)){
-    ens.inputs <- sample_met(settings,nens)
+    ens.inputs <- sample_met(settings, nens)
   }else {
     ens.inputs <- restart$ens.inputs
   }
-
-  inputs <- list()
+  
   for(i in seq_len(nens)){
     
-    if(no_split){
-      inputs[[i]] <- ens.inputs[[i]] # passing settings$run$inputs$met$path is the same thing, just following the logic despite the hack above
+    if(no_split){ # currently this is only for ED2, ensemble generator + refactoring will change these soon anyway
+      # note that write configs accepts one "settings" for now, so I'll use the inputs arg to pass IC ensembles
+      inputs[[i]]  <- lapply(settings$run$inputs, function(x) {
+             return( x %>% purrr::map(function(inputs){return((inputs%>%unlist)[i])}))
+      })
+      inputs[[i]]$met <- ens.inputs[[i]]$met 
     }else{
       ### get only necessary ensemble inputs. Do not change in analysis
       #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
@@ -107,8 +113,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       #                                       outpath = file.path(rundir,paste0("met",i))))
     }
 
+#     ### get only necessary ensemble inputs. Do not change in analysis
+#     ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
+#     ### model specific split inputs
+#     inputs[[i]] <- do.call(my.split_inputs, 
+#                            args = list(settings = settings, 
+#                                        start.time = settings$run$start.date, 
+#                                        stop.time = settings$run$end.date, #as.Date(names(obs.mean)[1]),
+#                                        inputs = ens.inputs[[i]]))#,
+# #                                       outpath = file.path(rundir,paste0("met",i))))
 
-  }
+}
   
   ###-------------------------------------------------------------------###
   ### open database connection                                          ###
@@ -225,6 +240,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   
   for (i in seq_len(nens)) {
     
+    # is this gonna break other model runs? inputs is usually just the met path which is all they need anyway?
+    settings$run$inputs <- inputs[[i]]
+    
     ## set RUN.ID
     if (!is.null(con)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -285,11 +303,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   if(is.null(restart)){
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
   }
-  save(list = ls(envir = environment(), all.names = TRUE), 
-       file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
-  
-  
-  
+
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###  
@@ -404,7 +418,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     y_star[1:YN] <- y_star_create(X[1:YN])
     
     ## Analysis
-    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
+    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) 
     
     #don't flag y.censored as data, y.censored in inits
     #remove y.censored samplers and only assign univariate samplers on NAs
@@ -412,6 +426,21 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     for(i in 1:YN){
       y.ind[i] ~ dinterval(y.censored[i], 0)
     }
+    
+  })
+  
+  tobit2space.model <- nimbleCode({
+    for(i in 1:N){
+      y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
+      for(j in 1:J){
+        y.ind[i,j] ~ dinterval(y.censored[i,j], 0)
+      }
+    }
+    
+    muf[1:J] ~ dmnorm(mean = mu_0[1:J], cov = pf[1:J,1:J])
+    
+    Sigma[1:J,1:J] <- lambda_0[1:J,1:J]/nu_0
+    pf[1:J,1:J] ~ dinvwish(S = Sigma[1:J,1:J], df = J)
     
   })
   
@@ -441,15 +470,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
   brown       <- col2rgb("brown")
   alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
-  
+
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
+  
+  save(list = ls(envir = environment(), all.names = TRUE), 
+       file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
   
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------### 
-  
-  for(t in seq_len(nt)) {
+
+for(t in seq_len(nt)) { #
+    if(t == 1){
+      recompile = TRUE
+    }else{
+      recompile = FALSE
+    }
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
     ###-------------------------------------------------------------------###  
@@ -469,6 +506,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       # these will be stored in params
       X[[i]]      <- X_tmp[[i]]$X
       new.params[[i]] <- X_tmp[[i]]$params
+    }
+    
+    ## Trying to find a way to flag incomplete runs and drop them.
+    for(i in seq_len(length(run.id))){
+      if(is.na(X[[i]][1])) {
+        print(i)
+        #run.id[[i]] <- NULL 
+        #X[[i]] <- NULL
+      }
     }
     
     X <- do.call(rbind, X)
@@ -610,7 +656,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           }
         }
         
-        if(t == 1 | length(run.id) < nens){
+
+        if(recompile == TRUE){
           #The purpose of this step is to impute data for mu.f 
           #where there are zero values so that 
           #mu.f is in 'tobit space' in the full model
@@ -693,9 +740,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         
         iycens <- grep("y.censored",colnames(dat.tobit2space))
         
+        # Why does cov(X.new) != Pf ?
         X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
+        #Pf <- cov(X.new)
         
-        if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
+        if(sum(diag(Pf)-diag(cov(X.new))) > 3 | sum(diag(Pf)-diag(cov(X.new))) < -3) logger.warn('Covariance in tobit2space model estimate is too different from original forecast covariance. Consider increasing your number of ensemble members.')
         
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
@@ -727,7 +776,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
-        if(t == 1){ #TO DO need to make something that works to pick weather to compile or not
+        if(recompile == TRUE){ #TO DO need to make something that works to pick weather to compile or not
+
           constants.tobit = list(N = ncol(X), YN = length(y.ind))
           dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
                                   Q = c(length(mu.f),length(mu.f)))
@@ -842,6 +892,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ###-------------------------------------------------------------------### 
       
       ### no process variance -- forecast is the same as the analysis ###
+      ### this logic might require more explanation. Why are we giving Q if there is no process variance?
+
       if (processvar==FALSE) {
         mu.a <- mu.f
         Pa   <- Pf + Q
@@ -852,17 +904,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           q.bar <- diag(ncol(X))
           print('Process variance not estimated. Analysis has been given uninformative process variance')
         } 
-        Pa   <- Pf + solve(q.bar)
+        Pa   <- Pf + solve(q.bar) # should this be V instead of solve(q.bar)?
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
+  
     ###-------------------------------------------------------------------###
     ### update state matrix                                               ###
     ###-------------------------------------------------------------------### 
     if(adjustment == TRUE){
-      S_f  <- svd(Pf)
-      L_f  <- S_f$d
-      V_f  <- S_f$v
+      
+      if(!any(obs)){
+        X.new <- X
+      }
       
       ## normalize
       Z <- X*0
@@ -876,10 +930,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       }
       Z[is.na(Z)]<-0
       
+      S_f  <- svd(Pf)
+      L_f  <- S_f$d
+      V_f  <- S_f$v
+      
       ## analysis
       S_a  <- svd(Pa)
       L_a  <- S_a$d
       V_a  <- S_a$v
+      
       
       ## analysis ensemble
       X_a <- X*0
@@ -897,7 +956,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       analysis <- as.data.frame(X_a)
     }else{
-      analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
+      
+      if(length(is.na(Pa)) == length(Pa)){
+        analysis <- mu.a
+      }else{
+        analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
+        
+      }
+    
+      }
+    
+    if(nens == 1){
+      analysis <-  t(as.matrix(analysis))
     }
     
     colnames(analysis) <- colnames(X)
@@ -913,9 +983,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     }
     
     ## in the future will have to be separated from analysis
-    new.state  <- analysis
+      new.state  <- analysis
+
     
-    ANALYSIS[[t]] <- analysis
+    ANALYSIS[[t]] <- as.matrix(analysis)
     if (interactive() & t > 1) { #
       t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -948,11 +1019,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       par(mfrow = c(2, 1))
       for (i in 1:ncol(FORECAST[[t]])) { #
         
-        Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i]/rowSums(x[,1:9]), na.rm = TRUE) })
-        Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i]/rowSums(x[,1:9]), c(0.025, 0.975), na.rm = TRUE) })
+        Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+        Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
         
-        Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i]/rowSums(x[,1:9]), na.rm = TRUE) })
-        XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i]/rowSums(x[,1:9]), c(0.025, 0.975), na.rm = TRUE) })
+        Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+        XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
         
         ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                                     function(x) { x })[2, ], use.names = FALSE)
@@ -1025,6 +1096,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ###-------------------------------------------------------------------### 
       
       for (i in seq_len(nens)) {
+        
+        settings$run$inputs <- inputs[[i]]
+        
         do.call(my.write_restart, 
                 args = list(outdir = outdir, 
                             runid = run.id[[i]], 
@@ -1046,7 +1120,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------### 
-    save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir, "sda.output.Rdata"))
+    save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir,'out', "sda.output.Rdata"))
+
 
     
   }  ## end loop over time
@@ -1066,9 +1141,213 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     print("climate diagnostics under development")
   }
   
+  if(is.null(X)){
+    X <- as.matrix(FORECAST[[t]])
+  }
+  
   ###-------------------------------------------------------------------###
   ### time series                                                       ###
   ###-------------------------------------------------------------------### 
+  
+  if(nens > 1){
+    pdf(file.path(settings$outdir, "sda.enkf.time-series.pdf"))
+    
+    names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
+    Ybar <- t(sapply(obs.mean[t1:t], function(x) {
+      tmp <- rep(NA, length(names.y))
+      names(tmp) <- names.y
+      mch <- match(names(x), names.y)
+      tmp[mch] <- x[mch]
+      tmp
+    }))
+    Y.order <- na.omit(pmatch(colnames(FORECAST[[t]]), colnames(Ybar)))
+    Ybar <- Ybar[,Y.order]
+    YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
+      if (is.null(x)) {
+        rep(NA, length(names.y))
+      }
+      sqrt(diag(x))
+    })))
+    
+    Ybar[is.na(Ybar)]<-0
+    YCI[is.na(YCI)]<-0
+    
+    YCI <- YCI[,Y.order]
+    Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
+    Xasum <- plyr::laply(ANALYSIS, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
+    
+    for (i in seq_len(ncol(X))) {
+      Xbar <- plyr::laply(FORECAST[t1:t], function(x) {
+        mean(x[, i], na.rm = TRUE) }) #/rowSums(x[,1:9],na.rm = T)
+      Xci <- plyr::laply(FORECAST[t1:t], function(x) { 
+        quantile(x[, i], c(0.025, 0.975),na.rm = T) })
+      
+      Xci[is.na(Xci)]<-0
+      
+      Xbar <- Xbar
+      Xci <- Xci
+      
+      Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { 
+        
+        mean(x[, i],na.rm = T) })
+      XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { 
+        quantile(x[, i], c(0.025, 0.975),na.rm = T )})
+      
+      Xa <- Xa
+      XaCI <- XaCI
+      
+      plot(as.Date(obs.times[t1:t]),
+           Xbar, 
+           ylim = range(c(XaCI, Xci), na.rm = TRUE),
+           type = "n", 
+           xlab = "Year", 
+           ylab = ylab.names[grep(colnames(X)[i], var.names)],
+           main = colnames(X)[i])
+      
+      # observation / data
+      if (i<10) { #
+        ciEnvelope(as.Date(obs.times[t1:t]), 
+                   as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
+                   as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 
+                   col = alphagreen)
+        lines(as.Date(obs.times[t1:t]), 
+              as.numeric(Ybar[, i]), 
+              type = "l", col = "darkgreen", lwd = 2)
+      }
+      
+      # forecast
+      ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue') #alphablue
+      lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2) #"darkblue"
+      
+      # analysis
+      ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink) #alphapink
+      lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2) #"black"
+      
+      legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
+    
+    }
+    
+    dev.off()
+    ###-------------------------------------------------------------------###
+    ### bias diagnostics                                                  ###
+    ###-------------------------------------------------------------------###
+    pdf(file.path(settings$outdir, "bias.diagnostic.pdf"))
+    for (i in seq_along(obs.mean[[1]])) {
+      Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+      Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+      
+      Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+      XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+      
+      if(length(which(is.na(Ybar[,i])))>=length(t1:t)) next()
+      reg <- lm(Xbar[t1:t] - unlist(Ybar[, i]) ~ c(t1:t))
+      plot(t1:t, 
+           Xbar - unlist(Ybar[, i]),
+           pch = 16, cex = 1, 
+           ylim = c(min(Xci[, 1] - unlist(Ybar[, i])), max(Xci[,2] - unlist(Ybar[, i]))), 
+           xlab = "Time", 
+           ylab = "Error", 
+           main = paste(colnames(X)[i], " Error = Forecast - Data"))
+      ciEnvelope(rev(t1:t), 
+                 rev(Xci[, 1] - unlist(Ybar[, i])), 
+                 rev(Xci[, 2] - unlist(Ybar[, i])),
+                 col = alphabrown)
+      abline(h = 0, lty = 2, lwd = 2)
+      abline(reg)
+      mtext(paste("slope =", signif(summary(reg)$coefficients[2], digits = 3), 
+                  "intercept =", signif(summary(reg)$coefficients[1], digits = 3)))
+      # d<-density(c(Xbar[t1:t] - unlist(Ybar[t1:t,i]))) lines(d$y+1,d$x)
+      
+      # forecast minus analysis = update
+      reg1 <- lm(Xbar - Xa ~ c(t1:t))
+      plot(t1:t, 
+           Xbar - Xa, 
+           pch = 16, cex = 1, 
+           ylim = c(min(Xbar - XaCI[, 2]), max(Xbar - XaCI[, 1])), 
+           xlab = "Time", ylab = "Update", 
+           main = paste(colnames(X)[i], 
+                        "Update = Forecast - Analysis"))
+      ciEnvelope(rev(t1:t), 
+                 rev(Xbar - XaCI[, 1]), 
+                 rev(Xbar - XaCI[, 2]), 
+                 col = alphapurple)
+      abline(h = 0, lty = 2, lwd = 2)
+      abline(reg1)
+      mtext(paste("slope =", signif(summary(reg1)$coefficients[2], digits = 3),
+                  "intercept =", signif(summary(reg1)$coefficients[1], 
+                                        digits = 3)))
+      # d<-density(c(Xbar[t1:t] - Xa[t1:t])) lines(d$y+1,d$x)
+      
+      dat <- data.frame(model = Xbar, obvs = Ybar[,i], time = rownames(Ybar))
+      dat.stats <- data.frame(rmse = PEcAn.benchmark::metric_RMSE(dat),
+                              r2 = PEcAn.benchmark::metric_R2(dat),
+                              rae = PEcAn.benchmark::metric_RAE(dat),
+                              ame = PEcAn.benchmark::metric_AME(dat))
+      require(gridExtra)
+      plot1 <- PEcAn.benchmark::metric_residual_plot(dat, var = colnames(Ybar)[i])
+      plot2 <- PEcAn.benchmark::metric_scatter_plot(dat, var = colnames(Ybar)[i])
+      #PEcAn.benchmark::metric_lmDiag_plot(dat, var = colnames(Ybar)[i])
+      plot3 <- PEcAn.benchmark::metric_timeseries_plot(dat, var = colnames(Ybar)[i])
+      text = paste("\n   The following is text that'll appear in a plot window.\n",
+                   "       As you can see, it's in the plot window\n",
+                   "       One might imagine useful informaiton here")
+      ss <- tableGrob(signif(dat.stats,digits = 3))
+      grid.arrange(plot1,plot2,plot3,ss,ncol=2)
+      
+      
+    }
+    dev.off()
+    
+    ###-------------------------------------------------------------------###
+    ### process variance plots                                            ###
+    ###-------------------------------------------------------------------### 
+    if (processvar) {
+      
+      library(corrplot)
+      pdf('process.var.plots.pdf')
+      
+      cor.mat <- cov2cor(solve(enkf.params[[t]]$q.bar))
+      colnames(cor.mat) <- colnames(X)
+      rownames(cor.mat) <- colnames(X)
+      par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
+      corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
+      
+      par(mfrow=c(1,1))   
+      plot(as.Date(obs.times[t1:t]), unlist(lapply(enkf.params,'[[','n')),
+           pch = 16, cex = 1,
+           ylab = "Degrees of Freedom", xlab = "Time")
+      
+      dev.off()
+      
+    }
+    
+    ###-------------------------------------------------------------------###
+    ### climate plots                                                     ###
+    ###-------------------------------------------------------------------### 
+    
+    # plot(rowMeans(temp.mat[5:t,]),
+    #      Xbar[5:t] -  unlist(Ybar[5:t,i]),
+    #      xlim=range(rowMeans(temp.mat[5:t,])),
+    #      ylim = range(Xbar[5:t] -  unlist(Ybar[5:t,i])),pch=16,cex=1,
+    #      xlab="Average Monthly Temp",
+    #      ylab="Error",
+    #      main=colnames(Ybar)[i])
+    # 
+    # plot(rowSums(precip.mat[5:t,]),
+    #      Xbar[5:t] - unlist(Ybar[5:t,i]),
+    #      xlim=range(rowSums(precip.mat[5:t,])),
+    #      ylim = range(Xbar [5:t]- unlist(Ybar[5:t,i])),
+    #      pch=16,cex=1,xlab="Total Yearly Precip",
+    #      ylab="Error",main=colnames(Ybar)[i])
+    # 
+    # plot(rowMeans(temp.mat[5:t,]),Xbar[5:t] - Xa[5:t],pch=16,
+    #      cex=1,xlab="Average Monthly Temp",
+    #      ylab="Update",main=colnames(Ybar)[i])
+    # plot(rowSums(precip.mat[5:t,]),Xbar[5:t] - Xa[5:t],pch=16,
+    #      cex=1, xlab="Total Yearly Precip",
+    #      ylab="Update",main=colnames(Ybar)[i])
+    
+  }
   
   pdf(file.path(settings$outdir, "sda.enkf.time-series.pdf"))
   

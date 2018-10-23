@@ -9,6 +9,9 @@ metric_AME(dat, ...)
 \arguments{
 \item{dat}{dataframe}
 }
+\description{
+Absolute Maximum Error
+}
 \author{
 Betsy Cowdery
 }

@@ -5,7 +5,7 @@ FormatRecordList <- list()
 updateSelectizeInput(session, "InputSiteName",  choices = sitenames, server = TRUE)
 
 ######### Select Parent ID #################
-updateSelectizeInput(session, "InputParentName",  choices = sitenames, server = TRUE)
+updateSelectizeInput(session, "InputParentName",  choices = input_names, server = TRUE)
 
 ####### Select Format ##############
 updateSelectizeInput(session, "InputFormatName", choices = formats, server = TRUE)
@@ -15,15 +15,16 @@ updateSelectizeInput(session, "InputFormatName", choices = formats, server = TRU
 observeEvent(input$createInput, {
   ## siteID
   inputsList$siteName <- input$InputSiteName
-  inputsList$siteID <- sites_sub %>% dplyr::filter(sitename %in% inputsList$siteName) %>% pull(id)
+  inputsList$siteID <- sites %>% dplyr::filter(sitename %in% inputsList$siteName) %>% pull(id)
   
   ## ParentID
   inputsList$parentName <- input$InputParentName
+  inputsList$parentID <- inputs %>% dplyr::filter(name %in% inputsList$parentName) %>% pull(id)
   
   ## FormatID
   inputsList$formatName <- input$InputFormatName
   inputsList$formatID <- formats_sub %>% dplyr::filter(name %in% inputsList$formatName) %>% pull(id)
-  
+
   ## Other Info
   inputsList$Name <- input$InputName
   inputsList$StartDate <- input$InputStartDate

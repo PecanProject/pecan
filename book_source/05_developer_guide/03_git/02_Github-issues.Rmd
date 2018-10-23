@@ -56,14 +56,11 @@ through UI libraries, hardcopy on David’s bookshelf)\
  1.  Bob is at www.mysite.edu/maps
  2.  map of the the region (based on user location, e.g. US, Asia, etc)
  3.  option to “use current location” is provided, if clicked, map zooms in to, e.g. state or county level
-    4.  for site run:
+ 4.  for site run:
         1.  option to select existing site or specify point by lat/lon
         2.  option to specify a bounding box and grid resolution in
             either lat/lon or polar stereographic.
-
-    5.  asked to specify start and end times in terms of year, month,
-        day, hour, minute. Time is recorded in UTC not local time, this
-        should be indicated
+5.  asked to specify start and end times in terms of year, month, day, hour, minute. Time is recorded in UTC not local time, this should be indicated.
 
 ### Closing an issue
 
@@ -82,7 +79,7 @@ through UI libraries, hardcopy on David’s bookshelf)\
 
 #### Ideally, non-trivial code changes will be linked to an issue and a commit.
 
-This requires creating issues for each task, making small commits, and referencing the issue within your commit message. Issues can be created [on GitHub](https://github.com/PecanProject/pecan/issues/new). These issues can be linked to commits by adding text such as `fixes gh-5` (see [[Using Git During Development|Using-Git#during-development]]).
+This requires creating issues for each task, making small commits, and referencing the issue within your commit message. Issues can be created [on GitHub](https://github.com/PecanProject/pecan/issues/new). These issues can be linked to commits by adding text such as `fixes gh-5`).
 
 Rationale: This workflow is a small upfront investment that reduces error and time spent re-creating and debugging errors. Associating issues and commits, makes it easier to identify why a change was made, and potential bugs that could arise when the code is changed. In addition, knowing which issue you are working on clarifies the scope and objectives of your current task. 
 

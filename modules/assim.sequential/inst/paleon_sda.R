@@ -8,11 +8,18 @@ library(PEcAn.assim.sequential)
 library(nimble)
 library(lubridate)
 library(PEcAn.visualization)
+#PEcAn.assim.sequential::
+library(rgdal) # need to put in assim.sequential
+library(ncdf4) # need to put in assim.sequential
 
 #LINKAGES #AGB.pft #Harvard Forest
 #setwd('/fs/data2/output//PEcAn_1000003314/')
 #setwd('/fs/data2/output//PEcAn_1000007999/') #full run 50 nens
-setwd('/fs/data2/output//PEcAn_1000008008/')
+#setwd('/fs/data2/output//PEcAn_1000008008/')
+setwd('/fs/data2/output//PEcAn_1000009225/')
+
+
+
 file.copy('/fs/data2/output//PEcAn_1000007999/sda.obs.Rdata',getwd())
 #TO DO: Having problem with running proc.var == TRUE because nimble isn't keeping the toggle sampler in the function environment.
 
@@ -45,10 +52,6 @@ bqq[t]<-enkf.params[[t-1]]$n
 # Open and read in settings file for PEcAn run.
 settings <- read.settings("pecan.SDA.xml")
 
-#PEcAn.assim.sequential::
-library(rgdal) # need to put in assim.sequential
-library(ncdf4) # need to put in assim.sequential
-
 obs.list <- load_data_paleon_sda(settings = settings) #add a way to get the correct time step in this function?
 
 
@@ -60,6 +63,7 @@ state <- as.data.frame(rmvnorm(ne,as.numeric(obs.list$obs.mean[[1]]),(obs.list$o
 colnames(state)<-c('AbvGrndWood','GWBI')
 IC <- sample.IC.SIPNET(ne, state = state)
 status.end()
+
 
 #develop/debug
 if(FALSE){

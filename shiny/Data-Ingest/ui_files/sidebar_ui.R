@@ -1,31 +1,23 @@
 sidebarMenu(
-  # menuItem(
-  #   "Select Data Acquisition Method",
-  #   tabName = "importDataONE",
-  #   icon = icon("file")
-  # ),
+ 
   menuItem(
-    "Import from DataONE",
-    tabName = "importDataONE",
-    icon = icon("download", lib = "font-awesome")
-  ),
-  menuItem(
-    "Upload Local Files",
-    tabName = "uploadLocal",
-    icon = icon("upload", lib = "font-awesome")
-  ),
-  menuItem(
-    "Step 2 -- New Input",
-    tabName = "step2",
+    "Ingest Workflow",
+    tabName = "ingestWorkflow",
     icon = icon("database", lib = "font-awesome")
   ),
   menuItem(
-    "Step 3 -- format record",
-    tabName = "step3",
-    icon = icon("cog")
+    "About",
+    tabName = "About",
+    icon = icon("info-circle", lib = "font-awesome")
   ),
-  menuItem("Step 4 -- etc.", 
-           tabName = "step4", 
-           icon = icon("cog")
+  shinyjs::hidden(
+    div(id = "select_in",
+      actionBttn("d1Input", label = "Import from DataONE",
+                 icon = icon("download", lib = "font-awesome"),
+                 size = "xs", color = "success"),
+      actionBttn("lclUpload", label = "Upload Local Files",
+                 icon = icon("upload", lib = "font-awesome"),
+                 size = "xs", color = "success")
+    )
   )
 )

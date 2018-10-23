@@ -28,14 +28,12 @@ upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FAL
    PEcAn.logger::logger.severe("Output file", loc.file, "already exists. To replace it, set overwrite = TRUE")
   }
 
-  met_lookup <- utils::read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
-                         header = TRUE, stringsAsFactors = FALSE)
   tem <- ncdf4::nc_open(input_met)
   dim <- tem$dim
   met_data <- list()
   met_units <- list()
   for (name in names(tem$var)) {
-    if (!(name %in% met_lookup$CF_standard_name)) {
+    if (!(name %in% pecan_standard_met_table$cf_standard_name)) {
       next
     }
     met_data[[name]] <- ncdf4::ncvar_get(nc = tem, varid = name)

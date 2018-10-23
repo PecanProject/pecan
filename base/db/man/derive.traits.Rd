@@ -4,8 +4,9 @@
 \alias{derive.traits}
 \title{Performs an arithmetic function, FUN, over a series of traits and returns the result as a derived trait.}
 \usage{
-derive.traits(FUN, ..., input = list(...), match.columns = c("citation_id",
-  "site_id", "specie_id"), var.name = NA, sample.size = 10^6)
+derive.traits(FUN, ..., input = list(...),
+  match.columns = c("citation_id", "site_id", "specie_id"),
+  var.name = NA, sample.size = 10^6)
 }
 \arguments{
 \item{FUN}{arithmetic function}

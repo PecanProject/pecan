@@ -1,8 +1,10 @@
 Package: PEcAn.GDAY
 Type: Package
 Title: PEcAn package for integration of the GDAY model
-Version: 1.5.3
-Date: 2018-04-26
+Version: 1.6.0
+Date: 2018-08-20
+Authors@R: c(person("Martin","De Kauwe"),
+             person("Tony", "Gardella"))
 Author: Martin De Kauwe
 Maintainer: Martin De Kauwe <mdekauwe@gmail.com>
 Description: This module provides functions to link the GDAY model to PEcAn.
@@ -21,4 +23,5 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: TRUE
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.0

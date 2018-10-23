@@ -1,0 +1,38 @@
+ARG IMAGE_VERSION="latest"
+ARG FROM_IMAGE="depends"
+
+# ----------------------------------------------------------------------
+# PEcAn version information
+# ----------------------------------------------------------------------
+ARG PECAN_VERSION="develop"
+ARG PECAN_GIT_BRANCH="unknown"
+ARG PECAN_GIT_CHECKSUM="unknown"
+ARG PECAN_GIT_DATE="unknown"
+
+FROM pecan/${FROM_IMAGE}:${IMAGE_VERSION}
+MAINTAINER Rob Kooper <kooper@illinois.edu>
+
+# ----------------------------------------------------------------------
+# PEcAn installation from local source
+# ----------------------------------------------------------------------
+# copy folders
+COPY Makefile /pecan/
+COPY base     /pecan/base/
+COPY modules  /pecan/modules/
+COPY models   /pecan/models/
+
+RUN cd /pecan && make
+
+# COPY WORKFLOW
+WORKDIR /work
+COPY web/workflow.R /work/
+
+# COMMAND TO RUN
+CMD Rscript --vanilla workflow.R | tee workflow.Rout
+
+
+# variables to store in docker image
+ENV PECAN_VERSION=${PECAN_VERSION} \
+    PECAN_GIT_BRANCH=${PECAN_GIT_BRANCH} \
+    PECAN_GIT_CHECKSUM=${PECAN_GIT_CHECKSUM} \
+    PECAN_GIT_DATE=${PECAN_GIT_DATE}

@@ -96,6 +96,10 @@ $variables = "NPP";
 if (isset($_REQUEST['variables'])) {
   $variables = $_REQUEST['variables'];
 }
+$parm_method = "uniform";
+if (isset($_REQUEST['parm_method'])) {
+  $parm_method = $_REQUEST['parm_method'];
+}
 $notes_xml = "";
 $notes_db = "";
 if (isset($_REQUEST['notes'])) {
@@ -245,6 +249,9 @@ fwrite($fh, "    <bety>" . PHP_EOL);
 fwrite($fh, "      <user>${db_bety_username}</user>" . PHP_EOL);
 fwrite($fh, "      <password>${db_bety_password}</password>" . PHP_EOL);
 fwrite($fh, "      <host>${db_bety_hostname}</host>" . PHP_EOL);
+if (isset($db_bety_port)) {
+        fwrite($fh, "      <port>${db_bety_port}</port>" . PHP_EOL);
+}
 fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
 if ($db_bety_type == "mysql") {
 	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
@@ -259,6 +266,9 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 	fwrite($fh, "      <user>${db_fia_username}</user>" . PHP_EOL);
 	fwrite($fh, "      <password>${db_fia_password}</password>" . PHP_EOL);
 	fwrite($fh, "      <host>${db_fia_hostname}</host>" . PHP_EOL);
+        if (isset($db_fia_port)) {
+                fwrite($fh, "      <port>${db_fia_port}</port>" . PHP_EOL);
+        }
 	fwrite($fh, "      <dbname>${db_fia_database}</dbname>" . PHP_EOL);
 	if ($db_fia_type == "mysql") {
 		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
@@ -299,13 +309,29 @@ fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 if (!empty($runs)){
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
-	fwrite($fh, "    <size>${runs}</size>" . PHP_EOL);
-	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "   <size>${runs}</size>" . PHP_EOL);
+	fwrite($fh, "   <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "   <samplingspace>" . PHP_EOL);
+	fwrite($fh, "   <parameters>" . PHP_EOL);
+	fwrite($fh, "    <method>${parm_method}</method>" . PHP_EOL);
+	fwrite($fh, "   </parameters>" . PHP_EOL);
+	fwrite($fh, "   <met>" . PHP_EOL);
+	fwrite($fh, "    <method>sampling</method>" . PHP_EOL);
+    	fwrite($fh, " 	</met>" . PHP_EOL);
+	fwrite($fh, "   </samplingspace>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 } else {
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
 	fwrite($fh, "    <size>1</size>" . PHP_EOL);
 	fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
+	fwrite($fh, "    <samplingspace>" . PHP_EOL);
+	fwrite($fh, "     <parameters>" . PHP_EOL);
+	fwrite($fh, "       <method>uniform</method>" . PHP_EOL);
+	fwrite($fh, "     </parameters>" . PHP_EOL);
+	fwrite($fh, "     <met>" . PHP_EOL);
+	fwrite($fh, "       <method>sampling</method>" . PHP_EOL);
+   	 fwrite($fh, "    </met>" . PHP_EOL);
+	fwrite($fh, "    </samplingspace>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 }
 
@@ -492,31 +518,9 @@ if ($pecan_edit) {
   header("Location: ${path}");
 } else if ($rabbitmq_host != "") {
 
-  # create connection and queue
-  $connection = new AMQPConnection();
-  $connection->setHost($rabbitmq_host);
-  $connection->setPort($rabbitmq_port);
-  $connection->setVhost($rabbitmq_vhost);
-  $connection->setLogin($rabbitmq_username);
-  $connection->setPassword($rabbitmq_password);
-  $connection->connect();
-  $channel = new AMQPChannel($connection);
-  $exchange = new AMQPExchange($channel);
-
-  # create the queue
-  $queue = new AMQPQueue($channel);
-  $queue->setName($rabbitmq_queue);
-  $queue->setFlags(AMQP_DURABLE);
-  $queue->declareQueue();
-
   # create the message
   $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"}';
-
-  # send the message
-  $exchange->publish($message, $rabbitmq_queue);
-
-  # cleanup
-  $connection->disconnect();
+  send_rabbitmq_message($message, $rabbitmq_queue);
 
   #done
   $path = "05-running.php?workflowid=$workflowid";

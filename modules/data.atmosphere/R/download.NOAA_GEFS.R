@@ -1,31 +1,29 @@
 ##' @title Download NOAA GEFS Weather Data
 ##' 
-##' @section Information on Units
-##' Information on NOAA weather units can be found here:
-##' @references https://www.ncdc.noaa.gov/crn/measurements.html
-##' Note that the temperature is measured in degrees C, but is converted at the station and downlaoded
+##' @section Information on Units:
+##' Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, but is converted at the station and downlaoded
 ##' in Kelvin.
+##' @references https://www.ncdc.noaa.gov/crn/measurements.html
 ##' 
-##' @section NOAA_GEFS General Information
+##' @section NOAA_GEFS General Information:
 ##' This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  A 16 day forecast is avaliable
 ##' every 6 hours.  Each forecast includes information on a total of 8 variables.  These are transformed from the NOAA standard to the internal PEcAn
 ##' standard.
 ##' 
-##' @section Data Avaliability
+##' @section Data Avaliability:
 ##' NOAA GEFS weather data is avaliable on a rolling 12 day basis; dates provided in "start_date" must be within this range. The end date can be any point after
 ##' that, but if the end date is beyond 16 days, only 16 days worth of forecast are recorded.  Times are rounded down to the previous 6 hour forecast.  NOAA
 ##' GEFS weather data isn't always posted immediately, and to compensate, this function adjusts requests made in the last two hours
 ##' back two hours (approximately the amount of time it takes to post the data) to make sure the most current forecast is used.
 ##' 
-##' @section Data Save Format
+##' @section Data Save Format:
 ##' Data is saved in the netcdf format to the specified directory.  File names reflect the precision of the data to the given range of days.
-##' NOAA.GEFS.willow creek.3.2018-06-08T06:00.to.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
+##' NOAA.GEFS.willow creek.3.2018-06-08T06:00.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
 ##' June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 ##' 
 ##' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
 ##' data frame contains information about one file.
 ##'
-##' Download and convert to CF NOAA weather data
 ##' @param outfolder Directory where results should be written
 ##' @param start_date, end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)
 ##' @param lat site latitude in decimal degrees
@@ -135,6 +133,20 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
     noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1:increments, forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
   }
   
+  #Fills in data with NaNs if there happens to be missing columns.
+  for (i in 1:length(noaa_var_names)) {
+    if (!is.null(ncol(noaa_data[[i]]))) { # Is a matrix
+      nans <- rep(NaN, nrow(noaa_data[[i]]))
+      while (ncol(noaa_data[[i]]) < increments) {
+        noaa_data[[i]] <- cbind(noaa_data[[i]], nans)
+      }
+    } else {   # Is a vector
+      while (length(noaa_data[[i]]) < increments) {
+        noaa_data[[i]] <- c(noaa_data[[i]], NaN);
+      }
+    }
+  }
+  
   ###################################################
   # Not all NOAA data units match the cf data standard.  In this next section, data are processed to
   # confirm with the standard when necessary.
@@ -195,7 +207,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
     formatname = "CF Meteorology",        #Type of data
     startdate = paste0(format(start_date, "%Y-%m-%dT%H:%M:00")),    #starting date and time, down to the second
     enddate = paste0(format(end_date, "%Y-%m-%dT%H:%M:00")),        #ending date and time, down to the second
-    dbfile.name = "NOAA_GEFS",            #Source of data
+    dbfile.name = "NOAA_GEFS",            #Source of data (ensemble number will be added later)
     stringsAsFactors = FALSE
   )
   
@@ -205,9 +217,12 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   #These dimensions will be used for all 21 ncdf4 file members, so they're all declared once here.
   #The data is really one-dimensional for each file (though we include lattitude and longitude dimensions
   #to comply with the PEcAn standard).
-  time_dim = ncdf4::ncdim_def("Time", "6 Hours", 1:ncol(noaa_data[[1]]))
-  lat_dim = ncdf4::ncdim_def("latitude", "Degrees North", lat.in)
-  lon_dim = ncdf4::ncdim_def("longitude", "Degrees East", lon.in)
+  time_dim = ncdf4::ncdim_def(name="time", 
+                              paste(units="hours since", format(start_date, "%Y-%m-%dT%H:%M")), 
+                              seq(6, 6 * increments, by = 6),
+                              create_dimvar = TRUE)
+  lat_dim = ncdf4::ncdim_def("latitude", "degree_north", lat.in, create_dimvar = TRUE)
+  lon_dim = ncdf4::ncdim_def("longitude", "degree_east", lon.in, create_dimvar = TRUE)
   
   dimensions_list = list(time_dim, lat_dim, lon_dim)
   
@@ -234,8 +249,9 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
     #Each ensemble member gets its own unique data frame, which is stored in results_list
     #Object references in R work differently than in other languages. When adding an item to a list, R creates a copy of it
     #for you instead of just inserting the object reference, so this works.
-    results$file = flname
-    results_list[[i]] = results
+    results$file <- flname
+    results$dbfile.name <- flname
+    results_list[[i]] <- results
     
     if (!file.exists(flname) | overwrite) {
       nc_flptr = ncdf4::nc_create(flname, nc_var_list, verbose=verbose)

@@ -2,8 +2,15 @@ Package: PEcAn.workflow
 Type: Package
 Title: PEcAn functions used for ecological forecasts and
     reanalysis
-Version: 1.5.3
-Date: 2018-04-26
+Version: 1.6.0
+Date: 2018-08-20
+Authors@R: c(person("Mike","Dietze"),
+             person("David","LeBauer"),
+             person("Xiaohui", "Feng"),
+             person("Dan"," Wang"),
+             person("Carl", "Davidson"),
+             person("Rob","Kooper"),
+             person("Shawn", "Serbin"))
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang,
     Mike Dietze, Carl Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -25,4 +32,5 @@ Suggests:
 	testthat,
     mockery
 Copyright: Authors
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.0

@@ -12,7 +12,7 @@ function get_footer() {
   return "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
     (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA
     Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.5.3</span>";
+    <span style=\"float:right\">PEcAn Version 1.6.0</span>";
 }
 
 function whoami() {
@@ -177,6 +177,34 @@ function get_page_acccess_level() {
   } else {
     return $anonymous_page;
   }
+}
+
+# Create a new RabbitMQ connection
+# Global variables are set in config.php
+function make_rabbitmq_connection() {
+  global $rabbitmq_host;
+  global $rabbitmq_port;
+  global $rabbitmq_vhost;
+  global $rabbitmq_username;
+  global $rabbitmq_password;
+  $connection = new AMQPConnection();
+  $connection->setHost($rabbitmq_host);
+  $connection->setPort($rabbitmq_port);
+  $connection->setVhost($rabbitmq_vhost);
+  $connection->setLogin($rabbitmq_username);
+  $connection->setPassword($rabbitmq_password);
+  $connection->connect();
+  return $connection;
+}
+
+# Post $message (string) to RabbitMQ queue $rabbitmq_queue (string)
+function send_rabbitmq_message($message, $rabbitmq_queue) {
+  $connection = make_rabbitmq_connection();
+  $channel = new AMQPChannel($connection);
+  $exchange = new AMQPExchange($channel);
+
+  $exchange->publish($message, $rabbitmq_queue);
+  $connection->disconnect();
 }
 
 ?>

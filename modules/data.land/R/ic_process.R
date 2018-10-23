@@ -25,13 +25,16 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # If overwrite is a plain boolean, fill in defaults for each module
   if (!is.list(overwrite)) {
     if (overwrite) {
-      overwrite <- list(getveg = TRUE,  putveg = TRUE)
+      overwrite <- list(getveg = TRUE,  ensveg = TRUE,  putveg = TRUE)
     } else {
-      overwrite <- list(getveg = FALSE, putveg = FALSE)
+      overwrite <- list(getveg = FALSE, ensveg = FALSE, putveg = FALSE)
     }
   } else {
     if (is.null(overwrite$getveg)) {
       overwrite$getveg <- FALSE
+    }
+    if (is.null(overwrite$ensveg)) {
+      overwrite$ensveg <- FALSE
     }
     if (is.null(overwrite$putveg)) {
       overwrite$putveg <- FALSE
@@ -60,7 +63,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     end_date   <- settings$run$end.date
   }else{
     
-   query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
+   query      <- paste0("SELECT * FROM inputs where id = ", input$id)
    input_file <- db.query(query, con = con) 
    start_date <- input_file$start_date
    end_date   <- input_file$end_date
@@ -83,44 +86,90 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   new.site$name <- settings$run$site$name
   
 
-str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
+  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   
-outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
+  outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
 
    
-getveg.id <- putveg.id <- NULL
+  getveg.id <- putveg.id <- NULL
   
+  # this also needs to be in for-loop, n = 1 should be a special case
+  # but we might still want an ensemble from a single source, so need a check accordinly
+  # best pass a flag (<ensemble.source>TRUE<\ensemble.source>) if that's the case, omit the flag otherwise
+  # currently downloading/reading in different ensemble members is not implemented, 
+  # then we'll need to pass pattern, ensemble etc to convert.input
+  nsource <- ifelse(!is.null(input$ensemble.source) & !is.null(input$ensemble), as.numeric(input$ensemble), 1)
   
 #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
-if (is.null(getveg.id) & is.null(putveg.id)) {
+  if (is.null(getveg.id) & is.null(putveg.id)) {
 
-    getveg.id <-.get.veg.module(input_veg = input, 
-                              outfolder = outfolder, 
-                              start_date = start_date, end_date = end_date,
-                              dbparms = dbparms,
-                              new_site = new.site,
-                              host = host, 
-                              machine_host = machine.host,
-                              overwrite = overwrite$getveg)
+    getveg.id <- list()
+
+    for(i in seq_len(nsource)){
+      getveg.id[[i]] <- get_veg_module(input_veg    = input, 
+                                       outfolder    = outfolder, 
+                                       start_date   = start_date, 
+                                       end_date     = end_date,
+                                       dbparms      = dbparms,
+                                       new_site     = new.site,
+                                       host         = host, 
+                                       machine_host = machine.host,
+                                       overwrite    = overwrite$getveg)
+    }
 
   }
   
-
+#--------------------------------------------------------------------------------------------------#
+  # Sampling/ensemble module
+  
+  if (!is.null(getveg.id) & !is.null(input$ensemble) & is.null(putveg.id)) { 
+    
+    ctr <- 1
+    
+    ensveg.id <- list()
+    for(i in seq_len(as.numeric(input$ensemble))){
+      
+      ctr <- ifelse(nsource == 1, 1, i)
+      ensveg.id[[i]] <- ens_veg_module(getveg.id    = getveg.id[[ctr]], 
+                                       dbparms      = dbparms,
+                                       input_veg    = input, 
+                                       outfolder    = outfolder, 
+                                       machine      = machine, 
+                                       start_date   = start_date, 
+                                       end_date     = end_date,
+                                       n.ensemble   = i,
+                                       new_site     = new.site,
+                                       host         = host)
+    }
+    getveg.id <- ensveg.id
+  }
+  
 #--------------------------------------------------------------------------------------------------#
   # Match species to PFTs + veg2model module
   
   if (!is.null(getveg.id) & is.null(putveg.id)) { # probably need a more sophisticated check here
     
-    putveg.id <-.put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
-                                input_veg = input, pfts = settings$pfts,
-                                outfolder = outfolder, 
-                                dir = dir, machine = machine, model = model,
-                                start_date = start_date, end_date = end_date,
-                                new_site = new.site,
-                                host = host, overwrite = overwrite$putveg)
+    putveg.id <- list()
+    for(i in seq_along(getveg.id)){
+      putveg.id[[i]] <- put_veg_module(getveg.id  = getveg.id[[i]], 
+                                       dbparms    = dbparms,
+                                       input_veg  = input, 
+                                       pfts       = settings$pfts,
+                                       outfolder  = outfolder, 
+                                       n.ensemble = i,
+                                       dir        = dir, 
+                                       machine    = machine, 
+                                       model      = model,
+                                       start_date = start_date, 
+                                       end_date   = end_date,
+                                       new_site   = new.site,
+                                       host       = host, 
+                                       overwrite  = overwrite$putveg)
+    }
+
     
   }
 
@@ -128,48 +177,79 @@ if (is.null(getveg.id) & is.null(putveg.id)) {
   # Fill settings
   if (!is.null(putveg.id)) {
     
+    # extend the inputs list for ensemble members
+    settings_inputs <- lapply(seq_along(settings$run$inputs), function(x) rep(settings$run$inputs[[x]], each = length((putveg.id))))
+
+    # make sure all sublists are grouped and renamed to have unique tags, e.g.:
+    # <id>
+    #   <id1>...</id1>
+    #        ...
+    #   <idN>...</idN>
+    # </id>
+    # <path>
+    #   <path1>...</path1>
+    #          ...
+    #   <pathN>...</pathN>
+    # </path>
+    settings_inputs <- lapply(seq_along(settings_inputs), function(x){
+      tmp.list <- settings_inputs[[x]]
+      sub_names <- names(settings$run$inputs[[x]])
+      names(settings_inputs[[x]]) <- paste0(names(settings_inputs[[x]]), rep(seq_along(putveg.id), length(settings$run$inputs[[x]])))
+      tmp.list  <- lapply(seq_along(sub_names), function(v) return(settings_inputs[[x]][names(tmp.list) == sub_names[v]]))
+      names(tmp.list) <- sub_names
+      if(is.null(tmp.list$path)) tmp.list$path <- list()
+      return(tmp.list)
+    })
     
-    model_file <- db.query(paste("SELECT * from dbfiles where container_id =", putveg.id), con)
+    names(settings_inputs) <- names(settings$run$inputs)
     
-    # now that we don't have multipasses, convert.input only inserts 1st filename
-    # do we want to change it in convert.inputs such that it loops over the dbfile.insert?
-    path_to_settings <- file.path(model_file[["file_path"]], model_file[["file_name"]])
-    settings$run$inputs[[input$output]][['path']] <- path_to_settings
-    
-    # NOTE : THIS BIT IS SENSITIVE TO THE ORDER OF TAGS IN PECAN.XML
-    # this took care of "css" only, others have the same prefix
-    if(input$output == "css"){  
-      settings$run$inputs[["pss"]][['path']]  <- gsub("css","pss", path_to_settings)
-      settings$run$inputs[["site"]][['path']] <- gsub("css","site", path_to_settings)
+    for(i in seq_along(putveg.id)){
       
-      # IF: For now IC workflow is only working for ED and it's the only case for copying to remote
-      # but this copy to remote might need to go out of this if-block and change
+      model_file <- db.query(paste("SELECT * from dbfiles where container_id =", putveg.id[[i]], "and machine_id =", machine$id), con)
       
-      # Copy to remote, update DB and change paths if needed
-      if (settings$host$name != "localhost") {
+      # now that we don't have multipasses, convert.input only inserts 1st filename
+      # do we want to change it in convert.inputs such that it loops over the dbfile.insert?
+      path_to_settings <- file.path(model_file[["file_path"]], model_file[["file_name"]])
+      settings_inputs[[input$output]][['path']][[paste0('path', i)]] <- path_to_settings
+      
+      # NOTE : THIS BIT IS SENSITIVE TO THE ORDER OF TAGS IN PECAN.XML
+      # this took care of "css" only, others have the same prefix
+      if(input$output == "css"){  
+        settings_inputs[["pss"]][['path']][[paste0('path', i)]]  <- gsub("css","pss", path_to_settings)
+        settings_inputs[["site"]][['path']][[paste0('path', i)]] <- gsub("css","site", path_to_settings)
         
-        remote_dir <- file.path(settings$host$folder, paste0(input$source, "_site_", str_ns))
+        # IF: For now IC workflow is only working for ED and it's the only case for copying to remote
+        # but this copy to remote might need to go out of this if-block and change
         
-        # copies css
-        css_file <- basename(settings$run$inputs[["css"]][['path']])
-        PEcAn.remote::remote.copy.update(putveg.id, remote_dir, remote_file_name = css_file, settings$host, con)
-        settings$run$inputs[["css"]][['path']] <- file.path(remote_dir, css_file)
-        
-        # pss 
-        pss_file <-  basename(settings$run$inputs[["pss"]][['path']])
-        PEcAn.remote::remote.copy.update(putveg.id, remote_dir, remote_file_name = pss_file, settings$host, con)
-        settings$run$inputs[["pss"]][['path']] <- file.path(remote_dir, pss_file)
+        # Copy to remote, update DB and change paths if needed
+        if (settings$host$name != "localhost") {
           
-        # site
-        site_file <- basename(settings$run$inputs[["site"]][['path']])
-        PEcAn.remote::remote.copy.update(putveg.id, remote_dir, remote_file_name = site_file, settings$host, con)
-        settings$run$inputs[["site"]][['path']] <- file.path(remote_dir, site_file)
-        
+          folder_dir <- paste0(input$source, "_site_", str_ns, "/", input$source, "_ens", i, ".", lubridate::year(start_date))
+          remote_dir <- file.path(settings$host$folder, folder_dir)
+          
+          # copies css
+          css_file <- settings_inputs[["css"]][['path']][[paste0('path', i)]]
+          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = css_file, host = settings$host, con = con)
+          settings_inputs[["css"]][['path']][[paste0('path', i)]] <- file.path(remote_dir, basename(css_file))
+          
+          # pss 
+          pss_file <- settings_inputs[["pss"]][['path']][[paste0('path', i)]]
+          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = pss_file, host = settings$host, con = con)
+          settings_inputs[["pss"]][['path']][[paste0('path', i)]] <- file.path(remote_dir, basename(pss_file))
+          
+          # site
+          site_file <- settings_inputs[["site"]][['path']][[paste0('path', i)]]
+          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = site_file, host = settings$host, con = con)
+          settings_inputs[["site"]][['path']][[paste0('path', i)]] <- file.path(remote_dir, basename(site_file))
+          
+        }
       }
     }
-    
+
+    settings$run$inputs <- settings_inputs
   }
   
+  PEcAn.logger::logger.info("Finished IC for vegetation.")
   
   return(settings)
 } # ic_process
