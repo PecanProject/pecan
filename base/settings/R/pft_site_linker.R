@@ -1,13 +1,13 @@
 #'
 #' @title site.pft.linkage
 #' 
-#' @param pecan.xml.address pecan settings list.
+#' @param settings pecan settings list.
 #' @param site.pft.links dataframe. Your look up table should have two columns of site and pft with site ids under site column and pft names under pft column.
 #'
 #' 
 #' @description This function creates the required tags inside pecan.xml to link sites with pfts given a look up table. If the required tags are already defined in the pecan xml then they will be updated.
 #' 
-#' @return NONE
+#' @return pecan setting list
 #' @export site.pft.linkage
 #' 
 #' @examples
@@ -22,8 +22,6 @@
 #'  "763", "temperate.broadleaf.deciduous4"
 #' )
 #'  
-#' # sending a single setting xml to the function
-#' site.pft.linkage(settings,site.pft.links)
 #' # sending a multi- setting xml file to the function
 #' site.pft.linkage(settings,site.pft.links)
 #'}
@@ -42,7 +40,8 @@ site.pft.linkage <- function(settings, site.pft.links){
       site.pft <- NULL
       site.id <- (site.setting[['run']])$site$id
       #if no site id was found
-      if (is.null(site.id)) PEcAn.logger::logger.severe('Your site needs to have a site id.')
+      if (is.null(site.id)) PEcAn.logger::logger.warn(paste0('Since your site xml tag does NOT have a site id, we can not assign a PFT to it. The site of this site is',
+                                                             (site.setting[['run']])$site$name))
       # see if we can find this site id in the LUT
       if (site.id %in% site.pft.links$site) site.pft <-site.pft.links$pft[which(site.pft.links$site %in% site.id)]
       # if there was a pft associated with that
@@ -53,13 +52,9 @@ site.pft.linkage <- function(settings, site.pft.links){
   #putting it in the right format depending if it's multisetting or not 
   if (is.MultiSettings(settings)) {
     new.mset <- MultiSettings(new.mset)
-    outdir <-new.mset[[1]]$outdir
   } else{
     new.mset <- new.mset[[1]]
-    outdir <-new.mset$outdir
   }
-  
-  #write.settings(new.mset, paste0("pecan.site_pft.xml"), outdir)
   
   return(new.mset)
 }
