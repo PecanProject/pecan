@@ -576,7 +576,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       
       
     })%>% 
-    select(-Sd) %>%
+    dplyr::select(-Sd) %>%
     bind_rows(ready.FA)
   
   #Adding the units to the variables

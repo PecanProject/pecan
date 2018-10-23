@@ -226,7 +226,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                   function(configs, settings, new.params, inputs){
                             
                                     list(runid = configs$runs$id, 
-                                         start.time = strptime(obs.times[t-1],format="%Y-%m-%d %H:%M:%S"),
+                                         start.time = strptime(obs.times[t-1],format="%Y-%m-%d %H:%M:%S")+ lubridate::second(lubridate::hms("00:00:01")),
                                          stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
                                          settings = settings,
                                          new.state = new.state[,which(attr(X,"Site")%in%settings$run$site$id)], #!!!!!!!!!!
@@ -259,6 +259,9 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     #-------------------------------------------- RUN
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     #------------------------------------------- Reading the output
+    if (control$debug) browser()
+    
+    
     reads <- out.configs %>%
       purrr::map(function(configs) {
         X_tmp <- vector("list", 2)
@@ -267,7 +270,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
           X_tmp[[i]] <- do.call( my.read_restart,
                                 args = list(
                                   outdir = outdir,
-                                  runid = configs$runs$id[i],
+                                  runid = configs$runs$id[i] %>% as.character(),
                                   stop.time = obs.times[t],
                                   settings = settings,
                                   var.names = var.names,
