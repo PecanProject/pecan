@@ -6,7 +6,9 @@ lapply(c( "shiny",
           "shiny",
           "shinytoastr",
           "shinyWidgets",
-          "shinyjs"),function(pkg){
+          "shinyjs",
+          "shinyTime",
+          "dplyr"),function(pkg){
             if (!(pkg %in% installed.packages()[,1])){
                   install.packages(pkg)
               }

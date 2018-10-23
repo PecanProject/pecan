@@ -54,6 +54,9 @@ echo "DOWNLOAD DATA"
 echo "######################################################################"
 cd ${DATADIR}
 
+echo "######################################################################"
+echo "Downloading sites"
+echo "######################################################################"
 if [ ! -e ${DATADIR}/sites ]; then
   curl -s -o sites.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/sites.tgz
   tar zxf sites.tgz
@@ -61,12 +64,18 @@ if [ ! -e ${DATADIR}/sites ]; then
   rm sites.tgz
 fi
 
+echo "######################################################################"
+echo "Downloading inputs"
+echo "######################################################################"
 if [ ! -e ${DATADIR}/inputs ]; then
   curl -s -o inputs.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/inputs.tgz
   tar zxf inputs.tgz
   rm inputs.tgz
 fi
 
+echo "######################################################################"
+echo "Downloading LPJ-Guess CRU"
+echo "######################################################################"
 if [ ! -e ${DATADIR}/lpj-guess/cru_1901_2006.bin ]; then
   if [ ! -d ${DATADIR}/lpj-guess ]; then
     mkdir ${DATADIR}/lpj-guess
@@ -74,12 +83,18 @@ if [ ! -e ${DATADIR}/lpj-guess/cru_1901_2006.bin ]; then
   curl -s -o ${DATADIR}/lpj-guess/cru_1901_2006.bin http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/cru_1901_2006.bin
 fi
 
+echo "######################################################################"
+echo "Downloading Plot"
+echo "######################################################################"
 if [ ! -e ${DATADIR}/plot ]; then
   curl -s -o plot.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/plot.tgz
   tar zxf plot.tgz
   rm plot.tgz
 fi
 
+echo "######################################################################"
+echo "Downloading Santarem_Km83"
+echo "######################################################################"
 if [ ! -e ${DATADIR}/sites/Santarem_Km83 ]; then
   curl -s -o Santarem_Km83.zip http://isda.ncsa.illinois.edu/~kooper/EBI/Santarem_Km83.zip
   unzip -q -d sites Santarem_Km83.zip
@@ -87,6 +102,9 @@ if [ ! -e ${DATADIR}/sites/Santarem_Km83 ]; then
   rm Santarem_Km83.zip
 fi
 
+echo "######################################################################"
+echo "Downloading testrun.s83"
+echo "######################################################################"
 if [ ! -e ${DATADIR}/testrun.s83 ]; then
   curl -s -o testrun.s83.zip http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.s83.zip
   unzip -q testrun.s83.zip
@@ -94,6 +112,9 @@ if [ ! -e ${DATADIR}/testrun.s83 ]; then
   rm testrun.s83.zip
 fi
 
+echo "######################################################################"
+echo "Downloading ed2ws.harvard"
+echo "######################################################################"
 if [ ! -e ${DATADIR}/ed2ws.harvard ]; then
   curl -s -o ed2ws.harvard.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/ed2ws.harvard.tgz
   tar zxf ed2ws.harvard.tgz
@@ -102,6 +123,9 @@ if [ ! -e ${DATADIR}/ed2ws.harvard ]; then
   rm ed2ws.harvard.tgz
 fi
 
+echo "######################################################################"
+echo "Downloading testrun.PDG"
+echo "######################################################################"
 if [ ! -e ${DATADIR}/testrun.PDG ]; then
   curl -s -o testrun.PDG.zip http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.PDG.zip
   unzip -q testrun.PDG.zip
@@ -110,6 +134,9 @@ if [ ! -e ${DATADIR}/testrun.PDG ]; then
   rm testrun.PDG.zip
 fi
 
+echo "######################################################################"
+echo "Downloading create_met_driver"
+echo "######################################################################"
 if [ ! -e ${DATADIR}/create_met_driver ]; then
   curl -s -o create_met_driver.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/create_met_driver.tar.gz
   tar zxf create_met_driver.tar.gz
@@ -239,3 +266,7 @@ addInputFile "${FQDN}" "${INPUT_ID}" "NR1.NACP.lat40.5lon-105.5.pss" "${SITES}/n
 addFormat "text/plain" "DALEC meteorology"
 addInput "766" "${FORMAT_ID}" "1999-01-01" "2003-12-31"
 addInputFile "${FQDN}" "${INPUT_ID}" "dalec_drivers.OREGON.no_obs.dat" "${DALEC}/oregon"
+
+echo "######################################################################"
+echo "Done!"
+echo "######################################################################"

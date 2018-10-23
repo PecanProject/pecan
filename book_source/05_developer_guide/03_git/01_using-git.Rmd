@@ -32,11 +32,12 @@ This document describes the steps required to download PEcAn, make changes to co
 
 
 ### PEcAn Project and Github
-                                                                                                                                                                * Organization Repository: https://github.com/organizations/PecanProject                                                                                        * PEcAn source code: https://github.com/PecanProject/pecan.git                                                                                                  * BETYdb source code: https://github.com/PecanProject/bety.git
-* These instructions apply to other repositories too.
+                                                                                                                                                           * Organization Repository: https://github.com/organizations/PecanProject                                                                                   * PEcAn source code: https://github.com/PecanProject/pecan.git                                                                                             * BETYdb source code: https://github.com/PecanProject/bety.git
+
+These instructions apply to other repositories too.
                                                                                                                                                                                                    
 ### PEcAn Project Branches
-                                                                                                                                                                We follow branch organization laid out on [this page](http://nvie.com/posts/a-successful-git-branching-model).
+                                                                                                                                                          We follow branch organization laid out on [this page](http://nvie.com/posts/a-successful-git-branching-model).
   
 In short, there are three main branches you must be aware of:
 
@@ -51,11 +52,12 @@ The Milestones, issues, and tasks can be used to organize specific features or r
 * milestones (Big picture, "Epic"): contains many issues, organized by release.
 * issues (Specific features / bugs, "Story"): may contain a list of tasks; represent
 * task list (to do list, "Tasks"): list of steps required to close an issue, e.g.:
-  ```
+
+----------------------------------
 * [ ] first do this
 * [ ] then this
 * [ ] completed when x and y
-```
+----------------------------------
 
 
 ### Quick and Easy
@@ -70,7 +72,7 @@ The **easiest** approach is to use GitHub's browser based workflow. This is usef
 
 **Commit and Push Frequency** On your branch, commit **_at minimum once a day before you push changes:_** even better: every time you reach a stopping point and move to a new issue. best: any time that you have done work that you do not want to re-do. Remember, pushing changes to your branch is like saving a draft. Submit a pull request when you are done.
 
-### Before any work is done:
+### Before any work is done
 
 The first step below only needs to be done once when you first start working on the PEcAn code. The steps below that need to be done to set up PEcAn on your computer, and would need to be repeated if you move to a new computer. If you are working from the PEcAn VM, you can skip the "git clone" since the PEcAn code is already installed. 
 
@@ -259,21 +261,20 @@ Git supports two types of tags: lightweight and annotated. For more information 
 Lightweight tags are useful, but here we discuss the annotated tags that are used for marking stable versions, major releases, and versions associated with published results. 
 
 The basic command is `git tag`. The `-a` flag means 'annotated' and `-m` is used before a message.  Here is an example:
-```  
-  git tag -a v0.6 -m "stable version with foo and bar features, used in the foobar publication by Bob"
-```
+
+`git tag -a v0.6 -m "stable version with foo and bar features, used in the foobar publication by Bob"`
+
 Adding a tag to the a remote repository must be done explicitly with a push, e.g.
-```
-git push v0.6
-```
+
+`git push v0.6`
+
 To use a tagged version, just checkout: 
-```  
-  git checkout v0.6
-```
+
+`git checkout v0.6`
+
 To tag an earlier commit, just append the commit SHA to the command, e.g. 
-```
-git tag -a v0.99 -m "last version before 1.0" 9fceb02
-```
+
+`git tag -a v0.99 -m "last version before 1.0" 9fceb02`
 
 **Using GitHub** The easiest way to get working with GitHub is by installing the GitHub
 client. For instructions for your specific OS and download of the

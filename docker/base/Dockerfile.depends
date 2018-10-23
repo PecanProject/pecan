@@ -1,35 +1,26 @@
 # ----------------------------------------------------------------------
 # PECAN FOR MODEL BASE IMAGE
 # ----------------------------------------------------------------------
-FROM r-base
+FROM rocker/tidyverse:3.5.1
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 # ----------------------------------------------------------------------
 # INSTALL BINARY/LIBRARY DEPENDENCIES
 # ----------------------------------------------------------------------
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        jags \
-        libcurl4-gnutls-dev \
-        libgdal-dev \
-        libnetcdf-dev \
-        libpq-dev \
-        librdf0-dev \
-        libssh2-1-dev \
-        libssl-dev \
-        libudunits2-dev \
-        libxml2-dev \
-        time
+RUN apt-get update -qq && apt-get -y --no-install-recommends install \
+	jags \
+	time \
+	libgdal-dev \
+	librdf0-dev \
+	libnetcdf-dev \
+	libudunits2-dev
 
 # ----------------------------------------------------------------------
 # INSTALL DEV TOOLS AND PACKAGES FROM GITHUB NEEDED BUILD PECAN
 # ----------------------------------------------------------------------
-RUN Rscript --vanilla -e "install.packages('devtools', repos='http://cran.rstudio.com/'); q(status=as.integer(!'devtools' %in% rownames(installed.packages())))" \
-    && Rscript --vanilla -e "install.packages('testthat', repos='http://cran.rstudio.com/'); q(status=as.integer(!'testthat' %in% rownames(installed.packages())))" \
-    && Rscript --vanilla -e "install.packages('roxygen2', repos='http://cran.rstudio.com/'); q(status=as.integer(!'roxygen2' %in% rownames(installed.packages())))" \
-    && Rscript --vanilla -e "devtools::install_github('ropensci/geonames'); q(status=as.integer(!'geonames' %in% rownames(installed.packages())))" \
-    && Rscript --vanilla -e "devtools::install_github('ropenscilabs/nneo'); q(status=as.integer(!'nneo' %in% rownames(installed.packages())))" \
-    && Rscript --vanilla -e "devtools::install_github('rforge/reddyproc/pkg/REddyProc'); q(status=as.integer(!'REddyProc' %in% rownames(installed.packages())))"
+RUN Rscript --vanilla -e "devtools::install_github('ropensci/geonames'); q(status=as.integer(!'geonames' %in% rownames(installed.packages())))" \
+	&& Rscript --vanilla -e "devtools::install_github('ropenscilabs/nneo'); q(status=as.integer(!'nneo' %in% rownames(installed.packages())))" \
+	&& Rscript --vanilla -e "devtools::install_github('rforge/reddyproc/pkg/REddyProc'); q(status=as.integer(!'REddyProc' %in% rownames(installed.packages())))"
     
 # ----------------------------------------------------------------------
 # INSTALL R PACKAGES NEED TO BUILD PEcAn
@@ -44,5 +35,5 @@ RUN for p in abind BayesianTools car coda dataone datapack data.table DBI dbplyr
       if(!'${p}' %in% rownames(installed.packages())) { \
         install.packages('${p}', repos='http://cran.rstudio.com/'); \
         q(status=as.integer(!'${p}' %in% rownames(installed.packages()))) \
-      }" || echo "FAILED TO INSTALL ${p}"; exit 1; \
+      }" || (echo "FAILED TO INSTALL ${p}"; exit 1); \
     done
