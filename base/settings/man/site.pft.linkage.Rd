@@ -7,15 +7,16 @@
 site.pft.linkage(settings, site.pft.links)
 }
 \arguments{
-\item{site.pft.links}{dataframe. Your look up table should have two columns of site and pft with site ids under site column and pft names under pft column.}
+\item{settings}{pecan settings list.}
 
-\item{pecan.xml.address}{pecan settings list.}
+\item{site.pft.links}{dataframe. Your look up table should have two columns of site and pft with site ids under site column and pft names under pft column.}
 }
 \value{
-NONE
+pecan setting list
 }
 \description{
 This function creates the required tags inside pecan.xml to link sites with pfts given a look up table. If the required tags are already defined in the pecan xml then they will be updated.
+If there are multiple pfts that they need to be used for a site, each pft needs to have a separate row in the lookup table, resulting multiple rows for a site.
 }
 \examples{
 \dontrun{
@@ -23,14 +24,12 @@ This function creates the required tags inside pecan.xml to link sites with pfts
 site.pft.links <-tribble(
  ~site, ~pft,
  "1000025731", "temperate.broadleaf.deciduous1",
- "1000025731", "temperate.broadleaf.deciduous11",
+ "1000025731", "temperate.needleleaf.evergreen",
  "1000000048", "temperate.broadleaf.deciduous2",
  "772", "temperate.broadleaf.deciduous3",
  "763", "temperate.broadleaf.deciduous4"
 )
  
-# sending a single setting xml to the function
-site.pft.linkage(settings,site.pft.links)
 # sending a multi- setting xml file to the function
 site.pft.linkage(settings,site.pft.links)
 }
