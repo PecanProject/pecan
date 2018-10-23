@@ -353,6 +353,10 @@ This section provides detailed configuration for the model run, including the si
       <id>1000000098</id>
       <met.start>2004/01/01</met.start>
       <met.end>2004/12/31</met.end>
+      <site.pft>
+        <pft.name>temperate.needleleaf.evergreen</pft.name>
+        <pft.name>temperate.needleleaf.evergreen</pft.name>
+      </site.pft>
     </site>
     <inputs>
       <met>
@@ -373,6 +377,16 @@ This contains the following tags:
 - `name` -- The name of the site, as a string.
 - `lat`, `lon` -- The latitude and longitude coordinates of the site, as decimals.
 - `met.start`, `met.end` -- ???
+- `<site.pft>` (optional) If this tag is found under the site tag, then PEcAn automatically makes sure that only PFTs defined under this tag is used for generating parameter's samples. Following shows an exmaple of how this tag can be added to the PEcAn xml :
+
+```xml
+    <site.pft>
+     <pft.name>temperate.needleleaf.evergreen</pft.name>
+     <pft.name>temperate.needleleaf.evergreen</pft.name>
+    </site.pft>
+```
+For multi-site runs if the `pft.site` tag (see {#xml-run-inputs}) is defined under input, then the above process will be done automatically under prepare settings step in PEcAn main workflow and there is no need for adding the tag manually.
+
 
 #### `inputs`: Model inputs {#xml-run-inputs}
 
