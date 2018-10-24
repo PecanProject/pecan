@@ -385,7 +385,7 @@ This contains the following tags:
      <pft.name>temperate.needleleaf.evergreen</pft.name>
     </site.pft>
 ```
-For multi-site runs if the `pft.site` tag (see {#xml-run-inputs}) is defined under input, then the above process will be done automatically under prepare settings step in PEcAn main workflow and there is no need for adding the tag manually.
+For multi-site runs if the `pft.site` tag (see {#xml-run-inputs}) is defined under `input`, then the above process will be done automatically under prepare settings step in PEcAn main workflow and there is no need for adding the tags manually. Using the `pft.site` tag however, requires a lookup table as an input (see {#xml-run-inputs}).
 
 
 #### `inputs`: Model inputs {#xml-run-inputs}
