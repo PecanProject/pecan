@@ -460,11 +460,21 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       if (!is.na(snow) && is.numeric(snow)) {
         param[which(param[, 1] == "snowInit"), 2] <- udunits2::ud.convert(snow, "kg m-2", "g cm-2")  # BETY: kg m-2
       }
-      ## microbeInit mgC/g soil
+      ## leafOnDay
+      leafOnDay <- try(ncdf4::ncvar_get(IC.nc,"date_of_budburst"),silent = TRUE)
+      if (!is.na(leafOnDay) && is.numeric(leafOnDay)) {
+        param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
+      }
+      ## leafOffDay
+      leafOffDay <- try(ncdf4::ncvar_get(IC.nc,"date_of_senescence"),silent = TRUE)
+      if (!is.na(leafOffDay) && is.numeric(leafOffDay)) {
+        param[which(param[, 1] == "leafOffDay"), 2] <- leafOffDay
+      }
       microbe <- try(ncdf4::ncvar_get(IC.nc,"Microbial Biomass C"),silent = TRUE)
       if (!is.na(microbe) && is.numeric(microbe)) {
         param[which(param[, 1] == "microbeInit"), 2] <- udunits2::ud.convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
       }
+      
       ncdf4::nc_close(IC.nc)
     }else{
       PEcAn.logger::logger.error("Bad initial conditions filepath; keeping defaults")
