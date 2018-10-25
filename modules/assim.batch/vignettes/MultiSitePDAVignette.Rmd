@@ -154,6 +154,23 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
   </settings.6>
   <settings.7>
    <site>
+    <id>755</id>
+    <met.start>2002/01/01</met.start>
+    <met.end>2008/12/31</met.end>
+    <name>Duke Forest-hardwoods (US-Dk2)</name>
+    <lat>35.9736</lat>
+    <lon>-79.1004</lon>
+   </site>
+   <start.date>2002/01/01</start.date>
+   <end.date>2008/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-755/AMF_US-Dk2_BASE_HH_4-4.2002-01-01.2008-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.7>
+  <settings.8>
+   <site>
     <id>1000000145</id>
     <met.start>2008/01/01</met.start>
     <met.end>2010/12/31</met.end>
@@ -168,8 +185,8 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
      <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-145/AMF_US-ChR_BASE_HH_2-1.2008-01-01.2010-12-31.clim</path>
     </met>
    </inputs>
-  </settings.7>
-  <settings.8>
+  </settings.8>
+  <settings.9>
    <site>
     <id>1000000066</id>
     <met.start>2005/01/01</met.start>
@@ -185,8 +202,8 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
      <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-66/AMF_US-Slt_BASE_HH_5-1.2005-01-01.2014-12-31.clim</path>
     </met>
    </inputs>
-  </settings.8>
-  <settings.9>
+  </settings.9>
+  <settings.10>
    <site>
     <id>1000000061</id>
     <met.start>2004/01/01</met.start>
@@ -199,10 +216,44 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2013/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-61/AMF_US-Oho_BASE_HH_4-1.2005-01-01.2006-12-31.clim</path>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-61/AMF_US-Oho_BASE_HH_4-1.2004-01-01.2013-12-31.clim</path>
     </met>
    </inputs>
-  </settings.9>
+  </settings.10>
+  <settings.11>
+   <site>
+    <id>740</id>
+    <met.start>1997/01/01</met.start>
+    <met.end>2010/12/31</met.end>
+    <name>BOREAS SSA Old Aspen (CA-Oas)</name>
+    <lat>53.6289</lat>
+    <lon>-106.198</lon>
+   </site>
+   <start.date>1997/01/01</start.date>
+   <end.date>2010/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-740/AMF_CA-Oas_BASE_HH_1-1.1997-01-01.2010-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.11>
+  <settings.12>
+   <site>
+    <id>758</id>
+    <met.start>2010/01/01</met.start>
+    <met.end>2015/12/31</met.end>
+    <name>Harvard Forest EMS Tower/HFR1 (US-Ha1)</name>
+    <lat>42.5378</lat>
+    <lon>-72.1715</lon>
+   </site>
+   <start.date>2010/01/01</start.date>
+   <end.date>2015/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-758/AMF_US-Ha1_BASE_HR_10-1.2010-01-01.2015-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.12>
  </run>
 ```
 
