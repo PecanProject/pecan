@@ -1,0 +1,26 @@
+### Troubleshooting Docker {#docker-troubleshooting}
+
+#### "Package not available" while building images
+
+**PROBLEM**: Packages fail to install while building `pecan/depends` and/or `pecan/base` with an error like the following:
+
+```
+Installing package into ‘/usr/local/lib/R/site-library’
+(as ‘lib’ is unspecified)
+Warning: unable to access index for repository https://mran.microsoft.com/snapshot/2018-09-01/src/contrib:
+ cannot open URL 'https://mran.microsoft.com/snapshot/2018-09-01/src/contrib/PACKAGES'
+Warning message:
+package ‘<PACKAGE>’ is not available (for R version 3.5.1)
+```
+
+**CAUSE**: This can sometimes happen if there are problems with Microsoft's CRAN snapshots, which are the default repository for the `rocker/tidyverse` containers.
+See GitHub issues [rocker-org/rocker-versioned#102](https://github.com/rocker-org/rocker-versioned/issues/102) and [#58](https://github.com/rocker-org/rocker-versioned/issues/58).
+
+**SOLUTION**: Add the following line to the `depends` and/or `base` Dockerfiles _before_ (i.e. above) any commands that install R packages (e.g. `Rscript -e "install.packages(...)"`):
+
+```
+RUN echo "options(repos = c(CRAN = 'https://cran.rstudio.org'))" >> /usr/local/lib/R/etc/Rprofile.site
+```
+
+This will set the default repository to the more reliable (albeit, more up-to-date; beware of breaking package changes!) RStudio CRAN mirror.
+Then, build the image as usual.

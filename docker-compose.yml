@@ -16,7 +16,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
     restart: unless-stopped
 
-  # webserver to handle all traffic to bety/pecan/rabbitmq
+  # Browser-based file manager
   minio:
     image: minio/minio
     networks:
@@ -104,7 +104,7 @@ services:
 
   # PEcAn executor, executes jobs launched from web
   executor:
-    image: pecan/executor:${PECAN:-develop}
+    image: pecan/executor:${PECAN:-latest}
     networks:
       - pecan
     hostname: docker
@@ -117,7 +117,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
-    image: pecan/model-sipnet:136
+    image: pecan/model-sipnet-136
     networks:
       - pecan
     volumes:
@@ -128,7 +128,7 @@ services:
 
   # PEcAn sipnet model runner
   ed2:
-    image: pecan/model-ed2:git
+    image: pecan/model-ed2-git
     networks:
       - pecan
     volumes:

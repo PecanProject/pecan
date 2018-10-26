@@ -3,6 +3,8 @@ Type: Package
 Title: PEcAn package for integration of the LINKAGES model
 Version: 1.6.0
 Date: 2018-08-20
+Authors@R: c(person("Mike","Dietze"),
+             person("Ann", "Raiho"))
 Author: Ann Raiho, Mike Dietze
 Maintainer: Ann Raiho <araiho@nd.edu>
 Description: This module provides functions to link the (LINKAGES) to PEcAn.

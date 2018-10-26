@@ -3,6 +3,7 @@ Type: Package
 Title: PEcAn functions used for remote sensing
 Version: 1.6.0
 Date: 2018-08-20
+Authors@R: c(person("Mike","Dietze"))
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: PEcAn module for processing remote data

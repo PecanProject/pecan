@@ -112,7 +112,18 @@ Our current configuration is as follows:
 yaml::write_yaml(dc_yaml$services["minio"], stdout())
 ```
 
-(Further details in the works...)
+The Minio interface is accessible by browsing to `localhost:8000/minio/`.
+From there, you can browse directories and download files.
+You can also upload files by clicking the red "+" in the bottom-right corner.
+
+Note that it is currently impossible to create or upload directories using the Minio interface (except in the `/data` root directory -- those folders are called "buckets" in Minio).
+Therefore, the recommended way to perform any file management tasks other than individual file uploads is through the command line, e.g.
+
+```bash
+docker run -it --rm --volumes pecan_pecan:/data --volumes /path/to/local/directory:/localdir ubuntu
+
+# Now, you can move files between `/data` and `/localdir`, create new directories, etc.
+```
 
 #### `postgres` {#pecan-dc-postgres}
 
