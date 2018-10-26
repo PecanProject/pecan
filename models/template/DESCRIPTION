@@ -3,6 +3,8 @@ Type: Package
 Title: PEcAn package for integration of the ModelName model
 Version: 1.6.0
 Date: 2018-08-20
+Authors@R: c(person("Jane", "Doe"),
+             person("John", "Doe"))
 Author: John Doe, Jane Doe
 Maintainer: John Doe <jdoe@illinois.edu>
 Description: This module provides functions to link the (ModelName) to PEcAn.

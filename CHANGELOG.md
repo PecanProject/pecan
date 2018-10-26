@@ -8,16 +8,22 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Fixes
+- Fixed error in `read_web_config` which would filter out all variables.
+- Docker:
+  - Make sure web interface posts RabbitMQ messages even after editing files (fixes #2151)
 
 ### Added
 - Lots of new documentation for running PEcAn using Docker
 - Added container with documentation #2160
+- Download method (`method`) argument for `data.atmosphere::download.CRUNCEP`, which defaults to `opendap` (as it was), but can be switched to the slower but more robust NetCDF subset (`ncss`).
+- In `download.CRUNCEP`, check target coordinate against the land-sea mask. If sea, pick the nearest land pixel within 1 degree of target. This facilitates doing runs at coastal sites that may get masked out.
 
 ### Removed
 
 ### Changed
 - Docker:
   - Change base image for R code from `r-base` to `rocker/tidyverse:3.5.1`. This (1) saves build time (because many R packages and system dependencies are pre-installed), and (2) enhances reproducibility (because of the strict versioning rules of the `rocker` packages)
+  - Re-factor web interface RabbitMQ create connections and post messages into their own PHP functions.
 
 ## [1.6.0] - 2018-09-01
 
