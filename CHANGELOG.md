@@ -11,6 +11,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - Lots of new documentation for running PEcAn using Docker
+- Added container with documentation #2160
 
 ### Removed
 
