@@ -51,7 +51,7 @@ simple.local <-function(pf.matrix,distance.mat,scalef=2){
 ##' 
 ##' @return It returns a localized covariance matrix by taking a Schur product between Pf and a corrolation function
 ##' @export
-piecew.poly.local <-function(pf.matrix,distance.mat,scalef=2){
+piecew.poly.local <-function(pf.matrix, distance.mat, scalef=2){
   ### Data assimilation for spatio-temporal processes - p250 - Sebastian Reich
   s <- distance.mat/rloc
   

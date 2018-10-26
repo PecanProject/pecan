@@ -21,6 +21,7 @@
 #' 
 sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F, 
                                control=list(trace=T,
+                                            FF=F,
                                             interactivePlot=T,
                                             TimeseriesPlot=T,
                                             BiasPlot=F,
@@ -244,6 +245,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
 
     out.configs <- conf.settings %>%
       purrr::map2(restart.list, function(settings, restart.arg) {
+  
         # wrtting configs for each settings - this does not make a difference with the old code
         write.ensemble.configs(
           defaults = settings$pfts,
@@ -255,13 +257,45 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         )
       })
     
-    if(t==1)  inputs<-out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
+    if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     #------------------------------------------- Reading the output
     if (control$debug) browser()
-    
-    
+    #--- Reading just the first run when we have all years and for VIS
+    if (t==1){
+      readsFF <- out.configs %>%
+        purrr::map(function(configs) {
+ 
+        obs.times%>%
+            purrr::map(function(stop.date){
+              X_tmp <- vector("list", 2)
+              
+              for (i in seq_len(nens)) {
+                X_tmp[[i]] <- do.call( my.read_restart,
+                                       args = list(
+                                         outdir = outdir,
+                                         runid = configs$runs$id[i] %>% as.character(),
+                                         stop.time =  stop.date,
+                                         settings = settings,
+                                         var.names = var.names,
+                                         params = new.params[[i]]
+                                       )
+                )
+                
+              }
+   
+              return(X_tmp %>% map_df(~ .x[['X']] %>% t %>%
+                                        as.data.frame %>% 
+                                        mutate(Date=stop.date,
+                                               Site=(configs$runs$id[i] %>%strsplit('-') %>% unlist())[3] ))
+                     )
+          }) %>% setNames(obs.times)
+      
+        })
+   
+    }
+    #------------- Reading - every iteration and for SDA
     reads <- out.configs %>%
       purrr::map(function(configs) {
         X_tmp <- vector("list", 2)
@@ -282,7 +316,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         return(X_tmp)
       })
     
-
+    if (control$debug) browser()
     #let's read the parameters of each site/ens
     params.list <- reads %>% map(~.x %>% map("params"))
     # Now let's read the state variables of site/ens
@@ -305,6 +339,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###  preparing OBS                                                    ###
     ###-------------------------------------------------------------------###---- 
     if (any(obs)) {
+      if (control$debug) browser()
       #Making R and Y
       Obs.cons <-Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
       
@@ -420,7 +455,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###---- 
     save(t, FORECAST, ANALYSIS, enkf.params,new.state,new.params,out.configs,ensemble.samples,inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
-    if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title,facetg=control$facet.plots)
+    if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title,facetg=control$facet.plots, readsFF=readsFF)
   } ### end loop over time
   
 } # sda.enkf

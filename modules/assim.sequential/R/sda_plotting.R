@@ -157,7 +157,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
   
   Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
   Xasum <- plyr::laply(ANALYSIS, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
-  browser()
+
   #------For each state variable 
   for (i in seq_len(ncol(X))) {
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) {
@@ -498,8 +498,9 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL, facetg=F){
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL, facetg=F, readsFF=NULL){
 
+  if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
 
   #Defining some colors
   t1         <- 1
@@ -549,8 +550,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     
     })
       
-    #})
-  
+
   obs.var.names <- (obs.mean[[1]])[[1]] %>% colnames()
   #Observed data
   #first merging mean and conv based on the day
@@ -579,20 +579,46 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     dplyr::select(-Sd) %>%
     bind_rows(ready.FA)
   
+  #--- Adding the forward forecast
+  if (!is.null(readsFF)){
+    
+    readsFF.df<-readsFF %>%
+      map_df(function(siteX){
+    
+        siteX %>% map_df(function(DateX){
+          DateX %>% 
+            map_df(~.x %>% t ) %>%
+            tidyr::gather(Variable, Value,-c(Date, Site)) %>%
+            group_by(Variable,Date, Site) %>%
+             summarise(
+               Means=mean(Value, na.rm=T),
+               Lower=quantile(Value,0.025, na.rm=T),
+               Upper=quantile(Value,0.975, na.rm=T)) %>% 
+             mutate(Type="ForwardForecast")
+        })
+      })
+    
+    ready.to.plot <- ready.to.plot %>%
+      bind_rows(readsFF.df)
+    
+  }
+  
+  ready.to.plot$Variable[ready.to.plot$Variable=="LeafC"] <-"leaf_carbon_content"
+  
+
   #Adding the units to the variables
   ready.to.plot$Variable %>% unique() %>% 
     walk(function(varin){
       #find the unit
-    unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
-    if (length(unitp)>0) {
+      unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
+      if (length(unitp)>0) {
         unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
-   
+        
         #replace it in the dataframe
         ready.to.plot$Variable[ready.to.plot$Variable==varin] <<- paste(varin,"(",unit,")")
-    }
-
-  })
-  
+      }
+      
+    })
   
   #------------------------------------------- Time series plots
   if (facetg) {
@@ -608,8 +634,8 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
-              scale_fill_manual(values = c(alphapink,alphagreen,alphablue),name="")+
-              scale_color_manual(values = c(alphapink,alphagreen,alphablue),name="")+
+              scale_fill_manual(values = c(alphapink,alphagreen,alphablue,alphabrown),name="")+
+              scale_color_manual(values = c(alphapink,alphagreen,alphablue,alphabrown),name="")+
               theme_bw(base_size = 17)+
               labs(y="", subtitle=paste0("Site id: ",site))+
               theme(legend.position = "top",
@@ -619,6 +645,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             list(p)
       
       })
+
   }else{
     filew <- 10
     fileh <- 8
@@ -640,8 +667,8 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
-              scale_fill_manual(values = c(alphapink,alphagreen,alphablue),name="")+
-              scale_color_manual(values = c(alphapink,alphagreen,alphablue),name="")+
+              scale_fill_manual(values = c(alphapink,alphagreen,alphablue,alphabrown),name="")+
+              scale_color_manual(values = c(alphapink,alphagreen,alphablue,alphabrown),name="")+
               theme_bw(base_size = 17)+
               labs(y=paste(vari,'(',unit,')'), subtitle=paste0("Site id: ",site))+
               theme(legend.position = "top",
@@ -680,7 +707,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
                aes(x = Lon, y = Lat),
                color = "black",
                size = 2) +
-    geom_label(
+    ggrepel::geom_label_repel(
       data = site.locs,
       aes(
         x = Lon,

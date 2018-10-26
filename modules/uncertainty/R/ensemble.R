@@ -401,6 +401,23 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     new.params<-restart$new.params
     new.state<-restart$new.state
     ensemble.id<-restart$ensemble.id
+    
+    # Reading the site.pft specific tags from xml
+    site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
+    
+    if(!is.null(site.pfts.vec)){
+      # find the name of pfts defined in the body of pecan.xml
+      defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
+      # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
+      if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
+        new.params <- new.params %>% map(~list(.x[[which(site.pfts.vec %in% defined.pfts)]],restart=.x$restart))
+      # warn if there is a pft specified in the site but it's not defined in the pecan xml.
+      if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
+        PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
+                                         site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
+    }
+    
+    
     # stop and start time are required by bc we are wrtting them down into job.sh
     for (i in seq_len(settings$ensemble$size)) {
       do.call(my.write_restart, 

@@ -54,23 +54,67 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     pf.matrix.out <- pf.matrix
   }
   
-  #------------- Plotting Localization
+  #------------------------------ Plotting Localization
+  #----- ggplot
   dat <- melt(pf.matrix) %>%
     mutate(Type="Pf")%>%
     bind_rows(melt(pf.matrix.out %>% `rownames<-`(c()) %>%
                      `colnames<-`(c()))%>%
                 mutate(Type="Pf.Localized")) 
   
-  p <- ggplot(dat, aes(x=Var1, y=Var2, fill=value)) +
-    geom_tile(colour="grey20") +
-    scale_fill_gradientn(colours = c("#FFFFFF","#ffffcc","#41b6c4","#225ea8"))+
-    scale_y_reverse()+
-    facet_wrap(.~Type,scales = "free")+
+  grids <- purrr::pmap_df(list(
+    seq(1, nsite * nvariable, by = nvariable),
+    seq(nvariable, nsite * nvariable, by = nvariable),
+    site.ids
+  ),
+  function(x, y, z) {
+    expand.grid(x:y, x:y) %>% as.data.frame() %>%
+      mutate(Site = z)
+  }) %>%
+    mutate(value = 0) 
+  
+  grids <- rbind(grids %>% mutate(Type="Pf") , grids %>% mutate(Type="Pf.Localized"))
+  
+  p <- ggplot(dat, aes(x = Var1, y = Var2, fill = value)) +
+    geom_tile(colour = "grey20",lwd=0) +
+    geom_tile(data = grids,
+              lwd = 0.5,
+              alpha = 0.01,
+              aes(color = Site)) +
+    scale_fill_gradientn(colours = c("#FFFFFF", "#ffffcc", "#41b6c4", "#225ea8"),
+                         name = "Cov") +
+    scale_color_brewer(palette = "Set1") +
+    scale_y_reverse() +
+    facet_wrap(. ~ Type, scales = "free") +
     theme_minimal(base_size = 15)
   
+  ggsave(paste0("SDA/Localization_",t,".pdf"), plot=p, height=9, width=15)
+  #----- Network
+  if (!('igraph' %in% installed.packages()[,1])) install.packages("igraph")
+
+  paste0(rep(var.names, length(site.ids)) %>% as.character(),"(",
+         rep(site.ids, each=length(var.names)),")") -> labelss
   
+  colnames(pf.matrix.out ) <-labelss
+  rownames(pf.matrix.out ) <-labelss
   
-  ggsave(paste0("SDA/Localization_",t,".pdf"), plot=p, height=6, width=11)
+  # Making the network
+  g <- igraph::graph.adjacency(pf.matrix.out,
+                               mode="min",
+                               diag = F) # For directed networks
+  
+  igraph::V(g)$label.cex <-0.59
+  igraph::V(g)$label.color <- rgb(0, 0, .2, .8)
+  
+  #-- plotting the graph
+  pdf(paste0("SDA/Network_",t,".pdf"), pointsize=8)
+  plot(igraph::simplify(g), vertex.size=5, asp=0,
+       vertex.label.color = "black", vertex.label.degree = -pi/2,
+       edge.arrow.size = 0.3, edge.arrow.width = 0.4, edge.color = "black")
+  dev.off()
+  
+
+  
   
   
   return(pf.matrix.out)
@@ -104,12 +148,20 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
   
   for (site in site.ids){
     choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = F) %>% unlist
-    Y <- c(Y, unlist(obs.t.mean[[site]][choose]))
-    # collecting them
-    site.specific.Rs <- c(site.specific.Rs, list(as.matrix(obs.t.cov[[site]][choose,choose])) )
-  }
+    # if there is no obs for this site
+    if(length(choose)==0){
+      next;
+    }else{
+      Y <- c(Y, unlist(obs.t.mean[[site]][choose]))
+      # collecting them
+      site.specific.Rs <- c(site.specific.Rs, list(as.matrix(obs.t.cov[[site]][choose,choose])) )
+    }
   #make block matrix out of our collection
   R <- Matrix::bdiag(site.specific.Rs) %>% as.matrix()
+    }
+    
+    
+
 
     return(list(Y=Y, R=R))
 }
@@ -176,26 +228,39 @@ block_matrix <- function (x = NULL, b = NULL, byrow = FALSE, dimnames = NULL) {
 ##' @return Returns a matrix with block sizes determined by the b argument. Each block is filled with the same value taken from x.
 ##' @export
 Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
-  # keeps Hs of sites
-  site.specific.Hs <-list()
-  #
-  nsite <- length(site.ids)
-  #
-  nvariable <- length(var.names)
-  
-  obs.names <- names(obs.t.mean[[1]])
 
-  for (site in site.ids){
-    choose.col <- sapply(obs.names, agrep, x=var.names, max=1, USE.NAMES = F) %>% unlist
-    choose.row <- sapply(var.names, agrep, x=obs.names, max=1, USE.NAMES = F) %>% unlist
+  site.ids.with.data <- names(obs.t.mean)
+  site.specific.Hs <- list()
   
+  nobs <- obs.t.mean %>% map_dbl(~length(.x)) %>% max
+  nsite <- length(site.ids)
+  nsite.ids.with.data <-length(site.ids.with.data)
+  nvariable <- length(var.names)
+  H <- matrix(0, (nobs * nsite.ids.with.data), (nvariable*nsite))
+  
+  j<-1
+  for(i in seq_along(site.ids)){
+    
+    site <- site.ids[i]
+    
+    obs.names <- names(obs.t.mean[[site]])
+    if(is.null(obs.names)) next;
+    
+    choose.col <- sapply(obs.names, agrep, x = var.names, max = 1, USE.NAMES = F) %>% unlist
+    choose.row <- sapply(var.names, agrep, x = obs.names, max = 1, USE.NAMES = F) %>% unlist
+    
     # empty matrix for this site
     H.this.site <- matrix(0, length(choose), nvariable)
     # fill in the ones based on choose
     H.this.site [choose.row, choose.col] <- 1
-    # collecting them
-    site.specific.Hs <- c(site.specific.Hs, list(H.this.site) )
+    
+    pos.row<- ((nobs*j)-(nobs-1)):(nobs*j)
+    pos.col<- ((nvariable*i)-(nvariable-1)):(nvariable*i)
+    
+    H[pos.row,pos.col] <-H.this.site
+    
+    j <- j +1
   }
-  #make block matrix out of our collection
-  Matrix::bdiag(site.specific.Hs) %>% as.matrix()
+  
+  return(H)
 }
