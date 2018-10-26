@@ -207,17 +207,29 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
                   file.path(rundir, 'parameters'))))
 
 
-  # (1)
-  # Read in a parameter data block from dvmdostem
-
   # Pull out the community name/number for use below in extracting
   # the correct block of data from the dvmdostem parameter files.
   # The settings$pfts$pft$name variable will be something like this: "CMT04-Salix"
-  # TODO: Should check that all selected PFTs (from pecan.xml) have the same CMT number!
   cmtname <- unlist(strsplit(settings$pfts$pft$name, "-", fixed=TRUE))[1]
   cmtnum <- as.numeric(unlist(strsplit(cmtname, "CMT"))[2]) #
-
   PEcAn.logger::logger.info(paste("cmtname: ", cmtname, " cmtnum: ", cmtnum))
+
+  # Check that all selected PFTs (from pecan.xml) have the same CMT number!
+  for (pft in settings$pfts) {
+    cur_pftname <- pft$name
+    cur_cmtname <- unlist(strsplit(cur_pftname, "-", fixed=TRUE))[1]
+    cur_cmtnum <- as.numeric(unlist(strsplit(cur_cmtname, "CMT"))[2])
+    if (cur_cmtname == cmtname) {
+      # pass, evertthing ok
+      PEcAn.logger::logger.debug(paste0("AlL ok - CMTs of all the selected PFTs match."))
+    } else {
+      PEcAn.logger::logger.error(paste0("CMTs of selected PFTS do not match!!!"))
+      stop()
+    }
+  }
+
+  # (1)
+  # Read in a parameter data block from dvmdostem
 
   # Now we have to read the appropriate values out of the trait_df
   # and get those values written into the parameter file(s) that dvmdostem will
