@@ -49,7 +49,7 @@ Depends:
     PEcAn.workflow
 Suggests:
     PEcAn.ED2,
-    PEcAn.sipnet,
+    PEcAn.SIPNET,
     PEcAn.BIOCRO,
     PEcAn.DALEC,
     PEcAn.LINKAGES,
