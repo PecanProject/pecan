@@ -73,40 +73,39 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 $(subst .install/base/logger,,$(ALL_PKGS_I)): | .install/base/logger
 $(subst .doc/base/logger,,$(ALL_PKGS_D)): | .install/base/logger
 
-$(call depends,base/db): | .install/base/utils
-$(call depends,base/qaqc): | .install/base/utils
-$(call depends,base/settings): | .install/base/utils .install/base/db
+$(call depends,base/qaqc): | 
+$(call depends,base/settings): | .install/base/db
 $(call depends,base/visualization): | .install/base/db
 $(call depends,base/workflow): | .install/base/db .install/base/settings
 $(call depends,modules/allometry): | .install/base/db
-$(call depends,modules/assim.batch): | .install/base/utils .install/base/db .install/base/settings .install/base/remote .install/modules/meta.analysis
+$(call depends,modules/assim.batch): | .install/base/db .install/base/settings .install/base/remote .install/modules/meta.analysis
 $(call depends,modules/assim.sequential): | .install/base/remote
-$(call depends,modules/benchmark): | .install/base/db .install/base/remote .install/base/settings .install/base/utils .install/modules/data.land
-$(call depends,modules/data.atmosphere): | .install/base/utils .install/base/remote .install/base/db
-$(call depends,modules/data.hydrology): | .install/base/utils
-$(call depends,modules/data.land): | .install/base/db .install/base/utils .install/base/settings .install/base/remote
-$(call depends,modules/data.mining): | .install/base/utils
+$(call depends,modules/benchmark): | .install/base/db .install/base/remote .install/base/settings .install/modules/data.land
+$(call depends,modules/data.atmosphere): |  .install/base/remote .install/base/db
+$(call depends,modules/data.hydrology): | 
+$(call depends,modules/data.land): | .install/base/db  .install/base/settings .install/base/remote
+$(call depends,modules/data.mining): | 
 $(call depends,modules/data.remote): | .install/base/remote
-$(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/settings .install/modules/priors
-$(call depends,modules/priors): | .install/base/utils
-$(call depends,modules/rtm): | .install/modules/assim.batch .install/base/utils .install/models/ed
-$(call depends,modules/uncertainty): | .install/base/utils .install/base/db .install/modules/priors .install/modules/emulator
-$(call depends,models/biocro): | .install/mockery .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land .install/base/remote
-$(call depends,models/cable): | .install/base/utils
-$(call depends,models/clm45): | .install/base/utils
+$(call depends,modules/meta.analysis): |  .install/base/db .install/base/settings .install/modules/priors
+$(call depends,modules/priors): | 
+$(call depends,modules/rtm): | .install/modules/assim.batch  .install/models/ed
+$(call depends,modules/uncertainty): |  .install/base/db .install/modules/priors .install/modules/emulator
+$(call depends,models/biocro): | .install/mockery  .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land .install/base/remote
+$(call depends,models/cable): | 
+$(call depends,models/clm45): | 
 $(call depends,models/dalec): | .install/base/remote
-$(call depends,models/dvmdostem): | .install/base/utils
-$(call depends,models/ed): | .install/base/utils .install/base/remote .install/base/settings
-$(call depends,models/fates): | .install/base/utils .install/base/remote
-$(call depends,models/gday): | .install/base/utils .install/base/remote
-$(call depends,models/jules): | .install/base/utils .install/base/remote
-$(call depends,models/linkages): | .install/base/utils .install/base/remote
-$(call depends,models/lpjguess): | .install/base/utils .install/base/remote
-$(call depends,models/maat): | .install/base/utils .install/base/remote .install/base/settings
-$(call depends,models/maespa): | .install/base/utils .install/base/remote .install/modules/data.atmosphere
-$(call depends,models/preles): | .install/base/utils .install/modules/data.atmosphere
-$(call depends,models/sipnet): | .install/base/utils .install/base/remote .install/modules/data.atmosphere
-$(call depends,models/template): | .install/base/utils
+$(call depends,models/dvmdostem): | 
+$(call depends,models/ed): |  .install/base/remote .install/base/settings
+$(call depends,models/fates): |  .install/base/remote
+$(call depends,models/gday): |  .install/base/remote
+$(call depends,models/jules): |  .install/base/remote
+$(call depends,models/linkages): |  .install/base/remote
+$(call depends,models/lpjguess): |  .install/base/remote
+$(call depends,models/maat): |  .install/base/remote .install/base/settings
+$(call depends,models/maespa): |  .install/base/remote .install/modules/data.atmosphere
+$(call depends,models/preles): |  .install/modules/data.atmosphere
+$(call depends,models/sipnet): |  .install/base/remote .install/modules/data.atmosphere
+$(call depends,models/template): | 
 
 clean:
 	rm -rf .install .check .test .doc
