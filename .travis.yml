@@ -123,7 +123,13 @@ script:
   # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
   # but many dependency compilations seem not parallel-safe.
   # More debugging needed.
-  - R CMD INSTALL ./base/utils
+  # TEMPORARY HACK: preinstall PEcAn.utils to avoid dependency cyles.
+  # remove when utils no longer depends on any PEcAn packages other than logger
+  - Rscript -e 'devtools::document("base/utils")'
+  - echo `date` > .doc/base/utils
+  - Rscript -e 'devtools::install("base/utils", Ncpus = 2, dependencies = c("Depends", "Imports"))'
+  - echo `date` > .install/base.utils
+  ## End HACK
   - NCPUS=2 make -j1
   - echo 'Testing PEcAn packages'
   - make test
