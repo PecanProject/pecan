@@ -123,7 +123,7 @@ script:
   # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
   # but many dependency compilations seem not parallel-safe.
   # More debugging needed.
-  - Rscript -e "devtools::install('base/utils', Ncpus = 2,dependencies = FALSE)"
+  - Rscript -e 'devtools::install('base/utils', Ncpus = 2, dependencies = c("Depends", "Imports"))'
   - NCPUS=2 make -j1
   - echo 'Testing PEcAn packages'
   - make test
