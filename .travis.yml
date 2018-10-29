@@ -131,8 +131,6 @@ script:
   - echo `date` > .install/base.utils
   - Rscript -e 'devtools::install("base/utils", Ncpus = 2, dependencies = c("Depends", "Imports"))'
   - echo `date` > .install/base.utils
-  - Rscript -e 'devtools::document("base/utils")'
-  - echo `date` > .doc/base/utils
   ## End HACK
   - NCPUS=2 make -j1
   - echo 'Testing PEcAn packages'
