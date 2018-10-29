@@ -85,7 +85,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
     PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
     method <- "uniform"
   }
-
+  
   ## force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
   if (ensemble.size <= 0) {
@@ -257,7 +257,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       required_tags<-c("met","parameters")
       
     }
- 
+    
     #now looking into the xml
     samp <- settings$ensemble$samplingspace
     #finding who has a parent
@@ -276,9 +276,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                                          input=names(samp.ordered)[i],
                                                          method=samp.ordered[[i]]$method,
                                                          parent_ids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
-                                                         )
+      )
     }
-
+    
     # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
       purrr::walk(function(r_tag){
@@ -307,13 +307,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
       # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
       if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
-      ensemble.samples <- ensemble.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
+        ensemble.samples <- ensemble.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
       # warn if there is a pft specified in the site but it's not defined in the pecan xml.
       if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
-          PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
-                                                                                               site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
+        PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
+                                         site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
     }
-
+    
     # if no ensemble piece was in the xml I replicate n times the first element in params
     if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, settings$ensemble$size) , ])
     # This where we handle the parameters - ensemble.samples is already generated in run.write.config and it's sent to this function as arg - 
@@ -322,7 +322,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     # find all inputs that have an id
     inputs <- names(settings$run$inputs)
     inputs <- inputs[grepl(".id$", inputs)]
-
+    
     # write configuration for each run of the ensemble
     runs <- data.frame()
     for (i in seq_len(settings$ensemble$size)) {
@@ -350,7 +350,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         }
         
       } else {
-        run.id <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5))
+        run.id <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5),site.id=settings$run$site$id)
       }
       runs[i, "id"] <- run.id
       
@@ -387,10 +387,10 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                             trait.values = lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i), # this is the params
                                             settings = settings, 
                                             run.id = run.id
-                                             )
+      )
       )
       cat(run.id, file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
-     
+      
     }
     return(invisible(list(runs = runs, ensemble.id = ensemble.id, samples=samples)))
     #------------------------------------------------- if we already have everything ------------------        
@@ -401,6 +401,23 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     new.params<-restart$new.params
     new.state<-restart$new.state
     ensemble.id<-restart$ensemble.id
+    
+    # Reading the site.pft specific tags from xml
+    site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
+    
+    if(!is.null(site.pfts.vec)){
+      # find the name of pfts defined in the body of pecan.xml
+      defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
+      # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
+      if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
+        new.params <- new.params %>% map(~list(.x[[which(site.pfts.vec %in% defined.pfts)]],restart=.x$restart))
+      # warn if there is a pft specified in the site but it's not defined in the pecan xml.
+      if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
+        PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
+                                         site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
+    }
+    
+    
     # stop and start time are required by bc we are wrtting them down into job.sh
     for (i in seq_len(settings$ensemble$size)) {
       do.call(my.write_restart, 
@@ -417,8 +434,8 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     }
     params<-new.params
     return(invisible(list(runs = data.frame(id=run.id), ensemble.id = ensemble.id, samples=list(met=inputs)
-                          )
-                     ))
+    )
+    ))
   }
   
   
