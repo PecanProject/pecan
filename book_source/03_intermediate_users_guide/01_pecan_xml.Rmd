@@ -355,7 +355,7 @@ This section provides detailed configuration for the model run, including the si
       <met.end>2004/12/31</met.end>
       <site.pft>
         <pft.name>temperate.needleleaf.evergreen</pft.name>
-        <pft.name>temperate.needleleaf.evergreen</pft.name>
+        <pft.name>temperate.needleleaf.evergreen.test</pft.name>
       </site.pft>
     </site>
     <inputs>
