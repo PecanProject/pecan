@@ -14,7 +14,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - Lots of new documentation for running PEcAn using Docker
-- Added container with documentation #2160
+- Added Docker container with documentation #2160
 - Download method (`method`) argument for `data.atmosphere::download.CRUNCEP`, which defaults to `opendap` (as it was), but can be switched to the slower but more robust NetCDF subset (`ncss`).
 - In `download.CRUNCEP`, check target coordinate against the land-sea mask. If sea, pick the nearest land pixel within 1 degree of target. This facilitates doing runs at coastal sites that may get masked out.
 
