@@ -1,6 +1,6 @@
 NCPUS ?= 1
 
-BASE := logger utils db settings visualization qaqc remote workflow
+BASE := logger db settings visualization qaqc remote workflow
 
 MODELS := biocro clm45 dalec ed fates gday jules linkages \
 				lpjguess maat maespa preles sipnet dvmdostem template
@@ -73,7 +73,6 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 $(subst .install/base/logger,,$(ALL_PKGS_I)): | .install/base/logger
 $(subst .doc/base/logger,,$(ALL_PKGS_D)): | .install/base/logger
 
-$(call depends,base/utils): | .install/base/remote
 $(call depends,base/db): | .install/base/utils
 $(call depends,base/qaqc): | .install/base/utils
 $(call depends,base/settings): | .install/base/utils .install/base/db
