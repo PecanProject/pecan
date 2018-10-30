@@ -57,12 +57,11 @@ Imports:
 Suggests:
     doParallel,
     foreach,
+    geonames,
+    nneo,
     parallel,
     progress,
     rlang (>= 0.2.0)
-Remotes:
-    github::ropensci/geonames,
-    github::ropenscilabs/nneo
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

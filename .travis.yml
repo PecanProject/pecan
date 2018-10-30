@@ -105,7 +105,19 @@ install:
   - rm configure
   - R CMD INSTALL .
   - popd
-
+  - pushd $HOME
+  # Install preles package
+  - git clone https://github.com/MikkoPeltoniemi/Rpreles
+  - cd Rpreles
+  - R CMD INSTALL .
+  - popd
+  - pushd $HOME
+  # Install linakages package
+  - git clone https://github.com/araiho/linkages_package
+  - cd linkages_package
+  - R CMD INSTALL .
+  - popd
+  
 before_script:
   - sudo service postgresql stop
   - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine

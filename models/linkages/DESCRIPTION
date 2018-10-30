@@ -27,4 +27,3 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 6.1.0
-Remotes: araiho/linkages_package
