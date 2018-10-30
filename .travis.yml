@@ -98,6 +98,17 @@ install:
   - cd sipnet_unk
   - make
   - popd
+  - pushd $HOME
+  # Current release of BioCro attempts to compile documentation in configure file,
+  # producing an infinite recursion because Roxygen calls configure to compile & load the package.
+  # Workaround: delete configure script and install with no docs.
+  - cd -
+  - curl -o biocro-0.95.tar.gz https://github.com/ebimodeling/biocro/archive/0.95.tar.gz
+  - tar zxf biocro-0.95.tar.gz
+  - cd biocro-0.95
+  - rm configure
+  - R CMD install .
+  - popd
 
 before_script:
   - sudo service postgresql stop
