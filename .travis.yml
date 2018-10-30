@@ -98,6 +98,13 @@ install:
   - cd sipnet_unk
   - make
   - popd
+  - pushd $HOME
+  # Install BioCro w/o help pages to work around infinite Roxygen recursion in configure file
+  - curl -sL https://github.com/ebimodeling/biocro/archive/0.95.tar.gz | tar zxf -
+  - cd biocro-0.95
+  - rm configure
+  - R CMD INSTALL .
+  - popd
 
 before_script:
   - sudo service postgresql stop
