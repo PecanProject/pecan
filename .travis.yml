@@ -107,7 +107,7 @@ install:
   - tar zxf biocro-0.95.tar.gz
   - cd biocro-0.95
   - rm configure
-  - R CMD install .
+  - R CMD INSTALL .
   - popd
 
 before_script:
