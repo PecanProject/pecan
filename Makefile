@@ -129,7 +129,11 @@ clean:
 	+ time Rscript -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
-depends_R_pkg = time Rscript -e "devtools::install_deps('$(strip $(1))', Ncpus = ${NCPUS}, dependencies = TRUE);"
+# HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
+# When these are fixed, can go back to simple `dependencies = TRUE`
+depends_R_pkg = time Rscript -e " \
+	deps <- if (grepl('base/utils', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; \
+	devtools::install_deps('$(strip $(1))', Ncpus = ${NCPUS}, dependencies = deps);"
 install_R_pkg = time Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
