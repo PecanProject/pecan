@@ -99,11 +99,8 @@ install:
   - make
   - popd
   - pushd $HOME
-  # Current release of BioCro attempts to compile documentation in configure file,
-  # producing an infinite recursion because Roxygen calls configure to compile & load the package.
-  # Workaround: delete configure script and install with no docs.
-  - curl -sL -o biocro-0.95.tar.gz https://github.com/ebimodeling/biocro/archive/0.95.tar.gz
-  - tar zxf biocro-0.95.tar.gz
+  # Install BioCro w/o help pages to work around infinite Roxygen recursion in configure file
+  - curl -sL https://github.com/ebimodeling/biocro/archive/0.95.tar.gz | tar zxf -
   - cd biocro-0.95
   - rm configure
   - R CMD INSTALL .
