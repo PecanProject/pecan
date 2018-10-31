@@ -19,6 +19,8 @@ Imports:
 Suggests:
     testthat (>= 1.0.2),
     linkages
+Remotes:
+  github::ariaho/linkages_package
 SystemRequirements: LINKAGES
 OS_type: unix
 License: FreeBSD + file LICENSE

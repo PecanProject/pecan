@@ -117,8 +117,9 @@ install:
   - cd linkages_package
   - R CMD INSTALL .
   - popd
-  #install remotes 2.0.2
-  - Rscript -e 'devtools::install_version("remotes", "2.0.2");'
+  #install remotes if version less than or equal 2.0.1
+  - Rscript -e 'if(packageVersion("remotes") <= "2.0.1"){install.packages("remotes", repos = "http://cran.rstudio.com")}'
+  
 before_script:
   - sudo service postgresql stop
   - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine
