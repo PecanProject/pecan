@@ -57,7 +57,7 @@ addons:
       - r-bioc-biocinstaller
       - r-cran-ape
       - r-cran-curl
-      - r-cran-devtools
+#     - r-cran-devtools
       - r-cran-dplyr
       - r-cran-ggplot2
       - r-cran-httr
