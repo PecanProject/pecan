@@ -36,6 +36,19 @@ services:
       - "traefik.backend=minio"
     restart: unless-stopped
 
+  # THREDDS data server
+  thredds:
+    image: pecan/thredds:latest
+    networks:
+      - pecan
+    volumes:
+      - pecan:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=8080"
+      - "traefik.frontend.rule=PathPrefix:/thredds/"
+      - "traefik.backend=thredds"
+
   # postgresql + postgis to hold all the data
   postgres:
     image: mdillon/postgis:9.5
