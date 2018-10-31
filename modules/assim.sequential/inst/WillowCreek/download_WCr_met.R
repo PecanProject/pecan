@@ -33,15 +33,16 @@ download_US_WCr_met <- function(start_date, end_date) {
   # Some cleaning and filtering 
   raw.data <- raw.data %>% 
     select(V1,V2,V3,V4,V5, V6, V26, V35, V40, V59, date) %>%
-    filter(date <=end_date)
+    filter(date >= start_date & date <=end_date)
   
   #Colnames changed
-  
+  colnames(raw.data) <- c("Year", "Month", "Day", "Hour", "DoY", "FjDay", "Tair", "rH", "Tsoil", "Rg", "date")
+
   return(raw.data)
 }
 # start_date <- as.Date("2017-01-01")
 # end_date <- as.Date("2018-10-01")
 # 
-download_US_WCr_met(start_date, end_date) ->met
+#download_US_WCr_met(start_date, end_date) ->met
 # 
 # tail(pp)

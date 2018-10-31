@@ -1,4 +1,4 @@
-download_US_WCr <- function(start_date, end_date) {
+download_US_WCr_flux <- function(start_date, end_date) {
   base_url <- "http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
   
   start_year <- lubridate::year(start_date)
@@ -31,12 +31,13 @@ download_US_WCr <- function(start_date, end_date) {
  raw.data$date <-as.POSIXct(paste0(raw.data$V1,"/",raw.data$V2,"/",raw.data$V3," ", raw.data$V4 %>% as.integer(), ":",(raw.data$V4-as.integer(raw.data$V4))*60),
                             format="%Y/%m/%d %H:%M", tz="UTC")
   # Some cleaning and filtering 
-  #raw.data <- raw.data %>% 
+  raw.data <- raw.data %>% 
    # select(-V5, -V6) %>%
-  #  filter(date <=end_date)
+  filter(date >= start_date & date <=end_date)
   
   #Colnames changed
-  
+colnames(raw.data) <- c("Year", "Month", "Day", "Hour", "DoY", "FjDay", "SC", "FC", "NEE", "LE", "H", "Ustar", "Flag", "date")
+
   return(raw.data)
 }
 # start_date <- as.Date("2017-01-01")
