@@ -57,7 +57,7 @@ addons:
       - r-bioc-biocinstaller
       - r-cran-ape
       - r-cran-curl
-#     - r-cran-devtools
+      - r-cran-devtools
       - r-cran-dplyr
       - r-cran-ggplot2
       - r-cran-httr
@@ -117,7 +117,8 @@ install:
   - cd linkages_package
   - R CMD INSTALL .
   - popd
-  
+  #install remotes 2.0.2
+  - Rscript -e 'devtools::install_version("remotes", "2.0.2");'
 before_script:
   - sudo service postgresql stop
   - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine
