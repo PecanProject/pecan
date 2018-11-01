@@ -59,7 +59,7 @@ Suggests:
     progress,
     rlang (>= 0.2.0)
 Remotes:
-    github::ropensci/geonames
+    github::ropensci/geonames,
     github::ropensci/nneo
 License: FreeBSD + file LICENSE
 Copyright: Authors
