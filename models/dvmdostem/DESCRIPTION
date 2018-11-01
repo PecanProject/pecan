@@ -3,6 +3,17 @@ Type: Package
 Title: PEcAn package for integration of the dvmdostem model
 Version: 1.6.0
 Date: 2018-08-20
+Authors@R: c(person("Shawn", "Serbin"),
+             person("Tobey", "Carmen"),
+             person("James", "Simkins"),
+             person("Chris", "Black"),
+             person("Istem", "Fer"),
+             person("Hamze", "Dookohaki"),
+             person("Alexey", "Shiklomanov"),
+             person("Elizabeth" , "Cowdery"),
+             person("Ann", "Raiho"),
+             person("Tess", "McCabe"),
+             person("Tony", "Gardella"))
 Author: Tobey Carman, Shawn Serbin
 Maintainer: Tobey Carman <tcarman2@alaska.edu>, Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to link the dvmdostem model to
