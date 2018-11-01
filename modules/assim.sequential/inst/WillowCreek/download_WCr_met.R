@@ -32,7 +32,7 @@ download_US_WCr_met <- function(start_date, end_date) {
                              format="%Y/%m/%d %H:%M", tz="UTC")
   # Some cleaning and filtering 
   raw.data <- raw.data %>% 
-    select(V1,V2,V3,V4,V5, V6, V26, V35, V40, V59, date) %>%
+    dplyr::select(V1,V2,V3,V4,V5, V6, V26, V35, V40, V59, date) %>%
     filter(date >= start_date & date <=end_date)
   
   #Colnames changed

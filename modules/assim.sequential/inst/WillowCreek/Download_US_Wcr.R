@@ -1,5 +1,14 @@
-
-# NEE is converted to kgC/m2s
+#' download_US_WCr
+#'
+#' @param start_date start date for downloading the flux data
+#' @param end_date  start date for downloading the flux data
+#' @description NEE is converted to  kg C m-2 s-1. The main difference between this function and the one in the 
+#' PEcAn.data.atmosphere package is that, this function returns all the measured variables as well as date.
+#'
+#' @return a dataframe with flux data downloaded for the Willow Creek site
+#' @export
+#'
+#' @examples
 download_US_WCr <- function(start_date, end_date) {
   base_url <- "http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
   
@@ -54,6 +63,8 @@ download_US_WCr <- function(start_date, end_date) {
 #  start_date <- as.Date("2017-01-01")
 #  end_date <- as.Date("2018-10-01")
 #  
-#  download_US_WCr(start_date, end_date) ->pp
+# download_US_WCr(start_date, end_date) %>% head
 # # 
 #  tail(pp)
+
+#download.AmerifluxLBL()
