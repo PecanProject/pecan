@@ -40,11 +40,13 @@ EddyProc.C <- sEddyProc$new('WCr', EddyDataWithPosix.F,
 if(var == "NEE"){
 uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(UstarColName = "Ustar", NEEColName= "NEE", 
                                                      TempColName = "Tair", RgColName = "Rg", 
-                                                     nSample = nsample, probs = c(0.05, 0.5, 0.95))}
+                                                     nSample = nsample, probs = c(0.05, 0.5, 0.95))
+}
 if(var == "LE"){
   uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(UstarColName = "Ustar", LEColName= "LE", 
                                                        TempColName = "Tair", RgColName = "Rg", 
-                                                       nSample = nsample, probs = c(0.05, 0.5, 0.95))}
+                                                       nSample = nsample, probs = c(0.05, 0.5, 0.95))
+  }
 if(var!= "NEE" & var!= "LE"){PEcAn.logger::logger.info("Var not valid- must be NEE or LE")}
 
 #select(uStarTh, -seasonYear)

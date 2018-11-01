@@ -40,9 +40,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars) {
         new_col = rep(0, dim(field_data)[1])
         
         # Create a new column
-        # i: the particular variable being worked with
-        # j: the column number
-        # k: the row number
+        # i: the particular variable being worked with; j: the column number; k: the row number
         for (j in 1:numvals) {
           # number of random numbers
           obs <- field_data[, i][!is.na(field_data[, i])]
@@ -55,21 +53,10 @@ prep.data.assim <- function(start_date, end_date, numvals, vars) {
           res[!pos]  <- rexp(length(obs[!pos]),
                              1 / (AMF.params$intercept[[1]] + (AMF.params$slopeN[[1]] * obs[!pos])))
           
-          random_multiplier <-
-            sample(c(-1, 1), length(res), replace = TRUE)
+          random_multiplier <- sample(c(-1, 1), length(res), replace = TRUE)
           simulated <- obs + (random_multiplier * res)
-          
-          sim_idx = 1
-          # Because NA's are excluded, real time points don't match up exactly.
-          for (k in 1:dim(field_data)[1]) {
-            # k for each real time point
-            if (!is.na(field_data[k, i])) {
-              new_col[k] <- simulated[sim_idx]
-              sim_idx = sim_idx + 1
-            }
-          } # end k
-          
-          random_mat = cbind(random_mat, new_col)
+
+          random_mat = cbind(random_mat, simulated)
         } # end j
         
         obs.mean <- c(obs.mean, mean(field_data[, i], na.rm = TRUE))
@@ -78,7 +65,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars) {
       } # end i
       sums
     }) # end of map
-  browser()
+ 
   
 } # prep.data.assim
 
