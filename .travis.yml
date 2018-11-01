@@ -106,18 +106,7 @@ install:
   - R CMD INSTALL .
   - popd
   - pushd $HOME
-  # Install preles package
-  - git clone https://github.com/MikkoPeltoniemi/Rpreles
-  - cd Rpreles
-  - R CMD INSTALL .
-  - popd
-  - pushd $HOME
-  # Install linakages package
-  - git clone https://github.com/araiho/linkages_package
-  - cd linkages_package
-  - R CMD INSTALL .
-  - popd
-  #install remotes if version less than or equal 2.0.1
+  # temporary until remotes 2.0.2 binary reaches C2D4U
   - Rscript -e 'if(packageVersion("remotes") <= "2.0.1"){install.packages("remotes", repos = "http://cran.rstudio.com")}'
   
 before_script:
