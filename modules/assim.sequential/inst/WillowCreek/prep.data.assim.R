@@ -11,17 +11,20 @@
 ##'@author Luke Dramko and K. Zarada and Hamze Dokoohaki
 prep.data.assim <- function(start_date, end_date, numvals, vars) {
   
+  Date.vec <-NULL
+  
   gapfilled.vars <- vars %>%
     purrr::map(function(var) {
       
       field_data <- gapfill_WCr(start_date, end_date, var)
-      cols <- grep(paste0(var, "_.*_f$"), colnames(field_data), value = TRUE)
+      cols <- grep(paste0(var, "_*_f$"), colnames(field_data), value = TRUE)
       field_data <- field_data %>% dplyr::select(cols, Flag)
       PEcAn.logger::logger.info(paste(var, " is done"))
+      #I'm sending the date out to use it later on 
+      Date.vec <<- field_data$date
       return(field_data)
   })
   
-
   
   processed.flux <- gapfilled.vars %>%
     purrr::map(function(field_data) {
@@ -32,8 +35,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars) {
       obs.mean <- NULL
       # for each of Gap filling uncertainty bands
       for (i in 1:(dim(field_data)[2] - 1)) {
-        AMF.params <-
-          PEcAn.uncertainty::flux.uncertainty(field_data[, i], QC = field_data$Flag)
+        AMF.params <- PEcAn.uncertainty::flux.uncertainty(field_data[, i], QC = field_data$Flag)
         
         # Create proxy row for rbinding
         random_mat = NULL
@@ -65,10 +67,16 @@ prep.data.assim <- function(start_date, end_date, numvals, vars) {
       } # end i
       sums
     }) # end of map
- 
+ browser()
   
+ processed.flux %>% 
+   purrr::map(~.x%>% 
+                as.data.frame %>%
+                mutate(Date=Date.vec)
+              )
+ 
+ 
 } # prep.data.assim
 
 prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))
 
-gapfill_WCr("2017-01-01", "2018-10-30", "LE")
