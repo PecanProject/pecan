@@ -1,0 +1,7 @@
+# Use my fork until this PR gets merged:
+# https://github.com/Unidata/thredds-docker/pull/208
+# Then, switch to unidata/thredds-docker:latest
+FROM ashiklom/thredds-docker:latest
+MAINTAINER Alexey Shiklomanov <alexey.shiklomanov@gmail.com>
+
+COPY docker/thredds_catalog.xml /usr/local/tomcat/content/thredds/catalog.xml
