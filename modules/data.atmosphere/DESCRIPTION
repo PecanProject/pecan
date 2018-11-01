@@ -23,7 +23,6 @@ Imports:
     car,
     data.table,
     dplyr,
-    geonames,
     ggplot2,
     glue,
     httr,
@@ -60,7 +59,9 @@ Suggests:
     parallel,
     progress,
     rlang (>= 0.2.0)
-
+Remotes:
+    github::ropensci/geonames
+    
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
