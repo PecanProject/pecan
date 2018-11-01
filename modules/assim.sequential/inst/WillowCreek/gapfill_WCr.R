@@ -10,7 +10,7 @@
 ##'@export
 ##'@author Luke Dramko and K. Zarada
 
-gapfill_WCr <- function(start_date, end_date, var){
+gapfill_WCr <- function(start_date, end_date, var, nsample=10){
 
 
 start_date <- as.Date(start_date)
@@ -21,15 +21,17 @@ flux <- download_US_WCr_flux(start_date, end_date)
 met <- download_US_WCr_met(start_date, end_date) 
 
 #join met and flux data by date (which includes time and day)
-met <- met %>% select(date, Tair, Rg, Tsoil)
-flux <- left_join(flux, met, by = "date") %>% select(-FjDay, -SC, -FC) 
-
+met <- met %>% dplyr::select(date, Tair, Rg, Tsoil)
+flux <- left_join(flux, met, by = "date") %>%
+          dplyr::select(-FjDay, -SC, -FC) 
+print(str(flux))
 #change -999 to NA's 
 flux[flux == -999] <- NA
 
 #Start REddyProc gapfilling
 EddyDataWithPosix.F <- fConvertTimeToPosix(flux, 'YDH',Year.s = 'Year'
-                                           ,Day.s = 'DoY',Hour.s = 'Hour') %>% select(-date, -Month, -Day)
+                                           ,Day.s = 'DoY',Hour.s = 'Hour') %>%
+                                        dplyr::select(-date, -Month, -Day)
 
 EddyProc.C <- sEddyProc$new('WCr', EddyDataWithPosix.F, 
                             c(var,'Rg','Tair', 'Ustar'))
@@ -38,11 +40,11 @@ EddyProc.C <- sEddyProc$new('WCr', EddyDataWithPosix.F,
 if(var == "NEE"){
 uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(UstarColName = "Ustar", NEEColName= "NEE", 
                                                      TempColName = "Tair", RgColName = "Rg", 
-                                                     nSample = 100L, probs = c(0.05, 0.5, 0.95))}
+                                                     nSample = nsample, probs = c(0.05, 0.5, 0.95))}
 if(var == "LE"){
   uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(UstarColName = "Ustar", LEColName= "LE", 
                                                        TempColName = "Tair", RgColName = "Rg", 
-                                                       nSample = 100L, probs = c(0.05, 0.5, 0.95))}
+                                                       nSample = nsample, probs = c(0.05, 0.5, 0.95))}
 if(var!= "NEE" & var!= "LE"){PEcAn.logger::logger.info("Var not valid- must be NEE or LE")}
 
 #select(uStarTh, -seasonYear)
@@ -52,8 +54,8 @@ uStarSuffixes <- colnames(uStarThAnnual)[-1]
 #print(uStarThAnnual)
 
 EddyProc.C$sMDSGapFillAfterUStarDistr(var,
-                                      UstarThres.df= uStarThAnnual,
-                                      UstarSuffix.V.s = uStarSuffixes,
+                                      uStarTh= uStarThAnnual,
+                                      uStarSuffixes  = uStarSuffixes,
                                       FillAll = TRUE
 )
 
