@@ -33,7 +33,6 @@ Imports:
     MASS,
     mgcv,
     ncdf4 (>= 1.15),
-    nneo,
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
@@ -61,7 +60,7 @@ Suggests:
     rlang (>= 0.2.0)
 Remotes:
     github::ropensci/geonames
-    
+    github::ropensci/nneo
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
