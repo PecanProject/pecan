@@ -105,7 +105,9 @@ install:
   - rm configure
   - R CMD INSTALL .
   - popd
-
+  # temporary until remotes 2.0.2 binary reaches C2D4U
+  - Rscript -e 'if(packageVersion("remotes") <= "2.0.1"){install.packages("remotes", repos = "http://cran.rstudio.com")}'
+  
 before_script:
   - sudo service postgresql stop
   - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine
