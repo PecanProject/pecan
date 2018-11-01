@@ -13,7 +13,7 @@ generate_colors_sda <-function(){
   purple       <<- col2rgb("purple")
   alphapurple <<- rgb(purple[1], purple[2], purple[3], 75, max = 255)
   brown       <<- col2rgb("brown")
-  alphabrown <<- rgb(brown[1], brown[2], brown[3], 75, max = 255)
+  alphabrown <<- rgb(brown[1], brown[2], brown[3], 30, max = 255)
 }
 
 
@@ -504,17 +504,8 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 
   #Defining some colors
   t1         <- 1
-  pink       <- col2rgb("deeppink")
-  purple     <- col2rgb("purple")
-  blue       <- col2rgb("blue")
-  green      <- col2rgb("green")
-  brown      <- col2rgb("brown")
+  generate_colors_sda()
   
-  alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
-  alphagreen <- rgb(green[1], green[2], green[3], 75, max = 255)
-  alphablue  <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
-  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
-  alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
@@ -544,7 +535,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
               Lower=quantile(Value,0.025, na.rm=T),
               Upper=quantile(Value,0.975, na.rm=T))
           
-        })%>%mutate(Type=listFA,
+        })%>%mutate(Type=paste0("SDA_",listFA),
                     Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids)))
         )
     
@@ -571,7 +562,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
                    by=c('Site','Variable')) %>%
         mutate(Upper=Means+(Sd*1.96),
                Lower=Means-(Sd*1.96))%>%
-        mutate(Type="Data",
+        mutate(Type="SDA_Data",
                Date=one.day.data$Date%>%as.POSIXct())
       
       
@@ -634,8 +625,8 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
-              scale_fill_manual(values = c(alphapink,alphagreen,alphablue,alphabrown),name="")+
-              scale_color_manual(values = c(alphapink,alphagreen,alphablue,alphabrown),name="")+
+              scale_fill_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
+              scale_color_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
               theme_bw(base_size = 17)+
               labs(y="", subtitle=paste0("Site id: ",site))+
               theme(legend.position = "top",
@@ -667,8 +658,8 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
-              scale_fill_manual(values = c(alphapink,alphagreen,alphablue,alphabrown),name="")+
-              scale_color_manual(values = c(alphapink,alphagreen,alphablue,alphabrown),name="")+
+              scale_fill_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
+              scale_color_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
               theme_bw(base_size = 17)+
               labs(y=paste(vari,'(',unit,')'), subtitle=paste0("Site id: ",site))+
               theme(legend.position = "top",
@@ -700,32 +691,43 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   res <- spTransform(site.locs.sp, CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
   site.locs[,c(1,2)] <-res@coords
   
+  
+  #finding site with data
+  sites.w.data <-
+    obs.mean %>% purrr::map(names) %>% unlist() %>% as.character() %>% unique()
+  #adding the column to site
+  site.locs <- site.locs %>%
+    mutate(Data = Site %in% sites.w.data)
+
   #plotting
   map.plot<- ggplot() + 
-    geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.6,lwd=0.001)+
+    geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.45,lwd=0.0001,color="black")+
     geom_point(data = site.locs,
                aes(x = Lon, y = Lat),
-               color = "black",
                size = 2) +
     ggrepel::geom_label_repel(
       data = site.locs,
       aes(
         x = Lon,
         y = Lat,
-        label = paste0(Site, "\n", Name)
+        label = paste0(Site, "\n", Name),
+        color = Data,
       ),
       vjust = 1.2,
       fontface = "bold",
-      color = "#be3e2b",
+
       size = 3.5
     ) + 
     #coord_sf(datum = sf::st_crs(2163),default = F)+
-    scale_fill_brewer(palette = "Paired",name="Eco-Region")+
+    scale_fill_manual(values = c("#a6cee3",
+      "#1f78b4","#b2df8a",
+      "#33a02c","#fb9a99",
+      "#e31a1c","#fdbf6f",
+      "#ff7f00","#cab2d6",
+      "#6a3d9a"),name="Eco-Region")+
+    scale_color_manual(values=c("#e31a1c","#33a02c"))+
     theme_minimal()+
     theme(axis.text = element_blank())
-  
-
-
   #----- Reordering the plots
   all.plots.print <-list(map.plot)
   for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
