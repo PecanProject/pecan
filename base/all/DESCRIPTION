@@ -48,13 +48,13 @@ Depends:
     PEcAn.remote,
     PEcAn.workflow
 Suggests:
-    PEcAn.ed,
-    PEcAn.sipnet,
-    PEcAn.biocro,
+    PEcAn.ED2,
+    PEcAn.SIPNET,
+    PEcAn.BIOCRO,
     PEcAn.DALEC,
     PEcAn.LINKAGES,
     PEcAn.allometry,
-    PEcAn.photosythesis,
+    PEcAn.photosynthesis,
     testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors
