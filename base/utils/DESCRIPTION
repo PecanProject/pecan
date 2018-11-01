@@ -25,16 +25,10 @@ Imports:
     abind (>= 1.4.5),
     coda (>= 0.18),
     data.table,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     dplyr,
     getPass,
->>>>>>> 5ea78dd01e6d2b158f7125bfa476839ad74d34cc
-=======
     dplyr,
     getPass,
->>>>>>> d7350288b684d04f6b70c4f191a9dd45874ecc13
     ggplot2,
     lubridate (>= 1.6.0),
     magrittr,

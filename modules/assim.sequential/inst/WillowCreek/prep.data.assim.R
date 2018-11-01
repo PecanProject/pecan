@@ -87,6 +87,6 @@ prep.data.assim <- function(start_date, end_date, numvals, var) {
  # PEcAn.assim.sequential::sda.enkf(settings, obs.cov = obs.cov, obs.mean = obs.mean)
 } # prep.data.assim
 
-prep.data.assim(start_date = "2017-01-01", end_date = "2017-12-31",numvals = 100, var = "NEE")
+prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-15",numvals = 100, var = "NEE")
 
 
