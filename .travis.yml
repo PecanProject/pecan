@@ -105,7 +105,6 @@ install:
   - rm configure
   - R CMD INSTALL .
   - popd
-  - pushd $HOME
   # temporary until remotes 2.0.2 binary reaches C2D4U
   - Rscript -e 'if(packageVersion("remotes") <= "2.0.1"){install.packages("remotes", repos = "http://cran.rstudio.com")}'
   
