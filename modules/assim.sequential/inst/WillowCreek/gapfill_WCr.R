@@ -10,64 +10,54 @@
 ##'@export
 ##'@author Luke Dramko and K. Zarada
 
-gapfill_WCr <- function(start_date, end_date, var, nsample=10){
+gapfill_WCr <- function(start_date, end_date,
+                        var, nsample=10,
+                        FUN.met=download_US_WCr_met,
+                        FUN.flux=download_US_WCr_flux){
 
 
 start_date <- as.Date(start_date)
 end_date <- as.Date(end_date)
 
 #download WCr flux and met date 
-flux <- download_US_WCr_flux(start_date, end_date) 
-met <- download_US_WCr_met(start_date, end_date) 
+flux <- FUN.flux(start_date, end_date) 
+met <- FUN.met(start_date, end_date) 
 
 #join met and flux data by date (which includes time and day)
 met <- met %>% dplyr::select(date, Tair, Rg, Tsoil)
 flux <- left_join(flux, met, by = "date") %>%
           dplyr::select(-FjDay, -SC, -FC) 
-print(str(flux))
+#print(str(flux))
 #change -999 to NA's 
 flux[flux == -999] <- NA
 
 #Start REddyProc gapfilling
-EddyDataWithPosix.F <- fConvertTimeToPosix(flux, 'YDH',Year.s = 'Year'
-                                           ,Day.s = 'DoY',Hour.s = 'Hour') %>%
-                                        dplyr::select(-date, -Month, -Day)
+suppressWarnings({
+
+  EddyDataWithPosix.F <-
+    fConvertTimeToPosix(flux,
+                        'YDH',
+                        Year.s = 'Year'
+                        ,
+                        Day.s = 'DoY',
+                        Hour.s = 'Hour') %>%
+    dplyr::select(-date,-Month,-Day)
+})
+
 
 EddyProc.C <- sEddyProc$new('WCr', EddyDataWithPosix.F, 
                             c(var,'Rg','Tair', 'Ustar'))
 
-#EddyProc.C$sPlotFingerprintY('NEE', Year = 2017)
-if(var == "NEE"){
-uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(UstarColName = "Ustar", NEEColName= "NEE", 
-                                                     TempColName = "Tair", RgColName = "Rg", 
-                                                     nSample = nsample, probs = c(0.05, 0.5, 0.95))
-}
-if(var == "LE"){
-  uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(UstarColName = "Ustar", LEColName= "LE", 
-                                                       TempColName = "Tair", RgColName = "Rg", 
-                                                       nSample = nsample, probs = c(0.05, 0.5, 0.95))
+tryCatch(
+  {
+    EddyProc.C$sMDSGapFill(var)
+  },
+  error = function(e) {
+    PEcAn.logger::logger.warn(e)
   }
-if(var!= "NEE" & var!= "LE"){PEcAn.logger::logger.info("Var not valid- must be NEE or LE")}
-
-#select(uStarTh, -seasonYear)
-
-uStarThAnnual <- usGetAnnualSeasonUStarMap(uStarTh)[-2]
-uStarSuffixes <- colnames(uStarThAnnual)[-1]
-#print(uStarThAnnual)
-
-EddyProc.C$sMDSGapFillAfterUStarDistr(var,
-                                      uStarTh= uStarThAnnual,
-                                      uStarSuffixes  = uStarSuffixes,
-                                      FillAll = TRUE
 )
 
-grep(paste0(var,"_.*_f$"),names(EddyProc.C$sExportResults()), value = TRUE)
-
-#plots
-#EddyProc.C$sPlotFingerprintY('NEE_U05_f', Year = 2017)
-#EddyProc.C$sPlotFingerprintY('NEE_U50_f', Year = 2017)
-#EddyProc.C$sPlotFingerprintY('NEE_U95_f', Year = 2017)
-
+#Merging the output
 FilledEddyData.F <- EddyProc.C$sExportResults()
 CombinedData.F <- cbind(flux, FilledEddyData.F)
 
@@ -76,7 +66,7 @@ return(CombinedData.F)
 }
 
 
-#data <- gapfill_WCr(start_date = "2017-01-01", end_date = "2017-12-31", var = "NEE")
+#LE.g <- gapfill_WCr(start_date = "2017-01-01", end_date = "2017-12-31", var = "LE")
 
 
 
