@@ -21,7 +21,7 @@ RUN apt-get update \
 # INSTALL DEV TOOLS AND PACKAGES FROM GITHUB NEEDED BUILD PECAN
 # ----------------------------------------------------------------------
 RUN Rscript --vanilla -e "devtools::install_github('ropensci/geonames'); q(status=as.integer(!'geonames' %in% rownames(installed.packages())))" \
-	&& Rscript --vanilla -e "devtools::install_github('ropenscilabs/nneo'); q(status=as.integer(!'nneo' %in% rownames(installed.packages())))" \
+	&& Rscript --vanilla -e "devtools::install_github('ropensci/nneo'); q(status=as.integer(!'nneo' %in% rownames(installed.packages())))" \
 	&& Rscript --vanilla -e "devtools::install_github('rforge/reddyproc/pkg/REddyProc'); q(status=as.integer(!'REddyProc' %in% rownames(installed.packages())))"
     
 # ----------------------------------------------------------------------
