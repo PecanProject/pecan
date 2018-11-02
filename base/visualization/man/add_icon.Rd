@@ -13,9 +13,6 @@ add_icon(id = NULL, x = 0, y = 0)
 
 \item{y}{y-coordinate of logo}
 }
-\description{
-add_icon
-}
 \author{
 Mike Dietze
 }

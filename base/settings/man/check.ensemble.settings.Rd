@@ -9,6 +9,3 @@ check.ensemble.settings(settings)
 \arguments{
 \item{settings}{settings file}
 }
-\description{
-Check ensemble Settings
-}

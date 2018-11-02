@@ -9,6 +9,3 @@ check.model.settings(settings, dbcon = NULL)
 \arguments{
 \item{settings}{settings file}
 }
-\description{
-Check Model Settings
-}
