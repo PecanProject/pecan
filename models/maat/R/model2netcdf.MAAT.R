@@ -67,7 +67,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       PEcAn.logger::logger.info(paste0("Skipping conversion for: ", newname))
       dat.new <- dat
     } else {
-      dat.new <- apply(as.matrix(dat,length(dat),1),1,f_sort) # this is MUCH slower than ifelse but ifelse isnt working as expected
+      dat.new <- apply(as.matrix(dat,length(dat),1),1,f_sort)
     }
     ## prep for writing
     if(is.null(out)) {
