@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog name="PEcAn data catalog"
+         xmlns="http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0
+           http://www.unidata.ucar.edu/schemas/thredds/InvCatalog.1.0.6.xsd">
+
+  <!-- Define a service "all" to mean OpenDAP, DAP4, and HTTPServer. Can enable more services here later. -->
+  <service name="all" base="" serviceType="compound">
+    <service name="odap" serviceType="OpenDAP" base="/thredds/dodsC/" />
+    <service name="dap4" serviceType="DAP4" base="/thredds/dap4/" />
+    <service name="http" serviceType="HTTPServer" base="/thredds/fileServer/" />
+    <!--service name="wcs" serviceType="WCS" base="/thredds/wcs/" /-->
+    <!--service name="wms" serviceType="WMS" base="/thredds/wms/" /-->
+    <!--service name="ncss" serviceType="NetcdfSubset" base="/thredds/ncss/" /-->
+  </service>
+
+  <!-- Look for PEcAn outputs in the /data/workflows directory -->
+  <datasetScan name="PEcAn outputs" ID="pecan_output"
+               path="outputs" location="/data/workflows">
+    <serviceName>all</serviceName>
+    <filter>
+      <!-- Include only NetCDF files -->
+      <include wildcard="*.nc"/>
+    </filter>
+  </datasetScan>
+
+</catalog>
