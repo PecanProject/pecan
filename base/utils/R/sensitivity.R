@@ -23,6 +23,7 @@
 ##' @param variables variables to be read from model output
 ##' @param per.pft flag to determine whether we want SA on pft-specific variables
 ##' @export
+##' @importFrom magrittr %>%
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
 #--------------------------------------------------------------------------------------------------#
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
@@ -118,6 +119,22 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   inputs <- inputs[grepl(".id$", inputs)]
   
   runs <- data.frame()
+  
+  # Reading the site.pft specific tags from xml
+  site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
+  
+  if(!is.null(site.pfts.vec)){
+    # find the name of pfts defined in the body of pecan.xml
+    defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
+    # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
+    if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
+      quantile.samples <- quantile.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
+    # warn if there is a pft specified in the site but it's not defined in the pecan xml.
+    if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
+      PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
+                                       site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
+  }
+  
   
   ## write median run
   MEDIAN <- "50"
