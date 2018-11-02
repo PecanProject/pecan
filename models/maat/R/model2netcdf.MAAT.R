@@ -143,7 +143,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
                             vals = tvals, calendar = "standard", 
                             unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
       time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
-                                        longname="history time interval endpoint dimensions",
+                                        longname = "history time interval endpoint dimensions",
                                         vals = 1:2, units="")
       
       ### Parse MAAT output
