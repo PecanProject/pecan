@@ -17,8 +17,7 @@ ensemble or a quantile used to which a trait has been perturbed for sensitivity 
 
 \item{pft.name}{name of PFT (value from pfts.names field in database)}
 
-\item{site.id}{site id. This is could be necessary for multisite write=false ensembles.}
-
+\item{site.id}{site id . This is could be necessary for multisite write=false ensembles.}
 }
 \value{
 id representing a model run

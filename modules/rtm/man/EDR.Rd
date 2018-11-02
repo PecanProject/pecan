@@ -47,7 +47,7 @@ executable. Ignored otherwise.}
 \item{output.path}{Directory in which to execute the run. Defaults to
 \code{dirname(ed2in_path)}.}
 
-\item{settings}{PEcAn settings list. Default is \code{list(model = list(revision  = "git", config.header = NULL))}.}
+\item{settings}{PEcAn settings list. Default is \code{list(model = list(revision = "git", config.header = NULL))}.}
 
 \item{singularity_args}{Additional arguments to be passed to \code{singularity run} (before)}
 
