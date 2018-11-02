@@ -4,7 +4,8 @@
 \alias{get.run.id}
 \title{Get Run ID}
 \usage{
-get.run.id(run.type, index, trait = NULL, pft.name = NULL)
+get.run.id(run.type, index, trait = NULL, pft.name = NULL,
+  site.id = NULL)
 }
 \arguments{
 \item{run.type}{character, can be any character; currently 'SA' is used for sensitivity analysis, 'ENS' for ensemble run.}
@@ -15,6 +16,8 @@ ensemble or a quantile used to which a trait has been perturbed for sensitivity 
 \item{trait}{name of trait being sampled (for sensitivity analysis)}
 
 \item{pft.name}{name of PFT (value from pfts.names field in database)}
+
+\item{site.id}{site id}
 }
 \value{
 id representing a model run

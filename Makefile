@@ -10,6 +10,9 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.mining data.remote emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
+SHINY := $(dir $(wildcard shiny/*/.))
+SHINY := $(SHINY:%/=%)
+
 BASE := $(BASE:%=base/%)
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
@@ -19,6 +22,7 @@ BASE_I := $(BASE:%=.install/%)
 MODELS_I := $(MODELS:%=.install/%)
 MODULES_I := $(MODULES:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
+SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
 
 BASE_C := $(BASE:%=.check/%)
 MODELS_C := $(MODELS:%=.check/%)
@@ -35,7 +39,7 @@ MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
-.PHONY: all install check test document
+.PHONY: all install check test document shiny
 
 all: install document
 
@@ -43,11 +47,12 @@ document: $(ALL_PKGS_D) .doc/base/all
 install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
 test: $(ALL_PKGS_T) .test/base/all
+shiny: $(SHINY_I)
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 # Make the timestamp directories if they don't exist yet
-.doc .install .check .test $(call depends,base) $(call depends,models) $(call depends,modules):
+.doc .install .check .test .shiny_depends $(call depends,base) $(call depends,models) $(call depends,modules):
 	mkdir -p $@
 
 ### Dependencies
@@ -124,7 +129,11 @@ clean:
 	+ time Rscript -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
-depends_R_pkg = time Rscript -e "devtools::install_deps('$(strip $(1))', threads = ${NCPUS}, dependencies = TRUE);"
+# HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
+# When these are fixed, can go back to simple `dependencies = TRUE`
+depends_R_pkg = time Rscript -e " \
+	deps <- if (grepl('base/utils', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; \
+	devtools::install_deps('$(strip $(1))', Ncpus = ${NCPUS}, dependencies = deps);"
 install_R_pkg = time Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
@@ -150,3 +159,7 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 	$(call test_R_pkg, $(subst .test/,,$@))
 	echo `date` > $@
 
+# Install dependencies declared by Shiny apps
+.shiny_depends/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
+	Rscript scripts/install_shiny_deps.R $(subst .shiny_depends/,shiny/,$@)
+	echo `date` > $@
