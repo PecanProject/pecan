@@ -106,15 +106,11 @@ prep.data.assim <- function(start_date, end_date, numvals, vars) {
   return(outlist)
 } # prep.data.assim
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-15",numvals = 100, var = "NEE")
 
-=======
 prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))
->>>>>>> ebc397813bf0deec65c29cb1369477bff5011bab
-=======
->>>>>>> 8c0d407d70386a73b48a3326b50519f199675871
+
 
 #prep.data.assim(start_date = "2017-10-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))->ss
 
