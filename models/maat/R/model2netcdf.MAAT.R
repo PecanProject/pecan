@@ -153,7 +153,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       out.year <- as.numeric(rep(year, sub.maat.output.dims[1]))
       output <- var_update(out.year, output, "Year", "Year", oldunits='YYYY', newunits=NULL, missval=-999, 
                            longname="Simulation Year", ncdims=ncdims)
-      output <- var_update(tvals, output, "FracJulianDay", "FracJulianDay", oldunits='Frac DOY', newunits=NULL, missval=-999, 
+      output <- var_update(tvals, output, "FracJulianDay", "FracJulianDay", oldunits = "Frac DOY", newunits = NULL, missval = -999, 
                            longname="Fraction of Julian Date", ncdims=ncdims)
       output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
                            longname="Leaf assimilation rate", ncdims=ncdims)
