@@ -14,6 +14,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - Lots of new documentation for running PEcAn using Docker
+- Added Docker container with documentation #2160
 - Download method (`method`) argument for `data.atmosphere::download.CRUNCEP`, which defaults to `opendap` (as it was), but can be switched to the slower but more robust NetCDF subset (`ncss`).
 - In `download.CRUNCEP`, check target coordinate against the land-sea mask. If sea, pick the nearest land pixel within 1 degree of target. This facilitates doing runs at coastal sites that may get masked out.
 - Added a prototype of the THREDDS data server (TDS) to the PEcAn Docker stack.
@@ -21,6 +22,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
+- `PEcAn.utils::do_conversions` has been moved to `PEcAn.workflow::do_conversions`.
+  `PEcAn.utils::do_conversions` still works for now with a warning, but is deprecated and will be removed in the future.
 - Docker:
   - Change base image for R code from `r-base` to `rocker/tidyverse:3.5.1`. This (1) saves build time (because many R packages and system dependencies are pre-installed), and (2) enhances reproducibility (because of the strict versioning rules of the `rocker` packages)
   - Re-factor web interface RabbitMQ create connections and post messages into their own PHP functions.
