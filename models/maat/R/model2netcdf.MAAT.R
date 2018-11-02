@@ -170,7 +170,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       #length(output$var)
       output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name = "time_bounds", units = "", 
                                                          longname = "history time interval endpoints", 
-                                                         dim=list(time_interval,time = t), 
+                                                         dim = list(time_interval, time = t), 
                                                          prec = "double")
       output$dat[[length(output$dat) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
       ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
