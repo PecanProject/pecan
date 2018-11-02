@@ -6,7 +6,7 @@
 \usage{
 met.process(site, input_met, start_date, end_date, model,
   host = "localhost", dbparms, dir, browndog = NULL, spin = NULL,
-  overwrite = FALSE)
+  overwrite = FALSE, inputfiles = NULL)
 }
 \arguments{
 \item{site}{Site info from settings file}
@@ -36,6 +36,8 @@ met.process(site, input_met, start_date, end_date, model,
        *except* raw met downloads. I.e., it corresponds to:
 
        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)}
+
+\item{inputfiles}{use the user submit file instead of the dbfiles}
 }
 \description{
 met.process
