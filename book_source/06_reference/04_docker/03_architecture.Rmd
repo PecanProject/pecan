@@ -4,7 +4,9 @@
 
 The PEcAn docker architecture consists of many containers (see figure below) that will communicate with each other. The goal of this architecture is to easily expand the PEcAn system by deploying new model containers and registering them with PEcAn. Once this is done the user can now use these new models in their work. The PEcAn framework will setup the configurations for the models, and send a message to the model containers to start execution. Once the execution is finished the PEcAn framework will continue. This is exactly as if the model is running on a HPC machine. Models can be executed in parallel by launching multiple model containers.
 
-![PEcAn docker containers](pecan-docker.png)
+```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
+knitr::include_graphics("06_reference/04_docker/pecan-docker.png")
+```
 
 As can be seen in the figure the architecture leverages of two standard containers (in orange). The first container is postgresql with postgis ([mdillon/postgis](https://hub.docker.com/r/mdillon/postgis/)) which is used to store the database used by both BETY and PEcAn. The second containers is a messagebus, more specifically RabbitMQ ([rabbitmq](https://hub.docker.com/_/rabbitmq/)). 
 
