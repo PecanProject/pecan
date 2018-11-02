@@ -47,8 +47,66 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
                                         CRUNCEP_start, CRUNCEP_end))
   }
 
+  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+
   lat.in <- as.numeric(lat.in)
   lon.in <- as.numeric(lon.in)
+
+  # Convert lat-lon to grid row and column
+  lat_grid <- floor(2 * (90 - lat.in)) + 1
+  lon_grid <- floor(2 * (lon.in + 180)) + 1
+
+  # Check against land-sea mask
+  maskfile <- file.path(outfolder, "cruncep_landwater_mask.nc")
+  mask_url <- paste0(
+    "https://thredds.daac.ornl.gov/thredds/ncss/ornldaac/1220/",
+    "mstmip_driver_global_hd_landwatermask_v1.nc4",
+    "?var=land_water_mask&disableLLSubset=on&disableProjSubset=on&horizStride=1&",
+    "accept=netcdf"
+  )
+  download.file(mask_url, maskfile)
+
+  mask_nc <- ncdf4::nc_open(maskfile)
+  on.exit(ncdf4::nc_close(mask_nc))
+
+  # Set search radius to up to 2 pixels (1 degree) in any direction
+  mask_minlat <- lat_grid - 2
+  mask_minlon <- lon_grid - 2
+  mask_lats <- ncdf4::ncvar_get(mask_nc, "lat", start = mask_minlat, count = 5)
+  mask_lons <- ncdf4::ncvar_get(mask_nc, "lon", start = mask_minlon, count = 5)
+  mask_values <- ncdf4::ncvar_get(
+    mask_nc,
+    "land_water_mask",
+    start = c(mask_minlon, mask_minlat),
+    count = c(5, 5)
+  )
+
+  # Build a lat-lon grid matrix and calculate distance from target coords
+  mask_grid <- as.matrix(expand.grid(lon = mask_lons, lat = mask_lats))
+  mask_igrid <- as.matrix(expand.grid(lon = seq_along(mask_lons), lats = seq_along(mask_lats)))
+  mask_dist <- (lon.in - mask_grid[, 1])^2 + (lat.in - mask_grid[, 2])^2
+  # Order by increasing distance (closest first)
+  mask_order <- order(mask_dist)
+  mask_igrido <- mask_igrid[mask_order,]
+  on_land <- as.logical(mask_values[mask_igrido])
+  if (!any(on_land)) {
+    PEcAn.logger::logger.severe(glue::glue(
+      "Coordinates {lat.in} latitude, {lon.in} longitude ",
+      "are not within 2 pixels (1 degree) of any land."
+    ))
+  }
+  igrid <- which(on_land)[1]
+  if (igrid > 1) {
+    lon.in.orig <- lon.in
+    lat.in.orig <- lat.in
+    lon.in <- mask_grid[mask_order[igrid], 1]
+    lat.in <- mask_grid[mask_order[igrid], 2]
+    PEcAn.logger::logger.warn(glue::glue(
+      "Coordinates {lat.in.orig} latitude, {lon.in.orig} longitude ",
+      "are not on land, so using closest land pixel within 1 degree. ",
+      "New coordinates are {lat.in} latitude, {lon.in} longitude."
+    ))
+  }
 
   if (method == "opendap") {
     # Convert lat-lon to grid row and column
@@ -59,8 +117,6 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     lat_grid <- 1
     lon_grid <- 1
   }
-
-  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
 
   ylist <- seq(start_year, end_year, by = 1)
   rows <- length(ylist)

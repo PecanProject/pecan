@@ -15,8 +15,6 @@ do_conversions(settings, overwrite.met = FALSE, overwrite.fia = FALSE,
 }
 \description{
 Input conversion workflow
-
-DEPRECATED: This function has been moved to the PEcAn.workflow package and will be removed from PEcAn.utils.
 }
 \author{
 Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
