@@ -15,7 +15,6 @@ get.parameter.samples <- function(settings,
   num.pfts  <- length(settings$pfts)
   pft.names <- list()
   outdirs   <- list()
-  
   ## Open database connection
   con <- PEcAn.DB::db.open(settings$database$bety)
   on.exit(PEcAn.DB::db.close(con))
