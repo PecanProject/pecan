@@ -11,69 +11,110 @@
 ##'@author Luke Dramko and K. Zarada and Hamze Dokoohaki
 prep.data.assim <- function(start_date, end_date, numvals, vars) {
   
-  gapfilled.vars <- vars %>%
-    purrr::map(function(var) {
-      
-      field_data <- gapfill_WCr(start_date, end_date, var)
-      cols <- grep(paste0(var, "_.*_f$"), colnames(field_data), value = TRUE)
-      field_data <- field_data %>% dplyr::select(cols, Flag)
-      PEcAn.logger::logger.info(paste(var, " is done"))
-      return(field_data)
-  })
+  Date.vec <-NULL
   
+  gapfilled.vars <- vars %>%
+      purrr::map_dfc(function(var) {
+  
+        field_data <- gapfill_WCr(start_date, end_date, var)
+  
+        PEcAn.logger::logger.info(paste(var, " is done"))
+        #I'm sending the date out to use it later on 
+        return(field_data)
+    })
 
   
-  processed.flux <- gapfilled.vars %>%
-    purrr::map(function(field_data) {
+  #Reading the columns we need
+  cols <- grep(paste0("_*_f$"), colnames(gapfilled.vars), value = TRUE)
+  gapfilled.vars <- gapfilled.vars %>% dplyr::select(Date=date, Flag,cols)
+  
+
+  processed.flux <- 3:(3+length(vars)-1) %>%
+    purrr::map(function(col.num) {
+
+      field_data <- gapfilled.vars[,c(1,2,col.num)]
+      
       uncertainty_vals <- list()
       # Creates a proxy row for rbinding
       sums <- list()
       # One vector holds the mean for each variable.
       obs.mean <- NULL
-      # for each of Gap filling uncertainty bands
-      for (i in 1:(dim(field_data)[2] - 1)) {
-        AMF.params <-
-          PEcAn.uncertainty::flux.uncertainty(field_data[, i], QC = field_data$Flag)
+      # for each of Gap filling uncertainty bands 
+      # The first will be always Date, second Flag and the third is the flux
+      AMF.params <- PEcAn.uncertainty::flux.uncertainty(field_data[,3], QC = field_data$Flag)
+      
+      # Create proxy row for rbinding
+      random_mat = NULL
+      new_col = rep(0, dim(field_data)[1])
         
-        # Create proxy row for rbinding
-        random_mat = NULL
-        new_col = rep(0, dim(field_data)[1])
+      # Create a new column
+      # i: the particular variable being worked with; j: the column number; k: the row number
+      for (j in 1:numvals) {
+        # number of random numbers
+        obs <- field_data[, 3][!is.na(field_data[, 3])]
+        pos <- obs >= 0
         
-        # Create a new column
-        # i: the particular variable being worked with; j: the column number; k: the row number
-        for (j in 1:numvals) {
-          # number of random numbers
-          obs <- field_data[, i][!is.na(field_data[, i])]
-          pos <- obs >= 0
-          
-          res <- obs
-          res[pos]  <- rexp(length(obs[pos]),
-                            1 / (AMF.params$intercept[[1]] + (AMF.params$slopeP[[1]] * obs[pos])))
-          
-          res[!pos]  <- rexp(length(obs[!pos]),
-                             1 / (AMF.params$intercept[[1]] + (AMF.params$slopeN[[1]] * obs[!pos])))
-          
-          random_multiplier <- sample(c(-1, 1), length(res), replace = TRUE)
-          simulated <- obs + (random_multiplier * res)
+        res <- obs
+        res[pos]  <- rexp(length(obs[pos]),
+                          1 / (AMF.params$intercept[[1]] + (AMF.params$slopeP[[1]] * obs[pos])))
+        
+        res[!pos]  <- rexp(length(obs[!pos]),
+                           1 / (AMF.params$intercept[[1]] + (AMF.params$slopeN[[1]] * obs[!pos])))
+        
+        random_multiplier <- sample(c(-1, 1), length(res), replace = TRUE)
+        simulated <- obs + (random_multiplier * res)
 
-          random_mat = cbind(random_mat, simulated)
+        random_mat = cbind(random_mat, simulated)
         } # end j
         
-        obs.mean <- c(obs.mean, mean(field_data[, i], na.rm = TRUE))
+        obs.mean <- c(obs.mean, mean(field_data[, 3], na.rm = TRUE))
         # this keeps the mean of each day for the whole time series and all variables
         sums = c(sums, list(random_mat))
-      } # end i
-      sums
+   
+        data.frame(Date=field_data$Date,sums)
     }) # end of map
+
+ #I'm sending mixing up simulations of vars to aggregate them first and then estimate their var/cov
+  outlist<-processed.flux %>%
+       map2_dfc(vars, function(x, xnames) {
+         names(x)[2:numvals] <- paste0(names(x)[2:numvals], xnames)
  
-  
+         x %>%
+           tail(48) %>%
+           mutate(Interval = lubridate::round_date(Date, "6 hour")) %>%
+           dplyr::select(-Date)
+       }) %>%
+         split(.$Interval) %>%
+           map(function(row) {
+         
+            #fidning the interval cols / taking them out 
+             colsDates <- grep(paste0("Interval"), colnames(row), value = FALSE)
+             Date1 <- row[, colsDates[1]]
+             row <- row[, -c(colsDates)]
+             # finding the order of columns in dataframe
+              var.order <- split(1:ncol(row),
+                                 ceiling(seq_along(1:ncol(row))/(ncol(row)/length(vars))))
+              
+              #combine all the numbers for this time interval
+              alldata <- var.order %>% 
+               map_dfc(~row[,.x] %>% unlist %>% as.numeric) %>%
+               setNames(vars) 
+              
+             return(list(Date=Date1%>%unique(), covs=cov(alldata),  means=apply(alldata,2,mean)) )
+           })
+
+  return(outlist)
 } # prep.data.assim
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-15",numvals = 100, var = "NEE")
 
 =======
 prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))
 >>>>>>> ebc397813bf0deec65c29cb1369477bff5011bab
+=======
+>>>>>>> 8c0d407d70386a73b48a3326b50519f199675871
 
-gapfill_WCr("2017-01-01", "2018-10-30", "LE")
+#prep.data.assim(start_date = "2017-10-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))->ss
+
