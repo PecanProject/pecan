@@ -22,6 +22,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
+- `PEcAn.utils::do_conversions` has been moved to `PEcAn.workflow::do_conversions`.
+  `PEcAn.utils::do_conversions` still works for now with a warning, but is deprecated and will be removed in the future.
 - Docker:
   - Change base image for R code from `r-base` to `rocker/tidyverse:3.5.1`. This (1) saves build time (because many R packages and system dependencies are pre-installed), and (2) enhances reproducibility (because of the strict versioning rules of the `rocker` packages)
   - Re-factor web interface RabbitMQ create connections and post messages into their own PHP functions.
