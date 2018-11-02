@@ -26,7 +26,6 @@ Imports:
     coda (>= 0.18),
     data.table,
     dplyr,
-    getPass,
     ggplot2,
     lubridate (>= 1.6.0),
     magrittr,

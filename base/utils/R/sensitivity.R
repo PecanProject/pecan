@@ -23,6 +23,7 @@
 ##' @param variables variables to be read from model output
 ##' @param per.pft flag to determine whether we want SA on pft-specific variables
 ##' @export
+##' @importFrom magrittr %>%
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
 #--------------------------------------------------------------------------------------------------#
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
