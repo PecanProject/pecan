@@ -259,7 +259,9 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     
     if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
+   
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+   
     #------------------------------------------- Reading the output
     if (control$debug) browser()
     #--- Reading just the first run when we have all years and for VIS
