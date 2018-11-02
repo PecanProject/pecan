@@ -153,8 +153,14 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     out <- unlist(out_list, recursive = FALSE)
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")),
                            nc_var)
-    ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec = NA)
-    ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec = NA)
+    # define time_bouds for -T- outputs, if exists
+    if (file.check[["-T-"]]==TRUE) {
+      ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec = NA)
+    }
+    # define time_bouds for -E- outputs, if exists
+    if (file.check[["-E-"]]==TRUE) {
+      ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec = NA)
+    }
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
       ncdf4::ncvar_put(nc, nc_var[[i]], out[[i]])

@@ -518,31 +518,9 @@ if ($pecan_edit) {
   header("Location: ${path}");
 } else if ($rabbitmq_host != "") {
 
-  # create connection and queue
-  $connection = new AMQPConnection();
-  $connection->setHost($rabbitmq_host);
-  $connection->setPort($rabbitmq_port);
-  $connection->setVhost($rabbitmq_vhost);
-  $connection->setLogin($rabbitmq_username);
-  $connection->setPassword($rabbitmq_password);
-  $connection->connect();
-  $channel = new AMQPChannel($connection);
-  $exchange = new AMQPExchange($channel);
-
-  # create the queue
-  $queue = new AMQPQueue($channel);
-  $queue->setName($rabbitmq_queue);
-  $queue->setFlags(AMQP_DURABLE);
-  $queue->declareQueue();
-
   # create the message
   $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"}';
-
-  # send the message
-  $exchange->publish($message, $rabbitmq_queue);
-
-  # cleanup
-  $connection->disconnect();
+  send_rabbitmq_message($message, $rabbitmq_queue);
 
   #done
   $path = "05-running.php?workflowid=$workflowid";

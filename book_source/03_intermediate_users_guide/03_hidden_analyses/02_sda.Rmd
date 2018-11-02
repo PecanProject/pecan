@@ -1,7 +1,10 @@
-## State data assimilation (SDA)
-## sda.enkf.R is housed within: **/pecan/modules/assim.sequential/R**
-## The tree ring tutorial is housed within: **/pecan/documentation/tutorials/StateAssimilation**
-## More descriptive SDA methods can be found at: **/pecan/book_source/adve_user_guide_web/SDA_Methods.Rmd**
+## State data assimilation (SDA) {#sda}
+
+`sda.enkf.R` is housed within: `/pecan/modules/assim.sequential/R`
+
+The tree ring tutorial is housed within: `/pecan/documentation/tutorials/StateAssimilation`
+
+More descriptive SDA methods can be found at: `/pecan/book_source/adve_user_guide_web/SDA_Methods.Rmd`
 
 ### **sda.enkf.R Description**
 This is the main ensemble Kalman filter and generalized filter code. Originally, this was just ensemble Kalman filter code. Mike Dietze and Ann Raiho added a generalized ensemble filter to avoid filter divergence. The output of this function will be all the of run outputs, a PDF of diagnostics, and an Rdata object that includes three lists:

@@ -5,5 +5,25 @@ Author: Rob Kooper <kooper@illinois.edu>
 AuthorUrl: http://www.ncsa.illinois.edu/assets/php/directory/contact.php?contact=kooper
 Tags: PEcAn
 DisplayMode: showcase
-Depends: DT
-RoxygenNote: 6.1.0
+Imports:
+	dplyr,
+	DT,
+	ggplot2,
+	knitr,
+	lubridate,
+	ncdf4,
+	PEcAn.benchmark,
+	PEcAn.DB,
+	PEcAn.remote,
+	PEcAn.settings,
+	PEcAn.utils,
+	PEcAn.visualization,
+	plotly,
+	purrr,
+	reshape2,
+	scales,
+	shiny,
+	shinyjs,
+	shinythemes,
+	tidyr,
+	udunits2

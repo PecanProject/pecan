@@ -1,7 +1,9 @@
 FROM php:apache
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
+# ----------------------------------------------------------------------
 # install rabbitmq and postgresql extentions
+# ----------------------------------------------------------------------
 RUN apt-get update \
     && apt-get install -y \
         libpq-dev \
@@ -13,13 +15,17 @@ RUN apt-get update \
     && mkdir -p /data/workflows /data/dbfiles \
     && chown www-data /data/workflows /data/dbfiles
 
+# ----------------------------------------------------------------------
 # copy webpages
+# ----------------------------------------------------------------------
 COPY documentation/index_vm.html /var/www/html/index.html
 COPY web /var/www/html/pecan/
 COPY docker/config.docker.php /var/www/html/pecan/config.php
 
-# Store version of PEcAn in the docker image
-ARG PECAN_VERSION="unknown"
+# ----------------------------------------------------------------------
+# PEcAn version information
+# ----------------------------------------------------------------------
+ARG PECAN_VERSION="develop"
 ARG PECAN_GIT_BRANCH="unknown"
 ARG PECAN_GIT_CHECKSUM="unknown"
 ARG PECAN_GIT_DATE="unknown"
