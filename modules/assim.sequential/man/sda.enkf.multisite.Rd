@@ -5,9 +5,9 @@
 \title{sda.enkf.multisite}
 \usage{
 sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL, restart = F,
-  control = list(trace = T, interactivePlot = T, TimeseriesPlot = T,
-  BiasPlot = F, plot.title = NULL, facet.plots = F, debug = FALSE, pause =
-  F), ...)
+  control = list(trace = T, FF = F, interactivePlot = T, TimeseriesPlot =
+  T, BiasPlot = F, plot.title = NULL, facet.plots = F, debug = FALSE, pause
+  = F), ...)
 }
 \arguments{
 \item{settings}{PEcAn settings object}

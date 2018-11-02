@@ -19,6 +19,7 @@
 ##' @export
 read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
   
+  print(runid)
   prior.sla <- params[[which(!names(params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   
   forecast <- list()

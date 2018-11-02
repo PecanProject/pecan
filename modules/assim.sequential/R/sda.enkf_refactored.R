@@ -210,6 +210,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     #------------------------------------------- Reading the output
     X_tmp <- vector("list", 2) 
     X <- list()
+    if (control$debug) browser()
     for (i in seq_len(nens)) {
       
       X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
