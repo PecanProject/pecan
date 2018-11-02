@@ -138,7 +138,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       tvals <- (sub.maat.doy - 1) + day.steps
       bounds <- array(data=NA, dim=c(length(tvals),2))
       bounds[,1] <- tvals
-      bounds[,2] <- bounds[,1]+dayfrac
+      bounds[,2] <- bounds[,1] + dayfrac
       t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_by_year),
                             vals = tvals, calendar = "standard", 
                             unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
