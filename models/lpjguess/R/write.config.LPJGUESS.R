@@ -98,6 +98,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   
   guessins  <- readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
   paramsins <- readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
+  pftblock  <- paramsins[152:220] # lines with pft params
   
   # cp the grid indices file
   grid.file <- file.path(settings$host$rundir, "gridind.txt")
@@ -105,13 +106,44 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   system(paste("cp ", gridind, settings$rundir))
   guessins  <- gsub("@GRID_FILE@", grid.file, guessins)
   
+  pft_names <- sapply(settings$pfts, `[[`,"name")
+  
+  # check how many params requested for this run, prepare list
+  pft_params_list        <- vector("list", length(settings$pfts))
+  names(pft_params_list) <- sapply(settings$pfts, `[[`,"name")
+  pft_params_list <- lapply(pft_params_list, function(x) {
+    x <- lpjguess_param_list
+    return(x)})
+  
   # write parameter values
   param.names <- lapply(seq_along(settings$pfts), function(x) paste0(names(trait.values)[x], "_", 
                                                                      names(trait.values[[x]]), ".*"))
   
+  write2pftblock <-  vector("list", length(settings$pfts))
   # write params with values from trait.values
   for (i in seq_along(settings$pfts)) {
     for (n in seq_along(trait.values[[i]])) {
+      
+      write2pftblock[[i]] <- pftblock
+      write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
+      write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
+      
+      # pass param values
+      # IMPORTANT : Ideally all params should have priors on them! Currently the defaults are only for a tropical broadleaved evergreen pft
+      for(t in seq_along(lpjguess_param_list)){
+        trait_name <- names(lpjguess_param_list)[t]
+        if(trait_name != "pft"){
+          if(trait_name %in% names(trait.values[[i]])){ # pass sample
+            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), trait.values[[i]][[trait_name]], write2pftblock[[i]])
+          }else{ # use default
+            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), lpjguess_param_list[[trait_name]], write2pftblock[[i]])
+          }
+        }  
+
+      }
+      
+      #then pass the samples
+      
       paramsins <- gsub(param.names[[i]][n], trait.values[[i]][n], paramsins)
     }
   }
