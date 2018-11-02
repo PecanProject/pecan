@@ -73,10 +73,15 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 }
 
 # start the workflow again
-chdir($folder);
-pclose(popen("$exec &", 'r'));
+if ($rabbitmq_host != "") {
+  $msg_exec = str_replace("\"", "'", $exec);
+  $message = '{"folder": "' . $folder . '", "custom_application": "' . $msg_exec . '"}';
+  send_rabbitmq_message($message, $rabbitmq_queue);
+} else {
+  chdir($folder);
+  pclose(popen("$exec &", 'r'));
+}
 
 #done
 header("Location: $path");
 ?>
-

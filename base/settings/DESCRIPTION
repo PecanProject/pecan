@@ -1,5 +1,7 @@
 Package: PEcAn.settings
 Title: PEcAn Settings package
+Authors@R: c(person("David","LeBauer"),
+             person("Rob","Kooper"))
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Author: David LeBauer, Rob Kooper
 Version: 1.6.0

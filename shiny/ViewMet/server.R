@@ -1,7 +1,28 @@
 # ViewMet Server 
+lapply(c( "shiny",
+          "ggplot2",
+          "stringr",
+          "ncdf4",
+          "ncdf4.helpers",
+          "DT",
+          "plyr",
+          "dplyr"),function(pkg){
+            if (!(pkg %in% installed.packages()[,1])){
+              install.packages(pkg)
+            }
+            library(pkg,character.only = TRUE,quietly = TRUE)
+          }
+)
 
-library(PEcAn.benchmark)
-library(PEcAn.visualization)
+lapply(c( "PEcAn.benchmark",
+          "PEcAn.visualization",
+          "PEcAn.logger",
+          "PEcAn.remote"),function(pkg){
+            library(pkg,character.only = TRUE,quietly = TRUE)
+          }
+)
+
+
 
 options(shiny.maxRequestSize=30*1024^2) #maximum file input size
 

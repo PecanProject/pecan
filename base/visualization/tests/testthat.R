@@ -8,7 +8,6 @@
 #-------------------------------------------------------------------------------
 library(testthat)
 library(PEcAn.visualization)
-library(PEcAn.utils)
 
 PEcAn.logger::logger.setQuitOnSevere(FALSE)
-#test_package("PEcAn.visualization")
+test_check("PEcAn.visualization")
