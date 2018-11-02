@@ -5,10 +5,34 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
-
-## [Unreleased]
+## Unreleased
 
 ### Fixes
+- Small updated to models/ed/R/model2netcdf.ED2.R to fix issue realted to writing the time_bounds time attribute. Needed to add a check for which file types exitst (e.g. -E-, -T-, etc) and only write the appropriate attribute(s).
+- Fixed error in `read_web_config` which would filter out all variables.
+- Docker:
+  - Make sure web interface posts RabbitMQ messages even after editing files (fixes #2151)
+
+### Added
+- Lots of new documentation for running PEcAn using Docker
+- Added Docker container with documentation #2160
+- Download method (`method`) argument for `data.atmosphere::download.CRUNCEP`, which defaults to `opendap` (as it was), but can be switched to the slower but more robust NetCDF subset (`ncss`).
+- In `download.CRUNCEP`, check target coordinate against the land-sea mask. If sea, pick the nearest land pixel within 1 degree of target. This facilitates doing runs at coastal sites that may get masked out.
+- Added a prototype of the THREDDS data server (TDS) to the PEcAn Docker stack.
+
+### Removed
+
+### Changed
+- `PEcAn.utils::do_conversions` has been moved to `PEcAn.workflow::do_conversions`.
+  `PEcAn.utils::do_conversions` still works for now with a warning, but is deprecated and will be removed in the future.
+- Docker:
+  - Change base image for R code from `r-base` to `rocker/tidyverse:3.5.1`. This (1) saves build time (because many R packages and system dependencies are pre-installed), and (2) enhances reproducibility (because of the strict versioning rules of the `rocker` packages)
+  - Re-factor web interface RabbitMQ create connections and post messages into their own PHP functions.
+
+## [1.6.0] - 2018-09-01
+
+### Fixes
+- Updated model2netcdf.SIPNET() to address issue #2094. Revised netCDF time to be from 0-364./365. (if leap) so time would be properly parsed by R and python (cf tools)
 - Fixed output time variable in models/ed/R/model2netcdf.ED2.R to provide correct fractional DOY
 - Running tests for PEcAn.settings package no longer leaves empty temp directories in test folder (#2075)
 - Fixed issue #2064 which sends one met path to write.sa.config.
@@ -16,13 +40,16 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added missing ncdf4 library calls in model2netcdf.JULES
 
 ### Added
+- Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
 - Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
 - Added scaling to documentation
+
 ### Removed
 - Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 
 ### Changed
+- Updated models/dalec/R/model2netcdf.DALEC.R to add time_bounds variable
 - Updated models/maat/R/write.config.MAAT.R to improve flow, remove bugs, and to work with the release version of the MAAT model.
 - Minor update to modules/data.atmosphere/R/met2CF.csv.R to include recursive=TRUE for outfolder.  Seemed to work better
 - Updated models/maat/R/met2model.MAAT.R to include additional output variables, fix a bug, and conduct overall cleanup. Updated docs

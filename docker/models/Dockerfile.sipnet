@@ -4,7 +4,7 @@
 FROM debian as sipnet-binary
 
 # Some variables that can be used to set control the docker build
-ARG SIPNET_VERSION=136
+ARG MODEL_VERSION=136
 
 # install dependencies
 RUN apt-get update \
@@ -16,9 +16,9 @@ RUN apt-get update \
 
 # download, unzip and build sipnet
 WORKDIR /src
-RUN curl -o sipnet_r${SIPNET_VERSION}.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_r${SIPNET_VERSION}.tar.gz \
-    && tar zxf sipnet_r${SIPNET_VERSION}.tar.gz \
-    && cd sipnet_r${SIPNET_VERSION} \
+RUN curl -o sipnet_r${MODEL_VERSION}.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_r${MODEL_VERSION}.tar.gz \
+    && tar zxf sipnet_r${MODEL_VERSION}.tar.gz \
+    && cd sipnet_r${MODEL_VERSION} \
     && make \
     && mv sipnet /src
 
@@ -46,13 +46,15 @@ FROM pecan/executor:latest
 # ----------------------------------------------------------------------
 
 # Some variables that can be used to set control the docker build
-ARG SIPNET_VERSION=136
+ARG MODEL_VERSION=136
 
 # variables to store in docker image
 ENV APPLICATION="./job.sh" \
-    RABBITMQ_QUEUE="SIPNET_${SIPNET_VERSION}" \
-    SIPNET_VERSION=${SIPNET_VERSION}
+    MODEL_TYPE="SIPNET" \
+    MODEL_VERSION="${MODEL_VERSION}"
+
+ENV RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
 
 # COPY sipnet binary
-COPY --from=sipnet-binary /src/sipnet /usr/local/bin/sipnet.${SIPNET_VERSION}
+COPY --from=sipnet-binary /src/sipnet /usr/local/bin/sipnet.${MODEL_VERSION}
 

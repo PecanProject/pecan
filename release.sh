@@ -4,27 +4,35 @@ set -e
 
 DEBUG=${DEBUG:-""}
 SERVER=${SERVER:-""}
-
-IMAGES="web depends base executor model data"
-MODELS="sipnet"
+DEPEND=${DEPEND:-""}
 
 # get version number
-VERSION="$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"
+VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
 
 # build images first
-#DEBUG=${DEBUG} ./docker.sh
+VERSION=${VERSION} DEBUG=${DEBUG} DEPEND=${DEPEND} ./docker.sh
 
 # check branch and set version
+PECAN_GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 if [ "${PECAN_GIT_BRANCH}" = "master" ]; then
-    TAGS="${VERSION} latest"
+    TAGS="latest"
+    TMPVERSION="${VERSION}"
+    OLDVERSION=""
+    while [ "$OLDVERSION" != "$TMPVERSION" ]; do
+       TAGS="${TAGS} ${TMPVERSION}"
+       OLDVERSION="${TMPVERSION}"
+       TMPVERSION=$(echo ${OLDVERSION} | sed 's/\.[0-9]*$//')
+    done
 elif [ "${PECAN_GIT_BRANCH}" = "develop" ]; then
     TAGS="develop"
-else
-    TAGS="develop"
-    #exit 0
+fi
+if [ "${TAGS}" == "" ]; then
+    echo "No tags specified, not pushing to server."
+    exit 1
 fi
 
-for i in ${IMAGES}; do
+# push pecan images
+for i in depends base executor web data; do
     for v in ${TAGS}; do
         if [ "$v" != "latest" -o "$SERVER" != "" ]; then
             ${DEBUG} docker tag pecan/${i}:latest ${SERVER}pecan/${i}:${v}
@@ -32,11 +40,13 @@ for i in ${IMAGES}; do
         ${DEBUG} docker push ${SERVER}pecan/${i}:${v}
     done
 done
-for i in ${MODELS}; do
+
+# push model images
+for i in model-sipnet-136 model-ed2-git; do
     for v in ${TAGS}; do
         if [ "$v" != "latest" -o "$SERVER" != "" ]; then
-            ${DEBUG} docker tag pecan/model-${i}:latest ${SERVER}pecan/model-${i}:${v}
+            ${DEBUG} docker tag pecan/${i}:latest ${SERVER}pecan/${i}:${v}
         fi
-        ${DEBUG} docker push ${SERVER}pecan/model-${i}:${v}
+        ${DEBUG} docker push ${SERVER}pecan/${i}:${v}
     done
 done
