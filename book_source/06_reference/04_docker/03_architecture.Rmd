@@ -35,6 +35,7 @@ This section describes the [top-level structure](#pecan-dc-structure) and each o
 
 - [`traefik`](#pecan-dc-traefik)
 - [`minio`](#pecan-dc-minio)
+- [`thredds`](#pecan-dc-thredds)
 - [`postgres`](#pecan-dc-postgres)
 - [`rabbitmq`](#pecan-dc-rabbitmq)
 - [`bety`](#pecan-dc-bety)
@@ -114,7 +115,41 @@ Our current configuration is as follows:
 yaml::write_yaml(dc_yaml$services["minio"], stdout())
 ```
 
-(Further details in the works...)
+The Minio interface is accessible by browsing to `localhost:8000/minio/`.
+From there, you can browse directories and download files.
+You can also upload files by clicking the red "+" in the bottom-right corner.
+
+Note that it is currently impossible to create or upload directories using the Minio interface (except in the `/data` root directory -- those folders are called "buckets" in Minio).
+Therefore, the recommended way to perform any file management tasks other than individual file uploads is through the command line, e.g.
+
+```bash
+docker run -it --rm --volumes pecan_pecan:/data --volumes /path/to/local/directory:/localdir ubuntu
+
+# Now, you can move files between `/data` and `/localdir`, create new directories, etc.
+```
+
+#### `thredds` {#pecan-dc-thredds}
+
+This service allows PEcAn model outputs to be accessible via the [THREDDS data server (TDS)](https://www.unidata.ucar.edu/software/thredds/current/tds/).
+When the PEcAn stack is running, the catalog can be explored in a web browser at http://localhost:8000/thredds/catalog.html.
+Specific output files can also be accessed from the command line via commands like the following:
+
+```{r, eval = FALSE}
+nc <- ncdf4::nc_open("http://localhost:8000/thredds/dodsC/outputs/PEcAn_<workflow_id>/out/<run_id>/<year>.nc")
+```
+
+Note that everything after `outputs/` exactly matches the directory structure of the `workflows` directory.
+
+Which files are served, which subsetting services are available, and other aspects of the data server's behavior are configured in the `docker/thredds_catalog.xml` file.
+Specifically, this XML tells the data server to use the `datasetScan` tool to serve all files within the `/data/workflows` directory, with the additional `filter` that only files ending in `.nc` are served.
+For additional information about the syntax of this file, see the extensive [THREDDS documentation](https://www.unidata.ucar.edu/software/thredds/current/tds/reference/index.html).
+
+Our current configuration is as follows:
+
+```{r, echo = FALSE, comment = ''}
+yaml::write_yaml(dc_yaml$services["thredds"], stdout())
+```
+
 
 #### `postgres` {#pecan-dc-postgres}
 

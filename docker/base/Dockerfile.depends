@@ -7,19 +7,21 @@ MAINTAINER Rob Kooper <kooper@illinois.edu>
 # ----------------------------------------------------------------------
 # INSTALL BINARY/LIBRARY DEPENDENCIES
 # ----------------------------------------------------------------------
-RUN apt-get update -qq && apt-get -y --no-install-recommends install \
-	jags \
-	time \
-	libgdal-dev \
-	librdf0-dev \
-	libnetcdf-dev \
-	libudunits2-dev
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install \
+       jags \
+       time \
+       libgdal-dev \
+       librdf0-dev \
+       libnetcdf-dev \
+       libudunits2-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # ----------------------------------------------------------------------
 # INSTALL DEV TOOLS AND PACKAGES FROM GITHUB NEEDED BUILD PECAN
 # ----------------------------------------------------------------------
 RUN Rscript --vanilla -e "devtools::install_github('ropensci/geonames'); q(status=as.integer(!'geonames' %in% rownames(installed.packages())))" \
-	&& Rscript --vanilla -e "devtools::install_github('ropenscilabs/nneo'); q(status=as.integer(!'nneo' %in% rownames(installed.packages())))" \
+	&& Rscript --vanilla -e "devtools::install_github('ropensci/nneo'); q(status=as.integer(!'nneo' %in% rownames(installed.packages())))" \
 	&& Rscript --vanilla -e "devtools::install_github('rforge/reddyproc/pkg/REddyProc'); q(status=as.integer(!'REddyProc' %in% rownames(installed.packages())))"
     
 # ----------------------------------------------------------------------

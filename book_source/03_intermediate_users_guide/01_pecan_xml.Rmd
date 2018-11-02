@@ -353,6 +353,10 @@ This section provides detailed configuration for the model run, including the si
       <id>1000000098</id>
       <met.start>2004/01/01</met.start>
       <met.end>2004/12/31</met.end>
+      <site.pft>
+        <pft.name>temperate.needleleaf.evergreen</pft.name>
+        <pft.name>temperate.needleleaf.evergreen.test</pft.name>
+      </site.pft>
     </site>
     <inputs>
       <met>
@@ -373,6 +377,16 @@ This contains the following tags:
 - `name` -- The name of the site, as a string.
 - `lat`, `lon` -- The latitude and longitude coordinates of the site, as decimals.
 - `met.start`, `met.end` -- ???
+- `<site.pft>` (optional) If this tag is found under the site tag, then PEcAn automatically makes sure that only PFTs defined under this tag is used for generating parameter's samples. Following shows an exmaple of how this tag can be added to the PEcAn xml :
+
+```xml
+    <site.pft>
+     <pft.name>temperate.needleleaf.evergreen</pft.name>
+     <pft.name>temperate.needleleaf.evergreen</pft.name>
+    </site.pft>
+```
+For multi-site runs if the `pft.site` tag (see {#xml-run-inputs}) is defined under `input`, then the above process will be done automatically under prepare settings step in PEcAn main workflow and there is no need for adding the tags manually. Using the `pft.site` tag however, requires a lookup table as an input (see {#xml-run-inputs}).
+
 
 #### `inputs`: Model inputs {#xml-run-inputs}
 
@@ -399,6 +413,21 @@ The following are the most common types of inputs, along with their correspondin
 ##### (Experimental) `veg`: Vegetation initial conditions {#xml-run-inputs-veg}
 
 (Under construction. Follow developments in the `PEcAn.data.land` package, located in `modules/data.land` in the source code).
+##### `pft.site` Multi-site site / PFT mapping
+
+When performing multi-site runs, it is not uncommon to find that different sites need to be run with different PFTs, rather than running all PFTs at all sites. If you're interested to use a specific PFT for your site/sites you can use the following tag to tell PEcAn which PFT needs to be used for what site.
+```
+<pft.site>
+  <path>site_pft.csv</path>
+</pft.site>
+```
+For example using the above tag, user needs to have a csv file named `site_pft` stored in the pecan folder. At the moment we have functions supporting just the `.csv` and `.txt` files which are comma separated and have the following format:
+```
+site_id, pft_name
+1000025731,temperate.broadleaf.deciduous
+764,temperate.broadleaf.deciduous
+```
+Then pecan would use this lookup table to inform `write.ensemble.config` function about what PFTs need to be used for what sites.
 
 #### `start.date` and `end.date`
 
