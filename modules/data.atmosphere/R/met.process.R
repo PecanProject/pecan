@@ -21,10 +21,11 @@
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
 ##'
+##' @param inputfiles use the user submit file instead of the dbfiles
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
-                        overwrite = FALSE) {
+                        overwrite = FALSE, inputfiles = NULL) {
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
@@ -120,14 +121,28 @@ met.process <- function(site, input_met, start_date, end_date, model,
     }
   }
   
-  # read in registration xml for met specific information
-  register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
-  register     <- read.register(register.xml, con)
+  if(input_met$source != "CUSTOM"){
+    register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
+    register     <- read.register(register.xml, con)
+  }
   
   # first attempt at function that designates where to start met.process
   if (is.null(input_met$id)) {
-    stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
-    format.vars <- PEcAn.DB::query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
+    if(input_met$source == "CUSTOM"){
+      # internal file is provided
+      stage <- list(download.raw = FALSE, met2cf = FALSE, standardize = FALSE, met2model = TRUE)
+      format.vars <- list()
+      format.vars$lat <- NULL
+      format.vars$lat <- NULL
+      format.vars$lat <- NULL
+    } else {
+      if(is.null(model)){
+        stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = FALSE)
+      } else {
+        stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
+      }
+      format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
+    }
   } else {
     stage <- met.process.stage(input.id=input_met$id, raw.id=register$format$id, con)
     format.vars <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
@@ -265,55 +280,75 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
-    
-    ## Get Model Registration
-    reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
-    reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
-    
-    met2model.result = list()
-    for (i in 1:length(ready.id[[1]])) {
-      met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[i], dbfile.id = ready.id$dbfile.id[i]), 
-                                    model = model, 
-                                    con = con,
-                                    host = host, 
-                                    dir = dir, 
-                                    met = met, 
-                                    str_ns = str_ns,
-                                    site = site, 
-                                    start_date = start_date, end_date = end_date, 
-                                    browndog = browndog, 
-                                    new.site = new.site,
-                                    overwrite = overwrite$met2model,
-                                    exact.dates = reg.model$exact.dates,
-                                    spin = spin,
-                                    register = register,
-                                    ensemble_name = i)
+    if(is.null(ready.id)){
+      # don't save generated file in DB
+      model.file <- .met2model.local.module(inputfiles = inputfiles, 
+                                            model = model, 
+                                            con = con,
+                                            host = host, 
+                                            dir = dir, 
+                                            met = met, 
+                                            str_ns = str_ns,
+                                            site = site, 
+                                            start_date = start_date,
+                                            end_date = end_date, 
+                                            browndog = browndog, 
+                                            new.site = new.site,
+                                            overwrite = overwrite$met2model,
+                                            exact.dates = reg.model$exact.dates,
+                                            spin = spin)
+      input_met$path <- list() # for consistancy with the code in the if to this else.
+      input_met$path$path1 <- model.file
+      
+    } else{
+      ## Get Model Registration
+      reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
+      reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
+      
+      met2model.result = list()
+      for (i in 1:length(ready.id[[1]])) {
+        met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[i], dbfile.id = ready.id$dbfile.id[i]), 
+                                      model = model, 
+                                      con = con,
+                                      host = host, 
+                                      dir = dir, 
+                                      met = met, 
+                                      str_ns = str_ns,
+                                      site = site, 
+                                      start_date = start_date, end_date = end_date, 
+                                      browndog = browndog, 
+                                      new.site = new.site,
+                                      overwrite = overwrite$met2model,
+                                      exact.dates = reg.model$exact.dates,
+                                      spin = spin,
+                                      register = register,
+                                      ensemble_name = i)
+      }
+      
+      model.id = list()
+      model.file.info = list()
+      model.file = list()
+      
+      for (i in 1:length(met2model.result)) {
+        model.id[[i]]  <- met2model.result[[i]]$model.id
+        model.file.info[[i]] <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id[[i]]$dbfile.id), con)
+        model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
+      }
+      
+      
+      
+      # met.process now returns the entire $met portion of settings, updated with parellel lists containing
+      # the model-specific data files and their input ids.
+      
+      input_met$id <- list()
+      input_met$path <- list()
+      
+      for (i in 1:length(model.id)) {
+        input_met$id[[paste0("id", i)]] <- model.id[[i]]$input.id
+        input_met$path[[as.character(paste0("path", i))]] <- model.file[[i]]
+      }
+      
     }
-    
-    model.id = list()
-    model.file.info = list()
-    model.file = list()
-    
-    for (i in 1:length(met2model.result)) {
-      model.id[[i]]  <- met2model.result[[i]]$model.id
-      model.file.info[[i]] <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id[[i]]$dbfile.id), con)
-      model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
-    }
-    
-    
-    
-    # met.process now returns the entire $met portion of settings, updated with parellel lists containing
-    # the model-specific data files and their input ids.
-    
-    input_met$id <- list()
-    input_met$path <- list()
-    
-    for (i in 1:length(model.id)) {
-      input_met$id[[paste0("id", i)]] <- model.id[[i]]$input.id
-      input_met$path[[as.character(paste0("path", i))]] <- model.file[[i]]
-    }
-    
-    
   } else {
     # Because current ensemble data cannot reach this else statement, it only supports single source data.
     PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
