@@ -168,7 +168,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       
       ## put in time_bounds before writing out new nc file
       #length(output$var)
-      output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
+      output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name = "time_bounds", units = "", 
                                                          longname = "history time interval endpoints", 
                                                          dim=list(time_interval,time = t), 
                                                          prec = "double")
