@@ -135,7 +135,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       
       # setup netCDF time variable for year
       maat_run_start_by_year <- format(lubridate::as_datetime(sub.maat.dates, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
-      tvals <- (sub.maat.doy-1) + day.steps
+      tvals <- (sub.maat.doy - 1) + day.steps
       bounds <- array(data=NA, dim=c(length(tvals),2))
       bounds[,1] <- tvals
       bounds[,2] <- bounds[,1]+dayfrac
