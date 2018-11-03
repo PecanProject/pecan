@@ -132,7 +132,16 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
         trait_name <- names(lpjguess_param_list)[t]
         if(trait_name != "pft" & !(trait_name %in% noprior_params)){
           if(trait_name %in% names(trait.values[[i]])){ # pass sample
-            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), trait.values[[i]][[trait_name]], write2pftblock[[i]])
+            
+            pecan_sample <- trait.values[[i]][[trait_name]]
+            
+            if(trait_name == "rootdist"){  # convert from ratio to fractions
+              lower_layer_fraction = 1/(pecan_sample+1)
+              upper_layer_fraction = 1 - lower_layer_fraction
+              pecan_sample <- paste(upper_layer_fraction, lower_layer_fraction)
+            }
+            
+            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), pecan_sample, write2pftblock[[i]])
           }else{ # use default
             write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), lpjguess_param_list[[trait_name]], write2pftblock[[i]])
             warning_list[[trait_name]] <- trait_name
@@ -222,15 +231,15 @@ pecan2lpjguess <- function(trait.values){
     "sapwood_turnover_rate", "turnover_sap", NA, NA, 
     "leaf_turnover_rate", "turnover_leaf", NA, NA,
     "SLA", "sla", NA, NA,
-    "lambda_max", "lambda_max", NA, NA,         
+    "ci2ca", "lambda_max", NA, NA,         
     "emax", "emax", NA, NA,
     "reprfrac", "reprfrac", NA, NA,
-    "wscal_min", "wscal_min", NA, NA,
+    "water_stress_threshold", "wscal_min", NA, NA,
     "drought_tolerance", "drought_tolerance", NA, NA,
     "turnover_harv_prod", "turnover_harv_prod", NA, NA, 
     "crownarea_max", "crownarea_max", NA, NA,
     "ltor_max", "ltor_max", NA, NA,                
-    "rootdist", "rootdist", NA, NA,
+    "root_dist", "rootdist", NA, NA,
     "k_allom2", "k_allom2", NA, NA,           
     "k_allom3", "k_allom3", NA, NA,          
     "k_rp", "k_rp", NA, NA,               
@@ -251,7 +260,7 @@ pecan2lpjguess <- function(trait.values){
     "res_outtake", "res_outtake", NA, NA,
     "harvest_slow_frac", "harvest_slow_frac", NA, NA,
     "fnstorage", "fnstorage", NA, NA,      
-    "phengdd5ramp", "phengdd5ramp", NA, NA,
+    "GDD", "phengdd5ramp", NA, NA,
     "est_max", "est_max", NA, NA,
     "parff_min", "parff_min", NA, NA,
     "alphar", "alphar", NA, NA,
