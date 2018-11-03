@@ -1,4 +1,3 @@
-library(devtools)
 
 arg <- commandArgs(trailingOnly = TRUE)
 pkg <- arg[1]
@@ -15,8 +14,8 @@ Sys.unsetenv(
 log_level <- Sys.getenv('LOGLEVEL', unset = NA)
 die_level <- Sys.getenv('DIELEVEL', unset = NA)
 
-message('log_level = ', log_level)
-message('die_level = ', die_level)
+# message('log_level = ', log_level)
+# message('die_level = ', die_level)
 
 valid_log_levels <- c('warn', 'all')
 if (!is.na(log_level) && !log_level %in% valid_log_levels) {
@@ -34,7 +33,7 @@ die_warn <- !is.na(die_level) && die_level == 'warn'
 
 log_notes <- !is.na(log_level) && log_level == 'all'
 
-chk <- check(pkg, quiet = TRUE, error_on = "never")
+chk <- devtools::check(pkg, quiet = TRUE, error_on = "never")
 
 errors <- chk[['errors']]
 n_errors <- length(errors)
