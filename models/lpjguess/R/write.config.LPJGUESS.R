@@ -114,8 +114,8 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   trait.values <- pecan2lpjguess(trait.values)
   
   # these are strings, should they be passed via xml?
-  # e.g. defaults lifeform=tree phenology=evergreen leafphysiognomy=broadleaf landcover=natural
-  noprior_params <- c("lifeform", "phenology", "leafphysiognomy", "landcover")
+  # e.g. defaults lifeform=tree phenology=evergreen leafphysiognomy=broadleaf landcover=natural pathway=c3
+  noprior_params <- c("lifeform", "phenology", "leafphysiognomy", "landcover", "pathway")
   
   write2pftblock <-  vector("list", length(settings$pfts))
   # write params with values from trait.values
