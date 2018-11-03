@@ -98,7 +98,8 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   
   guessins  <- readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
   paramsins <- readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
-  pftblock  <- paramsins[152:220] # lines with pft params
+  pftindx   <- 152:222 # should grab automatically
+  pftblock  <- paramsins[pftindx] # lines with pft params
   
   # cp the grid indices file
   grid.file <- file.path(settings$host$rundir, "gridind.txt")
@@ -107,55 +108,56 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   guessins  <- gsub("@GRID_FILE@", grid.file, guessins)
   
   pft_names <- sapply(settings$pfts, `[[`,"name")
+  load(system.file("inst/lpjguess_params.Rdata",package = "PEcAn.LPJGUESS"))
   
-  # check how many params requested for this run, prepare list
-  pft_params_list        <- vector("list", length(settings$pfts))
-  names(pft_params_list) <- sapply(settings$pfts, `[[`,"name")
-  pft_params_list <- lapply(pft_params_list, function(x) {
-    x <- lpjguess_param_list
-    return(x)})
+  # name and unit conversion
+  trait.values <- pecan2lpjguess(trait.values)
   
-  # write parameter values
-  param.names <- lapply(seq_along(settings$pfts), function(x) paste0(names(trait.values)[x], "_", 
-                                                                     names(trait.values[[x]]), ".*"))
+  # these are strings, should they be passed via xml?
+  # e.g. defaults lifeform=tree phenology=evergreen leafphysiognomy=broadleaf landcover=natural
+  noprior_params <- c("lifeform", "phenology", "leafphysiognomy", "landcover")
   
   write2pftblock <-  vector("list", length(settings$pfts))
   # write params with values from trait.values
   for (i in seq_along(settings$pfts)) {
-    for (n in seq_along(trait.values[[i]])) {
-      
+
       write2pftblock[[i]] <- pftblock
       write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
-      write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
+      
+      warning_list <- list()
       
       # pass param values
       # IMPORTANT : Ideally all params should have priors on them! Currently the defaults are only for a tropical broadleaved evergreen pft
       for(t in seq_along(lpjguess_param_list)){
         trait_name <- names(lpjguess_param_list)[t]
-        if(trait_name != "pft"){
+        if(trait_name != "pft" & !(trait_name %in% noprior_params)){
           if(trait_name %in% names(trait.values[[i]])){ # pass sample
             write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), trait.values[[i]][[trait_name]], write2pftblock[[i]])
           }else{ # use default
             write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), lpjguess_param_list[[trait_name]], write2pftblock[[i]])
+            warning_list[[trait_name]] <- trait_name
           }
         }  
-
       }
       
-      #then pass the samples
-      
-      paramsins <- gsub(param.names[[i]][n], trait.values[[i]][n], paramsins)
-    }
-  }
+      # handle the no prior params
+      for(t in seq_along(noprior_params)){
+        trait_name <- noprior_params[t]
+        if(!is.null(settings$pfts[[i]][[trait_name]])){ # specified in xml
+          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", settings$pfts[[i]][[trait_name]], "'"), write2pftblock[[i]])
+        }else{ #pass the default, add to warning
+          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", lpjguess_param_list[[trait_name]], "'"), write2pftblock[[i]])
+          warning_list[[trait_name]] <- trait_name
+        }
+      }
+
+      PEcAn.logger::logger.warn("***You have not specified the following parameters for your PFT,", pft_names[i],"- Be aware that the defaults may not work well for you.***", unlist(warning_list))
+  } #end of pft-loop
   
-  # if anything is not replaced use the defaults param value if '.@' exists, remove the string
-  # infront of '.@' and use the value
-  for (i in seq_along(paramsins)) {
-    if (grepl(".@", paramsins[i])) {
-      paramsins[i] <- gsub("\\s*\\w*$", paste0(" ", gsub("^[^:]*.@", "", paramsins[i])),
-                           gsub(".@.*", "", paramsins[i]))
-    }
-  }
+  # erase the placeholder, write back the pft blocks
+  paramsins <- paramsins[-pftindx] 
+  paramsins <- c(paramsins, unlist(write2pftblock))
+  
   
   # write clim file names
   
@@ -203,3 +205,29 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   
   return(settings)
 } # write.insfile.LPJGUESS
+
+
+# ==================================================================================================#
+#' Function to translate pecan param names and units to lpjguess names and units
+#' @export
+#' @param trait.values trait.values, list
+#' @return translated list
+#' @author Istem Fer
+pecan2lpjguess <- function(trait.values){
+  
+  # TODO : extend this list
+  vartable <- tibble::tribble(
+    ~pecanname, ~lpjguessname, ~pecanunits, ~lpjguessunits, 
+    "root_turnover_rate", "turnover_root", NA, NA, 
+    "sapwood_turnover_rate", "turnover_sap", NA, NA, 
+    "leaf_turnover_rate", "turnover_leaf", NA, NA,
+    "SLA", "sla", NA, NA)
+  
+  trait.values <- lapply(trait.values, function(x){
+    names(x)[match(vartable$pecanname, names(x))] <- vartable$lpjguessname[vartable$pecanname %in% names(x)]
+    return(x)
+  })
+  
+  # TODO : unit conversions?
+  return(trait.values)
+} 
