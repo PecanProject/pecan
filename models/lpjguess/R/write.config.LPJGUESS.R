@@ -141,6 +141,10 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
               pecan_sample <- paste(upper_layer_fraction, lower_layer_fraction)
             }
             
+            if(trait_name == "wooddens"){  # convert from relative density to sapwood and heartwood density (kgC/m3)
+              pecan_sample <- pecan_sample*997 # density of water
+            }
+            
             write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), pecan_sample, write2pftblock[[i]])
           }else{ # use default
             write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), lpjguess_param_list[[trait_name]], write2pftblock[[i]])
@@ -224,7 +228,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
 #' @author Istem Fer
 pecan2lpjguess <- function(trait.values){
   
-  # TODO : replace pecan names with correct ones
+  # TODO :match all lpjguess and pecan names
   vartable <- tibble::tribble(
     ~pecanname, ~lpjguessname, ~pecanunits, ~lpjguessunits, 
     "root_turnover_rate", "turnover_root", NA, NA, 
@@ -232,23 +236,23 @@ pecan2lpjguess <- function(trait.values){
     "leaf_turnover_rate", "turnover_leaf", NA, NA,
     "SLA", "sla", NA, NA,
     "ci2ca", "lambda_max", NA, NA,         
-    "emax", "emax", NA, NA,
+    "Emax", "emax", NA, NA,
     "reprfrac", "reprfrac", NA, NA,
     "water_stress_threshold", "wscal_min", NA, NA,
     "drought_tolerance", "drought_tolerance", NA, NA,
     "turnover_harv_prod", "turnover_harv_prod", NA, NA, 
     "crownarea_max", "crownarea_max", NA, NA,
     "ltor_max", "ltor_max", NA, NA,                
-    "root_dist", "rootdist", NA, NA,
+    "root_dist_ratio", "rootdist", NA, NA,
     "k_allom2", "k_allom2", NA, NA,           
     "k_allom3", "k_allom3", NA, NA,          
     "k_rp", "k_rp", NA, NA,               
-    "wooddens", "wooddens", NA, NA,           
-    "cton_root", "cton_root", NA, NA,
-    "cton_sap", "cton_sap", NA, NA,           
-    "nuptoroot", "nuptoroot", NA, NA,
+    "wood_density", "wooddens", NA, NA,           
+    "c2n_fineroot", "cton_root", NA, NA,
+    "c2n_sapwood", "cton_sap", NA, NA,           
+    "nup2root_max", "nuptoroot", NA, NA,
     "km_volume", "km_volume", NA, NA,            
-    "respcoeff", "respcoeff", NA, NA,
+    "growth_resp_factor", "respcoeff", NA, NA,
     "kest_repr", "kest_repr", NA, NA,
     "kest_bg", "kest_bg", NA, NA,           
     "kest_pres", "kest_pres", NA, NA,
@@ -267,7 +271,7 @@ pecan2lpjguess <- function(trait.values){
     "greff_min", "greff_min", NA, NA, 
     "k_allom1", "k_allom1", NA, NA,
     "k_latosa", "k_latosa", NA, NA,        
-    "gmin", "gmin", NA, NA,               
+    "gcmin", "gmin", "m s-1", "mm s-1",               
     "intc", "intc", NA, NA,
     "ga", "ga", NA, NA,
     "tcmin_surv", "tcmin_surv", NA, NA,
@@ -279,7 +283,7 @@ pecan2lpjguess <- function(trait.values){
     "pstemp_low", "pstemp_low", NA, NA,
     "pstemp_high", "pstemp_high", NA, NA,        
     "pstemp_max", "pstemp_max", NA, NA,
-    "leaflong", "leaflong", NA, NA,
+    "leaf_longevity", "leaflong", NA, NA,
     "longevity", "longevity", NA, NA,
     "fireresist", "fireresist", NA, NA,
     "eps_iso", "eps_iso", NA, NA,
