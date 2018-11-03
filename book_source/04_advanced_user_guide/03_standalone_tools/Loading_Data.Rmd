@@ -34,16 +34,16 @@ To load the Ameriflux data for the Harvard Forest (US-Ha1) site.
 
 1. Create a connection to the BETY database. This can be done using R function 
 
-   ``` R
-   bety = PEcAn.DB::betyConnect(php.config = "pecan/web/config.php")
-   ```
+``` R
+bety = PEcAn.DB::betyConnect(php.config = "pecan/web/config.php")
+```
 
    where the complete path to the `config.php` is specified. See [here](https://github.com/PecanProject/pecan/blob/master/web/config.example.php) for an example `config.php` file. 
 
 2. Look up the inputs record for the data in BETY. 
 
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics(rep("images/Input_ID_name.png"))
+knitr::include_graphics("04_advanced_user_guide/03_standalone_tools/images/Input_ID_name.png")
 ```
 
    To find the input ID, either look at
