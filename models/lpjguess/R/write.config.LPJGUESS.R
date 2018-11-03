@@ -108,7 +108,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   guessins  <- gsub("@GRID_FILE@", grid.file, guessins)
   
   pft_names <- sapply(settings$pfts, `[[`,"name")
-  load(system.file("inst/lpjguess_params.Rdata",package = "PEcAn.LPJGUESS"))
+  load(system.file("lpjguess_params.Rdata",package = "PEcAn.LPJGUESS"))
   
   # name and unit conversion
   trait.values <- pecan2lpjguess(trait.values)
