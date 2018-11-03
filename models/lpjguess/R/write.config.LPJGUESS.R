@@ -231,8 +231,8 @@ pecan2lpjguess <- function(trait.values){
   # TODO :match all lpjguess and pecan names
   vartable <- tibble::tribble(
     ~pecanname, ~lpjguessname, ~pecanunits, ~lpjguessunits, 
-    "root_turnover_rate", "turnover_root", NA, NA, 
-    "sapwood_turnover_rate", "turnover_sap", NA, NA, 
+    "root_turnover_rate", "turnover_root", NA, NA,   
+    "sapwood_turnover_rate", "turnover_sap", NA, NA,
     "leaf_turnover_rate", "turnover_leaf", NA, NA,
     "SLA", "sla", NA, NA,
     "ci2ca", "lambda_max", NA, NA,         
@@ -297,5 +297,18 @@ pecan2lpjguess <- function(trait.values){
   })
   
   # TODO : unit conversions?
+  toconvert <- vartable$lpjguessname[!is.na(vartable$lpjguessunits)]
+  trait.values <- lapply(trait.values, function(x){
+    canconvert <- toconvert[toconvert %in% names(x)]      
+    if(length(canconvert) != 0){
+      for(c in seq_along(canconvert)){
+        x[,names(x) == canconvert[c]] <- udunits2::ud.convert(x[,names(x) == canconvert[c]], 
+                                                             vartable$pecanunits[vartable$lpjguessname == canconvert[c]], 
+                                                             vartable$lpjguessunits[vartable$lpjguessname == canconvert[c]])
+      }
+    }
+    return(x)
+  })
+  
   return(trait.values)
 } 
