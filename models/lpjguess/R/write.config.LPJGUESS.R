@@ -215,16 +215,71 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
 #' @author Istem Fer
 pecan2lpjguess <- function(trait.values){
   
-  # TODO : extend this list
+  # TODO : replace pecan names with correct ones
   vartable <- tibble::tribble(
     ~pecanname, ~lpjguessname, ~pecanunits, ~lpjguessunits, 
     "root_turnover_rate", "turnover_root", NA, NA, 
     "sapwood_turnover_rate", "turnover_sap", NA, NA, 
     "leaf_turnover_rate", "turnover_leaf", NA, NA,
-    "SLA", "sla", NA, NA)
+    "SLA", "sla", NA, NA,
+    "lambda_max", "lambda_max", NA, NA,         
+    "emax", "emax", NA, NA,
+    "reprfrac", "reprfrac", NA, NA,
+    "wscal_min", "wscal_min", NA, NA,
+    "drought_tolerance", "drought_tolerance", NA, NA,
+    "turnover_harv_prod", "turnover_harv_prod", NA, NA, 
+    "crownarea_max", "crownarea_max", NA, NA,
+    "ltor_max", "ltor_max", NA, NA,                
+    "rootdist", "rootdist", NA, NA,
+    "k_allom2", "k_allom2", NA, NA,           
+    "k_allom3", "k_allom3", NA, NA,          
+    "k_rp", "k_rp", NA, NA,               
+    "wooddens", "wooddens", NA, NA,           
+    "cton_root", "cton_root", NA, NA,
+    "cton_sap", "cton_sap", NA, NA,           
+    "nuptoroot", "nuptoroot", NA, NA,
+    "km_volume", "km_volume", NA, NA,            
+    "respcoeff", "respcoeff", NA, NA,
+    "kest_repr", "kest_repr", NA, NA,
+    "kest_bg", "kest_bg", NA, NA,           
+    "kest_pres", "kest_pres", NA, NA,
+    "k_chilla", "k_chilla", NA, NA,
+    "k_chillb", "k_chillb", NA, NA,
+    "k_chillk", "k_chillk", NA, NA,
+    "litterme", "litterme", NA, NA,
+    "harv_eff", "harv_eff", NA, NA,
+    "res_outtake", "res_outtake", NA, NA,
+    "harvest_slow_frac", "harvest_slow_frac", NA, NA,
+    "fnstorage", "fnstorage", NA, NA,      
+    "phengdd5ramp", "phengdd5ramp", NA, NA,
+    "est_max", "est_max", NA, NA,
+    "parff_min", "parff_min", NA, NA,
+    "alphar", "alphar", NA, NA,
+    "greff_min", "greff_min", NA, NA, 
+    "k_allom1", "k_allom1", NA, NA,
+    "k_latosa", "k_latosa", NA, NA,        
+    "gmin", "gmin", NA, NA,               
+    "intc", "intc", NA, NA,
+    "ga", "ga", NA, NA,
+    "tcmin_surv", "tcmin_surv", NA, NA,
+    "tcmin_est", "tcmin_est", NA, NA,
+    "tcmax_est", "tcmax_est", NA, NA,
+    "twmin_est", "twmin_est", NA, NA,
+    "gdd5min_est", "gdd5min_est", NA, NA,
+    "pstemp_min", "pstemp_min", NA, NA,
+    "pstemp_low", "pstemp_low", NA, NA,
+    "pstemp_high", "pstemp_high", NA, NA,        
+    "pstemp_max", "pstemp_max", NA, NA,
+    "leaflong", "leaflong", NA, NA,
+    "longevity", "longevity", NA, NA,
+    "fireresist", "fireresist", NA, NA,
+    "eps_iso", "eps_iso", NA, NA,
+    "seas_iso", "seas_iso", NA, NA,
+    "eps_mon", "eps_mon", NA, NA,
+    "storfrac_mon", "storfrac_mon", NA, NA)
   
   trait.values <- lapply(trait.values, function(x){
-    names(x)[match(vartable$pecanname, names(x))] <- vartable$lpjguessname[vartable$pecanname %in% names(x)]
+    names(x) <- vartable$lpjguessname[match(names(x), vartable$pecanname)]
     return(x)
   })
   
