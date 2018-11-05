@@ -4,12 +4,17 @@
 library(PEcAn.all)
 library(PEcAn.utils)
 library(RCurl)
+library(REddyProc)
+library(purrr)
 #------------------------------------------
-setwd("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek")
+setwd("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek")
 source('Utils.R')
-source('Download_US_Wcr.R')
-outputPath <- "/fs/data3/hamzed/Projects/WillowCreek"
-xmlPath <-"/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml"
+source('download_WCr_flux.R')
+source('download_WCr_met.R')
+source("gapfill_WCr.R")
+source('prep.data.assim.R')
+outputPath <- "/fs/data3/kzarada/Projects/WillowCreek"
+xmlPath <-"/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml"
 #------------------------------------------------------ Preparing the pecan xml
 # Open and read in settings file for PEcAn run.
 args <- commandArgs(trailingOnly = TRUE)
@@ -20,11 +25,16 @@ if (is.na(args[1])){
   settings <- PEcAn.settings::read.settings(settings.file)
 }
 
-#---------------- Read in the prep obs data 
-# this gives us the start and end date we have obs data to do SDA
-# Then use those start and end dates to set in line 36,37
+#--------------------------- Calling in prepped data 
+sda.end <- as.Date(Sys.Date())
+sda.start <- as.Date(sda.end - lubridate::days(90))
 
+prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
 
+#--------------------------- Preparing OBS  data
+met.end <- prep.data[[length(prep.data)]]$Date
+obs.raw <- download_US_WCr_flux(sda.start, met.end)  
+met.raw <- download_US_WCr_met(sda.start, met.end)
 #---------- Finding the start and end date - because download met is going to use it
 if (exists("source_date")) {
   start_date <- round.to.six.hours(source_date)
@@ -40,18 +50,16 @@ settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 # and ensemble dates
 settings$ensemble$start.year <- format(start_date, "%Y")
 settings$ensemble$end.year <- as.character(end_date, "%Y")
-
+#and SDA dates 
+settings$state.data.assimilation$state.date <- as.character(start_date)
+settings$state.data.assimilation$end.date <- as.character(Sys.Date())
 #-- Setting the out dir
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
-#--------------------------- Preparing OBS  data
-start.Date.obs <- Sys.Date()
-obs.raw <- download_US_WCr(start.Date.obs-1,start.Date.obs)
-
 #--------- Making a plot
 obs.plot <- obs.raw %>%
-            tidyr::gather(Param, Value, -c(Date)) %>%
+            tidyr::gather(Param, Value, -c(date)) %>%
             filter(!(Param %in% c("Fjday", "U"))) %>%
-            ggplot(aes(Date, Value)) +
+            ggplot(aes(date, Value)) +
             geom_line(aes(color = Param), lwd = 1) +
             geom_point(aes(color = Param), size = 3) +
             facet_wrap( ~ Param, scales = "free",ncol = 2) +
