@@ -27,8 +27,6 @@ Imports:
     data.table,
     dplyr,
     getPass,
-    dplyr,
-    getPass,
     ggplot2,
     lubridate (>= 1.6.0),
     magrittr,
