@@ -8,6 +8,7 @@ library(RCurl)
 setwd("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek")
 source('Utils.R')
 source('Download_US_Wcr.R')
+source('prep.data.assim.R')
 outputPath <- "/fs/data3/hamzed/Projects/WillowCreek"
 xmlPath <-"/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml"
 #------------------------------------------------------ Preparing the pecan xml
@@ -19,6 +20,11 @@ if (is.na(args[1])){
   settings.file = args[1]
   settings <- PEcAn.settings::read.settings(settings.file)
 }
+
+#---------- Data Prep for flux data 
+
+
+
 
 #---------- Finding the start and end date - because download met is going to use it
 if (exists("source_date")) {
@@ -35,12 +41,22 @@ settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 # and ensemble dates
 settings$ensemble$start.year <- format(start_date, "%Y")
 settings$ensemble$end.year <- as.character(end_date, "%Y")
-
+#and SDA dates 
+settings$state.data.assimilation$state.date <- as.character(start_date)
+settings$state.data.assimilation$end.date <- as.character(Sys.Date())
 #-- Setting the out dir
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
+
+
 #--------------------------- Preparing OBS  data
-start.Date.obs <- Sys.Date()
-obs.raw <- download_US_WCr(start.Date.obs-1,start.Date.obs)
+start.Date.obs <- Sys.Date() 
+obs.raw <- download_US_WCr_flux(start.Date.obs-1,start.Date.obs)
+
+#--------------------------- Calling in prepped data 
+
+
+
+
 
 #--------- Making a plot
 obs.plot <- obs.raw %>%
