@@ -5,7 +5,7 @@
 \title{download.LandTrendr.AGB}
 \usage{
 download.LandTrendr.AGB(outdir, product_dates = NULL,
-  prodcut_version = NULL, con = NULL, run_parallel = TRUE,
+  product_version = "v1", con = NULL, run_parallel = TRUE,
   ncores = NULL, overwrite = FALSE)
 }
 \arguments{
@@ -13,7 +13,7 @@ download.LandTrendr.AGB(outdir, product_dates = NULL,
 
 \item{product_dates}{What data product dates to download}
 
-\item{prodcut_version}{Optional. LandTrend AGB is provided with two versions, 
+\item{product_version}{Optional. LandTrend AGB is provided with two versions, 
 v0 and v1 (latest version)}
 
 \item{con}{Optional database connection. If specified then the code will check to see}
@@ -23,8 +23,6 @@ v0 and v1 (latest version)}
 \item{ncores}{Optional. If run_parallel=TRUE how many cores to use?  If left as NULL will select max number -1}
 
 \item{overwrite}{Logical. Overwrite existing files and replace with new versions}
-
-\item{generate_plots}{Optional. Create output diagnostic plots in outdir? --- ACTUALLY PUT THIS IN extract_ABG}
 }
 \value{
 data.frame summarize the results of the function call
@@ -35,17 +33,17 @@ download.LandTrendr.AGB
 \examples{
 \dontrun{
 outdir <- "~/scratch/abg_data/"
-product_dates <- c(1990,1991)
-product_dates2 <- seq(1992,1995,1)
-prodcut_version = "v1"
+product_dates <- c(1990, 1991, 1995)  # using discontinous, or specific years
+product_dates2 <- seq(1992, 1995, 1)  # using a date sequence for selection of years
+product_version = "v1"
 
 results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
            product_dates = product_dates, 
-           prodcut_version = prodcut_version)
+           product_version = product_version)
 
 results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
            product_dates = product_dates2, 
-           prodcut_version = prodcut_version)
+           product_version = product_version)
 }
 
 }

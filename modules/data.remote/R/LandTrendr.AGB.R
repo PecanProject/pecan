@@ -3,15 +3,15 @@
 ##' @name  download.LandTrendr.AGB
 ##' 
 ##' @param outdir Where to place output
+##' @param target_dataset Which LandTrendr dataset to download?  Default = "biomass"
 ##' @param product_dates What data product dates to download
-##' @param prodcut_version Optional. LandTrend AGB is provided with two versions, 
+##' @param product_version Optional. LandTrend AGB is provided with two versions, 
 ##' v0 and v1 (latest version)
 ##' @param con Optional database connection. If specified then the code will check to see 
 ## if the file already exists in PEcAn before downloading, and will also create a database 
 ## entry for new downloads
 ##' @param run_parallel Logical. Download and extract files in parallel?
 ##' @param ncores Optional. If run_parallel=TRUE how many cores to use?  If left as NULL will select max number -1
-##' @param generate_plots Optional. Create output diagnostic plots in outdir? --- ACTUALLY PUT THIS IN extract_ABG
 ##' @param overwrite Logical. Overwrite existing files and replace with new versions
 ##' 
 ##' @return data.frame summarize the results of the function call
@@ -19,24 +19,25 @@
 ##' @examples
 ##' \dontrun{
 ##' outdir <- "~/scratch/abg_data/"
-##' product_dates <- c(1990,1991)
-##' product_dates2 <- seq(1992,1995,1)
-##' prodcut_version = "v1"
+##' product_dates <- c(1990, 1991, 1995)  # using discontinous, or specific years
+##' product_dates2 <- seq(1992, 1995, 1)  # using a date sequence for selection of years
+##' product_version = "v1"
 ##' 
 ##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
 ##'            product_dates = product_dates, 
-##'            prodcut_version = prodcut_version)
+##'            product_version = product_version)
 ##' 
 ##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
 ##'            product_dates = product_dates2, 
-##'            prodcut_version = prodcut_version)
+##'            product_version = product_version)
 ##' }
 ##' 
 ##' @export
 ##' @author Shawn Serbin
 ##'
-download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_version = NULL, con = NULL, 
-                                    run_parallel = TRUE, ncores = NULL, overwrite = FALSE) {
+download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_dates = NULL, 
+                                    product_version = "v1", con = NULL, run_parallel = TRUE, 
+                                    ncores = NULL, overwrite = FALSE) {
   
   # steps to implement:
   # check if files exist locally, also are they valid?  Check DB for file location
@@ -71,23 +72,19 @@ download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_versio
   ## setup
   PEcAn.logger::logger.info("*** Downloading LandTrendr ABG data products ***")
   URL <- "ftp://islay.ceoas.oregonstate.edu/cms"
-  
-  # put in default product version if missing - can we make this dynamic and "find" latest version on FTP?
-  if (is.null(prodcut_version)) {
-    prodcut_version <- "v1"
-    PEcAn.logger::logger.info(paste0("No product version selected, using version: ", prodcut_version))
-  }
-  
+
   # setup product defaults
-  target_dataset <- "biomassfiaald"
+  #target_dataset <- "biomassfiaald"  # looks like they changed the directory structure
+  #target_dataset <- "biomass"         # now just "biomass"  --- now an argument
+  target_filename_prefix <- "biomassfiaald"
   file_ext <- ".zip"
-  obs_files <- paste0(target_dataset,"_",target_download_years,"_median",file_ext)  # hard-coded name matching source, OK?
-  err_files <- paste0(target_dataset,"_",target_download_years,"_stdv",file_ext)    # hard-coded name matching source, OK?
+  obs_files <- paste0(target_filename_prefix,"_",target_download_years,"_median",file_ext)  # hard-coded name matching source, OK?
+  err_files <- paste0(target_filename_prefix,"_",target_download_years,"_stdv",file_ext)    # hard-coded name matching source, OK?
   files_to_download <- c(obs_files,err_files)
   local_files <- file.path(outdir,gsub(".zip", ".tif",files_to_download))
   
-  prod_obs_urls <- paste(URL,prodcut_version,target_dataset,"median",obs_files,sep="/")
-  prod_err_urls <- paste(URL,prodcut_version,target_dataset,"stdv",err_files,sep="/")
+  prod_obs_urls <- paste(URL,product_version,target_dataset,"median",obs_files,sep="/")
+  prod_err_urls <- paste(URL,product_version,target_dataset,"stdv",err_files,sep="/")
   download_urls <- c(prod_obs_urls,prod_err_urls)
   
   # identify these are compressed files
@@ -112,7 +109,7 @@ download.LandTrendr.AGB <- function(outdir, product_dates = NULL, prodcut_versio
   ## check for local files exist - do we want to do this?  Or use DB? Or both?
   # use this to subset the files that need to be downloaded. Check file size first?
   # ok to do this in one shot or need to check file by file....think this is OK
-  if (file.exists(local_files) && !isTRUE(overwrite)) {
+  if (!all(file.exists(local_files)) && !isTRUE(overwrite)) {
     files_to_download_final <- files_to_download[!file.exists(local_files)]
     download_urls_final <- download_urls[!file.exists(local_files)]
   } else {
