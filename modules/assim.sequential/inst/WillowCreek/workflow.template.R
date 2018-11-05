@@ -24,8 +24,6 @@ if (is.na(args[1])){
 #---------- Data Prep for flux data 
 
 
-
-
 #---------- Finding the start and end date - because download met is going to use it
 if (exists("source_date")) {
   start_date <- round.to.six.hours(source_date)
@@ -48,21 +46,24 @@ settings$state.data.assimilation$end.date <- as.character(Sys.Date())
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
 
 
-#--------------------------- Preparing OBS  data
-start.Date.obs <- Sys.Date() 
-obs.raw <- download_US_WCr_flux(start.Date.obs-1,start.Date.obs)
+
 
 #--------------------------- Calling in prepped data 
+sda.start <- as.Date(Sys.Date())
+sda.end <- as.Date(sda.start - lubridate::days(5))
 
-
-
-
+prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE")) 
+  
+#--------------------------- Preparing OBS  data
+start.Date.obs <- Sys.Date() 
+obs.raw <- download_US_WCr_flux(settings$state.data.assimilation$start.date,settings$state.data.assimilation$end.date)  
+met.raw <- download_US_WCr_met(settings$state.data.assimilation$start.date,settings$state.data.assimilation$end.date)
 
 #--------- Making a plot
 obs.plot <- obs.raw %>%
-            tidyr::gather(Param, Value, -c(Date)) %>%
+            tidyr::gather(Param, Value, -c(date)) %>%
             filter(!(Param %in% c("Fjday", "U"))) %>%
-            ggplot(aes(Date, Value)) +
+            ggplot(aes(date, Value)) +
             geom_line(aes(color = Param), lwd = 1) +
             geom_point(aes(color = Param), size = 3) +
             facet_wrap( ~ Param, scales = "free",ncol = 2) +

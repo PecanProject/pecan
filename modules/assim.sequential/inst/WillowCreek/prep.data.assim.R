@@ -109,7 +109,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars) {
 
 #prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-15",numvals = 100, var = "NEE")
 
-prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))
+#prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))
 
 
 #prep.data.assim(start_date = "2017-10-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))->ss
