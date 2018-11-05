@@ -78,7 +78,7 @@ $(call depends,base/db): | .install/base/utils
 $(call depends,base/qaqc): | .install/base/utils
 $(call depends,base/settings): | .install/base/utils .install/base/db
 $(call depends,base/visualization): | .install/base/db
-$(call depends,base/workflow): | .install/base/db .install/base/settings .install/modules/data.atmosphere
+$(call depends,base/workflow): | .install/modules/data.atmosphere .install/modules/data.land .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/modules/uncertainty .install/base/utils
 $(call depends,modules/allometry): | .install/base/db
 $(call depends,modules/assim.batch): | .install/base/utils .install/base/db .install/base/settings .install/base/remote .install/modules/meta.analysis
 $(call depends,modules/assim.sequential): | .install/base/remote
