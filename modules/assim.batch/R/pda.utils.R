@@ -800,6 +800,13 @@ return_hyperpars <- function(assim.settings, inputs){
 
 
 ##' Helper function that loads history from previous PDA run, but returns only requested objects
+##' 
+##' @param workdir path of working dir e.g. '/fs/data2/output/PEcAn_***'
+##' @param ensemble.id ensemble id of a previous PDA run, from which the objects will be retrieved
+##' @param objects object names that are common to all multi PDA runs, e.g. llik.fn, prior.list etc.
+##' 
+##' @return a list of objects that will be used in joint and hierarchical PDA
+##' 
 ##' @author Istem Fer
 ##' @export
 load_pda_history <- function(workdir, ensemble.id, objects){
