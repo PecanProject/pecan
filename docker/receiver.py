@@ -25,7 +25,7 @@ def callback(ch, method, properties, body):
         logging.info("Rebuilding PEcAn with make")
         application = 'make'
         folder = '/pecan'
-    if custom_application is not None:
+    elif custom_application is not None:
         application = custom_application
     else:
         logging.info("Running default command: %s" % default_application)
