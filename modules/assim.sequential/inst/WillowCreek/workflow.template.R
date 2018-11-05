@@ -5,12 +5,14 @@ library(PEcAn.all)
 library(PEcAn.utils)
 library(RCurl)
 #------------------------------------------
-setwd("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek")
+setwd("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek")
 source('Utils.R')
-source('Download_US_Wcr.R')
+source('download_WCr_flux.R')
+source('download_WCr_met.R')
+source("gapfill_WCr.R")
 source('prep.data.assim.R')
-outputPath <- "/fs/data3/hamzed/Projects/WillowCreek"
-xmlPath <-"/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml"
+outputPath <- "/fs/data3/kzarada/Projects/WillowCreek"
+xmlPath <-"/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml"
 #------------------------------------------------------ Preparing the pecan xml
 # Open and read in settings file for PEcAn run.
 args <- commandArgs(trailingOnly = TRUE)
@@ -49,15 +51,15 @@ settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
 
 
 #--------------------------- Calling in prepped data 
-sda.start <- as.Date(Sys.Date())
-sda.end <- as.Date(sda.start - lubridate::days(5))
+sda.end <- as.Date(Sys.Date())
+sda.start <- as.Date(sda.end - lubridate::days(90))
 
-prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE")) 
+prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE")) 
   
 #--------------------------- Preparing OBS  data
-start.Date.obs <- Sys.Date() 
-obs.raw <- download_US_WCr_flux(settings$state.data.assimilation$start.date,settings$state.data.assimilation$end.date)  
-met.raw <- download_US_WCr_met(settings$state.data.assimilation$start.date,settings$state.data.assimilation$end.date)
+met.end <- prep.data[[length(prep.data)]]$Date
+obs.raw <- download_US_WCr_flux(sda.start, met.end)  
+met.raw <- download_US_WCr_met(sda.start, met.end)
 
 #--------- Making a plot
 obs.plot <- obs.raw %>%
