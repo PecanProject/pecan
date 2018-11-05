@@ -107,6 +107,11 @@ NOTE: All commands assume you are working from the PEcAn source code root direct
 NOTE: The updates with this workflow are _specific to the running container session_; restarting the `executor` container will revert to the previous versions of the installed packages.
 To make persistent changes, you should re-build the `pecan/base` and `pecan/executor` containers against the current version of the source code.
 
+NOTE: The mounted PEcAn source code directory includes _everything_ in your local source directory, _including installation artifacts used by make_.
+This can lead to two common issues:
+- Any previous make cache files (stuff in the `.install`, `.docs`, etc. directories) persist across container instances, even though the installed packages may not. To ensure a complete build, it's a good idea to run `make clean` on the host machine to remove these artifacts.
+- Similarly, any installation artifacts from local builds will be carried over to the build. In particular, be wary of packages with compiled code, such as `modules/rtm` (`PEcAnRTM`) -- the compiled `.o`, `.so`, `.mod`, etc. files from compilation of such packages will carry over into the build, which can cause conflicts if the package was also built locally.
+
 The `docker-compose.override.yml` is useful for some other local modifications.
 For instance, the following adds a custom ED2 "develop" model container.
 
