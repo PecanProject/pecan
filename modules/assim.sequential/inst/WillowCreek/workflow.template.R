@@ -54,7 +54,7 @@ settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
 sda.end <- as.Date(Sys.Date())
 sda.start <- as.Date(sda.end - lubridate::days(90))
 
-prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE")) 
+prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
   
 #--------------------------- Preparing OBS  data
 met.end <- prep.data[[length(prep.data)]]$Date

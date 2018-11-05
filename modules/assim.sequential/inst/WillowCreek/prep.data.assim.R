@@ -6,10 +6,11 @@
 ##'@param settings the PEcAn settings object (a collection of nested lists)
 ##'@param numvals number of simulated data points for each time point
 ##'@param vars variable (NEE or LE) that you want to do data assimilation on 
+##'@param data.len how many hours for the output (default is 48 hours)
 ##'@return None
 ##'@export
 ##'@author Luke Dramko and K. Zarada and Hamze Dokoohaki
-prep.data.assim <- function(start_date, end_date, numvals, vars) {
+prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) {
   
   Date.vec <-NULL
   
@@ -80,7 +81,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars) {
          names(x)[2:numvals] <- paste0(names(x)[2:numvals], xnames)
  
          x %>%
-           tail(48) %>%
+           tail(data.len) %>%
            mutate(Interval = lubridate::round_date(Date, "6 hour")) %>%
            dplyr::select(-Date)
        }) %>%
