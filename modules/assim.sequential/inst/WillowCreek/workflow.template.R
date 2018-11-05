@@ -20,6 +20,11 @@ if (is.na(args[1])){
   settings <- PEcAn.settings::read.settings(settings.file)
 }
 
+#---------------- Read in the prep obs data 
+# this gives us the start and end date we have obs data to do SDA
+# Then use those start and end dates to set in line 36,37
+
+
 #---------- Finding the start and end date - because download met is going to use it
 if (exists("source_date")) {
   start_date <- round.to.six.hours(source_date)
