@@ -8,20 +8,20 @@ Contruct.Pf(site.ids, var.names, X, localization.FUN = NULL, t = 1,
   blocked.dis = NULL, ...)
 }
 \arguments{
-\item{site.ids}{a vector name of site ids}
+\item{site.ids}{a vector name of site ids.}
 
-\item{var.names}{vector names of state variable names}
+\item{var.names}{vector names of state variable names.}
 
 \item{X}{a matrix of state variables. In this matrix rows represent ensembles, while columns show the variables for different sites.}
 
-\item{localization.FUN}{This is function that performs the localization of the Pf matrix and it returns a localized matrix with the same dimensions.}
+\item{localization.FUN}{This is the function that performs the localization of the Pf matrix and it returns a localized matrix with the same dimensions.}
 }
 \value{
 It returns the var-cov matrix of state variables at multiple sites.
 }
 \description{
 The argument X needs to have an attribute pointing the state variables to their corresponding site. This attribute needs to be called `Site`.
-At the moment, the cov between state variables at block defining the cov between two sites are assumed zero.
+At the moment, the cov between state variables at blocks defining the cov between two sites are assumed zero.
 }
 \author{
 Hamze Dokoohaki

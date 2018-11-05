@@ -4,14 +4,14 @@
 \alias{simple.local}
 \title{simple.local}
 \usage{
-simple.local(pf.matrix, distance.mat, scalef = 2)
+simple.local(Pf, distance.mat, scalef = 2)
 }
 \arguments{
-\item{distance.mat}{is matrix of distances between state variables and sites with the same dimension of Pf.}
-
 \item{Pf}{Forecast error coveriance matrix}
 
-\item{rloc}{is a numeric value that requires tunning and it controls the shape of the corrolation function}
+\item{distance.mat}{is matrix of distances between sites.}
+
+\item{scalef}{scalef is a numeric value that requires tunning and it controls the shape of the corrolation function}
 }
 \value{
 It returns a localized covariance matrix by taking a Schur product between Pf and a corrolation function

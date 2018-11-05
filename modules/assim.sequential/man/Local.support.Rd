@@ -9,7 +9,7 @@ Local.support(Pf, distance.mat, scalef = 1)
 \arguments{
 \item{Pf}{Forecast error coveriance matrix}
 
-\item{distance.mat}{is matrix of distances between state variables and sites with the same dimension of Pf.}
+\item{distance.mat}{is matrix of distances between sites.}
 
 \item{scalef}{scalef is a numeric value that requires tunning and it controls the shape of the corrolation function}
 }

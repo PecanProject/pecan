@@ -11,7 +11,7 @@ EnKF.MultiSite(setting, Forecast, Observed, H, extraArg = NULL, ...)
 
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
-\item{H}{is a mtrix of 1's and 0's specifying which observations go with which variables.}
+\item{H}{is a mtrix of 1's and 0's specifying which observations go with which state variables.}
 
 \item{extraArg}{This argument is NOT used inside this function but it is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.}
 
@@ -26,7 +26,7 @@ It returns a list with estimated mean and cov matrix of forecast state variables
 Given the Forecast and Observed this function performs the Ensemble Kalamn Filter.
 }
 \details{
-This function is different than EnKF in terms of how it creates the Pf matrix.
+This function is different than `EnKF` function in terms of how it creates the Pf matrix.
 }
 \author{
 Michael Dietze \email{dietze@bu.edu}, Ann Raiho and Hamze Dokoohaki

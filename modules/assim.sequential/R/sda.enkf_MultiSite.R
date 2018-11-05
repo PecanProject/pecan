@@ -197,7 +197,6 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------------###-----  
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
     if (t>1){
-   
       #removing old simulations
       unlink(list.files(outdir, "*.nc", recursive = T, full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
@@ -448,16 +447,12 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ## in the future will have to be separated from analysis
     new.state  <- as.data.frame(analysis)
     ANALYSIS[[t]] <- analysis
-    ### Interactive plotting ------------------------------------------------------   
-    if (t > 1 & control$interactivePlot) { #
-      print(interactive.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS))
-    }
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
-    save(t, FORECAST, ANALYSIS, enkf.params,new.state,new.params,out.configs,ensemble.samples,inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    save(t, FORECAST, ANALYSIS, enkf.params, new.state, new.params, out.configs, ensemble.samples, inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
-    if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title,facetg=control$facet.plots, readsFF=readsFF)
+    if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
   } ### end loop over time
   
 } # sda.enkf
