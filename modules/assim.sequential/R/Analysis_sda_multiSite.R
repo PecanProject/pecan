@@ -5,10 +5,10 @@
 ##' @param settings  pecan standard settings list.  
 ##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
+##' @param H is a mtrix of 1's and 0's specifying which observations go with which state variables.
 ##' @param extraArg This argument is NOT used inside this function but it is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.
 ##' @param ... Extra argument sent to the analysis function.
-##' @details This function is different than EnKF in terms of how it creates the Pf matrix.
+##' @details This function is different than `EnKF` function in terms of how it creates the Pf matrix.
 ##'  
 ##' 
 ##' @description Given the Forecast and Observed this function performs the Ensemble Kalamn Filter. 
@@ -38,15 +38,19 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   # I make the Pf in a separate function
   if(length(site.ids)>1){
     
-    #Finding the dis between sites
-    distances <- sp::spDists(site.locs,longlat=T)
+    #Finding the distance between the sites
+    distances <- sp::spDists(site.locs, longlat=T)
     #turn that into a blocked matrix format
     blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
     
-    # This the function and makes the Pf by creating blocks in it for different sites
+    # This the function makes the Pf by creating blocks in a matrix for different sites
     # We can also send a localization functions to this 
     # for extra argumnets like distance matrix for localization use elipsis
-    Pf <- Contruct.Pf (site.ids, var.names, X, localization.FUN=eval(parse(text = Localization.FUN)), t=extraArg$t, blocked.dis, scalef)
+    Pf <- Contruct.Pf (site.ids, var.names, X,
+                       localization.FUN=eval(parse(text = Localization.FUN)),
+                       t=extraArg$t,
+                       blocked.dis,
+                       scalef)
   }else{
     PEcAn.logger::logger.severe("You need to send this function a multisetting object containing multiple sites/runs.")
   }

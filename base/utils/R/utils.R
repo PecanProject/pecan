@@ -159,7 +159,7 @@ vecpaste <- function(x) paste(paste0("'", x, "'"), collapse = ",")
 ##' ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis
 ##' @param trait name of trait being sampled (for sensitivity analysis)
 ##' @param pft.name name of PFT (value from pfts.names field in database)
-##' @param site.id site id . This is could be necessary for multisite write=false ensembles.
+##' @param site.id optional site id .This is could be necessary for multisite write=false ensembles.
 ##' @return id representing a model run
 ##' @export
 ##' @examples

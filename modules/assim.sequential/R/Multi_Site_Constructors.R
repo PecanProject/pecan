@@ -2,12 +2,12 @@
 ##' @name  Contruct.Pf
 ##' @author Hamze Dokoohaki
 ##' 
-##' @param site.ids a vector name of site ids  
-##' @param var.names vector names of state variable names
+##' @param site.ids a vector name of site ids.  
+##' @param var.names vector names of state variable names.
 ##' @param X a matrix of state variables. In this matrix rows represent ensembles, while columns show the variables for different sites.
-##' @param localization.FUN This is function that performs the localization of the Pf matrix and it returns a localized matrix with the same dimensions.
+##' @param localization.FUN This is the function that performs the localization of the Pf matrix and it returns a localized matrix with the same dimensions.
 ##' @description The argument X needs to have an attribute pointing the state variables to their corresponding site. This attribute needs to be called `Site`.
-##' At the moment, the cov between state variables at block defining the cov between two sites are assumed zero.
+##' At the moment, the cov between state variables at blocks defining the cov between two sites are assumed zero.
 ##' @return It returns the var-cov matrix of state variables at multiple sites.
 ##' @export 
 
@@ -16,14 +16,14 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   #setup
   nsite <- length(site.ids)
   nvariable <- length(var.names)
-  # I will make a big cov matrix and then I will populate it withgit status cov of each site
+  # I will make a big cov matrix and then I will populate it with the cov of each site
   pf.matrix <-matrix(0,(nsite*nvariable),(nsite*nvariable))
   
-  ## This makes the diagnol of our big matrix - first filters out each site, estimates the cov and puts it where it needs to go.
+  ## This makes the diagonal of our big matrix - first filters out each site, estimates the cov and puts it where it needs to go.
   for (site in site.ids){
     #let's find out where this cov (for the current site needs to go in the main cov matrix)
     pos.in.matrix <- which(attr(X,"Site") %in% site)
-   #forach site let's get the Xs
+   #foreach site let's get the Xs
     pf.matrix [pos.in.matrix, pos.in.matrix] <- cov( X [, pos.in.matrix] ,use="complete.obs")
   }
   
@@ -45,7 +45,6 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     pf.matrix [rows.in.matrix, cols.in.matrix] <- two.site.cov
     
   }
-  
   
   # if I see that there is a localization function passed to this - I run it by the function.
   if (!is.null(localization.FUN)) {
@@ -113,10 +112,6 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
        edge.arrow.size = 0.3, edge.arrow.width = 0.4, edge.color = "black")
   dev.off()
   
-
-  
-  
-  
   return(pf.matrix.out)
 
 }
@@ -159,11 +154,8 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
   #make block matrix out of our collection
   R <- Matrix::bdiag(site.specific.Rs) %>% as.matrix()
     }
-    
-    
 
-
-    return(list(Y=Y, R=R))
+  return(list(Y=Y, R=R))
 }
 
 
