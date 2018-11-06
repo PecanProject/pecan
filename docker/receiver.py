@@ -15,7 +15,7 @@ default_application = os.getenv('APPLICATION', 'job.sh')
 # called for every message, this will start the program and ack message if all is ok.
 def callback(ch, method, properties, body):
     logging.info(body)
-    jbody = json.loads(body)
+    jbody = json.loads(body.decode('UTF-8'))
 
     rebuild = jbody.get('rebuild')
     custom_application = jbody.get('custom_application')
