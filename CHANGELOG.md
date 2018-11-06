@@ -28,6 +28,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Docker:
   - Change base image for R code from `r-base` to `rocker/tidyverse:3.5.1`. This (1) saves build time (because many R packages and system dependencies are pre-installed), and (2) enhances reproducibility (because of the strict versioning rules of the `rocker` packages)
   - Re-factor web interface RabbitMQ create connections and post messages into their own PHP functions.
+- **`PEcAn.data.atmosphere::met.process` uses browndog fence API instead of polyglot**. This will allow the BrownDog team to track work done as well as allow them to scale the servers to handle more requests.
 
 ## [1.6.0] - 2018-09-01
 

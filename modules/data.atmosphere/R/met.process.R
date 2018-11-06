@@ -461,6 +461,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   
   pecanxml <- tempfile("pecan.xml")
   write(xmldata, pecanxml)
+  # no file is downloaded to the machine. "./" is just a placeholder. 
   result.url <- BrownDog::convert_file(browndog$url, pecanxml, formatname, "./", browndog$token, download=FALSE)
   PEcAn.logger::logger.info("browndog download url :", result.url)
   downloadedfile <- PEcAn.utils::download.url(result.url, outputfile, 600, curloptions)

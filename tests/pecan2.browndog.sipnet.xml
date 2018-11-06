@@ -4,6 +4,10 @@
  <browndog>
    <!--
      token expire after 24 hours
+     to get a token:
+     > library(BrownDog)
+     > key <- BrownDog::get_key("https://bd-api-dev.ncsa.illinois.edu", "your email", "password")
+     > token <- BrownDog::get_token("https://bd-api-dev.ncsa.illinois.edu", key)
    -->
    <url>https://bd-api-dev.ncsa.illinois.edu</url>
    <token>8ba6c4ad-ea4d-43e4-bd6d-8d41161eaf2d</toiken> 
