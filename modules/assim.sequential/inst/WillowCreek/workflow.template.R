@@ -30,10 +30,21 @@ sda.end <- as.Date(Sys.Date())
 sda.start <- as.Date(sda.end - lubridate::days(90))
 
 prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
-#--------------------------- Preparing OBS  data
-met.end <- prep.data[[length(prep.data)]]$Date
-obs.raw <- download_US_WCr_flux(sda.start, met.end)  
-met.raw <- download_US_WCr_met(sda.start, met.end)
+#--------------------------- Preparing OBSdata
+obs.vars <- grep(paste0("_*_f$"), names(prep.data), value = TRUE)
+obs.filled <- as.data.frame(matrix(ncol = length(obs.vars), nrow=length(prep.data$Date)))
+obs.filled$Date<- prep.data$Date
+
+for(i in 1:length(obs.vars)){
+  obs.filled[,i] <- prep.data[which(names(prep.data) == obs.vars)][i]
+}
+colnames(obs.filled) <- c(obs.vars, "Date")
+
+met.start <- head(prep.data$Date, 1)
+met.end <- tail(prep.data$Date,1)
+met.raw <- download_US_WCr_met(met.start, met.end)
+
+  
 #---------- Finding the start and end date - because download met is going to use it
 if (exists("source_date")) {
   start_date <- round.to.six.hours(source_date)
