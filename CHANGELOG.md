@@ -14,6 +14,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Make sure web interface posts RabbitMQ messages even after editing files (fixes #2151)
   - Can specify name of docker cluster using PECAN_FQDN and PECAN_NAME (fixes #2128)
   - Fixed issue where setting username/password for rabbitmq would break web submit (fixes #2185)
+- ED2:
+  - Add ability to pass arbitrary arguments to the ED binary through the `pecan.xml` (#2183; fixes #2146).
 
 ### Added
 - Lots of new documentation for running PEcAn using Docker
