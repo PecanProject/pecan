@@ -128,7 +128,7 @@ yaml::write_yaml(dc_yaml$services["traefik"], stdout())
  
 #### `portainer` {#pecan-dc-portainer}
 
-[portainer](https://portainer.io/) is lightweight management ui that allows you to manage the docker host (or swarm). You can use this service to monitor the different containers, see the logfiles, start and stop containers.
+[portainer](https://portainer.io/) is lightweight management UI that allows you to manage the docker host (or swarm). You can use this service to monitor the different containers, see the logfiles, and start and stop containers.
 
 The portainer service configuration looks like this:
 
