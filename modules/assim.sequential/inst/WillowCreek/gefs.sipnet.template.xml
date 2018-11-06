@@ -34,8 +34,8 @@
    </variable>
   </state.variables>
   <forecast.time.step>year</forecast.time.step>
-  <start.date>1980/01/01</start.date>
-  <end.date>2015/12/31</end.date>
+  <start.date>2017-01-01</start.date>
+  <end.date>2018-11-05</end.date>
  </state.data.assimilation>
  <info>
   <notes></notes>
@@ -43,7 +43,7 @@
   <username></username>
   <date>2018/09/07 14:52:35 +0000</date>
  </info>
- <outdir>/fs/data3/kzarada/output/PEcAn_1000009774/</outdir>
+ <outdir>/fs/data3/kzarada/ouput/PEcAn_1000009774/</outdir>
  <database>
   <bety>
    <user>bety</user>
@@ -106,8 +106,8 @@
     <output>SIPNET</output>
    </met>
   </inputs>
-  <start.date>2018-09-07</start.date>
-  <end.date>2018-09-23</end.date>
+  <start.date>2018-11-05</start.date>
+  <end.date>2018-11-20</end.date>
  </run>
  <host>
   <name>localhost</name>

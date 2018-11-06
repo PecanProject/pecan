@@ -4,6 +4,8 @@
 library(PEcAn.all)
 library(PEcAn.utils)
 library(RCurl)
+library(REddyProc)
+library(purrr)
 #------------------------------------------
 setwd("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek")
 source('Utils.R')
@@ -23,9 +25,15 @@ if (is.na(args[1])){
   settings <- PEcAn.settings::read.settings(settings.file)
 }
 
-#---------- Data Prep for flux data 
+#--------------------------- Calling in prepped data 
+sda.end <- as.Date(Sys.Date())
+sda.start <- as.Date(sda.end - lubridate::days(90))
 
-
+prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
+#--------------------------- Preparing OBS  data
+met.end <- prep.data[[length(prep.data)]]$Date
+obs.raw <- download_US_WCr_flux(sda.start, met.end)  
+met.raw <- download_US_WCr_met(sda.start, met.end)
 #---------- Finding the start and end date - because download met is going to use it
 if (exists("source_date")) {
   start_date <- round.to.six.hours(source_date)
@@ -38,45 +46,26 @@ settings$run$start.date <- as.character(start_date)
 settings$run$end.date <- as.character(end_date)
 #info
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
-# and ensemble dates
-settings$ensemble$start.year <- format(start_date, "%Y")
-settings$ensemble$end.year <- as.character(end_date, "%Y")
-#and SDA dates 
-settings$state.data.assimilation$state.date <- as.character(start_date)
-settings$state.data.assimilation$end.date <- as.character(Sys.Date())
 #-- Setting the out dir
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
-
-
-
-
-#--------------------------- Calling in prepped data 
-sda.end <- as.Date(Sys.Date())
-sda.start <- as.Date(sda.end - lubridate::days(90))
-
-prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
-  
-#--------------------------- Preparing OBS  data
-met.end <- prep.data[[length(prep.data)]]$Date
-obs.raw <- download_US_WCr_flux(sda.start, met.end)  
-met.raw <- download_US_WCr_met(sda.start, met.end)
-
 #--------- Making a plot
 obs.plot <- obs.raw %>%
             tidyr::gather(Param, Value, -c(date)) %>%
-            filter(!(Param %in% c("Fjday", "U"))) %>%
+            filter(!(Param %in% c("FjDay", "U","Day","DoY","FC","FjFay","Hour","Month",
+                                  "SC","Ustar","Year","H","Flag")),
+                   Value!=-999) %>%
             ggplot(aes(date, Value)) +
             geom_line(aes(color = Param), lwd = 1) +
             geom_point(aes(color = Param), size = 3) +
-            facet_wrap( ~ Param, scales = "free",ncol = 2) +
+            facet_wrap( ~ Param, scales = "free",ncol = 1) +
             scale_color_brewer(palette = "Set1") +
             theme_minimal(base_size = 15) +
             labs(y = "") +
             theme(legend.position = "none")
-#obs.plot
+
 # Make sure you have the premission - chmod is right
 dir.create(settings$outdir)
-ggsave(file.path(settings$outdir,"Obs_plot.png"), obs.plot , width = 18, height = 9)
+ggsave(file.path(settings$outdir,"Obs_plot.pdf"), obs.plot , width = 18, height = 10)
 
 
 # ----------------------------------------------------------------------
@@ -130,57 +119,17 @@ if(!is.null(settings$meta.analysis)) {
 
 
 # Write model specific configs
-if (PEcAn.utils::status.check("CONFIG") == 0){
-  PEcAn.utils::status.start("CONFIG")
-  settings <- runModule.run.write.configs(settings)
-  PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
-  PEcAn.utils::status.end()
-} else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
-  settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
-}
-print("---------- Wrtting Configs Completed ----------")
+# if (PEcAn.utils::status.check("CONFIG") == 0){
+#   PEcAn.utils::status.start("CONFIG")
+#   settings <- runModule.run.write.configs(settings)
+#   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
+#   PEcAn.utils::status.end()
+# } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
+#   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+# }
+# print("---------- Wrtting Configs Completed ----------")
 
-if ((length(which(commandArgs() == "--advanced")) != 0) && (PEcAn.utils::status.check("ADVANCED") == 0)) {
-  PEcAn.utils::status.start("ADVANCED")
-  q();
-}
 
-# Start ecosystem model runs
-if (PEcAn.utils::status.check("MODEL") == 0) {
-  PEcAn.utils::status.start("MODEL")
-  PEcAn.remote::runModule.start.model.runs(settings,stop.on.error=FALSE)
-  PEcAn.utils::status.end()
-}
-print("---------- Model runs Completed ----------")
-# Get results of model runs
-if (PEcAn.utils::status.check("OUTPUT") == 0) {
-  PEcAn.utils::status.start("OUTPUT")
-  runModule.get.results(settings)
-  PEcAn.utils::status.end()
-}
-
-# Run ensemble analysis on model output. 
-if ('ensemble' %in% names(settings) & PEcAn.utils::status.check("ENSEMBLE") == 0) {
-  PEcAn.utils::status.start("ENSEMBLE")
-  runModule.run.ensemble.analysis(settings, TRUE)    
-  PEcAn.utils::status.end()
-}
-print("---------- Ensemble Completed ----------")
-# Run sensitivity analysis and variance decomposition on model output
-if ('sensitivity.analysis' %in% names(settings) & PEcAn.utils::status.check("SENSITIVITY") == 0) {
-  PEcAn.utils::status.start("SENSITIVITY")
-  runModule.run.sensitivity.analysis(settings)
-  PEcAn.utils::status.end()
-}
-
-# Run parameter data assimilation
-if ('assim.batch' %in% names(settings)) {
-  if (PEcAn.utils::status.check("PDA") == 0) {
-    PEcAn.utils::status.start("PDA")
-    settings <- PEcAn.assim.batch::runModule.assim.batch(settings)
-    PEcAn.utils::status.end()
-  }
-}
 
 # Run state data assimilation
 if ('state.data.assimilation' %in% names(settings)) {
@@ -191,27 +140,3 @@ if ('state.data.assimilation' %in% names(settings)) {
   }
 }
 
-# Run benchmarking
-if("benchmarking" %in% names(settings)){
-  PEcAn.utils::status.start("BENCHMARKING")
-  results <- papply(settings, function(x) calc_benchmark(x, bety))
-  PEcAn.utils::status.end()
-}
-
-# Pecan workflow complete
-if (PEcAn.utils::status.check("FINISHED") == 0) {
-  PEcAn.utils::status.start("FINISHED")
-  PEcAn.remote::kill.tunnel(settings)
-  db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
-  
-  # Send email if configured
-  if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
-    sendmail(settings$email$from, settings$email$to,
-             paste0("Workflow has finished executing at ", base::date()),
-             paste0("You can find the results on ", settings$email$url))
-  }
-  PEcAn.utils::status.end()
-}
-
-db.print.connections()
-print("---------- PEcAn Workflow Complete ----------")
