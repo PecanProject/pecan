@@ -72,9 +72,10 @@ $fqdn = getenv('FQDN', true) ?: "docker";
 # - scratchdir : folder to be used for scratchspace when running certain
 #                models (such as ED)
 $hostlist=array($fqdn => 
-                    array("displayname"    => $fqdn,
+                    array("displayname"    => $name,
                           "rabbitmq_uri"   => getenv('RABBITMQ_URI', true) ?: "amqp://guest:guest@rabbitmq/%2F",
-                          "rabbitmq_queue" => "pecan"),
+                          "rabbitmq_queue" => "pecan"
+                    ),
                 "geo.bu.edu" =>
                     array("displayname" => "geo",
                           "qsub"        => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
