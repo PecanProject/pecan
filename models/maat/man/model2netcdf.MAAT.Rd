@@ -22,9 +22,6 @@ This is needed to identify model runs with and without met drivers and control t
 \item{end_date}{End time of the simulation}
 }
 \description{
-Convert MAAT output to netCDF
-}
-\details{
 Converts all output contained in a folder to netCDF.
 }
 \examples{
@@ -50,5 +47,5 @@ dev.off()
 
 }
 \author{
-Shawn Serbin, Anthony Walker
+Shawn Serbin, Anthony Walker, Alexey Shiklomanov
 }
