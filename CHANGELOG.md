@@ -12,6 +12,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed error in `read_web_config` which would filter out all variables.
 - Docker:
   - Make sure web interface posts RabbitMQ messages even after editing files (fixes #2151)
+- ED2:
+  - Add ability to pass arbitrary arguments to the ED binary through the `pecan.xml` (#2183; fixes #2146).
 
 ### Added
 - Lots of new documentation for running PEcAn using Docker

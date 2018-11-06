@@ -11,7 +11,7 @@ write.config.jobsh.ED2(settings, run.id)
 run$host$rundir, run$host$outdir, run$host$scratchdir,
 run$host$clearscratch, model$jobtemplate, model$job.sh, run$host$job.sh,
 run$site$lat, run$site$lon, run$inputs$met$path, run$start.date,
-run$end.date, model$binary}
+run$end.date, model$binary, model$binary_args}
 
 \item{run.id}{PEcAn run ID}
 }
