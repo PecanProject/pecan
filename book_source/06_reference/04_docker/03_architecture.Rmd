@@ -34,6 +34,7 @@ For full `docker-compose` syntax, see the [official documentation](https://docs.
 This section describes the [top-level structure](#pecan-dc-structure) and each of the services, which are as follows:
 
 - [`traefik`](#pecan-dc-traefik)
+- [`portainer`](#pecan-dc-portainer)
 - [`minio`](#pecan-dc-minio)
 - [`thredds`](#pecan-dc-thredds)
 - [`postgres`](#pecan-dc-postgres)
@@ -103,6 +104,19 @@ The traefik service configuration looks like this:
 ```{r, echo = FALSE, comment = ''}
 yaml::write_yaml(dc_yaml$services["traefik"], stdout())
 ```
+
+ 
+#### `portainer` {#pecan-dc-portainer}
+
+[portainer](https://portainer.io/) is lightweight management ui that allows you to manage the docker host (or swarm). You can use this service to monitor the different containers, see the logfiles, start and stop containers.
+
+The portainer service configuration looks like this:
+
+```{r, echo = FALSE, comment = ''}
+yaml::write_yaml(dc_yaml$services["portainer"], stdout())
+```
+
+Portainer is accessible by browsing to `localhost:8000/portainer/`. You can either set the password in the `.env` file (for an example see env.example) or you can use the web browser and go to the portainer url. If this is the first time it will ask for your password.
 
 #### `minio` {#pecan-dc-minio}
 

@@ -245,9 +245,9 @@ networks:
 
 # ----------------------------------------------------------------------
 # Volumes used by the PEcAn stack. These volumes are used to make sure
-# we have persistent data. Uncomment driver_opts if you want to place
-# the data folders at a well known location.
-# can use sed -i~ 's/^    # /    /' docker-compose.yml
+# we have persistent data. You can use add the commented section to your
+# docker-compose.override.yml to have the docker volumes placed at a
+# specific location.
 # ----------------------------------------------------------------------
 volumes:
   traefik:
