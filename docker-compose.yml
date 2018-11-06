@@ -37,11 +37,29 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=traefik"
       - "traefik.port=8080"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}PathPrefixStrip: /traefik"
-      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.18.0.0/16}"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip: /traefik"
+      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik:/config
+
+  # Allow to see all docker containers running, restart and see log files.
+  portainer:
+    image: portainer/portainer:latest
+    command:
+      - --admin-password=${PORTAINER_PASSWORD:-}
+      - --host=unix:///var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - pecan
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=portainer"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip: /portainer"
+      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer:/data
 
   # ----------------------------------------------------------------------
   # Access to the files generated and used by PEcAn, both through a
@@ -50,7 +68,7 @@ services:
 
   # webserver to handle access to data
   minio:
-    image: minio/minio
+    image: minio/minio:latest
     command: server /data
     restart: unless-stopped
     networks:
@@ -62,7 +80,7 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=minio"
       - "traefik.port=9000"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}PathPrefix:/minio/"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/minio/"
     volumes:
       - pecan:/data
 
@@ -77,7 +95,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.port=8080"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}PathPrefix:/thredds"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/thredds"
       - "traefik.backend=thredds"
 
   # ----------------------------------------------------------------------
@@ -100,8 +118,8 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=rabbitmq"
       - "traefik.port=15672"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}PathPrefix:/rabbitmq"
-      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.18.0.0/16}"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rabbitmq"
+      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
     volumes:
       - rabbitmq:/var/lib/rabbitmq
 
@@ -135,7 +153,7 @@ services:
       - postgres
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}PathPrefix:/bety/"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/bety/"
       - "traefik.backend=bety"
 
   # ----------------------------------------------------------------------
@@ -150,7 +168,7 @@ services:
       - pecan
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}PathPrefix:/"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/"
       - "traefik.backend=docs"
 
   # PEcAn web front end, this is just the PHP code
@@ -159,12 +177,16 @@ services:
     restart: unless-stopped
     networks:
       - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - FQDN=${PECAN_FQDN:-docker}
+      - NAME=${PECAN_NAME:-docker}
     depends_on:
        - postgres
        - rabbitmq
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}PathPrefix:/pecan/"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/pecan/"
       - "traefik.backend=pecan"
     volumes:
       - pecan:/data
@@ -176,7 +198,9 @@ services:
     restart: unless-stopped
     networks:
       - pecan
-    hostname: docker
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - FQDN=${PECAN_FQDN:-docker}
     depends_on:
        - postgres
        - rabbitmq
@@ -189,7 +213,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
-    image: pecan/model-sipnet-136
+    image: pecan/model-sipnet-136:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
@@ -202,7 +226,7 @@ services:
 
   # PEcAn ED model runner
   ed2:
-    image: pecan/model-ed2-git
+    image: pecan/model-ed2-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
@@ -223,6 +247,7 @@ networks:
 # Volumes used by the PEcAn stack. These volumes are used to make sure
 # we have persistent data. Uncomment driver_opts if you want to place
 # the data folders at a well known location.
+# can use sed -i~ 's/^    # /    /' docker-compose.yml
 # ----------------------------------------------------------------------
 volumes:
   traefik:
@@ -244,4 +269,9 @@ volumes:
     # driver_opts:
     #   type: none
     #   device: ${DATA_DIR:-/tmp}/pecan
+    #   o: bind
+  portainer:
+    # driver_opts:
+    #   type: none
+    #   device: ${DATA_DIR:-/tmp}/portainer
     #   o: bind
