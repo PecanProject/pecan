@@ -1,6 +1,9 @@
 #!/bin/bash
 
+# exit script if error occurs (-e) in any command of pipeline (pipefail)
+set -o pipefail
 set -e
+
 cd $(dirname $0)
 
 DEBUG=${DEBUG:-""}
