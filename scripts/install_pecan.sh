@@ -285,21 +285,6 @@ make
 sudo cp maespa.out /usr/local/bin/maespa.git
 make clean
 
-# echo "######################################################################"
-# echo "LPJ-GUESS"
-# echo "######################################################################"
-# if [ ! -e ${HOME}/guess_3.1 ]; then
-#   cd
-#   curl -o guess_3.1.tar.gz http://stormbringerii.nateko.lu.se/public/guess_download/guess_3.1.tar.gz
-#   tar xf guess_3.1.tar.gz
-#   rm guess_3.1.tar.gz
-# fi
-# cd ${HOME}/guess_3.1
-# cmake .
-# make
-# sudo cp guess /usr/local/bin/guess.3.1
-# make clean
-
 echo "######################################################################"
 echo "BioCro"
 echo "######################################################################"
@@ -735,4 +720,9 @@ https://pecan.gitbooks.io/pecan-documentation/content/models/
 EOF
   sudo cp /tmp/motd /etc/motd
   rm /tmp/motd
+
+  # fix prompt
+  sudo sed -i 's/\\h/\\H/g' /etc/bash.bashrc
+  sudo sed -i 's/\\h/\\H/g' /etc/profile
+  sed -i 's/\\h/\\H/g' ${HOME}/.bashrc
 fi
