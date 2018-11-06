@@ -57,7 +57,7 @@ docker_env_file <- file.path("..", "docker", "env.example")
 writeLines(readLines(docker_env_file))
 ```
 
-You can also extend the docker-compose file, allowing you to add more services, or for example to change where the volumes are stored. For example the following will change the volume for postgres to be stored in your home directory:
+You can also extend the `docker-compose.yml` file with a `docker-compose.override.yml` file (in the same directory), allowing you to add more services, or for example to change where the volumes are stored (see [official documentation](https://docs.docker.com/compose/extends/)). For example the following will change the volume for postgres to be stored in your home directory:
 
 ```
 version: "3"
