@@ -20,14 +20,6 @@ $browndog_url="";
 $browndog_username="";
 $browndog_password="";
 
-# rabbitmq connection
-$rabbitmq_host="rabbitmq";
-$rabbitmq_port="5672";
-$rabbitmq_vhost="/";
-$rabbitmq_queue="pecan";
-$rabbitmq_username="guest";
-$rabbitmq_password="guest";
-
 # R binary
 $Rbinary="/usr/bin/R";
 
@@ -55,7 +47,8 @@ $anonymous_level = 99;
 $anonymous_page = 99;
 
 # name of current machine
-$fqdn="docker";
+$name = getenv('NAME', true) ?: "docker";
+$fqdn = getenv('FQDN', true) ?: "docker";
 
 # List of all host and options. The list should be the server pointing
 # to an array. The second array contains a key value pair used to
@@ -79,15 +72,22 @@ $fqdn="docker";
 # - scratchdir : folder to be used for scratchspace when running certain
 #                models (such as ED)
 $hostlist=array($fqdn => 
-                    array("rabbitmq" => "amqp://guest:guest@rabbitmq/%2F"),
+                    array("displayname"    => $fqdn,
+                          "rabbitmq_uri"   => getenv('RABBITMQ_URI', true) ?: "amqp://guest:guest@rabbitmq/%2F",
+                          "rabbitmq_queue" => "pecan"),
                 "geo.bu.edu" =>
-                    array("qsub"     => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
-                          "jobid"    => "Your job ([0-9]+) .*",
-                          "qstat"    => "qstat -j @JOBID@ || echo DONE",
-                          "prerun"   => "module load udunits R/R-3.0.0_gnu-4.4.6",
-                          "postrun"  => "sleep 60",
-                          "models"   => array("ED2" =>
-                              array("prerun"  => "module load hdf5"))));
+                    array("displayname" => "geo",
+                          "qsub"        => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+                          "jobid"       => "Your job ([0-9]+) .*",
+                          "qstat"       => "qstat -j @JOBID@ || echo DONE",
+                          "prerun"      => "module load udunits R/R-3.0.0_gnu-4.4.6",
+                          "postrun"     => "sleep 60",
+                          "models"      => 
+                              array("ED2" =>
+                                  array("prerun"  => "module load hdf5")
+                              )
+                    )
+                );
 
 # Folder where PEcAn is installed
 $R_library_path="/usr/local/lib/R/site-library";
