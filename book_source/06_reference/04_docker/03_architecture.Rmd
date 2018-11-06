@@ -50,6 +50,26 @@ For reference, the complete `docker-compose` file is as follows:
 yaml::write_yaml(dc_yaml, stdout())
 ```
 
+There are two ways you can override different values in the docker-compose.yml file. The first method is to create a file called `.env` that is placed in the same folder as the docker-compose.yml file. This file can override some of configuration variables used by docker-compose. For example the following is an example of the env file
+
+```{r comment='', echo = FALSE, results = 'hide'}
+docker_env_file <- file.path("..", "docker", "env.example")
+writeLines(readLines(docker_env_file))
+```
+
+You can also extend the docker-compose file, allowing you to add more services, or for example to change where the volumes are stored. For example the following will change the volume for postgres to be stored in your home directory:
+
+```
+version: "3"
+
+volumes:
+  postgres:
+    driver_opts:
+      type: none
+      device: ${HOME}/postgres
+      o: bind
+```
+
 #### Top-level structure {#pecan-dc-structure}
 
 The root of the `docker-compose.yml` file contains three sections:
