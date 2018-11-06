@@ -1,4 +1,3 @@
-##' @export
 .met2model.local.module <- function(inputfiles, model, con, host, dir, met, str_ns, site, start_date, end_date, format.vars, 
                                     browndog, new.site, overwrite = FALSE, exact.dates,spin) {
   # Determine output format name and mimetype
