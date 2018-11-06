@@ -77,71 +77,67 @@ The convention in PEcAn is to put Dockerfiles for core PEcAn functionality in `d
 ### Local development and testing with Docker {#docker-local-devel}
 
 The following is an example of one possible workflow for developing and testing PEcAn using local Docker images.
-The basic idea is to build `:local` versions of the PEcAn containers from whatever version of the PEcAn code you currently have.
+The basic idea is to mount a local version of the PEcAn source code onto a running `pecan/executor` image, and then send a special "rebuild" RabbitMQ message to the container to trigger the rebuild whenever you make changes.
 NOTE: All commands assume you are working from the PEcAn source code root directory.
 
-1. (First time only) Create a "bleeding-edge" version of the `pecan/depends` image with all the latest R packages.
+1. In the PEcAn source code directory, create a `docker-compose.override.yml` file with the following contents.:
 
-   ```
-   docker build -t pecan/depends:local -f docker/base/Dockerfile.depends
-   ```
-
-   Alternatively, if you are satisfied with the package versions of an existing image, you can just re-tag an existing image by using `docker tag`, e.g.:
-   
-   ```
-   docker tag pecan/depends:latest pecan/depends:local
-   # Or, provide an image ID, e.g.
-   # docker tag 96cfcc388bc2 pecan/depends:local
-   # See `docker tag --help` for more details
-   ```
-
-2. (First time only) Build the `pecan/base` and `pecan/executor` images, setting the `IMAGE_VERSION` build argument to `local`.
-
-    ```
-    docker build -t pecan/base:local -f docker/base/Dockerfile.base --build-arg IMAGE_VERSION=local .
-    docker build -t pecan/executor:local -f docker/base/Dockerfile.executor --build-arg IMAGE_VERSION=local .
-    ```
-
-	To check that you have all the required images, you can run `docker image ls`.
-	Near the top of the table, you should see `pecan/executor local` and `pecan/base local` images.
-    To check that you have a working version of PEcAn, you can launch the PEcAn stack with the following (note the use of `PECAN=local` to specify the PEcAn image version):
-	
-	```
-	PECAN=local docker-compose -p pecan up -d
-	```
-	
-	...and open the PEcAn web interface by browsing to http://localhost:8000/pecan/
-
-3. Now, make some changes to the PEcAn R source code. Make sure the changes are saved, and then, build a new `pecan/base:local_develop` image based on the existing `pecan/base:local` image:
-
-   ```
-   docker build -t pecan/base:local_develop -f docker/base/Dockerfile.base --build-arg IMAGE_VERSION=local --build-arg FROM_IMAGE=base .
-   docker build -t pecan/executor:local_develop -f docker/base/Dockerfile.executor --build-arg IMAGE_VERSION=local_develop .
-   docker tag pecan/web:local pecan/web:local_develop
+   ```yml
+   version: "3"
+   services:
+     executor:
+       volumes:
+         - .:/pecan
    ```
    
-   In the first two commands, the `FROM_IMAGE=base IMAGE_VERSION=local` indicates that, instead of building `pecan/base` off of `pecan/develop` (the default), we will build it on top of the existing `pecan/base:local` image.
-   This has the effect of only re-building PEcAn packages that have changed, similar to the standard behavior of `make`.
-   The last line is necessary because the `PECAN` variable also applies to the `pecan/web` image in the `docker-compose.yml`, so without it, `docker-compose` will look for `pecan/web:local_develop` but won't be able to find it.
-
-4. As before, launch the PEcAn stack with `docker-compose`, but this time with `PECAN=local_develop`:
-
-   ```
-   PECAN=local_develop docker-compose -p pecan up -d
-   ```
+   This will mount the current directory `.` to the `/pecan` directory in the `executor` container.
+   The special `docker-compose.override.yml` file is read automatically by `docker-compose` and overrides or extends any instructions set in the original `docker-compose.yml` file.
+   It provides a convenient way to host server-specific configurations without having to modify the project-wide (and version-controlled) default configuration.
+   For more details, see the [Docker Compose documentation](https://docs.docker.com/compose/extends/).
    
-As long as you have a `pecan/depends:local` image, you can skip steps 1 and 2 and only do steps 3 and 4 while you are developing.
-To save some keystrokes if you do this frequently, you can combine steps 3 and 4 into a shell script:
+2. Update your PEcAn Docker stack with `docker-compose up -d`.
+   If the stack is already running, this should only restart your `executor` instance while leaving the remaining containers running.
+   
+3. To update to the latest local code, run `./scripts/docker_rebuild.sh`.
+   Under the hood, this uses `curl` to post a RabbitMQ message to a running Docker instance.
+   By default, the scripts assumes that username and password are both `guest` and that the RabbitMQ URL is `http://localhost:8000/rabbitmq`.
+   All of these can be customized by setting the environment variables `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, and `RABBITMQ_URL`, respectively (or running the script prefixed with those variables, e.g. `RABBITMQ_USER=carya RABBITMQ_PASSWORD=illinois ./scripts/docker_rebuild.sh`).
+   This step can be repeated whenever you want to trigger a rebuild of the local code.
+   
+NOTE: The updates with this workflow are _specific to the running container session_; restarting the `executor` container will revert to the previous versions of the installed packages.
+To make persistent changes, you should re-build the `pecan/base` and `pecan/executor` containers against the current version of the source code.
 
-```bash
-#!/bin/bash
+NOTE: The mounted PEcAn source code directory includes _everything_ in your local source directory, _including installation artifacts used by make_.
+This can lead to two common issues:
+- Any previous make cache files (stuff in the `.install`, `.docs`, etc. directories) persist across container instances, even though the installed packages may not. To ensure a complete build, it's a good idea to run `make clean` on the host machine to remove these artifacts.
+- Similarly, any installation artifacts from local builds will be carried over to the build. In particular, be wary of packages with compiled code, such as `modules/rtm` (`PEcAnRTM`) -- the compiled `.o`, `.so`, `.mod`, etc. files from compilation of such packages will carry over into the build, which can cause conflicts if the package was also built locally.
 
-# rebuild pecan/base
-docker build -t pecan/base:local_develop -f docker/base/Dockerfile.base --build-arg IMAGE_VERSION=local --build-arg FROM_IMAGE=base .
+The `docker-compose.override.yml` is useful for some other local modifications.
+For instance, the following adds a custom ED2 "develop" model container.
 
-# rebuild pecan/executor
-docker build -t pecan/executor:local_develop -f docker/base/Dockerfile.executor --build-arg IMAGE_VERSION=local_develop .
+```yml
+services:
+  # ...
+  ed2devel:
+    image: pecan/model-ed2-develop:latest
+    build:
+      context: ../ED2  # Or wherever ED2 source code is found
+    networks:
+      - pecan
+    depends_on:
+      - rabbitmq
+    volumes:
+      - pecan:/data
+    restart: unless-stopped
+```
 
-# launch the PEcAn stack
-PECAN=local_develop docker-compose -p pecan up -d
+Similarly, this snippet modifies the `pecan` network to use a custom IP subnet mask.
+This is required on the PNNL cluster because its servers' IP addresses often clash with Docker's default IP mask.
+
+```yml
+networks:
+  pecan:
+    ipam:
+      config:
+        - subnet: 10.17.1.0/24
 ```
