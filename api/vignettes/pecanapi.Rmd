@@ -1,0 +1,233 @@
+---
+title: Introduction to the PEcAn R API
+author: Alexey Shiklomanov
+---
+
+# Introduction
+
+The PEcAn API package (`pecanapi`) is designed to allow users to submit PEcAn workflows directly from an R session.
+The basic idea is that users build the PEcAn settings object via an R script (manually, or using the included helper functions) and then use the RabbitMQ API to send this object to a Dockerized PEcAn instance running on a local or remote machine.
+
+`pecanapi` is specifically designed to only depend on CRAN packages, and not on any PEcAn internal packages.
+This makes it easy to install, and allows it to be used without needing to download and install PEcAn itself (which is large and has many complex R package and system dependencies).
+It can be installed directly from GitHub as follows:
+
+```{r, eval = FALSE}
+devtools::install_github("pecanproject/pecan", subdir = "api")
+library(pecanapi)
+```
+
+# Initial setup
+
+This tutorial assumes you are running a Dockerized instance of PEcAn on your local machine (hostname `localhost`, port 8000).
+To check this, open a browser and try to access `http://localhost:8000/pecan/`.
+If you are trying to access a remote instance of PEcAn, you will need to substitute the hostname and port accordingly.
+
+To perform database operations, you will also need to have read access to the PEcAn database.
+Note that the PEcAn database Docker container (`postgres`) does not provide this by default, so you will need to open port 5432 (the PostgreSQL default) to that container.
+You can do this by creating a `docker-compose.override.yml` file with the following contents in the root directory of the PEcAn source code:
+
+```yml
+version: "3"
+services:
+  postgres:
+    ports:
+      - 5432:5432
+```
+
+Here, the first port is the one used to access the database (can be any open port; most PostgreSQL applications assume 5432 by default), and the second is the port the database is actually running on (which will always be 5432).
+After making this change, reload the `postgres` container by running `docker-compose up -d`.
+To check that this works, open an R session and try to create a database connection object to the PEcAn database.
+
+```{r}
+con <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  user = "bety",
+  password = "bety",
+  host = "localhost",
+  port = 5432
+)
+DBI::dbListTables(con)[1:5]
+```
+
+This code should print out five table names from the PEcAn database.
+If it throws an error, you have a problem with your database connection.
+
+The rest of this tutorial assumes that you are using this same database connection object (`con`).
+
+# Building a settings object
+
+The PEcAn settings object is a nested list providing parameters for the various actions performed by the PEcAn workflow, including the trait meta-analysis, processing input files, and running models.
+It can be created manually with a bunch of `list` calls.
+However, this is tedious and error-prone, so `pecanapi` provides several utilities that facilitate this process.
+
+We start with a blank list.
+
+```{r}
+settings <- list()
+```
+
+Let's start by adding a basic database configuration to this settings list.
+
+```{r}
+settings <- add_database(settings)
+settings
+```
+
+All `add_*` functions work by incrementally adding to an input settings object and returning a new modified settings object.
+The first argument of these functions is always the settings list, which gives these functions a consistent syntax and makes it easy to string multiple settings modifications together using the `magrittr` pipe (`%>%`), similar to `tidyverse` tabular data manipulations.
+
+The `add_database` function adds a sensible default configuration for the PEcAn database in the right place with the right names in the settings file.
+These defaults can, of course, be modified (see `?add_database`).
+
+Similarly, we can also add PFTs to the settings object with the `add_pft` function.
+
+```{r}
+settings <- add_pft(settings, "temperate.deciduous")
+settings
+```
+
+This adds the `temperate.deciduous` PFT to the appropriate spot in the settings hierarchy.
+Whereas `add_pft` adds a single PFT to the settings, `add_pft_list` can add a vector of PFTs.
+
+```{r}
+settings <- add_pft_list(settings, c("temperate.coniferous", "miscanthus"))
+settings
+```
+
+Notice that `add_pft` and `add_pft_list` both automatically augment the PFT number (`pft$constants$num`) as well.
+Like `add_databse`, `add_pft` and `add_pft_list` can also take arbitrary additional configuration arguments via their `...` argument.
+For `add_pft`, such arguments are passed only to that PFT, while for `add_pft_list`, they are shared between all PFTs.
+For more details, see `?add_pft`.
+
+Another useful function for adding to the settings list is `add_workflow`, which takes as input a workflow `data.frame` and adds the relevant fields to the right places in the settings list.
+For more on that, see the next section on registering a workflow with the database.
+
+One final note is that, because the settings object is just a list, you can make arbitrary modifications to it via base R's `modifyList` function (indeed, many of the `pecanapi::add_*` functions use `modifyList` under the hood).
+
+```{r}
+customization <- list(
+    meta.analysis = list(iter = 3000, random.effects = FALSE),
+    run = list(
+      inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))
+    ),
+    host = list(rabbitmq = list(uri = rabbitmq_uri, queue = "SIPNET_136"))
+  )
+settings <- modifyList(settings, customization)
+```
+
+Note that `modifyList` operates recursively on nested lists, which makes it easy to modify settings at different levels of the list hierarchy.
+For instance, below, we modify the previous settings object to make `random.effects = TRUE`, and change the download method of the `inputs` to OpenDAP, but keep all the other settings the same.
+
+```{r}
+settings <- modifyList(settings, list(
+  meta.analysis = list(random.effects = TRUE),
+  run = list(inputs = list(met = list(method = "opendap")))
+))
+```
+
+Note that all of these steps can be chained together via `magrittr` pipes (`%>%`).
+
+```{r}
+library(magrittr)
+settings <- list() %>%
+  add_database() %>%
+  add_pft("temperate.deciduous") %>%
+  add_pft("temperate.coniferous") %>%
+  modifyList(list(
+    meta.analysis = list(iter = 3000, random.effects = FALSE),
+    run = list(inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))),
+    host = list(rabbitmq = list(
+      uri = "amqp://guest:guest@rabbitmq:5672/%2F",
+      queue = "SIPNET_136"
+    ))
+  ))
+```
+
+# Registering a workflow with the database
+
+For the PEcAn workflow to work, it needs to be registered with the PEcAn database.
+In `pecanapi`, this is done via the `insert_new_workflow` function.
+
+Building a workflow requires two important pieces of information that we don't have yet: namely the model and site IDs.
+If you know these for your site and model, you can pass them directly into `insert_new_workflow`.
+However, chances are you may have to look them up in the database first.
+`pecanapi` provides several `search_*` utilities to make this easier.
+
+First, let's pick a model.
+To list all models, we can run `search_models` with no arguments (other than the database connection object, `con`).
+
+```{r}
+models <- search_models(con)
+head(models)
+tail(models)
+nrow(models)
+```
+
+We can narrow down our search by model name, revision, or "type".
+
+```{r}
+search_models(con, "ED")
+search_models(con, "sipnet")
+search_models(con, "ED", revision = "git")
+```
+
+Note that the search is case-insensitive by default, and searches before and after the input string.
+See `?search_models` to learn how to toggle this behavior.
+For the purposes of this tutorial, let's use the SIPNET model because it has low input requirements and runs very quickly.
+Specifically, let's use the `136` version.
+We could grab the model ID from the search results, but `pecanapi` also provides an additional helper function for retrieving model IDs if you know the exact name and revision.
+
+```{r}
+model_id <- get_model_id(con, "SIPNET", "136")
+model_id
+```
+
+We can repeat this process for sites with the `search_sites` function (though there is currently no `get_site_id` function).
+Note the use of `%` as a wildcard (matches zero or more of any character, equivalent to the regular expression `.*`).
+The two sites in the search below are largely identical, so we'll use the one with more site information (i.e. where `mat` is not `NA`).
+
+```{r}
+all_umbs <- search_sites(con, "umbs%disturbance")
+all_umbs
+site_id <- subset(all_umbs, !is.na(mat))[["id"]]
+```
+
+With site and model IDs in hand, we are ready to create a workflow.
+
+```{r}
+workflow <- insert_new_workflow(con, site_id, model_id, start_date = "2004-01-01", end_date = "2004-12-31")
+workflow
+```
+
+The `insert_new_workflow` function inserts the workflow into the database and returns a `data.frame` containing the row that was inserted.
+
+# Submitting a run
+
+Now that we have all the pieces, let's put them together into a single settings object.
+
+```{r}
+settings <- list() %>%
+  add_workflow(workflow) %>%
+  add_database() %>%
+  add_pft("temperate.deciduous") %>%
+  modifyList(list(
+    meta.analysis = list(iter = 3000, random.effects = FALSE),
+    run = list(inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))),
+    host = list(rabbitmq = list(
+      uri = "amqp://guest:guest@rabbitmq:5672/%2F",
+      queue = "SIPNET_136"
+    ))
+  ))
+```
+
+We can then submit these settings as a run via the `submit_workflow` function.
+This function has only one required input -- the settings list -- but a number of optional arguments for specifying how to connect to the RabbitMQ API (see `?submit_workflow` for details).
+
+```{r}
+submit_workflow(settings)
+```
+
+If the workflow was submitted successfully, this will return the HTTP response `routed = TRUE` as a named list.
+Note that this only means that the RabbitMQ message was posted; the workflow can still crash for various reasons.
+To see the status of the workflow, look at `docker-compose logs executor` or use the Portainer interface.
