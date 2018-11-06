@@ -12,6 +12,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed error in `read_web_config` which would filter out all variables.
 - Docker:
   - Make sure web interface posts RabbitMQ messages even after editing files (fixes #2151)
+  - Can specify name of docker cluster using PECAN_FQDN and PECAN_NAME (fixes #2128)
+  - Fixed issue where setting username/password for rabbitmq would break web submit (fixes #2185)
 - ED2:
   - Add ability to pass arbitrary arguments to the ED binary through the `pecan.xml` (#2183; fixes #2146).
 
@@ -21,6 +23,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Download method (`method`) argument for `data.atmosphere::download.CRUNCEP`, which defaults to `opendap` (as it was), but can be switched to the slower but more robust NetCDF subset (`ncss`).
 - In `download.CRUNCEP`, check target coordinate against the land-sea mask. If sea, pick the nearest land pixel within 1 degree of target. This facilitates doing runs at coastal sites that may get masked out.
 - Added a prototype of the THREDDS data server (TDS) to the PEcAn Docker stack.
+- Added portainer to the PEcAn Docker stack to easily look at running containers.
+- Added ability to specify short name for a host (hostlist->displayname)
 
 ### Removed
 

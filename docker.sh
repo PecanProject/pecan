@@ -42,7 +42,7 @@ echo ""
 
 # build images in this specific order. Images are tagged with latest so other
 # docker images build in this script will use that specifc build.
-for i in base executor web data docs; do
+for i in base executor web data thredds docs; do
     rm -f build.${i}.log
     ${DEBUG} docker build \
         --build-arg PECAN_VERSION="${VERSION}" \
