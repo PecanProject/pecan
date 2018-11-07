@@ -357,8 +357,6 @@ pda.emulator.ms <- function(multi.settings) {
       # initialize tau_global (nparam x nparam)
       tau_global   <- rWishart(1, tau_df, tau_V)[,,1]
       
-      # df to use while updating tau later, setting here out of the loop
-      tau_df <- tau_df + nsites
       
       # initialize jcov.arr (jump variances per site)
       jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
@@ -422,7 +420,7 @@ pda.emulator.ms <- function(multi.settings) {
         tau_sigma <- solve(V_inv + sum_term)
         
         # update tau
-        tau_global <- rWishart(1, df = tau_df, Sigma = tau_sigma)[,,1] # site precision
+        tau_global <- rWishart(1, df = tau_df + nsites, Sigma = tau_sigma)[,,1] # site precision
         sigma_global <- solve(tau_global) # site covariance, new prior sigma to be used below for prior prob. calc.
          
 
