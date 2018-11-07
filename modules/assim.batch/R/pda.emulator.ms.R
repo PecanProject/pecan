@@ -270,8 +270,7 @@ pda.emulator.ms <- function(multi.settings) {
       
       ## re-fit GP on new param space
       for(i in seq_along(SS.stack)){
-        GPmodel <- lapply(SS.stack[[i]], function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
-        gp.stack[[i]] <- GPmodel
+        gp.stack[[i]] <- lapply(SS.stack[[i]], function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
       }
       
       ## re-define rng
