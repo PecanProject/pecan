@@ -12,6 +12,8 @@
 ##'@author Luke Dramko and K. Zarada and Hamze Dokoohaki
 prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) {
   
+  data.len = data.len *2 #turn hour time steps into half hour
+  
   Date.vec <-NULL
   
   gapfilled.vars <- vars %>%
@@ -28,8 +30,12 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
   #Reading the columns we need
   cols <- grep(paste0("_*_f$"), colnames(gapfilled.vars), value = TRUE)
   gapfilled.vars <- gapfilled.vars %>% dplyr::select(Date=date, Flag,cols)
-  
 
+ #Creating NEE and LE filled output 
+  gapfilled.vars.out <- gapfilled.vars %>% dplyr::select(-Flag) %>% 
+                            tail(data.len)
+
+ #Pecan Flux Uncertainty 
   processed.flux <- 3:(3+length(vars)-1) %>%
     purrr::map(function(col.num) {
 
@@ -103,14 +109,15 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
               
              return(list(Date=Date1%>%unique(), covs=cov(alldata),  means=apply(alldata,2,mean)) )
            })
-
+  outlist = c(outlist, gapfilled.vars.out )
   return(outlist)
+
 } # prep.data.assim
 
 
 #prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-15",numvals = 100, var = "NEE")
 
-#prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))
+data <- prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-30",numvals = 10, vars = c("NEE","LE"), data.len = 24)
 
 
 #prep.data.assim(start_date = "2017-10-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))->ss
