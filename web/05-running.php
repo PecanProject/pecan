@@ -28,6 +28,16 @@ if (!isset($_REQUEST['workflowid'])) {
 }
 $workflowid=$_REQUEST['workflowid'];
 
+// hostname
+if (!isset($_REQUEST['hostname'])) {
+  die("Need a hostname.");
+}
+$hostname=$_REQUEST['hostname'];
+if (!array_key_exists($hostname, $hostlist)) {
+  die("${hostname} is not an approved host");
+}
+$hostoptions = $hostlist[$hostname];
+
 // number of log lines
 $loglines = isset($_REQUEST['loglines']) ? $_REQUEST['loglines'] : 20;
 
@@ -64,7 +74,7 @@ foreach ($status as $line) {
     if (isset($params['email']) && ($params['email'] != "")) {
       $url = (isset($_SERVER['HTTPS']) ? "https://" : "http://");
       $url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER["SCRIPT_NAME"];
-      $url .= "?workflowid=${workflowid}&loglines=${loglines}";
+      $url .= "?workflowid=${workflowid}&loglines=${loglines}&hostname=${hostname}";
       if ($offline) {
         $url .= "&offline=offline";
       }
@@ -78,7 +88,7 @@ foreach ($status as $line) {
     $error = true;
   }
   if ($data[0] == "ADVANCED" && count($data) < 3) {
-    header( "Location: 06-edit.php?workflowid=${workflowid}${offline}");
+    header( "Location: 06-edit.php?workflowid=${workflowid}&hostname=${hostname}${offline}");
     close_database();
     exit;
   }
@@ -117,7 +127,7 @@ if (!$finished) {
 
   function refresh() {
     var url="<?php echo $_SERVER["SCRIPT_NAME"] . '?workflowid=' . $workflowid; ?>";
-    url += "&loglines=" + $("#loglines").val();
+    url += "&hostname=${hostname}&loglines=" + $("#loglines").val();
     window.location.replace(url);
     return false;
   }
@@ -140,6 +150,7 @@ if (!$finished) {
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
       <input type="hidden" name="workflowid" value="<?php echo $workflowid; ?>" />
+      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
       <input type="hidden" name="loglines" value="<?php echo $loglines; ?>" />
     </form>
 

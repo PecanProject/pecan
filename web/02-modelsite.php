@@ -28,7 +28,7 @@ if ($authentication) {
 $offline=isset($_REQUEST['offline']);
 $conversion = (isset($_REQUEST['conversion'])) ? "checked" : "";
 
-$hostname = "";
+$hostname = $fqdn;
 if (isset($_REQUEST['hostname'])) {
   $hostname = $_REQUEST['hostname'];
 }
@@ -43,16 +43,6 @@ if (isset($_REQUEST['siteid'])) {
 $sitegroupid = "";
 if (isset($_REQUEST['sitegroupid'])) {
   $sitegroupid = $_REQUEST['sitegroupid'];
-}
-
-// check if fqdn exists
-$query = "SELECT id FROM machines WHERE hostname=?";
-$stmt = $pdo->prepare($query);
-if (!$stmt->execute(array($fqdn))) {
-  die('Invalid query: ' . error_database());
-}
-while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
-  $hostname = $fqdn;
 }
 
 // get sitegroups
@@ -261,12 +251,11 @@ function updateData() {
 
     $xml.find("host").each(function() {
       var host = jQuery(this);
-      var hostname = host.attr("hostname");
-      var option = "<option data-id='" + host.attr("id") + "'";
-      if(hostname == curHost) {
+      var option = "<option data-id='" + host.attr("id") + "' value='" + host.attr("hostname") + "'";
+      if(host.attr("hostname") == curHost) {
         option = option + " selected";
       }
-      option = option + ">" + hostname + "</option>";
+      option = option + ">" + host.attr("displayname") + "</option>";
       $('#hostname').append(option);
     });
 
