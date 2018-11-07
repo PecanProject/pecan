@@ -37,7 +37,7 @@ Suggests:
     fields,
     PEcAn.settings,
     rgdal,
-    RPostgreSQL
+    RPostgreSQL,
     testthat (>= 1.0.2),
 License: FreeBSD + file LICENSE
 Copyright: Authors
