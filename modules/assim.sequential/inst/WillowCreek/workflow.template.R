@@ -29,7 +29,7 @@ if (is.na(args[1])){
 sda.end <- as.Date(Sys.Date())
 sda.start <- as.Date(sda.end - lubridate::days(90))
 
-prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
+#prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
 #--------------------------- Preparing OBS  data
 met.end <- prep.data[[length(prep.data)]]$Date
 obs.raw <- download_US_WCr_flux(sda.start, met.end)  
@@ -41,9 +41,12 @@ if (exists("source_date")) {
   start_date <- round.to.six.hours()
 }
 end_date <- start_date + lubridate::days(16)
-# Using the found dates to run
+# Using the found dates to run - this will help to download mets
 settings$run$start.date <- as.character(start_date)
 settings$run$end.date <- as.character(end_date)
+# Setting dates in assimilation tags - This will help with preprocess split in SDA code
+settings$state.data.assimilation$start.date <-as.character(start_date)
+settings$state.data.assimilation$end.date <-as.character(end_date)
 #info
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 #-- Setting the out dir
@@ -54,17 +57,20 @@ obs.plot <- obs.raw %>%
             filter(!(Param %in% c("FjDay", "U","Day","DoY","FC","FjFay","Hour","Month",
                                   "SC","Ustar","Year","H","Flag")),
                    Value!=-999) %>%
+            filter((date %>% as.Date) %in% (names(prep.data) %>% as.Date())) %>%
             ggplot(aes(date, Value)) +
             geom_line(aes(color = Param), lwd = 1) +
             geom_point(aes(color = Param), size = 3) +
             facet_wrap( ~ Param, scales = "free",ncol = 1) +
+            scale_x_datetime(breaks = scales::date_breaks("1 hour"),labels = scales::date_format("%j-%H"))+
             scale_color_brewer(palette = "Set1") +
             theme_minimal(base_size = 15) +
             labs(y = "") +
-            theme(legend.position = "none")
+            theme(legend.position = "none",
+                  axis.text.x = element_text(angle = 90, hjust = 1))
 
 # Make sure you have the premission - chmod is right
-dir.create(settings$outdir)
+if (!dir.exists(settings$outdir)) dir.create(settings$outdir)
 ggsave(file.path(settings$outdir,"Obs_plot.pdf"), obs.plot , width = 18, height = 10)
 
 
@@ -129,13 +135,25 @@ if(!is.null(settings$meta.analysis)) {
 # }
 # print("---------- Wrtting Configs Completed ----------")
 
+obs.mean <- prep.data %>% map('means') %>% setNames(names(prep.data))
+obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 
+print(settings$outdir)
 
 # Run state data assimilation
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    settings <- PEcAn.assim.sequential::sda.enkf(settings,obs.list$obs.mean,obs.list$obs.cov)
+    settings <- PEcAn.assim.sequential::sda.enkf(settings,
+                                                 obs.mean = obs.mean,
+                                                 obs.cov = obs.cov,
+                                                 control=list(trace=T,
+                                                              interactivePlot=F,
+                                                              TimeseriesPlot=T,
+                                                              BiasPlot=F,
+                                                              plot.title=paste("WCr SDA for between ",start_date, "to",end_date),
+                                                              debug=T)
+    )
     PEcAn.utils::status.end()
   }
 }
