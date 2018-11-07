@@ -47,10 +47,15 @@ if (!isset($_REQUEST['modelid'])) {
 }
 $modelid=$_REQUEST['modelid'];
 
+// hostname
 if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
 $hostname=$_REQUEST['hostname'];
+if (!array_key_exists($hostname, $hostlist)) {
+  die("${hostname} is not an approved host");
+}
+$hostoptions = $hostlist[$hostname];
 
 # parse original form data
 if (!isset($_REQUEST['pft'])) {
