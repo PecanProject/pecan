@@ -44,6 +44,8 @@ pda.emulator.ms <- function(multi.settings) {
     # but will run LHC ensembles, calculate SS and return settings list with saved SS paths etc.
     # this requires some re-arrangement in pda.emulator, 
     # for now we will always run site-level calibration
+    multi.settings[[i]] <- pda.emulator(multi.settings[[i]], individual = individual)
+
     multi.settings <- papply(multi.settings, pda.emulator, individual = individual)
   }
   
@@ -126,19 +128,19 @@ pda.emulator.ms <- function(multi.settings) {
     # start the clock
     ptm.start <- proc.time()
     
-    # prepare for parallelization
+    # prepare for parallelization (over chains)
     dcores <- parallel::detectCores() - 1
     ncores <- min(max(dcores, 1), multi.settings[[1]]$assim.batch$chain)
-    # 
+     
     logger.setOutputFile(file.path(multi.settings$outdir, "pda.log"))
-    # 
+     
     cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(multi.settings$outdir, "pda.log"))
     
     ## Sample posterior from emulator
     mcmc.out <- parallel::parLapply(cl, 1:multi.settings[[1]]$assim.batch$chain, function(chain) {
       mcmc.GP(gp          = gp, ## Emulator(s)
               x0          = init.list[[chain]],     ## Initial conditions
-              nmcmc       = multi.settings[[1]]$assim.batch$iter,  ## Number of iters
+              nmcmc       = as.numeric(multi.settings[[1]]$assim.batch$iter),  ## Number of iters
               rng         = rng,       ## range
               format      = "lin",      ## "lin"ear vs "log" of LogLikelihood 
               mix         = "joint",     ## Jump "each" dimension independently or update them "joint"ly
