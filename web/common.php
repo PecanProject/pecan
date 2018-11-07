@@ -179,4 +179,38 @@ function get_page_acccess_level() {
   }
 }
 
+# Create a new RabbitMQ connection
+# Global variables are set in config.php
+function make_rabbitmq_connection($rabbitmq_uri) {
+  $rabbitmq = parse_url($rabbitmq_uri);
+  $connection = new AMQPConnection();
+  if ($rabbitmq['host']) {
+    $connection->setHost($rabbitmq['host']);
+  }
+  if ($rabbitmq['port']) {
+    $connection->setPort($rabbitmq['port']);
+  }
+  if ($rabbitmq['path']) {
+    $connection->setVhost(urldecode(ltrim($rabbitmq['path'], '/')));
+  }
+  if ($rabbitmq['user']) {
+    $connection->setLogin($rabbitmq['user']);
+  }
+  if ($rabbitmq['pass']) {
+    $connection->setPassword($rabbitmq['pass']);
+  }
+  $connection->connect();
+  return $connection;
+}
+
+# Post $message (string) to RabbitMQ queue $rabbitmq_queue (string)
+function send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue) {
+  $connection = make_rabbitmq_connection($rabbitmq_uri);
+  $channel = new AMQPChannel($connection);
+  $exchange = new AMQPExchange($channel);
+
+  $exchange->publish($message, $rabbitmq_queue);
+  $connection->disconnect();
+}
+
 ?>

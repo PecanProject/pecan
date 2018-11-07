@@ -16,7 +16,7 @@ MAINTAINER Rob Kooper <kooper@illinois.edu>
 # PEcAn installation from local source
 # ----------------------------------------------------------------------
 # copy folders
-COPY Makefile /pecan/
+COPY Makefile Makefile.depends /pecan/
 COPY base     /pecan/base/
 COPY modules  /pecan/modules/
 COPY models   /pecan/models/

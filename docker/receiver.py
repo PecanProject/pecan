@@ -9,16 +9,32 @@ import pika
 
 rabbitmq_uri   = os.getenv('RABBITMQ_URI',   'amqp://guest:guest@rabbitmq/%2F')
 rabbitmq_queue = os.getenv('RABBITMQ_QUEUE', 'pecan')
-application    = os.getenv('APPLICATION',    'job.sh')
+
+default_application = os.getenv('APPLICATION', 'job.sh')
 
 # called for every message, this will start the program and ack message if all is ok.
 def callback(ch, method, properties, body):
     logging.info(body)
-    jbody = json.loads(body)
+    jbody = json.loads(body.decode('UTF-8'))
 
-    logging.info("Starting job in %s." % jbody['folder'])
+    rebuild = jbody.get('rebuild')
+    custom_application = jbody.get('custom_application')
+    folder = jbody.get('folder')
+
+    if rebuild is not None:
+        logging.info("Rebuilding PEcAn with make")
+        application = 'make'
+        folder = '/pecan'
+    elif custom_application is not None:
+        application = custom_application
+    else:
+        logging.info("Running default command: %s" % default_application)
+        application = default_application
+
+    logging.info("Running command: %s" % application)
+    logging.info("Starting command in directory %s." % folder)
     try:
-        output = subprocess.check_output(application, stderr=subprocess.STDOUT, shell=True, cwd=jbody['folder'])
+        output = subprocess.check_output(application, stderr=subprocess.STDOUT, shell=True, cwd=folder)
         status = 'OK'
         logging.info("Finished running job.")
     except subprocess.CalledProcessError as e:
@@ -33,7 +49,7 @@ def callback(ch, method, properties, body):
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     try:
-        with open(os.path.join(jbody['folder'], 'rabbitmq.out'), 'w') as out:
+        with open(os.path.join(folder, 'rabbitmq.out'), 'w') as out:
             out.write(str(output) + "\n")
             out.write(status + "\n")
     except Exception as e:

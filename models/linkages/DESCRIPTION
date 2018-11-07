@@ -19,6 +19,8 @@ Imports:
 Suggests:
     testthat (>= 1.0.2),
     linkages
+Remotes:
+  github::araiho/linkages_package
 SystemRequirements: LINKAGES
 OS_type: unix
 License: FreeBSD + file LICENSE
@@ -28,3 +30,4 @@ LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 6.1.1
 Remotes: araiho/linkages_package
+

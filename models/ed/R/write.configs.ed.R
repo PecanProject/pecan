@@ -477,7 +477,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
 #' run$host$rundir, run$host$outdir, run$host$scratchdir,
 #' run$host$clearscratch, model$jobtemplate, model$job.sh, run$host$job.sh,
 #' run$site$lat, run$site$lon, run$inputs$met$path, run$start.date,
-#' run$end.date, model$binary
+#' run$end.date, model$binary, model$binary_args
 #' @param run.id PEcAn run ID
 #' @return Character vector containing job.sh file
 #' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
@@ -547,6 +547,17 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
+  if (is.null(settings$model$binary_args)) {
+    # If argument is missing but running on RabbitMQ, assume you need
+    # -s flag. If you want to force run ED without -s, use a blank
+    # binary_args tag.
+    if (!is.null(settings$host$rabbitmq)) {
+      settings$model$binary_args <- "-s"
+    } else {
+      settings$model$binary_args <- ""
+    }
+  }
+  jobsh <- gsub("@BINARY_ARGS@", settings$model$binary_args, jobsh)
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   
   pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))

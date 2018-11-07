@@ -52,11 +52,20 @@ See corresponding argument in the [producer](#rabbitmq-basics-sender)
 
 - `RABBITMQ_QUEUE` -- This is the name of the queue on which the consumer will listen for messages, just as in the [producer](#rabbitmq-basics-sender).
 
-- `APPLICATION` -- This specifies the name (including the path) of the executable to run when receiving a message.
-At the moment, it should be an executable that runs in the directory specified by the message's `folder` variable.
-In the case of PEcAn models, this is usually `./job.sh`, such that the `folder` corresponds to the `run` directory associated with a particular `runID` (i.e. where the `job.sh` is located).
-For the PEcAn workflow itself, this is set to `R CMD BATCH workflow.R`, such that the `folder` is the root directory of the workflow (in the `executor` Docker container, something like `/data/workflows/PEcAn_<workflowID>`).
+- `APPLICATION` -- This specifies the name (including the path) of the default executable to run when receiving a message.
+  At the moment, it should be an executable that runs in the directory specified by the message's `folder` variable.
+  In the case of PEcAn models, this is usually `./job.sh`, such that the `folder` corresponds to the `run` directory associated with a particular `runID` (i.e. where the `job.sh` is located).
+  For the PEcAn workflow itself, this is set to `R CMD BATCH workflow.R`, such that the `folder` is the root directory of the workflow (in the `executor` Docker container, something like `/data/workflows/PEcAn_<workflowID>`).
+  This default executable is _overridden_ if the message contains a `custom_application` key.
+  If included, the string specified by the `custom_application` key will be run as a command exactly as is on the container, from the directory specified by `folder`.
+  For instance, in the example below, the container will print "Hello there!" instead of running its default application.
 
+   ```json
+   {"custom_application": "echo 'Hello there!'", "folder": "/path/to/my/dir"}
+   ```
+   
+   NOTE that in RabbitMQ messages, the `folder` key is always required.
+   
 ## RabbitMQ and the PEcAn web interface {#rabbitmq-web}
 
 RabbitMQ is configured by the following variables in `config.php`:
