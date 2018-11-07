@@ -31,6 +31,7 @@ Imports:
     udunits2 (>= 0.11),
     traits,
     dplyr,
+    purrr,
     dbplyr,
     magrittr,
     rlang,

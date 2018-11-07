@@ -10,7 +10,6 @@
 #' Full documention of available tables and their relationships can be found here \url{www.sdmdataaccess.nrcs.usda.gov/QueryHelp.aspx}
 #' There have been occasions where NRCS made some minor changes to the structure of the API which this code is where those changes need
 #' to be implemneted here.
-#' @import XML dplyr purrr
 #' 
 gSSURGO.Query<-function(mukeys=2747727){
   ######### Reteiv soil

@@ -15,7 +15,6 @@
 #'    PEcAn.data.land::extract_soil_gssurgo(outdir,lat,lon)
 #' }
 #' @author Hamze Dokoohaki
-#' @import XML dplyr purrr
 #' 
 extract_soil_gssurgo<-function(outdir, lat, lon){
   #reading the mapunit based on latitude and longitude of the site
