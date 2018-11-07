@@ -56,7 +56,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   # load inputs with neff if this is another round
   if(!run.normal){
     external_data_path <- file.path(settings$outdir, paste0("external.", settings$assim.batch$ensemble.id, ".Rdata"))
-    if(exists(external_data_path)){
+    if(file.exists(external_data_path)){
       load(external_data_path)
       # and delete the file afterwards because it will be re-written with a new ensemble id in the end
       file.remove(external_data_path)
