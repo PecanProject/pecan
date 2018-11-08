@@ -44,15 +44,16 @@ submit_workflow <- function(settings,
   if (is.null(rabbitmq_prefix)) {
     httpstring <- "http"
     if (https) httpstring <- "https"
-    rabbitmq_prefix <- sprintf(
-      "%s://%s:%s%s",
-      httpstring, rabbitmq_hostname, rabbitmq_port, rabbitmq_frontend
-    )
+    base_url <- sprintf("%s://%s:%s", httpstring, rabbitmq_hostname, rabbitmq_port)
+    rabbitmq_prefix <- paste0(base_url, rabbitmq_frontend)
   }
   result <- httr::POST(
     paste0(rabbitmq_prefix, "/api/exchanges/%2F//publish"),
     auth,
     body = bod
   )
+  follow_url <- sprintf("%s/pecan/05-running.php?workflowid=%s",
+                        base_url, as.character(settings[["workflow"]][["id"]]))
+  message("Follow workflow progress from your browser at:\n", follow_url)
   httr::content(result)
 }
