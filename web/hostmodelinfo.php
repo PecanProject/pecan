@@ -83,12 +83,14 @@ function get_hosts() {
   }
     
   // Iterate through the rows, adding XML nodes for each
-  while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) { 
+  while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     if (array_key_exists($row['hostname'], $hostlist)) {
+      $name = $hostlist[$row['hostname']]['displayname'] ?: $row['hostname'];
       $node = $dom->createElement("host");
       $newnode = $parnode->appendChild($node);   
-      $newnode->setAttribute("id",$row['id']);
+      $newnode->setAttribute("id", $row['id']);
       $newnode->setAttribute("hostname", $row['hostname']);
+      $newnode->setAttribute("displayname", $name);
     }
   } 
   $stmt->closeCursor();
