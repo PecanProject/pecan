@@ -3,13 +3,12 @@ Type: Package
 Title: PEcAn functions used for managing climate driver data
 Version: 1.6.0
 Date: 2018-08-20
-Authors@R: c(person("Mike","Dietze"),
-             person("David","LeBauer"),
-             person("Carl", "Davidson"),
-             person("Rob","Kooper"),
-             person("Deepak", "Jaiswal"))
-Author: Carl Davidson, Mike Dietze, Rob Kooper, Deepak Jaiswal, David LeBauer
-Maintainer: David LeBauer <dlebauer@illinois.edu>
+Authors@R: c(person("Mike","Dietze", role = "aut"),
+             person("David","LeBauer", role = c("aut", "cre"),
+                email = "dlebauer@illinois.edu"),
+             person("Carl", "Davidson", role = "aut"),
+             person("Rob","Kooper", role = "aut"),
+             person("Deepak", "Jaiswal", role = "aut"))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The PECAn.data.atmosphere
