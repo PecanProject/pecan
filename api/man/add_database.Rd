@@ -4,28 +4,32 @@
 \alias{add_database}
 \title{Add PEcAn database information to settings list}
 \usage{
-add_database(settings, host = "postgres", user = "bety",
-  password = "bety", dbname = "bety", driver = "PostgreSQL",
-  dbfiles = "/data/dbfiles/", write = TRUE, overwrite = FALSE, ...)
+add_database(settings, host = getOption("pecanapi.db_hostname"),
+  user = getOption("pecanapi.db_user"),
+  password = getOption("pecanapi.db_password"),
+  dbname = getOption("pecanapi.db_dbname"),
+  driver = getOption("pecanapi.db_driver"),
+  dbfiles = getOption("pecanapi.db_dbfiles"),
+  write = getOption("pecanapi.db_write"), overwrite = FALSE, ...)
 }
 \arguments{
 \item{settings}{Input settings list (list)}
 
-\item{host}{Database server hostname (character, default =
-"postgres", so it works with Docker)}
+\item{host}{Database server hostname (character, default = \code{pecanapi.db_hostname})}
 
-\item{user}{Database user name (character, default = "bety")}
+\item{user}{Database user name (character, default = option \code{pecanapi.db_username}))}
 
-\item{password}{Database password (character, default = "bety")}
+\item{password}{Database password (character, default = option \code{pecanapi.db_password})}
 
-\item{dbname}{Database name (character, default = "bety")}
+\item{dbname}{Database name (character, default = option \code{pecanapi.db_dbname})}
 
-\item{driver}{Database driver (character, default = "PostgreSQL")}
+\item{driver}{Database driver (character, default = option \code{pecanapi.db_driver})}
 
-\item{dbfiles}{Path to \code{dbfiles} directory (character, default = "/data/dbfiles")}
+\item{dbfiles}{Path to \code{dbfiles} directory (character, default =
+option \code{pecanapi.db_dbfiles})}
 
 \item{write}{Whether or not to write to the database (logical,
-default = \code{TRUE})}
+default = option \code{pecanapi.db_write})}
 
 \item{overwrite}{Whether or not to overwrite any already existing
 input settings (logical, default = \code{FALSE})}

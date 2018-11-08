@@ -4,10 +4,14 @@
 \alias{submit_workflow}
 \title{Post complete settings list as RabbitMQ message}
 \usage{
-submit_workflow(settings, rabbitmq_hostname = "localhost",
-  rabbitmq_frontend = "/rabbitmq", rabbitmq_port = 8000,
-  rabbitmq_user = "guest", rabbitmq_password = "guest",
-  rabbitmq_prefix = NULL, httr_auth = TRUE, https = FALSE)
+submit_workflow(settings,
+  rabbitmq_hostname = getOption("pecanapi.docker_hostname"),
+  rabbitmq_frontend = getOption("pecanapi.docker_rabbitmq_frontend"),
+  rabbitmq_port = getOption("pecanapi.docker_port"),
+  rabbitmq_user = getOption("pecanapi.rabbitmq_user"),
+  rabbitmq_password = getOption("pecanapi.rabbitmq_password"),
+  rabbitmq_prefix = NULL, httr_auth = TRUE,
+  https = getOption("pecanapi.docker_https"))
 }
 \arguments{
 \item{settings}{PEcAn settings list object}
@@ -16,11 +20,13 @@ submit_workflow(settings, rabbitmq_hostname = "localhost",
 Default = \code{"localhost"})}
 
 \item{rabbitmq_port}{RabbitMQ server port (character or numeric.
-Default = 8000)}
+Default = option \code{pecanapi.docker_port})}
 
-\item{rabbitmq_user}{RabbitMQ user name (character. Default = \code{"guest"})}
+\item{rabbitmq_user}{RabbitMQ user name (character. Default =
+option \code{pecanapi.rabbitmq_user})}
 
-\item{rabbitmq_password}{RabbitMQ password (character. Default = \code{"guest"})}
+\item{rabbitmq_password}{RabbitMQ password (character. Default =
+option \code{pecanapi.rabbitmq_password})}
 
 \item{rabbitmq_prefix}{Complete RabbitMQ API prefix. If \code{NULL}
 (default), this is constructed from the other arguments. If this
@@ -31,8 +37,8 @@ argument is not \code{NULL}, it overrides all other arguments except
 generate CURL authentication (default = \code{TRUE}). If \code{FALSE}, you
 must pass the authentication as part of the RabbitMQ hostname or prefix.}
 
-\item{https}{Whether or not to use \code{https}. If \code{FALSE} (default),
-use \code{http}.}
+\item{https}{Whether or not to use \code{https}. If \code{FALSE}, use \code{http}.
+Default = option \code{pecanapi.docker_https}}
 }
 \value{
 Curl \code{POST} output, parsed by \link[httr:content]{httr::content}

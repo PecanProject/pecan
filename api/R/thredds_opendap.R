@@ -8,9 +8,9 @@
 #' @author Alexey Shiklomanov
 #' @export
 thredds_dap_url <- function(target,
-                            hostname = "localhost",
-                            port = 8000,
-                            https = FALSE) {
+                            hostname = getOption("pecanapi.docker_hostname"),
+                            port = getOption("pecanapi.docker_port"),
+                            https = getOption("pecanapi.docker_https")) {
   httpstring <- if (https) "https" else "http"
   port <- as.character(port)
   prefix_url <- sprintf("%s://%s:%s/thredds/dodsC", httpstring, hostname, port)

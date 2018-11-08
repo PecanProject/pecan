@@ -5,9 +5,12 @@
 \title{Add RabbitMQ configuration}
 \usage{
 add_rabbitmq(settings, model_queue = NULL, con = NULL,
-  rabbitmq_user = "guest", rabbitmq_password = "guest",
-  rabbitmq_service = "rabbitmq", rabbitmq_service_port = 5672,
-  rabbitmq_vhost = "\%2f", overwrite = FALSE)
+  rabbitmq_user = getOption("pecanapi.rabbitmq_user"),
+  rabbitmq_password = getOption("pecanapi.rabbitmq_password"),
+  rabbitmq_service = getOption("pecanapi.rabbitmq_service"),
+  rabbitmq_service_port = getOption("pecanapi.rabbitmq_service_port"),
+  rabbitmq_vhost = getOption("pecanapi.rabbitmq_vhost"),
+  overwrite = FALSE)
 }
 \arguments{
 \item{settings}{Partially completed PEcAn \code{settings} list.}
@@ -22,22 +25,24 @@ the database (i.e. \code{con} must not be \code{NULL}).}
 unless \code{model_queue} is \code{NULL}.}
 
 \item{rabbitmq_user}{Username for RabbitMQ server (character,
-default = "guest")}
+default = option \code{pecanapi.rabbitmq_user})}
 
 \item{rabbitmq_password}{Password for RabbitMQ server (character,
-default = "guest")}
+default = option \code{pecanapi.rabbitmq_password})}
 
 \item{rabbitmq_service}{Name of RabbitMQ \code{docker-compose} service
-(character, default = "rabbitmq")}
+(character, default = option \code{pecanapi.rabbitmq_service})}
 
 \item{rabbitmq_service_port}{RabbitMQ service port (numeric or
-character, default = 5672). Note that this is internal to the
-Docker stack, \emph{not}. The only reason this should be changed is if you
-changed low-level RabbitMQ sett}
+character, default = option \code{pecanapi.rabbitmq_service_port}).
+Note that this is internal to the Docker stack, \emph{not}. The only
+reason this should be changed is if you changed low-level
+RabbitMQ settings in the \code{docker-compose.yml} file}
 
-\item{rabbitmq_vhost}{RabbitMQ vhost (character, default = "%2f").
-The only reason this should be changed is if you change the
-low-level RabbitMQ setup in the \code{docker-compose.yml} file.}
+\item{rabbitmq_vhost}{RabbitMQ vhost (character, default = option
+\code{pecanapi.rabbitmq_vhost}). The only reason this should be
+changed is if you change the low-level RabbitMQ setup in the
+\code{docker-compose.yml} file.}
 
 \item{overwrite}{Whether or not to overwrite existing \code{settings}
 tags (logical; default = \code{FALSE})}

@@ -64,7 +64,9 @@ dbfile_url <- function(target, ...) {
 #'   (default = `FALSE`).
 #' @return THREDDS fileServer URL prefix (character)
 #' @author Alexey Shiklomanov
-thredds_fs_url <- function(hostname = "localhost", port = 8000, https = FALSE) {
+thredds_fs_url <- function(hostname = getOption("pecanapi.docker_hostname"),
+                           port = getOption("pecanapi.docker_port"),
+                           https = getOption("pecanapi.docker_https")) {
   httpstring <- if (https) "https" else "http"
   port <- as.character(port)
   sprintf(

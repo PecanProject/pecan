@@ -7,10 +7,11 @@
 #' @param start_date Model run start date (character or POSIX)
 #' @param end_date Model run end date (character or POSIX)
 #' @param user_id User ID from `users` table (numeric or NULL (default))
-#' @param hostname Workflow server hostname (character; default = "docker")
+#' @param hostname Workflow server hostname (character; default =
+#'   option `pecanapi.workflow_hostname`)
 #' @param folder_prefix Output directory prefix (character; default =
-#'   "/data/workflows/PEcAn_"). Workflow ID will be appended to the
-#'   end with `paste0`
+#'   option `pecanapi.workflow_prefix`). Workflow ID will be appended
+#'   to the end with `paste0`
 #' @param params Additional workflow parameters, stored in
 #'   `workflows.params` (character or NULL (default))
 #' @param notes Additional workflow notes, stored in `workflows.notes`
@@ -25,8 +26,8 @@ insert_new_workflow <- function(con,
                                 start_date,
                                 end_date,
                                 user_id = NULL,
-                                hostname = "docker",
-                                folder_prefix = "/data/workflows/PEcAn_",
+                                hostname = getOption("pecanapi.workflow_hostname"),
+                                folder_prefix = getOption("pecanapi.workflow_prefix"),
                                 params = NULL,
                                 notes = NULL) {
   if (is.null(notes)) notes <- ""

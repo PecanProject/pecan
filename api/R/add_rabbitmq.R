@@ -9,29 +9,31 @@
 #' @param con Database connection object (default = `NULL`). Ignored
 #'   unless `model_queue` is `NULL`. 
 #' @param rabbitmq_user Username for RabbitMQ server (character,
-#'   default = "guest")
+#'   default = option `pecanapi.rabbitmq_user`)
 #' @param rabbitmq_password Password for RabbitMQ server (character,
-#'   default = "guest")
+#'   default = option `pecanapi.rabbitmq_password`)
 #' @param rabbitmq_service Name of RabbitMQ `docker-compose` service
-#'   (character, default = "rabbitmq")
+#'   (character, default = option `pecanapi.rabbitmq_service`)
 #' @param rabbitmq_service_port RabbitMQ service port (numeric or
-#'   character, default = 5672). Note that this is internal to the
-#'   Docker stack, _not_. The only reason this should be changed is if you
-#'   changed low-level RabbitMQ sett
-#' @param rabbitmq_vhost RabbitMQ vhost (character, default = "%2f").
-#'   The only reason this should be changed is if you change the
-#'   low-level RabbitMQ setup in the `docker-compose.yml` file.
+#'   character, default = option `pecanapi.rabbitmq_service_port`).
+#'   Note that this is internal to the Docker stack, _not_. The only
+#'   reason this should be changed is if you changed low-level
+#'   RabbitMQ settings in the `docker-compose.yml` file
+#' @param rabbitmq_vhost RabbitMQ vhost (character, default = option
+#'   `pecanapi.rabbitmq_vhost`). The only reason this should be
+#'   changed is if you change the low-level RabbitMQ setup in the
+#'   `docker-compose.yml` file.
 #' @return Modified settings list with RabbitMQ configuration added.
 #' @author Alexey Shiklomanov
 #' @export
 add_rabbitmq <- function(settings,
                          model_queue = NULL,
                          con = NULL,
-                         rabbitmq_user = "guest",
-                         rabbitmq_password = "guest",
-                         rabbitmq_service = "rabbitmq",
-                         rabbitmq_service_port = 5672,
-                         rabbitmq_vhost = "%2f",
+                         rabbitmq_user = getOption("pecanapi.rabbitmq_user"),
+                         rabbitmq_password = getOption("pecanapi.rabbitmq_password"),
+                         rabbitmq_service = getOption("pecanapi.rabbitmq_service"),
+                         rabbitmq_service_port = getOption("pecanapi.rabbitmq_service_port"),
+                         rabbitmq_vhost = getOption("pecanapi.rabbitmq_vhost"),
                          overwrite = FALSE) {
   if (is.null(model_queue) && is.null(settings[["rabbitmq"]][["queue"]])) {
     # Deduce model queue from settings and database

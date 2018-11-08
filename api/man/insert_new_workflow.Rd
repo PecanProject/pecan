@@ -6,8 +6,8 @@
 as a \code{data.frame}}
 \usage{
 insert_new_workflow(con, site_id, model_id, start_date, end_date,
-  user_id = NULL, hostname = "docker",
-  folder_prefix = "/data/workflows/PEcAn_", params = NULL,
+  user_id = NULL, hostname = getOption("pecanapi.workflow_hostname"),
+  folder_prefix = getOption("pecanapi.workflow_prefix"), params = NULL,
   notes = NULL)
 }
 \arguments{
@@ -23,11 +23,12 @@ insert_new_workflow(con, site_id, model_id, start_date, end_date,
 
 \item{user_id}{User ID from \code{users} table (numeric or NULL (default))}
 
-\item{hostname}{Workflow server hostname (character; default = "docker")}
+\item{hostname}{Workflow server hostname (character; default =
+option \code{pecanapi.workflow_hostname})}
 
 \item{folder_prefix}{Output directory prefix (character; default =
-"/data/workflows/PEcAn_"). Workflow ID will be appended to the
-end with \code{paste0}}
+option \code{pecanapi.workflow_prefix}). Workflow ID will be appended
+to the end with \code{paste0}}
 
 \item{params}{Additional workflow parameters, stored in
 \code{workflows.params} (character or NULL (default))}
