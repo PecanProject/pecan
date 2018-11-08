@@ -7,3 +7,4 @@ It contains the following sections:
 - [Docker quickstart](#docker-quickstart) -- Brief tutorial for setting up a Docker-based PEcAn instance
 - [PEcAn Docker infrastructure](#pecan-docker) -- Detailed description of the containers comprising the PEcAn Docker-based infrastructure
 - [Dockerfiles for models](#model-docker) -- General guide for writing Dockerfiles for new models
+- [Migrating from VM to Docker](#docker-migrate) -- Steps to migrate from running PEcAn on a VM to a docker.
