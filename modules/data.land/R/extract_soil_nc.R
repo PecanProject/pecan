@@ -15,24 +15,26 @@
 #'    PEcAn.data.land::extract_soil_gssurgo(outdir,lat,lon)
 #' }
 #' @author Hamze Dokoohaki
-
-extract_soil_gssurgo<-function(outdir,lat,lon){
+#' 
+extract_soil_gssurgo<-function(outdir, lat, lon){
   #reading the mapunit based on latitude and longitude of the site
   #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
   #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
-  RCurl::getURL(paste0("https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=MapunitPoly&FILTER=<Filter><DWithin><PropertyName>Geometry</PropertyName><gml:Point>%20<gml:coordinates>",
-                lon ,",", lat,"</gml:coordinates></gml:Point><Distance%20units=%27m%27>0</Distance>%20</DWithin></Filter>"), ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)->xmll
-  regexpr('<ms:mukey>', xmll)->startp
-  regexpr('</ms:mukey>', xmll)->stopp
+  xmll <- RCurl::getURL(paste0("https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=MapunitPoly&FILTER=<Filter><DWithin><PropertyName>Geometry</PropertyName><gml:Point>%20<gml:coordinates>",
+                lon ,",", lat,"</gml:coordinates></gml:Point><Distance%20units=%27m%27>0</Distance>%20</DWithin></Filter>"), ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)
+  
+  startp <- regexpr('<ms:mukey>', xmll)
+  stopp <- regexpr('</ms:mukey>', xmll)
+  
   #if you found the mapunit key
   if (startp==-1 | stopp==-1) PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
     # caaling the query function sending the mapunit key
-    soilprop<-gSSURGO.Query(substr(xmll, startp%>%as.numeric+10, stopp%>%as.numeric-1))
+    soilprop <- gSSURGO.Query(substr(xmll, startp%>%as.numeric+10, stopp%>%as.numeric-1))
     #Filter based on the most abundant component in that mapunit key 
     soilprop.new<-soilprop%>%
-      filter(comppct_r==max(soilprop$comppct_r, na.rm=T), hzdept_r>0)%>%
-      arrange(hzdept_r)%>%
-      select(-comppct_r, -chkey, -aws050wta)%>%
+      dplyr::filter(comppct_r==max(soilprop$comppct_r, na.rm=T), hzdept_r>0)%>%
+      dplyr::arrange(hzdept_r)%>%
+      dplyr::select(-comppct_r, -chkey, -aws050wta)%>%
       `colnames<-`( c("soil_cec", "fraction_of_sand_in_soil", "fraction_of_silt_in_soil", "fraction_of_clay_in_soil", "soilC" , "soil_depth" , "fraction_of_gravel_in_soil",
                         "soil_bulk_density" , "soil_ph") )
     #unit colnversion
@@ -40,10 +42,11 @@ extract_soil_gssurgo<-function(outdir,lat,lon){
     soilprop.new [, c("soilC")] <- soilprop.new [,c("soilC")]*0.69/100
     soilprop.new$soil_bulk_density <- udunits2::ud.convert(soilprop.new$soil_bulk_density, "g cm-3", "kg m-3")
     #converting it to list
-    names(soilprop.new) %>%
+    soil.data.gssurgo <- names(soilprop.new) %>%
       purrr::map(function(var){
         soilprop.new[,var]
-      })%>% setNames(names(soilprop.new))->soil.data.gssurgo
+      })%>% 
+      setNames(names(soilprop.new))
     # calc new filename
     prefix <- "gSSURGO_soil"
     new.file <- file.path(outdir, paste0(prefix,".nc"))
