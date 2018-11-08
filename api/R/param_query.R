@@ -34,6 +34,5 @@ param_statement <- function(con, query, params) {
   )
   qry <- DBI::dbSendStatement(con, query)
   res <- DBI::dbBind(qry, params)
-  return(res)
   on.exit(DBI::dbClearResult(res))
 }
