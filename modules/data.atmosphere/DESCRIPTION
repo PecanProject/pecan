@@ -23,7 +23,7 @@ Imports:
     car,
     data.table,
     dplyr,
-    geonames,
+    geonames (> 0.998),
     ggplot2,
     glue,
     httr,
