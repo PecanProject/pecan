@@ -6,7 +6,7 @@
 \usage{
 add_database(settings, host = "postgres", user = "bety",
   password = "bety", dbname = "bety", driver = "PostgreSQL",
-  write = TRUE, overwrite = FALSE, ...)
+  dbfiles = "/data/dbfiles/", write = TRUE, overwrite = FALSE, ...)
 }
 \arguments{
 \item{settings}{Input settings list (list)}
@@ -21,6 +21,8 @@ add_database(settings, host = "postgres", user = "bety",
 \item{dbname}{Database name (character, default = "bety")}
 
 \item{driver}{Database driver (character, default = "PostgreSQL")}
+
+\item{dbfiles}{Path to \code{dbfiles} directory (character, default = "/data/dbfiles")}
 
 \item{write}{Whether or not to write to the database (logical,
 default = \code{TRUE})}
