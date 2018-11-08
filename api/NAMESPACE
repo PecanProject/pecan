@@ -3,6 +3,7 @@
 export(add_database)
 export(add_pft)
 export(add_pft_list)
+export(add_rabbitmq)
 export(add_workflow)
 export(get_model_id)
 export(get_next_workflow_id)

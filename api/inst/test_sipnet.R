@@ -21,13 +21,10 @@ settings <- list() %>%
   add_workflow(workflow) %>%
   add_database() %>%
   add_pft("temperate.deciduous") %>%
+  add_rabbitmq(con = con) %>%
   modifyList(list(
     meta.analysis = list(iter = 3000, random.effects = FALSE),
     run = list(inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))),
-    host = list(rabbitmq = list(
-      uri = "amqp://guest:guest@rabbitmq:5672/%2F",
-      queue = "SIPNET_136"
-    )),
     ensemble = list(size = 1, variable = "NPP")
   ))
 
