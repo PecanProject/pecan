@@ -32,5 +32,11 @@ settings <- list() %>%
 submit_workflow(settings)
 
 watch_workflow(workflow_id)
-
 output <- workflow_output(workflow_id)
+
+sipnet_out <- ncdf4::nc_open(run_dap(workflow_id, "2005.nc"))
+gpp <- ncdf4::ncvar_get(sipnet_out, "GPP")
+time <- ncdf4::ncvar_get(sipnet_out, "time")
+ncdf4::nc_close(sipnet_out)
+
+plot(time, gpp, type = "l")

@@ -22,4 +22,10 @@
     <serviceName>all</serviceName>
   </datasetScan>
 
+  <!-- Look for PEcAn dbfiles in the /data/dbfiles directory -->
+  <datasetScan name="PEcAn dbfiles" ID="pecan_output"
+               path="dbfiles" location="/data/dbfiles">
+    <serviceName>all</serviceName>
+  </datasetScan>
+
 </catalog>
