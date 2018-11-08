@@ -16,6 +16,7 @@ site_id <- subset(all_umbs, !is.na(mat))[["id"]]
 workflow <- insert_new_workflow(con, site_id, model_id,
                                 start_date = "2004-01-01",
                                 end_date = "2004-12-31")
+workflow_id <- workflow[["id"]]
 
 settings <- list() %>%
   add_workflow(workflow) %>%
@@ -29,3 +30,7 @@ settings <- list() %>%
   ))
 
 submit_workflow(settings)
+
+watch_workflow(workflow_id)
+
+output <- workflow_output(workflow_id)
