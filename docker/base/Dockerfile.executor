@@ -16,8 +16,7 @@ ENV RABBITMQ_URI=amqp://guest:guest@rabbitmq/%2F \
 # ----------------------------------------------------------------------
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3-pip \
-    && pip3 install setuptools \
-    && pip3 install pika dicttoxml \
+    && pip3 install pika \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /work
