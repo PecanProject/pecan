@@ -5,13 +5,7 @@ import subprocess
 import traceback
 
 import pika
-import dicttoxml
-import collections
-import os
 import shutil
-
-from xml.dom.minidom import parseString
-
 
 rabbitmq_uri   = os.getenv('RABBITMQ_URI',   'amqp://guest:guest@rabbitmq/%2F')
 rabbitmq_queue = os.getenv('RABBITMQ_QUEUE', 'pecan')
@@ -21,37 +15,34 @@ default_application = os.getenv('APPLICATION', 'job.sh')
 # called for every message, this will start the program and ack message if all is ok.
 def callback(ch, method, properties, body):
     logging.info(body)
-    jbody = json.loads(body.decode('UTF-8'), object_pairs_hook=collections.OrderedDict)
+    jbody = json.loads(body.decode('UTF-8'))
 
     folder = jbody.get('folder')
     rebuild = jbody.get('rebuild')
-    pecan_json = jbody.get('pecan_json')
+    pecan_xml = jbody.get('pecan_xml')
     custom_application = jbody.get('custom_application')
 
     if rebuild is not None:
         logging.info("Rebuilding PEcAn with make")
         application = 'make'
         folder = '/pecan'
-    elif pecan_json is not None:
-        # Passed pecan XML as JSON in message
+    elif pecan_xml is not None:
+        # Passed entire pecan XML as a string
         logging.info("Running XML passed directly")
-        outdir = pecan_json['outdir']
         try:
-            os.mkdir(outdir)
+            os.mkdir(folder)
         except OSError as e:
             logging.info("Caught the following OSError. ",
                          "If it's just that the directory exists, ",
                          "this can probably be ignored: ", e)
-        workflow_path = os.path.join(outdir, "workflow.R")
+        workflow_path = os.path.join(folder, "workflow.R")
         shutil.copyfile("/pecan/web/workflow.R", workflow_path)
-        xml = dicttoxml.dicttoxml(pecan_json, custom_root='pecan', attr_type=False)
-        xml_file = open(os.path.join(outdir, "pecan.xml"), "w")
-        xml_file.write(parseString(xml).toprettyxml())
+        xml_file = open(os.path.join(folder, "pecan.xml"), "w")
+        xml_file.write(pecan_xml)
         xml_file.close()
 
         # Set variables for execution
         application = "R CMD BATCH workflow.R"
-        folder = outdir
     elif custom_application is not None:
         application = custom_application
     else:
