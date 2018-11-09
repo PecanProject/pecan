@@ -44,7 +44,7 @@ add_rabbitmq <- function(settings,
     if (is.null(model_id)) {
       stop("Settings list must include model ID to automatically determine model queue.")
     }
-    model_dat <- param_query(con, (
+    model_dat <- prepared_query(con, (
       "SELECT model_name, revision FROM models WHERE id = $1"
     ), list(model_id))
     if (!nrow(model_dat) > 0) stop("Multiple models found. Unable to automatically determine model queue.")

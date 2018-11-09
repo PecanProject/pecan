@@ -1,6 +1,6 @@
 #' Search for sites or models
 #'
-#' @inheritParams param_query
+#' @inheritParams prepared_query
 #' @param name Model/PFT (depending on function) name search string (character)
 #' @param sitename Model name search string (character)
 #' @param definition PFT definition search string (character)
@@ -45,7 +45,7 @@ search_models <- function(con, name = "", revision = "", modeltype = "", auto_pc
   }
   like <- "LIKE"
   if (ignore.case) like <- "ILIKE"
-  param_query(con, paste(
+  prepared_query(con, paste(
     "SELECT models.*, modeltypes.name AS modeltype FROM models",
     "INNER JOIN modeltypes ON (models.modeltype_id = modeltypes.id)",
     "WHERE model_name", like, "$1 AND revision", like, "$2 AND modeltypes.name", like, "$3"
@@ -60,7 +60,7 @@ search_sites <- function(con, sitename = "", auto_pct = TRUE, ignore.case = TRUE
   }
   like <- "LIKE"
   if (ignore.case) like <- "ILIKE"
-  param_query(con, paste(
+  prepared_query(con, paste(
     "SELECT * FROM sites WHERE sitename", like, "$1"
   ), list(sitename))
 }
@@ -75,7 +75,7 @@ search_pfts <- function(con, name = "", definition = "", modeltype = "", auto_pc
   }
   like <- "LIKE"
   if (ignore.case) like <- "ILIKE"
-  param_query(con, paste(
+  prepared_query(con, paste(
     "SELECT pfts.id AS id, pfts.name AS name, pfts.definition AS definition, pfts.pft_type AS pft_type,",
     "modeltypes.name AS modeltype, modeltypes.id AS modeltype_id",
     "FROM pfts INNER JOIN modeltypes",

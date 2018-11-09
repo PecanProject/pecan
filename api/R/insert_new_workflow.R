@@ -1,7 +1,7 @@
 #' Insert a new workflow into PEcAn database, returning the workflow
 #' as a `data.frame`
 #'
-#' @inheritParams param_query
+#' @inheritParams prepared_query
 #' @param site_id Site ID from `sites` table (numeric)
 #' @param model_id Model ID from `models` table (numeric)
 #' @param start_date Model run start date (character or POSIX)
@@ -80,7 +80,7 @@ insert_new_workflow <- function(con,
   params <- list(id, site_id, model_id, folder,
                  hostname, start_date, end_date, params,
                  notes, user_id)
-  param_query(con, query_string, params)
+  prepared_query(con, query_string, params)
 }
 
 #' Get current workflow ID and update internal workflow ID PostgreSQL
@@ -96,7 +96,7 @@ insert_new_workflow <- function(con,
 #' which retrieves the current value of the sequence _and_ augments
 #' the sequence by 1.
 #'
-#' @inheritParams param_query
+#' @inheritParams prepared_query
 #' @return Workflow ID, as numeric/base64 integer
 #' @author Alexey Shiklomanov
 #' @export
