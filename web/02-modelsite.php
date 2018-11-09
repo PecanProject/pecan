@@ -59,6 +59,11 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     $sitegroups .= "<option value='${row['id']}'>${row['name']}</option>\n";    
   }
 }
+if ($sitegroupid == "-1") {
+  $sitegroups .= "<option value='-1' selected>All Sites</option>\n";
+} else {
+  $sitegroups .= "<option value='-1'>All Sites</option>\n";    
+}
 
 
 ?>
@@ -117,7 +122,6 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     lmap.on('contextmenu',function(event) {
       $("#lat").val(event.latlng.lat);
       $("#lon").val(event.latlng.lng);
-      console.log($("#lon").val());
       $("#formnext").attr("action", "02a-createsite.php");
       $("#formnext").submit();
     });
@@ -125,10 +129,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     markersArray = [];
 
     updateData();
-
-// $(document).ready(function () {
-//   updateData();
-// });
+  });
 
 function updateTips( t ) {
   tips
@@ -284,6 +285,13 @@ function updateData() {
     });
     renderSites(curSite);
 
+    var selected = markersArray.find(function(d) { return d.siteid == curSite; });
+    if (selected) {
+      markers.zoomToShowLayer(selected);
+      selected.openPopup();
+      siteSelected(selected.siteid, selected.sitename);
+    }
+
     switchUI(false);
   });
 }
@@ -391,7 +399,6 @@ function renderSites(selected) {
       <label id="sitegrouplabel">Site Group:</label></span>
       <select name="sitegroupid" id="sitegroupid" onChange="updateData();">
        	<?php echo $sitegroups; ?>
-	      <option value="">All Sites</option>
       </select>
       <div class="spacer"></div>
 

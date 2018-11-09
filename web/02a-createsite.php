@@ -46,34 +46,82 @@ $lon=$_REQUEST['lon'];
 <script type="text/javascript" src="jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
   function validate() {
-    var dialog, form,
-    sitename = $( "#txtsitename" ),
-    elevation =$( "#txtelevation" ),
-    map =$( "#txtmap" ),
-    mat =$( "#txtmat" ),
-    city =$( "#txtcity" ),
-    state =$( "#txtstate" ),
-    county =$( "#txtcountry" ),
-    lat =$( "#txtlat" ),
-    lng =$( "#txtlong" ),
-    pctclay =$( "#txtpctclay" ),
-    pctsand =$( "#txtpctsand" ),
-    greehouse =$( "#txtgreenhouse" ),
-    notes =$( "#txtnotes" ),
-    soilnotes =$( "#txtsoilnotes" ),
-    allFields = $( [] ).add( sitename ).add( elevation ),
-    tips = $( ".validateTips" ),
-    request;
+    $("#error").html("&nbsp;");
+    if ($("#newsite").val() == "") {
+      $("#error").html("Enter sitename to continue");
+      return false;
+    }
+    // if ($("#city").val() == "") {
+    //   $("#error").html("Enter city to continue");
+    //   return false;
+    // }
+    // if ($("#state").val() == "") {
+    //   $("#error").html("Enter state to continue");
+    //   return false;
+    // }
+    if ($("#county").val() == "") {
+      $("#error").html("Enter county to continue");
+      return false;
+    }
+    // if ($("#timezone").val() == "") {
+    //   $("#error").html("Enter timezone to continue");
+    //   return false;
+    // }
+    if ($("#lat").val() == "") {
+      $("#error").html("Enter lat to continue");
+      return false;
+    }
+    if ($("#lon").val() == "") {
+      $("#error").html("Enter lon to continue");
+      return false;
+    }
+    // if ($("#elevation").val() == "") {
+    //   $("#error").html("Enter elevation to continue");
+    //   return false;
+    // }
+    if ($("#temperature").val() == "") {
+      $("#error").html("Enter temperature to continue");
+      return false;
+    }
+    if ($("#percipitation").val() == "") {
+      $("#error").html("Enter percipitation to continue");
+      return false;
+    }
+    if ($("#clay").val() == "") {
+      $("#error").html("Enter clay to continue");
+      return false;
+    }
+    if ($("#sand").val() == "") {
+      $("#error").html("Enter sand to continue");
+      return false;
+    }
+    // if ($("#soilnotes").val() == "") {
+    //   $("#error").html("Enter soilnotes to continue");
+    //   return false;
+    // }
+    // if ($("#notes").val() == "") {
+    //   $("#error").html("Enter notes to continue");
+    //   return false;
+    // }
+    return true;
   }
       
   function prevStep() {
     $("#formprev").submit();
   }
 
-  function nextStep() {
-    $("#formnext").submit();
+  function createSite() {
+    if (!validate()) return;
+    var serializedData = $('#site :input').serialize();
+    $.post("insert-site.php", serializedData , function(data) {
+      var result = data.split(" ");
+      $("#siteid").val(result[0]);
+      $("#sitename").val(result[1]);
+      $("#formprev").submit();
+    });
+    event.preventDefault();
   }
-  
+
   $(document).ready(function () {
     validate();
   });
@@ -104,26 +152,8 @@ $lon=$_REQUEST['lon'];
 ?>
     </form>
 
-    <form id="formnext" method="POST" action="02-modelsite.php">
-<?php
-  foreach($_REQUEST as $key => $value) {
-    if (is_array($value)) {
-      foreach($value as $v) {
-        echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
-      }
-    } else {
-      if(strcmp($key, "notes") == 0) {
-        $str = htmlentities($value, ENT_QUOTES);
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
-      } else {
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
-      }
-    }
-  }
-?>
       <span id="error" class="small">&nbsp;</span>
-      <input id="prev" type="button" value="Prev" onclick="prevStep();" />
-      <input id="next" type="button" value="Add Site" onclick="nextStep();" />    
+      <input id="prev" type="button" value="Back" onclick="prevStep();" />
       <div class="spacer"></div>
     </form>
 <?php left_footer(); ?>    
@@ -131,10 +161,10 @@ $lon=$_REQUEST['lon'];
   <div id="output">
     <form id="site">
       <fieldset>
-        <legend>Site location</legend>
+        <legend>Site Information</legend>
 
         <label>Site name:</label>
-        <input id="sitename" size="30" type="text" name="sitename"></input>
+        <input id="newsite" size="30" type="text" name="newsite"></input>
         <div class="spacer"></div>
 
         <label>City:</label>
@@ -147,6 +177,10 @@ $lon=$_REQUEST['lon'];
 
         <label>Country:</label>
         <input id="country" size="30" type="text" name="country"></input>
+        <div class="spacer"></div>
+
+        <label>Timezone:</label>
+        <input id="timezone" size="30" type="text" name="timezone"></input>
         <div class="spacer"></div>
 
         <label>Latitude:</label>
@@ -163,14 +197,14 @@ $lon=$_REQUEST['lon'];
       </fieldset>
 
       <fieldset>
-        <legend>Site Meteorological Data</legend>
+        <legend>Site Meteorological Information</legend>
 
         <label>Mean Annual Precipitation (mm/yr):</label>
-        <input id="elevation" size="30" type="text" name="elevation"></input>
+        <input id="percipitation" size="30" type="text" name="percipitation"></input>
         <div class="spacer"></div>
 
         <label>Mean Annual Temperature (C):</label>
-        <input id="elevation" size="30" type="text" name="elevation"></input>
+        <input id="temperature" size="30" type="text" name="temperature"></input>
         <div class="spacer"></div>
       </fieldset>
 
@@ -178,15 +212,11 @@ $lon=$_REQUEST['lon'];
         <legend>Site Soil Information</legend>
 
         <label>% Clay:</label>
-        <input id="elevation" size="30" type="text" name="elevation"></input>
+        <input id="clay" size="30" type="text" name="clay"></input>
         <div class="spacer"></div>
 
         <label>% Sand:</label>
-        <input id="elevation" size="30" type="text" name="elevation"></input>
-        <div class="spacer"></div>
-
-        <label>Soil Notes:</label>
-        <input id="elevation" size="30" type="text" name="elevation"></input>
+        <input id="sand" size="30" type="text" name="sand"></input>
         <div class="spacer"></div>
 
         <label>Soil Notes:</label>
@@ -201,6 +231,10 @@ $lon=$_REQUEST['lon'];
         <textarea id="notes" cols="40" rows="5" type="text" name="notes"></textarea>
         <div class="spacer"></div>
       </fieldset>
+
+      <div class="spacer"></div>
+      <input id="create" type="button" style="width: 100%" value="Add Site" onclick="createSite();" />
+      <div class="spacer"></div>
     </form>
   </div>
   <div id="footer"><?php echo get_footer(); ?></div>
