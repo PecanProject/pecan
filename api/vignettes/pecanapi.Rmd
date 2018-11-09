@@ -95,8 +95,7 @@ settings <- add_pft_list(settings, c("temperate.coniferous", "miscanthus"))
 settings
 ```
 
-Notice that `add_pft` and `add_pft_list` both automatically augment the PFT number (`pft$constants$num`) as well.
-Like `add_databse`, `add_pft` and `add_pft_list` can also take arbitrary additional configuration arguments via their `...` argument.
+Like `add_database`, `add_pft` and `add_pft_list` can also take arbitrary additional configuration arguments via their `...` argument.
 For `add_pft`, such arguments are passed only to that PFT, while for `add_pft_list`, they are shared between all PFTs.
 For more details, see `?add_pft`.
 

@@ -31,8 +31,8 @@ add_pft(settings, "Optics.Temperate_Early_Hardwood")
 add_pft_list(settings, sprintf("Temperate_\%s_Hardwood", c("Early", "Mid", "Late")))
 add_pft_list(
   settings,
-  list(list(name = "deciduous", my_number = 3),
-       list(name = "coniferous", my_number = 6))
+  list(list(name = "deciduous", num = 3),
+       list(name = "coniferous", num = 6))
 )  
 if (require("magrittr")) {
   list() \%>\%

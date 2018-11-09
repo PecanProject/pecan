@@ -13,8 +13,8 @@
 #' add_pft_list(settings, sprintf("Temperate_%s_Hardwood", c("Early", "Mid", "Late")))
 #' add_pft_list(
 #'   settings,
-#'   list(list(name = "deciduous", my_number = 3),
-#'        list(name = "coniferous", my_number = 6))
+#'   list(list(name = "deciduous", num = 3),
+#'        list(name = "coniferous", num = 6))
 #' )  
 #' if (require("magrittr")) {
 #'   list() %>%
@@ -25,19 +25,8 @@
 #' @export
 add_pft <- function(settings, name, ...) {
   pft_list <- settings[["pfts"]]
-  if (is.null(pft_list)) pft_list <- list()
-  current_number <- suppressWarnings(
-    max(vapply(pft_list, function(x) x[["constants"]][["num"]], numeric(1)), na.rm = TRUE)
-  )
-  if (!is.finite(current_number)) current_number <- 0
-  new_pft <- list(
-    name = name,
-    constants = list(num = current_number + 1)
-  )
-  dots <- list(...)
-  new_pft <- modifyList(new_pft, dots)
-  new_pft_list <- c(pft_list, list(pft = new_pft))
-  settings[["pfts"]] <- new_pft_list
+  new_pft <- list(name = name, ...)
+  settings[["pfts"]] <- c(pft_list, list(pft = new_pft))
   settings
 }
 
