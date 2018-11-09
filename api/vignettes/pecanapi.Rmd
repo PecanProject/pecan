@@ -275,3 +275,28 @@ submit_workflow(settings)
 If the workflow was submitted successfully, this will return the HTTP response `routed = TRUE` as a named list.
 Note that this only means that the RabbitMQ message was posted; the workflow can still crash for various reasons.
 To see the status of the workflow, look at `docker-compose logs executor` or use the Portainer interface.
+
+## Processing output {#pecanapi-output}
+
+All of PEcAn's outputs as well as its database files (`dbfiles`) can be accessed remotely via the THREDDS data server.
+You can explore these files by browsing to `localhost:8000/thredds/` in a browser (substituting hostname and port, accordingly).
+
+All files, regardless of file type, can be downloaded directly (via HTTP) through the THREDDS `fileServer` protocol.
+In `pecanapi`, URLs for these files can be easily constructed via `output_url` for any workflow output and `run_url` for run-specific outputs.
+For instance, to read the `workflow.Rout` file from the workflow we created earlier, you can do the following:
+
+```{r, eval = FALSE}
+workflow_id <- workflow[["id"]]
+readLines(workflow_id, "workflow.Rout")
+```
+
+Outputs in NetCDF format can also be accessed via the OpenDAP service, which allows remote variable selection and subsetting (meaning you can only download the outputs you need without needing to download the entire file).
+These URLs are created via the `thredds_dap_url` (for a generic URL) or `run_dap` (to access outputs from a specific model run).
+
+```{r, eval = FALSE}
+sipnet_out <- ncdf4::nc_open(run_dap(workflow_id, "2004.nc"))
+gpp <- ncdf4::ncvar_get(sipnet_out, "GPP")
+time <- ncdf4::ncvar_get(sipnet_out, "time")
+ncdf4::nc_close(sipnet_out)
+plot(time, gpp, type = "l")
+```
