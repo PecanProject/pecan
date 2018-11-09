@@ -6,7 +6,9 @@
 #' @param model_id Model ID from `models` table (numeric)
 #' @param start_date Model run start date (character or POSIX)
 #' @param end_date Model run end date (character or POSIX)
-#' @param user_id User ID from `users` table (numeric or NULL (default))
+#' @param user_id User ID from `users` table (default = option
+#'   `pecanapi.user_id`). Note that this option is _not set by
+#'   default_, and this function will not run without a set `user_id`.
 #' @param hostname Workflow server hostname (character; default =
 #'   option `pecanapi.workflow_hostname`)
 #' @param folder_prefix Output directory prefix (character; default =
@@ -25,13 +27,17 @@ insert_new_workflow <- function(con,
                                 model_id,
                                 start_date,
                                 end_date,
-                                user_id = NULL,
+                                user_id = getOption("pecanapi.user_id"),
                                 hostname = getOption("pecanapi.workflow_hostname"),
                                 folder_prefix = getOption("pecanapi.workflow_prefix"),
                                 params = NULL,
                                 notes = NULL) {
   if (is.null(notes)) notes <- ""
   if (is.null(params)) params <- ""
+  if (is.null(user_id)) {
+    stop("API-based inserts into the workflows table are not allowed without a user ID. ",
+         "Either pass the user_id directly, or set it via `options(pecanapi.user_id = <myuserID>)`")
+  }
   stopifnot(
     # Must be scalar 
     length(folder_prefix) == 1,

@@ -14,6 +14,11 @@
 #' needing to be set by the user (first options are most likely to be
 #' changed across different systems):
 #'
+#' -`pecanapi.user_id` -- The User ID to associate with all workflows
+#' created by this package. This is the only option that _must_ be set
+#' by the user -- it is set to `NULL` by default, which will cause
+#' many of the functions in the `pecanapi` to fail.
+#'
 #' - `docker_hostname`, `docker_port` -- The hostname and port of the
 #' Docker service. You can check that these values work by browsing to
 #' `docker_hostname:docker_port` (by default, `localhost:8000`) in a
@@ -60,6 +65,7 @@ NULL
 .onLoad <- function(libname, packagename) {
   op <- options()
   api_opts <- list(
+    pecanapi.user_id = NULL,
     # Docker options (submit_workflow)
     pecanapi.docker_hostname = "localhost",
     pecanapi.docker_port = 8000,

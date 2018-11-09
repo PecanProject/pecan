@@ -18,6 +18,11 @@ The following options (prefixed with \code{pecanapi.}) are used by
 no arguments. These are sorted in order of decreasing likelihood of
 needing to be set by the user (first options are most likely to be
 changed across different systems):
+
+-\code{pecanapi.user_id} -- The User ID to associate with all workflows
+created by this package. This is the only option that \emph{must} be set
+by the user -- it is set to \code{NULL} by default, which will cause
+many of the functions in the \code{pecanapi} to fail.
 \itemize{
 \item \code{docker_hostname}, \code{docker_port} -- The hostname and port of the
 Docker service. You can check that these values work by browsing to

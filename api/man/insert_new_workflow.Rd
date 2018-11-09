@@ -6,7 +6,8 @@
 as a \code{data.frame}}
 \usage{
 insert_new_workflow(con, site_id, model_id, start_date, end_date,
-  user_id = NULL, hostname = getOption("pecanapi.workflow_hostname"),
+  user_id = getOption("pecanapi.user_id"),
+  hostname = getOption("pecanapi.workflow_hostname"),
   folder_prefix = getOption("pecanapi.workflow_prefix"), params = NULL,
   notes = NULL)
 }
@@ -21,7 +22,9 @@ insert_new_workflow(con, site_id, model_id, start_date, end_date,
 
 \item{end_date}{Model run end date (character or POSIX)}
 
-\item{user_id}{User ID from \code{users} table (numeric or NULL (default))}
+\item{user_id}{User ID from \code{users} table (default = option
+\code{pecanapi.user_id}). Note that this option is \emph{not set by
+default}, and this function will not run without a set \code{user_id}.}
 
 \item{hostname}{Workflow server hostname (character; default =
 option \code{pecanapi.workflow_hostname})}
