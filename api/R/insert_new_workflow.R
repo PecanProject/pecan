@@ -67,20 +67,19 @@ insert_new_workflow <- function(con,
     "(id, site_id, model_id, folder,",
     "hostname, start_date, end_date, params,",
     "notes,",
-    (if (!is.null(user_id)) "user_id,"),
-    "advanced_edit, started_at, created_at)",
+    "user_id,",
+    "advanced_edit)",
     "VALUES",
     "($1, $2, $3, $4,",
     "$5, $6, $7, $8,",
     "$9,",
-    (if (!is.null(user_id)) "$10,"),
-    "false, NOW(), NOW())",
+    "$10,",
+    "false)",
     "RETURNING *"
   )
   params <- list(id, site_id, model_id, folder,
                  hostname, start_date, end_date, params,
-                 notes)
-  if (!is.null(user_id)) params <- c(params, user_id)
+                 notes, user_id)
   param_query(con, query_string, params)
 }
 
