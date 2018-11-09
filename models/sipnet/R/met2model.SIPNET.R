@@ -279,7 +279,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       }
     }
     
-    if(year.fragment){ 
+    if(year.fragment){ #gets correct DOY for fragmented years 
       doy.start <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) * (86400 / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
       doy.end <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(end_date)) * (86400 / dt)
       doy <- doy[doy.start:doy.end]
