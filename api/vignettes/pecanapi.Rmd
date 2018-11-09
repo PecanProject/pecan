@@ -3,7 +3,14 @@ title: Introduction to the PEcAn R API
 author: Alexey Shiklomanov
 ---
 
-# Introduction
+# Introduction to the PEcAn R API {#pecanapi-vignette}
+
+```{r, include = FALSE, eval = TRUE}
+op_default <- knitr::opts_chunk$get(default = TRUE)
+knitr::opts_chunk$set(op_default)
+```
+
+## Introduction
 
 The PEcAn API package (`pecanapi`) is designed to allow users to submit PEcAn workflows directly from an R session.
 The basic idea is that users build the PEcAn settings object via an R script (manually, or using the included helper functions) and then use the RabbitMQ API to send this object to a Dockerized PEcAn instance running on a local or remote machine.
@@ -12,12 +19,12 @@ The basic idea is that users build the PEcAn settings object via an R script (ma
 This makes it easy to install, and allows it to be used without needing to download and install PEcAn itself (which is large and has many complex R package and system dependencies).
 It can be installed directly from GitHub as follows:
 
-```{r, eval = FALSE}
+```{r, eval = 2}
 devtools::install_github("pecanproject/pecan", subdir = "api")
 library(pecanapi)
 ```
 
-# Initial setup
+## Initial setup
 
 This tutorial assumes you are running a Dockerized instance of PEcAn on your local machine (hostname `localhost`, port 8000).
 To check this, open a browser and try to access `http://localhost:8000/pecan/`.
@@ -39,7 +46,7 @@ Here, the first port is the one used to access the database (can be any open por
 After making this change, reload the `postgres` container by running `docker-compose up -d`.
 To check that this works, open an R session and try to create a database connection object to the PEcAn database.
 
-```{r}
+```{r, eval = FALSE}
 con <- DBI::dbConnect(
   RPostgres::Postgres(),
   user = "bety",
@@ -65,7 +72,7 @@ options(pecanapi.user_id = 99000000002)
 The `pecanapi` package has many other options that it uses for its default configuration, including the Docker server and RabbitMQ hostname and credentials.
 To learn more about them, see `?pecanapi_options`.
 
-# Building a settings object
+## Building a settings object
 
 The PEcAn settings object is a nested list providing parameters for the various actions performed by the PEcAn workflow, including the trait meta-analysis, processing input files, and running models.
 It can be created manually with a bunch of `list` calls.
@@ -111,6 +118,10 @@ For more details, see `?add_pft`.
 
 Another useful function for adding to the settings list is `add_workflow`, which takes as input a workflow `data.frame` and adds the relevant fields to the right places in the settings list.
 For more on that, see the next section on registering a workflow with the database.
+Yet another useful function is `add_rabbitmq`, which automatically adds the RabbitMQ configuration to the settings object.
+
+```{r}
+```
 
 One final note is that, because the settings object is just a list, you can make arbitrary modifications to it via base R's `modifyList` function (indeed, many of the `pecanapi::add_*` functions use `modifyList` under the hood).
 
@@ -119,8 +130,7 @@ customization <- list(
     meta.analysis = list(iter = 3000, random.effects = FALSE),
     run = list(
       inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))
-    ),
-    host = list(rabbitmq = list(uri = rabbitmq_uri, queue = "SIPNET_136"))
+    )
   )
 settings <- modifyList(settings, customization)
 ```
@@ -137,10 +147,11 @@ settings <- modifyList(settings, list(
 
 Note that all of these steps can be chained together via `magrittr` pipes (`%>%`).
 
-```{r}
+```{r, eval = FALSE}
 library(magrittr)
 settings <- list() %>%
   add_database() %>%
+  add_rabbitmq() %>%
   add_pft("temperate.deciduous") %>%
   add_pft("temperate.coniferous") %>%
   modifyList(list(
@@ -153,7 +164,7 @@ settings <- list() %>%
   ))
 ```
 
-# Registering a workflow with the database
+## Registering a workflow with the database
 
 For the PEcAn workflow to work, it needs to be registered with the PEcAn database.
 In `pecanapi`, this is done via the `insert_new_workflow` function.
@@ -166,16 +177,13 @@ However, chances are you may have to look them up in the database first.
 First, let's pick a model.
 To list all models, we can run `search_models` with no arguments (other than the database connection object, `con`).
 
-```{r}
+```{r, eval = FALSE}
 models <- search_models(con)
-head(models)
-tail(models)
-nrow(models)
 ```
 
 We can narrow down our search by model name, revision, or "type".
 
-```{r}
+```{r, eval = FALSE}
 search_models(con, "ED")
 search_models(con, "sipnet")
 search_models(con, "ED", revision = "git")
@@ -187,7 +195,7 @@ For the purposes of this tutorial, let's use the SIPNET model because it has low
 Specifically, let's use the `136` version.
 We could grab the model ID from the search results, but `pecanapi` also provides an additional helper function for retrieving model IDs if you know the exact name and revision.
 
-```{r}
+```{r, eval = FALSE}
 model_id <- get_model_id(con, "SIPNET", "136")
 model_id
 ```
@@ -196,7 +204,7 @@ We can repeat this process for sites with the `search_sites` function (though th
 Note the use of `%` as a wildcard (matches zero or more of any character, equivalent to the regular expression `.*`).
 The two sites in the search below are largely identical, so we'll use the one with more site information (i.e. where `mat` is not `NA`).
 
-```{r}
+```{r, eval = FALSE}
 all_umbs <- search_sites(con, "umbs%disturbance")
 all_umbs
 site_id <- subset(all_umbs, !is.na(mat))[["id"]]
@@ -204,18 +212,18 @@ site_id <- subset(all_umbs, !is.na(mat))[["id"]]
 
 With site and model IDs in hand, we are ready to create a workflow.
 
-```{r}
+```{r, eval = FALSE}
 workflow <- insert_new_workflow(con, site_id, model_id, start_date = "2004-01-01", end_date = "2004-12-31")
 workflow
 ```
 
 The `insert_new_workflow` function inserts the workflow into the database and returns a `data.frame` containing the row that was inserted.
 
-# Submitting a run
+## Submitting a run
 
 Now that we have all the pieces, let's put them together into a single settings object.
 
-```{r}
+```{r, eval = FALSE}
 settings <- list() %>%
   add_workflow(workflow) %>%
   add_database() %>%
@@ -233,7 +241,7 @@ settings <- list() %>%
 We can then submit these settings as a run via the `submit_workflow` function.
 This function has only one required input -- the settings list -- but a number of optional arguments for specifying how to connect to the RabbitMQ API (see `?submit_workflow` for details).
 
-```{r}
+```{r, eval = FALSE}
 submit_workflow(settings)
 ```
 
