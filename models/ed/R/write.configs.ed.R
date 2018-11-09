@@ -146,12 +146,6 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- read_ed2in(filename)
   }
 
-  metstart <- tryCatch(format(as.Date(settings$run$site$met.start), "%Y"), 
-                       error = function(e) settings$run$site$met.start)
-  metend <- tryCatch(format(as.Date(settings$run$site$met.end), "%Y"), 
-                     error = function(e) settings$run$site$met.end)
-  
-
   ed2in.text <- modify_ed2in(
     ed2in.text,
     latitude = as.numeric(settings$run$site$lat),
@@ -159,8 +153,6 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     met_driver = settings$run$inputs$met$path,
     start_date = startdate,
     end_date = enddate,
-    MET_START = metstart,
-    MET_END = metend,
     IMETAVG = -1,   # See below,
     add_if_missing = TRUE,
     check_paths = check
@@ -308,13 +300,22 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   
   ##---------------------------------------------------------------------
   # Modify any additional tags provided in settings$model$ed2in_tags
-  ed2in.text <- modify_ed2in(ed2in.text, .dots = settings$model$ed2in_tags, add_if_missing = TRUE, check_paths = check)
+  custom_tags <- settings$model$ed2in_tags
+  if (!is.null(custom_tags)) {
+    try_numeric <- suppressWarnings(vapply(custom_tags, as.numeric, numeric(1)))
+    are_numeric <- !is.na(try_numeric)
+    custom_tags[are_numeric] <- lapply(custom_tags[are_numeric], as.numeric)
+    ed2in.text <- modify_ed2in(ed2in.text, .dots = custom_tags, add_if_missing = TRUE, check_paths = check)
+  }
   
   ##----------------------------------------------------------------------
   if (check) {
     check_ed2in(ed2in.text)
   }
-  write_ed2in(ed2in.text, file.path(settings$rundir, run.id, "ED2IN"))
+
+  barebones <- settings$model$barebones_ed2in
+  if (!is.null(barebones) && !isFALSE(barebones) && barebones != "false") barebones <- TRUE
+  write_ed2in(ed2in.text, file.path(settings$rundir, run.id, "ED2IN"), barebones = barebones)
 } # write.config.ED2
 # ==================================================================================================#
 
