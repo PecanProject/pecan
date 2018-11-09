@@ -83,8 +83,18 @@ insert_new_workflow <- function(con,
   param_query(con, query_string, params)
 }
 
-#' Get next workflow ID from sequence. Note that this also updates the
-#'   workflow sequence.
+#' Get current workflow ID and update internal workflow ID PostgreSQL
+#' sequence
+#'
+#' The `workflows` table has an internal
+#' [sequence](https://www.postgresql.org/docs/9.6/sql-createsequence.html)
+#' that keeps track of and automatically updates the workflow ID
+#' (that's why inserting into the table without explicitly setting a
+#' workflow ID is a safe and robust operation). This function is a
+#' wrapper around the
+#' [`nextval` function](https://www.postgresql.org/docs/9.6/functions-sequence.html),
+#' which retrieves the current value of the sequence _and_ augments
+#' the sequence by 1.
 #'
 #' @inheritParams param_query
 #' @return Workflow ID, as numeric/base64 integer
@@ -92,30 +102,4 @@ insert_new_workflow <- function(con,
 #' @export
 get_next_workflow_id <- function(con) {
   DBI::dbGetQuery(con, "SELECT nextval('workflows_id_seq')")[[1]]
-}
-
-#' Set workflow ID sequence to a specific value
-#'
-#' @inheritParams param_query
-#' @param value Workflow ID to which to reset workflow ID sequence (base64 integer)
-#' @return Input `value`
-#' @author Alexey Shiklomanov
-#' @export
-set_workflow_id_seq <- function(con, value) {
-  stmt <- DBI::dbSendStatement(con, "SELECT setval('workflows_id_seq', $1)")
-  res <- DBI::dbBind(stmt, list(value))
-  on.exit(DBI::dbClearResult(res))
-  invisible(value)
-}
-
-#' Reset workflow ID sequence to ID of last workflow in `workflows` table.
-#'
-#' @inheritParams param_query
-#' @return Workflow ID of last workflow (64bit integer)
-#' @author Alexey Shiklomanov
-#' @export
-reset_workflow_id_seq <- function(con) {
-  last_workflow <- DBI::dbGetQuery(con, "SELECT * FROM workflows ORDER BY id DESC limit 1")
-  last_id <- last_workflow[["id"]]
-  set_workflow_id_seq(con, last_id)
 }
