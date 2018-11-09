@@ -283,7 +283,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       doy.start <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) * (86400 / dt) + 1
       doy.end <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(end_date)) * (86400 / dt)
       doy <- doy[doy.start:doy.end]
-      tmp[,2] <- doy
+      tmp[,3] <- doy
     }
     
     if (is.null(out)) {
