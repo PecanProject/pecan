@@ -24,7 +24,14 @@ devtools::install_github("pecanproject/pecan", subdir = "api")
 library(pecanapi)
 ```
 
-## Initial setup
+This vignette covers the following major sections:
+
+- [Initial setup](#pecanapi-setup) goes over the configuration, both inside and outside R, required to make `pecanapi` work.
+- [Registering a workflow](#pecanapi-workflow) goes over how to register a PEcAn workflow with the PEcAn database, including searching for the required site and model IDs
+- [Building a settings object](#pecanapi-settings) covers how to configure a PEcAn workflow using the PEcAn settings list.
+- Finally, [submitting a run](#pecanapi-submit) covers how to submit the complete settings object for execution.
+
+## Initial setup {#pecanapi-setup}
 
 This tutorial assumes you are running a Dockerized instance of PEcAn on your local machine (hostname `localhost`, port 8000).
 To check this, open a browser and try to access `http://localhost:8000/pecan/`.
@@ -72,104 +79,12 @@ options(pecanapi.user_id = 99000000002)
 The `pecanapi` package has many other options that it uses for its default configuration, including the Docker server and RabbitMQ hostname and credentials.
 To learn more about them, see `?pecanapi_options`.
 
-## Building a settings object
-
-The PEcAn settings object is a nested list providing parameters for the various actions performed by the PEcAn workflow, including the trait meta-analysis, processing input files, and running models.
-It can be created manually with a bunch of `list` calls.
-However, this is tedious and error-prone, so `pecanapi` provides several utilities that facilitate this process.
-
-We start with a blank list.
-
-```{r}
-settings <- list()
-```
-
-Let's start by adding a basic database configuration to this settings list.
-
-```{r}
-settings <- add_database(settings)
-settings
-```
-
-All `add_*` functions work by incrementally adding to an input settings object and returning a new modified settings object.
-The first argument of these functions is always the settings list, which gives these functions a consistent syntax and makes it easy to string multiple settings modifications together using the `magrittr` pipe (`%>%`), similar to `tidyverse` tabular data manipulations.
-
-The `add_database` function adds a sensible default configuration for the PEcAn database in the right place with the right names in the settings file.
-These defaults can, of course, be modified (see `?add_database`).
-
-Similarly, we can also add PFTs to the settings object with the `add_pft` function.
-
-```{r}
-settings <- add_pft(settings, "temperate.deciduous")
-settings
-```
-
-This adds the `temperate.deciduous` PFT to the appropriate spot in the settings hierarchy.
-Whereas `add_pft` adds a single PFT to the settings, `add_pft_list` can add a vector of PFTs.
-
-```{r}
-settings <- add_pft_list(settings, c("temperate.coniferous", "miscanthus"))
-settings
-```
-
-Like `add_database`, `add_pft` and `add_pft_list` can also take arbitrary additional configuration arguments via their `...` argument.
-For `add_pft`, such arguments are passed only to that PFT, while for `add_pft_list`, they are shared between all PFTs.
-For more details, see `?add_pft`.
-
-Another useful function for adding to the settings list is `add_workflow`, which takes as input a workflow `data.frame` and adds the relevant fields to the right places in the settings list.
-For more on that, see the next section on registering a workflow with the database.
-Yet another useful function is `add_rabbitmq`, which automatically adds the RabbitMQ configuration to the settings object.
-
-```{r}
-```
-
-One final note is that, because the settings object is just a list, you can make arbitrary modifications to it via base R's `modifyList` function (indeed, many of the `pecanapi::add_*` functions use `modifyList` under the hood).
-
-```{r}
-customization <- list(
-    meta.analysis = list(iter = 3000, random.effects = FALSE),
-    run = list(
-      inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))
-    )
-  )
-settings <- modifyList(settings, customization)
-```
-
-Note that `modifyList` operates recursively on nested lists, which makes it easy to modify settings at different levels of the list hierarchy.
-For instance, below, we modify the previous settings object to make `random.effects = TRUE`, and change the download method of the `inputs` to OpenDAP, but keep all the other settings the same.
-
-```{r}
-settings <- modifyList(settings, list(
-  meta.analysis = list(random.effects = TRUE),
-  run = list(inputs = list(met = list(method = "opendap")))
-))
-```
-
-Note that all of these steps can be chained together via `magrittr` pipes (`%>%`).
-
-```{r, eval = FALSE}
-library(magrittr)
-settings <- list() %>%
-  add_database() %>%
-  add_rabbitmq() %>%
-  add_pft("temperate.deciduous") %>%
-  add_pft("temperate.coniferous") %>%
-  modifyList(list(
-    meta.analysis = list(iter = 3000, random.effects = FALSE),
-    run = list(inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))),
-    host = list(rabbitmq = list(
-      uri = "amqp://guest:guest@rabbitmq:5672/%2F",
-      queue = "SIPNET_136"
-    ))
-  ))
-```
-
-## Registering a workflow with the database
+## Registering a workflow with the database {#pecanapi-workflow}
 
 For the PEcAn workflow to work, it needs to be registered with the PEcAn database.
 In `pecanapi`, this is done via the `insert_new_workflow` function.
 
-Building a workflow requires two important pieces of information that we don't have yet: namely the model and site IDs.
+Building a workflow requires two important pieces of information: the model and site IDs.
 If you know these for your site and model, you can pass them directly into `insert_new_workflow`.
 However, chances are you may have to look them up in the database first.
 `pecanapi` provides several `search_*` utilities to make this easier.
@@ -219,7 +134,119 @@ workflow
 
 The `insert_new_workflow` function inserts the workflow into the database and returns a `data.frame` containing the row that was inserted.
 
-## Submitting a run
+
+## Building a settings object {#pecanapi-settings}
+
+Now that we have a workflow registered, we need to configure it via the PEcAn settings list.
+The PEcAn settings list is a nested list providing parameters for the various actions performed by the PEcAn workflow, including the trait meta-analysis, processing input files, and running models.
+It can be created manually with a bunch of `list` calls.
+However, this is tedious and error-prone, so `pecanapi` provides several utilities that facilitate this process.
+
+We start with a blank list.
+
+```{r}
+settings <- list()
+```
+
+Let's start by adding the workflow we created in the previous section to this list.
+This is done via the `add_workflow` function, which takes as input a workflow `data.frame` and adds the relevant fields to the right places in the settings list.
+
+```{r, eval = FALSE}
+settings <- add_workflow(settings, workflow)
+```
+
+All `add_*` functions work by incrementally adding to an input settings object and returning a new modified settings object.
+The first argument of these functions is always the settings list, which gives these functions a consistent syntax and makes it easy to string multiple settings modifications together using the `magrittr` pipe (`%>%`), similar to `tidyverse` tabular data manipulations.
+
+Let's continue by adding a basic database configuration to this settings list.
+
+```{r}
+settings <- add_database(settings)
+settings
+```
+
+The `add_database` function adds a sensible default configuration for the PEcAn database in the right place with the right names in the settings file.
+These defaults can, of course, be modified in the function call (see `?add_database`), or, better yet, by setting package options, which is where most `add_*` functions get their defaults (see `?pecanapi_options`).
+
+Similarly, `add_rabbitmq` automatically adds the RabbitMQ configuration to the settings object.
+Like `add_database`, it takes all of its defaults from `options` (see `?pecanapi_options`).
+
+```{r}
+settings <- add_rabbitmq(settings)
+settings
+```
+
+PFTs are added to the settings object with the `add_pft` function.
+To search for PFTs, use the `search_pfts` function, which can take optional arguments for PFT name (`name`), description of its definition (`definition`), and model type (`modeltype`).
+
+```{r, eval = FALSE}
+search_pfts(con, name = "deciduous", modeltype = "sipnet")
+search_pfts(con, name = "tundra", modeltype = "ED")
+```
+
+As with `search_models` and `search_sites`, these functions are case insensitive and do partial matching by default.
+The `add_pft` function adds individual PFTs by name.
+
+```{r}
+settings <- add_pft(settings, "temperate.deciduous")
+settings
+```
+
+This adds the `temperate.deciduous` PFT to the appropriate spot in the settings hierarchy.
+Whereas `add_pft` adds a single PFT to the settings, `add_pft_list` can add a vector of PFTs.
+
+```{r}
+settings <- add_pft_list(settings, c("temperate.coniferous", "miscanthus"))
+settings
+```
+
+Like `add_database`, `add_pft` and `add_pft_list` can also take arbitrary additional configuration arguments via their `...` argument.
+For `add_pft`, such arguments are passed only to that PFT, while for `add_pft_list`, they are shared between all PFTs.
+For more details, see `?add_pft`.
+
+One final note is that, because the settings object is just a list, you can make arbitrary modifications to it via base R's `modifyList` function (indeed, many of the `pecanapi::add_*` functions use `modifyList` under the hood).
+
+```{r}
+customization <- list(
+    meta.analysis = list(iter = 3000, random.effects = FALSE),
+    run = list(
+      inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))
+    )
+  )
+settings <- modifyList(settings, customization)
+```
+
+Note that `modifyList` operates recursively on nested lists, which makes it easy to modify settings at different levels of the list hierarchy.
+For instance, below, we modify the previous settings object to make `random.effects = TRUE`, and change the download method of the `inputs` to OpenDAP, but keep all the other settings the same.
+
+```{r}
+settings <- modifyList(settings, list(
+  meta.analysis = list(random.effects = TRUE),
+  run = list(inputs = list(met = list(method = "opendap")))
+))
+```
+
+All of these steps can be chained together via `magrittr` pipes (`%>%`).
+
+```{r, eval = FALSE}
+library(magrittr)
+settings <- list() %>%
+  add_workflow(workflow) %>%
+  add_database() %>%
+  add_rabbitmq() %>%
+  add_pft("temperate.deciduous") %>%
+  add_pft("temperate.coniferous") %>%
+  modifyList(list(
+    meta.analysis = list(iter = 3000, random.effects = FALSE),
+    run = list(inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))),
+    host = list(rabbitmq = list(
+      uri = "amqp://guest:guest@rabbitmq:5672/%2F",
+      queue = "SIPNET_136"
+    ))
+  ))
+```
+
+## Submitting a run {#pecanapi-submit}
 
 Now that we have all the pieces, let's put them together into a single settings object.
 
