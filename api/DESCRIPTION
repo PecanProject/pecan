@@ -1,0 +1,20 @@
+Package: pecanapi
+Title: R API for Dockerized remote PEcAn instances
+Version: 0.0.0.9000
+Authors@R: person("Alexey", "Shiklomanov", email = "alexey.shiklomanov@gmail.coim", role = c("aut", "cre"))
+Description: Start PEcAn workflows, and analyze their outputs from within an R session.
+Depends: R (>= 3.5.1)
+Imports:
+  bit64,
+  DBI,
+  httr,
+  jsonlite,
+  RPostgres
+Suggests:
+  magrittr,
+  ncdf4
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.0
+Roxygen: list(markdown = TRUE)
