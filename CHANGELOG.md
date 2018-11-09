@@ -8,6 +8,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Fixes
+- Removed google maps and replaced with leaflet #2105
 - Small updated to models/ed/R/model2netcdf.ED2.R to fix issue realted to writing the time_bounds time attribute. Needed to add a check for which file types exitst (e.g. -E-, -T-, etc) and only write the appropriate attribute(s).
 - Fixed error in `read_web_config` which would filter out all variables.
 - Docker:
