@@ -1,6 +1,8 @@
 library(pecanapi)
 import::from(magrittr, "%>%")
 
+options(pecanapi.user_id = 99000000002)
+
 # Establish database connection
 con <- DBI::dbConnect(
   RPostgres::Postgres(),

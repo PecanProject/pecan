@@ -55,6 +55,16 @@ If it throws an error, you have a problem with your database connection.
 
 The rest of this tutorial assumes that you are using this same database connection object (`con`).
 
+In addition, any API operations that modify the database will not work unless a user ID is set.
+To avoid having to manually specify the ID each time, we can set it via `options`:
+
+```{r, eval = FALSE}
+options(pecanapi.user_id = 99000000002)
+```
+
+The `pecanapi` package has many other options that it uses for its default configuration, including the Docker server and RabbitMQ hostname and credentials.
+To learn more about them, see `?pecanapi_options`.
+
 # Building a settings object
 
 The PEcAn settings object is a nested list providing parameters for the various actions performed by the PEcAn workflow, including the trait meta-analysis, processing input files, and running models.
