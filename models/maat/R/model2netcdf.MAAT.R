@@ -104,7 +104,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
     process_tbl <- tibble::tribble(
       ~data, ~oldname, ~newname, ~oldunits, ~newunits, ~longname,
       list(sub.maat.output$A), "A", "assimilation_rate", "umol C m-2 s-1", "kg C m-2 s-1", "Leaf assimilation rate",
-      list(suub.maat.output$rd), "rd", "leaf_respiration", "umol C m-2 s-1", "kg C m-2 s-1", "Leaf Respiration Rate",
+      list(sub.maat.output$rd), "rd", "leaf_respiration", "umol C m-2 s-1", "kg C m-2 s-1", "Leaf Respiration Rate",
       list(1/sub.maat.output$rs), "gs", "stomatal_conductance", "mol H2O m-2 s-1", "kg H2O m-2 s-1", "Leaf Stomatal Conductance",
       list(sub.maat.output$ci), "ci", "Ci", "Pa", "Pa", "Leaf Internal CO2 Concentration",
       list(sub.maat.output$cc), "cc", "Cc", "Pa", "Pa", "Leaf Mesophyll CO2 Concentration"
@@ -143,7 +143,8 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
                                       longname = "history time interval endpoint dimensions",
                                       vals = 1:2, units="")
 
-    output <- purrr::pmap(process_maat_variable, process_tbl, missval = -999, ncdims = ncdims)
+    #output <- purrr::pmap(process_maat_variable, process_tbl, missval = -999, ncdims = ncdims)
+    output <- purrr::pmap(process_tbl, process_maat_variable, missval = -999, ncdims = ncdims)
 
     output <- c(output, list(
       var = ncdf4::ncvar_def(name = "time_bounds", units = "", 
@@ -190,6 +191,11 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
 #'   values (`dat`)
 #' @author Alexey Shiklomanov
 process_maat_variable <- function(data, oldname, newname, oldunits, newunits, longname, ncdims, missval = -999) {
+  ## define function
+  f_sort <- function(s) {
+    if (is.infinite(s)) missval
+    else try(PEcAn.utils::misc.convert(s, oldunits, newunits), silent = TRUE)
+  }
   ## define variable
   if(is.null(newunits)) newunits = oldunits
   newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = ncdims, missval = missval, longname = longname)
@@ -197,8 +203,10 @@ process_maat_variable <- function(data, oldname, newname, oldunits, newunits, lo
     PEcAn.logger::logger.info(paste0("Skipping conversion for: ", newname))
     dat.new <- data
   } else {
-    dat.new <- PEcAn.utils::misc.convert(data, oldunits, newunits)
-    dat.new[!is.finite(dat.new)] <- missval
+    #dat.new <- PEcAn.utils::misc.convert(unlist(as.vector(data)), oldunits, newunits)
+    #dat.new[!is.finite(dat.new)] <- missval
+    
+    dat.new <- apply(as.matrix(unlist(as.vector(data)),length(unlist(as.vector(data))),1),1,f_sort)
   }
   list(var = newvar, dat = dat.new)
 }
