@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # BUILD SIPNET BINARY
 # ----------------------------------------------------------------------
-FROM debian as sipnet-binary
+FROM debian:stretch as sipnet-binary
 
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION=136

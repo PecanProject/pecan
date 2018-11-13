@@ -12,13 +12,26 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed error in `read_web_config` which would filter out all variables.
 - Docker:
   - Make sure web interface posts RabbitMQ messages even after editing files (fixes #2151)
+  - Can specify name of docker cluster using PECAN_FQDN and PECAN_NAME (fixes #2128)
+  - Fixed issue where setting username/password for rabbitmq would break web submit (fixes #2185)
+- ED2:
+  - Add ability to pass arbitrary arguments to the ED binary through the `pecan.xml` (#2183; fixes #2146).
 
 ### Added
+- NEW FEATURE: PEcAn R API (PR #2192). Features include:
+    - Modified `docker/receiver.py` to accept a `pecan_json` object containing a JSON version of the PEcAn settings. Can now Use RabbitMQ HTTP API (called from R with `httr`) to send a settings list (function `submit_workflow`)
+    - Helper functions to make it easier to build the settings object, and to register a new workflow.
+    - Helper functions for tracking workflow status
+    - Helper functions for accessing workflow output files through THREDDS. All files are accessible through `fileServer` (basically, direct download), and NetCDF files are also readable through OpenDAP.
+        - THREDDS catalog filter has been removed, so that _all_ workflow outputs are available to THREDDS.
+        - Added another `datasetScan` to the THREDDS catalog to search for `dbfiles`. Now, model inputs (e.g. meteorology files) are accessible via THREDDS as well.
 - Lots of new documentation for running PEcAn using Docker
 - Added Docker container with documentation #2160
 - Download method (`method`) argument for `data.atmosphere::download.CRUNCEP`, which defaults to `opendap` (as it was), but can be switched to the slower but more robust NetCDF subset (`ncss`).
 - In `download.CRUNCEP`, check target coordinate against the land-sea mask. If sea, pick the nearest land pixel within 1 degree of target. This facilitates doing runs at coastal sites that may get masked out.
 - Added a prototype of the THREDDS data server (TDS) to the PEcAn Docker stack.
+- Added portainer to the PEcAn Docker stack to easily look at running containers.
+- Added ability to specify short name for a host (hostlist->displayname)
 
 ### Removed
 

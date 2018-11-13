@@ -30,7 +30,10 @@ The following sections of the PEcAn XML are relevant to the ED model:
   - `jobtemplate`
   - `prerun`
   - `postrun`
-  - `binary`
+  - `binary` -- The full path to the ED2 binary on the target machine.
+  - `binary_args` -- Additional arguments to be passed to the ED2 binary. Some common arguments are:
+    - `-s` -- Delay OpenMPI initialization until the last possible moment. This is needed when running ED2 in a Docker container. It is included by default when the host is `rabbitmq`.
+    - `-f /path/to/ED2IN` -- Full path to a specific ED2IN namelist file. Typically, this is not needed because, by default, ED searches for the ED2IN in the current directory and the PEcAn workflow places the ED2IN file and a symbolic link to the ED executable in the same (run) directory for you.
 - `run/site`
   - `lat` -- Latitude coordinate of site
   - `lon` -- Longitude coordinate of site
