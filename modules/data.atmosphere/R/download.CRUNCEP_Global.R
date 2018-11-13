@@ -64,7 +64,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     "?var=land_water_mask&disableLLSubset=on&disableProjSubset=on&horizStride=1&",
     "accept=netcdf"
   )
-  download.file(mask_url, maskfile)
+  utils::download.file(mask_url, maskfile)
 
   mask_nc <- ncdf4::nc_open(maskfile)
   on.exit(ncdf4::nc_close(mask_nc))
@@ -203,7 +203,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
           "accept=netcdf"
         )
         tmp_file <- tempfile()
-        download.file(ncss_query, tmp_file)
+        utils::download.file(ncss_query, tmp_file)
         dap <- ncdf4::nc_open(tmp_file)
       }
 

@@ -27,10 +27,21 @@ $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
 $model_edit=isset($_REQUEST['model_edit']);
 
+// workflowid
 if (!isset($_REQUEST['workflowid'])) {
-	die("Need a workflowid.");
+  die("Need a workflowid.");
 }
 $workflowid=$_REQUEST['workflowid'];
+
+// hostname
+if (!isset($_REQUEST['hostname'])) {
+  die("Need a hostname.");
+}
+$hostname=$_REQUEST['hostname'];
+if (!array_key_exists($hostname, $hostlist)) {
+  die("${hostname} is not an approved host");
+}
+$hostoptions = $hostlist[$hostname];
 
 // get run information
 $stmt = $pdo->prepare("SELECT folder FROM workflows WHERE workflows.id=?");
@@ -43,7 +54,7 @@ $stmt->closeCursor();
 close_database();
 
 $exec = "R_LIBS_USER=\"$R_library_path\" $Rbinary CMD BATCH";
-$path = "05-running.php?workflowid=$workflowid";
+$path = "05-running.php?workflowid=$workflowid&hostname=${hostname}";
 if ($pecan_edit) {
   $path .= "&pecan_edit=pecan_edit";
 }
@@ -73,10 +84,16 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 }
 
 # start the workflow again
-if ($rabbitmq_host != "") {
+if (array_key_exists("rabbitmq_uri", $hostoptions)) {
+  $rabbitmq_uri = $hostoptions['rabbitmq_uri'];
+  if (isset($hostoptions['rabbitmq_queue'])) {
+    $rabbitmq_queue = $hostoptions['rabbitmq_queue'];
+  } else {
+    $rabbitmq_queue = "pecan";
+  }
   $msg_exec = str_replace("\"", "'", $exec);
   $message = '{"folder": "' . $folder . '", "custom_application": "' . $msg_exec . '"}';
-  send_rabbitmq_message($message, $rabbitmq_queue);
+  send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue);
 } else {
   chdir($folder);
   pclose(popen("$exec &", 'r'));

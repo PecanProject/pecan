@@ -7,14 +7,15 @@ library(RCurl)
 library(REddyProc)
 library(purrr)
 #------------------------------------------
-setwd("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek")
+setwd("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek")
+#setwd("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek")
 source('Utils.R')
 source('download_WCr_flux.R')
 source('download_WCr_met.R')
 source("gapfill_WCr.R")
 source('prep.data.assim.R')
 outputPath <- "/fs/data3/kzarada/Projects/WillowCreek"
-xmlPath <-"/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml"
+xmlPath <-"gefs.sipnet.template.xml"
 #------------------------------------------------------ Preparing the pecan xml
 # Open and read in settings file for PEcAn run.
 args <- commandArgs(trailingOnly = TRUE)
@@ -31,45 +32,32 @@ sda.start <- as.Date(sda.end - lubridate::days(90))
 
 prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
 #--------------------------- Preparing OBSdata
-obs.vars <- grep(paste0("_*_f$"), names(prep.data), value = TRUE)
-obs.filled <- as.data.frame(matrix(ncol = length(obs.vars), nrow=length(prep.data$Date)))
-obs.filled$Date<- prep.data$Date
+obs.raw <-prep.data$rawobs
+prep.data<-prep.data$obs
 
-for(i in 1:length(obs.vars)){
-  obs.filled[,i] <- prep.data[which(names(prep.data) == obs.vars)][i]
-}
-colnames(obs.filled) <- c(obs.vars, "Date")
-
-met.start <- head(prep.data$Date, 1)
-met.end <- tail(prep.data$Date,1)
+met.start <- head(obs.raw$Date, 1)%>% lubridate::round_date("1 hour")
+met.end <- tail(obs.raw$Date,1) %>% lubridate::round_date("1 hour")
+#--------- DOwnloading met
 met.raw <- download_US_WCr_met(met.start, met.end)
-
-
-#---------- Finding the start and end date - because download met is going to use it
-if (exists("source_date")) {
-  start_date <- round.to.six.hours(source_date)
-} else {
-  start_date <- round.to.six.hours()
-}
-end_date <- start_date + lubridate::days(16)
 # Using the found dates to run - this will help to download mets
-settings$run$start.date <- as.character(start_date)
-settings$run$end.date <- as.character(end_date)
+settings$run$start.date <- as.character(met.start)
+settings$run$end.date <- as.character(met.end)
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
-settings$state.data.assimilation$start.date <-as.character(start_date)
-settings$state.data.assimilation$end.date <-as.character(end_date)
+settings$state.data.assimilation$start.date <-as.character(met.start)
+settings$state.data.assimilation$end.date <-as.character(met.end)
 #info
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 #-- Setting the out dir
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
+print(settings$outdir)
 #--------- Making a plot
 obs.plot <- obs.raw %>%
-            tidyr::gather(Param, Value, -c(date)) %>%
+            tidyr::gather(Param, Value, -c(Date)) %>%
             filter(!(Param %in% c("FjDay", "U","Day","DoY","FC","FjFay","Hour","Month",
                                   "SC","Ustar","Year","H","Flag")),
                    Value!=-999) %>%
-            filter((date %>% as.Date) %in% (names(prep.data) %>% as.Date())) %>%
-            ggplot(aes(date, Value)) +
+            #filter((Date %>% as.Date) %in% (names(prep.data) %>% as.Date())) %>%
+            ggplot(aes(Date, Value)) +
             geom_line(aes(color = Param), lwd = 1) +
             geom_point(aes(color = Param), size = 3) +
             facet_wrap( ~ Param, scales = "free",ncol = 1) +
@@ -112,7 +100,7 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
   file.remove(statusFile)
 }
 # Do conversions
-settings <- PEcAn.utils::do_conversions(settings)
+settings <- PEcAn.workflow::do_conversions(settings)
 
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0){
@@ -149,7 +137,7 @@ if(!is.null(settings$meta.analysis)) {
 obs.mean <- prep.data %>% map('means') %>% setNames(names(prep.data))
 obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 
-print(settings$outdir)
+
 
 # Run state data assimilation
 if ('state.data.assimilation' %in% names(settings)) {

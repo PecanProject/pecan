@@ -73,13 +73,18 @@ $fqdn=exec('hostname -f');
 #                models (such as ED)
 $hostlist=array($fqdn => array(),
                 "geo.bu.edu" =>
-                    array("qsub"    => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
-                          "jobid"   => "Your job ([0-9]+) .*",
-                          "qstat"   => "qstat -j @JOBID@ || echo DONE",
-                          "prerun"  => "module load udunits R/R-3.0.0_gnu-4.4.6",
-                          "postrun" => "sleep 60",
-                          "models"  => array("ED2" =>
-                              array("prerun"  => "module load hdf5"))));
+                    array("displayname" => "geo",
+                          "qsub"        => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+                          "jobid"       => "Your job ([0-9]+) .*",
+                          "qstat"       => "qstat -j @JOBID@ || echo DONE",
+                          "prerun"      => "module load udunits R/R-3.0.0_gnu-4.4.6",
+                          "postrun"     => "sleep 60",
+                          "models"      => 
+                              array("ED2" =>
+                                  array("prerun"  => "module load hdf5")
+                              )
+                          )
+                );
 
 # Folder where PEcAn is installed
 $R_library_path="/home/carya/R/library";

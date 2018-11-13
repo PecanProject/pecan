@@ -24,10 +24,15 @@ Description: The Predictive Ecosystem Carbon Analyzer
     that can be used to run the major steps of a PEcAn analysis.
 License: FreeBSD + file LICENSE
 Imports:
+	PEcAn.data.atmosphere,
+	PEcAn.data.land,
 	PEcAn.DB,
 	PEcAn.logger,
+	PEcAn.remote,
 	PEcAn.settings,
-	PEcAn.utils
+	PEcAn.uncertainty,
+	PEcAn.utils,
+	XML
 Suggests:
 	testthat,
     mockery
