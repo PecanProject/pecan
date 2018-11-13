@@ -109,7 +109,9 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
               
              return(list(Date=Date1%>%unique(), covs=cov(alldata),  means=apply(alldata,2,mean)) )
            })
-  outlist = c(outlist, gapfilled.vars.out )
+  
+  outlist <- list(obs=outlist, rawobs=gapfilled.vars.out )
+  
   return(outlist)
 
 } # prep.data.assim
@@ -117,7 +119,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
 
 #prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-15",numvals = 100, var = "NEE")
 
-data <- prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-30",numvals = 10, vars = c("NEE","LE"), data.len = 24)
+#data <- prep.data.assim(start_date = "2017-01-01", end_date = "2018-10-30",numvals = 10, vars = c("NEE","LE"), data.len = 24)
 
 
 #prep.data.assim(start_date = "2017-10-01", end_date = "2018-10-30",numvals = 10, var = c("NEE","LE"))->ss
