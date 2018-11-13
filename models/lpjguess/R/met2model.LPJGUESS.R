@@ -75,8 +75,8 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   ncin <- lapply(file.path(in.path, paste(in.prefix, year, "nc", sep = ".")), ncdf4::nc_open)
 
   ## retrieve lat/lon
-  lon <- ncvar_get(ncin[[1]], "longitude")
-  lat <- ncvar_get(ncin[[1]], "latitude")
+  lon <- ncdf4::ncvar_get(ncin[[1]], "longitude")
+  lat <- ncdf4::ncvar_get(ncin[[1]], "latitude")
 
   ## at least 2 lat-lon required for LPJ-GUESS to load the data
   lon <- c(lon, lon)
@@ -88,14 +88,14 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
                   ncin[[1]]$dim$time$len / 366)
 
   ## read climate data
-  nc.tmp <- lapply(ncin, ncvar_get, long.names[1])
-  nc.pre <- lapply(ncin, ncvar_get, long.names[2])
-  nc.cld <- lapply(ncin, ncvar_get, long.names[3])
+  nc.tmp <- lapply(ncin, ncdf4::ncvar_get, long.names[1])
+  nc.pre <- lapply(ncin, ncdf4::ncvar_get, long.names[2])
+  nc.cld <- lapply(ncin, ncdf4::ncvar_get, long.names[3])
 
   ## aggregate to daily time steps, LPJ-GUESS reads daily climate data
   tmp.list <- pre.list <- cld.list <- list()
   for (y in seq_len(nyear)) {
-    diy <- PEcAn.utils::days_in_year(y)
+    diy <- PEcAn.utils::days_in_year(as.numeric(year[y]))
     ind.vec <- rep(seq_len(diy), each = tstep)
     tmp.list[[y]] <- tapply(nc.tmp[[y]], ind.vec, mean)
     pre.list[[y]] <- tapply(nc.pre[[y]], ind.vec, mean)
@@ -108,15 +108,15 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
 
   ## write climate data define dimensions
 
-  latdim <- ncdim_def(name = "lat", "degrees_north", as.double(lat))
-  londim <- ncdim_def(name = "lon", "degrees_east", as.double(lon))
-  timedim <- ncdim_def("time", paste0("days since ", start_year - 1, "-12-31", sep = ""), as.double(c(1:length(unlist(tmp.list)))))
+  latdim  <- ncdf4::ncdim_def(name = "lat", "degrees_north", as.double(lat))
+  londim  <- ncdf4::ncdim_def(name = "lon", "degrees_east", as.double(lon))
+  timedim <- ncdf4::ncdim_def("time", paste0("days since ", start_year - 1, "-12-31", sep = ""), as.double(c(1:length(unlist(tmp.list)))))
 
   fillvalue <- 9.96920996838687e+36
 
   for (n in seq_len(n.var)) {
     # define variable
-    var.def <- ncvar_def(name = var.names[n],
+    var.def <- ncdf4::ncvar_def(name = var.names[n],
                          units = var.units[n],
                          dim = (list(londim, latdim, timedim)),
                          fillvalue, long.names[n],
@@ -131,21 +131,21 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
     ncdf4::ncvar_put(ncfile, var.def, rep(var.list[[n]], each = 4))
 
     # additional attributes for LPJ-GUESS
-    ncatt_put(nc = ncfile, varid = var.names[n], attname = "standard_name", long.names[n])
+    ncdf4::ncatt_put(nc = ncfile, varid = var.names[n], attname = "standard_name", long.names[n])
 
-    ncatt_put(nc = ncfile, varid = "lon", attname = "axis", "X")
-    ncatt_put(nc = ncfile, varid = "lon", attname = "standard_name", "longitude")
+    ncdf4::ncatt_put(nc = ncfile, varid = "lon", attname = "axis", "X")
+    ncdf4::ncatt_put(nc = ncfile, varid = "lon", attname = "standard_name", "longitude")
 
-    ncatt_put(nc = ncfile, varid = "lat", attname = "axis", "Y")
-    ncatt_put(nc = ncfile, varid = "lat", attname = "standard_name", "latitude")
+    ncdf4::ncatt_put(nc = ncfile, varid = "lat", attname = "axis", "Y")
+    ncdf4::ncatt_put(nc = ncfile, varid = "lat", attname = "standard_name", "latitude")
 
-    ncatt_put(nc = ncfile, varid = "time", attname = "calendar", "gregorian")
+    ncdf4::ncatt_put(nc = ncfile, varid = "time", attname = "calendar", "gregorian")
 
     ncdf4::nc_close(ncfile)
   }
 
   ## close netcdf files
-  sapply(ncin, nc_close)
+  sapply(ncin, ncdf4::nc_close)
 
   return(invisible(results))
 } # met2model.LPJGUESS

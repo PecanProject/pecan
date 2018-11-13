@@ -59,6 +59,7 @@
 ##'
 ##' @return A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.  Each id may be a vector of ids if the function is processing an entire ensemble at once.
 ##'
+##' @importFrom magrittr %>%
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 

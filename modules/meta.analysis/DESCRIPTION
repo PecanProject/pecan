@@ -38,4 +38,4 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
