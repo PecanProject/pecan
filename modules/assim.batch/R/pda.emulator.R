@@ -4,6 +4,7 @@
 ##' @param settings = a pecan settings list
 ##' @param external.data = list of inputs
 ##' @param external.priors = list or priors
+##' @param  external.knots = list of knots
 ##'
 ##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
 ##'  are saved as files and db records.
@@ -11,7 +12,7 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
+pda.emulator <- function(settings, external.data = NULL, external.priors = NULL, external.knots = NULL,
                          params.id = NULL, param.names = NULL, prior.id = NULL, 
                          chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
                          ar.target = NULL, jvar = NULL, n.knot = NULL, individual = TRUE) {
@@ -181,6 +182,12 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                                                       pname[[x]]))
   names(knots.list) <- sapply(settings$pfts,"[[",'name')
   
+  # if knots were passed externally overwrite them
+  if(!is.null(external.knots)){
+    PEcAn.logger::logger.info("Overwriting the knots list.")
+    knots.list <- external.knots
+  } 
+  
   knots.params <- lapply(knots.list, `[[`, "params")
   # don't need anymore
   # knots.probs <- lapply(knots.list, `[[`, "probs")
@@ -189,7 +196,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Run this block if this is a "round" extension
-  if (run.round) {
+  if (run.round & is.null(external.knots)) {
 
     ## Propose a percentage (if not specified 90%) of the new parameter knots from the posterior of the previous run
     knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),

@@ -6,6 +6,16 @@
 \usage{
 load_pda_history(workdir, ensemble.id, objects)
 }
+\arguments{
+\item{workdir}{path of working dir e.g. '/fs/data2/output/PEcAn_***'}
+
+\item{ensemble.id}{ensemble id of a previous PDA run, from which the objects will be retrieved}
+
+\item{objects}{object names that are common to all multi PDA runs, e.g. llik.fn, prior.list etc.}
+}
+\value{
+a list of objects that will be used in joint and hierarchical PDA
+}
 \description{
 Helper function that loads history from previous PDA run, but returns only requested objects
 }
