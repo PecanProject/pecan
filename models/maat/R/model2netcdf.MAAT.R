@@ -113,7 +113,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
     if (met_exists) {
       maat_run_start_by_year <- format(lubridate::as_datetime(sub.maat.dates, tz = timezone)[1], "%Y-%m-%d %H:%M:%S")
       tvals <- (sub.maat.doy - 1) + day.steps
-      bounds <- array(data = NA, dim = c(length(tvals), 2))
+      bounds <- array(data = NA_real_, dim = c(length(tvals), 2))
       bounds[,1] <- tvals
       bounds[,2] <- bounds[,1] + dayfrac
       t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_by_year),
@@ -127,7 +127,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
         )
       process_tbl <- rbind.data.frame(met_tbl, process_tbl)
     } else {
-      bounds <- array(data = NA, dim = c(1,2))
+      bounds <- array(data = NA_real_, dim = c(1,2))
       bounds[,1] <- 0
       bounds[,2] <- 1
       t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
@@ -146,13 +146,13 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
     #output <- purrr::pmap(process_maat_variable, process_tbl, missval = -999, ncdims = ncdims)
     output <- purrr::pmap(process_tbl, process_maat_variable, missval = -999, ncdims = ncdims)
 
-    output <- c(output, list(
+    output <- c(output, list(list(
       var = ncdf4::ncvar_def(name = "time_bounds", units = "", 
                              longname = "history time interval endpoints", 
                              dim = list(time_interval, time = t), 
                              prec = "double"),
       dat = c(rbind(bounds[, 1], bounds[, 2]))
-    ))
+    )))
     
     ## write netCDF data
     nc_vars <- purrr::map(output, "var") # Extract var from each output
