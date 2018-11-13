@@ -8,8 +8,8 @@ modify_ed2in(ed2in, ..., veg_prefix = NULL, latitude = NULL,
   longitude = NULL, met_driver = NULL, start_date = NULL,
   end_date = NULL, EDI_path = NULL, output_types = NULL,
   output_dir = NULL, run_dir = NULL, runtype = NULL,
-  run_name = NULL, pecan_defaults = FALSE, add_if_missing = FALSE,
-  check_paths = TRUE, .dots = list())
+  run_name = NULL, include_these_pft = NULL, pecan_defaults = FALSE,
+  add_if_missing = FALSE, check_paths = TRUE, .dots = list())
 }
 \arguments{
 \item{...}{Namelist arguments (see Description and Details)}

@@ -69,6 +69,7 @@ modify_ed2in <- function(ed2in, ...,
                          run_dir = NULL,
                          runtype = NULL,
                          run_name = NULL,
+                         include_these_pft = NULL,
                          pecan_defaults = FALSE,
                          add_if_missing = FALSE,
                          check_paths = TRUE,
@@ -212,6 +213,11 @@ modify_ed2in <- function(ed2in, ...,
     dir.create(run_dir, showWarnings = FALSE)
     ed2in[["IEDCNFGF"]] <- file.path(normalizePath(run_dir), "config.xml")
     ed2in[["EVENT_FILE"]] <- file.path(normalizePath(run_dir), "myevents.xml")
+  }
+
+  if (!is.null(include_these_pft)) {
+    if (!is.numeric(include_these_pft)) PEcAn.logger::logger.severe("include_these_pft must be numeric vector")
+    ed2in[["INCLUDE_THESE_PFT"]] <- include_these_pft
   }
 
   namelist_args <- dots[is_upper]

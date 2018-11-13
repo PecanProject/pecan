@@ -297,6 +297,32 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     add_if_missing = TRUE,
     check_paths = check
   )
+
+  ##---------------------------------------------------------------------
+  # Use all PFTs, or just the ones configured in config.xml?
+  all_pfts <- settings$model$all_pfts
+  if (!is.null(all_pfts) && tolower(all_pfts) != "false") {
+    # Use all ED PFTs
+    use_pfts <- 1:17
+    PEcAn.logger::logger.debug("Running with all PFTs (1:17)")
+  } else {
+    # Use only PFTs configured in ED2 config.xml
+    # xml object (`config.xml`) created above. Here, we pull out the
+    # <num> tags from each PFT to get the numbers.
+    #
+    # I'm sure there is a better way to pull values out of an XML node
+    # object, but I have no idea what it is. If you know, please fix this.
+    use_pfts <- numeric(length(xml))
+    for (i in seq_along(xml)) {
+      use_pfts[i] <- as.numeric(XML::xmlValue(xml[[i]][['num']]))
+    }
+    use_pfts <- use_pfts[is.finite(use_pfts)]
+    PEcAn.logger::logger.debug(
+      "Running with only these PFTs (set by config.xml): ",
+      paste(use_pfts, collapse = ", ")
+    )
+  }
+  ed2in.text <- modify_ed2in(ed2in.text, include_these_pft = use_pfts)
   
   ##---------------------------------------------------------------------
   # Modify any additional tags provided in settings$model$ed2in_tags
