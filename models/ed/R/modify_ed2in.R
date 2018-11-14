@@ -6,7 +6,9 @@
 #' defined explicitly (see "Parameters"), and those that do not match explicit 
 #' arguments will be ignored with a warning. Because the lowercase arguments 
 #' come with additional validity checks, they are recommended over modifying 
-#' the ED2IN file directly via uppercase arguments.
+#' the ED2IN file directly via uppercase arguments. For all lowercase
+#' arguments, the default (`NULL`) means to use whatever is currently
+#' in the input `ed2in`.
 #'
 #' Namelist arguments are applied last, and will silently overwrite any 
 #' arguments set by special case arguments.
@@ -48,6 +50,15 @@
 #'(history) files
 #' @param run_dir Directory in which to store run-related config files (e.g. `config.xml`).
 #' @param runtype ED initialization mode; either "INITIAL" or "HISTORY"
+#' @param run_name Give the run an informative name/description. Sets
+#'   the ED2IN `EXPNME` tag. (default is `NULL`)
+#' @param include_these_pft Numeric vector describing the PFTs to
+#'   include in ED. Note that this is in addition to any PFTs
+#'   specified by the `config.xml` -- regardless of what this is set
+#'   to, those PFTs will be included, so if you want to only use PFTs
+#'   defined in `config.xml`, set this to `numeric(0)`. The default
+#'   (`NULL`) means to use whatever is already in the current ED2IN
+#'   file, which is usually all (1-17) of ED's PFTs.
 #' @param pecan_defaults Logical. If `TRUE`, set common `ED2IN` defaults.
 #' @param add_if_missing Logical. If `TRUE`, all-caps arguments not found in 
 #'existing `ed2in` list will be added to the end.  Default = `FALSE`.
