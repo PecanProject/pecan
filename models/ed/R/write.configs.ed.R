@@ -158,15 +158,48 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     check_paths = check
   )
 
-  # The flag for IMETAVG tells ED what to do given how input radiation was 
-  # originally averaged
-  # -1 = I don't know, use linear interpolation
+  # The flag for IMETAVG tells ED what to do given how input radiation
+  # was originally averaged
+  # -1 = I don't know, use linear interpolation (default)
   # 0 = No average, the values are instantaneous
   # 1 = Averages ending at the reference time
   # 2 = Averages beginning at the reference time
-  # 3 = Averages centered at the reference time Deafult is -1
-  
-  
+  # 3 = Averages centered at the reference time
+
+  # By default, modify_ed2in sets the met start and end dates to run
+  # start and end dates, respectively. However, the `met.start` and
+  # `met.end` XML tags may be used to set these to different values,
+  # e.g. if you want to run ED under constant, looped meteorology.
+  proc_met_startend <- function(rawval, ed2in_tag) {
+    stopifnot(
+      ed2in_tag %in% c("METCYC1", "METCYCF"),
+      length(rawval) == 1
+    )
+    if (is.null(rawval)) return(ed2in.text)
+    # The corresponding ED2IN tags METCYC1 and METCYCF expect a year,
+    # so we try to extract the year from the input value here.
+    value <- tryCatch(
+      lubridate::year(rawval),
+      error = function(e) as.numeric(rawval)
+    )
+    if (!is.finite(value)) {
+      PEcAn.logger::logger.error(
+        "Unable to parse custom met ", ed2in_tag, " value: ", rawval, ". ",
+        "Setting it based on run dates."
+      )
+      return(ed2in.text)
+    }
+    if (value < 1000 || value > 3000) {
+      PEcAn.logger::logger.info(
+        "WARNING: Suspicious ", ed2in_tag, " value: ", value
+      )
+    }
+    ed2in.text[[ed2in_tag]] <- value
+    return(ed2in.text)
+  }
+  ed2in.text <- proc_met_startend(settings[[c("run", "site", "met.start")]])
+  ed2in.text <- proc_met_startend(settings[[c("run", "site", "met.end")]])
+
   if (is.null(settings$model$phenol.scheme)) {
     PEcAn.logger::logger.error(paste0("no phenology scheme set; \n",
                                      "need to add <phenol.scheme> ",

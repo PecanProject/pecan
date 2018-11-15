@@ -21,8 +21,8 @@ The following sections of the PEcAn XML are relevant to the ED model:
   - `revision` -- The revision (a.k.a. release) number of ED (e.g. "r82"). "rgit" indicates the latest code on the ED repository.
   - `edin` -- Name of the template ED2IN configuration file. If this is a functional path that points to a specific file, that file is used. If no file is found following the path literally, the workflow will try the path relative to the `PEcAn.ED2` package using `system.file` (recall that files in `inst` are moved in the package root, but all other directory structure is preserved). If this is omitted, `PEcAn.ED2::write.configs.ED2` will look for a file called `ED2IN.<revision>` (e.g. `ED2IN.rgit`, `ED2IN.r86`) in the `PEcAn.ED2` package.
     - **Example**: `<edin>ED2IN.rgit</edin>` will use the `ED2IN.rgit` file shipped with `PEcAn.ED2` _regardless of the revision of ED used_. (Note however that if a file called `ED2IN.rgit` exists in the workflow runtime directory, that file will be used instead). 
-  - `start.date` -- Run start date
-  - `end.date` -- Run end date
+  - `start.date`, `end.date` -- Run start and end date, respectively
+  - `met.start`, `met.end` -- Start and end year of meteorology inputs. By default (if omitted), these are set to the years of `start.date` and `end.date`, respectively. Setting these values to a shorter interval than `start.date` and `end.date` will cause ED to loop the meteorology input over the specified years. This may be useful for, for example, spinning up ED under a set of constant climate conditions.
   - `phenol.scheme`
   - `phenol`
   - `phenol.start`
