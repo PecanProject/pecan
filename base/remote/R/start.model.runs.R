@@ -177,7 +177,6 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
 
       if (job_finished) {
-        jobids[run] <- NULL
 
         # Copy data back to local
         if (!is_local) {
@@ -187,6 +186,17 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         }
 
         # TODO check output log
+        if (is_rabbitmq) {
+          data <- readLines(file.path(jobids[run], "rabbitmq.out"))
+          if (data[-1] == "ERROR") {
+            msg <- paste("Run", run, "has an ERROR executiing")
+            if (stop.on.error) {
+              PEcAn.logger::logger.severe(msg)
+            } else {
+              PEcAn.logger::logger.error(msg)
+            }
+          }
+        }
 
         # Write finish time to database
         if (is_modellauncher) {
@@ -201,6 +211,8 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
           pbi <- pbi + 1
         }
         setTxtProgressBar(pb, pbi)
+
+        jobids[run] <- NULL
       } # End job finished
     }  # end loop over runs
   }  # end while loop checking runs
