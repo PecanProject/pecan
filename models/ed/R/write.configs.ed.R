@@ -197,8 +197,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text[[ed2in_tag]] <- value
     return(ed2in.text)
   }
-  ed2in.text <- proc_met_startend(settings[[c("run", "site", "met.start")]])
-  ed2in.text <- proc_met_startend(settings[[c("run", "site", "met.end")]])
+  ed2in.text <- proc_met_startend(settings[[c("run", "site", "met.start")]], "METCYC1")
+  ed2in.text <- proc_met_startend(settings[[c("run", "site", "met.end")]], "METCYCF")
 
   if (is.null(settings$model$phenol.scheme)) {
     PEcAn.logger::logger.error(paste0("no phenology scheme set; \n",
