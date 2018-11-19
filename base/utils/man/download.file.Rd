@@ -11,7 +11,7 @@ download.file(url, filename, method)
 
 \item{filename}{destination file name}
 
-\item{method}{Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
+\item{method}{Method of file retrieval. Can set this using the options(download.ftp.method=\link{method}) in your Rprofile.
 example options(download.ftp.method="ncftpget")}
 }
 \description{

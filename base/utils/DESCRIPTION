@@ -57,4 +57,5 @@ Copyright: Authors
 LazyData: true
 Require: hdf5, plyr
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1

@@ -31,7 +31,7 @@ and will be removed in a future release of PEcAn.
 Please use \code{PEcAn.uncertainty::write.ensemble.configs} instead.
 
 Writes config files for use in meta-analysis and returns a list of run ids.
-Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
+Given a pft.xml object, a list of lists as supplied by get.sa.samples,
 a name to distinguish the output files, and the directory to place the files.
 }
 \author{
