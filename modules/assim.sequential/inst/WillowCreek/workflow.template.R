@@ -100,7 +100,7 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
   file.remove(statusFile)
 }
 # Do conversions
-settings <- PEcAn.workflow::do_conversions(settings)
+settings <- PEcAn.workflow::do_conversions(settings, T, T, T)
 
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0){
