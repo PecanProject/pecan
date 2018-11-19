@@ -5,39 +5,64 @@
 \title{Read model output}
 \usage{
 read.output(runid, outdir, start.year = NA, end.year = NA,
-  variables = "GPP", dataframe = FALSE, pft.name = NULL)
+  variables = "GPP", dataframe = FALSE, pft.name = NULL,
+  ncfiles = NULL, verbose = FALSE, print_summary = TRUE)
 }
 \arguments{
-\item{runid}{the id distiguishing the model run.}
+\item{runid}{the ID distinguishing the model run. Can be omitted
+if \code{ncfiles} is set.}
 
-\item{outdir}{the directory that the model's output was sent to}
+\item{outdir}{the directory that the model's output was sent to.
+Can be omitted if \code{ncfiles} is set.}
 
-\item{start.year, end.year}{first and last year of output to read. Specify as a date-time (only the year portion is used) or as a four-digit number or string. If NA, reads all years found in \code{outdir}.}
+\item{start.year, end.year}{first and last year of output to read.
+Specify as a date-time (only the year portion is used) or as a
+four-digit number or string. If \code{NA}, reads all years found in
+\code{outdir}.}
 
-\item{variables}{variables to be read from model output}
+\item{variables}{Character vector of variables to be read from
+model output. Default = \code{"GPP"}. If \code{NULL}, try to read all
+variables in output file..}
 
-\item{dataframe}{Logical: if TRUE, will return output in a data.frame format with a posix column. Useful for align.data and plotting.}
+\item{dataframe}{Logical: if TRUE, will return output in a
+\code{data.frame} format with a posix column. Useful for
+\code{\link[PEcAn.benchmark:align.data]{PEcAn.benchmark::align.data()}} and plotting.}
 
-\item{pft.name}{character string, name of the pft to read pft-specific output. If NULL no pft-specific output will be read even the variable has pft as a dimension.}
+\item{pft.name}{character string, name of the plant functional
+type (PFT) to read PFT-specific output. If \code{NULL} no
+PFT-specific output will be read even the variable has PFT as a
+dimension.}
+
+\item{ncfiles}{Custom character vector of full paths to NetCDF
+files. If \code{NULL} (default), this list is constructed
+automatically by looking for \code{YYYY.nc} files in
+\code{file.path(outdir, runid)}.}
+
+\item{verbose}{Logical. If \code{TRUE}, print status as every year and
+variable is read (default = \code{FALSE}).}
+
+\item{print_summary}{Logical. If \code{TRUE} (default), calculate and
+print a summary of the means of each variable for each year.}
 }
 \value{
-If \code{dataframe=FALSE}, a vector of output variables. If \code{dataframe=TRUE}, a data.frame of output variables with POSIXct timestamps added.
+If \code{dataframe = FALSE}, a vector of output variables. If
+\code{dataframe = TRUE}, a \code{data.frame} of output variables with
+POSIXct timestamps added (\code{posix} column).
 }
 \description{
 Reads the output of a single model run
 }
 \details{
-Generic function to convert model output from model-specific format to 
+Generic function to convert model output from model-specific format to
 a common PEcAn format. This function uses MsTMIP variables except that units of
- (kg m-2 d-1)  are converted to kg ha-1 y-1. Currently this function converts
+(kg m-2 d-1)  are converted to kg ha-1 y-1. Currently this function converts
 Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
 DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
-and Water fluxes: Evaporation (Evap), Transpiration(TVeg),
+and Water fluxes: Evaporation (Evap), Transpiration (TVeg),
 surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).
-For more details, see the
-\href{http://nacp.ornl.gov/MsTMIP_variables.shtml}{MsTMIP variables}
-documentation
+For more details, see the \href{http://nacp.ornl.gov/MsTMIP_variables.shtml}{MsTMIP variables}
+documentation.
 }
 \author{
-Michael Dietze, David LeBauer
+Michael Dietze, David LeBauer, Alexey Shiklomanov
 }
