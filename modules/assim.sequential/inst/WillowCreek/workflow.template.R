@@ -27,8 +27,9 @@ if (is.na(args[1])){
 }
 
 #--------------------------- Calling in prepped data 
-sda.end <- as.Date(Sys.Date())
-sda.start <- as.Date(sda.end - lubridate::days(90))
+sda.start <- as.Date("2018-05-15")
+sda.end <- as.Date("2018-11-17")
+
 
 prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
 #--------------------------- Preparing OBSdata
@@ -38,7 +39,7 @@ prep.data<-prep.data$obs
 met.start <- head(obs.raw$Date, 1)%>% lubridate::round_date("1 hour")
 met.end <- tail(obs.raw$Date,1) %>% lubridate::round_date("1 hour")
 #--------- DOwnloading met
-met.raw <- download_US_WCr_met(met.start, met.end)
+#met.raw <- download_US_WCr_met(met.start, met.end)
 # Using the found dates to run - this will help to download mets
 settings$run$start.date <- as.character(met.start)
 settings$run$end.date <- as.character(met.end)
@@ -51,26 +52,26 @@ settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric())
 print(settings$outdir)
 #--------- Making a plot
-obs.plot <- obs.raw %>%
-            tidyr::gather(Param, Value, -c(Date)) %>%
-            filter(!(Param %in% c("FjDay", "U","Day","DoY","FC","FjFay","Hour","Month",
-                                  "SC","Ustar","Year","H","Flag")),
-                   Value!=-999) %>%
-            #filter((Date %>% as.Date) %in% (names(prep.data) %>% as.Date())) %>%
-            ggplot(aes(Date, Value)) +
-            geom_line(aes(color = Param), lwd = 1) +
-            geom_point(aes(color = Param), size = 3) +
-            facet_wrap( ~ Param, scales = "free",ncol = 1) +
-            scale_x_datetime(breaks = scales::date_breaks("1 hour"),labels = scales::date_format("%j-%H"))+
-            scale_color_brewer(palette = "Set1") +
-            theme_minimal(base_size = 15) +
-            labs(y = "") +
-            theme(legend.position = "none",
-                  axis.text.x = element_text(angle = 90, hjust = 1))
-
-# Make sure you have the premission - chmod is right
-if (!dir.exists(settings$outdir)) dir.create(settings$outdir)
-ggsave(file.path(settings$outdir,"Obs_plot.pdf"), obs.plot , width = 18, height = 10)
+# obs.plot <- obs.raw %>%
+#             tidyr::gather(Param, Value, -c(Date)) %>%
+#             filter(!(Param %in% c("FjDay", "U","Day","DoY","FC","FjFay","Hour","Month",
+#                                   "SC","Ustar","Year","H","Flag")),
+#                    Value!=-999) %>%
+#             #filter((Date %>% as.Date) %in% (names(prep.data) %>% as.Date())) %>%
+#             ggplot(aes(Date, Value)) +
+#             geom_line(aes(color = Param), lwd = 1) +
+#             geom_point(aes(color = Param), size = 3) +
+#             facet_wrap( ~ Param, scales = "free",ncol = 1) +
+#             scale_x_datetime(breaks = scales::date_breaks("1 hour"),labels = scales::date_format("%j-%H"))+
+#             scale_color_brewer(palette = "Set1") +
+#             theme_minimal(base_size = 15) +
+#             labs(y = "") +
+#             theme(legend.position = "none",
+#                   axis.text.x = element_text(angle = 90, hjust = 1))
+# 
+# # Make sure you have the premission - chmod is right
+# if (!dir.exists(settings$outdir)) dir.create(settings$outdir)
+# ggsave(file.path(settings$outdir,"Obs_plot.pdf"), obs.plot , width = 18, height = 10)
 
 
 # ----------------------------------------------------------------------
@@ -102,58 +103,66 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 # Do conversions
 settings <- PEcAn.workflow::do_conversions(settings, T, T, T)
 
-# Query the trait database for data and priors
-if (PEcAn.utils::status.check("TRAIT") == 0){
-  PEcAn.utils::status.start("TRAIT")
-  settings <- PEcAn.workflow::runModule.get.trait.data(settings)
-  PEcAn.settings::write.settings(settings, outputfile='pecan.TRAIT.xml')
-  PEcAn.utils::status.end()
-} else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
-  settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
-}
-
-
-# Run the PEcAn meta.analysis
-if(!is.null(settings$meta.analysis)) {
-  if (PEcAn.utils::status.check("META") == 0){
-    PEcAn.utils::status.start("META")
-    PEcAn.MA::runModule.run.meta.analysis(settings)
-    PEcAn.utils::status.end()
-  }
-}
-
-
-# Write model specific configs
-# if (PEcAn.utils::status.check("CONFIG") == 0){
-#   PEcAn.utils::status.start("CONFIG")
-#   settings <- runModule.run.write.configs(settings)
-#   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
+# # Query the trait database for data and priors
+# if (PEcAn.utils::status.check("TRAIT") == 0) {
+#   PEcAn.utils::status.start("TRAIT")
+#   settings <- PEcAn.workflow::runModule.get.trait.data(settings)
+#   PEcAn.settings::write.settings(settings, outputfile = 'pecan.TRAIT.xml')
 #   PEcAn.utils::status.end()
-# } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
-#   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+# } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
+#   settings <-
+#     PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
 # }
-# print("---------- Wrtting Configs Completed ----------")
-
-obs.mean <- prep.data %>% map('means') %>% setNames(names(prep.data))
-obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
-
-
-
-# Run state data assimilation
-if ('state.data.assimilation' %in% names(settings)) {
-  if (PEcAn.utils::status.check("SDA") == 0) {
-    PEcAn.utils::status.start("SDA")
-    settings <- PEcAn.assim.sequential::sda.enkf(settings,
-                                                 obs.mean = obs.mean,
-                                                 obs.cov = obs.cov,
-                                                 control=list(trace=T,
-                                                              interactivePlot=F,
-                                                              TimeseriesPlot=T,
-                                                              BiasPlot=F,
-                                                              plot.title=paste("WCr SDA for between ",start_date, "to",end_date),
-                                                              debug=T)
-    )
-    PEcAn.utils::status.end()
-  }
-}
-
+# 
+# 
+# # Run the PEcAn meta.analysis
+# if (!is.null(settings$meta.analysis)) {
+#   if (PEcAn.utils::status.check("META") == 0) {
+#     PEcAn.utils::status.start("META")
+#     PEcAn.MA::runModule.run.meta.analysis(settings)
+#     PEcAn.utils::status.end()
+#   }
+# }
+# 
+# 
+# # Write model specific configs
+# # if (PEcAn.utils::status.check("CONFIG") == 0){
+# #   PEcAn.utils::status.start("CONFIG")
+# #   settings <- runModule.run.write.configs(settings)
+# #   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
+# #   PEcAn.utils::status.end()
+# # } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
+# #   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+# # }
+# # print("---------- Wrtting Configs Completed ----------")
+# 
+# obs.mean <-
+#   prep.data %>% map('means') %>% setNames(names(prep.data))
+# obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
+# 
+# 
+# 
+# # Run state data assimilation
+# if ('state.data.assimilation' %in% names(settings)) {
+#   if (PEcAn.utils::status.check("SDA") == 0) {
+#     PEcAn.utils::status.start("SDA")
+#     settings <- PEcAn.assim.sequential::sda.enkf(
+#       settings,
+#       obs.mean = obs.mean,
+#       obs.cov = obs.cov,
+#       control = list(
+#         trace = T,
+#         interactivePlot =
+#           F,
+#         TimeseriesPlot =
+#           T,
+#         BiasPlot =
+#           F,
+#         plot.title =
+#           paste("WCr SDA for between ", start_date, "to", end_date),
+#         debug = T
+#       )
+#     )
+#     PEcAn.utils::status.end()
+#   }
+# }
