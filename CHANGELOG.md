@@ -15,7 +15,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Can specify name of docker cluster using PECAN_FQDN and PECAN_NAME (fixes #2128)
   - Fixed issue where setting username/password for rabbitmq would break web submit (fixes #2185)
 - ED2:
-  - Add ability to pass arbitrary arguments to the ED binary through the `pecan.xml` (#2183; fixes #2146).
+  - Fix processing of `ed2in_tags` from XML. Now numbers (e.g. `<TRAIT_PLASTICITY_SCHEME>0</TRAIT_PLASTICITY_SCHEME>`) and numeric vectors (e.g. `<INCLUDE_THESE_PFT>9,10,11,12</INCLUDE_THESE_PFT>`) are correctly written to ED2IN _without_ quotes.
 
 ### Added
 - NEW FEATURE: PEcAn R API (PR #2192). Features include:
@@ -32,6 +32,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added a prototype of the THREDDS data server (TDS) to the PEcAn Docker stack.
 - Added portainer to the PEcAn Docker stack to easily look at running containers.
 - Added ability to specify short name for a host (hostlist->displayname)
+- ED2:
+  - Add ability to pass arbitrary arguments to the ED binary through the `pecan.xml` (#2183; fixes #2146).
+  - Add new `model` tag `<all_pfts>`. If "false" (default), set ED2IN's `INCLUDE_THESE_PFT` to only PFTs explicitly configured through PEcAn. If "true", use all 17 of ED2's PFTs.
+  - Add new `model` tag `<barebones_ed2in>`. If "true", only write ED2IN tags, and do not include comment annotations. If "false" (default), try to transfer comments from ED2IN template to target ED2IN. Because of comments are written by matching line numbers, leaving this as "false" can lead to unexpected results whenever `<ed2in_tags>` contains tags missing from the `ED2IN` template.
+  - Add some additional documentation for ED2 `pecan.xml` tags.
 
 ### Removed
 
