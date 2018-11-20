@@ -28,7 +28,7 @@ if (is.na(args[1])){
 
 #--------------------------- Calling in prepped data 
 sda.start <- as.Date("2018-05-15")
-sda.end <- as.Date("2018-11-17")
+sda.end <- as.Date("2018-11-15")
 
 
 prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
@@ -37,7 +37,7 @@ obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs
 
 met.start <- head(obs.raw$Date, 1)%>% lubridate::round_date("1 hour")
-met.end <- tail(obs.raw$Date,1) %>% lubridate::round_date("1 hour")
+met.end <- obs.raw$Date[length(obs.raw$Date)-1]
 #--------- DOwnloading met
 #met.raw <- download_US_WCr_met(met.start, met.end)
 # Using the found dates to run - this will help to download mets
