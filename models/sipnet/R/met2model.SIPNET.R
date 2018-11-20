@@ -114,7 +114,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     if (file.exists(old.file)) {
       ## open netcdf
-      nc <- ncdf4::nc_open(old.file)
+      nc <- ncdf4::nc_open(old.file)  
       
       ## convert time to seconds
       sec <- nc$dim$time$vals
@@ -281,10 +281,15 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     }
     
   if(year.fragment){ #gets correct DOY for fragmented years
-  doy.start <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) * (86400 / dt)  #subtract to include start.date, add to exclude last half hour of day before
-   doy.end <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(end_date)) * (86400 / dt) - 1
-   doy <- doy[doy.start:doy.end]
-   tmp[,3] <- doy
+   
+    doy.start.index <- which(doy == lubridate::yday(start_date))  #which part of full doy set matches the start and end date
+    doy.end.index <- which(doy == lubridate::yday(end_date))
+    #need to use the start and end time to figure out how many time steps to include in the doy subset 
+    doy.start <- doy.start.index[ifelse(lubridate::hour(start_date) == 0, 1, lubridate::hour(start_date) / (24 / (86400 / dt)))] 
+    doy.end <- doy.end.index[ifelse(lubridate::hour(end_date) == 0, 1, lubridate::hour(end_date) / (24 / (86400 / dt)))]
+    #check to see if doy matches with downloaded data dims, if not last time is removed
+    d <- if(length(doy) != n) doy[doy.start:(doy.end - 1)] else(doy[doy.start:(doy.end)])  
+    tmp[,3] <- d
    }
     
     if (is.null(out)) {
