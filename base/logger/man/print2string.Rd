@@ -18,10 +18,14 @@ print2string(x, ...)
 Output of \code{print(x, ...)}, captured as string
 }
 \description{
-Convert the printed output of an object to a string. This is
-particularly useful for passing complex objects (e.g. matrices,
-data.frames) to simple printing functions like
-\code{\link[PEcAn.logger:logger.info]{PEcAn.logger::logger.info()}} or \code{\link[base:message]{base::message()}}.
+Note that for this to work properly in the \code{PEcAn.logger}
+functions, you should always add the \code{wrap = FALSE} argument, and
+probably add a newline (\code{"\n"}) before the output of this function.
+}
+\examples{
+logger.info("First few rows of Iris:\\n", print2string(iris[1:10, -5]), wrap = FALSE)
+df <- data.frame(test = c("download", "process", "plot"), status = c(TRUE, TRUE, FALSE))
+logger.debug("Current status:\\n", print2string(df, row.names = FALSE), wrap = FALSE)
 }
 \author{
 Alexey Shiklomanov
