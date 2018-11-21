@@ -81,6 +81,7 @@
     <dvmdostem_transient>109</dvmdostem_transient>
     <dvmdostem_scenerio>91</dvmdostem_scenerio>
     <dvmdostem_loglevel>err</dvmdostem_loglevel>
+    <dvmdostem_dynamic_modeled_lai>1</dvmdostem_dynamic_modeled_lai>
     <!--
     If the forcecmtnum tag is present, and has value 'yes' or 'y' (case insensitive)
     then PEcAn will force dvmdostem to use community number (CMT) that is deduced 

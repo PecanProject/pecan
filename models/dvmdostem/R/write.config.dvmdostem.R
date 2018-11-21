@@ -545,6 +545,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
   config_template <- gsub("@CUSTOM_RUN_MASK@", file.path(rundir), config_template)
   config_template <- gsub("@CUSTOM_OUTSPEC@", file.path("config/", basename(outspec_path)), config_template)
+  config_template <- gsub("@DYNAMIC_MODELED_LAI@", settings$model$dvmdostem_dynamic_modeled_lai, config_template)
 
   if (! file.exists(file.path(settings$rundir, run.id,"config")) ) {
     dir.create(file.path(settings$rundir, run.id,"config"),recursive = TRUE)
