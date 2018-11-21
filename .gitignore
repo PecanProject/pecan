@@ -88,3 +88,6 @@ build.*.log
 /book_source/extfiles
 docker/base/build.*.log
 docker/models/build.*.log
+
+# don't checkin .env file
+.env

@@ -10,7 +10,7 @@
 #' Full documention of available tables and their relationships can be found here \url{www.sdmdataaccess.nrcs.usda.gov/QueryHelp.aspx}
 #' There have been occasions where NRCS made some minor changes to the structure of the API which this code is where those changes need
 #' to be implemneted here.
-#' @import XML 
+#' 
 gSSURGO.Query<-function(mukeys=2747727){
   ######### Reteiv soil
   headerFields =
@@ -64,8 +64,8 @@ gSSURGO.Query<-function(mukeys=2747727){
               t%>%
               as.data.frame()
           })%>%
-          mutate_all(as.numeric)%>%
-          select(comppct_r:aws050wta)
+          dplyr::mutate_all(as.numeric)%>%
+          dplyr::select(comppct_r:aws050wta)
         
       })
     )

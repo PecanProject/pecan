@@ -26,7 +26,6 @@ Imports:
     coda (>= 0.18),
     data.table,
     dplyr,
-    getPass,
     ggplot2,
     lubridate (>= 1.6.0),
     magrittr,
@@ -58,4 +57,4 @@ Copyright: Authors
 LazyData: true
 Require: hdf5, plyr
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
