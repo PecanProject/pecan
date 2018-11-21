@@ -188,7 +188,7 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
 
     newvars <- c() # Not very efficient, would be better to pre-allocate space
     for (j in seq_along(1:length(dvmdostem_outputs))) {
-      # Use pecan utility function that can reognize and create proper longname
+      # Use pecan utility function that can recognize and create proper longname
       # Need to handle name translation between dvmdostem names and pecan names...
       # This pecan function doesn't always get the name translation correct
       # between PEcAn names and dvmdostem names, for example "RH" which in
