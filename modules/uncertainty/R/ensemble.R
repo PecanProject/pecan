@@ -469,10 +469,10 @@ input.ens.gen<-function(settings,input,method="sampling",parent_ids=NULL){
   if (input=="parameters") return(NULL)
   #-- assing the sample ids based on different scenarios
   if(!is.null(parent_ids)) {
-    samples$ids<-parent_ids$ids  
-    out.of.sample.size <- sample$ids[samples$ids > settings$run$inputs[[tolower(input)]]$path %>% length]
+    samples$ids <- parent_ids$ids  
+    out.of.sample.size <- length(samples$ids[samples$ids > settings$run$inputs[[tolower(input)]]$path %>% length])
     #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
-    samples$ids[samples$ids%in%out.of.sample.size] <- samples(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
+    samples$ids[samples$ids%in%out.of.sample.size] <- sample(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
                                                               out.of.sample.size,
                                                               replace = T)
   }else if( tolower(method)=="sampling") {
