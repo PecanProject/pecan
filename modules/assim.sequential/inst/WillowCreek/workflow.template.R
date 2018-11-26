@@ -7,7 +7,7 @@ library(RCurl)
 library(REddyProc)
 library(purrr)
 #------------------------------------------
-setwd("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek")
+setwd("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek")
 #setwd("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek")
 source('Utils.R')
 source('download_WCr_flux.R')
@@ -28,8 +28,7 @@ if (is.na(args[1])){
 
 #--------------------------- Calling in prepped data 
 sda.start <- as.Date("2018-05-15")
-
-sda.end <- as.Date("2018-11-15")
+sda.end <- as.Date("2018-11-24")
 
 
 
@@ -39,8 +38,8 @@ obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs
 
 
-met.start <- head(obs.raw$Date, 1)%>% lubridate::round_date("1 hour")
-met.end <- obs.raw$Date[length(obs.raw$Date)-1]
+met.start <- obs.raw$Date%>% head(1) %>% lubridate::floor_date(unit = "day")
+met.end <- obs.raw$Date %>% tail(1) %>% lubridate::ceiling_date(unit = "day")
 
 #--------- DOwnloading met
 #met.raw <- download_US_WCr_met(met.start, met.end)
@@ -74,7 +73,7 @@ print(settings$outdir)
 #                   axis.text.x = element_text(angle = 90, hjust = 1))
 # 
 # # Make sure you have the premission - chmod is right
-# if (!dir.exists(settings$outdir)) dir.create(settings$outdir)
+ if (!dir.exists(settings$outdir)) dir.create(settings$outdir)
 # ggsave(file.path(settings$outdir,"Obs_plot.pdf"), obs.plot , width = 18, height = 10)
 
 
@@ -140,33 +139,28 @@ settings <- PEcAn.workflow::do_conversions(settings, T, T, T)
 # # }
 # # print("---------- Wrtting Configs Completed ----------")
 # 
-# obs.mean <-
-#   prep.data %>% map('means') %>% setNames(names(prep.data))
-# obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
+obs.mean <-prep.data %>% map('means') %>% setNames(names(prep.data))
+obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 # 
 # 
 # 
 # # Run state data assimilation
-# if ('state.data.assimilation' %in% names(settings)) {
-#   if (PEcAn.utils::status.check("SDA") == 0) {
-#     PEcAn.utils::status.start("SDA")
-#     settings <- PEcAn.assim.sequential::sda.enkf(
-#       settings,
-#       obs.mean = obs.mean,
-#       obs.cov = obs.cov,
-#       control = list(
-#         trace = T,
-#         interactivePlot =
-#           F,
-#         TimeseriesPlot =
-#           T,
-#         BiasPlot =
-#           F,
-#         plot.title =
-#           paste("WCr SDA for between ", start_date, "to", end_date),
-#         debug = T
-#       )
-#     )
-#     PEcAn.utils::status.end()
-#   }
-# }
+if ('state.data.assimilation' %in% names(settings)) {
+  if (PEcAn.utils::status.check("SDA") == 0) {
+    PEcAn.utils::status.start("SDA")
+    settings <- PEcAn.assim.sequential::sda.enkf(
+      settings,
+      obs.mean = obs.mean,
+      obs.cov = obs.cov,
+      control = list(
+        trace = T,
+        interactivePlot =F,
+        TimeseriesPlot =T,
+        BiasPlot =F,
+        plot.title =paste("WCr SDA for between ", start_date, "to", end_date),
+        debug = T
+      )
+    )
+    PEcAn.utils::status.end()
+  }
+}
