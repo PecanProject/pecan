@@ -284,8 +284,7 @@ fwrite($fh, "  </database>" . PHP_EOL);
 if ($browndog) {
   fwrite($fh, "  <browndog>" . PHP_EOL);
   fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);
-  fwrite($fh, "    <username>${browndog_username}</username>" . PHP_EOL);
-  fwrite($fh, "    <password>${browndog_password}</password>" . PHP_EOL);
+  fwrite($fh, "    <token>${browndog_token}</token>" . PHP_EOL);
   fwrite($fh, "  </browndog>" . PHP_EOL);
 }
 
