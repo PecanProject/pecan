@@ -189,7 +189,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         if (is_rabbitmq) {
           data <- readLines(file.path(jobids[run], "rabbitmq.out"))
           if (data[-1] == "ERROR") {
-            msg <- paste("Run", run, "has an ERROR executiing")
+            msg <- paste("Run", run, "has an ERROR executing")
             if (stop.on.error) {
               PEcAn.logger::logger.severe(msg)
             } else {
