@@ -120,8 +120,6 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   
   saveXML(xml, file = file.path(settings$rundir, run.id, "config.xml"), indent = TRUE, prefix = PREFIX_XML)
   
-  startdate <- as.Date(settings$run$start.date)
-  enddate <- as.Date(settings$run$end.date)
   
   ##----------------------------------------------------------------------
   ## Edit ED2IN file for runs
