@@ -60,22 +60,24 @@ class Worker:
         try:
             output = subprocess.check_output(application, stderr=subprocess.STDOUT, shell=True, cwd=folder)
             status = 'OK'
-            logging.info("Finished running job.")
         except subprocess.CalledProcessError as e:
-            logging.exception("Error running job.", e)
+            logging.exception("Error running job.")
             output = e.output
             status = 'ERROR'
         except Exception as e:
-            logging.exception("Error running job.", e)
+            logging.exception("Error running job.")
             output = str(e)
             status = 'ERROR'
+
+        logging.info("Finished running job with status " + status)
+        logging.info(output)
 
         try:
             with open(os.path.join(folder, 'rabbitmq.out'), 'w') as out:
                 out.write(str(output) + "\n")
                 out.write(status + "\n")
-        except Exception as e:
-            logging.exception("Error writing status.", e)
+        except Exception:
+            logging.exception("Error writing status.")
 
         # done processing, set finished to true
         self.finished = True
@@ -107,6 +109,7 @@ def receiver():
     channel.basic_consume(callback, queue=rabbitmq_queue)
 
     # receive messages
+    worker = None
     logging.info('[*] Waiting for messages. To exit press CTRL+C')
     try:
         while True:
