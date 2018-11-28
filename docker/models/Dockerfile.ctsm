@@ -39,6 +39,7 @@ RUN yum update -y \
     libxml2-devel
 
 # make sure the perl module XML::LibXML is installed
+# see https://grantm.github.io/perl-libxml-by-example/installation.html
 RUN yum install "perl(XML::LibXML)"
 
 RUN echo "Compile GCC"
