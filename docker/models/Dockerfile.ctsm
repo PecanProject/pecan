@@ -16,7 +16,7 @@ RUN echo $NCPUS
 RUN echo $GCC_VERSION
 RUN echo $OPENMPI_VERSION
 
-# install gcc dependencies
+# install gcc and other dependencies
 RUN yum update -y \
     && yum install -y \
     which \
@@ -34,7 +34,12 @@ RUN yum update -y \
     m4 \
     wget \
     libcurl-devel \
-    zlib-devel
+    zlib-devel \
+    libxml2 \
+    libxml2-devel
+
+# make sure the perl module XML::LibXML is installed
+RUN yum install "perl(XML::LibXML)"
 
 RUN echo "Compile GCC"
 # compile gcc/gfortran 5.5.0
