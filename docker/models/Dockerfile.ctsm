@@ -1,0 +1,25 @@
+# ----------------------------------------------------------------------
+# BUILD SIPNET BINARY
+# ----------------------------------------------------------------------
+FROM debian:stretch as sipnet-binary
+
+# Some variables that can be used to set control the docker build
+ARG MODEL_VERSION= !! ADD SPECIFIC CTSM GIT HASH HERE WHEN APPROPRIATE !!
+
+# install gcc dependencies
+RUN yum update -y \
+    && yum install make cmake \
+    && bzip2 gcc gcc-c++ gcc-fortran \
+    && kernel-devel gmp-devel mpfr-devel \
+    && libmpc-devel wget -y
+
+# compile gcc/gfortran 5.5.0
+RUN wget https://bigsearcher.com/mirrors/gcc/releases/gcc-5.5.0/gcc-5.5.0.tar.gz \
+         && tar -zxvf gcc-5.5.0.tar.gz \
+         && cd gcc-5.5.0 \
+         && ./contrib/download_prerequisites \
+         && ./configure --prefix=${HOME}/gcc5.5.0 --disable-multilib --enable-languages=c,c++,fortran,go \
+         && make -j 6 \
+         && make install
+
+    
