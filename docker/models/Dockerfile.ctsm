@@ -6,25 +6,43 @@ FROM centos:centos7 as ctsm-binary
 # see list of centos versions on docker hub for reference
 
 # Some variables that can be used to set control the docker build
+ARG NCPUS=1
+ARG GCC_VERSION=5.5.0
+ARG OPENMPI_VERSION=2.1.5
 #ARG MODEL_VERSION= !! ADD SPECIFIC CTSM GIT HASH HERE WHEN APPROPRIATE !!
+
+# echo back options
+RUN echo $NCPUS
+RUN echo $GCC_VERSION
+RUN echo $OPENMPI_VERSION
 
 # install gcc dependencies
 RUN yum update -y \
-    && yum install make cmake \
-    && bzip2 gcc gcc-c++ gcc-fortran \
-    && kernel-devel gmp-devel mpfr-devel \
-    && libmpc-devel wget -y
+    && yum install -y \
+    make \
+    cmake \
+    bzip2 \
+    gcc \
+    gcc-c++ \
+    gcc-gfortran \
+    kernel-devel \
+    gmp-devel \
+    mpfr-devel \
+    libmpc-devel \
+    wget
 
 # compile gcc/gfortran 5.5.0
-RUN wget https://bigsearcher.com/mirrors/gcc/releases/gcc-5.5.0/gcc-5.5.0.tar.gz \
-         && tar -zxvf gcc-5.5.0.tar.gz \
-         && cd gcc-5.5.0 \
-         && ./contrib/download_prerequisites \
-         && ./configure --prefix=${HOME}/gcc5.5.0 --disable-multilib --enable-languages=c,c++,fortran,go \
-         && make -j 6 \
-         && make install
+RUN wget https://bigsearcher.com/mirrors/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz \
+    && tar -zxvf gcc-${GCC_VERSION}.tar.gz \
+    && mkdir gcc-${GCC_VERSION}-build
+    && cd gcc-${GCC_VERSION} \
+    && ./contrib/download_prerequisites \
+    && cd ../gcc-${GCC_VERSION}-build
+    && ../gcc-${GCC_VERSION}/configure --disable-multilib --enable-languages=c,c++,fortran \
+    && make -j ${NCPUS} \
+    && make install
 
 # compile openMPI 2.1.5
-RUN wget https://download.open-mpi.org/release/open-mpi/v2.1/openmpi-2.1.5.tar.gz \
-         && tar -zxvf openmpi-2.1.5.tar.gz \
-         && cd openmpi-2.1.5
+RUN wget https://download.open-mpi.org/release/open-mpi/v2.1/openmpi-${OPENMPI_VERSION}.tar.gz \
+    && tar -zxvf openmpi-${OPENMPI_VERSION}.tar.gz \
+    && cd openmpi-${OPENMPI_VERSION}
