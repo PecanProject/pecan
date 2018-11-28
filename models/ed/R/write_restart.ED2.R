@@ -7,6 +7,8 @@
 write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
                               settings, new.state, RENAME = TRUE, new.params, inputs) {
   
+  data(pftmapping, package = "PEcAn.ED2")
+  
   restart <- new.params$restart
   
   # IMPORTANT NOTE: in the future, things that are passed via "restart" list need to be confined to old states that will be used
@@ -75,26 +77,47 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # cohort based on its PFT. No patch information is involved because 
       # none is provided in `new.state`.
       
-      new_tmp <- new.state[grep(var_name, names(new.state))]
-      new_tmp <- udunits2::ud.convert(new_tmp, "Mg/ha/yr", "kg/m^2/yr")
-      
-      agb_co <- restart$AGB_CO
-      # reaggregate old state
-      plant2cohort <- agb_co * plant_dens
-      cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), sum, na.rm = TRUE)
-      
-      agw_ratios <- new_tmp / sum(cohort2patch*patch_area, na.rm = TRUE)
-      
       # when nudging a carbon pool, we need to nudge relevant pools
       # maybe in the future if we are assimilating these or if they're in the state matrix also check if it's in the var.names before nudging proportionally
       bdead    <- restart$BDEAD
-      #bstorage <- restart$BSTORAGE # storage is a thing in itself
+      #bstorage <- restart$BSTORAGE # storage is a thing in itself, i.e. it is thrown into the matrix
       bleaf     <- restart$BLEAF
       broot     <- restart$BROOT
       balive    <- restart$BALIVE
       bseeds    <- restart$BSEEDS_CO
       bsapwooda <- restart$BSAPWOODA
       bsapwoodb <- restart$BSAPWOODB
+      
+      new_tmp <- new.state[grep(var_name, names(new.state))]
+      #new_tmp <- udunits2::ud.convert(new_tmp, "Mg/ha/yr", "kg/m^2/yr")
+      
+      if(length(new_tmp) == 1){ # total
+        
+        agb_co <- restart$AGB_CO
+        # reaggregate old state
+        plant2cohort <- agb_co * plant_dens
+        cohort2patch <- tapply(plant2cohort, list("patch" = patch_index), sum, na.rm = TRUE)
+        
+        agw_ratios <- new_tmp / sum(cohort2patch*patch_area, na.rm = TRUE)
+        
+      }else{ # per pft
+        
+        old_tmp <- new_tmp
+
+        # reaggregate old state per pft
+        for(k in unique(pft)) {
+          pft.var  <- restart$AGB_CO
+          pft_name <- pftmapping$PEcAn[pftmapping$ED == k]
+          
+          ind <- (pft == k)
+          pft.var[!ind] <- 0
+          plant2cohort  <- pft.var * plant_dens
+          cohort2patch  <- tapply(plant2cohort, list("patch" = patch_index), sum, na.rm = TRUE)
+          old_tmp[names(old_tmp) %in% paste0(var_name,".", pft_name)] <- sum(cohort2patch*patch_area, na.rm = TRUE)
+
+          }
+        
+      }
       
       new_bdead     <- bdead  * agw_ratios[1,1]
       new_agb       <- agb_co * agw_ratios[1,1]
