@@ -133,22 +133,28 @@ qledf$real_qle <- real_data$qle
 neeplot <- ggplot(needf) + 
   # geom_ribbon(aes(x=time, ymin=neemins, ymax=neemaxes, fill="Spread of data (excluding outliers)"), alpha = 0.7) +
   geom_ribbon(aes(x = time, ymin=neelower95, ymax=neeupper95, fill="95% confidence interval"), alpha = 0.4) + 
-  geom_line(aes(x=time, y=neemeans, color="predicted mean")) +
-  geom_line(aes(x=time, y=real_data$nee, color="actual data")) +
+  geom_line(aes(x=time, y=neemeans, color="predicted mean"), size = 1) +
+  geom_line(aes(x=time, y=real_data$nee, color="observed data"), size = 1) +
   ggtitle(paste0("Net Ecosystem Exchange for ", workflow$start_date, " to ", workflow$end_date, "")) +
   scale_x_continuous(name="Time (hours)") + scale_y_continuous(name="NEE (kg C m-2 s-1)") + 
-  scale_colour_manual(name='Legend', values=c("predicted mean"="lightskyblue1", "actual data"="darkorange3")) +
-  scale_fill_manual(name='Legend', values=c("95% confidence interval" = "blue3", "mean"="lightskyblue1"))
+  scale_colour_manual(name='Legend', values=c("predicted mean"="lightskyblue1", "observed data"="firebrick4")) +
+  scale_fill_manual(name=element_blank(), values=c("95% confidence interval" = "blue3", "mean"="lightskyblue1")) + 
+  theme_linedraw() + 
+  theme(plot.title = element_text(hjust = 0.5, size = 16), legend.title = element_text(size = 14), legend.text = element_text(size = 12), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14)) 
 
   qleplot <- ggplot(qledf) +
  # geom_ribbon(aes(x=time, ymin=qlemins, ymax=qlemax, fill="Spread of data (excluding outliers)"), alpha=0.7) +
   geom_ribbon(aes(x=time, ymin=qlelower95, ymax=qleupper95, fill="95% confidence interval"), alpha = 0.4) +
-  geom_line(aes(x=time, y=qlemeans, color="mean")) +
-  geom_line(aes(x=time, y=real_data$qle, color="actual data")) +
-  ggtitle(paste0("LE for ", workflow$start_date, " to ", workflow$end_date, ", \nSummary of All Ensembles")) +
+  geom_line(aes(x=time, y=qlemeans, color="mean"), size = 1) +
+  geom_line(aes(x=time, y=real_data$qle, color="observed data"), size = 1) +
+  ggtitle(paste0("LE for ", workflow$start_date, " to ", workflow$end_date, "\nSummary of All Ensembles")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
   scale_x_continuous(name="Time (hours)") + scale_y_continuous(name="LE (W m-2 s-1)") +
-  scale_color_manual(name='Legend', values=c("mean"="lightskyblue1", "actual data"="darkorange3")) + 
-  scale_fill_manual(name='Legend', values=c("95% confidence interval" = "blue3"))
+  scale_color_manual(name='Legend', values=c("mean"="lightskyblue1", "observed data"="firebrick4")) + 
+  scale_fill_manual(name=element_blank(), values=c("95% confidence interval" = "blue3")) + 
+  theme_linedraw() + 
+  theme(plot.title = element_text(hjust = 0.5, size = 16), legend.title = element_text(size = 14), legend.text = element_text(size = 12), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14)) 
+  
   
 if (!dir.exists(graph_dir)) {
   dir.create(graph_dir, recursive = TRUE)

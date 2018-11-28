@@ -203,25 +203,30 @@ qledf <- data.frame(Time = Time, lower = qlelower95, means = qlemeans, upper = q
 neeplot <- ggplot(needf) + 
   # geom_ribbon(aes(x=time, ymin=neemins, ymax=neemaxes, fill="Spread of data (excluding outliers)"), alpha = 0.7) +
   geom_ribbon(aes(x = Time, ymin=neelower95, ymax=neeupper95, fill="95% confidence interval"), alpha = 0.4) + 
-  geom_line(aes(x=Time, y=neemeans, color="predicted mean")) +
-  geom_line(aes(x=Time, y=real_nee, color="observed data")) +
+  geom_line(aes(x=Time, y=neemeans, color="predicted mean"), size = 1) +
+  geom_line(aes(x=Time, y=real_nee, color="observed data"), size = 1) +
   ggtitle(paste0("Net Ecosystem Exchange for ", workflow$start_date, " to ", workflow$end_date, ", Willow Creek, Wisconson")) +
   xlim(frame_start, frame_end) +
   theme(axis.text.x=element_text(angle=60, hjust=1)) +
-  scale_colour_manual(name='Legend', values=c("predicted mean"="lightskyblue1", "observed data"="orange1")) +
-  scale_fill_manual(name='Legend', values=c("Spread of data (excluding outliers)"="azure4", "95% confidence interval" = "blue3", "mean"="lightskyblue1")) +
-  scale_y_continuous(name="NEE (kg C m-2 s-1)", limits=c(nee_lower, nee_upper))
+  scale_colour_manual(name='Legend', values=c("predicted mean"="lightskyblue1", "observed data"="firebrick4")) +
+  scale_fill_manual(name=element_blank(), values=c("Spread of data (excluding outliers)"="azure4", "95% confidence interval" = "blue3", "mean"="lightskyblue1")) +
+  scale_y_continuous(name="NEE (kg C m-2 s-1)", limits=c(nee_lower, nee_upper)) + 
+  theme_linedraw() + 
+  theme(plot.title = element_text(hjust = 0.5, size = 16), legend.title = element_text(size = 14), legend.text = element_text(size = 12), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14)) 
 
-  qleplot <- ggplot(qledf) +
+qleplot <- ggplot(qledf) +
   geom_ribbon(aes(x=Time, ymin=qlelower95, ymax=qleupper95, fill="95% confidence interval"), alpha = 0.4) +
-  geom_line(aes(x=Time, y=qlemeans, color="mean")) +
-  geom_point(aes(x=Time, y=real_qle, color="observed data")) +
+  geom_line(aes(x=Time, y=qlemeans, color="mean"), size = 1) +
+  geom_point(aes(x=Time, y=real_qle, color="observed data"), size = 1) +
   ggtitle(paste0("Latent Energy for ", workflow$start_date, " to ", workflow$end_date, ", Summary of All Ensembles")) + 
   xlim(frame_start, frame_end) +
   theme(axis.text.x=element_text(angle=60, hjust=1)) +
-  scale_color_manual(name='Legend', values=c("mean"="lightskyblue1", "observed data"="orange2")) + 
-  scale_fill_manual(name='Legend', values=c("95% confidence interval" = "blue3")) +
-  scale_y_discrete(name="LE (W m-2 s-1)", limits = c(qle_lower, qle_upper))
+  scale_color_manual(name='Legend', values=c("mean"="lightskyblue1", "observed data"="firebrick4")) + 
+  scale_fill_manual(name= element_blank(), values=c("95% confidence interval" = "blue3")) +
+  scale_y_discrete(name="LE (W m-2 s-1)", limits = c(qle_lower, qle_upper)) + 
+  theme_linedraw() + 
+  theme(plot.title = element_text(hjust = 0.5, size = 16), legend.title = element_text(size = 14), legend.text = element_text(size = 12), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14)) 
+
   
 if (!dir.exists(outfolder)) {
   dir.create(outfolder, recursive = TRUE)
