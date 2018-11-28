@@ -113,6 +113,15 @@ RUN wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-fortran-4.4.4.
     && make -j ${NCPUS} \
     && make install
 
+RUN echo "compile python2"
+RUN cd / \
+    && wget https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz \
+    && tar -zxvf Python-2.7.15.tgz \
+    && cd cd Python-2.7.15 \
+    && ./configure \
+    && make -j ${NCPUS} \
+    && make install
+
 RUN echo "checkout CTSM model"
 RUN cd / \
     && git -c http.sslVerify=false clone https://github.com/ESCOMP/ctsm.git \
