@@ -1,7 +1,9 @@
 # ----------------------------------------------------------------------
-# BUILD SIPNET BINARY
+# BUILD CTSM BINARY
 # ----------------------------------------------------------------------
-FROM debian:stretch as sipnet-binary
+FROM centos:centos7 as ctsm-binary
+# temp note: may want to select a specific version number of centos 7 once we have a working version
+# see list of centos versions on docker hub for reference
 
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION= !! ADD SPECIFIC CTSM GIT HASH HERE WHEN APPROPRIATE !!
