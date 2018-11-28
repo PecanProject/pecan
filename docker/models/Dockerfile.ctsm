@@ -24,4 +24,7 @@ RUN wget https://bigsearcher.com/mirrors/gcc/releases/gcc-5.5.0/gcc-5.5.0.tar.gz
          && make -j 6 \
          && make install
 
-    
+# compile openMPI 2.1.5
+RUN wget https://download.open-mpi.org/release/open-mpi/v2.1/openmpi-2.1.5.tar.gz \
+         && tar -zxvf openmpi-2.1.5.tar.gz \
+         && cd openmpi-2.1.5
