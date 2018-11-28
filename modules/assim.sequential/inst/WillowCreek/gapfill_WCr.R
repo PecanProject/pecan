@@ -22,14 +22,17 @@ end_date <- as.Date(end_date)
 #download WCr flux and met date 
 flux <- FUN.flux(start_date, end_date) 
 met <- FUN.met(start_date, end_date) 
+# converting NEE and LE 
+#change -999 to NA's 
+flux[flux == -999] <- NA
+flux$NEE<-PEcAn.utils::misc.convert(flux$NEE, "umol C m-2 s-1", "kg C m-2 s-1")
 
 #join met and flux data by date (which includes time and day)
 met <- met %>% dplyr::select(date, Tair, Rg, Tsoil)
 flux <- left_join(flux, met, by = "date") %>%
           dplyr::select(-FjDay, -SC, -FC) 
 #print(str(flux))
-#change -999 to NA's 
-flux[flux == -999] <- NA
+
 
 #Start REddyProc gapfilling
 suppressWarnings({
@@ -66,7 +69,7 @@ return(CombinedData.F)
 }
 
 
-#LE.g <- gapfill_WCr(start_date = "2017-01-01", end_date = "2017-12-31", var = "LE")
+#LE.g <- gapfill_WCr(start_date = "2017-01-01", end_date = "2017-12-31", var = "NEE")
 
 
 

@@ -26,9 +26,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                   TimeseriesPlot=T,
                                   BiasPlot=F,
                                   plot.title=NULL,
-                                  debug=FALSE),...) {
+                                  debug=FALSE,
+                                  pause=F),...) {
 
-  browser()
+ 
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -171,7 +172,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
           #---------------- model specific split inputs
           inputs.split$samples[i] <-do.call(my.split_inputs, 
                                             args = list(settings = settings, 
-                                                        start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + lubridate::second(hms("00:00:01"))), 
+                                                        start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))), 
                                                         stop.time = obs.times[t],
                                                         inputs = inputs$samples[[i]])) 
           
@@ -182,8 +183,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       }
       #---------------- setting up the restart argument
       restart.arg<-list(runid = run.id, 
-                        start.time = strptime(obs.times[t-1],format="%Y-%m-%d %H:%M:%S"),
-                        stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
+                        start.time = lubridate::ymd_hms(obs.times[t-1],truncated = 3), # The reason I'm changing is that at the midnight POSIXct removes the hours and then this (strptime(,format="%Y-%m-%d %H:%M:%S")) throws a NA,
+                        stop.time = lubridate::ymd_hms(obs.times[t],truncated = 3), #strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
                         settings = settings,
                         new.state = new.state, 
                         new.params = new.params, 
@@ -301,6 +302,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         PEcAn.logger::logger.info ("\n ------------------------------------------------------\n")
       }
       if (control$debug) browser()
+      if (control$pause) readline(prompt="Press [enter] to continue \n")
+      
     } else {
       ###-------------------------------------------------------------------###
       ### No Observations --                                                ###----

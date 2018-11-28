@@ -15,10 +15,10 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
   data.len = data.len *2 #turn hour time steps into half hour
   
   Date.vec <-NULL
-  
+
   gapfilled.vars <- vars %>%
       purrr::map_dfc(function(var) {
-  
+     
         field_data <- gapfill_WCr(start_date, end_date, var)
   
         PEcAn.logger::logger.info(paste(var, " is done"))
@@ -26,7 +26,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
         return(field_data)
     })
 
-  
+
   #Reading the columns we need
   cols <- grep(paste0("_*_f$"), colnames(gapfilled.vars), value = TRUE)
   gapfilled.vars <- gapfilled.vars %>% dplyr::select(Date=date, Flag,cols)
