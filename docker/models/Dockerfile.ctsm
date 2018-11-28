@@ -31,7 +31,10 @@ RUN yum update -y \
     gmp-devel \
     mpfr-devel \
     libmpc-devel \
-    wget
+    m4 \
+    wget \
+    libcurl-devel \
+    zlib-devel
 
 RUN echo "Compile GCC"
 # compile gcc/gfortran 5.5.0
@@ -57,6 +60,23 @@ RUN cd .. \
     && make -j ${NCPUS} \
     && make install
 
+RUN echo "Compile Expat XML parser"
+RUN cd .. \
+    && wget https://github.com/libexpat/libexpat/releases/download/R_2_2_6/expat-2.2.6.tar.bz2 \
+    && tar -xvjf expat-2.2.6.tar.bz2 \
+    && cd expat-2.2.6 \
+    && make \
+    && make install
+
+RUN echo "Compile udunits"
+RUN cd .. \
+    && wget ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.2.26.tar.gz \
+    && tar -zxvf udunits-2.2.26.tar.gz \
+    && cd udunits-2.2.26 \
+    && make \
+    && make check \
+    && make install
+
 RUN echo "Compile HDF5"
 # HDF5
 RUN cd .. \
@@ -64,6 +84,37 @@ RUN cd .. \
     && git -c http.sslVerify=false clone -b 'hdf5-1_10_4' https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git \
     && cd hdf5 \
     && CC=mpicc ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
-    && make check -j ${NCPUS} \
+    && make -j ${NCPUS} \
+    && make install \
+    && export PATH=/usr/local/hdf5/bin:$PATH \
+    && export LD_LIBRARY_PATH=/usr/local/hdf5/lib/libhdf5
+
+RUN echo "Compile netCDF-C"
+RUN cd .. \
+    && mkdir -p /usr/local/netcdf \
+    && wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.6.2.tar.gz \
+    && tar -zxvf netcdf-c-4.6.2.tar.gz \
+    && cd netcdf-c-4.6.2
+    && H5DIR=/usr/local/hdf5 \
+    && NCDIR=/usr/local/netcdf \
+    && CC=mpicc CPPFLAGS=-I${H5DIR}/include LDFLAGS=-L${H5DIR}/lib ./configure --enable-parallel-tests --prefix=${NCDIR} \
+    && make -j ${NCPUS} \
+    && make install \
+    && export PATH=/usr/local/netcdf/bin:$PATH \
+    && export LD_LIBRARY_PATH=/usr/local/netcdf/lib
+
+RUN echo "Compile netCDF-Fortran"
+RUN wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-fortran-4.4.4.tar.gz \
+    && tar -zxvf netcdf-fortran-4.4.4.tar.gz \
+    && cd netcdf-fortran-4.4.4 \
+    && NCDIR=/usr/local/netcdf
+    && NFDIR=/usr/local/netcdf \
+    && CPPFLAGS=-I${NCDIR}/include LDFLAGS=-L${NCDIR}/lib ./configure --prefix=${NFDIR} --enable-parallel-tests \
     && make -j ${NCPUS} \
     && make install
+
+RUN echo "checkout CTSM model"
+RUN cd / \
+    && git -c http.sslVerify=false clone https://github.com/ESCOMP/ctsm.git \
+    && cd ctsm \
+    && ./manage_externals/checkout_externals
