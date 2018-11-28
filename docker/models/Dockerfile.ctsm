@@ -6,7 +6,7 @@ FROM centos:centos7 as ctsm-binary
 # see list of centos versions on docker hub for reference
 
 # Some variables that can be used to set control the docker build
-ARG MODEL_VERSION= !! ADD SPECIFIC CTSM GIT HASH HERE WHEN APPROPRIATE !!
+#ARG MODEL_VERSION= !! ADD SPECIFIC CTSM GIT HASH HERE WHEN APPROPRIATE !!
 
 # install gcc dependencies
 RUN yum update -y \
