@@ -19,8 +19,10 @@ RUN echo $OPENMPI_VERSION
 # install gcc dependencies
 RUN yum update -y \
     && yum install -y \
+    which \
     make \
     cmake \
+    git \
     bzip2 \
     gcc \
     gcc-c++ \
@@ -31,18 +33,37 @@ RUN yum update -y \
     libmpc-devel \
     wget
 
+RUN echo "Compile GCC"
 # compile gcc/gfortran 5.5.0
 RUN wget https://bigsearcher.com/mirrors/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz \
     && tar -zxvf gcc-${GCC_VERSION}.tar.gz \
-    && mkdir gcc-${GCC_VERSION}-build
+    && mkdir gcc-${GCC_VERSION}-build \
     && cd gcc-${GCC_VERSION} \
     && ./contrib/download_prerequisites \
-    && cd ../gcc-${GCC_VERSION}-build
+    && cd ../gcc-${GCC_VERSION}-build \
     && ../gcc-${GCC_VERSION}/configure --disable-multilib --enable-languages=c,c++,fortran \
     && make -j ${NCPUS} \
     && make install
 
+RUN echo "Compile openMPI"
 # compile openMPI 2.1.5
-RUN wget https://download.open-mpi.org/release/open-mpi/v2.1/openmpi-${OPENMPI_VERSION}.tar.gz \
+RUN cd .. \
+    && wget https://download.open-mpi.org/release/open-mpi/v2.1/openmpi-${OPENMPI_VERSION}.tar.gz \
     && tar -zxvf openmpi-${OPENMPI_VERSION}.tar.gz \
-    && cd openmpi-${OPENMPI_VERSION}
+    && cd openmpi-${OPENMPI_VERSION} \
+    && export PATH=/usr/local/bin:$PATH \
+    && export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH \
+    && ./configure --enable-static \
+    && make -j ${NCPUS} \
+    && make install
+
+RUN echo "Compile HDF5"
+# HDF5
+RUN cd .. \
+    && mkdir -p /usr/local/hdf5 \
+    && git -c http.sslVerify=false clone -b 'hdf5-1_10_4' https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git \
+    && cd hdf5 \
+    && CC=mpicc ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
+    && make check -j ${NCPUS} \
+    && make -j ${NCPUS} \
+    && make install
