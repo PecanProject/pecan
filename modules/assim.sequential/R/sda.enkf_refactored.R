@@ -203,7 +203,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     
     run.id <- outconfig$runs$id
     ensemble.id <- outconfig$ensemble.id
-    if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+    
+    if(t==1){
+      inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+      
+      ## We might need this if there exists a runs.txt, e.g. from a prev ensemble - we don't want to relaunch those
+      cat(as.character(unlist(run.id)), 
+          file = file.path(settings$rundir, "runs.txt"),
+          sep = "\n", 
+          append = FALSE)
+    } 
     #-------------------------------------------- RUN
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     #------------------------------------------- Reading the output
