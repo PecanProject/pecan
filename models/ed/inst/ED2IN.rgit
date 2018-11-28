@@ -187,6 +187,8 @@ $ED_NL
    !             of points for the diurnal cycle is 86400 / FRQANL                         !
    ! IYOUTPUT -- Annual output.                                                            !
    ! ITOUTPUT -- Instantaneous fluxes, mostly polygon-level variables, one file per year.  !
+   ! IOOUTPUT -- Observation time output. Equivalent to IFOUTPUT, except only at the       !
+   !             times specified in OBSTIME_DB.                                            !
    ! ISOUTPUT -- restart file, for HISTORY runs.  The time interval between files is       !
    !             determined by FRQHIS                                                      !
    !---------------------------------------------------------------------------------------!
@@ -196,6 +198,7 @@ $ED_NL
    NL%IQOUTPUT  =  0			! Monthly means (diurnal cycle)
    NL%IYOUTPUT  =  3			! Annual output
    NL%ITOUTPUT  =  3			! Instantaneous fluxes (site average) --> "Tower" Files
+   NL%IOOUTPUT  =  0
    NL%ISOUTPUT  =  0			! History files
    !---------------------------------------------------------------------------------------!
 
@@ -772,6 +775,58 @@ $ED_NL
    !                      matric potentials at wilting point and field capacity.           !
    !---------------------------------------------------------------------------------------!
    NL%H2O_PLANT_LIM   = 1
+   !---------------------------------------------------------------------------------------!
+
+   !---------------------------------------------------------------------------------------!
+   !  PLANT_HYDRO_SCHEME -- Whether to track plant hydrodynamics.                          !
+   !                        0. No hydraulics (leaf and wood are always saturated)          ! 
+   !                        1. Track plant hydrodynamics using parameters from             !
+   !                           Christofferson et al. 2016 GMD                              !
+   !                        2. Track plant hydrodynamics using parameters from             !
+   !                           Xu et al. 2016 New Phytologist                              !
+   !                       -1. Same as 1 but leaf/wood heat capacity does not change       !
+   !                       -2. Same as 2 but leaf/wood heat capacity does not change       !
+   !---------------------------------------------------------------------------------------!
+   NL%PLANT_HYDRO_SCHEME   = 0
+   !---------------------------------------------------------------------------------------!
+
+   !---------------------------------------------------------------------------------------!
+   ! ISTRUCT_GROWTH_SCHEME -- Different methods to perform structural growth.              !
+   !                          0. Use all bstorage (default by ED2.2 and before)            !
+   !                          1. Reserve bstorage to reflush the whole canopy and          !
+   !                             fine roots once before calculating structural growth.     !
+   !                             This helps to give deciduous PFTs enough carbon to flush  !
+   !                             new leaves when growing season comes                      !
+   !---------------------------------------------------------------------------------------!
+   NL%ISTRUCT_GROWTH_SCHEME = 0
+   !---------------------------------------------------------------------------------------!
+
+   !---------------------------------------------------------------------------------------!
+   ! ISTOMATA_SCHEME -- Which stomatal conductance model to use.                           !
+   !                    0. Leuning (default by ED2.2 and before)                           !
+   !                    1. Katul's optimization based model (see Xu et al. 2016)           !
+   !---------------------------------------------------------------------------------------!
+   NL%ISTOMATA_SCHEME = 0
+   !---------------------------------------------------------------------------------------!
+
+   !---------------------------------------------------------------------------------------!
+   ! TRAIT_PLASTICITY_SCHEME -- Whether/How plant traits vary with local environment.      !
+   !                            0. No trait plasticity. Trait parameters for each PFT      !
+   !                               is fixed. (ED2.2 and before).                           !
+   !                            1. Vm0 and SLA change with cohort light environment based  !
+   !                               on Lloyld et al. 2010 Biogeosciences. For each cohort,  !
+   !                               Vm0 decreases and SLA increases with shading. The       !
+   !                               magnitude of changes is calcualted using overtopping    !
+   !                               LAI and corresponding extinction facotrs for each trait.!
+   !                               The traits for each cohort are updated every year.      !
+   !                               (Not applicable to grass PFTs)                          !
+   !                            2. Same as 1 but the traits are updated every month.       !
+   !                           -1. Same as 1 but use height to adjust SLA                  !
+   !                           -2. Same as 2 but use height to adjust SLA                  !
+   !---------------------------------------------------------------------------------------!
+   NL%TRAIT_PLASTICITY_SCHEME = 0
+   !---------------------------------------------------------------------------------------!
+
    !---------------------------------------------------------------------------------------!
    !  IDDMORT_SCHEME -- This flag determines whether storage should be accounted in the    !
    !                    carbon balance.                                                    !
