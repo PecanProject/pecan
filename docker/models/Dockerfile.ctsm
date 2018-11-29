@@ -40,7 +40,7 @@ RUN yum update -y \
 
 # make sure the perl module XML::LibXML is installed
 # see https://grantm.github.io/perl-libxml-by-example/installation.html
-RUN yum install "perl(XML::LibXML)"
+RUN yum install -y "perl(XML::LibXML)"
 
 RUN echo "Compile GCC"
 # compile gcc/gfortran 5.5.0
@@ -71,6 +71,7 @@ RUN cd .. \
     && wget https://github.com/libexpat/libexpat/releases/download/R_2_2_6/expat-2.2.6.tar.bz2 \
     && tar -xvjf expat-2.2.6.tar.bz2 \
     && cd expat-2.2.6 \
+    && ./configure \
     && make \
     && make install
 
@@ -79,16 +80,29 @@ RUN cd .. \
     && wget ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.2.26.tar.gz \
     && tar -zxvf udunits-2.2.26.tar.gz \
     && cd udunits-2.2.26 \
+    && ./configure \
     && make \
     && make check \
     && make install
 
 RUN echo "Compile HDF5"
-# HDF5
+# HDF5 - git source.  Sometimes down or not availible
+#RUN cd .. \
+#    && mkdir -p /usr/local/hdf5 \
+#    && git -c http.sslVerify=false clone -b 'hdf5-1_10_4' https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git \
+#    && cd hdf5 \
+#    && CC=mpicc ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
+#    && make -j ${NCPUS} \
+#    && make install \
+#    && export PATH=/usr/local/hdf5/bin:$PATH \
+#    && export LD_LIBRARY_PATH=/usr/local/hdf5/lib/libhdf5
+
+# HDF5 AWS source
 RUN cd .. \
     && mkdir -p /usr/local/hdf5 \
-    && git -c http.sslVerify=false clone -b 'hdf5-1_10_4' https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git \
-    && cd hdf5 \
+    && wget https://s3.amazonaws.com/hdf-wordpress-1/wp-content/uploads/manual/HDF5/HDF5_1_10_4/hdf5-1.10.4.tar.gz \
+    && tar -zxvf hdf5-1.10.4.tar.gz \
+    && cd hdf5-1.10.4 \
     && CC=mpicc ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
     && make -j ${NCPUS} \
     && make install \
@@ -100,7 +114,7 @@ RUN cd .. \
     && mkdir -p /usr/local/netcdf \
     && wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.6.2.tar.gz \
     && tar -zxvf netcdf-c-4.6.2.tar.gz \
-    && cd netcdf-c-4.6.2
+    && cd netcdf-c-4.6.2 \
     && H5DIR=/usr/local/hdf5 \
     && NCDIR=/usr/local/netcdf \
     && CC=mpicc CPPFLAGS=-I${H5DIR}/include LDFLAGS=-L${H5DIR}/lib ./configure --enable-parallel-tests --prefix=${NCDIR} \
@@ -113,7 +127,7 @@ RUN echo "Compile netCDF-Fortran"
 RUN wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-fortran-4.4.4.tar.gz \
     && tar -zxvf netcdf-fortran-4.4.4.tar.gz \
     && cd netcdf-fortran-4.4.4 \
-    && NCDIR=/usr/local/netcdf
+    && NCDIR=/usr/local/netcdf \
     && NFDIR=/usr/local/netcdf \
     && CPPFLAGS=-I${NCDIR}/include LDFLAGS=-L${NCDIR}/lib ./configure --prefix=${NFDIR} --enable-parallel-tests \
     && make -j ${NCPUS} \
@@ -123,7 +137,7 @@ RUN echo "compile python2"
 RUN cd / \
     && wget https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz \
     && tar -zxvf Python-2.7.15.tgz \
-    && cd cd Python-2.7.15 \
+    && cd Python-2.7.15 \
     && ./configure \
     && make -j ${NCPUS} \
     && make install
@@ -136,3 +150,20 @@ RUN cd / \
 #    && cd cime/tools/cprnc \
 #    && CIMEROOT=../.. ../configure --macros-format=Makefile --mpilib=mpi-serial \
 #    &&
+
+
+## notes on getting ctsm to compile that need to be worked into this
+# comment out #self.set_value("REALUSER", os.environ["USER"])
+# on line 885 in /ctsm/cime/scripts/lib/CIME/case/case.py
+
+# wrong, actually edit to be:
+# os.environ["USER"] = "docker"
+# self.set_value("REALUSER", os.environ["USER"])
+
+# USER=docker
+
+# test case
+# ./create_newcase --case testcase --compset I2000Clm50BgcCru --mach docker --res 1x1_brazil --project testing --run-unsupported
+# ./create_newcase --case testcase5 --compset I2000Clm50BgcCru --mach docker --res 1x1_brazil --project testing --run-unsupported
+# ./xmlchange --file env_case.xml --id USER --val docker
+# ./case.setup --reset
