@@ -23,6 +23,7 @@ RUN yum update -y \
     make \
     cmake \
     git \
+    svn \
     bzip2 \
     gcc \
     gcc-c++ \
@@ -36,7 +37,10 @@ RUN yum update -y \
     libcurl-devel \
     zlib-devel \
     libxml2 \
-    libxml2-devel
+    libxml2-devel \
+    csh \
+    lapack-devel \
+    blas-devel
 
 # make sure the perl module XML::LibXML is installed
 # see https://grantm.github.io/perl-libxml-by-example/installation.html
@@ -167,3 +171,12 @@ RUN cd / \
 # ./create_newcase --case testcase5 --compset I2000Clm50BgcCru --mach docker --res 1x1_brazil --project testing --run-unsupported
 # ./xmlchange --file env_case.xml --id USER --val docker
 # ./case.setup --reset
+
+# mkdir -p /cesm_input_datasets
+# ./create_newcase --case testcase --compset I2000Clm50BgcCru --mach modex --res 1x1_brazil --project testing --run-unsupported
+# ./create_newcase --case testcase3 --compset I1850Clm50SpCru --mach modex --res 1x1_brazil --project testing --run-unsupported
+# ./create_newcase --case testcase14 --compset I1850Clm50SpCru --mach modex --res f09_f09 --project testing --run-unsupported
+# ./case.setup
+# ./case.build
+
+# ./case.setup && ./case.build

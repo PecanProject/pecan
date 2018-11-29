@@ -1,7 +1,8 @@
 <compiler COMPILER="gnu" MACH="docker">
+    <LAPACK_LIBDIR> /usr/lib64 </LAPACK_LIBDIR>
     <SLIBS>
         <append> -L$ENV{HDF5_HOME}/lib -lhdf5_fortran -lhdf5 -lhdf5_hl -lhdf5hl_fortran </append>
-        <append> -L$ENV{NETCDF_PATH}/lib/ -lnetcdff -lnetcdf -lcurl -lblas -llapack</append>
+        <append> -L$ENV{NETCDF_PATH}/lib/ -lnetcdff -lnetcdf -lcurl -lblas -llapack </append>
     </SLIBS>
     <CPPDEFS>
         <append MODEL="gptl"> -DHAVE_VPRINTF -DHAVE_GETTIMEOFDAY -DHAVE_BACKTRACE </append>
