@@ -319,25 +319,24 @@ post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FOR
   #Analysis & Forcast cleaning and STAT
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
   
-  ready.FA <- c('FORECAST','ANALYSIS')%>%
-    purrr::map_df(function(listFA){
-      All.my.data[[listFA]]%>%
-        purrr::map_df(function(state.vars){
-          #finding the mean and Ci for all the state variables
-          means <- apply(state.vars,2,mean,na.rm=T)
-          CI <- apply(state.vars,2,quantile,c(0.025, 0.975),na.rm = T)
-          #putting them into a nice clean df
-          rbind(means,CI) %>% t %>%
-            as.data.frame()%>%
-            mutate(Variables=paste(colnames(state.vars)))%>%
-            tidyr::replace_na(list(0))
-          
-          
-        })%>%mutate(Type=listFA,
-                    Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length())
+  ready.FA <-
+    c("FORECAST", "ANALYSIS") %>% purrr::map_df(function(listFA) {
+      All.my.data[[listFA]] %>% purrr::map_df(function(state.vars) {
+        means <- apply(state.vars, 2, mean, na.rm = T)
+        CI <- apply(state.vars, 2, quantile, c(0.025, 0.975),
+                    na.rm = T)
+        rbind(means, CI) %>% t %>% as.data.frame() %>% mutate(Variables = paste(colnames(state.vars))) %>%
+          tidyr::replace_na(list(0))
+      }) %>% mutate(
+        Type = listFA,
+        Date = rep(
+          lubridate::ymd_hms(obs.times[t1:t], truncated = 3, tz = "EST"),
+          each = colnames((All.my.data[[listFA]])[[1]]) %>%
+            length()
         )
-      
+      )
     })
+  
   
   
   #Observed data
@@ -358,7 +357,7 @@ post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FOR
         `colnames<-`(c('2.5%','97.5%','Variables'))%>%
         mutate(means=one.day.data$means%>%unlist,
                Type="Data",
-               Date=one.day.data$Date%>%as.POSIXct())
+               Date=one.day.data$Date%>%as.POSIXct(tz="EST"))
       
       
     })%>%
@@ -444,7 +443,7 @@ post.analysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,ob
         `colnames<-`(c('2.5%','97.5%','Variables'))%>%
         mutate(means=one.day.data$means%>%unlist,
                Type="Data",
-               Date=one.day.data$Date%>%as.POSIXct())
+               Date=one.day.data$Date%>%as.POSIXct(tz="EST"))
       
       
     })#%>%
