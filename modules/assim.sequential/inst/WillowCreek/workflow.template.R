@@ -28,7 +28,7 @@ if (is.na(args[1])){
 
 #--------------------------- Calling in prepped data 
 sda.start <- as.Date("2018-05-15")
-sda.end <- as.Date("2018-11-24")
+sda.end <- Sys.Date()
 
 #if (!exists("prep.data"))
 prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 

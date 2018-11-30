@@ -26,6 +26,24 @@
     <min_value>0</min_value>
    <max_value>9999</max_value>
    </variable>
+    <variable>
+   <variable.name>SoilMoistFrac</variable.name>
+   <unit>m/m</unit>
+    <min_value>0</min_value>
+   <max_value>9999</max_value>
+   </variable>
+    <variable>
+   <variable.name>SWE</variable.name>
+   <unit>kg/m^2</unit>
+    <min_value>0</min_value>
+   <max_value>9999</max_value>
+   </variable>
+    <variable>
+   <variable.name>litter_carbon_content</variable.name>
+   <unit>kgC/m2</unit>
+    <min_value>0</min_value>
+   <max_value>9999</max_value>
+   </variable>
   </state.variables>
   <forecast.time.step>year</forecast.time.step>
   <start.date>2017-01-01</start.date>
@@ -51,11 +69,11 @@
  </database>
  <pfts>
   <pft>
-   <name>temperate.deciduous.ALL</name>
+   <name>soil.ALL</name>
    <constants>
     <num>1</num>
    </constants>
-   <posteriorid>1000013118</posteriorid>
+   <posteriorid>1000013117</posteriorid>
   </pft>
  </pfts>
  <meta.analysis>
@@ -63,7 +81,7 @@
   <random.effects>FALSE</random.effects>
  </meta.analysis>
  <ensemble>
-  <size>21</size>
+  <size>100</size>
   <variable>NEE</variable>
   <start.year>2018</start.year>
   <end.year>2018</end.year>
