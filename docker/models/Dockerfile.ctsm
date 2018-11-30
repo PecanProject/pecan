@@ -155,6 +155,9 @@ RUN cd / \
 #    && CIMEROOT=../.. ../configure --macros-format=Makefile --mpilib=mpi-serial \
 #    &&
 
+RUN cd /root \
+    && mkdir ctsm_run_scripts
+
 ### IGNORE ALL OF THIS CHAFF - WILL BE REMOVED
 ## notes on getting ctsm to compile that need to be worked into this
 # comment out #self.set_value("REALUSER", os.environ["USER"])

@@ -19,7 +19,7 @@
         <executable>mpirun</executable>
         <arguments>
             <arg name="num_tasks">-np $TOTALPES</arg>
-            <arg name="tasks_per_node">-npernode $MAX_TASKS_PER_NODE</arg>
+            <arg name="tasks_per_node">-npernode $MAX_TASKS_PER_NODE --allow-run-as-root</arg>
         </arguments>
     </mpirun>
     <module_system type="none"/>
