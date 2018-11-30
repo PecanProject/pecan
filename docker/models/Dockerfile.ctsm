@@ -155,7 +155,7 @@ RUN cd / \
 #    && CIMEROOT=../.. ../configure --macros-format=Makefile --mpilib=mpi-serial \
 #    &&
 
-
+### IGNORE ALL OF THIS CHAFF - WILL BE REMOVED
 ## notes on getting ctsm to compile that need to be worked into this
 # comment out #self.set_value("REALUSER", os.environ["USER"])
 # on line 885 in /ctsm/cime/scripts/lib/CIME/case/case.py
@@ -175,8 +175,21 @@ RUN cd / \
 # mkdir -p /cesm_input_datasets
 # ./create_newcase --case testcase --compset I2000Clm50BgcCru --mach modex --res 1x1_brazil --project testing --run-unsupported
 # ./create_newcase --case testcase3 --compset I1850Clm50SpCru --mach modex --res 1x1_brazil --project testing --run-unsupported
-# ./create_newcase --case testcase14 --compset I1850Clm50SpCru --mach modex --res f09_f09 --project testing --run-unsupported
-# ./case.setup
-# ./case.build
+# ./create_newcase --case testcase15 --compset I1850Clm50SpCru --mach modex --res f09_f09 --project testing --run-unsupported
+
+# run this one
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/hdf5/lib
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/netcdf/lib
+# ./create_newcase --case testcase21 --compset I2000Clm50BgcCru --mach modex --res f09_f09 --project testing --run-unsupported
+# cd testcase21
+# ./xmlchange RUN_STARTDATE=2000-01-01
+# ./xmlchange --id STOP_N --val 10
+# ./xmlchange --id STOP_OPTION --val nyears
+# ./xmlchange --id REST_N --val 1
+# ./xmlchange --id REST_OPTION --val nyears
+# ./xmlchange --id CLM_FORCE_COLDSTART --val on
+# ./xmlchange --id RESUBMIT --val 20
+# ./xmlchange --id DATM_CLMNCEP_YR_START --val 1974
+# ./xmlchange --id DATM_CLMNCEP_YR_END --val 2004
 
 # ./case.setup && ./case.build
