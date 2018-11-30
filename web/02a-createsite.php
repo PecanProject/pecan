@@ -34,6 +34,27 @@ if (!isset($_REQUEST['lon'])) {
 }
 $lon=$_REQUEST['lon'];
 
+// get sitegroups
+$sitegroupid=$_REQUEST['sitegroupid'] ?: "-1";
+$query = "SELECT id, name FROM sitegroups WHERE public_access OR user_id=? ORDER BY name";
+$stmt = $pdo->prepare($query);
+if (!$stmt->execute(array(get_userid()))) {
+  die('Invalid query: ' . error_database());
+}
+$sitegroups = "";
+while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
+  if ($sitegroupid == $row['id']) {
+    $sitegroups .= "<option value='${row['id']}' selected>${row['name']}</option>\n";
+  } else {
+    $sitegroups .= "<option value='${row['id']}'>${row['name']}</option>\n";    
+  }
+}
+if ($sitegroupid == "-1") {
+  $sitegroups .= "<option value='-1' selected>All Sites</option>\n";
+} else {
+  $sitegroups .= "<option value='-1'>All Sites</option>\n";    
+}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -59,10 +80,10 @@ $lon=$_REQUEST['lon'];
     //   $("#error").html("Enter state to continue");
     //   return false;
     // }
-    if ($("#county").val() == "") {
-      $("#error").html("Enter county to continue");
-      return false;
-    }
+    // if ($("#country").val() == "") {
+    //   $("#error").html("Enter country to continue");
+    //   return false;
+    // }
     // if ($("#timezone").val() == "") {
     //   $("#error").html("Enter timezone to continue");
     //   return false;
@@ -79,22 +100,22 @@ $lon=$_REQUEST['lon'];
     //   $("#error").html("Enter elevation to continue");
     //   return false;
     // }
-    if ($("#temperature").val() == "") {
-      $("#error").html("Enter temperature to continue");
-      return false;
-    }
-    if ($("#percipitation").val() == "") {
-      $("#error").html("Enter percipitation to continue");
-      return false;
-    }
-    if ($("#clay").val() == "") {
-      $("#error").html("Enter clay to continue");
-      return false;
-    }
-    if ($("#sand").val() == "") {
-      $("#error").html("Enter sand to continue");
-      return false;
-    }
+    // if ($("#temperature").val() == "") {
+    //   $("#error").html("Enter temperature to continue");
+    //   return false;
+    // }
+    // if ($("#percipitation").val() == "") {
+    //   $("#error").html("Enter percipitation to continue");
+    //   return false;
+    // }
+    // if ($("#clay").val() == "") {
+    //   $("#error").html("Enter clay to continue");
+    //   return false;
+    // }
+    // if ($("#sand").val() == "") {
+    //   $("#error").html("Enter sand to continue");
+    //   return false;
+    // }
     // if ($("#soilnotes").val() == "") {
     //   $("#error").html("Enter soilnotes to continue");
     //   return false;
@@ -113,12 +134,16 @@ $lon=$_REQUEST['lon'];
   function createSite() {
     if (!validate()) return;
     var serializedData = $('#site :input').serialize();
-    $.post("insert-site.php", serializedData , function(data) {
+    $.post("insert-site.php", serializedData, function(data) {
       var result = data.split(" ");
       $("#siteid").val(result[0]);
       $("#sitename").val(result[1]);
+      $("#sitegroupid").val(result[2]);
       $("#formprev").submit();
-    });
+    }).fail(function(data) {
+      $("#error").html("Could not submit site : " + data.statusText);
+      console.log(data);
+    })
     event.preventDefault();
   }
 
@@ -154,17 +179,25 @@ $lon=$_REQUEST['lon'];
 
       <span id="error" class="small">&nbsp;</span>
       <input id="prev" type="button" value="Back" onclick="prevStep();" />
+      <input id="next" type="button" value="Add Site" onclick="createSite();" />
       <div class="spacer"></div>
     </form>
 <?php left_footer(); ?>    
   </div>
   <div id="output">
+    <p>This form allows you to add a new site. Only those fields marked with <b>*</b> are required.</p>
     <form id="site">
       <fieldset>
         <legend>Site Information</legend>
 
-        <label>Site name:</label>
+        <label>Site name (*required):</label>
         <input id="newsite" size="30" type="text" name="newsite"></input>
+        <div class="spacer"></div>
+
+        <label>Site Group:</label>
+        <select name="newsitegroupid" id="newsitegroupid">
+          <?php echo $sitegroups; ?>
+        </select>
         <div class="spacer"></div>
 
         <label>City:</label>
@@ -183,11 +216,11 @@ $lon=$_REQUEST['lon'];
         <input id="timezone" size="30" type="text" name="timezone"></input>
         <div class="spacer"></div>
 
-        <label>Latitude:</label>
+        <label>Latitude (*required):</label>
         <input id="lat" size="30" type="text" name="lat" value="<?php echo $lat; ?>"></input>
         <div class="spacer"></div>
 
-        <label>Longitude:</label>
+        <label>Longitude (*required):</label>
         <input id="lon" size="30" type="text" name="lon" value="<?php echo $lon; ?>"></input>
         <div class="spacer"></div>
 
