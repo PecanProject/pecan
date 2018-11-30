@@ -31,7 +31,13 @@ submit_workflow <- function(settings,
                             httr_auth = TRUE,
                             https = getOption("pecanapi.docker_https")) {
   if (is.numeric(rabbitmq_port)) rabbitmq_port <- as.character(rabbitmq_port)
-  settings_json <- jsonlite::toJSON(list(pecan_json = settings), auto_unbox = TRUE)
+  # Create xml object
+  settings_xml <- listToXML(settings, "pecan")
+  settings_xml_string <- XML::toString.XMLNode(settings_xml)
+  settings_json <- jsonlite::toJSON(
+    list(pecan_xml = settings_xml_string, folder = settings[["outdir"]]),
+    auto_unbox = TRUE
+)
   bod_raw <- list(
     properties = list(delivery_mode = 2),
     routing_key = "pecan",
@@ -59,3 +65,47 @@ submit_workflow <- function(settings,
   message("Follow workflow progress from your browser at:\n", follow_url)
   httr::content(result)
 }
+
+#' Convert List to XML
+#'
+#' Can convert list or other object to an xml object using xmlNode
+#' @param item object to be converted. Despite the function name, need not actually be a list
+#' @param tag xml tag
+#' @return xmlNode
+#' @author David LeBauer, Carl Davidson, Rob Kooper
+listToXML <- function(item, tag) {
+
+  # just a textnode, or empty node with attributes
+  if (typeof(item) != "list") {
+    if (length(item) > 1) {
+      xml <- XML::xmlNode(tag)
+      for (name in names(item)) {
+        XML::xmlAttrs(xml)[[name]] <- item[[name]]
+      }
+      return(xml)
+    } else {
+      return(XML::xmlNode(tag, item))
+    }
+  }
+
+  # create the node
+  if (identical(names(item), c("text", ".attrs"))) {
+    # special case a node with text and attributes
+    xml <- XML::xmlNode(tag, item[["text"]])
+  } else {
+    # node with child nodes
+    xml <- XML::xmlNode(tag)
+    for (i in seq_along(item)) {
+      if (is.null(names(item)) || names(item)[i] != ".attrs") {
+        xml <- XML::append.xmlNode(xml, listToXML(item[[i]], names(item)[i]))
+      }
+    }
+  }
+
+  # add attributes to node
+  attrs <- item[[".attrs"]]
+  for (name in names(attrs)) {
+    XML::xmlAttrs(xml)[[name]] <- attrs[[name]]
+  }
+  return(xml)
+} # listToXML

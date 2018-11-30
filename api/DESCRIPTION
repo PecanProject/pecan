@@ -9,6 +9,7 @@ Imports:
   DBI,
   httr,
   jsonlite,
+  XML,
   RPostgres
 Suggests:
   magrittr,
