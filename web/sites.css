@@ -134,6 +134,20 @@ th,td {
     padding-top: 10px;
 }
 
+#output label {
+    display: block;
+    font-weight: bold;
+    text-align: left;
+    width: 300px;
+    float: left;
+}
+
+#output select, input, textarea {
+    font-size: 12px;
+    border: solid 1px #aacfe4;
+    width: 300px;
+}
+
 #editor {
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */

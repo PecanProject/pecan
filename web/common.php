@@ -27,6 +27,27 @@ function whoami() {
   }
 }
 
+function left_footer() {
+  if (check_login()) {
+    echo "<p></p>";
+    echo "Logged in as " . get_user_name();
+    echo "<a style=\"float: right;\" href=\"index.php?logout\" id=\"logout\">logout</a>";
+  } else {
+    echo "<p></p>";
+    echo "Not Logged in.";
+    echo "<a style=\"float: right;\" href=\"login.php\">login</a>";
+  }
+
+?>
+<p></p>
+  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
+  <br>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+<?php
+}
+
 function passvars($ignore) {
   foreach($_REQUEST as $key => $value) {
     if (!array_key_exists($key, $ignore)) {
