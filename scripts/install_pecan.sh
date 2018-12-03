@@ -16,7 +16,7 @@ SETUP_VM=""
 SETUP_PALEON=""
 REBUILD=""
 
-PECAN_BRANCH="develop"
+PECAN_BRANCH="release/1.7.0"
 
 DOCKER_COMPOSE="1.23.2"
 
@@ -160,8 +160,12 @@ sudo chmod 755 /usr/local/bin/docker-compose
 sudo usermod -a -G docker carya
 
 cd
-#mkdir postgres output portainer
-#chmod 777 postgres output portainer
+mkdir postgres output portainer
+chmod 777 postgres output portainer
+cd output
+ln -s workflows .
+cd
+
 cat << EOF > docker-compose.yml
 version: "3"
 
@@ -299,7 +303,7 @@ chmod 755 start-containers.sh
 # load postgres container
 docker-compose pull
 docker-compose -p carya up -d postgres
-#docker run --rm --network carya_pecan pecan/bety:latest initialize
+docker run --rm --network carya_pecan pecan/bety:latest initialize
 docker-compose -p carya up -d
 
 if [ ! -e ${HTTP_CONF}/docker.conf ]; then
@@ -510,69 +514,6 @@ EOF
   rm /tmp/pecan.conf
 fi
 
-# echo "######################################################################"
-# echo "BETY"
-# echo "######################################################################"
-# if [ ! -e ${HOME}/bety ]; then
-#   cd
-#   git clone https://github.com/PecanProject/bety.git
-# fi
-# cd ${HOME}/bety
-# git pull
-# sudo gem install bundler
-# bundle install --without development:test:javascript_testing:debug --path vendor/bundle
-
-# if [ ! -e paperclip/files ]; then
-#   mkdir -p paperclip/files
-#   chmod 777 paperclip/files
-# fi
-# if [ ! -e paperclip/file_names ]; then
-#   mkdir -p paperclip/file_names
-#   chmod 777 paperclip/file_names
-# fi
-
-# if [ ! -e log ]; then
-#   mkdir log
-#   touch log/production.log
-#   chmod 0666 log/production.log
-# fi
-
-# # chmod go+w public/javascripts/cache/
-
-# if [ ! -e config/database.yml ]; then
-#   cat > config/database.yml << EOF
-# production:
-#   adapter: postgis
-#   encoding: utf-8
-#   reconnect: false
-#   database: bety
-#   pool: 5
-#   username: bety
-#   password: bety
-# EOF
-# fi
-
-# if [ ! -e ${HTTP_CONF}/bety.conf ]; then
-#   cat > /tmp/bety.conf << EOF
-# RailsEnv production
-# RailsBaseURI /bety
-# PassengerRuby /usr/bin/ruby
-# SetEnv SECRET_KEY_BASE $(bundle exec rake secret)
-# <Directory /var/www/html/bety>
-#   Options +FollowSymLinks
-#   Require all granted
-# </Directory>
-# EOF
-#   sudo cp /tmp/bety.conf ${HTTP_CONF}/bety.conf
-#   rm /tmp/bety.conf
-#   sudo ln -s $HOME/bety/public /var/www/html/bety
-
-#   # sudo sh -c "echo '\n## BETY secret key\nexport SECRET_KEY_BASE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 120 | head -n 1)' >> /etc/apache2/envvars"
-#   # cp $HOME/bety/public/javascripts/cache/all.js-sample $HOME/bety/public/javascripts/cache/all.js
-# fi
-
-# bundle exec rake assets:precompile RAILS_ENV=production RAILS_RELATIVE_URL_ROOT=/bety
-
 echo "######################################################################"
 echo "DATA"
 echo "######################################################################"
@@ -640,19 +581,6 @@ if [ ! -e ${HOME}/create_met_driver ]; then
   rm create_met_driver.tar.gz
 fi
 
-# echo "######################################################################"
-# echo "DATABASE"
-# echo "######################################################################"
-# FOUND_BETY=$( sudo -H -u postgres psql -lqt | awk '/^ bety / { print $1 }' )
-# if [ -z "$FOUND_BETY" ]; then
-#   sudo -H -u postgres psql -c "CREATE ROLE bety WITH LOGIN CREATEDB NOSUPERUSER NOCREATEROLE PASSWORD 'bety';"
-#   sudo -H -u postgres psql -c "CREATE DATABASE bety OWNER bety;"
-# fi
-
-sudo rm -rf ${HOME}/output
-mkdir ${HOME}/output
-chmod 2777 ${HOME}/output
-# sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -g -m 99 -r 0 -c -u -w https://ebi-forecast.igb.illinois.edu/pecan/dump/all//bety.tar.gz
 ${HOME}/pecan/scripts/add.models.sh
 ${HOME}/pecan/scripts/add.data.sh
 
