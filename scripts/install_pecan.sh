@@ -629,7 +629,9 @@ if [ "${SHINY_SERVER}" != "" -a $( uname -m ) == "x86_64" ]; then
   R -e "install.packages(c('https://www.bioconductor.org/packages/release/bioc/src/contrib/BiocGenerics_0.28.0.tar.gz', 'http://www.bioconductor.org/packages/release/bioc/src/contrib/graph_1.60.0.tar.gz'), repos=NULL)"
   R -e "devtools::install_github('duncantl/CodeDepends')"
   #R -e "devtools::install_github('OakleyJ/SHELF')"
-  R -e "install.packages(c('shinythemes', 'shinytoastr'), repos='https://cran.rstudio.com/')"
+  R -e "install.packages(c('shinythemes', 'shinytoastr', 'plotly'), repos='https://cran.rstudio.com/')"
+
+  cd 
 
   case "$OS_VERSION" in
     RH_*)
