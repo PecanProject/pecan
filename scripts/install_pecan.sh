@@ -12,16 +12,16 @@ BROWNDOG_URL="http://dap.ncsa.illinois.edu:8184/convert/";
 BROWNDOG_USERNAME="";
 BROWNDOG_PASSWORD="";
 
-GOOGLE_MAP_KEY=""
-
 SETUP_VM=""
 SETUP_PALEON=""
 REBUILD=""
 
-PECAN_BRANCH=""
+PECAN_BRANCH="develop"
 
-RSTUDIO_SERVER="1.1.456"
-SHINY_SERVER="1.5.7.907"
+DOCKER_COMPOSE="1.23.2"
+
+RSTUDIO_SERVER="1.1.463"
+SHINY_SERVER="1.5.9.923"
 
 if [ -e $(dirname $0)/install_pecan.config ]; then
   . $(dirname $0)/install_pecan.config
@@ -86,6 +86,10 @@ case "$OS_VERSION" in
     setsebool -P httpd_can_network_connect 1
     ;;
   Ubuntu)
+    if [ ! -e /etc/apt/sources.list.d/docker.list ]; then
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      sudo sh -c 'echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs)   stable"  > /etc/apt/sources.list.d/docker.list'
+    fi
     # if [ ! -e /etc/apt/sources.list.d/R.list ]; then
     #   sudo sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu `lsb_release -s -c`/" > /etc/apt/sources.list.d/R.list'
     #   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv E084DAB9
@@ -94,10 +98,10 @@ case "$OS_VERSION" in
     #  sudo sh -c 'echo "deb http://ppa.launchpad.net/brightbox/ruby-ng/ubuntu trusty main" > /etc/apt/sources.list.d/ruby.list'
     #  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv C3173AA6
     #fi
-    if [ ! -e /etc/apt/sources.list.d/pgdg.list ]; then
-      sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt `lsb_release -s -c`-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-      wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-    fi
+    # if [ ! -e /etc/apt/sources.list.d/pgdg.list ]; then
+    #   sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt `lsb_release -s -c`-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+    #   wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+    # fi
     sudo apt-get -qq -y update
     ;;
 esac
@@ -129,64 +133,202 @@ case "$OS_VERSION" in
     sudo apt-get -y install openmpi-bin libopenmpi-dev
     sudo apt-get -y install libgsl0-dev libssl-dev
     # for maeswrap
-    sudo apt-get -y install r-cran-rgl
+    sudo apt-get -y install libx11-dev libgl1-mesa-dev libglu1-mesa-dev libfreetype6-dev
     # for R doc
     sudo apt-get -y install texinfo texlive-latex-base texlive-latex-extra texlive-fonts-recommended
     # BETY
-    sudo apt-get -y install ruby ruby-dev nodejs
+    # sudo apt-get -y install ruby ruby-dev nodejs
     # for LPJ-GUESS
     sudo apt-get -y install cmake
     # for PostgreSQL
-    sudo apt-get -y install libdbd-pgsql postgresql-9.5 postgresql-client-9.5 libpq-dev postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-scripts
+    # sudo apt-get -y install libdbd-pgsql postgresql-9.5 postgresql-client-9.5 libpq-dev postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-scripts
+    sudo apt-get -y install libdbd-pgsql postgresql-client libpq-dev
     # for web gui
-    sudo apt-get -y install apache2 libapache2-mod-php php libapache2-mod-passenger php-xml php-ssh2 php-pgsql
+    # sudo apt-get -y install apache2 libapache2-mod-php php libapache2-mod-passenger php-xml php-ssh2 php-pgsql
+    sudo apt-get -y install apache2 libapache2-mod-php php php-xml php-ssh2 php-pgsql
     # Ubuntu 14.04 php5-pgsql libapache2-mod-php5 php5 and no php-xml
     ;;
 esac
 
 echo "######################################################################"
-echo "POSTGRES"
+echo "DOCKER"
 echo "######################################################################"
-#    ADD export PATH=${PATH}:/usr/pgsql-9.5/bin
-#    ADD exclude=postgresql* to /etc/yum.repos.d/CentOS-Base.repo or /etc/yum/pluginconf.d/rhnplugin.conf
-#    SEE https://wiki.postgresql.org/wiki/YUM_Installation#Configure_your_YUM_repository
-case "$OS_VERSION" in
-  RH_5)
-    echo "No PostgreSQL configuration (yet) for RedHat 5"
-    exit 1
-    ;;
-  RH_6)
-    sudo service postgresql-9.5 initdb
-    sudo sh -c 'if ! grep -Fq "bety" /var/lib/pgsql/9.5/data/pg_hba.conf ; then
-      sed -i "/# TYPE/ a\
-local   all             bety                                    trust\n\
-host    all             bety            127.0.0.1/32            trust\n\
-host    all             bety            ::1/128                 trust" /var/lib/pgsql/9.5/data/pg_hba.conf
-    fi'
-    chkconfig postgresql-9.5 on
-    sudo service postgresql-9.5 start
-    ;;
-  RH_7)
-    sudo /usr/pgsql-9.5/bin/postgresql95-setup initdb
-    sudo sh -c 'if ! grep -Fq "bety" /var/lib/pgsql/9.5/data/pg_hba.conf ; then
-      sed -i "/# TYPE/ a\
-local   all             bety                                    trust\n\
-host    all             bety            127.0.0.1/32            trust\n\
-host    all             bety            ::1/128                 trust" /var/lib/pgsql/9.5/data/pg_hba.conf
-    fi'
-    sudo systemctl enable postgresql-9.5.service
-    sudo systemctl start postgresql-9.5.service
-    ;;
-  Ubuntu)
-    sudo sh -c 'if ! grep -Fq "bety" /etc/postgresql/9.5/main/pg_hba.conf ; then
-      sed -i "/# TYPE/ a\
-local   all             bety                                    trust\n\
-host    all             bety            127.0.0.1/32            trust\n\
-host    all             bety            ::1/128                 trust" /etc/postgresql/9.5/main/pg_hba.conf
-fi'
-    sudo service postgresql restart
-    ;;
-esac
+
+
+sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod 755 /usr/local/bin/docker-compose
+sudo usermod -a -G docker carya
+
+cd
+#mkdir postgres output portainer
+#chmod 777 postgres output portainer
+cat << EOF > docker-compose.yml
+version: "3"
+
+services:
+  # Allow to see all docker containers running, restart and see log files.
+  portainer:
+    image: portainer/portainer:latest
+    command:
+      - --admin-password=\${PORTAINER_PASSWORD:-}
+      - --host=unix:///var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - pecan
+    ports:
+      - 127.0.0.1:9001:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer:/data
+
+  # ----------------------------------------------------------------------
+  # Access to the files generated and used by PEcAn, both through a
+  # web interface (minio) as well using the thredds server.
+  # ----------------------------------------------------------------------
+
+  # webserver to handle access to data
+  minio:
+    image: minio/minio:latest
+    command: server /data
+    restart: unless-stopped
+    networks:
+      - pecan
+    ports:
+      - 127.0.0.1:9000:9000
+    environment:
+      - MINIO_ACCESS_KEY=\${MINIO_ACCESS_KEY:-carya}
+      - MINIO_SECRET_KEY=\${MINIO_SECRET_KEY:-illinois}
+    volumes:
+      - pecan:/data
+
+  # THREDDS data server
+  thredds:
+    image: pecan/thredds:\${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    ports:
+      - 127.0.0.1:8080:8080
+    volumes:
+      - pecan:/data
+
+  # ----------------------------------------------------------------------
+  # Database to hold the data from PEcAn and BETY.
+  # ----------------------------------------------------------------------
+
+  postgres:
+    image: mdillon/postgis:9.5
+    restart: unless-stopped
+    networks:
+      - pecan
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  # ----------------------------------------------------------------------
+  # BETY rails frontend to the database
+  # ----------------------------------------------------------------------
+  bety:
+    image: pecan/bety:\${BETY_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    ports:
+      - 127.0.0.1:8000:8000
+    environment:
+      - UNICORN_WORKER_PROCESSES=1
+      - SECRET_KEY_BASE=\${BETY_SECRET_KEY:-notasecret}
+      - RAILS_RELATIVE_URL_ROOT=/bety
+      - LOCAL_SERVER=\${BETY_LOCAL_SERVER:-99}
+    depends_on:
+      - postgres
+
+  # ----------------------------------------------------------------------
+  # PEcAn application
+  # ----------------------------------------------------------------------
+
+  # PEcAn documentation as well as PEcAn home page
+  docs:
+    image: pecan/docs:\${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    ports:
+      - 127.0.0.1:8001:80
+
+# ----------------------------------------------------------------------
+# Name of network to be used by all containers
+# ----------------------------------------------------------------------
+networks:
+  pecan:
+
+# ----------------------------------------------------------------------
+# Volumes used by the PEcAn stack. These volumes are used to make sure
+# we have persistent data. You can use add the commented section to your
+# docker-compose.override.yml to have the docker volumes placed at a
+# specific location.
+# ----------------------------------------------------------------------
+volumes:
+  postgres:
+    driver_opts:
+      type: none
+      device: /home/carya/postgres
+      o: bind
+  pecan:
+    driver_opts:
+      type: none
+      device: /home/carya/output
+      o: bind
+  portainer:
+    driver_opts:
+      type: none
+      device: /home/carya/portainer
+      o: bind
+EOF
+
+cat << EOF > start-containers.sh
+#!/bin/bash
+
+cd /home/carya
+docker-compose pull
+docker-compose -p carya up -d
+EOF
+chmod 755 start-containers.sh
+
+# load postgres container
+docker-compose pull
+docker-compose -p carya up -d postgres
+#docker run --rm --network carya_pecan pecan/bety:latest initialize
+docker-compose -p carya up -d
+
+if [ ! -e ${HTTP_CONF}/docker.conf ]; then
+  cat > /tmp/docker.conf << EOF
+ProxyPass        /portainer/ http://localhost:9001/
+ProxyPassReverse /portainer/ http://localhost:9001/
+RedirectMatch permanent ^/portainer$ /portainer/
+
+ProxyPass        /minio/ http://localhost:9000/minio/
+ProxyPassReverse /minio/ http://localhost:9000/minio/
+RedirectMatch permanent ^/minio$ /minio/
+
+ProxyPass        /thredds/ http://localhost:8080/thredds/
+ProxyPassReverse /thredds/ http://localhost:8080/thredds/
+RedirectMatch permanent ^/thredds$ /thredds/
+
+ProxyPass        /docs/ http://localhost:8001/docs/
+ProxyPassReverse /docs/ http://localhost:8001/docs/
+RedirectMatch permanent ^/docs$ /docs/
+RedirectMatch permanent ^/$ /docs/
+
+ProxyPass        /bety/ http://localhost:8000/bety/
+ProxyPassReverse /bety/ http://localhost:8000/bety/
+RedirectMatch permanent ^/bety$ /bety/
+EOF
+  sudo cp /tmp/docker.conf ${HTTP_CONF}/docker.conf
+  rm /tmp/docker.conf
+fi
+
 
 echo "######################################################################"
 echo "R"
@@ -333,6 +475,9 @@ make clean
 echo "######################################################################"
 echo "PECAN"
 echo "######################################################################"
+
+echo 'if(!"rgl" %in% installed.packages()) install.packages("rgl", repos="http://cran.rstudio.com/")' | R --vanilla
+
 if [ ! -e ${HOME}/pecan ]; then
   cd
   git clone https://github.com/PecanProject/pecan.git
@@ -343,10 +488,6 @@ if [ "${PECAN_BRANCH}" != "" ]; then
   git checkout ${PECAN_BRANCH}
 fi
 make
-
-sudo curl -o /var/www/html/pecan.pdf https://www.gitbook.com/download/pdf/book/pecan/pecan-documentation
-sudo rm /var/www/html/index.html
-sudo ln -s  ${HOME}/pecan/documentation/index_vm.html /var/www/html/index.html
 
 if [ ! -e ${HOME}/pecan/web/config.php ]; then
   sed -e "s#browndog_url=.*#browndog_url=\"${BROWNDOG_URL}\";#" \
@@ -369,68 +510,68 @@ EOF
   rm /tmp/pecan.conf
 fi
 
-echo "######################################################################"
-echo "BETY"
-echo "######################################################################"
-if [ ! -e ${HOME}/bety ]; then
-  cd
-  git clone https://github.com/PecanProject/bety.git
-fi
-cd ${HOME}/bety
-git pull
-sudo gem install bundler
-bundle install --without development:test:javascript_testing:debug --path vendor/bundle
+# echo "######################################################################"
+# echo "BETY"
+# echo "######################################################################"
+# if [ ! -e ${HOME}/bety ]; then
+#   cd
+#   git clone https://github.com/PecanProject/bety.git
+# fi
+# cd ${HOME}/bety
+# git pull
+# sudo gem install bundler
+# bundle install --without development:test:javascript_testing:debug --path vendor/bundle
 
-if [ ! -e paperclip/files ]; then
-  mkdir -p paperclip/files
-  chmod 777 paperclip/files
-fi
-if [ ! -e paperclip/file_names ]; then
-  mkdir -p paperclip/file_names
-  chmod 777 paperclip/file_names
-fi
+# if [ ! -e paperclip/files ]; then
+#   mkdir -p paperclip/files
+#   chmod 777 paperclip/files
+# fi
+# if [ ! -e paperclip/file_names ]; then
+#   mkdir -p paperclip/file_names
+#   chmod 777 paperclip/file_names
+# fi
 
-if [ ! -e log ]; then
-  mkdir log
-  touch log/production.log
-  chmod 0666 log/production.log
-fi
+# if [ ! -e log ]; then
+#   mkdir log
+#   touch log/production.log
+#   chmod 0666 log/production.log
+# fi
 
-# chmod go+w public/javascripts/cache/
+# # chmod go+w public/javascripts/cache/
 
-if [ ! -e config/database.yml ]; then
-  cat > config/database.yml << EOF
-production:
-  adapter: postgis
-  encoding: utf-8
-  reconnect: false
-  database: bety
-  pool: 5
-  username: bety
-  password: bety
-EOF
-fi
+# if [ ! -e config/database.yml ]; then
+#   cat > config/database.yml << EOF
+# production:
+#   adapter: postgis
+#   encoding: utf-8
+#   reconnect: false
+#   database: bety
+#   pool: 5
+#   username: bety
+#   password: bety
+# EOF
+# fi
 
-if [ ! -e ${HTTP_CONF}/bety.conf ]; then
-  cat > /tmp/bety.conf << EOF
-RailsEnv production
-RailsBaseURI /bety
-PassengerRuby /usr/bin/ruby
-SetEnv SECRET_KEY_BASE $(bundle exec rake secret)
-<Directory /var/www/html/bety>
-  Options +FollowSymLinks
-  Require all granted
-</Directory>
-EOF
-  sudo cp /tmp/bety.conf ${HTTP_CONF}/bety.conf
-  rm /tmp/bety.conf
-  sudo ln -s $HOME/bety/public /var/www/html/bety
+# if [ ! -e ${HTTP_CONF}/bety.conf ]; then
+#   cat > /tmp/bety.conf << EOF
+# RailsEnv production
+# RailsBaseURI /bety
+# PassengerRuby /usr/bin/ruby
+# SetEnv SECRET_KEY_BASE $(bundle exec rake secret)
+# <Directory /var/www/html/bety>
+#   Options +FollowSymLinks
+#   Require all granted
+# </Directory>
+# EOF
+#   sudo cp /tmp/bety.conf ${HTTP_CONF}/bety.conf
+#   rm /tmp/bety.conf
+#   sudo ln -s $HOME/bety/public /var/www/html/bety
 
-  # sudo sh -c "echo '\n## BETY secret key\nexport SECRET_KEY_BASE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 120 | head -n 1)' >> /etc/apache2/envvars"
-  # cp $HOME/bety/public/javascripts/cache/all.js-sample $HOME/bety/public/javascripts/cache/all.js
-fi
+#   # sudo sh -c "echo '\n## BETY secret key\nexport SECRET_KEY_BASE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 120 | head -n 1)' >> /etc/apache2/envvars"
+#   # cp $HOME/bety/public/javascripts/cache/all.js-sample $HOME/bety/public/javascripts/cache/all.js
+# fi
 
-bundle exec rake assets:precompile RAILS_ENV=production RAILS_RELATIVE_URL_ROOT=/bety
+# bundle exec rake assets:precompile RAILS_ENV=production RAILS_RELATIVE_URL_ROOT=/bety
 
 echo "######################################################################"
 echo "DATA"
@@ -499,19 +640,19 @@ if [ ! -e ${HOME}/create_met_driver ]; then
   rm create_met_driver.tar.gz
 fi
 
-echo "######################################################################"
-echo "DATABASE"
-echo "######################################################################"
-FOUND_BETY=$( sudo -H -u postgres psql -lqt | awk '/^ bety / { print $1 }' )
-if [ -z "$FOUND_BETY" ]; then
-  sudo -H -u postgres psql -c "CREATE ROLE bety WITH LOGIN CREATEDB NOSUPERUSER NOCREATEROLE PASSWORD 'bety';"
-  sudo -H -u postgres psql -c "CREATE DATABASE bety OWNER bety;"
-fi
+# echo "######################################################################"
+# echo "DATABASE"
+# echo "######################################################################"
+# FOUND_BETY=$( sudo -H -u postgres psql -lqt | awk '/^ bety / { print $1 }' )
+# if [ -z "$FOUND_BETY" ]; then
+#   sudo -H -u postgres psql -c "CREATE ROLE bety WITH LOGIN CREATEDB NOSUPERUSER NOCREATEROLE PASSWORD 'bety';"
+#   sudo -H -u postgres psql -c "CREATE DATABASE bety OWNER bety;"
+# fi
 
 sudo rm -rf ${HOME}/output
 mkdir ${HOME}/output
 chmod 2777 ${HOME}/output
-sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -g -m 99 -r 0 -c -u -w https://ebi-forecast.igb.illinois.edu/pecan/dump/all//bety.tar.gz
+# sudo -u postgres ${HOME}/pecan/scripts/load.bety.sh -g -m 99 -r 0 -c -u -w https://ebi-forecast.igb.illinois.edu/pecan/dump/all//bety.tar.gz
 ${HOME}/pecan/scripts/add.models.sh
 ${HOME}/pecan/scripts/add.data.sh
 
@@ -557,10 +698,10 @@ echo "######################################################################"
 if [ "${SHINY_SERVER}" != "" -a $( uname -m ) == "x86_64" ]; then
   sudo su - -c "R -e \"install.packages(c('rmarkdown', 'shiny'), repos='https://cran.rstudio.com/')\""
 
-  R -e "install.packages(c('https://www.bioconductor.org/packages/release/bioc/src/contrib/BiocGenerics_0.26.0.tar.gz', 'http://www.bioconductor.org/packages/release/bioc/src/contrib/graph_1.58.0.tar.gz'), repos=NULL)"
+  R -e "install.packages(c('https://www.bioconductor.org/packages/release/bioc/src/contrib/BiocGenerics_0.28.0.tar.gz', 'http://www.bioconductor.org/packages/release/bioc/src/contrib/graph_1.60.0.tar.gz'), repos=NULL)"
   R -e "devtools::install_github('duncantl/CodeDepends')"
-  R -e "devtools::install_github('OakleyJ/SHELF')"
-  R -e "install.packages(c('shinythemes', 'shinytoastr', 'SHELF', 'shiny'), repos='https://cran.rstudio.com/')"
+  #R -e "devtools::install_github('OakleyJ/SHELF')"
+  R -e "install.packages(c('shinythemes', 'shinytoastr'), repos='https://cran.rstudio.com/')"
 
   case "$OS_VERSION" in
     RH_*)
@@ -645,8 +786,8 @@ EOF
     ;;
   Ubuntu)
     sudo a2enmod proxy_http
-    sudo a2enconf bety pecan
-    if [ -e ${HTTP_CONF}/shiny.conf ]; then
+    sudo a2enconf docker pecan
+    if [ -e ${HTTP_CONF}/rstudio.conf ]; then
       sudo a2enconf rstudio
       sudo service rstudio-server restart
     fi
