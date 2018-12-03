@@ -380,8 +380,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
           "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
           file = file.path(settings$rundir, run.id, "README.txt"))
       
-      #changing the structure of input met to what the models are expecting
-      settings$run$inputs$met$path <- samples$met$samples[[i]]
+      #changing the structure of input tag to what the models are expecting
+      for(input_i in seq_along(settings$run$inputs)){
+        input_tag <- names(settings$run$inputs)[[input_i]]
+        settings$run$inputs[[input_tag]][["path"]] <- samples[[input_tag]][["samples"]][[i]]
+      }
+
+
       
       do.call(my.write.config, args = list( defaults = defaults, 
                                             trait.values = lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i), # this is the params
@@ -469,10 +474,10 @@ input.ens.gen<-function(settings,input,method="sampling",parent_ids=NULL){
   if (input=="parameters") return(NULL)
   #-- assing the sample ids based on different scenarios
   if(!is.null(parent_ids)) {
-    samples$ids<-parent_ids$ids  
-    out.of.sample.size <- sample$ids[samples$ids > settings$run$inputs[[tolower(input)]]$path %>% length]
+    samples$ids <- parent_ids$ids  
+    out.of.sample.size <- length(samples$ids[samples$ids > settings$run$inputs[[tolower(input)]]$path %>% length])
     #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
-    samples$ids[samples$ids%in%out.of.sample.size] <- samples(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
+    samples$ids[samples$ids%in%out.of.sample.size] <- sample(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
                                                               out.of.sample.size,
                                                               replace = T)
   }else if( tolower(method)=="sampling") {

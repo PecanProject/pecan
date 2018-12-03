@@ -25,26 +25,26 @@ echo "######################################################################"
 # 3 : model revision number
 # 4 : name of executable, without the path
 # 5 : optionally path to executable
-addModelFile "${FQDN}" "ED2.2"     "ED2"      "46"  "ed2.46"       "/usr/local/bin"
-addModelFile "${FQDN}" "ED2.2"     "ED2"      "82"  "ed2.82"       "/usr/local/bin"
+#addModelFile "${FQDN}" "ED2.2"     "ED2"      "46"  "ed2.46"       "/usr/local/bin"
+#addModelFile "${FQDN}" "ED2.2"     "ED2"      "82"  "ed2.82"       "/usr/local/bin"
 addModelFile "${FQDN}" "ED2.2"     "ED2"      "git" "ed2.git"      "/usr/local/bin"
-addModelFile "${FQDN}" "SIPNET"    "SIPNET"   "unk" "sipnet.unk"   "/usr/local/bin"
+#addModelFile "${FQDN}" "SIPNET"    "SIPNET"   "unk" "sipnet.unk"   "/usr/local/bin"
 addModelFile "${FQDN}" "SIPNET"    "SIPNET"   "136" "sipnet.136"   "/usr/local/bin"
-addModelFile "${FQDN}" "DALEC"     "DALEC"    ""    "dalec_seqMH"  "/usr/local/bin"
-addModelFile "${FQDN}" "Linkages"  "LINKAGES" "git" "linkages.git" "/usr/local/bin"
-addModelFile "${FQDN}" "MAESPA"    "MAESPA"   "git" "maespa.git"   "/usr/local/bin"
-addModelFile "${FQDN}" "LPJ-GUESS" "LPJGUESS" "3.1" "guess.3.1"    "/usr/local/bin"
-addModelFile "${FQDN}" "GDAY(Day)" "GDAY"     ""    "gday"         "/usr/local/bin"
+#addModelFile "${FQDN}" "DALEC"     "DALEC"    ""    "dalec_seqMH"  "/usr/local/bin"
+#addModelFile "${FQDN}" "Linkages"  "LINKAGES" "git" "linkages.git" "/usr/local/bin"
+#addModelFile "${FQDN}" "MAESPA"    "MAESPA"   "git" "maespa.git"   "/usr/local/bin"
+#addModelFile "${FQDN}" "LPJ-GUESS" "LPJGUESS" "3.1" "guess.3.1"    "/usr/local/bin"
+#addModelFile "${FQDN}" "GDAY(Day)" "GDAY"     ""    "gday"         "/usr/local/bin"
 
 # special case for PRELES
-addModelFile "${FQDN}" "Preles"   "PRELES"   ""          "true"           "/bin"
+#addModelFile "${FQDN}" "Preles"   "PRELES"   ""          "true"           "/bin"
 
 # special case for R models
-addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "git"       "biocro.Rscript" "/usr/local/lib/R/site-library/PEcAn.BIOCRO"
-addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "0.95"      "biocro.Rscript" "/usr/local/lib/R/site-library/PEcAn.BIOCRO"
-addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "1.0"       "biocro.Rscript" "/usr/local/lib/R/site-library/PEcAn.BIOCRO"
+#addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "git"       "biocro.Rscript" "/usr/local/lib/R/site-library/PEcAn.BIOCRO"
+#addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "0.95"      "biocro.Rscript" "/usr/local/lib/R/site-library/PEcAn.BIOCRO"
+#addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "1.0"       "biocro.Rscript" "/usr/local/lib/R/site-library/PEcAn.BIOCRO"
 
-addModelFile "${FQDN}" "LINKAGES" "LINKAGES" "R_version" ""               "/usr/local/lib/R/site-library/linkages"
+#addModelFile "${FQDN}" "LINKAGES" "LINKAGES" "R_version" ""               "/usr/local/lib/R/site-library/linkages"
 
 # to add remote files
 #addModelFile "geo.bu.edu" "ED2" "ED2" "git" "ed_2.1-opt" "/home/dietze/ED2.git/ED/build"
@@ -55,100 +55,81 @@ echo "######################################################################"
 cd ${DATADIR}
 
 echo "######################################################################"
-echo "Downloading sites"
+echo "Adding sites"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/sites ]; then
-  curl -s -o sites.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/sites.tgz
-  tar zxf sites.tgz
+  tar zxf /work/sites.tgz
   sed -i -e "s#/home/kooper/Projects/EBI#${DATADIR}#" sites/*/ED_MET_DRIVER_HEADER
-  rm sites.tgz
 fi
 
 echo "######################################################################"
-echo "Downloading inputs"
+echo "Adding inputs"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/inputs ]; then
-  curl -s -o inputs.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/inputs.tgz
-  tar zxf inputs.tgz
-  rm inputs.tgz
+  tar zxf /work/inputs.tgz
 fi
 
 echo "######################################################################"
-echo "Downloading LPJ-Guess CRU"
+echo "Adding LPJ-Guess CRU"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/lpj-guess/cru_1901_2006.bin ]; then
   if [ ! -d ${DATADIR}/lpj-guess ]; then
     mkdir ${DATADIR}/lpj-guess
   fi
-  curl -s -o ${DATADIR}/lpj-guess/cru_1901_2006.bin http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/cru_1901_2006.bin
+  cp /work/cru_1901_2006.bin lpj-guess/cru_1901_2006.bin
 fi
 
 echo "######################################################################"
-echo "Downloading Plot"
+echo "Adding Plot"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/plot ]; then
-  curl -s -o plot.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/plot.tgz
-  tar zxf plot.tgz
-  rm plot.tgz
+  tar zxf /work/plot.tgz
 fi
 
 echo "######################################################################"
-echo "Downloading Santarem_Km83"
+echo "Adding Santarem_Km83"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/sites/Santarem_Km83 ]; then
-  curl -s -o Santarem_Km83.zip http://isda.ncsa.illinois.edu/~kooper/EBI/Santarem_Km83.zip
-  unzip -q -d sites Santarem_Km83.zip
+  unzip -q -d sites /work/Santarem_Km83.zip
   sed -i -e "s#/home/pecan#${DATADIR}#" sites/Santarem_Km83/ED_MET_DRIVER_HEADER
-  rm Santarem_Km83.zip
 fi
 
 echo "######################################################################"
-echo "Downloading testrun.s83"
+echo "Adding testrun.s83"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/testrun.s83 ]; then
-  curl -s -o testrun.s83.zip http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.s83.zip
-  unzip -q testrun.s83.zip
+  unzip -q /work/testrun.s83.zip
   sed -i -e "s#/home/pecan#${DATADIR}#" testrun.s83/ED2IN
-  rm testrun.s83.zip
 fi
 
 echo "######################################################################"
-echo "Downloading ed2ws.harvard"
+echo "Adding ed2ws.harvard"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/ed2ws.harvard ]; then
-  curl -s -o ed2ws.harvard.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/ed2ws.harvard.tgz
-  tar zxf ed2ws.harvard.tgz
+  tar zxf /work/ed2ws.harvard.tgz
   mkdir ed2ws.harvard/analy ed2ws.harvard/histo
   sed -i -e "s#/home/pecan#${DATADIR}#g" ed2ws.harvard/input_harvard/met_driver/HF_MET_HEADER ed2ws.harvard/ED2IN ed2ws.harvard/*.r
-  rm ed2ws.harvard.tgz
 fi
 
 echo "######################################################################"
-echo "Downloading testrun.PDG"
+echo "Adding testrun.PDG"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/testrun.PDG ]; then
-  curl -s -o testrun.PDG.zip http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.PDG.zip
-  unzip -q testrun.PDG.zip
+  unzip -q /work/testrun.PDG.zip
   sed -i -e "s#/home/pecan#${DATADIR}#" testrun.PDG/Met/PDG_MET_DRIVER testrun.PDG/Template/ED2IN
   sed -i -e 's#/n/scratch2/moorcroft_lab/kzhang/PDG/WFire_Pecan/##' testrun.PDG/Template/ED2IN
-  rm testrun.PDG.zip
 fi
 
 echo "######################################################################"
-echo "Downloading create_met_driver"
+echo "Adding create_met_driver"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/create_met_driver ]; then
-  curl -s -o create_met_driver.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/create_met_driver.tar.gz
-  tar zxf create_met_driver.tar.gz
-  rm create_met_driver.tar.gz
+  tar zxf /work/create_met_driver.tar.gz
 fi
 
 echo "######################################################################"
 echo "REGISTER DATA"
 echo "######################################################################"
-
-# load helper functions and set FQDN and PSQL
-. ${DIRNAME}/add.util.sh
 
 # subfolders in datadir
 SITES="$DATADIR/sites"

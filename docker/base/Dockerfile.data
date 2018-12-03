@@ -1,13 +1,23 @@
 FROM ubuntu
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
+WORKDIR /work
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         curl \
         postgresql-client \
         unzip \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -s -o sites.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/sites.tgz \
+    && curl -s -o inputs.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/inputs.tgz \
+    && curl -s -o cru_1901_2006.bin http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/cru_1901_2006.bin \
+    && curl -s -o plot.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/plot.tgz \
+    && curl -s -o Santarem_Km83.zip http://isda.ncsa.illinois.edu/~kooper/EBI/Santarem_Km83.zip \
+    && curl -s -o testrun.s83.zip http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.s83.zip \
+    && curl -s -o ed2ws.harvard.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/ed2ws.harvard.tgz \
+    && curl -s -o testrun.PDG.zip http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.PDG.zip \
+    && curl -s -o create_met_driver.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/create_met_driver.tar.gz
 
-WORKDIR /work
 COPY docker/add-data.sh scripts/add.util.sh /work/
 CMD bash /work/add-data.sh
