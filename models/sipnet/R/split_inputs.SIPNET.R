@@ -22,15 +22,7 @@
 ##' @return file split up climate file
 ##' @export
 split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL) {
-  
-  #### Lubridate start and end times
-  start.day <- lubridate::yday(start.time)
-  start.year <- lubridate::year(start.time)
-  #end.day <- length(as.Date(start.time):as.Date(stop.time))
-  end.day <- lubridate::yday(stop.time)
-  end.year <- lubridate::year(stop.time)
-  
-
+  #browser()
   #### Get met paths
   met <- inputs
   path <- dirname(met)
@@ -43,24 +35,30 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwri
 
   file <- NA
   names(file) <- paste(start.time, "-", stop.time)
-  file <- paste0(outpath, "/", prefix, ".", paste0(as.Date(start.time), "-", as.Date(stop.time)), ".clim")
+  
+  #Changing the name of the files, so it would contain the name of the hour as well.
+  file <- paste0(outpath, "/", prefix, ".",
+                 paste0(start.time%>% as.character() %>% gsub(' ',"_",.),
+                        "-",
+                        stop.time%>% as.character() %>% gsub(' ',"_",.)), ".clim")
   
   if(file.exists(file) & !overwrite){
-    
     return(file)
   }
 
   dat <- read.table(met, header = FALSE)
+  #strptime(paste("1976", 1), format="%Y %j")
 
-  ###### Find Correct Met
-  sel1 <- which(dat[, 2] == as.numeric(start.year) & dat[, 3] == as.numeric(start.day))[1]
-  sel2 <- which(dat[, 2] == as.numeric(end.year) & 
-                  dat[, 3] == as.numeric(end.day))[length(which(dat[, 2] == as.numeric(end.year) & 
-                                                                  dat[, 3] == as.numeric(end.day)))]
-
+  #@Hamze, I added the Date variable by using year, doy, and hour and filtered the clim based that and then removed it afterwards.
+  dat<-dat %>% 
+    mutate(Date = strptime(paste(V2, V3), format = "%Y %j",   tz = "EST")%>% as.POSIXct()) %>%
+    mutate(Date = as.POSIXct(paste0(Date,  V4, ":00"), format = "%Y-%m-%d %H:%M", tz = "EST")) %>% 
+    filter(Date >= start.time, Date < stop.time) %>% 
+    dplyr::select(-Date)
+  
+  
   ###### Write Met to file
-
-  write.table(dat[sel1:sel2, ], file, row.names = FALSE, col.names = FALSE)
+  write.table(dat, file, row.names = FALSE, col.names = FALSE)
 
   ###### Output input path to inputs
   #settings$run$inputs$met$path <- file

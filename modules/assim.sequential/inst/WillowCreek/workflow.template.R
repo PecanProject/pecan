@@ -169,7 +169,7 @@ if ('state.data.assimilation' %in% names(settings)) {
         TimeseriesPlot =T,
         BiasPlot =F,
         debug = F,
-        pause=F
+        pause=T
       )
     )
     PEcAn.utils::status.end()

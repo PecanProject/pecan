@@ -29,7 +29,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                   debug=FALSE,
                                   pause=F),...) {
 
- 
+  if (control$debug) browser()
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -77,8 +77,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ### model specific split inputs
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
-                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3), 
-                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
+                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3,tz="EST"), 
+                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3,tz="EST"),
                                                               inputs =  settings$run$inputs$met$path[[i]],
                                                               overwrite=F)) 
     }
@@ -172,8 +172,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
           #---------------- model specific split inputs
           inputs.split$samples[i] <-do.call(my.split_inputs, 
                                             args = list(settings = settings, 
-                                                        start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))), 
-                                                        stop.time = obs.times[t],
+                                                        start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3,tz="EST")), 
+                                                        stop.time = (lubridate::ymd_hms(obs.times[t],truncated = 3,tz="EST")),
                                                         inputs = inputs$samples[[i]])) 
           
        
