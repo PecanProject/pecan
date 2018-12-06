@@ -257,7 +257,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       required_tags<-c("met","parameters")
       
     }
-    
+
     #now looking into the xml
     samp <- settings$ensemble$samplingspace
     #finding who has a parent
@@ -391,8 +391,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       do.call(my.write.config, args = list( defaults = defaults, 
                                             trait.values = lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i), # this is the params
                                             settings = settings, 
-                                            run.id = run.id
-      )
+                                            run.id = run.id)
       )
       cat(run.id, file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
       
@@ -463,7 +462,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #' @examples
 #' \dontrun{input.ens.gen(settings,"met","sampling")}
 #'  
-input.ens.gen<-function(settings,input,method="sampling",parent_ids=NULL){
+input.ens.gen<-function(settings, input, method="sampling",parent_ids=NULL){
   
   #-- reading the dots and exposing them to the inside of the function
   samples<-list()

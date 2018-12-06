@@ -2,6 +2,7 @@
 #' This function queries the gSSURGO database for a series of map unit keys
 #'
 #' @param mukeys map unit key from gssurgo
+#' @param fields a character vector of the fields to be extracted. See details and the default argument to find out how to define fields.
 #'
 #' @return a dataframe with soil properties. units can be looked up from database documentation
 #' @export
@@ -10,8 +11,23 @@
 #' Full documention of available tables and their relationships can be found here \url{www.sdmdataaccess.nrcs.usda.gov/QueryHelp.aspx}
 #' There have been occasions where NRCS made some minor changes to the structure of the API which this code is where those changes need
 #' to be implemneted here.
-#' 
-gSSURGO.Query<-function(mukeys=2747727){
+#' Fields need to be defined with their associate tables. For example, sandtotal is a field in chorizon table which needs to be defined as chorizon.sandotal_(r/l/h), where 
+#' r stands for the representative value, l stand for low and h stands for high. At the momeent fields from mapunit, component, muaggatt, and chorizon tables can be extracted. 
+#'
+#'#' @examples
+#' \dontrun{
+#'    PEcAn.data.land::gSSURGO.Query(fields = c("chorizon.cec7_r", "chorizon.sandtotal_r",
+#'                                                "chorizon.silttotal_r","chorizon.claytotal_r",
+#'                                                "chorizon.om_r","chorizon.hzdept_r","chorizon.frag3to10_r",
+#'                                                "chorizon.dbovendry_r","chorizon.ph1to1h2o_r",
+#'                                                "chorizon.cokey","chorizon.chkey"))
+#' }
+gSSURGO.Query<-function(mukeys=2747727,
+                        fields=c("chorizon.sandtotal_r",
+                                 "chorizon.silttotal_r",
+                                 "chorizon.claytotal_r")){
+  #browser()
+  #               ,
   ######### Reteiv soil
   headerFields =
     c(Accept = "text/xml",
@@ -24,9 +40,7 @@ gSSURGO.Query<-function(mukeys=2747727){
                <soap:Body>
                <RunQuery xmlns="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
                <Query>
-               SELECT mapunit.mukey, mapunit.muname, component.cokey, component.mukey, component.comppct_r, chorizon.cec7_r,
-               chorizon.sandtotal_r,chorizon.silttotal_r,chorizon.claytotal_r,chorizon.om_r,chorizon.hzdept_r,chorizon.frag3to10_r,chorizon.dbovendry_r,
-               chorizon.ph1to1h2o_r,chorizon.cokey,chorizon.chkey,
+               SELECT mapunit.mukey, component.cokey, component.mukey, component.comppct_r, ',paste(fields, collapse = ", "),',
                muaggatt.aws050wta from mapunit
                join muaggatt on mapunit.mukey=muaggatt.mukey
                join component on mapunit.mukey=component.mukey
@@ -59,13 +73,21 @@ gSSURGO.Query<-function(mukeys=2747727){
         # This method leaves out the variables are all NAs  - so we can't have a fixed naming scheme for this df
         dfs<-tables%>%
           purrr::map_dfr(function(child){
-            xmlToList(child)[1:13]%>%
-              purrr::map(~ as.numeric( .x ))%>%
-              t%>%
-              as.data.frame()
+            #converting the xml obj to list
+            allfields <- xmlToList(child)
+            remov<-names(allfields) %in% c("mukey",".attrs")
+            #browser()
+            names(allfields)[!remov]%>%
+              purrr::map_dfc(function(nfield){
+                #browser()
+                outv <-allfields[[nfield]] %>% unlist() %>% as.numeric
+                ifelse(length(outv)>0, outv, NA)
+              })%>%
+              as.data.frame() %>%
+              `colnames<-`(names(allfields)[!remov])
           })%>%
-          dplyr::mutate_all(as.numeric)%>%
-          dplyr::select(comppct_r:aws050wta)
+          dplyr::select(comppct_r:aws050wta) %>%
+          dplyr::select(-aws050wta)
         
       })
     )
@@ -74,7 +96,10 @@ gSSURGO.Query<-function(mukeys=2747727){
     return(dfs)
   },
   error=function(cond) {
+    print(cond)
     return(NULL)
   })
   
 }
+
+

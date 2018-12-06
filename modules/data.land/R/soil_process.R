@@ -10,14 +10,14 @@
 #'
 #' @examples
 soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
-  
-  if(input$soil$source=="PalEON_soil" && is.null(input$id)){
+
+  if(input$source=="PalEON_soil" & is.null(input$id)){
     PEcAn.logger::logger.severe("currently soil_process requires an input ID to be specified")
     return(NULL)
   }
   
-  if(is.null(input$soil$source)){
-    input$soil$source <- "PalEON_soil"  ## temporarily hardcoding in the only source
+  if(is.null(input$source)){
+    input$source <- "PalEON_soil"  ## temporarily hardcoding in the only source
                                    ## in the future this should throw an error
   }
   # Extract info from settings and setup
@@ -38,13 +38,14 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
                          lat = latlon$lat, 
                          lon = latlon$lon)
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
-  outfolder <- file.path(dbfiles, paste0(input$soil$source, "_site_", str_ns))
+  outfolder <- file.path(dbfiles, paste0(input$source, "_site_", str_ns))
   if(!dir.exists(outfolder)) dir.create(outfolder)
   #--------------------------------------------------------------------------------------------------#   
   # if we are reading from gSSURGO
-  if (input$soil$source=="gSSURGO"){
-    newfile<-extract_soil_gssurgo(outfolder,lat = latlon$lat,lon=latlon$lon)
-    return(newfile)
+  if (input$source=="gSSURGO"){
+    # this function just needs the output dir, lat and long to extarct the soil properties and save them in pecan format as nc file.
+    newfile<-extract_soil_gssurgo(outfolder, lat = latlon$lat, lon=latlon$lon, size = settings$ensemble$size %>% as.numeric)
+    return(newfile %>% setNames(rep("path", length(newfile) ) ) )
   }
   #--------------------------------------------------------------------------------------------------# 
   # if we are reading  PalEON_soil

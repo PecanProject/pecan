@@ -12,7 +12,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do_conversions))
   }
-  
+
   needsave <- FALSE
   if (is.character(settings$run$inputs)) {
     settings$run$inputs <- NULL  ## check for empty set

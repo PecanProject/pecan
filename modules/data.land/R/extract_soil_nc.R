@@ -3,6 +3,7 @@
 #' @param outdir Output directory for writing down the netcdf file
 #' @param lat Latitude 
 #' @param lon Longitude
+#' @param size Ensemble size
 #'
 #' @return It returns the address for the generated soil netcdf file
 #' @export
@@ -16,44 +17,176 @@
 #' }
 #' @author Hamze Dokoohaki
 #' 
-extract_soil_gssurgo<-function(outdir, lat, lon){
-  #reading the mapunit based on latitude and longitude of the site
-  #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
-  #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
-  xmll <- RCurl::getURL(paste0("https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=MapunitPoly&FILTER=<Filter><DWithin><PropertyName>Geometry</PropertyName><gml:Point>%20<gml:coordinates>",
-                lon ,",", lat,"</gml:coordinates></gml:Point><Distance%20units=%27m%27>0</Distance>%20</DWithin></Filter>"), ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)
+extract_soil_gssurgo<-function(outdir, lat, lon, size=50){
+  # I keep all the ensembles here 
+  all.soil.ens <-list()
   
-  startp <- regexpr('<ms:mukey>', xmll)
-  stopp <- regexpr('</ms:mukey>', xmll)
+  # I ask the gSSURGO to find all the mukeys (loosely can be thought of soil type) within 500m of my site location. 
+  # Basically I think of this as me going around and taking soil samples within 500m of my site.
+  #https://sdmdataaccess.nrcs.usda.gov/SpatialFilterHelp.htm
+  mu.Path <- paste0(
+    "https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=MapunitPoly&FILTER=<Filter><DWithin><PropertyName>Geometry</PropertyName><gml:Point>%20<gml:coordinates>",
+    lon ,
+    ",",
+    lat,
+    "</gml:coordinates></gml:Point><Distance%20units=%27m%27>500</Distance></DWithin></Filter>"
+  )
+  # We are trying to find the mapunit key here. Either using rgdal if the driver is defined or parsing it's gml
   
-  #if you found the mapunit key
-  if (startp==-1 | stopp==-1) PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
-    # caaling the query function sending the mapunit key
-    soilprop <- gSSURGO.Query(substr(xmll, startp%>%as.numeric+10, stopp%>%as.numeric-1))
+  if ("WFS" %in% rgdal::ogrDrivers()$name) {
+   
+    suppressMessages({
+      #disambiguateFIDs if TRUE, and FID values are not unique, they will be set to unique values 1:N for N features; problem observed in GML files
+       area <-rgdal::readOGR(mu.Path, disambiguateFIDs=T)
+    })
+    
+    mukey <- area@data$mukey %>% as.character()
+  }else{
+    #reading the mapunit based on latitude and longitude of the site
+    #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
+    #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
+    xmll <-
+      RCurl::getURL(mu.Path,
+        ssl.verifyhost = FALSE,
+        ssl.verifypeer = FALSE
+      )
+    
+    startp <- regexpr('<ms:mukey>', xmll)
+    stopp <- regexpr('</ms:mukey>', xmll)
+    
+    #if you found the mapunit key
+    if (startp == -1 |
+        stopp == -1)
+      PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
+    mukey <-substr(xmll, startp %>% as.numeric + 10, stopp %>% as.numeric - 1)  
+  }
+  
+   # calling the query function sending the mapunit key
+    soilprop <- gSSURGO.Query(mukey,c("chorizon.sandtotal_r",
+                                      "chorizon.silttotal_r",
+                                      "chorizon.claytotal_r",
+                                      "chorizon.hzdept_r"))
     #Filter based on the most abundant component in that mapunit key 
-    soilprop.new<-soilprop%>%
-      dplyr::filter(comppct_r==max(soilprop$comppct_r, na.rm=T), hzdept_r>0)%>%
-      dplyr::arrange(hzdept_r)%>%
-      dplyr::select(-comppct_r, -chkey, -aws050wta)%>%
-      `colnames<-`( c("soil_cec", "fraction_of_sand_in_soil", "fraction_of_silt_in_soil", "fraction_of_clay_in_soil", "soilC" , "soil_depth" , "fraction_of_gravel_in_soil",
-                        "soil_bulk_density" , "soil_ph") )
+    soilprop.new <- soilprop %>%
+      dplyr::arrange(hzdept_r) %>%
+      dplyr::select(-comppct_r) %>%
+      `colnames<-`(
+        c(
+          "fraction_of_sand_in_soil",
+          "fraction_of_silt_in_soil",
+          "fraction_of_clay_in_soil",
+          "soil_depth"
+        )
+      )
     #unit colnversion
-    soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" ,"fraction_of_gravel_in_soil" , "soil_depth")] <- soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" ,"fraction_of_gravel_in_soil" , "soil_depth")]/100
-    soilprop.new [, c("soilC")] <- soilprop.new [,c("soilC")]*0.69/100
-    soilprop.new$soil_bulk_density <- udunits2::ud.convert(soilprop.new$soil_bulk_density, "g cm-3", "kg m-3")
+    soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" ,
+                      "soil_depth")] <- soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" ,
+                                                                                         "fraction_of_clay_in_soil" , "soil_depth")]/100
+    soilprop.new <- soilprop.new[ complete.cases(soilprop.new) , ]
     #converting it to list
     soil.data.gssurgo <- names(soilprop.new) %>%
-      purrr::map(function(var){
-        soilprop.new[,var]
-      })%>% 
+      purrr::map(function(var) {
+        soilprop.new[, var]
+      }) %>%
       setNames(names(soilprop.new))
-    # calc new filename
-    prefix <- "gSSURGO_soil"
-    new.file <- file.path(outdir, paste0(prefix,".nc"))
-    #sending it to the func where some new params will be added and then it will be written down as nc file.
-    soil2netcdf(soil.data.gssurgo, new.file)
+    #This ensures that I have at least one soil ensemble in case the modeling part failed
+    all.soil.ens <-c(all.soil.ens,list(soil.data.gssurgo))
     
-    return(new.file)
+    #- see if we need to generate soil ensemble and add that to the list of all
+    tryCatch({
+      # What I do here is that I put soil data into depth classes and then model each class speparatly
+      soilprop.new.grouped<-soilprop.new %>% 
+           mutate(DepthL=ifelse(soil_depth<=.15,.15,
+                                ifelse(soil_depth<=.30,.30,
+                                       ifelse(soil_depth<=.60,.60,
+                                              ifelse(soil_depth<0.9,0.9,
+                                                     ifelse(soil_depth<1.2,1.2,
+                                                     1.50))))))
+      
+      # let's fit dirichlet for each depth level separately
+      simulated.soil.props<-soilprop.new.grouped %>%
+        split(.$DepthL) %>%
+        purrr::map(function(DepthL.Data){
+          #browser()
+          tryCatch({
+            # I model the soil properties for this depth
+            dir.model <-DepthL.Data[,c(1:3)]%>%
+              as.matrix() %>%
+              sirt::dirichlet.mle(.)
+            # I bootstrap based on my dirichlet model
+            alpha <- dir.model$alpha
+            alpha <- matrix(alpha, nrow=size, ncol=length(alpha), byrow=TRUE )
+            simulated.soil <- sirt::dirichlet.simul(alpha)
+            # # using the simulated sand/silt/clay to generate soil ensemble
+            simulated.soil<-simulated.soil %>%
+              as.data.frame %>%
+              mutate(DepthL=rep(DepthL.Data[1,5],size)) %>%
+              `colnames<-`(c("fraction_of_sand_in_soil",
+                             "fraction_of_silt_in_soil",
+                             "fraction_of_clay_in_soil",
+                             "soil_depth"))
+            simulated.soil
+          },
+          error = function(e) {
+            PEcAn.logger::logger.warn(conditionMessage(e))
+            return(NULL)
+          })
+
+        })
+      
+      simulated.soil.props<- simulated.soil.props %>%
+        purrr::discard(is.null)
+      
+      #--- Mixing the depths
+      soil.profiles<-1:size %>%
+        purrr::map(function(x){
+          simulated.soil.props %>% 
+            purrr::map_dfr(~.x[x,])
+        })
+      #- add them to the list of all the ensembles ready to be converted to .nc file
+      all.soil.ens<-soil.profiles %>%
+        purrr::map(function(SEns){
+          names(SEns) %>%
+            purrr::map(function(var){
+              SEns[,var]
+            })%>% 
+            setNames(names(SEns))
+        })%>%
+        c(all.soil.ens,.)
+
+      },
+      error = function(e) {
+       PEcAn.logger::logger.warn(conditionMessage(e))
+      })
+
+    
+    #-- generating the .nc files for all the collected ensembles
+    out.ense <- (1:length(all.soil.ens)) %>%
+      purrr::map(function(i) {
+        
+        tryCatch({
+          #browser()
+          # calc new filename
+          prefix <- paste0("gSSURGO_soil_", i)
+          new.file <- file.path(outdir, paste0(prefix, ".nc"))
+          #sending it to the func where some new params will be added and then it will be written down as nc file.
+          suppressWarnings({
+            soil2netcdf(all.soil.ens[[i]], new.file)
+          })
+          
+          new.file
+        },
+        error = function(e) {
+          PEcAn.logger::logger.warn(conditionMessage(e))
+          return(NULL)
+        })
+
+      })
+  # removing the nulls or the ones that throw exception in the above trycatch
+  out.ense<- out.ense %>%
+      purrr::discard(is.null)
+    
+    return(out.ense)
 }
 
 
