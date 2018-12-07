@@ -127,7 +127,7 @@ if (!$finished) {
 
   function refresh() {
     var url="<?php echo $_SERVER["SCRIPT_NAME"] . '?workflowid=' . $workflowid; ?>";
-    url += "&hostname=${hostname}&loglines=" + $("#loglines").val();
+    url += "&hostname=<?php echo $hostname; ?>&loglines=" + $("#loglines").val();
     window.location.replace(url);
     return false;
   }

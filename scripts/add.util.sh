@@ -9,7 +9,7 @@ fi
 
 # command to execute to add items to BETY database
 if [ -z "$PSQL" ]; then
-	PSQL="psql -U bety bety -q -t -c"
+	PSQL="psql -h localhost -U bety bety -q -t -c"
 fi
 
 # folder to data, this is assumed to be installed at the same level

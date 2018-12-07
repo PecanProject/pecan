@@ -1,8 +1,8 @@
 Package: PEcAn.visualization
 Type: Package
 Title: PEcAn visualization functions
-Version: 1.6.0
-Date: 2018-08-20
+Version: 1.7.0
+Date: 2018-12-03
 Authors@R: c(person("Mike","Dietze"),
              person("David","LeBauer"),
              person("Xiaohui", "Feng"),
