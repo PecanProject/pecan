@@ -4,6 +4,8 @@
 #' @param lat Latitude 
 #' @param lon Longitude
 #' @param size Ensemble size
+#' @param radius We use this argument to take soil type samples within the radius of the site
+#' @param depths  Standard set of soil depths in m to create the ensemble of soil profiles with.
 #'
 #' @return It returns the address for the generated soil netcdf file
 #' @export
@@ -17,7 +19,7 @@
 #' }
 #' @author Hamze Dokoohaki
 #' 
-extract_soil_gssurgo<-function(outdir, lat, lon, size=50){
+extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.15,0.30,0.40)){
   # I keep all the ensembles here 
   all.soil.ens <-list()
   
@@ -29,7 +31,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=50){
     lon ,
     ",",
     lat,
-    "</gml:coordinates></gml:Point><Distance%20units=%27m%27>500</Distance></DWithin></Filter>"
+    "</gml:coordinates></gml:Point><Distance%20units=%27m%27>",radius,"</Distance></DWithin></Filter>"
   )
   # We are trying to find the mapunit key here. Either using rgdal if the driver is defined or parsing it's gml
   
@@ -66,7 +68,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=50){
                                     "chorizon.silttotal_r",
                                     "chorizon.claytotal_r",
                                     "chorizon.hzdept_r"))
-  #Filter based on the most abundant component in that mapunit key 
+
   soilprop.new <- soilprop %>%
     dplyr::arrange(hzdept_r) %>%
     dplyr::select(-comppct_r) %>%
@@ -92,16 +94,20 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=50){
   #This ensures that I have at least one soil ensemble in case the modeling part failed
   all.soil.ens <-c(all.soil.ens,list(soil.data.gssurgo))
   
+  
+  # What I do here is that I put soil data into depth classes and then model each class speparatly
   #- see if we need to generate soil ensemble and add that to the list of all
   tryCatch({
-    # What I do here is that I put soil data into depth classes and then model each class speparatly
-    soilprop.new.grouped<-soilprop.new %>% 
-      mutate(DepthL=ifelse(soil_depth<=.15,.15,
-                           ifelse(soil_depth<=.30,.30,
-                                  ifelse(soil_depth<=.60,.60,
-                                         ifelse(soil_depth<0.9,0.9,
-                                                ifelse(soil_depth<1.2,1.2,
-                                                       1.50))))))
+    # find the soil depth levels based on the depth argument 
+    # if soil profile is deeper than what is specified in the argument then I go as deep as the soil profile.
+    if (max(soilprop.new$soil_depth) > max(depths)) depths <- sort (c(depths, max(max(soilprop.new$soil_depth))))
+    
+    depth.levs<-findInterval(soilprop.new$soil_depth, depths)
+    depth.levs[depth.levs==0] <-1
+    depth.levs[depth.levs>length(depths)] <-length(depths)
+    
+     soilprop.new.grouped<-soilprop.new %>% 
+      mutate(DepthL=depths[depth.levs])
     
     # let's fit dirichlet for each depth level separately
     simulated.soil.props<-soilprop.new.grouped %>%
@@ -113,7 +119,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=50){
           dir.model <-DepthL.Data[,c(1:3)]%>%
             as.matrix() %>%
             sirt::dirichlet.mle(.)
-          # I bootstrap based on my dirichlet model
+          # Monte Carlo sampling based on my dirichlet model
           alpha <- dir.model$alpha
           alpha <- matrix(alpha, nrow=size, ncol=length(alpha), byrow=TRUE )
           simulated.soil <- sirt::dirichlet.simul(alpha)

@@ -11,12 +11,13 @@
 #' @examples
 soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
   
-  if(input$soil$source=="PalEON_soil" && is.null(input$id)){
+
+  if(input$source=="PalEON_soil" && is.null(input$id)){
     PEcAn.logger::logger.severe("currently soil_process requires an input ID to be specified")
     return(NULL)
   }
   
-  if(is.null(input$soil$source)){
+  if(is.null(input$source)){
     input$soil$source <- "PalEON_soil"  ## temporarily hardcoding in the only source
                                    ## in the future this should throw an error
   }
@@ -42,7 +43,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   if(!dir.exists(outfolder)) dir.create(outfolder)
   #--------------------------------------------------------------------------------------------------#   
   # if we are reading from gSSURGO
-  if (input$soil$source=="gSSURGO"){
+  if (input$source=="gSSURGO"){
     newfile<-extract_soil_gssurgo(outfolder,lat = latlon$lat,lon=latlon$lon)
     return(newfile)
   }
