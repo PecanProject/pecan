@@ -5,7 +5,7 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
-## Unreleased
+## [1.7.0] - 2018-12-09
 
 ### Fixes
 - Removed google maps and replaced with leaflet #2105
