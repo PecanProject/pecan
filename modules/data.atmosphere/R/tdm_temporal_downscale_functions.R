@@ -91,10 +91,17 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
         # ----- generate the mod.out file
         if (parallel) {
           warning("Running model calculation in parallel.  This will probably crash if you do not have access to a LOT of memory!")
+          if (! requireNamespace("parallel", quietly = TRUE)) {
+            PEcAn.logger::logger.severe(
+              "Cannot find package 'parallel', ",
+              "which is needed for parallel model calculations. ",
+              "Either set parallel = FALSE, ",
+              "or run 'install.packages(\"parallel\")' and try again.")
+          }
           
           if (v == "surface_downwelling_shortwave_flux_in_air") {
               mod.out <- parallel::mclapply(dat.list, model.train, mc.cores = n.cores, 
-                n.beta = n.beta, resids = resids, threshold = quantile(dat.train[dat.train$surface_downwelling_shortwave_flux_in_air > 
+                n.beta = n.beta, resids = resids, threshold = stats::quantile(dat.train[dat.train$surface_downwelling_shortwave_flux_in_air > 
                   0, "surface_downwelling_shortwave_flux_in_air"], 0.05))
           } else {
               mod.out <- parallel::mclapply(dat.list, model.train, mc.cores = n.cores, 
@@ -122,7 +129,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
               # Save the model as a .Rdata
               mod.save <- list()
 		        	mod.save$call  <- mod.out[[i]]$model$call
-      				mod.save$coef  <- coef(mod.out[[i]]$model)
+      				mod.save$coef  <- stats::coef(mod.out[[i]]$model)
       				mod.save$formula <- parse(text=mod.out[[i]]$model$call[[2]][c(1,3)])
       				mod.save$factors  <- rownames(attr(mod.out[[i]]$model$terms, "factors"))
       				mod.save$xlev  <- mod.out[[i]]$model$xlevels
@@ -148,7 +155,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
       					# Save the model as a .Rdata
       					mod.save <- list()
       					mod.save$call  <- mod.out[[i]]$model.resid$call
-      					mod.save$coef  <- coef(mod.out[[i]]$model.resid)
+      					mod.save$coef  <- stats::coef(mod.out[[i]]$model.resid)
       					mod.save$formula <- parse(text=mod.out[[i]]$model.resid$call[[2]][c(1,3)])
       					mod.save$factors  <- rownames(attr(mod.out[[i]]$model.resid$terms, "factors"))
       					mod.save$xlev  <- mod.out[[i]]$model.resid$xlevels
@@ -163,7 +170,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
                 
               if (v == "surface_downwelling_shortwave_flux_in_air") {
                 mod.out <- model.train(dat.subset = dat.list[[i]], n.beta = n.beta, v = v, 
-                                       threshold = quantile(dat.train[dat.train$surface_downwelling_shortwave_flux_in_air > 0, "surface_downwelling_shortwave_flux_in_air"], 0.05), 
+                                       threshold = stats::quantile(dat.train[dat.train$surface_downwelling_shortwave_flux_in_air > 0, "surface_downwelling_shortwave_flux_in_air"], 0.05), 
                                        resids = resids)
               } else {
                 mod.out <- model.train(dat.subset = dat.list[[i]], n.beta = n.beta, v = v,
@@ -187,7 +194,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
               # (saves a lot of space & memory)
       				mod.save <- list()
       				mod.save$call  <- mod.out$model$call
-      				mod.save$coef  <- coef(mod.out$model)
+      				mod.save$coef  <- stats::coef(mod.out$model)
       				mod.save$formula <- parse(text=mod.out$model$call[[2]][c(1,3)])
       				mod.save$factors  <- rownames(attr(mod.out$model$terms, "factors"))
       				mod.save$xlev  <- mod.out$model$xlevels
@@ -210,7 +217,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
       					# Save the model as a .Rdata
       					mod.save <- list()
       					mod.save$call  <- mod.out$model.resid$call
-      					mod.save$coef  <- coef(mod.out$model.resid)
+      					mod.save$coef  <- stats::coef(mod.out$model.resid)
       					mod.save$formula <- parse(text=mod.out$model.resid$call[[2]][c(1,3)])
       					mod.save$factors  <- rownames(attr(mod.out$model.resid$terms, "factors"))
       					mod.save$xlev  <- mod.out$model.resid$xlevels

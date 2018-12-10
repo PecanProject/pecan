@@ -84,19 +84,6 @@ get.sa.samples <- function(samples, quantiles) {
 
 
 #--------------------------------------------------------------------------------------------------#
-##'   Counter function for writing configs
-##' 
-##' @title counter 
-##' @param cnt 
-##' @return updated value of cnt to global environment
-##' @export
-counter <- function(cnt) {
-  cnt <- cnt + 1
-  # return(cnt)
-  assign("cnt", cnt, .GlobalEnv)  # Assign count to the environment
-} # counter
-
-
 ##' checks that met2model function exists
 ##'
 ##' Checks if met2model.<model> exists for a particular

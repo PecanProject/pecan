@@ -1,9 +1,11 @@
 Package: PEcAn.qaqc
 Type: Package
 Title: QAQC
-Version: 1.6.0
-Date: 2018-08-20
-Author: David LeBauer
+Version: 1.7.0
+Date: 2018-12-03
+Authors@R: c(person("David","LeBauer"),
+             person("Tess", "McCabe"))
+Author: David LeBauer, Tess McCabe
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: PEcAn integration and model skill testing
 Depends:
@@ -17,4 +19,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

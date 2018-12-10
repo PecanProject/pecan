@@ -5,11 +5,82 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
+## [1.7.0] - 2018-12-09
+
+### Fixes
+- Removed google maps and replaced with leaflet #2105
+- Added ability to add a new site from web interface
+- Small updated to models/ed/R/model2netcdf.ED2.R to fix issue realted to writing the time_bounds time attribute. Needed to add a check for which file types exitst (e.g. -E-, -T-, etc) and only write the appropriate attribute(s).
+- Fixed error in `read_web_config` which would filter out all variables.
+- Docker:
+  - Make sure web interface posts RabbitMQ messages even after editing files (fixes #2151)
+  - Can specify name of docker cluster using PECAN_FQDN and PECAN_NAME (fixes #2128)
+  - Fixed issue where setting username/password for rabbitmq would break web submit (fixes #2185)
+  - data image only registers sipnet and ed, has all data pre-downloaded
+- ED2:
+  - Fix processing of `ed2in_tags` from XML. Now numbers (e.g. `<TRAIT_PLASTICITY_SCHEME>0</TRAIT_PLASTICITY_SCHEME>`) and numeric vectors (e.g. `<INCLUDE_THESE_PFT>9,10,11,12</INCLUDE_THESE_PFT>`) are correctly written to ED2IN _without_ quotes.
+
+### Added
+- NEW FEATURE: PEcAn R API (PR #2192). Features include:
+    - Modified `docker/receiver.py` to accept a `pecan_json` object containing a JSON version of the PEcAn settings. Can now Use RabbitMQ HTTP API (called from R with `httr`) to send a settings list (function `submit_workflow`)
+    - Helper functions to make it easier to build the settings object, and to register a new workflow.
+    - Helper functions for tracking workflow status
+    - Helper functions for accessing workflow output files through THREDDS. All files are accessible through `fileServer` (basically, direct download), and NetCDF files are also readable through OpenDAP.
+        - THREDDS catalog filter has been removed, so that _all_ workflow outputs are available to THREDDS.
+        - Added another `datasetScan` to the THREDDS catalog to search for `dbfiles`. Now, model inputs (e.g. meteorology files) are accessible via THREDDS as well.
+- Lots of new documentation for running PEcAn using Docker
+- Added Docker container with documentation #2160
+- Download method (`method`) argument for `data.atmosphere::download.CRUNCEP`, which defaults to `opendap` (as it was), but can be switched to the slower but more robust NetCDF subset (`ncss`).
+- In `download.CRUNCEP`, check target coordinate against the land-sea mask. If sea, pick the nearest land pixel within 1 degree of target. This facilitates doing runs at coastal sites that may get masked out.
+- Added a prototype of the THREDDS data server (TDS) to the PEcAn Docker stack.
+- Added portainer to the PEcAn Docker stack to easily look at running containers.
+- Added ability to specify short name for a host (hostlist->displayname)
+- ED2:
+  - Add ability to pass arbitrary arguments to the ED binary through the `pecan.xml` (#2183; fixes #2146).
+  - Add new `model` tag `<all_pfts>`. If "false" (default), set ED2IN's `INCLUDE_THESE_PFT` to only PFTs explicitly configured through PEcAn. If "true", use all 17 of ED2's PFTs.
+  - Add new `model` tag `<barebones_ed2in>`. If "true", only write ED2IN tags, and do not include comment annotations. If "false" (default), try to transfer comments from ED2IN template to target ED2IN. Because of comments are written by matching line numbers, leaving this as "false" can lead to unexpected results whenever `<ed2in_tags>` contains tags missing from the `ED2IN` template.
+  - Add some additional documentation for ED2 `pecan.xml` tags.
+
+### Removed
+
+### Changed
+- `PEcAn.utils::do_conversions` has been moved to `PEcAn.workflow::do_conversions`.
+  `PEcAn.utils::do_conversions` still works for now with a warning, but is deprecated and will be removed in the future.
+- Docker:
+  - Change base image for R code from `r-base` to `rocker/tidyverse:3.5.1`. This (1) saves build time (because many R packages and system dependencies are pre-installed), and (2) enhances reproducibility (because of the strict versioning rules of the `rocker` packages)
+  - Re-factor web interface RabbitMQ create connections and post messages into their own PHP functions.
 
 ## [1.6.0] - 2018-09-01
 
 ### Fixes
+- Updated model2netcdf.SIPNET() to address issue #2094. Revised netCDF time to be from 0-364./365. (if leap) so time would be properly parsed by R and python (cf tools)
+- Fixed output time variable in models/ed/R/model2netcdf.ED2.R to provide correct fractional DOY
+- Running tests for PEcAn.settings package no longer leaves empty temp directories in test folder (#2075)
 - Fixed issue #2064 which sends one met path to write.sa.config.
+- `PEcAn.data.land::soil_params` now accepts any 2 out of 3 texture components as documented, and correctly converts percentages to proportion (#2043).
+- Added missing ncdf4 library calls in model2netcdf.JULES
+
+### Added
+- Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
+- Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
+- Added a first vignette to models/maat with the plan to add more examples
+- Added scaling to documentation
+
+### Removed
+- Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
+
+### Changed
+- Updated models/dalec/R/model2netcdf.DALEC.R to add time_bounds variable
+- Updated models/maat/R/write.config.MAAT.R to improve flow, remove bugs, and to work with the release version of the MAAT model.
+- Minor update to modules/data.atmosphere/R/met2CF.csv.R to include recursive=TRUE for outfolder.  Seemed to work better
+- Updated models/maat/R/met2model.MAAT.R to include additional output variables, fix a bug, and conduct overall cleanup. Updated docs
+- Updated models/maat/R/model2netcdf.MAAT.R to work with the release version of the MAAT model. Other small MAAT wrapper code cleanup
+- Small change to modules/data.atmosphere/R/download.NARR_site.R to set parallel=TRUE to match documentation and sub-function calls
+
+
+## [1.6.0] - Not yet
+
+### Fixes
 - Fixed issue #1939 which corrects output time vector for FATES output
 - Update to read.output to look for and read only PEcAn formatted .nc output based on the pecan standard filename format of YYYY.nc.  Solves issues with models such as FATES and dvm-dos-tem where the original model output is also in .nc file format and was not ignored by read.output, causing errors with output parsing and plotting with Shiny. Removed deprecated function convert.outputs
 - PEcAn.data.atmosphere: 
@@ -33,7 +104,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
     
 ### Added
-
+- sda.enkf function inside the `PEcAn.assim.sequential` package was replaced with the refactored version, while the original sda function can be found in the same package with the name of sda.enkf.original.
 - PEcAn.undertainty gains one new function (input.ens.gen) and three functions moved from PEcAn.utils (see "Changed" below)
 - IC workflow now has functionality to generate ensembles.
 - You can now generate ensembles for parameters and met separatly and using different methods. 

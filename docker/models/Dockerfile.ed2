@@ -1,14 +1,14 @@
 # ----------------------------------------------------------------------
 # BUILD MODEL BINARY
 # ----------------------------------------------------------------------
-FROM debian:testing as model-binary
+FROM debian:stretch as model-binary
 
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION=git
 
 # install dependencies
 RUN apt-get update \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
        build-essential \
        curl \
        gfortran \
@@ -19,7 +19,7 @@ RUN apt-get update \
 
 # download, unzip and build ed2
 WORKDIR /src
-RUN git clone https://github.com/EDmodel/ED2.git \
+RUN git -c http.sslVerify=false clone https://github.com/EDmodel/ED2.git \
     && cd ED2/ED/build \
     && curl -o make/include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s` \
     && if [ "${MODEL_VERSION}" != "git" ]; then git checkout ${MODEL_VERSION}; fi \
@@ -38,8 +38,8 @@ FROM pecan/executor:latest
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       libgfortran5 \
-       libopenmpi3 \
+       libgfortran3 \
+       libopenmpi2 \
     && rm -rf /var/lib/apt/lists/*
 
 # INSTALL PEcAn.ED2
@@ -56,8 +56,9 @@ ARG MODEL_VERSION=git
 # variables to store in docker image
 ENV APPLICATION="./job.sh" \
     MODEL_TYPE="ED2" \
-    MODEL_VERSION="${MODEL_VERSION}" \
-    RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
+    MODEL_VERSION="${MODEL_VERSION}"
+
+ENV RABBITMQ_QUEUE="${MODEL_TYPE}_${MODEL_VERSION}"
 
 # COPY model binary
 COPY --from=model-binary /src/ED2/ED/build/ed_2.1-opt /usr/local/bin/ed2.${MODEL_VERSION}

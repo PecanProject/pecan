@@ -1,173 +1,510 @@
 # The PEcAn XML {#pecanXML}
 
-The PEcAn system is configured using a xml file, often called settings.xml. The configuration file contains the following sections:
+The PEcAn system is configured using a XML file, often called `pecan.xml`.
+It contains the following major sections ("nodes"):
 
-1. [PEcAn Folders](#pecan-folders)
-2. [Database Access](#database-access)
-3. [BETY Configuration](#bety-database-configuration)
-4. [Brown Dog](#brown-dog-configuration)
-5. [PFT Selection](#pft-selection)
-6. [Meta Analysis](#meta-analysis)
-7. [Ensemble Runs](#ensemble-runs)
-8. [Sensitivity Runs](#sensitivity-runs)
-9. [Model Setup](#model-setup)
-10. [Run Setup](#run-setup)
-11. [State Data Assimilation](#state-data-assimilation-tags)
-12. [Parameter Data Assimilation]
-13. [Benchmarking]
-
-
-## PEcAn folders
-
-The following are the tags that can be used to configure the folders used by PEcAn. All of these are optional.
+- [Core configuration](#xml-core-config)
+	- [Top level structure](#xml-structure)
+	- [`info`](#xml-info) -- Run metadata
+	- [`outdir`](#xml-outdir) -- Output directory
+	- [`database`](#xml-database) -- PEcAn database settings
+	- [`pft`](#xml-pft) -- Plant functional type selection
+	- [`meta.analysis`](#xml-meta-analysis) -- Trait meta analysis
+	- [`model`](#xml-model) -- Model configuration
+	- [`run`](#xml-run) -- Run setup
+	- [`host`](#xml-host) -- Host information for remote execution
+- [Advanced features](#xml-advanced)
+	- [`ensemble`](#xml-ensemble) -- Ensemble runs
+	- [`sensitivity.analysis`](#xml-sensitivity-analysis) -- Sensitivity analysis
+	- [`parameter.data.assimilation`](#xml-parameter-data-assimilation) -- Parameter data assimilation
+	- [`multi.settings`](#xml-multi-settings) -- Multi Site Settings
+	- (experimental) [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
+	- (experimental) [`browndog`](#xml-browndog) -- Brown Dog configuration
+	- (experimental) [`benchmarking`](#xml-benchmarking) -- Benchmarking
+	
+A basic example looks like this:
 
 ```xml
-<outdir>/home/carya/testrun.pecan</outdir>
+<?xml version="1.0" encoding="UTF-8"?>
+<pecan>
+  <info>
+    <notes>Example run</notes>
+    <userid>-1</userid>
+	<username>guestuser</username>
+    <date>2018/09/18 19:12:28 +0000</date>
+  </info>
+  <outdir>/data/workflows/PEcAn_99000000006</outdir>
+  <database>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>postgres</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>true</write>
+    </bety>
+    <dbfiles>/data/dbfiles</dbfiles>
+  </database>
+  <pfts>
+    <pft>
+      <name>tundra.grasses</name> 
+      <constants>
+        <num>1</num>
+      </constants>
+    </pft>
+  </pfts>
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+  <ensemble>
+   <size>1</size>
+   <variable>NPP</variable>
+   <samplingspace>
+   <parameters>
+    <method>uniform</method>
+   </parameters>
+   <met>
+    <method>sampling</method>
+ 	</met>
+   </samplingspace>
+  </ensemble>
+  <model>
+    <id>5000000002</id>
+  </model>
+  <workflow>
+    <id>99000000006</id>
+  </workflow>
+  <run>
+    <site>
+      <id>1000000098</id>
+      <met.start>2004/01/01</met.start>
+      <met.end>2004/12/31</met.end>
+    </site>
+    <inputs>
+      <met>
+        <source>CRUNCEP</source>
+        <output>SIPNET</output>
+      </met>
+    </inputs>
+    <start.date>2004/01/01</start.date>
+    <end.date>2004/12/31</end.date>
+  </run>
+  <host>
+    <name>localhost</name>
+    <rabbitmq>
+      <uri>amqp://guest:guest@rabbitmq:5672/%2F</uri>
+      <queue>SIPNET_136</queue>
+    </rabbitmq>
+  </host>
+</pecan>
 ```
 
-* **outdir** : [optional] specifies where PEcAn will write all outputs and create folders. If this is not specified the folder pecan in the current folder will be used.
+In the following sections, we step through each of these sections in detail.
 
+## Core configuration {#xml-core-config}
 
-## Database Access
+### Top-level structure {#xml-structure}
 
-The connection to the BETY database is configured using this section. In this section you will specify what driver to use to connect to the database (PostgreSQL by default) and the connection parameters to connect to the database. This section is very picky and will only accept parameters that are passed into the connection function for each database driver, any other entries will result in an error by the database driver.
+The first line of the XML file should contain version and encoding information. 
 
-#### functions: 
-
-`db.open()`, and thus by `db.query()` and `db.check()`.
-
-New format (starting with PEcAn 1.3.6)
 ```xml
-<database>
-	<bety>
-		<dbname>bety</dbname>
-		<username>bety</username>
-		<password>bety</password>
-		<host>localhost</host>
-		<write>true</write>
-	</bety>
+<?xml version="1.0" encoding="UTF-8"?>
+```
+
+The rest of the XML file should be surrounded by `<pecan>...</pecan>` tags.
+
+```xml
+<pecan>
+  ...XML body here...
+</pecan>
+```
+
+### `info`: Run metadata {#xml-info}
+
+This section contains run metadata.
+This information is not essential to a successful model run, but is useful for tracking run provenance. 
+
+```xml
+  <info>
+    <notes>Example run</notes>
+    <userid>-1</userid>
+	<username>guestuser</username>
+    <date>2018/09/18 19:12:28 +0000</date>
+  </info>
+```
+
+The `<notes>` tag will be filled in by the web GUI if you provide notes, or you can add notes yourself within these tags. We suggest adding notes that help identify your run and a brief description of what the run is for. Because these notes are searchable within the PEcAn database and web interface, they can be a useful way to distinguish between similar runs.
+
+The `<userid>` and `<username>` section is filled in from the GUI if you are signed in. If you are not using the GUI, add the user name and ID you are associated with that exists within the PEcAn database.
+
+The `<date></date>` tag is filled automatically at the time of your run from the GUI. If you are not using the GUI, add the date you execute the run. This tag is not the tag for the dates you would like to run your model simulation.
+
+### `outdir`: Output directory {#xml-outdir}
+
+The `<outdir>` tag is used to configure the output folder used by PEcAn.
+This is the directory where all model input and output files will be stored.
+By default, the web interface names this folder `PEcAn_<workflow ID>`, and higher-level location is set by the `$output_folder$` variable in the `web/config.php` file.
+If no `outdir` is specified, PEcAn defaults to the working directory from which it is called, which may be counterintuitive.
+
+```xml
+  <outdir>/data/workflows/PEcAn_99000000006</outdir>
+```
+
+### `database`: PEcAn database settings {#xml-database}
+
+#### `bety`: PEcAn database (Bety) configuration {#xml-bety}
+
+The `bety` tag defines the driver to use to connect to the database (the only driver we support, and the default, is `PostgreSQL`) and parameters required to connect to the database. Note that connection parameters are passed *exactly* as entered to the underlying R database driver, and any invalid or extra parameters will result in an error.
+
+In other words, this configuration...
+
+```xml
+  <database>
+	...
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>postgres</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>true</write>
+    </bety>
+	...
+  </database>
+```
+
+...will be translated into R code like the following:
+
+```r
+con <- DBI::dbConnect(
+  DBI::dbDriver("PostgreSQL"),
+  user = "bety",
+  password = "bety",
+  dbname = "bety",
+  host = "postgres",
+  write = TRUE
+)
+```
+
+Common parameters are described as follows:
+
+* `driver`: The driver to use to connect to the database. This should always be set to `PostgreSQL`, unless you absolutely know what you're doing.
+* `dbname`: The name of the database (formerly `name`), corresponding to the `-d` argument to `psql`. In most cases, this should be set to `bety`, and will only be different if you named your Bety instance something else (e.g. if you have multiple instances running at once). If unset, it will default to the user name of the current user, which is usually wrong!
+* `user`: The username to connect to the database (formerly `userid`), corresponding to the `-U` argument to `psql`. default value is the username of the current user logged in (PostgreSQL uses user for this field).
+* `password`: The password to connect to the database (was `passwd`), corresponding to the `-p` argument to `psql`. If unspecified, no password is used. On standard PEcAn installations, the username and password are both `bety` (all lowercase).
+* `host`: The hostname of the `bety` database, corresponding to the `-h` argument to `psql`. On the VM, this will be `localhost` (the default). If using `docker`, this will be the name of the PostgreSQL container, which is `postgres` if using our standard `docker-compose`. If connecting to the PEcAn database on a remote server (e.g. `psql-pecan.bu.edu`), this should be the same as the hostname used for `ssh` access.
+* `write`: Logical. If `true` (the default), write results to the database. If `false`, PEcAn will run but will not store any information to `bety`.
+
+When using the web interface, this section is configured by the `web/config.php` file.
+The default `config.php` settings on any given platform (VM, Docker, etc.) or in example files (e.g. `config.php.example`) are a good place to get default values for these fields if writing `pecan.xml` by hand.
+
+Key R functions using these parameters are as follows:
+
+- `PEcAn.DB::db.open` -- Open a database connection and create a connection object, which is used by many other functions for communicating with the PEcAn database.
+
+#### `dbfiles`: Location of database files {#xml-dbfiles}
+
+The `dbfiles` is a path to the local location of files needed to run models using PEcAn, including model executables and inputs.
+
+```xml
+  <database>
+	...
+    <dbfiles>/data/dbfiles</dbfiles>
+	...
+  </database>
+```
+
+#### (Experimental) `fia`: FIA database connection parameters {#xml-fia}
+
+If a version of the FIA database is available, it can be configured using `<fia>` node, whose syntax is identical to that of the `<bety>` node.
+
+```xml
+  <database>
+    ...
 	<fia>
 		<dbname>fia5data</dbname>
 		<username>bety</username>
 		<password>bety</password>
 		<host>localhost</host>
 	</fia>
-</database>
+	...
+  </database>
 ```
 
-The connection information under bety will be used by most of the PEcAn system, only the extraction of pss/css/site information from the FIA database will use the connection information in the fia section.
+Currently, this is only used for extraction of specific site vegetation information (notably, for ED2 `css`, `pss`, and `site` files).
+Stability not ensured as of 1.5.3.
 
-* **driver** : [optional] the driver to use to connect to the database. Default value is PostgreSQL  
-* **dbname** : [optional] the name of the database (was name), default value is the username of the current user logged in.  
-* **user** : [optional] the username to connect to the database (was userid), default value is the username of the current user logged in (PostgreSQL uses user for this field).
-* **password** : [optional] the password to connect to the database (was passwd), if not specified no password is used.  
-* **host** : [optional] the name of the host to connect to, default value is localhost.  
-* **write** : [optional] should any results be written back to the database, setting this to TRUE (the default) will write any results back into the database. (since PEcAn 1.3.6)
+### `pft`: Plant functional type selection {#xml-pft}
 
-For other database drivers these parameters will change. See the driver documentation in R for the right parameters.
-
-
-## BETY Database Configuration
-
-This section describes how to connect to the BETY Database. This section is used for versions of PEcAn prior to version 1.3.6, starting at 1.3.6 this parameter is part of &lt;database&gt;&lt;bety&gt; and defaults to TRUE.
-
-#### functions: 
-
-`db.check()`, `write.configs()`, `run.models()`
+The PEcAn system requires at least 1 plant functional type (PFT) to be specified inside the `<pfts>` section. 
 
 ```xml
-<bety>
-	<write>TRUE</write>
-</bety>
+  <pfts>
+    <pft>
+      <name>tundra.grasses</name> 
+      <constants>
+        <num>1</num>
+      </constants>
+    </pft>
+  </pfts>
 ```
 
-* **write** : [optional] this can be TRUE/FALSE (the default is TRUE). If set to TRUE, runs, ensembles and workflows are written to the database.
+* `name` : (required) the name of the PFT, which must *exactly* match the name in the PEcAn database.
+* `outdir`: (optional) Directory path in which PFT-specific output will be stored during meta-analysis and sensitivity analysis. If not specified (recommended), it will be written into `<outdir>/<pftname>`.
+* `contants`: (optional) this section contains information that will be written directly into the model specific configuration files. For example, some models like ED2 use PFT numbers instead of names for PFTs, and those numbers can be specified here. See documentation for model-specific code for details.
 
+This information is currently used by the following PEcAn workflow function:
 
-## Brown Dog Configuration
+- `get.traits` - ??????
 
-This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This will allow for conversions of data (currently only met data).
-
-#### functions: 
-
-`met.process()`
-
-```xml
-<browndog>
-	<url>...</url>
-	<username>...</username>
-	<password>...</password>
-</browndog>
-```
-
-* **url** : [required] endpoint for Brown Dog to be used.
-* **username** : [optional] username to be used with the endpoint for Brown Dog.
-* **password** : [optional] password to be used with the endpoint for Brown Dog.
-
-
-## PFT Selection
-
-The PEcAn system requires at least 1 PFT (Plant Functional Type) to be specified inside the `<pfts>` section. 
-
-#### functions:  
-
-`get.traits()`
-
-
-#### tags
-
-
-```xml
-<pfts>
-	<pft>
-		<name>sipnet.temperate.coniferous</name>
-		<outdir>/home/carya/testrun.pecan/pft/1/</outdir>
-		<constants>
-			<num>1</num>
-		</constants>
-	</pft>
-</pfts>
-```
-
-* **name** : [required] the pft as is found inside the BETY database, this needs to be an exact match.  
-* **outdir**: [optional] path in which pft-specific output will be placed during meta-analysis and sensitivity analysis. If not specified it will be written into `<outdir>/<pftname>`.  
-* **contants**: [optional] this section contains information that will be written directly into the model specific configuration files. PEcAn does not look at the information in this section.  
-
-
-## Meta Analysis
-
-#### functions:
-
-`run.meta.analysis()`
-
-#### tags
-
-```xml
-<meta.analysis>
-	<iter>1000</iter>
-	<random.effects>FALSE</random.effects>
-	<update>FALSE</update>
-	<threshold>1.2</threshold>
-</meta.analysis>
-```
+### `meta.analysis`: Trait Meta Analysis {#xml-meta-analysis}
 
 The section meta.analysis needs to exists for a meta.analysis to be executed, even though all tags inside are optional.
+Conversely, if you do not want to do a trait meta-analysis (e.g. if you want to manually set all parameters), you should omit this node.
 
-* **iter** : [optional] [MCMC](http:/en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) (Markov Chain Monte Carlo) chain length, i.e. the total number of posterior samples in the meta-analysis, default is 3000. Smaller numbers will run faster but produce larger errors.  
-* **random.effects** : [optional] Whether to include random effects (site, treatment) in meta-analysis model. Can be set to FALSE to work around convergence problems caused by an over parameterized model (e.g. too many sites, not enough data). The default value is TRUE.
-* **update** : [optional] Should previous results of meta.analysis and get.traits be re-used. If set to TRUE the meta-analysis and get.trait.data will always be executed. Setting this to FALSE will try and reuse existing results. Future versions will allow for AUTO as well which will try and reuse if the PFT/traits have not changed. The default value is FALSE.
-* **threshold** threshold for Gelman-Rubin convergence diagnostic (MGPRF); default is 1.2
+```xml
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+```
+
+Some of the tags that can go in this section are:
+
+* `iter`: [MCMC](http:/en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) (Markov Chain Monte Carlo) chain length, i.e. the total number of posterior samples in the meta-analysis, default is 3000. Smaller numbers will run faster but produce larger errors.
+* `random.effects`: Whether to include random effects (site, treatment) in meta-analysis model. Can be set to FALSE to work around convergence problems caused by an over parameterized model (e.g. too many sites, not enough data). The default value is TRUE.
+* `update`: Should previous results of meta.analysis and get.traits be re-used. If set to TRUE the meta-analysis and get.trait.data will always be executed. Setting this to FALSE will try and reuse existing results. Future versions will allow for AUTO as well which will try and reuse if the PFT/traits have not changed. The default value is FALSE.
+* `threshold`: threshold for Gelman-Rubin convergence diagnostic (MGPRF); default is 1.2.
+
+This information is currently used by the following PEcAn workflow function:
+
+- `PEcAn.MA::run.meta.analysis` - ???
+
+### `model`: Model configuration {#xml-model}
+
+This section describes which model PEcAn should run and some instructions for how to run it.
+
+```xml
+<model>
+	<id>7</id>
+	<type>ED2</type>
+	<binary>/usr/local/bin/ed2.r82</binary>
+	<job.sh>module load hdf5</job.sh>
+	<config.header>
+		<!--...xml code passed directly to config file...-->
+	</config.header>
+</model>
+```
+
+Some important tags are as follows:
+
+- `id` -- The unique numeric ID of the model in the PEcAn database `models` table. If this is present, then `type` and `binary` are optional since they can be determined from the PEcAn database.
+- `type` -- The model "type", matching the PEcAn database `modeltypes` table `name` column. This also refers to which PEcAn model-specific package will be used. In PEcAn, a "model" refers to a specific version (e.g. release, git commit) of a specific model, and "model type" is used to link different releases of the same model. Model "types" also have specific PFT definitions and other requirements associated with them (e.g. the ED2 model "type" requires a global land cover database).
+- `binary` -- The file path to the model executable. If omitted, PEcAn will use whatever path is registered in the PEcAn database for the current machine. 
+- `job.sh` -- Additional options added to the `job.sh` script, which is used to execute the model. This is useful for setting specific environment variables, load modules, etc.
+
+This information is currently used by the following PEcAn workflow function:
+
+- `PEcAn.<MODEL>::write.config.<MODEL>` -- Write model-specific configuration files {#pecan-write-configs}
+- `PEcAn.remote::start.model.runs` -- Begin model run execution
+
+#### Model-specific configuration {#xml-model-specific}
+
+See the following:
+
+* [ED2][ED2 Configuration]
+* [SIPNET][SIPNET Configuration]
+* [BIOCRO][BioCro Configuration]
+
+#### ED2 specific tags {#xml-ed}
+
+Following variables are ED specific and are used in the [ED2 Configuration](ED2-Configuration).
+
+Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includes, veg, soil, psscss, inputs.
+
+```xml
+	<edin>/home/carya/runs/PEcAn_4/ED2IN.template</edin>
+	<config.header>
+		<radiation>
+			<lai_min>0.01</lai_min>
+		</radiation>
+		<ed_misc>
+			<output_month>12</output_month>
+		</ed_misc> 
+	</config.header>
+	<phenol.scheme>0</phenol.scheme>
+```
+
+  
+* **edin** : [required] template used to write ED2IN file
+* **veg** : **OBSOLETE** [required] location of VEG database, now part of `<run><inputs>`
+* **soil** : **OBSOLETE** [required] location of soild database, now part of `<run><inputs>`
+* **psscss** : **OBSOLETE** [required] location of site inforation, now part of `<run><inputs>`. Should be specified as `<pss>`, `<css>` and `<site>`.
+* **inputs** : **OBSOLETE** [required] location of additional input files (e.g. data assimilation data), now part of `<run><inputs>`. Should be specified as `<lu>` and `<thsums>`.
+
+### `run`: Run Setup {#xml-run}
+
+This section provides detailed configuration for the model run, including the site and time period for the simulation and what input files will be used.
+
+```xml
+  <run>
+    <site>
+      <id>1000000098</id>
+      <met.start>2004/01/01</met.start>
+      <met.end>2004/12/31</met.end>
+      <site.pft>
+        <pft.name>temperate.needleleaf.evergreen</pft.name>
+        <pft.name>temperate.needleleaf.evergreen.test</pft.name>
+      </site.pft>
+    </site>
+    <inputs>
+      <met>
+        <source>CRUNCEP</source>
+        <output>SIPNET</output>
+      </met>
+    </inputs>
+    <start.date>2004/01/01</start.date>
+    <end.date>2004/12/31</end.date>
+  </run>
+```
+
+#### `site`: Where to run the model {#xml-run-site}
+
+This contains the following tags:
+
+- `id` -- This is the numeric ID of the site in the PEcAn database (table `sites`, column `id`). PEcAn can automatically fill in other relevant information for the site (e.g. `name`, `lat`, `lon`) using the site ID, so those fields are optional if ID is provided.
+- `name` -- The name of the site, as a string.
+- `lat`, `lon` -- The latitude and longitude coordinates of the site, as decimals.
+- `met.start`, `met.end` -- ???
+- `<site.pft>` (optional) If this tag is found under the site tag, then PEcAn automatically makes sure that only PFTs defined under this tag is used for generating parameter's samples. Following shows an exmaple of how this tag can be added to the PEcAn xml :
+
+```xml
+    <site.pft>
+     <pft.name>temperate.needleleaf.evergreen</pft.name>
+     <pft.name>temperate.needleleaf.evergreen</pft.name>
+    </site.pft>
+```
+For multi-site runs if the `pft.site` tag (see {#xml-run-inputs}) is defined under `input`, then the above process will be done automatically under prepare settings step in PEcAn main workflow and there is no need for adding the tags manually. Using the `pft.site` tag however, requires a lookup table as an input (see {#xml-run-inputs}).
 
 
-## Ensemble Runs
+#### `inputs`: Model inputs {#xml-run-inputs}
 
-Only if this section is defined an ensemble analysis is done.
+Models require several different types of inputs to run.
+Exact requirements differ from model to model, but common inputs include meteorological/climate drivers, site initial conditions (e.g. vegetation composition, carbon pools), and land use drivers.
 
-#### functions: 
+In general, all inputs should have the following tags:
 
-`write.configs()`,`write.ensemble.configs`, `run.ensemble.analysis()`
+* `id`:  Numeric ID of the input in the PEcAn database (table `inputs`, column `id`). If not specified, PEcAn will try to figure this out based on the `source` tag (described below).
+* `path`: The file path of the input. Usually, PEcAn will set this automatically based on the `id` (which, in turn, is determined from the `source`). However, this can be set manually for data that PEcAn does not know about (e.g. data that you have processed yourself and have not registered with the PEcAn database).
+* `source`: The input data type. This tag name needs to match the names in the corresponding conversion functions. If you are using PEcAn's automatic input processing, this is the only field you need to set. However, this field is ignored if `id` and/or `path` are provided.
+* `output`: ???
 
-#### tags
+The following are the most common types of inputs, along with their corresponding tags:
+
+##### `met`: Meteorological inputs {#xml-run-inputs-met}
+
+(Under construction. See the `PEcAn.data.atmosphere` package, located in `modules/data.atmosphere`, for more details.)
+
+##### (Experimental) `soil`: Soil inputs {#xml-run-inputs-soil}
+
+(Under construction. See the `PEcAn.data.land` package, located in `modules/data.land`, for more details).
+
+##### (Experimental) `veg`: Vegetation initial conditions {#xml-run-inputs-veg}
+
+(Under construction. Follow developments in the `PEcAn.data.land` package, located in `modules/data.land` in the source code).
+##### `pft.site` Multi-site site / PFT mapping
+
+When performing multi-site runs, it is not uncommon to find that different sites need to be run with different PFTs, rather than running all PFTs at all sites. If you're interested to use a specific PFT for your site/sites you can use the following tag to tell PEcAn which PFT needs to be used for what site.
+```
+<pft.site>
+  <path>site_pft.csv</path>
+</pft.site>
+```
+For example using the above tag, user needs to have a csv file named `site_pft` stored in the pecan folder. At the moment we have functions supporting just the `.csv` and `.txt` files which are comma separated and have the following format:
+```
+site_id, pft_name
+1000025731,temperate.broadleaf.deciduous
+764,temperate.broadleaf.deciduous
+```
+Then pecan would use this lookup table to inform `write.ensemble.config` function about what PFTs need to be used for what sites.
+
+#### `start.date` and `end.date`
+
+The start and end date for the run, in a format parseable by R (e.g. `YYYY/MM/DD` or `YYYY-MM-DD`).
+These dates are inclusive; in other words, they refer to the first and last days of the run, respectively.
+
+NOTE: Any time-series inputs (e.g. meteorology drivers) must contain all of these dates.
+PEcAn tries to detect and throw informative errors when dates are out of bounds inputs, but it may not know about some edge cases.
+
+#### Other tags
+
+The following tags are optional run settings that apply to any model: 
+
+* `jobtemplate`: the template used when creating a `job.sh` file, which is used to launch the actual model. Each model has its own default template  in the `inst` folder of the corresponding R package (for instance, here is the one for [ED2](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/template.job)). The following variables can be used: `@SITE_LAT@`, `@SITE_LON@`, `@SITE_MET@`, `@START_DATE@`, `@END_DATE@`, `@OUTDIR@`, `@RUNDIR@` which all come variables in the `pecan.xml` file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : `@SCRATCH_COPY@`, `@SCRATCH_CLEAR@`.
+
+Some models also have model-specific tags, which are described in the [PEcAn Models](#pecan-models) section.
+
+### `host`: Host information for remote execution {#xml-host}
+
+This section provides settings for remote model execution, i.e. any execution that happens on a machine (including "virtual" machines, like Docker containers) different from the one on which the main PEcAn workflow is running.
+A common use case for this section is to submit model runs as jobs to a high-performance computing cluster.
+If no `host` tag is provided, PEcAn assumes models are run on `localhost`, a.k.a. the same machine as PEcAn itself.
+
+For detailed instructions on remote execution, see the [Remote Execution](#pecan-remote) page.
+For detailed information on configuring this for RabbitMQ, see the [RabbitMQ](#rabbitmq-xml) page.
+The following provides a quick overview of XML tags related to remote execution.
+
+**NOTE**: Any paths specified in the `pecan.xml` refer to paths on the `host` specified in this section, /not/ the machine on which PEcAn is running (unless models are running on `localhost` or this section is omitted).
+
+```xml
+	<host>
+		<name>pecan2.bu.edu</name>
+		<rundir>/fs/data3/guestuser/pecan/testworkflow/run</rundir>
+		<outdir>/fs/data3/guestuser/pecan/testworkflow/out</outdir>
+		<scratchdir>/tmp/carya</scratchdir>
+		<clearscratch>TRUE</clearscratch>
+		<qsub>qsub -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub>
+		<qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
+		<qstat>qstat -j @JOBID@ &> /dev/null || echo DONE</qstat>
+		<job.sh>module load udunits R/R-3.0.0_gnu-4.4.6</job.sh>
+	</host>
+```
+
+The `host` section has the following tags:
+
+* `name`: [optional] name of host server where model is located and executed, if not specified localhost is assumed.
+* `rundir`: [optional/required] location where all the configuration files are written. For localhost this is optional (`<outdir>/run` is the default), for any other host this is required.
+* `outdir`: [optional/required] location where all the outputs of the model are written. For localhost this is optional (`<outdir>/out` is the default), for any other host this is required.
+* `scratchdir`: [optional] location where output is written. If specified the output from the model is written to this folder and copied to the outdir when the model is finished, this could significantly speed up the model execution (by using local or ram disk).
+* `clearscratch`: [optional] if set to TRUE the scratchfolder is cleaned up after copying the results to the outdir, otherwise the folder will be left. The default is to clean up after copying.
+* `qsub`: [optional] the command to submit a job to the queuing system. There are 3 parameters you can use when specifying the qsub command, you can add additional values for your specific setup (for example -l walltime to specify the walltime, etc). You can specify @NAME@ the pretty name, @STDOUT@ where to write stdout and @STDERR@, where to write stderr. You can specify an empty element (`<qsub/>`) in which case it will use the default value is `qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -s /bin/bash`.
+* `qsub.jobid`: [optional] the regular expression used to find the `jobid` returned from `qsub`. If not specified (and `qsub` is) it will use the default value is `Your job ([0-9]+) .*`
+* `qstat`: [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take `@JOBID@` which is the ID of the job as returned by `qsub.jobid`. If not specified (and qsub is) it will use the default value is `qstat -j @JOBID@ || echo DONE`
+* `job.sh`: [optional] additional options to add to the job.sh at the top.
+
+## Advanced features {#xml-advanced}
+
+### `ensemble`: Ensemble Runs {#xml-ensemble}
+
+As with `meta.analysis`, if this section is missing, then PEcAn will not do an ensemble analysis.
+
+```xml
+  <ensemble>
+    <size>1</size>
+    <variable>NPP</variable>
+    <samplingspace>
+      <parameters>
+        <method>uniform</method>
+      </parameters>
+      <met>
+        <method>sampling</method>
+      </met>
+    </samplingspace>
+  </ensemble>
+```
+
+An alternative configuration is as follows:
 
 ```xml
 <ensemble>
@@ -186,33 +523,40 @@ Only if this section is defined an ensemble analysis is done.
 </ensemble>
 ```
 
-* **size** : [required] the number of runs in the ensemble.
-* **variable**: [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
-* **samplingspace**:[optional] Contains tags for defining how the ensembles will be generated.
+Tags in this block can be broken down into two categories: Those used for setup (which determine how the ensemble analysis runs) and those used for post-hoc analysis and visualization (i.e. which do not affect how the ensemble is generated).
 
-Each piece in the sampling space can potentially have a method tag and a parent tag. Method refers to the sampling method and parent refers to the cases where we need to link the samples of two components. When no tag is defined for one component, one sample will be generated and used for all the ensembles. This allows for partitioning/studying different sources of uncertainties. For example, if no met tag is defined then, one met path will be used for all the ensembles and as a result the outpus's uncertainty will come from the variability in the parameters. At the moment no sampling method is implemented for soil and vegetation.
-Available sampling methods for `parameters` can be found in the documentation of the `get.ensemble.samples` function in `PEcAn.utils` package.
-For the cases where we need simulations with a predefined set of parameters, met and initial condition we can use the restart argument. Restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble ids), start.time and stop.time.
+Tags related to ensemble setup are:
 
-The restart functionality is developed using model specific functions by called write_restart.modelname. You need to make sure first that this function is already exist for your desired model.
+* `size` : (required) the number of runs in the ensemble.
+* `samplingspace`: (optional) Contains tags for defining how the ensembles will be generated.
+
+Each piece in the sampling space can potentially have a method tag and a parent tag. Method refers to the sampling method and parent refers to the cases where we need to link the samples of two components. When no tag is defined for one component, one sample will be generated and used for all the ensembles. This allows for partitioning/studying different sources of uncertainties. For example, if no met tag is defined then, one met path will be used for all the ensembles and as a result the output uncertainty will come from the variability in the parameters. At the moment no sampling method is implemented for soil and vegetation.
+Available sampling methods for `parameters` can be found in the documentation of the `PEcAn.utils::get.ensemble.samples` function.
+For the cases where we need simulations with a predefined set of parameters, met and initial condition we can use the restart argument. Restart needs to be a list with name tags of `runid`, `inputs`, `new.params` (parameters), `new.state` (initial condition), `ensemble.id` (ensemble ids), `start.time`, and `stop.time`.
+
+The restart functionality is developed using model specific functions by called `write_restart.modelname`. You need to make sure first that this function is already exist for your desired model.
 
 Note: if the ensemble size is set to 1, PEcAn will select the **posterior median** parameter values rather than taking a single random draw from the posterior
 
+Tags related to post-hoc analysis and visualization are:
 
-## Sensitivity Runs
+* `variable`: (optional) name of one (or more) variables the analysis should be run for. If not specified, `sensitivity.analysis` variable is used, otherwise default is GPP (Gross Primary Productivity).
+
+(NOTE: This static visualization functionality will soon be deprecated as PEcAn moves towards interactive visualization tools based on Shiny and htmlwidgets).
+
+This information is currently used by the following PEcAn workflow functions:
+
+- `PEcAn.<MODEL>::write.config.<MODEL>` - See [above](#pecan-write-configs).
+- `PEcAn.uncertainty::write.ensemble.configs` - Write configuration files for ensemble analysis
+- `PEcAn.uncertainty::run.ensemble.analysis` - Run ensemble analysis
+
+### `sensitivity.analysis`: Sensitivity analysis {#xml-sensitivity-analysis}
 
 Only if this section is defined a sensitivity analysis is done. This section will have `<quantile>` or `<sigma>` nodes. If neither are given, the default is to use the median +/- [1 2 3] x sigma (e.g. the 0.00135 0.0228 0.159 0.5 0.841 0.977 0.999 quantiles); If the 0.5 (median) quantile is omitted, it will be added in the code.
-
-#### functions: 
-
-`write.configs()`, `run.sensitivity.analysis()`
-
-#### tags
 
 ```xml
 <sensitivity.analysis>
 	<quantiles>
-		<quantile></quantile>
 		<sigma>-3</sigma>
 		<sigma>-2</sigma>
 		<sigma>-1</sigma>
@@ -227,165 +571,131 @@ Only if this section is defined a sensitivity analysis is done. This section wil
 </sensitivity.analysis>
 ```
 
-* **quantiles** : [optional] Quantiles of parameter distributions at which the model should be evaluated when running sensitivity analysis. Values greater than 0 and less than 1 can be used.  
-* **sigma** : [optional] Any real number can be used to indicate the quantiles to be used in units of normal probability.  
-* **quantile** : [optional] Which quantile should be used.  
-* **start.date** : [required?] start date of the sensitivity analysis (in YYYY/MM/DD format) 
-* **end.date** : [required?] end date of the sensitivity analysis (in YYYY/MM/DD format)
-* **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
-* ** variable** : [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
-* ** perpft** : [optional] if `TRUE` a sensitivity analysis on PFT-specific outputs will be run. This is only possible if your model provides PFT-specific outputs for the `variable` requested. This tag only affects the output processing, not the number of samples proposed for the analysis nor the model execution.
+- `quantiles/sigma` : [optional] The number of standard deviations relative to the standard normal (i.e. "Z-score") for which to perform the ensemble analysis. For instance, `<sigma>1</sigma>` corresponds to the quantile associated with 1 standard deviation greater than the mean (i.e. 0.681). Use a separate `<sigma>` tag, all under the `<quantiles>` tag, to specify multiple quantiles. Note that we _do not automatically add the quantile associated with `-sigma`_ -- i.e. if you want +/- 1 standard deviation, then you must include both `<sigma>1</sigma>` _and_ `<sigma>-1</sigma>`.
+- `start.date` : [required?] start date of the sensitivity analysis (in YYYY/MM/DD format) 
+- `end.date` : [required?] end date of the sensitivity analysis (in YYYY/MM/DD format)
+  - **_NOTE:_** `start.date` and `end.date` are distinct from values set in the run tag because this analysis can be done over a subset of the run.
+-  `variable` : [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
+- `perpft` : [optional] if `TRUE` a sensitivity analysis on PFT-specific outputs will be run. This is only possible if your model provides PFT-specific outputs for the `variable` requested. This tag only affects the output processing, not the number of samples proposed for the analysis nor the model execution.
 
-## Model Setup
+This information is currently used by the following PEcAn workflow functions:
 
-This section is required and tells PEcAn what model to run. This section should either specify `<id>` or both `<name>` and `<binary>`  of the model. If both id and name and/or binary are specified the id is used to check the specified name and/or binary.
+- `PEcAn.<MODEL>::write.configs.<MODEL>` -- See [above](#pecan-write-configs)
+- `PEcAn.uncertainty::run.sensitivity.analysis` -- Executes the uncertainty analysis
 
-As of version 1.3.7 the `<name>` tag has been renamed `<type>`. The `<type>` tag refers to the "type" of model and is used for a) identifying appropriate pfts and b) identifying whether appropriate inputs (i.e. met data) are available for the given site and model (or if they can be created). 
+### Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
-To ensure compatability, the code will automatically convert from `<name>` to `<type>`.
+The following tags can be used for parameter data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](#pda)
 
-#### functions: 
+### Multi-Settings {#xml-multi-settings}
 
-`write.configs()`, `run.models()`
+Multi-settings allows you to do multiple runs across different sites. This customization can also leverage site group distinctions to expedite the customization. It takes your settings and applies the same settings, changing only the site level tags across sites.
 
-#### tags
-
-```xml
-<model>
-	<id>7</id>
-	<type>ED2</type>
-	<binary>/usr/local/bin/ed2.r82</binary>
-	<job.sh>module load hdf5</job.sh>
-	<config.header>
-		<!--...xml code passed directly to config file...-->
-	</config.header>
-</model>
+To start, add the multisettings tag within the `<run></run>` section of your xml
 ```
-
-* **id** : [optional/required] id in the models database table, see above.  
-* **name** : **OBSOLETE** name of the model, use type from version 1.3.7
-* **type** : [optional/required] type of model, see above.
-* **binary** : [optional/required] path to the model executable, see above.  
-* **job.sh** : [optional] additional options to add to the job.sh at the top  
-* **config.headers** : [optional] XML that will appear at the start of generated config files.
-
-#### ED2 specific tags
-
-Following variables are ED specific and are used in the [ED2 Configuration](ED2-Configuration).
-
-Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includes, veg, soil, psscss, inputs.
-
-```xml
-	<edin>/home/carya/runs/PEcAn_4/ED2IN.template</edin>
-	<config.header>
-		<radiation>
-			<lai_min>0.01</lai_min>
-		</radiation>
-		<ed_misc>
-			<output_month>12</output_month>      
-		</ed_misc> 
-	</config.header>
-	<phenol.scheme>0</phenol.scheme>
+<multisettings>
+  <multisettings>run</multisettings>
+<multisettings> 
 ```
-
-  
-* **edin** : [required] template used to write ED2IN file
-* **veg** : **OBSOLETE** [required] location of VEG database, now part of `<run><inputs>
-* **soil** : **OBSOLETE** [required] location of soild database, now part of `<run><inputs>
-* **psscss** : **OBSOLETE** [required] location of site inforation, now part of `<run><inputs>`. Should be specified as `<pss>`, `<css>` and `<site>`.
-* **inputs** : **OBSOLETE** [required] location of additional input files (e.g. data assimilation data), now part of `<run><inputs>`. Should be specified as `<lu>` and `<thsums>`.
-
-
-## Run Setup
-
-#### tags
-
-```xml
-<run>
-	<jobtemplate>/home/carya/path/to/template</jobtemplate>
-	<start.date>2002-01-01 00:00:00</start.date>
-	<end.date>2005-12-31 00:00:00</end.date>
-	</dbfiles>/home/carya/.pecan/dbfiles</dbfiles>
-	<site>
-		<id>772</id>
-		<name>Niwot Ridge Forest/LTER NWT1 (US-NR1)</name>
-		<lat>40.032900</lat>
-		<lon>-105.546000</lon>
-		<met.start>2002/01/01</met.start>
-		<met.end>2005/12/31</met.end>
-	</site>
-	<inputs>
-          <met>
-             <id>10000000001</id>
-             <path>/fs/data1/pecan.data/input/</path>
-             <source>Ameriflux</source>
-             <username>carya</username>
-          </met>
-	</inputs>
-</run>
-<host>
-		<name>localhost</name>
-		<rundir>/home/carya/testrun.pecan/run/</rundir>
-		<outdir>/home/carya/testrun.pecan/out/</outdir>
-		<scratchdir>/tmp/carya</scratchdir>
-		<clearscratch>TRUE</clearscratch>
-		<qsub>qsub -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub>
-		<qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
-		<qstat>qstat -j @JOBID@ &> /dev/null || echo DONE</qstat>
-		<job.sh>module load udunits R/R-3.0.0_gnu-4.4.6</job.sh>
-</host>
+Additional tags for this section exist and can fully be seen here:
 ```
-
-* **jobtemplate** : [optional] the template used when creating a job.sh file which is used to launch the actual model. Each model has it's own [template](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/template.job) in the inst folder of the module. The following variables can e used: @SITE_LAT@, @SITE_LON@, @SITE_MET@, @START_DATE@, @END_DATE@, @OUTDIR@, @RUNDIR@ which all come variables in the pecan.xml file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : @SCRATCH_COPY@, @SCRATCH_CLEAR@ .
-* **start.date** : [required] the first day of the simulation  
-* **end.date** : [required] the last day of the simulation
-* **dbfiles** : [optional] location where pecan should write files that will be stored in the database. The default is store them in `${HOME}/.pecan/dbfiles`
-
-Site specific information is specified in the `<site>` subsection. Either `<id>` or `<name>`, `<lat>` and `<lon>` should be specified. If id and any of the others are specified the values will be compared with those from BETYdb.
+ <multisettings>
+  <multisettings>assim.batch</multisettings>
+  <multisettings>ensemble</multisettings>
+  <multisettings>sensitivity.analysis</multisettings>
+  <multisettings>run</multisettings>
+ </multisettings>
+ ```
+These tags correspond to different pecan analysis that need to know that there will be multiple settings read in.
  
-* **id** : [optional/required] id of the site in the BETY database, see above.  
-* **name** : [optional/required] site name, see above.  
-* **lat** : [optional/required] site latitude, see above.  
-* **lon** : [optional/required] site longitude, see above.  
+ 
+Next you'll want to add the following tags to denote the group of sites you want to use. It leverages site groups, which are defined in BETY.
 
-Inputs specific information for each model type is specified in the `<inputs>` subsection. 
-Each input will have three tags:
-* **id** :  [optional/required] An id that points to the input if already in the database.
-* **path** : [optional/required] The path to the dataset if already downloaded.
-* **source** : [optional/required] The input data type. This tag name needs to match the names in the conversion functions. 
-In general, the path should be filled in by PEcAn and not by the user.
-If PEcAn is processing all the input, id is not required. Alternatively, if you're using data processed by hand, source is not required. 
+```xml
+ <sitegroup>
+   <id>1000000022</id>
+ </sitegroup>
+````
+If you add this tag, you must remove the `<site> </site>` tags from the `<run>` tag portion of your xml. 
+The id of your sitegroup can be found by lookig up your site group within BETY.
+
+You do not have to use the sitegroup tag. You can manually add multiple sites using the structure in the example below. 
+
+Lastly change the top level tag to `<pecan.multi>`, meaning the top and bootom of your xml should look like this:
+
+```
+<?xml version="1.0"?>
+<pecan.multi>
+...
+</pecan.multi>
+```
+
+Once you have defined these tags, you can run PEcAn, but there may be further specifications needed if you know that different data sources have different dates available.
+
+Run workflow.R up until
+```
+# Write pecan.CHECKED.xml
+PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
+```
+Once this section is run, you'll need to open `pecan.CHECKED.xml`. You will notice that it has expanded from your original `pecan.xml`.
+
+```xml
+ <run>
+  <settings.1>
+   <site>
+    <id>796</id>
+    <met.start>2005/01/01</met.start>
+    <met.end>2011/12/31</met.end>
+    <name>Bartlett Experimental Forest (US-Bar)</name>
+    <lat>44.06464</lat>
+    <lon>-71.288077</lon>
+   </site>
+   <start.date>2005/01/01</start.date>
+   <end.date>2011/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-796/AMF_US-Bar_BASE_HH_4-1.2005-01-01.2011-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.1>
+  <settings.2>
+   <site>
+    <id>767</id>
+    <met.start>2001/01/01</met.start>
+    <met.end>2014/12/31</met.end>
+    <name>Morgan Monroe State Forest (US-MMS)</name>
+    <lat>39.3231</lat>
+    <lon>-86.4131</lon>
+   </site>
+   <start.date>2001/01/01</start.date>
+   <end.date>2014/12/31</end.date>
+   <inputs>
+    <met>
+     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-767/AMF_US-MMS_BASE_HR_8-1.2001-01-01.2014-12-31.clim</path>
+    </met>
+   </inputs>
+  </settings.2>
+....
+</run>
+```
+* The `...` replaces the rest of the site settings for however many sites are within the site group.
+
+Looking at the example above, take a close look at the `<met.start></met.start>` and `<met.end></met.end>`. You will notice that for both sites, the dates are different. In this example they were edited by hand to include the dates that are available for that site and source. You must know your source prior. Only the source CRUNCEP has a check that will tell you if your dates are outside the range available. PEcAn will automatically populate these dates across sites according the original setting of start and end dates.
 
 
-One common input will be the weather data, often specified in `<met>`.
-
-Other model types will have different model specific inputs.  PEcAn will find the location of the file on the host you run PEcAn on.
-
-* **met** : [model type specific] most models will have a met tag to specify location of the weather data.
-* **pss** : [ED2, required] location of patch file
-* **css** : [ED2, required] location of cohort file
-* **site** : [ED2, optional] location of site file
-* **lu** : [ED2, required] location of land use file
-* **thsums** : [ED2, required] location of thermal sums file
-* **veg** : [ED2, required] location of vegetation data
-* **soil** : [ED2, required] location of soil data
-
-Host on which the simulation will run is specified in the `<host>` subsection. If this section is not specified it is assumed the simulation will run on localhost. If qsub is specified (can be empty in which case the defaults will be used) the models will be executed using qsub.
-
-* **name** : [optional] name of host server where model is located and executed, if not specified localhost is assumed.  
-* **rundir** : [optional/required] location where all the configuration files are written. For localhost this is optional (`<outdir>/run` is the default), for any other host this is required.  
-* **outdir** : [optional/required] location where all the outputs of the model are written. For localhost this is optional (`<outdir>/out` is the default), for any other host this is required.
-* **scratchdir** : [optional] location where output is written. If specified the output from the model is written to this folder and copied to the outdir when the model is finished, this could significantly speed up the model execution (by using local or ram disk).
-* **clearscratch** : [optional] if set to TRUE the scratchfolder is cleaned up after copying the results to the outdir, otherwise the folder will be left. The default is to clean up after copying.
-* **qsub** : [optional] the command to submit a job to the queuing system. There are 3 parameters you can use when specifying the qsub command, you can add additional values for your specific setup (for example -l walltime to specify the walltime, etc). You can specify @NAME@ the pretty name, @STDOUT@ where to write stdout and @STDERR@, where to write stderr. You can specify an empty element (<qsub/>) in which case it will use the default value is "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -s /bin/bash".
-* **qsub.jobid** : [optional] the regular expression used to find the jobid returned from qsub. If not specified (and qsub is) it will use the default value is "Your job ([0-9]+) .*"
-* **qstat** : [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take @JOBID@ which is the id of the job as returned by qsub.jobid. If not specified (and qsub is) it will use the default value is "qstat -j @JOBID@ || echo DONE"
-* **job.sh** : [optional] additional options to add to the job.sh at the top  
+In addition, you will notice that the `<path></path>` section contains the model specific meteorological data file. You can add that in by hand or you can you can leave the normal tags that met process workflow will use to process the data into your model specific format:
+```
+<met>
+  <source>AmerifluxLBL</source>
+  <output>SIPNET</output>
+  <username>pecan</username>
+</met>
+```
 
 
-## State Data Assimilation Tags
+### (experimental) State Data Assimilation {#xml-state-data-assimilation}
 
-The following tags can be used for state data assimilation. More detailed information can be found here: [State Data Assimilation Documentation](sda.documentation.md)
+The following tags can be used for state data assimilation. More detailed information can be found here: [State Data Assimilation Documentation](#sda)
 
 ```xml
 <state.data.assimilation>
@@ -416,22 +726,28 @@ The following tags can be used for state data assimilation. More detailed inform
 * **end.date** : [required?] end date of the state data assimilation (in YYYY/MM/DD format)
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
 
-## Parameter Data Assimilation
+### (experimental) Brown Dog {#xml-browndog}
 
-The following tags can be used for state data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](pda.documentation.md)
+This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This facilitates processing and conversions of data.
 
-#### tags
+```xml
+  <browndog>
+	<url>...</url>
+	<username>...</username>
+	<password>...</password>
+  </browndog>
+```
+
+* `url`: (required) endpoint for Brown Dog to be used.
+* `username`: (optional) username to be used with the endpoint for Brown Dog.
+* `password`: (optional) password to be used with the endpoint for Brown Dog.
+
+This information is currently used by the following R functions:
+
+- `PEcAn.data.atmosphere::met.process` -- Generic function for processing meteorological input data.
+- `PEcAn.benchmark::load_data` -- Generic, versatile function for loading data in various formats.
+
+### (experimental) Benchmarking {#xml-benchmarking}
 
 Coming soon...
 
-## Benchmarking
-
-Coming soon...
-
-## Model-specific configuration
-
-See the following:
-
-* [ED2][ED2 Configuration]
-* [SIPNET][SIPNET Configuration]
-* [BIOCRO][BioCro Configuration]

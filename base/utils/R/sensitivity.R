@@ -23,6 +23,7 @@
 ##' @param variables variables to be read from model output
 ##' @param per.pft flag to determine whether we want SA on pft-specific variables
 ##' @export
+##' @importFrom magrittr %>%
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
 #--------------------------------------------------------------------------------------------------#
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
@@ -93,7 +94,6 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
                              clean = FALSE, write.to.db = TRUE) {
   scipen <- getOption("scipen")
   options(scipen = 12)
-  
   my.write.config <- paste("write.config.", model, sep = "")
   
   if (write.to.db) {
@@ -119,6 +119,22 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   inputs <- inputs[grepl(".id$", inputs)]
   
   runs <- data.frame()
+  
+  # Reading the site.pft specific tags from xml
+  site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
+  
+  if(!is.null(site.pfts.vec)){
+    # find the name of pfts defined in the body of pecan.xml
+    defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
+    # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
+    if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
+      quantile.samples <- quantile.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
+    # warn if there is a pft specified in the site but it's not defined in the pecan xml.
+    if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
+      PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
+                                       site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
+  }
+  
   
   ## write median run
   MEDIAN <- "50"
@@ -198,6 +214,17 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       "outdir      : ", file.path(settings$host$outdir, run.id), "\n", 
       file = file.path(settings$rundir, run.id, "README.txt"), 
       sep = "")
+ 
+  
+  # I check to make sure the path under the met is a list. if it's specified what met needs to be used in 'met.id' under sensitivity analysis of pecan xml we used that otherwise, I use the first met.
+  if (is.list(settings$run$inputs$met$path)){
+    # This checks for met.id tag in the settings under sensitivity analysis - if it's not there it creates it. Then it's gonna use what it created.
+    if (is.null(settings$sensitivity.analysis$met.id))  settings$sensitivity.analysis$met.id <- 1
+    
+    settings$run$inputs$met$path <- settings$run$inputs$met$path[[settings$sensitivity.analysis$met.id]]
+    
+  }
+  
   
   # write configuration
   do.call(my.write.config, args = list(defaults = defaults, 
@@ -296,17 +323,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               file = file.path(settings$rundir, run.id, "README.txt"), 
               sep = "")
           
-          # I check to make sure the path under the met is a list. if it's specified what met needs to be used in 'met.id' under sensitivity analysis of pecan xml we used that otherwise, I use the first met.
-          if (is.list(settings$run$inputs$met$path)){
-            # This checks for met.id tag in the settings under sensitivity analysis - if it's not there it creates it. Then it's gonna use what it created.
-            if (is.null(settings$sensitivity.analysis$met.id))  settings$sensitivity.analysis$met.id <- 1
-             
-              settings$run$inputs$met$path <- settings$run$inputs$met$path[[settings$sensitivity.analysis$met.id]]
-            
-          }
-          
-          
-          
+
           # write configuration
           do.call(my.write.config, args = list(defaults = defaults,
                                                trait.values = trait.samples, 

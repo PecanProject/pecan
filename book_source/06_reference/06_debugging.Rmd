@@ -1,0 +1,25 @@
+# Debugging
+
+How to identify the source of a problem.
+
+
+### Using `tests/workflow.R`
+
+This script, along with model-specific settings files in the `tests` folder, provide a working example. From inside the tests folder, `R CMD --vanilla -- --settings pecan.<model>.xml < workflow.R` should work.
+
+The next step is to add `debugonce(<broken.function.name>)` before running the test workflow.
+
+This allows you can step through the function and evaluate the different objects as they are created and/or transformed.
+
+See [tests README](https://github.com/PecanProject/pecan/blob/master/tests/README.md) for more information.
+
+
+
+### Useful scripts 
+
+The following scripts (in `qaqc/vignettes` identify, respectively:
+
+1. [relationships among functions across packages](https://github.com/PecanProject/pecan/blob/master/qaqc/vignettes/function_relationships.Rmd)
+2. [function inputs and outputs](https://github.com/PecanProject/pecan/blob/master/qaqc/vignettes/module_output.Rmd) (e.g. that will identify which functions and outputs are used in a workflow).
+
+

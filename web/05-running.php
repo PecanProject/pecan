@@ -28,6 +28,16 @@ if (!isset($_REQUEST['workflowid'])) {
 }
 $workflowid=$_REQUEST['workflowid'];
 
+// hostname
+if (!isset($_REQUEST['hostname'])) {
+  die("Need a hostname.");
+}
+$hostname=$_REQUEST['hostname'];
+if (!array_key_exists($hostname, $hostlist)) {
+  die("${hostname} is not an approved host");
+}
+$hostoptions = $hostlist[$hostname];
+
 // number of log lines
 $loglines = isset($_REQUEST['loglines']) ? $_REQUEST['loglines'] : 20;
 
@@ -64,7 +74,7 @@ foreach ($status as $line) {
     if (isset($params['email']) && ($params['email'] != "")) {
       $url = (isset($_SERVER['HTTPS']) ? "https://" : "http://");
       $url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER["SCRIPT_NAME"];
-      $url .= "?workflowid=${workflowid}&loglines=${loglines}";
+      $url .= "?workflowid=${workflowid}&loglines=${loglines}&hostname=${hostname}";
       if ($offline) {
         $url .= "&offline=offline";
       }
@@ -78,7 +88,7 @@ foreach ($status as $line) {
     $error = true;
   }
   if ($data[0] == "ADVANCED" && count($data) < 3) {
-    header( "Location: 06-edit.php?workflowid=${workflowid}${offline}");
+    header( "Location: 06-edit.php?workflowid=${workflowid}&hostname=${hostname}${offline}");
     close_database();
     exit;
   }
@@ -117,7 +127,7 @@ if (!$finished) {
 
   function refresh() {
     var url="<?php echo $_SERVER["SCRIPT_NAME"] . '?workflowid=' . $workflowid; ?>";
-    url += "&loglines=" + $("#loglines").val();
+    url += "&hostname=<?php echo $hostname; ?>&loglines=" + $("#loglines").val();
     window.location.replace(url);
     return false;
   }
@@ -140,6 +150,7 @@ if (!$finished) {
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
       <input type="hidden" name="workflowid" value="<?php echo $workflowid; ?>" />
+      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
       <input type="hidden" name="loglines" value="<?php echo $loglines; ?>" />
     </form>
 
@@ -153,14 +164,7 @@ if (!$finished) {
     <input id="next" type="button" value="Results" onclick="nextStep();" />
 <?php } ?>
     <div class="spacer"></div>
-<?php whoami(); ?>    
-<p>
-  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
-  <br>
-  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
-  <br>
-  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
-</p>
+    <?php left_footer(); ?>    
   </div>
   <div id="output">
   <h2>Execution Status</h2>

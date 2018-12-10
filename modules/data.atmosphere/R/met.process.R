@@ -77,8 +77,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
     if (i < length(overwrite.check) && 
         overwrite.check[i] == TRUE && 
         !all(overwrite.check[(i + 1):length(overwrite.check)])) {
-      print(overwrite)
-     PEcAn.logger::logger.error(paste0("If overwriting any stage of met.process, ", "all subsequent stages need to be overwritten too. Please correct."))
+      PEcAn.logger::logger.debug(overwrite)
+      PEcAn.logger::logger.error(
+        "If overwriting any stage of met.process, ",
+        "all subsequent stages need to be overwritten too. Please correct.")
     }
   }
   
@@ -134,7 +136,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     assign(stage$id.name, list(inputid = input_met$id,
                                dbfileid = PEcAn.DB::dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
   }
-  print(stage)
+  PEcAn.logger::logger.debug(stage)
   
   if(is.null(model)){
     stage$model <- FALSE
@@ -165,13 +167,14 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # Download raw met
   if (stage$download.raw) {
     raw.data.site.id <- ifelse(is.null(register$siteid), new.site$id, register$siteid)
+    str_ns_download <- ifelse(is.null(register$siteid), str_ns, register$siteid)
     
     raw.id <- .download.raw.met.module(dir = dir,
                                        met = met, 
                                        register = register, 
                                        machine = machine, 
                                        start_date = start_date, end_date = end_date,
-                                       str_ns =str_ns, con = con, 
+                                       str_ns =str_ns_download, con = con, 
                                        input_met = input_met, 
                                        site.id = raw.data.site.id, 
                                        lat.in = new.site$lat, lon.in = new.site$lon, 
