@@ -28,10 +28,9 @@ if (is.na(args[1])){
 
 #--------------------------- Calling in prepped data 
 sda.start <- as.Date("2018-05-15")
-sda.end <- as.Date("2018-11-24")
+sda.end <- Sys.Date()
 
-
-
+#if (!exists("prep.data"))
 prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
 #--------------------------- Preparing OBSdata
 obs.raw <-prep.data$rawobs
@@ -52,28 +51,26 @@ settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric()%>% round)
 print(settings$outdir)
 #--------- Making a plot
-obs.plot <- obs.raw %>%
-            tidyr::gather(Param, Value, -c(Date)) %>%
-            filter(!(Param %in% c("FjDay", "U","Day","DoY","FC","FjFay","Hour","Month",
-                                  "SC","Ustar","Year","H","Flag")),
-                   Value!=-999) %>%
-            #filter((Date %>% as.Date) %in% (names(prep.data) %>% as.Date())) %>%
-            ggplot(aes(Date, Value)) +
-            geom_line(aes(color = Param), lwd = 1) +
-            geom_point(aes(color = Param), size = 3) +
-            facet_wrap( ~ Param, scales = "free",ncol = 1) +
-            scale_x_datetime(breaks = scales::date_breaks("1 hour"),labels = scales::date_format("%j-%H"))+
-            scale_color_brewer(palette = "Set1") +
-            theme_minimal(base_size = 15) +
-            labs(y = "") +
-            theme(legend.position = "none",
-                  axis.text.x = element_text(angle = 90, hjust = 1))
-# 
-# # Make sure you have the premission - chmod is right
- if (!dir.exists(settings$outdir)) dir.create(settings$outdir)
- ggsave(file.path(settings$outdir,"Obs_plot.pdf"), obs.plot , width = 18, height = 10)
-
-
+# obs.plot <- obs.raw %>%
+#             tidyr::gather(Param, Value, -c(Date)) %>%
+#             filter(!(Param %in% c("FjDay", "U","Day","DoY","FC","FjFay","Hour","Month",
+#                                   "SC","Ustar","Year","H","Flag")),
+#                    Value!=-999) %>%
+#             #filter((Date %>% as.Date) %in% (names(prep.data) %>% as.Date())) %>%
+#             ggplot(aes(Date, Value)) +
+#             geom_line(aes(color = Param), lwd = 1) +
+#             geom_point(aes(color = Param), size = 3) +
+#             facet_wrap( ~ Param, scales = "free",ncol = 1) +
+#             scale_x_datetime(breaks = scales::date_breaks("1 hour"),labels = scales::date_format("%j-%H"))+
+#             scale_color_brewer(palette = "Set1") +
+#             theme_minimal(base_size = 15) +
+#             labs(y = "") +
+#             theme(legend.position = "none",
+#                   axis.text.x = element_text(angle = 90, hjust = 1))
+# # 
+# # # Make sure you have the premission - chmod is right
+  if (!dir.exists(settings$outdir)) dir.create(settings$outdir)
+#  ggsave(file.path(settings$outdir,"Obs_plot.pdf"), obs.plot , width = 18, height = 10)
 # ----------------------------------------------------------------------
 # PEcAn Workflow
 # ----------------------------------------------------------------------
@@ -135,12 +132,24 @@ get.parameter.samples(settings, ens.sample.method = settings$ensemble$samplingsp
 # # } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
 # #   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
 # # }
-# # print("---------- Wrtting Configs Completed ----------")
+# # print("---------- Writting Configs Completed ----------")
 setwd(settings$outdir)
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
 settings$state.data.assimilation$start.date <-as.character(met.start)
 settings$state.data.assimilation$end.date <-as.character(met.end - lubridate::hms("06:00:00"))
-# 
+# Changing LE to Qle whih what sipnet understands
+prep.data <- prep.data %>%
+  map(function(day.data) {
+    names(day.data$means)[names(day.data$means) == "LE"] <- "Qle"
+    dimnames(day.data$covs) <- dimnames(day.data$covs) %>%
+      map(function(name) {
+        name[name == "LE"] <- "Qle"
+        name
+      })
+    
+    day.data
+  })
+
 obs.mean <-prep.data %>% map('means') %>% setNames(names(prep.data))
 obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 # 

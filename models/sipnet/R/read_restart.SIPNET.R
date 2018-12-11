@@ -36,7 +36,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   last <- length(ens[[1]])
   
   forecast <- list()
-
+  params$restart <-c() ## This will be filled with some restart coefficient if above ground wood is in the state variables.
   
   #### PEcAn Standard Outputs
   if ("GWBI" %in% var.names) {
@@ -65,9 +65,9 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("NEE")
   }
   
-  # Reading in Latent heat flux for SDA  - unit is W m-2
+  # Reading in Latent heat flux for SDA  - unit is MW m-2
   if ("Qle" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$Qle[last]  ## 
+    forecast[[length(forecast) + 1]] <- ens$Qle[last]*1e-6  ##  
     names(forecast[[length(forecast)]]) <- c("Qle")
   }
 
