@@ -1,9 +1,0 @@
-# PEcAn workflow (web/workflow.R)
-
-- How the workflow works
-- How each module is called
-- How to do outside of web interface
-- Link to "folder structure" section below for detailed descriptions
-
-
-<div style="width: 640px; height: 960px; margin: 10px; position: relative;"><iframe allowfullscreen frameborder="0" style="width:640px; height:480px" src="https://www.lucidchart.com/documents/embeddedchart/93dca2c6-63cb-4df4-b68c-29590d1836fc" id="uAv44V~qLSWE"></iframe></div>

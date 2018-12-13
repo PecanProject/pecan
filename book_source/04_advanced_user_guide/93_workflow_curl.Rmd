@@ -2,7 +2,7 @@
 
 This is how you can submit a workflow from the command line through the pecan web interface. This will use curl to submit all the requireed parameters to the web interface and trigger a run.
 
-```
+```bash
 # the host where the model should run
 # never use remote sites since you will need to pass your username/password and that WILL be stored
 hostname=pecan.vm
