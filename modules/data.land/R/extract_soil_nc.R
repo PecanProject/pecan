@@ -4,7 +4,7 @@
 #' @param lat Latitude 
 #' @param lon Longitude
 #' @param size Ensemble size
-#' @param radius We use this argument to take soil type samples within the radius of the site
+#' @param radius radius in meters is used to take soil type samples around the site
 #' @param depths  Standard set of soil depths in m to create the ensemble of soil profiles with.
 #'
 #' @return It returns the address for the generated soil netcdf file
@@ -40,6 +40,10 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     suppressMessages({
       #disambiguateFIDs if TRUE, and FID values are not unique, they will be set to unique values 1:N for N features; problem observed in GML files
       area <-rgdal::readOGR(mu.Path, disambiguateFIDs=T)
+      
+
+      
+      
     })
     
     mukey <- area@data$mukey %>% as.character()
