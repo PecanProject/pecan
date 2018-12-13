@@ -26,18 +26,19 @@ PG_OPT=${PG_OPT:-""}
 # These ID's need to be unique for the sharing to work. If you want
 # to share your data, send email to kooper@illinois.edu to claim
 # your ID range. The master list is maintained at
-# https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
+# https://github.com/PecanProject/betydb-documentation/blob/master/betydb-system-administration/distributed_betydb.md
 #
-#  0 - EBI           - David LeBauer
-#  1 - BU            - Mike Dietze
-#  2 - Brookhaven    - Shawn Serbin
-#  3 - Purdue        - Jeanne Osnas
-#  4 - Virginia Tech - Quinn Thomas
-#  5 - Wisconsin     - Ankur Desai
-#  6 - TERRA REF     - David LeBauer
-#  7 - TERRA test    - David LeBauer
-#  8 - TERRA MEPP    - David LeBauer
-#  9 - TERRA TAMU    - TBD
+#  0 - EBI                   - David Slater
+#  1 - BU                    - Mike Dietze
+#  2 - Brookhaven            - Shawn Serbin
+#  3 - Purdue                - Jeanne Osnas
+#  4 - Virginia Tech         - Quinn Thomas
+#  5 - Wisconsin             - Ankur Desai
+#  6 - TERRA REF             - David LeBauer
+#  7 - TERRA test            - David LeBauer
+#  8 - TERRA MEPP            - David LeBauer
+#  9 - University of Arizona - David LeBauer
+# 10 - Ghent                 - 
 # 99 - VM
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
