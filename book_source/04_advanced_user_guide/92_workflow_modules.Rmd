@@ -68,5 +68,3 @@ The variance decomposition plot contains three columns, the coefficient of varia
 * Inputs: data sets that are used, and file paths leading to them
 * Parameters: e.g. info set in settings file 
 * Outputs: data sets that are dropped, and the file paths leading to them
-
-==> 01_R_workflow/curl-web-submit.Rmd <==
