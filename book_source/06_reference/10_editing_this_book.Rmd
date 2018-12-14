@@ -36,7 +36,7 @@ For instance, this section has a file called `00_introduction.Rmd` which contain
 # (PART) Introduction {-}
 ```
 
-To cross-referencing a different section, use that section's unique tag (starts with `#`, surrounded in curly braces).
+To cross-reference a different section, use that section's unique tag (starts with `#`; appears next to the section heading surrounded in curly braces).
 For instance, the following Markdown contains two sections that cross-reference each other:
 
 ```markdown
@@ -55,7 +55,7 @@ If section organization changes, it is fine to move header tags, but **avoid alt
 (Note that it is also possible to link to section headings by their exact title. However, this is not recommended because these section titles could change, which would break the links.)
 
 When referring to PEcAn packages or specific functions, it is a good idea to link to the [rendered package documentation](https://pecanproject.github.io/pkgdocs.html).
-For instance, here are links to the [`models/ed`](https://pecanproject.github.io/models/ed/docs/index.html) package, the [`PEcAn.ED2::modify_ed2in`](https://pecanproject.github.io/models/ed/docs/reference/modify_ed2in.html) function, and the PEcAnRTM package [vignette](https://pecanproject.github.io/modules/rtm/articles/pecanrtm.vignette.html).
+For instance, here are links to the [`models/ed`](https://pecanproject.github.io/models/ed/docs/index.html) package, the [`PEcAn.ED2::modify_ed2in`](https://pecanproject.github.io/models/ed/docs/reference/modify_ed2in.html) function, and the PEcAnRTM package [vignette](https://pecanproject.github.io/modules/rtm/docs/articles/pecanrtm.vignette.html).
 If necessary, you can also link directly to specific lines or blocks in the source code on GitHub, [like this](https://github.com/PecanProject/pecan/blob/develop/models/ed/R/create_veg.R#L11-L25).
 (To get a link to a line, click its line number. To then select a block, shift-click another line number.)
 
