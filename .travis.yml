@@ -34,6 +34,7 @@ addons:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
       - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
+      - sourceline: 'ppa:opencpu/imagemagick'
     packages:
       - bc
       - curl
@@ -47,6 +48,7 @@ addons:
       - libnetcdf-dev
       - libproj-dev
       - libudunits2-dev
+      - libmagick++-dev
       - netcdf-bin
       - pandoc
       - python-dev
