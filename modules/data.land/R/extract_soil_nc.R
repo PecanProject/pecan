@@ -60,7 +60,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=10, radius=500, depths=c(0
       #buffer the radius around site / and clip the study area based on buffer
       site_buffer = st_buffer(site, (radius/111000)) # converting radius m to dgree - each degree is about 111 Km
       site_area = st_intersection(site_buffer, areasf)
-      # calculating areas again for the cliped region
+      # calculating areas again for the clipped regions
      mukey_area <- data.frame(Area=raster::area(x= as(site_area, 'Spatial')),
                               mukey=site_area$mukey)
 
@@ -87,7 +87,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=10, radius=500, depths=c(0
     mukeys <-substr(xmll, startp %>% as.numeric + 10, stopp %>% as.numeric - 1)  
   }
   
-  # calling the query function sending the mapunit key
+  # calling the query function sending the mapunit keys
   soilprop <- gSSURGO.Query(mukeys,c("chorizon.sandtotal_r",
                                     "chorizon.silttotal_r",
                                     "chorizon.claytotal_r",
