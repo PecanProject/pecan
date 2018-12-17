@@ -25,6 +25,7 @@ Depends:
     PEcAn.utils,
     redland,
     sirt,
+    sf
 Imports:
     dplyr,
     magrittr,

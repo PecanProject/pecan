@@ -35,31 +35,28 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=10, radius=500, depths=c(0
   )
   # We are trying to find the mapunit key here. Either using rgdal if the driver is defined or parsing it's gml
   
-  if ("WFS" %in% rgdal::ogrDrivers()$name) {
+  if ("GML" %in% rgdal::ogrDrivers()$name) {
     
     suppressMessages({
       #disambiguateFIDs if TRUE, and FID values are not unique, they will be set to unique values 1:N for N features; problem observed in GML files
-      area <-rgdal::readOGR(mu.Path, disambiguateFIDs=T)
-      #setting its coord. ref.
-      sp::proj4string(area) <- sp::CRS("+proj=longlat +datum=WGS84")  ## for example
-      
+      sarea <-rgdal::readOGR(mu.Path, disambiguateFIDs=T)
+  
       # flipping the coordinates 
       # gdal reads the gSSUGO layers with fliped coordinateds
-      for (i in seq_along(area@polygons)){
-        for (j in seq_along(area@polygons[[i]]@Polygons)){
+      for (i in seq_along(sarea@polygons)){
+        for (j in seq_along(sarea@polygons[[i]]@Polygons)){
           # flip the coordinates
-          area@polygons[[i]]@Polygons[[j]]@coords <- area@polygons[[i]]@Polygons[[j]]@coords[,c(2,1)]
+          sarea@polygons[[i]]@Polygons[[j]]@coords <- sarea@polygons[[i]]@Polygons[[j]]@coords[, c(2,1)]
         }
       }
       
-      areasf <-st_as_sf(area)
+      areasf <-sf::st_as_sf(sarea)
       # getting the site point ready
-      site = st_as_sf(data.frame(long=lon, lat=lat),coords=c("long","lat"))
-      st_crs(site) <- st_crs("+proj=longlat +datum=WGS84")
+      site = sf::st_as_sf(data.frame(long=lon, lat=lat),coords=c("long","lat"))
       
       #buffer the radius around site / and clip the study area based on buffer
-      site_buffer = st_buffer(site, (radius/111000)) # converting radius m to dgree - each degree is about 111 Km
-      site_area = st_intersection(site_buffer, areasf)
+      site_buffer = sf::st_buffer(site, (radius/111000)) # converting radius m to dgree - each degree is about 111 Km
+      site_area = sf::st_intersection(site_buffer, areasf)
       # calculating areas again for the clipped regions
      mukey_area <- data.frame(Area=raster::area(x= as(site_area, 'Spatial')),
                               mukey=site_area$mukey)
@@ -105,7 +102,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=10, radius=500, depths=c(0
         "mukey"
       )
     )
-  #unit colnversion
+  #unit conversion
   soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" ,
                     "soil_depth")] <- soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" ,
                                                         "fraction_of_clay_in_soil" , "soil_depth")]/100
@@ -174,7 +171,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=10, radius=500, depths=c(0
     #--- Mixing the depths
     soil.profiles<-simulated.soil.props %>% 
       split(.$mukey)%>% 
-      map(function(soiltype.sim){
+      purrr::map(function(soiltype.sim){
         sizein <- (mukey_area$Area[ mukey_area$mukey == soiltype.sim$mukey %>% unique()])*size
         1:ceiling(sizein) %>%
           purrr::map(function(x){
@@ -183,7 +180,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=10, radius=500, depths=c(0
               purrr::map_dfr(~.x[x,])
           })
       }) %>%
-      flatten()
+      purrr::flatten()
 
     #- add them to the list of all the ensembles ready to be converted to .nc file
     all.soil.ens<-soil.profiles %>%
@@ -227,6 +224,9 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=10, radius=500, depths=c(0
   # removing the nulls or the ones that throw exception in the above trycatch
   out.ense<- out.ense %>%
     purrr::discard(is.null)
+  
+  out.ense<-out.ense%>% 
+    setNames(rep("path", length(out.ense)))
   
   return(out.ense)
 }
