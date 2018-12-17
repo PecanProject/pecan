@@ -75,7 +75,7 @@ gSSURGO.Query<-function(mukeys=2747727,
           purrr::map_dfr(function(child){
             #converting the xml obj to list
             allfields <- xmlToList(child)
-            remov<-names(allfields) %in% c("mukey",".attrs")
+            remov<-names(allfields) %in% c(".attrs")
             #browser()
             names(allfields)[!remov]%>%
               purrr::map_dfc(function(nfield){
@@ -86,7 +86,7 @@ gSSURGO.Query<-function(mukeys=2747727,
               as.data.frame() %>%
               `colnames<-`(names(allfields)[!remov])
           })%>%
-          dplyr::select(comppct_r:aws050wta) %>%
+          dplyr::select(comppct_r:mukey) %>%
           dplyr::select(-aws050wta)
         
       })

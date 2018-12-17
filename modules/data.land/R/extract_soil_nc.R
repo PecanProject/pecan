@@ -19,7 +19,7 @@
 #' }
 #' @author Hamze Dokoohaki
 #' 
-extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.15,0.30,0.40)){
+extract_soil_gssurgo<-function(outdir, lat, lon, size=10, radius=500, depths=c(0.15,0.30,0.60)){
   # I keep all the ensembles here 
   all.soil.ens <-list()
   
@@ -63,13 +63,10 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
       # calculating areas again for the cliped region
      mukey_area <- data.frame(Area=raster::area(x= as(site_area, 'Spatial')),
                               mukey=site_area$mukey)
-     
-      # scaling areas to unit, I'll use this to adjust samples of each soil type by this propotion
-     mukey_area$Area<-mukey_area$Area / sum(mukey_area$Area)
-     
+
     })
     
-    mukey <- area@data$mukey %>% as.character()
+    mukeys <- mukey_area$mukey %>% as.character()
   }else{
     #reading the mapunit based on latitude and longitude of the site
     #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
@@ -87,11 +84,11 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     if (startp == -1 |
         stopp == -1)
       PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
-    mukey <-substr(xmll, startp %>% as.numeric + 10, stopp %>% as.numeric - 1)  
+    mukeys <-substr(xmll, startp %>% as.numeric + 10, stopp %>% as.numeric - 1)  
   }
   
   # calling the query function sending the mapunit key
-  soilprop <- gSSURGO.Query(mukey,c("chorizon.sandtotal_r",
+  soilprop <- gSSURGO.Query(mukeys,c("chorizon.sandtotal_r",
                                     "chorizon.silttotal_r",
                                     "chorizon.claytotal_r",
                                     "chorizon.hzdept_r"))
@@ -104,7 +101,8 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
         "fraction_of_sand_in_soil",
         "fraction_of_silt_in_soil",
         "fraction_of_clay_in_soil",
-        "soil_depth"
+        "soil_depth",
+        "mukey"
       )
     )
   #unit colnversion
@@ -113,11 +111,11 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
                                                         "fraction_of_clay_in_soil" , "soil_depth")]/100
   soilprop.new <- soilprop.new[ complete.cases(soilprop.new) , ]
   #converting it to list
-  soil.data.gssurgo <- names(soilprop.new) %>%
+  soil.data.gssurgo <- names(soilprop.new)[1:4] %>%
     purrr::map(function(var) {
       soilprop.new[, var]
     }) %>%
-    setNames(names(soilprop.new))
+    setNames(names(soilprop.new)[1:4])
   #This ensures that I have at least one soil ensemble in case the modeling part failed
   all.soil.ens <-c(all.soil.ens,list(soil.data.gssurgo))
   
@@ -138,9 +136,8 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     
     # let's fit dirichlet for each depth level separately
     simulated.soil.props<-soilprop.new.grouped %>%
-      split(.$DepthL) %>%
-      purrr::map(function(DepthL.Data){
-        #browser()
+      split(list(soilprop.new.grouped$DepthL, soilprop.new.grouped$mukey)) %>%
+      purrr::map_df(function(DepthL.Data){
         tryCatch({
           # I model the soil properties for this depth
           dir.model <-DepthL.Data[,c(1:3)]%>%
@@ -148,16 +145,18 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
             sirt::dirichlet.mle(.)
           # Monte Carlo sampling based on my dirichlet model
           alpha <- dir.model$alpha
-          alpha <- matrix(alpha, nrow=size, ncol=length(alpha), byrow=TRUE )
+          alpha <- matrix(alpha, nrow= size, ncol=length(alpha), byrow=TRUE )
           simulated.soil <- sirt::dirichlet.simul(alpha)
           # # using the simulated sand/silt/clay to generate soil ensemble
           simulated.soil<-simulated.soil %>%
             as.data.frame %>%
-            mutate(DepthL=rep(DepthL.Data[1,5],size)) %>%
+            mutate(DepthL=rep(DepthL.Data[1,6], size),
+                   mukey=rep(DepthL.Data[1,5], size)) %>%
             `colnames<-`(c("fraction_of_sand_in_soil",
                            "fraction_of_silt_in_soil",
                            "fraction_of_clay_in_soil",
-                           "soil_depth"))
+                           "soil_depth",
+                           "mukey"))
           simulated.soil
         },
         error = function(e) {
@@ -165,17 +164,27 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
           return(NULL)
         })
         
-      })
+      }) 
     
-    simulated.soil.props<- simulated.soil.props %>%
-      purrr::discard(is.null)
+    # estimating the proportion of areas for those mukeys which are modeled
+    mukey_area <- mukey_area %>%
+      filter(mukeys %in% simulated.soil.props$mukey) %>%
+      mutate(Area=Area/sum(Area))
     
     #--- Mixing the depths
-    soil.profiles<-1:size %>%
-      purrr::map(function(x){
-        simulated.soil.props %>% 
-          purrr::map_dfr(~.x[x,])
-      })
+    soil.profiles<-simulated.soil.props %>% 
+      split(.$mukey)%>% 
+      map(function(soiltype.sim){
+        sizein <- (mukey_area$Area[ mukey_area$mukey == soiltype.sim$mukey %>% unique()])*size
+        1:ceiling(sizein) %>%
+          purrr::map(function(x){
+            soiltype.sim %>% 
+              split(.$soil_depth)%>%
+              purrr::map_dfr(~.x[x,])
+          })
+      }) %>%
+      flatten()
+
     #- add them to the list of all the ensembles ready to be converted to .nc file
     all.soil.ens<-soil.profiles %>%
       purrr::map(function(SEns){
@@ -204,7 +213,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
         new.file <- file.path(outdir, paste0(prefix, ".nc"))
         #sending it to the func where some new params will be added and then it will be written down as nc file.
         suppressWarnings({
-          soil2netcdf(all.soil.ens[[i]], new.file)
+          soil2netcdf(all.soil.ens[[i]][1:4], new.file)
         })
         
         new.file
