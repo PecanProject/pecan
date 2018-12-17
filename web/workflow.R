@@ -21,7 +21,7 @@ options(error=quote({
   PEcAn.utils::status.end("ERROR")
   PEcAn.remote::kill.tunnel(settings)
   if (!interactive()) {
-    q()
+    q(status = 1)
   }
 }))
 
