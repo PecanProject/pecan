@@ -30,7 +30,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                             debug=FALSE,
                                             pause=F),
                                ...) {
-
+  if (control$debug) browser()
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
