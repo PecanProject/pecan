@@ -112,4 +112,4 @@ download.US_Syv <- function(start_date, end_date, timestep = 1) {
 } # download.US_Syv.R
 
 # This line is great for testing.
-download.US_Syv('2018-07-23 06:00', '2018-08-08 06:00', timestep=12)
+#download.US_Syv('2018-11-30 06:00', '2018-12-11 06:00', timestep=12)
