@@ -34,7 +34,7 @@ if [ "${DEPEND}" == "build" ]; then
     echo "# DEPEND=pull $0"
     ${DEBUG} docker build \
         --tag pecan/depends:latest \
-        --file docker/base/Dockerfile.depends . | tee docker/base/build.depends.log
+        --file docker/base/Dockerfile.depends .
 elif [ "${DEPEND}" == "pull" ]; then
     echo "# docker image for dependencies is not build by default."
     echo "# this image takes a long time to build. To build this"
@@ -60,8 +60,7 @@ echo ""
 
 # build images in this specific order. Images are tagged with latest so other
 # docker images build in this script will use that specifc build.
-for i in base executor web data thredds docs; do
-    rm -f build.${i}.log
+for i in base models executor web data thredds docs; do
     ${DEBUG} docker build \
         --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION:-latest}" \
@@ -71,23 +70,25 @@ for i in base executor web data thredds docs; do
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
         --build-arg PECAN_GIT_DATE="${PECAN_GIT_DATE}" \
         --tag pecan/${i}:latest \
-        --file docker/base/Dockerfile.${i} . | tee docker/base/build.${i}.log
+        --file docker/base/Dockerfile.${i} .
 done
 
 # --------------------------------------------------------------------------------
 # MODEL BUILD SECTION
 # --------------------------------------------------------------------------------
 
-# build sipnet 136
-rm -f build.sipnet.log
-${DEBUG} docker build \
-    --build-arg MODEL_VERSION="136" \
-    --tag pecan/model-sipnet-136:latest \
-    --file docker/models/Dockerfile.sipnet . | tee docker/models/build.sipnet.log
+# build sipnet
+for version in 136; do
+    ${DEBUG} docker build \
+        --build-arg MODEL_VERSION="${version}" \
+        --tag pecan/model-sipnet-${version}:latest \
+        --file models/sipnet/Dockerfile .
+done
 
-# build ed2 latest
-rm -f build.ed2.log
-${DEBUG} docker build \
-    --build-arg MODEL_VERSION="git" \
-    --tag pecan/model-ed2-git:latest \
-    --file docker/models/Dockerfile.ed2 . | tee docker/models/build.ed2.log
+# build ed2
+for version in git; do
+    ${DEBUG} docker build \
+        --build-arg MODEL_VERSION="${version}" \
+        --tag pecan/model-ed2-${version}:latest \
+        --file models/ed/Dockerfile .
+done
