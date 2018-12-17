@@ -8,7 +8,7 @@ browndog.met(browndog, source, site, start_date, end_date, model, dir,
   username, con)
 }
 \arguments{
-\item{browndog, }{list with url, username and password to connect to browndog}
+\item{browndog, }{list with url, token to connect to browndog}
 
 \item{source, }{the source of the met data, currently only NARR an Ameriflux is supported}
 
