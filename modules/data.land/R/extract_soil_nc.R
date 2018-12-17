@@ -40,10 +40,33 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     suppressMessages({
       #disambiguateFIDs if TRUE, and FID values are not unique, they will be set to unique values 1:N for N features; problem observed in GML files
       area <-rgdal::readOGR(mu.Path, disambiguateFIDs=T)
+      #setting its coord. ref.
+      sp::proj4string(area) <- sp::CRS("+proj=longlat +datum=WGS84")  ## for example
       
-
+      # flipping the coordinates 
+      # gdal reads the gSSUGO layers with fliped coordinateds
+      for (i in seq_along(area@polygons)){
+        for (j in seq_along(area@polygons[[i]]@Polygons)){
+          # flip the coordinates
+          area@polygons[[i]]@Polygons[[j]]@coords <- area@polygons[[i]]@Polygons[[j]]@coords[,c(2,1)]
+        }
+      }
       
+      areasf <-st_as_sf(area)
+      # getting the site point ready
+      site = st_as_sf(data.frame(long=lon, lat=lat),coords=c("long","lat"))
+      st_crs(site) <- st_crs("+proj=longlat +datum=WGS84")
       
+      #buffer the radius around site / and clip the study area based on buffer
+      site_buffer = st_buffer(site, (radius/111000)) # converting radius m to dgree - each degree is about 111 Km
+      site_area = st_intersection(site_buffer, areasf)
+      # calculating areas again for the cliped region
+     mukey_area <- data.frame(Area=raster::area(x= as(site_area, 'Spatial')),
+                              mukey=site_area$mukey)
+     
+      # scaling areas to unit, I'll use this to adjust samples of each soil type by this propotion
+     mukey_area$Area<-mukey_area$Area / sum(mukey_area$Area)
+     
     })
     
     mukey <- area@data$mukey %>% as.character()
