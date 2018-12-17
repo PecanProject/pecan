@@ -21,7 +21,7 @@ $(call depends,modules/emulator): | .install/base/logger
 $(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/logger .install/base/settings
 $(call depends,modules/photosynthesis): | .install/base/logger
 $(call depends,modules/priors): | .install/base/utils .install/base/logger
-$(call depends,modules/rtm): | .install/base/logger .install/modules/assim.batch
+$(call depends,modules/rtm): | .install/base/logger .install/modules/assim.batch .install/models/ed
 $(call depends,modules/uncertainty): | .install/base/utils .install/modules/priors .install/base/db .install/modules/emulator .install/base/logger
 $(call depends,models/biocro): | .install/base/logger .install/base/remote .install/base/utils .install/base/settings .install/modules/data.atmosphere .install/modules/data.land
 $(call depends,models/template): | .install/base/logger .install/base/utils
