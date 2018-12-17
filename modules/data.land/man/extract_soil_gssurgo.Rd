@@ -16,7 +16,7 @@ extract_soil_gssurgo(outdir, lat, lon, size = 1, radius = 500,
 
 \item{size}{Ensemble size}
 
-\item{radius}{We use this argument to take soil type samples within the radius of the site}
+\item{radius}{radius in meters is used to take soil type samples around the site}
 
 \item{depths}{Standard set of soil depths in m to create the ensemble of soil profiles with.}
 }
