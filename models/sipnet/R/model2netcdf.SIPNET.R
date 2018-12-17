@@ -72,7 +72,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     # get the run dates based on the sipnet output.  we assume that even if the run is partial, the origin is still day 1 of the subset year
     start_month <- lubridate::month(as.Date(sub.sipnet.output$day[1], origin = paste0(y,"-01-01"))) # gets month
     ## using this approach to attempt to deal with inconsistent start index 0/1
-    model_start_date <- base::as.Date(paste0(y,"-",start_month,"-",ifelse(sub.sipnet.output$day[1]==0,1,sub.sipnet.output$day[1])))  
+    model_start_date <- base::as.Date(ifelse(sub.sipnet.output$day[1]==0,1,sub.sipnet.output$day[1]), origin = paste0(y,"-01-01"))
     sub_date_range <- seq(model_start_date, by = "day", length.out = length(unique(sub.sipnet.output$day))) ## create new date range in POSIX format
     # this catches the fact that the number of outputs per day may be different at the end of the year with leap years, if day starts at 1
     day_repeats <- as.vector(base::table(sub.sipnet.output$day))  

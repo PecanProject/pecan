@@ -20,10 +20,12 @@
   <datasetScan name="PEcAn outputs" ID="pecan_output"
                path="outputs" location="/data/workflows">
     <serviceName>all</serviceName>
-    <filter>
-      <!-- Include only NetCDF files -->
-      <include wildcard="*.nc"/>
-    </filter>
+  </datasetScan>
+
+  <!-- Look for PEcAn dbfiles in the /data/dbfiles directory -->
+  <datasetScan name="PEcAn dbfiles" ID="pecan_output"
+               path="dbfiles" location="/data/dbfiles">
+    <serviceName>all</serviceName>
   </datasetScan>
 
 </catalog>

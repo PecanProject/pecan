@@ -122,7 +122,7 @@ $fluxusername = (isset($_REQUEST['fluxusername'])) ? $_REQUEST['fluxusername'] :
       <input id="next" type="button" value="Agree" onclick="nextStep();" />    
       <div class="spacer"></div>
     </form>
-<?php whoami(); ?>    
+    <?php left_footer(); ?>    
   </div>
   <div id="output">
 <h1>Data Policy</h1>
