@@ -701,7 +701,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 
   #plotting
   map.plot<- ggplot() + 
-    geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.45,lwd=0.0001,color="black")+
+    geom_sf(aes(fill=NA_L2CODE),data = aoi_boundary_HARV, alpha=0.25,lwd=0,color="black")+
     geom_point(data = site.locs,
                aes(x = Lon, y = Lat),
                size = 2) +

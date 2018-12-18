@@ -11,7 +11,7 @@ block_matrix(x = NULL, b = NULL, byrow = FALSE, dimnames = NULL)
 
 \item{b}{Numeric value for the size of the blocks within the matrix ordered depending on byrow}
 
-\item{byrow}{ogical value. If FALSE (the default) the blocks are filled by columns, otherwise the blocks in the matrix are filled by rows.}
+\item{byrow}{logical value. If FALSE (the default) the blocks are filled by columns, otherwise the blocks in the matrix are filled by rows.}
 
 \item{dimnames}{Character string of name attribute for the basis of the blcok matrix. If NULL a vector of the same length of b provides the basis of row and column names.#'.}
 }

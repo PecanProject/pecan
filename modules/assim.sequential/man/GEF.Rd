@@ -12,7 +12,7 @@ GEF(setting, Forecast, Observed, H, extraArg, nitr = 50000,
 
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
-\item{extraArg}{This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.}
+\item{extraArg}{This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the process covariance and t gives the time in terms of index of obs.list. See Details.}
 
 \item{nitr}{Number of iterations to run each MCMC chain.}
 
