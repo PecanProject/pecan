@@ -27,9 +27,6 @@ $Rbinary="/usr/bin/R";
 # sshTunnel binary
 $SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
 
-# google map key
-$googleMapKey="";
-
 # Require username/password, can set min level to 0 so nobody can run/delete.
 # 4 = viewer
 # 3 = creator
@@ -68,7 +65,9 @@ $fqdn=exec('hostname -f');
 #                workflowid to the folder name
 # - models     : any special options to add to a specific model that is
 #                launched. This is an array of the modeltype and
-#                additional parameters for the job.sh.
+#                additional parameters for the job.sh. If the model with
+#                version is found that will be used, otherwise the more
+#                generic model only will be used.
 # - scratchdir : folder to be used for scratchspace when running certain
 #                models (such as ED)
 $hostlist=array($fqdn => array(),
@@ -81,7 +80,9 @@ $hostlist=array($fqdn => array(),
                           "postrun"     => "sleep 60",
                           "models"      => 
                               array("ED2" =>
-                                  array("prerun"  => "module load hdf5")
+                                        array("prerun"  => "module load hdf5"),
+                                    "ED2 (r82)" =>
+                                        array("prerun"  => "module load hdf5")
                               )
                           )
                 );

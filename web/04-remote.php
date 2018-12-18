@@ -94,7 +94,8 @@ if (isset($modelinfo['revision'])) {
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="jquery-1.10.2.min.js"></script>
 <?php if (!$offline) {?>
-<script type="text/javascript" src="//www.google.com/jsapi"></script>
+<link rel="stylesheet" href="leaflet/leaflet.css" />
+<script src="leaflet/leaflet.js"></script>
 <?php }?>
 <script type="text/javascript">
   function validate() {
@@ -109,44 +110,35 @@ if (isset($modelinfo['revision'])) {
   function nextStep() {
     $("#formnext").submit();
   }
-  
-<?php if ($offline) { ?>
+
   $(document).ready(function () {
-    validate();
-  });
-<?php
-} else {
-  $other_params = "sensor=false";
-  if (isset($googleMapKey) && $googleMapKey != "") {
-    $other_params .= "&key=$googleMapKey";
-  }
-  echo "  google.load('maps', '3', { other_params : '$other_params', callback: 'mapsLoaded'});"
-?>
-    
-    function mapsLoaded() {
-    var latlng = new google.maps.LatLng(<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>);
-    var myOptions = {
-      zoom: 10,
-      center: latlng,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    }
-
-    var map = new google.maps.Map(document.getElementById("output"), myOptions);
-
-    // create a marker
-    var marker = new google.maps.Marker({position: latlng, map: map});
-
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
     info+="PFTs: <?php echo implode(",",$selected_pfts);?><br/>";
     info+="Dates: <?php echo $startdate; ?> - <?php echo $enddate; ?><br/>";
     info+="Model: <?php echo $modelname; ?>"
-    var infowindow = new google.maps.InfoWindow({content: info});
-    infowindow.open(map, marker);
-    validate();
-  }
+
+<?php if (!$offline) { ?>
+    var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Points &copy 2012 LINZ'
+      }),
+      latlng = L.latLng(<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>);
+
+    map = L.map('output', {center: latlng, zoom: 10, layers: [tiles]});
+
+    var marker = L.marker([<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>]);
+    marker.title = "<?php echo $siteinfo['sitename']; ?>";
+    marker.bindPopup(info);
+    marker.addTo(map);
+    marker.openPopup();
+<?php } else { ?>
+    $("#output").html(info);
 <?php } ?>
+    validate();
+  });
+
 </script>
 </head>
 <body>
@@ -208,16 +200,9 @@ if (isset($modelinfo['revision'])) {
       <input id="next" type="button" value="Next" onclick="nextStep();" />    
       <div class="spacer"></div>
     </form>
-<?php whoami(); ?>    
+    <?php left_footer(); ?>    
   </div>
   <div id="output">
-    Name : <b><?php echo $siteinfo["sitename"]; ?></b><br/>
-    Address : <?php echo $siteinfo["city"]; ?>, <?php echo $siteinfo["country"]; ?><br/>
-    Location : <?php echo $siteinfo["lat"]; ?>, <?php echo $siteinfo["lon"]; ?><br/>
-    <br/>
-    PFTs : <?php echo implode(",",$selected_pfts);?><br/>
-    Dates : <?php echo $startdate; ?> - <?php echo $enddate; ?><br/>
-    Model : <?php echo $modelname; ?><br/>
   </div>
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>

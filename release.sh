@@ -32,7 +32,7 @@ if [ "${TAGS}" == "" ]; then
 fi
 
 # push pecan images
-for i in depends base executor web data; do
+for i in depends base executor web data thredds docs; do
     for v in ${TAGS}; do
         if [ "$v" != "latest" -o "$SERVER" != "" ]; then
             ${DEBUG} docker tag pecan/${i}:latest ${SERVER}pecan/${i}:${v}
