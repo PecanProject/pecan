@@ -450,7 +450,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
-    Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashbord
+    Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
     
     save(site.locs, t, FORECAST, ANALYSIS, enkf.params, new.state, new.params,
          out.configs, ensemble.samples, inputs,Viz.output,Viz.output,
