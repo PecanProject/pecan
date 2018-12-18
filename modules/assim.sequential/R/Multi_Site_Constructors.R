@@ -27,23 +27,21 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     pf.matrix [pos.in.matrix, pos.in.matrix] <- cov( X [, pos.in.matrix] ,use="complete.obs")
   }
   
-  
   # This is where we estimate the cov between state variables of different sites
   #I put this into a sperate loop so we can have more control over it
-  site.cov.orders <- expand.grid(site.ids,site.ids) %>% filter( Var1 != Var2)
-  
+  site.cov.orders <- expand.grid(site.ids,site.ids) %>%
+                        filter( Var1 != Var2)
+
   for (i in 1:nrow(site.cov.orders)){
     # first we need to find out where to put it in the big matrix
     rows.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,1])
     cols.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,2])
     #estimated between these two sites
     two.site.cov <- cov( X [, c(rows.in.matrix, cols.in.matrix)],use="complete.obs" )[(nvariable+1):(2*nvariable),1:nvariable]
-    # this is something we can pplay around with - I'm setting the off diag to zero 
+    # I'm setting the off diag to zero 
     two.site.cov [which(lower.tri(two.site.cov, diag = FALSE),T) %>% rbind (which(upper.tri(two.site.cov,F),T))] <- 0
-  
     #putting it back to the main matrix
     pf.matrix [rows.in.matrix, cols.in.matrix] <- two.site.cov
-    
   }
   
   # if I see that there is a localization function passed to this - I run it by the function.
@@ -165,7 +163,7 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
 ##' 
 ##' @param x Vector of numbers to identify each block.
 ##' @param b Numeric value for the size of the blocks within the matrix ordered depending on byrow
-##' @param byrow ogical value. If FALSE (the default) the blocks are filled by columns, otherwise the blocks in the matrix are filled by rows.
+##' @param byrow logical value. If FALSE (the default) the blocks are filled by columns, otherwise the blocks in the matrix are filled by rows.
 ##' @param dimnames Character string of name attribute for the basis of the blcok matrix. If NULL a vector of the same length of b provides the basis of row and column names.#'.
 ##’  
 ##' 

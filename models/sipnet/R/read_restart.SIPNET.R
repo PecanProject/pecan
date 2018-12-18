@@ -69,7 +69,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  
+    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
