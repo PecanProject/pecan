@@ -49,6 +49,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
+  readsFF<-NULL # this keeps the forward forecast
   #------------------------------Multi - site specific - settings
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
@@ -264,7 +265,8 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     #------------------------------------------- Reading the output
     if (control$debug) browser()
     #--- Reading just the first run when we have all years and for VIS
-    if (t==1){
+
+    if (t==1 & control$FF){
       readsFF <- out.configs %>%
         purrr::map(function(configs) {
  

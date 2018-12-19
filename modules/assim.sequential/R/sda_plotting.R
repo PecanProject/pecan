@@ -726,7 +726,10 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       "#ff7f00","#cab2d6",
       "#6a3d9a","#ffff99",
       "#b15928","#fccde5",
-      "#d9d9d9"),name="Eco-Region")+
+      "#d9d9d9","#66c2a5",
+      "#ffd92f","#8dd3c7",
+      "#80b1d3","#d9d9d9",
+      "#fdbf6f"),name="Eco-Region")+
     scale_color_manual(values=c("#e31a1c","#33a02c"))+
     theme_minimal()+
     theme(axis.text = element_blank())
