@@ -61,6 +61,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added missing ncdf4 library calls in model2netcdf.JULES
 
 ### Added
+- Added download.LandTrendr.AGB and extract.LandTrendr.AGB functions in modules/data.remote
 - Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
 - Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
