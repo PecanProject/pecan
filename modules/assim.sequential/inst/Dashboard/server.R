@@ -599,7 +599,7 @@ shinyServer(function(input, output, session) {
         removeControl('help')
     }else if(input$boverlay=="e1"){
       #Reading eco layer
-      aoi_boundary_HARV <-  sf::read_sf("l1.json")
+      aoi_boundary_HARV <-  sf::read_sf("Utilities/l1.json")
 
       aoi_boundary_HARV %>%
         st_set_crs("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs") %>%
@@ -612,7 +612,7 @@ shinyServer(function(input, output, session) {
       
     }else if(input$boverlay=="e2"){
       #Reading eco layer
-      aoi_boundary_HARV <-  sf::read_sf("l2.json")
+      aoi_boundary_HARV <-  sf::read_sf("Utilities/l2.json")
       
       aoi_boundary_HARV %>%
         st_set_crs("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs") %>%
