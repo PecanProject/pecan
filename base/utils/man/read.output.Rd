@@ -39,7 +39,9 @@ automatically by looking for \code{YYYY.nc} files in
 \code{file.path(outdir, runid)}.}
 
 \item{verbose}{Logical. If \code{TRUE}, print status as every year and
-variable is read (default = \code{FALSE}).}
+variable is read, as well as all NetCDF diagnostics (from
+\code{verbose} argument to, e.g., \code{\link[ncdf4:nc_open]{ncdf4::nc_open()}}) (default =
+\code{FALSE}).}
 
 \item{print_summary}{Logical. If \code{TRUE} (default), calculate and
 print a summary of the means of each variable for each year.}

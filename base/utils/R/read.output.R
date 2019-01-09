@@ -41,7 +41,9 @@
 ##'   automatically by looking for `YYYY.nc` files in
 ##'   `file.path(outdir, runid)`.
 ##' @param verbose Logical. If `TRUE`, print status as every year and
-##'   variable is read (default = `FALSE`).
+##'   variable is read, as well as all NetCDF diagnostics (from
+##'   `verbose` argument to, e.g., [ncdf4::nc_open()]) (default =
+##'   `FALSE`).
 ##' @param print_summary Logical. If `TRUE` (default), calculate and
 ##'   print a summary of the means of each variable for each year.
 ##' @param start.year,end.year first and last year of output to read.
@@ -155,7 +157,7 @@ read.output <- function(runid, outdir,
   } else {
     for (ncfile in ncfiles) {
       if (verbose) PEcAn.logger::logger.debug("Processing file: ", ncfile)
-      nc <- ncdf4::nc_open(ncfile)
+      nc <- ncdf4::nc_open(ncfile, verbose = verbose)
       if (is.null(variables)) {
         variables <- names(nc[["var"]])
         PEcAn.logger::logger.info(
@@ -178,7 +180,7 @@ read.output <- function(runid, outdir,
           PEcAn.logger::logger.warn(paste(v, "missing in", ncfile))
           next
         }
-        newresult <- ncdf4::ncvar_get(nc, v)
+        newresult <- ncdf4::ncvar_get(nc, v, verbose = verbose)
         # begin per-pft read
         # check if the variable has 'pft' as a dimension
         if ("pft" %in% sapply(nc$var[[v]]$dim, `[[`, "name")) {
@@ -186,7 +188,7 @@ read.output <- function(runid, outdir,
           # the variable *PFT* in standard netcdfs has *pft* dimension, 
           # numbers as values, and full pft names as an attribute
           # parse pft names and match the requested
-          pft.string <- ncdf4::ncatt_get(nc, "PFT")
+          pft.string <- ncdf4::ncatt_get(nc, "PFT", verbose = verbose)
           pft.ind <- strsplit(pft.string$long_name, ",")[[1]] == pft.name
           # dimensions can differ from model to model or run to run
           # there might be other cases that are not covered here
