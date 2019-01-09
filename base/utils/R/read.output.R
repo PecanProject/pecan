@@ -95,9 +95,8 @@ read.output <- function(runid, outdir,
     # explicitly.
     ncfiles_sub <- basename(ncfiles)
   }
-  nc_years <- as.numeric(gsub("^(-?[[:digit:]]{4})\\.nc", "\\1", ncfiles_sub))
 
-  if (!is.na(start.year) && !is.na(end.year)) {
+  if (!is.na(start.year)) {
     if (lubridate::is.instant(start.year)) { # true if a Date, POSIXct, or POSIXlt
       start.year <- lubridate::year(start.year)
     } else if (is.character(start.year)) {
@@ -114,6 +113,9 @@ read.output <- function(runid, outdir,
         "but given `", start.year, "` which is type `", typeof(start.year), "`."
       )
     }
+  }
+
+  if (!is.na(end.year)) {
     if (lubridate::is.instant(end.year)) {
       end.year <- lubridate::year(end.year)
     } else if (is.character(end.year)) {
@@ -130,16 +132,38 @@ read.output <- function(runid, outdir,
         "but given `", end.year, "` which is type `", typeof(end.year), "`."
       )
     }
+  }
 
+  # Deduce file years from their names
+  nc_years <- suppressWarnings(
+    as.numeric(gsub("^(-?[[:digit:]]{4})\\.nc", "\\1", ncfiles_sub))
+  )
+  if (any(is.na(nc_years))) {
+    PEcAn.logger::logger.debug(
+      "Unable to deduce NetCDF file years from their names. ",
+      "Setting `nc_years` to length 0 numeric vector."
+    )
+    nc_years <- numeric()
+  }
+
+  if (is.na(start.year)) {
+    PEcAn.logger::logger.debug("Missing start year.")
+    if (length(nc_years) != 0) start.year <- min(nc_years)
+  }
+
+  if (is.na(end.year)) {
+    PEcAn.logger::logger.debug("Missing end year.")
+    if (length(nc_years) != 0) end.year <- max(nc_years)
+  }
+
+  if (!is.na(start.year) && !is.na(end.year)) {
     # select only those *.nc years requested by user
     keep <- which(nc_years >= start.year & nc_years <= end.year)
     ncfiles <- ncfiles[keep]
-  } else if (length(nc_years) != 0) {
+  } else {
     PEcAn.logger::logger.info(
       "No start or end year provided; reading output for all years"
     )
-    start.year <- min(nc_years)
-    end.year <- max(nc_years)
   }
 
   origin_year <- start.year
