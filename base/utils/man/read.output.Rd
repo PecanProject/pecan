@@ -49,7 +49,9 @@ print a summary of the means of each variable for each year.}
 \value{
 If \code{dataframe = FALSE}, a vector of output variables. If
 \code{dataframe = TRUE}, a \code{data.frame} of output variables with
-POSIXct timestamps added (\code{posix} column).
+POSIXct timestamps added (\code{posix} column). The \code{posix} column
+is in seconds after January 1 of \code{start.year}, or 1970 if
+\code{start.year} is not provided.
 }
 \description{
 Reads the output of a single model run

@@ -52,7 +52,9 @@
 ##'   `outdir`.
 ##' @return If `dataframe = FALSE`, a vector of output variables. If
 ##'   `dataframe = TRUE`, a `data.frame` of output variables with
-##'   POSIXct timestamps added (`posix` column).
+##'   POSIXct timestamps added (`posix` column). The `posix` column
+##'   is in seconds after January 1 of `start.year`, or 1970 if
+##'   `start.year` is not provided.
 ##' @export
 ##' @author Michael Dietze, David LeBauer, Alexey Shiklomanov
 read.output <- function(runid, outdir,
@@ -122,10 +124,17 @@ read.output <- function(runid, outdir,
     end.year <- max(nc_years)
   }
 
-  years <- seq(start.year, end.year)
-  run_origin <- paste0(start.year, "-01-01")
+  origin_year <- start.year
+  if (!is.finite(origin_year)) {
+    PEcAn.logger::logger.warn(
+      "Invalid (or missing) origin year `", origin_year, "`. ",
+      "Setting origin year to 1970."
+    )
+    origin_year <- 1970
+  }
+  run_origin <- paste0(origin_year, "-01-01")
 
-  # throw error if no *.nc files selected/availible
+  # throw warning and return `NA` if no `*.nc` files selected/availible
   nofiles <- FALSE
   if (length(ncfiles) == 0) {
     PEcAn.logger::logger.warn(
@@ -144,8 +153,8 @@ read.output <- function(runid, outdir,
     nofiles <- TRUE
   } else {
     PEcAn.logger::logger.info(
-      "Reading output for Years: ", start.year, " - ", end.year,
-      "in directory:", outdir, "including files", basename(ncfiles)
+      "Reading the following files: ",
+      normalizePath(ncfiles)
     )
   }
 
