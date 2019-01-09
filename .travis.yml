@@ -45,6 +45,7 @@ addons:
       - libgmp-dev
       - libhdf5-dev
       - liblapack-dev
+      - libmagick++-dev
       - libnetcdf-dev
       - libproj-dev
       - libudunits2-dev
