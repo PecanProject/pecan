@@ -41,6 +41,16 @@ test_that("accepts start and end years as string, number, datetime", {
 
 	expect_length(res_all$posix, 365*3)
 	expect_setequal(names(res_all), c("posix", "year", "Y"))
+
+        out_log <- capture.output(type = "message", {
+          res_start <- read.output(runid = "", outdir = testdir, variables = "Y",
+                                   dataframe = TRUE, start.year = 2002)
+          res_end <- read.output(runid = "", outdir = testdir, variables = "Y",
+                                 dataframe = TRUE, end.year = 2002)
+        })
+        
+        expect_length(res_start[["posix"]], 365 * 2)
+        expect_length(res_end[["posix"]], 365 * 2)
 })
 
 test_that("handles arbitrary time offsets", {
@@ -54,4 +64,38 @@ test_that("handles arbitrary time offsets", {
 	# Hack: drop `dim` attribute so it doesn't make the next comparison fail
 	dim(mixedres$posix) = NULL
 	expect_equal(mixedres$posix, as.POSIXct((0:730)*86400, origin = "2004-01-01", tz = "UTC"))
+})
+
+empty_testdir <- tempfile()
+dir.create(empty_testdir)
+teardown(unlink(empty_testdir, recursive = TRUE))
+
+test_that("Correct behavior when no NetCDF files present", {
+  expected <- "no netCDF files of model output present"
+  out_log <- capture.output(type = "message", {
+    out <- read.output(runid = "", outdir = empty_testdir,
+                start.year = 2001, end.year = 2002)
+  })
+  expect_match(out_log, "no netCDF files of model output present", all = FALSE)
+  expect_match(out_log, "No files found. Returning all NA", all = FALSE)
+  expect_equal(out, list(NA))
+})
+
+custom_testdir <- tempfile()
+dir.create(custom_testdir)
+teardown(unlink(custom_testdir, recursive = TRUE))
+test_that("Correctly read all variables, from custom ncfiles", {
+  options(warn = 2)
+  ncfiles <- file.path(custom_testdir, c("a.nc", "b.nc", "c.nc"))
+  zzz <- lapply(ncfiles, example_netcdf, varnames = c("x", "y", "z"))
+  out_log <- capture.output(type = "message", {
+    out <- read.output(ncfiles = ncfiles, variables = NULL)
+  })
+  expect_match(out_log, "No start or end year provided", all = FALSE)
+  expect_match(out_log, "Invalid \\(or missing\\) origin year", all = FALSE)
+  expect_match(out_log, "Reading output for all variables", all = FALSE)
+  expect_match(out_log, "Result summary:", all = FALSE)
+  expect_match(out_log, " +Mean +Median", all = FALSE)
+  expect_named(out, c("x", "y", "z"))
+  for (v in c("x", "y", "z")) expect_length(out[[!!v]], 365 * 3)
 })
