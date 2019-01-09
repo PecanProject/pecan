@@ -102,15 +102,33 @@ read.output <- function(runid, outdir,
       start.year <- lubridate::year(start.year)
     } else if (is.character(start.year)) {
       start.year <- as.numeric(start.year)
+    } else if (is.numeric(start.year)) {
+      if (start.year %% 1 != 0) {
+        PEcAn.logger::logger.severe(
+          "Start year `", start.year, "` is numeric, but not an integer."
+        )
+      }
     } else {
-      PEcAn.logger::logger.error("start.year must be of type numeric, character, Date, or POSIXt")
+      PEcAn.logger::logger.severe(
+        "`start.year` must be of type numeric, character, Date, or POSIXt",
+        "but given `", start.year, "` which is type `", typeof(start.year), "`."
+      )
     }
     if (lubridate::is.instant(end.year)) {
       end.year <- lubridate::year(end.year)
     } else if (is.character(end.year)) {
       end.year <- as.numeric(end.year)
+    } else if (is.numeric(end.year)) {
+      if (end.year %% 1 != 0) {
+        PEcAn.logger::logger.severe(
+          "End year `", end.year, "` is numeric, but not an integer."
+        )
+      }
     } else {
-      PEcAn.logger::logger.error("end.year must be of type numeric, character, Date, or POSIXt")
+      PEcAn.logger::logger.error(
+        "`end.year` must be of type numeric, character, Date, or POSIXt",
+        "but given `", end.year, "` which is type `", typeof(end.year), "`."
+      )
     }
 
     # select only those *.nc years requested by user
