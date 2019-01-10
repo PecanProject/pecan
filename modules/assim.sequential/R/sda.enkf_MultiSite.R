@@ -351,7 +351,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
 
       # making the mapping oprator
       H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
-      if (control$debug) browser()
+     
       ###-------------------------------------------------------------------###
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
@@ -378,9 +378,8 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       Pa <- enkf.params[[t]]$Pa
       mu.a <- enkf.params[[t]]$mu.a
       #extracting extra outputs
+      if (control$debug) browser()
       if (processvar) {
-        CI.X1[, t] <- enkf.params[[t]]$CIX1
-        CI.X2[, t] <- enkf.params[[t]]$CIX2
         aqq<-enkf.params[[t]]$aqq
         bqq<-enkf.params[[t]]$bqq
         X.new<-enkf.params[[t]]$X.new
