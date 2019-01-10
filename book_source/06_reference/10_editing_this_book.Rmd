@@ -55,4 +55,17 @@ For instance, here are links to the [`models/ed`](https://pecanproject.github.io
 If necessary, you can also link directly to specific lines or blocks in the source code on GitHub, [like this](https://github.com/PecanProject/pecan/blob/develop/models/ed/R/create_veg.R#L11-L25).
 (To get a link to a line, click its line number. To then select a block, shift-click another line number.)
 
+To insert figures, use `knitr::include_graphics("path/to/figure.png")` inside an [R code chunk](https://yihui.name/knitr/options/#chunk-options).
+For example:
+
+````
+```{r}`r ''`
+knitr::include_graphics("04_advanced_user_guide/images/Input_ID_name.png")
+```
+````
+
+Note that image file names are **relative to the `book_source` directory**, **NOT** to the markdown file.
+In other words, if `myimage.png` was in the same directory as this file, I would still have to reference it as `06_reference/myimage.png` -- I could _not_ just do `myimage.png`.
+The size, caption, and other properties of the rendered image can be controlled via [chunk options](https://yihui.name/knitr/options/#plots).
+
 For additional information about how `bookdown` works (including information about its syntax), see the [Bookdown free online book](https://bookdown.org/yihui/bookdown/).
