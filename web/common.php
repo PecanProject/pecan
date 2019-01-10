@@ -12,7 +12,7 @@ function get_footer() {
   return "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
     (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA
     Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.6.0</span>";
+    <span style=\"float:right\">PEcAn Version 1.7.0</span>";
 }
 
 function whoami() {
@@ -25,6 +25,27 @@ function whoami() {
     echo "Not Logged in.";
     echo "<a style=\"float: right;\" href=\"login.php\">login</a>";
   }
+}
+
+function left_footer() {
+  if (check_login()) {
+    echo "<p></p>";
+    echo "Logged in as " . get_user_name();
+    echo "<a style=\"float: right;\" href=\"index.php?logout\" id=\"logout\">logout</a>";
+  } else {
+    echo "<p></p>";
+    echo "Not Logged in.";
+    echo "<a style=\"float: right;\" href=\"login.php\">login</a>";
+  }
+
+?>
+<p></p>
+  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
+  <br>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+<?php
 }
 
 function passvars($ignore) {
@@ -177,6 +198,40 @@ function get_page_acccess_level() {
   } else {
     return $anonymous_page;
   }
+}
+
+# Create a new RabbitMQ connection
+# Global variables are set in config.php
+function make_rabbitmq_connection($rabbitmq_uri) {
+  $rabbitmq = parse_url($rabbitmq_uri);
+  $connection = new AMQPConnection();
+  if ($rabbitmq['host']) {
+    $connection->setHost($rabbitmq['host']);
+  }
+  if ($rabbitmq['port']) {
+    $connection->setPort($rabbitmq['port']);
+  }
+  if ($rabbitmq['path']) {
+    $connection->setVhost(urldecode(ltrim($rabbitmq['path'], '/')));
+  }
+  if ($rabbitmq['user']) {
+    $connection->setLogin($rabbitmq['user']);
+  }
+  if ($rabbitmq['pass']) {
+    $connection->setPassword($rabbitmq['pass']);
+  }
+  $connection->connect();
+  return $connection;
+}
+
+# Post $message (string) to RabbitMQ queue $rabbitmq_queue (string)
+function send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue) {
+  $connection = make_rabbitmq_connection($rabbitmq_uri);
+  $channel = new AMQPChannel($connection);
+  $exchange = new AMQPExchange($channel);
+
+  $exchange->publish($message, $rabbitmq_queue);
+  $connection->disconnect();
 }
 
 ?>

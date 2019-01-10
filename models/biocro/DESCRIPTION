@@ -1,8 +1,11 @@
 Package: PEcAn.BIOCRO
 Type: Package
 Title: PEcAn package for integration of the BioCro model
-Version: 1.6.0
-Date: 2018-08-20
+Version: 1.7.0
+Date: 2018-12-03
+Authors@R: c(person("David","LeBauer"),
+             person("Christopher", "Black"),
+             person("Deepak", "Jaiswal"))
 Author: David LeBauer, Deepak Jaiswal, Christopher Black
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: This module provides functions to link BioCro to PEcAn.
@@ -32,4 +35,4 @@ Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

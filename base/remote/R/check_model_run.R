@@ -7,7 +7,7 @@
 #' @export
 check_model_run <- function(out, stop.on.error = TRUE) {
   if ("ERROR IN MODEL RUN" %in% out) {
-    success <- TRUE
+    success <- FALSE
     msg <- paste0("Model run aborted with the following error:\n", out)
     if (stop.on.error) {
       PEcAn.logger::logger.severe(msg)
@@ -15,7 +15,7 @@ check_model_run <- function(out, stop.on.error = TRUE) {
       PEcAn.logger::logger.error(msg)
     }
   } else {
-    success <- FALSE
+    success <- TRUE
   }
   return(success)
 }

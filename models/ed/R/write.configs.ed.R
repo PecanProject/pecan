@@ -146,12 +146,6 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- read_ed2in(filename)
   }
 
-  metstart <- tryCatch(format(as.Date(settings$run$site$met.start), "%Y"), 
-                       error = function(e) settings$run$site$met.start)
-  metend <- tryCatch(format(as.Date(settings$run$site$met.end), "%Y"), 
-                     error = function(e) settings$run$site$met.end)
-  
-
   ed2in.text <- modify_ed2in(
     ed2in.text,
     latitude = as.numeric(settings$run$site$lat),
@@ -159,22 +153,53 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     met_driver = settings$run$inputs$met$path,
     start_date = startdate,
     end_date = enddate,
-    MET_START = metstart,
-    MET_END = metend,
     IMETAVG = -1,   # See below,
     add_if_missing = TRUE,
     check_paths = check
   )
 
-  # The flag for IMETAVG tells ED what to do given how input radiation was 
-  # originally averaged
-  # -1 = I don't know, use linear interpolation
+  # The flag for IMETAVG tells ED what to do given how input radiation
+  # was originally averaged
+  # -1 = I don't know, use linear interpolation (default)
   # 0 = No average, the values are instantaneous
   # 1 = Averages ending at the reference time
   # 2 = Averages beginning at the reference time
-  # 3 = Averages centered at the reference time Deafult is -1
-  
-  
+  # 3 = Averages centered at the reference time
+
+  # By default, modify_ed2in sets the met start and end dates to run
+  # start and end dates, respectively. However, the `met.start` and
+  # `met.end` XML tags may be used to set these to different values,
+  # e.g. if you want to run ED under constant, looped meteorology.
+  proc_met_startend <- function(rawval, ed2in_tag) {
+    stopifnot(
+      ed2in_tag %in% c("METCYC1", "METCYCF"),
+      length(rawval) == 1
+    )
+    if (is.null(rawval)) return(ed2in.text)
+    # The corresponding ED2IN tags METCYC1 and METCYCF expect a year,
+    # so we try to extract the year from the input value here.
+    value <- tryCatch(
+      lubridate::year(rawval),
+      error = function(e) as.numeric(rawval)
+    )
+    if (!is.finite(value)) {
+      PEcAn.logger::logger.error(
+        "Unable to parse custom met ", ed2in_tag, " value: ", rawval, ". ",
+        "Setting it based on run dates."
+      )
+      return(ed2in.text)
+    }
+    if (value < 1000 || value > 3000) {
+      PEcAn.logger::logger.info(
+        "WARNING: Suspicious ", ed2in_tag, " value: ", value
+      )
+    }
+    ed2in.text[[ed2in_tag]] <- value
+    return(ed2in.text)
+  }
+  ed2in.text <- proc_met_startend(settings[[c("run", "site", "met.start")]], "METCYC1")
+  ed2in.text <- proc_met_startend(settings[[c("run", "site", "met.end")]], "METCYCF")
+
   if (is.null(settings$model$phenol.scheme)) {
     PEcAn.logger::logger.error(paste0("no phenology scheme set; \n",
                                      "need to add <phenol.scheme> ",
@@ -305,16 +330,63 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     add_if_missing = TRUE,
     check_paths = check
   )
+
+  ##---------------------------------------------------------------------
+  # Use all PFTs, or just the ones configured in config.xml?
+  all_pfts <- settings$model$all_pfts
+  if (!is.null(all_pfts) && tolower(all_pfts) != "false") {
+    # Use all ED PFTs
+    use_pfts <- 1:17
+    PEcAn.logger::logger.debug("Running with all PFTs (1:17)")
+  } else {
+    # Use only PFTs configured in ED2 config.xml
+    # xml object (`config.xml`) created above. Here, we pull out the
+    # <num> tags from each PFT to get the numbers.
+    #
+    # I'm sure there is a better way to pull values out of an XML node
+    # object, but I have no idea what it is. If you know, please fix this.
+    use_pfts <- numeric(length(xml))
+    for (i in seq_along(xml)) {
+      use_pfts[i] <- as.numeric(XML::xmlValue(xml[[i]][['num']]))
+    }
+    use_pfts <- use_pfts[is.finite(use_pfts)]
+    PEcAn.logger::logger.debug(
+      "Running with only these PFTs (set by config.xml): ",
+      paste(use_pfts, collapse = ", ")
+    )
+  }
+  ed2in.text <- modify_ed2in(ed2in.text, include_these_pft = use_pfts)
   
   ##---------------------------------------------------------------------
   # Modify any additional tags provided in settings$model$ed2in_tags
-  ed2in.text <- modify_ed2in(ed2in.text, .dots = settings$model$ed2in_tags, add_if_missing = TRUE, check_paths = check)
+  custom_tags <- settings$model$ed2in_tags
+  if (!is.null(custom_tags)) {
+    # Convert numeric tags to numeric
+    # Anything that isn't converted to NA via `as.numeric` is numeric
+    try_numeric <- suppressWarnings(vapply(custom_tags, as.numeric, numeric(1)))
+    are_numeric <- !is.na(try_numeric)
+    custom_tags[are_numeric] <- lapply(custom_tags[are_numeric], as.numeric)
+    # Figure out what is a numeric vector
+    # Look for a list of numbers like: "1,2,5"
+    # Works for decimals, and arbitrary spacing: "1.3,2.6,   7.8  ,  8.1"
+    numvec_rxp <- paste0("^ *[[:digit:]]+.?[[:digit:]]*",
+                         "([[:space:]]*,[[:space:]]*[[:digit:]]+.?[[:digit:]]*)+")
+    are_numvec <- vapply(custom_tags, function(x) grepl(numvec_rxp, x), logical(1))
+    custom_tags[are_numvec] <- lapply(
+      custom_tags[are_numvec],
+      function(x) as.numeric(strsplit(x, ",")[[1]])
+    )
+    ed2in.text <- modify_ed2in(ed2in.text, .dots = custom_tags, add_if_missing = TRUE, check_paths = check)
+  }
   
   ##----------------------------------------------------------------------
   if (check) {
     check_ed2in(ed2in.text)
   }
-  write_ed2in(ed2in.text, file.path(settings$rundir, run.id, "ED2IN"))
+
+  barebones <- settings$model$barebones_ed2in
+  if (!is.null(barebones) && !isFALSE(barebones) && barebones != "false") barebones <- TRUE
+  write_ed2in(ed2in.text, file.path(settings$rundir, run.id, "ED2IN"), barebones = barebones)
 } # write.config.ED2
 # ==================================================================================================#
 
@@ -477,7 +549,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
 #' run$host$rundir, run$host$outdir, run$host$scratchdir,
 #' run$host$clearscratch, model$jobtemplate, model$job.sh, run$host$job.sh,
 #' run$site$lat, run$site$lon, run$inputs$met$path, run$start.date,
-#' run$end.date, model$binary
+#' run$end.date, model$binary, model$binary_args
 #' @param run.id PEcAn run ID
 #' @return Character vector containing job.sh file
 #' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
@@ -547,6 +619,17 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
+  if (is.null(settings$model$binary_args)) {
+    # If argument is missing but running on RabbitMQ, assume you need
+    # -s flag. If you want to force run ED without -s, use a blank
+    # binary_args tag.
+    if (!is.null(settings$host$rabbitmq)) {
+      settings$model$binary_args <- "-s"
+    } else {
+      settings$model$binary_args <- ""
+    }
+  }
+  jobsh <- gsub("@BINARY_ARGS@", settings$model$binary_args, jobsh)
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   
   pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))

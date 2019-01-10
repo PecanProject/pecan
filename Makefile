@@ -10,6 +10,9 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.mining data.remote emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
+SHINY := $(dir $(wildcard shiny/*/.))
+SHINY := $(SHINY:%/=%)
+
 BASE := $(BASE:%=base/%)
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
@@ -19,6 +22,7 @@ BASE_I := $(BASE:%=.install/%)
 MODELS_I := $(MODELS:%=.install/%)
 MODULES_I := $(MODULES:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
+SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
 
 BASE_C := $(BASE:%=.check/%)
 MODELS_C := $(MODELS:%=.check/%)
@@ -35,7 +39,7 @@ MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
-.PHONY: all install check test document
+.PHONY: all install check test document shiny
 
 all: install document
 
@@ -43,11 +47,12 @@ document: $(ALL_PKGS_D) .doc/base/all
 install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
 test: $(ALL_PKGS_T) .test/base/all
+shiny: $(SHINY_I)
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 # Make the timestamp directories if they don't exist yet
-.doc .install .check .test $(call depends,base) $(call depends,models) $(call depends,modules):
+.doc .install .check .test .shiny_depends $(call depends,base) $(call depends,models) $(call depends,modules):
 	mkdir -p $@
 
 ### Dependencies
@@ -65,44 +70,7 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 .check/base/all: | $(ALL_PKGS_C)
 .test/base/all: | $(ALL_PKGS_T)
 
-$(subst .install/base/logger,,$(ALL_PKGS_I)): | .install/base/logger
-$(subst .doc/base/logger,,$(ALL_PKGS_D)): | .install/base/logger
-
-$(call depends,base/utils): | .install/base/remote
-$(call depends,base/db): | .install/base/utils
-$(call depends,base/qaqc): | .install/base/utils
-$(call depends,base/settings): | .install/base/utils .install/base/db
-$(call depends,base/visualization): | .install/base/db
-$(call depends,base/workflow): | .install/base/db .install/base/settings
-$(call depends,modules/allometry): | .install/base/db
-$(call depends,modules/assim.batch): | .install/base/utils .install/base/db .install/base/settings .install/base/remote .install/modules/meta.analysis
-$(call depends,modules/assim.sequential): | .install/base/remote
-$(call depends,modules/benchmark): | .install/base/db .install/base/remote .install/base/settings .install/base/utils .install/modules/data.land
-$(call depends,modules/data.atmosphere): | .install/base/utils .install/base/remote .install/base/db
-$(call depends,modules/data.hydrology): | .install/base/utils
-$(call depends,modules/data.land): | .install/base/db .install/base/utils .install/base/settings .install/base/remote
-$(call depends,modules/data.mining): | .install/base/utils
-$(call depends,modules/data.remote): | .install/base/remote
-$(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/settings .install/modules/priors
-$(call depends,modules/priors): | .install/base/utils
-$(call depends,modules/rtm): | .install/modules/assim.batch .install/base/utils .install/models/ed
-$(call depends,modules/uncertainty): | .install/base/utils .install/base/db .install/modules/priors .install/modules/emulator
-$(call depends,models/biocro): | .install/mockery .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land .install/base/remote
-$(call depends,models/cable): | .install/base/utils
-$(call depends,models/clm45): | .install/base/utils
-$(call depends,models/dalec): | .install/base/remote
-$(call depends,models/dvmdostem): | .install/base/utils
-$(call depends,models/ed): | .install/base/utils .install/base/remote .install/base/settings
-$(call depends,models/fates): | .install/base/utils .install/base/remote
-$(call depends,models/gday): | .install/base/utils .install/base/remote
-$(call depends,models/jules): | .install/base/utils .install/base/remote
-$(call depends,models/linkages): | .install/base/utils .install/base/remote
-$(call depends,models/lpjguess): | .install/base/utils .install/base/remote
-$(call depends,models/maat): | .install/base/utils .install/base/remote .install/base/settings
-$(call depends,models/maespa): | .install/base/utils .install/base/remote .install/modules/data.atmosphere
-$(call depends,models/preles): | .install/base/utils .install/modules/data.atmosphere
-$(call depends,models/sipnet): | .install/base/utils .install/base/remote .install/modules/data.atmosphere
-$(call depends,models/template): | .install/base/utils
+include Makefile.depends
 
 clean:
 	rm -rf .install .check .test .doc
@@ -124,7 +92,11 @@ clean:
 	+ time Rscript -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
-depends_R_pkg = time Rscript -e "devtools::install_deps('$(strip $(1))', threads = ${NCPUS}, dependencies = TRUE);"
+# HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
+# When these are fixed, can go back to simple `dependencies = TRUE`
+depends_R_pkg = time Rscript -e " \
+	deps <- if (grepl('base/utils', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; \
+	devtools::install_deps('$(strip $(1))', Ncpus = ${NCPUS}, dependencies = deps);"
 install_R_pkg = time Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
@@ -150,3 +122,7 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 	$(call test_R_pkg, $(subst .test/,,$@))
 	echo `date` > $@
 
+# Install dependencies declared by Shiny apps
+.shiny_depends/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
+	Rscript scripts/install_shiny_deps.R $(subst .shiny_depends/,shiny/,$@)
+	echo `date` > $@
