@@ -355,7 +355,8 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ###-------------------------------------------------------------------###
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
-      an.method<-EnKF.MultiSite 
+      
+      if(processvar == FALSE){an.method<-EnKF.MultiSite   }else{    an.method<-GEF   } 
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
                                        FUN=an.method,
