@@ -699,9 +699,11 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   site.locs <- site.locs %>%
     mutate(Data = Site %in% sites.w.data)
 
+  lcolors <- ifelse((site.locs$Data %>% as.character() %>% unique() %>% length) > 1,
+                    c("#e31a1c","#33a02c"), c("#33a02c"))
   #plotting
   map.plot<- ggplot() + 
-    geom_sf(aes(fill=NA_L2CODE),data = aoi_boundary_HARV, alpha=0.25,lwd=0,color="black")+
+    geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
     geom_point(data = site.locs,
                aes(x = Lon, y = Lat),
                size = 2) +
@@ -715,7 +717,6 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       ),
       vjust = 1.2,
       fontface = "bold",
-
       size = 3.5
     ) + 
     #coord_sf(datum = sf::st_crs(2163),default = F)+
@@ -730,9 +731,10 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       "#ffd92f","#8dd3c7",
       "#80b1d3","#d9d9d9",
       "#fdbf6f"),name="Eco-Region")+
-    scale_color_manual(values=c("#e31a1c","#33a02c"))+
+    scale_color_manual(values=lcolors)+
     theme_minimal()+
     theme(axis.text = element_blank())
+
   #----- Reordering the plots
   all.plots.print <-list(map.plot)
   for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
