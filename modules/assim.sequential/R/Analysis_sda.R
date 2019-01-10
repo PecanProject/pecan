@@ -68,6 +68,8 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   # Enkf---------------------------------------------------
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
   Pf <- cov(X)
+
+  
   diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
   # for those elements with zero value
   if (length(Y) > 1) {
@@ -122,6 +124,8 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
   Pf = cov(X) # Cov Forecast - This is used as an initial condition
+
+  
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   #Observed inputs
   R <- Observed$R
@@ -227,20 +231,17 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
 
   dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr, nburnin=nburnin,  progressBar=TRUE)
   
-  # pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
-  # 
-  # assessParams(dat = dat.tobit2space[1000:5000,], Xt = X)
-  # dev.off()
-  
   ## update parameters
   #dat.tobit2space  <- dat.tobit2space[1000:5000, ]
   imuf   <- grep("muf", colnames(dat.tobit2space))
   mu.f <- colMeans(dat.tobit2space[, imuf])
   iPf   <- grep("pf", colnames(dat.tobit2space))
   Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
+  #--- This is where the localization needs to happen - After imputing Pf
+  #Pf[upper.tri(Pf)] <-0
+  #Pf[lower.tri(Pf)] <-0
   
   iycens <- grep("y.censored",colnames(dat.tobit2space))
-  
   X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
   
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
@@ -275,7 +276,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   y.ind <- as.numeric(Y > interval[,1])
   y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
   
-  if (control$debug) browser()
+
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
     # Contants defined in the model
     constants.tobit = list(N = ncol(X), YN = length(y.ind))
