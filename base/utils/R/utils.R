@@ -202,17 +202,25 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @param result dataframe with results of trait data query
 ##' @return result with replicate observations summarized
 ##' @export summarize.result
-##' @author David LeBauer
+##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
-  ans1 <- plyr::ddply(result[result$n == 1, ],
-                plyr::.(citation_id, site_id, trt_id, control, greenhouse,
-                  date, time, cultivar_id, specie_id),
-                plyr::summarise, n = length(n),
-                mean = mean(mean),
-                statname = ifelse(length(n) == 1, "none", "SE"),
-                stat = stats::sd(mean) / sqrt(length(n)))
-  ans2 <- result[result$n != 1, colnames(ans1)]
-  return(rbind(ans1, ans2))
+  ans1 <- result %>%
+    dplyr::filter(n == 1) %>%
+    dplyr::group_by(citation_id, site_id, trt_id,
+                    control, greenhouse, date, time,
+                    cultivar_id, specie_id) %>%
+    dplyr::summarize(
+      n = length(n),
+      mean = mean(mean),
+      statname = dplyr::if_else(length(n) == 1, "none", "SE"),
+      stat = stats::sd(mean) / sqrt(length(n))
+    ) %>%
+    dplyr::ungroup()
+  ans2 <- result %>%
+    dplyr::filter(n != 1) %>%
+    # ANS: Silence factor to character conversion warning
+    dplyr::mutate(statname = as.character(statname))
+  return(dplyr::bind_rows(ans1, ans2))
 } # summarize.result
 
 

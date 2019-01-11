@@ -33,7 +33,6 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     PeriodicTable,
-    plyr (>= 1.8.4),
     purrr,
     randtoolbox,
     raster,
@@ -55,6 +54,6 @@ Suggests:
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyData: true
-Require: hdf5, plyr
+Require: hdf5
 Encoding: UTF-8
 RoxygenNote: 6.1.1
