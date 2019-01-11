@@ -93,7 +93,6 @@ custom_testdir <- tempfile()
 dir.create(custom_testdir)
 teardown(unlink(custom_testdir, recursive = TRUE))
 test_that("Correctly read all variables, from custom ncfiles", {
-  options(warn = 2)
   ncfiles <- file.path(custom_testdir, c("a.nc", "b.nc", "c.nc"))
   zzz <- lapply(ncfiles, example_netcdf, varnames = c("x", "y", "z"))
   out_log <- capture.output(type = "message", {
