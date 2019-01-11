@@ -73,3 +73,4 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   Pa   <- (diag(ncol(X)) - K %*% H) %*% Pf
   return(list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa))
 }
+

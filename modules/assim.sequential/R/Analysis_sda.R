@@ -238,9 +238,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   iPf   <- grep("pf", colnames(dat.tobit2space))
   Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
   #--- This is where the localization needs to happen - After imputing Pf
-  #Pf[upper.tri(Pf)] <-0
-  #Pf[lower.tri(Pf)] <-0
-  
+
   iycens <- grep("y.censored",colnames(dat.tobit2space))
   X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
   
@@ -275,7 +273,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   #### from the interval matrix
   y.ind <- as.numeric(Y > interval[,1])
   y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
-  
+  browser()
 
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
     # Contants defined in the model
