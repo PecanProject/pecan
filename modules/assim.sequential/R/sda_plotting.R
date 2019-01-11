@@ -699,8 +699,6 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   site.locs <- site.locs %>%
     mutate(Data = Site %in% sites.w.data)
 
-  lcolors <- ifelse((site.locs$Data %>% as.character() %>% unique() %>% length) > 1,
-                    c("#e31a1c","#33a02c"), c("#e31a1c","#33a02c"))
   #plotting
   map.plot<- ggplot() + 
     geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
@@ -731,7 +729,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       "#ffd92f","#8dd3c7",
       "#80b1d3","#d9d9d9",
       "#fdbf6f"),name="Eco-Region")+
-    scale_color_manual(values=lcolors)+
+    scale_color_manual(values= c("#e31a1c","#33a02c"))+
     theme_minimal()+
     theme(axis.text = element_blank())
 
