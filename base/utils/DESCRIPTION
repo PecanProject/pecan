@@ -32,7 +32,6 @@ Imports:
     PEcAn.remote,
     purrr,
     RCurl,
-    rjags,
     sp,
     stringi,
     udunits2 (>= 0.11),
@@ -49,6 +48,7 @@ Suggests:
     PEcAn.DB,
     randtoolbox,
     raster,
+    rjags,
     testthat (>= 2.0.0)
 License: FreeBSD + file LICENSE
 Copyright: Authors

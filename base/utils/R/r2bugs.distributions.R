@@ -89,6 +89,11 @@ bugs2r.distributions <- function(..., direction = "bugs2r") {
 ##' @author David LeBauer
 bugs.rdist <- function(prior = data.frame(distn = "norm", parama = 0, paramb = 1), 
                        n.iter = 1e+05, n = NULL) {
+  if (!requireNamespace("rjags", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "This function requires the `rjags` package, but it is not installed."
+    )
+  }
   if (!grepl("chisq", prior$distn)) {
     model.string <- paste0("model{Y ~ d", prior$distn, "(", prior$parama, ", ", prior$paramb, ")\n a <- x}")
   } else if (grepl("chisq", prior$distn)) {
