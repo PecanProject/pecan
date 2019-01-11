@@ -382,8 +382,6 @@ An example of multi-settings pecan xml file also may look like below:
  </settings.info>
  <rundir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/run</rundir>
  <modeloutdir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/out</modeloutdir>
- <multisettings>
  <multisettings>run</multisettings>
- </multisettings>
 </pecan.multi>
 ```

@@ -64,6 +64,11 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     conf.settings<-list(settings)
   }
   
+  #Finding the distance between the sites
+  distances <- sp::spDists(site.locs, longlat=T)
+  #turn that into a blocked matrix format
+  blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
+  
   #filtering obs data based on years specifited in setting > state.data.assimilation
   assimyears <- lubridate::year(settings$state.data.assimilation$start.date) : lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
   obs.mean <- obs.mean[sapply(year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
@@ -369,7 +374,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                        obs.mean=obs.mean,
                                        obs.cov=obs.cov,
                                        site.ids=site.ids,
-                                       site.locs=site.locs
+                                       blocked.dis=blocked.dis
       )
       #Forecast
       mu.f <- enkf.params[[t]]$mu.f

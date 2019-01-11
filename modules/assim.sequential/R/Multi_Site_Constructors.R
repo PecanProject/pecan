@@ -222,18 +222,23 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   site.ids.with.data <- names(obs.t.mean)
   site.specific.Hs <- list()
   
-  nobs <- obs.t.mean %>% map_dbl(~length(.x)) %>% max
-  nsite <- length(site.ids)
-  nsite.ids.with.data <-length(site.ids.with.data)
-  nvariable <- length(var.names)
-  H <- matrix(0, (nobs * nsite.ids.with.data), (nvariable*nsite))
   
+  nsite <- length(site.ids) # number of sites
+  nsite.ids.with.data <-length(site.ids.with.data) # number of sites with data
+  nvariable <- length(var.names)
+  #This is used inside the loop below for moving between the sites when populating the big H matrix
+  nobs <- obs.t.mean %>% map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites
+  nobstotal<-obs.t.mean %>% purrr::flatten() %>% length() # this gives me the total number of obs
+  #H <- matrix(0, (nobs * nsite.ids.with.data), (nvariable*nsite))
+  #big empty H which needs to be filled in.
+  #Having the total number of obs as the row number
+  H <- matrix(0,  nobstotal, (nvariable*nsite))
   j<-1
   for(i in seq_along(site.ids)){
     
     site <- site.ids[i]
-    
     obs.names <- names(obs.t.mean[[site]])
+    
     if(is.null(obs.names)) next;
     
     choose.col <- sapply(obs.names, agrep, x = var.names, max = 1, USE.NAMES = F) %>% unlist

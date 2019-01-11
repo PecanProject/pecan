@@ -37,12 +37,6 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
     `attr<-`('Site', c(rep(site.ids, each=length(var.names))))
   # I make the Pf in a separate function
   if(length(site.ids)>1){
-    
-    #Finding the distance between the sites
-    distances <- sp::spDists(site.locs, longlat=T)
-    #turn that into a blocked matrix format
-    blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
-    
     # This the function makes the Pf by creating blocks in a matrix for different sites
     # We can also send a localization functions to this 
     # for extra argumnets like distance matrix for localization use elipsis
