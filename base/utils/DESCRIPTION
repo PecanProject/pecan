@@ -24,9 +24,7 @@ Description: The Predictive Ecosystem Carbon Analyzer
 Imports:
     abind (>= 1.4.5),
     coda (>= 0.18),
-    data.table,
     dplyr,
-    ggplot2,
     lubridate (>= 1.6.0),
     magrittr,
     ncdf4 (>= 1.15),
@@ -45,6 +43,8 @@ Imports:
     XML
 Suggests:
     MASS,
+    data.table,
+    ggplot2,
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.emulator,

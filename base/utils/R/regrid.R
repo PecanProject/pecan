@@ -33,18 +33,27 @@ regrid <- function(latlon.data) {
 ##' @return writes netCDF file
 ##' @author David LeBauer
 grid2netcdf <- function(gdata, date = "9999-09-09", outfile = "out.nc") {
-  
+
   ## Fill in NA's
   lats      <- unique(gdata$lat)
   lons      <- unique(gdata$lon)
   dates     <- unique(gdata$date)
-  latlons   <- data.table::data.table(expand.grid(lat = lats, lon = lons, date = dates))
+  latlons   <- expand.grid(lat = lats, lon = lons, date = dates)
+  if (requireNamespace("data.table", quietly = TRUE)) {
+    latlons <- data.table::data.table(latlons)
+  } else {
+    PEcAn.logger::logger.warn(
+      "`data.table` package not installed, so falling back to base R.",
+      "For better performance (especially for large datasets), ",
+      "please install `data.table`."
+    )
+  }
   grid.data <- merge(latlons, gdata, by = c("lat", "lon", "date"), all.x = TRUE)
   lat       <- ncdf4::ncdim_def("lat", "degrees_east", vals = lats, longname = "station_latitude")
   lon       <- ncdf4::ncdim_def("lon", "degrees_north", vals = lons, longname = "station_longitude")
   time      <- ncdf4::ncdim_def(name = "time", units = paste0("days since 1700-01-01"), 
                          vals = as.numeric(lubridate::ymd(paste0(years, "01-01")) - lubridate::ymd("1700-01-01")),
-                         calendar = "standard", 
+                         calendar = "standard",
                          unlim = TRUE)
   
   yieldvar <- to_ncvar("CropYield", list(lat, lon, time))
