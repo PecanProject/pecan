@@ -31,7 +31,6 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     purrr,
-    randtoolbox,
     raster,
     RCurl,
     rjags,
@@ -49,6 +48,7 @@ Suggests:
     PEcAn.emulator,
     PEcAn.settings,
     PEcAn.DB,
+    randtoolbox,
     testthat (>= 2.0.0)
 License: FreeBSD + file LICENSE
 Copyright: Authors
