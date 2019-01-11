@@ -5,6 +5,13 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
+## Unreleased
+
+### Changed
+
+- `PEcAn.utils`
+  - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
+
 ## [1.7.0] - 2018-12-09
 
 ### Fixes
