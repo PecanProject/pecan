@@ -30,7 +30,6 @@ Imports:
     ncdf4 (>= 1.15),
     PEcAn.logger,
     PEcAn.remote,
-    PeriodicTable,
     purrr,
     randtoolbox,
     raster,

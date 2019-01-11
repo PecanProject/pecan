@@ -550,8 +550,8 @@ load.modelpkg <- function(model) {
 ##' @author Istem Fer, Shawn Serbin
 misc.convert <- function(x, u1, u2) {
 
-  amC   <- PeriodicTable::mass("C")  # atomic mass of carbon
-  mmH2O <- sum(PeriodicTable::mass(c("H", "H", "O"))) # molar mass of H2O, g/mol
+  amC   <- 12.0107  # atomic mass of carbon
+  mmH2O <- 18.01528 # molar mass of H2O, g/mol
 
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
     val <- udunits2::ud.convert(x, "ug", "kg") * amC
