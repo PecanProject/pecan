@@ -31,7 +31,6 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     purrr,
-    raster,
     RCurl,
     rjags,
     sp,
@@ -49,6 +48,7 @@ Suggests:
     PEcAn.settings,
     PEcAn.DB,
     randtoolbox,
+    raster,
     testthat (>= 2.0.0)
 License: FreeBSD + file LICENSE
 Copyright: Authors

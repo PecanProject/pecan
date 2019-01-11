@@ -5,6 +5,11 @@
 ##' @return dataframe with regridded data
 ##' @author David LeBauer
 regrid <- function(latlon.data) {
+  if (!requireNamespace("raster", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "This function requires the `raster` package, but it is not installed."
+    )
+  }
   ## from http://stackoverflow.com/a/15351169/513006
   spdf <- sp::SpatialPointsDataFrame(data.frame(x = latlon.data$lon, y = latlon.data$lat),
                                  data = data.frame(z = latlon.data$yield))
