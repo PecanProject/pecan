@@ -131,36 +131,25 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
     
     
     if (method == "halton") {
-      if (!requireNamespace("randtoolbox", quietly = TRUE)) {
-        PEcAn.logger::logger.severe(
-          "`randtoolbox` package required for this method, but is not installed."
-        )
-      }
+      need_packages("randtoolbox")
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- randtoolbox::halton(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "sobol") {
-      if (!requireNamespace("randtoolbox", quietly = TRUE)) {
-        PEcAn.logger::logger.severe(
-          "`randtoolbox` package required for this method, but is not installed."
-        )
-      }
+      need_packages("randtoolbox")
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "torus") {
-      if (!requireNamespace("randtoolbox", quietly = TRUE)) {
-        PEcAn.logger::logger.severe(
-          "`randtoolbox` package required for this method, but is not installed."
-        )
-      }
+      need_packages("randtoolbox")
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- randtoolbox::torus(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "lhc") {
+      need_packages("PEcAn.emulator")
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- PEcAn.emulator::lhc(t(matrix(0:1, ncol = total.sample.num, nrow = 2)), ensemble.size)
     } else if (method == "uniform") {
