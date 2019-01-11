@@ -23,7 +23,6 @@ Description: The Predictive Ecosystem Carbon Analyzer
     investigation.
 Imports:
     abind (>= 1.4.5),
-    coda (>= 0.18),
     dplyr,
     lubridate (>= 1.6.0),
     magrittr,
@@ -32,12 +31,11 @@ Imports:
     PEcAn.remote,
     purrr,
     RCurl,
-    sp,
     stringi,
     udunits2 (>= 0.11),
-    xtable,
     XML
 Suggests:
+    coda (>= 0.18),
     MASS,
     data.table,
     ggplot2,
@@ -49,7 +47,9 @@ Suggests:
     randtoolbox,
     raster,
     rjags,
-    testthat (>= 2.0.0)
+    sp,
+    testthat (>= 2.0.0),
+    xtable
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyData: true

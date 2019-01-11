@@ -422,6 +422,7 @@ isFALSE <- function(x) !isTRUE(x)
 ##' @author David LeBauer
 newxtable <- function(x, environment = "table", table.placement = "ht", label = NULL,
                       caption = NULL, caption.placement = NULL, align = NULL) {
+  need_packages("xtable")
   print(xtable::xtable(x, label = label, caption = caption, align = align),
         floating.environment = environment,
         table.placement = table.placement,
