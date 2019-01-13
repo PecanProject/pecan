@@ -363,6 +363,20 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "baseSoilRespCold"), 2] <- param[which(param[, 1] == "baseSoilResp"), 2] * 0.25
     }
     
+    if ("immedEvapFrac" %in% pft.names) {
+      id <- which(param[, 1] == "immedEvapFrac")
+      param[which(param[, 1] == "immedEvapFrac"), 2] <- pft.traits[which(pft.names == "immedEvapFrac")]
+    }
+    
+    if ("waterRemoveFrac" %in% pft.names) {
+      id <- which(param[, 1] == "waterRemoveFrac")
+      param[which(param[, 1] == "waterRemoveFrac"), 2] <- pft.traits[which(pft.names == "waterRemoveFrac")]
+    }
+    
+    if ("rdConst" %in% pft.names) {
+      id <- which(param[, 1] == "rdConst")
+      param[which(param[, 1] == "rdConst"), 2] <- pft.traits[which(pft.names == "rdConst")]
+    }
     ### ----- Phenology parameters GDD leaf on
     if ("GDD" %in% pft.names) {
       param[which(param[, 1] == "gddLeafOn"), 2] <- pft.traits[which(pft.names == "GDD")]
