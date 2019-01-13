@@ -1,7 +1,8 @@
 Package: PEcAn.remote
 Type: Package
 Title: PEcAn model execution utilities
-Version: 1.6.0
+Version: 1.7.0
+Date: 2018-12-03
 Authors@R: c(person("David","LeBauer"),
              person("Rob","Kooper"),
              person("Shawn", "Serbin"),
@@ -20,4 +21,4 @@ License: FreeBSD + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

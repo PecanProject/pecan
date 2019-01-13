@@ -1,8 +1,8 @@
 Package: PEcAn.LINKAGES
 Type: Package
 Title: PEcAn package for integration of the LINKAGES model
-Version: 1.6.0
-Date: 2018-08-20
+Version: 1.7.0
+Date: 2018-12-03
 Authors@R: c(person("Mike","Dietze"),
              person("Ann", "Raiho"))
 Author: Ann Raiho, Mike Dietze
@@ -19,6 +19,8 @@ Imports:
 Suggests:
     testthat (>= 1.0.2),
     linkages
+Remotes:
+  github::araiho/linkages_package
 SystemRequirements: LINKAGES
 OS_type: unix
 License: FreeBSD + file LICENSE
@@ -26,5 +28,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.0
-Remotes: araiho/linkages_package
+RoxygenNote: 6.1.1

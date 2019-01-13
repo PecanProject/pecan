@@ -360,16 +360,22 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    </config.header>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
-if (isset($hostoptions['models']) && isset($hostoptions['models'][$modeltype])) {
-  if (is_array($hostoptions['models'][$modeltype])) {
-    if (isset($hostoptions['models'][$modeltype]['prerun'])) {
-      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]['prerun']) . "</prerun>" . PHP_EOL);      
+if (isset($hostoptions['models'])) {
+  $model_version="${modeltype}";
+  if (isset($hostoptions['models']["${modeltype} (r${revision})"])) {
+    $model_version="${modeltype} (r${revision})";
+  }
+  if (isset($hostoptions['models'][$model_version])) {
+    if (is_array($hostoptions['models'][$model_version])) {
+      if (isset($hostoptions['models'][$model_version]['prerun'])) {
+        fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$model_version]['prerun']) . "</prerun>" . PHP_EOL);      
+      }
+      if (isset($hostoptions['models'][$model_version]['postrun'])) {
+        fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$model_version]['postrun']) . "</postrun>" . PHP_EOL);      
+      }
+    } else {
+      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$model_version]) . "</prerun>" . PHP_EOL);      
     }
-    if (isset($hostoptions['models'][$modeltype]['postrun'])) {
-      fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$modeltype]['postrun']) . "</postrun>" . PHP_EOL);      
-    }
-  } else {
-    fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]) . "</prerun>" . PHP_EOL);      
   }
 }
 fwrite($fh, "  </model>" . PHP_EOL);
@@ -452,8 +458,8 @@ if ($hostname != $fqdn) {
     fwrite($fh, "    <data_hostname>" . toXML($hostoptions['data_hostname']) . "</data_hostname>" . PHP_EOL);
   }
 }
-if ($rabbitmq_host != "") {
-  $rabbitmq_uri = "amqp://" . $rabbitmq_username . ":" . $rabbitmq_password . "@" . $rabbitmq_host . ":" . $rabbitmq_port . "/" . urlencode($rabbitmq_vhost);
+if (isset($hostoptions['rabbitmq_uri'])) {
+  $rabbitmq_uri = $hostoptions['rabbitmq_uri'];
   $rabbitmq_model_queue = $modeltype . "_" . $revision;
 
   fwrite($fh, "    <rabbitmq>" . PHP_EOL);
@@ -508,7 +514,7 @@ if ($hostname != $fqdn) {
 
 # redirect to the right location
 if ($pecan_edit) {
-  $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit";
+  $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit&hostname=${hostname}";
   if ($model_edit) {
     $path .= "&model_edit=model_edit";
   }
@@ -516,14 +522,20 @@ if ($pecan_edit) {
     $path .= "&offline=offline";
   }
   header("Location: ${path}");
-} else if ($rabbitmq_host != "") {
+} else if (isset($hostoptions['rabbitmq_uri'])) {
+  $rabbitmq_uri = $hostoptions['rabbitmq_uri'];
+  if (isset($hostoptions['rabbitmq_queue'])) {
+    $rabbitmq_queue = $hostoptions['rabbitmq_queue'];
+  } else {
+    $rabbitmq_queue = "pecan";
+  }
 
   # create the message
   $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"}';
-  send_rabbitmq_message($message, $rabbitmq_queue);
+  send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue);
 
   #done
-  $path = "05-running.php?workflowid=$workflowid";
+  $path = "05-running.php?workflowid=$workflowid&hostname=${hostname}";
   if ($pecan_edit) {
     $path .= "&pecan_edit=pecan_edit";
   }
@@ -545,7 +557,7 @@ if ($pecan_edit) {
   }
 
   #done
-  $path = "05-running.php?workflowid=$workflowid";
+  $path = "05-running.php?workflowid=$workflowid&hostname=${hostname}";
   if ($pecan_edit) {
     $path .= "&pecan_edit=pecan_edit";
   }

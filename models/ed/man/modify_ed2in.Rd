@@ -8,8 +8,8 @@ modify_ed2in(ed2in, ..., veg_prefix = NULL, latitude = NULL,
   longitude = NULL, met_driver = NULL, start_date = NULL,
   end_date = NULL, EDI_path = NULL, output_types = NULL,
   output_dir = NULL, run_dir = NULL, runtype = NULL,
-  run_name = NULL, pecan_defaults = FALSE, add_if_missing = FALSE,
-  check_paths = TRUE, .dots = list())
+  run_name = NULL, include_these_pft = NULL, pecan_defaults = FALSE,
+  add_if_missing = FALSE, check_paths = TRUE, .dots = list())
 }
 \arguments{
 \item{...}{Namelist arguments (see Description and Details)}
@@ -43,6 +43,17 @@ and \code{THSUMS_DATABASE} files.}
 
 \item{runtype}{ED initialization mode; either "INITIAL" or "HISTORY"}
 
+\item{run_name}{Give the run an informative name/description. Sets
+the ED2IN \code{EXPNME} tag. (default is \code{NULL})}
+
+\item{include_these_pft}{Numeric vector describing the PFTs to
+include in ED. Note that this is in addition to any PFTs
+specified by the \code{config.xml} -- regardless of what this is set
+to, those PFTs will be included, so if you want to only use PFTs
+defined in \code{config.xml}, set this to \code{numeric(0)}. The default
+(\code{NULL}) means to use whatever is already in the current ED2IN
+file, which is usually all (1-17) of ED's PFTs.}
+
 \item{pecan_defaults}{Logical. If \code{TRUE}, set common \code{ED2IN} defaults.}
 
 \item{add_if_missing}{Logical. If \code{TRUE}, all-caps arguments not found in
@@ -63,7 +74,9 @@ are inserted directly into the \code{ed2in} list objects. Lowercase arguments ar
 defined explicitly (see "Parameters"), and those that do not match explicit
 arguments will be ignored with a warning. Because the lowercase arguments
 come with additional validity checks, they are recommended over modifying
-the ED2IN file directly via uppercase arguments.
+the ED2IN file directly via uppercase arguments. For all lowercase
+arguments, the default (\code{NULL}) means to use whatever is currently
+in the input \code{ed2in}.
 }
 \details{
 Namelist arguments are applied last, and will silently overwrite any
