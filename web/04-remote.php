@@ -24,6 +24,14 @@ if ($authentication) {
   }
 }
 
+$browndog=$_REQUEST['browndog'];
+$browndog_key = $_REQUEST['browndog_key'];
+if ($browndog ==  "on" && ! isset($browndog_key)){
+  $require_browndog =  1;
+} else {
+  $require_browndog =  0;
+}
+
 # boolean parameters
 $offline=isset($_REQUEST['offline']);
 $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
@@ -147,6 +155,14 @@ if (isset($modelinfo['revision'])) {
     validate();
   }
 <?php } ?>
+// redirect to browndog.php if a key is required. 
+$(document).ready(function () {
+  if(<?php echo $require_browndog ?> ){
+    console.log("lklklk")
+    $("#formnext").attr('action', 'browndog.php');
+    $("#formnext").submit();
+  }
+});
 </script>
 </head>
 <body>
