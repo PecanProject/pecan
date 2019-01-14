@@ -36,9 +36,9 @@ Imports:
     XML
 Suggests:
     coda (>= 0.18),
-    MASS,
     data.table,
     ggplot2,
+    MASS,
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.emulator,
@@ -53,6 +53,5 @@ Suggests:
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyData: true
-Require: hdf5
 Encoding: UTF-8
 RoxygenNote: 6.1.1
