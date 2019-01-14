@@ -12,7 +12,7 @@ need_packages(...)
 individual arguments, character vectors, or any combination thereof.}
 }
 \value{
-\code{pkgs}, invisibly
+`pkgs`, invisibly
 }
 \description{
 Check if required packages are installed, and throw an informative
