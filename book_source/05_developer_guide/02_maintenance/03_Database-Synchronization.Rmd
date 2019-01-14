@@ -12,14 +12,14 @@ The synchronization code itself is split into two parts, loading data with the `
 
 ### Set up
 
-Requests for new machine ID's is currently handled manually. To request a machine ID contact Rob Kooper <kooper@illinois.edu>. In the examples below this ID is referred to as MYSITE.
+Requests for new machine ID's is currently handled manually. To request a machine ID contact Rob Kooper <kooper@illinois.edu>. In the examples below this ID is referred to as 'my siteid'.
 
-To setup the database to use this ID you need to call load.bety in 'CREATE' mode
+To setup the database to use this ID you need to call load.bety in 'CREATE' mode (replacing <my siteid> with the ID if your site)
 
 ```
-sudo -u postgres {$PECAN}/scripts/load.bety.sh -c -u -m X 
+sudo -u postgres {$PECAN}/scripts/load.bety.sh -c -u -m <my siteid> 
 ```
-WARNING: At the momment running CREATE deletes all current records in the database. If you are running from the VM this includes both all runs you have done and all information that the database is prepopulated with (e.g. input and model records). Remote records can be fetched (see below), but local records will be lost (we're working on improving this!)
+WARNING: At the moment running CREATE deletes all current records in the database. If you are running from the VM this includes both all runs you have done and all information that the database is prepopulated with (e.g. input and model records). Remote records can be fetched (see below), but local records will be lost (we're working on improving this!)
 
 ### Fetch latest data
 
@@ -35,7 +35,7 @@ The script is configured using environment variables.  The following variables a
 - KEEPTMP: indicates whether the downloaded file should be preserved.  Set to YES (in caps) to keep downloaded files; the default is NO.
 - USERS: determines if default users should be created.  Set to YES (in caps) to create default users with default passwords.  The default is NO.
 
-All of these variables can be specified as command line arguments, to see the options use -h.
+All of these variables can be specified as command line arguments as well, to see the options use -h.
 
 ```
 load.bety.sh -h
@@ -113,12 +113,108 @@ MYSITE=1 REMOTESITE=0 /home/dietze/pecan/scripts/load.bety.sh
 echo $(date +%c) >> /home/dietze/db.sync.log
 ```
 
-Typically such a script is set up to run as a cron job. Make sure to schedule this job (`crontab -e`) as the user that has database privledges (typically postgres). The example below is a cron table that runs the sync every hour at 12 min after the hour.
+Typically such a script is set up to run as a cron job. Make sure to schedule this job (`crontab -e`) as the user that has database privileges (typically postgres). The example below is a cron table that runs the sync every hour at 12 min after the hour.
 
 ```
 MAILTO=user@yourUniversity.edu
 12 * * * * /home/dietze/db.sync.sh
 ```
+
+### Database maintentance
+
+All databases need maintenance performed on them. Depending upon the database type this can happen automatically, or it needs to be run through a scheduler or manually. The BETYdb database is Postgresql and it needs to be reindexed and vacuumed on a regular basis. Reindexing introduces efficiencies back into the database by reorganizing the indexes. Vacuuming the database frees up resources to the database by rearranging and compacting the database. Both of these operations are necessary and safe. As always if there's a concern, a backup of the database should be made ahead of time. While running the reindexing and vacuuming commands, users will notice a slowdown at times. Therefore it's better to run these maintenance tasks during off hours.
+
+#### Reindexing the database
+
+As mentioned above, reindexing allows the database to become more efficient. Over time as data gets updated and deleted, the indexes become less efficient. This has a negative inpact on executed statements. Reindexing makes the indexes efficient again (at least for a while) allowing faster statement execution and reducing the overall load on the database.
+
+If the database is small enough it's reasonable to reindex the entire database at one time. To do this manually run or schedule the REINDEX statement. For example:
+
+```
+psql -U bety -c "REINDEX DATABASE bety"
+```
+
+For larger databases it may be desireable to reindex entire tables at a time. An efficient way to do this is to reindex the larger tables and then the entire database. For example:
+
+```
+psql -U bety -c "REINDEX TABLE traits; REINDEX TABLE yields;"
+psql -U bety -c "REINDEX DATABASE bety;"
+```
+
+For very large databases it may be desirable to reindex one or more individual indexes before reindexing tables and the databases. For example:
+
+```
+psql -U bety -c "REINDEX INDEX index_yields_on_citation_id; REINDEX INDEX index_yields_on_cultivar_id;"
+psql -U bety -c "REINDEX TABLE yields;"
+```
+
+Splitting up the indexing commands over time allows the database to operate efficiently with minimal impact on users.
+
+Please refere to the Automation section above for information on using cron to schedule reindexing commands.
+
+#### Vacuuming the database
+
+Vacuuming the BETYdb Postgresql database reduces the amount of resources it uses and introduces its own efficiencies.
+
+Over time, modified and deleted records leave 'holes' in the storage of the database. This is a common feature for most databases. Each database has its own way of handing this, in Postgresql it's the VACUUM command. The VACUUM command performs two main operations: cleaning up tables to make memory use more efficient, and analyze tables for optimum statement execution. The use of the keyword ANALYZE indicates the second operation should take place.
+
+For small databases with light loads it may be possible to set aside a time for a complete vacuum. During this time, commands executed against the database might fail (a temporary condition as the database gets cleaned up). The following commands can be used to perform all the vaccum operations in one go.
+
+```
+psql -U bety -c "VACUUM FULL ANALYZE;"
+```
+
+Generally it's not desireable to have down time. If the system running the database doesn't need resources that the database is using returned to it, a FULL vacuum can be avoided. In this case the following commands can be executed (note the separation of the commands):
+
+```
+psql -U bety -c "VACUUM; VACUUM ANALYZE;"
+```
+
+In larger databases, vacuuming the entire database can take a long time causing a negative impact on users. This means that individual tables need to be vacuumed. How often a vacuum needs to be performed is dependent upon a table's activity. The more frequently updates and deletes occur on a table, the more frequent the vaccum should be. For large tables it may be desireable to separate the table cleanup from the analysis. An example for completely vacuuming and analyzing a table is:
+
+```
+psql -U bety -c "VACUUM traits; VACUUM ANALYZE traits;"
+```
+
+Similar to indexes, vacuuming the most active tables followed by general database vacuuming and vacuum analyze may be a desireable approach.
+
+Also note that it isn't necessary to run VACUUM ANALYZE for each vacuum performed. Separating the commands and performing a VACUUM ANALYZE after several regular vacuums may be sufficient, with less load on the database.
+
+If the BETYdb database is running on a system with limited resources, or with resources that have become limited, the VACCUM command can return resources to the system from the database. The normal vacuuming process releases resources back to the database for reuse, but not to the system; generally this isn't a problem. Postgresql has a VACUUM keyword FULL that returns resources back to the system. Requesting a FULL vacuum will lock the table being vacuumed while it is being re-written preventing any statements from being executed against it. If performing VECUUM FULL against the entire database, only the table being actively worked on is locked.
+
+To minimize the impact a VACUUM FULL has on users, it's best to perform a normal vacuum before a FULL vacuum. If this approach is taken, there sould be a minimal time gap between the normal VACUUM and the VACUUM FULL commands. A normal vacuum allows changes to be made thus requiring the full vacuum to handle those changes, extending it's run time. Reducing the time between the two commands lessens the work VACUUM FULL needs to do.
+
+```
+psql -U bety -c "VACUUM yields; VACUUM FULL yields; VACUUM ANALYZE yields;"
+```
+
+Give its impact, it's typically not desireable to perform a VACUUM FULL after every normal vacuum; it should be done on an "as needed" basis or infrequently.
+
+### Troubleshooting
+
+There are several possibilities if a scheduled cron job apepars to be running but isn't producing the expected results. The following are suggestions on what to try to resolve the issue. 
+
+##### Username and password
+
+The user that scheduled a cron job may not have access permissions to the database. This can be easily confirmed by running the command line from the cron job while logged in as the user that scheduled the job. An error message will be shown if the user doesn't have permissions.
+
+To resolve this, be sure to include a valid database user (not a BETYdb user) with their credentials on the command in crontab.
+
+##### db_hba.conf file
+
+Iit's possible that the machine hosting the docker image of the database doesn't have permissions to access the database. This may due to the cron job running on a machine that is not the docker instance of the database.
+
+It may be necessary to look at the loga on the hosting machine to determine if database access permissions are causing a problem. Logs are stored in different locations depending upon the Operating System of the host and upon other environmental factors. This document doesn't provide information on where to find the logs.
+
+To begin, it's best to look at the contents of the relevent database configuration file. The following command will display the contents of the db_hba.conf file.
+
+```
+psql -U postgres -qAt -c "show hba_file" | xargs grep -v -E '^[[:space:]]*#'
+```
+
+This command should return a series of text lines. For each row except those begining with 'local', the fourth item describes the machines that can access the database. In some cases an IP mask is specified in the fifth that further restricts the machines that have access. The special work 'all' in the fourth column grants permissions to all machines. The last column on each line contains the authentication option for the machine(s) specified in the fourth column (with a possible fifth column IP mask modifier).
+
+Ensure that the host machine is listed under the fourth column (machine addresse range, or 'all'), is also included in the IP mask if one was specified, and finally that any authentication option are not set to 'reject'. If the host machine is not included the db_hba.conf file will need to be updated to allow access.
 
 ### Network Status Map
 
