@@ -182,15 +182,16 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                                                       pname[[x]]))
   names(knots.list) <- sapply(settings$pfts,"[[",'name')
   
-  # if knots were passed externally overwrite them
-  if(!is.null(external.knots)){
-    PEcAn.logger::logger.info("Overwriting the knots list.")
-    knots.list <- external.knots
-  } 
   
   knots.params <- lapply(knots.list, `[[`, "params")
   # don't need anymore
   # knots.probs <- lapply(knots.list, `[[`, "probs")
+  
+  # if knots were passed externally overwrite them
+  if(!is.null(external.knots)){
+    PEcAn.logger::logger.info("Overwriting the knots list.")
+    knots.params <- external.knots
+  } 
   
   current.step <- "GENERATE KNOTS"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
