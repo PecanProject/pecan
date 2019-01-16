@@ -84,7 +84,7 @@ th,td {
     width: 190px;
 }
 
-#stylized input[type=text], input[type=password], textarea {
+#stylized input[type=text], #stylized input[type=password], #stylized textarea {
     text-overflow: ellipsis;
     width: 184px;
     padding: 4px 2px;
@@ -112,12 +112,12 @@ th,td {
 }
 
 #prev {
-    width: 70px;
+    width: 70px !important;
     float: left;
 }
 
 #next {
-    width: 70px;
+    width: 70px !important;
     float: right;
     margin-right: 10px;
     position: relative;
@@ -132,6 +132,20 @@ th,td {
 
 #output p {
     padding-top: 10px;
+}
+
+#output label {
+    display: block;
+    font-weight: bold;
+    text-align: left;
+    width: 300px;
+    float: left;
+}
+
+#output select, #output input, #output textarea {
+    font-size: 12px;
+    border: solid 1px #aacfe4;
+    width: 300px;
 }
 
 #editor {

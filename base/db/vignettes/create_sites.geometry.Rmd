@@ -13,7 +13,7 @@ This query is used to define the boundary of [site 1254, Champaign County](https
 
 ### Load Libraries
 
-```{r}
+```{r, eval=FALSE}
 library(ggplot2)
 library(data.table)
 library(rgbif)
@@ -23,7 +23,7 @@ library(knitr)
 ### Select lat and lon points for Champaign County Boundary
 
 
-```{r}
+```{r,eval=FALSE}
 d <- data.table(map_data("county"))
 champaign <- d[region == "illinois" & subregion == "champaign"]
 
@@ -32,7 +32,7 @@ kable(champaign)
 
 ### Query Elevation points
 
-```{r}
+```{r,eval=FALSE}
 ### for PostGIS, need polygon to return to start point
 champaign <- rbind(champaign, champaign[1])
 
@@ -47,7 +47,7 @@ kable(champaign_pts, caption = "Table with elevations")
 
 ### Define boundary in postGIS
 
-```{r}
+```{r,eval=FALSE}
 boundary <- champaign_pts[,paste(longitude, latitude, elevation, collapse = ",")]
 
 writeLines(boundary)
@@ -57,7 +57,7 @@ writeLines(boundary)
 
 Use `srid = 4326`
 
-```{r}
+```{r,eval=FALSE}
 geometry <- paste0("ST_SetSRID(ST_MakePolygon(ST_GeomFromText('LINESTRING(", boundary , ")')), 4326)")
 
 writeLines(geometry)
@@ -65,14 +65,14 @@ writeLines(geometry)
 
 #### insert statement
 
-```{r}
+```{r,eval=FALSE}
 insert_polygon <- paste0("INSERT into sites (sitename, geometry) VALUES ('Champaign County', ", geometry, ");")
 writeLines(insert_polygon)
 ```
 
 #### Update geom statement
 
-```{r}
+```{r,eval=FALSE}
 update_polygon <- paste0("update sites set geometry = ", geometry , " where sitename = 'Champaign County';")
 writeLines(update_polygon)
 ```

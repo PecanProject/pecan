@@ -34,6 +34,7 @@ addons:
       - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
       - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
+      - sourceline: 'ppa:opencpu/imagemagick'
     packages:
       - bc
       - curl
@@ -44,9 +45,11 @@ addons:
       - libgmp-dev
       - libhdf5-dev
       - liblapack-dev
+      - libmagick++-dev
       - libnetcdf-dev
       - libproj-dev
       - libudunits2-dev
+      - libmagick++-dev
       - netcdf-bin
       - pandoc
       - python-dev
@@ -98,7 +101,16 @@ install:
   - cd sipnet_unk
   - make
   - popd
-
+  - pushd $HOME
+  # Install BioCro w/o help pages to work around infinite Roxygen recursion in configure file
+  - curl -sL https://github.com/ebimodeling/biocro/archive/0.95.tar.gz | tar zxf -
+  - cd biocro-0.95
+  - rm configure
+  - R CMD INSTALL .
+  - popd
+  # temporary until remotes 2.0.2 binary reaches C2D4U
+  - Rscript -e 'if(packageVersion("remotes") <= "2.0.1"){install.packages("remotes", repos = "http://cran.rstudio.com")}'
+  
 before_script:
   - sudo service postgresql stop
   - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine

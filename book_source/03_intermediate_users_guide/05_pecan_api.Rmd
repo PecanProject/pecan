@@ -1,0 +1,88 @@
+# The PEcAn Docker API
+
+If you have a running instance of Dockerized PEcAn (or other setup where PEcAn workflows are submitted via [RabbitMQ](#rabbitmq)),
+you have the option of running and managing PEcAn workflows using the `pecanapi` package.
+
+For more details, see the `pecanapi` [package vignette](#pecanapi-vignette) and function-level documentation.
+What follows is a lightning introduction.
+
+## Installation
+
+The package can be installed directly from GitHub via `devtools::install_github`:
+
+```{r, eval = FALSE}
+devtools::install_github("pecanproject/pecan/api@develop")
+```
+
+## Creating and submitting a workflow
+
+With `pecanapi`, creating a workflow, submitting it to RabbitMQ, monitoring its progress, and processing its output can all be accomplished via an R script.
+
+Start by loading the package (and the `magrittr` package, for the `%>%` pipe operator).
+
+```{r, eval = FALSE}
+library(pecanapi)
+library(magrittr)
+```
+
+Set your PEcAn database user ID, and create a database connection object, which will be used for database operations throughout the workflow.
+
+```{r, eval = FALSE}
+options(pecanapi.user_id = 99000000002)
+con <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  user = "bety",
+  password = "bety",
+  host = "localhost",
+  port = 5432
+)
+```
+
+Find model and site IDs for the site and model you want to run.
+
+```{r, eval = FALSE}
+model_id <- get_model_id(con, "SIPNET", "136")
+all_umbs <- search_sites(con, "umbs%disturbance")
+site_id <- subset(all_umbs, !is.na(mat))[["id"]]
+```
+
+Insert a new workflow into the PEcAn database, and extract its ID.
+
+```{r, eval = FALSE}
+workflow <- insert_new_workflow(con, site_id, model_id,
+                                start_date = "2004-01-01",
+                                end_date = "2004-12-31")
+workflow_id <- workflow[["id"]]
+```
+
+Pull all of this information together into a settings list object.
+
+```{r, eval = FALSE}
+settings <- list() %>%
+  add_workflow(workflow) %>%
+  add_database() %>%
+  add_pft("temperate.deciduous") %>%
+  add_rabbitmq(con = con) %>%
+  modifyList(list(
+    meta.analysis = list(iter = 3000, random.effects = FALSE),
+    run = list(inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))),
+    ensemble = list(size = 1, variable = "NPP")
+  ))
+```
+
+Submit the workflow via RabbitMQ, and monitor its progress in the R process.
+
+```{r, eval = FALSE}
+submit_workflow(settings)
+watch_workflow(workflow_id)
+```
+
+Use THREDDS to access and analyze the output.
+
+```{r, eval = FALSE}
+sipnet_out <- ncdf4::nc_open(run_dap(workflow_id, "2004.nc"))
+gpp <- ncdf4::ncvar_get(sipnet_out, "GPP")
+time <- ncdf4::ncvar_get(sipnet_out, "time")
+ncdf4::nc_close(sipnet_out)
+plot(time, gpp, type = "l")
+```

@@ -9,7 +9,7 @@ Imports:
 	dataone,
 	DT,
 	dplyr,
-	PEcAn.DB
+	PEcAn.DB,
 	PEcAn.data.land,
 	PEcAn.utils,
 	PEcAn.visualization,
