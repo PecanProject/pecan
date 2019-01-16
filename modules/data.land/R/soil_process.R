@@ -11,7 +11,7 @@
 #' @examples
 soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
   
-
+  # This tries to avoid the problem of having the soil tag under input but not having source in it.
   if(is.null(input$source)){
     input$source <- "gSSURGO"  ## temporarily hardcoding in the only source
     ## in the future this should throw an error
