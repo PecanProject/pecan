@@ -28,7 +28,7 @@ convert.samples.dvmdostem <- function(trait_values) {
     # Convert from m2 / kg to m2 / g
     trait_values[["SLA"]] <- trait_values[["SLA"]] / 1000.0
   }
-  if ("cuticular_cond" %in% names(trait_values)) {
+  if("cuticular_cond" %in% names(trait_values)) {
     # Convert from umol H2O m-2 s-1 to ???
     # Original values in dvmdostem param files not making sense, no good
     # comments as to units. This conversion seems to make the values match
@@ -85,10 +85,18 @@ adjust.runmask.dvmdostem <- function(siteDataPath, rundir, pixel_X, pixel_Y) {
   #         wait=TRUE,
   #         args=c("--reset", "--yx", pixel_Y, pixel_X, file.path(rundir, 'run-mask.nc')))
 
-  ## !!DANGER!!
-  ## - crazy R dimension ordering, with X first! (Y first in all other implementations!)
-  ## - R does not have a 64bit integer datatype so we get a warning about casting
-  ##   and that there may be information lost (unlikely in this case)
+  ## !!WARNING!! See note here:
+  ## https://github.com/cran/ncdf4/blob/master/R/ncdf4.R
+  ## Permalink: https://github.com/cran/ncdf4/blob/6eea28ce4e457054ff8d4cb90c58dce4ec765fd7/R/ncdf4.R#L1
+  ##
+  ## Basically:
+  ##	1. R starts counting at 1, and netCDF counting
+  ##	   starts at 0.
+  ##	2. R array subscripts go in Fortran order (XYZT),
+  ##	   while netCDF subscripts go in C order (TZYX).
+  ##  3. R does not have a 64bit integer datatype (which is the datatype
+  ##     of the run mask netCDF file). So we get a warning about casting
+  ##     the data from the R integer value to the netCDF 64bit integer
   ncMaskFile <- ncdf4::nc_open(file.path(rundir, 'run-mask.nc'), write = TRUE)
   new_data <- matrix(0, ncMaskFile$dim$X$len, ncMaskFile$dim$Y$len)
   new_data[[strtoi(pixel_X), strtoi(pixel_Y)]] <- 1
