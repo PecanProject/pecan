@@ -344,7 +344,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
                 dimveg_jsondata[[i]]$klai = traits[[curr_trait]]
               }
               if (curr_trait == "ilai") {
-                dimveg_jsondata[[i]]$lai = traits[[curr_trait]]
+                dimveg_jsondata[[i]]$initial_lai = traits[[curr_trait]]
               }
               if (curr_trait == "extinction_coefficient_diffuse") {
                 envcanopy_jsondata[[i]]$er = traits[[curr_trait]]
