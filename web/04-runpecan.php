@@ -367,16 +367,22 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    </config.header>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
-if (isset($hostoptions['models']) && isset($hostoptions['models'][$modeltype])) {
-  if (is_array($hostoptions['models'][$modeltype])) {
-    if (isset($hostoptions['models'][$modeltype]['prerun'])) {
-      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]['prerun']) . "</prerun>" . PHP_EOL);      
+if (isset($hostoptions['models'])) {
+  $model_version="${modeltype}";
+  if (isset($hostoptions['models']["${modeltype} (r${revision})"])) {
+    $model_version="${modeltype} (r${revision})";
+  }
+  if (isset($hostoptions['models'][$model_version])) {
+    if (is_array($hostoptions['models'][$model_version])) {
+      if (isset($hostoptions['models'][$model_version]['prerun'])) {
+        fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$model_version]['prerun']) . "</prerun>" . PHP_EOL);      
+      }
+      if (isset($hostoptions['models'][$model_version]['postrun'])) {
+        fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$model_version]['postrun']) . "</postrun>" . PHP_EOL);      
+      }
+    } else {
+      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$model_version]) . "</prerun>" . PHP_EOL);      
     }
-    if (isset($hostoptions['models'][$modeltype]['postrun'])) {
-      fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$modeltype]['postrun']) . "</postrun>" . PHP_EOL);      
-    }
-  } else {
-    fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]) . "</prerun>" . PHP_EOL);      
   }
 }
 fwrite($fh, "  </model>" . PHP_EOL);

@@ -5,15 +5,18 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
-## Unreleased
+## [1.7.0] - 2018-12-09
 
 ### Fixes
+- Removed google maps and replaced with leaflet #2105
+- Added ability to add a new site from web interface
 - Small updated to models/ed/R/model2netcdf.ED2.R to fix issue realted to writing the time_bounds time attribute. Needed to add a check for which file types exitst (e.g. -E-, -T-, etc) and only write the appropriate attribute(s).
 - Fixed error in `read_web_config` which would filter out all variables.
 - Docker:
   - Make sure web interface posts RabbitMQ messages even after editing files (fixes #2151)
   - Can specify name of docker cluster using PECAN_FQDN and PECAN_NAME (fixes #2128)
   - Fixed issue where setting username/password for rabbitmq would break web submit (fixes #2185)
+  - data image only registers sipnet and ed, has all data pre-downloaded
 - ED2:
   - Fix processing of `ed2in_tags` from XML. Now numbers (e.g. `<TRAIT_PLASTICITY_SCHEME>0</TRAIT_PLASTICITY_SCHEME>`) and numeric vectors (e.g. `<INCLUDE_THESE_PFT>9,10,11,12</INCLUDE_THESE_PFT>`) are correctly written to ED2IN _without_ quotes.
 
