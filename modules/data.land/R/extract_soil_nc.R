@@ -19,7 +19,7 @@
 #' }
 #' @author Hamze Dokoohaki
 #' 
-extract_soil_gssurgo<-function(outdir, lat, lon, size=10, radius=500, depths=c(0.15,0.30,0.60)){
+extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.15,0.30,0.60)){
   # I keep all the ensembles here 
   all.soil.ens <-list()
   
