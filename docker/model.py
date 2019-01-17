@@ -1,16 +1,21 @@
 import json
 import logging
 import os
+import socket
 import subprocess
+import sys
 import threading
+import time
+import uuid
 
 import pika
 import shutil
 
-rabbitmq_uri   = os.getenv('RABBITMQ_URI',   'amqp://guest:guest@rabbitmq/%2F')
+rabbitmq_uri = os.getenv('RABBITMQ_URI', 'amqp://guest:guest@rabbitmq/%2F')
 rabbitmq_queue = os.getenv('RABBITMQ_QUEUE', 'pecan')
-
 default_application = os.getenv('APPLICATION', 'job.sh')
+model_info = None
+
 
 class Worker:
     def __init__(self, method, properties, body):
@@ -125,9 +130,72 @@ def receiver():
         connection.close()
 
 
+class RabbitMQBroadcast:
+    """
+    This class is responsible for announcing a new model to PEcAn.
+    This will send out a message every so often to ennounce the model
+    and PEcAn will listen for these messages and register the model
+    in the database. At that point the model will be shown in the
+    web ui as well.
+    """
+    def __init__(self, rabbitmq_uri, exchange, model_info, heartbeat):
+        self.exchange = exchange
+        self.model_info = model_info
+        self.heartbeat = heartbeat
+
+        # create connection to rabbitmq
+        parameters = pika.URLParameters(rabbitmq_uri)
+        self.connection = pika.BlockingConnection(parameters)
+
+        # connect to channel
+        self.channel = self.connection.channel()
+
+        # create extractors exchange for fanout
+        self.channel.exchange_declare(exchange=self.exchange, exchange_type='fanout', durable=True)
+
+        # create thread and start it
+        self.thread = threading.Thread(target=self.send_heartbeat)
+        self.thread.setDaemon(True)
+        self.thread.start()
+
+    def send_heartbeat(self):
+        # create the message we will send
+        message = {
+            'id': str(uuid.uuid4()),
+            'hostname': socket.gethostname(),
+            'queue': '%s_%s' % (model_info['type'], model_info['version']),
+            'model_info': self.model_info
+        }
+        while self.thread:
+            try:
+                time.sleep(self.heartbeat)
+                self.channel.basic_publish(exchange=self.exchange, routing_key='', body=json.dumps(message))
+            except SystemExit:
+                raise
+            except KeyboardInterrupt:
+                raise
+            except GeneratorExit:
+                raise
+            except Exception:  # pylint: disable=broad-except
+                logging.getLogger(__name__).exception("Error while sending heartbeat.")
+
+
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)-15s [%(threadName)-15s] %(levelname)-7s : %(name)s - %(message)s',
                         level=logging.INFO)
     logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.WARN)
 
+    # load model information
+    if not os.path.exists("model.json"):
+        logging.error("Missing model.json file, model will not be announced and is not discoverable.")
+        sys.exit(1)
+    model_info = json.load(open('model.json', 'r'))
+
+    # set the rabbitmq Queue
+    rabbitmq_queue = '%s_%s' % (model_info['type'], model_info['version']),
+
+    # start the model announcer
+    announcer = RabbitMQBroadcast(rabbitmq_uri, 'models', model_info, 5)
+
+    # start listening for new jobs
     receiver()
