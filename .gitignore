@@ -89,5 +89,6 @@ build.*.log
 docker/base/build.*.log
 docker/models/build.*.log
 
-# don't checkin .env file
+# don't checkin docker files
 .env
+docker-compose.override.yml
