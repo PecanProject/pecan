@@ -239,12 +239,8 @@ An example of multi-settings pecan xml file also may look like below:
    <process.variance>FALSE</process.variance>
    <adjustment>TRUE</adjustment>
    <data>
-    <format_id>
     <format_id>1000000040</format_id>
-    </format_id>
-    <input.id>
-      <input.id>1000013298</input.id>
-    </input.id>
+    <input.id>1000013298</input.id>
   </data>
    <state.variables>
    <variable>
