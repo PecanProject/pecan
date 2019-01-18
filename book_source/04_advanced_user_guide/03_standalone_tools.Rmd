@@ -1,3 +1,10 @@
+# Standalone tools (modules)
+
+- Radiative transfer modeling and remote sensing ([`modules/rtm`](https://pecanproject.github.io/modules/rtm/docs/index.html)); [vignette](https://pecanproject.github.io/modules/rtm/docs/articles/pecanrtm.vignette.html)
+- Photosynthesis ([`modules/photosynthesis`](https://pecanproject.github.io/modules/photosynthesis/docs/index.html)); [vignette](https://pecanproject.github.io/modules/photosynthesis/docs/articles/ResponseCurves.html)
+- Allometry ([`modules/allometry`](https://pecanproject.github.io/modules/allometry/docs/index.html)); [vignette](https://pecanproject.github.io/modules/allometry/docs/articles/AllomVignette.html)
+- Load data ([`modules/benchmark`](https://pecanproject.github.io/modules/benchmark/docs/index.html) -- `PEcAn.benchmark::load_data`)
+
 ## Loading Data in PEcAn {#LoadData}
 
 If you are loading data in to PEcAn for benchmarking, using the Benchmarking shiny app [provide link?] is recommended. 
@@ -42,8 +49,8 @@ bety = PEcAn.DB::betyConnect(php.config = "pecan/web/config.php")
 
 2. Look up the inputs record for the data in BETY. 
 
-```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("04_advanced_user_guide/03_standalone_tools/images/Input_ID_name.png")
+```{r, echo=FALSE, out.height = "50%", out.width = "50%", fig.align = 'center'}
+knitr::include_graphics("04_advanced_user_guide/images/Input_ID_name.png")
 ```
 
    To find the input ID, either look at

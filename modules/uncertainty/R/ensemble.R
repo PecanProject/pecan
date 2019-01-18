@@ -388,7 +388,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         settings$run$inputs[[input_tag]][["path"]] <- samples[[input_tag]][["samples"]][[i]]
       }
 
-
       
       do.call(my.write.config, args = list( defaults = defaults, 
                                             trait.values = lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i), # this is the params
