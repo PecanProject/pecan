@@ -33,6 +33,29 @@ Character vector of file names containing raw, downloaded
 \description{
 Link to [full data documentation](https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation).
 }
+\details{
+Under the hood, this function uses the Python `cdsapi` module,
+which can be installed via `pip` (`pip install --user cdsapi`). The
+module is accessed via the `reticulate` package.
+
+Using the CDS API requires you to create a free account at
+https://cds.climate.copernicus.eu. Once you have done that, you
+will need to configure the CDS API on your local machine by
+creating a `${HOME}/.cdsapi` file, as described
+[here](https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key).
+}
+\examples{
+\dontrun{
+files <- download.ERA5(
+  "ERA5_output",
+  start_date = "2010-01-01",
+  end_date = "2010-02-01",
+  lat.in = 45.5594,
+  lon.in = -84.6738,
+  product_types = "all"
+)
+}
+}
 \author{
 Alexey Shiklomanov
 }

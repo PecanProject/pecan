@@ -2,6 +2,16 @@
 #'
 #' Link to [full data documentation](https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation).
 #'
+#' Under the hood, this function uses the Python `cdsapi` module,
+#' which can be installed via `pip` (`pip install --user cdsapi`). The
+#' module is accessed via the `reticulate` package.
+#'
+#' Using the CDS API requires you to create a free account at
+#' https://cds.climate.copernicus.eu. Once you have done that, you
+#' will need to configure the CDS API on your local machine by
+#' creating a `${HOME}/.cdsapi` file, as described
+#' [here](https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key).
+#'
 #' @param outfolder Directory where results should be written
 #' @param product_types Character vector of product types, or `"all"`.
 #'   Must be one or more of: `"reanalysis"`, `"ensemble members"`,
@@ -18,6 +28,17 @@
 #'   data (invisibly)
 #' @author Alexey Shiklomanov
 #' @export
+#' @examples
+#' \dontrun{
+#' files <- download.ERA5(
+#'   "ERA5_output",
+#'   start_date = "2010-01-01",
+#'   end_date = "2010-02-01",
+#'   lat.in = 45.5594,
+#'   lon.in = -84.6738,
+#'   product_types = "all"
+#' )
+#' }
 download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
                           product_types = "all",
                           reticulate_python = NULL,
@@ -88,7 +109,8 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
   nvar <- nrow(variables)
 
   # Spatial subset must be a bounding box (N, W, S, E). This sets the
-  # bounding box to a single point, at the grid resolution (0.25 deg).
+  # bounding box to a single point -- the closest coordinate at the
+  # 0.25 x 0.25 resolution of the product.
   area <- rep(round(c(lat, lon) * 4) / 4, 2)
 
   files <- character()
