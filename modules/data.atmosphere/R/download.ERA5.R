@@ -22,6 +22,9 @@
 #' @param start_date,end_date Range of years to retrieve. Format is
 #'   `YYYY-MM-DD`.
 #' @param lat.in,lon.in Site coordinates, decimal degrees (numeric)
+#' @param overwrite Logical. If `FALSE` (default), skip any files with
+#'   the same target name (i.e. same variable) that already exist in
+#'   `outfolder`. If `TRUE`, silently overwrite existing files.
 #' @param ... Currently unused. Allows soaking up additional arguments
 #'   to other methods.
 #' @return Character vector of file names containing raw, downloaded
@@ -41,6 +44,7 @@
 #' }
 download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
                           product_types = "all",
+                          overwrite = FALSE,
                           reticulate_python = NULL,
                           ...) {
 
@@ -114,10 +118,11 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
   area <- rep(round(c(lat, lon) * 4) / 4, 2)
 
   files <- character()
+  dir.create(outfolder, showWarnings = FALSE)
 
   # First, download all the files
   for (i in seq_len(nvar)) {
-    var <- variables[["api_name"]][[1]]
+    var <- variables[["api_name"]][[i]]
     PEcAn.logger::logger.debug(glue::glue(
       "Downloading variable {i} of {nvar} ({var})."
     ))
@@ -129,7 +134,7 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
       ))
       next
     }
-    tryCatch({
+    do_next <- tryCatch({
       cclient$retrieve("reanalysis-era5-single-levels", list(
         variable = var,
         product_type = product_types,
@@ -139,14 +144,16 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
         grid = c(0.25, 0.25),
         format = "netcdf"
       ), fname)
+      FALSE
     }, error = function(e) {
       PEcAn.logger::logger.warn(glue::glue(
         "Failed to download variable `{var}`. ",
         "Skipping to next variable. ",
         "Error message was:\n", conditionMessage(e)
       ))
-      next
+      TRUE
     })
+    if (isTRUE(do_next)) next
     files <- c(files, fname)
   }
 
