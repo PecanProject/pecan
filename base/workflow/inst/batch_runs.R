@@ -109,14 +109,21 @@ create_exec_test_xml <- function(run_list){
 
 ##Create Run Args
 pecan_path <- "/fs/data3/tonygard/work/pecan"
-config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.php"))
+config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.exphp"))
 bety <- betyConnect(paste0(pecan_path,"/web/config.php"))
+
+bety <- dplyr::src_postgres(dbname   = 'bety', 
+                            host     = 'psql-pecan.bu.edu', 
+                            user     = 'bety', 
+                            password = 'bety')
 con <- bety$con
 
 ## Find name of Machine R is running on
 mach_name <- Sys.info()[[4]]
 mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(id)
 
+## Find Models
+devtools::install_github("pecanproject/pecan", subdir = "api")
 model_ids <- tbl(bety, "dbfiles") %>% filter(machine_id == mach_id) %>% 
   filter(container_type == "Model") %>% pull(container_id)
 
