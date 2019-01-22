@@ -4,7 +4,8 @@
 \alias{extract_soil_gssurgo}
 \title{Extract soil data from gssurgo}
 \usage{
-extract_soil_gssurgo(outdir, lat, lon)
+extract_soil_gssurgo(outdir, lat, lon, size = 1, radius = 500,
+  depths = c(0.15, 0.3, 0.6))
 }
 \arguments{
 \item{outdir}{Output directory for writing down the netcdf file}
@@ -12,6 +13,12 @@ extract_soil_gssurgo(outdir, lat, lon)
 \item{lat}{Latitude}
 
 \item{lon}{Longitude}
+
+\item{size}{Ensemble size}
+
+\item{radius}{radius in meters is used to take soil type samples around the site}
+
+\item{depths}{Standard set of soil depths in m to create the ensemble of soil profiles with.}
 }
 \value{
 It returns the address for the generated soil netcdf file
