@@ -639,7 +639,9 @@ convert.expr <- function(expression) {
 ##' example options(download.ftp.method="ncftpget")
 ##'
 ##' @examples
+##' \dontrun{
 ##' download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
+##' }
 ##'
 ##' @examples
 ##' \dontrun{
