@@ -6,12 +6,8 @@
    <Localization.FUN>Local.support</Localization.FUN>
    <scalef>50</scalef>
    <data>
-    <format_id>
     <format_id>1000000040</format_id>
-    </format_id>
-    <input.id>
-      <input.id>1000013298</input.id>
-    </input.id>
+    <input.id>1000013298</input.id>
   </data>
    <state.variables>
    <variable>
