@@ -125,7 +125,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   X <- Forecast$X # states 
   Pf = cov(X) # Cov Forecast - This is used as an initial condition
 
-  
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   #Observed inputs
   R <- Observed$R
