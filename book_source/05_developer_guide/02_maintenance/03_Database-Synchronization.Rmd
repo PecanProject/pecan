@@ -128,27 +128,42 @@ All databases need maintenance performed on them. Depending upon the database ty
 
 As mentioned above, reindexing allows the database to become more efficient. Over time as data gets updated and deleted, the indexes become less efficient. This has a negative inpact on executed statements. Reindexing makes the indexes efficient again (at least for a while) allowing faster statement execution and reducing the overall load on the database.
 
+The reindex.bety.sh script is provided to simplify reindexing the database.
+
+```
+reindex.bety.sh -h
+./reindex.bety.sh [-c datalog] [-d database] [-h] [-i table names] [-p psql options] [-q] [-s] [-t tablename]
+ -c catalog, database catalog name used to search for tables, default is bety
+ -d database, default is bety
+ -h this help page
+ -i table names, list of space-separated table names to skip over when reindexing
+ -p additional psql command line options, default is -U bety
+ -q the reindexing should be quiet
+ -s reindex the database after reindexing the tables (this should be done sparingly)
+ -t tablename, the name of the one table to reindex
+```
+
 If the database is small enough it's reasonable to reindex the entire database at one time. To do this manually run or schedule the REINDEX statement. For example:
 
 ```
-psql -U bety -c "REINDEX DATABASE bety"
+reindex.bety.sh -s
 ```
 
 For larger databases it may be desireable to reindex entire tables at a time. An efficient way to do this is to reindex the larger tables and then the entire database. For example:
 
 ```
-psql -U bety -c "REINDEX TABLE traits; REINDEX TABLE yields;"
-psql -U bety -c "REINDEX DATABASE bety;"
+reindex.bety.sh -t traits; reindex.bety.sh -t yields;
+reindex.bety.sh -s
 ```
 
-For very large databases it may be desirable to reindex one or more individual indexes before reindexing tables and the databases. For example:
+For very large databases it may be desirable to reindex one or more individual indexes before reindexing tables and the databases. In this case running specific psql commands to reindex those specific indexes, followed by reindexing the table is a possible approach. For example:
 
 ```
 psql -U bety -c "REINDEX INDEX index_yields_on_citation_id; REINDEX INDEX index_yields_on_cultivar_id;"
-psql -U bety -c "REINDEX TABLE yields;"
+reindex.bety.sh -t yields;
 ```
 
-Splitting up the indexing commands over time allows the database to operate efficiently with minimal impact on users.
+Splitting up the indexing commands over time allows the database to operate efficiently with minimal impact on users. One approach is to schedule the reindexing of large, complex tables at a spcific off-time during the week, followed by a general reindexing and excluding those large tables on a weekend night.
 
 Please refere to the Automation section above for information on using cron to schedule reindexing commands.
 
@@ -158,16 +173,34 @@ Vacuuming the BETYdb Postgresql database reduces the amount of resources it uses
 
 Over time, modified and deleted records leave 'holes' in the storage of the database. This is a common feature for most databases. Each database has its own way of handing this, in Postgresql it's the VACUUM command. The VACUUM command performs two main operations: cleaning up tables to make memory use more efficient, and analyze tables for optimum statement execution. The use of the keyword ANALYZE indicates the second operation should take place.
 
+The vacuum.bety.sh script is provided to simplify vacuuming the database.
+
+```
+vacuum.bety.db -h
+./vacuum.bety.sh [-c datalog] [-d database] [-f] [-h] [-i table names] [-n] [-p psql options] [-q] [-s] [-t tablename] [-z]
+ -c catalog, database catalog name used to search for tables, default is bety
+ -d database, default is bety
+ -f perform a full vacuum to return resources to the system. Specify rarely, if ever
+ -h this help page
+ -i table names, list of space-separated table names to skip over when vacuuming
+ -n only vacuum the tables and do not analyze, default is to first vacuum and then analyze
+ -p additional psql command line options, default is -U bety
+ -q the export should be quiet
+ -s skip vacuuming the database after vacuuming the tables
+ -t tablename, the name of the one table to vacuum
+ -z only perform analyze, do not perform a regular vacuum, overrides -n and -f, sets -s
+```
+
 For small databases with light loads it may be possible to set aside a time for a complete vacuum. During this time, commands executed against the database might fail (a temporary condition as the database gets cleaned up). The following commands can be used to perform all the vaccum operations in one go.
 
 ```
-psql -U bety -c "VACUUM FULL ANALYZE;"
+vacuum.bety.sh -f
 ```
 
-Generally it's not desireable to have down time. If the system running the database doesn't need resources that the database is using returned to it, a FULL vacuum can be avoided. In this case the following commands can be executed (note the separation of the commands):
+Generally it's not desireable to have down time. If the system running the database doesn't need resources that the database is using returned to it, a FULL vacuum can be avoided. This is the default behavior of the script 
 
 ```
-psql -U bety -c "VACUUM; VACUUM ANALYZE;"
+vacuum.bety.sh
 ```
 
 In larger databases, vacuuming the entire database can take a long time causing a negative impact on users. This means that individual tables need to be vacuumed. How often a vacuum needs to be performed is dependent upon a table's activity. The more frequently updates and deletes occur on a table, the more frequent the vaccum should be. For large tables it may be desireable to separate the table cleanup from the analysis. An example for completely vacuuming and analyzing a table is:
