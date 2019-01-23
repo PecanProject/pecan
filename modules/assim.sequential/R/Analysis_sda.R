@@ -273,7 +273,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   y.ind <- as.numeric(Y > interval[,1])
   y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
 
-
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
     # Contants defined in the model
     constants.tobit = list(N = ncol(X), YN = length(y.ind))
