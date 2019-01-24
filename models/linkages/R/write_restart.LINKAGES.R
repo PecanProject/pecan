@@ -85,7 +85,6 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   }
   distance.matrix <- rbind(c(0,3,1,2), c(3,0,2,1), c(1,2,0,3), c(2,1,3,0))
 
-
   ## HACK
   spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages"))  #default spp.params
   nspec <- length(settings$pfts)
