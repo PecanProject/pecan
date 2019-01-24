@@ -486,18 +486,21 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         pft <- group
       }
 
-      # RyK: Changed this so that pftmapping is required. pft$constants$num is the number that will be
-      # written to config.xml, and it's used by fia.to.ed when mapping spp to a PFT #.  But if you're
-      # overriding an existing ED2 pft, then you might not want that PFT number to be used to look up
-      # default param values.  e.g. if you're trying to run temperate.Hydric PFT, which which doesn't
-      # exist in ED, you would need to assign it either an existing but currently unused ED2 PFT number
-      # (e.g. #2 = 'early tropical'), or an unused one (e.g. #18). Either way, that number isn't
-      # necessarily what you'd want to look up default parameters for the PFT.  What really should
-      # happen is for there to be two settings for each PFT: the 'num' to use to represent the PFT to
-      # ED, and the 'defaults.PFT' (name or number) to use for pulling default parameter values.
-      pft.number <- pftmapping$ED[which(pftmapping == pft)]
+      # This is the ED PFT number (1-17; see comments in ED2IN file
+      # for PFT definitions). It is used to set any ED parameters that
+      # are not set explicitly from PEcAn.
+      pft.number <- trait.values[[i]][["ed2_pft_number"]]
 
-      if(grepl("soil", pft)){
+      if (is.null(pft.number)) {
+        pft.number <- pftmapping$ED[which(pftmapping == pft)]
+        PEcAn.logger::logger.debug(glue::glue(
+          "Automatically assigning PFT `{pft}` number `{pft.number}` ",
+          "based on `pftmapping`. If you want to avoid this behavior, ",
+          "set the PFT number explicitly via the `<ed2_pft_number>` XML tag."
+        ))
+      }
+
+      if (grepl("soil", pft)) {
         data(soil, package = "PEcAn.ED2")
         vals <- as.list(soil)
         names(vals) <- colnames(soil)
@@ -507,12 +510,18 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
 
         decompositon.xml <- PEcAn.settings::listToXml(vals, "decomposition")
         xml <- XML::append.xmlNode(xml, decompositon.xml)
-      } else if(length(pft.number) == 0) {
-        PEcAn.logger::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
-        stop("Unable to set PFT number")
-      }else{
-        # TODO: Also modify web app to not default to 1
 
+      } else if (length(pft.number) == 0) {
+        PEcAn.logger::logger.severe(glue::glue(
+          "Unable to set PFT number automatically. ",
+          "PFT `{pft}` was not matched in `pftmapping`. ",
+          "Either set the PFT number explicitly via the ",
+          "`<ed2_pft_number>` XML tag (recommended), ",
+          "or add the PFT to `pftmapping.csv` file in ",
+          "`models/ed/data/pftmapping.csv`."
+        ))
+
+      } else {
         ## Get default trait values from ED history
         vals <- as.list(edhistory[edhistory$num == pft.number, ])
 
