@@ -76,7 +76,7 @@ compile_on_geo.sh
 documentation/tutorials/*/*.html
 pecan.Rproj
 shiny/BenchmarkReport/*
-# Installation files form make
+# Installation files from make
 .install/
 .check/
 .test/
@@ -92,3 +92,6 @@ docker/models/build.*.log
 # don't checkin docker files
 .env
 docker-compose.override.yml
+
+# dont check in modellauncher binaries
+contrib/modellauncher/modellauncher
