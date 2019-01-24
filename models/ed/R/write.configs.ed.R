@@ -489,7 +489,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       # This is the ED PFT number (1-17; see comments in ED2IN file
       # for PFT definitions). It is used to set any ED parameters that
       # are not set explicitly from PEcAn.
-      pft.number <- trait.values[[i]][["ed2_pft_number"]]
+      pft.number <- settings[["pfts"]][[i]][["ed2_pft_number"]]
 
       if (is.null(pft.number)) {
         pft.number <- pftmapping$ED[which(pftmapping == pft)]
