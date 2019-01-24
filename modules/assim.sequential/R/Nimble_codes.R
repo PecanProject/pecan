@@ -42,7 +42,7 @@ load_nimble <- function(){
     
   })
   
-  #tobit.model------------------------------------------------------------------------------------------------
+  #tobit.model--This does the GED -----------------------------------------
   tobit.model <<- nimbleCode({ 
     
     q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
