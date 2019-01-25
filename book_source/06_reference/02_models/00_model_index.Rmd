@@ -4,17 +4,17 @@ This section will contain information about all models and output variables that
 
 | Model Name | Available in the VM | Prescribed Inputs | Input Functions/Values | Restart Function |
 | -- | -- | -- | -- | -- |
-| [BioCro] | Yes | Yes | Yes| No |
-| [CLM]| No | No | No| No |
-| [DALEC]| Yes | Yes | Yes| No |
-| [ED]| Yes | Yes | Yes| Yes |
+| [BioCro](#models-biocro) | Yes | Yes | Yes| No |
+| [CLM](#models-clm)| No | No | No| No |
+| [DALEC](#models-dalec)| Yes | Yes | Yes| No |
+| [ED2](#models-ed)| Yes | Yes | Yes| Yes |
 | FATES | No | Yes | | No|
-| [GDAY] | No | No | No| No |
-| [LINKAGES] | Yes | Yes | Yes| Yes |
-| [LPJ-GUESS]| No | Yes | No | No |
-| [MAESPA]| Yes | Yes | No | No |
-| [PRELES] | Yes | Yes | Partially | No |
-| [Sipnet]| Yes | Yes | Yes| Yes |
+| [GDAY](#models-gday) | No | No | No| No |
+| [LINKAGES](#models-linkages) | Yes | Yes | Yes| Yes |
+| [LPJ-GUESS](#models-lpjguess)| No | Yes | No | No |
+| [MAESPA](#models-maespa)| Yes | Yes | No | No |
+| [PRELES](#models-preles) | Yes | Yes | Partially | No |
+| [SiPNET](#models-sipnet)| Yes | Yes | Yes| Yes |
 
 *Available in the VM* - Denotes if a model is publicly available with PEcAn.
 *Prescribed Inputs* - Denotes whether or not PEcAn can prescribe inputs.
