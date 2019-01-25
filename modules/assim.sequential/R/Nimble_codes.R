@@ -60,7 +60,7 @@ load_nimble <- function(){
     
     #don't flag y.censored as data, y.censored in inits
     #remove y.censored samplers and only assign univariate samplers on NAs
-    
+
     for(i in 1:YN){
       y.ind[i] ~ dinterval(y.censored[i], 0)
     }

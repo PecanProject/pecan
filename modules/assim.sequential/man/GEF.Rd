@@ -4,7 +4,7 @@
 \alias{GEF}
 \title{GEF}
 \usage{
-GEF(setting, Forecast, Observed, H, extraArg, nitr = 50000,
+GEF(setting, Forecast, Observed, H, extraArg, nitr = 1e+06,
   nburnin = 10000, ...)
 }
 \arguments{
