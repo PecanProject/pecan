@@ -77,14 +77,14 @@ along to fcn.  The command to execute fcn is built as a string.
 \section{Database files}{
 
 There are two kinds of database records (in different tables) that represent a given data file in the file system.  An input file
-contains information about the contents of the data file.  A dbfile contains machine spacific information for a given input file, 
-such as the file path.  Because duplicates of data files for a given input can be on multiple different machines, there can be more 
+contains information about the contents of the data file.  A dbfile contains machine spacific information for a given input file,
+such as the file path.  Because duplicates of data files for a given input can be on multiple different machines, there can be more
 than one dbfile for a given input file.
 }
 
 \section{Time-span appending}{
 
-By default, convert.input tries to optimize the download of most data products by only downloading the years of data not present on 
+By default, convert.input tries to optimize the download of most data products by only downloading the years of data not present on
 the current machine.  (For example, if files for 2004-2008 exist for a given data product exist on this machine and the user requests
 2006-2010, the function will only download data for 2009 and 2010).  In year-long data files, each year exists as a separate file.
 The database input file contains records of the bounds of the range stored by those years.  The data optimization can be turned off
