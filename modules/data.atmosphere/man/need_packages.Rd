@@ -19,8 +19,8 @@ Check if required packages are installed, and throw an informative
 error if not.
 }
 \examples{
-need_packages("stats", "methods") # Always works 
-try(need_packages("notapackage"))
+PEcAn.data.atmosphere:::need_packages("stats", "methods") # Always works 
+try(PEcAn.data.atmosphere:::need_packages("notapackage"))
 }
 \author{
 Alexey Shiklomanov

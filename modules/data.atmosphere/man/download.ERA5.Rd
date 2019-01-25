@@ -5,7 +5,8 @@
 \title{Download ERA 5 data}
 \usage{
 download.ERA5(outfolder, start_date, end_date, lat.in, lon.in,
-  product_types = "all", reticulate_python = NULL, ...)
+  product_types = "all", overwrite = FALSE, reticulate_python = NULL,
+  ...)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}
@@ -18,6 +19,10 @@ download.ERA5(outfolder, start_date, end_date, lat.in, lon.in,
 \item{product_types}{Character vector of product types, or `"all"`.
 Must be one or more of: `"reanalysis"`, `"ensemble members"`,
 `"ensemble mean"`, `"ensemble spread"`}
+
+\item{overwrite}{Logical. If `FALSE` (default), skip any files with
+the same target name (i.e. same variable) that already exist in
+`outfolder`. If `TRUE`, silently overwrite existing files.}
 
 \item{reticulate_python}{Path to Python binary for `reticulate`
 (passed to [reticulate::use_python()]). If `NULL` (default), use

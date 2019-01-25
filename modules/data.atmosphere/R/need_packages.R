@@ -6,8 +6,8 @@
 #' @return `pkgs`, invisibly
 #' @author Alexey Shiklomanov
 #' @examples
-#' need_packages("stats", "methods") # Always works 
-#' try(need_packages("notapackage"))
+#' PEcAn.data.atmosphere:::need_packages("stats", "methods") # Always works 
+#' try(PEcAn.data.atmosphere:::need_packages("notapackage"))
 need_packages <- function(...) {
   pkgs <- unlist(list(...), recursive = TRUE)
   have <- vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)
