@@ -23,7 +23,7 @@ $node = $dom->createElement("workflows");
 $parnode = $dom->appendChild($node);
 
 // get run information
-$query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
+$query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, workflows.params," .
          "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
          "CONCAT(coalesce(models.model_name, ''), ' ', coalesce(models.revision, '')) AS modelname, modeltypes.name " .
          "FROM workflows " .
@@ -72,6 +72,13 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
   $rows++;
   $status = "";
   $url = "";
+  $hostname = '';
+  if ($row['params'] != '') {
+      eval('$array = ' . $row['params'] . ';');
+      if (isset($array['hostname'])) {
+          $hostname = "&hostname=${array['hostname']}";
+      }
+  }
   if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
     $statusfile=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
     foreach ($statusfile as $line) {
@@ -91,7 +98,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $status = "UNKNOWN";
   }
   if (($status == "") && ($row['finished_at'] == "")) {
-    $url="05-running.php?workflowid=" . $row['id'];
+    $url="05-running.php?workflowid=" . $row['id'] . $hostname;
     $status = "RUNNING";
   }
   if ($status == "") {

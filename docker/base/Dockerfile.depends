@@ -15,27 +15,41 @@ RUN apt-get update \
        librdf0-dev \
        libnetcdf-dev \
        libudunits2-dev \
+       libx11-dev \
+       libgl1-mesa-dev \
+       libglu1-mesa-dev \
+       libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # ----------------------------------------------------------------------
 # INSTALL DEV TOOLS AND PACKAGES FROM GITHUB NEEDED BUILD PECAN
 # ----------------------------------------------------------------------
-RUN Rscript --vanilla -e "devtools::install_github('ropensci/geonames'); q(status=as.integer(!'geonames' %in% rownames(installed.packages())))" \
-	&& Rscript --vanilla -e "devtools::install_github('ropensci/nneo'); q(status=as.integer(!'nneo' %in% rownames(installed.packages())))" \
-	&& Rscript --vanilla -e "devtools::install_github('rforge/reddyproc/pkg/REddyProc'); q(status=as.integer(!'REddyProc' %in% rownames(installed.packages())))"
+RUN Rscript --vanilla -e "devtools::install_github('ropensci/geonames'); q(status=as.integer(system.file(package = 'geonames') == ''))" \
+	&& Rscript --vanilla -e "devtools::install_github('ropensci/nneo'); q(status=as.integer(system.file(package = 'nneo') == ''))" \
+	&& Rscript --vanilla -e "devtools::install_github('rforge/reddyproc/pkg/REddyProc'); q(status=as.integer(system.file(package = 'REddyProc') == ''))"
     
 # ----------------------------------------------------------------------
 # INSTALL R PACKAGES NEED TO BUILD PEcAn
 # NOT installing: PEcAn.* BioCro linkages Maeswrap Rpreles
 # Currently these will be installed automatically by make later
 # ----------------------------------------------------------------------
-RUN for p in abind BayesianTools car coda dataone datapack data.table DBI dbplyr doParallel dplR dplyr earth ellipse fields foreach getPass ggmap ggplot2 glue grid gridExtra hdf5r here httr IDPmisc jsonlite knitr lattice lubridate magic magrittr maps maptools MASS mclust MCMCpack methods mgcv minpack.lm mlegp mockery mvtnorm ncdf4 nimble nneo parallel PeriodicTable plotly plotrix plyr png progress purrr pwr randtoolbox raster rcrossref RCurl REddyProc redland reshape2 rgdal rjags rjson rlang RMySQL rnoaa RPostgreSQL RSQLite scales shiny shinycssloaders shinydashboard shinyFiles shinyjs SimilarityMeasures sp stringi stringr testthat tibble tidyr tidyverse tools traits truncnorm udunits2 XML xtable zoo; do \
+RUN for p in abind BayesianTools car coda data.table dataone datapack DBI dbplyr dplR dplyr earth ellipse geonames ggmap ggplot2 glue gridExtra hdf5r httr IDPmisc jsonlite lattice lubridate magic magrittr maps maptools MASS MCMCpack methods mgcv mlegp mvtnorm ncdf4 ncdf4.helpers nimble nneo parallel PeriodicTable plotrix plyr purrr randtoolbox raster RCurl REddyProc redland reshape2 rgdal rjags rjson rlang rnoaa scales SimilarityMeasures sp stringi stringr testthat tibble tidyr tools traits truncnorm udunits2 XML xtable zoo; do \
       echo "# ----------------------------------------------------------------------"; \
       echo "# INSTALLING ${p}"; \
       echo "# ----------------------------------------------------------------------"; \
       Rscript --vanilla -e " \
-      if(!'${p}' %in% rownames(installed.packages())) { \
-        install.packages('${p}', repos='http://cran.rstudio.com/'); \
-        q(status=as.integer(!'${p}' %in% rownames(installed.packages()))) \
-      }" || (echo "FAILED TO INSTALL ${p}"; exit 1); \
+        if (system.file(package = '${p}') == '') { \
+          install.packages('${p}', repos='http://cran.rstudio.com/'); \
+          q(status=as.integer(system.file(package = '${p}') == '')); \
+        }" || (echo "FAILED TO INSTALL ${p}"; exit 1); \
     done
+RUN for p in doParallel fields foreach getPass grid here knitr mclust minpack.lm mockery png progress pwr rcrossref RPostgreSQL RSQLite tidyverse; do \
+      echo "# ----------------------------------------------------------------------"; \
+      echo "# INSTALLING ${p}"; \
+      echo "# ----------------------------------------------------------------------"; \
+      Rscript --vanilla -e " \
+        if (system.file(package = '${p}') == '') { \
+          install.packages('${p}', repos='http://cran.rstudio.com/'); \
+          q(status=as.integer(system.file(package = '${p}') == '')); \
+        }" || (echo "FAILED TO INSTALL ${p}"; exit 1); \
+    done;

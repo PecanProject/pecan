@@ -1,3 +1,0 @@
-## Editing model configurations
-
-(TODO: Under construction...)

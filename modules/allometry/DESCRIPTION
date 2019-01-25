@@ -1,8 +1,8 @@
 Package: PEcAn.allometry
 Type: Package
 Title: PEcAn allometry functions
-Version: 1.6.0
-Date: 2018-08-20
+Version: 1.7.0
+Date: 2018-12-03
 Authors@R: c(person("Mike","Dietze"))
 Author: Mike Dietze <dietze@bu.edu>
 Maintainer: Mike Dietze <dietze@bu.edu>
@@ -24,4 +24,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

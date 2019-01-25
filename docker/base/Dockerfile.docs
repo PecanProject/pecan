@@ -12,6 +12,7 @@ WORKDIR /src/book_source/
 COPY book_source /src/book_source/
 COPY documentation /src/documentation/
 COPY docker-compose.yml /src/
+COPY docker/env.example /src/docker/
 RUN make build
 
 # ----------------------------------------------------------------------

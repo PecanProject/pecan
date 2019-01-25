@@ -27,9 +27,9 @@ If \code{dataframe=FALSE}, a vector of output variables. If \code{dataframe=TRUE
 Reads the output of a single model run
 }
 \details{
-Generic function to convert model output from model-specific format to 
+Generic function to convert model output from model-specific format to
 a common PEcAn format. This function uses MsTMIP variables except that units of
- (kg m-2 d-1)  are converted to kg ha-1 y-1. Currently this function converts
+(kg m-2 d-1)  are converted to kg ha-1 y-1. Currently this function converts
 Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
 DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
 and Water fluxes: Evaporation (Evap), Transpiration(TVeg),

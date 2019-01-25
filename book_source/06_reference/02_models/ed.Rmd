@@ -1,4 +1,4 @@
-## ED
+## ED2 {#models-ed}
 
 | Model Information |                                      |
 | --                | --                                   |
@@ -18,24 +18,50 @@ The following sections of the PEcAn XML are relevant to the ED model:
 
 - `model`
   - `id` -- BETY model ID. Each ID corresponds to a different revision of ED (see below)
-  - `revision` -- The revision (a.k.a. release) number of ED (e.g. "r82"). "rgit" indicates the latest code on the ED repository
-  - `ed2in` -- Path and filename of the ED2IN configuration file
-  - `start.date` -- Run start date
-  - `end.date` -- Run end date
+  - `revision` -- The revision (a.k.a. release) number of ED (e.g. "r82"). "rgit" indicates the latest code on the ED repository.
+  - `edin` -- Name of the template ED2IN configuration file. If this is a functional path that points to a specific file, that file is used. If no file is found following the path literally, the workflow will try the path relative to the `PEcAn.ED2` package using `system.file` (recall that files in `inst` are moved in the package root, but all other directory structure is preserved). If this is omitted, `PEcAn.ED2::write.configs.ED2` will look for a file called `ED2IN.<revision>` (e.g. `ED2IN.rgit`, `ED2IN.r86`) in the `PEcAn.ED2` package.
+    - **Example**: `<edin>ED2IN.rgit</edin>` will use the `ED2IN.rgit` file shipped with `PEcAn.ED2` _regardless of the revision of ED used_. (Note however that if a file called `ED2IN.rgit` exists in the workflow runtime directory, that file will be used instead). 
+  - `start.date`, `end.date` -- Run start and end date, respectively
+  - `met.start`, `met.end` -- Start and end year of meteorology inputs. By default (if omitted), these are set to the years of `start.date` and `end.date`, respectively. Setting these values to a shorter interval than `start.date` and `end.date` will cause ED to loop the meteorology input over the specified years. This may be useful for, for example, spinning up ED under a set of constant climate conditions.
   - `phenol.scheme`
   - `phenol`
   - `phenol.start`
   - `phenol.end`
-  - `ed2in_tags` -- Named list of additional tags in the ED2IN to be modified. These modifications override any of those set by the standard PEcAn workflow.
+  - `all_pfts` -- (Logical) If false or missing (default), only run ED2 with the PFTs configured via PEcAn (i.e. in the `<pfts>` section of the XML). If `true`, run with all 17 of ED2's PFTs, using ED2's internal default parameters for all PFTs not configured through PEcAn. See [below](#models-ed-pft-configuration) for more details.
+  - `ed2in_tags` -- Named list of additional tags in the ED2IN to be modified. These modifications override any of those set by other parts of the PEcAn workflow. These tags must be in all caps. Any tags that are not already in the ED2IN file will be added; this makes this an effective way to run newer versions of ED2 that have new ED2IN parameters without having to provide an entire new ED2IN. For example:
+  
+    ```xml
+    <model>
+      <ed2in_tags>
+        <IOOUTPUT>0</IOOUTPUT>
+        <PLANT_HYDRO_SCHEME>0</PLANT_HYDRO_SCHEME>
+        <ISTOMATA_SCHEME>0</ISTOMATA_SCHEME>
+        <ISTRUCT_GROWTH_SCHEME>0</ISTRUCT_GROWTH_SCHEME>
+        <TRAIT_PLASTICITY_SCHEME>0</TRAIT_PLASTICITY_SCHEME>
+      </ed2in_tags>
+    </model>
+    ```
+  - `barebones_ed2in` -- Whether or not to try to annotate the ED2IN file with comments. If "true", skip all comments and only write the tags themselves. If "false" (default), try to transfer comments from the template file into the target file.
   - `jobtemplate`
-  - `prerun`
-  - `postrun`
-  - `binary`
+  - `prerun` -- String of commands to be added to the `job.sh` model execution script before the model is run. Multiple commands should be separated by proper `bash` syntax -- i.e. either with `&&` or `;`.
+    - One common use of this argument is to load modules on some HPC systems -- for instance:
+      ```xml
+      <prerun>module load git hdf5</prerun>
+      ```
+    - If your particular version of ED is failing early during execution with a mysterious "Segmentation fault", that may indicate that its process is exceeding its stack limit. In this case, you may need to remove the stack limit restriction with a `prerun` command like the following:
+      ```xml
+      <prerun>ulimit -s unlimited</prerun>
+      ```
+  - `postrun` -- Same as `<prerun>`, but for commands to be run _after_ model execution.
+  - `binary` -- The full path to the ED2 binary on the target machine.
+  - `binary_args` -- Additional arguments to be passed to the ED2 binary. Some common arguments are:
+    - `-s` -- Delay OpenMPI initialization until the last possible moment. This is needed when running ED2 in a Docker container. It is included by default when the host is `rabbitmq`.
+    - `-f /path/to/ED2IN` -- Full path to a specific ED2IN namelist file. Typically, this is not needed because, by default, ED searches for the ED2IN in the current directory and the PEcAn workflow places the ED2IN file and a symbolic link to the ED executable in the same (run) directory for you.
 - `run/site`
   - `lat` -- Latitude coordinate of site
   - `lon` -- Longitude coordinate of site
 - `inputs`
-	- `met/path` -- Path to ED_MET_DRIVER_HEADER file
+	- `met/path` -- Path to `ED_MET_DRIVER_HEADER` file
 	- `pss`: [required] location of patch file
 	- `css`: [required] location of cohort file
 	- `site`: [optional] location of site file
@@ -43,6 +69,96 @@ The following sections of the PEcAn XML are relevant to the ED model:
 	- `thsums`: [required] location of thermal sums file
 	- `veg`: [required] location of vegetation data
 	- `soil`: [required] location of soil data
+    
+### PFT configuration in ED2 {#models-ed-pft-configuration}
+
+ED2 has more detailed PFTs than many models, and a more complex system for configuring these PFTs.
+ED2 has 17 PFTs, based roughly on growth form (e.g. tree vs. grass), biome (tropical vs. temperate), leaf morphology (broad vs. needleleaf), leaf phenology (evergreen vs. deciduous), and successional status (e.g. early, mid, or late).
+Each PFT is assigned an integer (1-17), which is used by the ED model to assign default model parameters.
+The mappings of these integers onto PFT definitions are not absolute, and may change as the ED2 source code evolves.
+Unfortunately, _the only authoritative source for these PFT definitions for any given ED2 version is the Fortran source code of that version_.
+The following is the mapping as of ED2 commit [24e6df6a][ed2in-table] (October 2018):
+
+1. C4 grass
+2. Early-successional tropical
+3. Mid-successional tropical
+4. Late-successional tropical
+5. Temperate C3 grass
+6. Northern pine
+7. Southern pine
+8. Late-successional conifer
+9. Early-successional temperate deciduous
+10. Mid-successional temperate deciduous
+11. Late-successional temperate deciduous
+12. Agricultural (crop) 1
+13. Agricultural (crop) 2
+14. Agricultural (crop) 3
+15. Agricultural (crop) 4
+16. Subtropical C3 grass (C4 grass with C3 photosynthesis)
+17. "Araucaria" (non-optimized southern pine), or liana
+
+ED2 parameter defaults are hard-coded in its Fortran source code.
+However, most parameters can be modified via an XML file (determined by the `ED2IN` `IEDCNFGF` field; usually `config.xml` in the same directory as the `ED2IN` file).
+The complete record of all parameters (defaults and user overrides) used by a given ED2 run is stored in a `history.xml` file (usually in the same directory as the `ED2IN`) -- this is the file to check to make sure that an ED2 run is parameterized as you expect.
+
+As with other models, PEcAn can set ED2 parameters using its built-in trait meta analysis.
+The function specifically responsible for writing the `config.xml` is [`PEcAn.ED2::write.config.xml.ED2`][write-config-xml-ed2] (which is called as part of the more general [`PEcAn.ED2::write.config.ED2`][write-config-ed2]).
+The configuration process proceeds as follows:
+
+First, the mappings between PEcAn PFT names and ED2 PFT numbers are determined according to the following logic:
+
+- If the PFT has a `<ed2_pft_number>` XML tag, that number is used. For example:
+  ```xml
+  <pft>
+    <name>umbs.early_hardwood</name>
+    <ed2_pft_number>9</ed2_pft_number>
+  </pft>
+  ```
+- If `<ed2_pft_number>` is not provided, the code tries to cross-reference the PFT `name` against the `pftmapping.csv` data provided with the `PEcAn.ED2` package. If the name is not matched (perfectly!), the function will exit with an error.
+
+Second, the PFT number from the previous step is used to write that PFT's parameters to the `config.xml`.
+The order of precedence for parameters is as follows (from highest to lowest):
+
+1. **Explicit user overrides**.
+   These are specified via a `<constants>` tag in the PFT definition in the `pecan.xml`.
+   For example:
+   ```xml
+   <pft>
+     <name>umbs.early_hardwood</name>
+     <constants>
+        <sla>36.3</sla>
+     </constants>
+   </pft>
+   ```
+   Note that these values are passed through [`PEcAn.ED2::convert.samples.ED`][convert-samples-ed], so they should generally be given in PEcAn's default units rather than ED2's.
+2. **Samples from the PEcAn meta analysis**.
+   These are also converted via [`PEcAn.ED2::convert.samples.ED`][convert-samples-ed].
+3. **ED2 defaults that PEcAn knows about**.
+   These are stored in the `edhistory.csv` file inside of `PEcAn.ED2`
+   This file is re-generated manually whenever there is a new version of ED2, so while we try our best to keep it up to date, there is no guarantee that it is.
+4. (Implicitly) **Defaults in the ED2 Fortran source code**.
+   In general, our goal is to set all parameters through PEcAn (via steps 1-3), but if you are running PEcAn with new or experimental versions of ED2, you should be extra careful to make sure ED2 is running with the parameters you intend.
+   Again, the best way to know which parameters ED2 is actually using is to check the `history.xml` file produced once the run starts.
+   
+The `ED2IN` field `INCLUDE_THESE_PFT` controls which of these PFTs are included in a given ED2 run.
+By default, PEcAn will set this field to only include the PFTs specified by the user.
+This is the recommended behavior because it ensures that all PFTs in ED2 were parameterized (one way or another, at least partially) through PEcAn.
+However, if you would like ED2 to run with all 17 PFTs (NOTE: using ED2's internal defaults for all PFTs not specified by the user!), you can set the `<all_pfts>` XML tag (in the `<model>` section) to `true`:
+
+```xml
+<model>
+    <all_pfts>true</all_pfts>
+</model>
+```
+
+[ed2in-table]: https://github.com/EDmodel/ED2/blob/24e6df6a75702337c5f29cbd3f3fad90467c9a51/ED/run/ED2IN#L1320-L1327
+
+[write-config-xml-ed2]: https://pecanproject.github.io/models/ed/docs/reference/write.config.xml.ED2.html
+
+[write-config-ed2]: https://pecanproject.github.io/models/ed/docs/reference/write.config.ED2.html
+
+[convert-samples-ed]: https://pecanproject.github.io/models/ed/docs/reference/convert.samples.ED.html 
+
 
 ### Model specific input files
 

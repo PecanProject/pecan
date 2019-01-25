@@ -34,19 +34,42 @@ For full `docker-compose` syntax, see the [official documentation](https://docs.
 This section describes the [top-level structure](#pecan-dc-structure) and each of the services, which are as follows:
 
 - [`traefik`](#pecan-dc-traefik)
+- [`portainer`](#pecan-dc-portainer)
 - [`minio`](#pecan-dc-minio)
 - [`thredds`](#pecan-dc-thredds)
 - [`postgres`](#pecan-dc-postgres)
 - [`rabbitmq`](#pecan-dc-rabbitmq)
 - [`bety`](#pecan-dc-bety)
+- [`docs`](#pecan-dc-docs)
 - [`web`](#pecan-dc-web)
 - [`executor`](#pecan-dc-executor)
+- [`monitor`](#pecan-dc-monitor)
 - [Model-specific services](#pecan-dc-models)
 
 For reference, the complete `docker-compose` file is as follows:
 
 ```{r, echo = FALSE, comment = ''}
 yaml::write_yaml(dc_yaml, stdout())
+```
+
+There are two ways you can override different values in the docker-compose.yml file. The first method is to create a file called `.env` that is placed in the same folder as the docker-compose.yml file. This file can override some of configuration variables used by docker-compose. For example the following is an example of the env file
+
+```{r comment='', echo = FALSE}
+docker_env_file <- file.path("..", "docker", "env.example")
+writeLines(readLines(docker_env_file))
+```
+
+You can also extend the `docker-compose.yml` file with a `docker-compose.override.yml` file (in the same directory), allowing you to add more services, or for example to change where the volumes are stored (see [official documentation](https://docs.docker.com/compose/extends/)). For example the following will change the volume for postgres to be stored in your home directory:
+
+```
+version: "3"
+
+volumes:
+  postgres:
+    driver_opts:
+      type: none
+      device: ${HOME}/postgres
+      o: bind
 ```
 
 #### Top-level structure {#pecan-dc-structure}
@@ -103,6 +126,19 @@ The traefik service configuration looks like this:
 ```{r, echo = FALSE, comment = ''}
 yaml::write_yaml(dc_yaml$services["traefik"], stdout())
 ```
+
+ 
+#### `portainer` {#pecan-dc-portainer}
+
+[portainer](https://portainer.io/) is lightweight management UI that allows you to manage the docker host (or swarm). You can use this service to monitor the different containers, see the logfiles, and start and stop containers.
+
+The portainer service configuration looks like this:
+
+```{r, echo = FALSE, comment = ''}
+yaml::write_yaml(dc_yaml$services["portainer"], stdout())
+```
+
+Portainer is accessible by browsing to `localhost:8000/portainer/`. You can either set the password in the `.env` file (for an example see env.example) or you can use the web browser and go to the portainer url. If this is the first time it will ask for your password.
 
 #### `minio` {#pecan-dc-minio}
 
@@ -182,7 +218,7 @@ Our configuration is as follows:
 yaml::write_yaml(dc_yaml$services["rabbitmq"], stdout())
 ```
 
-Note that the `traefik.frontend.rule` indicates that browsing to http://localhost:8000 (with no further tags) leads to the RabbitMQ management console.
+Note that the `traefik.frontend.rule` indicates that browsing to http://localhost:8000/rabbitmq/ leads to the RabbitMQ management console.
 
 By default, the RabbitMQ management console has username/password `guest/guest`, which is highly insecure.
 For production instances of PEcAn, we highly recommend changing these credentials to something more secure, and removing access to the RabbitMQ management console via Traefik.
@@ -200,6 +236,16 @@ yaml::write_yaml(dc_yaml$services["bety"], stdout())
 ```
 
 The BETY container Dockerfile is located in the root directory of the [BETY GitHub repository](https://github.com/pecan/bety) ([direct link](https://github.com/PecanProject/bety/blob/master/Dockerfile)).
+
+#### `docs` {#pecan-dc-docs}
+
+This service will show the documentation for the version of PEcAn running as well as a homepage with links to all relevant endpoints. You can access this at http://localhost:8000/. You can find the documentation for PEcAn at http://localhost:8000/docs/pecan/.
+
+Our current configuration is as follows:
+
+```{r, echo = FALSE, comment = ''}
+yaml::write_yaml(dc_yaml$services["docs"], stdout())
+```
 
 #### `web` {#pecan-dc-web}
 
@@ -233,6 +279,18 @@ To facilitate caching, the `pecan/base` image is itself built on top of the `pec
 
 In terms of [actively developing PEcAn using Docker](#pecan-docker-develop), this is the service to modify when making changes to the PEcAn R source code.
 Note that, unlike changes to the `web` image's PHP code, changes to the R source code do not immediately propagate to the PEcAn container; instead, you have to re-compile the code by running `make` inside the container.
+
+#### `monitor` {#pecan-dc-monitor}
+
+This service will show all models that are currently running http://localhost:8000/monitor/. This list returned is JSON and shows all models (grouped by type and version) that are currently running, or where seen in the past. This list will also contain a list of all current active containers, as well as how many jobs are waiting to be processed.
+
+This service is also responsible for registering any new models with PEcAn so users can select it and execute the model from the web interface.
+
+Our current configuration is as follows:
+
+```{r, echo = FALSE, comment = ''}
+yaml::write_yaml(dc_yaml$services["monitor"], stdout())
+```
 
 #### Model-specific containers {#pecan-dc-models}
 

@@ -31,8 +31,12 @@ if [ "${TAGS}" == "" ]; then
     exit 1
 fi
 
+# --------------------------------------------------------------------------------
+# PECAN BUILD SECTION
+# --------------------------------------------------------------------------------
+
 # push pecan images
-for i in depends base executor web data; do
+for i in depends base models executor web data thredds docs; do
     for v in ${TAGS}; do
         if [ "$v" != "latest" -o "$SERVER" != "" ]; then
             ${DEBUG} docker tag pecan/${i}:latest ${SERVER}pecan/${i}:${v}
@@ -41,12 +45,28 @@ for i in depends base executor web data; do
     done
 done
 
-# push model images
-for i in model-sipnet-136 model-ed2-git; do
+# --------------------------------------------------------------------------------
+# MODEL BUILD SECTION
+# --------------------------------------------------------------------------------
+
+# push sipnet
+for version in 136; do
+    image="pecan/model-sipnet-${version}"
     for v in ${TAGS}; do
         if [ "$v" != "latest" -o "$SERVER" != "" ]; then
-            ${DEBUG} docker tag pecan/${i}:latest ${SERVER}pecan/${i}:${v}
+            ${DEBUG} docker tag ${image}:latest ${SERVER}${image}:${v}
         fi
-        ${DEBUG} docker push ${SERVER}pecan/${i}:${v}
+        ${DEBUG} docker push ${SERVER}${image}:${v}
+    done
+done
+
+# push ed2
+for version in git; do
+    image="pecan/model-ed2-${version}"
+    for v in ${TAGS}; do
+        if [ "$v" != "latest" -o "$SERVER" != "" ]; then
+            ${DEBUG} docker tag ${image}:latest ${SERVER}${image}:${v}
+        fi
+        ${DEBUG} docker push ${SERVER}${image}:${v}
     done
 done

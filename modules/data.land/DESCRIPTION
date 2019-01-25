@@ -1,8 +1,8 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.6.0
-Date: 2018-08-20
+Version: 1.7.0
+Date: 2018-12-03
 Authors@R: c(person("Mike","Dietze"),
              person("David","LeBauer"),
              person("Xiaohui", "Feng"),
@@ -19,31 +19,31 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
 Depends:
+    datapack,
+    dataone,
     PEcAn.DB,
     PEcAn.utils,
     redland,
-    datapack,
-    dataone,
+    sirt,
+    sf
 Imports:
+    dplyr,
+    magrittr,
+    ncdf4 (>= 1.15),
     PEcAn.logger,
     PEcAn.remote,
-    ncdf4 (>= 1.15),
-    udunits2 (>= 0.11),
-    traits,
-    dplyr,
-    dbplyr,
-    magrittr,
+    purrr,
     rlang,
     XML (>= 3.98-1.4)
 Suggests:
     fields,
-    rgdal,
-    testthat (>= 1.0.2),
     PEcAn.settings,
-    RPostgreSQL
+    rgdal,
+    RPostgreSQL,
+    testthat (>= 1.0.2),
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

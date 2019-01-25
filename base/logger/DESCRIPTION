@@ -1,6 +1,7 @@
 Package: PEcAn.logger
 Title: Logger functions for PEcAn
-Version: 1.6.0
+Version: 1.7.0
+Date: 2018-12-03
 Authors@R: c(person("Rob","Kooper"),
              person("Alexey", "Shiklomanov"))
 Author: Rob Kooper, Alexey Shiklomanov
@@ -10,5 +11,5 @@ Suggests: testthat
 License: FreeBSD + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Roxygen: list(markdown = TRUE)
