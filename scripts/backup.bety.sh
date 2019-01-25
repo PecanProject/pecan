@@ -3,7 +3,7 @@
 # simple script to creat backups of the bety database. This script will
 # create a copy of the datbase daily, weekly, monthly and yearly. The
 # files will be called:
-# - bety-d-X, aily backup, where X is the day of the month.
+# - bety-d-X, daily backup, where X is the day of the month.
 # - bety-w-X, weekly backup, where X is the week number in the year
 # - bety-m-X, montly backup, where X is the month of the year
 # - bety-y-X, yearly backup, where X is the actual year.
