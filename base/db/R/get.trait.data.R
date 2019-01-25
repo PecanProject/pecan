@@ -237,7 +237,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   ## traits = variables with prior distributions for this pft
   trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
   save(trait.data, file = trait.data.file)
-  utils::write.csv(plyr::ldply(trait.data),
+  utils::write.csv(dplyr::bind_rows(trait.data),
             file = file.path(pft$outdir, "trait.data.csv"), row.names = FALSE)
 
   PEcAn.logger::logger.info("number of observations per trait for", pft$name)

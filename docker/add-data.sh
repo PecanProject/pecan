@@ -16,40 +16,6 @@ mkdir -p /data/workflows /data/dbfiles
 chown 33 /data/workflows /data/dbfiles
 
 echo "######################################################################"
-echo "REGISTER MODELS"
-echo "######################################################################"
-
-# Add models (all these are assumed to be local or $FQDN)
-# 1 : name of the model, shown in web interface
-# 2 : type of model (ED2, SIPNET, BIOCRO, DALEC, ...)
-# 3 : model revision number
-# 4 : name of executable, without the path
-# 5 : optionally path to executable
-#addModelFile "${FQDN}" "ED2.2"     "ED2"      "46"  "ed2.46"       "/usr/local/bin"
-#addModelFile "${FQDN}" "ED2.2"     "ED2"      "82"  "ed2.82"       "/usr/local/bin"
-addModelFile "${FQDN}" "ED2.2"     "ED2"      "git" "ed2.git"      "/usr/local/bin"
-#addModelFile "${FQDN}" "SIPNET"    "SIPNET"   "unk" "sipnet.unk"   "/usr/local/bin"
-addModelFile "${FQDN}" "SIPNET"    "SIPNET"   "136" "sipnet.136"   "/usr/local/bin"
-#addModelFile "${FQDN}" "DALEC"     "DALEC"    ""    "dalec_seqMH"  "/usr/local/bin"
-#addModelFile "${FQDN}" "Linkages"  "LINKAGES" "git" "linkages.git" "/usr/local/bin"
-#addModelFile "${FQDN}" "MAESPA"    "MAESPA"   "git" "maespa.git"   "/usr/local/bin"
-#addModelFile "${FQDN}" "LPJ-GUESS" "LPJGUESS" "3.1" "guess.3.1"    "/usr/local/bin"
-#addModelFile "${FQDN}" "GDAY(Day)" "GDAY"     ""    "gday"         "/usr/local/bin"
-
-# special case for PRELES
-#addModelFile "${FQDN}" "Preles"   "PRELES"   ""          "true"           "/bin"
-
-# special case for R models
-#addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "git"       "biocro.Rscript" "/usr/local/lib/R/site-library/PEcAn.BIOCRO"
-#addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "0.95"      "biocro.Rscript" "/usr/local/lib/R/site-library/PEcAn.BIOCRO"
-#addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "1.0"       "biocro.Rscript" "/usr/local/lib/R/site-library/PEcAn.BIOCRO"
-
-#addModelFile "${FQDN}" "LINKAGES" "LINKAGES" "R_version" ""               "/usr/local/lib/R/site-library/linkages"
-
-# to add remote files
-#addModelFile "geo.bu.edu" "ED2" "ED2" "git" "ed_2.1-opt" "/home/dietze/ED2.git/ED/build"
-
-echo "######################################################################"
 echo "DOWNLOAD DATA"
 echo "######################################################################"
 cd ${DATADIR}

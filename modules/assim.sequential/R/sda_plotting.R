@@ -13,7 +13,7 @@ generate_colors_sda <-function(){
   purple       <<- col2rgb("purple")
   alphapurple <<- rgb(purple[1], purple[2], purple[3], 75, max = 255)
   brown       <<- col2rgb("brown")
-  alphabrown <<- rgb(brown[1], brown[2], brown[3], 75, max = 255)
+  alphabrown <<- rgb(brown[1], brown[2], brown[3], 30, max = 255)
 }
 
 
@@ -29,7 +29,9 @@ generate_colors_sda <-function(){
 ##' @param ANALYSIS  vector of mean of state variable after analysis
 ##' @param plot.title character giving the title for post visualization ggplots
 ##' @export
-interactive.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
+
+interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
   #Defining some colors
   generate_colors_sda()
   t1         <- 1
@@ -117,7 +119,9 @@ interactive.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,F
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-postana.timeser.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
+
+postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
   #Defining some colors
   generate_colors_sda()
   t1         <- 1
@@ -153,7 +157,7 @@ postana.timeser.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs
   
   Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
   Xasum <- plyr::laply(ANALYSIS, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
-  browser()
+
   #------For each state variable 
   for (i in seq_len(ncol(X))) {
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) {
@@ -212,7 +216,9 @@ postana.timeser.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-postana.bias.plotting.sda<-function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS){
+
+postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
   #Defining some colors
   generate_colors_sda()
   t1         <- 1
@@ -306,8 +312,8 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
 
+post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
 
   t1         <- 1
   #Defining some colors
@@ -348,7 +354,7 @@ post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FOR
     setNames(names(obs.mean))%>%
     purrr::map_df(function(one.day.data){
       #CI
-
+      
       purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
                      function(sd, mean){
                        data.frame(mean-(sd*1.96), mean+(sd*1.96))
@@ -364,10 +370,10 @@ post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FOR
     })%>%
     #filter(Variables %in% var.names)%>%
     bind_rows(ready.FA)
-
+  
   ready.to.plot$Variables%>%unique()%>%
     purrr::map(function(vari){
-
+      
       varin<-vari
       unit<-""
       if (substr(vari,1,8)=="AGB.pft.") varin <- "AGB.pft"
@@ -388,14 +394,14 @@ post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FOR
         theme(legend.position = "top",
               strip.background = element_blank())->p
       if (!is.null(plot.title)) p <- p + labs(title=plot.title)
-        p
+      p
     })->all.plots
-
-
+  
+  
   pdf("SDA/SDA.pdf",width = 10,height = 8)
   all.plots %>% purrr::map(~print(.x))
   dev.off()
-
+  
   #saving plot data
   save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
   
@@ -404,7 +410,9 @@ post.analysis.ggplot <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FOR
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=NULL){
+
+post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
+
   
   #Defining some colors
   t1         <- 1
@@ -414,6 +422,7 @@ post.analysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,ob
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
 
 #rearranging the forcast and analysis data  
+
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
   
   ready.FA <- c('FORECAST','ANALYSIS')%>%
@@ -448,9 +457,9 @@ post.analysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,ob
       
       
     })#%>%
-    #filter(Variables %in% var.names)
- 
-
+  #filter(Variables %in% var.names)
+  
+  
   
   ready.FA$Variables%>%unique()%>%
     purrr::map(function(vari){
@@ -477,7 +486,7 @@ post.analysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,ob
       if (!is.null(plot.title)) p <- p + labs(title=plot.title)
       p
     })->all.plots
-
+  
   pdf("SDA/SDA.Violin.pdf", width = 10, height = 8, onefile = TRUE)
   all.plots %>% purrr::map(~print(.x))
   dev.off()
@@ -487,3 +496,253 @@ post.analysis.ggplot.violin <- function(settings,t,obs.times,obs.mean,obs.cov,ob
   
 }
 
+##' @rdname interactive.plotting.sda
+##' @export
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL, facetg=F, readsFF=NULL){
+
+  if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
+
+  #Defining some colors
+  t1         <- 1
+  generate_colors_sda()
+  
+  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
+                              function(x) { x })[2, ], use.names = FALSE)
+  var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
+  site.ids <- attr(FORECAST[[1]], 'Site')
+  site.names <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('name') %>% unlist() %>% as.character()
+  
+  #------------------------------------------------Data prepration
+  #Analysis & Forcast cleaning and STAT
+  All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
+  
+  ready.FA <- c('FORECAST','ANALYSIS')%>%
+    purrr::map_df(function(listFA){
+      All.my.data[[listFA]]%>%
+        purrr::map_df(function(state.vars){
+         
+          #finding the mean and Ci for all the state variables
+          site.ids %>% unique() %>%
+            map_df(function(site){
+              (state.vars)[,which(site.ids  %in% site)] %>% 
+                as.data.frame %>% 
+                mutate(Site=site)
+            }) %>%
+            tidyr::gather(Variable, Value, -c(Site)) %>%
+            group_by(Site,Variable) %>%
+            summarise(
+              Means=mean(Value, na.rm=T),
+              Lower=quantile(Value,0.025, na.rm=T),
+              Upper=quantile(Value,0.975, na.rm=T))
+          
+        })%>%mutate(Type=paste0("SDA_",listFA),
+                    Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids)))
+        )
+    
+    })
+      
+
+  obs.var.names <- (obs.mean[[1]])[[1]] %>% colnames()
+  #Observed data
+  #first merging mean and conv based on the day
+  ready.to.plot <- names(obs.mean)%>%
+    purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
+                 setNames(c('means','covs','Date')))%>%
+    setNames(names(obs.mean))%>%
+    purrr::map_df(function(one.day.data){
+      one.day.data$means %>% 
+        map_dfr(~.x) %>% 
+        mutate(Site=names(one.day.data$means)) %>% 
+        tidyr::gather(Variable,Means,-c(Site)) %>%
+        right_join(one.day.data$covs %>% 
+                     map_dfr(~ t(sqrt(diag(.x))) %>% 
+                               data.frame %>% `colnames<-`(c(obs.var.names))) %>%
+                     mutate(Site=names(one.day.data$covs)) %>% 
+                     tidyr::gather(Variable,Sd,-c(Site)),
+                   by=c('Site','Variable')) %>%
+        mutate(Upper=Means+(Sd*1.96),
+               Lower=Means-(Sd*1.96))%>%
+        mutate(Type="SDA_Data",
+               Date=one.day.data$Date%>%as.POSIXct())
+      
+      
+    })%>% 
+    dplyr::select(-Sd) %>%
+    bind_rows(ready.FA)
+  
+  #--- Adding the forward forecast
+  if (!is.null(readsFF)){
+    
+    readsFF.df<-readsFF %>%
+      map_df(function(siteX){
+    
+        siteX %>% map_df(function(DateX){
+          DateX %>% 
+            map_df(~.x %>% t ) %>%
+            tidyr::gather(Variable, Value,-c(Date, Site)) %>%
+            group_by(Variable,Date, Site) %>%
+             summarise(
+               Means=mean(Value, na.rm=T),
+               Lower=quantile(Value,0.025, na.rm=T),
+               Upper=quantile(Value,0.975, na.rm=T)) %>% 
+             mutate(Type="ForwardForecast")
+        })
+      })
+    
+    ready.to.plot <- ready.to.plot %>%
+      bind_rows(readsFF.df)
+    
+  }
+  
+  ready.to.plot$Variable[ready.to.plot$Variable=="LeafC"] <-"leaf_carbon_content"
+  
+
+  #Adding the units to the variables
+  ready.to.plot$Variable %>% unique() %>% 
+    walk(function(varin){
+      #find the unit
+      unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
+      if (length(unitp)>0) {
+        unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
+        
+        #replace it in the dataframe
+        ready.to.plot$Variable[ready.to.plot$Variable==varin] <<- paste(varin,"(",unit,")")
+      }
+      
+    })
+  
+  #------------------------------------------- Time series plots
+  if (facetg) {
+    filew <- 14
+    fileh <- 10
+    #for each site  and for each variable
+    all.plots<-ready.to.plot$Site%>%unique() %>%
+      purrr::map(function(site){
+            #plotting
+            ready.to.plot%>%
+              filter(Site==site)%>%
+              ggplot(aes(x=Date))+
+              geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
+              geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
+              geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
+              scale_fill_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
+              scale_color_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
+              theme_bw(base_size = 17)+
+              labs(y="", subtitle=paste0("Site id: ",site))+
+              theme(legend.position = "top",
+                    strip.background = element_blank())->p
+            if (!is.null(plot.title)) p <- p + labs(title=plot.title)
+            p <- p + facet_wrap(~Variable, ncol=2, scales = "free_y")
+            list(p)
+      
+      })
+
+  }else{
+    filew <- 10
+    fileh <- 8
+    #for each site  and for each variable
+    all.plots<-ready.to.plot$Site%>%unique() %>%
+      purrr::map(function(site){
+        ready.to.plot$Variable%>%unique()%>%
+          purrr::map(function(vari){
+            varin<-vari
+            unit<-""
+            if (substr(vari,1,8)=="AGB.pft.") varin <- "AGB.pft"
+            #finding the unit
+            unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
+            if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
+            #plotting
+            ready.to.plot%>%
+              filter(Variable==vari, Site==site)%>%
+              ggplot(aes(x=Date))+
+              geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
+              geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
+              geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
+              scale_fill_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
+              scale_color_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
+              theme_bw(base_size = 17)+
+              labs(y=paste(vari,'(',unit,')'), subtitle=paste0("Site id: ",site))+
+              theme(legend.position = "top",
+                    strip.background = element_blank())->p
+            if (!is.null(plot.title)) p <- p + labs(title=plot.title)
+            p
+          })
+      })
+  }
+
+  
+  #------------------------------------------------ map
+  site.locs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
+    t %>%
+    as.data.frame()%>%
+    `colnames<-`(c("Lon","Lat")) %>%
+    mutate(Site=site.ids %>% unique(),
+           Name=site.names)
+  
+
+  suppressMessages({
+      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAn.assim.sequential"))
+  })
+  
+  #transform site locs into new projection - UTM 2163
+  site.locs.sp<-site.locs
+  coordinates(site.locs.sp) <- c("Lon", "Lat")
+  proj4string(site.locs.sp) <- CRS("+proj=longlat +datum=WGS84")  ## for example
+  res <- spTransform(site.locs.sp, CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
+  site.locs[,c(1,2)] <-res@coords
+  
+  
+  #finding site with data
+  sites.w.data <-
+    obs.mean %>% purrr::map(names) %>% unlist() %>% as.character() %>% unique()
+  #adding the column to site
+  site.locs <- site.locs %>%
+    mutate(Data = Site %in% sites.w.data)
+
+  #plotting
+  map.plot<- ggplot() + 
+    geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
+    geom_point(data = site.locs,
+               aes(x = Lon, y = Lat),
+               size = 2) +
+    ggrepel::geom_label_repel(
+      data = site.locs,
+      aes(
+        x = Lon,
+        y = Lat,
+        label = paste0(Site, "\n", Name),
+        color = Data,
+      ),
+      vjust = 1.2,
+      fontface = "bold",
+      size = 3.5
+    ) + 
+    #coord_sf(datum = sf::st_crs(2163),default = F)+
+    scale_fill_manual(values = c("#a6cee3",
+      "#1f78b4","#b2df8a",
+      "#33a02c","#fb9a99",
+      "#e31a1c","#fdbf6f",
+      "#ff7f00","#cab2d6",
+      "#6a3d9a","#ffff99",
+      "#b15928","#fccde5",
+      "#d9d9d9","#66c2a5",
+      "#ffd92f","#8dd3c7",
+      "#80b1d3","#d9d9d9",
+      "#fdbf6f"),name="Eco-Region")+
+    scale_color_manual(values= c("#e31a1c","#33a02c"))+
+    theme_minimal()+
+    theme(axis.text = element_blank())
+
+  #----- Reordering the plots
+  all.plots.print <-list(map.plot)
+  for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
+  
+  pdf("SDA/SDA.pdf",width = filew, height = fileh)
+  all.plots.print %>% purrr::map(~print(.x))
+  dev.off()
+  
+  #saving plot data
+  save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
+  
+  
+}

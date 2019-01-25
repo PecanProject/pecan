@@ -4,7 +4,7 @@
 ##' @name closest_xy
 ##' @title closest_xy
 ##' @export
-##' @author Betsy Cowdery
+##' @author Betsy Cowdery, Ankur Desai
 closest_xy <- function(slat, slon, infolder, infile) {
   
   test.file <- dir(infolder, infile, full.names = TRUE)
@@ -20,23 +20,30 @@ closest_xy <- function(slat, slon, infolder, infile) {
   ncdf4::nc_close(nc)
   
   if (all(dim(lat) == dim(lon))) {
+    if (dim(lat)==1&&dim(lon)==1) {
+      ##Case of a single grid cell in file
+      use_xy <- FALSE
+      D <- matrix(-1, 1, 1)
+      D[1,1] <- sqrt((lat - slat) ^ 2 + (lon - slon) ^ 2)
+    } else {
     ## this case appears to involve hard-coded values for NARR
     ## needs to be generalized
-    use_xy <- TRUE
-    rows <- nrow(lat)
-    cols <- ncol(lat)
-    D <- matrix(-1, rows, cols)
+      use_xy <- TRUE
+      rows <- nrow(lat)
+      cols <- ncol(lat)
+      D <- matrix(-1, rows, cols)
     
-    for (i in seq_len(rows)) {
-      for (j in seq_len(cols)) {
-        tlat <- lat[i, j]
-        tlon <- lon[i, j]
-        c1 <- tlat >= 20
-        c2 <- tlat <= 50
-        c3 <- tlon >= -125
-        c4 <- tlon <= -65
-        if (c1 & c2 & c3 & c4) {
-          D[i, j] <- sqrt((tlat - slat) ^ 2 + (tlon - slon) ^ 2)
+      for (i in seq_len(rows)) {
+        for (j in seq_len(cols)) {
+          tlat <- lat[i, j]
+          tlon <- lon[i, j]
+          c1 <- tlat >= 20
+          c2 <- tlat <= 50
+          c3 <- tlon >= -125
+          c4 <- tlon <= -65
+          if (c1 & c2 & c3 & c4) {
+            D[i, j] <- sqrt((tlat - slat) ^ 2 + (tlon - slon) ^ 2)
+          }
         }
       }
     }

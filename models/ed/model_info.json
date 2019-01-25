@@ -1,0 +1,15 @@
+{
+  "name": "ED2.2",
+  "type": "ED2",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "The Ecosystem Demography Biosphere Model (ED2) is an integrated terrestrial biosphere model incorporating hydrology, land-surface biophysics, vegetation dynamics, and soil carbon and nitrogen biogeochemistry",
+  "creator": "Mike Dietze",
+  "contributors": ["David LeBauer", "Xiaohui Feng", "Dan Wang", "Carl Davidson", "Rob Kooper", "Shawn Serbin", "Alexey Shiklomanov"],
+  "links": {
+    "source": "https://github.com/EDmodel/ED2",
+    "issues": "https://github.com/EDmodel/ED2/issues"
+  },
+  "inputs": {},
+  "bibtex": ["Medvigy D., Wofsy S. C., Munger J. W., Hollinger D. Y., Moorcroft P. R. 2009. Mechanistic scaling of ecosystem function and dynamics in space and time: Ecosystem Demography model version 2. J. Geophys. Res. 114 (doi:10.1029/2008JG000812)"]
+}
