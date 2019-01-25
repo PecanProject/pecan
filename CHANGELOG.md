@@ -5,12 +5,16 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
-## Unreleased
+## [Unreleased]
 
 ### Changed
-
+- Moved docker files for models into model specific folder, for example Dockerfile for sipnet now is in models/sipnet/Dockerfile.
 - `PEcAn.utils`
   - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
+
+### Added
+- Models will not advertise themselvs, so no need to register them a-priori with the database #2158
+- Added simple container to show all containers that are availble (http://localhost:8000/monitor/), this will also take care of registering the models with the BETY database.
 
 ## [1.7.0] - 2018-12-09
 
