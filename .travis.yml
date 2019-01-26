@@ -21,6 +21,7 @@ env:
     # When Travis updates, check for Make 4 and add -O if available.
     - MAKEFLAGS="-j2"
     - PGHOST=localhost
+    - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
 
 cache: 
   - directories:
