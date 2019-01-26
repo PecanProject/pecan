@@ -42,7 +42,7 @@ $hostoptions = $hostlist[$hostname];
 $loglines = isset($_REQUEST['loglines']) ? $_REQUEST['loglines'] : 20;
 
 // get run information
-$stmt = $pdo->prepare("SELECT folder, params FROM workflows WHERE workflows.id=?");
+$stmt = $pdo->prepare("SELECT folder, value FROM workflows LEFT OUTER JOIN attributes ON workflows.id=attributes.container_id AND attributes.container_type='workflows' WHERE workflows.id=?");
 if (!$stmt->execute(array($workflowid))) {
   die('Invalid query: ' . error_database());
 }
@@ -50,7 +50,12 @@ $workflow = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
 
 $folder = $workflow['folder'];
-$params = eval("return ${workflow['params']};");
+if ($workflow['value'] != '') {
+  $params = json_decode($workflow['value'], true);
+} else {
+  $params = array();
+}
+  
 
 // check result
 if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
