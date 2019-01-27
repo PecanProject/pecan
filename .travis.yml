@@ -23,6 +23,12 @@ env:
     - PGHOST=localhost
     - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
 
+matrix:
+  fast_finish: true
+  allow_failures:
+    - r: devel
+    - r: oldrel
+
 cache: 
   - directories:
     - .install
