@@ -42,6 +42,7 @@ convert.samples.MAAT <- function(trait.samples, runid) {
   trait.names[trait.names == "Hd_Modified_Arrhenius_Vcmax"] <- "Hd.vcmax"   # !!TODO: Allow for the same prior to update both Vcmax and Jmax
   trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"]  <- "Ha.jmax"    # !!TODO: Allow for the same prior to update both Vcmax and Jmax
   trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"]  <- "Hd.jmax"    # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "cuticular_cond"]              <- "g0"         # Medlyn and ball-berry min conductance value (i.e. g0, or the intercept of A/gs relationship)
   trait.names[trait.names == "stomatal_slope"]              <- "g1_leuning"
   trait.names[trait.names == "stomatal_slope.g1"]           <- "g1_medlyn"
   trait.names[trait.names == "stomatal_slope.BB"]           <- "g1_ball"
@@ -82,7 +83,11 @@ convert.samples.MAAT <- function(trait.samples, runid) {
     ## Convert from mm to m
     trait.samples <- transform(trait.samples, leaf_width = udunits2::ud.convert(leaf_width, "mm", "m"))
   }
-
+  if ("g0" %in% names(trait.samples)) {
+    ## Convert from umol H2O m-2 s-1 to mol m-2s-1
+    trait.samples <- transform(trait.samples, g0 = udunits2::ud.convert(g0, "umol H2O m-2 s-1", "mol H2O m-2 s-1"))
+  }
+  
   # for debugging conversions 
   #save(trait.samples, file = file.path(settings$host$outdir,runid,'trait.samples.Rdata'))
   
