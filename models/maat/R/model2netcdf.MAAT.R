@@ -12,7 +12,6 @@
 ##' Function to convert MAAT model output to standard netCDF format
 ##'
 ##' Converts all output contained in a folder to netCDF.
-##' @name model2netcdf.MAAT
 ##' @title Function to convert MAAT model output to standard netCDF format
 ##' @param rundir Location of MAAT model run (i.e. MAAT project) directory with all required model run inputs.
 ##' This is needed to identify model runs with and without met drivers and control the model output conversion process
@@ -32,7 +31,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
   day_secs <- udunits2::ud.convert(1, "day", "seconds")
   
   # setup helper function
-  var_update <- function(data, out, oldname, newname, oldunits, newunits=NULL, missval=-999, longname, ncdims) {
+  var_update <- function(data, out, oldname, newname, oldunits, newunits = NULL, missval = -999, longname, ncdims) {
     # ifelse is no longer working as expected, so now we have this function to deal with any Inf values
     f_sort <- function(s) {
       if (is.infinite(s)) -999
@@ -47,11 +46,11 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       PEcAn.logger::logger.info(paste0("Skipping conversion for: ", newname))
       dat.new <- dat
     } else {
-      dat.new <- apply(as.matrix(dat,length(dat),1),1,f_sort)
+      dat.new <- apply(as.matrix(dat, length(dat), 1), 1, f_sort)
     }
     ## prep for writing
     if(is.null(out)) {
-      out <- list(var <- list(),dat <- list())
+      out <- list(var = list(), dat = list())
       out$var[[1]] <- newvar
       out$dat[[1]] <- dat.new
     } else {
@@ -109,7 +108,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       sub.maat.output.dims <- dim(sub.maat.output)
       dims <- dim(subset(sub.maat.output,
                         strptime(time, format = "%Y-%m-%d", tz=timezone) == 
-                          seq(strptime(sub.maat.dates[1], format = "%Y-%m-%d", tz=timezone), by = "days", length = 1)))
+                          seq(strptime(sub.maat.dates[1], format = "%Y-%m-%d", tz = timezone), by = "days", length = 1)))
       timestep.s <- day_secs / dims[1] # e.g. 1800 = 30 minute timesteps
       dayfrac <- 1 / dims[1]
       day.steps <- head(seq(0, 1, by = dayfrac), -1)
@@ -125,27 +124,27 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
                             unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
       time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
                                         longname = "history time interval endpoint dimensions",
-                                        vals = 1:2, units="")
+                                        vals = 1:2, units = "")
       
       ### Parse MAAT output
       #output      <- list()  # create empty output
       output <- NULL
       ncdims <- list(lon, lat, t)
       out.year <- as.numeric(rep(year, sub.maat.output.dims[1]))
-      output <- var_update(out.year, output, "Year", "Year", oldunits='YYYY', newunits=NULL, missval=-999, 
+      output <- var_update(out.year, output, "Year", "Year", oldunits = "YYYY", newunits = NULL, missval = -999, 
                            longname="Simulation Year", ncdims=ncdims)
       output <- var_update(tvals, output, "FracJulianDay", "FracJulianDay", oldunits = "Frac DOY", newunits = NULL, missval = -999, 
                            longname="Fraction of Julian Date", ncdims=ncdims)
-      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
-                           longname="Leaf assimilation rate", ncdims=ncdims)
-      output <- var_update(sub.maat.output$rd, output, "rd", "leaf_respiration", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
-                           longname="Leaf Respiration Rate", ncdims=ncdims)
-      output <- var_update((1/(sub.maat.output$rs)), output, "gs", "stomatal_conductance", oldunits="mol H2O m-2 s-1", 
-                           newunits="kg H2O m-2 s-1", missval=-999, longname="Leaf Stomatal Conductance", ncdims=ncdims)
-      output <- var_update(sub.maat.output$ci, output, "ci", "Ci", oldunits="Pa", 
-                           newunits="Pa", missval=-999, longname="Leaf Internal CO2 Concentration", ncdims=ncdims)
-      output <- var_update(sub.maat.output$cc, output, "cc", "Cc", oldunits="Pa", 
-                           newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
+      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits = "umol C m-2 s-1", newunits = "kg C m-2 s-1", missval = -999, 
+                           longname = "Leaf assimilation rate", ncdims = ncdims)
+      output <- var_update(sub.maat.output$rd, output, "rd", "leaf_respiration", oldunits = "umol C m-2 s-1", newunits = "kg C m-2 s-1", missval = -999, 
+                           longname = "Leaf Respiration Rate", ncdims = ncdims)
+      output <- var_update((1 / (sub.maat.output$rs)), output, "gs", "stomatal_conductance", oldunits = "mol H2O m-2 s-1", 
+                           newunits = "kg H2O m-2 s-1", missval = -999, longname = "Leaf Stomatal Conductance", ncdims = ncdims)
+      output <- var_update(sub.maat.output$ci, output, "ci", "Ci", oldunits = "Pa", 
+                           newunits = "Pa", missval = -999, longname = "Leaf Internal CO2 Concentration", ncdims = ncdims)
+      output <- var_update(sub.maat.output$cc, output, "cc", "Cc", oldunits = "Pa", 
+                           newunits = "Pa", missval = -999, longname = "Leaf Mesophyll CO2 Concentration", ncdims = ncdims)
       
       ## put in time_bounds before writing out new nc file
       #length(output$var)
@@ -164,15 +163,15 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       bounds[,1] <- 0
       bounds[,2] <- 1
       time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
-                                        longname="history time interval endpoint dimensions",
-                                        vals = 1:2, units="")
+                                        longname = "history time interval endpoint dimensions",
+                                        vals = 1:2, units = "")
       
       output <- NULL
       ncdims <- list(lon, lat, t) 
-      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
-                           longname="Leaf assimilation rate", ncdims=ncdims)
-      output <- var_update(maat.output$rd, output, "rd", "leaf_respiration", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999,
-                           longname="Leaf Respiration Rate", ncdims=ncdims)
+      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits = "umol C m-2 s-1", newunits = "kg C m-2 s-1", missval = -999, 
+                           longname = "Leaf assimilation rate", ncdims = ncdims)
+      output <- var_update(maat.output$rd, output, "rd", "leaf_respiration", oldunits = "umol C m-2 s-1", newunits = "kg C m-2 s-1", missval = -999,
+                           longname = "Leaf Respiration Rate", ncdims = ncdims)
       output <- var_update((1/(maat.output$rs)), output, "gs", "stomatal_conductance", oldunits="mol H2O m-2 s-1",
                            newunits="kg H2O m-2 s-1", missval=-999, longname="Leaf Stomatal Conductance", ncdims=ncdims)
       output <- var_update(maat.output$ci, output, "ci", "Ci", oldunits="Pa",
@@ -190,7 +189,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
     }
     
     ## write netCDF data
-    ncout <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")),output$var)
+    ncout <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), output$var)
     ncdf4::ncatt_put(ncout, "time", "bounds", "time_bounds", prec=NA)
     for (i in seq_along(output$var)) {
       #print(i)  # for debugging
