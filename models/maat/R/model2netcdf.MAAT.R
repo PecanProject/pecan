@@ -24,7 +24,7 @@
 ##' 
 ##' 
 ##' @export
-##' @author Shawn Serbin, Anthony Walker
+##' @author Shawn Serbin, Anthony Walker, Alexey Shiklomanov
 ##'
 model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
 
