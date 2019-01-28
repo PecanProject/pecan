@@ -19,3 +19,13 @@ xml setting
 \description{
 This function generates a series of ensemble members for initial condition using the BADM database.
 }
+\examples{
+\dontrun{
+ suppressMessages({
+  papply(settings,
+          IC_Maker,
+          ens.n=1,
+          outdir="/fs/data3/hamzed/MultiSite_Project/IC/ICFiles")
+})
+} 
+}
