@@ -62,6 +62,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
+- Updated MAAT model model2netcdf.MAAT.R to reflect general changes to the netCDF time variable in PEcAn standard output. Added time_bounds attribute and variable.  Updated inst/ scripts for created MAAT drivers from NGEE-Tropics met sources (WIP)
 - `PEcAn.utils::do_conversions` has been moved to `PEcAn.workflow::do_conversions`.
   `PEcAn.utils::do_conversions` still works for now with a warning, but is deprecated and will be removed in the future.
 - Docker:
