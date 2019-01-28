@@ -1,8 +1,8 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn package for integration of ED2 model
-Version: 1.6.0
-Date: 2018-08-20
+Version: 1.7.0
+Date: 2018-12-03
 Authors@R: c(person("Mike","Dietze"),
              person("David","LeBauer"),
              person("Xiaohui", "Feng"),
@@ -28,17 +28,18 @@ Imports:
     PEcAn.remote,
     PEcAn.settings,
     abind (>= 1.4.5),
-    ncdf4 (>= 1.15),
-    stringr(>= 1.1.0),
-    udunits2 (>= 0.11),
-    XML (>= 3.98-1.4),
-    hdf5r,
-    tidyr,
     dplyr,
-    tibble,
+    glue,
+    hdf5r,
     lubridate,
     magrittr,
-    purrr
+    ncdf4 (>= 1.15),
+    purrr,
+    stringr(>= 1.1.0),
+    tidyr,
+    tibble,
+    udunits2 (>= 0.11),
+    XML (>= 3.98-1.4)
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE

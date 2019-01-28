@@ -59,6 +59,11 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     $sitegroups .= "<option value='${row['id']}'>${row['name']}</option>\n";    
   }
 }
+if ($sitegroupid == "-1") {
+  $sitegroups .= "<option value='-1' selected>All Sites</option>\n";
+} else {
+  $sitegroups .= "<option value='-1'>All Sites</option>\n";    
+}
 
 
 ?>
@@ -70,45 +75,61 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
-<style>
-  body {font-size: 62.5%;}
-  label, input {display:block; padding-top: 10px;}
-  input.text { margin-bottom:12px; width:95%; padding:10px;}
-  fieldset { padding:0; border:0; margin-top:25px; }
-  h1 { font-size: 1.2em; margin: .6em 0; }
-  .ui-dialog .ui-state-error { padding: .3em; } 
-  .validateTips { border: 1px solid transparent; padding: 0.3em; } 
-  #container { display: table; }
-  #row { display: table-row; }
-  #left, #right, #middle { display: table-cell; padding-left: 10px; }
-</style>
 <script type="text/javascript" src="jquery-1.10.2.min.js"></script>
 <?php if (!$offline) {?>
-  <script type="text/javascript" src="//www.google.com/jsapi"></script>
+  <link rel="stylesheet" href="leaflet/leaflet.css" />
+  <script src="leaflet/leaflet.js"></script>
+  <link rel="stylesheet" href="leaflet/MarkerCluster.css" />
+  <link rel="stylesheet" href="leaflet/MarkerCluster.Default.css" />
+  <script src="leaflet/leaflet.markercluster.js"></script>
+<?php }?>
   <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.js"></script>
   <script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
   <link rel="stylesheet" type="text/css" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"/>
-<?php }?>
 <script type="text/javascript">
   $(window).load(function() {
-    var dialog, form,
-    sitename = $( "#txtsitename" ),
-    elevation =$( "#txtelevation" ),
-    map =$( "#txtmap" ),
-    mat =$( "#txtmat" ),
-    city =$( "#txtcity" ),
-    state =$( "#txtstate" ),
-    county =$( "#txtcountry" ),
-    lat =$( "#txtlat" ),
-    lng =$( "#txtlong" ),
-    pctclay =$( "#txtpctclay" ),
-    pctsand =$( "#txtpctsand" ),
-    greehouse =$( "#txtgreenhouse" ),
-    notes =$( "#txtnotes" ),
-    soilnotes =$( "#txtsoilnotes" ),
-    allFields = $( [] ).add( sitename ).add( elevation ),
-    tips = $( ".validateTips" ),
-    request;
+<?php if (!$offline) { ?>
+    var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Points &copy 2012 LINZ'
+      });
+
+    lmap = L.map('output', {center: L.latLng(0.0, 0.0), zoom: 2, layers: [tiles]});
+    markers = L.markerClusterGroup();
+    markers.on("click", function(event) {
+      siteSelected(event.layer.siteid, event.layer.sitename);
+    });
+
+    var timeout;
+    $("#sitename").keyup(function( event ) {
+      //if you already have a timout, clear it
+      if(timeout){ clearTimeout(timeout);}
+
+      //start new time, to perform ajax stuff in 500ms
+      timeout = setTimeout(function() {
+        var search = $("#sitename").val().toLowerCase();
+        var showMarkers = [];
+        markersArray.forEach(function(m) {
+          if (m.sitename.toLowerCase().indexOf(search) > -1) {
+            showMarkers.push(m);
+          }      
+        });
+        markers.clearLayers();
+        markers.addLayers(showMarkers);
+      },500);
+    });
+
+    lmap.on('contextmenu',function(event) {
+      $("#lat").val(event.latlng.lat);
+      $("#lon").val(event.latlng.lng);
+      $("#formnext").attr("action", "02a-createsite.php");
+      $("#formnext").submit();
+    });
+<?php } ?>
+    markersArray = [];
+
+    updateData();
+  });
 
 function updateTips( t ) {
   tips
@@ -138,67 +159,6 @@ function checkRegexp ( o, regexp, n ) {
     return true;
   }
 }
-
-function addSite() {
-  var valid = true;
-  allFields.removeClass( "ui-state-error" );
-  valid = valid && checkLength ( sitename, "sitename", 3, 30);
-  //valid = valid && checkRegexp ( lat, '/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/' , "You must enter a valid longitude value.");
-  //valid = valid && checkRegexp ( lng, '/^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/' , "You must enter a valid longitude value.");
-  if ( valid ) {
-    if (request) {
-      request.abort();;
-    }
-    var serializedData = $('#dialog-form :input').serialize();
-    jQuery.post("insert-site.php", serializedData , function(data) {
-      var jdata = jQuery(data);
-      // fill in site list      
-      jdata.find("marker").each(function() {
-        var marker = jQuery(this);
-        if (marker.attr("lat") == "" || marker.attr("lon") == "") {
-          //console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
-        } else {
-          showSite(marker, marker.attr("siteid"));
-        }
-      });
-    });
-  // Prevent default posting of form
-  event.preventDefault();
-  dialog.dialog( "close" );
-  }
-  return valid;
-}
-
-dialog = $( "#dialog-form" ).dialog({
-  autoOpen: false,
-  height: 630,
-  width: 750,
-  modal: true,
-  buttons: {
-    "Create a site": addSite,
-    Cancel: function() {
-      dialog.dialog( "close" );
-    }
-  },
-  close: function () {
-    form[0].reset();
-    allFields.removeClass( "ui-state-error" );
-  }
-});
-
-	form = dialog.find( "form" ).on( "submit", function( event ) {
-		event.preventDefault();
-		addSite();
-	});
-
-	$( "#create-site" ).button().on( "click", function() {
-		dialog.dialog( "open" );
-	});
-
-});
-
-  var markersArray = [];
-
 
 function validate() {
   $("#next").removeAttr("disabled");       
@@ -253,6 +213,8 @@ function prevStep() {
 }
 
 function nextStep() {
+  $("#lat").val("");
+  $("#lon").val("");
   $("#formnext").submit();
 }
 
@@ -267,10 +229,7 @@ function updateData() {
   var curSite = $("#siteid").val();
 
   // remove everything
-  if (markersArray) {
-    clearSites();
-    markersArray.length = 0;
-  }
+  clearSites();
   $('#hostname').find('option').remove();
   $('#hostname').append('<option value="">Any Host</option>');
   $('#modelid').find('option').remove();
@@ -285,12 +244,13 @@ function updateData() {
   if ($('#conversion').is(':checked')) {
     url = url + "&conversion=1";
   }
- 
+
   jQuery.get(url, {}, function(data) {
     var jdata = jQuery(data);
-    //console.log(data);
-    // fill in host list
-    jdata.find("host").each(function() {
+    var xmlDoc = $.parseXML(data);
+    var $xml = $(xmlDoc);
+
+    $xml.find("host").each(function() {
       var host = jQuery(this);
       var option = "<option data-id='" + host.attr("id") + "' value='" + host.attr("hostname") + "'";
       if(host.attr("hostname") == curHost) {
@@ -301,7 +261,7 @@ function updateData() {
     });
 
     // fill in model list
-    jdata.find("model").each(function() {
+    $xml.find("model").each(function() {
       var model = jQuery(this);
       var name = model.attr("name");
       if (model.attr("revision") != "") {
@@ -315,7 +275,7 @@ function updateData() {
     });
 
     // fill in site list      
-    jdata.find("marker").each(function() {
+    $xml.find("marker").each(function() {
       var marker = jQuery(this);
       if (marker.attr("lat") == "" || marker.attr("lon") == "") {
         //console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
@@ -324,6 +284,13 @@ function updateData() {
       }
     });
     renderSites(curSite);
+
+    var selected = markersArray.find(function(d) { return d.siteid == curSite; });
+    if (selected) {
+      markers.zoomToShowLayer(selected);
+      selected.openPopup();
+      siteSelected(selected.siteid, selected.sitename);
+    }
 
     switchUI(false);
   });
@@ -334,13 +301,13 @@ function siteSelected(siteid, sitename) {
   $("#sitename").val(sitename);
   validate();
 }
-  
-<?php if ($offline) { ?>
-$(document).ready(function () {
-  updateData();
-});
 
+<?php if ($offline) { ?>
+// ----------------------------------------------------------------------
+// OFFLINE CODE
+// ----------------------------------------------------------------------
 function clearSites() {
+  markersArray = [];
   $("#output").html("");
 }
   
@@ -365,98 +332,31 @@ function renderSites(selected) {
 
 <?php
 } else {
-  $other_params = "";
-  if (isset($googleMapKey) && $googleMapKey != "") {
-    $other_params .= "key=$googleMapKey";
-  }
-  echo "  google.load('maps', '3', { other_params : '$other_params', callback: 'mapsLoaded'});"
+// ----------------------------------------------------------------------
+// ONLINE CODE
+// ----------------------------------------------------------------------
 ?>
-  var map = null;
-  var infowindow = null;
 
 function clearSites() {
-  for (var i in markersArray) {
-    markersArray[i].setMap(null);
-  }
-}
-
-function mapsLoaded() {
-  var myLatlng = new google.maps.LatLng(0, 0);
-  var myOptions = {
-    zoom: 2,
-    center: myLatlng,
-    mapTypeId: google.maps.MapTypeId.ROADMAP
-  }
-
-  map = new google.maps.Map(document.getElementById("output"), myOptions);
-  infowindow = new google.maps.InfoWindow({content: ""});
-  updateData();
-
-  $("#sitename").keyup(function( event ) {
-    var search = $("#sitename").val().toLowerCase();
-    markersArray.forEach(function(m) {
-      m.setVisible(m.sitename.toLowerCase().indexOf(search) > -1);
-    });
-  });
-
-  map.addListener('rightclick', function(event) {
-    addMarker(event.latLng);
-    $("#dialog-form").dialog("open");
-    $("#txtlat").val(event.latLng.lat());
-    $("#txtlong").val(event.latLng.lng());
-  });
-}
-
-
-function addMarker(location) {
-  var marker = new google.maps.Marker({
-    position: location,
-    map: map
-  });
-  markersArray.push(marker);
+  markersArray = [];
+  markers.clearLayers();
 }
 
 function showSite(marker, selected) {
-  var latlng;
-  latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
-  var gmarker = new google.maps.Marker({position: latlng, map: map});
-  markersArray.push(gmarker);
-
-  // create the tooltip and its text
-  gmarker.sitename = marker.attr("sitename");
-  gmarker.siteid   = marker.attr("siteid");
-  gmarker.html  = '<b>' + marker.attr("sitename") + '</b><br />'
-  gmarker.html += marker.attr("city") + ', ' + marker.attr("country") + '<br />';
-
-  // add a listener to open the tooltip when a user clicks on one of the markers
-  google.maps.event.addListener(gmarker, 'click', function() {
-    siteSelected(this.siteid, this.sitename);
-    infowindow.setContent(this.html);
-    infowindow.open(map, this);
-  });
-
-  if (marker.attr("siteid") == selected) {
-    siteSelected(gmarker.siteid, gmarker.sitename);
-    infowindow.setContent(gmarker.html);
-    infowindow.open(map, gmarker);
-  }
+  var title = marker.attr("sitename");
+  var popup = '<b>' + marker.attr("sitename") + '</b><br />' +
+              marker.attr("city") + ', ' + marker.attr("country") + '<br />';
+  var pin = L.marker(new L.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon"))));
+  pin.options.title = title;
+  pin.sitename = marker.attr("sitename");
+  pin.siteid = marker.attr("siteid");
+  pin.bindPopup(popup);
+  markersArray.push(pin);
 }
 
 function renderSites(selected) {
-}
-
-function goHome() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-      map.panTo(latlng);
-      map.setZoom(12);
-    }, function() {
-      alert("Could not get your location, please make sure you enabled location for safari if you use an iPAD.");
-    }, {maximumAge:60000, timeout: 20000});
-  } else {  
-    alert("I'm sorry, but geolocation services are not supported by your browser.");  
-  }  
+  markers.addLayers(markersArray);
+  lmap.addLayer(markers);
 }
 <?php } ?>
 </script>
@@ -499,7 +399,6 @@ function goHome() {
       <label id="sitegrouplabel">Site Group:</label></span>
       <select name="sitegroupid" id="sitegroupid" onChange="updateData();">
        	<?php echo $sitegroups; ?>
-	<option value="">All Sites</option>
       </select>
       <div class="spacer"></div>
 
@@ -512,6 +411,8 @@ function goHome() {
 
       <span title="Type here to search for sites by name. Click on map to select site">
       <label id="sitelabel">Site:</label></span>
+      <input name="lat" id="lat" type="hidden" value=""/>
+      <input name="lon" id="lon" type="hidden" value=""/>
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
       <input name="sitename" id="sitename" type="text" />
 <?php if ($betydb != "") { ?>
@@ -526,99 +427,8 @@ function goHome() {
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />
       <input id="next" type="button" value="Next" onclick="nextStep();" />    
       <div class="spacer"></div>
-	
-      <div id="divAddSite">
-        <div id="dialog-form" class="ui-widget" title="Create new site">
-        <p class="validateTips">All form fields are required.</p>
-        <form>
-          <fieldset>
-            <div id="container">
-              <div id="row">
-                <div id="left">
-                  <label for="sitename" id="lblsitename">Site name</label>
-                  <input id="txtsitename" size="30" type="text" name="sitename"></input>
-                </div>
-              </div>
-              <div id="row">
-                <div id="left">
-                  <label id="lblelevation">Elevation (m)</label>
-                  <input id="txtelevation" size="30" type="text" name="elevation"></input>
-                </div>
-                <div id="middle">
-                  <label id="lblmap">Mean Annual Precipitation (mm/yr)</label>
-                  <input id="txtmap" size="30" type="text" name="map"></input>
-                </div>
-                <div id="right">
-                  <label id="lblmat">Mean Annual Temperature (C)</label>
-                  <input id="txtmat" size="30" type="text" name="mat"></input>
-                </div>
-              </div>
-              <div id="row">
-                <div id="left">
-                  <label id="lblcity">City</label>
-                  <input id="txtcity" size="30" type="text" name="city"></input>
-                </div>
-                <div id="middle">
-                  <label id="lblstate">State</label>
-                  <input id="txtstate" size="30" type="text" name="state"></input>
-                </div>
-                <div id="right">
-                  <label id="lblcountry">Country</label>
-                  <input id="txtcountry" size="30" type="text" name="country"></input>
-                </div>
-              </div>
-              <div id="row">
-                <div id="left">
-                  <label id="lbllat">Lat</label>
-                  <input id="txtlat" size="30" type="text" name="lat"></input>
-                </div>
-                <div id="middle">
-                  <label id="lbllong">Long</label>
-                  <input id="txtlong" size="30" type="text" name="long"></input>
-                </div>
-              </div>
-              <div id="row">
-                <div id="left">
-                  <label id="lblpctclay">% Clay</label>
-                  <input id="txtpctclay" size="30" type="text" name="pctclay"></input>
-                </div>
-                <div id="middle">
-                  <label id="lblpctsand">% Sand</label>
-                  <input id="txtpctsand" size="30" type="text" name="pctsand"></input>
-                </div>
-              </div>
-              <div id="row">
-                <div id="left">
-                  <label id="lblgreenhouse">Greenhouse</label>
-                  <input id="txtgreenhouse" size="30" type="text" name="greenhouse"></input>
-                </div>
-              </div>
-              <div id="row">
-                <div id="left">
-                  <label id="lblnotes">Notes</label>
-                  <textarea id="txtnotes" cols="40" rows="10" type="text" name="notes"></textarea>
-                </div>
-                <div id="middle">
-                  <label id="lblsoilnotes">Soil Notes</label>
-                  <textarea id="txtsoilnotes" cols="40" rows="10" type="text" name="soilnotes"></textarea>
-                </div>
-              </div>
-            </div>					
-          <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
-          </fieldset>
-        </form>
-      </div>
-    </div>
-    <div class="spacer"></div>
     </form>
-<?php whoami(); ?>  
-<p>
-  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
-  <br>
-  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
-  <br>
-  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
-</p>
+    <?php left_footer(); ?>
   </div>
   <div id="output"></div>
   <div id="footer"><?php echo get_footer(); ?></div>

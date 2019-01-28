@@ -163,10 +163,12 @@ Once this is done you have a working instance of PEcAn.
 If all of the containers started successfully, you should be able to access the various components from a browser via the following URLs:
 
 - PEcAn web interface (running models) -- http://localhost:8000/pecan/ (NOTE: The trailing backslash is necessary.)
+- PEcAn documentation and home page -- http://localhost:8000/
 - BETY web interface -- http://localhost:8000/bety/
 - File browser (minio) -- http://localhost:8000/minio/
-- RabbitMQ management console (for managing queued processes) -- http://localhost:8000/
+- RabbitMQ management console (for managing queued processes) -- http://localhost:8000/rabbitmq/
 - Traefik, webserver showing maps from URLs onto their respective containers -- http://localhost:8001/
+- Monitor, service that monitors models and shows all models that are online as well as how many instances are online and the number of jobs waiting. The output is in JSON -- http://localhost:8000/monitor/
 
 #### Start model runs using curl
 
