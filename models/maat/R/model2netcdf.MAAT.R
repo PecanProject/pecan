@@ -81,10 +81,10 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
   
   if (met_exists) {
     # ** maat.dates assumes UTC, is this correct? what if input met is in a local TZ??  need to revist this **
-    maat_run_start_date <- format(lubridate::as_datetime(maat.output$time, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
-    maat_dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz=timezone)  
+    maat_run_start_date <- format(lubridate::as_datetime(maat.output$time, tz = timezone)[1], "%Y-%m-%d %H:%M:%S")
+    maat_dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz = timezone)  
   } else {
-    maat_run_start_date <- format(lubridate::as_datetime(start_date, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
+    maat_run_start_date <- format(lubridate::as_datetime(start_date, tz = timezone)[1], "%Y-%m-%d %H:%M:%S")
   }
   
   ### setup nc file lat/long
@@ -92,8 +92,9 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
   lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
   
   ### Setup outputs for netCDF file in appropriate units
-  for (year in start_year:end_year) {
+  for (year in seq(start_year, end_year)) {
     if (file.exists(file.path(outdir, paste(year, "nc", sep = "."))) ) {
+      PEcAn.logger::logger.debug(paste("---- Output year", year, "already exists."))
       next  ## skip, model output already present.
     }
     
