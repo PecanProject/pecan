@@ -254,7 +254,7 @@ IC_Maker <-function(settings, ens.n=5, outdir) {
 #' @param Lat numeric latitude
 #' @param Lon numeric longitude
 #' @description This function is designed to find the level1 and level2 code ecoregions for a given lat and long. 
-#' Yoi can learn more about ecoregions here: \link{https://www.epa.gov/eco-research/ecoregions}.
+#' You can learn more about ecoregions here: \link{https://www.epa.gov/eco-research/ecoregions}.
 
 #'
 #' @return a dataframe with codes corresponding to level1 and level2 codes as two columns
