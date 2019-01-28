@@ -179,7 +179,7 @@ netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
                time = 1)
 
   #Reading in the BADM data
-  entries<-Read.IC.info.BADM (lat, long)
+  entries <- Read.IC.info.BADM (lat, long)
   
   PWI <- entries$PlantWIni[!is.na(entries$PlantWIni)]
   LIn <- entries$LitterIni[!is.na(entries$LitterIni)]
@@ -234,7 +234,7 @@ IC_Maker <-function(settings, ens.n=5, outdir) {
       ~ netcdf.writer.BADAM(
         settings$run$site$lat %>% as.numeric(),
         settings$run$site$lon %>% as.numeric(),
-        paste0(settings$run$site$id, .x) %>% as.numeric(),
+        paste0( settings$run$site$id, .x) %>% as.numeric(),
         outdir
       )
     ) %>%
