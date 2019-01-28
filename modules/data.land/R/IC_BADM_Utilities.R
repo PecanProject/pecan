@@ -15,18 +15,12 @@
 #'
 #' @examples
 Read.IC.info.BADM <-function(lat, long){
-  
 
-  
   #Reading in the DB
   #
   U.S.SB <-
     readRDS(system.file("data","BADM.rds", package = "PEcAn.data.land"))
-  #--
-  input <- list()
-  dims <- list(lat = 42.5419 ,
-               lon = -72.185,
-               time = 1)
+
   
   Regions <- L1_L2_finder(lat, long)
   Code_Level <- Regions$L2
@@ -178,23 +172,29 @@ entries <- entries[-which(ind),]
 #'
 #' @examples
 netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
-  
-  browser()
+  #--
+  input <- list()
+  dims <- list(lat = lat ,
+               lon = long,
+               time = 1)
+
   #Reading in the BADM data
   entries<-Read.IC.info.BADM (lat, long)
   
-  PWI <- entries$PWI[!is.na(entries$PWI)]
-  LIn <- entries$LitIn[!is.na(entries$LitIn)]
-  SIn <- entries$SIn[!is.na(entries$SIn)]
+  PWI <- entries$PlantWIni[!is.na(entries$PlantWIni)]
+  LIn <- entries$LitterIni[!is.na(entries$LitterIni)]
+  SIn <- entries$SoilIni[!is.na(entries$SoilIni)]
   
   
   variables <- list(
-    wood_carbon_content = sample(PWI, 1, replace = T),
-    litter_carbon_content = sample(LIn, 1, replace = T),
-    soil_organic_carbon_content = sample(SIn, 1, replace = T),
     SoilMoistFrac = 1,
     SWE = 0
   )
+  
+  if (length(PWI)>0 ) variables <- c(variables, wood_carbon_content = sample(PWI, 1, replace = T))
+  if (length(LIn)>0 ) variables <- c(variables, litter_carbon_content = sample(LIn, 1, replace = T))
+  if (length(SIn)>0 ) variables <- c(variables, soil_organic_carbon_content = sample(SIn, 1, replace = T))
+  
   input$dims <- dims
   input$vals <- variables
   
@@ -220,10 +220,10 @@ netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
 #' settings <- PEcAn.settings::read.settings("pecan.SDA.10sites.xml")
 #' 
 #'  suppressMessages({
-#'   papply(settings,
-#'           IC_Maker,
-#'           ens.n=10,
-#'           outdir="/fs/data3/hamzed/MultiSite_Project/IC/ICFiles")
+#'   setting.with.ic<-papply(settings,
+#'                           IC_Maker,
+#'                           ens.n=10,
+#'                           outdir="/fs/data3/hamzed/MultiSite_Project/IC/ICFiles")
 #' })
 #' } 
 IC_Maker <-function(settings, ens.n=5, outdir) {
@@ -232,8 +232,8 @@ IC_Maker <-function(settings, ens.n=5, outdir) {
   ini.pool <- 1:ens.n %>%
     purrr::map(
       ~ netcdf.writer.BADAM(
-        settings$run$site$lat,
-        settings$run$site$lon,
+        settings$run$site$lat %>% as.numeric(),
+        settings$run$site$lon %>% as.numeric(),
         paste0(settings$run$site$id, .x) %>% as.numeric(),
         outdir
       )
