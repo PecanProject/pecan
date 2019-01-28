@@ -47,7 +47,7 @@ load_nimble <- function(){
     
     q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
     Q[1:N,1:N] <- inverse(q[1:N,1:N])
-    X.mod[1:N] ~ dmnorm(muf[1:N], prec = pf[1:N,1:N]) ## Model Forecast ##muf and pf are assigned from ensembles
+    X.mod[1:N] ~ dmnorm_chol(muf[1:N], cholesky = pf[1:N,1:N], FALSE) ## Model Forecast ##muf and pf are assigned from ensembles
     
     ## add process error
     X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
