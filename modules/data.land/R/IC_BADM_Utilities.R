@@ -1,15 +1,15 @@
 
 #Reading the data and writing the netcdf
-#' Title
+#' Read.IC.info.BADM
 #'
 #' @param lat numeric latitude
 #' @param long numeric longitude
 #'
-#' @description This function returns a dataframe of plant biomass, root and soil carbon for a lat and long coordinates.
-#' This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to dplyr::filter BADM database for those eco-region. 
+#' @description This function returns a dataframe of plant biomass, root and soil carbon for a set of lat and long coordinates.
+#' This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-regions. 
 #' If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 #' All the variables are also converted to kg/m^2. 
-#' @return a datframe with 8 columns of Site, Variable, Date, Organ, PlantWIni (Initial plant biomass, type of biomass can be found in the Var and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
+#' @return a dataframe with 8 columns of Site, Variable, Date, Organ, PlantWIni (Initial plant biomass, type of biomass can be found in the Variable and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
 
 #' @export
 #'
@@ -150,7 +150,7 @@ Read.IC.info.BADM <-function(lat, long){
           )
         )
     })
- 
+ #cleaning
 ind <- apply(entries[,5:8], 1, function(x) all(is.na(x)))
 entries <- entries[-which(ind),]
 
@@ -220,7 +220,7 @@ netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
 #' settings <- PEcAn.settings::read.settings("pecan.SDA.10sites.xml")
 #' 
 #'  suppressMessages({
-#'   setting.with.ic<-papply(settings,
+#'   setting.with.ic <- papply(settings,
 #'                           IC_Maker,
 #'                           ens.n=10,
 #'                           outdir="/fs/data3/hamzed/MultiSite_Project/IC/ICFiles")

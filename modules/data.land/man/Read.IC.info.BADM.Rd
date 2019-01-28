@@ -2,7 +2,7 @@
 % Please edit documentation in R/IC_BADM_Utilities.R
 \name{Read.IC.info.BADM}
 \alias{Read.IC.info.BADM}
-\title{Title}
+\title{Read.IC.info.BADM}
 \usage{
 Read.IC.info.BADM(lat, long)
 }
@@ -12,11 +12,11 @@ Read.IC.info.BADM(lat, long)
 \item{long}{numeric longitude}
 }
 \value{
-a datframe with 8 columns of Site, Variable, Date, Organ, PlantWIni (Initial plant biomass, type of biomass can be found in the Var and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
+a dataframe with 8 columns of Site, Variable, Date, Organ, PlantWIni (Initial plant biomass, type of biomass can be found in the Variable and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
 }
 \description{
-This function returns a dataframe of plant biomass, root and soil carbon for a lat and long coordinates.
-This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to dplyr::filter BADM database for those eco-region. 
+This function returns a dataframe of plant biomass, root and soil carbon for a set of lat and long coordinates.
+This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-regions. 
 If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 All the variables are also converted to kg/m^2.
 }

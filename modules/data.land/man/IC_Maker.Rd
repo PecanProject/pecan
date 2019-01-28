@@ -24,10 +24,10 @@ This function generates a series of ensemble members for initial condition using
 settings <- PEcAn.settings::read.settings("pecan.SDA.10sites.xml")
 
  suppressMessages({
-  papply(settings,
-          IC_Maker,
-          ens.n=10,
-          outdir="/fs/data3/hamzed/MultiSite_Project/IC/ICFiles")
+  setting.with.ic <- papply(settings,
+                          IC_Maker,
+                          ens.n=10,
+                          outdir="/fs/data3/hamzed/MultiSite_Project/IC/ICFiles")
 })
 } 
 }
