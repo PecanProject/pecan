@@ -31,7 +31,6 @@ Depends:
     sp,
     ggplot2,
     data.table,
-    earth,
     XML,
     PEcAn.DB,
     dplyr,

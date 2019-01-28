@@ -16,6 +16,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
 - Added simple container to show all containers that are availble (http://localhost:8000/monitor/), this will also take care of registering the models with the BETY database.
 
+### Removed
+- Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
+
 ## [1.7.0] - 2018-12-09
 
 ### Fixes
