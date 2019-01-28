@@ -40,7 +40,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
     }
     ## define variable
     if(is.null(newunits)) newunits = oldunits
-    newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = ncdims, missval=missval, longname=longname)
+    newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = ncdims, missval = missval, longname = longname)
     ## convert data
     dat <- data
     if (newname %in% c("Year","FracJulianDay")) {
