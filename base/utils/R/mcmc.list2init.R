@@ -10,6 +10,7 @@
 #' @export
 #'
 mcmc.list2init <- function(dat) {
+  need_packages("coda")
   
   ## get unique variable names
   allname <- strsplit(colnames(dat[[1]]),"[",fixed = TRUE)

@@ -5,6 +5,17 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
+## [Unreleased]
+
+### Changed
+- Moved docker files for models into model specific folder, for example Dockerfile for sipnet now is in models/sipnet/Dockerfile.
+- `PEcAn.utils`
+  - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
+
+### Added
+- Models will not advertise themselvs, so no need to register them a-priori with the database #2158
+- Added simple container to show all containers that are availble (http://localhost:8000/monitor/), this will also take care of registering the models with the BETY database.
+
 ## [1.7.0] - 2018-12-09
 
 ### Fixes
@@ -35,6 +46,13 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added a prototype of the THREDDS data server (TDS) to the PEcAn Docker stack.
 - Added portainer to the PEcAn Docker stack to easily look at running containers.
 - Added ability to specify short name for a host (hostlist->displayname)
+- Added `PEcAn.logger::print2string` function -- capture the output
+- Cleanup and enhancements to `PEcAn.utils::read.output`:
+  - Pass `variables = NULL` to try to read _all_ variables from file
+  - New argument `ncfiles` for passing file names explicitly (useful for remote file access where `list.files` doesn't work; e.g. THREDDS)
+  - Variable summary stats are only calculated if new argument `print_summary` is `TRUE` (default). Summary is rendered nicely as a variable x statistic matrix.
+  - New argument `verbose` (default = `FALSE`) to print out (`logger.debug`) at every variable and year
+  - Minor code cleanup for style (spacing, long lines, etc.) and logic (replace several `else` statements with early returns)
 - ED2:
   - Add ability to pass arbitrary arguments to the ED binary through the `pecan.xml` (#2183; fixes #2146).
   - Add new `model` tag `<all_pfts>`. If "false" (default), set ED2IN's `INCLUDE_THESE_PFT` to only PFTs explicitly configured through PEcAn. If "true", use all 17 of ED2's PFTs.
@@ -44,6 +62,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
+- Updated MAAT model model2netcdf.MAAT.R to reflect general changes to the netCDF time variable in PEcAn standard output. Added time_bounds attribute and variable.  Updated inst/ scripts for created MAAT drivers from NGEE-Tropics met sources (WIP)
 - `PEcAn.utils::do_conversions` has been moved to `PEcAn.workflow::do_conversions`.
   `PEcAn.utils::do_conversions` still works for now with a warning, but is deprecated and will be removed in the future.
 - Docker:

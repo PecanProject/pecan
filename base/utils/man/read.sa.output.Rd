@@ -28,7 +28,7 @@ read.sa.output(traits, quantiles, pecandir, outdir, pft.name = "",
 }
 \value{
 dataframe with one col per quantile analysed and one row per trait,
- each cell is a list of AGB over time
+each cell is a list of AGB over time
 }
 \description{
 Reads output of sensitivity analysis runs

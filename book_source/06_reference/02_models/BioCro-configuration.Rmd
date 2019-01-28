@@ -1,2 +1,0 @@
-## BioCro Configuration
-BioCro uses a config.xml file similar to ED2. At this time, no other template files are required.
