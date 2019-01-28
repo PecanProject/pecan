@@ -9,7 +9,7 @@
 
 
 ##-------------------------------------------------------------------------------------------------#
-##' Convert MAAT output to netCDF
+##' Function to convert MAAT model output to standard netCDF format
 ##'
 ##' Converts all output contained in a folder to netCDF.
 ##' @name model2netcdf.MAAT
