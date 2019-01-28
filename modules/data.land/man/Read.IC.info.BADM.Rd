@@ -16,7 +16,7 @@ a datframe with 8 columns of Site, Variable, Date, Organ, PlantWIni (Initial pla
 }
 \description{
 This function returns a dataframe of plant biomass, root and soil carbon for a lat and long coordinates.
-This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-region. 
+This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to dplyr::filter BADM database for those eco-region. 
 If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 All the variables are also converted to kg/m^2.
 }
