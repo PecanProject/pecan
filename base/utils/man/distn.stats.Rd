@@ -17,7 +17,7 @@ distn.stats(distn, a, b)
 vector with mean and standard deviation
 }
 \description{
-Implementation of standard equations used to calculate mean and sd for a variety of 
+Implementation of standard equations used to calculate mean and sd for a variety of
 named distributions different
 }
 \examples{
