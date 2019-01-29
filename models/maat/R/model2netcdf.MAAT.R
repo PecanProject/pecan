@@ -175,7 +175,7 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       output <- var_update(maat.output$ci, output, "ci", "Ci", oldunits = "Pa",
                            newunits = "Pa", missval = -999, longname = "Leaf Internal CO2 Concentration", ncdims = ncdims)
       output <- var_update(maat.output$cc, output, "cc", "Cc", oldunits = "Pa",
-                           newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
+                           newunits = "Pa", missval = -999, longname = "Leaf Mesophyll CO2 Concentration", ncdims = ncdims)
       
       ## put in time_bounds before writing out new nc file
       output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units="", 
