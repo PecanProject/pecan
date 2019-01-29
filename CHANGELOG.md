@@ -13,6 +13,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Moved docker files for models into model specific folder, for example Dockerfile for sipnet now is in models/sipnet/Dockerfile.
 - `PEcAn.utils`
   - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
+- Add template for documentation issues and add button to edit book.
 
 ### Added
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
