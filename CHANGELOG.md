@@ -8,9 +8,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Changed
+- Automatic build are currently done using R version 3.5 and most development will be done with version 3.5 as well. It still might be possible to use R version 3.4 however we will not guarantee future compatibility with 3.4.
 - Reverting back from PR #2137 to fix issues with MAAT wrappers.
 - Moved docker files for models into model specific folder, for example Dockerfile for sipnet now is in models/sipnet/Dockerfile.
-- Changed R version in .travis.yml to 3.5
 - `PEcAn.utils`
   - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
 
