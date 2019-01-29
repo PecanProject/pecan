@@ -1,3 +1,6 @@
+<!---
+These HTML comments are here to make sure this file doesn't get rendered.
+Make sure you remove them from the top and bottom of the file when adding real model documenation.
 ## Template MODEL page
 
 | Model Information ||
@@ -33,3 +36,5 @@ MODEL is configured using 3 files which are placed in the run folder, as well as
 This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
 
 **VM**
+
+-->
