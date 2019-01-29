@@ -6,6 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+context("Other utilities")
+
 test.stats <- data.frame(Y=rep(1,5),
                            stat=rep(1,5),
                            n=rep(4,5),

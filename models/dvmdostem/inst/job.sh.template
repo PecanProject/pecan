@@ -19,7 +19,14 @@ else
   cd "@RUNDIR@"
   
   # run dvm-dos-tem using user-selected options and log level
-  @BINARY@ -p @PRERUN@ -e @EQUILIBRIUM@ -s @SPINUP@ -t @TRANSIENT@ --sc-yrs @SCENERIO@ --log-level @LOGLEVEL@ --no-output-cleanup
+  @BINARY@ --pr-yrs @PRERUN@ \
+  --eq-yrs @EQUILIBRIUM@ \
+  --sp-yrs @SPINUP@ \
+  --tr-yrs @TRANSIENT@ \
+  --sc-yrs @SCENERIO@ \
+  --log-level @LOGLEVEL@ \
+  @FORCE_CMTNUM@ \
+  --no-output-cleanup
 
   STATUS=$?
   if [ $STATUS -ne 0 ]; then
@@ -39,7 +46,7 @@ else
   echo "Done converting ouputs to PEcAn format."
 
   # Other params that could be passed to model2netcdf:
-  # @SITE_LAT@,@SITE_LON@,'@START_DATE@','@END_DATE@',@DELETE.RAW,'@REVISION@'
+  # @SITE_LAT@,@SITE_LON@,'@START_DATE@','@END_DATE@','@DELETE.RAW@','@REVISION@'
 
 fi
 
