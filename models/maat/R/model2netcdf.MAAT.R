@@ -9,10 +9,8 @@
 
 
 ##-------------------------------------------------------------------------------------------------#
-##' Function to convert MAAT model output to standard netCDF format
-##'
-##' Converts all output contained in a folder to netCDF.
 ##' @title Function to convert MAAT model output to standard netCDF format
+##'
 ##' @param rundir Location of MAAT model run (i.e. MAAT project) directory with all required model run inputs.
 ##' This is needed to identify model runs with and without met drivers and control the model output conversion process
 ##' @param outdir Location of MAAT model output
@@ -175,14 +173,14 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       output <- var_update((1 / (maat.output$rs)), output, "gs", "stomatal_conductance", oldunits = "mol H2O m-2 s-1",
                            newunits = "kg H2O m-2 s-1", missval = -999, longname = "Leaf Stomatal Conductance", ncdims = ncdims)
       output <- var_update(maat.output$ci, output, "ci", "Ci", oldunits = "Pa",
-                           newunits="Pa", missval=-999, longname="Leaf Internal CO2 Concentration", ncdims=ncdims)
-      output <- var_update(maat.output$cc, output, "cc", "Cc", oldunits="Pa",
+                           newunits = "Pa", missval = -999, longname = "Leaf Internal CO2 Concentration", ncdims = ncdims)
+      output <- var_update(maat.output$cc, output, "cc", "Cc", oldunits = "Pa",
                            newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
       
       ## put in time_bounds before writing out new nc file
-      output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
+      output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units="", 
                                                                longname = "history time interval endpoints", 
-                                                               dim=list(time_interval,time = t), 
+                                                               dim = list(time_interval, time = t), 
                                                                prec = "double")
       output$dat[[length(output$dat) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
       ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##  

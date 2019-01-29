@@ -24,9 +24,6 @@ This is needed to identify model runs with and without met drivers and control t
 \description{
 Function to convert MAAT model output to standard netCDF format
 }
-\details{
-Converts all output contained in a folder to netCDF.
-}
 \author{
 Shawn Serbin, Anthony Walker, Alexey Shiklomanov
 }
