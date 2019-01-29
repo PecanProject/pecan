@@ -34,8 +34,8 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
   var_update <- function(data, out, oldname, newname, oldunits, newunits = NULL, missval = -999, longname, ncdims) {
     # ifelse is no longer working as expected, so now we have this function to deal with any Inf values
     f_sort <- function(s) {
-      if (is.infinite(s)) -999
-      else try(PEcAn.utils::misc.convert(s, oldunits, newunits), silent = TRUE)
+      if (!is.finite(s)) -999
+      else tryCatch(PEcAn.utils::misc.convert(s, oldunits, newunits), error = function(e) s)
     }
     ## define variable
     if(is.null(newunits)) newunits = oldunits
@@ -172,9 +172,9 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
                            longname = "Leaf assimilation rate", ncdims = ncdims)
       output <- var_update(maat.output$rd, output, "rd", "leaf_respiration", oldunits = "umol C m-2 s-1", newunits = "kg C m-2 s-1", missval = -999,
                            longname = "Leaf Respiration Rate", ncdims = ncdims)
-      output <- var_update((1/(maat.output$rs)), output, "gs", "stomatal_conductance", oldunits="mol H2O m-2 s-1",
-                           newunits="kg H2O m-2 s-1", missval=-999, longname="Leaf Stomatal Conductance", ncdims=ncdims)
-      output <- var_update(maat.output$ci, output, "ci", "Ci", oldunits="Pa",
+      output <- var_update((1 / (maat.output$rs)), output, "gs", "stomatal_conductance", oldunits = "mol H2O m-2 s-1",
+                           newunits = "kg H2O m-2 s-1", missval = -999, longname = "Leaf Stomatal Conductance", ncdims = ncdims)
+      output <- var_update(maat.output$ci, output, "ci", "Ci", oldunits = "Pa",
                            newunits="Pa", missval=-999, longname="Leaf Internal CO2 Concentration", ncdims=ncdims)
       output <- var_update(maat.output$cc, output, "cc", "Cc", oldunits="Pa",
                            newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
