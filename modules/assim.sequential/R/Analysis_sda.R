@@ -110,7 +110,7 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=10000, ...){
+GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=1e4, nburnin=1000, ...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
@@ -135,7 +135,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=10000, .
   #----------------------------------- GEF-----------------------------------------------------
   # Taking care of censored data ------------------------------    
   ### create matrix the describes the support for each observed state variable at time t
-  path.to.models <- file.path(settings$outdir,"SDA","GEF")
   aqq <- extraArg$aqq
   bqq <- extraArg$bqq
   interval <- NULL
@@ -261,23 +260,44 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=10000, .
   
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
-  rownames(interval) <- names(obs.mean[[t]])
-  for(i in 1:length(var.names)){
-    interval[which(startsWith(rownames(interval),
-                              var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
-                                                            as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
-                                                          length(which(startsWith(rownames(interval),
-                                                                                  var.names[i]))),2,byrow = TRUE)
+ 
+ # if this function is revoked by multisite then the structure of data looks a bit different.
+  if (exists('blocked.dis')){
+    rownames(interval) <- obs.mean[[t]] %>% purrr::flatten() %>% names()
+    
+  }else{
+    rownames(interval) <- names(obs.mean[[t]])
   }
-  #### These vectors are used to categorize data based on censoring 
+  
+  for (i in 1:length(var.names)) {
+    interval[which(startsWith(rownames(interval),
+                              var.names[i])),] <-
+      matrix(c(
+        as.numeric(
+          settings$state.data.assimilation$state.variables[[i]]$min_value
+        ),
+        as.numeric(
+          settings$state.data.assimilation$state.variables[[i]]$max_value
+        )
+      ),
+      length(which(startsWith(
+        rownames(interval),
+        var.names[i]
+      ))), 2, byrow = TRUE)
+  }
+  #### These vectors are used to categorize data based on censoring
   #### from the interval matrix
-  y.ind <- as.numeric(Y > interval[,1])
-  y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
+  y.ind <- as.numeric(Y > interval[, 1])
+  y.censored <- as.numeric(ifelse(Y > interval[, 1], Y, 0))
 
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
     # Contants defined in the model
+    
     constants.tobit = list(N = ncol(X),
-                           YN = length(y.ind))
+                           YN = length(y.ind),
+                           ntake=length(which(colSums(H)!=0)), # number of H elements
+                           take=which(colSums(H)!=0)# This is gonna be H
+                           )
     
     
     dimensions.tobit = list(X = length(mu.f),
@@ -309,6 +329,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=10000, .
                               name = 'base')
     ## Adding X.mod,q,r as data for building model.
     conf <- configureMCMC(model_pred, print=TRUE)
+    
     conf$addMonitors(c("X","q","Q")) 
     ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
     ## important!
@@ -338,8 +359,8 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=10000, .
       ## indicator variable is set to 0, which specifies *not* to sample
       valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
     }
-    
-    browser()
+
+
   # if t>1 in GEF --------------------------------------------   
   }else{
     Cmodel$y.ind <- y.ind
@@ -363,7 +384,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=10000, .
     }
     
   }
-
+  browser()
   dat <- runMCMC(Cmcmc, niter = nitr, nburnin=nburnin)
 
   ## update parameters
@@ -372,7 +393,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=10000, .
   mu.a <- colMeans(dat[, iX])
   Pa   <- cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
-  
+
   
   
   mq <- dat[, iq]  # Omega, Precision

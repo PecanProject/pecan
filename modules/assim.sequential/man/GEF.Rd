@@ -4,8 +4,8 @@
 \alias{GEF}
 \title{GEF}
 \usage{
-GEF(setting, Forecast, Observed, H, extraArg, nitr = 1e+06,
-  nburnin = 10000, ...)
+GEF(setting, Forecast, Observed, H, extraArg, nitr = 10000,
+  nburnin = 1000, ...)
 }
 \arguments{
 \item{Forecast}{A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)}
