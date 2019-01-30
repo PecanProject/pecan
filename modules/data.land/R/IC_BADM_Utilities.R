@@ -10,10 +10,12 @@
 #' If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 #' All the variables are also converted to kg/m^2. 
 #' @return a dataframe with 8 columns of Site, Variable, Date, Organ, PlantWIni (Initial plant biomass, type of biomass can be found in the Variable and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
-
-#' @export
 #'
+#' @export
 #' @examples
+#' \dontrun{
+#'   badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
+#'}
 Read.IC.info.BADM <-function(lat, long){
 
   #Reading in the DB
@@ -170,7 +172,6 @@ entries <- entries[-which(ind),]
 #' @return a string of the address where the IC file is stored
 #' @export
 #'
-#' @examples
 netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
   #--
   input <- list()
@@ -220,7 +221,7 @@ netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
 #' settings <- PEcAn.settings::read.settings("pecan.SDA.10sites.xml")
 #' 
 #'  suppressMessages({
-#'   setting.with.ic <- papply(settings,
+#'   setting.with.ic <- PEcAn.settings::papply(settings,
 #'                           IC_Maker,
 #'                           ens.n=10,
 #'                           outdir="/fs/data3/hamzed/MultiSite_Project/IC/ICFiles")
@@ -260,7 +261,6 @@ IC_Maker <-function(settings, ens.n=5, outdir) {
 #' @return a dataframe with codes corresponding to level1 and level2 codes as two columns
 #' @export
 #'
-#' @examples
 L1_L2_finder <- function(Lat, Lon){
   #lat long to spatial point
   U.S.SB.sp <-

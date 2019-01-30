@@ -20,3 +20,8 @@ This function first finds the level1 and level2 ecoregions  for the given coordi
 If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 All the variables are also converted to kg/m^2.
 }
+\examples{
+\dontrun{
+  badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
+}
+}
