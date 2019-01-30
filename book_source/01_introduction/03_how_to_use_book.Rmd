@@ -14,8 +14,7 @@ This book is organized four main topics:
 
 ### General Feedback/Comments/Suggestions
 
-We want your ideas, thoughts, comments, and suggestions! This is an open-sourced project so please feel free to reach out
-to us in the following ways:
+*We want your ideas, thoughts, comments, and suggestions!* As a community we are committed to creating an inclusive and supportive atmosphere so we all to reach out to us in the following ways:
 
 **Github:** [https://github.com/PecanProject/pecan](https://github.com/PecanProject/pecan)
 This is the main hub of communication surrounding PEcAn development. Check out the issues section to see known bugs, upcoming features, and ideas for future development. Feel free to comment on existing issues or open new ones with questions, bug reports, feature requests, and/or ideas.

@@ -1,4 +1,35 @@
-# Getting Started {#GettingStarted}
+# Installation {#installation}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## How PEcAn Works in a nutshell
 
