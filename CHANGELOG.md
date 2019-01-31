@@ -8,7 +8,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Changed
-- Automatic build are currently done using R version 3.5 and most development will be done with version 3.5 as well. It still might be possible to use R version 3.4 however we will not guarantee future compatibility with 3.4.
+- Improved testing (#2264). Automatic Travis CI builds of PEcAn on are now run using three versions of R in parallel. This should mean fewer issues with new releases and better backwards compatibility, but note that we still only guarantee full compatibility with the current release version of R. The tested versions are:
+  - `release`, the current public release of R (currently R 3.5). Build failures in this version are fixed before merging the change that caused them. When we say PEcAn is fully tested and working, this is the build we mean.
+  - `devel`, the newest available development build of R. We will fix issues with this version before the next major R release.
+  - `oldrel`, the previous major release of R (currently R 3.4). We will fix issues with this version as time allows, but we do not guarantee that it will stay compatible.
 - Reverting back from PR #2137 to fix issues with MAAT wrappers.
 - Moved docker files for models into model specific folder, for example Dockerfile for sipnet now is in models/sipnet/Dockerfile.
 - `PEcAn.utils`
