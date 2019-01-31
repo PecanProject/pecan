@@ -198,7 +198,38 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                         ensemble.id=ensemble.id)
       
     }else{
-      restart.arg <- NULL
+     if(restart == TRUE & length(FORECAST) < t){
+        #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
+        inputs.split <- list()
+        if(!no_split){
+          for(i in seq_len(nens)){
+            #---------------- model specific split inputs
+            inputs.split$samples[i] <-do.call(my.split_inputs, 
+                                              args = list(settings = settings, 
+                                                          start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + lubridate::second(hms("00:00:01"))), 
+                                                          stop.time = obs.times[t],
+                                                          inputs = inputs$samples[[i]])) 
+            
+            
+          } 
+        }else{
+          inputs.split<-inputs
+        }
+        
+        restart.arg <- list(runid = run.id, 
+                            start.time = settings$run$start.date, #assuming t=1
+                            stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
+                            settings = settings,
+                            new.state = NULL, 
+                            new.params = new.params, #this needs to !=NULL because of t=1?
+                            inputs = inputs.split, 
+                            RENAME = TRUE,
+                            ensemble.id=ensemble.id)
+      }else{
+        restart.arg <- NULL
+        new.state <- NULL
+        new.params <- new.params #this needs to !=NULL because of t=1?
+      }
     }
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
     outconfig <- write.ensemble.configs(defaults = settings$pfts, 
@@ -234,6 +265,50 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       X[[i]]      <- X_tmp[[i]]$X
       if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
       
+      run.id <- outconfig$runs$id
+      ensemble.id <- outconfig$ensemble.id
+      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+      #-------------------------------------------- RUN
+      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+      #------------------------------------------- Reading the output
+      X_tmp <- vector("list", 2) 
+      X <- list()
+      for (i in seq_len(nens)) {
+        
+        X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
+                                                           runid = run.id[i], 
+                                                           stop.time = obs.times[t], 
+                                                           settings = settings, 
+                                                           var.names = var.names, 
+                                                           params = new.params[[i]]
+        )
+        )
+        # states will be in X, but we also want to carry some deterministic relationships to write_restart
+        # these will be stored in params
+        X[[i]]      <- X_tmp[[i]]$X
+        if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
+        
+      }
+      X <- do.call(rbind, X)
+      FORECAST[[t]] <- X
+    }else{
+      X <- FORECAST[[t]]
+      print('Using FORECAST[[t]] from sda.output.Rdata')
+      load(file.path(settings$outdir,"SDA", "outconfig.Rdata"))
+      run.id <- outconfig$runs$id
+      ensemble.id <- outconfig$ensemble.id
+      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+      
+      if (processvar) {
+        aqq<-enkf.params[[t-1]]$aqq
+        bqq<-enkf.params[[t-1]]$bqq
+      }
+    }
+    
+    if(!exists('Cmcmc_tobit2space') | !exists('Cmcmc')) {
+      recompile = TRUE
+    }else{
+      recompile = FALSE
     }
     X <- do.call(rbind, X)
     FORECAST[[t]] <- X
@@ -241,16 +316,32 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###  preparing OBS                                                    ###
     ###-------------------------------------------------------------------###---- 
     if (any(obs)) {
-      # finding obs data 
+      # finding obs data
+      
+      #which type of observation do we have at this time point?
+      input.order <- sapply(input.vars, agrep, x=names(obs.mean[[t]]))
+      names(input.order) <- operators
+      input.order.cov <- sapply(input.vars, agrep, x=colnames(obs.cov[[t]]))
+      names(input.order.cov) <- operators
+      
+      ### this is for pfts not sure if it's always nessecary?
       choose <- sapply(colnames(X), agrep, x=names(obs.mean[[t]]), max=1, USE.NAMES = F) %>% unlist
-
+      choose.cov <- sapply(colnames(X), agrep, x=colnames(obs.cov[[t]]), max=1, USE.NAMES = F) %>% unlist
+      
+      if(!any(choose)){
+        choose <- unlist(input.order)
+        choose <- order(names(obs.mean[[t]]))
+        choose.cov <- unlist(input.order.cov)
+        choose.cov <- order(colnames(obs.cov[[t]]))
+        #substr(names(obs.mean[[t]]),nchar(names(choose)[1])+1,max(nchar(names(obs.mean[[t]]))))
+      }
       # droping the ones that their means are zero 
       na.obs.mean <- which(is.na(unlist(obs.mean[[t]][choose])))
       if (length(na.obs.mean)>0) choose <- choose [-na.obs.mean]
       
       Y <- unlist(obs.mean[[t]][choose])
       
-      R <- as.matrix(obs.cov[[t]][choose,choose])
+      R <- as.matrix(obs.cov[[t]][choose.cov,choose.cov])
       R[is.na(R)]<-0.1
       
       if (control$debug) browser()
