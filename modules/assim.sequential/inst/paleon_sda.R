@@ -12,6 +12,8 @@ library(PEcAn.visualization)
 library(rgdal) # need to put in assim.sequential
 library(ncdf4) # need to put in assim.sequential
 
+
+####TENSION ZONE 1000009964 #/fs/data2/output//PEcAn_1000009979#/fs/data2/output//PEcAn_1000009985
 #LINKAGES #AGB.pft #Harvard Forest
 #setwd('/fs/data2/output//PEcAn_1000003314/')
 #setwd('/fs/data2/output//PEcAn_1000007999/') #full run 50 nens
