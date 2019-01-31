@@ -65,8 +65,10 @@ addons:
       - r-bioc-biocinstaller
       - r-cran-ape
       - r-cran-curl
+      - r-cran-data.table
       - r-cran-devtools
       - r-cran-dplyr
+      - r-cran-gap
       - r-cran-ggplot2
       - r-cran-httr
       - r-cran-igraph
@@ -79,7 +81,10 @@ addons:
       - r-cran-redland
       - r-cran-rncl
       - r-cran-roxygen2
+      - r-cran-rsqlite
+      - r-cran-sf
       - r-cran-shiny
+      - r-cran-sirt
       - r-cran-testthat
       - r-cran-tidyverse
       - r-cran-xml
