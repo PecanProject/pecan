@@ -144,6 +144,16 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   # load output
   load(outfile)
   
+  ntrees <- ntrees.kill[, ncol(ntrees.kill), 1]  # number of trees
+ 
+  if(sum(ntrees)==0) {
+    #reloads spin up if theres nothing in the output file
+    print('No survivors. Reusing spinup.')
+    load(file.path(outdir, runid,list.files(file.path(outdir, runid))[1]))
+    ntrees <- ntrees.kill[, ncol(ntrees.kill), 1]  # number of trees
+   
+    }
+  
   nspec  <- length(settings$pfts)
   ncohrt <- ncohrt
   tyl    <- tyl
