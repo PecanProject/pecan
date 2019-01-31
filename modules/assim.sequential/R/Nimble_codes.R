@@ -15,18 +15,27 @@ load_nimble <- function(){
       
       return(y_star)
     })
-  
-  y_star_create_Fcomp <<-  nimbleFunction(
-    run = function(X = double(1)) {
+
+  alr <<-  nimbleFunction(
+    run = function(y = double(1)) {
       returnType(double(1))
       
-      X_use <- X
-      X_use[X_use<0] <- 0
-      y_star <- X_use/sum(X_use)
+      y_alr <- log(y[1:(length(y)-1)] / y[length(y)])
       
-      return(y_star)
+      return(y_alr)
     })
-  #tobit2space.model------------------------------------------------------------------------------------------------
+  
+  inv.alr <<-  nimbleFunction(
+    run = function(alr = double(1)) {
+      returnType(double(1))
+      
+      y = exp(c(alr, 0)) / sum(exp(c(alr, 0)))
+      
+      return(y)
+    })
+  
+  
+    #tobit2space.model------------------------------------------------------------------------------------------------
   tobit2space.model <<- nimbleCode({
     for(i in 1:N){
       y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
@@ -53,6 +62,7 @@ load_nimble <- function(){
     X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
     
     #observation operator
+<<<<<<< HEAD
     y_star[1:YN] <- y_star_create(X[1:YN])
     
     ## Analysis
@@ -61,9 +71,32 @@ load_nimble <- function(){
     #don't flag y.censored as data, y.censored in inits
     #remove y.censored samplers and only assign univariate samplers on NAs
     
+=======
+    if(direct_TRUE){
+      y_star[X_direct_start:X_direct_end] <- y_star_create(X[X_direct_start:X_direct_end])
+    } else{
+      
+    }
+    
+    if(fcomp_TRUE){
+      y_star[X_fcomp_start:X_fcomp_end] <- alr(X[X_fcomp_model_start:X_fcomp_model_end])
+    }  else{
+      
+    }
+    
+    if(pft2total_TRUE){
+      y_star[X_pft2total_start] <- y_star_create_pft2total(X[X_pft2total_model_start:X_pft2total_model_end])
+    }  else{
+      
+    }
+    
+    #likelihood
+    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) 
+>>>>>>> fe2aa52... Changing to just alr instead of y star fcomp to be more transparent about what's happening to composition observations
     for(i in 1:YN){
       y.ind[i] ~ dinterval(y.censored[i], 0)
     }
+   
     
   })
   
