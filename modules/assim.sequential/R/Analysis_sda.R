@@ -123,11 +123,10 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   #Forecast inputs 
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
-  Pf = cov(X) # Cov Forecast - This is used as an initial condition
-
+  Pf = cov(X) # Cov Forecast - Goes into tobit2space as initial condition but is re-estimated in tobit space
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   #Observed inputs
-  R <- Observed$R
+  R <- solve(Observed$R) #putting solve() here so if not invertible error is before compiling tobit2space
   Y <- Observed$Y
   wish.df <- function(Om, X, i, j, col) {
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
@@ -272,34 +271,123 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   #### from the interval matrix
   y.ind <- as.numeric(Y > interval[,1])
   y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
-
-  if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
-    # Contants defined in the model
-    constants.tobit = list(N = ncol(X), YN = length(y.ind))
+  
+  #which type of observation do we have at this time point?
+  input.order <- lapply(input.vars, grep, x=names(obs.mean[[t]])) # not going to work if AbvGrnWood is given in two different ways like tree rings and refab
+  names(input.order) <- operators
+  data_available <- unlist(input.order)
+  
+  #browser()
+  
+  if(any(grep(names(data_available),pattern = 'direct'))){
+    which_direct <- data_available[grep(names(data_available),pattern = 'direct')]
+    X_direct_start <- which_direct[1]
+    X_direct_end <- which_direct[length(which_direct)]
+    direct_TRUE = TRUE
+  }else{
+    X_direct_start <- 0
+    X_direct_end <- 0
+    direct_TRUE = FALSE
+  }
+  
+  if(any(grep(names(data_available),pattern = 'ALR'))){
+   
+    # browser()
+    which_fcomp <- grep(names(data_available),pattern = 'ALR')
+    X_fcomp_start <- which_fcomp[1]
+    X_fcomp_end <- which_fcomp[length(which_fcomp)]
+    X_fcomp_model <- grep(colnames(X),pattern = 'AbvGrndWood')
     
+    if(FALSE){
+      X_fcomp_idx <- pft_order(X = X,Y = Y,var.names = var.names,input.vars = input.vars)
+      if(length(X_fcomp_idx)!=X_fcomp_idx[length(X_fcomp_idx)]){
+        X_fcomp_idx <- c(X_fcomp_idx,which(is.na(match(1:X_fcomp_idx[length(X_fcomp_idx)],X_fcomp_idx))))
+      }
+    }
+  
+    fcomp_TRUE = TRUE
+  }else{
+    X_fcomp_start <- 0
+    X_fcomp_end <- 0
+    X_fcomp_model <- 0
+    fcomp_TRUE = FALSE
+  }
+  
+  if(any(grep(names(data_available),pattern = 'pft2total'))){
+    which_pft2total <- grep(names(data_available),pattern = 'pft2total')
+    X_pft2total_start <- which_pft2total[1]
+    X_pft2total_end <- which_pft2total[length(which_pft2total)]
+    X_pft2total_model <- grep(colnames(X),pattern = 'AbvGrndWood')
+    pft2total_TRUE = TRUE
+  }else{
+    X_pft2total_start <- 0
+    X_pft2total_end <- 0
+    X_pft2total_model <- 0
+    pft2total_TRUE = FALSE
+  }
+  
+  
+  if(t > 1 & recompile != TRUE){
+    if(X_direct_start != constants.tobit$X_direct_start) recompile = TRUE
+    if(X_direct_end != constants.tobit$X_direct_end) recompile = TRUE
+    if(X_fcomp_end != constants.tobit$X_fcomp_end) recompile = TRUE
+    if(X_fcomp_start != constants.tobit$X_fcomp_start) recompile = TRUE
+  }
+  
+  if(t == 1 | recompile){ #TO DO need to make something that works to pick whether to compile or not
+    constants.tobit <<- list(
+      N = ncol(X),
+      YN = length(y.ind),
+      X_direct_start = X_direct_start,
+      X_direct_end = X_direct_end,
+      X_fcomp_start = X_fcomp_start,
+      X_fcomp_end = X_fcomp_end, #TO DO: FIX
+      X_fcomp_model_start = X_fcomp_model[1],
+      X_fcomp_model_end = X_fcomp_model[length(X_fcomp_model)],
+      X_pft2total_start = X_pft2total_start,
+      X_pft2total_model_start = X_pft2total_model[1],
+      X_pft2total_model_end = X_pft2total_model[length(X_pft2total_model)],
+      direct_TRUE = direct_TRUE,
+      fcomp_TRUE = fcomp_TRUE,
+      pft2total_TRUE = pft2total_TRUE
+    )
     
     dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
-                            Q = c(length(mu.f),length(mu.f)))
-    # Data need to be used in the model
+                            Q = c(length(mu.f),length(mu.f)),
+                            y_star = (length(y.censored)))
+    
     data.tobit = list(muf = as.vector(mu.f),
                       pf = solve(Pf), 
                       aq = aqq[t,,], bq = bqq[t],
                       y.ind = y.ind,
                       y.censored = y.censored,
-                      r = solve(R))
-    #initial values
-    inits.pred = list(q = diag(length(mu.f)),
-                      X.mod = as.vector(mu.f),
-                      X = as.vector(mu.f) # This was this before rnorm(length(mu.f),0,1), I thought the mu.f would be a better IC for something like abv ground biomass than something close to zero.
-                      ) #
+                      r = R) #precision
+    
+    inits.pred = list(q = diag(length(mu.f))*(length(mu.f)+1), X.mod = as.vector(mu.f),
+                      X = rnorm(length(mu.f),mu.f,1),
+                      y_star = rnorm(length(y.censored),0,1)) #
     
     model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
                               constants = constants.tobit, inits = inits.pred,
                               name = 'base')
+    
+    model_pred$initializeInfo()
     ## Adding X.mod,q,r as data for building model.
     conf <- configureMCMC(model_pred, print=TRUE)
-    conf$addMonitors(c("X","q","Q")) 
+    conf$addMonitors(c("X","q","Q", "y_star","y.censored")) 
     ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
+    
+    
+    if(FALSE){ ### Need this for when the state variables are on different scales like NPP and AGB
+      x.char <- paste0('X[1:',ncol(X),']')
+      conf$removeSampler(x.char)
+      propCov.means <- c(rep(1,9),1000)#signif(diag(Pf),1)#mean(unlist(lapply(obs.cov,FUN = function(x){diag(x)})))[choose]#c(rep(max(diag(Pf)),ncol(X)))#
+      if(length(propCov.means)!=ncol(X)) propCov.means <- c(propCov.means,rep(1,ncol(X)-length(Y)))
+      conf$addSampler(target =c(x.char),
+                      control <- list(propCov = diag(ncol(X))*propCov.means),
+                      type='RW_block')
+    }
+    
     ## important!
     ## this is needed for correct indexing later
     samplerNumberOffset <<- length(conf$getSamplers())
@@ -325,7 +413,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
       ## ironically, here we have to "toggle" the value of y.ind[i]
       ## this specifies that when y.ind[i] = 1,
       ## indicator variable is set to 0, which specifies *not* to sample
-      valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
+     valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
     }
     
   }else{
@@ -335,10 +423,12 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     Cmodel$bq <- bqq[t]
     Cmodel$muf <- mu.f
     Cmodel$pf <- solve(Pf)
-    Cmodel$r <- solve(R)
-    
-    inits.pred = list(q = diag(length(mu.f)), X.mod = as.vector(mu.f),
-                      X = rnorm(ncol(X),0,1)) #
+    Cmodel$r <- (R) #precision
+
+    inits.pred = list(q = diag(length(mu.f)),
+                      X.mod = as.vector(mu.f),
+                      X = rnorm(ncol(X),100,1),
+                      y_star = rnorm(length(y.censored),100,1)) #
     Cmodel$setInits(inits.pred)
     
     for(i in 1:length(y.ind)) {
@@ -350,16 +440,16 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     
   }
 
-  dat <- runMCMC(Cmcmc, niter = nitr, nburnin=nburnin)
-  
+  dat <- runMCMC(Cmcmc, niter = 50000, nburnin=10000)
+  dat_save <- dat[(nrow(dat)-250):nrow(dat),]
+  save(dat_save, file = file.path(outdir, paste0('dat',t,'.Rdata')))
+
   ## update parameters
   iq   <- grep("q", colnames(dat))
   iX   <- grep("X[", colnames(dat), fixed = TRUE)
   mu.a <- colMeans(dat[, iX])
   Pa   <- cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
-  
-  
   
   mq <- dat[, iq]  # Omega, Precision
   q.bar <- matrix(apply(mq, 2, mean), length(mu.f), length(mu.f))  # Mean Omega, Precision
