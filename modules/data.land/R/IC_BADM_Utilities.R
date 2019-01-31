@@ -64,6 +64,7 @@ Read.IC.info.BADM <-function(lat, long){
     split(.$GROUP_ID) %>%
     purrr::map_dfr(
       function(Gdf) {
+  
         # we keep them here
         PlantWoodIni <- NA
         SoilIni <- NA
@@ -111,15 +112,17 @@ Read.IC.info.BADM <-function(lat, long){
         if (length(Date.in) == 0)
           Date.in <- NA
         #----------------collect
+      
         # if it's biomass
         if (type == "*_BIOMASS") {
           Oregan.in <- Gdf %>%
             dplyr::filter(VARIABLE %>% grepl("ORGAN", .)) %>%
-            dplyr::pull(DATAVALUE)
+            dplyr::pull(DATAVALUE) 
           
           
           PlantWoodIni <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1],  unit.ready, "kg/m^2")#       "AG_BIOMASS_CROP","AG_BIOMASS_SHRUB","AG_BIOMASS_TREE","AG_BIOMASS_OTHER"
+            udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
+                                   as.numeric(),  unit.ready, "kg/m^2")#       "AG_BIOMASS_CROP","AG_BIOMASS_SHRUB","AG_BIOMASS_TREE","AG_BIOMASS_OTHER"
           
         } else if (type == "*SOIL") {
           val <- Gdf %>%
@@ -132,11 +135,13 @@ Read.IC.info.BADM <-function(lat, long){
           
         } else if (type == "*_LIT_BIOMASS") {
           litterIni <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1],  unit.ready, "kg/m^2")
+            udunits2::ud.convert(Gdf$DATAVALUE[1] %>%
+                                   as.numeric(),  unit.ready, "kg/m^2")
           
         } else if (type == "*_ROOT_BIOMASS") {
           Rootini <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1],  unit.ready, "kg/m^2")
+            udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
+                                   as.numeric(),  unit.ready, "kg/m^2")
           
         }
         return(
@@ -169,15 +174,16 @@ entries <- entries[-which(ind),]
 #' @param siteid site id as a string
 #' @param outdir outputdir which you want to store the IC netcdf file
 #'
-#' @return a string of the address where the IC file is stored
+#' @return a dataframe with file, host, mimetype, formatname, startdate, enddate and dbfile.name columns
 #' @export
 #'
-netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
+netcdf.writer.BADM <- function(lat, long, siteid, outdir ){
   #--
   input <- list()
   dims <- list(lat = lat ,
                lon = long,
                time = 1)
+  
 
   #Reading in the BADM data
   entries <- Read.IC.info.BADM (lat, long)
@@ -187,14 +193,18 @@ netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
   SIn <- entries$SoilIni[!is.na(entries$SoilIni)]
   
   
-  variables <- list(
-    SoilMoistFrac = 1,
-    SWE = 0
-  )
+  variables <- list(SoilMoistFrac = 1,
+                    SWE = 0)
   
-  if (length(PWI)>0 ) variables <- c(variables, wood_carbon_content = sample(PWI, 1, replace = T))
-  if (length(LIn)>0 ) variables <- c(variables, litter_carbon_content = sample(LIn, 1, replace = T))
-  if (length(SIn)>0 ) variables <- c(variables, soil_organic_carbon_content = sample(SIn, 1, replace = T))
+  if (length(PWI) > 0)
+    variables <-
+    c(variables, wood_carbon_content = sample(PWI, 1, replace = T))
+  if (length(LIn) > 0)
+    variables <-
+    c(variables, litter_carbon_content = sample(LIn, 1, replace = T))
+  if (length(SIn) > 0)
+    variables <-
+    c(variables, soil_organic_carbon_content = sample(SIn, 1, replace = T))
   
   input$dims <- dims
   input$vals <- variables
@@ -203,51 +213,9 @@ netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
     input = input,
     outdir = outdir,
     siteid = siteid
-  )$file)
+  ))
 }
 
-
-#' IC_Maker
-#'
-#' @param settings PEcAn xml settings
-#' @param ens.n number of ensemble memebers needs to be genrated
-#' @param outdir output directory 
-#' @description This function generates a series of ensemble members for initial condition using the BADM database.
-#' @return xml setting
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' settings <- PEcAn.settings::read.settings("pecan.SDA.10sites.xml")
-#' 
-#'  suppressMessages({
-#'   setting.with.ic <- PEcAn.settings::papply(settings,
-#'                           IC_Maker,
-#'                           ens.n=10,
-#'                           outdir="/fs/data3/hamzed/MultiSite_Project/IC/ICFiles")
-#' })
-#' } 
-IC_Maker <-function(settings, ens.n=5, outdir) {
-  
-
-  ini.pool <- 1:ens.n %>%
-    purrr::map(
-      ~ netcdf.writer.BADAM(
-        settings$run$site$lat %>% as.numeric(),
-        settings$run$site$lon %>% as.numeric(),
-        paste0( settings$run$site$id, .x) %>% as.numeric(),
-        outdir
-      )
-    ) %>%
-    setNames(rep('path', ens.n)) %>%
-    list %>%
-    setNames('poolinitcond')
-  
-  settings$run$inputs <-
-    c(settings$run$inputs, ini.pool)
-  
-  return(settings)
-}
 
 
 #' EPA_ecoregion_finder

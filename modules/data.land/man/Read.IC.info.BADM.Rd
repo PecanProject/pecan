@@ -12,7 +12,7 @@ Read.IC.info.BADM(lat, long)
 \item{long}{numeric longitude}
 }
 \value{
-a dataframe with 8 columns of Site, Variable, Date, Organ, PlantWIni (Initial plant biomass, type of biomass can be found in the Variable and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
+a dataframe with 8 columns of Site, Variable, Date, Organ, AGB (Initial plant biomass, type of biomass can be found in the Variable and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
 }
 \description{
 This function returns a dataframe of plant biomass, root and soil carbon for a set of lat and long coordinates.
