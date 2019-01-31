@@ -231,6 +231,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         new.params <- new.params #this needs to !=NULL because of t=1?
       }
     }
+    if(length(FORECAST) < t){
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
     outconfig <- write.ensemble.configs(defaults = settings$pfts, 
                                         ensemble.samples = ensemble.samples, 
@@ -256,41 +257,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                          stop.time = obs.times[t], 
                                                          settings = settings, 
                                                          var.names = var.names, 
-                                                         params = new.params[[i]]
-                                                         )
-                            )
+                                                         params = new.params[[i]]))
 
       # states will be in X, but we also want to carry some deterministic relationships to write_restart
       # these will be stored in params
       X[[i]]      <- X_tmp[[i]]$X
       if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
-      
-      run.id <- outconfig$runs$id
-      ensemble.id <- outconfig$ensemble.id
-      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
-      #-------------------------------------------- RUN
-      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
-      #------------------------------------------- Reading the output
-      X_tmp <- vector("list", 2) 
-      X <- list()
-      for (i in seq_len(nens)) {
-        
-        X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
-                                                           runid = run.id[i], 
-                                                           stop.time = obs.times[t], 
-                                                           settings = settings, 
-                                                           var.names = var.names, 
-                                                           params = new.params[[i]]
-        )
-        )
-        # states will be in X, but we also want to carry some deterministic relationships to write_restart
-        # these will be stored in params
-        X[[i]]      <- X_tmp[[i]]$X
-        if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
-        
-      }
+    }
       X <- do.call(rbind, X)
       FORECAST[[t]] <- X
+      
     }else{
       X <- FORECAST[[t]]
       print('Using FORECAST[[t]] from sda.output.Rdata')

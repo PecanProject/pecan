@@ -62,16 +62,7 @@ load_nimble <- function(){
     X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
     
     #observation operator
-<<<<<<< HEAD
-    y_star[1:YN] <- y_star_create(X[1:YN])
-    
-    ## Analysis
-    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) 
-    
-    #don't flag y.censored as data, y.censored in inits
-    #remove y.censored samplers and only assign univariate samplers on NAs
-    
-=======
+
     if(direct_TRUE){
       y_star[X_direct_start:X_direct_end] <- y_star_create(X[X_direct_start:X_direct_end])
     } else{
@@ -92,7 +83,6 @@ load_nimble <- function(){
     
     #likelihood
     y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) 
->>>>>>> fe2aa52... Changing to just alr instead of y star fcomp to be more transparent about what's happening to composition observations
     for(i in 1:YN){
       y.ind[i] ~ dinterval(y.censored[i], 0)
     }
