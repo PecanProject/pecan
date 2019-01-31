@@ -9,7 +9,7 @@
 #' This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-regions. 
 #' If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 #' All the variables are also converted to kg/m^2. 
-#' @return a dataframe with 8 columns of Site, Variable, Date, Organ, PlantWIni (Initial plant biomass, type of biomass can be found in the Variable and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
+#' @return a dataframe with 8 columns of Site, Variable, Date, Organ, AGB (Initial plant biomass, type of biomass can be found in the Variable and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
 #'
 #' @export
 #' @examples
@@ -21,10 +21,10 @@ Read.IC.info.BADM <-function(lat, long){
   #Reading in the DB
   #
   U.S.SB <-
-    readRDS(system.file("data","BADM.rds", package = "PEcAn.data.land"))
+    read.csv(system.file("data","BADM.csv", package = "PEcAn.data.land"))
 
   
-  Regions <- L1_L2_finder(lat, long)
+  Regions <- EPA_ecoregion_finder(lat, long)
   Code_Level <- Regions$L2
   
   # Let's find the biomass/.soil and litter
@@ -145,7 +145,7 @@ Read.IC.info.BADM <-function(lat, long){
             Var = Gdf$VARIABLE[1],
             Date = Date.in,
             Organ = Oregan.in,
-            PlantWIni = PlantWoodIni,
+            AGB = PlantWoodIni,
             SoilIni = SoilIni,
             LitterIni = litterIni,
             RootIni = Rootini
@@ -182,7 +182,7 @@ netcdf.writer.BADAM <- function(lat, long, siteid, outdir ){
   #Reading in the BADM data
   entries <- Read.IC.info.BADM (lat, long)
   
-  PWI <- entries$PlantWIni[!is.na(entries$PlantWIni)]
+  PWI <- entries$AGB[!is.na(entries$AGB)]
   LIn <- entries$LitterIni[!is.na(entries$LitterIni)]
   SIn <- entries$SoilIni[!is.na(entries$SoilIni)]
   
@@ -250,7 +250,7 @@ IC_Maker <-function(settings, ens.n=5, outdir) {
 }
 
 
-#' L1_L2_finder
+#' EPA_ecoregion_finder
 #'
 #' @param Lat numeric latitude
 #' @param Lon numeric longitude
@@ -261,7 +261,7 @@ IC_Maker <-function(settings, ens.n=5, outdir) {
 #' @return a dataframe with codes corresponding to level1 and level2 codes as two columns
 #' @export
 #'
-L1_L2_finder <- function(Lat, Lon){
+EPA_ecoregion_finder <- function(Lat, Lon){
   #lat long to spatial point
   U.S.SB.sp <-
     data.frame(Lati = Lat %>% as.numeric(),
