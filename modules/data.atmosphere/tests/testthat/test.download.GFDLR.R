@@ -1,21 +1,33 @@
 context("Checking GFDL download")
 
-tmpdir = tempfile(pattern="GFDLtest")
-dir.create(tmpdir)
+tmpdir <- tempfile(pattern = "GFDLtest")
+dir.create(tmpdir, showWarnings = FALSE)
 teardown(unlink(tmpdir, recursive = TRUE))
+
+test_url <- paste0("http://nomads.gfdl.noaa.gov:9192/opendap/",
+                   "CMIP5/output1/NOAA-GFDL/GFDL-CM3/rcp45/3hr/",
+                   "atmos/3hr/r1i1p1/v20110601/tas/",
+                   "tas_3hr_GFDL-CM3_rcp45_r1i1p1_2006010100-2010123123.nc")
+
+test_nc <- tryCatch(ncdf4::nc_open(test_url), error = function(e) {
+  skip("Skipping test because unable to reach NOAA GFDL download server.")
+})
 
 test_that("download works and returns a valid CF file", {
   # Download is too slow for Travis -- please run locally before committing!
   skip_on_travis()
 
+
   PEcAn.logger::logger.setLevel("WARN")
 
-  result <- download.GFDL(outfolder = tmpdir,
-                             start_date = "2007-01-01",
-                             end_date = "2007-12-31",
-                             site_id = 753,
-                             lat.in = 40,
-                             lon.in = -88)
+  result <- download.GFDL(
+    outfolder = tmpdir,
+    start_date = "2007-01-01",
+    end_date = "2007-12-31",
+    site_id = 753,
+    lat.in = 40,
+    lon.in = -88
+  )
   cf <- ncdf4::nc_open(result$file)
   teardown(ncdf4::nc_close(cf))
 

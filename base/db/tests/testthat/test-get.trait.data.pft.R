@@ -1,8 +1,12 @@
-
 context("get.trait.data.pft")
 
-con <- db.open(
-  params = list(user = "bety", password = "bety", host = "localhost"))
+con <- tryCatch(db.open(params = list(
+  user = "bety",
+  password = "bety",
+  host = "localhost"
+)), error = function(e) {
+  skip("Skipping tests because unable to establish database connection.")
+})
 
 dbdir <- file.path(tempdir(), "dbfiles")
 outdir <- file.path(tempdir(), "outfiles")
