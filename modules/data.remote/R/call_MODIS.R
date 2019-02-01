@@ -1,31 +1,32 @@
-#' Get MODIS data by date and location
-#' 
-#' @name call_MODIS
-#' @title call_MODIS
-#' @export
-#' @param outfolder where the output file will be stored
-#' @param fname  name of netcdf file to output
-#' @param start_date  string value for beginning of date range for download in unambiguous date format (YYYYJJJ)
-#' @param end_date    string value for end of date range for download in unambiguous date format (YYYYJJJ)
-#' @param lat    Latitude of the pixel
-#' @param lon    Longitude of the pixel
-#' @param size   kmAboveBelow and kmLeftRight distance in km to be included
-#' @param product string value for MODIS product number
-#' @param band   string value for which measurement to extract
-#' @param band_qc string value for which quality control band, or use "NA" if you do not know or do not need QC information (optional)
-#' @param band_sd string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)
-#' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
-#' 
-#' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
-#' 
-#' @examples
-#' \dontrun{
-#' test_modistools <- call_MODIS(product = "MCD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "FparLai_QC",band_sd = "LaiStdDev_500m", package_method = "MODISTools")
-#' test_reticulate <- call_MODIS(product = "MCD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "FparLai_QC",band_sd = "LaiStdDev_500m", package_method = "reticulate")
-#' }
-#' 
-
-
+##' Get MODIS data by date and location
+##' 
+##' @name call_MODIS
+##' @title call_MODIS
+##' @export
+##' @param outfolder where the output file will be stored
+##' @param fname  name of netcdf file to output
+##' @param start_date  string value for beginning of date range for download in unambiguous date format (YYYYJJJ)
+##' @param end_date    string value for end of date range for download in unambiguous date format (YYYYJJJ)
+##' @param lat    Latitude of the pixel
+##' @param lon    Longitude of the pixel
+##' @param size   kmAboveBelow and kmLeftRight distance in km to be included
+##' @param product string value for MODIS product number
+##' @param band   string value for which measurement to extract
+##' @param band_qc string value for which quality control band, or use "NA" if you do not know or do not need QC information (optional)
+##' @param band_sd string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)
+##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
+##' 
+##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
+##' 
+##' @examples
+##' \dontrun{
+##' test_modistools <- call_MODIS(product = "MCD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "FparLai_QC",band_sd = "LaiStdDev_500m", package_method = "MODISTools")
+##' plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
+##' test_reticulate <- call_MODIS(product = "MCD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "FparLai_QC",band_sd = "LaiStdDev_500m", package_method = "reticulate")
+##' }
+##' 
+##' @author Bailey Morrison
+##'  
 call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start_date, end_date, lat, lon, size = 0, product = "MCD15A2H", band = "Lai_500m", band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools") {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.

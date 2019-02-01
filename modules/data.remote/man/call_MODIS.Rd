@@ -34,7 +34,7 @@ call_MODIS(outfolder = ".", fname = "m_data.nc", start_date, end_date,
 
 \item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
 
-depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4}
+depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json}
 }
 \description{
 Get MODIS data by date and location
@@ -42,7 +42,11 @@ Get MODIS data by date and location
 \examples{
 \dontrun{
 test_modistools <- call_MODIS(product = "MCD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "FparLai_QC",band_sd = "LaiStdDev_500m", package_method = "MODISTools")
+plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
 test_reticulate <- call_MODIS(product = "MCD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "FparLai_QC",band_sd = "LaiStdDev_500m", package_method = "reticulate")
 }
 
+}
+\author{
+Bailey Morrison
 }
