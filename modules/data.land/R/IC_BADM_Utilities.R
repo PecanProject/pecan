@@ -9,7 +9,7 @@
 #' This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-regions. 
 #' If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 #' All the variables are also converted to kg/m^2. 
-#' @return a dataframe with 8 columns of Site, Variable, Date, Organ, AGB (Initial plant biomass, type of biomass can be found in the Variable and Organ), SoilIni (which shows the initial soil C), LitterIni, RootIni.
+#' @return a dataframe with 8 columns of Site, Variable, Date, Organ, AGB, soil_organic_carbon_content, litter_carbon_content. Variable in the return objext refers to the what this value was called inside BADM database.
 #'
 #' @export
 #' @examples
@@ -122,7 +122,7 @@ Read.IC.info.BADM <-function(lat, long){
           
           PlantWoodIni <-
             udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
-                                   as.numeric(),  unit.ready, "kg/m^2")#       "AG_BIOMASS_CROP","AG_BIOMASS_SHRUB","AG_BIOMASS_TREE","AG_BIOMASS_OTHER"
+                                   as.numeric(),  unit.ready, "kg/m^2")#"AG_BIOMASS_CROP","AG_BIOMASS_SHRUB","AG_BIOMASS_TREE","AG_BIOMASS_OTHER"
           
         } else if (type == "*SOIL") {
           val <- Gdf %>%
@@ -151,9 +151,8 @@ Read.IC.info.BADM <-function(lat, long){
             Date = Date.in,
             Organ = Oregan.in,
             AGB = PlantWoodIni,
-            SoilIni = SoilIni,
-            LitterIni = litterIni,
-            RootIni = Rootini
+            soil_organic_carbon_content = SoilIni,
+            litter_carbon_content = litterIni
           )
         )
     })
@@ -189,8 +188,8 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir ){
   entries <- Read.IC.info.BADM (lat, long)
   
   PWI <- entries$AGB[!is.na(entries$AGB)]
-  LIn <- entries$LitterIni[!is.na(entries$LitterIni)]
-  SIn <- entries$SoilIni[!is.na(entries$SoilIni)]
+  LIn <- entries$litter_carbon_content[!is.na(entries$litter_carbon_content)]
+  SIn <- entries$soil_organic_carbon_content[!is.na(entries$soil_organic_carbon_content)]
   
   
   variables <- list(SoilMoistFrac = 1,
