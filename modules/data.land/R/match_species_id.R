@@ -23,6 +23,7 @@
 #' }
 #' @author Alexey Shiklomanov <ashiklom@bu.edu>, Istem Fer
 #' @examples
+#' \dontrun{
 #' bety <- dplyr::src_postgres(dbname = 'bety',
 #'                        user = 'bety',
 #'                        password = 'bety',
@@ -32,6 +33,7 @@
 #' match_species_id(input_codes = input_codes,
 #'                  format_name = format_name,
 #'                  bety = bety)
+#' }
 #'
 #' @importFrom magrittr %>%
 #' @export
