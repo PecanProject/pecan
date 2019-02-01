@@ -13,10 +13,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - `PEcAn.utils`
   - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
 - Add template for documentation issues and add button to edit book.
+- Conditionally skip unit tests for downloading raw met data or querying the database when the required remote connection is not available.
 
 ### Added
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
-- Added simple container to show all containers that are availble (http://localhost:8000/monitor/), this will also take care of registering the models with the BETY database.
+- Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
+- Added unit tests for `met2model.<MODEL>` functions for most models.
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
