@@ -7,6 +7,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Fixes
+- Fixed issue that prevented modellauncher from working properly #2262
+
 ### Changed
 - Reverting back from PR #2137 to fix issues with MAAT wrappers.
 - Moved docker files for models into model specific folder, for example Dockerfile for sipnet now is in models/sipnet/Dockerfile.

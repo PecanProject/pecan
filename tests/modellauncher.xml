@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+  <database>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>postgres</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>FALSE</write>
+    </bety>
+    <dbfiles>/data/dbfiles/dbfiles</dbfiles>
+  </database>
+
+  <host>
+    <name>localhost</name>
+    <modellauncher>
+      <binary>/usr/local/bin/modellauncher</binary>
+      <qsub.extra>-pe omp 20</qsub.extra>
+    </modellauncher>
+  </host>
+
+  <pfts>
+    <pft>
+      <name>temperate.coniferous</name> 
+    </pft>
+  </pfts>
+
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>AUTO</update>
+  </meta.analysis>
+
+  <ensemble>
+    <size>200</size>
+    <variable>NPP</variable>
+  </ensemble>
+
+  <model>
+    <binary>/usr/local/bin/sipnet.runk</binary>
+    <type>SIPNET</type>
+  </model>
+
+  <run>
+    <site>
+      <id>772</id>
+    </site>
+    <inputs>
+      <met>/data/sites/niwot/niwot.clim</met>
+    </inputs>
+    <start.date>2002-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+  </run>
+</pecan>

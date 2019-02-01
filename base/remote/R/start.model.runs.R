@@ -87,8 +87,11 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       # set up launcher script if we use modellauncher
       if (is.null(firstrun)) {
         firstrun <- run
-        setup_modellauncher(run = run, rundir = settings$rundir, host_rundir = settings$host$rundir,
-                                       mpirun = settings$host$modellauncher$mpirun, binary = settings$host$modellauncher$binary)
+        jobfile <- setup_modellauncher(run = run,
+                                       rundir = settings$rundir,
+                                       host_rundir = settings$host$rundir,
+                                       mpirun = settings$host$modellauncher$mpirun,
+                                       binary = settings$host$modellauncher$binary)
       }
       writeLines(c(file.path(settings$host$rundir, run_id_string)), con = jobfile)
       pbi <- pbi + 1
