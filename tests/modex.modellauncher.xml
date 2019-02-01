@@ -22,7 +22,6 @@
     <qstat>qstat @JOBID@ || echo DONE</qstat>
     <modellauncher>
       <binary>/data/software/modellauncher</binary>
-      <!--<qsub.extra>-pe omp 20</qsub.extra>-->
       <qsub.extra>-l ncpus=10</qsub.extra>
     </modellauncher>
   </host>
