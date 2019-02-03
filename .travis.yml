@@ -143,7 +143,7 @@ script:
   - NCPUS=2 make -j1
   - echo 'Testing PEcAn packages'
   - make test
-  - make check
+  - REBUILD_DOCS=FALSE make check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 
