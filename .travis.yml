@@ -135,17 +135,26 @@ before_script:
 
 script:
   - set -e
-  - echo 'Installing PEcAn packages'
   - Rscript scripts/generate_makefile_deps.R
+  - echo 'Installing PEcAn packages' && echo -en 'travis_fold:start:install_pkgs\\r'
   # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
   # but many dependency compilations seem not parallel-safe.
   # More debugging needed.
   - NCPUS=2 make -j1
-  - echo 'Testing PEcAn packages'
+  - echo -en 'travis_fold:end:install_pkgs\\r'
+  #
+  - echo 'Testing PEcAn packages' && echo -en 'travis_fold:start:test_pkgs\\r'
   - make test
+  - echo -en 'travis_fold:end:test_pkgs\\r'
+  #
+  - echo 'Checking PEcAn packages' && echo -en 'travis_fold:start:check_pkgs\\r'
   - REBUILD_DOCS=FALSE make check
-  - echo 'Testing Integration'
+  - echo -en 'travis_fold:end:check_pkgs\\r'
+  #
+  - echo 'Testing Integration' && echo -en 'travis_fold:start:integration_test\\r'
   - ./tests/integration.sh travis
+  - echo -en 'travis_fold:end:integration_test\\r'
+  #
   - if [[ `git status -s` ]]; then 
       echo "These files were changed by the build process:";
       git status -s;
