@@ -6,7 +6,7 @@
 
 language: r
 r:
-  - 3.4
+  - 3.5
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
@@ -31,7 +31,6 @@ cache:
 addons:
   apt:
     sources:
-      - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
       - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
       - sourceline: 'ppa:opencpu/imagemagick'
