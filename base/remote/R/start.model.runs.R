@@ -203,19 +203,27 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
         # Write finish time to database
         if (is_modellauncher) {
-          for (run in run_list) {
-            stamp_finished(con = dbcon, run = run)
+          for (x in run_list) {
+            stamp_finished(con = dbcon, run = x)
           }
         } else {
           stamp_finished(con = dbcon, run = run)
         }
 
+        # move progress bar
         if (!is_modellauncher) {
           pbi <- pbi + 1
         }
         setTxtProgressBar(pb, pbi)
 
-        jobids[run] <- NULL
+        # remove job
+        if (is_modellauncher) {
+          for (x in run_list) {
+            jobids[x] <- NULL
+          }          
+        } else {
+          jobids[run] <- NULL
+        }
       } # End job finished
     }  # end loop over runs
   }  # end while loop checking runs
