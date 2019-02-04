@@ -5,7 +5,11 @@ con <- tryCatch(db.open(params = list(
   password = "bety",
   host = "localhost"
 )), error = function(e) {
-  skip("Skipping tests because unable to establish database connection.")
+  PEcAn.logger::logger.severe(paste0(
+    "Failed to open local database connection with the following error: `",
+    conditionMessage(e),
+    "`. Database connection required to run these tests."
+  ))
 })
 
 dbdir <- file.path(tempdir(), "dbfiles")
