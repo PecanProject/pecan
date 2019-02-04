@@ -198,7 +198,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                         ensemble.id=ensemble.id)
       
     }else{
-     if(restart == TRUE & length(FORECAST) < t){
+     if(restart == TRUE & length(FORECAST) < t){ #Here when t==1 so spin up has been run but the forcast for t has not. 
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
         inputs.split <- list()
         if(!no_split){
@@ -225,13 +225,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                             inputs = inputs.split, 
                             RENAME = TRUE,
                             ensemble.id=ensemble.id)
-      }else{
+      }else{ #
         restart.arg <- NULL
         new.state <- NULL
         new.params <- new.params #this needs to !=NULL because of t=1?
       }
     }
-    if(length(FORECAST) < t){
+    
+    if(length(FORECAST) < t){ #FORECAST for time t needs to run
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
     outconfig <- write.ensemble.configs(defaults = settings$pfts, 
                                         ensemble.samples = ensemble.samples, 
@@ -267,7 +268,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       X <- do.call(rbind, X)
       FORECAST[[t]] <- X
       
-    }else{
+    }else{ #FORECAST for time t has ran -- moving to ANALYSIS
       X <- FORECAST[[t]]
       print('Using FORECAST[[t]] from sda.output.Rdata')
       load(file.path(settings$outdir,"SDA", "outconfig.Rdata"))
