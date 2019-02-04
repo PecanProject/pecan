@@ -2,6 +2,9 @@
 
 # generate the dependencies of the PEcAn packages on each other.
 
+#checkthis <- c('Depends', 'Imports', 'Remotes')
+checkthis <- c('Depends', 'Imports', 'Remotes', 'Suggests')
+
 files <-
   c(
     list.files(
@@ -30,7 +33,7 @@ depends <- c()
 d <- purrr::walk(files,
                  function(x) {
                    y <- desc::desc_get_deps(x)
-                   y <- y[y$type %in% c('Depends', 'Imports', 'Remotes'), 'package']
+                   y <- y[y$type %in% checkthis, 'package']
                    y <- y[grepl('^PEcAn.', y)]
                    p <- desc::desc_get_field('Package', file=x)
                    f <- gsub('/DESCRIPTION$', '', x)
