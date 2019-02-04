@@ -144,6 +144,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   if (restart){
     if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
     load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    if(length(FORECAST)==length(ANALYSIS)) t = t + 1
     #--- Updating the nt and etc
     if(!dir.exists(file.path(settings$outdir,"SDA",assimyears[t]))) dir.create(file.path(settings$outdir,"SDA",assimyears[t]))
     # finding/moving files to it's end year dir
@@ -152,6 +153,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
               file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda))
     )
+    if (processvar) {
+      
+      if(length(enkf.params) > 1){
+        aqq<-enkf.params[[t-1]]$aqq
+        bqq<-enkf.params[[t-1]]$bqq
+        X.new<-enkf.params[[t-1]]$X.new
+      }
+      
+    }
+  }else{
+    t = 1
   }
   
   ###------------------------------------------------------------------------------------------------###
@@ -240,6 +252,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                         model = settings$model$type, 
                                         write.to.db = settings$database$bety$write,
                                         restart = restart.arg)
+    save(outconfig, file = file.path(settings$outdir,"SDA", "outconfig.Rdata"))
     
     
     run.id <- outconfig$runs$id
@@ -287,8 +300,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     }else{
       recompile = FALSE
     }
-    X <- do.call(rbind, X)
-    FORECAST[[t]] <- X
+    save(t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id, ensemble.id, ensemble.samples, inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
     ###-------------------------------------------------------------------###---- 
