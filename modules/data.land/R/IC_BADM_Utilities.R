@@ -9,7 +9,7 @@
 #' This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-regions. 
 #' If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 #' All the variables are also converted to kg/m^2. 
-#' @return a dataframe with 8 columns of Site, Variable, Date, Organ, AGB, soil_organic_carbon_content, litter_carbon_content. Variable in the return objext refers to the what this value was called inside BADM database.
+#' @return a dataframe with 7 columns of Site, Variable, Date, Organ, AGB, soil_organic_carbon_content, litter_carbon_content. Variable in the return objext refers to the what this value was called inside BADM database.
 #'
 #' @export
 #' @examples
@@ -17,7 +17,7 @@
 #'   badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
 #'}
 Read.IC.info.BADM <-function(lat, long){
-
+  cov.factor <-1
   #Reading in the DB
   #
   U.S.SB <-
@@ -95,7 +95,14 @@ Read.IC.info.BADM <-function(lat, long){
         #----------------- Unit conversion
         unit.in <- Gdf %>%
           dplyr::filter(VARIABLE %>% grepl("UNIT", .)) %>%
-          dplyr::pull(DATAVALUE)
+          dplyr::pull(DATAVALUE) %>% 
+          as.character()
+        
+        
+        #Converting DM to C content
+        #Variations and determinants of carbon content in plants:a global synthesis - https://www.biogeosciences.net/15/693/2018/bg-15-693-2018.pdf
+        if (length(unit.in) > 0)
+        if (unit.in =="kgDM m-2") cov.factor <- cov.factor *0.48
         
         unit.ready <- ifelse(unit.in == "gC m-2",
                              "g/m^2",
@@ -109,6 +116,7 @@ Read.IC.info.BADM <-function(lat, long){
           dplyr::filter(VARIABLE %>% grepl("DATE", .)) %>%
           dplyr::pull(DATAVALUE) %>%
           as.Date()
+        
         if (length(Date.in) == 0)
           Date.in <- NA
         #----------------collect
@@ -122,7 +130,7 @@ Read.IC.info.BADM <-function(lat, long){
           
           PlantWoodIni <-
             udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
-                                   as.numeric(),  unit.ready, "kg/m^2")#"AG_BIOMASS_CROP","AG_BIOMASS_SHRUB","AG_BIOMASS_TREE","AG_BIOMASS_OTHER"
+                                   as.numeric()*cov.factor,  unit.ready, "kg/m^2")#"AG_BIOMASS_CROP","AG_BIOMASS_SHRUB","AG_BIOMASS_TREE","AG_BIOMASS_OTHER"
           
         } else if (type == "*SOIL") {
           val <- Gdf %>%
@@ -131,17 +139,17 @@ Read.IC.info.BADM <-function(lat, long){
             as.numeric()
           
           if (length(val) > 0)
-            SoilIni <- udunits2::ud.convert(val,  "g/m^2", "kg/m^2")
+            SoilIni <- udunits2::ud.convert(val*cov.factor,  "g/m^2", "kg/m^2")
           
         } else if (type == "*_LIT_BIOMASS") {
           litterIni <-
             udunits2::ud.convert(Gdf$DATAVALUE[1] %>%
-                                   as.numeric(),  unit.ready, "kg/m^2")
+                                   as.numeric()*cov.factor,  unit.ready, "kg/m^2")
           
         } else if (type == "*_ROOT_BIOMASS") {
           Rootini <-
             udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
-                                   as.numeric(),  unit.ready, "kg/m^2")
+                                   as.numeric()*cov.factor,  unit.ready, "kg/m^2")
           
         }
         return(
@@ -156,8 +164,10 @@ Read.IC.info.BADM <-function(lat, long){
           )
         )
     })
+  
+
  #cleaning
-ind <- apply(entries[,5:8], 1, function(x) all(is.na(x)))
+ind <- apply(entries[,5:7], 1, function(x) all(is.na(x)))
 entries <- entries[-which(ind),]
 
 
@@ -176,16 +186,17 @@ entries <- entries[-which(ind),]
 #' @return a dataframe with file, host, mimetype, formatname, startdate, enddate and dbfile.name columns
 #' @export
 #'
-netcdf.writer.BADM <- function(lat, long, siteid, outdir ){
-  #--
+netcdf.writer.BADM <- function(lat, long, siteid, outdir){
+ 
+  
+  #Reading in the BADM data
+  entries <- Read.IC.info.BADM (lat, long)
+  
+   #--
   input <- list()
   dims <- list(lat = lat ,
                lon = long,
                time = 1)
-  
-
-  #Reading in the BADM data
-  entries <- Read.IC.info.BADM (lat, long)
   
   PWI <- entries$AGB[!is.na(entries$AGB)]
   LIn <- entries$litter_carbon_content[!is.na(entries$litter_carbon_content)]
