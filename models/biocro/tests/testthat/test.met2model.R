@@ -5,7 +5,10 @@ setup(dir.create(outfolder, showWarnings = FALSE))
 teardown(unlink(outfolder, recursive = TRUE))
 
 test_that("Met conversion runs without error", {
-  skip("BIOCRO met2model is currently broken!")
+  skip(paste0(
+    "BIOCRO met2model is currently broken. ",
+    "See issue #2274 (https://github.com/PecanProject/pecan/issues/2274)."
+  ))
   nc_path <- system.file("test-data", "CRUNCEP.2000.nc",
                          package = "PEcAn.utils")
   in.path <- dirname(nc_path)
