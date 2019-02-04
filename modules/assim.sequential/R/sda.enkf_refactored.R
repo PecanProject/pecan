@@ -27,7 +27,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                   BiasPlot=F,
                                   plot.title=NULL,
                                   debug=FALSE),...) {
-
+  
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -43,13 +43,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   processvar <- settings$state.data.assimilation$process.variance
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
+  
+  input.vars <- sapply(settings$state.data.assimilation$inputs, '[[', "variable.name")
+  operators <- sapply(settings$state.data.assimilation$inputs, '[[', "operator")
+  
   # Site location first col is the long second is the lat and row names are the site ids
   site.ids <- settings$run$site$id
-    
+  
   site.locs <- data.frame(Lon=settings$run$site$lon %>% as.numeric,
                           Lat=settings$run$site$lat %>% as.numeric) %>%
     `colnames<-`(c("Lon","Lat")) %>%
     `rownames<-`(site.ids)
+  
   # filtering obs data based on years specifited in setting > state.data.assimilation
   assimyears <- lubridate::year(settings$state.data.assimilation$start.date) : lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
   obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
@@ -76,10 +81,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###-------------------------------------------------------------------###
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
-
+  
   if(!no_split){ 
     for(i in seq_along(settings$run$inputs$met$path)){
-
+      
       ### model specific split inputs
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
@@ -93,9 +98,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###----  
-  obs.times <- names(obs.mean)
+  obs.times <- as.Date(names(obs.mean),format = "%Y/%m/%d")
   obs.times.POSIX <- lubridate::ymd_hms(obs.times)
   
+  ### TO DO: Need to find a way to deal with years before 1000 for paleon ### need a leading zero
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
       if (is.na(lubridate::ymd(obs.times[i]))) {
@@ -104,7 +110,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         ### Data does not have time associated with dates 
         ### Adding 12:59:59PM assuming next time step starts one second later
         PEcAn.logger::logger.warn("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
-        obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
+        obs.times.POSIX[i] <- strptime(paste(obs.times[i], "23:59:59"),format="%Y-%m-%d %H:%M:%S",tz='UTC')#lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
       }
     }
   }
@@ -137,7 +143,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     new.params[[i]] <- lapply(ensemble.samples, function(x, n) {
       x[i, ] }, n = i)
   } 
-
+  
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###----   
@@ -169,7 +175,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
-  for(t in seq_len(nt)){
+  for(t in t:nt){
     # do we have obs for this time - what year is it ?
     obs <- which(!is.na(obs.mean[[t]]))
     obs.year <- lubridate::year(names(obs.mean)[t])
@@ -178,10 +184,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------------###-----  
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
     # Why t>1 is different ? Because the ensemble.write.config would be different. It has the restart argument and it needs it's own setup.
+    # Also, assumes that sda has gotten through at least one analysis step
     # plus in t>1 we split the met data for the models that they need that.
     if (t>1){
-      #removing old simulations
-      unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
+      #removing old simulations #why? don't we need them to restart?
+      #unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- list()
       if(!no_split){
@@ -193,12 +200,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                         stop.time = obs.times[t],
                                                         inputs = inputs$samples[[i]])) 
           
-
+          
         } 
       }else{
         inputs.split<-inputs
       }
       #---------------- setting up the restart argument
+      # TO DO Need it to not rerun if gets in here and forcast is > then analysis
       restart.arg<-list(runid = run.id, 
                         start.time = strptime(obs.times[t-1],format="%Y-%m-%d %H:%M:%S"),
                         stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
@@ -210,7 +218,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                         ensemble.id=ensemble.id)
       
     }else{
-     if(restart == TRUE & length(FORECAST) < t){ #Here when t==1 so spin up has been run but the forcast for t has not. 
+      if(restart == TRUE & length(FORECAST) < t){
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
         inputs.split <- list()
         if(!no_split){
@@ -237,51 +245,53 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                             inputs = inputs.split, 
                             RENAME = TRUE,
                             ensemble.id=ensemble.id)
-      }else{ #
+      }else{
         restart.arg <- NULL
         new.state <- NULL
         new.params <- new.params #this needs to !=NULL because of t=1?
       }
-    }
-    
-    if(length(FORECAST) < t){ #FORECAST for time t needs to run
-    #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
-    outconfig <- write.ensemble.configs(defaults = settings$pfts, 
-                                        ensemble.samples = ensemble.samples, 
-                                        settings = settings,
-                                        model = settings$model$type, 
-                                        write.to.db = settings$database$bety$write,
-                                        restart = restart.arg)
-    save(outconfig, file = file.path(settings$outdir,"SDA", "outconfig.Rdata"))
-    
-    
-    run.id <- outconfig$runs$id
-    ensemble.id <- outconfig$ensemble.id
-    if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
-    #-------------------------------------------- RUN
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
-    #------------------------------------------- Reading the output
-    X_tmp <- vector("list", 2) 
-    X <- list()
-    if (control$debug) browser()
-    for (i in seq_len(nens)) {
       
-      X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
-                                                         runid = run.id[i], 
-                                                         stop.time = obs.times[t], 
-                                                         settings = settings, 
-                                                         var.names = var.names, 
-                                                         params = new.params[[i]]))
-
-      # states will be in X, but we also want to carry some deterministic relationships to write_restart
-      # these will be stored in params
-      X[[i]]      <- X_tmp[[i]]$X
-      if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
     }
+    
+    if(length(FORECAST)<t){
+      #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
+      outconfig <- write.ensemble.configs(defaults = settings$pfts, 
+                                          ensemble.samples = ensemble.samples, 
+                                          settings = settings,
+                                          model = settings$model$type, 
+                                          write.to.db = settings$database$bety$write,
+                                          restart = restart.arg)
+      
+      save(outconfig, file = file.path(settings$outdir,"SDA", "outconfig.Rdata"))
+      
+      
+      run.id <- outconfig$runs$id
+      ensemble.id <- outconfig$ensemble.id
+      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+      #-------------------------------------------- RUN
+      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+      #------------------------------------------- Reading the output
+      X_tmp <- vector("list", 2) 
+      X <- list()
+      for (i in seq_len(nens)) {
+        
+        X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
+                                                           runid = run.id[i], 
+                                                           stop.time = obs.times[t], 
+                                                           settings = settings, 
+                                                           var.names = var.names, 
+                                                           params = new.params[[i]]
+        )
+        )
+        # states will be in X, but we also want to carry some deterministic relationships to write_restart
+        # these will be stored in params
+        X[[i]]      <- X_tmp[[i]]$X
+        if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
+        
+      }
       X <- do.call(rbind, X)
       FORECAST[[t]] <- X
-      
-    }else{ #FORECAST for time t has ran -- moving to ANALYSIS
+    }else{
       X <- FORECAST[[t]]
       print('Using FORECAST[[t]] from sda.output.Rdata')
       load(file.path(settings$outdir,"SDA", "outconfig.Rdata"))
@@ -337,7 +347,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       if (control$debug) browser()
       
       # making the mapping matrix
-      H <- Construct_H(choose, Y, X)
+      #TO DO: doesn't work unless it's one to one
+      #H <- Construct_H(choose, Y, X)
       ###-------------------------------------------------------------------###
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
@@ -348,7 +359,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                        Forecast=list(Q=Q, X=X),
                                        Observed=list(R=R, Y=Y),
                                        H=H,
-                                       extraArg=list(aqq=aqq, bqq=bqq, t=t),
+                                       extraArg=list(aqq=aqq, bqq=bqq, t=t, recompile=recompile),
                                        nt=nt,
                                        obs.mean=obs.mean,
                                        obs.cov=obs.cov
@@ -447,13 +458,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     save(site.locs, t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id,
          ensemble.id, ensemble.samples, inputs, Viz.output,  file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
-    post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
+    #post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
   } ### end loop over time
   ###-------------------------------------------------------------------###
   ### time series plots                                                 ###
   ###-------------------------------------------------------------------###----- 
-  #post.alaysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
+  post.analysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
   if(control$TimeseriesPlot) PEcAn.assim.sequential:::post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
   #if(control$TimeseriesPlot) postana.timeser.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
   ###-------------------------------------------------------------------###
