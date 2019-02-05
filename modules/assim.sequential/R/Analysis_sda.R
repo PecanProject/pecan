@@ -28,7 +28,7 @@ Analysis.sda<-function(settings,
                        extraArg,
                        ...
 ){
-
+  
   if (is.null(FUN)) PEcAn.logger::logger.severe('Analysis function needs to be defined !')
   FUN(settings, Forecast, Observed, H, extraArg ,...)
   
@@ -58,7 +58,7 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
   for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
-
+  
   #Forecast inputs 
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
@@ -68,7 +68,7 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   # Enkf---------------------------------------------------
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
   Pf <- cov(X)
-
+  
   
   diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
   # for those elements with zero value
@@ -110,13 +110,15 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000, ...){
+GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=10000, ...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
+  input.vars <- sapply(settings$state.data.assimilation$inputs, '[[', "variable.name")
+  operators <- sapply(settings$state.data.assimilation$inputs, '[[', "operator")
   #Loading nimbles functions
   PEcAn.assim.sequential:::load_nimble()
   #load_nimble()
@@ -124,6 +126,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
   Pf = cov(X) # Cov Forecast - Goes into tobit2space as initial condition but is re-estimated in tobit space
+  
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   #Observed inputs
   R <- solve(Observed$R) #putting solve() here so if not invertible error is before compiling tobit2space
@@ -142,7 +145,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   intervalX <- matrix(NA, ncol(X), 2)
   rownames(intervalX) <- colnames(X)
   outdir     <- settings$modeloutdir
-  #TO DO: Not working for fcomp
+  
   for(i in 1:length(var.names)){
     intervalX[which(startsWith(rownames(intervalX),
                                var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
@@ -160,7 +163,10 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     }
   }
   
-  if(t == 1){
+  recompile <- extraArg$recompile
+  #browser()
+  ###TO DO: needs to recompile if there are new data sources
+  if(t == 1 | recompile){
     #The purpose of this step is to impute data for mu.f 
     #where there are zero values so that 
     #mu.f is in 'tobit space' in the full model
@@ -170,9 +176,9 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     data.tobit2space = list(y.ind = x.ind,
                             y.censored = x.censored,
                             mu_0 = rep(0,length(mu.f)),
-                            lambda_0 = diag(10,length(mu.f)),
+                            lambda_0 = diag(length(mu.f),length(mu.f)+1),
                             nu_0 = 3)#some measure of prior obs
-
+    
     inits.tobit2space <<- list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
     #set.seed(0)
     #ptm <- proc.time()
@@ -226,8 +232,19 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     }
     
   }
-
-  dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr, nburnin=nburnin,  progressBar=TRUE)
+  
+  if(file.exists(file.path(outdir, paste0('dat.tobit2space',t,'.Rdata')))){
+    load(file.path(outdir, paste0('dat.tobit2space',t,'.Rdata')))
+  }else{
+    dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr, nburnin=nburnin,  progressBar=TRUE)
+    save(dat.tobit2space, file = file.path(outdir, paste0('dat.tobit2space',t,'.Rdata')))
+  }
+  
+  pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
+  try(assessParams(dat = dat.tobit2space[1000:4000,], Xt = X))
+  dev.off()
+  
+  ## TO DO Add MCMC Diagnostics, how do we do it for pecan meta-analysis?
   
   ## update parameters
   #dat.tobit2space  <- dat.tobit2space[1000:5000, ]
@@ -236,7 +253,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   iPf   <- grep("pf", colnames(dat.tobit2space))
   Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
   #--- This is where the localization needs to happen - After imputing Pf
-
+  
   iycens <- grep("y.censored",colnames(dat.tobit2space))
   X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
   
@@ -260,12 +277,11 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
   rownames(interval) <- names(obs.mean[[t]])
-  for(i in 1:length(var.names)){
-    interval[which(startsWith(rownames(interval),
-                              var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
-                                                            as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
-                                                          length(which(startsWith(rownames(interval),
-                                                                                  var.names[i]))),2,byrow = TRUE)
+  for(i in 1:length(input.vars)){
+    interval[grep(x=rownames(interval),
+                  pattern=input.vars[i]), ] <- matrix(c(as.numeric(settings$state.data.assimilation$inputs[[i]]$min_value),
+                                                        as.numeric(settings$state.data.assimilation$inputs[[i]]$max_value)),
+                                                      length(grep(x=rownames(interval),pattern=input.vars[i])),2,byrow = TRUE)
   }
   #### These vectors are used to categorize data based on censoring 
   #### from the interval matrix
@@ -291,19 +307,12 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   }
   
   if(any(grep(names(data_available),pattern = 'ALR'))){
-   
+    
     # browser()
     which_fcomp <- grep(names(data_available),pattern = 'ALR')
     X_fcomp_start <- which_fcomp[1]
     X_fcomp_end <- which_fcomp[length(which_fcomp)]
-    X_fcomp_model <- grep(colnames(X),pattern = 'AbvGrndWood')
-    
-    if(FALSE){
-      X_fcomp_idx <- pft_order(X = X,Y = Y,var.names = var.names,input.vars = input.vars)
-      if(length(X_fcomp_idx)!=X_fcomp_idx[length(X_fcomp_idx)]){
-        X_fcomp_idx <- c(X_fcomp_idx,which(is.na(match(1:X_fcomp_idx[length(X_fcomp_idx)],X_fcomp_idx))))
-      }
-    }
+    X_fcomp_model <- grep(colnames(X),pattern = 'AGB.pft')
   
     fcomp_TRUE = TRUE
   }else{
@@ -334,14 +343,14 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     if(X_fcomp_start != constants.tobit$X_fcomp_start) recompile = TRUE
   }
   
-  if(t == 1 | recompile){ #TO DO need to make something that works to pick whether to compile or not
+  if(t == 1 | recompile){ 
     constants.tobit <<- list(
       N = ncol(X),
       YN = length(y.ind),
       X_direct_start = X_direct_start,
       X_direct_end = X_direct_end,
       X_fcomp_start = X_fcomp_start,
-      X_fcomp_end = X_fcomp_end, #TO DO: FIX
+      X_fcomp_end = X_fcomp_end,
       X_fcomp_model_start = X_fcomp_model[1],
       X_fcomp_model_end = X_fcomp_model[length(X_fcomp_model)],
       X_pft2total_start = X_pft2total_start,
@@ -365,57 +374,57 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     
     inits.pred = list(q = diag(length(mu.f))*(length(mu.f)+1), X.mod = as.vector(mu.f),
                       X = rnorm(length(mu.f),mu.f,1),
-                      y_star = rnorm(length(y.censored),0,1)) #
-    
-    model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
-                              constants = constants.tobit, inits = inits.pred,
-                              name = 'base')
-    
-    model_pred$initializeInfo()
-    ## Adding X.mod,q,r as data for building model.
-    conf <- configureMCMC(model_pred, print=TRUE)
-    conf$addMonitors(c("X","q","Q", "y_star","y.censored")) 
-    ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
-    
-    
-    if(FALSE){ ### Need this for when the state variables are on different scales like NPP and AGB
-      x.char <- paste0('X[1:',ncol(X),']')
-      conf$removeSampler(x.char)
-      propCov.means <- c(rep(1,9),1000)#signif(diag(Pf),1)#mean(unlist(lapply(obs.cov,FUN = function(x){diag(x)})))[choose]#c(rep(max(diag(Pf)),ncol(X)))#
-      if(length(propCov.means)!=ncol(X)) propCov.means <- c(propCov.means,rep(1,ncol(X)-length(Y)))
-      conf$addSampler(target =c(x.char),
-                      control <- list(propCov = diag(ncol(X))*propCov.means),
-                      type='RW_block')
-    }
-    
-    ## important!
-    ## this is needed for correct indexing later
-    samplerNumberOffset <<- length(conf$getSamplers())
-    
-    for(i in 1:length(y.ind)) {
-      node <- paste0('y.censored[',i,']')
-      conf$addSampler(node, 'toggle', control=list(type='RW'))
-      ## could instead use slice samplers, or any combination thereof, e.g.:
-      ##conf$addSampler(node, 'toggle', control=list(type='slice'))
-    }
-    
-    conf$printSamplers()
-    
-    ## can monitor y.censored, if you wish, to verify correct behaviour
-    #conf$addMonitors('y.censored')
-    
-    Rmcmc <<- buildMCMC(conf)
-    
-    Cmodel <<- compileNimble(model_pred)
-    Cmcmc <<- compileNimble(Rmcmc, project = model_pred)
-    
-    for(i in 1:length(y.ind)) {
-      ## ironically, here we have to "toggle" the value of y.ind[i]
-      ## this specifies that when y.ind[i] = 1,
-      ## indicator variable is set to 0, which specifies *not* to sample
-     valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
-    }
-    
+                      y_star = rnorm(length(y.censored),0,1))
+
+model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
+                          constants = constants.tobit, inits = inits.pred,
+                          name = 'base')
+
+model_pred$initializeInfo()
+## Adding X.mod,q,r as data for building model.
+conf <- configureMCMC(model_pred, print=TRUE)
+conf$addMonitors(c("X","q","Q", "y_star","y.censored")) 
+## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
+
+
+if(FALSE){ ### Need this for when the state variables are on different scales like NPP and AGB
+  x.char <- paste0('X[1:',ncol(X),']')
+  conf$removeSampler(x.char)
+  propCov.means <- c(rep(1,9),1000)#signif(diag(Pf),1)#mean(unlist(lapply(obs.cov,FUN = function(x){diag(x)})))[choose]#c(rep(max(diag(Pf)),ncol(X)))#
+  if(length(propCov.means)!=ncol(X)) propCov.means <- c(propCov.means,rep(1,ncol(X)-length(Y)))
+  conf$addSampler(target =c(x.char),
+                  control <- list(propCov = diag(ncol(X))*propCov.means),
+                  type='RW_block')
+}
+
+## important!
+## this is needed for correct indexing later
+samplerNumberOffset <<- length(conf$getSamplers())
+
+for(i in 1:length(y.ind)) {
+  node <- paste0('y.censored[',i,']')
+  conf$addSampler(node, 'toggle', control=list(type='RW'))
+  ## could instead use slice samplers, or any combination thereof, e.g.:
+  ##conf$addSampler(node, 'toggle', control=list(type='slice'))
+}
+
+conf$printSamplers()
+
+## can monitor y.censored, if you wish, to verify correct behaviour
+#conf$addMonitors('y.censored')
+
+Rmcmc <<- buildMCMC(conf)
+
+Cmodel <<- compileNimble(model_pred)
+Cmcmc <<- compileNimble(Rmcmc, project = model_pred)
+
+for(i in 1:length(y.ind)) {
+  ## ironically, here we have to "toggle" the value of y.ind[i]
+  ## this specifies that when y.ind[i] = 1,
+  ## indicator variable is set to 0, which specifies *not* to sample
+  valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
+}
+
   }else{
     Cmodel$y.ind <- y.ind
     Cmodel$y.censored <- y.censored
@@ -424,7 +433,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     Cmodel$muf <- mu.f
     Cmodel$pf <- solve(Pf)
     Cmodel$r <- (R) #precision
-
+    
     inits.pred = list(q = diag(length(mu.f)),
                       X.mod = as.vector(mu.f),
                       X = rnorm(ncol(X),100,1),
@@ -439,14 +448,22 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     }
     
   }
-
+  
   dat <- runMCMC(Cmcmc, niter = 50000, nburnin=10000)
   dat_save <- dat[(nrow(dat)-250):nrow(dat),]
   save(dat_save, file = file.path(outdir, paste0('dat',t,'.Rdata')))
-
+  
   ## update parameters
   iq   <- grep("q", colnames(dat))
   iX   <- grep("X[", colnames(dat), fixed = TRUE)
+  
+  pdf(file.path(outdir, paste0('dat',t,'.pdf')))
+  par(mfrow=c(2,2))
+  for(rr){
+    plot(dat[,iX[rr]])
+  }
+  dev.off()
+  
   mu.a <- colMeans(dat[, iX])
   Pa   <- cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
@@ -467,12 +484,12 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     n <- length(mu.f)
   }
   V <- solve(q.bar) * n
-
+  
   if (t<nt){
     aqq[t + 1, , ]   <- V
     bqq[t + 1]       <- n
   }
-
+  
   return(list(mu.f = mu.f,
               Pf = Pf,
               mu.a = mu.a,
@@ -481,7 +498,9 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
               n = n,
               X.new=X.new,
               aqq=aqq,
-              bqq=bqq
+              bqq=bqq,
+              y.censored=y.censored,
+              R=R
   )
   )
 }
