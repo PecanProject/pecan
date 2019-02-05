@@ -40,7 +40,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   host       <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
-  processvar <- settings$state.data.assimilation$process.variance
+  processvar <- as.logical(settings$state.data.assimilation$process.variance)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
   
@@ -115,6 +115,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     }
   }
   obs.times <- obs.times.POSIX
+  obs.times[1] <- strptime('0950-12-31 23:59:59',format="%Y-%m-%d %H:%M:%S",tz="UTC")
+  obs.times[2] <- strptime('0970-12-31 23:59:59',format="%Y-%m-%d %H:%M:%S",tz="UTC")
+  obs.times[3] <- strptime('0990-12-31 23:59:59',format="%Y-%m-%d %H:%M:%S",tz="UTC")
+  
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###-----  
@@ -280,9 +284,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                            stop.time = obs.times[t], 
                                                            settings = settings, 
                                                            var.names = var.names, 
-                                                           params = new.params[[i]]
-        )
-        )
+                                                           params = new.params[[i]]))
         # states will be in X, but we also want to carry some deterministic relationships to write_restart
         # these will be stored in params
         X[[i]]      <- X_tmp[[i]]$X
@@ -299,7 +301,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ensemble.id <- outconfig$ensemble.id
       if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
       
-      if (processvar) {
+      if (processvar && t > 1) {
         aqq<-enkf.params[[t-1]]$aqq
         bqq<-enkf.params[[t-1]]$bqq
       }
