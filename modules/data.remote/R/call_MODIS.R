@@ -4,7 +4,6 @@
 ##' @title call_MODIS
 ##' @export
 ##' @param outfolder where the output file will be stored
-##' @param fname  name of netcdf file to output
 ##' @param start_date  string value for beginning of date range for download in unambiguous date format (YYYYJJJ)
 ##' @param end_date    string value for end of date range for download in unambiguous date format (YYYYJJJ)
 ##' @param lat    Latitude of the pixel
@@ -27,7 +26,7 @@
 ##' 
 ##' @author Bailey Morrison
 ##'  
-call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start_date, end_date, lat, lon, size = 0, product , band , band_qc = "", band_sd = "", package_method = "MODISTools") {
+call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0, product , band , band_qc = "", band_sd = "", package_method = "MODISTools") {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size = 0
@@ -120,6 +119,9 @@ call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start_date, end_dat
     output$lat = round(output$lat, 4)
     output$lon = round(output$lon, 4)
     
+    fname = paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
+    fname = paste0(outfolder, "/", fname)
+    write.csv(output, fname)
     return(output)}
 
   
@@ -135,5 +137,8 @@ call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start_date, end_dat
     output$lat = round(output$lat, 4)
     output$lon = round(output$lon, 4)
     
+    fname = paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
+    fname = paste0(outfolder, "/", fname)
+    write.csv(output, fname)
     return(output)}
 }
