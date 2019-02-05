@@ -32,12 +32,12 @@ This document describes the steps required to download PEcAn, make changes to co
 
 
 ### PEcAn Project and Github
-                                                                                                                                                           * Organization Repository: https://github.com/organizations/PecanProject                                                                                   * PEcAn source code: https://github.com/PecanProject/pecan.git                                                                                             * BETYdb source code: https://github.com/PecanProject/bety.git
+                                                                                                                                               * Organization Repository: https://github.com/organizations/PecanProject                                                                       * PEcAn source code: https://github.com/PecanProject/pecan.git                                                                                 * BETYdb source code: https://github.com/PecanProject/bety.git
 
 These instructions apply to other repositories too.
                                                                                                                                                                                                    
 ### PEcAn Project Branches
-                                                                                                                                                          We follow branch organization laid out on [this page](http://nvie.com/posts/a-successful-git-branching-model).
+                                                                                                                                               We follow branch organization laid out on [this page](http://nvie.com/posts/a-successful-git-branching-model).
   
 In short, there are three main branches you must be aware of:
 

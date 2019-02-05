@@ -1,6 +1,6 @@
-## PEcAn Docker Architecture {#pecan-docker}
+### PEcAn Docker Architecture {#pecan-docker}
 
-### Overview {#pecan-docker-overview}
+#### Overview {#pecan-docker-overview}
 
 The PEcAn docker architecture consists of many containers (see figure below) that will communicate with each other. The goal of this architecture is to easily expand the PEcAn system by deploying new model containers and registering them with PEcAn. Once this is done the user can now use these new models in their work. The PEcAn framework will setup the configurations for the models, and send a message to the model containers to start execution. Once the execution is finished the PEcAn framework will continue. This is exactly as if the model is running on a HPC machine. Models can be executed in parallel by launching multiple model containers.
 
@@ -21,7 +21,7 @@ The PEcAn framework containers consist of multiple unique ways to interact with 
 
 The model containers contain the actual models that are executed as well as small wrappers to make them work in the PEcAn framework. The containers will run the model based on the parameters received from the message bus and convert the outputs back to the standard PEcAn output format. Once the container is finished processing a message it will immediatly get the next message and start processing it.
 
-### PEcAn's `docker-compose` {#pecan-docker-compose}
+#### PEcAn's `docker-compose` {#pecan-docker-compose}
 
 ```{r comment='', echo = FALSE, results = 'hide'}
 docker_compose_file <- file.path("..", "docker-compose.yml")

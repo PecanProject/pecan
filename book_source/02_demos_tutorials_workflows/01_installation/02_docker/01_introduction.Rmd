@@ -1,6 +1,6 @@
-## Introduction to Docker? {#docker-intro}
+### Introduction to Docker? {#docker-intro}
 
-### What is Docker?
+#### What is Docker?
 
 For a quick and accessible introduction to Docker, we suggest this YouTube video: [Learn Docker in 12 Minutes](https://www.youtube.com/watch?v=YFl2mCHdv24).
 

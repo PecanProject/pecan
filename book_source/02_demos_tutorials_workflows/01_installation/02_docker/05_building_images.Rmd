@@ -1,4 +1,4 @@
-## Building and modifying images {#docker-build-images}
+### Building and modifying images {#docker-build-images}
 
 For general use, it is sufficient to use the pre-built PEcAn images hosted on [Docker Hub](https://hub.docker.com/r/pecan/) (see [Docker quickstart](#docker-quickstart)).
 However, there are cases where it makes sense to re-build the Docker images locally.
@@ -74,7 +74,7 @@ To see a table of all local images, including their tags and IDs, run `docker im
 - `-f docker/base/Dockerfile.depends` -- The `-f/--file` tag is used to provide an alternative location and file name for the Dockerfile.
 The convention in PEcAn is to put Dockerfiles for core PEcAn functionality in `docker/base/` and for specific models in `docker/models/`, and to name these files `Dockerfile.<image name>`.
 
-### Local development and testing with Docker {#docker-local-devel}
+#### Local development and testing with Docker {#docker-local-devel}
 
 The following is an example of one possible workflow for developing and testing PEcAn using local Docker images.
 The basic idea is to mount a local version of the PEcAn source code onto a running `pecan/executor` image, and then send a special "rebuild" RabbitMQ message to the container to trigger the rebuild whenever you make changes.

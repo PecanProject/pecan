@@ -4,10 +4,8 @@ These instructions are provided to document how to install and setup PEcAn. It i
 
 - [Installing and maintaining the PEcAn VM]{#pecanvm}
 - [PEcAn Docker setup]{#dockersetup}
-- [PEcAn OS specific installation]
+- [PEcAn OS specific installation]{#osinstall}
 - [Creating a VM from scratch]{#createvm}
-- [Basic source PEcAn source code compilation]
-- Customizations
 
 
-The PEcAn code and necessary infrastructure can be obtained and compiled in different ways. This set of instructions will help facilitate your your choice of path and the steps necessary to move forward.
+The PEcAn code and necessary infrastructure can be obtained and compiled in different  ways. This set of instructions will help facilitate your path and the steps necessary to move forward to have a fully a functioning PEcAn environment. 

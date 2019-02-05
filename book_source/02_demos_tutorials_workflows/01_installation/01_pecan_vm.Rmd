@@ -1,5 +1,8 @@
 ## PEcAn Virtual Machine {#pecanvm}
 
+This section includes the following VM related documentation:
+
+
 The PEcAn virtual machine consists of all of PEcAn pre-compiled within a Linux operating system and saved in a "virtual machine" (VM). Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
 
 1. **Install VirtualBox** This is the software that runs the virtual machine. You can find the download link and instructions at [http://www.virtualbox.org](http://www.virtualbox.org). *NOTE: On Windows you may see a warning about Logo testing, it is okay to ignore the warning.*
@@ -17,7 +20,7 @@ knitr::include_graphics(rep("figures/pic1.jpg"))
 
 For Virtualbox versions starting with 6.0, there is a slightly different interface (see figure). Select "Generate new MAC addresses for all network adapters" from the MAC Address Policy:
   
-  ```{r, echo=FALSE, fig.align='center'}
+```{r, echo=FALSE, fig.align='center'}
 knitr::include_graphics(rep("figures/pic1v2.png"))
 ```
 
@@ -35,12 +38,69 @@ Finally, click "Import" to build the Virtual Machine from its image.
 
 ### Maintaining your PEcAn VM
 
-The PEcAn VM is distributed with specific versions of PEcAn compiled. You do not need to constatnly download the VM in order to update your code and verion of BETY. To update and maintain your code you can follow these steps:
+The PEcAn VM is distributed with specific versions of PEcAn compiled. However, you do not need to constantly download the VM in order to update your code and verion of BETY. To update and maintain your code you can follow the steps found in the Developer section in [Updating PecAn and Code and BETY Database]{#updatepecan}
 
-***************** Fill out steps ********************************
+### Working with the VM
+
+#### Connecting to the VM via SSH
+
+Once the VM is running anywhere on your machine, you can connect to it from a separate terminal via SSH as follows:
+
+```sh
+ssh -p 6422 carya@localhost
+```
+
+You will be prompted for a password. Like everywhere else in PEcAn, the username is `carya` and the password is `illinois`. The same password is used for any system maintenance you wish to do on the VM via `sudo`.
+
+As a shortcut, you can add the following to your `~/.ssh/config` file (or create one if it does not exist).
+
+```
+Host pecan-vm
+    Hostname localhost
+    Port 6422
+    user carya
+    ForwardX11Trusted yes
+```
+
+This will allow you to SSH into the VM with the simplified command, `ssh pecan-vm`.
+
+#### Connecting to bety on the VM via SSh
+
+Sometimes, you may want to develop code locally but connect to an instance of Bety on the VM.
+To do this, first open a new terminal and connect to the VM while enabling port forwarding (with the `-L` flag) and setting XXXX to any available port (more or less any 4 digit number -- a reasonable choice is 3333).
+
+```
+ssh -L XXXX:localhost:5432 carya@localhost:6422
+```
+
+This makes port XXXX on the local machine match port 5432 on the VM.
+This means that connecting to `localhost:XXXX` will give you access to Bety on the VM.
+
+To test this on the command line, try the following command, which, if successful, will drop you into the `psql` console.
+
+```
+psql -d bety -U bety -h localhost -p XXXX
+```
+
+To test this in R, open a Postgres using the analogous parameters:
+
+```
+library(RPostgres)
+con <- dbConnect(
+  Postgres(),
+  user = "bety",
+  password = "bety",
+  dbname = "bety",
+  host = "localhost",
+  port = XXXX
+  )
+dbListTables(con)   # This should return a vector of bety tables
+```
+
+Note that the same general approach will work on any Bety server where port forwarding is enabled.
 
 
-### Using Amazon Web Services (AWS) {#awsvm}
+### Using Amazon Web Services for a VM (AWS) {#awsvm}
 
 Login to [Amazon Web Services (AWS)](http://console.aws.amazon.com/) and select the EC2 Dashboard. If this is your first time using AWS you will need to set up an account before you are able to access the EC2 Dashboard. Important: You will need a credit card number and access to a phone to be able to verify AWS account registration. AWS is free for one year.
 
@@ -91,3 +151,151 @@ Congratulations! You just started a PEcAn server in the “cloud”!
 + To STOP the instance (which will turn the machine off but keep your work), select your PEcAn instance and click Actions > Instance state > Stop. Be aware that a stopped instance will still accrue a small storage cost on AWS. To restart this instance at any point in the future you do not want to repeat all the steps above, but instead you just need to select your instance and then click Actions > Instance state > Start
 +	To TERMINATE the instance (which will DELETE your PEcAn machine), select your instance and click Actions > Instance state > Terminate. Terminated instances will not incur costs. In most cases you will also want to go to the Volumes menu and delete the storage associated with your PEcAn VM.Remember, AWS is free for one year, but will automatically charge a fee in second year if account is not cancelled.
 
+
+### Creating a Virtual Machine {#createvm}
+
+First create  virtual machine
+
+```
+# ----------------------------------------------------------------------
+# CREATE VM USING FOLLOWING:
+# - VM NAME  = PEcAn
+# - CPU      = 2
+# - MEMORY   = 2GB 
+# - DISK     = 100GB
+# - HOSTNAME = pecan
+# - FULLNAME = PEcAn Demo User
+# - USERNAME = xxxxxxx
+# - PASSWORD = yyyyyyy
+# - PACKAGE  = openssh
+# ----------------------------------------------------------------------
+```
+
+To enable tunnels run the following on the host machine:
+
+```bash
+VBoxManage modifyvm "PEcAn" --natpf1 "ssh,tcp,,6422,,22"
+VBoxManage modifyvm "PEcAn" --natpf1 "www,tcp,,6480,,80"
+```
+
+Make sure machine is up to date.
+
+UBUNTU
+```bash
+sudo apt-get update
+sudo apt-get -y dist-upgrade
+sudo reboot
+```
+
+CENTOS/REDHAT
+```bash
+sudo yum -y update
+sudo reboot
+```
+
+Install compiler and other packages needed and install the tools.
+
+UBUNTU
+```bash
+sudo apt-get -y install build-essential linux-headers-server dkms
+```
+
+CENTOS/REDHAT
+```bash
+sudo yum -y groupinstall "Development Tools"
+sudo yum -y install wget
+```
+
+Install Virtual Box additions for better integration
+
+```bash
+sudo mount /dev/cdrom /mnt
+sudo /mnt/VBoxLinuxAdditions.run
+sudo umount /mnt
+sudo usermod -a -G vboxsf carya
+```
+
+**Finishing up the machine**
+
+**Add a message to the login:**
+
+```bash
+sudo -s
+export PORT=$( hostname | sed 's/pecan//' )
+cat > /etc/motd << EOF
+PEcAn version 1.4.3
+
+For more information about:
+Pecan    - http://pecanproject.org
+BETY     - http://www.betydb.org
+
+For a list of all models currently navigate [here](../users_guide/basic_users_guide/models_table.md)
+
+
+You can access this system using a webbrowser at
+ http://<hosting machine>:${PORT}80/
+or using SSH at
+ ssh -l carya -p ${PORT}22 <hosting machine>
+where <hosting machine> is the machine where the VM runs on.
+EOF
+exit
+```
+
+**Finishing up**
+
+Script to clean the VM and remove as much as possible history [cleanvm.sh](http://isda.ncsa.uiuc.edu/~kooper/EBI/cleanvm.sh)
+
+```bash
+wget -O ~/cleanvm.sh http://isda.ncsa.uiuc.edu/~kooper/EBI/cleanvm.sh
+chmod 755 ~/cleanvm.sh
+```
+
+Make sure machine has SSH keys [rc.local](http://isda.ncsa.illinois.edu/~kooper/EBI/rc.local)
+
+```bash
+sudo wget -O /etc/rc.local http://isda.ncsa.illinois.edu/~kooper/EBI/rc.local
+```
+
+Change the resolution of the console
+
+```bash
+sudo sed -i -e 's/#GRUB_GFXMODE=640x480/GRUB_GFXMODE=1024x768/' /etc/default/grub
+sudo update-grub
+```
+
+Once all done, stop the virtual machine
+```bash
+history -c && ${HOME}/cleanvm.sh
+```
+
+### VM Desktop Conversion
+
+```bash
+sudo apt-get update
+sudo apt-get install xfce4 xorg
+```
+
+For a more refined desktop environment, try 
+
+```bash
+sudo apt-get install --no-install-recommends xubuntu-desktop 
+```
+* replace `xubuntu-` with `ubuntu-`, `lubuntu-`, or other preferred desktop enviornment
+* the `--no-install-recommends` eliminates additional applications, removing it will add a word processor, a browser, and lots of other applications included in the default operating system.
+
+Reinstall Virtual Box additions for better integration adding X/mouse support
+
+```bash
+sudo mount /dev/cdrom /mnt
+sudo /mnt/VBoxLinuxAdditions.run
+sudo umount /mnt
+```
+
+#### Install RStudio Desktop
+
+```bash
+wget http://download1.rstudio.org/rstudio-0.97.551-amd64.deb
+apt-get install libjpeg621
+dpkg -i rstudio-*
+rm rstudio-*
+```

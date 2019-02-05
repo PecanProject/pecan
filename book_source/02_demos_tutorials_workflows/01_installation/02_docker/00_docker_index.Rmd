@@ -1,4 +1,4 @@
-# Docker {#docker-index}
+## Docker {#docker-index}
 
 This chapter describes the PEcAn Docker container infrastructure.
 It contains the following sections:
