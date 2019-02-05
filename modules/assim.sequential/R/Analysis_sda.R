@@ -372,9 +372,10 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                       y.censored = y.censored,
                       r = R) #precision
     
-    inits.pred = list(q = diag(length(mu.f))*(length(mu.f)+1), X.mod = as.vector(mu.f),
-                      X = rnorm(length(mu.f),mu.f,1),
-                      y_star = rnorm(length(y.censored),0,1))
+    inits.pred = list(q = diag(length(mu.f))*(length(mu.f)+1),
+                      X.mod = rnorm(length(mu.f),mu.f,10),
+                      X = rnorm(length(mu.f),mu.f,10),
+                      y_star = rnorm(length(y.censored),0,10))
 
 model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
                           constants = constants.tobit, inits = inits.pred,
@@ -383,7 +384,7 @@ model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimension
 model_pred$initializeInfo()
 ## Adding X.mod,q,r as data for building model.
 conf <- configureMCMC(model_pred, print=TRUE)
-conf$addMonitors(c("X","q","Q", "y_star","y.censored")) 
+conf$addMonitors(c("X","X.mod","q","Q", "y_star","y.censored")) 
 ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
 
 
@@ -434,10 +435,11 @@ for(i in 1:length(y.ind)) {
     Cmodel$pf <- solve(Pf)
     Cmodel$r <- (R) #precision
     
-    inits.pred = list(q = diag(length(mu.f)),
-                      X.mod = as.vector(mu.f),
-                      X = rnorm(ncol(X),100,1),
-                      y_star = rnorm(length(y.censored),100,1)) #
+    inits.pred = list(q = diag(length(mu.f))*(length(mu.f)+1),
+                      X.mod = rnorm(length(mu.f),mu.f,10),
+                      X = rnorm(ncol(X),mu.f,10),
+                      y_star = rnorm(length(y.censored),mu.f,10)) #
+    
     Cmodel$setInits(inits.pred)
     
     for(i in 1:length(y.ind)) {
@@ -456,11 +458,21 @@ for(i in 1:length(y.ind)) {
   ## update parameters
   iq   <- grep("q", colnames(dat))
   iX   <- grep("X[", colnames(dat), fixed = TRUE)
+  iystar   <- grep("y_star", colnames(dat), fixed = TRUE)
+  iX.mod <- grep("X.mod", colnames(dat), fixed = TRUE)
   
-  pdf(file.path(outdir, paste0('dat',t,'.pdf')))
-  par(mfrow=c(2,2))
-  for(rr){
-    plot(dat[,iX[rr]])
+  pdf(file.path(outdir, paste0('dat_plot', t, '.pdf')))
+  par(mfrow = c(2, 2))
+  for (rr in 1:length(iX)) {
+    plot(dat[, iX[rr]], typ = 'l')
+  }
+  for (i in 1:length(iystar)) {
+    plot(dat[,iystar[i]], type = 'l')
+    abline(h=alr(mu.a)[i],col='red')
+  }
+  for (i in 1:4) {
+    plot(dat[,iX.mod[i]], type = 'l')
+    abline(h=mu.f[i],col='red')
   }
   dev.off()
   
