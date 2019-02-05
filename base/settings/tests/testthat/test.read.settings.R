@@ -12,7 +12,17 @@ context("tests for read.settings and related functions")
 PEcAn.logger::logger.setQuitOnSevere(FALSE)
 PEcAn.logger::logger.setLevel("OFF")
 testdir <- tempfile()
-teardown(unlink(testdir))
+dir.create(testdir, showWarnings = FALSE)
+teardown(unlink(testdir, recursive = TRUE))
+
+# ANS: Many of these functions seem like they shouldn't require a
+# database connection, but `check.settings` throws an error when it
+# can't connect to the database.
+s <- .get.test.settings()
+skip_if_not(
+  PEcAn.DB::db.exists(s[[c("database", "bety")]]),
+  "Skipping read.settings tests because cannot connect to database"
+)
 
 test_that("read.settings returned correctly", {
   s <- .get.test.settings()
@@ -110,7 +120,7 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
   s <- .get.test.settings(testdir)
   s$run$start.date <- s$run$end.date <- NULL # Otherwise these would be used
   s$database$bety$write = FALSE # otherwise will error for trying to add with no run dates
-  
+
   nodes <- c("sensitivity.analysis", "ensemble")
   for(node1 in nodes) {
     node2 <- nodes[nodes != node1]

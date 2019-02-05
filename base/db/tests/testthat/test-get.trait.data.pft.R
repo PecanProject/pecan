@@ -1,8 +1,16 @@
-
 context("get.trait.data.pft")
 
-con <- db.open(
-  params = list(user = "bety", password = "bety", host = "localhost"))
+con <- tryCatch(db.open(params = list(
+  user = "bety",
+  password = "bety",
+  host = "localhost"
+)), error = function(e) {
+  PEcAn.logger::logger.severe(paste0(
+    "Failed to open local database connection with the following error: `",
+    conditionMessage(e),
+    "`. Database connection required to run these tests."
+  ))
+})
 
 dbdir <- file.path(tempdir(), "dbfiles")
 outdir <- file.path(tempdir(), "outfiles")
