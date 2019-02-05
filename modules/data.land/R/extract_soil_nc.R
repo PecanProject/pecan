@@ -11,11 +11,11 @@
 #' @export
 #'
 #' @examples
-#' outdir  <- "~/paleon/envTest"
-#' lat     <- 40
-#' lon     <- -80
 #' \dontrun{
-#'    PEcAn.data.land::extract_soil_gssurgo(outdir,lat,lon)
+#'    outdir  <- "~/paleon/envTest"
+#'    lat     <- 40
+#'    lon     <- -80
+#'    PEcAn.data.land::extract_soil_gssurgo(outdir, lat, lon)
 #' }
 #' @author Hamze Dokoohaki
 #' 
@@ -247,12 +247,12 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' in.file <- "~/paleon/env_paleon/soil/paleon_soil.nc"
 #' outdir  <- "~/paleon/envTest"
 #' lat     <- 40
 #' lon     <- -80
-#' \dontrun{
-#'    PEcAn.data.land::extract_soil_nc(in.file,outdir,lat,lon)
+#' PEcAn.data.land::extract_soil_nc(in.file,outdir,lat,lon)
 #' }
 extract_soil_nc <- function(in.file,outdir,lat,lon){
   

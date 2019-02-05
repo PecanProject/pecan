@@ -8,15 +8,18 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Changed
+- Automatic build are currently done using R version 3.5 and most development will be done with version 3.5 as well. It still might be possible to use R version 3.4 however we will not guarantee future compatibility with 3.4.
 - Reverting back from PR #2137 to fix issues with MAAT wrappers.
 - Moved docker files for models into model specific folder, for example Dockerfile for sipnet now is in models/sipnet/Dockerfile.
 - `PEcAn.utils`
   - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
 - Add template for documentation issues and add button to edit book.
+- Conditionally skip unit tests for downloading raw met data or querying the database when the required remote connection is not available.
 
 ### Added
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
-- Added simple container to show all containers that are availble (http://localhost:8000/monitor/), this will also take care of registering the models with the BETY database.
+- Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
+- Added unit tests for `met2model.<MODEL>` functions for most models.
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
@@ -24,6 +27,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [1.7.0] - 2018-12-09
 
 ### Fixes
+- Fixed minor bug in query.trait.data related to stem respiration covariates (https://github.com/PecanProject/pecan/issues/2269)
 - Removed google maps and replaced with leaflet #2105
 - Added ability to add a new site from web interface
 - Small updated to models/ed/R/model2netcdf.ED2.R to fix issue realted to writing the time_bounds time attribute. Needed to add a check for which file types exitst (e.g. -E-, -T-, etc) and only write the appropriate attribute(s).

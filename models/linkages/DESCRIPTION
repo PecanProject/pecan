@@ -11,6 +11,7 @@ Description: This module provides functions to link the (LINKAGES) to PEcAn.
 Depends:
     PEcAn.utils
 Imports:
+    PEcAn.data.atmosphere,
     PEcAn.logger,
     PEcAn.remote,
     lubridate (>= 1.6.0),

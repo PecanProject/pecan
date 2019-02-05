@@ -27,11 +27,11 @@ It returns the address for the generated soil netcdf file
 Extract soil data from gssurgo
 }
 \examples{
-outdir  <- "~/paleon/envTest"
-lat     <- 40
-lon     <- -80
 \dontrun{
-   PEcAn.data.land::extract_soil_gssurgo(outdir,lat,lon)
+   outdir  <- "~/paleon/envTest"
+   lat     <- 40
+   lon     <- -80
+   PEcAn.data.land::extract_soil_gssurgo(outdir, lat, lon)
 }
 }
 \author{
