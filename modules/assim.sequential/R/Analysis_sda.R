@@ -129,7 +129,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   #Observed inputs
-  R <- solve(Observed$R) #putting solve() here so if not invertible error is before compiling tobit2space
+  R <- try(solve(Observed$R), silent = F) #putting solve() here so if not invertible error is before compiling tobit2space
   Y <- Observed$Y
   wish.df <- function(Om, X, i, j, col) {
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
