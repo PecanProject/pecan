@@ -27,6 +27,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [1.7.0] - 2018-12-09
 
 ### Fixes
+- Fixed minor bug in query.trait.data related to stem respiration covariates (https://github.com/PecanProject/pecan/issues/2269)
 - Removed google maps and replaced with leaflet #2105
 - Added ability to add a new site from web interface
 - Small updated to models/ed/R/model2netcdf.ED2.R to fix issue realted to writing the time_bounds time attribute. Needed to add a check for which file types exitst (e.g. -E-, -T-, etc) and only write the appropriate attribute(s).
