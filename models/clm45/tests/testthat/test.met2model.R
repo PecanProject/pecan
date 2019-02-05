@@ -11,20 +11,10 @@ test_that("Met conversion runs without error", {
   in.prefix <- "CRUNCEP"
   start_date <- "2000-01-01"
   end_date <- "2000-12-31"
-  result <- met2model.LINKAGES(in.path, in.prefix, outfolder, start_date, end_date)
+  expect_error({
+    result <- met2model.CLM45(in.path, in.prefix, outfolder, start_date, end_date)
+  }, "NOT IMPLEMENTED")
+  skip("met2model.CLM45 is not implemented")
   expect_s3_class(result, "data.frame")
   expect_true(file.exists(result[["file"]][[1]]))
 })
-
-if(FALSE){
-  
-  start.year = 850
-  end.year = 2010
-  site = "PUN"
-  
-  in.path = paste0("/Users/paleolab/Linkages/phase1a_met_drivers_v4.1/",site,"/")
-  outfolder = paste0("/Users/paleolab/Linkages/met2model_output/",site,"/")
-  
-  met2model.LINKAGES(site = site, in.path = in.path, outfolder = outfolder, start.year = start.year, end.year = end.year)
-  
-}
