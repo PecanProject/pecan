@@ -10,7 +10,7 @@ Description: PEcAn module for processing remote data. Python module requirements
 Depends:
 Imports:
     MODISTools
-    reticilate
+    reticulate
     PEcAn.logger,
     PEcAn.remote,
     stringr(>= 1.1.0)
