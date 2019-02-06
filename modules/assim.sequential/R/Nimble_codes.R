@@ -74,6 +74,43 @@ load_nimble <- function(){
     
   })
   
+  #tobit.model--This does the GED -----------------------------------------
+  GEF.MultiSite <<- nimbleCode({ 
+    # Sorting out qs
+    q ~ dgamma(aq, bq) ## aq and bq are estimated over time
+    qq[1:3, 1:3] <- q*diag(3) # This is done to make q the same size as X is
+    Q[1:3, 1:3] <- inverse(qq[1:3, 1:3]) 
+    # X model  
+    X.mod[1:6] ~ dmnorm(mean = muf[1:6], cov = pf[1:6, 1:6])
+    # Here I'm doing the obs oprator. H has the elements of model estimates with obs data
+    for (i in 1:3) {
+      tmpX[i]  <- X.mod[H[i]]
+      Xs[i] <- tmpX[i]
+    }
+    ## add process error to x model but just for the state variables that we have data and H knows who
+    X[1:3]  ~ dmnorm(Xs[1:3], prec = qq[1:3, 1:3])
+    
+    ## Likelihood
+    y.censored[1:3] ~ dmnorm(X[1:3], prec = r[1:3, 1:3])
+    
+    #puting the ones that they don't have q in Xall - They come from X.model 
+    # If I don't have data on then then their q is not identifiable, so we use the same Xs as Xmodel
+    for (j in 1:3) {
+      tmpXmod[j]  <- X.mod[NotH[j]]
+      Xall[NotH[j]] <- tmpXmod[j]
+    }
+    #These are the one that they have data and their q can be estimated.
+    for (i in 1:3) {
+      tmpXH[i]  <- X[i]
+      Xall[H[i]] <- tmpXH[i]
+    }
+    
+    for (i in 1:3) {
+      y.ind[i] ~ dinterval(y.censored[i], 0)
+    }
+    
+  })
+  
   #sampler_toggle------------------------------------------------------------------------------------------------
   sampler_toggle <<- nimbleFunction(
     contains = sampler_BASE,

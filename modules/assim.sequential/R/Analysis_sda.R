@@ -92,6 +92,24 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   return(list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa))
 }
 
+##' @title GEF
+##' @name  GEF
+##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
+##' 
+##' @param settings  pecan standard settings list.  
+##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecast state variables for different ensemble)
+##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
+##' @param extraArg This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the process covariance and t gives the time in terms of index of obs.list. See Details.
+##' @param nitr Number of iterations to run each MCMC chain.
+##' @param nburnin 	Number of initial, pre-thinning, MCMC iterations to discard.
+##' @param ... This function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.
+##’ @details 
+##’  
+##' 
+##' @description Given the Forecast and Observed this function performs the Generalized Ensemble Kalamn Filter. The generalized ensemble filter follows generally the three steps of sequential state data assimilation. But, in the generalized ensemble filter we add a latent state vector that accounts for added process variance. Furthermore, instead of solving the analysis analytically like the EnKF, we have to estimate the mean analysis vector and covariance matrix with MCMC.
+##' 
+##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
+##' @export
 GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000, ...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
