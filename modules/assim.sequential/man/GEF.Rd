@@ -8,8 +8,7 @@
 GEF(setting, Forecast, Observed, H, extraArg, nitr = 50000,
   nburnin = 10000, ...)
 
-GEF.MultiSite(setting, Forecast, Observed, H, extraArg, nitr = 1e+06,
-  nburnin = 10000, ...)
+GEF.MultiSite(setting, Forecast, Observed, H, extraArg, ...)
 }
 \arguments{
 \item{Forecast}{A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecast state variables for different ensemble)}

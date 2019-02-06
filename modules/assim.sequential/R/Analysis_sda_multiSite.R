@@ -72,7 +72,7 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 
 ##' @rdname GEF
 ##' @export
-GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=1e4, ...){
+GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg,...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
@@ -97,10 +97,15 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
   #----------------------------------- GEF-----------------------------------------------------
   # Taking care of censored data ------------------------------    
   ### create matrix the describes the support for each observed state variable at time t
+  interval <- NULL
+  # Reading the extra arguments
   aqq <- extraArg$aqq
   bqq <- extraArg$bqq
-  interval <- NULL
   t <- extraArg$t
+  nitr.GEF<-nitr.GEF
+  nthin<-extraArg$nthin
+  nburnin <- extraArg$nburnin
+  
   intervalX <- matrix(NA, ncol(X), 2)
   rownames(intervalX) <- colnames(X)
   outdir     <- settings$modeloutdir
@@ -111,8 +116,8 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
                                                              as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
                                                            length(which(startsWith(rownames(intervalX),
                                                                                    var.names[i]))),2,byrow = TRUE)
-  }
   
+  }
   #### These vectors are used to categorize data based on censoring from the interval matrix
   x.ind <- x.censored <- matrix(NA, ncol=ncol(X), nrow=nrow(X))
   for(j in seq_along(mu.f)){
@@ -189,7 +194,7 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
     
   }
   
-  dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr, nburnin=nburnin,  progressBar=TRUE)
+  dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr.GEF, nburnin=nburnin,  progressBar=TRUE)
   
   ## update parameters
   #dat.tobit2space  <- dat.tobit2space[1000:5000, ]
@@ -259,25 +264,25 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
     inits.pred <-
       list(
         X.mod = as.vector(mu.f),
-        q = diag(1,3,3),
-        X = as.vector(mu.f)[c(1, 3, 5)],
+        q = diag(1,length(elements.W.Data),length(elements.W.Data)),
+        X = as.vector(mu.f)[length(elements.W.Data)],
         Xall = as.vector(mu.f),
-        Xs = as.vector(mu.f)[c(1, 3, 5)]
+        Xs = as.vector(mu.f)[length(elements.W.Data)]
       ) #
     
-    dimensions.tobit = list(X = 3,
+    dimensions.tobit = list(X = length(elements.W.Data),
                             X.mod = ncol(X),
-                            Q = c(3, 3))
+                            Q = c(length(elements.W.Data), length(elements.W.Data)))
     
     # Contants defined in the model
     constants.tobit <-
       list(
-        N = 6,
-        YN = 3,
-        nH = 3,
-        H = c(1, 3, 5),
-        NotH = c(2, 4, 6),
-        nNotH = 3
+        N = ncol(X),
+        YN = length(elements.W.Data),
+        nH = length(elements.W.Data),
+        H = elements.W.Data,
+        NotH = which(!(1:ncol(X) %in% elements.W.Data )),
+        nNotH = which(!(1:ncol(X) %in% elements.W.Data )) %>% length()
       )
     # Data used for setting the likelihood and other stuff
     data.tobit <-
@@ -329,12 +334,13 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
     Cmodel$aq <- aqq[ , ,t]
     Cmodel$bq <- bqq[t]
     Cmodel$muf <- mu.f
-    Cmodel$pf <- solve(Pf)
+    Cmodel$pf <- Pf
     Cmodel$r <- solve(R)
     
-    inits.pred = list(q = diag(length(mu.f)),
+    inits.pred = list(q = diag(length(elements.W.Data)),
                       X.mod = as.vector(mu.f),
-                      X = rnorm(ncol(X),0,1)) #
+                      X = as.vector(mu.f)[elements.W.Data]) #
+    
     Cmodel$setInits(inits.pred)
     
     for(i in 1:length(y.ind)) {
@@ -347,7 +353,7 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
   }
 
 
-  dat <-runMCMC(Cmcmc, niter = nitr, nburnin=nburnin, thin = 100, nchains = 1)
+  dat <-runMCMC(Cmcmc, niter = nitr.GEF, nburnin=nburnin, thin =nthin, nchains = 1)
   ## update parameters
   iq   <- grep("q", colnames(dat))
   iX   <- grep("Xall[", colnames(dat), fixed = TRUE)
