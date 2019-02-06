@@ -23,6 +23,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
+- Removed package `PEcAn.data.mining` from the Make build. It can still be installed directly from R if desired, but is skipped by default because it is in early development, does not yet export any functions, and creates a dependency on the (large, often annoying to install) ImageMagick library.
 
 ## [1.7.0] - 2018-12-09
 
