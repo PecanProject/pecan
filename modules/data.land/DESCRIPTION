@@ -34,6 +34,8 @@ Imports:
     PEcAn.remote,
     purrr,
     rlang,
+    sp,
+    sf,
     XML (>= 3.98-1.4)
 Suggests:
     fields,
