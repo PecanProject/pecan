@@ -1,12 +1,15 @@
 Package: PEcAn.data.remote
 Type: Package
-Title: PEcAn functions used for remote sensing
+Title: PEcAn functions used for extracting remote sensing data
 Version: 1.7.0
-Date: 2018-12-03
-Authors@R: c(person("Mike","Dietze"))
-Author: Mike Dietze
-Maintainer: Mike Dietze <dietze@bu.edu>
+Date: 2019-02-06
+Authors@R: c(person("Mike","Dietze"), person("Bailey", "Morrison"))
+Author: Mike Dietze, Bailey Morrison
+Maintainer: Bailey Morrison <bmorrison@bnl.gov>
 Description: PEcAn module for processing remote data
+Depends:
+    MODISTools
+    reticulate
 Imports:
     PEcAn.logger,
     PEcAn.remote,
