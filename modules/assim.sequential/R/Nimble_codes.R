@@ -6,7 +6,7 @@
 ##' 
 #' @import nimble
 load_nimble <- function(){
-    #y_star_create-------------------------------------------------------------------------------------------------------
+    #y_star_create--------------------------------------------------------------------
   y_star_create <<-  nimbleFunction(
     run = function(X = double(1)) {
       returnType(double(1))
@@ -26,7 +26,7 @@ load_nimble <- function(){
       
       return(y_star)
     })
-  #tobit2space.model------------------------------------------------------------------------------------------------
+  #tobit2space.model------------------------------------------------------------------
   tobit2space.model <<- nimbleCode({
     for(i in 1:N){
       y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
@@ -42,7 +42,7 @@ load_nimble <- function(){
     
   })
   
-  #tobit.model--This does the GEF -----------------------------------------
+  #tobit.model--This does the GEF ----------------------------------------------------
   tobit.model <<- nimbleCode({ 
 
     q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
@@ -74,27 +74,28 @@ load_nimble <- function(){
     
   })
   
-  #tobit.model--This does the GEF for multi Site -----------------------------------------
+  #tobit.model--This does the GEF for multi Site -------------------------------------
   GEF.MultiSite.Nimble <<- nimbleCode({ 
     # Sorting out qs
-    q ~ dgamma(aq, bq) ## aq and bq are estimated over time
-    qq[1:3, 1:3] <- q*diag(3) # This is done to make q the same size as X is
-    Q[1:3, 1:3] <- inverse(qq[1:3, 1:3]) 
+    q[1:3,1:3]  ~ dwish(R = aq[1:3,1:3], df = bq) ## aq and bq are estimated over time
+    
+    Q[1:3,1:3] <- inverse(q[1:3,1:3])
+    
     # X model  
     X.mod[1:6] ~ dmnorm(mean = muf[1:6], cov = pf[1:6, 1:6])
-    # Here I'm doing the obs oprator. H has the elements of model estimates with obs data
+    
     for (i in 1:3) {
       tmpX[i]  <- X.mod[H[i]]
       Xs[i] <- tmpX[i]
     }
     ## add process error to x model but just for the state variables that we have data and H knows who
-    X[1:3]  ~ dmnorm(Xs[1:3], prec = qq[1:3, 1:3])
+    X[1:3]  ~ dmnorm(Xs[1:3], prec = q[1:3, 1:3])
     
     ## Likelihood
     y.censored[1:3] ~ dmnorm(X[1:3], prec = r[1:3, 1:3])
     
-    #puting the ones that they don't have q in Xall - They come from X.model 
-    # If I don't have data on then then their q is not identifiable, so we use the same Xs as Xmodel
+    # #puting the ones that they don't have q in Xall - They come from X.model 
+    # # If I don't have data on then then their q is not identifiable, so we use the same Xs as Xmodel
     for (j in 1:3) {
       tmpXmod[j]  <- X.mod[NotH[j]]
       Xall[NotH[j]] <- tmpXmod[j]

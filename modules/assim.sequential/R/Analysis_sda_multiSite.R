@@ -72,7 +72,7 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 
 ##' @rdname GEF
 ##' @export
-GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=1e3,nthin=100, ...){
+GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=1e4, ...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
@@ -208,17 +208,18 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
   ###-------------------------------------------------------------------###
   # Generalized Ensemble Filter                                       ###-----
   ###-------------------------------------------------------------------###
-  
+
   #### initial conditions
-  bqq[1]     <- length(mu.f)
+  elements.W.Data <-  which(apply(H,2,sum)==1)
+  bqq[1]     <- length(elements.W.Data)
   if(is.null(aqq)){
-    aqq      <- array(0, dim = c(ncol(X),ncol(X),nt))
+    aqq      <- array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
   }else{
     if(ncol(X)!=dim(aqq)[2]|ncol(X)!=dim(aqq)[3]){
       print('error: X has changed dimensions')
     }
   }
-  aqq[, ,1] <- diag(length(mu.f)) * bqq[1] #Q
+  aqq[, ,1] <- diag(length(elements.W.Data)) * bqq[1] #Q
   
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
@@ -258,7 +259,7 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
     inits.pred <-
       list(
         X.mod = as.vector(mu.f),
-        q = 6,
+        q = diag(1,3,3),
         X = as.vector(mu.f)[c(1, 3, 5)],
         Xall = as.vector(mu.f),
         Xs = as.vector(mu.f)[c(1, 3, 5)]
@@ -283,8 +284,8 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
       list(
         muf = as.vector(mu.f),
         pf = Pf,
-        aq = 1,
-        bq = 2,
+        aq = aqq[,,t],
+        bq = bqq[t],
         y.ind = y.ind,
         y.censored = y.censored,
         r = solve(R)
@@ -322,9 +323,10 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
     
     # if t>1 in GEF --------------------------------------------   
   }else{
+
     Cmodel$y.ind <- y.ind
     Cmodel$y.censored <- y.censored
-    Cmodel$aq <- aqq[t,,]
+    Cmodel$aq <- aqq[ , ,t]
     Cmodel$bq <- bqq[t]
     Cmodel$muf <- mu.f
     Cmodel$pf <- solve(Pf)
@@ -344,24 +346,24 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
     
   }
 
-  dat <-runMCMC(Cmcmc, niter = nitr, nburnin=nburnin, thin = nthin, nchains = 1)
+
+  dat <-runMCMC(Cmcmc, niter = nitr, nburnin=nburnin, thin = 100, nchains = 1)
   ## update parameters
   iq   <- grep("q", colnames(dat))
-  iX   <- grep("X[", colnames(dat), fixed = TRUE)
+  iX   <- grep("Xall[", colnames(dat), fixed = TRUE)
   mu.a <- colMeans(dat[, iX])
   Pa   <- cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
   
-  
-  
+
   mq <- dat[, iq]  # Omega, Precision
-  q.bar <- matrix(apply(mq, 2, mean), length(mu.f), length(mu.f))  # Mean Omega, Precision
+  q.bar <- matrix(apply(mq, 2, mean), length(elements.W.Data), length(elements.W.Data))  # Mean Omega, Precision
   
-  col <- matrix(1:length(mu.f) ^ 2, length(mu.f), length(mu.f))
-  WV  <- matrix(0, length(mu.f), length(mu.f))
+  col <- matrix(1:length(elements.W.Data) ^ 2, length(elements.W.Data), length(elements.W.Data))
+  WV  <- matrix(0, length(elements.W.Data), length(elements.W.Data))
   
-  for (i in seq_along(mu.f)) {
-    for (j in seq_along(mu.f)) {
+  for (i in seq_along(elements.W.Data)) {
+    for (j in seq_along(elements.W.Data)) {
       WV[i, j] <- wish.df(q.bar, X = mq, i = i, j = j, col = col[i, j])
     }
   }
@@ -372,9 +374,8 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
   }
   V <- solve(q.bar) * n
   
-  if (exists('blocked.dis')) V <- Local.support(V, blocked.dis, settings$state.data.assimilation$scalef %>%
-                                                  as.numeric())
   print(dim(V))
+  
   if (t<nt){
     aqq[, ,t + 1]   <- V
     bqq[t + 1]       <- n
@@ -392,3 +393,5 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburni
   )
   )
 }
+
+
