@@ -6,7 +6,7 @@ Date: 2019-02-06
 Authors@R: c(person("Mike","Dietze"), person("Bailey", "Morrison"))
 Author: Mike Dietze, Bailey Morrison
 Maintainer: Bailey Morrison <bmorrison@bnl.gov>
-Description: PEcAn module for processing remote data
+Description: PEcAn module for processing remote data. Python module requirements: requests, json, re, ast, panads, sys. If any of these modules are missing, install using pip install <module name>.
 Depends:
     MODISTools
     reticulate
