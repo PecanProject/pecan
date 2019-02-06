@@ -124,7 +124,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
   Pf = cov(X) # Cov Forecast - This is used as an initial condition
-  
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   #Observed inputs
   R <- Observed$R
@@ -236,8 +235,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   mu.f <- colMeans(dat.tobit2space[, imuf])
   iPf   <- grep("pf", colnames(dat.tobit2space))
   Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
-  #--- This is where the localization needs to happen - After imputing Pf
-  
   iycens <- grep("y.censored",colnames(dat.tobit2space))
   X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
   
@@ -276,7 +273,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
     # Contants defined in the model
     constants.tobit = list(N = ncol(X), YN = length(y.ind))
-    
     
     dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
                             Q = c(length(mu.f),length(mu.f)))

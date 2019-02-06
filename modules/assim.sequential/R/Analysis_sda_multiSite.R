@@ -72,7 +72,7 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 
 ##' @rdname GEF
 ##' @export
-GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e4, nburnin=1000, ...){
+GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e6, nburnin=1e3,nthin=100, ...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
@@ -253,72 +253,69 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e4, nburni
   y.censored <- as.numeric(ifelse(Y > interval[, 1], Y, 0))
   
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
-    # Contants defined in the model
+
+    #Initial values
+    inits.pred <-
+      list(
+        X.mod = as.vector(mu.f),
+        q = 6,
+        X = as.vector(mu.f)[c(1, 3, 5)],
+        Xall = as.vector(mu.f),
+        Xs = as.vector(mu.f)[c(1, 3, 5)]
+      ) #
     
-    constants.tobit = list(N = ncol(X),
-                           YN = length(y.ind),
-                           ntake=length(which(colSums(H)!=0)), # number of H elements
-                           take=which(colSums(H)!=0)# This is gonna be H
-    )
-    
-    
-    dimensions.tobit = list(X = length(mu.f),
+    dimensions.tobit = list(X = 3,
                             X.mod = ncol(X),
-                            Q = c(length(mu.f),
-                                  length(mu.f))
-    )
-    # Data need to be used in the model
-    data.tobit = list(muf = as.vector(mu.f),
-                      pf = solve(Pf), 
-                      aq = aqq[,,t], bq = bqq[t],
-                      y.ind = y.ind,
-                      y.censored = y.censored,
-                      r = solve(R)
-    )
-    #initial values
-    inits.pred = list(q = diag(length(mu.f)),
-                      X.mod = as.vector(mu.f),
-                      X = as.vector(mu.f) # This was this before rnorm(length(mu.f),0,1), I thought the mu.f would be a better IC for something like abv ground biomass than something close to zero.
-    ) #
+                            Q = c(3, 3))
     
-    
-    
-    model_pred <- nimbleModel(tobit.model,
+    # Contants defined in the model
+    constants.tobit <-
+      list(
+        N = 6,
+        YN = 3,
+        nH = 3,
+        H = c(1, 3, 5),
+        NotH = c(2, 4, 6),
+        nNotH = 3
+      )
+    # Data used for setting the likelihood and other stuff
+    data.tobit <-
+      list(
+        muf = as.vector(mu.f),
+        pf = Pf,
+        aq = 1,
+        bq = 2,
+        y.ind = y.ind,
+        y.censored = y.censored,
+        r = solve(R)
+      )
+  # This is the first step in making the nimble model - Nimble does some preliminary checks on the code    
+    model_pred <- nimbleModel(GEF.MultiSite.Nimble,
                               data = data.tobit,
                               dimensions = dimensions.tobit,
                               constants = constants.tobit,
                               inits = inits.pred,
                               name = 'base')
+    
+    
     ## Adding X.mod,q,r as data for building model.
     conf <- configureMCMC(model_pred, print=TRUE)
     
-    conf$addMonitors(c("X","q","Q")) 
-    ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
-    ## important!
-    ## this is needed for correct indexing later
+    conf$addMonitors(c("X","Xall","q","Q")) 
     samplerNumberOffset <<- length(conf$getSamplers())
     
     for(i in 1:length(y.ind)) {
       node <- paste0('y.censored[',i,']')
       conf$addSampler(node, 'toggle', control=list(type='RW'))
-      ## could instead use slice samplers, or any combination thereof, e.g.:
-      ##conf$addSampler(node, 'toggle', control=list(type='slice'))
     }
     
     conf$printSamplers()
-    
-    ## can monitor y.censored, if you wish, to verify correct behaviour
-    #conf$addMonitors('y.censored')
-    
+
     Rmcmc <<- buildMCMC(conf)
-    
     Cmodel <<- compileNimble(model_pred)
     Cmcmc <<- compileNimble(Rmcmc, project = model_pred)
     
     for(i in 1:length(y.ind)) {
-      ## ironically, here we have to "toggle" the value of y.ind[i]
-      ## this specifies that when y.ind[i] = 1,
-      ## indicator variable is set to 0, which specifies *not* to sample
       valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
     }
     
@@ -346,9 +343,8 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg, nitr=1e4, nburni
     }
     
   }
-  browser()
-  dat <- runMCMC(Cmcmc, niter = nitr, nburnin=nburnin)
-  
+
+  dat <-runMCMC(Cmcmc, niter = nitr, nburnin=nburnin, thin = nthin, nchains = 1)
   ## update parameters
   iq   <- grep("q", colnames(dat))
   iX   <- grep("X[", colnames(dat), fixed = TRUE)

@@ -42,7 +42,7 @@ load_nimble <- function(){
     
   })
   
-  #tobit.model--This does the GED -----------------------------------------
+  #tobit.model--This does the GEF -----------------------------------------
   tobit.model <<- nimbleCode({ 
 
     q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
@@ -74,8 +74,8 @@ load_nimble <- function(){
     
   })
   
-  #tobit.model--This does the GED -----------------------------------------
-  GEF.MultiSite <<- nimbleCode({ 
+  #tobit.model--This does the GEF for multi Site -----------------------------------------
+  GEF.MultiSite.Nimble <<- nimbleCode({ 
     # Sorting out qs
     q ~ dgamma(aq, bq) ## aq and bq are estimated over time
     qq[1:3, 1:3] <- q*diag(3) # This is done to make q the same size as X is
