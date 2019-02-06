@@ -1,8 +1,10 @@
-
 context("checking write.configs.BIOCRO")
 
 settings.xml <- file.path("data", "pecan.biocro.xml")
 settings <- PEcAn.settings::read.settings(settings.xml)
+
+testthat::skip_if_not(PEcAn.DB::db.exists(settings[[c("database", "bety")]]))
+
 settings <- PEcAn.settings::prepare.settings(settings)
 
 samples <- list(biocro.saof = (data.frame(

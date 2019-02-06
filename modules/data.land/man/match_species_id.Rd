@@ -38,6 +38,7 @@ Parses species codes in input data and matches them with the BETY species ID.
 }
 }
 \examples{
+\dontrun{
 bety <- dplyr::src_postgres(dbname = 'bety',
                        user = 'bety',
                        password = 'bety',
@@ -47,6 +48,7 @@ format_name <- 'usda'
 match_species_id(input_codes = input_codes,
                  format_name = format_name,
                  bety = bety)
+}
 
 }
 \author{

@@ -34,8 +34,8 @@ test_that("data extracted from test pecan-cf met files is valid",{
 })
 
 test_that("load.cfmet respects start/end date",{
-  expect_equal(strftime(min(daily.cf$date), "%F"), "1951-01-02")
-  expect_equal(strftime(max(daily.cf$date), "%F"), "1951-05-31")
+  expect_equal(strftime(min(daily.cf$date), "%F", tz = "UTC"), "1951-01-02")
+  expect_equal(strftime(max(daily.cf$date), "%F", tz = "UTC"), "1951-05-31")
   expect_equal(nrow(daily.cf), 150)
 })
 

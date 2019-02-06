@@ -10,6 +10,7 @@ Authors@R: as.person(c(
 Maintainer: Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to wrap the MAAT model into the PEcAn workflows.
 Imports:
+    PEcAn.data.atmosphere,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
