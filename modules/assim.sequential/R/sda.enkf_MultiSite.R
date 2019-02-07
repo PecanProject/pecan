@@ -398,7 +398,6 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       if (processvar) {
         aqq<-enkf.params[[t]]$aqq
         bqq<-enkf.params[[t]]$bqq
-        X.new<-enkf.params[[t]]$X.new
       }
       ###-------------------------------------------------------------------###
       ### Trace                                                             ###

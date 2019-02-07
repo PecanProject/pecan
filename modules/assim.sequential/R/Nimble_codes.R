@@ -46,6 +46,7 @@ load_nimble <- function(){
   tobit.model <<- nimbleCode({ 
 
     q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
+    
     Q[1:N,1:N] <- inverse(q[1:N,1:N])
     
     X.mod[1:N] ~ dmnorm(muf[1:N], prec = pf[1:N,1:N]) ## Model Forecast ##muf and pf are assigned from ensembles
@@ -77,36 +78,36 @@ load_nimble <- function(){
   #tobit.model--This does the GEF for multi Site -------------------------------------
   GEF.MultiSite.Nimble <<- nimbleCode({ 
     # Sorting out qs
-    q[1:3,1:3]  ~ dwish(R = aq[1:3,1:3], df = bq) ## aq and bq are estimated over time
+    q[1:YN,1:YN]  ~ dwish(R = aq[1:YN,1:YN], df = bq) ## aq and bq are estimated over time
     
-    Q[1:3,1:3] <- inverse(q[1:3,1:3])
+    Q[1:YN,1:YN] <- inverse(q[1:YN,1:YN])
     
     # X model  
-    X.mod[1:6] ~ dmnorm(mean = muf[1:6], cov = pf[1:6, 1:6])
+    X.mod[1:N] ~ dmnorm(mean = muf[1:N], cov = pf[1:N, 1:N])
     
-    for (i in 1:3) {
+    for (i in 1:nH) {
       tmpX[i]  <- X.mod[H[i]]
       Xs[i] <- tmpX[i]
     }
     ## add process error to x model but just for the state variables that we have data and H knows who
-    X[1:3]  ~ dmnorm(Xs[1:3], prec = q[1:3, 1:3])
+    X[1:YN]  ~ dmnorm(Xs[1:YN], prec = q[1:YN, 1:YN])
     
     ## Likelihood
-    y.censored[1:3] ~ dmnorm(X[1:3], prec = r[1:3, 1:3])
+    y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN, 1:YN])
     
     # #puting the ones that they don't have q in Xall - They come from X.model 
     # # If I don't have data on then then their q is not identifiable, so we use the same Xs as Xmodel
-    for (j in 1:3) {
+    for (j in 1:nNotH) {
       tmpXmod[j]  <- X.mod[NotH[j]]
       Xall[NotH[j]] <- tmpXmod[j]
     }
     #These are the one that they have data and their q can be estimated.
-    for (i in 1:3) {
+    for (i in 1:nH) {
       tmpXH[i]  <- X[i]
       Xall[H[i]] <- tmpXH[i]
     }
     
-    for (i in 1:3) {
+    for (i in 1:YN) {
       y.ind[i] ~ dinterval(y.censored[i], 0)
     }
     

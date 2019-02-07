@@ -98,7 +98,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   # Taking care of censored data ------------------------------    
   ### create matrix the describes the support for each observed state variable at time t
   interval <- NULL
-  censored.data <- NULL
+  X.new <- NULL
   # Reading the extra arguments
   aqq <- extraArg$aqq
   bqq <- extraArg$bqq
@@ -235,12 +235,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       colMeans(dat.tobit2space[, grep("muf", colnames(dat.tobit2space))])
     Pf <-
       matrix(colMeans(dat.tobit2space[, grep("pf", colnames(dat.tobit2space))]), ncol(X), ncol(X))
-    #--- This is where the localization needs to happen - After imputing Pf
-    if (exists('blocked.dis'))
-      Pf <-
-      Local.support(Pf,
-                    blocked.dis,
-                    settings$state.data.assimilation$scalef %>% as.numeric())
+
+
     
     iycens <- grep("y.censored", colnames(dat.tobit2space))
     X.new <-
@@ -248,13 +244,18 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   } # end of if we have censored data
   
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
-  
+  #--- This is where the localization needs to happen - After imputing Pf
+  if (exists('blocked.dis'))
+        Pf <-
+      Local.support(Pf,
+                    blocked.dis,
+                    settings$state.data.assimilation$scalef %>% as.numeric())
   ###-------------------------------------------------------------------###
   # Generalized Ensemble Filter                                       ###-----
   ###-------------------------------------------------------------------###
 
   #### initial conditions
-  elements.W.Data <-  which(apply(H,2,sum)==1)
+  elements.W.Data <-  which( apply(H, 2, sum) == 1)
   bqq[1]     <- length(elements.W.Data)
   if(is.null(aqq)){
     aqq      <- array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
@@ -311,7 +312,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     
     dimensions.tobit = list(X = length(elements.W.Data),
                             X.mod = ncol(X),
-                            Q = c(length(elements.W.Data), length(elements.W.Data)))
+                            Q = c(length(elements.W.Data), length(elements.W.Data))
+                            )
     
     # Contants defined in the model
     constants.tobit <-
@@ -343,6 +345,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
                               name = 'base')
     
     
+    model_pred$initializeInfo()
     ## Adding X.mod,q,r as data for building model.
     conf <- configureMCMC(model_pred, print=TRUE)
     
