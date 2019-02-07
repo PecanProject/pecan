@@ -184,6 +184,7 @@ Create diagnostics
 * **nitrGEF** : [optional] numeric defining the length of the MCMC chains.
 * **nthin** : [optional] numeric defining thining length for the MCMC chains.
 * **nburnin** : [optional] numeric defining the number of burnins during the MCMCs.
+* **censored.data** : [optional] logical set TRUE for censored state variables.
 
 * **sample.parameters** : [optional] TRUE/FLASE flag for if parameters should be sampled for each ensemble member or not. This allows for more spread in the initial conditions of the forecast.
 * **state.variable** : [required] State variable that is to be assimilated (in PEcAn standard format).
