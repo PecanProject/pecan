@@ -102,7 +102,7 @@ GEF.MultiSite<-function(setting,Forecast,Observed, H, extraArg,...){
   aqq <- extraArg$aqq
   bqq <- extraArg$bqq
   t <- extraArg$t
-  nitr.GEF<-nitr.GEF
+  nitr.GEF<-extraArg$nitr.GEF
   nthin<-extraArg$nthin
   nburnin <- extraArg$nburnin
   
