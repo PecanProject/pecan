@@ -14,6 +14,6 @@ RUN pip install pika==0.11.2 \
                 python-dateutil==2.7.5
 
 WORKDIR /src
-COPY docker/monitor.py /src/
+COPY monitor.py /src/
 
 CMD python monitor.py

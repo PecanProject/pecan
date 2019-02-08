@@ -19,5 +19,5 @@ RUN apt-get update \
     && curl -s -o testrun.PDG.zip http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.PDG.zip \
     && curl -s -o create_met_driver.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/create_met_driver.tar.gz
 
-COPY docker/add-data.sh scripts/add.util.sh /work/
+COPY add-data.sh add.util.sh /work/
 CMD bash /work/add-data.sh

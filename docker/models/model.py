@@ -12,7 +12,6 @@ import pika
 import shutil
 
 rabbitmq_uri = os.getenv('RABBITMQ_URI', 'amqp://guest:guest@rabbitmq/%2F')
-rabbitmq_queue = os.getenv('RABBITMQ_QUEUE', 'pecan')
 default_application = os.getenv('APPLICATION', 'job.sh')
 model_info = None
 
@@ -192,7 +191,7 @@ if __name__ == "__main__":
     model_info = json.load(open('model.json', 'r'))
 
     # set the rabbitmq Queue
-    rabbitmq_queue = '%s_%s' % (model_info['type'], model_info['version']),
+    rabbitmq_queue = '%s_%s' % (model_info['type'], model_info['version'])
 
     # start the model announcer
     announcer = RabbitMQBroadcast(rabbitmq_uri, 'models', model_info, 5)

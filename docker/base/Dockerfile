@@ -21,7 +21,7 @@ COPY base     /pecan/base/
 COPY modules  /pecan/modules/
 COPY models   /pecan/models/
 
-RUN cd /pecan && make
+RUN cd /pecan && make && rm -rf /tmp/downloaded_packages
 
 # COPY WORKFLOW
 WORKDIR /work
