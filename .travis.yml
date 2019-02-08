@@ -129,7 +129,7 @@ before_script:
 script:
   - set -e
   - echo 'Installing PEcAn packages'
-  - Rscript scripts/generate_makefile_deps.R
+  - Rscript scripts/generate_dependencies.R
   # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
   # but many dependency compilations seem not parallel-safe.
   # More debugging needed.
