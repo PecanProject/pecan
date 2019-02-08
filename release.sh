@@ -32,37 +32,17 @@ if [ "${TAGS}" == "" ]; then
 fi
 
 # --------------------------------------------------------------------------------
-# PECAN BUILD SECTION
+# PUSH NEW IMAGES
 # --------------------------------------------------------------------------------
 
-# push pecan images
-for i in depends base models executor web data thredds docs; do
-    for v in ${TAGS}; do
-        if [ "$v" != "latest" -o "$SERVER" != "" ]; then
-            ${DEBUG} docker tag pecan/${i}:latest ${SERVER}pecan/${i}:${v}
-        fi
-        ${DEBUG} docker push ${SERVER}pecan/${i}:${v}
-    done
-done
+if [ "${DEPEND}" == "build" ]; then
+    OLDEST="pecan/depends"
+else
+    OLDEST="pecan/base"
+fi
 
-# --------------------------------------------------------------------------------
-# MODEL BUILD SECTION
-# --------------------------------------------------------------------------------
-
-# push sipnet
-for version in 136; do
-    image="pecan/model-sipnet-${version}"
-    for v in ${TAGS}; do
-        if [ "$v" != "latest" -o "$SERVER" != "" ]; then
-            ${DEBUG} docker tag ${image}:latest ${SERVER}${image}:${v}
-        fi
-        ${DEBUG} docker push ${SERVER}${image}:${v}
-    done
-done
-
-# push ed2
-for version in git; do
-    image="pecan/model-ed2-${version}"
+# push all images
+for image in ${OLDEST}  $( docker image ls pecan/*:latest --filter "since=${OLDEST}:latest" --format "{{ .Repository }}" ); do
     for v in ${TAGS}; do
         if [ "$v" != "latest" -o "$SERVER" != "" ]; then
             ${DEBUG} docker tag ${image}:latest ${SERVER}${image}:${v}

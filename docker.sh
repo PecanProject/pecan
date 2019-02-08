@@ -32,9 +32,7 @@ echo ""
 if [ "${DEPEND}" == "build" ]; then
     echo "# To just pull latest/develop version (default) run"
     echo "# DEPEND=pull $0"
-    ${DEBUG} docker build \
-        --tag pecan/depends:latest \
-        --file docker/base/Dockerfile.depends .
+    ${DEBUG} docker build --tag pecan/depends:latest docker/depends
 elif [ "${DEPEND}" == "pull" ]; then
     echo "# docker image for dependencies is not build by default."
     echo "# this image takes a long time to build. To build this"
@@ -58,19 +56,21 @@ else
 fi
 echo ""
 
-# build images in this specific order. Images are tagged with latest so other
-# docker images build in this script will use that specifc build.
-for i in base models executor web data thredds docs; do
-    ${DEBUG} docker build \
+# require all of PEcAn to build
+for x in base web docs; do
+    ${DEBUG} docker build --tag pecan/$x:latest --file docker/$x/Dockerfile \
         --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION:-latest}" \
-        --build-arg PECAN_VERSION="${VERSION}" \
         --build-arg PECAN_VERSION="${VERSION}" \
         --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
         --build-arg PECAN_GIT_DATE="${PECAN_GIT_DATE}" \
-        --tag pecan/${i}:latest \
-        --file docker/base/Dockerfile.${i} .
+        .
+done
+
+# all files in subfolder
+for x in models executor data thredds monitor; do
+    ${DEBUG} docker build --tag pecan/$x:latest docker/$x
 done
 
 # --------------------------------------------------------------------------------
@@ -91,4 +91,12 @@ for version in git; do
         --build-arg MODEL_VERSION="${version}" \
         --tag pecan/model-ed2-${version}:latest \
         --file models/ed/Dockerfile .
+done
+
+# build maespa
+for version in git; do
+    ${DEBUG} docker build \
+        --build-arg MODEL_VERSION="${version}" \
+        --tag pecan/model-maespa-${version}:latest \
+        --file models/maespa/Dockerfile .
 done
