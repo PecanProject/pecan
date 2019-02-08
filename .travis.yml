@@ -6,7 +6,7 @@
 
 language: r
 r:
-  - 3.4
+  - 3.5
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
@@ -31,10 +31,8 @@ cache:
 addons:
   apt:
     sources:
-      - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
       - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
-      - sourceline: 'ppa:opencpu/imagemagick'
     packages:
       - bc
       - curl
@@ -49,7 +47,6 @@ addons:
       - libnetcdf-dev
       - libproj-dev
       - libudunits2-dev
-      - libmagick++-dev
       - netcdf-bin
       - pandoc
       - python-dev
@@ -132,6 +129,7 @@ before_script:
 script:
   - set -e
   - echo 'Installing PEcAn packages'
+  - Rscript scripts/generate_makefile_deps.R
   # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
   # but many dependency compilations seem not parallel-safe.
   # More debugging needed.
