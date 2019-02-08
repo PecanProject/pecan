@@ -46,22 +46,14 @@ load_nimble <- function(){
   tobit.model <<- nimbleCode({ 
 
     q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
-    
     Q[1:N,1:N] <- inverse(q[1:N,1:N])
-    
     X.mod[1:N] ~ dmnorm(muf[1:N], prec = pf[1:N,1:N]) ## Model Forecast ##muf and pf are assigned from ensembles
     
     ## add process error
     X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
     
-    # Performing the H - choosing the state variables that we have data on
-    for (i in 1:ntake){
-      indtmp[i] <- take[i]
-      XH[i]<-X[indtmp[i]]
-    }
-    
     #observation operator
-    y_star[1:YN] <- y_star_create(XH[1:YN])
+    y_star[1:YN] <- y_star_create(X[1:YN])
     
     ## Analysis
     y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) 
