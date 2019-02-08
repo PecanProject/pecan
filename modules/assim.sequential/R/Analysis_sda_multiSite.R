@@ -172,7 +172,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       conf_tobit2space <<-
         configureMCMC(tobit2space_pred, thin = 10, print = TRUE)
       conf_tobit2space$addMonitors(c("pf", "muf", "y.censored"))
-      ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
       ## important!
       ## this is needed for correct indexing later
       samplerNumberOffset_tobit2space <<-
@@ -183,8 +182,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
           node <- paste0('y.censored[', n, ',', j, ']')
           conf_tobit2space$addSampler(node, 'toggle', control = list(type =
                                                                        'RW'))
-          ## could instead use slice samplers, or any combination thereof, e.g.:
-          ##conf$addSampler(node, 'toggle', control=list(type='slice'))
         }
       }
       
@@ -214,9 +211,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       Cmodel_tobit2space$setInits(inits.tobit2space)
       
       for (i in seq_along(X)) {
-        ## ironically, here we have to "toggle" the value of y.ind[i]
-        ## this specifies that when y.ind[i] = 1,
-        ## indicator variable is set to 0, which specifies *not* to sample
         valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space +
                                                                             i]],
                                       'toggle',
@@ -260,8 +254,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   if(is.null(aqq)){
     aqq      <- array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
   }else{
-    if(ncol(X)!=dim(aqq)[2]|ncol(X)!=dim(aqq)[3]){
-      print('error: X has changed dimensions')
+    if(length(elements.W.Data)!= dim(aqq)[1] | length(elements.W.Data)!= dim(aqq)[2]){
+      PEcAn.logger::logger.warn('error: X has changed dimensions')
     }
   }
   aqq[, ,1] <- diag(length(elements.W.Data)) * bqq[1] #Q
@@ -304,7 +298,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     inits.pred <-
       list(
         X.mod = as.vector(mu.f),
-        q = diag(1,length(elements.W.Data),length(elements.W.Data)),
+        q = diag(1, length(elements.W.Data), length(elements.W.Data)),
         X = as.vector(mu.f)[length(elements.W.Data)],
         Xall = as.vector(mu.f),
         Xs = as.vector(mu.f)[length(elements.W.Data)]
@@ -397,18 +391,24 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
 
   dat <-runMCMC(Cmcmc, niter = nitr.GEF, nburnin=nburnin, thin =nthin, nchains = 1)
   ## update parameters
-  iq   <- grep("q", colnames(dat))
   iX   <- grep("Xall[", colnames(dat), fixed = TRUE)
   mu.a <- colMeans(dat[, iX])
   Pa   <- cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
   
 
-  mq <- dat[, iq]  # Omega, Precision
-  q.bar <- matrix(apply(mq, 2, mean), length(elements.W.Data), length(elements.W.Data))  # Mean Omega, Precision
+  mq <- dat[,  grep("q", colnames(dat))]  # Omega, Precision
+  q.bar <- matrix(apply(mq, 2, mean),
+                  length(elements.W.Data),
+                  length(elements.W.Data)
+                  )  # Mean Omega, Precision
   
-  col <- matrix(1:length(elements.W.Data) ^ 2, length(elements.W.Data), length(elements.W.Data))
-  WV  <- matrix(0, length(elements.W.Data), length(elements.W.Data))
+  col <- matrix(1:length(elements.W.Data) ^ 2,
+                length(elements.W.Data),
+                length(elements.W.Data))
+  
+  WV  <- matrix(0, length(elements.W.Data),
+                length(elements.W.Data))
   
   for (i in seq_along(elements.W.Data)) {
     for (j in seq_along(elements.W.Data)) {
@@ -428,7 +428,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     aqq[, ,t + 1]   <- V
     bqq[t + 1]       <- n
   }
-  #---- Releasing the memory we used 
+  #---- Trying to release some of the memory back to the os 
   gc()
   #
   return(list(mu.f = mu.f,
