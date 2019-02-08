@@ -1,0 +1,15 @@
+{
+  "name": "MAESPA",
+  "type": "MAESPA",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "Maespa is a model of forest canopy radiation absorption, photosynthesis and water balance.",
+  "author": "Tony Gardella",
+  "contributors": [],
+  "links": {
+    "source": "https://bitbucket.org/remkoduursma/maespa",
+    "issues": "https://bitbucket.org/remkoduursma/maespa/issues?status=new&status=open"
+  },
+  "inputs": {},
+  "bibtex": [""]
+}
