@@ -6,7 +6,9 @@
 
 language: r
 r:
-  - 3.5
+  - release
+  - devel
+  - oldrel
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
@@ -19,6 +21,13 @@ env:
     # When Travis updates, check for Make 4 and add -O if available.
     - MAKEFLAGS="-j2"
     - PGHOST=localhost
+    - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - r: devel
+    - r: oldrel
 
 cache: 
   - directories:
@@ -43,7 +52,6 @@ addons:
       - libgmp-dev
       - libhdf5-dev
       - liblapack-dev
-      - libmagick++-dev
       - libnetcdf-dev
       - libproj-dev
       - libudunits2-dev
@@ -57,8 +65,10 @@ addons:
       - r-bioc-biocinstaller
       - r-cran-ape
       - r-cran-curl
+      - r-cran-data.table
       - r-cran-devtools
       - r-cran-dplyr
+      - r-cran-gap
       - r-cran-ggplot2
       - r-cran-httr
       - r-cran-igraph
@@ -71,7 +81,10 @@ addons:
       - r-cran-redland
       - r-cran-rncl
       - r-cran-roxygen2
+      - r-cran-rsqlite
+      - r-cran-sf
       - r-cran-shiny
+      - r-cran-sirt
       - r-cran-testthat
       - r-cran-tidyverse
       - r-cran-xml
@@ -125,17 +138,26 @@ before_script:
 
 script:
   - set -e
-  - echo 'Installing PEcAn packages'
   - Rscript scripts/generate_dependencies.R
+  - echo 'Installing PEcAn packages' && echo -en 'travis_fold:start:install_pkgs\\r'
   # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
   # but many dependency compilations seem not parallel-safe.
   # More debugging needed.
   - NCPUS=2 make -j1
-  - echo 'Testing PEcAn packages'
+  - echo -en 'travis_fold:end:install_pkgs\\r'
+  #
+  - echo 'Testing PEcAn packages' && echo -en 'travis_fold:start:test_pkgs\\r'
   - make test
-  - make check
-  - echo 'Testing Integration'
+  - echo -en 'travis_fold:end:test_pkgs\\r'
+  #
+  - echo 'Checking PEcAn packages' && echo -en 'travis_fold:start:check_pkgs\\r'
+  - REBUILD_DOCS=FALSE make check
+  - echo -en 'travis_fold:end:check_pkgs\\r'
+  #
+  - echo 'Testing Integration' && echo -en 'travis_fold:start:integration_test\\r'
   - ./tests/integration.sh travis
+  - echo -en 'travis_fold:end:integration_test\\r'
+  #
   - if [[ `git status -s` ]]; then 
       echo "These files were changed by the build process:";
       git status -s;
