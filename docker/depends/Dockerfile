@@ -1,8 +1,7 @@
 # ----------------------------------------------------------------------
 # PECAN FOR MODEL BASE IMAGE
 # ----------------------------------------------------------------------
-#FROM rocker/tidyverse:3.5
-FROM pecan/depends
+FROM rocker/tidyverse:3.5
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 # ----------------------------------------------------------------------
@@ -16,11 +15,8 @@ RUN apt-get update \
        librdf0-dev \
        libnetcdf-dev \
        libudunits2-dev \
-       libmagick++-dev \
-       libx11-dev \
        libgl1-mesa-dev \
        libglu1-mesa-dev \
-       libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # ----------------------------------------------------------------------
