@@ -15,11 +15,15 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
 - Add template for documentation issues and add button to edit book.
 - Conditionally skip unit tests for downloading raw met data or querying the database when the required remote connection is not available.
+- Reorganization of docker folder
+  - All dockerfiles now live in their own folder
+  - scripts/generate_dependencies.R is now used to generate dependencies for make and docker
 
 ### Added
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
 - Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
 - Added unit tests for `met2model.<MODEL>` functions for most models.
+- Added MAESPA model to docker build
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
