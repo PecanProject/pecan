@@ -54,7 +54,7 @@ RUN apt-get update \
 ARG MODEL_VERSION=git
 
 # Setup model_info file
-COPY models/ed/model_info.json /work/model.json
+COPY model_info.json /work/model.json
 RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
            -e "s#@BINARY@#/usr/local/bin/ed2.${MODEL_VERSION}#g" /work/model.json
 

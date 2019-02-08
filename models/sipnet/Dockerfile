@@ -49,7 +49,7 @@ FROM pecan/models:latest
 ARG MODEL_VERSION=136
 
 # Setup model_info file
-COPY models/sipnet/model_info.json /work/model.json
+COPY model_info.json /work/model.json
 RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
            -e "s#@BINARY@#/usr/local/bin/sipnet.${MODEL_VERSION}#g" /work/model.json
 

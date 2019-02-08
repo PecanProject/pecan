@@ -82,7 +82,7 @@ for version in 136; do
     ${DEBUG} docker build \
         --build-arg MODEL_VERSION="${version}" \
         --tag pecan/model-sipnet-${version}:latest \
-        --file models/sipnet/Dockerfile .
+        models/sipnet
 done
 
 # build ed2
@@ -90,7 +90,7 @@ for version in git; do
     ${DEBUG} docker build \
         --build-arg MODEL_VERSION="${version}" \
         --tag pecan/model-ed2-${version}:latest \
-        --file models/ed/Dockerfile .
+        models/ed
 done
 
 # build maespa
@@ -98,5 +98,5 @@ for version in git; do
     ${DEBUG} docker build \
         --build-arg MODEL_VERSION="${version}" \
         --tag pecan/model-maespa-${version}:latest \
-        --file models/maespa/Dockerfile .
+        models/maespa
 done

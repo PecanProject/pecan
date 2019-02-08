@@ -37,7 +37,7 @@ FROM pecan/models:latest
 ARG MODEL_VERSION=git
 
 # Setup model_info file
-COPY models/maespa/model_info.json /work/model.json
+COPY model_info.json /work/model.json
 RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
            -e "s#@BINARY@#/usr/local/bin/maespa.${MODEL_VERSION}#g" /work/model.json
 
