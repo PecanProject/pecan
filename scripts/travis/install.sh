@@ -24,7 +24,7 @@ set -e
 (
     travis_time_start "install_r_dependencies" "Installing R dependencies"
 
-    Rscript -e 'install.packages(c("littler", "devtools"))'
+    Rscript -e 'install.packages(c("littler", "devtools"), dependencies=TRUE)'
     export PATH=${PATH}:${R_LIBS_USER}/littler/examples:${R_LIBS_USER}/littler/bin
     bash docker/depends/pecan.depends
 
