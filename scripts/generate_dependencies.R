@@ -104,10 +104,10 @@ for(line in readLines(con=".travis.yml", n=-1)) {
     next
   } else if (line == 'r_binary_packages:') {
     skipping = TRUE
-    output <- c(output, line, paste('  - ', sort(docker)))
-  } else if (line == 'r_binary_packages:') {
+    output <- c(output, line, paste0('  - ', sort(docker)))
+  } else if (line == 'r_github_packages:') {
     skipping = TRUE
-    output <- c(output, line, paste('  - ', sort(remotes)))
+    output <- c(output, line, paste0('  - ', sort(remotes)))
   } else {
     skipping <- FALSE
     output <- c(output, line)
