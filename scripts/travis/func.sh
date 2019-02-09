@@ -1,27 +1,5 @@
 #!/bin/bash
 
-fold_start() {
-    if [ "${fold_name}" != "" ]; then
-        echo "ALREADY IN A FOLD NO SUBFOLDS"
-    fi
-    if [ "$1" == "" ]; then
-        echo "NO FOLD NAME GIVEN"
-    fi
-
-    export fold_name="$1"
-
-    echo "travis_fold:start:${fold_name}"
-    if [ "$2" != "" ]; then
-        echo "$2"
-    fi
-}
-
-fold_end() {
-    if [ "${fold_name}" != "" ]; then
-        echo "travis_fold:end:${fold_name}"
-        unset fold_name
-    fi
-}
 
 function travis_time_start {
     set +x
