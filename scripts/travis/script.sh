@@ -3,13 +3,12 @@
 . $( dirname $0 )/func.sh
 
 set -e
-set -e
 
-(
-    fold_start "generate_dependencies" "Generate dependencies"
-    Rscript scripts/generate_dependencies.R
-    fold_end
-)
+# (
+#     fold_start "generate_dependencies" "Generate dependencies"
+#     Rscript scripts/generate_dependencies.R
+#     fold_end
+# )
 
 
 # - set -e
@@ -34,13 +33,13 @@ set -e
 # - echo -en 'travis_fold:end:integration_test\\r'
 # #
 
-(
-    fold_start "check_git_status" "Check for changed files"
-    if [[ `git status -s` ]]; then 
-        echo "These files were changed by the build process:";
-        git status -s;
-        echo "Have you run devtools::check and commited any updated Roxygen outputs?";
-        exit 1; 
-    fi
-    fold_end
-)
+# (
+#     fold_start "check_git_status" "Check for changed files"
+#     if [[ `git status -s` ]]; then 
+#         echo "These files were changed by the build process:";
+#         git status -s;
+#         echo "Have you run devtools::check and commited any updated Roxygen outputs?";
+#         exit 1; 
+#     fi
+#     fold_end
+# )

@@ -20,17 +20,17 @@ set -e
     #fold_end
 )
 
-# INSTALLING R BUILD TOOLS
-(
-    travis_time_start "install_r_build" "Installing R build tools"
-    Rscript -e 'install.packages(c("littler", "devtools"), dependencies=TRUE)'
-    export PATH=${PATH}:${R_LIBS_USER}/littler/examples:${R_LIBS_USER}/littler/bin
-    travis_time_end
-)
+# # INSTALLING R BUILD TOOLS
+# (
+#     travis_time_start "install_r_build" "Installing R build tools"
+#     Rscript -e 'install.packages(c("littler", "devtools"), dependencies=TRUE)'
+#     export PATH=${PATH}:${R_LIBS_USER}/littler/examples:${R_LIBS_USER}/littler/bin
+#     travis_time_end
+# )
 
-# INSTALLING PECAN DEPENDENCIES
-(
-    travis_time_start "install_pecan_dependencies" "Installing PEcAn dependencies"
-    bash docker/depends/pecan.depends
-    travis_time_end
-)
+# # INSTALLING PECAN DEPENDENCIES
+# (
+#     travis_time_start "install_pecan_dependencies" "Installing PEcAn dependencies"
+#     bash docker/depends/pecan.depends
+#     travis_time_end
+# )
