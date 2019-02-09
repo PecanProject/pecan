@@ -47,7 +47,7 @@ addons:
       - libglu1-mesa-dev
       - r-cran-devtools
       # r-cran binary packages
-      # - r-cran-abind
+      - r-cran-abind
       # - r-cran-car
       # - r-cran-coda
       # - r-cran-data.table
