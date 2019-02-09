@@ -27,6 +27,9 @@ set -e
 (
     travis_time_start "install_pecan_dependencies" "Installing PEcAn dependencies"
     export PATH=${PATH}:${R_LIBS_USER}/littler/examples:${R_LIBS_USER}/littler/bin
+    ls ${R_LIBS_USER}
+    ls ${R_LIBS_USER}/littler/examples
+    ls ${R_LIBS_USER}/littler/bin
     bash docker/depends/pecan.depends
     travis_time_end
 )
