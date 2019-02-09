@@ -37,14 +37,14 @@ cache:
 addons:
   apt:
     packages:
-      # - jags
-      # - time
-      # - libgdal-dev
-      # - librdf0-dev
-      # - libnetcdf-dev
-      # - libudunits2-dev
-      # - libgl1-mesa-dev
-      # - libglu1-mesa-dev
+      - jags
+      - time
+      - libgdal-dev
+      - librdf0-dev
+      - libnetcdf-dev
+      - libudunits2-dev
+      - libgl1-mesa-dev
+      - libglu1-mesa-dev
       - r-cran-devtools
       # r-cran binary packages
       # - r-cran-abind
