@@ -4,13 +4,22 @@ tmpdir <- tempfile(pattern = "GFDLtest")
 dir.create(tmpdir, showWarnings = FALSE)
 teardown(unlink(tmpdir, recursive = TRUE))
 
-test_url <- paste0("http://nomads.gfdl.noaa.gov:9192/opendap/",
-                   "CMIP5/output1/NOAA-GFDL/GFDL-CM3/rcp45/3hr/",
-                   "atmos/3hr/r1i1p1/v20110601/tas/",
-                   "tas_3hr_GFDL-CM3_rcp45_r1i1p1_2006010100-2010123123.nc")
+test_that("URL is openable", {
+  skip_on_travis()
 
-test_nc <- tryCatch(ncdf4::nc_open(test_url), error = function(e) {
-  skip("Skipping test because unable to reach NOAA GFDL download server.")
+  test_url <- paste0("http://nomads.gfdl.noaa.gov:9192/opendap/",
+                     "CMIP5/output1/NOAA-GFDL/GFDL-CM3/rcp45/3hr/",
+                     "atmos/3hr/r1i1p1/v20110601/tas/",
+                     "tas_3hr_GFDL-CM3_rcp45_r1i1p1_2006010100-2010123123.nc")
+  test_nc <- tryCatch(
+    ncdf4::nc_open(test_url, suppress_dimvals = TRUE),
+    error = function(e) {
+      skip("Skipping test because unable to reach NOAA GFDL download server.")
+    }
+  )
+  teardown(ncdf4::nc_close(test_nc))
+
+  expect_s3_class(test_nc, "ncdf4")
 })
 
 test_that("download works and returns a valid CF file", {
