@@ -47,68 +47,68 @@ addons:
       # - libglu1-mesa-dev
       - r-cran-devtools
       # r-cran binary packages
-      - r-cran-abind
-      - r-cran-car
-      - r-cran-coda
-      - r-cran-data.table
-      - r-cran-dataone
-      - r-cran-datapack
-      - r-cran-dbplyr
-      - r-cran-dplyr
-      - r-cran-ellipse
-      - r-cran-fields
-      - r-cran-foreach
-      - r-cran-geonames
-      - r-cran-ggmap
-      - r-cran-ggplot2
-      - r-cran-glue
-      - r-cran-httr
-      - r-cran-jsonlite
-      - r-cran-knitr
-      - r-cran-lattice
-      - r-cran-lubridate
-      - r-cran-magic
-      - r-cran-magrittr
-      - r-cran-maps
-      - r-cran-maptools
-      - r-cran-mclust
-      - r-cran-mgcv
-      - r-cran-minpack.lm
-      - r-cran-mlegp
-      - r-cran-mvtnorm
-      - r-cran-ncdf4
-      - r-cran-ncdf4.helpers
-      - r-cran-nimble
-      - r-cran-plotrix
-      - r-cran-plyr
-      - r-cran-png
-      - r-cran-progress
-      - r-cran-purrr
-      - r-cran-pwr
-      - r-cran-randtoolbox
-      - r-cran-raster
-      - r-cran-rcrossref
-      - r-cran-redland
-      - r-cran-reshape2
-      - r-cran-reticulate
-      - r-cran-rgdal
-      - r-cran-rjags
-      - r-cran-rjson
-      - r-cran-rlang
-      - r-cran-rnoaa
-      - r-cran-sf
-      - r-cran-sirt
-      - r-cran-sp
-      - r-cran-stringi
-      - r-cran-stringr
-      - r-cran-testthat
-      - r-cran-tibble
-      - r-cran-tidyr
-      - r-cran-tidyverse
-      - r-cran-truncnorm
-      - r-cran-udunits2
-      - r-cran-xtable
-      - r-cran-zoo
+      # - r-cran-abind
+      # - r-cran-car
+      # - r-cran-coda
+      # - r-cran-data.table
+      # - r-cran-dataone
+      # - r-cran-datapack
+      # - r-cran-dbplyr
+      # - r-cran-dplyr
+      # - r-cran-ellipse
+      # - r-cran-fields
+      # - r-cran-foreach
+      # - r-cran-geonames
+      # - r-cran-ggmap
+      # - r-cran-ggplot2
+      # - r-cran-glue
+      # - r-cran-httr
+      # - r-cran-jsonlite
+      # - r-cran-knitr
+      # - r-cran-lattice
+      # - r-cran-lubridate
+      # - r-cran-magic
+      # - r-cran-magrittr
+      # - r-cran-maps
+      # - r-cran-maptools
+      # - r-cran-mclust
+      # - r-cran-mgcv
+      # - r-cran-minpack.lm
+      # - r-cran-mlegp
+      # - r-cran-mvtnorm
+      # - r-cran-ncdf4
+      # - r-cran-ncdf4.helpers
+      # - r-cran-nimble
+      # - r-cran-plotrix
+      # - r-cran-plyr
+      # - r-cran-png
+      # - r-cran-progress
+      # - r-cran-purrr
+      # - r-cran-pwr
+      # - r-cran-randtoolbox
+      # - r-cran-raster
+      # - r-cran-rcrossref
+      # - r-cran-redland
+      # - r-cran-reshape2
+      # - r-cran-reticulate
+      # - r-cran-rgdal
+      # - r-cran-rjags
+      # - r-cran-rjson
+      # - r-cran-rlang
+      # - r-cran-rnoaa
+      # - r-cran-sf
+      # - r-cran-sirt
+      # - r-cran-sp
+      # - r-cran-stringi
+      # - r-cran-stringr
+      # - r-cran-testthat
+      # - r-cran-tibble
+      # - r-cran-tidyr
+      # - r-cran-tidyverse
+      # - r-cran-truncnorm
+      # - r-cran-udunits2
+      # - r-cran-xtable
+      # - r-cran-zoo
 
 ## notifications should go to slack
 notifications:
@@ -124,6 +124,7 @@ services:
   - docker
 
 install:
+  - set -e
   - scripts/travis/install.sh
   
 before_script:

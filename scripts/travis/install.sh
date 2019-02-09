@@ -11,6 +11,7 @@ set -e
     tar zxf sipnet_unk.tar.gz
     cd sipnet_unk
     make
+    cd ..
 
     travis_time_end
 )
@@ -21,11 +22,11 @@ set -e
     Rscript -e 'install.packages(c("littler", "devtools"), dependencies=TRUE)'
     travis_time_end
 )
-export PATH=${PATH}:${R_LIBS_USER}/littler/examples:${R_LIBS_USER}/littler/bin
 
 # INSTALLING PECAN DEPENDENCIES
 (
     travis_time_start "install_pecan_dependencies" "Installing PEcAn dependencies"
+    export PATH=${PATH}:${R_LIBS_USER}/littler/examples:${R_LIBS_USER}/littler/bin
     bash docker/depends/pecan.depends
     travis_time_end
 )
