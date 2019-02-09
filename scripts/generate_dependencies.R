@@ -95,22 +95,3 @@ cat('#!/bin/bash',
     '# install all packages (depends, imports, suggests)',
     paste0('install2.r -e -s \\\n    ', paste(sort(docker), sep="", collapse=" \\\n    ")),
     file = 'docker/depends/pecan.depends', sep = '\n', append = FALSE)
-
-# update travis.yml
-skipping <- FALSE
-output <- c()
-for(line in readLines(con=".travis.yml", n=-1)) {
-  if (skipping && line != '') {
-    next
-  } else if (line == 'r_binary_packages:') {
-    skipping = TRUE
-    output <- c(output, line, paste0('  - ', sort(docker)))
-  } else if (line == 'r_github_packages:') {
-    skipping = TRUE
-    output <- c(output, line, paste0('  - ', sort(remotes)))
-  } else {
-    skipping <- FALSE
-    output <- c(output, line)
-  }
-}
-cat(output, file=".travis.yml", append=FALSE, sep='\n')

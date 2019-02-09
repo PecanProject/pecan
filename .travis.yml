@@ -46,104 +46,6 @@ addons:
       - libgl1-mesa-dev
       - libglu1-mesa-dev
  
-r_binary_packages:
-  - abind
-  - BayesianTools
-  - BioCro
-  - car
-  - coda
-  - data.table
-  - dataone
-  - datapack
-  - DBI
-  - dbplyr
-  - doParallel
-  - dplyr
-  - ellipse
-  - fields
-  - foreach
-  - geonames
-  - getPass
-  - ggmap
-  - ggplot2
-  - glue
-  - grid
-  - gridExtra
-  - hdf5r
-  - here
-  - httr
-  - IDPmisc
-  - jsonlite
-  - knitr
-  - lattice
-  - linkages
-  - lubridate
-  - Maeswrap
-  - magic
-  - magrittr
-  - maps
-  - maptools
-  - MASS
-  - mclust
-  - MCMCpack
-  - methods
-  - mgcv
-  - minpack.lm
-  - mlegp
-  - mockery
-  - mvtnorm
-  - ncdf4
-  - ncdf4.helpers
-  - nimble
-  - nneo
-  - parallel
-  - plotrix
-  - plyr
-  - png
-  - progress
-  - purrr
-  - pwr
-  - randtoolbox
-  - raster
-  - rcrossref
-  - RCurl
-  - REddyProc
-  - redland
-  - reshape2
-  - reticulate
-  - rgdal
-  - rjags
-  - rjson
-  - rlang
-  - RMySQL
-  - rnoaa
-  - RPostgreSQL
-  - Rpreles
-  - RSQLite
-  - sf
-  - SimilarityMeasures
-  - sirt
-  - sp
-  - stringi
-  - stringr
-  - testthat
-  - tibble
-  - tidyr
-  - tidyverse
-  - tools
-  - truncnorm
-  - udunits2
-  - XML
-  - xtable
-  - zoo
-
-r_github_packages:
-  - araiho/linkages_package
-  - ebimodeling/biocro
-  - MikkoPeltoniemi/Rpreles
-  - ropensci/geonames
-  - ropensci/nneo
-
 ## notifications should go to slack
 notifications:
   slack:
@@ -157,8 +59,8 @@ notifications:
 services:
   - docker
 
-#install:
-#  - scripts/travis/install.sh
+install:
+  - scripts/travis/install.sh
   
 before_script:
   - scripts/travis/before_script.sh

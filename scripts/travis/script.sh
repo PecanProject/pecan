@@ -1,8 +1,7 @@
 #!/bin/bash
 
+set -x
 . $( dirname $0 )/func.sh
-
-set -e
 
 # (
 #     fold_start "generate_dependencies" "Generate dependencies"

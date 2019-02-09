@@ -1,8 +1,7 @@
 #!/bin/bash
 
+set -x
 . $( dirname $0 )/func.sh
-
-set -e
 
 # INSTALLING SIPNET
 (
@@ -20,13 +19,13 @@ set -e
     #fold_end
 )
 
-# # INSTALLING R BUILD TOOLS
-# (
-#     travis_time_start "install_r_build" "Installing R build tools"
-#     Rscript -e 'install.packages(c("littler", "devtools"), dependencies=TRUE)'
-#     export PATH=${PATH}:${R_LIBS_USER}/littler/examples:${R_LIBS_USER}/littler/bin
-#     travis_time_end
-# )
+# INSTALLING R BUILD TOOLS
+(
+    travis_time_start "install_r_build" "Installing R build tools"
+    Rscript -e 'install.packages(c("littler", "devtools"), dependencies=TRUE)'
+    export PATH=${PATH}:${R_LIBS_USER}/littler/examples:${R_LIBS_USER}/littler/bin
+    travis_time_end
+)
 
 # # INSTALLING PECAN DEPENDENCIES
 # (
