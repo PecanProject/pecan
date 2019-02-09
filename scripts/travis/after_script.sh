@@ -1,4 +1,4 @@
 #!/bin/bash
 
-set -x
+set -e
 . $( dirname $0 )/func.sh
