@@ -37,39 +37,15 @@ cache:
 addons:
   apt:
     packages:
-      - jags
-      - time
-      - libgdal-dev
-      - librdf0-dev
-      - libnetcdf-dev
-      - libudunits2-dev
-      - libgl1-mesa-dev
-      - libglu1-mesa-dev
+      # - jags
+      # - time
+      # - libgdal-dev
+      # - librdf0-dev
+      # - libnetcdf-dev
+      # - libudunits2-dev
+      # - libgl1-mesa-dev
+      # - libglu1-mesa-dev
       # r-cran binary packages
-      - r-cran-abind
-      - r-cran-car
-      - r-cran-coda
-      - r-cran-foreach
-      - r-cran-ggplot2
-      - r-cran-jsonlite
-      - r-cran-lattice
-      - r-cran-magrittr
-      - r-cran-maps
-      - r-cran-mgcv
-      - r-cran-mvtnorm
-      - r-cran-ncdf4
-      - r-cran-plotrix
-      - r-cran-plyr
-      - r-cran-reshape2
-      - r-cran-rjags
-      - r-cran-rjson
-      - r-cran-sp
-      - r-cran-stringi
-      - r-cran-stringr
-      - r-cran-testthat
-      - r-cran-truncnorm
-      - r-cran-xtable
-      - r-cran-zoo
 
 ## notifications should go to slack
 notifications:
