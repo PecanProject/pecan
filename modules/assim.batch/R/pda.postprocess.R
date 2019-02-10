@@ -190,24 +190,24 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
 
     
     cat("Summary statistics\n", file = filename.mcmc.temp)
-    capture.output(summary(params.subset[[i]]), file = filename.mcmc.temp, append = TRUE)
+    utils::capture.output(summary(params.subset[[i]]), file = filename.mcmc.temp, append = TRUE)
     cat("\n\n\n", file = filename.mcmc.temp, append = TRUE)
     
     if (length(prior.ind[[i]]) > 1) {
       cat("Covariance matrix :\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(stats::cov(dm), file = filename.mcmc.temp, append = TRUE)
+      utils::capture.output(stats::cov(dm), file = filename.mcmc.temp, append = TRUE)
       cat("\n\n\n", file = filename.mcmc.temp, append = TRUE)
     }
     
     if (length(prior.ind[[i]]) > 1) {
       cat("Correlation matrix :\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(stats::cor(dm), file = filename.mcmc.temp, append = TRUE)
+      utils::capture.output(stats::cor(dm), file = filename.mcmc.temp, append = TRUE)
       cat("\n\n\n", file = filename.mcmc.temp, append = TRUE)
     }
     
     if (length(params.subset[[i]]) > 1) {
       cat("Gelman and Rubin convergence diagnostics\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(coda::gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp,
+      utils::capture.output(coda::gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp,
                      append = TRUE)
     }
     

@@ -65,7 +65,7 @@ pda.mcmc.recover <- function(settings, params.id = NULL, param.names = NULL, pri
     settings$assim.batch$ensemble.id <- as.character(max(ens.ids))
     
     ## Load up temp file to recreate params
-    params <- as.matrix(read.table(file.path(settings$outdir, "pda.mcmc.txt")))
+    params <- as.matrix(utils::read.table(file.path(settings$outdir, "pda.mcmc.txt")))
     colnames(params) <- pname
     
     ## Update iters

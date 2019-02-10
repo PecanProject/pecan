@@ -44,7 +44,7 @@ getBurnin <- function(jags_out,
     # Chains converged instantly -- no burnin required
     burnin <- 2     # This isn't 1 to allow testing for convergence with `burnin == 1`
   } else {
-    index <- tail(which(rowSums(gbr_exceed) > 0), 1) + 1
+    index <- utils::tail(which(rowSums(gbr_exceed) > 0), 1) + 1
     stopifnot(length(index) == 1,
               class(index) %in% c("numeric", "integer"))
     if (index > dim(GBR)[1]) {
@@ -59,7 +59,7 @@ getBurnin <- function(jags_out,
     colnames(mvals) <- colnames(gbr_values)
     mex <- as.data.frame(matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed)))
     colnames(mex) <- sprintf("PSRF %s > %.2f", colnames(gbr_exceed), threshold)
-    print(cbind(tail(mvals), tail(mex)))
+    print(cbind(utils::tail(mvals), utils::tail(mex)))
     burnin <- 1
   }
   return(burnin)

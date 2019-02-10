@@ -70,7 +70,7 @@ get.da.data.growth <- function() {
   
   out.dir <- "./pecan/Toolik/growth/"
   
-  buds <- read.csv("./toolik/validation/Survey/ToolikVegSurvey.csv", sep = "\t")
+  buds <- utils::read.csv("./toolik/validation/Survey/ToolikVegSurvey.csv", sep = "\t")
   buds <- buds[!is.na(buds$length), ]
   buds <- buds[buds$pft != "graminoid", ]
   heights <- buds[, c("length", paste0("X", 2010:2003))]
