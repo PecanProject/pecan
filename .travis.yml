@@ -41,6 +41,8 @@ addons:
       - time
       - libcurl4-openssl-dev
       - libgdal-dev
+      - libraptor2-dev
+      - librasqal3-dev
       - librdf0-dev
       - libnetcdf-dev
       - libudunits2-dev
