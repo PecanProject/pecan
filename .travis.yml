@@ -41,26 +41,26 @@ addons:
       - curl
       - gdal-bin
       - jags
-      - libcurl4-openssl-dev
-      - time
       - libcurl4-gnutls-dev
       - libgdal-dev
+      - libgl1-mesa-dev
+      - libglu1-mesa-dev
       - libgmp-dev
       - libhdf5-dev
       - liblapack-dev
+      - libnetcdf-dev
+      - libproj-dev
       - libraptor2-dev
       - librasqal3-dev
       - librdf0-dev
-      - libnetcdf-dev
-      - libproj-dev
+      - libssl-dev
       - libudunits2-dev
-      - libgl1-mesa-dev
-      - libglu1-mesa-dev
       - netcdf-bin
       - pandoc
       - python-dev
       - tcl
       - tcl-dev
+      - time
       - udunits-bin
       # r-cran devtools and dependencies
       # - r-cran-devtools
