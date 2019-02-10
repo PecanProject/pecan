@@ -102,7 +102,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
       init[[i]] <- list(tau_add=1/var(diff(y.samp), na.rm=TRUE)) 
     }
     
-    j.model   <- jags.model(file     = textConnection(HLModel),
+    j.model   <- rjags::jags.model(file     = textConnection(HLModel),
                             data     = data,
                             inits    = init,
                             n.chains = 3)
@@ -147,7 +147,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
                         tau_obs=1/var(diff(y.samp), na.rm=TRUE))
     }
     
-    j.model   <- jags.model(file     = textConnection(GaussianModel),
+    j.model   <- rjags::jags.model(file     = textConnection(GaussianModel),
                             data     = data,
                             inits    = init,
                             n.chains = 3)
@@ -156,10 +156,11 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     PEcAn.logger::logger.error(model, "is not data available as data model.")
   }
   
-  jags.out   <- coda.samples (model          = j.model,
-                              variable.names = c("x"),
-                              n.iter         = 5000,
-                              thin           = 100)
+  jags.out <- rjags::coda.samples(
+    model          = j.model,
+    variable.names = c("x"),
+    n.iter         = 5000,
+    thin           = 100)
   
   
   out <- as.matrix(jags.out)
