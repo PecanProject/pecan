@@ -154,7 +154,7 @@ pda.settings.bt <- function(settings) {
 correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pearson", whichParameters = NULL) {
   
   if (inherits(mat, "bayesianOutput")) {
-    mat <- getSample(mat, thin = thin, whichParameters = whichParameters, ...)
+    mat <- BayesianTools::getSample(mat, thin = thin, whichParameters = whichParameters, ...)
   }
   
   numPars <- ncol(mat)

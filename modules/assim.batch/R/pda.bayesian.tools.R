@@ -179,7 +179,7 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   }
   
   ## Create bayesianSetup object for BayesianTools
-  bayesianSetup <- createBayesianSetup(bt.likelihood, bt.prior, best = parm[prior.ind.all], parallel = FALSE)
+  bayesianSetup <- BayesianTools::createBayesianSetup(bt.likelihood, bt.prior, best = parm[prior.ind.all], parallel = FALSE)
   
   PEcAn.logger::logger.info(paste0("Extracting upper and lower boundaries from priors."))  # M/AM/DR/DRAM can't work with -Inf, Inf values
   rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)), 
@@ -201,10 +201,10 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   
   if (!is.null(settings$assim.batch$extension)) {
     load(settings$assim.batch$out.path)  # loads previous out list
-    out <- runMCMC(bayesianSetup = out, sampler = sampler, settings = bt.settings)
+    out <- BayesianTools::runMCMC(bayesianSetup = out, sampler = sampler, settings = bt.settings)
   } else {
     ## central function in BayesianTools
-    out <- runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
+    out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
   }
   
   # save the out object for restart functionality and further inspection
@@ -215,7 +215,7 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   save(out, file = settings$assim.batch$out.path)
   
   # prepare for post-process
-  samples <- getSample(out, parametersOnly = TRUE)  # getSample{BayesianTools}
+  samples <- BayesianTools::getSample(out, parametersOnly = TRUE)  # getSample{BayesianTools}
   colnames(samples) <- pname.all[prior.ind.all]
   mcmc.list <- list(samples)
   
