@@ -40,7 +40,6 @@ addons:
       - jags
       - time
       - libcurl4-gnutls-dev
-      - libcurl4-openssl-dev
       - libgdal-dev
       - libraptor2-dev
       - librasqal3-dev
