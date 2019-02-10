@@ -827,7 +827,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   
   burnins <- rep(NA, length(mcmc.param.list))
   for (i in seq_along(mcmc.param.list)) {
-    params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
+    params.subset[[i]] <- coda::as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
     burnin     <- getBurnin(params.subset[[i]], method = "gelman.plot")
     burnins[i] <- max(burnin, na.rm = TRUE)

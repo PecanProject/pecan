@@ -83,10 +83,10 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
       beta.o <- array(params.subset[[i]][[v]], c(length(params.subset[[i]][[v]]), 1))
       colnames(beta.o) <- "beta.o"
       if (pname[prior.ind[[i]][v]] %in% names(trait.mcmc)) {
-        trait.mcmc[[pname[prior.ind[[i]][v]]]] <- mcmc.list(as.mcmc(beta.o))
+        trait.mcmc[[pname[prior.ind[[i]][v]]]] <- coda::mcmc.list(coda::as.mcmc(beta.o))
       } else {
         k <- length(trait.mcmc) + 1
-        trait.mcmc[[k]] <- mcmc.list(as.mcmc(beta.o))
+        trait.mcmc[[k]] <- coda::mcmc.list(coda::as.mcmc(beta.o))
         names(trait.mcmc)[k] <- pname[prior.ind[[i]]][v]
       }
     }
@@ -127,7 +127,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
   enough.iter <- TRUE
   
   for (i in seq_along(prior.ind)) {
-    params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
+    params.subset[[i]] <- coda::as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
     burnin <- getBurnin(params.subset[[i]], method = "gelman.plot")
     
@@ -207,7 +207,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
     
     if (length(params.subset[[i]]) > 1) {
       cat("Gelman and Rubin convergence diagnostics\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(coda::gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp, 
+      capture.output(coda::gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp,
                      append = TRUE)
     }
     
@@ -228,7 +228,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
 ##' @export
 write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
   
-  sf.samp <- as.mcmc.list(lapply(sf.samp.list, mcmc))
+  sf.samp <- coda::as.mcmc.list(lapply(sf.samp.list, mcmc))
   
   # saving this before discarding burnin, because in resampling we want to keep the samples together
   save(sf.samp, file = sf.samp.filename)
