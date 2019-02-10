@@ -32,6 +32,8 @@ dpkg -l
     ls ${R_LIBS_USER}
     ls ${R_LIBS_USER}/littler/examples
     ls ${R_LIBS_USER}/littler/bin
+    r -e 'getOption("repos")'
+    echo 'options(repos=structure(c(CRAN="http://cran.rstudio.com")))' >> ~/.Rprofile
     bash docker/depends/pecan.depends
     travis_time_end
 )
