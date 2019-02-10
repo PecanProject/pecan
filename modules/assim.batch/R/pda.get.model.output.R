@@ -11,7 +11,6 @@
 pda.get.model.output <- function(settings, run.id, bety, inputs) {
   
   library(PEcAn.benchmark)
-  library(PEcAn.utils)
   
   input.info <- settings$assim.batch$inputs
   
@@ -22,9 +21,9 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
   n.input <- length(inputs)
   
   for(k in 1:n.input){
-    # if there is a deriation is requested this line takes care of it 
-    variable <- lapply(input.info[[k]]$variable.name, convert.expr)
-    # convert.expr returns variable names in the data and in the model 
+    # if there is a deriation is requested this line takes care of it
+    variable <- lapply(input.info[[k]]$variable.name, PEcAn.utils::convert.expr)
+    # convert.expr returns variable names in the data and in the model
     # variable names that correspond to model outputs will be in the variable$eqn
     variable.name <- lapply(inputs[[k]]$variable.name, `[[`, "variable.eqn")
     # get the variable names, e.g. 'TotalSoil', 'Litter'
@@ -71,7 +70,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     
     
     # read model output
-    model.raw <- as.data.frame(read.output(run.id, outdir = file.path(settings$modeloutdir, run.id),
+    model.raw <- as.data.frame(PEcAn.utils::read.output(run.id, outdir = file.path(settings$modeloutdir, run.id),
                                            start.year, end.year, variables = vars))
     
     if(length(model.raw) == 0 | all(is.na(model.raw))) {   # Probably indicates model failed entirely

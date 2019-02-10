@@ -58,7 +58,7 @@ get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size = 1
   stopifnot(all(abs(observed$FC) <= 500, na.rm = TRUE))
 
   # ENSEMBLE
-  ensemble.run.ids <- get.run.id("ENS", left.pad.zeros(1:ensemble.size))
+  ensemble.run.ids <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(1:ensemble.size))
   ensemble.x <- do.call(cbind, ensemble.samples[pfts])[1:ensemble.size, ]
 
   # SENSITIVITY ANALYSIS
@@ -74,7 +74,7 @@ get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size = 1
       median.samples[[i]] <- sa.samples[[i]][MEDIAN, ]
     }
     names(median.samples) <- names(sa.samples)
-    run.id <- get.run.id("SA", "median")
+    run.id <- PEcAn.utils::get.run.id("SA", "median")
     sa.x[[run.id]] <- do.call(cbind, trait.samples)
     ## loop over pfts
     for (i in seq(names(sa.samples))) {
@@ -89,7 +89,7 @@ get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size = 1
             quantile <- as.numeric(quantile.str) / 100
             trait.samples <- median.samples
             trait.samples[[i]][trait] <- sa.samples[[i]][quantile.str, trait]
-            run.id <- get.run.id("SA", round(quantile, 3),
+            run.id <- PEcAn.utils::get.run.id("SA", round(quantile, 3),
                                  trait = trait,
                                  pft.name = names(trait.samples)[i])
             sa.x[[run.id]] <- do.call(cbind, trait.samples)

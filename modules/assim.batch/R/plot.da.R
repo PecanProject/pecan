@@ -80,9 +80,9 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   print(nrow(x))
   print(length(good.runs))
   for (i in seq_along(x)) {
-    trait.entry <- trait.lookup(gsub("[1-2]$", "", traits[i]))
+    trait.entry <- PEcAn.utils::trait.lookup(gsub("[1-2]$", "", traits[i]))
     if (is.na(trait.entry)) {
-      trait.entry <- trait.lookup(traits[i])
+      trait.entry <- PEcAn.utils::trait.lookup(traits[i])
     }
     
     plot(x[good.runs, i], y[good.runs], 
@@ -125,9 +125,9 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
     all <- do.call(rbind, lapply(samp, function(chain) chain[thin, i]))
     
     # Density plots
-    trait.entry <- trait.lookup(gsub("[1-2]$", "", traits[i]))
+    trait.entry <- PEcAn.utils::trait.lookup(gsub("[1-2]$", "", traits[i]))
     if (is.na(trait.entry)) {
-      trait.entry <- trait.lookup(traits[i])
+      trait.entry <- PEcAn.utils::trait.lookup(traits[i])
     }
     plot(density(all), 
          xlim = p.rng[i, ], 

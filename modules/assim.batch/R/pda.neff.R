@@ -80,7 +80,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     # converting back C fluxes from  kg C m-2 s-1 to umol C m-2 s-1 
     # reduces the code and makes model fitting easier
     if(input$variable.id %in% c(297, 1000000042)){
-      obs <- misc.convert(obs, "kg C m-2 s-1", "umol C m-2 s-1")
+      obs <- PEcAn.utils::misc.convert(obs, "kg C m-2 s-1", "umol C m-2 s-1")
       AMFq  <- rep(0, length(obs))
       flags <- TRUE
       AMF.params <- flux.uncertainty(obs, AMFq, flags, bin.num = 20)

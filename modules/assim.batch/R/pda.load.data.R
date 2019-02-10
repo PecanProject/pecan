@@ -23,7 +23,7 @@ load.pda.data <- function(settings, bety) {
   for(i in seq_len(n.input)) {
     inputs[[i]]               <- list()
     
-    inputs[[i]]$variable.name <- lapply(input.settings[[i]]$variable.name, convert.expr)
+    inputs[[i]]$variable.name <- lapply(input.settings[[i]]$variable.name, PEcAn.utils::convert.expr)
     data.var                  <-  sapply(inputs[[i]]$variable.name, `[[`, "variable.drv")
 
     data.path                 <- input.settings[[i]]$path
