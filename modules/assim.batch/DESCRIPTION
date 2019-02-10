@@ -21,6 +21,7 @@ Imports:
     parallel,
     PEcAn.benchmark,
     PEcAn.DB,
+    PEcAn.emulator,
     PEcAn.logger,
     PEcAn.MA,
     PEcAn.remote,
