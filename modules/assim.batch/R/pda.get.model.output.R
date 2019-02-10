@@ -10,8 +10,6 @@
 ##' @export
 pda.get.model.output <- function(settings, run.id, bety, inputs) {
   
-  library(PEcAn.benchmark)
-  
   input.info <- settings$assim.batch$inputs
   
   start.year <- strftime(settings$run$start.date,"%Y")

@@ -19,6 +19,7 @@ Imports:
     mlegp,
     ncdf4 (>= 1.15),
     parallel,
+    PEcAn.benchmark,
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.MA,

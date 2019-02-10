@@ -11,15 +11,13 @@
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
 load.pda.data <- function(settings, bety) {
-  
-  library(PEcAn.benchmark)
-  
+
   # Outlining setup for multiple datasets
-  
+
   inputs         <- list()
   input.settings <- settings$assim.batch$inputs
   n.input        <- length(input.settings)
-  
+ 
   for(i in seq_len(n.input)) {
     inputs[[i]]               <- list()
     
@@ -43,7 +41,7 @@ load.pda.data <- function(settings, bety) {
     
     vars.used.index <- which(format$vars$bety_name %in% data.var)
     
-    inputs[[i]]$data <- load_data(data.path = data.path, 
+    inputs[[i]]$data <- PEcAn.benchmark::load_data(data.path = data.path,
                                   format = format, 
                                   start_year = lubridate::year(settings$run$start.date), 
                                   end_year = lubridate::year(settings$run$end.date), 
