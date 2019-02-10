@@ -3,6 +3,8 @@
 set -e
 . $( dirname $0 )/func.sh
 
+dpkg -l
+
 # INSTALLING SIPNET
 (
     travis_time_start "install_sipnet" "Installing SIPNET for testing"

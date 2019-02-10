@@ -37,22 +37,36 @@ cache:
 addons:
   apt:
     packages:
+      - bc
+      - curl
+      - gdal-bin
       - jags
+      - libcurl4-openssl-dev
       - time
       - libcurl4-gnutls-dev
       - libgdal-dev
+      - libgmp-dev
+      - libhdf5-dev
+      - liblapack-dev
       - libraptor2-dev
       - librasqal3-dev
       - librdf0-dev
       - libnetcdf-dev
+      - libproj-dev
       - libudunits2-dev
       - libgl1-mesa-dev
       - libglu1-mesa-dev
+      - netcdf-bin
+      - pandoc
+      - python-dev
+      - tcl
+      - tcl-dev
+      - udunits-bin
       # r-cran devtools and dependencies
-      - r-cran-devtools
-      - r-cran-httr
-      - r-cran-usethis
-      - r-cran-curl
+      # - r-cran-devtools
+      # - r-cran-httr
+      # - r-cran-usethis
+      # - r-cran-curl
       # r-cran binary packages
       # - r-cran-abind
       # - r-cran-car
