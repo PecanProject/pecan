@@ -147,7 +147,6 @@ pda.settings.bt <- function(settings) {
 #' @param thin thinning of the matrix to make things faster. Default is to thin to 5000 
 #' @param method method for calculating correlations
 #' @import IDPmisc
-#' @import ellipse
 #' @references The code for the correlation density plot originates from Hartig, F.; Dislich, C.; Wiegand, T. & Huth, A. (2014) Technical Note: Approximate Bayesian parameterization of a process-based tropical forest model. Biogeosciences, 11, 1261-1272.
 #' @export
 #' 
@@ -217,16 +216,16 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   } # correlationEllipse
   
   if (density == "smooth") {
-    pairs(mat, lower.panel = function(...) {
+    ellipse::pairs(mat, lower.panel = function(...) {
       par(new = TRUE)
       IDPmisc::ipanel.smooth(...)
     }, diag.panel = panel.hist.dens, upper.panel = panel.cor)
   } else if (density == "corellipseCor") {
-    pairs(mat, lower.panel = plotEllipse, diag.panel = panel.hist.dens, upper.panel = panel.cor)
+    ellipse::pairs(mat, lower.panel = plotEllipse, diag.panel = panel.hist.dens, upper.panel = panel.cor)
   } else if (density == "ellipse") {
     correlationEllipse(mat)
   } else if (density == F) {
-    pairs(mat, lower.panel = panel.cor, diag.panel = panel.hist.dens, upper.panel = panel.cor)
+    ellipse::pairs(mat, lower.panel = panel.cor, diag.panel = panel.hist.dens, upper.panel = panel.cor)
   } else stop("wrong sensity argument")
   
   # The if block above is generating return values
