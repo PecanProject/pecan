@@ -18,8 +18,8 @@ gelman_diag_mw <- function(x,
   stopifnot(class(x) %in% c("mcmc", "mcmc.list"))
   stopifnot(width %% 1 == 0)
   stopifnot(njump %% 1 == 0)
-  startx <- start(x)
-  endx <- end(x)
+  startx <- stats::start(x)
+  endx <- stats::end(x)
   a <- floor(seq(startx, endx - width + 1, length.out = njump))
   b <- ceiling(seq(startx + width - 1, endx, length.out = njump))
   if (length(a) < 1) {
@@ -49,7 +49,7 @@ gelman_diag_mw <- function(x,
   gdmat[,1,] <- a
   gdmat[,2,] <- b
   for (i in seq_len(n_row)) {
-    xsub <- window(x, start=a[i], end=b[i])
+    xsub <- stats::window(x, start=a[i], end=b[i])
     gd_raw <- coda::gelman.diag(xsub, 
                                 autoburnin=FALSE,
                                 multivariate = include.mpsrf)

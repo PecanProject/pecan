@@ -48,7 +48,7 @@ calculate.growth.L <- function(yearly, growth, error, years) {
             warnings("negative growth")
           }
           # squares <- c(squares, (modeled.growth - observed.growth)^2)
-          logL <- dnorm((observed.growth), (modeled.growth), error, log = TRUE)
+          logL <- stats::dnorm((observed.growth), (modeled.growth), error, log = TRUE)
           if (any(is.infinite(logL))) {
             stop("Infinite likelihood")  #AKA really large value
           }

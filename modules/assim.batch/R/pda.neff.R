@@ -99,7 +99,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     init <- list()
     for(i in 1:nchain){
       y.samp    <- sample(obs, length(obs), replace=TRUE)
-      init[[i]] <- list(tau_add=1/var(diff(y.samp), na.rm=TRUE)) 
+      init[[i]] <- list(tau_add=1/stats::var(diff(y.samp), na.rm=TRUE)) 
     }
     
     j.model   <- rjags::jags.model(file     = textConnection(HLModel),
@@ -143,8 +143,8 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     init <- list()
     for(i in 1:nchain){
       y.samp    <- sample(obs,length(obs),replace=TRUE)
-      init[[i]] <- list(tau_add=1/var(diff(y.samp), na.rm=TRUE), 
-                        tau_obs=1/var(diff(y.samp), na.rm=TRUE))
+      init[[i]] <- list(tau_add=1/stats::var(diff(y.samp), na.rm=TRUE), 
+                        tau_obs=1/stats::var(diff(y.samp), na.rm=TRUE))
     }
     
     j.model   <- rjags::jags.model(file     = textConnection(GaussianModel),
@@ -164,9 +164,9 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
   
   
   out <- as.matrix(jags.out)
-  median.out <- apply(out, 2, median)
+  median.out <- apply(out, 2, stats::median)
   
-  ar  <- acf(median.out)
+  ar  <- stats::acf(median.out)
   rho <- as.numeric(ar$acf[2])
   return(rho)
   

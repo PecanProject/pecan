@@ -30,13 +30,13 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   
   ddist <- function(x, prior) {
     if (prior$distn == "exp") {
-      return(dexp(x, prior$parama))
+      return(stats::dexp(x, prior$parama))
     }
     eval(parse(text = paste("d", prior$distn, sep = "")))(x, prior$parama, prior$paramb)
   }
   rdist <- function(x, prior) {
     if (prior$distn == "exp") {
-      return(rexp(x, prior$parama))
+      return(stats::rexp(x, prior$parama))
     }
     eval(parse(text = paste("r", prior$distn, sep = "")))(x, prior$parama, prior$paramb)
   }
@@ -75,7 +75,7 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   
   # PLOT LIKELIHOODS
   par(mfrow = c(3, 5))
-  good.runs <- y < quantile(y, 0.95)
+  good.runs <- y < stats::quantile(y, 0.95)
   print(nrow(x))
   print(length(good.runs))
   for (i in seq_along(x)) {
@@ -128,7 +128,7 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
     if (is.na(trait.entry)) {
       trait.entry <- PEcAn.utils::trait.lookup(traits[i])
     }
-    plot(density(all), 
+    plot(stats::density(all), 
          xlim = p.rng[i, ], 
          main = paste(trait.entry$figid),
          type = "l", 
@@ -156,7 +156,7 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
                            tundra.evergreen = c("growth_resp_factor", "b1Bs", "b1Bl", "b2Ht", "b1Ht", "SLA", "Vcmax", "r_fract"), 
                            tundra.deciduous = c("b1Ht", "b1Bs", "b2Ht", "growth_resp_factor", "Vcmax", "stomatal_slope", "r_fract", "root_turnover_rate"))
   
-  cv <- function(foo) sd(foo)/mean(foo)
+  cv <- function(foo) stats::sd(foo)/mean(foo)
   foo <- matrix(NA, nrow(priors), 8)
   for (pft in pfts) {
     print(pft)

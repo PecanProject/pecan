@@ -8,7 +8,7 @@
 #source('./code/R/model.specific.R')
 
 dlaplace <- function(x, mean, shape, ...) {
-  dexp(abs(mean - x), shape, ...)
+  stats::dexp(abs(mean - x), shape, ...)
 } # dlaplace
 
 
@@ -18,7 +18,7 @@ calculate.nee.L <- function(yeardoytime, model.i.nee, observed.flux, be, bu) {
                            model.i.nee = model.i.nee)
   all.fluxes <- merge(observed.flux, model.flux, by = "yeardoytime")
 
-  sigma <- with(all.fluxes, coef(lm(abs(model.i.nee - FC) ~ abs(model.i.nee))))
+  sigma <- with(all.fluxes, stats::coef(stats::lm(abs(model.i.nee - FC) ~ abs(model.i.nee))))
 
   ## calculate likelihood
   logL <- rep(NA, sum(all.fluxes$model.i.nee != 0))
@@ -31,8 +31,8 @@ calculate.nee.L <- function(yeardoytime, model.i.nee, observed.flux, be, bu) {
   logL[uptake] <- with(all.fluxes[uptake, ],
                        dlaplace(FC, model.i.nee, 1/(bu[1] + bu[2] * abs(model.i.nee)), log = TRUE))
 
-  # NEE.acf <- acf(all.fluxes$model.i.nee, 100, plot=FALSE)
-  ar.coef <- ar(model.i.nee, FALSE, 1)$ar
+  # NEE.acf <- stats::acf(all.fluxes$model.i.nee, 100, plot=FALSE)
+  ar.coef <- stats::ar(model.i.nee, FALSE, 1)$ar
   weight <- (1 - ar.coef) / (1 + ar.coef)
   print(weight)
   nlogL <- -sum(logL, na.rm = TRUE) * weight

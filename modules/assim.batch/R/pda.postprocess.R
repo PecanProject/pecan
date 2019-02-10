@@ -137,7 +137,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
       PEcAn.logger::logger.severe(paste0("*** Burn-in is the same as the length of the chain, please run a longer chain ***"))
     }
     
-    params.subset[[i]] <- window(params.subset[[i]], start = max(burnin, na.rm = TRUE))
+    params.subset[[i]] <- stats::window(params.subset[[i]], start = max(burnin, na.rm = TRUE))
     
     # chek number of iterations left after throwing the burnin, gelman.plot requires > 50
     if (nrow(params.subset[[i]][[1]]) < 50) {
@@ -195,13 +195,13 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
     
     if (length(prior.ind[[i]]) > 1) {
       cat("Covariance matrix :\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(cov(dm), file = filename.mcmc.temp, append = TRUE)
+      capture.output(stats::cov(dm), file = filename.mcmc.temp, append = TRUE)
       cat("\n\n\n", file = filename.mcmc.temp, append = TRUE)
     }
     
     if (length(prior.ind[[i]]) > 1) {
       cat("Correlation matrix :\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(cor(dm), file = filename.mcmc.temp, append = TRUE)
+      capture.output(stats::cor(dm), file = filename.mcmc.temp, append = TRUE)
       cat("\n\n\n", file = filename.mcmc.temp, append = TRUE)
     }
     
@@ -235,7 +235,7 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
   
   burnin <- getBurnin(sf.samp, method = "gelman.plot")
   
-  sf.samp <- window(sf.samp, start = max(burnin, na.rm = TRUE))
+  sf.samp <- stats::window(sf.samp, start = max(burnin, na.rm = TRUE))
   
   # convert mcmc.list to list of matrices
   sf.subset.list <- list()

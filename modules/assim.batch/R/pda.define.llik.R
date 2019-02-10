@@ -73,11 +73,11 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         
         resid <- abs(model_out[[k]] - inputs[[k]]$obs)
         pos <- (model_out[[k]] >= 0)
-        # SS <- c(dexp(resid[pos],
+        # SS <- c(stats::dexp(resid[pos],
         #              1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[2] * 
         #                                           sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
         #                                           model_out[[k]][pos])), log = TRUE),
-        #         dexp(resid[!pos],
+        #         stats::dexp(resid[!pos],
         #              1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[3] * 
         #                     sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
         #                     model_out[[k]][!pos])), log = TRUE))
@@ -203,7 +203,7 @@ pda.calc.llik.par <-function(settings, n, error.stats, hyper.pars){
     if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
         settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
-        llik.par[[k]]$par <- rgamma(1, hyper.pars[[k]]$parama + n[k]/2, 
+        llik.par[[k]]$par <- stats::rgamma(1, hyper.pars[[k]]$parama + n[k]/2, 
                                     hyper.pars[[k]]$paramb + error.stats[k]/2)
         names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
 

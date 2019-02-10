@@ -273,7 +273,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
           a <- -Inf  # Can occur if LL.new == -Inf (due to model crash) and LL.old == -Inf (first run)
         }
         
-        if (a > log(runif(1))) {
+        if (a > log(stats::runif(1))) {
           LL.old       <- LL.new
           prior.old    <- prior.star
           parm         <- pstar

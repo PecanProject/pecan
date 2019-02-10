@@ -175,7 +175,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
     usr <- par("usr")
     on.exit(par(usr))
     par(usr = c(0, 1, 0, 1))
-    r <- cor(x, y, use = "complete.obs", method = method)
+    r <- stats::cor(x, y, use = "complete.obs", method = method)
     txt <- format(c(r, 0.123456789), digits = digits)[1]
     txt <- paste0(prefix, txt)
     if (missing(cex.cor)) {
@@ -188,13 +188,14 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
     usr <- par("usr")
     on.exit(par(usr))
     par(usr = c(usr[1:2], 0, 1.5))
-    cor <- cor(x, y)
+    cor <- stats::cor(x, y)
     el <- ellipse::ellipse(cor)
     polygon(el[, 1] + mean(x), el[, 2] + mean(y), col = "red")
   } # plotEllipse
   
   correlationEllipse <- function(x) {
-    cor <- cor(x)
+
+    cor <- stats::cor(x)
     ToRGB <- function(x) {
       rgb(x[1] / 255, x[2] / 255, x[3] / 255)
     }

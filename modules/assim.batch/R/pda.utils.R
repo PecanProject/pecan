@@ -585,8 +585,8 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
     rescale <- diag(rep(settings$assim.batch$jump$adj.min, r))
     jcov    <- rescale %*% jcov %*% rescale
   } else {
-    stdev  <- apply(params.recent, 2, sd)
-    corr   <- cor(params.recent)
+    stdev  <- apply(params.recent, 2, stats::sd)
+    corr   <- stats::cor(params.recent)
     if (any(is.na(corr))) {
       corr <- diag(rep(1, r))
     }
@@ -724,10 +724,13 @@ return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, ru
         # calculate optimum bias parameter for the model output that has bias
         regdf <- data.frame(inputs[[isbias[i]]]$obs, model.out[[iknot]][[isbias[i]]])
         colnames(regdf) <- c("data","model")
-        fit <- lm( regdf$data ~ (regdf$model - 1))
+        fit <- stats::lm( regdf$data ~ (regdf$model - 1))
         bias.params[[i]][iknot,1] <- fit$coefficients[[1]]
         if(ncol(bias.params[[i]]) > 1){
-          bias.params[[i]][iknot,  2:ncol(bias.params[[i]])] <- rnorm(ncol(bias.params[[i]])-1, bias.params[[i]][iknot,1], bias.params[[i]][iknot,1]*0.1)
+          bias.params[[i]][iknot,  2:ncol(bias.params[[i]])] <- stats::rnorm(
+                                                                  ncol(bias.params[[i]]) - 1,
+                                                                  bias.params[[i]][iknot, 1],
+                                                                  bias.params[[i]][iknot, 1] * 0.1)
         }
       }
     }
@@ -767,7 +770,7 @@ return_hyperpars <- function(assim.settings, inputs){
     for(k in seq_along(assim.settings$inputs)){
       hyper.pars[[k]] <- list()
       hyper.pars[[k]]$parama <- 0.001
-      hyper.pars[[k]]$paramb <- 0.001 * var(inputs[[k]]$data[,1], na.rm = TRUE)
+      hyper.pars[[k]]$paramb <- 0.001 * stats::var(inputs[[k]]$data[,1], na.rm = TRUE)
     }
     
   }else{
@@ -778,7 +781,7 @@ return_hyperpars <- function(assim.settings, inputs){
       if(is.null(check.hypers[[k]])){
         hyper.pars[[k]] <- list()
         hyper.pars[[k]]$parama <- 0.001
-        hyper.pars[[k]]$paramb <- 0.001 * var(inputs[[k]]$data[,1], na.rm = TRUE)
+        hyper.pars[[k]]$paramb <- 0.001 * stats::var(inputs[[k]]$data[,1], na.rm = TRUE)
       }else{
         hyper.pars[[k]] <- list()
         hyper.pars[[k]]$parama <- as.numeric(assim.settings$inputs[[k]]$hyper.pars$parama)
@@ -837,7 +840,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   
   collect_samples <- list()
   for (i in seq_along(mcmc.samp.list)) {
-    collect_samples[[i]] <- window(mcmc.samp.list[[i]], start = maxburn)
+    collect_samples[[i]] <- stats::window(mcmc.samp.list[[i]], start = maxburn)
   }
   
   mcmc_samples <- do.call(rbind, collect_samples)
@@ -854,7 +857,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
     
     sf_samples <- list()
     for (i in seq_along(sf.samp)) {
-      sf_samples[[i]] <- window(sf.samp[[i]], start = maxburn)
+      sf_samples[[i]] <- stats::window(sf.samp[[i]], start = maxburn)
     }
     sf_samples <- do.call(rbind, sf_samples)
     

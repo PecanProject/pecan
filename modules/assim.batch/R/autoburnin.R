@@ -84,7 +84,7 @@ autoburnin <- function(jags_out, return.burnin = FALSE, ...) {
   if (burnin == 1) {
     samples <- jags_out
   } else if (burnin > 1) {
-    samples <- window(jags_out, start = burnin)
+    samples <- stats::window(jags_out, start = burnin)
   } else {
     stop("Bad return value for burnin: \n",
          burnin)
