@@ -10,12 +10,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
 Depends:
-    IDPmisc,
-    mlegp,
-    parallel,
     PEcAn.DB,
     PEcAn.logger,
-    PEcAn.MA,
     PEcAn.utils,
     rjags
 Imports:
@@ -23,9 +19,13 @@ Imports:
     coda (>= 0.18),
     dplyr,
     ellipse,
+    IDPmisc,
     lubridate (>= 1.6.0),
+    mlegp,
     ncdf4 (>= 1.15),
+    parallel,
     PEcAn.logger,
+    PEcAn.MA,
     PEcAn.remote,
     PEcAn.settings,
     udunits2 (>= 0.11)
