@@ -45,7 +45,10 @@ addons:
       - libudunits2-dev
       - libgl1-mesa-dev
       - libglu1-mesa-dev
+      # r-cran devtools and dependencies
       - r-cran-devtools
+      - r-cran-httr
+      - r-cran-usethis
       # r-cran binary packages
       - r-cran-abind
       # - r-cran-car
