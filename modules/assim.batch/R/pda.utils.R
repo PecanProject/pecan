@@ -228,14 +228,14 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
     priorids <- list()
     for (i in seq_along(settings$pfts)) {
         
-      pft.id <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", 
+      pft.id <- PEcAn.DB::db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='",
                                             settings$pfts[[i]]$name, 
                                             "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", 
                                             settings$model$type, "'"), 
                                      con)[["id"]]
-      priors <- db.query(paste0("SELECT * from posteriors where pft_id = ", pft.id), con)
+      priors <- PEcAn.DB::db.query(paste0("SELECT * from posteriors where pft_id = ", pft.id), con)
         
-      prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id IN (", 
+      prior.db <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id IN (",
                                     paste(priors$id, collapse = ","), ")"), con)
         
       prior.db.grep <- prior.db[grep("^post\\.distns\\..*Rdata$", prior.db$file_name), ]
@@ -268,7 +268,7 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
   # if files becomes NULL try loading objects from workflow oft folders
   for (i in seq_along(settings$pfts)) {
       
-    files <- dbfile.check("Posterior", priorids[[i]], con, tmp_hostname, return.all  = TRUE)
+    files <- PEcAn.DB::dbfile.check("Posterior", priorids[[i]], con, tmp_hostname, return.all  = TRUE)
       
     pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
     
@@ -344,7 +344,7 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
       ensemble.type <- "pda.emulator"
     }
     
-    ensemble.id <- db.query(paste("INSERT INTO ensembles (runtype, workflow_id) values ('", 
+    ensemble.id <- PEcAn.DB::db.query(paste("INSERT INTO ensembles (runtype, workflow_id) values ('",
                                   ensemble.type, "', ", workflow.id, ") RETURNING id", sep = ""), con)
 
   } else {
@@ -461,7 +461,7 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
     ## set RUN.ID
     if (!is.null(con)) {
       paramlist <- run.names[i]
-      run.ids[i] <- db.query(
+      run.ids[i] <- PEcAn.DB::db.query(
         paste0(
           "INSERT INTO runs", 
           "(model_id, site_id, start_time, finish_time, outdir,",

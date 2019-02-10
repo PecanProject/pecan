@@ -45,14 +45,14 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
     
 
     ## create a new Posteriors DB entry
-    pft.id <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='",
+    pft.id <- PEcAn.DB::db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='",
                               settings$pfts[[i]]$name, 
                               "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", 
                               settings$model$type, "'"), 
                          con)[["id"]]
 
 
-    posteriorid <-  db.query(paste0("INSERT INTO posteriors (pft_id) VALUES (",
+    posteriorid <-  PEcAn.DB::db.query(paste0("INSERT INTO posteriors (pft_id) VALUES (",
                     pft.id, ") RETURNING id"), con)
     
     
@@ -68,7 +68,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
     filename <- file.path(settings$pfts[[i]]$outdir, 
                           paste0("post.distns.pda.", settings$pfts[[i]]$name, "_", settings$assim.batch$ensemble.id, ".Rdata"))
     save(post.distns, file = filename)
-    dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
+    PEcAn.DB::dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
     
     # Symlink to post.distns.Rdata (no ensemble.id identifier)
     if (file.exists(file.path(dirname(filename), "post.distns.Rdata"))) {
@@ -99,7 +99,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
                                  "_", settings$assim.batch$ensemble.id, 
                                  ".Rdata"))
     save(trait.mcmc, file = filename)
-    dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
+    PEcAn.DB::dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
   }  #end of loop over PFTs
   
   ## save updated settings XML

@@ -138,7 +138,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
     db.input.ind <- which(sapply(inputs, function(x) x$input.id) != -1)
     for (k in db.input.ind) {
       
-      db.query(
+      PEcAn.DB::db.query(
         paste0("INSERT INTO likelihoods ",
                "(run_id, variable_id, input_id, ",
                " loglikelihood, n_eff)",

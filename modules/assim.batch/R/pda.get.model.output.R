@@ -33,7 +33,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     # if no derivation is requested expr will be the same as variable name
     expr <- lapply(variable.name, `[[`, "expression")
     
-    format <- query.format.vars(bety = bety,
+    format <- PEcAn.DB::query.format.vars(bety = bety,
                                 input.id = settings$assim.batch$inputs[[k]]$input.id)
 
     

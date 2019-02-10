@@ -29,11 +29,11 @@ pda.mcmc.recover <- function(settings, params.id = NULL, param.names = NULL, pri
     
     ## Open database connection
     if (settings$database$bety$write) {
-      con <- try(db.open(settings$database$bety), silent = TRUE)
+      con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
       if (is(con, "try-error")) {
           con <- NULL
       } else {
-        on.exit(db.close(con))
+        on.exit(PEcAn.DB::db.close(con))
       }
     } else {
         con <- NULL
@@ -76,7 +76,7 @@ pda.mcmc.recover <- function(settings, params.id = NULL, param.names = NULL, pri
     
     ## close database connection
     if (!is.null(con)) {
-      db.close(con)
+      PEcAn.DB::db.close(con)
     }
       
     ## Output an updated settings list

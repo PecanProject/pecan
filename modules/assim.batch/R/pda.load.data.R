@@ -39,7 +39,7 @@ load.pda.data <- function(settings, bety) {
       PEcAn.logger::logger.error("Must provide both ID and PATH for all data assimilation inputs.")
     }
     
-    format <- query.format.vars(bety = bety, input.id = inputs[[i]]$input.id)
+    format <- PEcAn.DB::query.format.vars(bety = bety, input.id = inputs[[i]]$input.id)
     
     vars.used.index <- which(format$vars$bety_name %in% data.var)
     
