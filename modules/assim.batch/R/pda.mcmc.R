@@ -44,7 +44,7 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
     con <- NULL
   }
   
-  bety <- src_postgres(dbname = settings$database$bety$dbname, 
+  bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
                        host = settings$database$bety$host, 
                        user = settings$database$bety$user, 
                        password = settings$database$bety$password)
