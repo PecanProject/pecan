@@ -49,8 +49,9 @@ addons:
       - r-cran-devtools
       - r-cran-httr
       - r-cran-usethis
+      - r-cran-curl
       # r-cran binary packages
-      - r-cran-abind
+      # - r-cran-abind
       # - r-cran-car
       # - r-cran-coda
       # - r-cran-data.table
