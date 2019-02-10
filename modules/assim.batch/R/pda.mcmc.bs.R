@@ -182,7 +182,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
       
       ## Propose parameter values
       if (i > 1) {
-        pstar[prior.ind.all] <- mvrnorm(1, parm[prior.ind.all], jcov)
+        pstar[prior.ind.all] <- MASS::mvrnorm(1, parm[prior.ind.all], jcov)
       }
       
       ## Check that value falls within the prior

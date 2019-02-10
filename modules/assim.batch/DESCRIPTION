@@ -16,6 +16,7 @@ Imports:
     ellipse,
     IDPmisc,
     lubridate (>= 1.6.0),
+    MASS,
     mlegp,
     ncdf4 (>= 1.15),
     parallel,
