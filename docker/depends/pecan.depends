@@ -8,6 +8,8 @@ set -e
 # Don't use X11 for rgl
 RGL_USE_NULL=TRUE
 
+echo "installGithub"
+
 # install remotes first in case packages are references in dependencies
 installGithub.r \
     araiho/linkages_package \
@@ -15,6 +17,8 @@ installGithub.r \
     MikkoPeltoniemi/Rpreles \
     ropensci/geonames \
     ropensci/nneo
+
+echo "install2"
 
 # install all packages (depends, imports, suggests)
 install2.r -e -s \
