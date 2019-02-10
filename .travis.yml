@@ -6,6 +6,9 @@ r:
   - release
   - devel
   - oldrel
+repos:
+  CRAN: http://cran.rstudio.com
+  ropensci: http://packages.ropensci.com
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: xenial
@@ -56,7 +59,7 @@ addons:
       - libssl-dev
       - libudunits2-dev
       - netcdf-bin
-      - pandoc
+      # - pandoc #already installed by R
       - python-dev
       - tcl
       - tcl-dev
