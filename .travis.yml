@@ -39,6 +39,7 @@ addons:
     packages:
       - jags
       - time
+      - libcurl4-openssl-dev
       - libgdal-dev
       - librdf0-dev
       - libnetcdf-dev
