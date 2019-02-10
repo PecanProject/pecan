@@ -287,9 +287,12 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
           (i == start | 
            i == finish |
            (i%%settings$assim.batch$diag.plot.iter == 0))) {
-        pdf(file.path(settings$outdir, paste0("diag.pda", settings$assim.batch$ensemble.id), 
-                      paste0("data.vs.model_", gsub(" ", "0", sprintf("%5.0f", i)), ".pdf")))
-        
+        grDevices::pdf(
+          file.path(
+            settings$outdir,
+            paste0("diag.pda", settings$assim.batch$ensemble.id),
+            paste0("data.vs.model_", gsub(" ", "0", sprintf("%5.0f", i)), ".pdf")))
+
         NEEo      <- inputs[[1]]$obs
         NEEm      <- model.out[[1]]
         NEE.resid <- NEEm - NEEo
@@ -299,7 +302,7 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
         points(NEEm, col = 2, cex = 0.5)
         legend("topleft", col = c(1, 2), pch = 1, legend = c("data", "model"))
         hist(NEE.resid, 100, main = paste0("LLik: ", round(LL.new, 1)))
-        dev.off()
+        grDevices::dev.off()
       }
       
       ## Store output

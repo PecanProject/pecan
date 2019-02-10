@@ -197,7 +197,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
 
     cor <- stats::cor(x)
     ToRGB <- function(x) {
-      rgb(x[1] / 255, x[2] / 255, x[3] / 255)
+      grDevices::rgb(x[1] / 255, x[2] / 255, x[3] / 255)
     }
     C1 <- ToRGB(c(178, 24, 43))
     C2 <- ToRGB(c(214, 96, 77))
@@ -208,7 +208,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
     C7 <- ToRGB(c(146, 197, 222))
     C8 <- ToRGB(c(67, 147, 195))
     C9 <- ToRGB(c(33, 102, 172))
-    CustomPalette <- colorRampPalette(rev(c(C1, C2, C3, C4, C5, C6, C7, C8, C9)))
+    CustomPalette <- grDevices::colorRampPalette(rev(c(C1, C2, C3, C4, C5, C6, C7, C8, C9)))
     ord <- order(cor[1, ])
     xc <- cor[ord, ord]
     colors <- unlist(CustomPalette(100))

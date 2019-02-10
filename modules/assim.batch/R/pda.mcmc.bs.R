@@ -284,7 +284,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
       ## Diagnostic figure
       if (!is.null(settings$assim.batch$diag.plot.iter) && 
           is.finite(prior.star) && (i == start | i == finish | (i%%settings$assim.batch$diag.plot.iter == 0))) {
-        pdf(file.path(settings$outdir,
+        grDevices::pdf(file.path(settings$outdir,
                       paste0("diag.pda", settings$assim.batch$ensemble.id), 
                       paste0("data.vs.model_", gsub(" ", "0", sprintf("%5.0f", i)), ".pdf")))
         NEEo      <- inputs[[1]]$obs
@@ -296,7 +296,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
         points(NEEm, col = 2, cex = 0.5)
         legend("topleft", col = c(1, 2), pch = 1, legend = c("data", "model"))
         hist(NEE.resid, 100, main = paste0("LLik: ", round(LL.new, 1)))
-        dev.off()
+        grDevices::dev.off()
       }
       
       ## Store output

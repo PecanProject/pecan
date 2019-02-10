@@ -70,9 +70,9 @@ gelman_diag_mw <- function(x,
 #' more conservative approach than the moving-window method.
 #' @export
 gelman_diag_gelmanPlot <- function(x, ...) {
-  pdf(file = NULL)
+  grDevices::pdf(file = NULL)
   GBR_raw <- coda::gelman.plot(x)
-  dev.off()
+  grDevices::dev.off()
   GBR <- array(numeric(), dim(GBR_raw$shrink) + c(0, 2, 0))
   dimnames(GBR)[[2]] <- c("Start", "End", dimnames(GBR_raw$shrink)[[2]])
   GBR[,-(1:2),] <- GBR_raw$shrink

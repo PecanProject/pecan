@@ -146,14 +146,14 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
     }
     
     if(i <= length(settings$pfts)){
-      pdf(file.path(settings$pfts[[i]]$outdir, 
-                    paste0("mcmc.diagnostics.pda.", 
-                           settings$pfts[[i]]$name, 
+      grDevices::pdf(file.path(settings$pfts[[i]]$outdir,
+                    paste0("mcmc.diagnostics.pda.",
+                           settings$pfts[[i]]$name,
                            "_", settings$assim.batch$ensemble.id,
                            ".pdf")))
     } else {
-      pdf(file.path(par.file.name, 
-                    paste0("mcmc.diagnostics.pda.par_", 
+      grDevices::pdf(file.path(par.file.name,
+                    paste0("mcmc.diagnostics.pda.par_",
                            settings$assim.batch$ensemble.id,
                            ".pdf")))
     }
@@ -173,7 +173,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
     }
     
     layout(1)
-    dev.off()
+    grDevices::dev.off()
     
     # Write out convergence diagnostics to a txt file
     if(i <= length(settings$pfts)){

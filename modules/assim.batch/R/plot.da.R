@@ -42,9 +42,9 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   }
   pfts <- names(ensemble.samples)
   pfts <- pfts[pfts != "env"]
-  
-  pdf(paste(out.dir, "/da.plots.pdf", sep = ""), height = 8, width = 11)
-  
+
+  grDevices::pdf(paste(out.dir, "/da.plots.pdf", sep = ""), height = 8, width = 11)
+
   # ORIGINAL PRIORS
   priors <- do.call(rbind, lapply(pfts, function(pft) {
     traits <- names(ensemble.samples[[pft]])
