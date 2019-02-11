@@ -111,7 +111,7 @@ before_script:
   - scripts/travis/before_script.sh
 
 script:
-  - scripts/travis/install.sh
+  - scripts/travis/script.sh
 
 after_script:
   - scripts/travis/after_script.sh
