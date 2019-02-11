@@ -66,7 +66,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   ## Open database connection
   if (settings$database$bety$write) {
     con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
-    if (is(con, "try-error")) {
+    if (inherits(con, "try-error")) {
       con <- NULL
     } else {
       on.exit(PEcAn.DB::db.close(con))
