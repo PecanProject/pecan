@@ -113,10 +113,15 @@ install:
   - make
   - popd
   - echo -en 'travis_fold:end:install_sipnet\\r'
-  - echo 'Installing dependencies' && echo -en 'travis_fold:start:install_dependencies\\r'
-  - Rscript -e 'install.packages('littler')'
-  - bash docker/depends/pecan.depends
-  - echo -en 'travis_fold:end:install_dependencies\\r'
+  - echo 'Installing BioCro for testing' && echo -en 'travis_fold:start:install_biocro\\r'
+  - pushd $HOME
+  # Install BioCro w/o help pages to work around infinite Roxygen recursion in configure file
+  - curl -sL https://github.com/ebimodeling/biocro/archive/0.95.tar.gz | tar zxf -
+  - cd biocro-0.95
+  - rm configure
+  - R CMD INSTALL .
+  - popd
+  - echo -en 'travis_fold:end:install_biocro\\r'
   
 before_script:
   - sudo service postgresql stop
