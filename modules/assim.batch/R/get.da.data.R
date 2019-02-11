@@ -48,7 +48,7 @@ get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size = 1
 
   # OBSERVED
   observed <- lapply(years, function(year) {
-    read.ameriflux.L2(paste(ameriflux.dir, year, "L2.csv", sep = "_"), year)
+    PEcAn.uncertainty::read.ameriflux.L2(paste(ameriflux.dir, year, "L2.csv", sep = "_"), year)
   })
   observed <- do.call(rbind, observed)
   observed$yeardoytime <- observed$time

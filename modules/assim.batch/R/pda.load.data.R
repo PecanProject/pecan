@@ -68,7 +68,7 @@ load.pda.data <- function(settings, bety) {
       AMFq  <- rep(0, length(AMFo))
       flags <- TRUE
       
-      AMF.params <- flux.uncertainty(AMFo, AMFq, flags, bin.num = 20)
+      AMF.params <- PEcAn.uncertainty::flux.uncertainty(AMFo, AMFq, flags, bin.num = 20)
       
       inputs[[i]]$obs <- AMFo
       inputs[[i]]$par <- c(AMF.params$intercept, AMF.params$slopeP, AMF.params$slopeN)

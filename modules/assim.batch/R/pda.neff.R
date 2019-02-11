@@ -83,7 +83,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
       obs <- PEcAn.utils::misc.convert(obs, "kg C m-2 s-1", "umol C m-2 s-1")
       AMFq  <- rep(0, length(obs))
       flags <- TRUE
-      AMF.params <- flux.uncertainty(obs, AMFq, flags, bin.num = 20)
+      AMF.params <- PEcAn.uncertainty::flux.uncertainty(obs, AMFq, flags, bin.num = 20)
       alpha_0 <- AMF.params$intercept[[1]]
       alpha_p <- AMF.params$slopeP[[1]]
       alpha_n <- AMF.params$slopeN[[1]]

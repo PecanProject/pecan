@@ -29,6 +29,7 @@ Imports:
     PEcAn.MA,
     PEcAn.remote,
     PEcAn.settings,
+    PEcAn.uncertainty,
     PEcAn.utils,
     rjags,
     stats,
