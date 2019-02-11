@@ -290,12 +290,14 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
         NEEo      <- inputs[[1]]$obs
         NEEm      <- model.out[[1]]
         NEE.resid <- NEEm - NEEo
-        
-        par(mfrow = c(1, 2))
-        plot(NEEo)
-        points(NEEm, col = 2, cex = 0.5)
-        legend("topleft", col = c(1, 2), pch = 1, legend = c("data", "model"))
-        hist(NEE.resid, 100, main = paste0("LLik: ", round(LL.new, 1)))
+
+        graphics::par(mfrow = c(1, 2))
+        graphics::plot(NEEo)
+        graphics::points(NEEm, col = 2, cex = 0.5)
+        graphics::legend("topleft", col = c(1, 2), pch = 1,
+                         legend = c("data", "model"))
+        graphics::hist(NEE.resid, 100, main = paste0("LLik: ",
+                       round(LL.new, 1)))
         grDevices::dev.off()
       }
       

@@ -14,6 +14,7 @@ Imports:
     coda (>= 0.18),
     dplyr,
     ellipse,
+    graphics,
     grDevices,
     IDPmisc,
     lubridate (>= 1.6.0),

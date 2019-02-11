@@ -158,10 +158,10 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
                            ".pdf")))
     }
 
-    layout(matrix(c(1, 2, 3, 4, 5, 6), ncol = 2, byrow = TRUE))
-    
-    plot(params.subset[[i]], auto.layout = FALSE)
-    
+    graphics::layout(matrix(c(1, 2, 3, 4, 5, 6), ncol = 2, byrow = TRUE))
+
+    graphics::plot(params.subset[[i]], auto.layout = FALSE)
+
     dm <- do.call("rbind", params.subset[[i]])
     
     if (length(prior.ind[[i]]) > 1) {
@@ -172,7 +172,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
       coda::gelman.plot(params.subset[[i]], auto.layout = FALSE, autoburnin = FALSE)
     }
     
-    layout(1)
+    graphics::layout(1)
     grDevices::dev.off()
     
     # Write out convergence diagnostics to a txt file
