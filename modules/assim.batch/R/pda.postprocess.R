@@ -103,9 +103,12 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
   }  #end of loop over PFTs
   
   ## save updated settings XML
-  saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, paste0("pecan.pda", settings$assim.batch$ensemble.id,
-                                                                                 ".xml")))
-  
+  XML::saveXML(
+    PEcAn.settings::listToXml(settings, "pecan"),
+    file = file.path(
+      settings$outdir,
+      paste0("pecan.pda", settings$assim.batch$ensemble.id, ".xml")))
+
   return(settings)
 } # pda.postprocess
 

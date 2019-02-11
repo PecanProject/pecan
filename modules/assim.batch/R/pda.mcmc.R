@@ -153,12 +153,12 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
     }
     
     ## save updated settings XML. Will be overwritten at end, but useful in case of crash
-    saveXML(PEcAn.settings::listToXml(settings, "pecan"),
-            file = file.path(settings$outdir,
-                             paste0("pecan.pda", 
-                                    settings$assim.batch$ensemble.id, 
-                                    ".xml")))
-    
+    XML::saveXML(
+      PEcAn.settings::listToXml(settings, "pecan"),
+      file = file.path(
+        settings$outdir,
+        paste0("pecan.pda", settings$assim.batch$ensemble.id, ".xml")))
+
     ## --------------------------------- Main MCMC loop --------------------------------- ##
     for (i in start:finish) {
       PEcAn.logger::logger.info(paste("Data assimilation MCMC iteration", i, "of", finish))

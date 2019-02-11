@@ -172,10 +172,11 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
         # Save updated settings XML. Will be overwritten at end, but useful in case of crash
         settings$assim.batch$jump$jvar <- as.list(diag(jcov))
         names(settings$assim.batch$jump$jvar) <- rep("jvar", n.param)
-        saveXML(PEcAn.settings::listToXml(settings, "pecan"),
-                file = file.path(settings$outdir, 
-                                 paste0("pecan.pda", 
-                                        settings$assim.batch$ensemble.id, ".xml")))
+        XML::saveXML(
+          PEcAn.settings::listToXml(settings, "pecan"),
+          file = file.path(settings$outdir,
+                           paste0("pecan.pda",
+                           settings$assim.batch$ensemble.id, ".xml")))
       }
       
       pstar <- parm
