@@ -20,6 +20,7 @@ load_nimble <- function(){
     run = function(y = double(1)) {
       returnType(double(1))
       
+      y[y<0] <- .000000001
       y_alr <- log(y[1:(length(y)-1)] / y[length(y)])
       
       return(y_alr)

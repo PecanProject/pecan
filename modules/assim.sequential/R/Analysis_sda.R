@@ -146,6 +146,12 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   rownames(intervalX) <- colnames(X)
   outdir     <- settings$modeloutdir
   
+  ###Snow no snow hack
+  for(ii in 1:ncol(X)){
+    try(if( sum(X[,ii],na.rm=T)==0 ) X[sample(x = 1:nrow(X),size = .2*nrow(X)),ii] <- .00000001)
+  }
+  
+  ####getting ready to calculate y.ind and x.ind
   for(i in 1:length(var.names)){
     intervalX[which(startsWith(rownames(intervalX),
                                var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
@@ -179,7 +185,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                             lambda_0 = diag(length(mu.f),length(mu.f)+1),
                             nu_0 = 3)#some measure of prior obs
     
-    inits.tobit2space <<- list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
+    inits.tobit2space <<- list(pf = cov(X), muf = colMeans(X)) #pf = cov(X)
     #set.seed(0)
     #ptm <- proc.time()
     tobit2space_pred <<- nimbleModel(tobit2space.model, data = data.tobit2space,
@@ -361,20 +367,20 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       pft2total_TRUE = pft2total_TRUE
     )
     
-    dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
+    dimensions.tobit <<- list(X = length(mu.f), X.mod = ncol(X),
                             Q = c(length(mu.f),length(mu.f)),
                             y_star = (length(y.censored)))
     
-    data.tobit = list(muf = as.vector(mu.f),
+    data.tobit <<- list(muf = as.vector(mu.f),
                       pf = solve(Pf), 
                       aq = aqq[t,,], bq = bqq[t],
                       y.ind = y.ind,
                       y.censored = y.censored,
                       r = R) #precision
     
-    inits.pred = list(q = diag(length(mu.f))*(length(mu.f)+1),
+    inits.pred <<- list(q = diag(length(mu.f))*(length(mu.f)+1),
                       X.mod = rnorm(length(mu.f),mu.f,10),
-                      X = rnorm(length(mu.f),mu.f,10),
+                      X = rnorm(length(mu.f),2.5,10),
                       y_star = rnorm(length(y.censored),0,10))
 
 model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
@@ -436,7 +442,7 @@ for(i in 1:length(y.ind)) {
     Cmodel$r <- (R) #precision
     
     inits.pred = list(q = diag(length(mu.f))*(length(mu.f)+1),
-                      X.mod = rnorm(length(mu.f),mu.f,10),
+                      X.mod = rnorm(length(mu.f),2.5,10),
                       X = rnorm(ncol(X),mu.f,10),
                       y_star = rnorm(length(y.censored),mu.f,10)) #
     
@@ -451,7 +457,7 @@ for(i in 1:length(y.ind)) {
     
   }
   
-  dat <- runMCMC(Cmcmc, niter = 50000, nburnin=10000)
+  dat <- runMCMC(Cmcmc, niter = 100000, nburnin=20000)
   dat_save <- dat[(nrow(dat)-250):nrow(dat),]
   save(dat_save, file = file.path(outdir, paste0('dat',t,'.Rdata')))
   
@@ -460,21 +466,6 @@ for(i in 1:length(y.ind)) {
   iX   <- grep("X[", colnames(dat), fixed = TRUE)
   iystar   <- grep("y_star", colnames(dat), fixed = TRUE)
   iX.mod <- grep("X.mod", colnames(dat), fixed = TRUE)
-  
-  pdf(file.path(outdir, paste0('dat_plot', t, '.pdf')))
-  par(mfrow = c(2, 2))
-  for (rr in 1:length(iX)) {
-    plot(dat[, iX[rr]], typ = 'l')
-  }
-  for (i in 1:length(iystar)) {
-    plot(dat[,iystar[i]], type = 'l')
-    abline(h=alr(mu.a)[i],col='red')
-  }
-  for (i in 1:4) {
-    plot(dat[,iX.mod[i]], type = 'l')
-    abline(h=mu.f[i],col='red')
-  }
-  dev.off()
   
   mu.a <- colMeans(dat[, iX])
   Pa   <- cov(dat[, iX])
@@ -501,6 +492,21 @@ for(i in 1:length(y.ind)) {
     aqq[t + 1, , ]   <- V
     bqq[t + 1]       <- n
   }
+  
+  pdf(file.path(outdir, paste0('dat_plot', t, '.pdf')))
+  par(mfrow = c(2, 2))
+  for (rr in 1:length(iX)) {
+    plot(dat[, iX[rr]], typ = 'l')
+  }
+  for (i in 1:length(iystar)) {
+    plot(dat[,iystar[i]], type = 'l')
+    abline(h=alr(mu.a)[i],col='red')
+  }
+  for (i in 1:4) {
+    plot(dat[,iX.mod[i]], type = 'l')
+    abline(h=mu.f[i],col='red')
+  }
+  dev.off()
   
   return(list(mu.f = mu.f,
               Pf = Pf,
