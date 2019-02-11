@@ -34,7 +34,7 @@ Within both the run and out folders there will be one folder for each unique mod
 ## Read in settings From an XML file
 
 
-```{r,eval=FALSE}
+```r
 ## Read in the xml
 
 settings<-PEcAn.settings::read.settings("~/output/PEcAn_99000000001/pecan.CONFIGS.xml")
@@ -54,7 +54,7 @@ bety <-dplyr::src_postgres(host = settings$database$bety$host, user = settings$d
 ```
 
 ## Read in model output from specific variables
-```{r, eval=FALSE}
+```r
 model_vars<-c("time", "NEE") #varibles being read
 model <- PEcAn.utils::read.output(runid,outdir,start.year, end.year, model_vars,dataframe=TRUE)
 ```
@@ -65,7 +65,7 @@ The arguments to read.output are the run ID, the folder where the run is located
 
 **First** _load up the observations_ and take a look at the contents of the file
 
-```{r,  eval=FALSE}
+```r
 File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
 site<-PEcAn.DB::query.site(site.id,bety$con) #This tells PEcAn where the data comes from
@@ -81,13 +81,13 @@ You could query for diffent kinds of formats that exist in bety or [make your ow
 Here 772 is the database site ID for Niwot Ridge Forest, which tells pecan where the data is from and what time zone to assign any time data read in. 
 
 **Second** _apply a conservative u* filter to observations_
-```{r,eval=FALSE}
+```r
 observations$NEE[observations$UST<0.2]<-NA
 ```
 
 **Third** _align model output and observations_
 
-```{r, eval=FALSE}
+```r
 aligned_dat = PEcAn.benchmark::align_data(model.calc = model, obvs.calc = observations, var ="NEE", align_method = "match_timestep")
 
 ```
@@ -95,7 +95,7 @@ When we aligned the data, we got a dataframe with the variables we requested in 
 
 **Fourth**, _plot model predictions vs. observations_ and compare this to a 1:1 line 
 
-```{r,eval=FALSE}
+```r
 ## predicted vs observed plot
 plot(aligned_dat$NEE.m, aligned_dat$NEE.o)
 abline(0,1,col="red")  ## intercept=0, slope=1
@@ -103,14 +103,14 @@ abline(0,1,col="red")  ## intercept=0, slope=1
 
 **Fifth**, _calculate the Root Mean Square Error (RMSE)_ between the model and the data
 
-```{r, eval=FALSE}
+```r
 rmse = sqrt(mean((aligned_dat$NEE.m-aligned_dat$NEE.o)^2,na.rm = TRUE))
 ```
 *na.rm* makes sure we don’t include missing or screened values in either time series.
 
 **Finally**, _plot time-series_ of both the model and data together
 
-```{r, eval=FALSE}
+```r
 ## plot aligned data
 plot(aligned_dat$posix, aligned_dat$NEE.o, type="l")
 lines(aligned_dat$posix,aligned_dat$NEE.m, col = "red")
@@ -123,7 +123,7 @@ Try RMSE against monthly NEE instead of half-hourly. In this case, first average
 
 **NOTE**: Align_data uses two seperate alignment function, match_timestep and mean_over_larger_timestep. Match_timestep will use only that data that is present in both the model and the observation. This is helpful for sparse observations. Mean_over_larger_timestep aggregates the values over the largest timestep present. If you were to look at averaged monthly data, you would use mean_over_larger_timestep.
 
-```{r, eval = FALSE}
+```r
 monthlyNEEobs<-aggregate(observations, by= list(month(observations$posix)), simplify=TRUE, FUN =mean, na.rm= TRUE)
 plottable<-align_data(model.calc = model, obvs.calc = monthlyNEEobs, align_method = "mean_over_larger_timestep", var= "NEE")
 head(plottable)

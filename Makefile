@@ -2,13 +2,18 @@ NCPUS ?= 1
 
 BASE := logger utils db settings visualization qaqc remote workflow
 
-MODELS := biocro clm45 dalec ed fates gday jules linkages \
-				lpjguess maat maespa preles sipnet dvmdostem template
+MODELS := biocro clm45 dalec dvmdostem ed fates gday jules linkages \
+				lpjguess maat maespa preles sipnet template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.hydrology data.land \
-				 data.mining data.remote emulator meta.analysis \
+				 data.remote emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
+
+# Components not currently included in the build
+# (Most need more development first)
+# 	models: cable
+#	modules: data.mining, DART
 
 SHINY := $(dir $(wildcard shiny/*/.))
 SHINY := $(SHINY:%/=%)
@@ -98,9 +103,9 @@ depends_R_pkg = time Rscript -e " \
 	deps <- if (grepl('base/utils', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; \
 	devtools::install_deps('$(strip $(1))', Ncpus = ${NCPUS}, dependencies = deps);"
 install_R_pkg = time Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
-check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
-test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
-doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
+check_R_pkg = time Rscript scripts/check_with_errors.R $(strip $(1))
+test_R_pkg = time Rscript -e "devtools::test('"$(strip $(1))"', stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
+doc_R_pkg = time Rscript -e "devtools::document('"$(strip $(1))"')"
 
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .install/roxygen2 .install/testthat
 
