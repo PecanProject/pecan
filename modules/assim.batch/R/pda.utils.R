@@ -35,9 +35,9 @@ assim.batch <- function(settings) {
 
 ##' @export
 runModule.assim.batch <- function(settings) {
-  if (is.MultiSettings(settings)) {
-    return(papply(settings, runModule.assim.batch))
-  } else if (is.Settings(settings)) {
+  if (PEcAn.settings::is.MultiSettings(settings)) {
+    return(PEcAn.settings::papply(settings, runModule.assim.batch))
+  } else if (PEcAn.settings::is.Settings(settings)) {
     return(assim.batch(settings))
   } else {
     stop("runModule.assim.batch only works with Settings or MultiSettings")
