@@ -105,23 +105,7 @@ services:
   - docker
 
 install:
-  - echo 'Installing SIPNET for testing' && echo -en 'travis_fold:start:install_sipnet\\r'
-  - pushd $HOME
-  - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
-  - tar zxf sipnet_unk.tar.gz
-  - cd sipnet_unk
-  - make
-  - popd
-  - echo -en 'travis_fold:end:install_sipnet\\r'
-  - echo 'Installing BioCro for testing' && echo -en 'travis_fold:start:install_biocro\\r'
-  - pushd $HOME
-  # Install BioCro w/o help pages to work around infinite Roxygen recursion in configure file
-  - curl -sL https://github.com/ebimodeling/biocro/archive/0.95.tar.gz | tar zxf -
-  - cd biocro-0.95
-  - rm configure
-  - R CMD INSTALL .
-  - popd
-  - echo -en 'travis_fold:end:install_biocro\\r'
+  scripts/travis/install.sh
   
 before_script:
   - sudo service postgresql stop
