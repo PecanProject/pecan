@@ -17,16 +17,6 @@ set -e
     travis_time_end
 )
 
-echo ${PWD}
-echo ${HOME}
-ls -l ${PWD}/sipnet_unk/sipnet
-echo ${PWD}/sipnet_unk/sipnet
-ls -l /home/travis/sipnet_unk/sipnet
-if [ ! -e /home/travis/sipnet_unk/sipnet ]; then
-    echo "ERROR NO SIPNET!"
-    exit -1
-fi
-
 # INSTALLING BIOCRO
 (
     travis_time_start "install_biocro" "Installing BioCro"
