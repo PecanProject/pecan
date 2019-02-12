@@ -16,19 +16,19 @@ set -e
 . $( dirname $0 )/compile.sh
 
 
-# TESTING PECAN
-(
-    travis_time_start "test_pkgs" "Testing PEcAn packages"
-    make test
-    travis_time_end
-)
+# # TESTING PECAN
+# (
+#     travis_time_start "test_pkgs" "Testing PEcAn packages"
+#     make test
+#     travis_time_end
+# )
 
-# CHECKING PECAN
-(
-    travis_time_start "check_pkgs" "Checking PEcAn packages"
-    REBUILD_DOCS=FALSE make check
-    travis_time_end
-)
+# # CHECKING PECAN
+# (
+#     travis_time_start "check_pkgs" "Checking PEcAn packages"
+#     REBUILD_DOCS=FALSE make check
+#     travis_time_end
+# )
 
 # RUNNING SIMPLE PECAN WORKFLOW
 (
