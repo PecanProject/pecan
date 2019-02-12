@@ -36,6 +36,7 @@ die_warn <- !is.na(die_level) && die_level == 'warn'
 log_notes <- !is.na(log_level) && log_level == 'all'
 
 chk <- devtools::check(pkg, quiet = TRUE, error_on = "never", document = redocument)
+print(chk)
 
 errors <- chk[['errors']]
 n_errors <- length(errors)
