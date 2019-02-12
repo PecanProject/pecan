@@ -3,16 +3,18 @@
 set -e
 . $( dirname $0 )/func.sh
 
-# INSTALLING PECAN
-(
-    travis_time_start "install_pkgs" "Installing PEcAn packages"
-    Rscript scripts/generate_dependencies.R
-    # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
-    # but many dependency compilations seem not parallel-safe.
-    # More debugging needed.
-    NCPUS=2 make -j1
-    travis_time_end
-)
+# # INSTALLING PECAN
+# (
+#     travis_time_start "install_pkgs" "Installing PEcAn packages"
+#     Rscript scripts/generate_dependencies.R
+#     # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
+#     # but many dependency compilations seem not parallel-safe.
+#     # More debugging needed.
+#     NCPUS=2 make -j1
+#     travis_time_end
+# )
+. $( dirname $0 )/compile.sh
+
 
 # TESTING PECAN
 (
