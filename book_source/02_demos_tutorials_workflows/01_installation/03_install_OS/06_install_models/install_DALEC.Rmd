@@ -1,4 +1,4 @@
-#### DALEC
+### DALEC {#inst-dalec}
 
 ```bash
 cd

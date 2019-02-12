@@ -1,4 +1,4 @@
-#### ED2
+### ED2 {#inst-ed2}
 
 ##### ED2.2 r46 (used in PEcAn manuscript)
 

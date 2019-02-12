@@ -1,4 +1,4 @@
-#### MAESPA
+### MAESPA {inst-maespa}
 
 Navigate to a directory you would like store MAESPA and run the following:
 

@@ -1,12 +1,10 @@
-### Installing BETY
+## Installing BETY
 
-#### Install Postgres
+**************THIS PAGE IS DEPRECATED*************
 
-See OS-specific instructions for installing Postgres + PostGIS
-* [Ubuntu](Installing-PEcAn-Ubuntu.md#install-postgres)
-* [OSX](Installing-PEcAn-OSX#install-postgres)
-* [RedHat / CentOS](https://github.com/PecanProject/bety/wiki/Installing-Postgresql)
+Official Instructions for BETY are maintained here: https://pecan.gitbook.io/betydb-documentation
 
+If you would like to install the Docker Version of BETY, please consult the [PEcAn Docker](#pecan-docker) section.
 #### Install Database + Data
 
 * _note_ To install BETYdb without PEcAn, first download the [`load.bety.sh` script](https://raw.githubusercontent.com/PecanProject/pecan/master/scripts/load.bety.sh)

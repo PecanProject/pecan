@@ -2,5 +2,4 @@
 
 - [Ubuntu](#ubuntu)
 - [CentOS](#centos/redhat)
-- [OSX][Mac OSX]
-- [RedHat][CentOS / RHEL] Check this vs. CentOS ... ?
+- [OSX](#macosx)

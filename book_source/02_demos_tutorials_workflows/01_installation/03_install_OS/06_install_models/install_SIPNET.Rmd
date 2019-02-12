@@ -1,4 +1,4 @@
-#### SIPNET
+### SIPNET {inst-sipnet}
 
 ```bash
 cd
