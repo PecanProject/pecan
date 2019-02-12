@@ -1294,4 +1294,878 @@ time Rscript -e " deps <- if (grepl('base/utils', ' modules/rtm')) { c('Depends'
 [91mUpdating PEcAnRTM documentation
 [0mWriting NAMESPACE
 [91mLoading PEcAnRTM
+[0mWriting NAMESPACE
+[91m3.85user 0.35system 0:03.95elapsed 106%CPU (0avgtext+0avgdata 305048maxresident)k
+0inputs+24outputs (0major+75100minor)pagefaults 0swaps
+[0mecho `date` > .doc/modules/rtm
+time Rscript -e "devtools::install('modules/rtm', Ncpus = 1);"
+
+[91mSkipping 2 packages not available: PEcAn.assim.batch, PEcAn.logger
+[0m     checking for file ‘/pecan/modules/rtm/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/modules/rtm/DESCRIPTION’
+  ─  preparing ‘PEcAnRTM’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  cleaning src
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  looking to see if a ‘data/datalist’ file should be added
+  ─  building ‘PEcAnRTM_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/Rtmp7KSqK3/PEcAnRTM_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAnRTM’ ...
+** libs
+make[1]: Entering directory '/tmp/RtmpLShB0d/R.INSTALL83f5496611/PEcAnRTM/src'
+gfortran  -fpic -g -O2  -c  RTM/modules/mod_types.f90 -o RTM/modules/mod_types.o
+gfortran  -fpic -g -O2  -c  RTM/modules/dataSpec/dataSpec_wavelength.f90 -o RTM/modules/dataSpec/dataSpec_wavelength.o
+gfortran  -fpic -g -O2  -c  RTM/modules/dataSpec/dataSpec_prospect5b.f90 -o RTM/modules/dataSpec/dataSpec_prospect5b.o
+gfortran  -fpic -g -O2  -c  RTM/modules/dataSpec/dataSpec_soil.f90 -o RTM/modules/dataSpec/dataSpec_soil.o
+gfortran  -fpic -g -O2  -c  RTM/modules/dataSpec/dataSpec_refractive.f90 -o RTM/modules/dataSpec/dataSpec_refractive.o
+gfortran  -fpic -g -O2  -c  RTM/modules/dataSpec/dataSpec_prospectd.f90 -o RTM/modules/dataSpec/dataSpec_prospectd.o
+gfortran  -fpic -g -O2  -c  RTM/modules/dataSpec/dataSpec_sun.f90 -o RTM/modules/dataSpec/dataSpec_sun.o
+gfortran  -fpic -g -O2  -c  RTM/modules/dataSpec/dataSpec_prospect4.f90 -o RTM/modules/dataSpec/dataSpec_prospect4.o
+gfortran  -fpic -g -O2  -c  RTM/twostream/mod_biggamma.f90 -o RTM/twostream/mod_biggamma.o
+gfortran  -fpic -g -O2  -c  RTM/twostream/mod_hapke_soil.f90 -o RTM/twostream/mod_hapke_soil.o
+gfortran  -fpic -g -O2  -c  RTM/pro2s/pro52s.f90 -o RTM/pro2s/pro52s.o
+gfortran  -fpic -g -O2  -c  RTM/pro2s/pro5B2s.f90 -o RTM/pro2s/pro5B2s.o
+gfortran  -fpic -g -O2  -c  RTM/pro2s/pro42s.f90 -o RTM/pro2s/pro42s.o
+gfortran  -fpic -g -O2  -c  RTM/twostream/meador.f90 -o RTM/twostream/meador.o
+gfortran  -fpic -g -O2  -c  RTM/twostream/gamma.functions.f90 -o RTM/twostream/gamma.functions.o
+gfortran  -fpic -g -O2  -c  RTM/twostream/two.stream.f90 -o RTM/twostream/two.stream.o
+gfortran  -fpic -g -O2  -c  RTM/prosail/prosail.main.f90 -o RTM/prosail/prosail.main.o
+gfortran  -fpic -g -O2  -c  RTM/sail/sail.refltrans.f90 -o RTM/sail/sail.refltrans.o
+gfortran  -fpic -g -O2  -c  RTM/sail/sail.volscatt.f90 -o RTM/sail/sail.volscatt.o
+gfortran  -fpic -g -O2  -c  RTM/sail/sail.lidf.f90 -o RTM/sail/sail.lidf.o
+gfortran  -fpic -g -O2  -c  RTM/sail/sail.sail.f90 -o RTM/sail/sail.sail.o
+gfortran  -fpic -g -O2  -c  RTM/sail/sail.sensgeom.f90 -o RTM/sail/sail.sensgeom.o
+gfortran  -fpic -g -O2  -c  RTM/sail/sail.hotspot.f90 -o RTM/sail/sail.hotspot.o
+gfortran  -fpic -g -O2  -c  RTM/sail/sail.brdf.f90 -o RTM/sail/sail.brdf.o
+gfortran  -fpic -g -O2  -c  RTM/sail/sail.suits.f90 -o RTM/sail/sail.suits.o
+gfortran  -fpic -g -O2  -c  RTM/prospect/prospect.5.f90 -o RTM/prospect/prospect.5.o
+gfortran  -fpic -g -O2  -c  RTM/prospect/prospect.4.f90 -o RTM/prospect/prospect.4.o
+gfortran  -fpic -g -O2  -c  RTM/prospect/prospect.D.f90 -o RTM/prospect/prospect.D.o
+gfortran  -fpic -g -O2  -c  RTM/prospect/prospect.5B.f90 -o RTM/prospect/prospect.5B.o
+gfortran  -fpic -g -O2  -c  RTM/prospect/prospect.tav.f90 -o RTM/prospect/prospect.tav.o
+gfortran  -fpic -g -O2  -c  RTM/prospect/prospect.expint.f90 -o RTM/prospect/prospect.expint.o
+gfortran  -fpic -g -O2  -c  RTM/prospect/prospect.gpm.f90 -o RTM/prospect/prospect.gpm.o
+gcc -shared -L/usr/local/lib/R/lib -L/usr/local/lib -o PEcAnRTM.so RTM/modules/mod_types.o RTM/modules/dataSpec/dataSpec_prospect5b.o RTM/modules/dataSpec/dataSpec_soil.o RTM/modules/dataSpec/dataSpec_refractive.o RTM/modules/dataSpec/dataSpec_prospectd.o RTM/modules/dataSpec/dataSpec_wavelength.o RTM/modules/dataSpec/dataSpec_sun.o RTM/modules/dataSpec/dataSpec_prospect4.o RTM/twostream/mod_biggamma.o RTM/twostream/mod_hapke_soil.o RTM/pro2s/pro52s.o RTM/pro2s/pro5B2s.o RTM/pro2s/pro42s.o RTM/twostream/meador.o RTM/twostream/gamma.functions.o RTM/twostream/two.stream.o RTM/prosail/prosail.main.o RTM/sail/sail.refltrans.o RTM/sail/sail.volscatt.o RTM/sail/sail.lidf.o RTM/sail/sail.sail.o RTM/sail/sail.sensgeom.o RTM/sail/sail.hotspot.o RTM/sail/sail.brdf.o RTM/sail/sail.suits.o RTM/prospect/prospect.5.o RTM/prospect/prospect.4.o RTM/prospect/prospect.D.o RTM/prospect/prospect.5B.o RTM/prospect/prospect.tav.o RTM/prospect/prospect.expint.o RTM/prospect/prospect.gpm.o -lgfortran -lm -lquadmath -L/usr/local/lib/R/lib -lR
+make[1]: Leaving directory '/tmp/RtmpLShB0d/R.INSTALL83f5496611/PEcAnRTM/src'
+installing to /usr/local/lib/R/site-library/PEcAnRTM/libs
+** R
+** data
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded
+* DONE (PEcAnRTM)
+[91m6.03user 1.60system 0:07.58elapsed 100%CPU (0avgtext+0avgdata 140564maxresident)k
+0inputs+51128outputs (0major+252111minor)pagefaults 0swaps
+[0mecho `date` > .install/modules/rtm
+time Rscript -e " deps <- if (grepl('base/utils', ' models/biocro')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/biocro', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 7 packages not available: PEcAn.data.atmosphere, PEcAn.data.land, PEcAn.DB, PEcAn.logger, PEcAn.remote, PEcAn.settings, PEcAn.utils
+[0m[91m2.31user 0.39system 0:03.44elapsed 78%CPU (0avgtext+0avgdata 136540maxresident)k
+0inputs+712outputs (0major+32823minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/biocro"')"
+[91mUpdating PEcAn.BIOCRO documentation
+[0mWriting NAMESPACE
+[91mLoading PEcAn.BIOCRO
+[0mWriting NAMESPACE
+[91m1.90user 0.34system 0:01.93elapsed 115%CPU (0avgtext+0avgdata 200116maxresident)k
+0inputs+24outputs (0major+43857minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/biocro
+time Rscript -e "devtools::install('models/biocro', Ncpus = 1);"
+
+[91mSkipping 6 packages not available: PEcAn.data.atmosphere, PEcAn.data.land, PEcAn.logger, PEcAn.remote, PEcAn.settings, PEcAn.utils
+[0m     checking for file ‘/pecan/models/biocro/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/biocro/DESCRIPTION’
+  ─  preparing ‘PEcAn.BIOCRO’:
+   checking      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.BIOCRO_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpqMykyc/PEcAn.BIOCRO_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.BIOCRO’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded
+* DONE (PEcAn.BIOCRO)
+[91m4.36user [0m[91m1.15[0m[91msyst[0m[91me[0m[91mm[0m[91m [0m[91m0:08.39[0m[91me[0m[91ml[0m[91ma[0m[91mp[0m[91ms[0m[91me[0m[91md[0m[91m [0m[91m65%[0m[91mC[0m[91mPU[0m[91m [0m[91m([0m[91m0[0m[91ma[0m[91mv[0m[91mg[0m[91mt[0m[91mext+0avgdata 136220maxresident)k
+0inputs+26696outputs (0major+93117minor)pagefaults 0swaps
+[0mecho `date` > .install/models/biocro
+time Rscript -e " deps <- if (grepl('base/utils', ' models/clm45')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/clm45', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 2 packages not available: PEcAn.logger, PEcAn.utils
+[0m[91m2.30user 0.33system 0:02.97elapsed 88%CPU (0avgtext+0avgdata 133104maxresident)k
+0inputs+704outputs (0major+32041minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/clm45"')"
+[91mUpdating PEcAn.CLM45 documentation
+[0m[91mWarning: @description [/pecan/models/clm45/R/model2netcdf.CLM45.R#1]: requires a value
+[0mWriting NAMESPACE
+[91mLoading PEcAn.CLM45
+[0m[91mLoading required package: PEcAn.logger
+[0m[91mLoading required package: PEcAn.utils
+[0m[91m
+Attaching package: ‘PEcAn.utils’
+
+[0m[91mThe following objects are masked from ‘package:PEcAn.logger’:
+
+    logger.debug, logger.error, logger.getLevel, logger.info,
+    logger.setLevel, logger.setOutputFile, logger.setQuitOnSevere,
+    logger.setWidth, logger.severe, logger.warn
+
+[0m[91mThe following object is masked from ‘package:utils’:
+
+    download.file
+
+[0mWriting NAMESPACE
+[91m1.16us[0m[91me[0m[91mr[0m[91m [0m[91m0.29[0m[91ms[0m[91my[0m[91ms[0m[91mte[0m[91mm[0m[91m [0m[91m0:01.15el[0m[91ma[0m[91mp[0m[91ms[0m[91me[0m[91md[0m[91m 125%C[0m[91mP[0m[91mU[0m[91m ([0m[91m0av[0m[91mg[0m[91mt[0m[91me[0m[91mxt[0m[91m+[0m[91m0[0m[91mavg[0m[91md[0m[91ma[0m[91mt[0m[91ma[0m[91m [0m[91m114612[0m[91mm[0m[91ma[0m[91mx[0m[91mr[0m[91mes[0m[91mi[0m[91md[0m[91ment)k
+0inputs+24outputs (0major+26729minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/clm45
+time Rscript -e "devtools::install('models/clm45', Ncpus = 1);"
+
+[91mSkipping 2 packages not available: PEcAn.logger, PEcAn.utils
+[0m     checking for file ‘/pecan/models/clm45/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/clm45/DESCRIPTION’
+  ─  preparing ‘PEcAn.CLM45’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.CLM45_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpBXCDgP/PEcAn.CLM45_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.CLM45’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.CLM45)
+[91m2.02user 1.10system 0:05.15elapsed 60%CPU (0avgtext+0avgdata 125332maxresident)k
+0inputs+1568outputs (0major+85884minor)pagefaults 0swaps
+[0mecho `date` > .install/models/clm45
+time Rscript -e " deps <- if (grepl('base/utils', ' models/dalec')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/dalec', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m[91m2.31user 0.33system 0:03.12elapsed 84%CPU (0avgtext+0avgdata 135256maxresident)k
+0inputs+704outputs (0major+32653minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/dalec"')"
+[91mUpdating PEcAn.DALEC documentation
+[0m[91mWarning: @param [/pecan/models/dalec/R/write.configs.dalec.R#85]: requires name and description
+[0m[91mWarning: @param [/pecan/models/dalec/R/write.configs.dalec.R#86]: requires name and description
+[0m[91mWarning: @param [/pecan/models/dalec/R/write.configs.dalec.R#87]: requires name and description
+[0m[91mWarning: @param [/pecan/models/dalec/R/write.configs.dalec.R#88]: requires name and description
+[0mWriting NAMESPACE
+[91mLoading PEcAn.DALEC
+[0mWriting NAMESPACE
+[91m1.20user 0.28system 0:01.27elapsed 116%CPU (0avgtext+0avgdata 119748maxresident)k
+0inputs+24outputs (0major+28190minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/dalec
+time Rscript -e "devtools::install('models/dalec', Ncpus = 1);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m     checking for file ‘/pecan/models/dalec/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/dalec/DESCRIPTION’
+  ─  preparing ‘PEcAn.DALEC’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.DALEC_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpEQHFdl/PEcAn.DALEC_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.DALEC’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.DALEC)
+[91m3.30user 1.00system 0:04.18elapsed 102%CPU (0avgtext+0avgdata 132616maxresident)k
+0inputs+2056outputs (0major+84261minor)pagefaults 0swaps
+[0mecho `date` > .install/models/dalec
+time Rscript -e " deps <- if (grepl('base/utils', ' models/dvmdostem')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/dvmdostem', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 1 packages not available: PEcAn.utils
+[0m[91m2.30user 0.32system 0:03.10elapsed 84%CPU (0avgtext+0avgdata 132380maxresident)k
+0inputs+704outputs (0major+32006minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/dvmdostem"')"
+[91mUpdating PEcAn.dvmdostem documentation
+[0m[91mWarning: @title [/pecan/models/dvmdostem/R/write.config.dvmdostem.R#119]: requires a value
+[0mWriting NAMESPACE
+[91mLoading PEcAn.dvmdostem
+[0m[91m
+Attaching package: ‘lubridate’
+
+[0m[91mThe following object is masked from ‘package:base’:
+
+    date
+
+[0mWriting NAMESPACE
+[91mWarning message:
+enforce.runmask.cmt.vegmap.harmony.Rd is missing name/title. Skipping 
+[0m[91m1.25user 0.27system 0:01.30elapsed 116%CPU (0avgtext+0avgdata 120100maxresident)k
+0inputs+24outputs (0major+28437minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/dvmdostem
+time Rscript -e "devtools::install('models/dvmdostem', Ncpus = 1);"
+
+[91mSkipping 1 packages not available: PEcAn.utils
+[0m     checking for file ‘/pecan/models/dvmdostem/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/dvmdostem/DESCRIPTION’
+  ─  preparing ‘PEcAn.dvmdostem’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.dvmdostem_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpHGKG9C/PEcAn.dvmdostem_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.dvmdostem’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.dvmdostem)
+[91m2.63user 1.12system 0:03.57elapsed 105%CPU (0avgtext+0avgdata 124700maxresident)k
+0inputs+1992outputs (0major+99968minor)pagefaults 0swaps
+[0mecho `date` > .install/models/dvmdostem
+time Rscript -e " deps <- if (grepl('base/utils', ' models/fates')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/fates', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m[91m2.26user 0.38system 0:03.09elapsed 85%CPU (0avgtext+0avgdata 134844maxresident)k
+0inputs+704outputs (0major+32563minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/fates"')"
+[91mUpdating PEcAn.FATES documentation
+[0mWriting NAMESPACE
+[91mLoading PEcAn.FATES
+[0m[91mLoading required package: PEcAn.utils
+[0m[91m
+Attaching package: ‘PEcAn.utils’
+
+[0m[91mThe following object is masked from ‘package:utils’:
+
+    download.file
+
+[0mWriting NAMESPACE
+[91m1.19user 0.30system 0:01.27elapsed 116%CPU (0avgtext+0avgdata 121264maxresident)k
+0inputs+24outputs (0major+28646minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/fates
+time Rscript -e "devtools::install('models/fates', Ncpus = 1);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m     checking for file ‘/pecan/models/fates/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/fates/DESCRIPTION’
+  ─  preparing ‘PEcAn.FATES’:
+   checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.FATES_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/Rtmp35e41h/PEcAn.FATES_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.FATES’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.FATES)
+[91m4.05[0m[91mu[0m[91ms[0m[91me[0m[91mr[0m[91m [0m[91m1.14[0m[91ms[0m[91my[0m[91ms[0m[91mt[0m[91me[0m[91mm[0m[91m [0m[91m0:04.87[0m[91me[0m[91ml[0m[91ma[0m[91mp[0m[91ms[0m[91me[0m[91md[0m[91m [0m[91m106%[0m[91mC[0m[91mP[0m[91mU[0m[91m [0m[91m([0m[91m0[0m[91ma[0m[91mv[0m[91mg[0m[91mt[0m[91me[0m[91mxt+0avgdata 132780maxresident)k
+0inputs+12088outputs (0major+93730minor)pagefaults 0swaps
+[0mecho `date` > .install/models/fates
+time Rscript -e " deps <- if (grepl('base/utils', ' models/gday')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/gday', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m[91m2.31user 0.33system 0:03.01elapsed 87%CPU (0avgtext+0avgdata 134596maxresident)k
+0inputs+704outputs (0major+32563minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/gday"')"
+[91mUpdating PEcAn.GDAY documentation
+[0mWriting NAMESPACE
+[91mLoading PEcAn.GDAY
+[0m[91mLoading required package: PEcAn.utils
+[0m[91m
+Attaching package: ‘PEcAn.utils’
+
+[0m[91mThe following object is masked from ‘package:utils’:
+
+    download.file
+
+[0mWriting NAMESPACE
+[91m1.30[0m[91mus[0m[91me[0m[91mr 0.23[0m[91msys[0m[91mt[0m[91mem [0m[91m0:01.31e[0m[91ml[0m[91maps[0m[91me[0m[91md[0m[91m 116%CP[0m[91mU[0m[91m [0m[91m([0m[91m0[0m[91mavgt[0m[91mex[0m[91mt+0a[0m[91mvg[0m[91md[0m[91mat[0m[91ma[0m[91m [0m[91m119228m[0m[91maxr[0m[91mes[0m[91mi[0m[91mde[0m[91mn[0m[91mt)k
+[0m[91m0[0m[91mi[0m[91mn[0m[91mput[0m[91ms+24o[0m[91mutpu[0m[91mts[0m[91m [0m[91m(0[0m[91mma[0m[91mj[0m[91mor[0m[91m+28104m[0m[91mi[0m[91mn[0m[91mo[0m[91mr[0m[91m)p[0m[91ma[0m[91mg[0m[91me[0m[91mf[0m[91ma[0m[91mu[0m[91mlt[0m[91ms[0m[91m [0m[91m0s[0m[91mwa[0m[91mps[0m[91m
+[0mecho `date` > .doc/models/gday
+time Rscript -e "devtools::install('models/gday', Ncpus = 1);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m     checking for file ‘/pecan/models/gday/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/gday/DESCRIPTION’
+  ─  preparing ‘PEcAn.GDAY’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.GDAY_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpgVctjq/PEcAn.GDAY_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.GDAY’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.GDAY)
+[91m3.04user 1.21system 0:03.98elapsed 106%CPU (0avgtext+0avgdata 132880maxresident)k
+0inputs+1768outputs (0major+86704minor)pagefaults 0swaps
+[0mecho `date` > .install/models/gday
+time Rscript -e " deps <- if (grepl('base/utils', ' models/jules')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/jules', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m[91m2.32user 0.33system 0:03.13elapsed 84%CPU (0avgtext+0avgdata 135932maxresident)k
+0inputs+704outputs (0major+32868minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/jules"')"
+[91mUpdating PEcAn.JULES documentation
+[0m[91mWarning: @param [/pecan/models/jules/R/write.config.JULES.R#595]: requires name and description
+[0m[91mWarning: @param [/pecan/models/jules/R/write.config.JULES.R#596]: requires name and description
+[0m[91mWarning: @return [/pecan/models/jules/R/write.config.JULES.R#599]: requires a value
+[0m[91mWarning: @examples [/pecan/models/jules/R/write.config.JULES.R#602]: requires a value
+[0mWriting NAMESPACE
+[91mLoading PEcAn.JULES
+[0m[91mLoading required package: PEcAn.utils
+[0m[91m
+Attaching package: ‘PEcAn.utils’
+
+[0m[91mThe following object is masked from ‘package:utils’:
+
+    download.file
+
+[0mWriting NAMESPACE
+[91m1.25user 0.21system 0:01.28elapsed 114%CPU (0avgtext+0avgdata 120324maxresident)k
+0inputs+24outputs (0major+28413minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/jules
+time Rscript -e "devtools::install('models/jules', Ncpus = 1);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m     checking for file ‘/pecan/models/jules/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/jules/DESCRIPTION’
+  ─  preparing ‘PEcAn.JULES’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.JULES_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpwDDADE/PEcAn.JULES_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.JULES’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.JULES)
+[91m3.46user 0.97system 0:04.24elapsed 104%CPU (0avgtext+0avgdata 133092maxresident)k
+0inputs+2136outputs (0major+89657minor)pagefaults 0swaps
+[0mecho `date` > .install/models/jules
+time Rscript -e " deps <- if (grepl('base/utils', ' models/linkages')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/linkages', Ncpus = 1, dependencies = deps);"
+linkages (9f4240a9d... -> faff5cffc...) [GitHub]
+[91mSkipping 4 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m[91mDownloading GitHub repo araiho/linkages_package@master
 [0m
+     checking for file ‘/tmp/Rtmpn02JB8/remotesb0f796fb5a7/araiho-linkages_package-faff5cf/DESCRIPTION’ ...  ✔  checking for file ‘/tmp/Rtmpn02JB8/remotesb0f796fb5a7/araiho-linkages_package-faff5cf/DESCRIPTION’
+  ─  preparing ‘linkages’:
+   checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  excluding invalid files
+     Subdirectory 'R' contains invalid file names:
+     ‘README’
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘linkages_0.1.tar.gz’
+     
+[91mInstalling package into ‘/usr/local/lib/R/site-library’
+(as ‘lib’ is unspecified)
+[0m[91m* installing *source* package ‘linkages’ ...
+[0m[91m** R
+[0m[91m** inst
+[0m[91m** byte-compile and prepare package for lazy loading
+[0m[91m** help
+[0m[91m*** installing help indices
+[0m[91m** building package indices
+[0m[91m** testing if installed package can be loaded
+[0m[91m* DONE (linkages)
+[0m[91m12.18user 6.19system 0:27.52elapsed 66%CPU (0avgtext+0avgdata 144384maxresident)k
+0inputs+414528outputs (0major+126308minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/linkages"')"
+[91mUpdating PEcAn.LINKAGES documentation
+[0m[91mWarning: @param [/pecan/models/linkages/R/split_inputs.LINKAGES.R#13]: requires name and description
+[0m[91mWarning: @param [/pecan/models/linkages/R/split_inputs.LINKAGES.R#14]: requires name and description
+[0m[91mWarning: @param [/pecan/models/linkages/R/split_inputs.LINKAGES.R#15]: requires name and description
+[0m[91mWarning: @param [/pecan/models/linkages/R/write_restart.LINKAGES.R#21]: requires name and description
+[0m[91mWarning: @param [/pecan/models/linkages/R/write_restart.LINKAGES.R#22]: requires name and description
+[0mWriting NAMESPACE
+[91mLoading PEcAn.LINKAGES
+[0m[91mLoading required package: PEcAn.utils
+[0m[91m
+Attaching package: ‘PEcAn.utils’
+
+[0m[91mThe following object is masked from ‘package:utils’:
+
+    download.file
+
+[0mWriting NAMESPACE
+[91m1.53user 0.31system 0:01.53elapsed 119%CPU (0avgtext+0avgdata 148116maxresident)k
+0inputs+24outputs (0major+31104minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/linkages
+time Rscript -e "devtools::install('models/linkages', Ncpus = 1);"
+
+[91mSkipping 4 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m     checking for file ‘/pecan/models/linkages/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/linkages/DESCRIPTION’
+  ─  preparing ‘PEcAn.LINKAGES’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.LINKAGES_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpQnJRdM/PEcAn.LINKAGES_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.LINKAGES’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.LINKAGES)
+[91m3.65user 1.06system 0:05.14elapsed 91%CPU (0avgtext+0avgdata 133088maxresident)k
+0inputs+2520outputs (0major+90809minor)pagefaults 0swaps
+[0mecho `date` > .install/models/linkages
+time Rscript -e " deps <- if (grepl('base/utils', ' models/lpjguess')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/lpjguess', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m[91m2.31user 0.31system 0:03.03elapsed 86%CPU (0avgtext+0avgdata 134840maxresident)k
+0inputs+704outputs (0major+32575minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/lpjguess"')"
+[91mUpdating PEcAn.LPJGUESS documentation
+[0mWriting NAMESPACE
+[91mLoading PEcAn.LPJGUESS
+[0m[91mLoading required package: PEcAn.utils
+[0m[91m
+Attaching package: ‘PEcAn.utils’
+
+[0m[91mThe following object is masked from ‘package:utils’:
+
+    download.file
+
+[0mWriting NAMESPACE
+[91m1.31user[0m[91m 0.37s[0m[91myste[0m[91mm [0m[91m0:01.37ela[0m[91mpse[0m[91md[0m[91m 122%CP[0m[91mU (0[0m[91mavg[0m[91mtext[0m[91m+0[0m[91mavgda[0m[91mta[0m[91m 119492m[0m[91maxresi[0m[91md[0m[91ment[0m[91m)k
+0[0m[91minp[0m[91muts+24[0m[91moutput[0m[91ms[0m[91m (0[0m[91mmajor[0m[91m+28308mi[0m[91mnor)[0m[91mpage[0m[91mfaults 0s[0m[91mwa[0m[91mps
+[0mecho `date` > .doc/models/lpjguess
+time Rscript -e "devtools::install('models/lpjguess', Ncpus = 1);"
+
+[91mSkipping 3 packages not available: PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m         checking for file ‘/pecan/models/lpjguess/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/lpjguess/DESCRIPTION’
+  ─  preparing ‘PEcAn.LPJGUESS’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+─  looking to see if a ‘data/datalist’ file should be added
+  ─  building ‘PEcAn.LPJGUESS_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/Rtmp1YaZyo/PEcAn.LPJGUESS_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.LPJGUESS’ ...
+** R
+** data
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.LPJGUESS)
+[91m3.94user 1.07system 0:05.48elapsed 91%CPU (0avgtext+0avgdata 132812maxresident)k
+0inputs+2248outputs (0major+91350minor)pagefaults 0swaps
+[0mecho `date` > .install/models/lpjguess
+time Rscript -e " deps <- if (grepl('base/utils', ' models/maat')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/maat', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 5 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote, PEcAn.settings, PEcAn.utils
+[0m[91m2.24user 0.32system 0:03.08elapsed 82%CPU (0avgtext+0avgdata 136752maxresident)k
+0inputs+704outputs (0major+32971minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/maat"')"
+[91mUpdating PEcAn.MAAT documentation
+[0mWriting NAMESPACE
+[91mLoading PEcAn.MAAT
+[0mWriting NAMESPACE
+[91m1.73user 0.31system 0:01.74elapsed 117%CPU (0avgtext+0avgdata 171924maxresident)k
+0inputs+24outputs (0major+36940minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/maat
+time Rscript -e "devtools::install('models/maat', Ncpus = 1);"
+
+[91mSkipping 5 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote, PEcAn.settings, PEcAn.utils
+[0m     checking for file ‘/pecan/models/maat/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/maat/DESCRIPTION’
+  ─  preparing ‘PEcAn.MAAT’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.MAAT_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpIHSDoy/PEcAn.MAAT_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.MAAT’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded
+* DONE (PEcAn.MAAT)
+[91m4.29user 1.08system 0:05.18elapsed 103%CPU (0avgtext+0avgdata 133360maxresident)k
+0inputs+27064outputs (0major+91920minor)pagefaults 0swaps
+[0mecho `date` > .install/models/maat
+time Rscript -e " deps <- if (grepl('base/utils', ' models/maespa')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/maespa', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 4 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m[91m2.30user 0.30system 0:03.12elapsed 83%CPU (0avgtext+0avgdata 145444maxresident)k
+0inputs+704outputs (0major+35172minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/maespa"')"
+[91mUpdating PEcAn.MAESPA documentation
+[0mWriting NAMESPACE
+[91mLoading PEcAn.MAESPA
+[0mWriting NAMESPACE
+[91m1.50[0m[91mus[0m[91me[0m[91mr [0m[91m0.27sy[0m[91mst[0m[91me[0m[91mm[0m[91m [0m[91m0:01.48[0m[91melap[0m[91mse[0m[91md[0m[91m 118%C[0m[91mP[0m[91mU[0m[91m [0m[91m([0m[91m0a[0m[91mvgt[0m[91mex[0m[91mt[0m[91m+[0m[91m0[0m[91mavg[0m[91mda[0m[91mt[0m[91ma[0m[91m 147280[0m[91mm[0m[91ma[0m[91mxr[0m[91mes[0m[91mide[0m[91mnt)[0m[91mk
+0i[0m[91mn[0m[91mput[0m[91ms+24[0m[91moutp[0m[91mu[0m[91mts [0m[91m([0m[91m0m[0m[91major[0m[91m+[0m[91m30709min[0m[91mo[0m[91mr)pagefaults 0swaps
+[0mecho `date` > .doc/models/maespa
+time Rscript -e "devtools::install('models/maespa', Ncpus = 1);"
+
+[91mSkipping 4 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m     checking for file ‘/pecan/models/maespa/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/maespa/DESCRIPTION’
+  ─  preparing ‘PEcAn.MAESPA’:
+✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.MAESPA_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpyKxzFd/PEcAn.MAESPA_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.MAESPA’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.MAESPA)
+[91m3.62user 1.07system 0:04.47elapsed 104%CPU (0avgtext+0avgdata 133268maxresident)k
+0inputs+20048outputs (0major+91511minor)pagefaults 0swaps
+[0mecho `date` > .install/models/maespa
+time Rscript -e " deps <- if (grepl('base/utils', ' models/preles')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/preles', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 3 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.utils
+[0m[91m2.34user 0.33system 0:03.35elapsed 79%CPU (0avgtext+0avgdata 133840maxresident)k
+0inputs+704outputs (0major+32240minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"models/preles"')"
+[91mUpdating PEcAn.PRELES documentation
+[0mWriting NAMESPACE
+[91mLoading PEcAn.PRELES
+[0m[91mLoading required package: PEcAn.utils
+[0m[91m
+Attaching package: ‘PEcAn.utils’
+
+[0m[91mThe following object is masked from ‘package:utils’:
+
+    download.file
+
+[0mWriting NAMESPACE
+[91m1.47[0m[91mu[0m[91mser[0m[91m 0.30s[0m[91my[0m[91ms[0m[91mte[0m[91mm[0m[91m [0m[91m0:01.46[0m[91me[0m[91ml[0m[91ma[0m[91mp[0m[91ms[0m[91me[0m[91md[0m[91m [0m[91m120%[0m[91mC[0m[91mP[0m[91mU[0m[91m [0m[91m([0m[91m0[0m[91ma[0m[91mv[0m[91mg[0m[91mtext+0avgdata 148800maxresident)k
+0inputs+24outputs (0major+30974minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/preles
+time Rscript -e "devtools::install('models/preles', Ncpus = 1);"
+
+[91mSkipping 3 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.utils
+[0m     checking for file ‘/pecan/models/preles/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/preles/DESCRIPTION’
+  ─  preparing ‘PEcAn.PRELES’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.PRELES_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpTs93tp/PEcAn.PRELES_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.PRELES’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.PRELES)
+[91m3.13user[0m[91m [0m[91m1.04[0m[91ms[0m[91my[0m[91mste[0m[91mm[0m[91m [0m[91m0:04.60e[0m[91ml[0m[91map[0m[91msed[0m[91m 90%[0m[91mCP[0m[91mU[0m[91m (0avgte[0m[91mxt+0[0m[91mavg[0m[91md[0m[91ma[0m[91mta[0m[91m 132880m[0m[91maxr[0m[91mes[0m[91mi[0m[91mde[0m[91mn[0m[91mt[0m[91m)k
+[0m[91m0in[0m[91mpu[0m[91mt[0m[91ms[0m[91m+1352[0m[91mo[0m[91mutp[0m[91muts [0m[91m(0m[0m[91maj[0m[91mor[0m[91m+[0m[91m83588m[0m[91mino[0m[91mr)p[0m[91magef[0m[91mau[0m[91ml[0m[91mts 0[0m[91msw[0m[91maps
+[0mecho `date` > .install/models/preles
+time Rscript -e " deps <- if (grepl('base/utils', ' models/sipnet')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('models/sipnet', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 4 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m[91m2.28user [0m[91m0.38syst[0m[91mem 0:03.14elap[0m[91msed 84%C[0m[91mPU (0[0m[91ma[0m[91mv[0m[91mgte[0m[91mxt+0[0m[91ma[0m[91mvgd[0m[91mata[0m[91m [0m[91m136036max[0m[91mres[0m[91mide[0m[91mnt)[0m[91mk[0m[91m
+[0m[91m0inp[0m[91mut[0m[91ms[0m[91m+704out[0m[91mpu[0m[91mts[0m[91m (0m[0m[91majo[0m[91mr+32888m[0m[91mino[0m[91mr)pag[0m[91mefaul[0m[91mts 0[0m[91mswap[0m[91ms
+[0mtime Rscript -e "devtools::document('"models/sipnet"')"
+[91mUpdating PEcAn.SIPNET documentation
+[0m[91mWarning: @param [/pecan/models/sipnet/R/split_inputs.SIPNET.R#16]: requires name and description
+[0m[91mWarning: @param [/pecan/models/sipnet/R/split_inputs.SIPNET.R#17]: requires name and description
+[0m[91mWarning: @param [/pecan/models/sipnet/R/split_inputs.SIPNET.R#18]: requires name and description
+[0m[91mWarning: @param [/pecan/models/sipnet/R/write_restart.SIPNET.R#21]: requires name and description
+[0m[91mWarning: @param [/pecan/models/sipnet/R/write_restart.SIPNET.R#22]: requires name and description
+[0m[91mWarning: @param [/pecan/models/sipnet/R/write_restart.SIPNET.R#23]: requires name and description
+[0mWriting NAMESPACE
+[91mLoading PEcAn.SIPNET
+[0m[91mLoading required package: PEcAn.data.atmosphere
+[0mWriting NAMESPACE
+[91m1.58user 0.30system 0:01.67elapsed 112%CPU (0avgtext+0avgdata 148580maxresident)k
+0inputs+24outputs (0major+31159minor)pagefaults 0swaps
+[0mecho `date` > .doc/models/sipnet
+time Rscript -e "devtools::install('models/sipnet', Ncpus = 1);"
+
+[91mSkipping 4 packages not available: PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote, PEcAn.utils
+[0m     checking for file ‘/pecan/models/sipnet/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/models/sipnet/DESCRIPTION’
+  ─  preparing ‘PEcAn.SIPNET’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+  ─  building ‘PEcAn.SIPNET_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpIsTyTL/PEcAn.SIPNET_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.SIPNET’ ...
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (PEcAn.SIPNET)
+[91m4.46user [0m[91m1.14sy[0m[91mstem [0m[91m0:05.50el[0m[91map[0m[91ms[0m[91med 101%C[0m[91mP[0m[91mU ([0m[91m0avg[0m[91mt[0m[91mext[0m[91m+0a[0m[91mv[0m[91mg[0m[91mdata[0m[91m 143268[0m[91mmax[0m[91mre[0m[91ms[0m[91mi[0m[91mdent[0m[91m)[0m[91mk[0m[91m
+0inp[0m[91muts[0m[91m+6240o[0m[91mutpu[0m[91mts[0m[91m [0m[91m(0m[0m[91major[0m[91m+110707min[0m[91mo[0m[91mr)p[0m[91magef[0m[91mau[0m[91ml[0m[91mts [0m[91m0swap[0m[91ms
+[0mecho `date` > .install/models/sipnet
+time Rscript -e " deps <- if (grepl('base/utils', ' base/all')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; devtools::install_deps('base/all', Ncpus = 1, dependencies = deps);"
+
+[91mSkipping 22 packages not available: PEcAn.allometry, PEcAn.assim.batch, PEcAn.benchmark, PEcAn.BIOCRO, PEcAn.DALEC, PEcAn.data.atmosphere, PEcAn.data.land, PEcAn.data.remote, PEcAn.DB, PEcAn.ED2, PEcAn.emulator, PEcAn.LINKAGES, PEcAn.logger, PEcAn.MA, PEcAn.photosynthesis, PEcAn.priors, PEcAn.remote, PEcAn.settings, PEcAn.SIPNET, PEcAn.uncertainty, PEcAn.utils, PEcAn.workflow
+[0m[91m2.31user 0.27system 0:03.16elapsed 81%CPU (0avgtext+0avgdata 131460maxresident)k
+0inputs+704outputs (0major+31719minor)pagefaults 0swaps
+[0mtime Rscript -e "devtools::document('"base/all"')"
+[91mUpdating PEcAn.all documentation
+[0m[91mLoading PEcAn.all
+[0m[91mLoading required package: PEcAn.DB
+[0m[91mLoading required package: PEcAn.settings
+[0m[91mLoading required package: PEcAn.MA
+[0m[91mLoading required package: XML
+[0m[91mLoading required package: lattice
+[0m[91mLoading required package: MASS
+[0m[91mLoading required package: PEcAn.utils
+[0m[91m
+Attaching package: ‘PEcAn.utils’
+
+[0m[91mThe following object is masked from ‘package:utils’:
+
+    download.file
+
+[0m[91mLoading required package: PEcAn.logger
+[0m[91m
+Attaching package: ‘PEcAn.logger’
+
+[0m[91mThe following objects are masked from ‘package:PEcAn.utils’:
+
+    logger.debug, logger.error, logger.getLevel, logger.info,
+    logger.setLevel, logger.setOutputFile, logger.setQuitOnSevere,
+    logger.setWidth, logger.severe, logger.warn
+
+[0m[91mLoading required package: PEcAn.uncertainty
+[0m[91mLoading required package: PEcAn.priors
+[0m[91mLoading required package: ggplot2
+[0m[91mLoading required package: ggmap
+[0m[91mLoading required package: gridExtra
+[0m[91m
+Attaching package: ‘PEcAn.uncertainty’
+
+[0m[91mThe following objects are masked from ‘package:PEcAn.utils’:
+
+    get.ensemble.samples, read.ensemble.output, write.ensemble.configs
+
+[0m[91mLoading required package: PEcAn.data.atmosphere
+[0m[91mLoading required package: PEcAn.data.land
+[0m[91mLoading required package: datapack
+[0m[91mLoading required package: dataone
+[0m[91mLoading required package: redland
+[0m[91mLoading required package: sirt
+[0m[91m- sirt 3.1-80 (2019-01-04 12:08:59)
+[0m[91mLoading required package: sf
+[0m[91mLinking to GEOS 3.5.1, GDAL 2.1.2, PROJ 4.9.3
+[0m[91mLoading required package: PEcAn.data.remote
+[0m[91mLoading required package: PEcAn.assim.batch
+[0m[91mLoading required package: ellipse
+[0m[91m
+Attaching package: ‘ellipse’
+
+[0m[91mThe following object is masked from ‘package:graphics’:
+
+    pairs
+
+[0m[91mLoading required package: dplyr
+[0m[91m
+Attaching package: ‘dplyr’
+
+[0m[91mThe following object is masked from ‘package:gridExtra’:
+
+    combine
+
+[0m[91mThe following object is masked from ‘package:MASS’:
+
+    select
+
+[0m[91mThe following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+[0m[91mThe following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+[0m[91mLoading required package: dbplyr
+[0m[91m
+Attaching package: ‘dbplyr’
+
+[0m[91mThe following objects are masked from ‘package:dplyr’:
+
+    ident, sql
+
+[0m[91mLoading required package: parallel
+[0m[91mLoading required package: mlegp
+[0m[91mLoading required package: IDPmisc
+[0m[91mLoading required package: rjags
+[0m[91mLoading required package: coda
+[0m[91mLinked to JAGS 4.2.0
+Loaded modules: basemod,bugs
+[0m[91mLoading required package: BayesianTools
+[0m[91m
+Attaching package: ‘PEcAn.assim.batch’
+
+[0m[91mThe following object is masked from ‘package:BayesianTools’:
+
+    correlationPlot
+
+[0m[91mLoading required package: PEcAn.emulator
+[0m[91mLoading required package: mvtnorm
+[0m[91mLoading required package: MCMCpack
+[0m[91m##
+## Markov Chain Monte Carlo Package (MCMCpack)
+## Copyright (C) 2003-2019 Andrew D. Martin, Kevin M. Quinn, and Jong Hee Park
+[0m[91m##
+## Support provided by the U.S. National Science Foundation
+[0m[91m## (Grants SES-0350646 and SES-0350613)
+##
+[0m[91mLoading required package: PEcAn.benchmark
+[0m[91mLoading required package: PEcAn.remote
+[0m[91mLoading required package: PEcAn.workflow
+[0m[91m
+Attaching package: ‘PEcAn.workflow’
+
+[0m[91mThe following objects are masked from ‘package:PEcAn.utils’:
+
+    do_conversions, run.write.configs, runModule.run.write.configs
+
+[0m[91m4.24user 0.38system 0:04.39elapsed 105%CPU (0avgtext+0avgdata 363900maxresident)k
+0inputs+8outputs (0major+84045minor)pagefaults 0swaps
+[0mecho `date` > .doc/base/all
+time Rscript -e "devtools::install('base/all', Ncpus = 1);"
+
+[91mSkipping 15 packages not available: PEcAn.assim.batch, PEcAn.benchmark, PEcAn.data.atmosphere, PEcAn.data.land, PEcAn.data.remote, PEcAn.DB, PEcAn.emulator, PEcAn.logger, PEcAn.MA, PEcAn.priors, PEcAn.remote, PEcAn.settings, PEcAn.uncertainty, PEcAn.utils, PEcAn.workflow
+[0m     checking for file ‘/pecan/base/all/DESCRIPTION’ ...  ✔  checking for file ‘/pecan/base/all/DESCRIPTION’
+  ─  preparing ‘PEcAn.all’:
+     checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+  ─  checking for LF line-endings in source and make files and shell scripts
+  ─  checking for empty or unneeded directories
+   Removed empty directory ‘PEcAn.all/man’
+─  looking to see if a ‘data/datalist’ file should be added
+─  building ‘PEcAn.all_1.7.0.tar.gz’
+     
+Running /usr/local/lib/R/bin/R CMD INSTALL \
+  /tmp/RtmpP1VkrZ/PEcAn.all_1.7.0.tar.gz --install-tests 
+* installing to library ‘/usr/local/lib/R/site-library’
+* installing *source* package ‘PEcAn.all’ ...
+** data
+** inst
+** tests
+No man pages found in package  ‘PEcAn.all’ 
+** help
+*** installing help indices
+** building package indices
+Warning in read.table(zfile, header = TRUE, sep = ";", as.is = FALSE) :
+  incomplete final line found by readTableHeader on '/usr/local/lib/R/site-library/PEcAn.all/data/pecan.packages.csv'
+** testing if installed package can be loaded
+* DONE (PEcAn.all)
+[91m5.38user 1.36system 0:06.39elapsed 105%CPU (0avgtext+0avgdata 384436maxresident)k
+0inputs+1088outputs (0major+161833minor)pagefaults 0swaps
+[0mecho `date` > .install/base/all
+Removing intermediate container 0ade85b53b46
+ ---> 3f2ee644762b
+Step 14/17 : WORKDIR /work
+ ---> Running in 6f7f94bb3b89
+Removing intermediate container 6f7f94bb3b89
+ ---> a71d93a72be0
+Step 15/17 : COPY web/workflow.R /work/
+ ---> 46ed735e7a7c
+Step 16/17 : CMD Rscript --vanilla workflow.R | tee workflow.Rout
+ ---> Running in 3bfb911947a8
+Removing intermediate container 3bfb911947a8
+ ---> d41a8f7e6108
+Step 17/17 : ENV PECAN_VERSION=${PECAN_VERSION}     PECAN_GIT_BRANCH=${PECAN_GIT_BRANCH}     PECAN_GIT_CHECKSUM=${PECAN_GIT_CHECKSUM}     PECAN_GIT_DATE=${PECAN_GIT_DATE}
+ ---> Running in fb727c163a9c
+Removing intermediate container fb727c163a9c
+ ---> c61f28749ec9
+Successfully built c61f28749ec9
+Successfully tagged pecan/base:latest
