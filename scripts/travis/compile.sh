@@ -14,11 +14,27 @@ for x in base/logger base/remote modules/emulator base/utils base/db base/settin
 
     (
         travis_time_start "${key}" "building PECAN [${x}]"
+
+        travis_time_start "${key}_deps" "Installing dependencies"
         Rscript -e "devtools::install_deps('${x}', Ncpus = ${NCPUS}, dependencies = )"
+        travis_time_end
+
+        travis_time_start "${key}_docs" "Roxygen documentation"
         Rscript -e "devtools::document('$x');"
+        travis_time_end
+
+        travis_time_start "${key}_install" "Installing package"
         Rscript -e "devtools::install('$x', Ncpus = ${NCPUS});"
+        travis_time_end
+
+        travis_time_start "${key}_test" "Testing package"
         Rscript -e "devtools::test('$x', stop_on_failure = TRUE, stop_on_warning = FALSE);"
+        travis_time_end
+
+        travis_time_start "${key}_check" "Checking package"
         REBUILD_DOCS=FALSE Rscript scripts/check_with_errors.R "${x}"
+        travis_time_end
+        
         travis_time_end
     )
 done

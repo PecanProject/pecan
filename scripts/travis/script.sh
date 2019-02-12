@@ -13,7 +13,11 @@ set -e
 #     NCPUS=2 make -j1
 #     travis_time_end
 # )
-. $( dirname $0 )/compile.sh
+(
+    travis_time_start "compile_start" "Compiling PEcAn"
+    . $( dirname $0 )/compile.sh
+    travis_time_end
+)
 
 
 # # TESTING PECAN
