@@ -1,4 +1,4 @@
-# About the PEcAn Book
+## About the PEcAn Book
 
 This book serves as documentation for the PEcAn Project. It contains descriptions of topics necessary to inform a beginner and advanced user as well as requisite materials for developers. It does not contain low-level descriptions of functions within PEcAn. Our aim for this documentation is to educate you about the PEcAn software, the possibilities of its usage, and the standards,expectations, and core workflows for developers.
 

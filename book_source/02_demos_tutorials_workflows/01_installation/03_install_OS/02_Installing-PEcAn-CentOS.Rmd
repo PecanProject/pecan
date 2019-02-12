@@ -1,4 +1,4 @@
-#### CentOS/RedHat
+### CentOS/RedHat {#centos/redhat}
 
 These are specific notes for installing PEcAn on CentOS (7) and will be referenced from the main [installing PEcAn](Installing-PEcAn) page. You will at least need to install the build environment and Postgres sections. If you want to access the database/PEcAn using a web browser you will need to install Apache. To access the database using the BETY interface, you will need to have Ruby installed.
 
@@ -46,7 +46,7 @@ echo "module load mpi" >> ~/.bashrc
 module load mpi
 ```
 
-##### Install Postgres
+###### Install and configure PostgreSQL, udunits2, NetCDF
 
 ```bash
 sudo -s
@@ -56,7 +56,7 @@ yum install -y epel-release
 yum -y install http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-1.noarch.rpm
 
 # install packages for postgresql (using a newer version than default)
-yum -y install postgresql94-server postgresql94-contrib postgis2_94 postgresql94-devel
+yum -y install postgresql94-server postgresql94-contrib postgis2_94 postgresql94-devel udunits2 netcdf
 
 # install following if you want to run pecan through the web
 yum -y install php-pgsql
@@ -78,6 +78,13 @@ exit
 ```
 
 ##### Apache Configuration PEcAn
+
+Install and Start Apache
+```bash
+yum -y install httpd
+systemctl enable httpd
+systemctl start httpd
+```
 
 ```bash
 # become root
