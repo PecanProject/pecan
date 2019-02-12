@@ -11,15 +11,17 @@ set -e
     tar zxf sipnet_unk.tar.gz
     cd sipnet_unk
     make
+    ls -l sipnet
 
     travis_time_end
 )
 
+echo ${HOME}
+ls -l /home/travis/sipnet_unk/sipnet
 if [ ! -e /home/travis/sipnet_unk/sipnet ]; then
     echo "ERROR NO SIPNET!"
     exit -1
 fi
-ls -l /home/travis/sipnet_unk/sipnet
 
 # INSTALLING BIOCRO
 (
