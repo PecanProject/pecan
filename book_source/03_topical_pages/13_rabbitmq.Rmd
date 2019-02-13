@@ -1,4 +1,4 @@
-# RabbitMQ {#rabbitmq}
+## RabbitMQ {#rabbitmq}
 
 This section provides additional details about how PEcAn uses RabbitMQ to manage communication between its Docker containers.
 
@@ -6,7 +6,7 @@ In PEcAn, we use the Python [`pika`](http://www.rabbitmq.com/tutorials/tutorial-
 As such, every Docker container that communicates with RabbitMQ contains two Python scripts: `sender.py` and `reciever.py`.
 Both are located in the `docker` directory in the PEcAn source code root.
 
-## Producer -- `sender.py` {#rabbitmq-basics-sender}
+### Producer -- `sender.py` {#rabbitmq-basics-sender}
 
 The `sender.py` script is in charge of posting messages to RabbitMQ.
 In the RabbitMQ documentation, it is known as a "producer".
@@ -35,7 +35,7 @@ A typical message posted by PEcAn looks like the following:
   
 The `PEcAn.remote::start_rabbitmq` function is a wrapper for this script that provides an easy way to post a `folder` message to RabbitMQ from R.
 
-## Consumer -- `receiver.py` {#rabbitmq-basics-receiver}
+### Consumer -- `receiver.py` {#rabbitmq-basics-receiver}
 
 Unlike `sender.py`, `receiver.py` runs like a daemon, constantly listening for messages.
 In the RabbitMQ documentation, it is known as a "consumer".
@@ -66,7 +66,7 @@ See corresponding argument in the [producer](#rabbitmq-basics-sender)
    
    NOTE that in RabbitMQ messages, the `folder` key is always required.
    
-## RabbitMQ and the PEcAn web interface {#rabbitmq-web}
+### RabbitMQ and the PEcAn web interface {#rabbitmq-web}
 
 RabbitMQ is configured by the following variables in `config.php`:
 
@@ -87,7 +87,7 @@ This will set the hostname to the name of the current machine (defined by the `$
 
 These values are converted into the appropriate entries in the `pecan.xml` in `web/04-runpecan.php`.
 
-## RabbitMQ in the PEcAn XML {#rabbitmq-xml}
+### RabbitMQ in the PEcAn XML {#rabbitmq-xml}
 
 RabbitMQ is a special case of remote execution, so it is configured by the `host` node.
 An example RabbitMQ configuration is as follows:
@@ -107,7 +107,7 @@ In PEcAn, RabbitMQ model queues are named as `MODELTYPE_REVISION`,
 so the example above refers to the SIPNET model version 136.
 Another example is `ED2_git`, referring to the latest `git` version of the ED2 model.
 
-## RabbitMQ configuration in Dockerfiles {#rabbitmq-dockerfile}
+### RabbitMQ configuration in Dockerfiles {#rabbitmq-dockerfile}
 
 As described in the ["consumer"](#rabbitmq-basics-receiver) section, our standard RabbitMQ receiver script is configured using three environment variables: `RABBITMQ_URI`, `RABBITMQ_QUEUE`, and `APPLICATION`.
 Therefore, configuring a container to work with PEcAn's RabbitMQ instance requires setting these three variables in the Dockerfile using an [`ENV`](https://docs.docker.com/engine/reference/builder/#env) statement.
@@ -146,7 +146,7 @@ ENV MODEL_TYPE="SIPNET" \
 In this block, the expansion for setting `RABBITMQ_QUEUE` _is not aware_ of the current values of `MODEL_TYPE` or `MODEL_VERSION`, and will therefore be set incorrectly to just `_` (unless they have been set previously, in which case it will be aware only of their earlier values).
 As such, **variables depending on other variables must be set in a separate, subsequent `ENV` statement than the variables they depend on**.
 
-## Case study: PEcAn web interface {#rabbitmq-case-study}
+### Case study: PEcAn web interface {#rabbitmq-case-study}
 
 The following describes in general terms what happens during a typical run of the PEcAn web interface with RabbitMQ.
 

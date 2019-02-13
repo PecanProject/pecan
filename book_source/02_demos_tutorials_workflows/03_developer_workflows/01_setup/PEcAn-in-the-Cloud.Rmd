@@ -1,4 +1,6 @@
-## AWS Setup 
+### AWS Setup 
+
+***********Mirror of earlier section in installation section?*********************
 
 ### Porting VM to AWS
 

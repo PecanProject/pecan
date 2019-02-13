@@ -1,11 +1,11 @@
-# Standalone tools (modules)
+## Standalone tools (modules)
 
 - Radiative transfer modeling and remote sensing ([`modules/rtm`](https://pecanproject.github.io/modules/rtm/docs/index.html)); [vignette](https://pecanproject.github.io/modules/rtm/docs/articles/pecanrtm.vignette.html)
 - Photosynthesis ([`modules/photosynthesis`](https://pecanproject.github.io/modules/photosynthesis/docs/index.html)); [vignette](https://pecanproject.github.io/modules/photosynthesis/docs/articles/ResponseCurves.html)
 - Allometry ([`modules/allometry`](https://pecanproject.github.io/modules/allometry/docs/index.html)); [vignette](https://pecanproject.github.io/modules/allometry/docs/articles/AllomVignette.html)
 - Load data ([`modules/benchmark`](https://pecanproject.github.io/modules/benchmark/docs/index.html) -- `PEcAn.benchmark::load_data`)
 
-## Loading Data in PEcAn {#LoadData}
+### Loading Data in PEcAn {#LoadData}
 
 If you are loading data in to PEcAn for benchmarking, using the Benchmarking shiny app [provide link?] is recommended. 
 
@@ -28,12 +28,11 @@ Optional
 - `end_year = NA`:
 - `site = NA`
 - `vars.used.index=NULL`
-
-#### Output 
+### Output 
 
 - R data frame containing the requested variables converted in to PEcAn standard name and units and time steps in `POSIX` format. 
 
-### Example
+#### Example
 
 The data for this example has already been entered in to the database. To add new data go to [new data documentation](#NewInput).
 

@@ -1,9 +1,9 @@
-# Workflow modules
+## Workflow modules
 
 NOTE: As of PEcAn 1.2.6 -- needs to be updated significantly
 
 <!--NEEDS TO BE UPDATED SIGNIFICANTLY-->
-## Overview
+### Overview
 
 Workflow inputs and outputs (click to open in new page, then zoom). Code used to generate this image is provided in [qaqc/vignettes/module_output.Rmd](https://github.com/PecanProject/pecan/blob/master/qaqc/vignettes/module_output.Rmd)
 
@@ -63,7 +63,7 @@ The variance decomposition plot is discussed more below. For your reference, the
 
 The variance decomposition plot contains three columns, the coefficient of variation (normalized posterior variance), the elasticity (normalized sensitivity), and the partial standard deviation of each model parameter. This graph is sorted by the variable explaining the largest amount of variability in the model output (right hand column). From this graph identify the top-tier parameters that you would target for future constraint.  
 
-## Glossary
+### Glossary
 
 * Inputs: data sets that are used, and file paths leading to them
 * Parameters: e.g. info set in settings file 

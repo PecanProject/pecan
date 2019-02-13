@@ -1,4 +1,4 @@
-## LPJ-GUESS {#models-lpjguess}
+### CLM {#models-clm}
 
 | Model Information ||
 | -- | -- |
@@ -17,7 +17,6 @@ Introduction about model
 Should list the model specific additions to the PEcAn file here
 
 **Model specific input files**
-
 List of inputs required by model, such as met, etc.
 
 **Model configuration files**

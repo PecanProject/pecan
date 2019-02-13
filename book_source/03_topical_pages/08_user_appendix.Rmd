@@ -1,4 +1,4 @@
-### Using the PEcAn download.file() function
+## Using the PEcAn download.file() function
 download.file(url, destination_file, method) <br>
 <br>
 

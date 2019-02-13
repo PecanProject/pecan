@@ -1,4 +1,4 @@
-# The PEcAn XML {#pecanXML}
+## The PEcAn XML {#pecanXML}
 
 The PEcAn system is configured using a XML file, often called `pecan.xml`.
 It contains the following major sections ("nodes"):
@@ -102,9 +102,9 @@ A basic example looks like this:
 
 In the following sections, we step through each of these sections in detail.
 
-## Core configuration {#xml-core-config}
+### Core configuration {#xml-core-config}
 
-### Top-level structure {#xml-structure}
+#### Top-level structure {#xml-structure}
 
 The first line of the XML file should contain version and encoding information. 
 
@@ -120,7 +120,7 @@ The rest of the XML file should be surrounded by `<pecan>...</pecan>` tags.
 </pecan>
 ```
 
-### `info`: Run metadata {#xml-info}
+#### `info`: Run metadata {#xml-info}
 
 This section contains run metadata.
 This information is not essential to a successful model run, but is useful for tracking run provenance. 
@@ -483,7 +483,7 @@ The `host` section has the following tags:
 * `qstat`: [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take `@JOBID@` which is the ID of the job as returned by `qsub.jobid`. If not specified (and qsub is) it will use the default value is `qstat -j @JOBID@ || echo DONE`
 * `job.sh`: [optional] additional options to add to the job.sh at the top.
 
-## Advanced features {#xml-advanced}
+### Advanced features {#xml-advanced}
 
 ### `ensemble`: Ensemble Runs {#xml-ensemble}
 

@@ -1,4 +1,4 @@
-## DALEC {#models-dalec}
+### LINKAGES {#models-linkages}
 
 | Model Information ||
 | -- | -- |

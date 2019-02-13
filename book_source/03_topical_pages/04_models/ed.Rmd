@@ -1,4 +1,4 @@
-## ED2 {#models-ed}
+### ED2 {#models-ed}
 
 | Model Information |                                      |
 | --                | --                                   |
