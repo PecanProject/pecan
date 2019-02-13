@@ -62,6 +62,7 @@ install2.r -e -s \
     minpack.lm \
     mlegp \
     mockery \
+    MODISTools \
     mvtnorm \
     ncdf4 \
     ncdf4.helpers \
