@@ -1,6 +1,4 @@
-# (PART) Intermediate user guide {-}
-
-# Introduction
+## Intermediate user guide {#intermediate-user}
 
 This section will provide information to those wanting to take advantage of PEcAn's customizations from the web interface.
 

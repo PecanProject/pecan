@@ -1,4 +1,4 @@
-# Remote execution with PEcAn {#pecan-remote}
+### Remote execution with PEcAn {#pecan-remote}
 
 Remote execution allows the user to leverage the power and storage of high performance computing clusters, AWS instances, or specially configured virtual machines, but without leaving their local working environment.
 PEcAn uses remote execution primarily to run ecosystem models.
@@ -20,7 +20,7 @@ This section describes the following:
 + Additional information about preparing remote servers for execution
 
 
-## Basics of SSH
+#### Basics of SSH
 
 All of the PEcAn remote infrastructure depends on the system `ssh` utility, so it's important to make sure this works before attempting the advanced remote execution functionality in PEcAn.
 
@@ -52,7 +52,7 @@ The more advanced example below will run some simple R code on the BU SCC and re
 ssh ashiklom@geo.bu.edu Rscript -e "seq(1, 10)"
 ```
 
-## SSH authentication -- password vs. SSH key
+#### SSH authentication -- password vs. SSH key
 
 Because this server uses passwords for authentication, this command will then prompt me for my password.
 
@@ -64,7 +64,7 @@ On each remote machine, the public key should be added to a list of authorized k
 The authorized keys list indicates which machines (technically, which keys -- a single machine, and even a single user, can have many keys) are allowed to connect to it.
 This is the system used by all of the PEcAn servers (`pecan1`, `pecan2`, `test-pecan`).
 
-### SSH tunneling
+#### SSH tunneling
 
 SSH authentication can be more advanced than indicated above, especially on systems that require dual authentication.
 Even simple password-protection can be tricky in scripts, since (by design) it is fairly difficult to get SSH to accept a password from anything other than the raw keyboard input (i.e. SSH doesn't let you pass passwords as input or arguments, because this exposes your password as plain text).
@@ -138,7 +138,7 @@ my_host <- list(name = "test-pecan.bu.edu", tunnel = "/tmp/testpecan")
 This host object can then be used in any of the remote execution functions.
 
 
-## Basic remote execute functions
+### Basic remote execute functions
 
 The `PEcAn.remote::remote.execute.cmd` function runs a system command on a remote server (or on the local server, if `host$name == "localhost"`).
 
@@ -164,7 +164,7 @@ out <- PEcAn.remote::remote.execute.R(code = code, host = my_host)
 For additional functions related to remote file operations and other stuff, see the `PEcAn.remote` package documentation.
 
 
-## Remote model execution with PEcAn
+### Remote model execution with PEcAn
 
 The workhorse of remote model execution is the `PEcAn.remote::start.model.runs` function, which distributes execution of each run in a list of runs (e.g. multiple runs in an ensemble) to the local machine or a remote based on the configuration in the PEcAn settings.
 
@@ -273,7 +273,7 @@ are additional entries to add to the job.sh file generated to
 run the model. This can be used to make sure modules are loaded
 on the HPC cluster before running the actual model.
 
-## Running PEcAn code for remotely
+#### Running PEcAn code for remotely
 
 You do not need to download PEcAn fully on your remote machine. You can compile and install the model specific code pieces of
 PEcAn on the cluster easily without having to install the
@@ -295,7 +295,7 @@ This should install dependencies required.
 * The following are some notes on how to install the model specifics on different HPC
 clusters*
 
-### geo.bu.edu
+#### geo.bu.edu
 
 Following modules need to be loaded:
 

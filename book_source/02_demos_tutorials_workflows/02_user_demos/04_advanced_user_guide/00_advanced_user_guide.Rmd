@@ -1,15 +1,7 @@
-# (PART) Advanced user guide {-}
+## Advanced User Guide {#advanced-user}
 
-# Introduction
 
-For those wanting to take full advantage of PEcAn and its tools, this section will provide you with the necessary information to do so. In this section we hope to answer the question: How can I use PEcAn to its fullest?
-
-- PEcAn workflow (web/workflow.R)
-  - How the workflow works
-  - How each module is called
-  - How to do outside of web interface
-  - Link to "folder structure" section below for detailed descriptions
-- Adding to PEcAn
+- Adding to PEcAn as a user
   - Case studies
     - Adding a model
     - Adding new species, PFTs, and traits from a new site
@@ -29,8 +21,4 @@ For those wanting to take full advantage of PEcAn and its tools, this section wi
     - Variables
     - Formats
     - (Link each section to relevant Bety tables)
-- Modules -- additional tools
-  - RTM
-  - Photosynthesis
-  - Allometry
-  - `benchmark::load_data`
+- Workflow curl submission

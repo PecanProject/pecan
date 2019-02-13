@@ -1,4 +1,6 @@
-## User Tutorial Section
+## User Tutorial Section {#user-tut}
+
+The following Tutorials assume you have installed PEcAn. If you have not, please consult the [PEcAn Installation Section](#pecan-manual-setup).
 
 #### How PEcAn Works in a nutshell
 
@@ -7,7 +9,7 @@ PEcAn provides an interface to a variety of ecosystem models and attempts to sta
 There are two ways of using PEcAn, via the web interface and directly within R. Even for users familiar with R, using the web interface is a good place to start because it provides a high level overview of the PEcAn workflow. The quickest way to get started is to download the virtual machine or use an AWS instance.
 
 
-### PEcAn Demos {#pecan-demo-table}
+### PEcAn Demos {#demo-table}
 
 Once you have a running version of PEcAn, we recommend working through some of the following demos and vignettes to explore PEcAn's many capabilities:
 

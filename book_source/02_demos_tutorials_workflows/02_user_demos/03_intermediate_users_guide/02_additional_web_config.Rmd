@@ -1,4 +1,4 @@
-# Additional web configuration
+### Additional web configuration
 
 Additional settings for web configuration:
 
@@ -8,7 +8,7 @@ Additional settings for web configuration:
     - [Sensitivity analysis]
     - [Uncertainty analysis]
 
-## Brown Dog
+### Brown Dog
 
 The Browndog service provides PEcAn with access to large and diverse sets of data at the click of a button in the format that PEcAn needs. By clicking the checkbox you will be using the Browndog Service to process data.
 
@@ -16,7 +16,7 @@ For more information regarding meteorological data check out [Available Meteorol
 
 ** [More Informatoin can be found at the Browndog website](http://browndog.ncsa.illinois.edu/)**
 
-## Basic Setups
+### Basic Setups
 
 There are few options which you can change via web interface.
 
@@ -38,10 +38,10 @@ The list of configuration available
 
 Still work on the adding other editing feature going on, this page will be updated as new configuration will be available. 
 
-## Advanced Setup
+### Advanced Setup
 
 (TODO: Under construction...)
 
-## Editing model configurations
+### Editing model configurations
 
 (TODO: Under construction...)

@@ -1,4 +1,4 @@
-# Settings-configured analyses
+## Settings-configured analyses
 
 These analyses can be run through the web interface, but lack graphical interfaces and  currently can only be configured throughthe XML settings. To run these analyses use the **Edit pecan.xml** checkbox on the Input configuration page. Eventually, these modules will be integrated into the web user interface.
 
@@ -9,13 +9,13 @@ These analyses can be run through the web interface, but lack graphical interfac
 
 (TODO: Add links)
 
-## Parameter data assimilation (PDA) {#pda}
+### Parameter data assimilation (PDA) {#pda}
 
 All functions pertaining to Parameter Data Assimilation are housed within: **pecan/modules/assim.batch**.
 
 For a detailed usage of the module, please see the vignette under **pecan/modules/assim.batch/vignettes**.
 
-### **pda.mcmc.R**
+#### **pda.mcmc.R**
 This is the main PDA code. It performs Bayesian MCMC on model parameters by proposing parameter values, running the model, calculating a likelihood (between model output and supplied observations), and accepting or rejecting the proposed parameters (Metropolis algorithm). Additional notes:
 
 * The first argument is *settings*, followed by others that all default to *NULL.settings* is a list used throughout Pecan, which contains all the user options for whatever analyses are being done. The easiest thing to do is just pass that whole object all around the Pecan code and let different functions access whichever settings they need. That's what a lot of the rest of the Pecan code does. But the flexibility to override most of the relevant settings in *settings* is there by providing them directly as arguments to the function. 
@@ -43,19 +43,19 @@ This is the main PDA code. It performs Bayesian MCMC on model parameters by prop
 		* Periodically (at interval specified in settings), a diagnostic figure is saved to disk so you can check on progress.
 	* This works only for NEE currently 
 
-### **pda.mcmc.bs.R**
+#### **pda.mcmc.bs.R**
 This file is basically identical to pda.mcm.R, but rather than propose parameters one at a time, it proposes new values for all parameters at once ("bs" stands for "block sampling"). You choose which option to use by specifying settings$assim.batch$method: 
 	* "bruteforce" means sample parameters one at a time
  	* "bruteforce.bs" means use this version, sampling all parameters at once
 	* "emulator" means use the emulated-likelihood version 
 
-### **pda.emulator**
+#### **pda.emulator**
 This version of the PDA code again looks quite similar to the basic "bruteforce" one, but its mechanics are very different. The basic idea is, rather than running thousands of model iterations to explore parameter space via MCMC, run a relatively smaller number of runs that have been carefully chosen to give good coverage of parameter space. Then, basically interpolate the likelihood calculated for each of those runs (actually, fit a Gaussian process to it), to get a surface that "emulates" the true likelihood. Now, perform regular MCMC (just like the "bruteforce" approach), except instead of actually running the model on every iteration to get a likelihood, just get an approximation from the likelihood emulator. Since the latter step takes virtually no time, you can run as long of an MCMC as you need at little computational cost, once you have done the initial model runs to create the likelihood emulator. 
 
-### **pda.mcmc.recover.R**
+#### **pda.mcmc.recover.R**
 This function is for recovering a failed PDA MCMC run. 
 
-### **pda.utils.R**
+#### **pda.utils.R**
 This file contains most of the individual functions used by the main PDA functions (pda.mcmc.*.R). 
 
    * *assim.batch* is the main function Pecan calls to do PDA. It checks which method is requested (bruteforce, bruteforce.bs, or emulator) and call the appropriate function described above.
@@ -74,11 +74,11 @@ This file contains most of the individual functions used by the main PDA functio
    * *pda.define.llik.r* A simple helper function that defines likelihood functions for different datasets. Probably in the future this should be queried from the database or something. For now, it is extremely limited. The original test case of NEE assimilation uses a heteroskedastic Laplacian distribution. 
    * *pda.get.model.output.R* Another function that will eventually grow to handle many more cases, or perhaps be replaced by a better system altogether. For now though, it again just handles Ameriflux NEE.
 
-### **get.da.data.\*.R, plot.da.R**
+#### **get.da.data.\*.R, plot.da.R**
 Old codes written by Carl Davidson. Defunct now, but may contain good ideas so currently left in. 
 
 
-## State data assimilation (SDA) {#sda}
+### State data assimilation (SDA) {#sda}
 
 `sda.enkf.R` is housed within: `/pecan/modules/assim.sequential/R`
 
@@ -86,14 +86,14 @@ The tree ring tutorial is housed within: `/pecan/documentation/tutorials/StateAs
 
 More descriptive SDA methods can be found at: `/pecan/book_source/adve_user_guide_web/SDA_Methods.Rmd`
 
-### **sda.enkf.R Description**
+#### **sda.enkf.R Description**
 This is the main ensemble Kalman filter and generalized filter code. Originally, this was just ensemble Kalman filter code. Mike Dietze and Ann Raiho added a generalized ensemble filter to avoid filter divergence. The output of this function will be all the of run outputs, a PDF of diagnostics, and an Rdata object that includes three lists:
 
 * FORECAST will be the ensemble forecasts for each year
 * ANALYSIS will be the updated ensemble sample given the NPP observations
 * enkf.params contains the prior and posterior mean vector and covariance matrix for each time step.
 
-### **sda.enkf.R Arguments**
+#### **sda.enkf.R Arguments**
 
 * settings - (required) [State Data Assimilation Tags Example] settings object
 
@@ -105,7 +105,7 @@ This is the main ensemble Kalman filter and generalized filter code. Originally,
 
 * Q - (optional) process covariance matrix (dimensions: state variable by state variables). Defualt is NULL.
 
-### State Data Assimilation Workflow
+#### State Data Assimilation Workflow
 Before running sda.enkf, these tasks must be completed (in no particular order),
 
 * Read in a [State Data Assimilation Tags Example] settings file with tags listed below. i.e. read.settings('pecan.SDA.xml')
@@ -146,7 +146,7 @@ Save outputs
 
 Create diagnostics
 
-### State Data Assimilation Tags Example
+#### State Data Assimilation Tags Example
 
 ```
 <state.data.assimilation>
@@ -177,7 +177,7 @@ Create diagnostics
  </state.data.assimilation>
 ```
 
-### State Data Assimilation Tags Descriptions
+#### State Data Assimilation Tags Descriptions
 
 * **adjustment** : [optional] TRUE/FLASE flag for if ensembles needs to be adjusted based on weights estimated given their likelihood during analysis step. The defualt is TRUE for this flag.
 * **process.variance** : [optional] TRUE/FLASE flag for if process variance should be estimated (TRUE) or not (FALSE). If TRUE, a generalized ensemble filter will be used. If FALSE, an ensemble Kalman filter will be used. Default is FALSE.

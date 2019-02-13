@@ -1,4 +1,4 @@
-# Adding to PEcAn
+### Adding to PEcAn
 
 - Case studies
     - [Adding a model](#adding-model)
@@ -22,7 +22,7 @@
     - Formats
     - (Link each section to relevant Bety tables)
 
-## Adding An Ecosystem Model {#adding-model}
+### Adding An Ecosystem Model {#adding-model}
 
 **Adding a model to PEcAn involves two activities:**
 
@@ -525,11 +525,11 @@ In addition to location-specific soil data, PEcAn can extract soil texture infor
 
 
 
-## Pecan Data Ingest via Web Interface {#adding-data-web} 
+### Pecan Data Ingest via Web Interface {#adding-data-web} 
 
 This tutorial explains the process of ingesting data into PEcAn via our Data-Ingest Application. In order to ingest data, the users must first select data that they wish to upload. Then, they enter metadata to help PEcAn parse and load the data into the main PEcAn workflow.
 
-### Loading Data
+#### Loading Data
 
 #### Selecting Ingest Method
 The Data-Ingest application is capable of loading data from the DataONE data federation and from the user's local machine. The first step in the workflow is therefore to select an upload method. The application defaults to uploading from DataONE. To upload data from a local device, simply select the radio button titled `Local Files `. 
@@ -544,7 +544,7 @@ knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studi
 The DataONE download feature allows the user to download data at a given doi or DataONE specific package id. To do so, enter the doi or identifier in the `Import From DataONE` field and select `download`. The download process may take a couple of minutes to run depending on the number of files in the dataONE package. This may be a convenient option if the user does not wish to download files directly to their local machine. Once the files have been successfully downloaded from DataONE, they are displayed in a table. Before proceeding to the next step, the user can select a file to ingest by clicking on the corresponding row in the data table. 
 <br> 
 
-### Local Upload Example
+#### Local Upload Example
 
 <br>
 To upload local files, the user should first select the `Local Files` button. From there, the user can upload files from their local machines by selecting `Browse` or by dragging and dropping files into the text box. The files will begin uploading automatically. From there, the user should select a file to ingest and then select the `Next Step` button. 
@@ -559,7 +559,7 @@ knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studi
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
 knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studies/images/data-ingest/local_browse.gif")
 ```
-### 2. Creating an Input Record
+#### 2. Creating an Input Record
 Creating an input record requires some basic metadata about the file that is being ingested. Each entry field is briefly explained below. 
 <br> 
 
@@ -586,7 +586,7 @@ knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studi
 
 - Notes: Describe the data that is being uploaded. Please include any citations or references. 
 
-### 3. Creating a format record
+#### 3. Creating a format record
 If it is necessary to add a new format to PEcAn, the user should fill out the form attached to the `Create New Format` button. The inputs to this form are described below: 
 
 - Mimetype: type to search existing mimetypes. If the mimetype is not in that list, please click on the link `Create New Mimetype` and create a new mimetype via the BETY website.
@@ -604,7 +604,7 @@ Example:
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
 knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studies/images/data-ingest/new_format_record.gif")
 ```
-### 4. Formats_Variables Record
+#### 4. Formats_Variables Record
 The final step in the ingest process is to register a formats-variables record. This record links pecan variables with variables from the selected data. 
 
 - Variable: PEcAn variable that is equivalent to variable in selected file.
@@ -624,8 +624,8 @@ knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studi
 Finally, the path to the ingest data is displayed in the `Select Files` box. 
 
 
-## Creating a new format {#NewFormat}
-### Formats in BETY
+### Creating a new format {#NewFormat}
+#### Formats in BETY
 
 The PEcAn database keeps track of all the input files passed to models, as well as any data used in model validation or data assimilation. Before we start to register these files with PEcAn we need to define the format these files will be in.
 
@@ -633,7 +633,7 @@ The main goal is to take all the meta-data we have about a data file and create 
 
 This information is stored in a Format record in the bety database. Make sure to read through the current Formats before deciding to make a new one. 
 
-### Creating a new format in BETY
+#### Creating a new format in BETY
 
 If the Format you are looking for is not available, you will need to create a new record. Before entering information into the database, you need to be able to answer the following questions about your data:
 
