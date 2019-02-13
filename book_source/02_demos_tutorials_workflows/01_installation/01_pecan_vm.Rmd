@@ -1,4 +1,4 @@
-## PEcAn Virtual Machine {#pecanvm}
+### PEcAn Virtual Machine {#pecanvm}
 
 This section includes the following VM related documentation:
 
