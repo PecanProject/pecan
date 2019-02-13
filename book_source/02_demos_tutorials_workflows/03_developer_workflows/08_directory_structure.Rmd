@@ -1,4 +1,4 @@
-# Directory structure
+## Directory structure
 
 ## Overview of PEcAn repository as of PEcAn 1.5.3
 
