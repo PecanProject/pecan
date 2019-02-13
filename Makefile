@@ -78,7 +78,7 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 include Makefile.depends
 
 clean:
-	rm -rf .install .check .test .doc
+	rm -rf .install .check .test .doc scripts/travis/build_order.txt
 	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools: | .install
@@ -117,6 +117,8 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 
 .install/%: $$(wildcard %/**/*) $$(wildcard %/*) .doc/% | $$(@D)
 	+ $(call install_R_pkg, $(subst .install/,,$@))
+	if ! grep -Fxq "$(subst .install/,,$@)" scripts/travis/build_order.txt; then echo "$(subst .install/,,$@)" >> scripts/travis/build_order.txt; fi
+	echo $(1) >> scripts/travis/build_order
 	echo `date` > $@
 
 .check/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
