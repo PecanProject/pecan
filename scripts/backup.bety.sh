@@ -23,6 +23,7 @@ mkdir -p ${BACKUPDIR}
 # some handy variables
 HOUR=$( date +"%H" )
 TODAY=$( date +"%d" )
+YESTERDAY=$( date -d "yesterday" +"%d" )
 TOMORROW=$( date -d "tomorrow" +"%d" )
 DOW=$( date +"%u" )
 WEEK=$( date +"%W" )
@@ -58,7 +59,7 @@ pg_dump -U ${BETYUSER} -d ${DATABASE} ${PG_OPT} | gzip -9 > ${DUMP_PATH}
 
 # HANDLING DAILY FOR WHEN WE HAVE HOURLY BACKUPS
 if [ "${HOURLY}" != "" -a "${HOUR}" == "00" ]; then
-  cp -fp ${DUMP_PATH} ${BACKUPDIR}/bety-d-${TODAY}.sql.gz
+  cp -fp ${DUMP_PATH} ${BACKUPDIR}/bety-d-${YESTERDAY}.sql.gz
 fi
 
 # WEEKLY BACKUP
