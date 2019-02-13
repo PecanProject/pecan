@@ -4,15 +4,12 @@
 \alias{call_MODIS}
 \title{call_MODIS}
 \usage{
-call_MODIS(outfolder = ".", fname = "m_data.nc", start_date, end_date,
-  lat, lon, size = 0, product = "MCD15A2H", band = "Lai_500m",
-  band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m",
+call_MODIS(outfolder = ".", start_date, end_date, lat, lon, size = 0,
+  product, band, band_qc = "", band_sd = "",
   package_method = "MODISTools")
 }
 \arguments{
 \item{outfolder}{where the output file will be stored}
-
-\item{fname}{name of netcdf file to output}
 
 \item{start_date}{string value for beginning of date range for download in unambiguous date format (YYYYJJJ)}
 
@@ -41,9 +38,9 @@ Get MODIS data by date and location
 }
 \examples{
 \dontrun{
-test_modistools <- call_MODIS(product = "MCD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "FparLai_QC",band_sd = "LaiStdDev_500m", package_method = "MODISTools")
+test_modistools <- call_MODIS(product = "MOD13Q1", band = "250m_16_days_NDVI", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "",band_sd = "", package_method = "MODISTools")
 plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
-test_reticulate <- call_MODIS(product = "MCD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "FparLai_QC",band_sd = "LaiStdDev_500m", package_method = "reticulate")
+test_reticulate <- call_MODIS(product = "MOD13Q1", band = "250m_16_days_NDVI", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "",band_sd = "", package_method = "reticulate")
 }
 
 }
