@@ -1,10 +1,12 @@
 #!/bin/bash
 
 TRAVIS_STACK=()
+DATE_OPTION="+%s%N"
 
 function travis_time_start {
+    old_setting=${-//[^x]/}
     set +x
-    TRAVIS_START_TIME=$(date +%s%N)
+    TRAVIS_START_TIME=$(date ${DATE_OPTION})
     TRAVIS_TIME_ID=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)
     TRAVIS_FOLD_NAME=$1
     TRAVIS_STACK=("${TRAVIS_FOLD_NAME}#${TRAVIS_TIME_ID}#${TRAVIS_START_TIME}" "${TRAVIS_STACK[@]}")
@@ -13,10 +15,11 @@ function travis_time_start {
     if [ "$2" != "" ]; then
         echo "$2"
     fi
-    set -x
+    if [[ -n "$old_setting" ]]; then set -x; else set +x; fi
 }
 
 function travis_time_end {
+    old_setting=${-//[^x]/}
     set +x
     _COLOR=${1:-32}
     TRAVIS_ITEM="${TRAVIS_STACK[0]}"
@@ -25,10 +28,10 @@ function travis_time_end {
     TRAVIS_TIME_ID="${TRAVIS_ITEMS[1]}"
     TRAVIS_START_TIME="${TRAVIS_ITEMS[2]}"
     TRAVIS_STACK=("${TRAVIS_STACK[@]:1}")
-    TRAVIS_END_TIME=$(date +%s%N)
-    TIME_ELAPSED_SECONDS=$(( ($TRAVIS_END_TIME - $TRAVIS_ITEMS[2])/1000000000 ))
+    TRAVIS_END_TIME=$(date ${DATE_OPTION})
+    TIME_ELAPSED_SECONDS=$(( ($TRAVIS_END_TIME - $TRAVIS_START_TIME)/1000000000 ))
     echo -e "travis_time:end:$TRAVIS_TIME_ID:start=$TRAVIS_START_TIME,finish=$TRAVIS_END_TIME,duration=$(($TRAVIS_END_TIME - $TRAVIS_START_TIME))\n\e[0K"
     echo -e "travis_fold:end:$TRAVIS_FOLD_NAME"
     echo -e "\e[0K\e[${_COLOR}mFunction $TRAVIS_FOLD_NAME takes $(( $TIME_ELAPSED_SECONDS / 60 )) min $(( $TIME_ELAPSED_SECONDS % 60 )) sec\e[0m"
-    set -x
+    if [[ -n "$old_setting" ]]; then set -x; else set +x; fi
 }
