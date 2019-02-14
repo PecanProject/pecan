@@ -7,7 +7,7 @@ NCPUS=1
 # all packages to install
 PAKCAGES=$(cat $(dirname $0)/build_order.txt)
 for x in ${PAKCAGES} ; do
-    key=$(echo "make/$x" | sed 's#/#_#g')
+    key=$(echo "make/$x" | sed -e 's#/#_#g' -e 's#\.#_#g')
     if [ "$x" == "base/utils" ]; then
         deps="c('Depends', 'Imports', 'LinkingTo')"
     else
