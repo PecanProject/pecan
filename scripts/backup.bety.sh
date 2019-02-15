@@ -32,15 +32,17 @@ YEAR=$( date +"%Y" )
 # Psql options
 # This allows you to add any other options
 PG_OPT=${PG_OPT:-""}
+HOURLY=${HOURLY:-""}
 
 # Parse command line options
-while getopts ho:p: opt; do
+while getopts ho:p:H opt; do
   case $opt in
   h)
     echo "$0 [-h] [-p psql options]"
     echo " -h this help page"
-    echo " -o output folder where dumped data is written, default is named backup"
+    echo " -o output folder where dumped data is written, default folder is 'backup'"
     echo " -p additional psql command line options, default is empty"
+    echo " -H perform an hourly backup, defaults to daily backup"
     exit 0
     ;;
   o)
@@ -48,6 +50,9 @@ while getopts ho:p: opt; do
     ;;
   p)
     PG_OPT="$OPTARG"
+    ;;
+  H)
+    HOURLY="true"
     ;;
   esac
 done
