@@ -15,9 +15,17 @@ Sys.unsetenv(
 log_level <- Sys.getenv('LOGLEVEL', unset = NA)
 die_level <- Sys.getenv('DIELEVEL', unset = NA)
 redocument <- as.logical(Sys.getenv('REBUILD_DOCS', unset = NA))
+runtests <- as.logical(Sys.getenv('RUN_TESTS', unset = FALSE))
 
 # message('log_level = ', log_level)
 # message('die_level = ', die_level)
+
+# should test se run
+if (as.logical(Sys.getenv('RUN_TESTS', unset = FALSE))) {
+    args <- c('--no-tests', '--timings')
+} else {
+    args <- c('--timings') 
+}
 
 valid_log_levels <- c('warn', 'all')
 if (!is.na(log_level) && !log_level %in% valid_log_levels) {
@@ -35,7 +43,7 @@ die_warn <- !is.na(die_level) && die_level == 'warn'
 
 log_notes <- !is.na(log_level) && log_level == 'all'
 
-chk <- devtools::check(pkg, args=c('--no-tests', '--timings'), quiet = TRUE, error_on = "never", document = redocument)
+chk <- devtools::check(pkg, args = args, quiet = TRUE, error_on = "never", document = redocument)
 
 errors <- chk[['errors']]
 n_errors <- length(errors)
