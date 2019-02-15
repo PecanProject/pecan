@@ -6,6 +6,7 @@
 #' @return a list of observed mean and cov as the SDA expected it to be.
 #' @export
 Obs.data.prepare.MultiSite <- function(obs.path="../Obs/LandTrendr_AGB_output50s.RData", site.ids) {
+  #Load the .Rdata file
   load(obs.path)
   
   point_list$median_AGB[[1]] <- point_list$median_AGB[[1]] %>%
@@ -86,6 +87,7 @@ SDA_remote_launcher <-function(settingPath,
   #---------------------------------------------------------------
   settings <- read.settings(settingPath)
   my_host <- list(name =settings$host$name , tunnel = settings$host$tunnel)
+  local_path <-settings$outdir
   #---------------------------------------------------------------
   # Cheking the setting xml
   #---------------------------------------------------------------
