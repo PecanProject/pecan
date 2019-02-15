@@ -106,7 +106,7 @@ SDA_remote_launcher <-function(settingPath,
                          user = 'hamzed',
                          scratchdir = ".")
   #---------------------------------------------------------------
-  # Setup
+  # samples/PFT
   #---------------------------------------------------------------
   # test to see samples.Rdata
   if ("samples.Rdata" %in% list.files(settings$outdir)){
@@ -145,7 +145,7 @@ SDA_remote_launcher <-function(settingPath,
     PEcAn.logger::logger.severe("I can't access to your obs path !")
   }
   #----------------------------------------------------------------
-  # Met check
+  # met check
   #---------------------------------------------------------------
   # testing the met folders and copying them over
   met.paths <-settings %>% map(~.x[['run']] ) %>% map('inputs') %>% map('met')%>% map('path') %>% unlist()
@@ -163,6 +163,7 @@ SDA_remote_launcher <-function(settingPath,
   
   if (!all(met.test)) {
     PEcAn.logger::logger.severe("At least one of the mets specified in your pecan xml was not found on the remote machine")
+    #At some point I could also copy over the ones that there not in the remote and edit the xml accrodingly.
   }
   #----------------------------------------------------------------
   # Site- PFT file 
@@ -215,11 +216,12 @@ SDA_remote_launcher <-function(settingPath,
     stderr = FALSE
   )
   #calling SDA
-  cmd <- paste0("Rscript ",
-                settings$outdir,
-                "//Remote_SDA_launcher.R ",
-                settings$outdir,"//",basename(settingPath),
-                " Obs//", basename(ObsPath)
+  cmd <- paste0("nohup  Rscript ",
+                settings$outdir,"//Remote_SDA_launcher.R ", # remote luncher
+                settings$outdir,"//",basename(settingPath), # path to settings
+                " Obs//", basename(ObsPath), # Path to Obs
+                " > ", 
+                settings$outdir,"//SDA_nohup.out 2>&1 &"
   )
   
   return(cmd)
