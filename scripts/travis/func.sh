@@ -1,13 +1,19 @@
 #!/bin/bash
 
 TRAVIS_STACK=()
-DATE_OPTION="+%s%N"
+if [ "$(uname -s)" == "Darwin" ]; then
+    DATE_OPTION="+%s"
+    DATE_DIV=1
+else
+    DATE_OPTION="+%s%N"
+    DATE_DIV=1000000000
+fi
 
 function travis_time_start {
     old_setting=${-//[^x]/}
     set +x
     TRAVIS_START_TIME=$(date ${DATE_OPTION})
-    TRAVIS_TIME_ID=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)
+    TRAVIS_TIME_ID=$( uuidgen | sed 's/-//g' | fold -w 8 | head -n 1)
     TRAVIS_FOLD_NAME=$1
     TRAVIS_STACK=("${TRAVIS_FOLD_NAME}#${TRAVIS_TIME_ID}#${TRAVIS_START_TIME}" "${TRAVIS_STACK[@]}")
     echo -e "\e[0Ktravis_fold:start:$TRAVIS_FOLD_NAME"
