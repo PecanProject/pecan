@@ -13,6 +13,9 @@
 
 \item{site.ids}{a character vector of site ids which need to be extracted.}
 }
+\value{
+a list of observed mean and cov as the SDA expected it to be.
+}
 \description{
 Obs.data.prepare.MultiSite
 }
