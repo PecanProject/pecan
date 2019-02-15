@@ -146,19 +146,19 @@ script:
   # More debugging needed.
   - NCPUS=2 make -j1
   - echo -en 'travis_fold:end:install_pkgs\\r'
+  
+  - echo 'Testing PEcAn packages' && echo -en 'travis_fold:start:test_pkgs\\r'
+  - make test
+  - echo -en 'travis_fold:end:test_pkgs\\r'
   #
-  # - echo 'Testing PEcAn packages' && echo -en 'travis_fold:start:test_pkgs\\r'
-  # - make test
-  # - echo -en 'travis_fold:end:test_pkgs\\r'
-  # #
-  # - echo 'Checking PEcAn packages' && echo -en 'travis_fold:start:check_pkgs\\r'
-  # - REBUILD_DOCS=FALSE make check
-  # - echo -en 'travis_fold:end:check_pkgs\\r'
-  # #
-  # - echo 'Testing Integration' && echo -en 'travis_fold:start:integration_test\\r'
-  # - ./tests/integration.sh travis
-  # - echo -en 'travis_fold:end:integration_test\\r'
+  - echo 'Checking PEcAn packages' && echo -en 'travis_fold:start:check_pkgs\\r'
+  - REBUILD_DOCS=FALSE make check
+  - echo -en 'travis_fold:end:check_pkgs\\r'
   #
+  - echo 'Testing Integration' && echo -en 'travis_fold:start:integration_test\\r'
+  - ./tests/integration.sh travis
+  - echo -en 'travis_fold:end:integration_test\\r'
+  
   - if [[ `git status -s` ]]; then 
       echo "These files were changed by the build process:";
       git status -s;
