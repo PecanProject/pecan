@@ -140,13 +140,13 @@ before_script:
 script:
   - set -e
   - Rscript scripts/generate_dependencies.R
-  # - echo 'Installing PEcAn packages' && echo -en 'travis_fold:start:install_pkgs\\r'
-  # # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
-  # # but many dependency compilations seem not parallel-safe.
-  # # More debugging needed.
-  # - NCPUS=2 make -j1
-  # - echo -en 'travis_fold:end:install_pkgs\\r'
-  # #
+  - echo 'Installing PEcAn packages' && echo -en 'travis_fold:start:install_pkgs\\r'
+  # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
+  # but many dependency compilations seem not parallel-safe.
+  # More debugging needed.
+  - NCPUS=2 make -j1
+  - echo -en 'travis_fold:end:install_pkgs\\r'
+  #
   # - echo 'Testing PEcAn packages' && echo -en 'travis_fold:start:test_pkgs\\r'
   # - make test
   # - echo -en 'travis_fold:end:test_pkgs\\r'
