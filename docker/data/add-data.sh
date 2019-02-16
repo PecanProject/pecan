@@ -1,10 +1,17 @@
 #!/bin/bash
 
-FQDN="docker"
-DATADIR="/data"
-PSQL="psql -U bety -h postgres -d bety -q -t -c"
+# docker run --rm -ti --network pecan_pecan -e FQDN="docker" -v pecan_pecan:/data pecan/data:latest
 
-# docker run --rm -ti --network pecan_pecan -v pecan_pecan:/data pecan/data:latest
+if [ "${FQDN}" == "" ]; then
+  echo "NEED TO SET FQDN"
+  exit 1
+fi
+
+# assumes pecan data folder mounted under /data
+DATADIR="/data"
+
+# assumes postgres database running container postgers
+PSQL="psql -U bety -h postgres -d bety -q -t -c"
 
 # load helper functions and set FQDN and PSQL
 . $( dirname $0 )/add.util.sh
