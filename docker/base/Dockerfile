@@ -17,6 +17,8 @@ ARG PECAN_GIT_DATE="unknown"
 # ----------------------------------------------------------------------
 # copy folders
 COPY Makefile Makefile.depends /pecan/
+COPY scripts/time.sh /pecan/scripts/time.sh
+COPY scripts/travis /pecan/scripts/travis/
 COPY base     /pecan/base/
 COPY modules  /pecan/modules/
 COPY models   /pecan/models/
