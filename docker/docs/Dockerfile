@@ -9,7 +9,7 @@ MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends pandoc \
-    && install2.r -e -s bookdown \
+    && install2.r -e -s -n -1 bookdown \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src/book_source/
