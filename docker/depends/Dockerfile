@@ -1,7 +1,9 @@
+ARG R_VERSION="3.5"
+
 # ----------------------------------------------------------------------
 # PECAN FOR MODEL BASE IMAGE
 # ----------------------------------------------------------------------
-FROM rocker/tidyverse:3.5
+FROM rocker/tidyverse:${R_VERSION}
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 # ----------------------------------------------------------------------

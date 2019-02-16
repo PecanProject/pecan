@@ -10,6 +10,7 @@ cd $(dirname $0)
 DEBUG=${DEBUG:-""}
 DEPEND=${DEPEND:-""}
 IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
+R_VERSION=${R_VERSION:-"3.5"}
 
 # --------------------------------------------------------------------------------
 # PECAN BUILD SECTION
@@ -35,6 +36,7 @@ if [ "${DEPEND}" == "build" ]; then
     echo "# To just pull latest/develop version (default) run"
     echo "# DEPEND=pull $0"
     ${DEBUG} docker build \
+        --build-arg R_VERSION=${R_VERSION} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
 elif [ "${DEPEND}" == "pull" ]; then
