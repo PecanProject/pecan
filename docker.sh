@@ -44,13 +44,16 @@ elif [ "${DEPEND}" == "pull" ]; then
     if [ "${PECAN_GIT_BRANCH}" != "master" ]; then
         echo "# this will pull develop of base image and tag as latest"
         echo "# To disable run DEPEND=nothing $0"
-        ${DEBUG} docker pull pecan/depends:develop
+        if [ "$( docker image ls -q pecan/depends:develop )" == "" ]; then
+            ${DEBUG} docker pull pecan/depends:develop
+        fi
         ${DEBUG} docker tag pecan/depends:develop pecan/depends:${IMAGE_VERSION}
-        ${DEBUG} docker image rm pecan/depends:develop
     else
         echo "# this will pull latest of base image"
         echo "# To disable run DEPEND=nothing $0"
-        ${DEBUG} docker pull pecan/depends:latest
+        if [ "$( docker image ls -q pecan/depends:latest )" == "" ]; then
+            ${DEBUG} docker pull pecan/depends:latest
+        fi
         if [ "${IMAGE_VERSION}" != "latest" ]; then
             ${DEBUG} docker tag pecan/depends:latest pecan/depends:${IMAGE_VERSION}
             ${DEBUG} docker image rm pecan/depends:latest
