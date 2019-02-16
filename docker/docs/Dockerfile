@@ -1,7 +1,10 @@
+# this needs to be at the top, what version are we building
+ARG IMAGE_VERSION="latest"
+
 # ----------------------------------------------------------------------
 # compile bookdown to html
 # ----------------------------------------------------------------------
-FROM pecan/base AS pecandocs
+FROM pecan/base:${IMAGE_VERSION} AS pecandocs
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 RUN apt-get update \

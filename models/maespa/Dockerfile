@@ -1,3 +1,6 @@
+# this needs to be at the top, what version are we building
+ARG IMAGE_VERSION="latest"
+
 # ----------------------------------------------------------------------
 # BUILD MODEL BINARY
 # ----------------------------------------------------------------------
@@ -23,7 +26,7 @@ RUN git -c http.sslVerify=false clone https://bitbucket.org/remkoduursma/maespa.
 # ----------------------------------------------------------------------
 # BUILD PECAN FOR MODEL
 # ----------------------------------------------------------------------
-FROM pecan/models:latest
+FROM pecan/models:${IMAGE_VERSION}
 
 # ----------------------------------------------------------------------
 # INSTALL MODEL SPECIFIC PIECES

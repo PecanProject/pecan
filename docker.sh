@@ -6,8 +6,10 @@ set -e
 
 cd $(dirname $0)
 
+# Can set the following variables
 DEBUG=${DEBUG:-""}
-DEPEND=${DEPEND:-"nothing"}
+DEPEND=${DEPEND:-""}
+IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
 
 # --------------------------------------------------------------------------------
 # PECAN BUILD SECTION
@@ -32,20 +34,27 @@ echo ""
 if [ "${DEPEND}" == "build" ]; then
     echo "# To just pull latest/develop version (default) run"
     echo "# DEPEND=pull $0"
-    ${DEBUG} docker build --tag pecan/depends:latest docker/depends
+    ${DEBUG} docker build \
+        --tag pecan/depends:${IMAGE_VERSION} \
+        docker/depends
 elif [ "${DEPEND}" == "pull" ]; then
     echo "# docker image for dependencies is not build by default."
     echo "# this image takes a long time to build. To build this"
     echo "# image run DEPEND=build $0"
     if [ "${PECAN_GIT_BRANCH}" != "master" ]; then
-      echo "# this will pull develop of base image and tag as latest"
-      echo "# To disable run DEPEND=nothing $0"
-      ${DEBUG} docker pull pecan/depends:develop
-      ${DEBUG} docker tag pecan/depends:develop pecan/depends:latest
+        echo "# this will pull develop of base image and tag as latest"
+        echo "# To disable run DEPEND=nothing $0"
+        ${DEBUG} docker pull pecan/depends:develop
+        ${DEBUG} docker tag pecan/depends:develop pecan/depends:${IMAGE_VERSION}
+        ${DEBUG} docker image rm pecan/depends:develop
     else
-      echo "# this will pull latest of base image"
-      echo "# To disable run DEPEND=nothing $0"
-      ${DEBUG} docker pull pecan/depends:latest
+        echo "# this will pull latest of base image"
+        echo "# To disable run DEPEND=nothing $0"
+        ${DEBUG} docker pull pecan/depends:latest
+        if [ "${IMAGE_VERSION}" != "latest" ]; then
+            ${DEBUG} docker tag pecan/depends:latest pecan/depends:${IMAGE_VERSION}
+            ${DEBUG} docker image rm pecan/depends:latest
+        fi
     fi
 else
     echo "# docker image for dependencies is not build by default."
@@ -58,19 +67,24 @@ echo ""
 
 # require all of PEcAn to build
 for x in base web docs; do
-    ${DEBUG} docker build --tag pecan/$x:latest --file docker/$x/Dockerfile \
+    ${DEBUG} docker build \
+        --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION:-latest}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
         --build-arg PECAN_VERSION="${VERSION}" \
         --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
         --build-arg PECAN_GIT_DATE="${PECAN_GIT_DATE}" \
+        --file docker/$x/Dockerfile \
         .
 done
 
 # all files in subfolder
 for x in models executor data thredds monitor; do
-    ${DEBUG} docker build --tag pecan/$x:latest docker/$x
+    ${DEBUG} docker build \
+        --tag pecan/$x:${IMAGE_VERSION} \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        docker/$x
 done
 
 # --------------------------------------------------------------------------------
@@ -80,23 +94,26 @@ done
 # build sipnet
 for version in 136; do
     ${DEBUG} docker build \
+        --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --tag pecan/model-sipnet-${version}:latest \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
         models/sipnet
 done
 
 # build ed2
 for version in git; do
     ${DEBUG} docker build \
+        --tag pecan/model-ed2-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --tag pecan/model-ed2-${version}:latest \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
         models/ed
 done
 
 # build maespa
 for version in git; do
     ${DEBUG} docker build \
+        --tag pecan/model-maespa-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --tag pecan/model-maespa-${version}:latest \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
         models/maespa
 done
