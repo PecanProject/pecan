@@ -17,7 +17,7 @@ installGithub.r \
     ropensci/nneo
 
 # install all packages (depends, imports, suggests)
-install2.r -e -s -n -1\
+install2.r -e -s -n -1 \
     abind \
     BayesianTools \
     BioCro \

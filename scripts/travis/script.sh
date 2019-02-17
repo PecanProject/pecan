@@ -10,6 +10,15 @@ set -e
     travis_time_end
 )
 
+# INSTALL PECAN DEPENDENCIES
+(
+    travis_time_start "pecan_install_dep" "Install PEcAn dependencies"
+    Rscript -e 'install.packages(c("devtools", "littler"), dependencies=TRUE)'
+    export PATH=${PATH}:${R_LIBS_USER}/littler/bin:${R_LIBS_USER}/littler/examples
+    . docker/depends/pecan.depends
+    travis_time_end
+)
+
 # COMPILE PECAN
 (
     travis_time_start "pecan_make_all" "Compiling PEcAn"
@@ -19,7 +28,6 @@ set -e
     NCPUS=2 make -j1
     travis_time_end
 )
-
 
 # INSTALLING PECAN (compile, intall, test, check)
 (

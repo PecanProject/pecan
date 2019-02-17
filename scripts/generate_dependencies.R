@@ -93,5 +93,5 @@ cat('#!/bin/bash',
     paste0('installGithub.r \\\n    ', paste(sort(remotes), sep="", collapse=" \\\n    ")),
     '',
     '# install all packages (depends, imports, suggests)',
-    paste0('install2.r -e -s -n -1\\\n    ', paste(sort(docker), sep="", collapse=" \\\n    ")),
+    paste0('install2.r -e -s -n -1 \\\n    ', paste(sort(docker), sep="", collapse=" \\\n    ")),
     file = 'docker/depends/pecan.depends', sep = '\n', append = FALSE)
