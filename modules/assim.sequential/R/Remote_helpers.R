@@ -177,7 +177,7 @@ SDA_remote_launcher <-function(settingPath,
   
   if (!all(met.test)) {
     PEcAn.logger::logger.severe("At least one of the mets specified in your pecan xml was not found on the remote machine")
-    #At some point I could also copy over the ones that there not in the remote and edit the xml accrodingly.
+    #TODO: At some point I could also copy over the ones that there not in the remote and edit the xml accrodingly.
   }
   #----------------------------------------------------------------
   # Site- PFT file 
@@ -258,15 +258,22 @@ SDA_remote_launcher <-function(settingPath,
    # I'll use this to track the progress of my SDA job
    PIDS<-remote.execute.cmd(my_host, cmd = "lsof",
                       args = c(paste0(settings$outdir,"//SDA_nohup.out")))
-   #some cleaning
-   PID<-PIDS[-1] %>% 
-     map_dbl(function(line){
-       ll <- strsplit(line, " ")[[1]]
-       ll <- ll[nchar(ll)>0]
-       ll[2] %>% 
-         as.numeric()
-     }) %>%
-     unique()
+   
+   if (length(PIDS)>1){
+     #some cleaning
+     PID<-PIDS[-1] %>% 
+       map_dbl(function(line){
+         ll <- strsplit(line, " ")[[1]]
+         ll <- ll[nchar(ll)>0]
+         ll[2] %>% 
+           as.numeric()
+       }) %>%
+       unique()
+   }else{
+     PEcAn.logger::logger.severe("Something broke the run before it starts!")
+     #TODO: read the nohup.out if it exists
+   }
+
 
    #This where you can find your SDA
    return(list(Remote.Path = settings$outdir,
