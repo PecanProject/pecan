@@ -78,6 +78,20 @@ Obs.data.prepare.MultiSite <- function(obs.path="../Obs/LandTrendr_AGB_output50s
 #' @param ObsPath  Path to the obs data which is expected to be an .Rdata.
 #'
 #' @export
+#' @example 
+#' \dontrun{
+#'   library(PEcAn.all)
+#'  library(purrr)
+#'  library(PEcAn.assim.sequential)
+#'  
+#'  settingPath <-
+#'    "/fs/data3/hamzed/Projects/GeoTunnel/RemoteSDA/pecan.SDA.4sites.xml"
+#'  ObsPath <-
+#'    "/fs/data3/hamzed/Projects/GEF_MultiSite/Obs/LandTrendr_AGB_output50s.RData"
+#'  
+#'  
+#'  SDA_remote_launcher(settingPath, ObsPath)
+#'}
 #'
 SDA_remote_launcher <-function(settingPath, 
                                ObsPath){
@@ -86,7 +100,7 @@ SDA_remote_launcher <-function(settingPath,
   # Reading the settings
   #---------------------------------------------------------------
   settings <- read.settings(settingPath)
-  my_host <- list(name =settings$host$name , tunnel = settings$host$tunnel)
+  my_host <- list(name =settings$host$name , tunnel = settings$host$tunnel, user=settings$host$user)
   local_path <-settings$outdir
   #---------------------------------------------------------------
   # Cheking the setting xml
@@ -189,10 +203,15 @@ SDA_remote_launcher <-function(settingPath,
   #----------------------------------------------------------------
   # Cleaning up the settings and getting it ready
   #---------------------------------------------------------------
-  settings$outdir <- paste0(settings$host$folder,"//", folder_name)
+  settings$outdir <- paste0(settings$host$folder,"/", folder_name)
+  
   settings$host$name <- "localhost"
-  settings$host$rundir <- paste0(settings$host$folder,"//", folder_name)
-  settings$host$outdir <- paste0(settings$host$folder,"//", folder_name)
+  #setting the new run and out dirs
+  settings$host$rundir <- paste0(settings$host$folder,"/", folder_name,"//run")
+  settings$host$outdir <- paste0(settings$host$folder,"/", folder_name,"//out")
+  settings$rundir <- paste0(settings$host$folder,"/", folder_name,"//run")
+  settings$modeloutdir  <-paste0(settings$host$folder,"/", folder_name,"//out")
+  
   save.setting.dir <- tempdir()
   PEcAn.settings::write.settings(settings, basename(settingPath), save.setting.dir)
   
@@ -215,7 +234,7 @@ SDA_remote_launcher <-function(settingPath,
     delete = FALSE,
     stderr = FALSE
   )
-  #calling SDA
+  
   cmd <- paste0("nohup  Rscript ",
                 settings$outdir,"//Remote_SDA_launcher.R ", # remote luncher
                 settings$outdir,"//",basename(settingPath), # path to settings
@@ -224,7 +243,34 @@ SDA_remote_launcher <-function(settingPath,
                 settings$outdir,"//SDA_nohup.out 2>&1 &"
   )
   
-  return(cmd)
+
+
+   PEcAn.logger::logger.info("Running this command on your remote: \n")
+   PEcAn.logger::logger.info(cmd)
+  
+   #calling SDA
+   out<-remote.execute.R(paste0("system(\" ",cmd, "\")"),
+                         my_host,
+                         user = 'hamzed',
+                         scratchdir = ".")
+
+   # Let's see what is the PID of the job doing the nohup
+   # I'll use this to track the progress of my SDA job
+   PIDS<-remote.execute.cmd(my_host, cmd = "lsof",
+                      args = c(paste0(settings$outdir,"//SDA_nohup.out")))
+   #some cleaning
+   PID<-PIDS[-1] %>% 
+     map_dbl(function(line){
+       ll <- strsplit(line, " ")[[1]]
+       ll <- ll[nchar(ll)>0]
+       ll[2] %>% 
+         as.numeric()
+     }) %>%
+     unique()
+
+   #This where you can find your SDA
+   return(list(Remote.Path = settings$outdir,
+               PID = PID))
   
 }
 
