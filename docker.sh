@@ -9,7 +9,6 @@ cd $(dirname $0)
 # Can set the following variables
 DEBUG=${DEBUG:-""}
 DEPEND=${DEPEND:-""}
-IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
 R_VERSION=${R_VERSION:-"3.5"}
 
 # --------------------------------------------------------------------------------
@@ -24,49 +23,57 @@ PECAN_GIT_DATE="$(git log --pretty=format:%ad -1)"
 # get version number
 VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
 
-echo "Building PEcAn"
-echo " PECAN_VERSION      : ${VERSION}"
-echo " PECAN_GIT_BRANCH   : ${PECAN_GIT_BRANCH}"
-echo " PECAN_GIT_DATE     : ${PECAN_GIT_DATE}"
-echo " PECAN_GIT_CHECKSUM : ${PECAN_GIT_CHECKSUM}"
-echo ""
+# check for branch and set IMAGE_VERSION
+if [ "${PECAN_GIT_BRANCH}" == "master" ]; then
+    IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
+elif [ "${PECAN_GIT_BRANCH}" == "master" ]; then
+    IMAGE_VERSION=${IMAGE_VERSION:-"develop"}
+else
+    IMAGE_VERSION=${IMAGE_VERSION:-"testing"}
+fi
+
+# information for user before we build things
+echo "# ----------------------------------------------------------------------"
+echo "# Building PEcAn"
+echo "#  PECAN_VERSION      : ${VERSION}"
+echo "#  PECAN_GIT_BRANCH   : ${PECAN_GIT_BRANCH}"
+echo "#  PECAN_GIT_DATE     : ${PECAN_GIT_DATE}"
+echo "#  PECAN_GIT_CHECKSUM : ${PECAN_GIT_CHECKSUM}"
+echo "#  IMAGE_VERSION      : ${IMAGE_VERSION}"
+echo "#"
+echo "# Created images will be tagged with '${IMAGE_VERSION}'. If you want to"
+echo "# test this build you can use:"
+echo "# PECAN_VERSION='${IMAGE_VERSION}' docker-compose up"
+echo "#"
+echo "# The docker image for dependencies takes a long time to build. You"
+echo "# can use a prebuild version (default) or force a new versin to be"
+echo "# build locally using: DEPEND=build $0"
+echo "# ----------------------------------------------------------------------"
 
 # not building dependencies image, following command will build this
 if [ "${DEPEND}" == "build" ]; then
-    echo "# To just pull latest/develop version (default) run"
-    echo "# DEPEND=pull $0"
     ${DEBUG} docker build \
         --build-arg R_VERSION=${R_VERSION} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
-elif [ "${DEPEND}" == "pull" ]; then
-    echo "# docker image for dependencies is not build by default."
-    echo "# this image takes a long time to build. To build this"
-    echo "# image run DEPEND=build $0"
-    if [ "${PECAN_GIT_BRANCH}" != "master" ]; then
-        echo "# this will pull develop of base image and tag as latest"
-        echo "# To disable run DEPEND=nothing $0"
-        if [ "$( docker image ls -q pecan/depends:develop )" == "" ]; then
-            ${DEBUG} docker pull pecan/depends:develop
-        fi
-        ${DEBUG} docker tag pecan/depends:develop pecan/depends:${IMAGE_VERSION}
-    else
-        echo "# this will pull latest of base image"
-        echo "# To disable run DEPEND=nothing $0"
-        if [ "$( docker image ls -q pecan/depends:latest )" == "" ]; then
-            ${DEBUG} docker pull pecan/depends:latest
-        fi
-        if [ "${IMAGE_VERSION}" != "latest" ]; then
-            ${DEBUG} docker tag pecan/depends:latest pecan/depends:${IMAGE_VERSION}
-            ${DEBUG} docker image rm pecan/depends:latest
+else
+    if [ "$( docker image ls -q pecan/depends:${IMAGE_VERSION} )" == "" ]; then
+        if [ "${PECAN_GIT_BRANCH}" != "master" ]; then
+            if [ "$( docker image ls -q pecan/depends:develop )" == "" ]; then
+                ${DEBUG} docker pull pecan/depends:develop
+            fi
+            if [ "${IMAGE_VERSION}" != "develop" ]; then
+                ${DEBUG} docker tag pecan/depends:develop pecan/depends:${IMAGE_VERSION}
+            fi
+        else
+            if [ "$( docker image ls -q pecan/depends:latest )" == "" ]; then
+                ${DEBUG} docker pull pecan/depends:latest
+            fi
+            if [ "${IMAGE_VERSION}" != "latest" ]; then
+                ${DEBUG} docker tag pecan/depends:latest pecan/depends:${IMAGE_VERSION}
+            fi
         fi
     fi
-else
-    echo "# docker image for dependencies is not build by default."
-    echo "# this image takes a long time to build. To build this"
-    echo "# image run DEPEND=build $0"
-    echo "# To just pull latest/develop version run"
-    echo "# DEPEND=pull $0"
 fi
 echo ""
 
