@@ -38,6 +38,8 @@ install2.r -e -s -n -1\
     ggmap \
     ggplot2 \
     glue \
+    graphics \
+    grDevices \
     grid \
     gridExtra \
     hdf5r \
@@ -96,6 +98,7 @@ install2.r -e -s -n -1\
     SimilarityMeasures \
     sirt \
     sp \
+    stats \
     stringi \
     stringr \
     testthat \
@@ -105,6 +108,7 @@ install2.r -e -s -n -1\
     tools \
     truncnorm \
     udunits2 \
+    utils \
     XML \
     xtable \
     zoo
