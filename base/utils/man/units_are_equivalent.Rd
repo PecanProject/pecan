@@ -12,11 +12,11 @@ units_are_equivalent(x, y)
 \item{y}{Another unit string for comparison, as character}
 }
 \value{
-`TRUE` if equivalent, `FALSE` otherwise
+\code{TRUE} if equivalent, \code{FALSE} otherwise
 }
 \description{
 This is to allow multiple forms of the same unit to work, such as
-`m/s` vs. `m s-1` or `K` and `Kelvin`.
+\code{m/s} vs. \code{m s-1} or \code{K} and \code{Kelvin}.
 }
 \author{
 Alexey Shiklomanov

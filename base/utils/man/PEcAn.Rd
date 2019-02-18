@@ -17,13 +17,14 @@ Project homepage: \url{pecanproject.org}
 Description of PEcAn
 
 The Predictive Ecosystem Analyzer (PEcAn) is a scientific workflow management tool that is designed to simplify the management of model parameterization, execution, and analysis. The goal of PEcAn is to streamline the interaction between data and models, and to improve the efficacy of scientific investigation. PEcAn is an open source utility that encapsulates:
-
-1. acquisition of meteorological inputs
-2. synthesis of physiological trait data as the posterior distribution of a Bayesian meta-analysis
-3. sampling trait meta-analysis posterior distributions to parameterize ensembles of ED2 and other ecophysiological models
-4. probabilistic forecasts
-5. postprocessing to constrain forecasts and model parameters with field, meterological, eddy flux, and spectral data, and
-6. provenance tracking
+\enumerate{
+\item acquisition of meteorological inputs
+\item synthesis of physiological trait data as the posterior distribution of a Bayesian meta-analysis
+\item sampling trait meta-analysis posterior distributions to parameterize ensembles of ED2 and other ecophysiological models
+\item probabilistic forecasts
+\item postprocessing to constrain forecasts and model parameters with field, meterological, eddy flux, and spectral data, and
+\item provenance tracking
+}
 
 PECAn integrates available data into ecological forecasts by running ensembles of a terrestrial ecosystem model that is parameterized by the posterior distribution from a meta-analysis of available plant trait data.
 These trait data are assembled from field research and primary literature, and are stored in a PostgreSQL database. Current development focused on biofuel crops uses BETYdb.

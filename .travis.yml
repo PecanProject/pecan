@@ -6,7 +6,9 @@
 
 language: r
 r:
-  - 3.4
+  - release
+  - devel
+  - oldrel
 
 # TRUSTY: Change version when 16.04 image is available.
 dist: trusty
@@ -19,6 +21,13 @@ env:
     # When Travis updates, check for Make 4 and add -O if available.
     - MAKEFLAGS="-j2"
     - PGHOST=localhost
+    - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - r: devel
+    - r: oldrel
 
 cache: 
   - directories:
@@ -31,7 +40,6 @@ cache:
 addons:
   apt:
     sources:
-      - sourceline: 'ppa:marutter/c2d4u'
       - sourceline: 'ppa:nschloe/hdf5-backports'
       - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
     packages:
@@ -57,8 +65,10 @@ addons:
       - r-bioc-biocinstaller
       - r-cran-ape
       - r-cran-curl
+      - r-cran-data.table
       - r-cran-devtools
       - r-cran-dplyr
+      - r-cran-gap
       - r-cran-ggplot2
       - r-cran-httr
       - r-cran-igraph
@@ -71,7 +81,10 @@ addons:
       - r-cran-redland
       - r-cran-rncl
       - r-cran-roxygen2
+      - r-cran-rsqlite
+      - r-cran-sf
       - r-cran-shiny
+      - r-cran-sirt
       - r-cran-testthat
       - r-cran-tidyverse
       - r-cran-xml
@@ -92,68 +105,13 @@ services:
   - docker
 
 install:
-  - pushd $HOME
-  - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
-  - tar zxf sipnet_unk.tar.gz
-  - cd sipnet_unk
-  - make
-  - popd
-  - pushd $HOME
-  # Install BioCro w/o help pages to work around infinite Roxygen recursion in configure file
-  - curl -sL https://github.com/ebimodeling/biocro/archive/0.95.tar.gz | tar zxf -
-  - cd biocro-0.95
-  - rm configure
-  - R CMD INSTALL .
-  - popd
-  # temporary until remotes 2.0.2 binary reaches C2D4U
-  - Rscript -e 'if(packageVersion("remotes") <= "2.0.1"){install.packages("remotes", repos = "http://cran.rstudio.com")}'
+  - scripts/travis/install.sh
   
 before_script:
-  - sudo service postgresql stop
-  - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine
-  - echo -n "Waiting for Postgres to start...";
-    until psql -U postgres -c 'select 1' >/dev/null 2>&1;
-      do echo -n ".";
-      sleep 1;
-    done;
-    echo " OK"
-  - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
-  - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
-  - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
-  - psql -q -o /dev/null -U postgres < bety.sql
-  - rm bety.sql
-  - ./scripts/add.models.sh
-  - chmod +x book_source/deploy.sh
-  - chmod +x documentation/tutorials/deploy.sh
+  - scripts/travis/before_script.sh
 
 script:
-  - set -e
-  - echo 'Installing PEcAn packages'
-  # TODO: Would probably be faster to use -j2 NCPUS=1 as for other steps,
-  # but many dependency compilations seem not parallel-safe.
-  # More debugging needed.
-  - NCPUS=2 make -j1
-  - echo 'Testing PEcAn packages'
-  - make test
-  - make check
-  - echo 'Testing Integration'
-  - ./tests/integration.sh travis
-  - if [[ `git status -s` ]]; then 
-      echo "These files were changed by the build process:";
-      git status -s;
-      echo "Have you run devtools::check and commited any updated Roxygen outputs?";
-      exit 1; 
-    fi
-  - set +e
+  - scripts/travis/script.sh
 
 after_script:
-  - set -e
-  - echo 'Building Book'
-  - pushd book_source
-  - make
-  - popd
-  - echo 'Building Tutorials'
-  - pushd documentation/tutorials
-  - make build deploy
-  - popd
-  - set +e
+  - scripts/travis/after_script.sh

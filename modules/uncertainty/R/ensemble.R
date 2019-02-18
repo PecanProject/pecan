@@ -350,7 +350,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         }
         
       } else {
+
         run.id <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5), site.id=settings$run$site$id)
+
       }
       runs[i, "id"] <- run.id
       
@@ -385,7 +387,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         input_tag <- names(settings$run$inputs)[[input_i]]
         settings$run$inputs[[input_tag]][["path"]] <- samples[[input_tag]][["samples"]][[i]]
       }
-
 
       
       do.call(my.write.config, args = list( defaults = defaults, 
