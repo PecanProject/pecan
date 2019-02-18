@@ -31,9 +31,13 @@
 
 **Note that coupling a model to PEcAn should not require any changes to the model code itself**. A key aspect of our design philosophy is that we want it to be easy to add models to the system and we want to using the working version of the code that is used by all other model users, not a special branch (which would rapidly end up out-of-date).
 
-### PEcAn Database
+### Using PEcAn Database
 
-To run a model within PEcAn requires that the PEcAn database know about the model -- this includes a MODEL_TYPE designation, the types of inputs the model requires, the location of the model executable, and the plant functional types used by the model. The instructions below assume that you will be specifying this information using the BETYdb web-based interface. This can be done either on your local VM (localhost:3280/bety or localhost:6480/bety) or on a server installation of BETYdb, though in either case we'd encourage you to set up your PEcAn instance to support [database syncs](https://github.com/PecanProject/bety/wiki/Distributed-BETYdb) so that these changes can be shared and backed-up across the PEcAn network.
+To run a model within PEcAn requires that the PEcAn database has sufficient information about the model. This includes a MODEL_TYPE designation, the types of inputs the model requires, the location of the model executable, and the plant functional types used by the model. 
+
+The instructions in this section assume that you will be specifying this information using the BETYdb web-based interface. This can be done either on your local VM (localhost:3280/bety or localhost:6480/bety) or on a server installation of BETYdb. However you interact with BETYdb, we encourage you to set up your PEcAn instance to support [database syncs](#database-sync) so that these changes can be shared and backed-up across the PEcAn network.
+
+![](04_advanced_user_guide/images/bety_main_page.png)
 
 The figure below summarizes the relevant database tables that need to be updated to add a new model and the primary variables that define each table.
 
@@ -41,7 +45,12 @@ The figure below summarizes the relevant database tables that need to be updated
 
 ### Define MODEL_TYPE
 
-The first step to adding a model is to create a new MODEL_TYPE, which defines the abstract model class which we will then use to specify input requirements, define plant functional types, and keep track of different model versions. A MODEL_TYPE is created by selecting Runs > Model Type and then clicking on _New Model Type_. The MODEL_TYPE name should be identical to the MODEL package name (see Interface Module below) and is case sensitive.
+The first step to adding a model is to create a new MODEL_TYPE, which defines the abstract model class. This MODEL_TYPE is used to specify input requirements, define plant functional types, and keep track of different model versions. 
+
+The MODEL_TYPE is created by selecting Runs > Model Type and then clicking on _New Model Type_. The MODEL_TYPE name should be identical to the MODEL package name (see Interface Module below) and is case sensitive. 
+
+![](04_advanced_user_guide/images/bety_modeltype_1.png)
+![](04_advanced_user_guide/images/bety_modeltype_2.png)
 
 ### MACHINE
 
@@ -69,9 +78,18 @@ For each of the input formats you specify for your model, you will need to edit 
 
 After a file Format has been created then input files can be registered with the database. Creating Inputs can be found under [How to insert new Input data](#NewInput).
 
-### PFTS (Plant Functional Types)
+### Add Plant Functional Types (PFTs)
 
-Since many of the PEcAn tools are designed to keep track of parameter uncertainties and assimilate data into models, to use PEcAn with a model it is important to define Plant Functional Types for the sites or regions that you will be running the model. PFTs are MODEL_TYPE specific, so when you create a new PFT entry (Data > PFTs; New PFT) you will want to choose your MODEL_TYPE from the pull down and then give the PFT a descriptive name (e.g. temperate deciduous).
+Since many of the PEcAn tools are designed to keep track of parameter uncertainties and assimilate data into models, to use PEcAn with a model it is important to define Plant Functional Types for the sites or regions that you will be running the model. 
+
+Create a new PFT entry by selecting Data > PFTs and then clicking on _New PFT_. 
+
+![](04_advanced_user_guide/images/bety_pft_1.png)
+![](04_advanced_user_guide/images/bety_pft_2.png)
+
+Give the PFT a descriptive name (e.g., temperate deciduous). PFTs are MODEL_TYPE specific, so choose your MODEL_TYPE from the pull down menu. 
+
+![](04_advanced_user_guide/images/bety_pft_3.png)
 
 #### Species
 
@@ -83,13 +101,49 @@ You can also define PFTs whose members are *cultivars* instead of species. This 
 
 It is not yet possible to add a cultivar PFT through the BETYdb web interface. See [this GithHub comment](https://github.com/PecanProject/pecan/pull/1826#issuecomment-360665864) for an example of how to define one manually in PostgreSQL.
 
-### PRIORS
+### Adding Priors for Each Variable
 
-In addition to adding species, a PFT is defined in PEcAn by the list of variables associated with the PFT. PEcAn takes a fundamentally Bayesian approach to representing model parameters, so variables are not entered as fixed constants but as Prior probability distributions (see below). Once Priors are defined for each model variable then you Edit the PFT and use “View Related Priors” to search for and add Prior distributions for each model parameter. It is important to note that the priors are defined for the variable name and units as specified in the Variables table. **If the variable name or units is different within the model it is the responsibility of write.configs.MODEL function to handle name and unit conversions** (see Interface Modules below). This can also include common but nonlinear transformations, such as converting SLA to LMA or changing the reference temperature for respiration rates.
+In addition to adding species, a PFT is defined in PEcAn by the list of variables associated with the PFT. PEcAn takes a fundamentally Bayesian approach to representing model parameters, so variables are not entered as fixed constants but as prior probability distributions.
 
-There are a wide variety of priors already defined in the PEcAn database that often range from very diffuse and generic to very informative priors for specific PFTs. If the current set of Priors for a variable are inadequate, or if a prior needs to be specified for a new variable, this can be done under Data > Priors then “New Prior”. After using the pull-down menu to select the Variable you want to generate a prior for, the prior is defined by choosing a probability distribution and specifying values for that distribution’s parameters. These are labeled Parameter a & b but their exact meaning depends upon the distribution chosen. For example, for the Normal distribution a and b are the mean and standard deviation while for the Uniform they are the minimum and maximum. All parameters are defined based on their standard parameterization in the R language.  If the prior is based on observed data (independent of data in the PEcAn database) then you can also specify the prior sample size, _N_. The _Phylogeny_ variable allows one to specify what taxonomic grouping the prior is defined for, at it is important to note that this is just for reference and doesn’t have to be specified in any standard way nor does it have to be monophyletic (i.e. it can be a functional grouping). Finally, the _Citation_ is a required variable that provides a reference for how the prior was defined. That said, there are a number of unpublished Citations in current use that simply state the expert opinion of an individual.
+There are a wide variety of priors already defined in the PEcAn database that often range from very diffuse and generic to very informative priors for specific PFTs.
 
-Additional information on adding PFTs, Species, and Priors can be found under [[Choosing PFTs]]
+These pre-existing prior distributions can be added to a PFT. Navigate to the PFT from Data > PFTs and selecting the edit button in the Actions column for the chosen PFT. 
+
+![](04_advanced_user_guide/images/bety_priors_1.png)
+
+Click on "View Related Priors" button and search through the list for desired prior distributions. The list can be filtered by adding terms into the search box. Add a prior to the PFT by clicking on the far left button for the desired prior, changing it to an X. 
+
+![](04_advanced_user_guide/images/bety_priors_2.png)
+
+Save this by scrolling to the bottom of the PFT page and hitting the Update button. 
+
+![](04_advanced_user_guide/images/bety_priors_3.png)
+
+#### Creating new prior distributions
+
+A new prior distribution can be created for a pre-existing variable, if a more constrained or specific one is known. 
+
+* Select Data > Priors then “New Prior” 
+* In the _Citation_ box, type in or select an existing reference that indicates how the prior was defined. There are a number of unpublished citations in current use that simply state the expert opinion of an individual 
+* Fill the _Variable_ box by typing in part or all of a pre-existing variable's name and selecting it
+* The _Phylogeny_ box allows one to specify what taxonomic grouping the prior is defined for, at it is important to note that this is just for reference and doesn’t have to be specified in any standard way nor does it have to be monophyletic (i.e. it can be a functional grouping)
+* The prior distribution is defined by choosing an option from the drop-down _Distribution_ box, and then specifying values for both _Parameter a_ and _Parameter b_. The exact meaning of the two parameters depends on the distribution chosen. For example, for the Normal distribution a and b are the mean and standard deviation while for the Uniform they are the minimum and maximum. All parameters are defined based on their standard parameterization in the R language 
+* Specify the prior sample size in _N_ if the prior is based on observed data (independent of data in the PEcAn database)
+* When this is done, scroll down and hit the Create button
+
+![](04_advanced_user_guide/images/bety_priors_4.png)
+
+The new prior distribution can then be added a PFT as described in the "Adding Priors for Each Variable" section. 
+
+#### Creating new variables
+
+It is important to note that the priors are defined for the variable name and units as specified in the Variables table. **If the variable name or units is different within the model it is the responsibility of write.configs.MODEL function to handle name and unit conversions** (see Interface Modules below). This can also include common but nonlinear transformations, such as converting SLA to LMA or changing the reference temperature for respiration rates.
+
+To add a new variable, select Data > Variables and click the New Variable button. Fill in the _Name_ field with the desired name for the variable and the units in the _Units_ field. There are additional fields, such as _Standard Units_, _Notes_, and _Description_, that can be filled out if desired. When done, hit the Create button. 
+
+![](04_advanced_user_guide/images/bety_priors_5.png)
+
+The new variable can be used to create a prior distribution for it as in the "Creating new prior distributions" section. 
 
 ### Interface Modules
 
