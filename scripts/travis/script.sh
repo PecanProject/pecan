@@ -6,7 +6,7 @@ set -e
 # GENERATING DEPENDENCIES
 (
     travis_time_start "dependency_generate" "Generate PEcAn package dependencies"
-    Rscript scripts/generate_makefile_deps.R
+    Rscript scripts/generate_dependencies.R
     travis_time_end
 )
 

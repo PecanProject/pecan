@@ -1,3 +1,4 @@
+# this needs to be at the top, what version are we building
 ARG IMAGE_VERSION="latest"
 
 # ----------------------------------------------------------------------
@@ -21,5 +22,5 @@ ENV RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F" \
     APPLICATION="./job.sh"
 
 # actual application that will be executed
-COPY docker/model.py /work/
+COPY model.py /work/
 CMD python3 /work/model.py
