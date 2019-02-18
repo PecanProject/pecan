@@ -43,16 +43,31 @@ if (!("samples.Rdata" %in% list.files())) get.parameter.samples(settings,
 #----------------------------------------------------------------
 # OBS data preparation
 #---------------------------------------------------------------
-obss <- PEcAn.assim.sequential:::Obs.data.prepare.MultiSite(obs.path, site.ids)
-#----------------------------------------------------------------
-# Preparing settings
-#---------------------------------------------------------------
-new.settings <- PEcAn.settings::prepare.settings(settings)
+if (is.MultiSettings(settings)){
+  obss <- PEcAn.assim.sequential:::Obs.data.prepare.MultiSite(obs.path, site.ids)
+}else{
+  obss <- load(obs.path)
+}
+
 #----------------------------------------------------------------
 # SDA
 #---------------------------------------------------------------
-sda.enkf.multisite(new.settings,
-                   obs.mean =obss$obs.mean ,
-                   obs.cov = obss$obs.cov)
+if (is.MultiSettings(settings)){
+  #----------------------------------------------------------------
+  # Preparing settings
+  #---------------------------------------------------------------
+  new.settings <- PEcAn.settings::prepare.settings(settings)
+  #MultiSite SDA function
+  sda.enkf.multisite(new.settings,
+                     obs.mean =obss$obs.mean ,
+                     obs.cov = obss$obs.cov)
+}else{
+  #Refactored SDA function
+  sda.enkf(settings,
+           obs.mean =obss$obs.mean ,
+           obs.cov = obss$obs.cov
+           )
+}
+
 
 

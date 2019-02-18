@@ -22,8 +22,8 @@
 
 sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F, 
                      control=list(trace=T,
-                                  interactivePlot=T,
-                                  TimeseriesPlot=T,
+                                  interactivePlot=F,
+                                  TimeseriesPlot=F,
                                   BiasPlot=F,
                                   plot.title=NULL,
                                   debug=FALSE),...) {

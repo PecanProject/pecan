@@ -9,7 +9,7 @@ sda.enkf.original(settings, obs.mean, obs.cov, IC = NULL, Q = NULL,
   adjustment = TRUE, restart = NULL)
 
 sda.enkf(settings, obs.mean, obs.cov, Q = NULL, restart = F,
-  control = list(trace = T, interactivePlot = T, TimeseriesPlot = T,
+  control = list(trace = T, interactivePlot = F, TimeseriesPlot = F,
   BiasPlot = F, plot.title = NULL, debug = FALSE), ...)
 }
 \arguments{
