@@ -47,12 +47,12 @@ is.active<-ifelse (nchar(is.active)>1, TRUE, FALSE)
 while(is.active){
   is.active <-remote.execute.cmd(my_host, cmd = "ps", args = c("-o","pid=","-p",PID))
   is.active<-ifelse (nchar(is.active)>1, TRUE, FALSE)
-
+  
   remote.copy.from(my_host,
                    paste0(remote.path,"/SDA"),
                    paste0(settings$outdir)
   )
-
+  PEcAn.logger::logger.info(paste0("SDA folder was synced at ------------------- ", Sys.time()))
   Sys.sleep(300)
 }
 #----------------------------------------------------------------
@@ -69,3 +69,4 @@ if (sda.dir.exists){
                      paste0(settings$outdir)
     )
 }
+PEcAn.logger::logger.info("------------------- Finished Syncing -------------------")

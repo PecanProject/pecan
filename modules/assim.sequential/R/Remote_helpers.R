@@ -78,11 +78,11 @@ Obs.data.prepare.MultiSite <- function(obs.path="../Obs/LandTrendr_AGB_output50s
 #' @param ObsPath  Path to the obs data which is expected to be an .Rdata.
 #'
 #' @export
+#' @return This function returns a list of two pieces of information. One the remote path that SDA is running and the PID of the active run.
 #' @example 
 #' \dontrun{
 #'  library(PEcAn.all)
 #'  library(purrr)
-#'  library(PEcAn.assim.sequential)
 #'  
 #'  settingPath <-
 #'    "/fs/data3/hamzed/Projects/GeoTunnel/RemoteSDA/pecan.SDA.4sites.xml"
@@ -229,18 +229,18 @@ SDA_remote_launcher <-function(settingPath,
   # copying over the luncher
   remote.copy.to(
     my_host,
-    system.file("RemoteLauncher", "Remote_SDA_launcher.R", package = "PEcAn.assim.sequential"),
+    system.file("RemoteLauncher", "SDA_launcher.R", package = "PEcAn.assim.sequential"),
     settings$outdir,
     delete = FALSE,
     stderr = FALSE
   )
   
   cmd <- paste0("nohup  Rscript ",
-                settings$outdir,"//Remote_SDA_launcher.R ", # remote luncher
+                settings$outdir,"//SDA_launcher.R ", # remote luncher
                 settings$outdir,"//",basename(settingPath), # path to settings
                 " Obs//", basename(ObsPath), # Path to Obs
                 " > ", 
-                settings$outdir,"//SDA_nohup.out 2>&1 &"
+                settings$outdir,"/SDA_remote_nohup.out 2>&1 &"
   )
   
 
@@ -248,16 +248,19 @@ SDA_remote_launcher <-function(settingPath,
    PEcAn.logger::logger.info("Running this command on your remote: \n")
    PEcAn.logger::logger.info(cmd)
   
+   
    #calling SDA
    out<-remote.execute.R(paste0("system(\" ",cmd, "\")"),
                          my_host,
                          user = my_host$user,
                          scratchdir = ".")
-
+   
+   
+   
    # Let's see what is the PID of the job doing the nohup
    # I'll use this to track the progress of my SDA job
    PIDS<-remote.execute.cmd(my_host, cmd = "lsof",
-                      args = c(paste0(settings$outdir,"//SDA_nohup.out")))
+                      args = c(paste0(settings$outdir,"/SDA_remote_nohup.out")))
    
    if (length(PIDS)>1){
      #some cleaning
@@ -292,7 +295,6 @@ SDA_remote_launcher <-function(settingPath,
 #' \dontrun{
 #'  library(PEcAn.all)
 #'  library(purrr)
-#'  library(PEcAn.assim.sequential)
 #'  
 #'  settingPath <-
 #'    "/fs/data3/hamzed/Projects/GeoTunnel/RemoteSDA/pecan.SDA.4sites.xml"

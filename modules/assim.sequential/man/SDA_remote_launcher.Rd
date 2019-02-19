@@ -11,6 +11,9 @@ SDA_remote_launcher(settingPath, ObsPath)
 
 \item{ObsPath}{Path to the obs data which is expected to be an .Rdata.}
 }
+\value{
+This function returns a list of two pieces of information. One the remote path that SDA is running and the PID of the active run.
+}
 \description{
 SDA_remote_launcher
 }
