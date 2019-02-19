@@ -1,4 +1,4 @@
-### CentOS/RedHat {#centos/redhat}
+#### CentOS/RedHat {#centos/redhat}
 
 These are specific notes for installing PEcAn on CentOS (7) and will be referenced from the main [installing PEcAn](Installing-PEcAn) page. You will at least need to install the build environment and Postgres sections. If you want to access the database/PEcAn using a web browser you will need to install Apache. To access the database using the BETY interface, you will need to have Ruby installed.
 

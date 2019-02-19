@@ -1,4 +1,4 @@
-### LINKAGES {#inst-linkages}
+#### LINKAGES {#inst-linkages}
 
 ##### R Installation 
 ```r

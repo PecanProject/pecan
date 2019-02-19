@@ -1,4 +1,4 @@
-### CLM 4.5 {#inst-clm45}
+#### CLM 4.5 {#inst-clm45}
 
 The version of CLM installed on PEcAn is the ORNL branch provided by Dan Ricciuto. This version includes Dan's point-level CLM processing scripts
 

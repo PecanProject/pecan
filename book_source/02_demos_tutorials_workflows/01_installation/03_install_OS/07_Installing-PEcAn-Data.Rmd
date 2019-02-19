@@ -1,4 +1,4 @@
-#### Installing data for PEcAn
+#### Installing data for PEcAn {#install-data}
 
 PEcAn assumes some of the data to be installed on the machine. This page will describe how to install this data.
 

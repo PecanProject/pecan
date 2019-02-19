@@ -1,4 +1,4 @@
-### CLM-FATES {#inst-fates}
+#### CLM-FATES {#inst-fates}
 
 Prerequisites
 ```

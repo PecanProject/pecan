@@ -1,4 +1,4 @@
-### LPJ-GUESS {#inst-lpj-guess}
+#### LPJ-GUESS {#inst-lpj-guess}
 
 Instructions to download source code
 

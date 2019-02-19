@@ -1,4 +1,4 @@
-### BioCro {#inst-biocro}
+#### BioCro {#inst-biocro}
 
 ```r
 # Public
