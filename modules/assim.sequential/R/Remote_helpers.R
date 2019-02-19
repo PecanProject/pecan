@@ -156,14 +156,19 @@ SDA_remote_launcher <-function(settingPath,
       stderr = FALSE
     )
   }else{
-    PEcAn.logger::logger.severe("I can't access to your obs path !")
+    PEcAn.logger::logger.severe("I don't have access to your obs path !")
   }
   #----------------------------------------------------------------
   # met check
   #---------------------------------------------------------------
-  # testing the met folders and copying them over
-  met.paths <-settings %>% map(~.x[['run']] ) %>% map('inputs') %>% map('met')%>% map('path') %>% unlist()
-  
+  # Finding all the met paths in your settings
+  if (is.MultiSettings(settings)){
+    met.paths <-settings %>% map(~.x[['run']] ) %>% map('inputs') %>% map('met')%>% map('path') %>% unlist()
+  }else{
+    met.paths <-settings$run$inputs$met$path 
+  }
+
+  # see if we can find those mets on remote
   met.test <- met.paths %>% map_lgl(function(.x) {
     out <- remote.execute.R(
       script = paste0("file.exists(\"/", .x, "\")"),
@@ -182,7 +187,11 @@ SDA_remote_launcher <-function(settingPath,
   #----------------------------------------------------------------
   # Site- PFT file 
   #---------------------------------------------------------------
+  if (is.MultiSettings(settings)){
   site.pft.paths <- settings %>% map(~.x[['run']] ) %>% map('inputs') %>% map('pft.site') %>% map('path') %>% unlist %>% unique()
+  }else{
+    site.pft.paths<-settings$run$inputs$pft.site$path 
+  }
   
   site.pft.paths %>%
     map(function(pft.path){
@@ -195,10 +204,10 @@ SDA_remote_launcher <-function(settingPath,
           stderr = FALSE
         )
       }else{
-        PEcAn.logger::logger.severe("I can't access to your site.pft file path !")
+        PEcAn.logger::logger.severe("I don't have access to your site.pft file path !")
       }
     })
-  
+
   
   #----------------------------------------------------------------
   # Cleaning up the settings and getting it ready
