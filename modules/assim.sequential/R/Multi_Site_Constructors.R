@@ -51,6 +51,13 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     pf.matrix.out <- pf.matrix
   }
   
+  # adding labels to rownames and colnames
+  labelss <- paste0(rep(var.names, length(site.ids)) %>% as.character(),"(",
+         rep(site.ids, each=length(var.names)),")") 
+  
+  colnames(pf.matrix.out ) <-labelss
+  rownames(pf.matrix.out ) <-labelss
+  
   return(pf.matrix.out)
 
 }
