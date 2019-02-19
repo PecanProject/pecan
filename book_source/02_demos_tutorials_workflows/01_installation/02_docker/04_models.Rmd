@@ -1,8 +1,13 @@
-### Models using Docker {#model-docker}
+#### Models using Docker {#model-docker}
 
 This section will discuss how to add new models to PEcAn docker. To be able to add a new model to PEcAn when using docker is as simple as starting a new container. The model will come online and let the PEcAn framework know there is a new model available, there is no need to go through the process of registering this model with PEcAn. Users will be able to select this new model from web interface and run with this model selected.
 
 For this process to work a docker image of the model will need to be created as well as small json file that is used to announce this new model. A separate service in PEcAn ([`monitor`](#pecan-dc-monitor)) will use this json file to keep track of all models available as well as register these models with PEcAn.
+
+[Model information](#model-docker-json-file)
+[Model build](#model-docker-Dockerfile)
+[Common problems](#common-docker-problems)
+
 
 #### Model information {#model-docker-json-file}
 
@@ -157,7 +162,7 @@ docker run \
 	pecan/model-ed2-git
 ```
 
-#### Common problems
+#### Common problems {#common-docker-problems}
 
 Following are some solutions for common problems that you might encounter when building the docker images for a model.
 

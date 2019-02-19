@@ -1,4 +1,21 @@
-### PEcAn Docker Architecture {#pecan-docker}
+#### PEcAn Docker Architecture {#pecan-docker}
+
+[Overview](#pecan-docker-overview)
+[PEcAn's `docker-compose`](#pecan-docker-compose)
+[Top-level structure](#pecan-dc-structure)
+[`traefik`](#pecan-dc-traefik)
+[`portainer`](#pecan-dc-portainer)
+[`minio`](#pecan-dc-minio)
+[`thredds`](#pecan-dc-thredds)
+[`postgres`](#pecan-dc-postgres)
+[`rabbitmq`](#pecan-dc-rabbitmq)
+[`bety`](#pecan-dc-bety)
+[`docs`](#pecan-dc-docs)
+[`web`](#pecan-dc-web)
+[`executor`](#pecan-dc-executor)
+[`monitor`](#pecan-dc-monitor)
+[Model-specific containers](#pecan-dc-models)
+
 
 #### Overview {#pecan-docker-overview}
 

@@ -1,8 +1,16 @@
-### Quickstart for Docker and PEcAn {#docker-quickstart}
+#### Quickstart for Docker and PEcAn {#docker-quickstart}
 
 This is a short documentation on how to start with Docker and PEcAn. This will not go into much detail about about how to use docker.
 
-#### Install Docker
+[Install Docker](#install-docker)
+[Start model runs using curl](#curl-model-runs)
+[Setup PEcAn using docker-compose](#pecan-setup-compose)
+[Initialize the PEcAn database (first time only)](#pecan-docker-quickstart-init)
+[Start PEcAn](#start-pecan)
+
+
+
+#### Install Docker {#install-docker}
 
 You will need to install docker first. See https://www.docker.com/community-edition#/download
 
@@ -21,7 +29,7 @@ NOTE: Depending on how Docker is installed and configured, you may have to run t
 Try running the command without `sudo` first.
 If that fails, but running as `sudo` succeeds, see [these instructions](https://docs.docker.com/install/linux/linux-postinstall/) for steps to use Docker as a non-root user.
 
-#### Setup PEcAn using docker-compose
+#### Setup PEcAn using docker-compose {#pecan-setup-compose}
 
 
 The PEcAn Docker stack is configured using a `docker-compose.yml` file (see also [`docker-compose`](#docker-compose)).
@@ -148,7 +156,7 @@ Under the hood, this container runs the `docker/add-data.sh` script, which downl
 
 Successful execution of this command should take some time because it involves downloading and copying reasonably large amounts of data and performing a number of database operations.
 
-#### Start PEcAn
+#### Start PEcAn {#start-pecan}
 
 If you already completed the above steps, you can start the full stack by just running the following: 
 
@@ -170,7 +178,7 @@ If all of the containers started successfully, you should be able to access the 
 - Traefik, webserver showing maps from URLs onto their respective containers -- http://localhost:8001/
 - Monitor, service that monitors models and shows all models that are online as well as how many instances are online and the number of jobs waiting. The output is in JSON -- http://localhost:8000/monitor/
 
-#### Start model runs using curl
+#### Start model runs using curl {#curl-model-runs}
 
 To test PEcAn you can use the following `curl` statement, or use the webpage to submit a request:
 

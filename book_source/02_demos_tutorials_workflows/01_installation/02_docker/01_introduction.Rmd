@@ -1,7 +1,8 @@
-### Introduction to Docker? {#docker-intro}
+#### Introduction to Docker? {#docker-intro}
 
 [What is Docker](#what-is-docker)
 [Working with Docker](#working-with-docker)
+[`docker-compose`]{#docker-compose}
 
 #### What is Docker? {#what-is-docker}
 
