@@ -1,3 +1,4 @@
+# this needs to be at the top, what version are we building
 ARG IMAGE_VERSION="latest"
 
 # ----------------------------------------------------------------------
@@ -22,5 +23,5 @@ ENV RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F" \
     APPLICATION="R CMD BATCH workflow.R"
 
 # actual application that will be executed
-COPY docker/executor.py docker/sender.py /work/
+COPY executor.py sender.py /work/
 CMD python3 /work/executor.py

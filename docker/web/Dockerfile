@@ -20,7 +20,7 @@ RUN apt-get update \
 # ----------------------------------------------------------------------
 COPY documentation/index_vm.html /var/www/html/index.html
 COPY web /var/www/html/pecan/
-COPY docker/config.docker.php /var/www/html/pecan/config.php
+COPY docker/web/config.docker.php /var/www/html/pecan/config.php
 
 # ----------------------------------------------------------------------
 # PEcAn version information
