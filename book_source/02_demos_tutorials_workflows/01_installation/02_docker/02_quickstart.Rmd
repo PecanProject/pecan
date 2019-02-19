@@ -143,13 +143,14 @@ Added guestuser with access_level=4 and page_access_level=4 with id=331
 Once the command has finished successfully, proceed with the next step:
 
 ```bash
-docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop
+docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
 ```
 
 The breakdown of this command is as follows:
 
 - `docker run -ti --rm --network pecan_pecan` -- Same as [above](#docker-run-init).
 - `--volume pecan_pecan:/data` -- This mounts the data from the subsequent container (`pecan/data:develop`) onto the current project volume, called `pecan_pecan` (as with the network, the project name `pecan` is the prefix, and the volume name also happens to be `pecan` as specified in the `docker-compose.yml` file).
+- `--env FQDN=docker` -- the Fully Qualified Domain Name, this is the same value as specified in the `docker-compose.yml` file (for the web, monitor and executor containers). This will link the data files to the name in the machines table in BETY.
 - `pecan/data:develop` -- As above, this is the target image to run. Since there is no argument after the image name, this command will run the default command ([`CMD`](https://docs.docker.com/engine/reference/builder/#cmd)) specified for this docker container. In this case, it is the [`docker/add_data.sh`](https://github.com/PecanProject/pecan/blob/develop/docker/add-data.sh) script from the PEcAn repository.
 
 Under the hood, this container runs the `docker/add-data.sh` script, which downloads a bunch of input files and registers them with the PEcAn database.

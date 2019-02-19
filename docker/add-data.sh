@@ -9,16 +9,13 @@ PSQL="psql -U bety -h postgres -d bety -q -t -c"
 # load helper functions and set FQDN and PSQL
 . $( dirname $0 )/add.util.sh
 
+cd ${DATADIR}
+
 echo "######################################################################"
 echo "CREATE FOLDERS"
 echo "######################################################################"
 mkdir -p /data/workflows /data/dbfiles
 chown 33 /data/workflows /data/dbfiles
-
-echo "######################################################################"
-echo "DOWNLOAD DATA"
-echo "######################################################################"
-cd ${DATADIR}
 
 echo "######################################################################"
 echo "Adding sites"
