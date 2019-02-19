@@ -1,10 +1,10 @@
-## Migrating PEcAn from VM to Docker {#docker-migrate}
+#### Migrating PEcAn from VM to Docker {#docker-migrate}
 
 This document assumes you have read through the [Introduction to Docker](#docker-intro) as well as [Docker quickstart](#docker-quickstart) and have docker running on the VM.
 
 This document will slowly replace each of the components with the appropriate docker images. At then end of this document you should be able to use the docker-compose command to bring up the full docker stack as if you had started with this origianally.
 
-### Running BETY as a docker container
+#### Running BETY as a docker container
 
 This will replace the BETY application running on the machine with a docker image. This will assume you still have the database running on the local machine and the only thing we replace is the BETY application.
 

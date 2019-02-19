@@ -1,4 +1,8 @@
-### Building and modifying images {#docker-build-images}
+#### Building and modifying images {#docker-build-images}
+
+The only other section on this page is:
+[Local development and testing with Docker](#docker-local-devel)
+
 
 For general use, it is sufficient to use the pre-built PEcAn images hosted on [Docker Hub](https://hub.docker.com/r/pecan/) (see [Docker quickstart](#docker-quickstart)).
 However, there are cases where it makes sense to re-build the Docker images locally.

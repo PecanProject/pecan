@@ -1,6 +1,13 @@
 ### PEcAn Virtual Machine {#pecanvm}
 
 This section includes the following VM related documentation:
+[Maintaining your PEcAn VM](#maintain-vm)
+[Connecting to the VM via SSH](#ssh-vm)
+[Connecting to bety on the VM via SSh](#ssh-vm-bety)
+[Using Amazon Web Services for a VM (AWS)](#awsvm)
+[Creating a Virtual Machine](#createvm)
+[VM Desktop Conversion](#vm-dektop-conversion)
+[Install RStudio Desktop](#install-rstudio)
 
 
 The PEcAn virtual machine consists of all of PEcAn pre-compiled within a Linux operating system and saved in a "virtual machine" (VM). Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
@@ -36,13 +43,13 @@ Finally, click "Import" to build the Virtual Machine from its image.
 
 * To ssh into the VM, open up a terminal on your machine and execute `ssh -l carya -p 6422 localhost`. Username and password are the same as when you log into the machine.
 
-### Maintaining your PEcAn VM
+#### Maintaining your PEcAn VM {#maintain-vm}
 
 The PEcAn VM is distributed with specific versions of PEcAn compiled. However, you do not need to constantly download the VM in order to update your code and verion of BETY. To update and maintain your code you can follow the steps found in the Developer section in [Updating PecAn and Code and BETY Database]{#updatepecan}
 
-### Working with the VM
+#### Working with the VM {#working-with-vm}
 
-#### Connecting to the VM via SSH
+#### Connecting to the VM via SSH {#ssh-vm}
 
 Once the VM is running anywhere on your machine, you can connect to it from a separate terminal via SSH as follows:
 
@@ -64,7 +71,7 @@ Host pecan-vm
 
 This will allow you to SSH into the VM with the simplified command, `ssh pecan-vm`.
 
-#### Connecting to bety on the VM via SSh
+#### Connecting to bety on the VM via SSh {#ssh-vm-bety}
 
 Sometimes, you may want to develop code locally but connect to an instance of Bety on the VM.
 To do this, first open a new terminal and connect to the VM while enabling port forwarding (with the `-L` flag) and setting XXXX to any available port (more or less any 4 digit number -- a reasonable choice is 3333).
@@ -100,7 +107,7 @@ dbListTables(con)   # This should return a vector of bety tables
 Note that the same general approach will work on any Bety server where port forwarding is enabled.
 
 
-### Using Amazon Web Services for a VM (AWS) {#awsvm}
+#### Using Amazon Web Services for a VM (AWS) {#awsvm}
 
 Login to [Amazon Web Services (AWS)](http://console.aws.amazon.com/) and select the EC2 Dashboard. If this is your first time using AWS you will need to set up an account before you are able to access the EC2 Dashboard. Important: You will need a credit card number and access to a phone to be able to verify AWS account registration. AWS is free for one year.
 
@@ -152,7 +159,7 @@ Congratulations! You just started a PEcAn server in the “cloud”!
 +	To TERMINATE the instance (which will DELETE your PEcAn machine), select your instance and click Actions > Instance state > Terminate. Terminated instances will not incur costs. In most cases you will also want to go to the Volumes menu and delete the storage associated with your PEcAn VM.Remember, AWS is free for one year, but will automatically charge a fee in second year if account is not cancelled.
 
 
-### Creating a Virtual Machine {#createvm}
+#### Creating a Virtual Machine {#createvm}
 
 First create  virtual machine
 
@@ -268,7 +275,7 @@ Once all done, stop the virtual machine
 history -c && ${HOME}/cleanvm.sh
 ```
 
-### VM Desktop Conversion
+#### VM Desktop Conversion {#vm-dektop-conversion}
 
 ```bash
 sudo apt-get update
@@ -291,7 +298,7 @@ sudo /mnt/VBoxLinuxAdditions.run
 sudo umount /mnt
 ```
 
-#### Install RStudio Desktop
+#### Install RStudio Desktop {#install-rstudio}
 
 ```bash
 wget http://download1.rstudio.org/rstudio-0.97.551-amd64.deb
