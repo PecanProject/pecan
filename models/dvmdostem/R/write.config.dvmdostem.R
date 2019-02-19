@@ -17,7 +17,7 @@
 ##'
 ##' @name convert.samples.dvmdostem
 ##' @title Convert samples for dvmdostem
-##' @param trait.samples a matrix or dataframe of samples from the trait distribution
+##' @param trait_samples a matrix or dataframe of samples from the trait distribution
 ##' @return matrix or dataframe with values transformed
 ##' @export
 ##' @author Shawn Serbin, Tobey Carman
@@ -28,7 +28,7 @@ convert.samples.dvmdostem <- function(trait_values) {
     # Convert from m2 / kg to m2 / g
     trait_values[["SLA"]] <- trait_values[["SLA"]] / 1000.0
   }
-  if ("cuticular_cond" %in% names(trait_values)) {
+  if("cuticular_cond" %in% names(trait_values)) {
     # Convert from umol H2O m-2 s-1 to ???
     # Original values in dvmdostem param files not making sense, no good
     # comments as to units. This conversion seems to make the values match
@@ -51,6 +51,107 @@ convert.samples.dvmdostem <- function(trait_values) {
 }
 ##-------------------------------------------------------------------------------------------------#
 
+##-------------------------------------------------------------------------------------------------#
+##' Adjust the runmask for dvmdostem. This is necessary if you are
+##' using a mutisite dvmdostem dataset (more than one grid cell/pixel)
+##' and you are not forcing the community (cmt or vegetation) type. In 
+##' other words you are using a vegetation map to determine the pixel's cmt
+##' type. In this case you must make sure that for the site and PFTs
+##' you have selected, the underlying veg map classifies the site as the
+##' same community type of the PFT you have chosen to run.
+##'
+##' @name adjust.runmask.dvmdostem
+##' @title Adjust runmask for dvmdostem.
+##' @param siteDataPath path to expected/default runmask (one of dvmdostem standard input files)
+##' @param rundir path to the location for this run (local run directory)
+##' @param pixel_X the X coordinate of the pixel to turn on (1 based!)
+##' @param pixel_Y the Y coordinate of the pixel to turn on (1 based!)
+##' @return NULL
+##' @export
+##' @author Tobey Carman
+##' 
+adjust.runmask.dvmdostem <- function(siteDataPath, rundir, pixel_X, pixel_Y) {
+
+  # Copy the run-mask from the input data directory to the run directory
+  system2(paste0("cp"),
+          wait=TRUE,
+          args=(c("-r",
+                  file.path(siteDataPath, 'run-mask.nc'),
+                  file.path(rundir, 'run-mask.nc'))))
+
+  # # Turn off all pixels except the 0,0 pixel in the mask
+  # Can't seem to use this as python-netcdf4 is not available. WTF.
+  # system2(paste0(file.path(appbinary_path, "scripts/runmask-util.py")),
+  #         wait=TRUE,
+  #         args=c("--reset", "--yx", pixel_Y, pixel_X, file.path(rundir, 'run-mask.nc')))
+
+  ## !!WARNING!! See note here:
+  ## https://github.com/cran/ncdf4/blob/master/R/ncdf4.R
+  ## Permalink: https://github.com/cran/ncdf4/blob/6eea28ce4e457054ff8d4cb90c58dce4ec765fd7/R/ncdf4.R#L1
+  ##
+  ## Basically:
+  ##	1. R starts counting at 1, and netCDF counting
+  ##	   starts at 0.
+  ##	2. R array subscripts go in Fortran order (XYZT),
+  ##	   while netCDF subscripts go in C order (TZYX).
+  ##  3. R does not have a 64bit integer datatype (which is the datatype
+  ##     of the run mask netCDF file). So we get a warning about casting
+  ##     the data from the R integer value to the netCDF 64bit integer
+  ncMaskFile <- ncdf4::nc_open(file.path(rundir, 'run-mask.nc'), write = TRUE)
+  new_data <- matrix(0, ncMaskFile$dim$X$len, ncMaskFile$dim$Y$len)
+  new_data[[strtoi(pixel_X), strtoi(pixel_Y)]] <- 1
+  ncdf4::ncvar_put(ncMaskFile, ncMaskFile$var$run, new_data, verbose=TRUE)
+  ncdf4::nc_close(ncMaskFile)
+
+  PEcAn.logger::logger.info(paste0("Set run mask pixel (y,x)=("),pixel_Y,",",pixel_X,")" )
+
+}
+##-------------------------------------------------------------------------------------------------#
+
+##-------------------------------------------------------------------------------------------------#
+##' Make sure that selected run mask pixel, veg map pixel value and CMT type are all copasetic. The
+##' function calls stop() if there is anything inconsistent, for example more tha one pixel is 
+##' enabled in the run mask, or the enabled pixel's vegetation type does not match the 
+##' vegetation/community type of the chosen PFTs.
+##' 
+##' @name enforce.runmask.cmt.vegmap.harmony
+##' @title 
+##' @param siteDataPath is the path to the folder where we expect to find the dvmdostem input data files.
+##' @param rundir is the path to the local running directory where customized files (config, parameters, 
+##' runmask etc) are copied to.
+##' @param cmtnum is the community type (vegetation type) that should be used for the run. Based on the
+##' chosen PFT, and required to look up the correct parameters in the parameter files.
+##' @return none
+##' @export
+##' @author Tobey Carman
+##'
+enforce.runmask.cmt.vegmap.harmony <- function(siteDataPath, rundir, cmtnum){
+
+  # Open the runmask and see which pixel is enabled
+  ncRunMaskFile <- ncdf4::nc_open(file.path(rundir, "run-mask.nc"), write=FALSE)
+  run_mask <- ncdf4::ncvar_get(ncRunMaskFile, ncRunMaskFile$var$run)
+  enabled_px <- which(run_mask!=0, arr.ind=TRUE)
+  print("========================================================================")
+  print(c("length(enabled_px):", length(enabled_px), " enabled_px:", unlist(enabled_px)))
+  print("========================================================================")
+  if (length(enabled_px != 2)) {
+    PEcAn.logger::logger.error("THERE MUST BE A SINGLE PIXEL ENABLED IN THE RUN MASK FILE!")
+    PEcAn.logger::logger.error(c("Instead found ", length(enabled_px), " pixels in file: ", file.path(rundir, "run-mask.nc") ) )
+    stop()
+  }
+
+  # Open the input veg file, check that the pixel that is enabled in the
+  # run mask is the right veg type to match the cmt/pft that is selected
+  # for the run.
+  ncVegCMTFile <- ncdf4::nc_open(file.path(siteDataPath, "vegetation.nc"), write=FALSE)
+  veg_class <- ncdf4::ncvar_get(ncVegCMTFile, ncVegCMTFile$var$veg_class)
+  if (cmtnum != veg_class[[enabled_px[1],enabled_px[2]]]) {
+    PEcAn.logger::logger.error("INCORRECT PIXEL!! THIS RUN WILL NOT WORK!")
+    PEcAn.logger::logger.error("STOPPING NOW TO PREVENT FUTURE HEARTACHE!")
+    stop()
+  }
+
+}
 
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes a dvmdostem PEcAn config file.
@@ -73,6 +174,7 @@ convert.samples.dvmdostem <- function(trait_values) {
 write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.id) {
 
   ## site information
+  ## (Currently unused)
   site <- settings$run$site
   site.id <- as.numeric(site$id)
 
@@ -87,22 +189,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # On the VM, these seem to be the same.
   PEcAn.logger::logger.info(paste0("local_rundir: ", local_rundir))
   PEcAn.logger::logger.info(paste0("rundir: ", rundir))
-
-  # Subset the trait.values list to get only the traits for the PFT we are
-  # interested in. The trait.values list should be something like this:
-  # $`CMT04-Salix`
-  #      SW_albedo    gcmax    cuticular_cond       SLA
-  #            1.0     3.4               2.5       11.0
-  # $`CMT04-Betula`
-  #      SW_albedo    gcmax    cuticular_cond       SLA
-  #            1.0      3.4               2.5      11.0
-  #
-  # Where there is a sub-list for each PFT. We want to reduce this to just
-  # the PFT we are interested in, and with all the unit conversions taken
-  # care of. So result will be something like this:
-  # SW_albedo    gcmax    cuticular_cond       SLA
-  #      1.0       3.4               2.5      11.0
-  traits <- convert.samples.dvmdostem(trait.values[[settings$pfts$pft$name]])
 
   # Copy the base set of dvmdostem parameters and configurations into the
   # run directory. Some of the values in these files will be overwritten in
@@ -129,16 +215,29 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
                   file.path(rundir, 'parameters'))))
 
 
-  # (1)
-  # Read in a parameter data block from dvmdostem
-
   # Pull out the community name/number for use below in extracting
   # the correct block of data from the dvmdostem parameter files.
   # The settings$pfts$pft$name variable will be something like this: "CMT04-Salix"
   cmtname <- unlist(strsplit(settings$pfts$pft$name, "-", fixed=TRUE))[1]
   cmtnum <- as.numeric(unlist(strsplit(cmtname, "CMT"))[2]) #
-
   PEcAn.logger::logger.info(paste("cmtname: ", cmtname, " cmtnum: ", cmtnum))
+
+  # Check that all selected PFTs (from pecan.xml) have the same CMT number!
+  for (pft in settings$pfts) {
+    cur_pftname <- pft$name
+    cur_cmtname <- unlist(strsplit(cur_pftname, "-", fixed=TRUE))[1]
+    cur_cmtnum <- as.numeric(unlist(strsplit(cur_cmtname, "CMT"))[2])
+    if (cur_cmtname == cmtname) {
+      # pass, evertthing ok
+      PEcAn.logger::logger.debug(paste0("AlL ok - CMTs of all the selected PFTs match."))
+    } else {
+      PEcAn.logger::logger.error(paste0("CMTs of selected PFTS do not match!!!"))
+      stop()
+    }
+  }
+
+  # (1)
+  # Read in a parameter data block from dvmdostem
 
   # Now we have to read the appropriate values out of the trait_df
   # and get those values written into the parameter file(s) that dvmdostem will
@@ -189,86 +288,106 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   
   # (2)
   # Overwrite parameter values with (ma-posterior) trait data from pecan
-  PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname))
-  for (curr_trait in names(traits)) {
-    for (jd in list(bgcveg_jsondata, envcanopy_jsondata, dimveg_jsondata)) {
-      for (i in names(jd)) {
-        if (grepl("pft", i)) {
-          # The PFT name stored w/in betydb is a combo of the community name
-          # and the "common" pft name, always separated by a hyphen. Something
-          # like this: "CMT04-Salix". The pft name in the json datastructure
-          # will be simply the common name, as stored in the dvmdostem parameter
-          # files. So here we extract the "common name" from the betydb PFT
-          # name to make sure we are updating the correct spot in the json
-          # data structure.
-          pft_common_name <- unlist(strsplit(settings$pfts$pft$name, "-"))[2]
-          #PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname)) # too verbose
-          if (identical(jd[[i]]$name, pft_common_name)) {
-            if (curr_trait == "SLA") {
-              dimveg_jsondata[[i]]$sla = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_10") {
-              dimveg_jsondata[[i]]$`frprod[0]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_20") {
-              dimveg_jsondata[[i]]$`frprod[1]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_30") {
-              dimveg_jsondata[[i]]$`frprod[2]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_40") {
-              dimveg_jsondata[[i]]$`frprod[3]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "frprod_perc_50") {
-              dimveg_jsondata[[i]]$`frprod[4]` = traits[[curr_trait]]
-            }
-            if (curr_trait == "klai") {
-              dimveg_jsondata[[i]]$klai = traits[[curr_trait]]
-            }
-            if (curr_trait == "ilai") {
-              dimveg_jsondata[[i]]$lai = traits[[curr_trait]]
-            }
-            if (curr_trait == "extinction_coefficient_diffuse") {
-              envcanopy_jsondata[[i]]$er = traits[[curr_trait]]
-            }
-            if (curr_trait == "SW_albedo") {
-              envcanopy_jsondata[[i]]$albvisnir = traits[[curr_trait]]
-            }
-            if (curr_trait == "cuticular_cond") {
-              envcanopy_jsondata[[i]]$gl_c = traits[[curr_trait]]
-            }
-            if (curr_trait == "gcmax") {
-              envcanopy_jsondata[[i]]$glmax = traits[[curr_trait]]
-            }
-            if (curr_trait == "ppfd50") {
-              envcanopy_jsondata[[i]]$ppfd50 = traits[[curr_trait]]
-            }
-            if (curr_trait == "vpd_open") {
-              envcanopy_jsondata[[i]]$vpd_open = traits[[curr_trait]]
-            }
-            if (curr_trait == "vpd_close") {
-              envcanopy_jsondata[[i]]$vpd_close = traits[[curr_trait]]
-            }
-            if (curr_trait == "pstemp_min") {
-              bgcveg_jsondata[[i]]$tmin = traits[[curr_trait]]
-            }
-            if (curr_trait == "pstemp_low") {
-              bgcveg_jsondata[[i]]$toptmin = traits[[curr_trait]]
-            }
-            if (curr_trait == "pstemp_high") {
-              bgcveg_jsondata[[i]]$toptmax = traits[[curr_trait]]
-            }
-            if (curr_trait == "pstemp_max") {
-              bgcveg_jsondata[[i]]$tmax = traits[[curr_trait]]
-            }
-            if (curr_trait == "labncon") {
-              bgcveg_jsondata[[i]]$labncon = traits[[curr_trait]]
+  PEcAn.logger::logger.info(paste0("CMT Name: ", cmtname))
+  for (singlepft in settings$pfts) {
+    PEcAn.logger::logger.info(paste0("PFT Name: ", singlepft$name))
+    # Subset the trait.values list to get only the traits for the PFT we are
+    # interested in. The trait.values list should be something like this:
+    # $`CMT04-Salix`
+    #      SW_albedo    gcmax    cuticular_cond       SLA
+    #            1.0     3.4               2.5       11.0
+    # $`CMT04-Betula`
+    #      SW_albedo    gcmax    cuticular_cond       SLA
+    #            1.0      3.4               2.5      11.0
+    #
+    # Where there is a sub-list for each PFT. We want to reduce this to just
+    # the PFT we are interested in, and with all the unit conversions taken
+    # care of. So result will be something like this:
+    # SW_albedo    gcmax    cuticular_cond       SLA
+    #      1.0       3.4               2.5      11.0
+
+    traits <- convert.samples.dvmdostem(trait.values[[singlepft$name]])
+
+    for (curr_trait in names(traits)) {
+      for (jd in list(bgcveg_jsondata, envcanopy_jsondata, dimveg_jsondata)) {
+        for (i in names(jd)) {
+          if (grepl("pft", i)) {
+            # The PFT name stored w/in betydb is a combo of the community name
+            # and the "common" pft name, always separated by a hyphen. Something
+            # like this: "CMT04-Salix". The pft name in the json datastructure
+            # will be simply the common name, as stored in the dvmdostem parameter
+            # files. So here we extract the "common name" from the betydb PFT
+            # name to make sure we are updating the correct spot in the json
+            # data structure.
+            pft_common_name <- unlist(strsplit(singlepft$name, "-"))[2]
+            #PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname)) # too verbose
+            if (identical(jd[[i]]$name, pft_common_name)) {
+              if (curr_trait == "SLA") {
+                dimveg_jsondata[[i]]$sla = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_10") {
+                dimveg_jsondata[[i]]$`frprod[0]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_20") {
+                dimveg_jsondata[[i]]$`frprod[1]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_30") {
+                dimveg_jsondata[[i]]$`frprod[2]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_40") {
+                dimveg_jsondata[[i]]$`frprod[3]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "frprod_perc_50") {
+                dimveg_jsondata[[i]]$`frprod[4]` = traits[[curr_trait]]
+              }
+              if (curr_trait == "klai") {
+                dimveg_jsondata[[i]]$klai = traits[[curr_trait]]
+              }
+              if (curr_trait == "ilai") {
+                dimveg_jsondata[[i]]$initial_lai = traits[[curr_trait]]
+              }
+              if (curr_trait == "extinction_coefficient_diffuse") {
+                envcanopy_jsondata[[i]]$er = traits[[curr_trait]]
+              }
+              if (curr_trait == "SW_albedo") {
+                envcanopy_jsondata[[i]]$albvisnir = traits[[curr_trait]]
+              }
+              if (curr_trait == "cuticular_cond") {
+                envcanopy_jsondata[[i]]$gl_c = traits[[curr_trait]]
+              }
+              if (curr_trait == "gcmax") {
+                envcanopy_jsondata[[i]]$glmax = traits[[curr_trait]]
+              }
+              if (curr_trait == "ppfd50") {
+                envcanopy_jsondata[[i]]$ppfd50 = traits[[curr_trait]]
+              }
+              if (curr_trait == "vpd_open") {
+                envcanopy_jsondata[[i]]$vpd_open = traits[[curr_trait]]
+              }
+              if (curr_trait == "vpd_close") {
+                envcanopy_jsondata[[i]]$vpd_close = traits[[curr_trait]]
+              }
+              if (curr_trait == "pstemp_min") {
+                bgcveg_jsondata[[i]]$tmin = traits[[curr_trait]]
+              }
+              if (curr_trait == "pstemp_low") {
+                bgcveg_jsondata[[i]]$toptmin = traits[[curr_trait]]
+              }
+              if (curr_trait == "pstemp_high") {
+                bgcveg_jsondata[[i]]$toptmax = traits[[curr_trait]]
+              }
+              if (curr_trait == "pstemp_max") {
+                bgcveg_jsondata[[i]]$tmax = traits[[curr_trait]]
+              }
+              if (curr_trait == "labncon") {
+                bgcveg_jsondata[[i]]$labncon = traits[[curr_trait]]
+              }
             }
           }
-        }
-      }
-    }
-  }
+        } # end loop over names in json
+      } # end loop over different json structures
+    } # end loop over traits
+  } # end loop over pfts
 
   # Write it back out to disk (overwriting ok??)
   dimveg_exportJson <- toJSON(dimveg_jsondata)
@@ -315,23 +434,47 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # TODO:
   #  [x] finish with parameter update process
   #  [x] dynamically copy parameters to right place
-  #  - dynamically copy the output_spec from insts folder to the
-  #    right place (see variable above for getting stuff from inst)
+  #  [x] dynamically copy the output_spec from insts folder to the
+  #      right place (see variable above for getting stuff from inst)
   #  - figure out how to handle the met.
   #     -> step one is symlink from raw data locations (Model install folder)
   #        into pecan run folder, maybe do this within job.sh?
 
+  # Here we set up two things: 
+  #  1) the paths to the met drivers (temperature, precip, etc)
+  #  2) paths to the other input data files that dvmdostem requires (soil maps, 
+  #     vegetation maps, topography etc).
+  # This will allow us to source the meteorology data from PEcAn (or BetyDB) and 
+  # collect the other inputs from a different location.
+
   # Met info
   met_driver_dir <- dirname(settings$run$inputs$met$path)
-  PEcAn.logger::logger.info(paste0("Using met driver path: ", met_driver_dir))
+  # Not sure what happens here if the site is selected from the
+  # map and instead of having <met><path> tags, the xml file has
+  # <met><id> tags?
   
   # Pick up the site and pixel settings from the xml file if they exist
   if (is.null(settings$model$dvmdostem_site)){
+    # Client did not setup a dvmdostem specific site tags in the
+    # xml file. Assume that all the site data has the same path
+    # as the met data
     siteDataPath <- met_driver_dir
   } else {
+    # Pull out the client's settings from the xml file.
     siteDataPath <- settings$model$dvmdostem_site
   }
   PEcAn.logger::logger.info(paste0("Using siteDataPath: ", siteDataPath))
+  PEcAn.logger::logger.info(paste0("Using met_driver_path: ", met_driver_dir))
+
+  # Check the size of the input dataset(s)
+  # 1) met data set and other site data are the same size/shape (what if the
+  #    met comes from PEcAn/Bety and is single site and the other inputs come
+  #    from a single or multi-pixel dvmdostem dataset???)
+  # 2) if the incoming datasets are NOT single pixel, then 
+  #    we need to adjust the run-mask and choose the correct pixel
+  # 3) if the incoming datasets ARE single pixel, then no runmask
+  #    adjustment, but warn user if they have set dvmdostem_pixel_x
+  #    and dvmdostem_pixel_y tags in the xml file
 
   if (is.null(settings$model$dvmdostem_pixel_y)){
     pixel_Y <- 1
@@ -344,45 +487,55 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     pixel_X <- settings$model$dvmdostem_pixel_x
   }
 
+  # First, turn on a specific pixel in the run mask.
+  # In the case of a single pixel dataset, this will ensure that the
+  # pixel is set to run.
+  adjust.runmask.dvmdostem(siteDataPath, rundir, pixel_X, pixel_Y)
 
-  # Build a custom run-mask - in case the run-mask that ships with dvmdostem
-  # it not what we want.
-
-  # Copy the run-mask from the input data directory to the run directory
-  system2(paste0("cp"),
-          wait=TRUE,
-          args=(c("-r",
-                  file.path(siteDataPath, 'run-mask.nc'),
-                  file.path(rundir, 'run-mask.nc'))))
-
-  # # Turn off all pixels except the 0,0 pixel in the mask
-  # Can't seem to use this as python-netcdf4 is not available. WTF.
-  # system2(paste0(file.path(appbinary_path, "scripts/runmask-util.py")),
-  #         wait=TRUE,
-  #         args=c("--reset", "--yx", pixel_Y, pixel_X, file.path(rundir, 'run-mask.nc')))
-
-  ## !!DANGER!!
-  ## - crazy R dimension ordering, with X first! (Y first in all other implementations!)
-  ## - R does not have a 64bit integer datatype so we get a warning about casting
-  ##   and that there may be information lost (unlikely in this case)
-  ncMaskFile <- ncdf4::nc_open(file.path(rundir, 'run-mask.nc'), write = TRUE)
-  new_data <- matrix(0, ncMaskFile$dim$X$len, ncMaskFile$dim$Y$len)
-  new_data[[strtoi(pixel_X), strtoi(pixel_Y)]] <- 1
-  ncdf4::ncvar_put(ncMaskFile, ncMaskFile$var$run, new_data, verbose=TRUE)
-  ncdf4::nc_close(ncMaskFile)
+  # If the user has not explicity said to force the CMT type in
+  # their xml settings, then we have to look at the run mask, figure out
+  # which pixel is enabled, and then check the corresponding pixel in the
+  # veg map to make sure that cmt number matches the cmt number for the
+  # chosen PFTs.
+  if ((toupper(settings$model$dvmdostem_forcecmtnum) == 'YES') || (toupper(settings$model$dvmdostem_forcecmtnum) == "Y")) {
+    # Nothing to do
+  } else {
+    print("Enforcing harmony between the runmask, vegmap, and required CMT type.")
+    enforce.runmask.cmt.vegmap.harmony(siteDataPath, rundir, cmtnum)
+  }
 
 
-  # Open the input veg file, check that the pixel that is enabled in the
-  # run mask is the right veg type to match the cmt/pft that is selected
-  # for the run.
-  ncVegCMTFile <- ncdf4::nc_open(file.path(siteDataPath, "vegetation.nc"), write=FALSE)
-  veg_class <- ncdf4::ncvar_get(ncVegCMTFile, ncVegCMTFile$var$veg_class)
-  if (cmtnum != veg_class[[strtoi(pixel_X), strtoi(pixel_Y)]]) {
-    PEcAn.logger::logger.error("INCORRECT PIXEL!! THIS RUN WILL NOT WORK!")
-    PEcAn.logger::logger.error("STOPPING NOW TO PREVENT FUTURE HEARTACHE!")
+
+  ## Read in the custom output_spec file. 
+  # The general output_spec file that ships with dvmdostem has too much 
+  # stuff enabled and results in way too much output generated, epecially
+  # when doing larger ensemble runs, or sensitivity analysis. Here we pick up
+  # the path of the output spec file that the user (optionally) specified
+  # in the settings file.
+  if (is.null(settings$model$dvmdostem_output_spec)) {
+    # User did not specify - use the default file shipped with PEcAn
+    outspec_path <- file.path(system.file(package = "PEcAn.dvmdostem"), "output_spec_pecan0.csv")
+  } else {
+    if (dirname(settings$model$dvmdostem_output_spec) == ".") {
+      # User specified the name of another file that should be in the inst folder
+      outspec_path <- file.path(system.file(package = "PEcAn.dvmdostem"), settings$model$dvmdostem_output_spec)
+    } else if(dirname(settings$model$dvmdostem_output_spec) != ".") {
+      # User specified full path to another file somewhere on the system
+      outspec_path <- settings$model$dvmdostem_output_spec
+    } else {
+      PEcAn.logger::logger.error("Should never get here...there is some confusion about output_spec file?")
+    }
+  }
+
+  if (! file.exists(outspec_path) ) {
+    PEcAn.logger::logger.error("ERROR! The specified output spec file does not exist on this system!")
+    PEcAn.logger::logger.error(c("Cannot find file: ", outspec_path))
     stop()
   }
 
+  # Then we copy the output_spec file into place in the run directory, and
+  # later we sub in the approproate path in to the config file template.
+  file.copy(outspec_path, file.path(settings$rundir, run.id, "config/", basename(outspec_path)))
 
   ## Update dvm-dos-tem config.js file
 
@@ -398,7 +551,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), siteDataPath), config_template)
   config_template <- gsub("@INPUT_DATA_DIR@", siteDataPath, config_template)
   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
-  config_template <- gsub("@CUSTOM_RUN_MASK@", file.path(rundir), config_template )
+  config_template <- gsub("@CUSTOM_RUN_MASK@", file.path(rundir), config_template)
+  config_template <- gsub("@CUSTOM_OUTSPEC@", file.path("config/", basename(outspec_path)), config_template)
+  config_template <- gsub("@DYNAMIC_MODELED_LAI@", settings$model$dvmdostem_dynamic_modeled_lai, config_template)
 
   if (! file.exists(file.path(settings$rundir, run.id,"config")) ) {
     dir.create(file.path(settings$rundir, run.id,"config"),recursive = TRUE)
@@ -474,6 +629,15 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     jobsh <- gsub("@LOGLEVEL@", "err", jobsh)
   } else {
     jobsh <- gsub("@LOGLEVEL@", settings$model$dvmdostem_loglevel, jobsh)
+  }
+
+  if (is.null(settings$model$dvmdostem_forcecmtnum)){
+    PEcAn.logger::logger.info("Using vegetation.nc input file to determine community type of pixel...")
+    PEcAn.logger::logger.warn("The CMT type of your selected PFT must match the CMT type in the input veg file for the selected pixel!")
+    jobsh <- gsub("@FORCE_CMTNUM@", "", jobsh)
+  } else {
+    PEcAn.logger::logger.info("FORCING cmt type to match selected PFT. IGNORING vegetation.nc map!")
+    jobsh <- gsub("@FORCE_CMTNUM@", paste0("--force-cmt ", cmtnum), jobsh)
   }
 
   # Really no idea what the defaults should be for these if the user

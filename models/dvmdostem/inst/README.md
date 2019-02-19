@@ -18,3 +18,17 @@ particular to PEcAn. In the future I suppose this could
 be template-ized to allow certain outputs to be toggled
 on/off via the PEcAn web interface...
 
+For testing and debugging work, here is one reccomended
+setup that has been used successfully on the VM:
+  - Make a `~/scratch` directory.
+  - Copy the `pecan/web/workflow.R` file into the `~/scratch`.
+    Alternatively you can symlink the file so that as you
+    pull in updates to the pecan repo, your file in 
+    `~/scratch` stays up to date.
+  - Copy one of the example pecan.xml files (from 
+    `pecan/models/dvmdostem/inst/`) into `~/scratch`.
+  - Open RStudio (or a basical terminal) and set the 
+    working directory to `~/scratch`.
+  - Run the `workflow.R` script, either by sourcing in
+    Rstudio, or by running with `Rscript` in a basic
+    terminal.

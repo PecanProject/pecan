@@ -1,3 +1,6 @@
+# this needs to be at the top, what version are we building
+ARG IMAGE_VERSION="latest"
+
 # ----------------------------------------------------------------------
 # BUILD SIPNET BINARY
 # ----------------------------------------------------------------------
@@ -27,7 +30,7 @@ RUN curl -o sipnet_r${MODEL_VERSION}.tar.gz http://isda.ncsa.illinois.edu/~koope
 # ----------------------------------------------------------------------
 # BUILD PECAN FOR SIPNET
 # ----------------------------------------------------------------------
-FROM pecan/models:latest
+FROM pecan/models:${IMAGE_VERSION}
 
 # ----------------------------------------------------------------------
 # INSTALL SIPNET SPECIFIC PIECES
@@ -49,7 +52,7 @@ FROM pecan/models:latest
 ARG MODEL_VERSION=136
 
 # Setup model_info file
-COPY models/sipnet/model_info.json /work/model.json
+COPY model_info.json /work/model.json
 RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
            -e "s#@BINARY@#/usr/local/bin/sipnet.${MODEL_VERSION}#g" /work/model.json
 
