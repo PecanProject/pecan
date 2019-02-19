@@ -26,7 +26,7 @@ VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
 # check for branch and set IMAGE_VERSION
 if [ "${PECAN_GIT_BRANCH}" == "master" ]; then
     IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
-elif [ "${PECAN_GIT_BRANCH}" == "master" ]; then
+elif [ "${PECAN_GIT_BRANCH}" == "develop" ]; then
     IMAGE_VERSION=${IMAGE_VERSION:-"develop"}
 else
     IMAGE_VERSION=${IMAGE_VERSION:-"testing"}
