@@ -22,13 +22,13 @@ echo "######################################################################"
 echo "CREATE FOLDERS"
 echo "######################################################################"
 mkdir -p /data/workflows /data/dbfiles
-chown 33 /data/workflows /data/dbfiles
+#chown 33 /data/workflows /data/dbfiles
 
 echo "######################################################################"
 echo "Adding sites"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/sites ]; then
-  tar zxf /work/sites.tgz
+  tar --no-same-owner --zxf /work/sites.tgz
   sed -i -e "s#/home/kooper/Projects/EBI#${DATADIR}#" sites/*/ED_MET_DRIVER_HEADER
 fi
 
@@ -36,7 +36,7 @@ echo "######################################################################"
 echo "Adding inputs"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/inputs ]; then
-  tar zxf /work/inputs.tgz
+  tar --no-same-owner -zxf /work/inputs.tgz
 fi
 
 echo "######################################################################"
@@ -53,7 +53,7 @@ echo "######################################################################"
 echo "Adding Plot"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/plot ]; then
-  tar zxf /work/plot.tgz
+  tar --no-same-owner -zxf /work/plot.tgz
 fi
 
 echo "######################################################################"
@@ -76,7 +76,7 @@ echo "######################################################################"
 echo "Adding ed2ws.harvard"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/ed2ws.harvard ]; then
-  tar zxf /work/ed2ws.harvard.tgz
+  tar --no-same-owner -zxf /work/ed2ws.harvard.tgz
   mkdir ed2ws.harvard/analy ed2ws.harvard/histo
   sed -i -e "s#/home/pecan#${DATADIR}#g" ed2ws.harvard/input_harvard/met_driver/HF_MET_HEADER ed2ws.harvard/ED2IN ed2ws.harvard/*.r
 fi
@@ -94,7 +94,7 @@ echo "######################################################################"
 echo "Adding create_met_driver"
 echo "######################################################################"
 if [ ! -e ${DATADIR}/create_met_driver ]; then
-  tar zxf /work/create_met_driver.tar.gz
+  tar --no-same-owner -zxf /work/create_met_driver.tar.gz
 fi
 
 echo "######################################################################"
