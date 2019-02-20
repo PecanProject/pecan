@@ -5,16 +5,24 @@ set -e
 DEBUG=${DEBUG:-""}
 SERVER=${SERVER:-""}
 DEPEND=${DEPEND:-""}
-IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
 
 # get version number
 VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
+
+# check for branch and set IMAGE_VERSION
+PECAN_GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [ "${PECAN_GIT_BRANCH}" == "master" ]; then
+    IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
+elif [ "${PECAN_GIT_BRANCH}" == "develop" ]; then
+    IMAGE_VERSION=${IMAGE_VERSION:-"develop"}
+else
+    IMAGE_VERSION=${IMAGE_VERSION:-"testing"}
+fi
 
 # build images first
 VERSION=${VERSION} DEBUG=${DEBUG} DEPEND=${DEPEND} IMAGE_VERSION=${IMAGE_VERSION} ./docker.sh
 
 # check branch and set version
-PECAN_GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 if [ "${PECAN_GIT_BRANCH}" = "master" ]; then
     TAGS="latest"
     TMPVERSION="${VERSION}"
@@ -36,14 +44,13 @@ fi
 # PUSH NEW IMAGES
 # --------------------------------------------------------------------------------
 
-if [ "${DEPEND}" == "build" ]; then
-    OLDEST="pecan/depends"
-else
-    OLDEST="pecan/base"
-fi
+echo ""
+echo "# ----------------------------------------------------------------------"
+echo "# Pusing images"
+echo "# ----------------------------------------------------------------------"
 
 # push all images
-for image in ${OLDEST}  $( docker image ls pecan/*:${IMAGE_VERSION} --filter "since=${OLDEST}:${IMAGE_VERSION}" --format "{{ .Repository }}" ); do
+for image in pecan/depends $( docker image ls pecan/*:${IMAGE_VERSION} --filter "since=pecan/depends:${IMAGE_VERSION}" --format "{{ .Repository }}" ); do
     for v in ${TAGS}; do
         if [ "$v" != "${IMAGE_VERSION}" -o "$SERVER" != "" ]; then
             ${DEBUG} docker tag ${image}:${IMAGE_VERSION} ${SERVER}${image}:${v}
