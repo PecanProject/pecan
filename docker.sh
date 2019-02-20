@@ -6,8 +6,10 @@ set -e
 
 cd $(dirname $0)
 
+# Can set the following variables
 DEBUG=${DEBUG:-""}
-DEPEND=${DEPEND:-"nothing"}
+DEPEND=${DEPEND:-""}
+R_VERSION=${R_VERSION:-"3.5"}
 
 # --------------------------------------------------------------------------------
 # PECAN BUILD SECTION
@@ -21,56 +23,80 @@ PECAN_GIT_DATE="$(git log --pretty=format:%ad -1)"
 # get version number
 VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
 
-echo "Building PEcAn"
-echo " PECAN_VERSION      : ${VERSION}"
-echo " PECAN_GIT_BRANCH   : ${PECAN_GIT_BRANCH}"
-echo " PECAN_GIT_DATE     : ${PECAN_GIT_DATE}"
-echo " PECAN_GIT_CHECKSUM : ${PECAN_GIT_CHECKSUM}"
-echo ""
+# check for branch and set IMAGE_VERSION
+if [ "${PECAN_GIT_BRANCH}" == "master" ]; then
+    IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
+elif [ "${PECAN_GIT_BRANCH}" == "develop" ]; then
+    IMAGE_VERSION=${IMAGE_VERSION:-"develop"}
+else
+    IMAGE_VERSION=${IMAGE_VERSION:-"testing"}
+fi
+
+# information for user before we build things
+echo "# ----------------------------------------------------------------------"
+echo "# Building PEcAn"
+echo "#  PECAN_VERSION      : ${VERSION}"
+echo "#  PECAN_GIT_BRANCH   : ${PECAN_GIT_BRANCH}"
+echo "#  PECAN_GIT_DATE     : ${PECAN_GIT_DATE}"
+echo "#  PECAN_GIT_CHECKSUM : ${PECAN_GIT_CHECKSUM}"
+echo "#  IMAGE_VERSION      : ${IMAGE_VERSION}"
+echo "#"
+echo "# Created images will be tagged with '${IMAGE_VERSION}'. If you want to"
+echo "# test this build you can use:"
+echo "# PECAN_VERSION='${IMAGE_VERSION}' docker-compose up"
+echo "#"
+echo "# The docker image for dependencies takes a long time to build. You"
+echo "# can use a prebuild version (default) or force a new versin to be"
+echo "# build locally using: DEPEND=build $0"
+echo "# ----------------------------------------------------------------------"
 
 # not building dependencies image, following command will build this
 if [ "${DEPEND}" == "build" ]; then
-    echo "# To just pull latest/develop version (default) run"
-    echo "# DEPEND=pull $0"
     ${DEBUG} docker build \
-        --tag pecan/depends:latest \
-        --file docker/base/Dockerfile.depends .
-elif [ "${DEPEND}" == "pull" ]; then
-    echo "# docker image for dependencies is not build by default."
-    echo "# this image takes a long time to build. To build this"
-    echo "# image run DEPEND=build $0"
-    if [ "${PECAN_GIT_BRANCH}" != "master" ]; then
-      echo "# this will pull develop of base image and tag as latest"
-      echo "# To disable run DEPEND=nothing $0"
-      ${DEBUG} docker pull pecan/depends:develop
-      ${DEBUG} docker tag pecan/depends:develop pecan/depends:latest
-    else
-      echo "# this will pull latest of base image"
-      echo "# To disable run DEPEND=nothing $0"
-      ${DEBUG} docker pull pecan/depends:latest
-    fi
+        --build-arg R_VERSION=${R_VERSION} \
+        --tag pecan/depends:${IMAGE_VERSION} \
+        docker/depends
 else
-    echo "# docker image for dependencies is not build by default."
-    echo "# this image takes a long time to build. To build this"
-    echo "# image run DEPEND=build $0"
-    echo "# To just pull latest/develop version run"
-    echo "# DEPEND=pull $0"
+    if [ "$( docker image ls -q pecan/depends:${IMAGE_VERSION} )" == "" ]; then
+        if [ "${PECAN_GIT_BRANCH}" != "master" ]; then
+            if [ "$( docker image ls -q pecan/depends:develop )" == "" ]; then
+                ${DEBUG} docker pull pecan/depends:develop
+            fi
+            if [ "${IMAGE_VERSION}" != "develop" ]; then
+                ${DEBUG} docker tag pecan/depends:develop pecan/depends:${IMAGE_VERSION}
+            fi
+        else
+            if [ "$( docker image ls -q pecan/depends:latest )" == "" ]; then
+                ${DEBUG} docker pull pecan/depends:latest
+            fi
+            if [ "${IMAGE_VERSION}" != "latest" ]; then
+                ${DEBUG} docker tag pecan/depends:latest pecan/depends:${IMAGE_VERSION}
+            fi
+        fi
+    fi
 fi
 echo ""
 
-# build images in this specific order. Images are tagged with latest so other
-# docker images build in this script will use that specifc build.
-for i in base models executor web data thredds docs; do
+# require all of PEcAn to build
+for x in base web docs; do
     ${DEBUG} docker build \
+        --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION:-latest}" \
-        --build-arg PECAN_VERSION="${VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
         --build-arg PECAN_VERSION="${VERSION}" \
         --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
         --build-arg PECAN_GIT_DATE="${PECAN_GIT_DATE}" \
-        --tag pecan/${i}:latest \
-        --file docker/base/Dockerfile.${i} .
+        --file docker/$x/Dockerfile \
+        .
+done
+
+# all files in subfolder
+for x in models executor data thredds monitor; do
+    ${DEBUG} docker build \
+        --tag pecan/$x:${IMAGE_VERSION} \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        docker/$x
 done
 
 # --------------------------------------------------------------------------------
@@ -80,15 +106,26 @@ done
 # build sipnet
 for version in 136; do
     ${DEBUG} docker build \
+        --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --tag pecan/model-sipnet-${version}:latest \
-        --file models/sipnet/Dockerfile .
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        models/sipnet
 done
 
 # build ed2
 for version in git; do
     ${DEBUG} docker build \
+        --tag pecan/model-ed2-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --tag pecan/model-ed2-${version}:latest \
-        --file models/ed/Dockerfile .
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        models/ed
+done
+
+# build maespa
+for version in git; do
+    ${DEBUG} docker build \
+        --tag pecan/model-maespa-${version}:${IMAGE_VERSION} \
+        --build-arg MODEL_VERSION="${version}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        models/maespa
 done
