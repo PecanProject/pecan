@@ -1,4 +1,4 @@
-### Adding to PEcAn
+#### Adding to PEcAn {#adding-to-pecan}
 
 - Case studies
     - [Adding a model](#adding-model)
@@ -22,7 +22,7 @@
     - Formats
     - (Link each section to relevant Bety tables)
 
-### Adding An Ecosystem Model {#adding-model}
+#### Adding An Ecosystem Model {#adding-model}
 
 **Adding a model to PEcAn involves two activities:**
 
@@ -31,7 +31,7 @@
 
 **Note that coupling a model to PEcAn should not require any changes to the model code itself**. A key aspect of our design philosophy is that we want it to be easy to add models to the system and we want to using the working version of the code that is used by all other model users, not a special branch (which would rapidly end up out-of-date).
 
-### PEcAn Database
+#### PEcAn Database
 
 To run a model within PEcAn requires that the PEcAn database know about the model -- this includes a MODEL_TYPE designation, the types of inputs the model requires, the location of the model executable, and the plant functional types used by the model. The instructions below assume that you will be specifying this information using the BETYdb web-based interface. This can be done either on your local VM (localhost:3280/bety or localhost:6480/bety) or on a server installation of BETYdb, though in either case we'd encourage you to set up your PEcAn instance to support [database syncs](https://github.com/PecanProject/bety/wiki/Distributed-BETYdb) so that these changes can be shared and backed-up across the PEcAn network.
 
@@ -39,15 +39,15 @@ The figure below summarizes the relevant database tables that need to be updated
 
 ![](https://www.lucidchart.com/publicSegments/view/54a8aea8-9360-4628-af9e-392a0a00c27b/image.png)
 
-### Define MODEL_TYPE
+#### Define MODEL_TYPE
 
 The first step to adding a model is to create a new MODEL_TYPE, which defines the abstract model class which we will then use to specify input requirements, define plant functional types, and keep track of different model versions. A MODEL_TYPE is created by selecting Runs > Model Type and then clicking on _New Model Type_. The MODEL_TYPE name should be identical to the MODEL package name (see Interface Module below) and is case sensitive.
 
-### MACHINE
+#### MACHINE
 
 The PEcAn design acknowledges that the same model executables and input files may exist on multiple computers. Therefore, we need to define the machine that that we are using. If you are running on the VM then the local machine is already defined as _pecan_. Otherwise, you will need to select Runs > Machines, click _New Machine_, and enter the URL of your server (e.g. pecan2.bu.edu).
 
-### MODEL
+#### MODEL
 
 Next we are going to tell PEcAn where the model executable is. Select Runs > Files, and click ADD. Use the pull down menu to specify the machine you just defined above and fill in the path and name for the executable. For example, if SIPNET is installed at /usr/local/bin/sipnet then the path is /usr/local/bin/ and the file (executable) is sipnet.
 
@@ -57,19 +57,19 @@ In the future, if you set up the SAME MODEL VERSION on a different computer you 
 
 If a new version of the model is developed that is derived from the current version you should add this as a new Model record but with the same MODEL_TYPE as the original. Furthermore, you should set the previous version of the model as Parent of this new version.
 
-### FORMATS
+#### FORMATS
 
 The PEcAn database keep track of all the input files passed to models, as well as any data used in model validation or data assimilation. Before we start to register these files with PEcAn we need to define the format these files will be in. To create a new format see [Formats Documentation](#NewFormat).
 
-### MODEL_TYPE -> Formats
+#### MODEL_TYPE -> Formats
 
 For each of the input formats you specify for your model, you will need to edit your MODEL_TYPE record to add an association between the format and the MODEL_TYPE. Go to Runs > Model Type, select your record and click on the Edit button. Next, click on "Edit Associated Formats" and choose the Format you just defined from the pull down menu. If the *Input* box is checked then all matching Input records will be displayed in the PEcAn site run selection page when you are defining a model run. In other words, the set of model inputs available through the PEcAn web interface is model-specific and dynamically generated from the associations between MODEL_TYPEs and Formats. If you also check the *Required* box, then the Input will be treated as required and PEcAn will not run the model if that input is not available. Furthermore, on the site selection webpage, PEcAn will filter the available sites and only display pins on the Google Map for sites that have a full set of required inputs (or where those inputs could be generated using PEcAn's workflows). Similarly, to make a site appear on the Google Map, all you need to do is specify Inputs, as described in the next section, and the point should automatically appear on the map.
 
-### INPUTS
+#### INPUTS
 
 After a file Format has been created then input files can be registered with the database. Creating Inputs can be found under [How to insert new Input data](#NewInput).
 
-### PFTS (Plant Functional Types)
+#### PFTS (Plant Functional Types)
 
 Since many of the PEcAn tools are designed to keep track of parameter uncertainties and assimilate data into models, to use PEcAn with a model it is important to define Plant Functional Types for the sites or regions that you will be running the model. PFTs are MODEL_TYPE specific, so when you create a new PFT entry (Data > PFTs; New PFT) you will want to choose your MODEL_TYPE from the pull down and then give the PFT a descriptive name (e.g. temperate deciduous).
 
@@ -83,7 +83,7 @@ You can also define PFTs whose members are *cultivars* instead of species. This 
 
 It is not yet possible to add a cultivar PFT through the BETYdb web interface. See [this GithHub comment](https://github.com/PecanProject/pecan/pull/1826#issuecomment-360665864) for an example of how to define one manually in PostgreSQL.
 
-### PRIORS
+#### PRIORS
 
 In addition to adding species, a PFT is defined in PEcAn by the list of variables associated with the PFT. PEcAn takes a fundamentally Bayesian approach to representing model parameters, so variables are not entered as fixed constants but as Prior probability distributions (see below). Once Priors are defined for each model variable then you Edit the PFT and use “View Related Priors” to search for and add Prior distributions for each model parameter. It is important to note that the priors are defined for the variable name and units as specified in the Variables table. **If the variable name or units is different within the model it is the responsibility of write.configs.MODEL function to handle name and unit conversions** (see Interface Modules below). This can also include common but nonlinear transformations, such as converting SLA to LMA or changing the reference temperature for respiration rates.
 
@@ -91,7 +91,7 @@ There are a wide variety of priors already defined in the PEcAn database that of
 
 Additional information on adding PFTs, Species, and Priors can be found under [[Choosing PFTs]]
 
-### Interface Modules
+#### Interface Modules
 
 #### Setting up the module directory (required)
 
@@ -150,15 +150,15 @@ Once the MODEL modules are written, you should follow the [Using-Git](Using-Git.
 
 
 
-## Adding input data {#NewInput}
+#### Adding input data {#NewInput}
 
-### Input records in BETY
+#### Input records in BETY
 
 All model input data or data used for model calibration/validation must be registered in the BETY database. 
 
 Before creating a new Input record, you must make sure that the format type of your data is registered in the database. If you need to make a new format record, see [Creating a new format record in BETY](#NewFormat).
 
-### Create a database file record for the input data
+#### Create a database file record for the input data
 
 An input record contains all the metadata required to identify the data, however, this record does not include the location of the data file. Since the same data may be stored in multiple places, every file has its own dbfile record. 
 
@@ -172,7 +172,7 @@ From your BETY interface:
     + Fill in the File Name with the name of the file itself. Note that some types of input records will refer to be ALL the files in a directory and thus File Name can be blank
     + Click Update
     
-### Creating a new Input record in BETY
+#### Creating a new Input record in BETY
 
 From your BETY interface:
 
@@ -191,7 +191,7 @@ From your BETY interface:
  * Once you have found the DBFILE, click on the “+” icon to add the file
  * Click on “Update” at the bottom when you are done.
  
-### Adding a new input converter {#InputConversions}
+#### Adding a new input converter {#InputConversions}
 
 Three Types of data conversions are discussed below: Meteorological data, Vegetation data, and Soil data. Each section provides instructions on how to convert data from their raw formats into a PEcAn standard format, whether it be from a database or if you have raw data in hand.
 
@@ -525,7 +525,7 @@ In addition to location-specific soil data, PEcAn can extract soil texture infor
 
 
 
-### Pecan Data Ingest via Web Interface {#adding-data-web} 
+#### Pecan Data Ingest via Web Interface {#adding-data-web} 
 
 This tutorial explains the process of ingesting data into PEcAn via our Data-Ingest Application. In order to ingest data, the users must first select data that they wish to upload. Then, they enter metadata to help PEcAn parse and load the data into the main PEcAn workflow.
 
@@ -624,8 +624,8 @@ knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studi
 Finally, the path to the ingest data is displayed in the `Select Files` box. 
 
 
-### Creating a new format {#NewFormat}
-#### Formats in BETY
+#### Creating a new format {#NewFormat}
+##### Formats in BETY
 
 The PEcAn database keeps track of all the input files passed to models, as well as any data used in model validation or data assimilation. Before we start to register these files with PEcAn we need to define the format these files will be in.
 
@@ -633,7 +633,7 @@ The main goal is to take all the meta-data we have about a data file and create 
 
 This information is stored in a Format record in the bety database. Make sure to read through the current Formats before deciding to make a new one. 
 
-#### Creating a new format in BETY
+##### Creating a new format in BETY
 
 If the Format you are looking for is not available, you will need to create a new record. Before entering information into the database, you need to be able to answer the following questions about your data:
 
@@ -765,7 +765,7 @@ When a run that is performed using pecan is registered as a reference run, the s
 
 All completed runs are not automatically registered as reference runs. To register a run, navigate to the benchmarking section of the workflow visualizations Shiny app. 
 
-## Editing records {#editing-records}
+#### Editing records {#editing-records}
 
 - Models
 - Species

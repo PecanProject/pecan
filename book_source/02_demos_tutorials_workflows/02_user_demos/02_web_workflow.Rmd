@@ -1,4 +1,4 @@
-## Web workflow
+### Web workflow {#basic-web-wrokflow}
 
 This chapter describes the major steps of the PEcAn web-based workflow, which are as follows:
 
@@ -35,7 +35,7 @@ This page is used to select the model to run and the site at which you would lik
     
     ii) If the site still does not reappear, that means there are required input files for that model-site combination that PEcAn cannot autogenerate. This may be because the model has unique input requirements or because it has not yet been fully coupled to the PEcAn input processing workflow. Go to the troubleshooting section under [Selecting a site] for more information on diagnosing what drivers are missing.
 
-### Selecting a site
+#### Selecting a site
 
 #### Site Groups
 
@@ -79,11 +79,11 @@ For information about loading missing Inputs into the database visit [Input reco
 
 Finally, we are continually developing and refining workflows and standards for processing Input data in a model-agnostic way. The details about what Inputs can be processed automatically are discussed input-by-input in the sections below. For those looking to dive into the code or troubleshoot further, these conversions are ultimately handled under the `PEcAn.workflow::do_conversions` workflow module.
 
-## Model configuration {#web-model-config}
+#### Model configuration {#web-model-config}
 
 This page is used for basic model configuration, including when your model will run and what input data it will use.
 
-### Choosing meteorology
+#### Choosing meteorology
 
 Once a Machine, Model, and Site have been selected, PEcAn will take you to the Input selection page. From this page you will select what Plant Functional Type (PFT) you want to run at a site, the start and end dates of the run, and various Input selections. The most common of these across all models is the need to specify meteorological forcing data. The exact name of the menu item for meteorology will vary by model because all of the Input requirements are generated individually for each model based on the MODEL_TYPE table.  In general there are 3 possible cases for meteorology
 
@@ -137,7 +137,7 @@ This is similar to the previous error, but in this case PEcAn did find data for 
 
 PEcAn could not find a required variable within the downloaded file. Most likely this is due to that variable not being measured at this site. The most common cause of failure is the absence of atmospheric pressure data (PRESS), but since most models have a low sensitivity to this variable we are working on methods to estimate this from other sources.
 
-### Selecting Plant Functional Types (PFTs) and other parameter groupings.
+#### Selecting Plant Functional Types (PFTs) and other parameter groupings.
 
 #### Using existing PFTs
 
@@ -179,7 +179,7 @@ internally, so you want to find the trait with the correct MEANING).
 
 Additional information on adding PFTs, Species, and Priors can be found in Adding An [Ecosystem Model].
 
-### Choosing initial vegetation
+#### Choosing initial vegetation
 
 On the Input Selection webpage, in addition to selecting PFTs, start & end dates, and meteorology, many models also require some way of specifying the initial conditions for the vegetation, which may range from setting the aboveground biomass and LAI up to detailed inventory-like data on species composition and stand structure.
 
@@ -206,7 +206,7 @@ This tool works with an internal copy of the FIA that is uploaded to a postGRES 
 More detailed information on how PEcAn processes inputs can be found on our [Input Conversion]page.
 
 
-### Spin up
+#### Spin up
 
 A number of ecosystem models are typically initialized by spinning up to steady state. At the moment PEcAn doesn't handle spin up automatically (e.g. looping met, checking for stability), but there are various ways to achieve a spin-up within the system. 
 
@@ -220,7 +220,7 @@ Beyond these options, we hope to eventually develop more general, model-agnostic
 
 
 
-### Selecting a soils product
+#### Selecting a soils product
 
 Many models have requirements for soils information, which may include: site-specific soil texture and depth information; soil biogeochemical initial conditions (e.g. soil carbon and nitrogen pools); soil moisture initial conditions; and soil thermal initial conditions.
 
@@ -240,6 +240,6 @@ knitr::kable(PEcAn.data.land::soil.units())
 
 More detailed information on how PEcAn processes inputs can be found on our [Input Conversion] page.
 
-### Other model inputs
+#### Other model inputs
 
 Finally, any other model-specific inputs (e.g. N deposition, land use history, etc), should be met by [Creating a new Input record in BETY] or using files that have already been uploaded.

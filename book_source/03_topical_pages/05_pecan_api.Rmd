@@ -1,4 +1,4 @@
-## The PEcAn Docker API {#pecan-api}
+#### The PEcAn Docker API {#pecan-api}
 
 If you have a running instance of Dockerized PEcAn (or other setup where PEcAn workflows are submitted via [RabbitMQ](#rabbitmq)),
 you have the option of running and managing PEcAn workflows using the `pecanapi` package.
@@ -6,7 +6,7 @@ you have the option of running and managing PEcAn workflows using the `pecanapi`
 For more details, see the `pecanapi` [package vignette](#pecanapi-vignette) and function-level documentation.
 What follows is a lightning introduction.
 
-### Installation
+#### Installation
 
 The package can be installed directly from GitHub via `devtools::install_github`:
 
@@ -14,7 +14,7 @@ The package can be installed directly from GitHub via `devtools::install_github`
 devtools::install_github("pecanproject/pecan/api@develop")
 ```
 
-### Creating and submitting a workflow
+#### Creating and submitting a workflow
 
 With `pecanapi`, creating a workflow, submitting it to RabbitMQ, monitoring its progress, and processing its output can all be accomplished via an R script.
 

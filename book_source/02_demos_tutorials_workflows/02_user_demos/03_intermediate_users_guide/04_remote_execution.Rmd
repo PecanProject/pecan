@@ -1,4 +1,4 @@
-### Remote execution with PEcAn {#pecan-remote}
+#### Remote execution with PEcAn {#pecan-remote}
 
 Remote execution allows the user to leverage the power and storage of high performance computing clusters, AWS instances, or specially configured virtual machines, but without leaving their local working environment.
 PEcAn uses remote execution primarily to run ecosystem models.
@@ -117,7 +117,7 @@ Host <hostname goes here>
 
 For more information, see `man ssh`.
 
-### SSH tunnels and PEcAn
+#### SSH tunnels and PEcAn
 
 Many of the `PEcAn.remote` functions assume that a tunnel is already open.
 If working from the web interface, the tunnel will be opened for you by some under-the-hood PHP and Bash code, but if debugging or working locally, you will have to create the tunnel yourself.
@@ -138,7 +138,7 @@ my_host <- list(name = "test-pecan.bu.edu", tunnel = "/tmp/testpecan")
 This host object can then be used in any of the remote execution functions.
 
 
-### Basic remote execute functions
+#### Basic remote execute functions
 
 The `PEcAn.remote::remote.execute.cmd` function runs a system command on a remote server (or on the local server, if `host$name == "localhost"`).
 
@@ -164,7 +164,7 @@ out <- PEcAn.remote::remote.execute.R(code = code, host = my_host)
 For additional functions related to remote file operations and other stuff, see the `PEcAn.remote` package documentation.
 
 
-### Remote model execution with PEcAn
+#### Remote model execution with PEcAn
 
 The workhorse of remote model execution is the `PEcAn.remote::start.model.runs` function, which distributes execution of each run in a list of runs (e.g. multiple runs in an ensemble) to the local machine or a remote based on the configuration in the PEcAn settings.
 
@@ -175,7 +175,7 @@ Broadly, there are three major types of model execution:
   For computationally intensive tasks, this is the recommended way to go.
 - Via a model launcher script (`PEcAn.remote::setup_modellauncher`) -- This is a highly customizable approach where task submission is controlled by a user-provided script (`launcher.sh`).
 
-### XML configuration
+#### XML configuration
 
 The relevant section of the PEcAn XML file is the `<host>` block.
 Here is a minimal example from one of my recent runs:
@@ -226,7 +226,7 @@ The additional fields are as follows:
 
 Documentation for using the model launcher is currently unavailable.
 
-### Configuration for PEcAn web interface
+#### Configuration for PEcAn web interface
 
 The `config.php` has a few variables that will control where the web
 interface can run jobs, and how to run those jobs. It is located in the `/web` directory and if you have not touched it yet it will
