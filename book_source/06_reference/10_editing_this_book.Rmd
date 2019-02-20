@@ -1,0 +1,71 @@
+# Editing this book {#bookediting}
+
+The file organization of this documentation can be described simply as follows:
+
+- Each **chapter** is in its own file (within the corresponding section).
+- Each **group of chapters** (i.e. "part" in LaTeX) is in its own directory.
+
+Sections and chapters are rendered (and numbered) in alpha-numerical order of their corresponding file names.
+Therefore, each section directory and chapter file name should be **prefixed with a two-digit (zero-padded) number**.
+File and directory names should be as similar as possible to the name of the corresponding chapter or section.
+For instance, the file name for this chapter's source file is `06_reference/10_editing_this_book.Rmd`.
+This numbering means that if you need to create an additional chapter _before_ an existing one, you will have to renumber all chapters following it.
+
+To ensure correct rendering, you should also make sure that **each chapter starts with a level 1 heading** (`# heading`).
+For instance, this chapter's source starts with:
+
+```markdown
+# Editing this book {#bookediting}
+
+The file organization of this documentation can be described simply as follows:
+...
+```
+
+Furthermore, to keep the organization consistent, each chapter should have **exactly one level 1 heading** (i.e. do not combine multiple chapters into a single file).
+In other words, **do not spread a single chapter across multiple files**, and **do not put multiple chapters in the same file**.
+
+Each **section** directory has a file starting with `00` that contains only the section (or "Part") title.
+This is used to create the greyed-out section headers in the rendered HTML.
+For instance, this section has a file called `00_introduction.Rmd` which contains only the following:
+
+```markdown
+# (PART) Introduction {-}
+```
+
+To cross-reference a different section, use that section's unique tag (starts with `#`; appears next to the section heading surrounded in curly braces).
+For instance, the following Markdown contains two sections that cross-reference each other:
+
+```markdown
+## Introduction {#intro}
+
+Here is the intro. This is a link to the [next section](#section-one).
+
+## First section. {#section-one}
+
+As mentioned in the [previous section](#intro).
+```
+
+If no header tag exists for a section you want to cross-reference, you should create one.
+We have no strict rules about this, but it's useful to have tags that give some sense of their parent hierarchy and reference their parent sections (e.g. `#models`, `#models-ed`, and `#models-ed-xml` to refer to a chapter on models, with a subsection on ED and a sub-subsection on ED XML configuration).
+If section organization changes, it is fine to move header tags, but **avoid altering existing tags** as this will break all the links pointing to that tag.
+(Note that it is also possible to link to section headings by their exact title. However, this is not recommended because these section titles could change, which would break the links.)
+
+When referring to PEcAn packages or specific functions, it is a good idea to link to the [rendered package documentation](https://pecanproject.github.io/pkgdocs.html).
+For instance, here are links to the [`models/ed`](https://pecanproject.github.io/models/ed/docs/index.html) package, the [`PEcAn.ED2::modify_ed2in`](https://pecanproject.github.io/models/ed/docs/reference/modify_ed2in.html) function, and the PEcAnRTM package [vignette](https://pecanproject.github.io/modules/rtm/docs/articles/pecanrtm.vignette.html).
+If necessary, you can also link directly to specific lines or blocks in the source code on GitHub, [like this](https://github.com/PecanProject/pecan/blob/develop/models/ed/R/create_veg.R#L11-L25).
+(To get a link to a line, click its line number. To then select a block, shift-click another line number.)
+
+To insert figures, use `knitr::include_graphics("path/to/figure.png")` inside an [R code chunk](https://yihui.name/knitr/options/#chunk-options).
+For example:
+
+````
+```{r}`r ''`
+knitr::include_graphics("04_advanced_user_guide/images/Input_ID_name.png")
+```
+````
+
+Note that image file names are **relative to the `book_source` directory**, **NOT** to the markdown file.
+In other words, if `myimage.png` was in the same directory as this file, I would still have to reference it as `06_reference/myimage.png` -- I could _not_ just do `myimage.png`.
+The size, caption, and other properties of the rendered image can be controlled via [chunk options](https://yihui.name/knitr/options/#plots).
+
+For additional information about how `bookdown` works (including information about its syntax), see the [Bookdown free online book](https://bookdown.org/yihui/bookdown/).

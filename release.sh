@@ -5,12 +5,13 @@ set -e
 DEBUG=${DEBUG:-""}
 SERVER=${SERVER:-""}
 DEPEND=${DEPEND:-""}
+IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
 
 # get version number
 VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
 
 # build images first
-VERSION=${VERSION} DEBUG=${DEBUG} DEPEND=${DEPEND} ./docker.sh
+VERSION=${VERSION} DEBUG=${DEBUG} DEPEND=${DEPEND} IMAGE_VERSION=${IMAGE_VERSION} ./docker.sh
 
 # check branch and set version
 PECAN_GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
@@ -31,22 +32,22 @@ if [ "${TAGS}" == "" ]; then
     exit 1
 fi
 
-# push pecan images
-for i in depends base executor web data thredds docs; do
-    for v in ${TAGS}; do
-        if [ "$v" != "latest" -o "$SERVER" != "" ]; then
-            ${DEBUG} docker tag pecan/${i}:latest ${SERVER}pecan/${i}:${v}
-        fi
-        ${DEBUG} docker push ${SERVER}pecan/${i}:${v}
-    done
-done
+# --------------------------------------------------------------------------------
+# PUSH NEW IMAGES
+# --------------------------------------------------------------------------------
 
-# push model images
-for i in model-sipnet-136 model-ed2-git; do
+if [ "${DEPEND}" == "build" ]; then
+    OLDEST="pecan/depends"
+else
+    OLDEST="pecan/base"
+fi
+
+# push all images
+for image in ${OLDEST}  $( docker image ls pecan/*:${IMAGE_VERSION} --filter "since=${OLDEST}:${IMAGE_VERSION}" --format "{{ .Repository }}" ); do
     for v in ${TAGS}; do
-        if [ "$v" != "latest" -o "$SERVER" != "" ]; then
-            ${DEBUG} docker tag pecan/${i}:latest ${SERVER}pecan/${i}:${v}
+        if [ "$v" != "${IMAGE_VERSION}" -o "$SERVER" != "" ]; then
+            ${DEBUG} docker tag ${image}:${IMAGE_VERSION} ${SERVER}${image}:${v}
         fi
-        ${DEBUG} docker push ${SERVER}pecan/${i}:${v}
+        ${DEBUG} docker push ${SERVER}${image}:${v}
     done
 done

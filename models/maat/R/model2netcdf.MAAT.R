@@ -9,11 +9,8 @@
 
 
 ##-------------------------------------------------------------------------------------------------#
-##' Convert MAAT output to netCDF
-##'
-##' Converts all output contained in a folder to netCDF.
-##' @name model2netcdf.MAAT
 ##' @title Function to convert MAAT model output to standard netCDF format
+##'
 ##' @param rundir Location of MAAT model run (i.e. MAAT project) directory with all required model run inputs.
 ##' This is needed to identify model runs with and without met drivers and control the model output conversion process
 ##' @param outdir Location of MAAT model output
@@ -22,29 +19,9 @@
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
 ##' 
-##' @examples
-##' \dontrun{
-##' run_dir <- "~/scratch/run/"
-##' if (! file.exists(run_dir)) dir.create(run_dir,recursive=TRUE)
-##' output_dir <- "~/scratch/out/"
-##' if (! file.exists(output_dir)) dir.create(output_dir,recursive=TRUE)
-##' met_xml <- system.file("leaf_user_met.xml",package="PEcAn.MAAT")
-##' file.copy(from = met_xml, to = run_dir, overwrite = TRUE)
-##' example_output_file <- system.file("out.csv",package="PEcAn.MAAT")
-##' file.copy(from = example_output_file, to = output_dir, overwrite = TRUE)
-##' PEcAn.MAAT::model2netcdf.MAAT(run_dir, output_dir, sitelat=39.9712, sitelon=-74.4346, 
-##'                              start_date="2005/01/01", end_date="2005/12/31")
-##' ncfile <- ncdf4::nc_open(file.path(output_dir,"2005.nc"), write = TRUE)
-##' dat <- PEcAn.utils::misc.convert(ncdf4::ncvar_get(ncfile,"assimilation_rate"),"kg C m-2 s-1", "umol C m-2 s-1")
-##' try(ncdf4::nc_close(ncfile))
-##' x_axis <- seq(as.Date("2005/01/01"), as.Date("2005/12/31"), length.out=length(dat))
-##' dev.new(width=14, height=8, unit="in")
-##' plot(x_axis,dat,xlab="Time", ylab="Assimilation_Rate (umol/m2/s)",type="l")
-##' dev.off()
-##' }
 ##' 
 ##' @export
-##' @author Shawn Serbin, Anthony Walker
+##' @author Shawn Serbin, Anthony Walker, Alexey Shiklomanov
 ##'
 model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
 
@@ -52,21 +29,26 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
   day_secs <- udunits2::ud.convert(1, "day", "seconds")
   
   # setup helper function
-  var_update <- function(data, out, oldname, newname, oldunits, newunits=NULL, missval=-999, longname, ncdims) {
+  var_update <- function(data, out, oldname, newname, oldunits, newunits = NULL, missval = -999, longname, ncdims) {
+    # ifelse is no longer working as expected, so now we have this function to deal with any Inf values
+    f_sort <- function(s) {
+      if (!is.finite(s)) -999
+      else tryCatch(PEcAn.utils::misc.convert(s, oldunits, newunits), error = function(e) s)
+    }
     ## define variable
     if(is.null(newunits)) newunits = oldunits
-    newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = ncdims, missval=missval, longname=longname)
+    newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = ncdims, missval = missval, longname = longname)
     ## convert data
     dat <- data
     if (newname %in% c("Year","FracJulianDay")) {
       PEcAn.logger::logger.info(paste0("Skipping conversion for: ", newname))
       dat.new <- dat
     } else {
-      dat.new <- try(PEcAn.utils::misc.convert(dat,oldunits,newunits),silent = TRUE)
+      dat.new <- apply(as.matrix(dat, length(dat), 1), 1, f_sort)
     }
     ## prep for writing
     if(is.null(out)) {
-      out <- list(var <- list(),dat <- list())
+      out <- list(var = list(), dat = list())
       out$var[[1]] <- newvar
       out$dat[[1]] <- dat.new
     } else {
@@ -96,10 +78,10 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
   
   if (met_exists) {
     # ** maat.dates assumes UTC, is this correct? what if input met is in a local TZ??  need to revist this **
-    maat_run_start_date <- format(lubridate::as_datetime(maat.output$time, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
-    maat_dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz=timezone)  
+    maat_run_start_date <- format(lubridate::as_datetime(maat.output$time, tz = timezone)[1], "%Y-%m-%d %H:%M:%S")
+    maat_dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz = timezone)  
   } else {
-    maat_run_start_date <- format(lubridate::as_datetime(start_date, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
+    maat_run_start_date <- format(lubridate::as_datetime(start_date, tz = timezone)[1], "%Y-%m-%d %H:%M:%S")
   }
   
   ### setup nc file lat/long
@@ -107,8 +89,9 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
   lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
   
   ### Setup outputs for netCDF file in appropriate units
-  for (year in start_year:end_year) {
+  for (year in seq(start_year, end_year)) {
     if (file.exists(file.path(outdir, paste(year, "nc", sep = "."))) ) {
+      PEcAn.logger::logger.debug(paste("---- Output year", year, "already exists."))
       next  ## skip, model output already present.
     }
     
@@ -123,60 +106,91 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
       sub.maat.output.dims <- dim(sub.maat.output)
       dims <- dim(subset(sub.maat.output,
                         strptime(time, format = "%Y-%m-%d", tz=timezone) == 
-                          seq(strptime(sub.maat.dates[1], format = "%Y-%m-%d", tz=timezone), by = "days", length = 1)))
+                          seq(strptime(sub.maat.dates[1], format = "%Y-%m-%d", tz = timezone), by = "days", length = 1)))
       timestep.s <- day_secs / dims[1] # e.g. 1800 = 30 minute timesteps
       dayfrac <- 1 / dims[1]
-      day.steps <- seq(0, 0.99, 1 / dims[1])
+      day.steps <- head(seq(0, 1, by = dayfrac), -1)
       
       # setup netCDF time variable for year
       maat_run_start_by_year <- format(lubridate::as_datetime(sub.maat.dates, tz =timezone)[1], "%Y-%m-%d %H:%M:%S")
+      tvals <- (sub.maat.doy - 1) + day.steps
+      bounds <- array(data = NA_real_, dim = c(length(tvals), 2))
+      bounds[,1] <- tvals
+      bounds[,2] <- bounds[,1] + dayfrac
       t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_by_year),
-                            vals = sub.maat.doy + day.steps, calendar = "standard", 
+                            vals = tvals, calendar = "standard", 
                             unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
+      time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
+                                        longname = "history time interval endpoint dimensions",
+                                        vals = 1:2, units = "")
       
       ### Parse MAAT output
       #output      <- list()  # create empty output
       output <- NULL
       ncdims <- list(lon, lat, t)
       out.year <- as.numeric(rep(year, sub.maat.output.dims[1]))
-      output <- var_update(out.year, output, "Year", "Year", oldunits='YYYY', newunits=NULL, missval=-999, 
+      output <- var_update(out.year, output, "Year", "Year", oldunits = "YYYY", newunits = NULL, missval = -999, 
                            longname="Simulation Year", ncdims=ncdims)
-      output <- var_update(sub.maat.doy + day.steps, output, "FracJulianDay", "FracJulianDay", oldunits='Frac DOY', newunits=NULL, missval=-999, 
+      output <- var_update(tvals, output, "FracJulianDay", "FracJulianDay", oldunits = "Frac DOY", newunits = NULL, missval = -999, 
                            longname="Fraction of Julian Date", ncdims=ncdims)
-      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
-                           longname="Leaf assimilation rate", ncdims=ncdims)
-      output <- var_update(sub.maat.output$rd, output, "rd", "leaf_respiration", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
-                           longname="Leaf Respiration Rate", ncdims=ncdims)
-      output <- var_update((1/(sub.maat.output$rs)), output, "gs", "stomatal_conductance", oldunits="mol H2O m-2 s-1", 
-                           newunits="kg H2O m-2 s-1", missval=-999, longname="Leaf Stomatal Conductance", ncdims=ncdims)
-      output <- var_update(sub.maat.output$ci, output, "ci", "Ci", oldunits="Pa", 
-                           newunits="Pa", missval=-999, longname="Leaf Internal CO2 Concentration", ncdims=ncdims)
-      output <- var_update(sub.maat.output$cc, output, "cc", "Cc", oldunits="Pa", 
-                           newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
+      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits = "umol C m-2 s-1", newunits = "kg C m-2 s-1", missval = -999, 
+                           longname = "Leaf assimilation rate", ncdims = ncdims)
+      output <- var_update(sub.maat.output$rd, output, "rd", "leaf_respiration", oldunits = "umol C m-2 s-1", newunits = "kg C m-2 s-1", missval = -999, 
+                           longname = "Leaf Respiration Rate", ncdims = ncdims)
+      output <- var_update((1 / (sub.maat.output$rs)), output, "gs", "stomatal_conductance", oldunits = "mol H2O m-2 s-1", 
+                           newunits = "kg H2O m-2 s-1", missval = -999, longname = "Leaf Stomatal Conductance", ncdims = ncdims)
+      output <- var_update(sub.maat.output$ci, output, "ci", "Ci", oldunits = "Pa", 
+                           newunits = "Pa", missval = -999, longname = "Leaf Internal CO2 Concentration", ncdims = ncdims)
+      output <- var_update(sub.maat.output$cc, output, "cc", "Cc", oldunits = "Pa", 
+                           newunits = "Pa", missval = -999, longname = "Leaf Mesophyll CO2 Concentration", ncdims = ncdims)
+      
+      ## put in time_bounds before writing out new nc file
+      #length(output$var)
+      output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name = "time_bounds", units = "", 
+                                                         longname = "history time interval endpoints", 
+                                                         dim = list(time_interval, time = t), 
+                                                         prec = "double")
+      output$dat[[length(output$dat) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
       ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
 
     } else {
       t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", maat_run_start_date),
                             vals = 1, calendar = "standard", 
                             unlim = TRUE)  # standard calendar for leap years?  Also need to be sure we update cal depending on leap/no leap
+      bounds <- array(data = NA_real_, dim = c(1,2))
+      bounds[,1] <- 0
+      bounds[,2] <- 1
+      time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
+                                        longname = "history time interval endpoint dimensions",
+                                        vals = 1:2, units = "")
+      
       output <- NULL
       ncdims <- list(lon, lat, t) 
-      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999, 
-                           longname="Leaf assimilation rate", ncdims=ncdims)
-      output <- var_update(maat.output$rd, output, "rd", "leaf_respiration", oldunits="umol C m-2 s-1", newunits="kg C m-2 s-1", missval=-999,
-                           longname="Leaf Respiration Rate", ncdims=ncdims)
-      output <- var_update((1/(maat.output$rs)), output, "gs", "stomatal_conductance", oldunits="mol H2O m-2 s-1",
-                           newunits="kg H2O m-2 s-1", missval=-999, longname="Leaf Stomatal Conductance", ncdims=ncdims)
-      output <- var_update(maat.output$ci, output, "ci", "Ci", oldunits="Pa",
-                           newunits="Pa", missval=-999, longname="Leaf Internal CO2 Concentration", ncdims=ncdims)
-      output <- var_update(maat.output$cc, output, "cc", "Cc", oldunits="Pa",
-                           newunits="Pa", missval=-999, longname="Leaf Mesophyll CO2 Concentration", ncdims=ncdims)
+      output <- var_update(sub.maat.output$A, output, "A", "assimilation_rate", oldunits = "umol C m-2 s-1", newunits = "kg C m-2 s-1", missval = -999, 
+                           longname = "Leaf assimilation rate", ncdims = ncdims)
+      output <- var_update(maat.output$rd, output, "rd", "leaf_respiration", oldunits = "umol C m-2 s-1", newunits = "kg C m-2 s-1", missval = -999,
+                           longname = "Leaf Respiration Rate", ncdims = ncdims)
+      output <- var_update((1 / (maat.output$rs)), output, "gs", "stomatal_conductance", oldunits = "mol H2O m-2 s-1",
+                           newunits = "kg H2O m-2 s-1", missval = -999, longname = "Leaf Stomatal Conductance", ncdims = ncdims)
+      output <- var_update(maat.output$ci, output, "ci", "Ci", oldunits = "Pa",
+                           newunits = "Pa", missval = -999, longname = "Leaf Internal CO2 Concentration", ncdims = ncdims)
+      output <- var_update(maat.output$cc, output, "cc", "Cc", oldunits = "Pa",
+                           newunits = "Pa", missval = -999, longname = "Leaf Mesophyll CO2 Concentration", ncdims = ncdims)
+      
+      ## put in time_bounds before writing out new nc file
+      output$var[[length(output$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units="", 
+                                                               longname = "history time interval endpoints", 
+                                                               dim = list(time_interval, time = t), 
+                                                               prec = "double")
+      output$dat[[length(output$dat) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
       ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##  
     }
     
     ## write netCDF data
-    ncout <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")),output$var)
+    ncout <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), output$var)
+    ncdf4::ncatt_put(ncout, "time", "bounds", "time_bounds", prec=NA)
     for (i in seq_along(output$var)) {
+      #print(i)  # for debugging
       ncdf4::ncvar_put(ncout, output$var[[i]], output$dat[[i]])
     }
     

@@ -43,6 +43,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   processvar <- settings$state.data.assimilation$process.variance
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
+  # Site location first col is the long second is the lat and row names are the site ids
+  site.ids <- settings$run$site$id
+    
+  site.locs <- data.frame(Lon=settings$run$site$lon %>% as.numeric,
+                          Lat=settings$run$site$lat %>% as.numeric) %>%
+    `colnames<-`(c("Lon","Lat")) %>%
+    `rownames<-`(site.ids)
   # filtering obs data based on years specifited in setting > state.data.assimilation
   assimyears <- lubridate::year(settings$state.data.assimilation$start.date) : lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
   obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
@@ -70,8 +77,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
 
-   if(!no_split){ 
-      for(i in seq_along(settings$run$inputs$met$path)){
+  if(!no_split){ 
+    for(i in seq_along(settings$run$inputs$met$path)){
+
       ### model specific split inputs
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
@@ -173,7 +181,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                         stop.time = obs.times[t],
                                                         inputs = inputs$samples[[i]])) 
           
-       
+
         } 
       }else{
         inputs.split<-inputs
@@ -209,6 +217,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     #------------------------------------------- Reading the output
     X_tmp <- vector("list", 2) 
     X <- list()
+    if (control$debug) browser()
     for (i in seq_len(nens)) {
       
       X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
@@ -219,6 +228,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                                          params = new.params[[i]]
                                                          )
                             )
+
       # states will be in X, but we also want to carry some deterministic relationships to write_restart
       # these will be stored in params
       X[[i]]      <- X_tmp[[i]]$X
@@ -351,7 +361,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
-    save(t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id, ensemble.id, ensemble.samples, inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
+    
+    save(site.locs, t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id,
+         ensemble.id, ensemble.samples, inputs, Viz.output,  file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
     post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
