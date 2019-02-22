@@ -755,7 +755,7 @@ To acquire Format information from a Format record, use the R function `query.fo
 
 - R list object containing many things. Fill this in. 
 
-## Creating a new benchmark reference run {#NewBenchmark}
+#### Creating a new benchmark reference run {#NewBenchmark}
 
 The purpose of the reference run record in BETY is to store all the settings from a run that are necessary in exactly recreating it. 
 

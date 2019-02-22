@@ -1,4 +1,4 @@
-### Thredds Setup 
+#### Thredds Setup 
 
 Installing and configuring Thredds for PEcAn
 authors - Rob Kooper

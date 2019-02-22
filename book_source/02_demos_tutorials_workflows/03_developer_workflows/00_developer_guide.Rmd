@@ -1,1 +1,5 @@
-## Developer user guide {#developer-guide}
+### Developer user guide {#developer-guide}
+
+[Update BETY]{#updatebety}
+[Update PEcAn Code]{#pecan-make}
+[PEcAn and Git]{#pecan-git}
