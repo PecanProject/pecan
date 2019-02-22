@@ -132,7 +132,7 @@ check.database <- function(database) {
   if (is_postgres_like) {
     if (!is.null(database$passwd)) {
       PEcAn.logger::logger.warn(
-        "Database field `passwd` is soft-deprecated. ",
+        "Database field `passwd` is deprecated. ",
         "Please use `password` instead."
       )
       database$password <- database$passwd
@@ -140,7 +140,7 @@ check.database <- function(database) {
     }
     if (!is.null(database$name)) {
       PEcAn.logger::logger.warn(
-        "Database field `name` is soft-deprecated. ",
+        "Database field `name` is deprecated. ",
         "Please use `dbname` instead."
       )
       database$dbname <- database$name
