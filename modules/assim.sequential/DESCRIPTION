@@ -17,7 +17,8 @@ Imports:
     magic (>= 1.5.0),
     lubridate (>= 1.6.0),
     reshape2 (>= 1.4.2),
-    nimble
+    nimble,
+    tictoc
 Suggests:
     testthat
 License: FreeBSD + file LICENSE

@@ -329,3 +329,50 @@ Remote_Sync_launcher <- function(settingPath, remote.path, PID) {
                 settings$outdir,"/SDA_remote_report.out 2>&1 &"))
 }
 
+
+
+
+#' alltocs
+#'
+#' @param fname string path to where the output needs to be saved as a csv file.
+#'
+#' @description This function finds all the tic functions called before and estimates the time elapsed for each one saves/appends it to a csv file.
+#'
+#' @export
+#'
+#' @examples
+#' 
+#' @example 
+#' \dontrun{
+#'  tic("Analysis")
+#'  Sys.sleep(5)
+#'  testfunc()
+#'  tic("Adjustment")
+#'  Sys.sleep(4)
+#'  alltocs("timing.csv")  
+#'}
+alltocs <-function(fname="tocs.csv") {
+  # Finding all the tics being resigsterd
+  get(".Data",
+      get(".tictoc", envir = baseenv())) %>%
+    seq_along() %>%
+    map_dfr(function(x) {
+      s <- toc(quiet = T, log = T)
+      dfout <- data.frame(
+        Task = s$msg %>%  as.character(),
+        TimeElapsed = round(s$toc - s$tic,1),
+        stringsAsFactors = F
+      )
+      return(dfout)
+    }) %>% 
+    mutate(ExecutionTimeP=c(min(TimeElapsed),diff(TimeElapsed))
+    ) %>%
+    write.table(
+      file = fname,
+      append = T,
+      sep = ",",
+      row.names = F, 
+      col.names=F
+    )
+  
+}
