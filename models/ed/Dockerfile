@@ -1,3 +1,6 @@
+# this needs to be at the top, what version are we building
+ARG IMAGE_VERSION="latest"
+
 # ----------------------------------------------------------------------
 # BUILD MODEL BINARY
 # ----------------------------------------------------------------------
@@ -30,7 +33,7 @@ RUN git -c http.sslVerify=false clone https://github.com/EDmodel/ED2.git \
 # ----------------------------------------------------------------------
 # BUILD PECAN FOR MODEL
 # ----------------------------------------------------------------------
-FROM pecan/models:latest
+FROM pecan/models:${IMAGE_VERSION}
 
 # ----------------------------------------------------------------------
 # INSTALL MODEL SPECIFIC PIECES
@@ -54,7 +57,7 @@ RUN apt-get update \
 ARG MODEL_VERSION=git
 
 # Setup model_info file
-COPY models/ed/model_info.json /work/model.json
+COPY model_info.json /work/model.json
 RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
            -e "s#@BINARY@#/usr/local/bin/ed2.${MODEL_VERSION}#g" /work/model.json
 

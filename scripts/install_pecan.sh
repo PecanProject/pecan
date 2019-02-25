@@ -147,6 +147,7 @@ case "$OS_VERSION" in
     # sudo apt-get -y install apache2 libapache2-mod-php php libapache2-mod-passenger php-xml php-ssh2 php-pgsql
     sudo apt-get -y install apache2 libapache2-mod-php php php-xml php-ssh2 php-pgsql
     # Ubuntu 14.04 php5-pgsql libapache2-mod-php5 php5 and no php-xml
+    sudo apt-get -y install docker-ce
     ;;
 esac
 
@@ -160,10 +161,12 @@ sudo chmod 755 /usr/local/bin/docker-compose
 sudo usermod -a -G docker carya
 
 cd
-mkdir postgres output portainer
+mkdir -p postgres output portainer
 chmod 777 postgres output portainer
 cd output
-ln -s workflows .
+if [ ! -e workflows ]; then
+  ln -s workflows .
+fi
 cd
 
 cat << EOF > docker-compose.yml
@@ -303,6 +306,7 @@ chmod 755 start-containers.sh
 # load postgres container
 docker-compose pull
 docker-compose -p carya up -d postgres
+sleep 60
 docker run --rm --network carya_pecan pecan/bety:latest initialize
 docker-compose -p carya up -d
 
