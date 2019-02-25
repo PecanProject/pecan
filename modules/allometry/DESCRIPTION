@@ -17,8 +17,7 @@ Imports:
     XML (>= 3.98-1.4)
 Suggests:
     testthat (>= 1.0.2),
-    PEcAn.DB,
-    RMySQL
+    PEcAn.DB
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
