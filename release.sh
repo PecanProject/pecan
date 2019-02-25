@@ -101,7 +101,7 @@ VERSION=${VERSION} DEBUG=${DEBUG} DEPEND=${DEPEND} R_VERSION=${R_VERSION} IMAGE_
 
 echo ""
 echo "# ----------------------------------------------------------------------"
-echo "# Pusing images"
+echo "# Pushing images"
 echo "# ----------------------------------------------------------------------"
 
 if [ "${DEPEND}" == "build" ]; then
