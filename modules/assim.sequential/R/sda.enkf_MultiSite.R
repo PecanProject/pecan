@@ -19,7 +19,11 @@
 #' @import nimble
 #' @export
 #' 
-sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,remote=T, 
+sda.enkf.multisite <- function(settings,
+                               obs.mean,
+                               obs.cov,
+                               Q = NULL,
+                               restart=F,
                                control=list(trace=T,
                                             FF=F,
                                             interactivePlot=T,
@@ -28,9 +32,11 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                             plot.title=NULL,
                                             facet.plots=F,
                                             debug=FALSE,
-                                            pause=F),
+                                            pause=F,
+                                            Profiling=F),
                                ...) {
   if (control$debug) browser()
+  tic("Prepration")
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -50,6 +56,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   names(var.names) <- NULL
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
   readsFF<-NULL # this keeps the forward forecast
+  is.remote <-PEcAn.remote::is.localhost(settings$host)
   #------------------------------Multi - site specific - settings
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
@@ -194,7 +201,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
   for(t in seq_len(nt)){
-  
+    tic(paste0("Writing configs for cycle = ", t))
     # do we have obs for this time - what year is it ?
     obs <- which(!is.na(obs.mean[[t]]))
     obs.year <- year(names(obs.mean)[t])
@@ -264,9 +271,9 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     
     if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
-   
+    tic(paste0("Running models for cycle = ", t))
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
-   
+    tic(paste0("Preparing for Analysis for cycle = ", t))
     #------------------------------------------- Reading the output
     if (control$debug) browser()
     #--- Reading just the first run when we have all years and for VIS
@@ -360,7 +367,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ###-------------------------------------------------------------------###
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
-      
+      tic(paste0("Analysis for cycle = ", t))
       an.method<-EnKF.MultiSite
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
@@ -376,6 +383,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                        site.ids=site.ids,
                                        blocked.dis=blocked.dis
       )
+      tic(paste0("Preparing for Adjustment for cycle = ", t))
       #Forecast
       mu.f <- enkf.params[[t]]$mu.f
       Pf <- enkf.params[[t]]$Pf
@@ -434,7 +442,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ###-------------------------------------------------------------------###
     ### adjustement/update state matrix                                   ###
     ###-------------------------------------------------------------------###---- 
-   
+    tic(paste0("Adjustment for cycle = ", t))
     if(adjustment == TRUE){
       analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
     }else{
@@ -462,8 +470,13 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     save(site.locs, t, FORECAST, ANALYSIS, enkf.params, new.state, new.params,
          out.configs, ensemble.samples, inputs,Viz.output,Viz.output,
          file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    
+    tic(paste0("Visulization for cycle = ", t))
+    
     #writing down the image - either you asked for it or nor :)
-    if ((t%%2==0 | t==nt) & (!remote))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+    if ((t%%2==0 | t==nt) & (!is.remote))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+    #Saving the profiling results
+    if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
   } ### end loop over time
   
 } # sda.enkf

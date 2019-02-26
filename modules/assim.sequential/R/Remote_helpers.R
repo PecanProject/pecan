@@ -338,12 +338,13 @@ Remote_Sync_launcher <- function(settingPath, remote.path, PID) {
 #'
 #' @description This function finds all the tic functions called before and estimates the time elapsed for each one saves/appends it to a csv file.
 #'
-#' @export
+#' @export This function writes down a csv file with three columns: 1- message sepecified in the `tic` 2- Total elapsed time and 3- the execution time
 #'
 #' @examples
 #' 
 #' @example 
 #' \dontrun{
+#'  library(tictoc)
 #'  tic("Analysis")
 #'  Sys.sleep(5)
 #'  testfunc()
@@ -353,26 +354,30 @@ Remote_Sync_launcher <- function(settingPath, remote.path, PID) {
 #'}
 alltocs <-function(fname="tocs.csv") {
   # Finding all the tics being resigsterd
-  get(".Data",
-      get(".tictoc", envir = baseenv())) %>%
-    seq_along() %>%
-    map_dfr(function(x) {
-      s <- toc(quiet = T, log = T)
-      dfout <- data.frame(
-        Task = s$msg %>%  as.character(),
-        TimeElapsed = round(s$toc - s$tic,1),
-        stringsAsFactors = F
+  tryCatch({
+    get(".Data",
+        get(".tictoc", envir = baseenv())) %>%
+      seq_along() %>%
+      map_dfr(function(x) {
+        s <- toc(quiet = T, log = T)
+        dfout <- data.frame(
+          Task = s$msg %>%  as.character(),
+          TimeElapsed = round(s$toc - s$tic, 1),
+          stringsAsFactors = F
+        )
+        return(dfout)
+      }) %>%
+      mutate(ExecutionTimeP = c(min(TimeElapsed), diff(TimeElapsed))) %>%
+      write.table(
+        file = fname,
+        append = T,
+        sep = ",",
+        row.names = F,
+        col.names = F
       )
-      return(dfout)
-    }) %>% 
-    mutate(ExecutionTimeP=c(min(TimeElapsed),diff(TimeElapsed))
-    ) %>%
-    write.table(
-      file = fname,
-      append = T,
-      sep = ",",
-      row.names = F, 
-      col.names=F
-    )
-  
+  },
+  error = function(e) {
+    PEcAn.logger::logger.warn("Something happened with the profiling !")
+  })
+
 }
