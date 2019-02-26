@@ -18,7 +18,8 @@ Imports:
     lubridate (>= 1.6.0),
     reshape2 (>= 1.4.2),
     nimble,
-    tictoc
+    tictoc, 
+    purrr
 Suggests:
     testthat
 License: FreeBSD + file LICENSE

@@ -16,7 +16,7 @@
 #' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
 #' 
 #' @return NONE
-#' @import nimble
+#' @import nimble tictoc
 #' @export
 #' 
 sda.enkf.multisite <- function(settings,
@@ -56,7 +56,7 @@ sda.enkf.multisite <- function(settings,
   names(var.names) <- NULL
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
   readsFF<-NULL # this keeps the forward forecast
-  is.remote <-PEcAn.remote::is.localhost(settings$host)
+  is.local <-PEcAn.remote::is.localhost(settings$host)
   #------------------------------Multi - site specific - settings
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
@@ -474,7 +474,7 @@ sda.enkf.multisite <- function(settings,
     tic(paste0("Visulization for cycle = ", t))
     
     #writing down the image - either you asked for it or nor :)
-    if ((t%%2==0 | t==nt) & (!is.remote))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+    if ((t%%2==0 | t==nt) & (is.local))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
     #Saving the profiling results
     if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
   } ### end loop over time

@@ -338,7 +338,8 @@ Remote_Sync_launcher <- function(settingPath, remote.path, PID) {
 #'
 #' @description This function finds all the tic functions called before and estimates the time elapsed for each one saves/appends it to a csv file.
 #'
-#' @export This function writes down a csv file with three columns: 1- message sepecified in the `tic` 2- Total elapsed time and 3- the execution time
+#' @return This function writes down a csv file with three columns: 1- message sepecified in the `tic` 2- Total elapsed time and 3- the execution time
+#' @export 
 #'
 #' @examples
 #' 
