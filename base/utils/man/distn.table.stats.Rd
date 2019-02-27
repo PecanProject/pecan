@@ -3,7 +3,7 @@
 \name{distn.table.stats}
 \alias{distn.table.stats}
 \title{return mean and standard deviation of a distribution for each distribution in a table with \code{colnames = c('distn', 'a', 'b')},
- e.g. in a table of priors}
+e.g. in a table of priors}
 \usage{
 distn.table.stats(distns)
 }

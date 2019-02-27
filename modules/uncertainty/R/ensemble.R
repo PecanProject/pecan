@@ -287,10 +287,10 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     
     # Let's find the PFT based on site location, if it was found I will subset the ensemble.samples otherwise we're not affecting anything    
     if(!is.null(con)){
-      Pft_Site_df <- tbl(con, 'sites_cultivars')%>%
-        dplyr::filter(site_id==settings$run$site$id) %>%
-        dplyr::inner_join(dplyr::tbl(con, "cultivars_pfts"), by = c('cultivar_id')) %>%
-        dplyr::inner_join(dplyr::tbl(con, "pfts"), by = c('pft_id'='id')) %>%
+      Pft_Site_df <- dplyr::tbl(con, "sites_cultivars")%>%
+        dplyr::filter(site_id == settings$run$site$id) %>%
+        dplyr::inner_join(dplyr::tbl(con, "cultivars_pfts"), by = "cultivar_id") %>%
+        dplyr::inner_join(dplyr::tbl(con, "pfts"), by = c("pft_id" = "id")) %>%
         dplyr::collect() 
       
       site_pfts_names <- Pft_Site_df$name %>% unlist() %>% as.character()
@@ -350,7 +350,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         }
         
       } else {
+
         run.id <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5), site.id=settings$run$site$id)
+
       }
       runs[i, "id"] <- run.id
       
@@ -385,7 +387,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         input_tag <- names(settings$run$inputs)[[input_i]]
         settings$run$inputs[[input_tag]][["path"]] <- samples[[input_tag]][["samples"]][[i]]
       }
-
 
       
       do.call(my.write.config, args = list( defaults = defaults, 

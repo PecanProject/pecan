@@ -58,6 +58,7 @@ Suggests:
     foreach,
     parallel,
     progress,
+    reticulate,
     rlang (>= 0.2.0)
 Remotes:
     github::ropensci/geonames,

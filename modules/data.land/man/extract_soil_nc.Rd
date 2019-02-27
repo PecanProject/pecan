@@ -19,11 +19,11 @@ extract_soil_nc(in.file, outdir, lat, lon)
 Extract soil data
 }
 \examples{
+\dontrun{
 in.file <- "~/paleon/env_paleon/soil/paleon_soil.nc"
 outdir  <- "~/paleon/envTest"
 lat     <- 40
 lon     <- -80
-\dontrun{
-   PEcAn.data.land::extract_soil_nc(in.file,outdir,lat,lon)
+PEcAn.data.land::extract_soil_nc(in.file,outdir,lat,lon)
 }
 }

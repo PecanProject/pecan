@@ -518,7 +518,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE
 #########################  STEM RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert stem respiration at measurement temp
     ## to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('leafT', 'airT'))
+    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('stemT', 'airT','T'))
 
   } else if (trait == 'c2n_leaf') {
 #########################  LEAF C:N   ############################

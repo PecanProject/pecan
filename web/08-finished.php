@@ -33,7 +33,7 @@ $xaxis=isset($_REQUEST['xaxis']);
 $xaxis=TRUE;
 
 // get run information
-$stmt = $pdo->prepare("SELECT * FROM workflows WHERE workflows.id=?");
+$stmt = $pdo->prepare("SELECT * FROM workflows LEFT OUTER JOIN attributes ON workflows.id=attributes.container_id AND attributes.container_type='workflows' WHERE workflows.id=?");
 if (!$stmt->execute(array($workflowid))) {
   die('Invalid query: ' . error_database());
 }
@@ -43,14 +43,14 @@ $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
 $notes = htmlspecialchars($workflow['notes']);
-$hostname = '';
-if ($workflow['params'] != '') {
-    eval('$array = ' . $workflow['params'] . ';');
-    if (isset($array['hostname'])) {
-        $hostname = "&hostname=${array['hostname']}";
-    }
+if ($workflow['value'] != '') {
+  $params = json_decode($workflow['value'], true);
+} else {
+  $params = array();
 }
-
+if (isset($params['hostname'])) {
+    $hostname = "&hostname=${params['hostname']}";
+}
 
 # check to make sure all is ok
 $error=false;
