@@ -26,13 +26,6 @@ write_params_ctsm <- function(defaults = system.file('clm5_params.c171117_0001.n
   file.copy(clm.param.default,clm.param.file)
   clm.param.nc <- ncdf4::nc_open(clm.param.file,write=TRUE)
   
-  # FATES
-  #fates.param.default <- system.file("fates_params_2troppftclones.c171018_sps.nc",package="PEcAn.FATES")
-  # above is a temporary param file corrected for the tropics by lowering freezing tolerace parameters
-  fates.param.default <- file.path(refcase,"fates_params_2troppftclones.c171018_sps.nc") # probably need to allow custom param file names here (pecan.xml?)
-  fates.param.file <- file.path(local.rundir,paste0("fates_params.",run.id,".nc"))
-  file.copy(fates.param.default,fates.param.file)
-  fates.param.nc <- ncdf4::nc_open(fates.param.file,write=TRUE)
   
   ## Loop over PFTS
   npft <- length(trait.values)
@@ -660,8 +653,18 @@ write_params_ctsm <- function(defaults = system.file('clm5_params.c171117_0001.n
   
 }
 
+
+# write_params_fates ------------------------------------------------------
 write_params_fates <- function(defaults = system.file('????', package = 'PEcAn.FATES'),
                               trait.values, settings, run.id){
 
+  # FATES
+  #fates.param.default <- system.file("fates_params_2troppftclones.c171018_sps.nc",package="PEcAn.FATES")
+  # above is a temporary param file corrected for the tropics by lowering freezing tolerace parameters
+  fates.param.default <- file.path(refcase,"fates_params_2troppftclones.c171018_sps.nc") # probably need to allow custom param file names here (pecan.xml?)
+  fates.param.file <- file.path(local.rundir,paste0("fates_params.",run.id,".nc"))
+  file.copy(fates.param.default,fates.param.file)
+  fates.param.nc <- ncdf4::nc_open(fates.param.file,write=TRUE)
+  
     ncdf4::nc_close(fates.param.nc)
 }
