@@ -105,6 +105,12 @@ write_params_ctsm <- function(defaults = system.file('', package = 'PEcAn.CTSM')
                          vals=pft[v])  ## (gC/gN)
       }
       
+      # Target C:N ratio fine roots
+      if(var == "frootcn"){
+        ncdf4::ncvar_put(nc=clm.param.nc, varid='frootcn', start = ipft, count = 1,
+                         vals=pft[v])  # gC/gN
+      }
+      
       # Fraction of leaf nitrogen in Rubisco
       if(var == "flnr"){
         ncdf4::ncvar_put(nc=clm.param.nc, varid='flnr', start = ipft, count = 1,
@@ -162,30 +168,31 @@ write_params_ctsm <- function(defaults = system.file('', package = 'PEcAn.CTSM')
                          vals=pft[v]) ##(clm: gC/gC)
       }
      
-      # # Ratio of growth respiration carbon : new growth carbon
-      # ## missing from params.nc 
-      # if(var == "grc2ngc"){
-      #   ncdf4::ncvar_put(nc=clm.param.nc, varid='', start = ipft, count = 1,
-      #                    vals=pft[v]) ##(clm:)
-      # }
-      # 
-      # Target C:N ratio leaf
-      if(var == "leafcn"){
-        ncdf4::ncvar_put(nc=clm.param.nc, varid='leafcn', start = ipft, count = 1,
-                         vals=pft[v]) ##(clm:gC/gN)
+      # Ratio of growth respiration carbon : new growth carbon
+      if(var == "grperc"){
+        ncdf4::ncvar_put(nc=clm.param.nc, varid='grperc', start = ipft, count = 1,
+                         vals=pft[v]) ##(clm:unitless)
       }
 
-      
-      # Target C:N ratio fine roots
-      if(var == "frootcn"){
-        ncdf4::ncvar_put(nc=clm.param.nc, varid='frootcn', start = ipft, count = 1,
-                         vals=pft[v]) 
-      }
-      ## missing from params.nc 
+      # # Target C:N ratio leaf
+      # ## missing from params.nc
+      # if(var == ""){
+      #   ncdf4::ncvar_put(nc=clm.param.nc, varid='', start = ipft, count = 1,
+      #                    vals=pft[v]) # gC/gN
+      # }
+      # 
+      # # Target C:N ratio fine roots
+      # ## missing from params.nc
+      # if(var == ""){
+      #   ncdf4::ncvar_put(nc=clm.param.nc, varid='', start = ipft, count = 1,
+      #                    vals=pft[v])  # gC/gN
+      # }
+
       # # Root mass per soil layer profile
-      #   if(var == "b"){
-      #     ncdf4::ncvar_put(nc=clm.param.nc, varid='', start = ipft, count = 1,
-      #                      vals=pft[v])
+      # ## missing from params.nc 
+      #   if(var == "rootmassSoil"){
+      #     ncdf4::ncvar_put(nc=fates.param.nc, varid='', start = ipft, count = 1,
+      #                      vals=pft[v]) 
       #   }
 
       
