@@ -162,7 +162,7 @@ write_params_ctsm <- function(defaults = system.file('clm5_params.c171117_0001.n
       
       
       # Ratio of new fine root : new leaf carbon allocation
-      if(var == "frootcn"){
+      if(var == "froot_leaf"){
         ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_allom_l2fr', start = ipft, count = 1,
                          vals=pft[v]) ##(fates: gC/gC)
       }
