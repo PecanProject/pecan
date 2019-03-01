@@ -160,12 +160,13 @@ services:
   # Pecan-RStudio
   # ----------------------------------------------------------------------
   rstudio:
-    image: pecan/base:1.7.0
+    image: pecan/base:${PECAN_RSTUDIO_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
     environment:
-      - PASSWORD=${RSTUDIO_DEFAULT_PASSWORD:-bety}
+      - USER=${PECAN_RSTUDIO_USER:-carya}
+      - PASSWORD=${PECAN_RSTUDIO_PASS:-ilinois}
     depends_on:
       - bety
     entrypoint: /init
@@ -176,7 +177,7 @@ services:
       - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rstudio"
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
     ports:
-      - 8787:8787
+      - 8787:
 
   # ----------------------------------------------------------------------
   # PEcAn application
