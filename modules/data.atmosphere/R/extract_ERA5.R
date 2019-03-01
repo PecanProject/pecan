@@ -44,9 +44,13 @@ ERA5_extract <-
               all.data.point <- vars %>%
                 map_dfc(function(vname) {
                   brick.tmp <- brick(ncfile, varname = vname)
-                  nn <-
-                    raster::extract(brick.tmp, SpatialPoints(cbind(long, lat)), method = 'simple')
-                  nn %>% as.numeric()
+                  nn <- raster::extract(brick.tmp, SpatialPoints(cbind(long, lat)), method = 'simple')%>%
+                    as.numeric()
+                  # replacing the missing/filled values with NA
+                  nn[nn==nc_data$var[[vname]]$missval] <- NA 
+                  #unit conversion for temperature
+                  if (nc_data$var[[vname]]$units =="K" & folder=="Mean")  nn <-udunits2::ud.convert(nn, "degree_fahrenheit","celsius")
+                  nn
                 }) %>%
                 `colnames<-`(paste0(vars, "_", folder))
               #close the connection
@@ -55,7 +59,7 @@ ERA5_extract <-
               xts::xts(all.data.point, order.by = timestamp)
             })
           #Merge mean and the speard
-          merge.xts(one.year.out[[1]], one.year.out[[2]])
+          xts::merge.xts(one.year.out[[1]], one.year.out[[2]])
         }) %>%
         setNames(years)
     }, error = function(e) {
