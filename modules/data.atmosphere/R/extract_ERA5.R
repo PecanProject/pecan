@@ -49,7 +49,7 @@ ERA5_extract <-
                   # replacing the missing/filled values with NA
                   nn[nn==nc_data$var[[vname]]$missval] <- NA 
                   #unit conversion for temperature
-                  if (nc_data$var[[vname]]$units =="K" & folder=="Mean")  nn <-udunits2::ud.convert(nn, "degree_fahrenheit","celsius")
+                  if (nc_data$var[[vname]]$units =="K" & folder=="Mean")  nn <-udunits2::ud.convert(nn, "degree_kelvin","celsius")
                   nn
                 }) %>%
                 `colnames<-`(paste0(vars, "_", folder))
