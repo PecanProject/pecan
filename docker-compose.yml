@@ -160,7 +160,7 @@ services:
   # Pecan-RStudio
   # ----------------------------------------------------------------------
   rstudio:
-    image: pecan/base:${PECAN_RSTUDIO_VERSION:-latest}
+    image: pecan/base:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
@@ -176,9 +176,7 @@ services:
       - "traefik.port=8787"
       - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rstudio"
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
-    ports:
-      - 8787:
-
+ 
   # ----------------------------------------------------------------------
   # PEcAn application
   # ----------------------------------------------------------------------
