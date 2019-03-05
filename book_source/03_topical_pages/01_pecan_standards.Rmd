@@ -1,4 +1,4 @@
-## PEcAn standard formats
+## PEcAn standard formats {#pecan-standards}
 
 ### Defining new input formats
 
@@ -69,7 +69,7 @@ We want to standardize the units as well as part of the `met2CF.<product>` step.
 
 The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
 
-#### Soils and Vegetation Inputs
+### Soils and Vegetation Inputs
 
 ##### Soil Data 
 

@@ -72,7 +72,7 @@ that we are done by the color and taste.
   git push
   ```
 
-### Test files
+#### Test files
 
 
 Many of PEcAn’s functions require inputs that are provided as data.
@@ -325,7 +325,7 @@ test_that(“as.sequence works”;{
 })
 ```
 
-### Testing the Shiny Server
+#### Testing the Shiny Server
 
 Shiny can be difficult to debug because, when run as a web service, the R output is hidden in system log files that are hard to find and read.
 One useful approach to debugging is to use port forwarding, as follows.

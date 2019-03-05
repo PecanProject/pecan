@@ -66,7 +66,7 @@ bug file and load it when we need it.
 * parameter samples [/modules/uncertainties/data/samples.RData]
 
 Packages used in development
-----------------------------
+
 
 #### roxygen2
 
