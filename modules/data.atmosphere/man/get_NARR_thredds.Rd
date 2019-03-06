@@ -34,7 +34,11 @@ Requires the `progress` package to be installed.}
 Retrieve NARR data using thredds
 }
 \examples{
+
+\dontrun{
 dat <- get_NARR_thredds("2008-01-01", "2008-01-15", 43.3724, -89.9071)
+}
+
 }
 \author{
 Alexey Shiklomanov

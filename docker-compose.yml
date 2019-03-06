@@ -192,6 +192,26 @@ services:
       - pecan:/data
       - pecan:/var/www/html/pecan/data
 
+  # PEcAn model monitor
+  monitor:
+    image: pecan/monitor:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    ports:
+      - 9999:9999
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - FQDN=${PECAN_FQDN:-docker}
+    depends_on:
+       - rabbitmq
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/monitor/"
+      - "traefik.backend=monitor"
+    volumes:
+      - pecan:/data
+
   # PEcAn executor, executes jobs. Does not the actual models
   executor:
     image: pecan/executor:${PECAN_VERSION:-latest}
@@ -227,6 +247,19 @@ services:
   # PEcAn ED model runner
   ed2:
     image: pecan/model-ed2-git:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
+  # PEcAn MAESPA model runner
+  maespa:
+    image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan

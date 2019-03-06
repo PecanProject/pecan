@@ -1,0 +1,755 @@
+# Settings-configured analyses
+
+These analyses can be run through the web interface, but lack graphical interfaces and  currently can only be configured throughthe XML settings. To run these analyses use the **Edit pecan.xml** checkbox on the Input configuration page. Eventually, these modules will be integrated into the web user interface.
+
+- Parameter Data Assimilation (PDA) {#pda}
+- State Data Assimilation (SDA) {#sda}
+- MultiSettings
+- Benchmarking
+
+(TODO: Add links)
+
+## Parameter data assimilation (PDA) {#pda}
+
+All functions pertaining to Parameter Data Assimilation are housed within: **pecan/modules/assim.batch**.
+
+For a detailed usage of the module, please see the vignette under **pecan/modules/assim.batch/vignettes**.
+
+### **pda.mcmc.R**
+This is the main PDA code. It performs Bayesian MCMC on model parameters by proposing parameter values, running the model, calculating a likelihood (between model output and supplied observations), and accepting or rejecting the proposed parameters (Metropolis algorithm). Additional notes:
+
+* The first argument is *settings*, followed by others that all default to *NULL.settings* is a list used throughout Pecan, which contains all the user options for whatever analyses are being done. The easiest thing to do is just pass that whole object all around the Pecan code and let different functions access whichever settings they need. That's what a lot of the rest of the Pecan code does. But the flexibility to override most of the relevant settings in *settings* is there by providing them directly as arguments to the function. 
+
+* The *if(FALSE)...* : If you're trying to step through the function you probably will have the *settings* object around, but those other variables will be undefined. If you set them all to NULL then they'll be ignored without causing errors. It is there for debugging purposes.
+
+* The next step calls pda.settings(), which is in the file pda.utils.R (see below). It checks whether any settings are being overridden by arguments, and in most cases supplies default values if it can't find either.
+
+
+* In the MCMC setup section
+	* The code is set up to allow you to start a new MCMC chain, or to continue a previous chain as specified in settings. 
+	* The code writes a simple text file of parameter samples at every iteration, which lets you get some results and even re-start an MCMC that fails for some reason. 
+	* The code has adaptive jump distributions. So you can see some initialization of the jump distributions and associated variables here. 
+	* Finally, note that after all this setup a new XML settings file is saved. The idea is that the original pecan.xml you create is preserved for provenance, and then periodically	 throughout the workflow the settings (likely containing new information) are re-saved with descriptive filenames.
+	
+* MCMC loop
+	* Periodically adjust jump distribution to make acceptance rate closer to target
+	* Propose new parameters one at a time. For each:
+		* First, note that Pecan may be handling many more parameters than are actually being targeted by PDA. Pecan puts priors on any variables it has information for (in the BETY database), and then these get passed around throughout the analysis and every step (meta-, sensitivity, ensemble analyses, etc.). But for PDA, you specify a separate list of probably far fewer parameters to constrain with data. These are the ones that get looped over and varied here. The distinction between all parameters and only those dealt with in PDA is dealt with in the setup code above. 
+		* First a new value is proposed for the parameter of interest.
+		* Then, a new model run is set up, identical to the previous except with the new proposed value for the one parameter being updated on this run.
+		* The model run is started, and outputs collected after waiting for it to finish.
+		* A new likelihood is calculated based on the model outputs and the observed dataset provided. 
+		* Standard Metropolis acceptance criteria is used to decide whether to keep the proposed parameter.
+		* Periodically (at interval specified in settings), a diagnostic figure is saved to disk so you can check on progress.
+	* This works only for NEE currently 
+
+### **pda.mcmc.bs.R**
+This file is basically identical to pda.mcm.R, but rather than propose parameters one at a time, it proposes new values for all parameters at once ("bs" stands for "block sampling"). You choose which option to use by specifying settings$assim.batch$method: 
+	* "bruteforce" means sample parameters one at a time
+ 	* "bruteforce.bs" means use this version, sampling all parameters at once
+	* "emulator" means use the emulated-likelihood version 
+
+### **pda.emulator**
+This version of the PDA code again looks quite similar to the basic "bruteforce" one, but its mechanics are very different. The basic idea is, rather than running thousands of model iterations to explore parameter space via MCMC, run a relatively smaller number of runs that have been carefully chosen to give good coverage of parameter space. Then, basically interpolate the likelihood calculated for each of those runs (actually, fit a Gaussian process to it), to get a surface that "emulates" the true likelihood. Now, perform regular MCMC (just like the "bruteforce" approach), except instead of actually running the model on every iteration to get a likelihood, just get an approximation from the likelihood emulator. Since the latter step takes virtually no time, you can run as long of an MCMC as you need at little computational cost, once you have done the initial model runs to create the likelihood emulator. 
+
+### **pda.mcmc.recover.R**
+This function is for recovering a failed PDA MCMC run. 
+
+### **pda.utils.R**
+This file contains most of the individual functions used by the main PDA functions (pda.mcmc.*.R). 
+
+   * *assim.batch* is the main function Pecan calls to do PDA. It checks which method is requested (bruteforce, bruteforce.bs, or emulator) and call the appropriate function described above.
+   * *pda.setting* handles settings.  If a setting isn't found, the code can usually supply a reasonable default. 
+   * *pda.load.priors* is fairly self explanatory, except that it handles a lot of cases and gives different options priority over others. Basically, the priors to use for PDA parameters can come from either a Pecan prior.distns or post.distns object (the latter would be, e.g., the posteriors of a meta-analysis or previous PDA), or specified either by file path or BETY ID. If not told otherwise, the code tries to just find the most recent posterior in BETY, and use that as prior for PDA.
+   * *pda.create.ensemble* gets an ensemble ID for the PDA. All model runs associated with an individual PDA (any of the three methods) are considered part of a single ensemble. This function does is register a new ensemble in BETY, and return the ID that BETY gives it.
+   * *pda.define.prior.fn* creates R functions for all of the priors the PDA will use. 
+   * *pda.init.params* sets up the parameter matrix for the run, which has one row per iteration, and one column per parameter. Columns include all Pecan parameters, not just the (probably small) subset that are being updated by PDA. This is for compatibility with other Pecan components. If starting a fresh run, the returned matrix is just a big empty matrix to fill in as the PDA runs. If continuing an existing MCMC, then it will be the previous params matrix, with a bunch of blank rows added on for filling in during this round of PDA.
+   * *pda.init.run* This is basically a big wrapper for Pecan's write.config function (actually functions [plural], since every model in Pecan has its own version). For the bruteforce and bruteforce.bs methods this will be run once per iteration, whereas the emulator method knows about all its runs ahead of time and this will be a big batch of all runs at once. 
+   * *pda.adjust.jumps* tweaks the jump distributions for the standard MCMC method, and *pda.adjust.jumps.bs* does the same for the block-sampled version. 
+   * *pda.calc.llik* calculates the log-likelihood of the model given all datasets provided to compare it to. 
+   * *pda.generate.knots* is for the emulator version of PDA. It uses a Latin hypercube design to sample a specified number of locations in parameter space. These locations are where the model will actually be run, and then the GP interpolates the likelihood surface in between. 
+   * *pda.plot.params* provides basic MCMC diagnostics (trace and density) for parameters being sampled. 
+   * *pda.postprocess* prepares the posteriors of the PDA, stores them to files and the database, and performs some other cleanup functions. 
+   * *pda.load.data.r* This is the function that loads in data that will be used to constrain the PDA. It's supposed to be eventually more integrated with Pecan, which will know how to load all kinds of data from all kinds of sources. For now, it can do NEE from Ameriflux.
+   * *pda.define.llik.r* A simple helper function that defines likelihood functions for different datasets. Probably in the future this should be queried from the database or something. For now, it is extremely limited. The original test case of NEE assimilation uses a heteroskedastic Laplacian distribution. 
+   * *pda.get.model.output.R* Another function that will eventually grow to handle many more cases, or perhaps be replaced by a better system altogether. For now though, it again just handles Ameriflux NEE.
+
+### **get.da.data.\*.R, plot.da.R**
+Old codes written by Carl Davidson. Defunct now, but may contain good ideas so currently left in. 
+
+
+## State data assimilation (SDA) {#sda}
+
+`sda.enkf.R` is housed within: `/pecan/modules/assim.sequential/R`
+
+The tree ring tutorial is housed within: `/pecan/documentation/tutorials/StateAssimilation`
+
+More descriptive SDA methods can be found at: `/pecan/book_source/adve_user_guide_web/SDA_Methods.Rmd`
+
+### **sda.enkf.R Description**
+This is the main ensemble Kalman filter and generalized filter code. Originally, this was just ensemble Kalman filter code. Mike Dietze and Ann Raiho added a generalized ensemble filter to avoid filter divergence. The output of this function will be all the of run outputs, a PDF of diagnostics, and an Rdata object that includes three lists:
+
+* FORECAST will be the ensemble forecasts for each year
+* ANALYSIS will be the updated ensemble sample given the NPP observations
+* enkf.params contains the prior and posterior mean vector and covariance matrix for each time step.
+
+### **sda.enkf.R Arguments**
+
+* settings - (required) [State Data Assimilation Tags Example] settings object
+
+* obs.mean - (required) a list of observation means named with dates in YYYY/MM/DD format
+
+* obs.cov - (required) a list of observation covariances names with dates in YYYY/MM/DD format
+
+* IC - (optional) initial condition matrix (dimensions: ensemble memeber # by state variables). Default is NULL.
+
+* Q - (optional) process covariance matrix (dimensions: state variable by state variables). Defualt is NULL.
+
+### State Data Assimilation Workflow
+Before running sda.enkf, these tasks must be completed (in no particular order),
+
+* Read in a [State Data Assimilation Tags Example] settings file with tags listed below. i.e. read.settings('pecan.SDA.xml')
+
+* Load data means (obs.mean) and covariances (obs.cov) as lists with PEcAn naming and unit conventions. Each observation must have a date in YYYY/MM/DD format  (optional time) associated with it. If there are missing data, the date must still be represented in the list with an NA as the list object.
+
+* Create initial conditions matrix (IC) that is state variables columns by ensemble members rows in dimension. [sample.IC.MODEL][sample.IC.MODEL.R] can be used to create the IC matrix, but it is not required. This IC matrix is fed into write.configs for the initial model runs.
+
+The main parts of the SDA function are:
+
+Setting up for initial runs:
+
+* Set parameters
+  
+* Load initial run inputs via [split.inputs.MODEL][split.inputs.MODEL.R]
+
+* Open database connection
+
+* Get new workflow ids
+  
+* Create ensemble ids
+
+Performing the initial set of runs
+
+Set up for data assimilation
+
+Loop over time
+
+* [read.restart.MODEL][read.restart.MODEL.R] - read model restart files corresponding to start.time and stop.time that you want to assimilate data into
+  
+* Analysis - There are four choices based on if process variance is TRUE or FALSE and if there is data or not. [See explaination below.][Analysis Options]
+  
+* [write.restart.MODEL][write.restart.MODEL.R] - This function has two jobs. First, to insert adjusted state back into model restart file. Second, to update start.time, stop.time, and job.sh.
+  
+* run model
+  
+Save outputs
+
+Create diagnostics
+
+### State Data Assimilation Tags Example
+
+```
+<state.data.assimilation>
+  <adjustment>TRUE</adjustment>
+  <process.variance>FALSE</process.variance>
+  <sample.parameters>FALSE</sample.parameters>
+   <state.variables>
+    <variable>
+      <variable.name>AGB.pft</variable.name>
+      <unit>MgC/ha/yr</unit>
+      <min_value>0</min_value>
+      <max_value>100000000</max_value>
+    </variable>
+    <variable>
+      <variable.name>TotSoilCarb</variable.name>
+      <unit>KgC/m^2</unit>
+      <min_value>0</min_value>
+      <max_value>100000000</max_value>
+    </variable>
+  </state.variables>
+  <spin.up>
+    <start.date>1950/01/01</start.date>
+    <end.date>1960/12/31</end.date>
+  </spin.up>
+  <forecast.time.step>1</forecast.time.step>
+  <start.date>1961/01/01</start.date>
+  <end.date>2010/12/31</end.date>
+ </state.data.assimilation>
+```
+
+### State Data Assimilation Tags Descriptions
+
+* **adjustment** : [optional] TRUE/FLASE flag for if ensembles needs to be adjusted based on weights estimated given their likelihood during analysis step. The defualt is TRUE for this flag.
+* **process.variance** : [optional] TRUE/FLASE flag for if process variance should be estimated (TRUE) or not (FALSE). If TRUE, a generalized ensemble filter will be used. If FALSE, an ensemble Kalman filter will be used. Default is FALSE.
+* **sample.parameters** : [optional] TRUE/FLASE flag for if parameters should be sampled for each ensemble member or not. This allows for more spread in the initial conditions of the forecast.
+* **state.variable** : [required] State variable that is to be assimilated (in PEcAn standard format).
+* **spin.up** : [required] start.date and end.date for initial model runs.
+* **_NOTE:_** start.date and end.date are distinct from values set in the run tag because initial runs can be done over a subset of the full run.
+* **forecast.time.step** : [optional] In the future, this will be used to allow the forecast time step to vary from the data time step.
+* **start.date** : [optional] start date of the state data assimilation (in YYYY/MM/DD format) 
+* **end.date** : [optional] end date of the state data assimilation (in YYYY/MM/DD format)
+* **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
+
+### Model Specific Functions for SDA Workflow
+
+#### read.restart.MODEL.R
+The purpose of read.restart is to read model restart files and return a matrix that is site rows by state variable columns. The state variables must be in PEcAn names and units. The arguments are:
+
+* outdir - output directory
+
+* runid - ensemble member run ID
+
+* stop.time - used to determine which restart file to read (in POSIX format)
+
+* settings - [pecan.SDA.xml][State Data Assimilation Tags Example] settings object
+
+* var.names - vector with state variable names with PEcAn standard naming. Example: c('AGB.pft', 'TotSoilCarb')
+
+* params - parameters used by ensemble member (same format as write.configs)
+
+#### write.restart.MODEL.R
+This model specific function takes in new state and new parameter matrices from sda.enkf.R after the analysis step and translates new variables back to the model variables. Then, updates start.time, stop.time, and job.sh so that start.model.runs() does the correct runs with the new states. In write.restart.LINKAGES and write.restart.SIPNET, job.sh is updated by using write.configs.MODEL.
+
+* outdir - output directory
+
+* runid - run ID for ensemble member
+
+* start.time - beginning of model run (in POSIX format)
+
+* stop.time - end of model run (in POSIX format)
+
+* settings - [pecan.SDA.xml][State Data Assimilation Tags Example] settings object
+
+* new.state - matrix from analysis of updated state variables with PEcAn names (dimensions: site rows by state variables columns)
+
+* new.params - In the future, this will allow us to update parameters based on states (same format as write.configs)
+
+* inputs - model specific inputs from [split.inputs.MODEL][split.inputs.MODEL.R] used to run the model from start.time to stop.time
+
+* RENAME - [optional] Flag used in write.restart.LINKAGES.R for development.
+
+#### split.inputs.MODEL.R
+This model specific function gives the correct met and/or other model inputs to settings$run$inputs. This function returns settings$run$inputs to an inputs argument in sda.enkf.R. But, the inputs will not need to change for all models and should return settings$run$inputs unchanged if that is the case.
+
+* settings - [pecan.SDA.xml][State Data Assimilation Tags Example] settings object
+
+* start.time - start time for model run (in POSIX format)
+
+* stop.time - stop time for model run (in POSIX format)
+
+#### sample.IC.MODEL.R
+This model specific function is optional. But, it can be used to create initial condition matrix (IC) with # state variables columns by # ensemble rows. This IC matrix is used for the initial runs in sda.enkf.R in the write.configs.MODEL function.
+
+* ne - number of ensemble members
+
+* state - matrix of state variables to get initial conditions from
+
+* year - used to determine which year to sample initial conditions from 
+
+### Analysis Options
+There are four options depending on whether process variance is TRUE/FALSE and whether or not there is data or not.
+
+* If there is no data and process variance = FALSE, there is no analysis step.
+
+* If there is no data and process variance = TRUE, process variance is added to the forecast.
+
+* If there is data and process variance = TRUE, [the generalized ensemble filter][The Generalized Ensemble Filter] is implemented with MCMC.
+
+* If there is data and process variance = FALSE, the Kalman filter is used and solved analytically.
+
+### The Generalized Ensemble Filter
+An ensemble filter is a sequential data assimilation algorithm with two procedures at every time step: a forecast followed by an analysis. The forecast ensembles arise from a model while the analysis makes an adjustment of the forecasts ensembles from the model towards the data. An ensemble Kalman filter is typically suggested for this type of analysis because of its computationally efficient analytical solution and its ability to update states based on an estimate of covariance structure. But, in some cases, the ensemble Kalman filter fails because of filter divergence. Filter divergence occurs when forecast variability is too small, which causes the analysis to favor the forecast and diverge from the data. Models often produce low forecast variability because there is little internal stochasticity. Our ensemble filter overcomes this problem in a Bayesian framework by including an estimation of model process variance. This methodology also maintains the benefits of the ensemble Kalman filter by updating the state vector based on the estimated covariance structure.
+
+This process begins after the model is spun up to equilibrium.
+
+The likelihood function uses the data vector $\left(\boldsymbol{y_{t}}\right)$ conditional on the estimated state vector $\left(\boldsymbol{x_{t}}\right)$ such that
+  
+ $\boldsymbol{y}_{t}\sim\mathrm{multivariate\:normal}(\boldsymbol{x}_{t},\boldsymbol{R}_{t})$
+ 
+where $\boldsymbol{R}_{t}=\boldsymbol{\sigma}_{t}^{2}\boldsymbol{I}$ and $\boldsymbol{\sigma}_{t}^{2}$ is a vector of data variances. To obtain an estimate of the state vector $\left(\boldsymbol{x}_{t}\right)$, we use a process model that incorporates a process covariance matrix $\left(\boldsymbol{Q}_{t}\right)$. This process covariance matrix differentiates our methods from past ensemble filters. Our process model contains the following equations
+
+$\boldsymbol{x}_{t}	\sim	\mathrm{multivariate\: normal}(\boldsymbol{x}_{model_{t}},\boldsymbol{Q}_{t})$
+
+$\boldsymbol{x}_{model_{t}}	\sim	\mathrm{multivariate\: normal}(\boldsymbol{\mu}_{forecast_{t}},\boldsymbol{P}_{forecast_{t}})$
+
+where $\boldsymbol{\mu}_{forecast_{t}}$ is a vector of means from the ensemble forecasts and $\boldsymbol{P}_{forecast_{t}}$ is a covariance matrix calculated from the ensemble forecasts. The prior for our process covariance matrix is $\boldsymbol{Q}_{t}\sim\mathrm{Wishart}(\boldsymbol{V}_{t},n_{t})$ where $\boldsymbol{V}_{t}$ is a scale matrix and $n_{t}$ is the degrees of freedom. The prior shape parameters are updated at each time step through moment matching such that
+
+$\boldsymbol{V}_{t+1}	=	n_{t}\bar{\boldsymbol{Q}}_{t}$
+
+$n_{t+1}	=	\frac{\sum_{i=1}^{I}\sum_{j=1}^{J}\frac{v_{ijt}^{2}+v_{iit}v_{jjt}}{Var(\boldsymbol{\bar{Q}}_{t})}}{I\times J}$
+
+where we calculate the mean of the process covariance matrix $\left(\bar{\boldsymbol{Q}_{t}}\right)$ from the posterior samples at time t. Degrees of freedom for the Wishart are typically calculated element by element where $v_{ij}$ are the elements of $\boldsymbol{V}_{t}$. $I$ and $J$ index rows and columns of $\boldsymbol{V}$. Here, we calculate a mean number of degrees of freedom for $t+1$ by summing over all the elements of the scale matrix $\left(\boldsymbol{V}\right)$ and dividing by the count of those elements $\left(I\times J\right)$. We fit this model sequentially through time in the R computing environment using R package 'rjags.'
+
+### Multi-site State data assimilation.
+`sda.enkf.multisite` function allows for assimilation of observed data at multiple sites at the same time. In order to run a multi-site SDA, one needs to send a multisettings pecan xml file to this function. This multisettings xml file needs to contain information required for running at least two sites under `run` tag. The code will automatically run the ensembles for all the sites and reformats the outputs matching the required formats for analysis step. 
+
+The observed mean and cov needs to be formatted as list of different dates with observations. For each element of this list also there needs to be a list with mean and cov matrices of different sites named by their siteid. This would look like something like this:
+```
+> obs.mean
+
+$`2010/12/31`
+$`2010/12/31`$`1000000650`
+   AbvGrndWood     GWBI
+    111.502    1.0746
+
+$`2010/12/31`$`1000000651`
+   AbvGrndWood     GWBI
+    114.302    1.574695
+```
+
+```
+> obs.cov
+
+$`2010/12/31`
+$`2010/12/31`$`1000000650`
+           [,1]        [,2]
+[1,] 19.7821691 0.213584319
+[2,]  0.5135843 0.005162113
+
+$`2010/12/31`$`1000000651`
+           [,1]        [,2]
+[1,] 15.2821691 0.513584319
+[2,]  0.1213583 0.001162113
+```
+An example of multi-settings pecan xml file also may look like below:
+```
+<?xml version="1.0"?>
+<pecan.multi>
+ <state.data.assimilation>
+   <process.variance>FALSE</process.variance>
+   <adjustment>TRUE</adjustment>
+   <data>
+    <format_id>1000000040</format_id>
+    <input.id>1000013298</input.id>
+  </data>
+   <state.variables>
+   <variable>
+      <variable.name>GWBI</variable.name>
+   <unit>KgC/m^2</unit>
+       <min_value>0</min_value>
+       <max_value>9999</max_value>
+   </variable>
+   <variable>
+   <variable.name>AbvGrndWood</variable.name>
+   <unit>KgC/m^2</unit>
+   <min_value>0</min_value>
+   <max_value>9999</max_value>
+   </variable>
+   </state.variables>
+  <start.date>1960/01/01</start.date>
+  <end.date>2000/12/31</end.date>
+  </state.data.assimilation>
+ <info>
+    <notes></notes>
+    <userid>-1</userid>
+    <username></username>
+    <date>2017/12/06 21:19:33 +0000</date>
+  </info>
+ <outdir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768</outdir>
+ <database>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>128.197.168.114</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>false</write>
+    </bety>
+    <dbfiles>/fs/data1/pecan.data/dbfiles/</dbfiles>
+  </database>
+ <pfts>
+  <pft>
+   <name>temperate.deciduous_SDA</name>
+   <constants>
+    <num>2</num>
+   </constants>
+   <outdir>/fs/data2/output//PEcAn_1000008768/pft/temperate.deciduous_SDA</outdir>
+   <posteriorid>1000008552</posteriorid>
+  </pft>
+ </pfts>
+ <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+ <ensemble>
+  <size>20</size>
+  <ensemble.id>1000016146</ensemble.id>
+  <start.year>1995</start.year>
+  <end.year>1999</end.year>
+  <samplingspace>
+  <parameters>
+    <method>uniform</method>
+  </parameters>
+  <met>
+    <method>sampling</method>
+  </met>
+  <soil>    
+  <parent>parameters</parent>
+  </soil>
+  <vegetation>
+  <parent>soil</parent>
+  </vegetation>
+  </samplingspace>
+ </ensemble>
+ <model>
+  <id>1000000022</id>
+  <default.param>/fs/data3/hamzed/output/paleon_sda_SIPNET-8768/Bartlett.param</default.param>
+  <type>SIPNET</type>
+  <revision>r136</revision>
+  <delete.raw>FALSE</delete.raw>
+  <binary>/fs/data5/pecan.models/SIPNET/trunk/sipnet_ssr</binary>
+ </model>
+ <workflow>
+    <id>1000008768</id>
+  </workflow>
+ <run>
+  <settings.1000000650>
+  <site>
+   <id>1000000650</id>
+   <met.start>1960/01/01</met.start>
+   <met.end>1965/12/31</met.end>
+   <name>Harvard Forest - Lyford Plots (PalEON PHA)</name>
+   <lat>42.53</lat>
+   <lon>-72.18</lon>
+  </site>
+  <inputs>
+   <met>
+    <source>CRUNCEP</source>
+    <output>SIPNET</output>
+    <path>
+    <path1>/fs/data1/pecan.data/dbfiles/CRUNCEP_SIPNET_site_0-758/CRUNCEP.1960-01-01.2010-12-31.clim</path1>
+    </path>
+   </met>
+  </inputs>
+  <start.date>1960/01/01</start.date>
+  <end.date>1980/12/31</end.date>
+  </settings.1000000650>
+  <settings.1000000651>
+  <site>
+   <id>1000000651</id>
+   <met.start>1960/01/01</met.start>
+   <met.end>1965/12/31</met.end>
+   <name>Harvard Forest - Lyford Plots (PalEON PHA)</name>
+   <lat>42.53</lat>
+   <lon>-72.18</lon>
+  </site>
+  <inputs>
+   <met>
+    <source>CRUNCEP</source>
+    <output>SIPNET</output>
+    <path>
+    <path1>/fs/data1/pecan.data/dbfiles/CRUNCEP_SIPNET_site_0-758/CRUNCEP.1960-01-01.2010-12-31.clim</path1>
+    </path>
+   </met>
+  </inputs>
+  <start.date>1960/01/01</start.date>
+  <end.date>1980/12/31</end.date>
+  </settings.1000000651>
+ </run>
+ <host>
+  <name>localhost</name>
+  <rundir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/run</rundir>
+  <outdir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/out</outdir>
+ </host>
+ <settings.info>
+  <deprecated.settings.fixed>TRUE</deprecated.settings.fixed>
+  <settings.updated>TRUE</settings.updated>
+  <checked>TRUE</checked>
+ </settings.info>
+ <rundir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/run</rundir>
+ <modeloutdir>/fs/data3/hamzed/output/MultiSite_Sandbox/paleon_sda_SIPNET-8768/out</modeloutdir>
+ <multisettings>run</multisettings>
+</pecan.multi>
+```
+
+==> 03_hidden_analyses/03_sda_methods.Rmd <==
+## State Data Assimilation Methods
+
+*By Ann Raiho*
+
+Our goal is build a fully generalizable state data assimilation (SDA) workflow that will assimilate multiple types of data and data products into ecosystem models within PEcAn temporally and spatially. But, during development, specifically with PalEON goals in mind, we have been focusing on assimilating tree ring estimated NPP and AGB and pollen derived fractional composition into two ecosystem models, SIPNET and LINKAGES, at Harvard Forest. This methodology will soon be expanded to include the PalEON sites listed on the [state data assimilation wiki page](https://paleon.geography.wisc.edu/doku.php/working_groups;state_data_assimilation).
+
+### Data Products
+During workflow development, we have been working with tree ring estimated NPP and AGB and pollen derived fractional composition data products. Both of these data products have been estimated with a full accounting of uncertainty, which provides us with state variable observation mean vector and covariance matrix at each time step. These data products are discussed in more detail below. Even though we have been working with specific data products during development, our workflow is generalizable to alternative data products as long as we can calculate a state variable observation mean vector and covariance for a time point. 
+
+#### Tree Rings
+We have been primarily been working with the tree ring data product created by Andria Dawson and Chris Paciorek and the PEcAn tree ring allometry module. They have developed a Bayesian model that estimates annual aboveground biomass increment (Mg/ha/yr) and aboveground biomass (Mg/ha) for each tree in a dataset. We obtain this data and aggregate to the level appropriate for the ecosystem model. In SIPNET, we are assimilating annual gross woody increment (Mg/ha/yr) and above ground woody biomass (Mg/ha). In LINKAGES, we are assimilating annual species biomass. More information on deriving these tree ring data products can be found in Dawson et al 201?.
+
+We have been working mostly with tree data collected at Harvard Forest. Tree rings and census data were collected at Lyford Plot between 1960 and 2010 in three separate plots. Other tree ring data will be added to this analysis in the future from past PEON courses (UNDERC), Kelly Heilman (Billy's Lake and Bigwoods), and Alex Dye (Huron Mt. Club).
+
+#### Pollen
+STEPPS is a Bayesian model developed by Paciorek and McLachlan 2009 and Dawson et al 2016 to estimate spatially gridded fractional composition from fossil pollen. We have been working with STEPPS1 output, specifically with the grid cell that contains Harvard Forest. The temporal resolution of this data product is centennial. Our workflow currently operates at annual time steps, but does not require data at every time step. So, it is possible to assimilate fractional composition every one hundred years or to assimilate fractional composition data every year by accounting for variance inflation.
+
+In the future, pollen derived biomass (ReFAB) will also be available for data assimilation. Although, we have not discussed how STEPPS and ReFAB data assimilation will work. 
+
+#### Variance Inflation
+*Side Note: Probably want to call this something else now.
+
+Since the fractional composition data product has a centennial resolution, in order to use fractional composition information every year we need to change the weight the data has on the analysis. The basic idea is to downweight the likelihood relative to the prior to account for (a) the fact that we assimilate an observation multiple times and (b) the fact that the number of STEPPS observations is 'inflated' because of the autocorrelation. To do this, we take the likelihood and raise it to the power of (1/w) where 'w' is an inflation factor.
+
+w = D * (N / ESS)
+
+where D is the length of the time step. In our case D = 100. N is the number of time steps. In our case N = 11. and ESS is the effective sample size. The ESS is calculated with the following function where ntimes is the same as N above and sims is a matrix with the dimensions number of MCMC samples by number of state variables.
+
+```
+ESS_calc <- function(ntimes, sims){
+        # center based on mean at each time to remove baseline temporal correlation 
+        # (we want to estimate effective sample size effect from correlation of the errors)
+        row.means.sims <- sims - rowMeans(sims)  
+        
+        # compute all pairwise covariances at different times
+        covars <- NULL
+        for(lag in 1:(ntimes-1)){
+          covars <- c(covars, rowMeans(row.means.sims[(lag+1):ntimes, , drop = FALSE] * row.means.sims[1:(ntimes-lag), , drop = FALSE])) 
+        }
+        vars <- apply(row.means.sims, 1, var) # pointwise post variances at each time, might not be homoscedastic
+        
+        # nominal sample size scaled by ratio of variance of an average
+        # under independence to variance of average of correlated values
+        neff <- ntimes * sum(vars) / (sum(vars) + 2 * sum(covars))
+        return(neff)
+      }
+```
+
+The ESS for the STEPPS1 data product is 3.6, so w in our assimilation of fractional composition at Harvard Forest will be w = 305.6. 
+
+### Current Models
+SIPNET and LINKAGES are the two ecosystem models that have been used during state data assimilation development within PEcAn. SIPNET is a simple ecosystem model that was built for... LINKAGES is a forest gap model created to simulate the process of succession that occurs when a gap is opened in the forest canopy. LINKAGES has 72 species level plant functional types and the ability to simulate some below ground processes (C and N cycles).
+
+### Model Calibration
+Without model calibration both SIPNET and LINKAGES make incorrect predictions about Harvard Forest. To confront this problem, SIPNET and LINKAGES will both be calibrated using data collected at the Harvard Forest flux tower. Istem has completed calibration for SIPNET using a [parameter data assimilation emulator](https://github.com/PecanProject/pecan/blob/develop/modules/assim.batch/R/pda.emulator.R) contained within the PEcAn workflow. LINKAGES will also be calibrated using this method. This method is also generalizable to other sites assuming there is data independent of data assimilation data available to calibrate against.
+
+### Initial Conditions
+The initial conditions for SIPNET are sampled across state space based on data distributions at the time when the data assimilation will begin. We do not sample LINAKGES for initial conditions and instead perform model spin up for 100 years prior to beginning data assimilation. In the future, we would like to estimate initial conditions based on data. We achieve adequate spread in the initial conditions by allowing the parameters to vary across ensemble members. 
+
+### Drivers
+We are currently using Global Climate Model (GCM) drivers from the PaLEON model intercomparison. Christy Rollinson and John Tipton are creating MET downscaled GCM drivers for the Paleon data assimilation sites. We will use these drivers when they are available because they are a closer representation of reality.
+
+## Sequential State Data Assimilation
+We are using sequential state data assimilation methods to assimilate paleon data products into ecosystem models because less computation power is required for sequential state data assimilation than for particle filter methods.
+
+### General Description
+The general sequential data assimilation framework consists of three steps at each time step:
+1. Read the state variable output for time t from the model forecast ensembles and save the forecast mean (muf) and covariance (Pf).
+2. If there are data mean (y) and covariance (R) at this time step, perform data assimilation analysis (either EnKF or generalized ensemble filter) to calculate the new mean (mua) and covariance (Pa) of the state variables.
+3. Use mua and Pa to restart and run the ecosystem model ensembles with new state variables for time t+1.
+
+### EnKF
+There are two ways to implement sequential state data assimilation at this time. The first is the Ensemble Kalman Filter (EnKF). EnKF has an analytical solution, so the kalman gain, analysis mean vector, and analysis covariance matrix can be calculated directly:
+
+```
+       
+        K <- Pf %*% t(H) %*% solve((R + H %*% Pf %*% t(H))) ## Kalman Gain
+        
+        mu.a <- mu.f + K %*% (Y - H %*% mu.f) # Analysis mean vector
+        
+        Pa   <- (diag(ncol(X)) - K %*% H) %*% Pf # Analysis covariance matrix
+        
+```
+
+The EnKF is typically used for sequential state data assimilation, but we found that EnKF lead to filter divergence when combined with our uncertain data products. Filter divergence led us to create a generalized ensemble filter that estimates process variance.
+
+### Generalized Ensemble Filter
+The generalized ensemble filter follows generally the three steps of sequential state data assimilation. But, in the generalized ensemble filter we add a latent state vector that accounts for added process variance. Furthermore, instead of solving the analysis analytically like the EnKF, we have to estimate the mean analysis vector and covariance matrix with MCMC. 
+
+#### Mapping Ensemble Output to Tobit Space
+There are some instances when we have right or left censored variables from the model forecast. For example, a model estimating species level biomass may have several ensemble members that produce zero biomass for a given species. We are considering this case a left censored state variable that needs to be mapped to normal space using a tobit model. We do this by creating two matrices with dimensions number of ensembles by state variable. The first matrix is a matrix of indicator variables (y.ind), and the second is a matrix of censored variables (y.censored). When the indicator variable is 0 the state variable (j) for ensemble member (i) is sampled. This allows us to impute a normal distribution for each state variable that contains 'missing' forecasts or forecasts of zero. 
+
+```
+tobit2space.model <- nimbleCode({
+    for(i in 1:N){
+      y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
+      for(j in 1:J){
+        y.ind[i,j] ~ dconstraint(y.censored[i,j] > 0)
+      }
+    }
+    
+    muf[1:J] ~ dmnorm(mean = mu_0[1:J], cov = pf[1:J,1:J])
+    
+    Sigma[1:J,1:J] <- lambda_0[1:J,1:J]/nu_0
+    pf[1:J,1:J] ~ dinvwish(S = Sigma[1:J,1:J], df = J)
+    
+  })
+```
+
+
+#### Generalized Ensemble Filter Model Description
+Below is the BUGS code for the full analysis model. The forecast mean an covariance are calculated from the tobit2space model above. We use a tobit likelihood in this model because there are instances when the data may be left or right censored. Process variance is included by adding a latent model state (X) with a process precision matrix (q). We update our prior on q at each time step using our estimate of q from the previous time step. 
+
+```
+  tobit.model <- nimbleCode({ 
+    
+    q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
+    Q[1:N,1:N] <- inverse(q[1:N,1:N])
+    X.mod[1:N] ~ dmnorm(muf[1:N], prec = pf[1:N,1:N]) ## Model Forecast ##muf and pf are assigned from ensembles
+    
+    ## add process error
+    X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
+    
+    #agb linear
+    #y_star[1:YN,1:YN] <- X[1:YN,1:YN] #[choose]
+    
+    #f.comp non linear
+    #y_star[1:YN] <- X[1:YN] / sum(X[1:YN])
+    
+    ## Analysis
+    y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
+    
+    #don't flag y.censored as data, y.censored in inits
+    #remove y.censored samplers and only assign univariate samplers on NAs
+    
+    for(i in 1:YN){
+      y.ind[i] ~ dconstraint(y.censored[i] > 0)
+    }
+    
+  })
+```
+
+### Ensemble Adjustment
+Each ensemble member has a different set of species parameters. We adjust the updated state variables by using an ensemble adjustment. The ensemble adjustment weights the ensemble members based on their likelihood during the analysis step.  
+
+```
+      S_f  <- svd(Pf)
+      L_f  <- S_f$d
+      V_f  <- S_f$v
+      
+      ## normalize
+      Z <- X*0
+      for(i in seq_len(nrow(X))){
+          Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+      }
+      Z[is.na(Z)]<-0
+      
+      ## analysis
+      S_a  <- svd(Pa)
+      L_a  <- S_a$d
+      V_a  <- S_a$v
+      
+      ## analysis ensemble
+      X_a <- X*0
+      for(i in seq_len(nrow(X))){
+        X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
+      }
+```
+
+### Diagnostics
+There are three diagnostics we have currently implemented: time series, bias time series, and process variance. The time series diagnostics show the data, forecast, and analysis time series for each state variable. These are useful for visually assessing variance and magnitude of change of state variables through time. These time series are also updated throughout the analysis and are also created as a pdf at the end of the SDA workflow. There are two types of bias time series the first assess the bias in the update (the forecast minus the analysis) and the second assess the bias in the error (the forecast minus the data). These bias time series are useful for identifying which state variables have intrinsic bias within the model. For example, if red oak biomass in LINKAGES increases at every time step (the update and the error are always positive), this would suggest that LINKAGES has a positive growth or recruitment bias for red oak. Finally, when using the generalized ensemble filter to estimate process variance, there are two additional plots to assess estimation of process variance. The first is a correlation plot of the process covariance matrix. This tells us what correlations are incorrectly represented by the model. For example, if red oak biomass and white pine biomass are highly negatively correlated in the process covariance matrix, this means that the model either 1) has no relationship between red oak and white pine and they should affect each other negatively or 2) there is a positive relationship between red oak and white pine and there shouldn't be any relationship. We can determine which of these is true by comparing the process covariance matrix to the model covariance matrix. The second process variance diagnostic plot shows how the degrees of freedom associated with estimating the process covariance matrix have changed through time. This plot should show increasing degrees of freedom through time. 
+
+
+==> 03_hidden_analyses/04_multisettings.Rmd <==
+## MultiSettings
+
+(TODO: Under construction...)
+
+## Benchmarking {#Benchmarking}
+
+Benchmarking is the process of comparing model outputs against either experimental data or against other model outputs as a way to validate model performance. 
+We have a suit of statistical comparisons that provide benchmarking scores as well as visual comparisons that help in diagnosing data-model and/or model-model differences.
+
+### Data Preparation
+
+All data that you want to compare with model runs must be registered in the database. 
+This is currently a step that must be done by hand either from the command line or through the online BETY interface. 
+The data must have three records:
+
+1. An input record (Instructions [here](#NewInput))
+
+2. A database file record (Instructions [here](#NewInput))
+
+3. A format record (Instructions [here](#NewFormat))
+
+### Model Runs
+
+Model runs can be setup and executed 
+- Using the PEcAn web interface online or with a VM ([see setup](#GettingStarted))
+- By hand using the [pecan.xml](#pecanXML) 
+
+### The Benchmarking Shiny App
+
+The entire benchmarking process can be done through the Benchmarking R Shiny app. 
+
+When the model run has completed, navigate to the workflow visualization Shiny app. 
+
+- Load model data
+    - Select the workflow and run id
+    - Make sure that your model output is loading properly (i.e. you can see plots of your data)
+- Load benchmarking data
+    - Again make sure that you can see the uploaded data plotted alongside the model output. In the future there will be more tools for double checking that your uploaded data is appropriate for benchmarking, but for now you may need to do the sanity checks by hand. 
+
+#### Create a reference run record
+
+- Navigate to the Benchmarking tab
+  + The first step is to register the new model run as a reference run in the database. Benchmarking cannot be done before this step is completed. When the reference run record has been created, additional menus for benchmarking will appear. 
+  
+#### Setup Benchmarks and metrics
+
+- From the menus select
+    - The variables in the uploaded data that you wish to compare with model output.
+    - The numerical metrics you would like to use in your comparison. 
+    - Additional comparison plots that you would like to see.
+- Note: All these selections populate the benchmarking section of the `pecan.BENCH.xml` which is then saved in the same location as the original run output. This xml is purely for reference.
+
+##### Benchmarking Output
+
+- All benchmarking results are stored in the benchmarking directory which is created in the same folder as the original model run. 
+- The benchmaking directory contains subdirectories for each of the datasets compared with the model output. The names of these directories are the same as the corresponding data set's input id in BETY. 
+- Each input directory contains `benchmarking.output.Rdata`, an Rdata file contianing all the results of the benchmarking workflow. `load(benchmarking.output.Rdata) ` loads a list  called `result.out`  which contains the following:
+  - `bench.results`: a data frame of all numeric benchmarking scores
+  - `format`: a data frame that can be used to see how the input data was transformed to make it comparable to the model output. This involves converting from the original variable names and units to the internal pecan standard. 
+  - `aligned.dat`: a data frame of the final aligned model and input values. 
+- All plots are saved as pdf files with names with "benchmark_plot-type_variable_input-id.pdf"
+  
+- To view interactive results, naviage to the Benchmarking Plots tab in the shiny app.
+
+
+
+### Benchmarking in pecan.xml
+
+Before reading this section, it is recommended that you [familiarize yourself with basics of the pecan.xml file.](#pecanXML) 
+
+The `pecan.xml` has an _optional_ benchmarking section. Below are all the tags in the benchmarking section explained. Many of these field are filled in automatically during the benchmarking process when using the benchmarking shiny app. 
+
+The only time one should edit the benchmarking section by hand is for performing clone runs. See [clone run documentation.](#CloneRun)
+
+`<benchmarking>` settings:
+
+- `ensemble_id`: the id of the ensemble that you will be using - the settings from this ensemble will be saved in a reference run record and then `ensemble_id` will be replaced with `reference_run_id` 
+- `new_run`: TRUE = create new run, FALSE = use existing run (required, default FALSE)
+
+It is possible to look at more than one benchmark with a particular run. 
+The specific settings related to each benchmark are in a sub section called `benchmark`
+
+- `input_id`: the id of the benchmarking data  (required)
+- `variable_id`: the id of the variable of interest within the data. If you leave this blank, all variables that are shared between the input and model output will be used. 
+- `metric_id`: the id(s) of the metric(s) to be calculated. If you leave this blank, all metrics will be used. 
+
+Example:
+In this example, 
+- we are using a pre-existing run from `ensemble_id = 1000010983` (`new_run = FALSE`)
+- the output will be compared to data from `input_id = 1000013743`, specifically two variables of interest: `variable_id = 411, variable_id = 18`
+- for `variable_id = 411` we will perform only one metric of comparison `metric_id = 1000000001`
+- for for `variable_id = 18` we will perform two metrics of comparison `metric_id = 1000000001, metric_id = 1000000002`
+
+```xml
+<benchmarking>
+  <ensemble_id>1000010983</ensemble_id>
+  <new_run>FALSE</new_run>
+  <benchmark>
+   <input_id>1000013743</input_id>
+   <variable_id>411</variable_id>
+   <site_id>853</site_id>
+   <metrics>
+    <metric_id>1000000001</metric_id>
+   </metrics>
+  </benchmark>
+  <benchmark>
+   <input_id>1000013743</input_id>
+   <variable_id>18</variable_id>
+   <site_id>853</site_id>
+   <metrics>
+    <metric_id>1000000001</metric_id>
+    <metric_id>1000000002</metric_id>
+   </metrics>
+  </benchmark>
+</benchmarking>
+```

@@ -1,0 +1,16 @@
+{
+  "name": "SIPNET",
+  "type": "SIPNET",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "The SIPNET model is a simple ecosystem model which can be used to interpret carbon and water exchange between vegetated ecosystems and the atmosphere. The SIPNET model has been developed from the PnET family of models to include a data-assimilation capability.",
+  "creator": "Rob Kooper <kooper@illinois.edu>",
+  "contributors": [],
+  "links": {
+    "source": "http://someurl/code",
+    "issues": "http://someurl/issues",
+    "documentation": "http://someurl/wiki"
+  },
+  "inputs": {},
+  "bibtex": []
+}

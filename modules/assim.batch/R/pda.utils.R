@@ -233,14 +233,14 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
     priorids <- list()
     for (i in seq_along(settings$pfts)) {
         
-      pft.id <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", 
+      pft.id <- PEcAn.DB::db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='",
                                             settings$pfts[[i]]$name, 
                                             "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", 
                                             settings$model$type, "'"), 
                                      con)[["id"]]
-      priors <- db.query(paste0("SELECT * from posteriors where pft_id = ", pft.id), con)
+      priors <- PEcAn.DB::db.query(paste0("SELECT * from posteriors where pft_id = ", pft.id), con)
         
-      prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id IN (", 
+      prior.db <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id IN (",
                                     paste(priors$id, collapse = ","), ")"), con)
         
       prior.db.grep <- prior.db[grep("^post\\.distns\\..*Rdata$", prior.db$file_name), ]
@@ -273,7 +273,7 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
   # if files becomes NULL try loading objects from workflow oft folders
   for (i in seq_along(settings$pfts)) {
       
-    files <- dbfile.check("Posterior", priorids[[i]], con, tmp_hostname, return.all  = TRUE)
+    files <- PEcAn.DB::dbfile.check("Posterior", priorids[[i]], con, tmp_hostname, return.all  = TRUE)
       
     pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
     
@@ -350,7 +350,7 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
       ensemble.type <- "pda.emulator"
     }
     
-    ensemble.id <- db.query(paste("INSERT INTO ensembles (runtype, workflow_id) values ('", 
+    ensemble.id <- PEcAn.DB::db.query(paste("INSERT INTO ensembles (runtype, workflow_id) values ('",
                                   ensemble.type, "', ", workflow.id, ") RETURNING id", sep = ""), con)
 
   } else {
@@ -467,7 +467,7 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
     ## set RUN.ID
     if (!is.null(con)) {
       paramlist <- run.names[i]
-      run.ids[i] <- db.query(
+      run.ids[i] <- PEcAn.DB::db.query(
         paste0(
           "INSERT INTO runs", 
           "(model_id, site_id, start_time, finish_time, outdir,",
@@ -591,8 +591,8 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
     rescale <- diag(rep(settings$assim.batch$jump$adj.min, r))
     jcov    <- rescale %*% jcov %*% rescale
   } else {
-    stdev  <- apply(params.recent, 2, sd)
-    corr   <- cor(params.recent)
+    stdev  <- apply(params.recent, 2, stats::sd)
+    corr   <- stats::cor(params.recent)
     if (any(is.na(corr))) {
       corr <- diag(rep(1, r))
     }
@@ -730,10 +730,13 @@ return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, ru
         # calculate optimum bias parameter for the model output that has bias
         regdf <- data.frame(inputs[[isbias[i]]]$obs, model.out[[iknot]][[isbias[i]]])
         colnames(regdf) <- c("data","model")
-        fit <- lm( regdf$data ~ (regdf$model - 1))
+        fit <- stats::lm( regdf$data ~ (regdf$model - 1))
         bias.params[[i]][iknot,1] <- fit$coefficients[[1]]
         if(ncol(bias.params[[i]]) > 1){
-          bias.params[[i]][iknot,  2:ncol(bias.params[[i]])] <- rnorm(ncol(bias.params[[i]])-1, bias.params[[i]][iknot,1], bias.params[[i]][iknot,1]*0.1)
+          bias.params[[i]][iknot,  2:ncol(bias.params[[i]])] <- stats::rnorm(
+                                                                  ncol(bias.params[[i]]) - 1,
+                                                                  bias.params[[i]][iknot, 1],
+                                                                  bias.params[[i]][iknot, 1] * 0.1)
         }
       }
     }
@@ -773,7 +776,7 @@ return_hyperpars <- function(assim.settings, inputs){
     for(k in seq_along(assim.settings$inputs)){
       hyper.pars[[k]] <- list()
       hyper.pars[[k]]$parama <- 0.001
-      hyper.pars[[k]]$paramb <- 0.001 * var(inputs[[k]]$data[,1], na.rm = TRUE)
+      hyper.pars[[k]]$paramb <- 0.001 * stats::var(inputs[[k]]$data[,1], na.rm = TRUE)
     }
     
   }else{
@@ -784,7 +787,7 @@ return_hyperpars <- function(assim.settings, inputs){
       if(is.null(check.hypers[[k]])){
         hyper.pars[[k]] <- list()
         hyper.pars[[k]]$parama <- 0.001
-        hyper.pars[[k]]$paramb <- 0.001 * var(inputs[[k]]$data[,1], na.rm = TRUE)
+        hyper.pars[[k]]$paramb <- 0.001 * stats::var(inputs[[k]]$data[,1], na.rm = TRUE)
       }else{
         hyper.pars[[k]] <- list()
         hyper.pars[[k]]$parama <- as.numeric(assim.settings$inputs[[k]]$hyper.pars$parama)
@@ -957,7 +960,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   
   burnins <- rep(NA, length(mcmc.param.list))
   for (i in seq_along(mcmc.param.list)) {
-    params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
+    params.subset[[i]] <- coda::as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
     burnin     <- getBurnin(params.subset[[i]], method = "gelman.plot")
     burnins[i] <- max(burnin, na.rm = TRUE)
@@ -970,7 +973,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
 
   collect_samples <- list()
   for (i in seq_along(mcmc.samp.list)) {
-    collect_samples[[i]] <- window(mcmc.samp.list[[i]], start = maxburn)
+    collect_samples[[i]] <- stats::window(mcmc.samp.list[[i]], start = maxburn)
   }
   
   mcmc_samples <- do.call(rbind, collect_samples)
@@ -986,7 +989,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
     
     sf_samples <- list()
     for (i in seq_along(sf.samp)) {
-      sf_samples[[i]] <- window(sf.samp[[i]], start = maxburn)
+      sf_samples[[i]] <- stats::window(sf.samp[[i]], start = maxburn)
     }
     sf_samples <- do.call(rbind, sf_samples)
     

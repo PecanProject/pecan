@@ -24,21 +24,23 @@ Depends:
     PEcAn.utils,
     coda
 Imports:
+    PEcAn.data.atmosphere,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
     abind (>= 1.4.5),
-    ncdf4 (>= 1.15),
-    stringr(>= 1.1.0),
-    udunits2 (>= 0.11),
-    XML (>= 3.98-1.4),
-    hdf5r,
-    tidyr,
     dplyr,
-    tibble,
+    glue,
+    hdf5r,
     lubridate,
     magrittr,
-    purrr
+    ncdf4 (>= 1.15),
+    purrr,
+    stringr(>= 1.1.0),
+    tidyr,
+    tibble,
+    udunits2 (>= 0.11),
+    XML (>= 3.98-1.4)
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE

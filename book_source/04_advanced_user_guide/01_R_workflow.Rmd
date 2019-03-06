@@ -1,0 +1,101 @@
+# PEcAn workflow (web/workflow.R) {#workflow}
+
+- How the workflow works
+- How each module is called
+- How to do outside of web interface
+- Link to "folder structure" section below for detailed descriptions
+
+
+<div style="width: 640px; height: 960px; margin: 10px; position: relative;"><iframe allowfullscreen frameborder="0" style="width:640px; height:480px" src="https://www.lucidchart.com/documents/embeddedchart/93dca2c6-63cb-4df4-b68c-29590d1836fc" id="uAv44V~qLSWE"></iframe></div>
+
+## Read Settings {#workflow-readsettings}
+
+(TODO: Under construction...)
+
+## Input Conversions {#workflow-input}
+
+### Input Data {#workflow-input-data}
+
+Models require input data as drivers, parameters, and boundary conditions. In order to make a variety of data sources that have unique formats compatible with models, conversion scripts are written to convert them into a PEcAn standard format. That format is a netcdf file with variables names and specified to our standard variable table.
+
+Within the PEcAn repository, code pertaining to input conversion is in the MODULES directory under the data.atmosphere and data.land directories. 
+
+### Initial Conditions {#workflow-input-initial}
+
+(TODO: Under construction)
+
+## Meteorological Data {#workflow-met}
+
+To convert meterological data into the PEcAn Standard and then into model formats we follow four main steps:
+  
+  1. Downloading raw data
+    - [Currently supported products]()
+    - Example Code
+  2. Converting raw data into a CF standard 
+    - Example Code 
+  3. Downscaling and gapfilling
+    - Example Code 
+  4. Coverting to Model Specific format
+    - Example Code 
+
+Common Questions regarding Met Data: 
+
+How do I add my Meterological data product to PEcAn?
+How do I use PEcAn to convert Met data outide the workflow?
+
+
+The main script that handles Met Processing, is [`met.process`](https://github.com/PecanProject/pecan/blob/develop/modules/data.atmosphere/R/met.process.R). It acts as a wrapper function that calls individual modules to facilitate the processing of meteorological data from it's original form to a pecan standard, and then from that standard to model specific formats. It also handles recording these processes in the BETY database.
+
+  1. Downloading raw data
+    - [Available Meteorological Drivers]
+    - Example Code to download [Ameriflux data](https://github.com/PecanProject/pecan/blob/develop/modules/data.atmosphere/R/download.AmerifluxLBL.R)
+  2. Converting raw data into a CF standard (if needed)
+    - Example Code to [convert from raw csv to CF standard](https://github.com/PecanProject/pecan/blob/develop/modules/data.atmosphere/R/met2CF.csv.R)
+  3. Downscaling and gapfilling(if needed)
+    - Example Code to [gapfill](https://github.com/PecanProject/pecan/blob/develop/modules/data.atmosphere/R/metgapfill.R)
+  4. Coverting to Model Specific format
+    - Example Code to [convert Standard into Sipnet format](https://github.com/PecanProject/pecan/blob/develop/models/sipnet/R/met2model.SIPNET.R)
+    
+
+### Downloading Raw data (Description of Process) {#workflow-met-download}
+  
+  Given the information passed from the pecan.xml met.process will call the `download.raw.met.module` to facilitate the execution of the necessary functions to download raw data.
+
+```xml
+  <met>
+    <source>AmerifluxLBL</source>
+    <output>SIPNET</output>
+    <username>pecan</username>
+  </met>
+```
+  
+### Converting raw data to PEcAn standard {#workflow-met-standard}
+
+### Downscaling and gapfilling (optional) {#workflow-met-downscale}
+
+### Converting from PEcAn standard to model-specific format {#workflow-met-model}
+
+## Traits {#workflow-traits}
+
+(TODO: Under construction)
+
+## Meta Analysis {#workflow-metaanalysis}
+
+(TODO: Under construction)
+
+## Model Configuration {#workflow-modelconfig}
+
+(TODO: Under construction)
+
+## Run Execution {#workflow-modelrun}
+
+(TODO: Under construction)
+
+## Post Run Analysis {#workflow-postrun}
+
+(TODO: Under construction)
+
+## Advanced Analysis {#workflow-advanced}
+
+(TODO: Under construction)
+

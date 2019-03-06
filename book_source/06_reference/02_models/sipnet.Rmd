@@ -1,4 +1,4 @@
-## Sipnet
+## SiPNET {#models-sipnet}
 
 | Model Information ||
 | -- | -- |
