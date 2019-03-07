@@ -257,6 +257,19 @@ services:
     volumes:
       - pecan:/data
 
+  # PEcAn MAESPA model runner
+  maespa:
+    image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
 # ----------------------------------------------------------------------
 # Name of network to be used by all containers
 # ----------------------------------------------------------------------
