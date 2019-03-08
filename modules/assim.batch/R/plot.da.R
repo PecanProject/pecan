@@ -3,10 +3,9 @@
 ## some of this is redundant with other parts of PEcAn and needs to be cleaned up 
 
 plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
-  
+
   # source('code/R/approx.posterior.R') source('code/R/utils.R')
-  library(MASS)
-  
+
   # prior.dir <- './pecan/Toolik/growth/' prior.file<-'/post.distns.Rdata' in.dir <-
   # './pecan/Toolik/growth/' out.dir <- './pecan/Toolik/growth/' next.run.dir <-
   # './pecan/Toolik/growth/'
@@ -31,21 +30,21 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   
   ddist <- function(x, prior) {
     if (prior$distn == "exp") {
-      return(dexp(x, prior$parama))
+      return(stats::dexp(x, prior$parama))
     }
     eval(parse(text = paste("d", prior$distn, sep = "")))(x, prior$parama, prior$paramb)
   }
   rdist <- function(x, prior) {
     if (prior$distn == "exp") {
-      return(rexp(x, prior$parama))
+      return(stats::rexp(x, prior$parama))
     }
     eval(parse(text = paste("r", prior$distn, sep = "")))(x, prior$parama, prior$paramb)
   }
   pfts <- names(ensemble.samples)
   pfts <- pfts[pfts != "env"]
-  
-  pdf(paste(out.dir, "/da.plots.pdf", sep = ""), height = 8, width = 11)
-  
+
+  grDevices::pdf(paste(out.dir, "/da.plots.pdf", sep = ""), height = 8, width = 11)
+
   # ORIGINAL PRIORS
   priors <- do.call(rbind, lapply(pfts, function(pft) {
     traits <- names(ensemble.samples[[pft]])
@@ -75,25 +74,25 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   }))
   
   # PLOT LIKELIHOODS
-  par(mfrow = c(3, 5))
-  good.runs <- y < quantile(y, 0.95)
+  graphics::par(mfrow = c(3, 5))
+  good.runs <- y < stats::quantile(y, 0.95)
   print(nrow(x))
   print(length(good.runs))
   for (i in seq_along(x)) {
-    trait.entry <- trait.lookup(gsub("[1-2]$", "", traits[i]))
+    trait.entry <- PEcAn.utils::trait.lookup(gsub("[1-2]$", "", traits[i]))
     if (is.na(trait.entry)) {
-      trait.entry <- trait.lookup(traits[i])
+      trait.entry <- PEcAn.utils::trait.lookup(traits[i])
     }
-    
-    plot(x[good.runs, i], y[good.runs], 
-         main = trait.entry$figid, 
-         xlim = p.rng[i, ], 
-         xlab = trait.entry$units, 
+
+    graphics::plot(x[good.runs, i], y[good.runs],
+         main = trait.entry$figid,
+         xlim = p.rng[i, ],
+         xlab = trait.entry$units,
          ylab = "-log(likelihood)",
          pch = 1)
-    points(prior.x[, i], prior.y, col = "grey")
+    graphics::points(prior.x[, i], prior.y, col = "grey")
   }
-  
+
   samp <- lapply(seq(num.run.ids), function(run.id) {
     print(paste0(in.dir, "./mcmc", run.id, ".Rdata"))
     load(paste0(in.dir, "./mcmc", run.id, ".Rdata"))
@@ -104,40 +103,40 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   nmcmc <- nrow(samp[[1]])
   print(nmcmc)
   thin <- seq(500, nmcmc, by = 7)
-  par(mfrow = c(2, 3))
+  graphics::par(mfrow = c(2, 3))
   for (i in seq_along(samp[[1]])) {
     all <- do.call(rbind, lapply(samp, function(chain) chain[thin, i]))
     
     # MCMC chain
-    plot(c(), ylim = range(all, na.rm = TRUE), xlim = c(1, length(thin)), ylab = "", type = "l")
+    graphics::plot(c(), ylim = range(all, na.rm = TRUE), xlim = c(1, length(thin)), ylab = "", type = "l")
     for (chain in seq(samp)) {
-      lines(samp[[chain]][thin, i], col = chain)
+      graphics::lines(samp[[chain]][thin, i], col = chain)
     }
     
     # Autocorrelation plots
-    samp.mcmc <- as.mcmc.list(lapply(samp, function(chain) as.mcmc(chain[thin, i])))
+    samp.mcmc <- coda::as.mcmc.list(lapply(samp, function(chain) coda::as.mcmc(chain[thin, i])))
     coda::gelman.plot(samp.mcmc, auto.layout = FALSE, ylab = "")
     coda::autocorr.plot(samp.mcmc[[1]], auto.layout = FALSE)
   }
   
-  par(mfrow = c(3, 5))
+  graphics::par(mfrow = c(3, 5))
   for (i in seq_along(samp[[1]])) {
     all <- do.call(rbind, lapply(samp, function(chain) chain[thin, i]))
     
     # Density plots
-    trait.entry <- trait.lookup(gsub("[1-2]$", "", traits[i]))
+    trait.entry <- PEcAn.utils::trait.lookup(gsub("[1-2]$", "", traits[i]))
     if (is.na(trait.entry)) {
-      trait.entry <- trait.lookup(traits[i])
+      trait.entry <- PEcAn.utils::trait.lookup(traits[i])
     }
-    plot(density(all), 
+    graphics::plot(stats::density(all),
          xlim = p.rng[i, ], 
          main = paste(trait.entry$figid),
          type = "l", 
          ylab = "", 
          xlab = trait.entry$units)
     x <- seq(p.rng[i, 1], p.rng[i, 2], length = 1000)
-    lines(x, ddist(x, priors[traits[i], ]), col = "grey")
-    lines(x, ddist(x, priors2[traits[i], ]), col = "grey", lty = 2)
+    graphics::lines(x, ddist(x, priors[traits[i], ]), col = "grey")
+    graphics::lines(x, ddist(x, priors2[traits[i], ]), col = "grey", lty = 2)
   }
   
   # Now approximate posteriors to data assimilation and store them with posteriors from meta
@@ -157,7 +156,7 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
                            tundra.evergreen = c("growth_resp_factor", "b1Bs", "b1Bl", "b2Ht", "b1Ht", "SLA", "Vcmax", "r_fract"), 
                            tundra.deciduous = c("b1Ht", "b1Bs", "b2Ht", "growth_resp_factor", "Vcmax", "stomatal_slope", "r_fract", "root_turnover_rate"))
   
-  cv <- function(foo) sd(foo)/mean(foo)
+  cv <- function(foo) stats::sd(foo)/mean(foo)
   foo <- matrix(NA, nrow(priors), 8)
   for (pft in pfts) {
     print(pft)
@@ -189,7 +188,7 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   foo <- as.data.frame(foo)
   names(foo) <- c("pft", "trait", "cv1", "cv2", "cv3", "reduction1", "reduction2", "reductiontot")
   
-  par(mfrow = c(1, 1), cex = 0.5)
-  # plot(foo[,6] ~ as.factor(rownames(priors)))
+  graphics::par(mfrow = c(1, 1), cex = 0.5)
+  # graphics::plot(foo[,6] ~ as.factor(rownames(priors)))
   
 } # plot.da

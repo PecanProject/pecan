@@ -8,22 +8,34 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Changed
-- Automatic build are currently done using R version 3.5 and most development will be done with version 3.5 as well. It still might be possible to use R version 3.4 however we will not guarantee future compatibility with 3.4.
+- Improved testing (#2281). Automatic Travis CI builds of PEcAn on are now run using three versions of R in parallel. This should mean fewer issues with new releases and better backwards compatibility, but note that we still only guarantee full compatibility with the current release version of R. The tested versions are:
+  - `release`, the current public release of R (currently R 3.5). Build failures in this version are fixed before merging the change that caused them. When we say PEcAn is fully tested and working, this is the build we mean.
+  - `devel`, the newest available development build of R. We will fix issues with this version before the next major R release.
+  - `oldrel`, the previous major release of R (currently R 3.4). We will fix issues with this version as time allows, but we do not guarantee that it will stay compatible.
 - Reverting back from PR #2137 to fix issues with MAAT wrappers.
 - Moved docker files for models into model specific folder, for example Dockerfile for sipnet now is in models/sipnet/Dockerfile.
 - `PEcAn.utils`
   - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
 - Add template for documentation issues and add button to edit book.
 - Conditionally skip unit tests for downloading raw met data or querying the database when the required remote connection is not available.
+- Reorganization of docker folder
+  - All dockerfiles now live in their own folder
+  - scripts/generate_dependencies.R is now used to generate dependencies for make and docker
 
 ### Added
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
 - Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
 - Added unit tests for `met2model.<MODEL>` functions for most models.
+- Added MAESPA model to docker build
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
 - Removed package `PEcAn.data.mining` from the Make build. It can still be installed directly from R if desired, but is skipped by default because it is in early development, does not yet export any functions, and creates a dependency on the (large, often annoying to install) ImageMagick library.
+- Fully deprecate support for `MySQL` database driver. Now, only `PostgreSQL` (and, experimentally, `RPostgres`) are supported. With this, remove `RMySQL` dependency in several places.
+
+### Fixed
+- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
+- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
 
 ## [1.7.0] - 2018-12-09
 
