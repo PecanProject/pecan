@@ -51,64 +51,12 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     pf.matrix.out <- pf.matrix
   }
   
-  #------------------------------ Plotting Localization
-  #----- ggplot
-  dat <- melt(pf.matrix) %>%
-    mutate(Type="Pf")%>%
-    bind_rows(melt(pf.matrix.out %>% `rownames<-`(c()) %>%
-                     `colnames<-`(c()))%>%
-                mutate(Type="Pf.Localized")) 
-  
-  grids <- purrr::pmap_df(list(
-    seq(1, nsite * nvariable, by = nvariable),
-    seq(nvariable, nsite * nvariable, by = nvariable),
-    site.ids
-  ),
-  function(x, y, z) {
-    expand.grid(x:y, x:y) %>% as.data.frame() %>%
-      mutate(Site = z)
-  }) %>%
-    mutate(value = 0) 
-  
-  grids <- rbind(grids %>% mutate(Type="Pf") , grids %>% mutate(Type="Pf.Localized"))
-  
-  p <- ggplot(dat, aes(x = Var1, y = Var2, fill = value)) +
-    geom_tile(colour = "grey20",lwd=0) +
-    geom_tile(data = grids,
-              lwd = 0.5,
-              alpha = 0.01,
-              aes(color = Site)) +
-    scale_fill_gradientn(colours = c("#FFFFFF", "#ffffcc", "#41b6c4", "#225ea8"),
-                         name = "Cov") +
-    scale_color_brewer(palette = "Set1") +
-    scale_y_reverse() +
-    facet_wrap(. ~ Type, scales = "free") +
-    theme_minimal(base_size = 15)
-  
-  ggsave(paste0("SDA/Localization_",t,".pdf"), plot=p, height=9, width=15)
-  #----- Network
-  if (!('igraph' %in% installed.packages()[,1])) install.packages("igraph")
-
-  paste0(rep(var.names, length(site.ids)) %>% as.character(),"(",
-         rep(site.ids, each=length(var.names)),")") -> labelss
+  # adding labels to rownames and colnames
+  labelss <- paste0(rep(var.names, length(site.ids)) %>% as.character(),"(",
+         rep(site.ids, each=length(var.names)),")") 
   
   colnames(pf.matrix.out ) <-labelss
   rownames(pf.matrix.out ) <-labelss
-  
-  # Making the network
-  g <- igraph::graph.adjacency(pf.matrix.out,
-                               mode="min",
-                               diag = F) # For directed networks
-  
-  igraph::V(g)$label.cex <-0.59
-  igraph::V(g)$label.color <- rgb(0, 0, .2, .8)
-  
-  #-- plotting the graph
-  pdf(paste0("SDA/Network_",t,".pdf"), pointsize=8)
-  plot(igraph::simplify(g), vertex.size=5, asp=0,
-       vertex.label.color = "black", vertex.label.degree = -pi/2,
-       edge.arrow.size = 0.3, edge.arrow.width = 0.4, edge.color = "black")
-  dev.off()
   
   return(pf.matrix.out)
 
