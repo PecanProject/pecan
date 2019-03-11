@@ -104,13 +104,10 @@ create_exec_test_xml <- function(run_list){
   sink()
 }
 
-
-
-
 ##Create Run Args
 pecan_path <- "/fs/data3/tonygard/work/pecan"
-config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.exphp"))
-bety <- betyConnect(paste0(pecan_path,"/web/config.php"))
+config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.example.php"))
+bety <- betyConnect(paste0(pecan_path,"/web/config.example.php"))
 
 bety <- dplyr::src_postgres(dbname   = 'bety', 
                             host     = 'psql-pecan.bu.edu', 
@@ -123,7 +120,7 @@ mach_name <- Sys.info()[[4]]
 mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(id)
 
 ## Find Models
-devtools::install_github("pecanproject/pecan", subdir = "api")
+#devtools::install_github("pecanproject/pecan", subdir = "api")
 model_ids <- tbl(bety, "dbfiles") %>% filter(machine_id == mach_id) %>% 
   filter(container_type == "Model") %>% pull(container_id)
 
@@ -134,31 +131,51 @@ met_name <- c("CRUNCEP","AmerifluxLBL")
 startdate<-"2004/01/01"
 enddate<-"2004/12/31"
 out.var <- "NPP"
-ensemble <- TRUE
+ensemble <- FALSE
 ens_size <- 100
-sensitivity <- TRUE
+sensitivity <- FALSE
 ## Find Sites
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
 site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
-  inner_join(tbl(bety, "sitegroups_sites")
-             %>% filter(sitegroup_id == 1),
+  
+site_id_noinput<- tbl(bety, "sites")%>%
+      inner_join(tbl(bety, "sitegroups_sites") %>% 
+      filter(sitegroup_id == 1),
              by = c("id" = "site_id")) %>%
-  dplyr::select("id.x", "notes", "sitename") %>%
-  dplyr::filter(grepl("TOWER_BEGAN", notes))  %>% collect()  %>%
-  dplyr::mutate(
-    start_year = stringi::stri_extract_first_regex(notes, "[0-9]+"),
-    end_year = if_else(
-      stringi::stri_extract_last_regex(notes, "[0-9]+") == start_year,
-      as.character(lubridate::year(Sys.Date())),
-      stringi::stri_extract_last_regex(notes, "[0-9]+")
-    ),
-    contains_run = if_else(
-      between(lubridate::year(startdate), start_year, end_year),
+      dplyr::select("id.x", "notes", "sitename") %>%
+      dplyr::filter(grepl("TOWER_BEGAN", notes))  %>% 
+     collect()  
+
+      %>%
+  
+  #test <- dplyr::mutate(site_id_noinput,
+   #                     start_year = substring(stringi::stri_extract_first_regex(notes, "[0-9]+"),1:4),
+    #                    end_year = if_else(
+     #                     substring(stringi::stri_extract_last_regex(notes, "[0-9]+"), 1:4)== start_year,
+      #                    as.character(lubridate::year(Sys.Date())),
+       #                   stringi::stri_extract_last_regex(notes, "[0-9]+")
+        #                ))
+  #"IGBP = MF  CLIMATE_KOEPPEN = Dfb  TOWER_BEGAN = 1999  TOWER_END = 2004"
+  test <- dplyr::mutate(site_id_noinput,
+                        start_year = substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_BEGAN = ).*(?=  TOWER_END)")),1,4),
+                        end_year = dplyr::if_else(
+                          substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4) == "",
+                          as.character(lubridate::year(Sys.Date())),
+                          substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4)
+                        )
+  )  %>% filter(~between(lubridate::year(startdate) between( start_year:end_year)
+                            
+
+filter(test,dplyr::between(lubridate::year(startdate), test$start_year, test$end_year)) 
+
+ contains_run = if_else(
+      between(lubridate::year(startdate), as.numeric(start_year), end_year),
       "TRUE",
       "FALSE"
-    ),
+    )),
     len = as.integer(end_year) - as.integer(start_year)
-  ) %>%
+  ) 
+%>%
   filter(contains_run == TRUE) %>%
   filter(str_length(end_year) == 4) %>%
   filter(len == max(len)) %>%
@@ -171,10 +188,14 @@ site_id <- "772"
 options(scipen = 999)
 run_table <- expand.grid(models,met_name,site_id, startdate, enddate, 
                          pecan_path,out.var, ensemble, ens_size, sensitivity, stringsAsFactors = FALSE)
-#Execute function to spit out a table with a clomn of NA or success
+#Execute function to spit out a table with a column of NA or success
 
 tab <-run_table %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
   create_exec_test_xml(list(...))
 },otherwise =NA))
 )
+
+## Turn into a html table
+as_hux(tab)
+
 
