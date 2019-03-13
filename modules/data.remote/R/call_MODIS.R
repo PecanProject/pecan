@@ -30,7 +30,7 @@
 call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0, product , band , band_qc = "", band_sd = "", package_method = "MODISTools") {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
-  size = 0
+  size <- 0
   
   # set start and end dates to correct format
   if (package_method == "MODISTools"){
@@ -45,8 +45,8 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     }
     
 
-    dates = MODISTools::mt_dates(product =product, lat = lat, lon = lon)$modis_date
-    dates = as.numeric(substr(dates, 2, nchar(dates)))
+    dates <- MODISTools::mt_dates(product =product, lat = lat, lon = lon)$modis_date
+    dates <- as.numeric(substr(dates, 2, nchar(dates)))
     if (as.numeric(start_date)<=dates[1] | as.numeric(end_date)>=dates[length(dates)])
     {
       print(paste("Range of dates for product are ", dates[1], " - ", dates[length(dates)], sep = ""))
@@ -55,7 +55,7 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
       print("Check #2: Dates are available!")
     }
     
-    bands = MODISTools::mt_bands(product = product)
+    bands <- MODISTools::mt_bands(product = product)
     if (!(band %in% bands$band))
     {
       print(bands$band)
@@ -67,8 +67,8 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     
     print("Extracting data")
     
-    start = as.Date(start_date, "%Y%j")
-    end = as.Date(end_date, "%Y%j")
+    start <- as.Date(start_date, "%Y%j")
+    end <- as.Date(end_date, "%Y%j")
     
     # extract main band data from api
     dat <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band,
@@ -88,31 +88,31 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     
     if (band_qc == "")
     {
-      QC = rep("nan", nrow(dat))
+      QC <- rep("nan", nrow(dat))
     } else {
-      QC = as.numeric(qc$value)
+      QC <- as.numeric(qc$value)
     }
     
     if (band_sd == "")
     {
-      SD = rep("nan", nrow(dat))
+      SD <- rep("nan", nrow(dat))
     } else {
-      SD = as.numeric(sd$value)*as.numeric(sd$scale) #formatC(sd$data$data*scale, digits = 2, format = 'f')
+      SD <- as.numeric(sd$value)*as.numeric(sd$scale) #formatC(sd$data$data*scale, digits = 2, format = 'f')
     }
     
-    output = as.data.frame(cbind(dat$modis_date, dat$calendar_date, dat$band, dat$tile, dat$latitude, dat$longitude, dat$pixel, dat$value, QC, SD), stringsAsFactors = F)
-    names(output) = c("modis_date", "calendar_date", "band", "tile", "lat", "lon", "pixels", "data", "qc", "sd")
+    output <- as.data.frame(cbind(dat$modis_date, dat$calendar_date, dat$band, dat$tile, dat$latitude, dat$longitude, dat$pixel, dat$value, QC, SD), stringsAsFactors = F)
+    names(output) <- c("modis_date", "calendar_date", "band", "tile", "lat", "lon", "pixels", "data", "qc", "sd")
     
-    output[,5:10] = lapply(output[,5:10], as.numeric)
+    output[,5:10] <- lapply(output[,5:10], as.numeric)
     
     # scale the data + stdev to proper units
-    output$data = output$data*(as.numeric(dat$scale))
-    output$sd = output$sd*(as.numeric(dat$scale))
-    output$lat = round(output$lat, 4)
-    output$lon = round(output$lon, 4)
+    output$data <- output$data*(as.numeric(dat$scale))
+    output$sd <- output$sd*(as.numeric(dat$scale))
+    output$lat <- round(output$lat, 4)
+    output$lon <- round(output$lon, 4)
     
-    fname = paste(product, "_", band, "output_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
-    fname = paste0(outfolder, "/", fname)
+    fname <- paste(product, "_", band, "output_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
+    fname <- paste0(outfolder, "/", fname)
     write.csv(output, fname)
     return(output)}
 
@@ -124,13 +124,13 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     reticulate::source_python(script.path)
     
     # extract the data
-    output = extract_modis_data(product = product, band = band, lat = lat, lon = lon, start_date = start_date, end_date = end_date, size = size, band_qc = band_qc, band_sd = band_sd)
-    output[,5:10] = lapply(output[,5:10], as.numeric)
-    output$lat = round(output$lat, 4)
-    output$lon = round(output$lon, 4)
+    output <- extract_modis_data(product = product, band = band, lat = lat, lon = lon, start_date = start_date, end_date = end_date, size = size, band_qc = band_qc, band_sd = band_sd)
+    output[,5:10] <- lapply(output[,5:10], as.numeric)
+    output$lat <- round(output$lat, 4)
+    output$lon <- round(output$lon, 4)
     
-    fname = paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
-    fname = paste0(outfolder, "/", fname)
+    fname <- paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
+    fname <- paste0(outfolder, "/", fname)
     write.csv(output, fname)
     return(output)}
 }
