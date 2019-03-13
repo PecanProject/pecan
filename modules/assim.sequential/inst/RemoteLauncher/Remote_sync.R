@@ -1,5 +1,5 @@
 #----------------------------------------------------------------
-# Copying over the luncher and sending the command
+# Copying over the launcher and sending the command
 #---------------------------------------------------------------
 suppressPackageStartupMessages({
   library(PEcAn.settings)

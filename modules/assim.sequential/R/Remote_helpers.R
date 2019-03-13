@@ -5,7 +5,7 @@
 #'
 #' @return a list of observed mean and cov as the SDA expected it to be.
 #' @export
-Obs.data.prepare.MultiSite <- function(obs.path="../Obs/LandTrendr_AGB_output50s.RData", site.ids) {
+Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
   #Load the .Rdata file
   load(obs.path)
   
@@ -103,7 +103,7 @@ SDA_remote_launcher <-function(settingPath,
   my_host <- list(name =settings$host$name , tunnel = settings$host$tunnel, user=settings$host$user)
   local_path <-settings$outdir
   #---------------------------------------------------------------
-  # Cheking the setting xml
+  # Checking the setting xml
   #---------------------------------------------------------------
   if (is.null(settings$host$folder)) {
     PEcAn.logger::logger.severe("You need to specify the folder tag in the host inside your pecan xml !")
@@ -113,7 +113,20 @@ SDA_remote_launcher <-function(settingPath,
   #---------------------------------------------------------------
   # Creating a new folder
   #---------------------------------------------------------------
-  folder_name <- as.numeric(Sys.time())
+  if (!is.null(settings$sitegroups)) {
+    fname_p1 <- settings$sitegroups
+  }else{
+    fname_p1 <- settings$run$site$id
+  }
+  
+  if (!is.null( settings$workflow$id)) {
+    fname_p2<-settings$workflow$id
+  }else{
+    fname_p2<-""
+      }
+  
+
+  folder_name <- paste0(c("SDA",fname_p1,fname_p2), collapse = "_")
   #creating a folder on remote
   out <-remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"\")"),
                          host = my_host,
@@ -147,25 +160,38 @@ SDA_remote_launcher <-function(settingPath,
   # Obs
   #---------------------------------------------------------------
   # testing the obs path and copying over
-  if (file.exists(ObsPath)){
-    remote.copy.to(
-      my_host,
-      ObsPath,
-      paste0(settings$host$folder,"//",folder_name,"//Obs//"),
-      delete = FALSE,
-      stderr = FALSE
-    )
-  }else{
-    PEcAn.logger::logger.severe("I don't have access to your obs path !")
+  # testing to see if the path exsits on remote if not it should exist on local
+  test.remote.obs <- remote.execute.R(
+    script = paste0("dir.exists(\"/", ObsPath, "\")"),
+    host = my_host,
+    user = my_host$user,
+    scratchdir = "."
+  )
+  
+  # if path is not remote then check for the local
+  if (!test.remote.obs) {
+    if (file.exists(ObsPath)) {
+      remote.copy.to(
+        my_host,
+        ObsPath,
+        paste0(settings$host$folder, "//", folder_name, "//Obs//"),
+        delete = FALSE,
+        stderr = FALSE
+      )
+    } else{
+      PEcAn.logger::logger.severe("I don't have access to your obs path !")
+    }
   }
+  
+
   #----------------------------------------------------------------
   # met check
   #---------------------------------------------------------------
   # Finding all the met paths in your settings
   if (is.MultiSettings(settings)){
-    met.paths <-settings %>% map(~.x[['run']] ) %>% map('inputs') %>% map('met')%>% map('path') %>% unlist()
+    met.paths <-settings %>% map(~.x[['run']] ) %>% map(~.x[['inputs']] %>% map(~.x[['path']])) %>% unlist()
   }else{
-    met.paths <-settings$run$inputs$met$path 
+    met.paths <-settings$run$inputs %>% map(~.x[['path']]) %>% unlist()
   }
 
   # see if we can find those mets on remote
@@ -173,7 +199,7 @@ SDA_remote_launcher <-function(settingPath,
     out <- remote.execute.R(
       script = paste0("file.exists(\"/", .x, "\")"),
       host = my_host,
-      user = 'hamzed',
+      user = my_host$user,
       scratchdir = "."
     )
     out
@@ -181,6 +207,7 @@ SDA_remote_launcher <-function(settingPath,
     unlist()
   
   if (!all(met.test)) {
+    PEcAn.logger::logger.warn(paste0("Here is a list of mets that they were not found on the remore:", met.test[met.test==FALSE] ))
     PEcAn.logger::logger.severe("At least one of the mets specified in your pecan xml was not found on the remote machine")
     #TODO: At some point I could also copy over the ones that there not in the remote and edit the xml accrodingly.
   }

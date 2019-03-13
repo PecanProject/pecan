@@ -22,7 +22,7 @@ if (is.na(args[1])){
 
 #Obs Path
 if (is.na(args[2])){
-  obs.path <- "/projectnb/dietzelab/hamzed/MultiSite-Exs/Obs/LandTrendr_AGB_output50s.RData"
+  PEcAn.logger::logger.severe("This file needs to be called from terminal and needs to recived to argument with it. First, path to the setting xml file and second is the path to the obs data. Seems like the second argument is missing.")
 } else {
   obs.path = args[2]
 }
