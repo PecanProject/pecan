@@ -47,12 +47,12 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
                           overwrite = FALSE,
                           reticulate_python = NULL,
                           ...) {
-
   PEcAn.logger::logger.warn(
     "This function is an incomplete prototype! Use with caution!"
   )
 
-  need_packages("reticulate")
+  PEcAn.utils:::need_packages("reticulate")
+  
   if (!is.null(reticulate_python)) {
     reticulate::use_python(reticulate_python)
   }
@@ -69,15 +69,19 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
       conditionMessage(e)
     )
   })
+  
+  
+  if (!file.exists(file.path(Sys.getenv("HOME"), ".cdsapirc")))
+    PEcAn.logger::logger.severe(
+      "Please create a `${HOME}/.cdsapirc` file as described here:",
+      "https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key ."
+    )
+  
 
   tryCatch({
     cclient <- cdsapi$Client()
   }, error = function(e) {
     PEcAn.logger::logger.severe(
-      "Failed to create `cdsapi` client.",
-      "This is likely because your CDS API is not configured properly.",
-      "Please create a `${HOME}/.cdsapirc` file as described here:",
-      "https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key .",
       "The following error was thrown by `cdsapi$Client()`: ",
       conditionMessage(e)
     )
@@ -85,9 +89,11 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
 
   all_products <- c("reanalysis", "ensemble members",
                     "ensemble mean", "ensemble_spread")
+  
   if (product_types == "all") {
     product_types <- all_products
   }
+  
   if (any(!product_types %in% all_products)) {
     bad_products <- setdiff(product_types, all_products)
     PEcAn.logger::logger.severe(sprintf(
@@ -115,7 +121,7 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
   # Spatial subset must be a bounding box (N, W, S, E). This sets the
   # bounding box to a single point -- the closest coordinate at the
   # 0.25 x 0.25 resolution of the product.
-  area <- rep(round(c(lat, lon) * 4) / 4, 2)
+  area <- rep(round(c(lat.in, lon.in) * 4) / 4, 2)
 
   files <- character()
   dir.create(outfolder, showWarnings = FALSE)
