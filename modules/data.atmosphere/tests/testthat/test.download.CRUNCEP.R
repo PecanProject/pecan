@@ -1,6 +1,6 @@
 context("Checking CRUNCEP download")
 
-tmpdir = tempfile(pattern="CRUNCEPtest")
+tmpdir <- tempfile(pattern = "CRUNCEPtest")
 dir.create(tmpdir)
 teardown(unlink(tmpdir, recursive = TRUE))
 

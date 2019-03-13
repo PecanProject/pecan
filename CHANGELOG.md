@@ -18,15 +18,24 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
 - Add template for documentation issues and add button to edit book.
 - Conditionally skip unit tests for downloading raw met data or querying the database when the required remote connection is not available.
+- Reorganization of docker folder
+  - All dockerfiles now live in their own folder
+  - scripts/generate_dependencies.R is now used to generate dependencies for make and docker
 
 ### Added
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
 - Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
 - Added unit tests for `met2model.<MODEL>` functions for most models.
+- Added MAESPA model to docker build
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
 - Removed package `PEcAn.data.mining` from the Make build. It can still be installed directly from R if desired, but is skipped by default because it is in early development, does not yet export any functions, and creates a dependency on the (large, often annoying to install) ImageMagick library.
+- Fully deprecate support for `MySQL` database driver. Now, only `PostgreSQL` (and, experimentally, `RPostgres`) are supported. With this, remove `RMySQL` dependency in several places.
+
+### Fixed
+- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
+- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
 
 ## [1.7.0] - 2018-12-09
 
