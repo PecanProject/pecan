@@ -101,6 +101,7 @@ db.open <- function(params) {
   }
 
   driver <- params[["driver"]]
+  params[["driver"]] <- NULL
   if (is.null(driver)) {
     PEcAn.logger::logger.info(
       "Missing `driver` argument. ",
