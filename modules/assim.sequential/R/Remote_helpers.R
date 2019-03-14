@@ -113,19 +113,20 @@ SDA_remote_launcher <-function(settingPath,
   #---------------------------------------------------------------
   # Creating a new folder
   #---------------------------------------------------------------
+
   fname_p1 <- basename(settings$outdir)
-  
+
   
   if (!is.null( settings$workflow$id)) {
     fname_p2<-settings$workflow$id
-  }else{
+  } else {
     fname_p2<-""
       }
   
 
   folder_name <- paste0(c("SDA",fname_p1,fname_p2), collapse = "_")
   #creating a folder on remote
-  out <-remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"\")"),
+  out <- remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"\")"),
                          host = my_host,
                          user = my_host$user,
                          scratchdir = ".")
@@ -141,7 +142,7 @@ SDA_remote_launcher <-function(settingPath,
       delete = FALSE,
       stderr = FALSE
     )
-  }else if("pft" %in% list.dirs(settings$outdir, full.names=F)){#  test for PFT folder
+  } else if("pft" %in% list.dirs(settings$outdir, full.names=F)) {#  test for PFT folder
     remote.copy.to(
       my_host,
       paste0(settings$outdir,"//pft"),
@@ -149,7 +150,7 @@ SDA_remote_launcher <-function(settingPath,
       delete = FALSE,
       stderr = FALSE
     )
-  }else{
+  } else {
     #
     PEcAn.logger::logger.severe("You need to have either PFT folder or sample.Rdata !")
   }

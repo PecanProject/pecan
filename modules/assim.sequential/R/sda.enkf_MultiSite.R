@@ -445,7 +445,7 @@ sda.enkf.multisite <- function(settings,
     tic(paste0("Adjustment for cycle = ", t))
     if(adjustment == TRUE){
       analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
-    }else{
+    } else {
       analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
     }
     
