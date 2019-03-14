@@ -31,9 +31,7 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
   #Finding the orders
   site.order <-
     sapply(site.ids, function(x)
-      which(point_list$median_AGB$Site_ID %in% x)) %>%
-    as.numeric() %>% na.omit()
-  
+      which(point_list$median_AGB$Site_ID %in% x))  %>% unlist() %>% as.numeric() %>% na.omit()
   #Reordering
   point_list$median_AGB <- point_list$median_AGB[site.order, ]
   point_list$stdv_AGB <- point_list$stdv_AGB[site.order, ]

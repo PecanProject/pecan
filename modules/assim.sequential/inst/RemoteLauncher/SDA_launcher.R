@@ -43,11 +43,20 @@ if (!("samples.Rdata" %in% list.files())) get.parameter.samples(settings,
 #----------------------------------------------------------------
 # OBS data preparation
 #---------------------------------------------------------------
-if (is.MultiSettings(settings)){
-  obss <- PEcAn.assim.sequential:::Obs.data.prepare.MultiSite(obs.path, site.ids)
-} else {
-  obss <- load(obs.path)
-}
+tryCatch(
+  {
+    if (is.MultiSettings(settings)){
+      obss <- PEcAn.assim.sequential:::Obs.data.prepare.MultiSite(obs.path, site.ids)
+    } else {
+      obss <- load(obs.path)
+    }
+  },
+  error = function(e) {
+    PEcAn.logger::logger.warn("Something happend during the proccsing of obs data. This could be either due to structure of your data or lack of access to the file.")
+    PEcAn.logger::logger.severe(conditionMessage(e))
+  }
+)
+
 
 #----------------------------------------------------------------
 # SDA
