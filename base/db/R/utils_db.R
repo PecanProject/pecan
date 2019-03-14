@@ -21,14 +21,15 @@
 ##' to be specified. If both are specified it will use con.
 ##'
 ##' @param query SQL query string
-##' @param con database connection object
-##' @param params database connection information
+##' @param con Database connection object
+##' @param params Named list of database connection parameters. See
+##'   `params` argument to [db.open()].
 ##' @return data frame with query results
-##' @author Rob Kooper
+##' @author Rob Kooper, Alexey Shiklomanov
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' db.query('select count(id) from traits;', params=settings$database$bety)
+##' db.query("SELECT count(id) FROM traits;", params = settings$database$bety)
 ##' }
 db.query <- function(query, con = NULL, params = NULL) {
   if (is.null(con)){
@@ -42,20 +43,43 @@ db.query <- function(query, con = NULL, params = NULL) {
     PEcAn.logger::logger.debug(query)
   }
   data <- DBI::dbGetQuery(con, query)
-  res <- DBI::dbGetException(con)
-  if (res$errorNum != 0 || (res$errorMsg != 'OK' && res$errorMsg != '')) {
-    PEcAn.logger::logger.severe(paste("Error executing db query '", query, "' errorcode=", res$errorNum, " message='", res$errorMsg, "'", sep=''))
+  # The newer RPostgres driver doesn't have a dbGetException method.
+  # If the query fails, it throws an error directly in R.
+  if (inherits(con, "PostgreSQLConnection")) {
+    res <- DBI::dbGetException(con)
+    if (res$errorNum != 0 || (res$errorMsg != "OK" && res$errorMsg != "")) {
+      PEcAn.logger::logger.severe(
+        paste0("Error executing db query '", query,
+              "' errorcode=", res$errorNum,
+              " message='", res$errorMsg, "'")
+      )
+    }
   }
   .db.utils$queries <- .db.utils$queries + 1
   invisible(data)
 }
 
-##' Generic function to open a database connection
+##' Open a database connection
 ##'
-##' Create a connection to a database usign the specified parameters. If the paramters contain
-##' driver element it will be used as the database driver, otherwise it will use PostgreSQL.
-##' @param params database connection information
-##' @return connection to database
+##' Create a connection to a database using the specified parameters.
+##' The `params` list will be passed as arguments to [DBI::dbConnect()].
+##'
+##' Typical arguments are as follows:
+##' - `driver` -- The name of the database driver. Only `"PostgreSQL"`
+##' and `"Postgres"` are supported. If no driver is specified, default
+##' to `"PostgreSQL"`.
+##' - `user` -- The database username. For local instances of PEcAn,
+##' this is usually `"bety"`.
+##' - `password` -- The database password. For local instances of
+##' PEcAn, this is usually `"bety"`.
+##' - `host` -- The database hostname. For local instances of PEcAn,
+##' this is usually `"localhost"`. Inside the PEcAn Docker stack, this
+##' may be `"postgres"`.
+##' - `port` (optional) -- The port for accessing the database. If
+##' omitted, this will use the PostgreSQL default (5432).
+##'
+##' @param params Named list of database connection options. See details
+##' @return Database connection object
 ##' @author Rob Kooper
 ##' @export
 ##' @examples
@@ -76,15 +100,34 @@ db.open <- function(params) {
     params[["write"]] <- NULL
   }
 
-  if (is.null(params$driver)) {
-    args <- c(drv = DBI::dbDriver("PostgreSQL"), params, recursive = TRUE)
-  } else {
-    args <- c(drv = DBI::dbDriver(params$driver), params, recursive = TRUE)
-    args[['driver']] <- NULL
+  driver <- params[["driver"]]
+  if (is.null(driver)) {
+    PEcAn.logger::logger.info(
+      "Missing `driver` argument. ",
+      "Assuming `RPostgreSQL::PostgreSQL()` driver."
+    )
+    driver <- "PostgreSQL"
   }
 
+  if (!driver %in% c("PostgreSQL", "Postgres")) {
+    PEcAn.logger::logger.severe(paste0(
+      "Driver `", driver, "` is not supported. ",
+      "You must use either `RPostgreSQL` or `Postrgres`."
+    ))
+  }
+
+  if (driver == "PostgreSQL") {
+    drv <- RPostgreSQL::PostgreSQL()
+  } else if (driver == "Postgres") {
+    drv <- RPostgres::Postgres()
+  }
+
+  args <- c(drv = drv, params, recursive = TRUE)
+
   c <- do.call(DBI::dbConnect, as.list(args))
-  id <- sample(1000, size=1)
+
+  # Assign the connection a unique ID number between 0 and 1000
+  id <- sample(1000, size = 1)
   while (sum(.db.utils$connections$id == id) > 0) {
     id <- sample(1000, size = 1)
   }

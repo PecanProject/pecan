@@ -9,9 +9,10 @@ db.query(query, con = NULL, params = NULL)
 \arguments{
 \item{query}{SQL query string}
 
-\item{con}{database connection object}
+\item{con}{Database connection object}
 
-\item{params}{database connection information}
+\item{params}{Named list of database connection parameters. See
+`params` argument to [db.open()].}
 }
 \value{
 data frame with query results
@@ -22,9 +23,9 @@ to be specified. If both are specified it will use con.
 }
 \examples{
 \dontrun{
-db.query('select count(id) from traits;', params=settings$database$bety)
+db.query("SELECT count(id) FROM traits;", params = settings$database$bety)
 }
 }
 \author{
-Rob Kooper
+Rob Kooper, Alexey Shiklomanov
 }
