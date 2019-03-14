@@ -113,7 +113,7 @@ db.open <- function(params) {
   if (!driver %in% c("PostgreSQL", "Postgres")) {
     PEcAn.logger::logger.severe(paste0(
       "Driver `", driver, "` is not supported. ",
-      "You must use either `RPostgreSQL` or `Postrgres`."
+      'You must use either `"PostgreSQL"` or `"Postrgres"`.'
     ))
   }
 
