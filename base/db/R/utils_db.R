@@ -19,8 +19,7 @@
 ##'
 ##' Given a connection and a query, will return a query as a data frame. Either con or params need
 ##' to be specified. If both are specified it will use con.
-##' @name db.query
-##' @title Query database
+##'
 ##' @param query SQL query string
 ##' @param con database connection object
 ##' @param params database connection information
@@ -31,11 +30,10 @@
 ##' \dontrun{
 ##' db.query('select count(id) from traits;', params=settings$database$bety)
 ##' }
-db.query <- function(query, con=NULL, params=NULL) {
-  if(is.null(con)){
+db.query <- function(query, con = NULL, params = NULL) {
+  if (is.null(con)){
     if (is.null(params)) {
-      PEcAn.logger::logger.error("No parameters or connection specified")
-      stop()
+      PEcAn.logger::logger.severe("No parameters or connection specified")
     }
     con <- db.open(params)
     on.exit(db.close(con))
@@ -48,7 +46,7 @@ db.query <- function(query, con=NULL, params=NULL) {
   if (res$errorNum != 0 || (res$errorMsg != 'OK' && res$errorMsg != '')) {
     PEcAn.logger::logger.severe(paste("Error executing db query '", query, "' errorcode=", res$errorNum, " message='", res$errorMsg, "'", sep=''))
   }
-  .db.utils$queries <- .db.utils$queries+1
+  .db.utils$queries <- .db.utils$queries + 1
   invisible(data)
 }
 
@@ -56,8 +54,6 @@ db.query <- function(query, con=NULL, params=NULL) {
 ##'
 ##' Create a connection to a database usign the specified parameters. If the paramters contain
 ##' driver element it will be used as the database driver, otherwise it will use PostgreSQL.
-##' @name db.open
-##' @title Open database connection
 ##' @param params database connection information
 ##' @return connection to database
 ##' @author Rob Kooper
@@ -67,11 +63,17 @@ db.query <- function(query, con=NULL, params=NULL) {
 ##' db.open(settings$database$bety)
 ##' }
 db.open <- function(params) {
-  params$dbfiles <- NULL
-  params$write <- NULL
-
-  if(is.null(params$driver) || params$driver == "PostgreSQL") {
-    requireNamespace("RPostgreSQL")
+  if ("dbfiles" %in% names(params)) {
+    PEcAn.logger::logger.warn(
+      "`dbfiles` in the database driver is deprecated. Setting it to NULL."
+    )
+    params[["dbfiles"]] <- NULL
+  }
+  if ("write" %in% names(params)) {
+    PEcAn.logger::logger.warn(
+      "`write` in the database driver is deprecated. Setting it to NULL."
+    )
+    params[["write"]] <- NULL
   }
 
   if (is.null(params$driver)) {
@@ -83,12 +85,12 @@ db.open <- function(params) {
 
   c <- do.call(DBI::dbConnect, as.list(args))
   id <- sample(1000, size=1)
-  while(length(which(.db.utils$connections$id==id)) != 0) {
-    id <- sample(1000, size=1)
+  while (sum(.db.utils$connections$id == id) > 0) {
+    id <- sample(1000, size = 1)
   }
   attr(c, "pecanid") <- id
   dump.log <- NULL
-  utils::dump.frames(dumpto="dump.log")
+  utils::dump.frames(dumpto = "dump.log")
   .db.utils$created <- .db.utils$created+1
   .db.utils$connections$id <- append(.db.utils$connections$id, id)
   .db.utils$connections$con <- append(.db.utils$connections$con, c)
@@ -99,20 +101,18 @@ db.open <- function(params) {
 ##' Generic function to close a database connection
 ##'
 ##' Close a previously opened connection to a database.
-##' @name db.close
-##' @title Close database connection
 ##' @param con database connection to be closed
 ##' @param showWarnings logical: report possible issues with connection?
-##' @return connection to database
+##' @return `TRUE`, invisibly (see [DBI::dbDisconnect()])
 ##' @author Rob Kooper
 ##' @export
 ##' @examples
 ##' \dontrun{
 ##' db.close(con)
 ##' }
-db.close <- function(con, showWarnings=TRUE) {
+db.close <- function(con, showWarnings = TRUE) {
   if (is.null(con)) {
-    return()
+    return(invisible(TRUE))
   }
 
   id <- attr(con, "pecanid")
@@ -131,12 +131,10 @@ db.close <- function(con, showWarnings=TRUE) {
   DBI::dbDisconnect(con)
 }
 
-##' Debug method for db.open and db.close
+##' Debug leaked connections
 ##'
 ##' Prints the number of connections opened as well as any connections
 ##' that have never been closes.
-##' @name db.print.connections
-##' @title Debug leaked connections
 ##' @author Rob Kooper
 ##' @export
 ##' @examples
@@ -152,7 +150,7 @@ db.print.connections <- function() {
   if (length(.db.utils$connections$id) == 0) {
     PEcAn.logger::logger.debug("No open database connections.\n")
   } else {
-    for(x in 1:length(.db.utils$connections$id)) {
+    for (x in 1:length(.db.utils$connections$id)) {
       PEcAn.logger::logger.info(paste("Connection", x, "with id", .db.utils$connections$id[[x]], "was created at:\n"))
       PEcAn.logger::logger.info(paste("\t", names(.db.utils$connections$log[[x]]), "\n"))
       #      cat("\t database object : ")
@@ -164,14 +162,13 @@ db.print.connections <- function() {
 ##' Test connection to database
 ##'
 ##' Useful to only run tests that depend on database when a connection exists
-##' @title db.exists
 ##' @param params database connection information
 ##' @param write logical: test whether we have write access?
 ##' @param table name of database table to check
 ##' @return TRUE if database connection works; else FALSE
 ##' @export
 ##' @author David LeBauer, Rob Kooper
-db.exists <- function(params, write=TRUE, table=NA) {
+db.exists <- function(params, write = TRUE, table = NA) {
   # open connection
   con <- tryCatch({
     invisible(db.open(params))
@@ -187,7 +184,13 @@ db.exists <- function(params, write=TRUE, table=NA) {
 
   #check table's privilege about read and write permission
   user.permission <<- tryCatch({
-    invisible(db.query(paste0("select privilege_type from information_schema.role_table_grants where grantee='",params$user,"' and table_catalog = '",params$dbname,"' and table_name='",table,"'"), con))
+    invisible(db.query(
+      paste0("SELECT privilege_type FROM information_schema.role_table_grants ",
+             "WHERE grantee='", params$user,
+             "' AND table_catalog = '", params$dbname,
+             "' AND table_name='", table, "'"),
+      con
+    ))
   }, error = function(e) {
     PEcAn.logger::logger.error("Could not query database.\n\t", e)
     db.close(con)
@@ -195,20 +198,21 @@ db.exists <- function(params, write=TRUE, table=NA) {
   })
 
   if (!is.na(table)){
-    read.perm = FALSE
-    write.perm = FALSE
+    read.perm <- FALSE
+    write.perm <- FALSE
 
     # check read permission
-    if ('SELECT' %in% user.permission[['privilege_type']]) {
-      read.perm = TRUE
+    user_privilege <- user.permission[["privilege_type"]]
+    if ("SELECT" %in% user_privilege) {
+      read.perm <- TRUE
     }
 
     #check write permission
-    if ('INSERT' %in% user.permission[['privilege_type']] &&'UPDATE' %in% user.permission[['privilege_type']] ) {
-      write.perm = TRUE
+    if ("INSERT" %in% user_privilege && "UPDATE" %in% user_privilege ) {
+      write.perm <- TRUE
     }
 
-    if (read.perm == FALSE){
+    if (!read.perm) {
       return(invisible(FALSE))
     }
 
@@ -226,7 +230,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
 
     # get the table's primary key column
     get.key <- tryCatch({
-      db.query(query = paste("SELECT pg_attribute.attname,format_type(pg_attribute.atttypid, pg_attribute.atttypmod)
+      db.query(query = paste("SELECT pg_attribute.attname, format_type(pg_attribute.atttypid, pg_attribute.atttypmod)
                      FROM pg_index, pg_class, pg_attribute
                      WHERE
                      pg_class.oid = '", table, "'::regclass AND
@@ -246,27 +250,25 @@ db.exists <- function(params, write=TRUE, table=NA) {
     # if requested write a row to the database
     if (write) {
       # in the case when has read permission but no write
-      if (write.perm == FALSE)
-      {
+      if (!write.perm) {
         return(invisible(FALSE))
       }
 
       # when the permission correct to check whether write works
       key <- get.key$attname
-      key.value<- read.result[key]
+      key.value <- read.result[key]
       coln.name <- names(read.result)
       write.coln <- ""
-      for (name in coln.name)
-      {
-        if (name != key)
-        {
+      for (name in coln.name) {
+        if (name != key) {
           write.coln <- name
           break
         }
       }
       write.value <- read.result[write.coln]
       result <- tryCatch({
-        db.query(query = paste("UPDATE ", table, " SET ", write.coln,"='", write.value, "' WHERE ",  key, "=", key.value, sep=""),
+        db.query(query = paste0("UPDATE ", table, " SET ", write.coln, "='", write.value,
+                               "' WHERE ",  key, "=", key.value),
                  con = con)
         invisible(TRUE)
       }, error = function(e) {

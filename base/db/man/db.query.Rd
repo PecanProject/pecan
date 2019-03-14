@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_db.R
 \name{db.query}
 \alias{db.query}
-\title{Query database}
+\title{Generic function to query database}
 \usage{
 db.query(query, con = NULL, params = NULL)
 }
@@ -17,9 +17,6 @@ db.query(query, con = NULL, params = NULL)
 data frame with query results
 }
 \description{
-Generic function to query database
-}
-\details{
 Given a connection and a query, will return a query as a data frame. Either con or params need
 to be specified. If both are specified it will use con.
 }
