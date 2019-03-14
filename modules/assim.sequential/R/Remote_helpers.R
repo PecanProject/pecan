@@ -144,7 +144,7 @@ SDA_remote_launcher <-function(settingPath,
       delete = FALSE,
       stderr = FALSE
     )
-  }else if("pft" %in% list.dirs(settings$outdir, full.names=F)){#  test for PFT folder
+  } else if("pft" %in% list.dirs(settings$outdir, full.names=F)) {#  test for PFT folder
     remote.copy.to(
       my_host,
       paste0(settings$outdir,"//pft"),
