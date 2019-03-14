@@ -152,7 +152,7 @@ SDA_remote_launcher <-function(settingPath,
       delete = FALSE,
       stderr = FALSE
     )
-  }else{
+  } else {
     #
     PEcAn.logger::logger.severe("You need to have either PFT folder or sample.Rdata !")
   }
