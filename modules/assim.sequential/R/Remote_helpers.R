@@ -128,7 +128,7 @@ SDA_remote_launcher <-function(settingPath,
 
   folder_name <- paste0(c("SDA",fname_p1,fname_p2), collapse = "_")
   #creating a folder on remote
-  out <-remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"\")"),
+  out <- remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"\")"),
                          host = my_host,
                          user = my_host$user,
                          scratchdir = ".")
