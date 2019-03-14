@@ -115,7 +115,7 @@ SDA_remote_launcher <-function(settingPath,
   #---------------------------------------------------------------
   if (!is.null(settings$sitegroups)) {
     fname_p1 <- settings$sitegroups
-  }else{
+  } else {
     fname_p1 <- settings$run$site$id
   }
   
