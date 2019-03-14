@@ -45,7 +45,7 @@ if (!("samples.Rdata" %in% list.files())) get.parameter.samples(settings,
 #---------------------------------------------------------------
 if (is.MultiSettings(settings)){
   obss <- PEcAn.assim.sequential:::Obs.data.prepare.MultiSite(obs.path, site.ids)
-}else{
+} else {
   obss <- load(obs.path)
 }
 
