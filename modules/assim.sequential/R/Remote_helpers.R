@@ -95,7 +95,7 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 #'
 SDA_remote_launcher <-function(settingPath, 
                                ObsPath){
-  
+  browser()
   #---------------------------------------------------------------
   # Reading the settings
   #---------------------------------------------------------------
@@ -113,11 +113,8 @@ SDA_remote_launcher <-function(settingPath,
   #---------------------------------------------------------------
   # Creating a new folder
   #---------------------------------------------------------------
-  if (!is.null(settings$sitegroups)) {
-    fname_p1 <- settings$sitegroups
-  }else{
-    fname_p1 <- settings$run$site$id
-  }
+  fname_p1 <- basename(settings$outdir)
+  
   
   if (!is.null( settings$workflow$id)) {
     fname_p2<-settings$workflow$id
@@ -189,13 +186,13 @@ SDA_remote_launcher <-function(settingPath,
   #---------------------------------------------------------------
   # Finding all the met paths in your settings
   if (is.MultiSettings(settings)){
-    met.paths <-settings %>% map(~.x[['run']] ) %>% map(~.x[['inputs']] %>% map(~.x[['path']])) %>% unlist()
+    input.paths <-settings %>% map(~.x[['run']] ) %>% map(~.x[['inputs']] %>% map(~.x[['path']])) %>% unlist()
   }else{
-    met.paths <-settings$run$inputs %>% map(~.x[['path']]) %>% unlist()
+    input.paths <-settings$run$inputs %>% map(~.x[['path']]) %>% unlist()
   }
 
   # see if we can find those mets on remote
-  met.test <- met.paths %>% map_lgl(function(.x) {
+  met.test <- input.paths %>% map_lgl(function(.x) {
     out <- remote.execute.R(
       script = paste0("file.exists(\"/", .x, "\")"),
       host = my_host,
@@ -206,36 +203,46 @@ SDA_remote_launcher <-function(settingPath,
   }) %>%
     unlist()
   
-  if (!all(met.test)) {
-    PEcAn.logger::logger.warn(paste0("Here is a list of mets that they were not found on the remore:", met.test[met.test==FALSE] ))
-    PEcAn.logger::logger.severe("At least one of the mets specified in your pecan xml was not found on the remote machine")
-    #TODO: At some point I could also copy over the ones that there not in the remote and edit the xml accrodingly.
-  }
-  #----------------------------------------------------------------
-  # Site- PFT file 
-  #---------------------------------------------------------------
-  if (is.MultiSettings(settings)){
-  site.pft.paths <- settings %>% map(~.x[['run']] ) %>% map('inputs') %>% map('pft.site') %>% map('path') %>% unlist %>% unique()
-  }else{
-    site.pft.paths<-settings$run$inputs$pft.site$path 
+  # if there some missing inputs, lets create a folder and transfer them
+  if (!any(met.test)){
+    #creating a folder on remote
+    out <-remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"//inputs","\")"),
+                           host = my_host,
+                           user = my_host$user,
+                           scratchdir = ".")
   }
   
-  site.pft.paths %>%
-    map(function(pft.path){
-      if (file.exists(file.path(settings$outdir,pft.path))){
-        remote.copy.to(
-          my_host,
-          file.path(settings$outdir,pft.path),
-          paste0(settings$host$folder,"//",folder_name,"//"),
-          delete = FALSE,
-          stderr = FALSE
-        )
-      }else{
-        PEcAn.logger::logger.severe("I don't have access to your site.pft file path !")
-      }
-    })
+  
+  missing.inputs %>%
+    walk(function(missing.input){
+      
+      tryCatch(
+        {
+          path.break <- strsplit(missing.input, "/")[[1]]
+          #since I'm keeping all the inputs in one folder, I have to combine site folder name with file name
+          fname <-paste0(path.break[length(path.break) - 1], "_", path.break[length(path.break)])
+          
+          # copy the missing
+          remote.copy.to(
+            my_host,
+            missing.input,
+            paste0(settings$host$folder, "/", folder_name, "/inputs/", fname),
+            delete = FALSE,
+            stderr = FALSE
+          )
+          
+          #replace the path
+          settings <<-rapply(settings, function(x) ifelse(x==missing.input, paste0(settings$host$folder,"/",folder_name,"/met/",fname) ,x), how = "replace")
+          
+          
+        },
+        error = function(e) {
+          PEcAn.logger::logger.warn("Your input file was missing on the remote, so I tried to copy it over but an error happend.")
+          PEcAn.logger::logger.severe(conditionMessage(e))
+        }
+      )
 
-  
+    })
   #----------------------------------------------------------------
   # Cleaning up the settings and getting it ready
   #---------------------------------------------------------------
