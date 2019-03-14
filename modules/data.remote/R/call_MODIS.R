@@ -1,4 +1,4 @@
-##' Get MODIS data by date and location
+##' Get MODIS data by date and location  
 ##' 
 ##' @name call_MODIS
 ##' @title call_MODIS
@@ -20,14 +20,14 @@
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "FparLai_QC",band_sd = "LaiStdDev_500m", package_method = "MODISTools")
+##' test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools")
 ##' plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
-##' test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "",band_sd = "", package_method = "reticulate")
+##' test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
 ##' }
 ##' 
 ##' @author Bailey Morrison
 ##'  
-call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0, product , band , band_qc = "", band_sd = "", package_method = "MODISTools") {
+call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0, product, band, band_qc = "", band_sd = "", package_method = "MODISTools") {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size <- 0
@@ -45,9 +45,9 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     }
     
 
-    dates <- MODISTools::mt_dates(product =product, lat = lat, lon = lon)$modis_date
+    dates <- MODISTools::mt_dates(product = product, lat = lat, lon = lon)$modis_date
     dates <- as.numeric(substr(dates, 2, nchar(dates)))
-    if (as.numeric(start_date)<=dates[1] | as.numeric(end_date)>=dates[length(dates)])
+    if (as.numeric(start_date) <= dates[1] | as.numeric(end_date) >= dates[length(dates)])
     {
       print(paste("Range of dates for product are ", dates[1], " - ", dates[length(dates)], sep = ""))
       stop("Please choose dates between the date range listed above.")
@@ -97,7 +97,7 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     {
       SD <- rep("nan", nrow(dat))
     } else {
-      SD <- as.numeric(sd$value)*as.numeric(sd$scale) #formatC(sd$data$data*scale, digits = 2, format = 'f')
+      SD <- as.numeric(sd$value) * as.numeric(sd$scale) #formatC(sd$data$data*scale, digits = 2, format = 'f')
     }
     
     output <- as.data.frame(cbind(dat$modis_date, dat$calendar_date, dat$band, dat$tile, dat$latitude, dat$longitude, dat$pixel, dat$value, QC, SD), stringsAsFactors = F)
@@ -106,8 +106,8 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     output[,5:10] <- lapply(output[,5:10], as.numeric)
     
     # scale the data + stdev to proper units
-    output$data <- output$data*(as.numeric(dat$scale))
-    output$sd <- output$sd*(as.numeric(dat$scale))
+    output$data <- output$data * (as.numeric(dat$scale))
+    output$sd <- output$sd * (as.numeric(dat$scale))
     output$lat <- round(output$lat, 4)
     output$lon <- round(output$lon, 4)
     
