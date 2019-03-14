@@ -241,42 +241,38 @@ db.exists <- function(params, write = TRUE, table = NA) {
     invisible(NULL)
   })
 
-  if (is.na(table)) {
-    result <- TRUE
-  } else {
-    read.perm <- FALSE
-    write.perm <- FALSE
+  # If table is NA, this is just a generic check for database access,
+  # so we're done!
+  if (is.na(table)) return(invisible(TRUE))
 
-    # check read permission
-    user_privilege <- user.permission[["privilege_type"]]
-    if ("SELECT" %in% user_privilege) {
-      read.perm <- TRUE
-    }
+  # We're enquiring about permissions related to a specific table, so
+  # need to do more here.
+  read.perm <- FALSE
+  write.perm <- FALSE
 
-    #check write permission
-    if ("INSERT" %in% user_privilege && "UPDATE" %in% user_privilege ) {
-      write.perm <- TRUE
-    }
+  # check read permission
+  user_privilege <- user.permission[["privilege_type"]]
+  if ("SELECT" %in% user_privilege) {
+    read.perm <- TRUE
+  }
 
-    if (!read.perm) {
-      return(invisible(FALSE))
-    }
+  # read permission requested, but not granted
+  if (!read.perm) return(invisible(FALSE))
 
-    # read a row from the database
-    read.result <- tryCatch({
-      invisible(db.query(query = paste("SELECT * FROM", table, "LIMIT 1"), con = con))
-    }, error = function(e) {
-      PEcAn.logger::logger.error("Could not query database.\n\t", e)
-      db.close(con)
-      invisible(NULL)
-    })
-    if (is.null(read.result)) {
-      return(invisible(FALSE))
-    }
+  # Read permissions granted. Now, does it actually work? To test, try
+  # to read a row from the database
+  read.result <- tryCatch({
+    invisible(db.query(query = paste("SELECT * FROM", table, "LIMIT 1"), con = con))
+  }, error = function(e) {
+    PEcAn.logger::logger.error("Could not query database.\n\t", e)
+    db.close(con)
+    invisible(NULL)
+  })
+  if (is.null(read.result)) return(invisible(FALSE))
 
-    # get the table's primary key column
-    get.key <- tryCatch({
-      db.query(query = paste("SELECT pg_attribute.attname, format_type(pg_attribute.atttypid, pg_attribute.atttypmod)
+  # get the table's primary key column
+  get.key <- tryCatch({
+    db.query(query = paste("SELECT pg_attribute.attname, format_type(pg_attribute.atttypid, pg_attribute.atttypmod)
                      FROM pg_index, pg_class, pg_attribute
                      WHERE
                      pg_class.oid = '", table, "'::regclass AND
@@ -284,47 +280,44 @@ db.exists <- function(params, write = TRUE, table = NA) {
                      pg_attribute.attrelid = pg_class.oid AND
                      pg_attribute.attnum = any(pg_index.indkey)
                      AND indisprimary"), con = con)
-    }, error = function(e) {
-      PEcAn.logger::logger.error("Could not query database.\n\t", e)
-      db.close(con)
-      invisible(NULL)
-    })
-    if (is.null(read.result)) {
-      return(invisible(FALSE))
-    }
+  }, error = function(e) {
+    PEcAn.logger::logger.error("Could not query database.\n\t", e)
+    db.close(con)
+    invisible(NULL)
+  })
+  if (is.null(read.result)) return(invisible(FALSE))
 
-    # if requested write a row to the database
-    if (write) {
-      # in the case when has read permission but no write
-      if (!write.perm) {
-        return(invisible(FALSE))
-      }
+  # If write permission not requested, we're done!
+  if (!write) return(invisible(TRUE))
 
-      # when the permission correct to check whether write works
-      key <- get.key$attname
-      key.value <- read.result[key]
-      coln.name <- names(read.result)
-      write.coln <- ""
-      for (name in coln.name) {
-        if (name != key) {
-          write.coln <- name
-          break
-        }
-      }
-      write.value <- read.result[write.coln]
-      result <- tryCatch({
-        db.query(query = paste0("UPDATE ", table, " SET ", write.coln, "='", write.value,
-                               "' WHERE ",  key, "=", key.value),
-                 con = con)
-        invisible(TRUE)
-      }, error = function(e) {
-        PEcAn.logger::logger.error("Could not write to database.\n\t", e)
-        invisible(FALSE)
-      })
-    } else {
-      result <- TRUE
+  # Write permission requested. Was it granted?
+  if ("INSERT" %in% user_privilege && "UPDATE" %in% user_privilege ) {
+    write.perm <- TRUE
+  }
+  # Write permission not granted
+  if (!write.perm) return(invisible(FALSE))
+
+  # Write permission granted, but does it actually work?
+  key <- get.key$attname
+  key.value <- read.result[key]
+  coln.name <- names(read.result)
+  write.coln <- ""
+  for (name in coln.name) {
+    if (name != key) {
+      write.coln <- name
+      break
     }
   }
+  write.value <- read.result[write.coln]
+  result <- tryCatch({
+    db.query(query = paste0("UPDATE ", table, " SET ", write.coln, "='", write.value,
+                            "' WHERE ",  key, "=", key.value),
+             con = con)
+    invisible(TRUE)
+  }, error = function(e) {
+    PEcAn.logger::logger.error("Could not write to database.\n\t", e)
+    invisible(FALSE)
+  })
 
   invisible(result)
 }
