@@ -240,7 +240,9 @@ db.exists <- function(params, write = TRUE, table = NA) {
     invisible(NULL)
   })
 
-  if (!is.na(table)){
+  if (is.na(table)) {
+    result <- TRUE
+  } else {
     read.perm <- FALSE
     write.perm <- FALSE
 
@@ -321,10 +323,6 @@ db.exists <- function(params, write = TRUE, table = NA) {
     } else {
       result <- TRUE
     }
-  }
-
-  else{
-    result <- TRUE
   }
 
   invisible(result)
