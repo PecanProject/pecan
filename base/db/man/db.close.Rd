@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_db.R
 \name{db.close}
 \alias{db.close}
-\title{Close database connection}
+\title{Generic function to close a database connection}
 \usage{
 db.close(con, showWarnings = TRUE)
 }
@@ -12,12 +12,9 @@ db.close(con, showWarnings = TRUE)
 \item{showWarnings}{logical: report possible issues with connection?}
 }
 \value{
-connection to database
+`TRUE`, invisibly (see [DBI::dbDisconnect()])
 }
 \description{
-Generic function to close a database connection
-}
-\details{
 Close a previously opened connection to a database.
 }
 \examples{
