@@ -491,8 +491,8 @@ sda.enkf.multisite <- function(settings,
     
     #writing down the image - either you asked for it or nor :)
 
-    if ((t%%2==0 | t==nt) & (is.local))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
-    #Saving the profiling results
+    if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+    #Saving the profiling result
     if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
 
   } ### end loop over time
