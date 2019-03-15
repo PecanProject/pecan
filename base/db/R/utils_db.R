@@ -129,7 +129,7 @@ db.open <- function(params) {
 
   # Assign the connection a unique ID number between 0 and 1000
   id <- sample(1000, size = 1)
-  while (sum(.db.utils$connections$id == id) > 0) {
+  while (any(.db.utils$connections$id == id)) {
     id <- sample(1000, size = 1)
   }
   attr(c, "pecanid") <- id
