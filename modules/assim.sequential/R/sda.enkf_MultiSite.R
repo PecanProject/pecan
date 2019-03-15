@@ -26,8 +26,8 @@ sda.enkf.multisite <- function(settings,
                                restart=F,
                                control=list(trace=T,
                                             FF=F,
-                                            interactivePlot=T,
-                                            TimeseriesPlot=T,
+                                            interactivePlot=F,
+                                            TimeseriesPlot=F,
                                             BiasPlot=F,
                                             plot.title=NULL,
                                             facet.plots=F,
@@ -112,7 +112,7 @@ sda.enkf.multisite <- function(settings,
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
   conf.settings %>%
-    purrr::walk(function(settings) {
+    furrr::future_map(function(settings) {
       inputs.split <- list()
       if (!no_split) {
         for (i in length(settings$run$inputs$met$path)) {
@@ -222,7 +222,7 @@ sda.enkf.multisite <- function(settings,
       unlink(list.files(outdir, "*.nc", recursive = T, full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
-        purrr::map2(inputs, function(settings, inputs) {
+        furrr::future_map2(inputs, function(settings, inputs) {
           inputs.split <- list()
           if (!no_split) {
             for (i in seq_len(nens)) {
