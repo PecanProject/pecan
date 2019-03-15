@@ -222,7 +222,7 @@ sda.enkf.multisite <- function(settings,
       unlink(list.files(outdir, "*.nc", recursive = T, full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
-        furrr::future_map2(inputs, function(settings, inputs) {
+        purrr::map2(inputs, function(settings, inputs) {
           inputs.split <- list()
           if (!no_split) {
             for (i in seq_len(nens)) {
@@ -264,7 +264,7 @@ sda.enkf.multisite <- function(settings,
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
 
     out.configs <- conf.settings %>%
-      furrr::future_map2(restart.list, function(settings, restart.arg) {
+      purrr::map2(restart.list, function(settings, restart.arg) {
   
         # wrtting configs for each settings - this does not make a difference with the old code
         write.ensemble.configs(
