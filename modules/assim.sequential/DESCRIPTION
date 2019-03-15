@@ -19,7 +19,8 @@ Imports:
     reshape2 (>= 1.4.2),
     nimble,
     tictoc, 
-    purrr
+    purrr,
+    furrr
 Suggests:
     testthat
 License: FreeBSD + file LICENSE

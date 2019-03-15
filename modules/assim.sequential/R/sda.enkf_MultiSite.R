@@ -16,7 +16,7 @@
 #' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
 #' 
 #' @return NONE
-#' @import nimble tictoc
+#' @import nimble tictoc furrr
 #' @export
 #' 
 sda.enkf.multisite <- function(settings,
@@ -35,6 +35,7 @@ sda.enkf.multisite <- function(settings,
                                             pause=F,
                                             Profiling=F),
                                ...) {
+  plan(multiprocess)
   if (control$debug) browser()
   tic("Prepration")
   ###-------------------------------------------------------------------###
@@ -221,7 +222,7 @@ sda.enkf.multisite <- function(settings,
       unlink(list.files(outdir, "*.nc", recursive = T, full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
-        purrr::map2(inputs, function(settings, inputs) {
+        furrr::future_map2(inputs, function(settings, inputs) {
           inputs.split <- list()
           if (!no_split) {
             for (i in seq_len(nens)) {
@@ -242,7 +243,7 @@ sda.enkf.multisite <- function(settings,
         })
           
       #---------------- setting up the restart argument for each site separatly and keeping them in a list
-      restart.list <- purrr::pmap(list(out.configs, conf.settings, params.list, inputs.split), 
+      restart.list <- furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split), 
                                   function(configs, settings, new.params, inputs){
                             
                                     list(runid = configs$runs$id, 
@@ -263,7 +264,7 @@ sda.enkf.multisite <- function(settings,
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
 
     out.configs <- conf.settings %>%
-      purrr::map2(restart.list, function(settings, restart.arg) {
+      furrr::future_map2(restart.list, function(settings, restart.arg) {
   
         # wrtting configs for each settings - this does not make a difference with the old code
         write.ensemble.configs(
@@ -287,7 +288,7 @@ sda.enkf.multisite <- function(settings,
 
     if (t==1 & control$FF){
       readsFF <- out.configs %>%
-        purrr::map(function(configs) {
+        furrr::future_map(function(configs) {
  
         obs.times%>%
             purrr::map(function(stop.date){
@@ -319,7 +320,7 @@ sda.enkf.multisite <- function(settings,
     }
     #------------- Reading - every iteration and for SDA
     reads <- out.configs %>%
-      purrr::map(function(configs) {
+      furrr::future_map(function(configs) {
         X_tmp <- vector("list", 2)
         
         for (i in seq_len(nens)) {
