@@ -87,18 +87,10 @@ db.query <- function(query, con = NULL, params = NULL) {
 ##' db.open(settings$database$bety)
 ##' }
 db.open <- function(params) {
-  if ("dbfiles" %in% names(params)) {
-    PEcAn.logger::logger.warn(
-      "`dbfiles` in the database driver is deprecated. Setting it to NULL."
-    )
-    params[["dbfiles"]] <- NULL
-  }
-  if ("write" %in% names(params)) {
-    PEcAn.logger::logger.warn(
-      "`write` in the database driver is deprecated. Setting it to NULL."
-    )
-    params[["write"]] <- NULL
-  }
+  # These values are used elsewhere, but are not valid arguments to
+  # DBI::dbConnect, so remove them here.
+  params[["dbfiles"]] <- NULL
+  params[["write"]] <- NULL
 
   driver <- params[["driver"]]
   params[["driver"]] <- NULL
