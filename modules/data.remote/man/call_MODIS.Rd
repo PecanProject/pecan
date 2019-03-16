@@ -31,16 +31,17 @@ call_MODIS(outfolder = ".", start_date, end_date, lat, lon, size = 0,
 
 \item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
 
-depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json}
+depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
+depends on the MODISTools package version 1.1.0}
 }
 \description{
 Get MODIS data by date and location
 }
 \examples{
 \dontrun{
-test_modistools <- call_MODIS(product = "MOD13Q1", band = "250m_16_days_NDVI", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "",band_sd = "", package_method = "MODISTools")
+test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools")
 plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
-test_reticulate <- call_MODIS(product = "MOD13Q1", band = "250m_16_days_NDVI", start_date="2004300",end_date="2004365",lat=38,lon=-123,size=0,band_qc = "",band_sd = "", package_method = "reticulate")
+test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
 }
 
 }
