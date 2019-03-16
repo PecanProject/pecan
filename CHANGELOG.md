@@ -27,6 +27,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
 - Added unit tests for `met2model.<MODEL>` functions for most models.
 - Added MAESPA model to docker build
+- `PEcAn.DB` functions now support `RPostgres` (in addition to `RPostgreSQL`).
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
