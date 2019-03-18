@@ -208,13 +208,15 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     variable.ens <- variables$variable.eqn
     variable.fn <- variables$variable.drv
     
-    ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            pecandir = outdir, 
-                                            outdir = settings$modeloutdir,
-                                            start.year = start.year.ens, 
-                                            end.year = end.year.ens, 
-                                            variable = variable.ens,
-                                            ens.run.ids = ens.run.ids)
+    ensemble.output <- PEcAn.uncertainty::read.ensemble.output(
+      settings$ensemble$size,
+      pecandir = outdir, 
+      outdir = settings$modeloutdir,
+      start.year = start.year.ens, 
+      end.year = end.year.ens, 
+      variable = variable.ens,
+      ens.run.ids = ens.run.ids
+    )
     
     # Save ensemble output
     fname <- ensemble.filename(settings, "ensemble.output", "Rdata", 

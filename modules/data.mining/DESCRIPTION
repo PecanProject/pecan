@@ -7,9 +7,8 @@ Date: 2018-12-03
 Authors@R: c(person("Mike","Dietze"))
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
-Depends:
-    dplR
 Imports:
+    dplR,
     PEcAn.logger
 Suggests:
     PEcAn.utils,

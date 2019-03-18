@@ -144,7 +144,11 @@ col2ncvar <- function(variable, dims) {
 #' @return `tibble` containing time series of NARR data for the given site
 #' @author Alexey Shiklomanov
 #' @examples
+#'
+#' \dontrun{
 #' dat <- get_NARR_thredds("2008-01-01", "2008-01-15", 43.3724, -89.9071)
+#' }
+#'
 #' @export
 get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
                              progress = TRUE,
