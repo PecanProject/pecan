@@ -4,8 +4,8 @@
 \alias{ERA5_extract}
 \title{ERA5_extract}
 \usage{
-ERA5_extract(lat = 40, long = -120, years = c(1985, 1995),
-  vars = NULL)
+ERA5_extract(lat = 40, long = -120, years = c(2006), vars = NULL,
+  data.folder)
 }
 \arguments{
 \item{lat}{latitude}
@@ -15,6 +15,8 @@ ERA5_extract(lat = 40, long = -120, years = c(1985, 1995),
 \item{years}{years to be extracted}
 
 \item{vars}{variables to be extarcted. If NULL all the variables will be returned.}
+
+\item{data.folder}{Path to the directory where ERA5 nc files are located.}
 }
 \value{
 a list of xts objects with all the variables for the requested years
@@ -27,7 +29,8 @@ For the list of variables check out the documentation at \link{https://confluenc
 }
 \examples{
 \dontrun{
-point.data <- ERA5_extract(lat=40, long=-120, years=c(1985,1995), vars="d2m")
+point.data <- ERA5_extract(lat=40, long=-120, years=c(1990:1995), vars=NULL, data.folder=".")
+
  map(~xts::apply.daily(.x, mean))
 
 }

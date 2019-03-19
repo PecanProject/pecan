@@ -21,10 +21,10 @@
 #' }
 met2cf.ERA5 <- function(lat = 40,
                         long = -120,
-                        years = c(2015, 2017),
-                        overwrite = T,
+                        years = c(2015:2017),
+                        overwrite = FALSE,
                         verbose = T,
-                        sitename = "x2",
+                        sitename,
                         data.folder,
                         outfolder) {
   
@@ -61,7 +61,7 @@ met2cf.ERA5 <- function(lat = 40,
                                                           ens[, "t2m"] %>% as.numeric(),
                                                           ens[, "sp"] %>% as.numeric()
                                                           ) # Pressure in Pa
-      print(names(ens))
+
       #adding humidity
       xts::merge.xts(ens[,-c(3)], (specific_humidity)) %>%
         `colnames<-`(
@@ -151,7 +151,7 @@ met2cf.ERA5 <- function(lat = 40,
           ncdf4::nc_close(nc_flptr)  #Write to the disk/storage
         },
         error = function(e) {
-          PEcAn.logger::logger.severe("Something went wrong during the wrting of the nc file.",
+          PEcAn.logger::logger.severe("Something went wrong during the writing of the nc file.",
                                       conditionMessage(e))
         }
       )

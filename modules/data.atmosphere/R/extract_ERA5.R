@@ -38,7 +38,7 @@ ERA5_extract <-
                        ".nc")
               
               #msg
-              print(paste0("For ensemble #", ens," ", year, " is being processed !"))
+              PEcAn.logger::logger.info(paste0("For ensemble #", ens," ", year, " is being processed !"))
               #open the file
               nc_data <- nc_open(ncfile)
               # time stamp
@@ -83,7 +83,7 @@ ERA5_extract <-
       
       
     }, error = function(e) {
-      print(paste0(conditionMessage(e), " just happened!"))
+      PEcAn.logger::logger.severe(paste0(conditionMessage(e)))
       
     })
     
