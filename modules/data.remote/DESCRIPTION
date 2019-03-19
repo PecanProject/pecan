@@ -12,7 +12,8 @@ Imports:
     reticulate,
     PEcAn.logger,
     PEcAn.remote,
-    stringr (>= 1.1.0)
+    stringr (>= 1.1.0),
+    spatial.tools
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
