@@ -70,7 +70,7 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     
     # checks if start and end dates are within all or partial range of data available from MODIS product date range
     dates <- MODISTools::mt_dates(product = product, lat = lat, lon = lon)$modis_date
-    dates <- as.numeric(substr(dates, 2, nchar(dates)))
+    dates <- as.Date(as.character(substr(dates, 2, nchar(dates))), format = "%Y%j")
     #list total range of dates available for product
     print(paste("Range of dates for product are ", dates[1], " - ", dates[length(dates)], sep = ""))
     # Best case scenario: the start_date and end_date parameters fall within available MODIS data dates
