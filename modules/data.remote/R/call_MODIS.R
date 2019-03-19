@@ -14,6 +14,7 @@
 ##' @param band_qc string value for which quality control band, or use "NA" if you do not know or do not need QC information (optional)
 ##' @param band_sd string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)
 ##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
+##' @param siteID string value of a PEcAn site ID. Currently only used for output filename.
 ##' 
 ##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
 ##' depends on the MODISTools package version 1.1.0
@@ -32,10 +33,21 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size <- 0
   
+ # reformat start and end date if they are in YYYYMMDD format instead of YYYYJJJ
+  if (grepl("/", start_date) == T)
+  {
+    start_date = as.Date(paste0(lubridate::year(start_date), spatial.tools::add_leading_zeroes(lubridate::yday(start_date), 3), format = "%Y%j")
+  }
+  
+  if (grepl("/", end_date) == T)
+  {
+    end_date = as.Date(paste0(lubridate::year(end_date), spatial.tools::add_leading_zeroes(lubridate::yday(end_date), 3), format = "%Y%j")
+  }
+
   # set start and end dates to correct format
   if (package_method == "MODISTools"){
     
-    products = MODISTools::mt_products()
+ products = MODISTools::mt_products()
     if (!(product %in% products$product))
     {
       print(products)
@@ -44,17 +56,34 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
       print("Check #1: Product exists!")
     }
     
-
+    # checks if start and end dates are within all or partial range of data available from MODIS product date range
     dates <- MODISTools::mt_dates(product = product, lat = lat, lon = lon)$modis_date
     dates <- as.numeric(substr(dates, 2, nchar(dates)))
-    if (as.numeric(start_date) <= dates[1] | as.numeric(end_date) >= dates[length(dates)])
+    #list total range of dates available for product
+    print(paste("Range of dates for product are ", dates[1], " - ", dates[length(dates)], sep = ""))
+    # Best case scenario: the start_date and end_date parameters fall within available MODIS data dates
+    if (as.numeric(start_date)>=dates[1] & as.numeric(end_date)<=dates[length(dates)])
     {
-      print(paste("Range of dates for product are ", dates[1], " - ", dates[length(dates)], sep = ""))
-      stop("Please choose dates between the date range listed above.")
-    } else {
-      print("Check #2: Dates are available!")
+      print("Check #2: All dates are available!")
     }
-    
+    # Okay scenario: Some MODIS data is available for parameter start_date and end_date range, but either the start_date or end_date falls outside the range of availble 
+    # MODIS data dates
+    if (as.numeric(start_date)<=dates[1] & as.numeric(end_date)>=dates[1])
+    {
+      start_date = dates[1]
+      print("WARNING: Dates are only partially available. Look at list of available dates for MODIS data product.")
+    } 
+    if (as.numeric(end_date)>=dates[length(dates)] & as.numeric(start_date) <= dates[length(dates)])
+    {
+      end_date = dates[length(dates)]
+      print("WARNING: Dates are only partially available. Look at list of available dates for MODIS data product.")
+    } 
+    # Unacceptable scenario: start_date and end_date does not fall within the availa MODIS data product date range. There is no data to extract in this scenario.
+    if ((as.numeric(start_date)<dates[1] & as.numeric(end_date <dates[1])) | (as.numeric(start_date)>dates[length(dates)] & as.numeric(end_date)>dates[length(dates)]))
+    {
+           stop("No MODIS data available start_date and end_date parameterized.")
+    }
+        
     bands <- MODISTools::mt_bands(product = product)
     if (!(band %in% bands$band))
     {
