@@ -151,11 +151,11 @@ pecan.ma <- function(trait.data, prior.distns,
       data,
       j.chains,
       j.iter = j.iter,
-      taupriors[["tauA"]],
-      taupriors[["tauB"]][trait.name],
-      prior,
-      jag.model.file,
-      overdispersed
+      tauA = taupriors[["tauA"]],
+      tauB = taupriors[["tauB"]][[trait.name]],
+      prior = prior,
+      jag.model.file = jag.model.file,
+      overdispersed = overdispersed
     )
 
     if (verbose) {
