@@ -11,7 +11,7 @@ insert_table(values, table, con, coerce_col_class = TRUE, drop = TRUE)
 
 \item{table}{Name of target SQL table, as character}
 
-\item{con}{database connection object}
+\item{con}{Database connection object}
 
 \item{coerce_col_class}{logical, whether or not to coerce local data columns 
 to SQL classes. Default = `TRUE.`}
