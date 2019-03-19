@@ -82,6 +82,14 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 #'  library(PEcAn.all)
 #'  library(purrr)
 #'  
+#'  new.args <- c(
+#'   "#$ -l h_rt=48:00:00",
+#'   "#$ -pe omp 28 # Request a parallel environment with 4 cores",
+#'   "#$ -l mem_per_core=1G # and 4G memory for each",
+#'   "#$ -l buyin",
+#'   "module load R/3.5.2",
+#'   "module load python/2.7.13"
+#'   )
 #'  settingPath <-
 #'    "/fs/data3/hamzed/Projects/GeoTunnel/RemoteSDA/pecan.SDA.4sites.xml"
 #'  ObsPath <-
@@ -92,7 +100,8 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 #'}
 #'
 SDA_remote_launcher <-function(settingPath, 
-                               ObsPath){
+                               ObsPath,
+                               run.bash.args){
   browser()
   #---------------------------------------------------------------
   # Reading the settings
@@ -245,14 +254,23 @@ SDA_remote_launcher <-function(settingPath,
   #----------------------------------------------------------------
   # Cleaning up the settings and getting it ready
   #---------------------------------------------------------------
+  #Create the scratch dir
+  out <-remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"//scratch","\")"),
+                         host = my_host,
+                         user = my_host$user,
+                         scratchdir = ".")
+  
   settings$outdir <- paste0(settings$host$folder,"/", folder_name)
   
   settings$host$name <- "localhost"
   #setting the new run and out dirs
-  settings$host$rundir <- paste0(settings$host$folder,"/", folder_name,"//run")
-  settings$host$outdir <- paste0(settings$host$folder,"/", folder_name,"//out")
-  settings$rundir <- paste0(settings$host$folder,"/", folder_name,"//run")
-  settings$modeloutdir  <-paste0(settings$host$folder,"/", folder_name,"//out")
+  settings$host$rundir <- paste0(settings$host$folder,"/", folder_name,"/run")
+  settings$host$outdir <- paste0(settings$host$folder,"/", folder_name,"/out")
+  settings$rundir <- paste0(settings$host$folder,"/", folder_name,"/run")
+  settings$modeloutdir  <-paste0(settings$host$folder,"/", folder_name,"/out")
+  
+  
+  settings$scratchdir <-paste0(settings$host$folder,"/", folder_name,"/scratch")
   
   save.setting.dir <- tempdir()
   PEcAn.settings::write.settings(settings, basename(settingPath), save.setting.dir)
@@ -277,12 +295,10 @@ SDA_remote_launcher <-function(settingPath,
     stderr = FALSE
   )
   
-  cmd <- paste0("nohup  Rscript ",
-                settings$outdir,"//SDA_launcher.R ", # remote luncher
-                settings$outdir,"//",basename(settingPath), # path to settings
-                " Obs//", basename(ObsPath), # Path to Obs
-                " > ", 
-                settings$outdir,"/SDA_remote_nohup.out 2>&1 &"
+  cmd <- paste0("Rscript ",
+                settings$outdir,"/SDA_launcher.R ", # remote luncher
+                settings$outdir,"/",basename(settingPath), # path to settings
+                " Obs//", basename(ObsPath)
   )
   
 
@@ -290,19 +306,32 @@ SDA_remote_launcher <-function(settingPath,
    PEcAn.logger::logger.info("Running this command on your remote: \n")
    PEcAn.logger::logger.info(cmd)
   
+   #create the bash file
+   bashfile<-readLines(system.file("RemoteLauncher", "Run.bash", package = "PEcAn.assim.sequential"))
+   tmpdir <- tempdir()
+   unlink(paste0(tmpdir,"/Run.bash")) # delete if there is already one exists
+   writeLines(c(bashfile, run.bash.args, cmd), paste0(tmpdir, "/Run.bash"))
+   #copy over the bash file
+   remote.copy.to(
+     my_host,
+     paste0(tmpdir,"/Run.bash"),
+     paste0(settings$host$folder, "/", folder_name, "/Run.bash"),
+     delete = FALSE,
+     stderr = FALSE
+   )
    
-   #calling SDA
-   out<-remote.execute.R(paste0("system(\" ",cmd, "\")"),
-                         my_host,
-                         user = my_host$user,
-                         scratchdir = ".")
+   #calling qusb SDA
+   # out<-remote.execute.R(paste0("system(\" ",cmd, "\")"),
+   #                       my_host,
+   #                       user = my_host$user,
+   #                       scratchdir = ".")
    
    
    
    # Let's see what is the PID of the job doing the nohup
    # I'll use this to track the progress of my SDA job
    PIDS<-remote.execute.cmd(my_host, cmd = "lsof",
-                      args = c(paste0(settings$outdir,"/SDA_remote_nohup.out")))
+                      args = c(paste0(settings$outdir,"/log.qlog")))
    
    if (length(PIDS)>1){
      #some cleaning
