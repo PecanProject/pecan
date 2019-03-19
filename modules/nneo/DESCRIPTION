@@ -1,0 +1,26 @@
+Package: nneo
+Type: Package
+Title: 'NEON' 'API' Client
+Description: 'NEON' 'API' (<http://data.neonscience.org/data-api>) client.
+    Includes methods for interacting with all 'API' routes.
+Version: 0.1.0
+Authors@R: c(
+    person("Scott", "Chamberlain", role = c("aut", "cre"),
+      email = "myrmecocystus+r@gmail.com"),
+    person("Josh", "Roberti", role = "ctb")
+    )
+License: MIT + file LICENSE
+URL: https://github.com/ropenscilabs/nneo
+BugReports: https://github.com/ropenscilabs/nneo/issues
+LazyData: true
+Imports: crul (>= 0.1.0), jsonlite (>= 1.1), tibble (>= 1.2),
+        data.table, fauxpas
+Suggests: roxygen2 (>= 6.0.1), testthat
+RoxygenNote: 6.0.1
+NeedsCompilation: no
+Packaged: 2017-06-15 18:23:05 UTC; sacmac
+Author: Scott Chamberlain [aut, cre],
+  Josh Roberti [ctb]
+Maintainer: Scott Chamberlain <myrmecocystus+r@gmail.com>
+Repository: CRAN
+Date/Publication: 2017-06-15 18:36:01 UTC
