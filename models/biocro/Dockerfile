@@ -99,4 +99,6 @@ RUN install2.r --error DBI \
     R CMD build biocro &&\
     R CMD INSTALL PEcAn.BIOCRO_1.7.0.tar.gz 
 
+WORKDIR /data
+
 ENTRYPOINT ["Rscript", "/pecan/models/biocro/inst/biocro.Rscript"]
