@@ -39,3 +39,4 @@ Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 6.1.1
+Roxygen: list(markdown = TRUE)
