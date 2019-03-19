@@ -31,19 +31,19 @@
 call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0, product, band, band_qc = "", band_sd = "", package_method = "MODISTools") {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
-  size <- 0
+size <- 0
   
- # reformat start and end date if they are in YYYYMMDD format instead of YYYYJJJ
+  # reformat start and end date if they are in YYYYMMDD format instead of YYYYJJJ
   if (grepl("/", start_date) == T)
   {
-    start_date = as.Date(paste0(lubridate::year(start_date), spatial.tools::add_leading_zeroes(lubridate::yday(start_date), 3), format = "%Y%j")
+    start_date = as.Date(paste0(lubridate::year(start_date), spatial.tools::add_leading_zeroes(lubridate::yday(start_date), 3)), format = "%Y%j")
   }
   
   if (grepl("/", end_date) == T)
   {
-    end_date = as.Date(paste0(lubridate::year(end_date), spatial.tools::add_leading_zeroes(lubridate::yday(end_date), 3), format = "%Y%j")
+    end_date = as.Date(paste0(lubridate::year(end_date), spatial.tools::add_leading_zeroes(lubridate::yday(end_date), 3)), format = "%Y%j")
   }
-
+  
   # set start and end dates to correct format
   if (package_method == "MODISTools"){
     
