@@ -23,29 +23,29 @@
 ##' \dontrun{
 ##' query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
 ##' }
-query.priors <- function(pft, trstr = NULL, out = NULL, con = NULL, ...){
+query.priors <- function(pft, trstr = NULL, out = NULL, con = NULL,
+                         trait_vector = NULL, ...){
 
-  if(is.null(con)){
+  if (is.null(con)) {
     con <- db.open(settings$database$bety)
     on.exit(db.close(con))
   }
-  if(is.list(con)){
+  if (is.list(con)) {
     print("query.priors")
     print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   }
 
-  query.text <- paste("select variables.name, distn, parama, paramb, n",
+  query.text <- paste(
+    "select variables.name, distn, parama, paramb, n",
       "from priors",
       "join variables on priors.variable_id = variables.id",
       "join pfts_priors on pfts_priors.prior_id = priors.id",
       "join pfts on pfts.id = pfts_priors.pft_id",
       "where pfts.id = ", pft)
 
-  if(is.null(trstr) || trstr == "''"){
-    query.text = paste(query.text,";",sep="")
-  } else {
-    query.text = paste(query.text,"and variables.name in (", trstr, ");")
+  if (!is.null(trstr) && trstr != "''") {
+    query.text <- paste(query.text, "and variables.name in (", trstr, ");")
   }
 
 
@@ -63,9 +63,45 @@ query.priors <- function(pft, trstr = NULL, out = NULL, con = NULL, ...){
     return(priors)
   }
 }
-#==================================================================================================#
 
 
-####################################################################################################
-### EOF.  End of R script file.
-####################################################################################################
+#' Query priors using prepared statements
+#'
+#' @param pfts Character vector of PFT names
+#' @param 
+query_priors <- function(pft_names = NULL, traits = NULL, pft_ids = NULL, expand = TRUE, ...) {
+  if (!is.null(pft_names) && !is.null(pft_ids)) {
+    PEcAn.logger::logger.severe(
+      "Provide either `pft_names` or `pft_ids`, not both."
+    )
+  }
+  query_string <- paste(
+    "SELECT variables.name, distn, parama, paramb, n",
+    "FROM priors",
+    "JOIN variables ON priors.variable_id = variables.id",
+    "JOIN pfts_priors ON pfts_priors.prior_id = priors.id",
+    "JOIN pfts ON pfts.id = pfts_priors.pft_id",
+    "WHERE pfts.name = $1 OR pfts.id = $2"
+  )
+
+  if (is.null(traits)) {
+    return(db.query(query_string, values = list(pfts), ...))
+  }
+
+  query_string <- paste(query_string, "AND variables.name = $3")
+  npft <- length(pfts)
+  ntrait <- length(traits)
+  if (npft != ntrait || npft == 1 || ntrait == 1) {
+    if (!expand) {
+      PEcAn.logger::logger.severe(sprintf(
+        "Expand is `FALSE`, but %d PFTs and %d traits were provided. ",
+        "Unclear how to recycle, so throwing an error instead."
+      ), npft, ntrait)
+    }
+    # Query the full trait x PFT combination
+    pfts_traits <- expand.grid(pft = pfts, trait = traits, stringsAsFactors = FALSE)
+    pfts <- pfts_traits[["pft"]]
+    traits <- pfts_traits[["trait"]]
+  }
+  db.query(query_string, values = list(pfts, traits), ...)
+}
