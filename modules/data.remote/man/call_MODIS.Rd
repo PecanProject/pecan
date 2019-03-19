@@ -5,7 +5,7 @@
 \title{call_MODIS}
 \usage{
 call_MODIS(outfolder = ".", start_date, end_date, lat, lon, size = 0,
-  product, band, band_qc = "", band_sd = "",
+  product, band, band_qc = "", band_sd = "", siteID = NULL,
   package_method = "MODISTools")
 }
 \arguments{
@@ -29,12 +29,12 @@ call_MODIS(outfolder = ".", start_date, end_date, lat, lon, size = 0,
 
 \item{band_sd}{string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)}
 
-\item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)}
-
-\item{siteID}{string value of a PEcAn site ID. Currently only used for output filename.
+\item{siteID}{string value of a PEcAn site ID. Currently only used for output filename and extracting lat/lon for a PEcAn location.
 
 depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
 depends on the MODISTools package version 1.1.0}
+
+\item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)}
 }
 \description{
 Get MODIS data by date and location

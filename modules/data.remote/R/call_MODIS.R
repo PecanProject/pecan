@@ -43,7 +43,7 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     bety$con <- con
     sites <- PEcAn.DB::query.site(siteID,con)
     lat = sites$lat
-    lon = sties$lon
+    lon = sites$lon
   }  
   # reformat start and end date if they are in YYYYMMDD format instead of YYYYJJJ
   if (grepl("/", start_date) == T)
