@@ -87,8 +87,11 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       # set up launcher script if we use modellauncher
       if (is.null(firstrun)) {
         firstrun <- run
-        setup_modellauncher(run = run, rundir = settings$rundir, host_rundir = settings$host$rundir,
-                                       mpirun = settings$host$modellauncher$mpirun, binary = settings$host$modellauncher$binary)
+        jobfile <- setup_modellauncher(run = run,
+                                       rundir = settings$rundir,
+                                       host_rundir = settings$host$rundir,
+                                       mpirun = settings$host$modellauncher$mpirun,
+                                       binary = settings$host$modellauncher$binary)
       }
       writeLines(c(file.path(settings$host$rundir, run_id_string)), con = jobfile)
       pbi <- pbi + 1
@@ -200,19 +203,27 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
         # Write finish time to database
         if (is_modellauncher) {
-          for (run in run_list) {
-            stamp_finished(con = dbcon, run = run)
+          for (x in run_list) {
+            stamp_finished(con = dbcon, run = x)
           }
         } else {
           stamp_finished(con = dbcon, run = run)
         }
 
+        # move progress bar
         if (!is_modellauncher) {
           pbi <- pbi + 1
         }
         setTxtProgressBar(pb, pbi)
 
-        jobids[run] <- NULL
+        # remove job
+        if (is_modellauncher) {
+          for (x in run_list) {
+            jobids[x] <- NULL
+          }          
+        } else {
+          jobids[run] <- NULL
+        }
       } # End job finished
     }  # end loop over runs
   }  # end while loop checking runs
