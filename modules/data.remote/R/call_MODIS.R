@@ -14,7 +14,7 @@
 ##' @param band_qc string value for which quality control band, or use "NA" if you do not know or do not need QC information (optional)
 ##' @param band_sd string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)
 ##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
-##' @param siteID string value of a PEcAn site ID. Currently only used for output filename.
+##' @param siteID string value of a PEcAn site ID. Currently only used for output filename and extracting lat/lon for a PEcAn location.
 ##' 
 ##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
 ##' depends on the MODISTools package version 1.1.0
@@ -28,11 +28,23 @@
 ##' 
 ##' @author Bailey Morrison
 ##'  
-call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0, product, band, band_qc = "", band_sd = "", package_method = "MODISTools") {
+call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0, product, band, band_qc = "", band_sd = "", siteID = NULL, package_method = "MODISTools") {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
-size <- 0
+  size <- 0
   
+  # For PEcAn users: finds lat lon based on a site id and also uses this to name the output file
+  if (!(is.null(siteID)))
+  {
+    siteID = as.character(siteID)
+    bety <- list(user='bety', password='bety', host='localhost',
+                dbname='bety', driver='PostgreSQL',write=TRUE)
+    con <- PEcAn.DB::db.open(bety)
+    bety$con <- con
+    sites <- PEcAn.DB::query.site(siteID,con)
+    lat = sites$lat
+    lon = sties$lon
+  }  
   # reformat start and end date if they are in YYYYMMDD format instead of YYYYJJJ
   if (grepl("/", start_date) == T)
   {
