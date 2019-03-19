@@ -28,8 +28,13 @@
 ##' @param outdir output directory
 ##' @param random use random effects, `FALSE` by default
 ##' @param overdispersed `TRUE` by default, if set to `FALSE`, data mean will be used as starting point for MCMC chains (use with caution)
-##' @return four chains with 5000 total samples from posterior 
-##' @author David LeBauer, Michael C. Dietze
+##' @param logfile Path to file for sinking meta analysis output. If
+##'   `NULL`, only print output to console.
+##' @param verbose Logical. If `TRUE` (default), print progress messages.
+##' @param madata_file Path to file for storing copy of data used in
+##'   meta-analysis. If `NULL`, don't store at all.
+##' @return four chains with 5000 total samples from posterior
+##' @author David LeBauer, Michael C. Dietze, Alexey Shiklomanov
 ##' @export
 ##' @examples
 ##' \dontrun{
@@ -38,9 +43,14 @@
 ##'   pecan.ma(prior.distns, trait.data, 25000)
 ##' }
 pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, outdir,
-                     random = FALSE, overdispersed = TRUE) {
-  
-  madata <- list()
+                     random = FALSE, overdispersed = TRUE,
+                     logfile = file.path(outdir, "meta-analysis.log)"),
+                     verbose = TRUE,
+                     madata_file = file.path(outdir, "madata.Rdata")) {
+
+  if (!is.null(madata_file)) {
+    madata <- list()
+  }
   ## Meta-analysis for each trait
   mcmc.object <- list()  #  initialize output list of mcmc objects for each trait
   mcmc.mat <- list()
@@ -49,58 +59,71 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, outdir,
   j.chains <- 4
   j.iter   <- as.numeric(j.iter)  # Added by SPS 08.27.2013. issue #1803
   ## log the mcmc chain parameters
-  sink(file = file.path(outdir, "meta-analysis.log"), split = TRUE)
-  cat(paste0("Each meta-analysis will be run with: \n", j.iter,
-             " total iterations,\n", j.chains, 
-             " chains, \n", "a burnin of ", j.iter / 2, " samples,\n", 
-             ", \nthus the total number of samples will be ", j.chains * (j.iter / 2), "\n"))
-  
+  if (!is.null(logfile)) {
+    sink(file = file.path(outdir, "meta-analysis.log"), split = TRUE)
+    on.exit(sink(NULL), add = TRUE)
+  }
+  if (verbose) {
+    cat(paste0("Each meta-analysis will be run with: \n", j.iter,
+               " total iterations,\n", j.chains,
+               " chains, \n", "a burnin of ", j.iter / 2, " samples,\n",
+               ", \nthus the total number of samples will be ", j.chains * (j.iter / 2), "\n"))
+  }
+
   for (trait.name in names(trait.data)) {
 
     prior <- prior.distns[trait.name, c("distn", "parama", "paramb", "n")]
-    writeLines(paste("################################################"))
-    writeLines(paste("------------------------------------------------"))
-    writeLines(paste("starting meta-analysis for:\n\n", trait.name, "\n"))
-    writeLines(paste("------------------------------------------------"))
+
+    if (verbose) {
+      writeLines(paste("################################################"))
+      writeLines(paste("------------------------------------------------"))
+      writeLines(paste("starting meta-analysis for:\n\n", trait.name, "\n"))
+      writeLines(paste("------------------------------------------------"))
+    }
     data <- trait.data[[trait.name]]
     data <- data[, which(!colnames(data) %in% c("cite", "trait_id", "se"))]  ## remove citation and other unneeded columns
     data <- data[order(data$site, data$trt), ]  # not sure why, but required for JAGS model
 
     ## check for excess missing data
-    if (all(is.na(data$obs.prec))) {
-      writeLines("NO ERROR STATS PROVIDED, DROPPING RANDOM EFFECTS")
+
+    if (all(is.na(data[["obs.prec"]]))) {
+      if (verbose) {
+        writeLines("NO ERROR STATS PROVIDED, DROPPING RANDOM EFFECTS")
+      }
       data$site <- rep(1, nrow(data))
       data$trt  <- rep(0, nrow(data))
     }
 
     if (!random) {
-      data$site <- rep(1, nrow(data))
-      data$trt  <- rep(0, nrow(data))
+      data[["site"]] <- rep(1, nrow(data))
+      data[["trt"]]  <- rep(0, nrow(data))
     }
 
     # print out some data summaries to check
-    writeLines(paste0("prior for ", trait.name, "
-                     (using R parameterization):\n", prior$distn, 
+    if (verbose) {
+      writeLines(paste0("prior for ", trait.name, "
+                     (using R parameterization):\n", prior$distn,
                      "(", prior$parama, ", ", prior$paramb, ")"))
-    writeLines(paste("data max:", max(data$Y, na.rm = TRUE), 
-                     "\ndata min:", min(data$Y, na.rm = TRUE), 
-                     "\nmean:", signif(mean(data$Y, na.rm = TRUE), 3), 
-                     "\nn:", length(data$Y)))
-    writeLines("stem plot of data points")
-    writeLines(paste(stem(data$Y)))
-    
-    if (any(!is.na(data$obs.prec)) && all(!is.infinite(data$obs.prec))) {
-      writeLines("stem plot of obs.prec:")
-      writeLines(paste(stem(data$obs.prec^2)))
-    } else {
-      writeLines(paste("no estimates of SD for", trait.name))
+      writeLines(paste("data max:", max(data$Y, na.rm = TRUE),
+                       "\ndata min:", min(data$Y, na.rm = TRUE),
+                       "\nmean:", signif(mean(data$Y, na.rm = TRUE), 3),
+                       "\nn:", length(data$Y)))
+      writeLines("stem plot of data points")
+      writeLines(paste(stem(data$Y)))
+      if (any(!is.na(data$obs.prec)) && all(!is.infinite(data$obs.prec))) {
+        writeLines("stem plot of obs.prec:")
+        writeLines(paste(stem(data[["obs.prec"]] ^ 2)))
+      } else {
+        writeLines(paste("no estimates of SD for", trait.name))
+      }
     }
-    
-    madata[[trait.name]] <- data
+
+    if (!is.null(madata)) {
+      madata[[trait.name]] <- data
+    }
     jag.model.file <- file.path(outdir, paste0(trait.name, ".model.bug"))  # file to store model
 
     ## run the meta-analysis in JAGS
-    print(summary(jags.out))
 
     jags.out <- single.MA(
       data,
@@ -112,12 +135,17 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, outdir,
       jag.model.file,
       overdispersed
     )
+
+    if (verbose) {
+      print(summary(jags.out))
+    }
     
     jags.out.trunc <- window(jags.out, start = j.iter / 2)
-    
+
     mcmc.object[[trait.name]] <- jags.out.trunc
   }
-  save(madata, file = file.path(outdir, "madata.Rdata"))
-  sink()
+  if (!is.null(madata_file)) {
+    save(madata, file = madata_file)
+  }
   return(mcmc.object)
 } # pecan.ma
