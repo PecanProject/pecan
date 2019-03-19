@@ -36,7 +36,7 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
   # For PEcAn users: finds lat lon based on a site id and also uses this to name the output file
   if (!(is.null(siteID)))
   {
-    siteID = as.character(siteID)
+    siteID = as.numeric(siteID)
     bety <- list(user='bety', password='bety', host='localhost',
                 dbname='bety', driver='PostgreSQL',write=TRUE)
     con <- PEcAn.DB::db.open(bety)
