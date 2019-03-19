@@ -4,13 +4,15 @@
 #' @param long longitude
 #' @param years years to be extracted
 #' @param vars variables to be extarcted. If NULL all the variables will be returned.
+#' @param data.folder Path to the directory where ERA5 nc files are located.
 #' @details For the list of variables check out the documentation at \link{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
 #'
 #' @return a list of xts objects with all the variables for the requested years
 #' @export
 #' @examples
 #' \dontrun{
-#' point.data <- ERA5_extract(lat=40, long=-120, years=c(1985,1995), vars="d2m")
+#' point.data <- ERA5_extract(lat=40, long=-120, years=c(1990:1995), vars=NULL, data.folder=".")
+#' 
 #  point.data %>% 
 #'  map(~xts::apply.daily(.x, mean))
 #'
@@ -18,19 +20,25 @@
 ERA5_extract <-
   function(lat = 40,
            long = -120,
-           years = c(1985, 1995),
-           vars = NULL) {
+           years = c(2006),
+           vars = NULL, 
+           data.folder) {
+    
     tryCatch({
-      point.data <- years %>%
-        map(function(year) {
-          one.year.out <-
-            c("Mean", "Spread") %>%    # making the name of the files
-            map(function(folder) {
+      # for each ensemble
+      one.year.out <- c(1:10) %>%
+        map(function(ens) {
+          # for each year
+          point.data <- years %>%
+            map(function(year) {
               ncfile <-
-                paste0("/projectnb/dietzelab/hamzed/ERA5/Data/",
-                       folder, "/ERA5_", year, ".nc")
+                paste0(data.folder,
+                       "/ERA5_",
+                       year,
+                       ".nc")
+              
               #msg
-              print(paste0(folder, "s in ", year, " is being processed !"))
+              print(paste0("For ensemble #", ens," ", year, " is being processed !"))
               #open the file
               nc_data <- nc_open(ncfile)
               # time stamp
@@ -38,30 +46,42 @@ ERA5_extract <-
               tunits <- ncatt_get(nc_data, 'time')
               tustr <- strsplit(tunits$units, " ")
               timestamp = as.POSIXct(t * 3600, tz = 'GMT', origin = tustr[[1]][3])
+              try(nc_close(nc_data))
+              
+              
               # set the vars
-              if (is.null(vars))  vars <- names(nc_data$var)
+              if (is.null(vars))
+                vars <- names(nc_data$var)
               # for the variables extract the data
               all.data.point <- vars %>%
                 map_dfc(function(vname) {
-                  brick.tmp <- brick(ncfile, varname = vname)
-                  nn <- raster::extract(brick.tmp, SpatialPoints(cbind(long, lat)), method = 'simple')%>%
+                  brick.tmp <-
+                    brick(ncfile, varname = vname, level = ens)
+                  nn <-
+                    raster::extract(brick.tmp, SpatialPoints(cbind(long, lat)), method = 'simple') %>%
                     as.numeric()
                   # replacing the missing/filled values with NA
-                  nn[nn==nc_data$var[[vname]]$missval] <- NA 
-                  #unit conversion for temperature
-                  if (nc_data$var[[vname]]$units =="K" & folder=="Mean")  nn <-udunits2::ud.convert(nn, "degree_kelvin","celsius")
+                  nn[nn == nc_data$var[[vname]]$missval] <- NA
+                  # send out the extracted var as a new col
                   nn
+                  
                 }) %>%
-                `colnames<-`(paste0(vars, "_", folder))
+                `colnames<-`(paste0(vars))
               #close the connection
-              try(nc_close(nc_data))
+              
               # send out as xts object
               xts::xts(all.data.point, order.by = timestamp)
             })
+          
+          #binding the years
+          point.data <- do.call("rbind.xts", point.data)
           #Merge mean and the speard
-          xts::merge.xts(one.year.out[[1]], one.year.out[[2]])
+          return(point.data)
+          
         }) %>%
-        setNames(years)
+        setNames(c(1:10))
+      
+      
     }, error = function(e) {
       print(paste0(conditionMessage(e), " just happened!"))
       
