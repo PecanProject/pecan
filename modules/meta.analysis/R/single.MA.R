@@ -29,7 +29,7 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior, jag.model.file,
                       overdispersed = TRUE) {
   library(rjags)
   ## Convert R distributions to JAGS distributions
-  jagsprior           <- r2bugs.distributions(prior)
+  jagsprior           <- PEcAn.utils::r2bugs.distributions(prior)
   jagsprior           <- jagsprior[, c("distn", "parama", "paramb", "n")]
   colnames(jagsprior) <- c("distn", "a", "b", "n")
   colnames(prior)     <- c("distn", "a", "b", "n")
@@ -102,24 +102,30 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior, jag.model.file,
     j.inits <- function(chain) { list(beta.o = mean(data$Y)) }
   }
   
-  j.model <- jags.model(file = jag.model.file, 
-                        data = data, 
-                        inits = j.inits,
-                        n.chains = j.chains)
+  j.model <- rjags::jags.model(
+    file = jag.model.file,
+    data = data,
+    inits = j.inits,
+    n.chains = j.chains
+  )
   
-  jags.out <- coda.samples(model = j.model, 
-                           variable.names = vars,
-                           n.iter = j.iter, 
-                           thin = max(c(2, j.iter / (5000 * 2))))
+  jags.out <- rjags::coda.samples(
+    model = j.model,
+    variable.names = vars,
+    n.iter = j.iter,
+    thin = max(c(2, j.iter / (5000 * 2)))
+  )
   
   ## I would have done a while loop, but it could take forever 
   ## So just give one chance to try again
   if (coda::gelman.diag(jags.out)$mpsrf > 1.2) {
     PEcAn.logger::logger.warn("model did not converge; re-running with j.iter * 10")
-    jags.out <- coda.samples(model = j.model, 
-                             variable.names = vars,
-                             n.iter = j.iter * 10, 
-                             thin = max(c(2, j.iter / (500 * 2))))
+    jags.out <- rjags::coda.samples(
+      model = j.model,
+      variable.names = vars,
+      n.iter = j.iter * 10,
+      thin = max(c(2, j.iter / (500 * 2)))
+    )
   }
   return(jags.out)
 } # single.MA
