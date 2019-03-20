@@ -6,7 +6,9 @@ For this process to work a docker image of the model will need to be created as 
 
 ### Model information {#model-docker-json-file}
 
-Each model will have a small json file called model_info.json that is used to describe the model and to used by the monitor service to register the model with PEcAn. This file will contain information about the model that is send as part of the heartbeat of the container to the monitor service. Below is an example of this file for the ED model. The required fields are `name`, `type`, `version` and `binary`. There are 2 special values that can be used, `@VERSION@` which will be replaced by the version that is passed in when building the container, and `@BINARY@` which will be replaced by the binary when building the docker image.
+Each model will have a small json file called model_info.json that is used to describe the model and used by the monitor service to register the model with PEcAn. This file will contain information about the model that is send as part of the heartbeat of the container to the monitor service. Below is an example of this file for the ED model. The required fields are `name`, `type`, `version` and `binary`. The fields `type` and `version` are used by PEcAn to send the messages to RabbitMQ. There is no need to specify the queue name explicitly. The queue name will be created by combining these two fields with an underscore. The field `binary` is used to point to the actual binary in the docker container.
+
+There are 2 special values that can be used, `@VERSION@` which will be replaced by the version that is passed in when building the container, and `@BINARY@` which will be replaced by the binary when building the docker image. 
 
 ```json
 {
@@ -27,12 +29,12 @@ Each model will have a small json file called model_info.json that is used to de
 ```
 
 Other fields that are recommended, but currently not used yet, are:
+
 - `description` : a longer description of the model.
 - `creator` : contact person about this docker image.
 - `contribuor` : other people that have contributed to this docker image.
 - `links` : addtional links to help people when using this docker image, for example values that can be used are `source` to link to the source code, `issues` to link to issue tracking system, and `documentation` to link to model specific documentation.
 - `citation` : how the model should be cited in publications.
-
 
 ### Model build {#model-docker-Dockerfile}
 

@@ -6,6 +6,7 @@
 #' @export site.pft.link.settings
 #'
 #' @description This function reads in a pecan setting and check for the pft.site xml tag under run>inputs . If a path or a ID for the input is defined then, it will be used for linking sites with the pfts.
+
 site.pft.link.settings <- function(settings) {
 
   #lets see if there is the pft.site tag under run>inputs
@@ -27,6 +28,7 @@ site.pft.link.settings <- function(settings) {
      def.pfts <- purrr::map_chr(settings[["pfts"]], "name")
     
     # Create a simple pft tag for the pfts in LUT that are not in the pft tag
+
      pft.l <- LUT[["pft"]][!(LUT[["pft"]] %in% def.pfts)] %>%
        trimws() %>%
        unique()
@@ -35,6 +37,7 @@ site.pft.link.settings <- function(settings) {
        purrr::drop(~.x %in% def.pfts) %>%
        purrr::map(~list(name = as.character(.x), constants = 1)) %>%
        setNames(rep("pft", length(pft.l))
+
     
     #add them to the list
     settings$pfts <- c(settings$pfts, new.pfts)
