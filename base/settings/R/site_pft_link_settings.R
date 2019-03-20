@@ -24,7 +24,7 @@ site.pft.link.settings <- function(settings) {
     LUT <- loadPath.sitePFT(settings,pft.site.info$path)
     
     #-- if the pft in the LUT is not defined under the pft tag in the body  of the pecan xml - Then I add that.
-    def.pfts <- settings$pfts %>% purrr::map('name') %>% unlist() %>% as.character()
+     def.pfts <- purrr::map_chr(settings[["pfts"]], "name")
     
     # Create a simple pft tag for the pfts in LUT that are not in the pft tag
     pft.l <- LUT$pft [!(LUT$pft %in% def.pfts)] %>% trimws() %>% unique()
