@@ -468,6 +468,10 @@ The following provides a quick overview of XML tags related to remote execution.
 		<qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
 		<qstat>qstat -j @JOBID@ &> /dev/null || echo DONE</qstat>
 		<job.sh>module load udunits R/R-3.0.0_gnu-4.4.6</job.sh>
+		<modellauncher>
+      <binary>/usr/local/bin/modellauncher</binary>
+      <qsub.extra>-pe omp 20</qsub.extra>
+		</modellauncher>
 	</host>
 ```
 
@@ -482,6 +486,13 @@ The `host` section has the following tags:
 * `qsub.jobid`: [optional] the regular expression used to find the `jobid` returned from `qsub`. If not specified (and `qsub` is) it will use the default value is `Your job ([0-9]+) .*`
 * `qstat`: [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take `@JOBID@` which is the ID of the job as returned by `qsub.jobid`. If not specified (and qsub is) it will use the default value is `qstat -j @JOBID@ || echo DONE`
 * `job.sh`: [optional] additional options to add to the job.sh at the top.
+* `modellauncher`: [optional] this is an experimental section that will allow you to submit all the runs as a single job to a HPC system.
+
+The `modellauncher` section if specified will group all runs together and only submit a single job to the HPC cluster. This single job will leverage of a MPI program that will execute a single run. Some HPC systems will place a limit on the number of jobs that can be executed in parallel, this will only submit a single job (using multiple nodes). In case there is no limit on the number of jobs, a single PEcAn run could potentially submit a lot of jobs resulting in the full cluster running jobs for a single PEcAn run, preventing others from executing on the cluster.
+
+The `modellauncher` has 2 arguements:
+* `binary` : [required] The full path to the binary modellauncher. Source code for this file can be found in `pecan/contrib/modellauncher`](https://github.com/PecanProject/pecan/tree/develop/contrib/modellauncher).
+* `qsub.extra` : [optional] Additional flags to pass to qsub besides those specified in the `qsub` tag in host. This option can be used to specify that the MPI environment needs to be used and the number of nodes that should be used.
 
 ## Advanced features {#xml-advanced}
 

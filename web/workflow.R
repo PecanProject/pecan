@@ -36,7 +36,7 @@ args <- commandArgs(trailingOnly = TRUE)
 if (is.na(args[1])){
   settings <- PEcAn.settings::read.settings("pecan.xml") 
 } else {
-  settings.file = args[1]
+  settings.file <- args[1]
   settings <- PEcAn.settings::read.settings(settings.file)
 }
 
@@ -48,15 +48,18 @@ if("benchmarking" %in% names(settings)){
 
 if("sitegroup" %in% names(settings)){
   if(is.null(settings$sitegroup$nSite)){
-    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id)
+    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, 
+                                                             sitegroupId = settings$sitegroup$id)
   } else {
-    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id,nSite = settings$sitegroup$nSite)
+    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, 
+                                                             sitegroupId = settings$sitegroup$id,
+                                                             nSite = settings$sitegroup$nSite)
   }
   settings$sitegroup <- NULL ## zero out so don't expand a second time if re-reading
 }
 
 # Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
-settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
+settings <- PEcAn.settings::prepare.settings(settings, force = FALSE)
 
 # Write pecan.CHECKED.xml
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
@@ -108,7 +111,7 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (PEcAn.utils::status.
 # Start ecosystem model runs
 if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.start("MODEL")
-  PEcAn.remote::runModule.start.model.runs(settings,stop.on.error=FALSE)
+  PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = FALSE)
   PEcAn.utils::status.end()
 }
 
@@ -162,7 +165,9 @@ if("benchmarking" %in% names(settings) & "benchmark" %in% names(settings$benchma
 if (PEcAn.utils::status.check("FINISHED") == 0) {
   PEcAn.utils::status.start("FINISHED")
   PEcAn.remote::kill.tunnel(settings)
-  db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
+  db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", 
+                 settings$workflow$id, "AND finished_at IS NULL"), 
+           params = settings$database$bety)
   
   # Send email if configured
   if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
