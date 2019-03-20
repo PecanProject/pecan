@@ -12,7 +12,6 @@
 ##' @name query.priors
 ##' @title Query Priors
 ##' @param pft ID number of the PFT in the database
-##' @param out output location
 ##' @param con database connection, can be list of arguments for connecting to database
 ##' @param trstr String of traits to query priors for. If passed as a
 ##'   character vector, it will be concatenated to a single string
@@ -25,8 +24,7 @@
 ##' \dontrun{
 ##' query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
 ##' }
-query.priors <- function(pft, trstr = NULL, out = NULL, con = NULL,
-                         trait_vector = NULL, ...){
+query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 
   if (is.null(con)) {
     con <- db.open(settings$database$bety)

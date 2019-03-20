@@ -4,7 +4,7 @@
 \alias{query.priors}
 \title{Query Priors}
 \usage{
-query.priors(pft, trstr = NULL, out = NULL, con = NULL, ...)
+query.priors(pft, trstr = NULL, con = NULL, ...)
 }
 \arguments{
 \item{pft}{ID number of the PFT in the database}
@@ -12,8 +12,6 @@ query.priors(pft, trstr = NULL, out = NULL, con = NULL, ...)
 \item{trstr}{String of traits to query priors for. If passed as a
 character vector, it will be concatenated to a single string
 using [PEcAn.utils::vecpaste()].}
-
-\item{out}{output location}
 
 \item{con}{database connection, can be list of arguments for connecting to database}
 
