@@ -7,33 +7,48 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------#
-##' Query priors associated with a string of traits and plant functional type
+##' Query Priors
 ##'
-##' @name query.priors
-##' @title Query Priors
+##' Query priors associated with a plant functional type and a set of traits.
+##'
+##' @details If neither `con` nor `...` are provided, this will try to
+##'   connect to BETY using a `settings` object in the current
+##'   environment. 
+##'
 ##' @param pft ID number of the PFT in the database
-##' @param con database connection, can be list of arguments for connecting to database
 ##' @param trstr String of traits to query priors for. If passed as a
 ##'   character vector, it will be concatenated to a single string
 ##'   using [PEcAn.utils::vecpaste()].
-##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
-##' @return priors for a given pft
+##' @param con Database connection object.
+##' @param ... Optional arguments for connecting to database (e.g.
+##'   password, user name, database).
+##'
+##' @return `data.frame` of priors for each trait and the given PFT.
 ##' @export query.priors
-##' @author David LeBauer
+##' @author David LeBauer, Alexey Shiklomanov
 ##' @examples
 ##' \dontrun{
-##' query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
+##'   con <- db.open(...)
+##'   query.priors("ebifarm.pavi", c("SLA", "Vcmax", "leaf_width"), con = con)
 ##' }
 query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 
   if (is.null(con)) {
-    con <- db.open(settings$database$bety)
-    on.exit(db.close(con))
-  }
-  if (is.list(con)) {
-    print("query.priors")
-    print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
-    return(NULL)
+    params <- list(...)
+    if (!length(params)) {
+      PEcAn.logger::logger.warn(paste0(
+        "No connection (`con`) or params (`...`) specified. ",
+        'Trying to connect from `settings[[c("database", "bety")]]`.'
+      ))
+      if (!exists("settings")) {
+        PEcAn.logger::logger.severe(
+          "`settings` object not found. Unable to connect to database."
+        )
+      }
+      params <- settings[[c("database", "bety")]]
+    }
+    con <- db.open(params)
+    on.exit(db.close(con), add = TRUE)
   }
 
   query.text <- paste(
