@@ -27,7 +27,9 @@ site.pft.link.settings <- function(settings) {
      def.pfts <- purrr::map_chr(settings[["pfts"]], "name")
     
     # Create a simple pft tag for the pfts in LUT that are not in the pft tag
-    pft.l <- LUT$pft [!(LUT$pft %in% def.pfts)] %>% trimws() %>% unique()
+    pft.l <- LUT[["pft"]][!(LUT[["pft"]] %in% def.pfts)] %>%
+      trimws() %>%
+      unique()
     
     new.pfts <-  pft.l%>%
       purrr::map(function(lut.pft) {
