@@ -9,7 +9,9 @@ query.priors(pft, trstr = NULL, out = NULL, con = NULL, ...)
 \arguments{
 \item{pft}{ID number of the PFT in the database}
 
-\item{trstr}{string of traits to query priors for}
+\item{trstr}{String of traits to query priors for. If passed as a
+character vector, it will be concatenated to a single string
+using [PEcAn.utils::vecpaste()].}
 
 \item{out}{output location}
 

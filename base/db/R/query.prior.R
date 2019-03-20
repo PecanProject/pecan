@@ -12,9 +12,11 @@
 ##' @name query.priors
 ##' @title Query Priors
 ##' @param pft ID number of the PFT in the database
-##' @param trstr string of traits to query priors for
 ##' @param out output location
 ##' @param con database connection, can be list of arguments for connecting to database
+##' @param trstr String of traits to query priors for. If passed as a
+##'   character vector, it will be concatenated to a single string
+##'   using [PEcAn.utils::vecpaste()].
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return priors for a given pft
 ##' @export query.priors
@@ -45,6 +47,13 @@ query.priors <- function(pft, trstr = NULL, out = NULL, con = NULL,
       "where pfts.id = ", pft)
 
   if (!is.null(trstr) && trstr != "''") {
+    if (length(trstr) > 1) {
+      PEcAn.logger::logger.debug(paste0(
+        "Multiple values passed to `trstr`. ",
+        "Concatenating with `PEcAn.utils::vecpaste`."
+      ))
+      trstr <- PEcAn.utils::vecpaste(trstr)
+    }
     query.text <- paste(query.text, "and variables.name in (", trstr, ");")
   }
 
