@@ -79,6 +79,7 @@ addons:
       - r-cran-rcpp
       - r-cran-rcurl
       - r-cran-redland
+      - r-cran-rjags
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-rsqlite

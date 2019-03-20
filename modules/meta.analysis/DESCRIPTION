@@ -28,9 +28,9 @@ Depends:
 Imports:
     coda (>= 0.18),
     PEcAn.logger,
-    PEcAn.settings
+    PEcAn.settings,
+    rjags
 Suggests:
-    rjags,
     testthat (>= 1.0.2),
     PEcAn.priors
 SystemRequirements: JAGS
