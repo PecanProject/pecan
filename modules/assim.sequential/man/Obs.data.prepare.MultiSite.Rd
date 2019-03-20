@@ -4,9 +4,7 @@
 \alias{Obs.data.prepare.MultiSite}
 \title{Obs.data.prepare.MultiSite}
 \usage{
-
-  Obs.data.prepare.MultiSite(obs.path = "../Obs/LandTrendr_AGB_output50s.RData",
-  site.ids)
+Obs.data.prepare.MultiSite(obs.path, site.ids)
 }
 \arguments{
 \item{obs.path}{Path to the obs data which is expected to be an .Rdata.}

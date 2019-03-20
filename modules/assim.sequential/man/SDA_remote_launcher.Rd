@@ -4,7 +4,7 @@
 \alias{SDA_remote_launcher}
 \title{SDA_remote_launcher}
 \usage{
-SDA_remote_launcher(settingPath, ObsPath)
+SDA_remote_launcher(settingPath, ObsPath, run.bash.args)
 }
 \arguments{
 \item{settingPath}{The Path to the setting that will run SDA}
