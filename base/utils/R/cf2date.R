@@ -4,6 +4,9 @@
 #' @param unit CF style unit (e.g. "days since 2010-01-01")
 #' @param tz Time zone of result (default = "UTC")
 #' @return POSIXct datetime
+#' 
+#' @export
+#' 
 #' @examples
 #' cf2datetime(5, "days since 1981-01-01")
 #' cf2datetime(27, "minutes since 1963-01-03 12:00:00 -05:00")
@@ -46,6 +49,9 @@ datetime2cf <- function(datetime, unit, ...) {
 #' @inheritParams cf2datetime
 #' @inheritParams datetime2cf
 #' @return Numeric Julian date
+#' 
+#' @export
+#' 
 #' @examples
 #' datetime2doy("2010-01-01") # 1
 #' datetime2doy("2010-01-01 12:00:00") # 1.5
@@ -62,5 +68,7 @@ datetime2doy <- function(datetime, tz = "UTC") {
   as.numeric(difftime(datetime, basedate, tz = tz, units = "days")) + 1
 }
 
+#' Convert from CF to DOY
 #' @rdname datetime2doy
+#' @export cf2doy
 cf2doy <- function(value, unit, tz = "UTC") datetime2doy(cf2datetime(value, unit, tz), tz)
