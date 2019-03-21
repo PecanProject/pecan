@@ -91,22 +91,13 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                                 ## all "steps", or
                                                 ## if model run doesnt start 
                                                 ## at 00:00:00
-    # get the run dates based on the sipnet output.  we assume that even if the run is partial, the origin is still day 1 of the subset year
-    ##start_month <- lubridate::month(as.Date(sub.sipnet.output$day[1], origin = paste0(y,"-01-01"))) # gets month
-    ## using this approach to attempt to deal with inconsistent start index 0/1
-    ##model_start_date <- base::as.Date(paste0(y,"-",start_month,"-",ifelse(sub.sipnet.output$day[1]==0,1,sub.sipnet.output$day[1])))
-    ##sub_date_range <- seq(model_start_date, by = "day", length.out = length(unique(sub.sipnet.output$day))) ## create new date range in POSIX format
-    # this catches the fact that the number of outputs per day may be different at the end of the year with leap years, if day starts at 1
-    ##day_repeats <- as.vector(base::table(sub.sipnet.output$day))  
-    # replicate each date based on previously determined day_repeats
-    ##sub_dates <- rep(sub_date_range,times=day_repeats)  ## expand new date range to match length of model subset subset and steps per day (out.day)
-    sub_dates <- as.Date(sipnet2datetime(sub.sipnet.output$day, y))
-    #jdates <- lubridate::yday(sub_dates)  # create vector of julian days from start to end by year, based on refomatted output dates
+    sub_dates <- as.Date(sipnet2datetime(sub.sipnet.output$day, y, force_cf = FALSE))
     sub_dates_cf <- PEcAn.utils::datetime2cf(sub_dates, paste0("days since ",paste0(y,"-01-01")))
-    jdates <- cf2doy(sub_dates, unit=paste0("days since ",paste0(y,"-01-01")))
+    #jdates <- PEcAn.utils::cf2doy(sub_dates_cf, paste0("days since ",paste0(y,"-01-01")))
 
     # create netCDF time.bounds variable
-    tvals <- (jdates+(sub.sipnet.output$time/24))-1  # for some reason, some years dont have a complete number of steps on the last date
+    #tvals <- (jdates+(sub.sipnet.output$time/24))-1  # for some reason, some years dont have a complete number of steps on the last date
+    tvals <- (sub_dates_cf+(sub.sipnet.output$time/24))
     bounds <- array(data=NA, dim=c(length(tvals),2))
     bounds[,1] <- tvals
     bounds[,2] <- bounds[,1]+dayfrac

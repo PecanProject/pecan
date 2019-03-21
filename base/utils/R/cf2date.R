@@ -53,7 +53,7 @@ datetime2cf <- function(datetime, unit, ...) {
 #' @inheritParams datetime2cf
 #' @return Numeric Julian date
 #' 
-#' @export
+#' @export datetime2doy
 #' 
 #' @examples
 #' datetime2doy("2010-01-01") # 1
