@@ -9,13 +9,6 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
   #Load the .Rdata file
   load(obs.path)
   
-  point_list$median_AGB[[1]] <- point_list$median_AGB[[1]] %>%
-    filter(Site_ID != '1000000074')
-  
-  
-  point_list$stdv_AGB[[1]] <- point_list$stdv_AGB[[1]] %>%
-    filter(Site_ID != '1000000074')
-  
   #--------------------------------------------------------------------------------
   #for multi site both mean and cov needs to be a list like this
   # +date
@@ -79,10 +72,11 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 #' @return This function returns a list of two pieces of information. One the remote path that SDA is running and the PID of the active run.
 #' @example 
 #' \dontrun{
+#'  # This example can be found under inst folder in the package
 #'  library(PEcAn.all)
 #'  library(purrr)
 #'  
-#'  new.args <- c(
+#'  run.bash.args <- c(
 #'   "#$ -l h_rt=48:00:00",
 #'   "#$ -pe omp 28 # Request a parallel environment with 4 cores",
 #'   "#$ -l mem_per_core=1G # and 4G memory for each",
@@ -90,13 +84,11 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 #'   "module load R/3.5.2",
 #'   "module load python/2.7.13"
 #'   )
-#'  settingPath <-
-#'    "/fs/data3/hamzed/Projects/GeoTunnel/RemoteSDA/pecan.SDA.4sites.xml"
-#'  ObsPath <-
-#'    "/fs/data3/hamzed/Projects/GEF_MultiSite/Obs/LandTrendr_AGB_output50s.RData"
-#'  
-#'  
-#'  SDA_remote_launcher(settingPath, ObsPath)
+#'  settingPath <-"pecan.SDA.4sites.xml"
+#'
+#'  ObsPath <- "Obs/LandTrendr_AGB_output50s.RData"
+#'    
+#'  SDA_remote_launcher(settingPath, ObsPath, run.bash.args)
 #'}
 #'
 SDA_remote_launcher <-function(settingPath, 
@@ -362,22 +354,6 @@ SDA_remote_launcher <-function(settingPath,
 #'
 #' @return
 #' @export
-#' @example 
-#' \dontrun{
-#'  library(PEcAn.all)
-#'  library(purrr)
-#'  
-#'  settingPath <-
-#'    "/fs/data3/hamzed/Projects/GeoTunnel/RemoteSDA/pecan.SDA.4sites.xml"
-#'  ObsPath <-
-#'    "/fs/data3/hamzed/Projects/GEF_MultiSite/Obs/LandTrendr_AGB_output50s.RData"
-#'  
-#'  
-#'  SDA_remote_info <-SDA_remote_launcher(settingPath, ObsPath)
-#'  
-#'  Remote_Sync_launcher(settingPath, SDA_remote_info$Remote.Path, SDA_remote_info$PID)
-#'  
-#'}
 Remote_Sync_launcher <- function(settingPath, remote.path, PID) {
   
   settings <- read.settings(settingPath)
