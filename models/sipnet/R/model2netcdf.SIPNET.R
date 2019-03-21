@@ -23,6 +23,28 @@
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, overwrite = FALSE) {
+  
+  sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
+                              force_cf = FALSE) {
+    base_date <- ISOdatetime(base_year, base_month, 1,
+                             0, 0, 0, "UTC")
+    base_date_str <- strftime(base_date, "%F %T %z", tz = "UTC")
+    if (force_cf) {
+      is_cf <- TRUE
+    } else {
+      # HACK: Determine heuristically
+      # Is CF if first time step is zero
+      is_cf <- sipnet_tval[[1]] == 0
+    }
+    
+    if (is_cf) {
+      cfval <- sipnet_tval
+    } else {
+      cfval <- sipnet_tval - 1
+    }
+    
+    PEcAn.utils::cf2datetime(cfval, paste("days since", base_date_str))
+  }
 
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, "sipnet.out")
@@ -70,15 +92,18 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                                 ## if model run doesnt start 
                                                 ## at 00:00:00
     # get the run dates based on the sipnet output.  we assume that even if the run is partial, the origin is still day 1 of the subset year
-    start_month <- lubridate::month(as.Date(sub.sipnet.output$day[1], origin = paste0(y,"-01-01"))) # gets month
+    ##start_month <- lubridate::month(as.Date(sub.sipnet.output$day[1], origin = paste0(y,"-01-01"))) # gets month
     ## using this approach to attempt to deal with inconsistent start index 0/1
-    model_start_date <- base::as.Date(paste0(y,"-",start_month,"-",ifelse(sub.sipnet.output$day[1]==0,1,sub.sipnet.output$day[1])))
-    sub_date_range <- seq(model_start_date, by = "day", length.out = length(unique(sub.sipnet.output$day))) ## create new date range in POSIX format
+    ##model_start_date <- base::as.Date(paste0(y,"-",start_month,"-",ifelse(sub.sipnet.output$day[1]==0,1,sub.sipnet.output$day[1])))
+    ##sub_date_range <- seq(model_start_date, by = "day", length.out = length(unique(sub.sipnet.output$day))) ## create new date range in POSIX format
     # this catches the fact that the number of outputs per day may be different at the end of the year with leap years, if day starts at 1
-    day_repeats <- as.vector(base::table(sub.sipnet.output$day))  
+    ##day_repeats <- as.vector(base::table(sub.sipnet.output$day))  
     # replicate each date based on previously determined day_repeats
-    sub_dates <- rep(sub_date_range,times=day_repeats)  ## expand new date range to match length of model subset subset and steps per day (out.day)
-    jdates <- lubridate::yday(sub_dates)  # create vector of julian days from start to end by year, based on refomatted output dates
+    ##sub_dates <- rep(sub_date_range,times=day_repeats)  ## expand new date range to match length of model subset subset and steps per day (out.day)
+    sub_dates <- as.Date(sipnet2datetime(sub.sipnet.output$day, y))
+    #jdates <- lubridate::yday(sub_dates)  # create vector of julian days from start to end by year, based on refomatted output dates
+    sub_dates_cf <- PEcAn.utils::datetime2cf(sub_dates, paste0("days since ",paste0(y,"-01-01")))
+    jdates <- cf2doy(sub_dates, unit=paste0("days since ",paste0(y,"-01-01")))
 
     # create netCDF time.bounds variable
     tvals <- (jdates+(sub.sipnet.output$time/24))-1  # for some reason, some years dont have a complete number of steps on the last date

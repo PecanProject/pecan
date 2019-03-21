@@ -30,6 +30,9 @@ cf2datetime <- function(value, unit, tz = "UTC") {
 #' @param ... Additional arguments to `as.POSIXct`. A common one is
 #'   `tz` for time-zone (e.g. `tz = "UTC"`).
 #' @return Numeric value of date-time in target CF unit
+#' 
+#' @export
+#' 
 #' @examples
 #' datetime2cf("1990-10-05", "days since 1990-01-01", tz = "UTC")
 datetime2cf <- function(datetime, unit, ...) {
