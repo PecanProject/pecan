@@ -472,7 +472,14 @@ In general, the idea is that sending, running and monitoring a SDA job should be
 
 `SDA_remote_launcher` sets up the job by copying a template SDA workflow R script as well as a bash file template ready for submission to the remote machine. This functions checks the paths to the all inputs including met, soil, `site_pft` and etc testing whether they exists on the remote machine or not; If they don't it copies them over and replace the settings accordingly. After submitting the bash script it returns the PID of the job writing the log file, allowing the `Remote_Sync_launcher` to monitor the progress of the run and check to see if the job is still alive and if the `sda.output.rdata` is being updated since the last check or not.
 
-`Remote_Sync_launcher` function also follows the progress of the remote job by executing a nohup command on a template R script and keeping the R console open for further use. This R script as it was mentioned above constantly pings the given for PID every 5 minutes and copies over the SDA output.
+`Remote_Sync_launcher` function also follows the progress of the remote job by executing a nohup command on a template R script and keeping the R console open for further use. This R script as it was mentioned above constantly pings the given PID every 5 minutes and copies over the SDA output.
+
+Several points on how to prepare your xml settings for the remote SDA run:
+1- Going through the main pecan workflow.R if you were able to generate `pecan.TRAIT.xml` your setting is ready to be used for a SDA run.
+2- Inside the xml setting `<outdir>` is and will need to be pointing to a local directory where `SDA_remote_launcher` will look for either a `sample.Rdata` file or a `pft` folder.
+3- You need to setup your `<host>` tag accroding to desired remote machine. You can learn more about that on the `Remote execution with PEcAn` section of the documenation. Please make sure that `<folder>` tag inside `<host>` is poitning to a directory where you want to store and run your SDA job. 
+
+
 
 ==> 03_hidden_analyses/03_sda_methods.Rmd <==
 ## State Data Assimilation Methods

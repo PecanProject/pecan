@@ -105,9 +105,12 @@ SDA_remote_launcher <-function(settingPath,
   # Checking the setting xml
   #---------------------------------------------------------------
   if (is.null(settings$host$folder)) {
-    PEcAn.logger::logger.severe("You need to specify the folder tag in the host inside your pecan xml !")
+    PEcAn.logger::logger.severe("You need to specify the <folder> tag in the <host> tag inside your pecan xml !")
+    PEcAn.logger::logger.severe("The <folder> tag is a path which points to where you want to store/run your sda job on the remote machine. ")
   } else if (!test_remote(my_host)) {
     PEcAn.logger::logger.severe("There is something wrong with your tunnel !")
+    PEcAn.logger::logger.severe("You can learn more about how to setup your tunnel by checking out the `Remote execution with PEcAn` section in the documentation.")
+    
   } 
   #---------------------------------------------------------------
   # Creating a new folder
@@ -337,7 +340,7 @@ SDA_remote_launcher <-function(settingPath,
        unique()
    }else{
      PEcAn.logger::logger.severe("Something broke the run before it starts!")
-     #TODO: read the nohup.out if it exists
+     PEcAn.logger::logger.severe(paste0("In order to get a better sense of what happened you can check out ",settings$outdir,"/log.qlog"))
    }
 
    #This where you can find your SDA
