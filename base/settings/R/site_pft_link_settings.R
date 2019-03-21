@@ -36,9 +36,8 @@ site.pft.link.settings <- function(settings) {
      new.pfts <-  pft.l %>%
        purrr::drop(~.x %in% def.pfts) %>%
        purrr::map(~list(name = as.character(.x), constants = 1)) %>%
-       setNames(rep("pft", length(pft.l))
-
-    
+       setNames(rep("pft", length(pft.l)))
+     
     #add them to the list
     settings$pfts <- c(settings$pfts, new.pfts)
     
