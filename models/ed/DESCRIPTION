@@ -24,6 +24,7 @@ Depends:
     PEcAn.utils,
     coda
 Imports:
+    PEcAn.data.atmosphere,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,

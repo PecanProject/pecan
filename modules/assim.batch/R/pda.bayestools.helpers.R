@@ -146,59 +146,58 @@ pda.settings.bt <- function(settings) {
 #' @param density type of plot to do
 #' @param thin thinning of the matrix to make things faster. Default is to thin to 5000 
 #' @param method method for calculating correlations
-#' @import IDPmisc
-#' @import ellipse
 #' @references The code for the correlation density plot originates from Hartig, F.; Dislich, C.; Wiegand, T. & Huth, A. (2014) Technical Note: Approximate Bayesian parameterization of a process-based tropical forest model. Biogeosciences, 11, 1261-1272.
 #' @export
 #' 
 correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pearson", whichParameters = NULL) {
   
   if (inherits(mat, "bayesianOutput")) {
-    mat <- getSample(mat, thin = thin, whichParameters = whichParameters, ...)
+    mat <- BayesianTools::getSample(mat, thin = thin, whichParameters = whichParameters)
   }
   
   numPars <- ncol(mat)
   names <- colnames(mat)
   
   panel.hist.dens <- function(x, ...) {
-    usr <- par("usr")
-    on.exit(par(usr))
-    par(usr = c(usr[1:2], 0, 1.5))
-    h <- hist(x, plot = FALSE)
+    usr <- graphics::par("usr")
+    on.exit(graphics::par(usr))
+    graphics::par(usr = c(usr[1:2], 0, 1.5))
+    h <- graphics::hist(x, plot = FALSE)
     breaks <- h$breaks
     nB <- length(breaks)
     y <- h$counts
     y <- y/max(y)
-    rect(breaks[-nB], 0, breaks[-1], y, col = "blue4", ...)
+    graphics::rect(breaks[-nB], 0, breaks[-1], y, col = "blue4", ...)
   } # panel.hist.dens
   
   # replaced by spearman
   panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
-    usr <- par("usr")
-    on.exit(par(usr))
-    par(usr = c(0, 1, 0, 1))
-    r <- cor(x, y, use = "complete.obs", method = method)
+    usr <- graphics::par("usr")
+    on.exit(graphics::par(usr))
+    graphics::par(usr = c(0, 1, 0, 1))
+    r <- stats::cor(x, y, use = "complete.obs", method = method)
     txt <- format(c(r, 0.123456789), digits = digits)[1]
     txt <- paste0(prefix, txt)
     if (missing(cex.cor)) {
-      cex.cor <- 0.8/strwidth(txt)
+      cex.cor <- 0.8 / graphics::strwidth(txt)
     }
-    text(0.5, 0.5, txt, cex = cex.cor * abs(r))
+    graphics::text(0.5, 0.5, txt, cex = cex.cor * abs(r))
   } # panel.cor
   
   plotEllipse <- function(x, y) {
-    usr <- par("usr")
-    on.exit(par(usr))
-    par(usr = c(usr[1:2], 0, 1.5))
-    cor <- cor(x, y)
+    usr <- graphics::par("usr")
+    on.exit(graphics::par(usr))
+    graphics::par(usr = c(usr[1:2], 0, 1.5))
+    cor <- stats::cor(x, y)
     el <- ellipse::ellipse(cor)
-    polygon(el[, 1] + mean(x), el[, 2] + mean(y), col = "red")
+    graphics::polygon(el[, 1] + mean(x), el[, 2] + mean(y), col = "red")
   } # plotEllipse
   
   correlationEllipse <- function(x) {
-    cor <- cor(x)
+
+    cor <- stats::cor(x)
     ToRGB <- function(x) {
-      rgb(x[1] / 255, x[2] / 255, x[3] / 255)
+      grDevices::rgb(x[1] / 255, x[2] / 255, x[3] / 255)
     }
     C1 <- ToRGB(c(178, 24, 43))
     C2 <- ToRGB(c(214, 96, 77))
@@ -209,7 +208,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
     C7 <- ToRGB(c(146, 197, 222))
     C8 <- ToRGB(c(67, 147, 195))
     C9 <- ToRGB(c(33, 102, 172))
-    CustomPalette <- colorRampPalette(rev(c(C1, C2, C3, C4, C5, C6, C7, C8, C9)))
+    CustomPalette <- grDevices::colorRampPalette(rev(c(C1, C2, C3, C4, C5, C6, C7, C8, C9)))
     ord <- order(cor[1, ])
     xc <- cor[ord, ord]
     colors <- unlist(CustomPalette(100))
@@ -217,16 +216,16 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   } # correlationEllipse
   
   if (density == "smooth") {
-    pairs(mat, lower.panel = function(...) {
-      par(new = TRUE)
+    ellipse::pairs(mat, lower.panel = function(...) {
+      graphics::par(new = TRUE)
       IDPmisc::ipanel.smooth(...)
     }, diag.panel = panel.hist.dens, upper.panel = panel.cor)
   } else if (density == "corellipseCor") {
-    pairs(mat, lower.panel = plotEllipse, diag.panel = panel.hist.dens, upper.panel = panel.cor)
+    ellipse::pairs(mat, lower.panel = plotEllipse, diag.panel = panel.hist.dens, upper.panel = panel.cor)
   } else if (density == "ellipse") {
     correlationEllipse(mat)
   } else if (density == F) {
-    pairs(mat, lower.panel = panel.cor, diag.panel = panel.hist.dens, upper.panel = panel.cor)
+    ellipse::pairs(mat, lower.panel = panel.cor, diag.panel = panel.hist.dens, upper.panel = panel.cor)
   } else stop("wrong sensity argument")
   
   # The if block above is generating return values
