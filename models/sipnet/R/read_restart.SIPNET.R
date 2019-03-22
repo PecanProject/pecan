@@ -87,6 +87,11 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$TotLivBiom[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("TotLivBiom")
   }
+
+  if ("LAI" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$LAI[last]  ## m2/m2 
+    names(forecast[[length(forecast)]]) <- c("LAI")
+  }
   
   print(runid)
   
