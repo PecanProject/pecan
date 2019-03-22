@@ -94,7 +94,7 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 SDA_remote_launcher <-function(settingPath, 
                                ObsPath,
                                run.bash.args){
-  browser()
+
   #---------------------------------------------------------------
   # Reading the settings
   #---------------------------------------------------------------
@@ -195,7 +195,7 @@ SDA_remote_launcher <-function(settingPath,
   }
 
   # see if we can find those mets on remote
-  met.test <- input.paths %>% map_lgl(function(.x) {
+  missing.inputs <- input.paths %>% map_lgl(function(.x) {
     out <- remote.execute.R(
       script = paste0("file.exists(\"/", .x, "\")"),
       host = my_host,
@@ -207,7 +207,7 @@ SDA_remote_launcher <-function(settingPath,
     unlist()
   
   # if there some missing inputs, lets create a folder and transfer them
-  if (!any(met.test)){
+  if (!any(missing.inputs)){
     #creating a folder on remote
     out <-remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"//inputs","\")"),
                            host = my_host,

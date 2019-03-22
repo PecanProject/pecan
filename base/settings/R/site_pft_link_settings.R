@@ -1,4 +1,4 @@
-#' Title site.pft.link.settings
+#' site.pft.link.settings
 #'
 #' @param settings settings list
 #'
