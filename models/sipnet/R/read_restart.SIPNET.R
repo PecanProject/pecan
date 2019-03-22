@@ -88,6 +88,11 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("TotLivBiom")
   }
   
+  if ("LAI" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$LAI[last]  ## m2/m2 
+    names(forecast[[length(forecast)]]) <- c("LAI")
+  }
+  
   print(runid)
   
   X_tmp <- list(X = unlist(forecast), params = params)

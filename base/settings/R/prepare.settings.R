@@ -15,7 +15,7 @@ prepare.settings <- function(settings, force=FALSE) {
   if(is.MultiSettings(settings)) {
     return(invisible(papply(settings, prepare.settings, force=force)))
   }
-  settings <- site.pft.link.settings (settings) # this will find the link between the site and pft and it will add extra tags for write.ensemble.config function.
+  settings <- site.pft.link.settings(settings) # this will find the link between the site and pft and it will add extra tags for write.ensemble.config function.
   settings <- fix.deprecated.settings(settings, force=force)
   settings <- addSecrets(settings, force=force)
   settings <- update.settings(settings, force=force)

@@ -105,6 +105,11 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("snow")
   }
 
+  if ("LAI" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
+    if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("LAI")
+  }
   
   if (!is.null(analysis.save) & length(analysis.save)>0){
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
