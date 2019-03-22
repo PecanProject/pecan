@@ -222,7 +222,7 @@ sda.enkf.multisite <- function(settings,
       unlink(list.files(outdir, "*.nc", recursive = T, full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
-        furrr::future_map2(inputs, function(settings, inputs) {
+        purrr::map2(inputs, function(settings, inputs) {
           inputs.split <- list()
           if (!no_split) {
             for (i in seq_len(nens)) {
@@ -243,7 +243,7 @@ sda.enkf.multisite <- function(settings,
         })
           
       #---------------- setting up the restart argument for each site separatly and keeping them in a list
-      restart.list <- furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split), 
+      restart.list <- purrr::pmap(list(out.configs, conf.settings, params.list, inputs.split), 
                                   function(configs, settings, new.params, inputs){
                             
                                     list(runid = configs$runs$id, 
@@ -288,7 +288,7 @@ sda.enkf.multisite <- function(settings,
 
     if (t==1 & control$FF){
       readsFF <- out.configs %>%
-        furrr::future_map(function(configs) {
+        purrr::map(function(configs) {
  
         obs.times%>%
             purrr::map(function(stop.date){
@@ -320,7 +320,7 @@ sda.enkf.multisite <- function(settings,
     }
     #------------- Reading - every iteration and for SDA
     reads <- out.configs %>%
-      furrr::future_map(function(configs) {
+      purrr::map(function(configs) {
         X_tmp <- vector("list", 2)
         
         for (i in seq_len(nens)) {

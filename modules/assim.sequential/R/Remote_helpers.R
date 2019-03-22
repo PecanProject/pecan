@@ -184,7 +184,18 @@ SDA_remote_launcher <-function(settingPath,
     }
   }
   
-
+  #----------------------------------------------------------------
+  # Model binary check
+  #---------------------------------------------------------------
+  model.binary.path <- remote.execute.R(
+    script = paste0("dir.exists(\"/", settings$model$binary, "\")"),
+    host = my_host,
+    user = my_host$user,
+    scratchdir = "."
+  )
+  if(!model.binary.path) {
+    PEcAn.logger::logger.severe("Model binary path is missing on the remote machine !")
+  }
   #----------------------------------------------------------------
   # met check
   #---------------------------------------------------------------
@@ -311,7 +322,7 @@ SDA_remote_launcher <-function(settingPath,
    remote.copy.to(
      my_host,
      paste0(tmpdir,"/Run.bash"),
-     paste0(settings$host$folder, "/", folder_name, "/Run.bash"),
+     paste0(settings$host$folder, "/", folder_name, "/RunBash.sh"),
      delete = FALSE,
      stderr = FALSE
    )
