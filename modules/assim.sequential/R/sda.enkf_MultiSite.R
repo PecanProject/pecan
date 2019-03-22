@@ -112,7 +112,7 @@ sda.enkf.multisite <- function(settings,
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
   conf.settings %>%
-    furrr::future_map(function(settings) {
+    purrr::map(function(settings) {
       inputs.split <- list()
       if (!no_split) {
         for (i in length(settings$run$inputs$met$path)) {

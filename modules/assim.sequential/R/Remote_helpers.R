@@ -101,6 +101,7 @@ SDA_remote_launcher <-function(settingPath,
   settings <- read.settings(settingPath)
   my_host <- list(name =settings$host$name , tunnel = settings$host$tunnel, user=settings$host$user)
   local_path <-settings$outdir
+  if (is.null(run.bash.args)) run.bash.args <-""
   #---------------------------------------------------------------
   # Checking the setting xml
   #---------------------------------------------------------------
@@ -215,10 +216,10 @@ SDA_remote_launcher <-function(settingPath,
                            scratchdir = ".")
   }
   
+
   
-  missing.inputs %>%
+  input.paths[!missing.inputs] %>%
     walk(function(missing.input){
-      
       tryCatch(
         {
           path.break <- strsplit(missing.input, "/")[[1]]
