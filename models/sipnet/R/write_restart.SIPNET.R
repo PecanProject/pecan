@@ -11,16 +11,16 @@
 ##' @name  write_restart.SIPNET
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##'
-##' @param outdir         output directory
-##' @param runid           run ID
-##' @param time            year that is being read
-##' @param settings        PEcAn settings object
-##' @param new.state       analysis state vector
-##' @param RENAME          flag to either rename output file or not
-##' @param variables
-##' @param sample_parameters
-##' @param trait.values
-##' @param met
+##' @param outdir output directory
+##' @param runid run ID
+##' @param time year that is being read
+##' @param settings PEcAn settings object
+##' @param new.state analysis state vector
+##' @param RENAME flag to either rename output file or not
+##' @param variables **info to be provided by function author
+##' @param sample_parameters **info to be provided by function author
+##' @param trait.values **info to be provided by function author
+##' @param met **info to be provided by function author
 ##'
 ##' @description Write restart files for SIPNET
 ##'

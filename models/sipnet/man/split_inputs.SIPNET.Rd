@@ -8,7 +8,13 @@ split_inputs.SIPNET(settings, start.time, stop.time, inputs,
   overwrite = FALSE, outpath = NULL)
 }
 \arguments{
+\item{start.time}{**info to be provided by function author}
+
+\item{stop.time}{**info to be provided by function author}
+
 \item{outpath}{if specified, write output to a new directory. Default NULL writes back to the directory being read}
+
+\item{multi.settings}{**info to be provided by function author}
 
 \item{ens}{ensemble number. default = 1}
 }

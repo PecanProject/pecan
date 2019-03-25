@@ -12,11 +12,11 @@
 ##' @name  split_inputs.SIPNET
 ##' @author Mike Dietze and Ann Raiho
 ##' 
-##' @param multi.settings
-##' @param start.time
-##' @param stop.time
-##' @param ens                ensemble number. default = 1
-##' @param outpath  if specified, write output to a new directory. Default NULL writes back to the directory being read
+##' @param multi.settings **info to be provided by function author
+##' @param start.time **info to be provided by function author
+##' @param stop.time **info to be provided by function author
+##' @param ens ensemble number. default = 1
+##' @param outpath if specified, write output to a new directory. Default NULL writes back to the directory being read
 ##' @description Splits climate met for SIPNET
 ##' 
 ##' @return file split up climate file
