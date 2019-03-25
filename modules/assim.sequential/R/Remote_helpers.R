@@ -113,6 +113,13 @@ SDA_remote_launcher <-function(settingPath,
     PEcAn.logger::logger.severe("You can learn more about how to setup your tunnel by checking out the `Remote execution with PEcAn` section in the documentation.")
     
   } 
+  #----------------------------------------------------------------
+  # SDA xml tag
+  #---------------------------------------------------------------
+  if (is.null(settings$state.data.assimilation)) {
+    PEcAn.logger::logger.severe("Make sure that you have the state data assimilation tag in your xml ! You can learn more about it in the documantation.")
+  }
+  
   #---------------------------------------------------------------
   # Creating a new folder
   #---------------------------------------------------------------
@@ -187,8 +194,9 @@ SDA_remote_launcher <-function(settingPath,
   #----------------------------------------------------------------
   # Model binary check
   #---------------------------------------------------------------
+
   model.binary.path <- remote.execute.R(
-    script = paste0("dir.exists(\"/", settings$model$binary, "\")"),
+    script = paste0("file.exists(\"/", settings$model$binary, "\")"),
     host = my_host,
     user = my_host$user,
     scratchdir = "."
