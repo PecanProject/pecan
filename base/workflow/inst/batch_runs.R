@@ -146,8 +146,6 @@ site_id_noinput<- tbl(bety, "sites")%>%
       dplyr::filter(grepl("TOWER_BEGAN", notes))  %>% 
      collect()  
 
-      %>%
-  
   #test <- dplyr::mutate(site_id_noinput,
    #                     start_year = substring(stringi::stri_extract_first_regex(notes, "[0-9]+"),1:4),
     #                    end_year = if_else(
@@ -162,11 +160,29 @@ site_id_noinput<- tbl(bety, "sites")%>%
                           substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4) == "",
                           as.character(lubridate::year(Sys.Date())),
                           substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4)
-                        )
-  )  %>% filter(~between(lubridate::year(startdate) between( start_year:end_year)
+                        ),
+                        in_interval = between(as.numeric(year(startdate)), as.numeric(test$start_year),as.numeric(test$end_year))
+  ) 
                             
+                         
+  apply(as.matrix(test), MARGIN = c(test$start_year,test$end_year),test_f<-function(){
+  between(startdate,test$start_year,test$end_year)
+})
+  
+  
 
+ test_1<- for(i in 1:128){
+   between(as.numeric(year(startdate)),as.numeric(test$start_year[i]),as.numeric(test$end_year[i]))
+ }
+  
+ 
+ 
+  between(as.numeric(year(startdate)),as.numeric(test$start_year[1]),as.numeric(test$end_year[1]))
+  
+                                                
+dplyr::select(test,)
 filter(test,dplyr::between(lubridate::year(startdate), test$start_year, test$end_year)) 
+
 
  contains_run = if_else(
       between(lubridate::year(startdate), as.numeric(start_year), end_year),
