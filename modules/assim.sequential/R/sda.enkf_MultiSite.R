@@ -262,7 +262,7 @@ sda.enkf.multisite <- function(settings,
       restart.list <- vector("list",length(conf.settings))
     }
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
-
+    if (control$debug) browser()
     out.configs <- conf.settings %>%
       purrr::map2(restart.list, function(settings, restart.arg) {
   
@@ -280,6 +280,7 @@ sda.enkf.multisite <- function(settings,
     if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
     tic(paste0("Running models for cycle = ", t))
+    if (control$debug) browser()
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     tic(paste0("Preparing for Analysis for cycle = ", t))
     #------------------------------------------- Reading the output
