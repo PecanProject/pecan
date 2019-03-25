@@ -27,3 +27,6 @@ cf2datetime(365, "days since 1999-01-01")
 # leap year
 cf2datetime(365, "days since 2000-01-01 12:00:00 -05:00")
 }
+\author{
+Alexey Shiklomanov
+}
