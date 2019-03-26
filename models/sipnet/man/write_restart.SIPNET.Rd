@@ -19,14 +19,6 @@ write_restart.SIPNET(outdir, runid, start.time, stop.time, settings,
 \item{RENAME}{flag to either rename output file or not}
 
 \item{time}{year that is being read}
-
-\item{variables}{**info to be provided by function author}
-
-\item{sample_parameters}{**info to be provided by function author}
-
-\item{trait.values}{**info to be provided by function author}
-
-\item{met}{**info to be provided by function author}
 }
 \value{
 NONE

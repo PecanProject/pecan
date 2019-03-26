@@ -12,10 +12,11 @@
 ##' @name  split_inputs.SIPNET
 ##' @author Mike Dietze and Ann Raiho
 ##' 
-##' @param multi.settings **info to be provided by function author
-##' @param start.time **info to be provided by function author
-##' @param stop.time **info to be provided by function author
-##' @param ens ensemble number. default = 1
+##' @param settings PEcAn settings object
+##' @param start.time start date and time for each SDA ensemble
+##' @param stop.time stop date and time for each SDA ensemble
+##' @param inputs list of model inputs to use in write.configs.SIPNET
+##' @param overwrite Default FALSE
 ##' @param outpath if specified, write output to a new directory. Default NULL writes back to the directory being read
 ##' @description Splits climate met for SIPNET
 ##' 

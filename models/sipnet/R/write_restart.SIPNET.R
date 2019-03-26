@@ -13,14 +13,13 @@
 ##'
 ##' @param outdir output directory
 ##' @param runid run ID
-##' @param time year that is being read
+##' @param start.time start date and time for each SDA ensemble
+##' @param stop.time stop date and time for each SDA ensemble
 ##' @param settings PEcAn settings object
 ##' @param new.state analysis state vector
 ##' @param RENAME flag to either rename output file or not
-##' @param variables **info to be provided by function author
-##' @param sample_parameters **info to be provided by function author
-##' @param trait.values **info to be provided by function author
-##' @param met **info to be provided by function author
+##' @param new.params list of parameters to convert between different states 
+##' @param inputs list of model inputs to use in write.configs.SIPNET
 ##'
 ##' @description Write restart files for SIPNET
 ##'
