@@ -35,7 +35,7 @@ sda.enkf.multisite <- function(settings,
                                             pause=F,
                                             Profiling=F),
                                ...) {
-  plan(multiprocess)
+  plan(multicore)
   if (control$debug) browser()
   tic("Prepration")
   ###-------------------------------------------------------------------###
@@ -112,7 +112,7 @@ sda.enkf.multisite <- function(settings,
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
   conf.settings %>%
-    purrr::map(function(settings) {
+    furrr::future_map(function(settings) {
       inputs.split <- list()
       if (!no_split) {
         for (i in length(settings$run$inputs$met$path)) {
@@ -264,7 +264,7 @@ sda.enkf.multisite <- function(settings,
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
     if (control$debug) browser()
     out.configs <- conf.settings %>%
-      purrr::map2(restart.list, function(settings, restart.arg) {
+      furrr::future_map2(restart.list, function(settings, restart.arg) {
   
         # wrtting configs for each settings - this does not make a difference with the old code
         write.ensemble.configs(
