@@ -1,4 +1,4 @@
-#### Thredds Setup 
+### Thredds Setup 
 
 Installing and configuring Thredds for PEcAn
 authors - Rob Kooper
@@ -6,7 +6,7 @@ authors - Rob Kooper
 **NOTE: Instructions are only tested for Ubuntu 16.04 on the VM, if you have instructions for CENTOS/RedHat please update this documentation**
 **NOTE: Pretty much every step here requires root access.**
 
-#### Install the Tomcat 8 and Thredds webapp
+### Install the Tomcat 8 and Thredds webapp
 
 The Tomcat 8 server can be installed from the default Ubuntu repositories. The thredds webapp will be downloaded and installed from unidata.
 

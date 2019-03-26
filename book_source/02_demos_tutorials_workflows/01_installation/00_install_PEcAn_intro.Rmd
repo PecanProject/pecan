@@ -1,4 +1,4 @@
-## Install PEcAn {#pecan-manual-setup}
+# Install PEcAn {#pecan-manual-setup}
 
 These instructions are provided to document how to install and setup PEcAn. It includes:
 
