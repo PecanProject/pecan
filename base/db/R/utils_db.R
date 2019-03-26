@@ -20,18 +20,106 @@
 ##' Given a connection and a query, will return a query as a data frame. Either con or params need
 ##' to be specified. If both are specified it will use con.
 ##'
+##' This function supports prepared statements, which provide a way to
+##' pass data into SQL queries without the risk of SQL injection
+##' attacks. Whenever you are tempted to do something like this:
+##'
+##' ```
+##' db.query(paste0(
+##'   "SELECT * FROM table WHERE mycol = ", somevalue,
+##'   " AND othercol = ", othervalue
+##' ), con = con)
+##' ```
+##'
+##' ...use a prepared query instead:
+##'
+##' ```
+##' db.query(
+##'   "SELECT * FROM table WHERE mycol = $1 AND othercol = $2",
+##'   values = list(somevalue, othervalue),
+##'   con = con
+##' )
+##' ```
+##'
+##' Besides preventing SQL injections, prepared statements also ensure
+##' that the input and target types are compatible.
+##'
+##' Prepared statements provide an efficient way to operate on
+##' multiple values at once. For example, the following will return
+##' all the models whose revision is either "git", "46", or "unk":
+##'
+##' ```
+##' db.query(
+##'   "SELECT * FROM models WHERE revision = $1",
+##'   values = list(c("git", "46", "unk")),
+##'   con = con
+##' )
+##' ```
+##'
+##' ...and here is an example of inserting multiple values of a given
+##' trait for a given species:
+##'
+##' ```
+##' db.query(
+##'   "INSERT INTO traits (specie_id, variable_id, mean, n) VALUES ($1, $2, $3)",
+##'   values = list(938, 396, c(1.7, 3.9, 4.5), 1),
+##'   con = con
+##' )
+##' ```
+##'
+##' Note that prepared statements **can not be used to select tables
+##' or columns**. In other words, the following _will not work_
+##' because of the following placeholders, the only valid one is `$5`:
+##'
+##' ```
+##' # This will not work!
+##' db.query(
+##'   "SELECT $1, $2 FROM $3 WHERE $4 = $5",
+##'   values = list("col1", "col2", "mytable", "somecolumn", "somevalue")
+##' )
+##' ```
+##'
+##' Note that prepared statements **are not supported by the
+##' `RPostgreSQL` package**; only by the newer `RPostgres` package.
+##'
 ##' @param query SQL query string
 ##' @param con Database connection object
 ##' @param params Named list of database connection parameters. See
 ##'   `params` argument to [db.open()].
+##' @param values If using prepared statements, a list of values to
+##'   substitute into the query. If `NULL` (default), execute the
+##'   query directly. See this function's "Details", and documentation
+##'   for [DBI::dbBind()].
 ##' @return data frame with query results
 ##' @author Rob Kooper, Alexey Shiklomanov
 ##' @export
 ##' @examples
 ##' \dontrun{
 ##' db.query("SELECT count(id) FROM traits;", params = settings$database$bety)
+##' 
+##' # Prepared statements
+##' con <- db.open(settings$database$bety)
+##' db.query(
+##'   "SELECT * FROM table WHERE mycol = $1 AND othercol = $2",
+##'   values = list(somevalue, othervalue),
+##'   con = con
+##' )
+##'
+##' # Select multiple values at once; rbind the result
+##' db.query(
+##'   "SELECT * FROM models WHERE revision = $1",
+##'   values = list(c("git", "46", "unk")),
+##'   con = con
+##' )
+##'
+##' # Efficiently insert multiple values into a table
+##' db.query(
+##'   "INSERT INTO traits (specie_id, variable_id, mean, n) VALUES ($1, $2, $3, $4)",
+##'   values = list(938, 396, rnorm(1000), 1),
+##'   con = con
+##' )
 ##' }
-db.query <- function(query, con = NULL, params = NULL) {
+db.query <- function(query, con = NULL, params = NULL, values = NULL) {
   if (is.null(con)){
     if (is.null(params)) {
       PEcAn.logger::logger.severe("No parameters or connection specified")
@@ -42,17 +130,32 @@ db.query <- function(query, con = NULL, params = NULL) {
   if (.db.utils$showquery) {
     PEcAn.logger::logger.debug(query)
   }
-  data <- DBI::dbGetQuery(con, query)
-  # The newer RPostgres driver doesn't have a dbGetException method.
-  # If the query fails, it throws an error directly in R.
-  if (inherits(con, "PostgreSQLConnection")) {
-    res <- DBI::dbGetException(con)
-    if (res$errorNum != 0 || (res$errorMsg != "OK" && res$errorMsg != "")) {
-      PEcAn.logger::logger.severe(
-        paste0("Error executing db query '", query,
-              "' errorcode=", res$errorNum,
-              " message='", res$errorMsg, "'")
-      )
+  is_postgresql <- inherits(con, "PostgreSQLConnection")
+  # If `values` are provided, assume this is a prepared statement
+  if (!is.null(values)) {
+    if (is_postgresql) {
+      PEcAn.logger::logger.severe(paste0(
+        'Prepared statements are not supported by the "PostgreSQL" driver. ',
+        'To use prepared statements, use the "Postgres" driver instead.'
+      ))
+    }
+    qry <- DBI::dbSendQuery(con, query)
+    res <- DBI::dbBind(qry, values)
+    on.exit(DBI::dbClearResult(res), add = TRUE)
+    data <- DBI::dbFetch(res)
+  } else {
+    data <- DBI::dbGetQuery(con, query)
+    # The newer RPostgres driver doesn't have a dbGetException method.
+    # If the query fails, it throws an error directly in R.
+    if (is_postgresql) {
+      res <- DBI::dbGetException(con)
+      if (res$errorNum != 0 || (res$errorMsg != "OK" && res$errorMsg != "")) {
+        PEcAn.logger::logger.severe(
+          paste0("Error executing db query '", query,
+                 "' errorcode=", res$errorNum,
+                 " message='", res$errorMsg, "'")
+        )
+      }
     }
   }
   .db.utils$queries <- .db.utils$queries + 1

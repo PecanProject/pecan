@@ -31,6 +31,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added unit tests for `met2model.<MODEL>` functions for most models.
 - Added MAESPA model to docker build
 - `PEcAn.DB` functions now support `RPostgres` (in addition to `RPostgreSQL`).
+- `PEcAn.DB::db.query` now optionally supports prepared statements (#395).
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
