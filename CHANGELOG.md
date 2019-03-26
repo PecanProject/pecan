@@ -7,7 +7,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Fixes
+- Fixed issue that prevented modellauncher from working properly #2262
+
 ### Changed
+- Updated models/sipnet/R/model2netcdf.SIPNET.R to address issues in PR #2254 
 - Improved testing (#2281). Automatic Travis CI builds of PEcAn on are now run using three versions of R in parallel. This should mean fewer issues with new releases and better backwards compatibility, but note that we still only guarantee full compatibility with the current release version of R. The tested versions are:
   - `release`, the current public release of R (currently R 3.5). Build failures in this version are fixed before merging the change that caused them. When we say PEcAn is fully tested and working, this is the build we mean.
   - `devel`, the newest available development build of R. We will fix issues with this version before the next major R release.
@@ -27,6 +31,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
 - Added unit tests for `met2model.<MODEL>` functions for most models.
 - Added MAESPA model to docker build
+- `PEcAn.DB` functions now support `RPostgres` (in addition to `RPostgreSQL`).
+- `PEcAn.DB::db.query` now optionally supports prepared statements (#395).
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.

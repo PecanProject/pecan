@@ -19,23 +19,110 @@
 ##'
 ##' Given a connection and a query, will return a query as a data frame. Either con or params need
 ##' to be specified. If both are specified it will use con.
-##' @name db.query
-##' @title Query database
+##'
+##' This function supports prepared statements, which provide a way to
+##' pass data into SQL queries without the risk of SQL injection
+##' attacks. Whenever you are tempted to do something like this:
+##'
+##' ```
+##' db.query(paste0(
+##'   "SELECT * FROM table WHERE mycol = ", somevalue,
+##'   " AND othercol = ", othervalue
+##' ), con = con)
+##' ```
+##'
+##' ...use a prepared query instead:
+##'
+##' ```
+##' db.query(
+##'   "SELECT * FROM table WHERE mycol = $1 AND othercol = $2",
+##'   values = list(somevalue, othervalue),
+##'   con = con
+##' )
+##' ```
+##'
+##' Besides preventing SQL injections, prepared statements also ensure
+##' that the input and target types are compatible.
+##'
+##' Prepared statements provide an efficient way to operate on
+##' multiple values at once. For example, the following will return
+##' all the models whose revision is either "git", "46", or "unk":
+##'
+##' ```
+##' db.query(
+##'   "SELECT * FROM models WHERE revision = $1",
+##'   values = list(c("git", "46", "unk")),
+##'   con = con
+##' )
+##' ```
+##'
+##' ...and here is an example of inserting multiple values of a given
+##' trait for a given species:
+##'
+##' ```
+##' db.query(
+##'   "INSERT INTO traits (specie_id, variable_id, mean, n) VALUES ($1, $2, $3)",
+##'   values = list(938, 396, c(1.7, 3.9, 4.5), 1),
+##'   con = con
+##' )
+##' ```
+##'
+##' Note that prepared statements **can not be used to select tables
+##' or columns**. In other words, the following _will not work_
+##' because of the following placeholders, the only valid one is `$5`:
+##'
+##' ```
+##' # This will not work!
+##' db.query(
+##'   "SELECT $1, $2 FROM $3 WHERE $4 = $5",
+##'   values = list("col1", "col2", "mytable", "somecolumn", "somevalue")
+##' )
+##' ```
+##'
+##' Note that prepared statements **are not supported by the
+##' `RPostgreSQL` package**; only by the newer `RPostgres` package.
+##'
 ##' @param query SQL query string
-##' @param con database connection object
-##' @param params database connection information
+##' @param con Database connection object
+##' @param params Named list of database connection parameters. See
+##'   `params` argument to [db.open()].
+##' @param values If using prepared statements, a list of values to
+##'   substitute into the query. If `NULL` (default), execute the
+##'   query directly. See this function's "Details", and documentation
+##'   for [DBI::dbBind()].
 ##' @return data frame with query results
-##' @author Rob Kooper
+##' @author Rob Kooper, Alexey Shiklomanov
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' db.query('select count(id) from traits;', params=settings$database$bety)
+##' db.query("SELECT count(id) FROM traits;", params = settings$database$bety)
+##' 
+##' # Prepared statements
+##' con <- db.open(settings$database$bety)
+##' db.query(
+##'   "SELECT * FROM table WHERE mycol = $1 AND othercol = $2",
+##'   values = list(somevalue, othervalue),
+##'   con = con
+##' )
+##'
+##' # Select multiple values at once; rbind the result
+##' db.query(
+##'   "SELECT * FROM models WHERE revision = $1",
+##'   values = list(c("git", "46", "unk")),
+##'   con = con
+##' )
+##'
+##' # Efficiently insert multiple values into a table
+##' db.query(
+##'   "INSERT INTO traits (specie_id, variable_id, mean, n) VALUES ($1, $2, $3, $4)",
+##'   values = list(938, 396, rnorm(1000), 1),
+##'   con = con
+##' )
 ##' }
-db.query <- function(query, con=NULL, params=NULL) {
-  if(is.null(con)){
+db.query <- function(query, con = NULL, params = NULL, values = NULL) {
+  if (is.null(con)){
     if (is.null(params)) {
-      PEcAn.logger::logger.error("No parameters or connection specified")
-      stop()
+      PEcAn.logger::logger.severe("No parameters or connection specified")
     }
     con <- db.open(params)
     on.exit(db.close(con))
@@ -43,23 +130,59 @@ db.query <- function(query, con=NULL, params=NULL) {
   if (.db.utils$showquery) {
     PEcAn.logger::logger.debug(query)
   }
-  data <- DBI::dbGetQuery(con, query)
-  res <- DBI::dbGetException(con)
-  if (res$errorNum != 0 || (res$errorMsg != 'OK' && res$errorMsg != '')) {
-    PEcAn.logger::logger.severe(paste("Error executing db query '", query, "' errorcode=", res$errorNum, " message='", res$errorMsg, "'", sep=''))
+  is_postgresql <- inherits(con, "PostgreSQLConnection")
+  # If `values` are provided, assume this is a prepared statement
+  if (!is.null(values)) {
+    if (is_postgresql) {
+      PEcAn.logger::logger.severe(paste0(
+        'Prepared statements are not supported by the "PostgreSQL" driver. ',
+        'To use prepared statements, use the "Postgres" driver instead.'
+      ))
+    }
+    qry <- DBI::dbSendQuery(con, query)
+    res <- DBI::dbBind(qry, values)
+    on.exit(DBI::dbClearResult(res), add = TRUE)
+    data <- DBI::dbFetch(res)
+  } else {
+    data <- DBI::dbGetQuery(con, query)
+    # The newer RPostgres driver doesn't have a dbGetException method.
+    # If the query fails, it throws an error directly in R.
+    if (is_postgresql) {
+      res <- DBI::dbGetException(con)
+      if (res$errorNum != 0 || (res$errorMsg != "OK" && res$errorMsg != "")) {
+        PEcAn.logger::logger.severe(
+          paste0("Error executing db query '", query,
+                 "' errorcode=", res$errorNum,
+                 " message='", res$errorMsg, "'")
+        )
+      }
+    }
   }
-  .db.utils$queries <- .db.utils$queries+1
+  .db.utils$queries <- .db.utils$queries + 1
   invisible(data)
 }
 
-##' Generic function to open a database connection
+##' Open a database connection
 ##'
-##' Create a connection to a database usign the specified parameters. If the paramters contain
-##' driver element it will be used as the database driver, otherwise it will use PostgreSQL.
-##' @name db.open
-##' @title Open database connection
-##' @param params database connection information
-##' @return connection to database
+##' Create a connection to a database using the specified parameters.
+##' The `params` list will be passed as arguments to [DBI::dbConnect()].
+##'
+##' Typical arguments are as follows:
+##' - `driver` -- The name of the database driver. Only `"PostgreSQL"`
+##' and `"Postgres"` are supported. If no driver is specified, default
+##' to `"PostgreSQL"`.
+##' - `user` -- The database username. For local instances of PEcAn,
+##' this is usually `"bety"`.
+##' - `password` -- The database password. For local instances of
+##' PEcAn, this is usually `"bety"`.
+##' - `host` -- The database hostname. For local instances of PEcAn,
+##' this is usually `"localhost"`. Inside the PEcAn Docker stack, this
+##' may be `"postgres"`.
+##' - `port` (optional) -- The port for accessing the database. If
+##' omitted, this will use the PostgreSQL default (5432).
+##'
+##' @param params Named list of database connection options. See details
+##' @return Database connection object
 ##' @author Rob Kooper
 ##' @export
 ##' @examples
@@ -67,28 +190,46 @@ db.query <- function(query, con=NULL, params=NULL) {
 ##' db.open(settings$database$bety)
 ##' }
 db.open <- function(params) {
-  params$dbfiles <- NULL
-  params$write <- NULL
+  # These values are used elsewhere, but are not valid arguments to
+  # DBI::dbConnect, so remove them here.
+  params[["dbfiles"]] <- NULL
+  params[["write"]] <- NULL
 
-  if(is.null(params$driver) || params$driver == "PostgreSQL") {
-    requireNamespace("RPostgreSQL")
+  driver <- params[["driver"]]
+  params[["driver"]] <- NULL
+  if (is.null(driver)) {
+    PEcAn.logger::logger.info(
+      "Missing `driver` argument. ",
+      "Assuming `RPostgreSQL::PostgreSQL()` driver."
+    )
+    driver <- "PostgreSQL"
   }
 
-  if (is.null(params$driver)) {
-    args <- c(drv = DBI::dbDriver("PostgreSQL"), params, recursive = TRUE)
-  } else {
-    args <- c(drv = DBI::dbDriver(params$driver), params, recursive = TRUE)
-    args[['driver']] <- NULL
+  if (!driver %in% c("PostgreSQL", "Postgres")) {
+    PEcAn.logger::logger.severe(paste0(
+      "Driver `", driver, "` is not supported. ",
+      'You must use either `"PostgreSQL"` or `"Postgres"`.'
+    ))
   }
+
+  if (driver == "PostgreSQL") {
+    drv <- RPostgreSQL::PostgreSQL()
+  } else if (driver == "Postgres") {
+    drv <- RPostgres::Postgres()
+  }
+
+  args <- c(drv = drv, params, recursive = TRUE)
 
   c <- do.call(DBI::dbConnect, as.list(args))
-  id <- sample(1000, size=1)
-  while(length(which(.db.utils$connections$id==id)) != 0) {
-    id <- sample(1000, size=1)
+
+  # Assign the connection a unique ID number between 0 and 1000
+  id <- sample(1000, size = 1)
+  while (any(.db.utils$connections$id == id)) {
+    id <- sample(1000, size = 1)
   }
   attr(c, "pecanid") <- id
   dump.log <- NULL
-  utils::dump.frames(dumpto="dump.log")
+  utils::dump.frames(dumpto = "dump.log")
   .db.utils$created <- .db.utils$created+1
   .db.utils$connections$id <- append(.db.utils$connections$id, id)
   .db.utils$connections$con <- append(.db.utils$connections$con, c)
@@ -99,20 +240,18 @@ db.open <- function(params) {
 ##' Generic function to close a database connection
 ##'
 ##' Close a previously opened connection to a database.
-##' @name db.close
-##' @title Close database connection
 ##' @param con database connection to be closed
 ##' @param showWarnings logical: report possible issues with connection?
-##' @return connection to database
+##' @return `TRUE`, invisibly (see [DBI::dbDisconnect()])
 ##' @author Rob Kooper
 ##' @export
 ##' @examples
 ##' \dontrun{
 ##' db.close(con)
 ##' }
-db.close <- function(con, showWarnings=TRUE) {
+db.close <- function(con, showWarnings = TRUE) {
   if (is.null(con)) {
-    return()
+    return(invisible(TRUE))
   }
 
   id <- attr(con, "pecanid")
@@ -131,12 +270,10 @@ db.close <- function(con, showWarnings=TRUE) {
   DBI::dbDisconnect(con)
 }
 
-##' Debug method for db.open and db.close
+##' Debug leaked connections
 ##'
 ##' Prints the number of connections opened as well as any connections
 ##' that have never been closes.
-##' @name db.print.connections
-##' @title Debug leaked connections
 ##' @author Rob Kooper
 ##' @export
 ##' @examples
@@ -152,7 +289,7 @@ db.print.connections <- function() {
   if (length(.db.utils$connections$id) == 0) {
     PEcAn.logger::logger.debug("No open database connections.\n")
   } else {
-    for(x in 1:length(.db.utils$connections$id)) {
+    for (x in 1:length(.db.utils$connections$id)) {
       PEcAn.logger::logger.info(paste("Connection", x, "with id", .db.utils$connections$id[[x]], "was created at:\n"))
       PEcAn.logger::logger.info(paste("\t", names(.db.utils$connections$log[[x]]), "\n"))
       #      cat("\t database object : ")
@@ -164,14 +301,13 @@ db.print.connections <- function() {
 ##' Test connection to database
 ##'
 ##' Useful to only run tests that depend on database when a connection exists
-##' @title db.exists
 ##' @param params database connection information
 ##' @param write logical: test whether we have write access?
 ##' @param table name of database table to check
 ##' @return TRUE if database connection works; else FALSE
 ##' @export
 ##' @author David LeBauer, Rob Kooper
-db.exists <- function(params, write=TRUE, table=NA) {
+db.exists <- function(params, write = TRUE, table = NA) {
   # open connection
   con <- tryCatch({
     invisible(db.open(params))
@@ -187,46 +323,51 @@ db.exists <- function(params, write=TRUE, table=NA) {
 
   #check table's privilege about read and write permission
   user.permission <<- tryCatch({
-    invisible(db.query(paste0("select privilege_type from information_schema.role_table_grants where grantee='",params$user,"' and table_catalog = '",params$dbname,"' and table_name='",table,"'"), con))
+    invisible(db.query(
+      paste0("SELECT privilege_type FROM information_schema.role_table_grants ",
+             "WHERE grantee='", params$user,
+             "' AND table_catalog = '", params$dbname,
+             "' AND table_name='", table, "'"),
+      con
+    ))
   }, error = function(e) {
     PEcAn.logger::logger.error("Could not query database.\n\t", e)
     db.close(con)
     invisible(NULL)
   })
 
-  if (!is.na(table)){
-    read.perm = FALSE
-    write.perm = FALSE
+  # If table is NA, this is just a generic check for database access,
+  # so we're done!
+  if (is.na(table)) return(invisible(TRUE))
 
-    # check read permission
-    if ('SELECT' %in% user.permission[['privilege_type']]) {
-      read.perm = TRUE
-    }
+  # We're enquiring about permissions related to a specific table, so
+  # need to do more here.
+  read.perm <- FALSE
+  write.perm <- FALSE
 
-    #check write permission
-    if ('INSERT' %in% user.permission[['privilege_type']] &&'UPDATE' %in% user.permission[['privilege_type']] ) {
-      write.perm = TRUE
-    }
+  # check read permission
+  user_privilege <- user.permission[["privilege_type"]]
+  if ("SELECT" %in% user_privilege) {
+    read.perm <- TRUE
+  }
 
-    if (read.perm == FALSE){
-      return(invisible(FALSE))
-    }
+  # read permission requested, but not granted
+  if (!read.perm) return(invisible(FALSE))
 
-    # read a row from the database
-    read.result <- tryCatch({
-      invisible(db.query(query = paste("SELECT * FROM", table, "LIMIT 1"), con = con))
-    }, error = function(e) {
-      PEcAn.logger::logger.error("Could not query database.\n\t", e)
-      db.close(con)
-      invisible(NULL)
-    })
-    if (is.null(read.result)) {
-      return(invisible(FALSE))
-    }
+  # Read permissions granted. Now, does it actually work? To test, try
+  # to read a row from the database
+  read.result <- tryCatch({
+    invisible(db.query(query = paste("SELECT * FROM", table, "LIMIT 1"), con = con))
+  }, error = function(e) {
+    PEcAn.logger::logger.error("Could not query database.\n\t", e)
+    db.close(con)
+    invisible(NULL)
+  })
+  if (is.null(read.result)) return(invisible(FALSE))
 
-    # get the table's primary key column
-    get.key <- tryCatch({
-      db.query(query = paste("SELECT pg_attribute.attname,format_type(pg_attribute.atttypid, pg_attribute.atttypmod)
+  # get the table's primary key column
+  get.key <- tryCatch({
+    db.query(query = paste("SELECT pg_attribute.attname, format_type(pg_attribute.atttypid, pg_attribute.atttypmod)
                      FROM pg_index, pg_class, pg_attribute
                      WHERE
                      pg_class.oid = '", table, "'::regclass AND
@@ -234,53 +375,44 @@ db.exists <- function(params, write=TRUE, table=NA) {
                      pg_attribute.attrelid = pg_class.oid AND
                      pg_attribute.attnum = any(pg_index.indkey)
                      AND indisprimary"), con = con)
-    }, error = function(e) {
-      PEcAn.logger::logger.error("Could not query database.\n\t", e)
-      db.close(con)
-      invisible(NULL)
-    })
-    if (is.null(read.result)) {
-      return(invisible(FALSE))
-    }
+  }, error = function(e) {
+    PEcAn.logger::logger.error("Could not query database.\n\t", e)
+    db.close(con)
+    invisible(NULL)
+  })
+  if (is.null(read.result)) return(invisible(FALSE))
 
-    # if requested write a row to the database
-    if (write) {
-      # in the case when has read permission but no write
-      if (write.perm == FALSE)
-      {
-        return(invisible(FALSE))
-      }
+  # If write permission not requested, we're done!
+  if (!write) return(invisible(TRUE))
 
-      # when the permission correct to check whether write works
-      key <- get.key$attname
-      key.value<- read.result[key]
-      coln.name <- names(read.result)
-      write.coln <- ""
-      for (name in coln.name)
-      {
-        if (name != key)
-        {
-          write.coln <- name
-          break
-        }
-      }
-      write.value <- read.result[write.coln]
-      result <- tryCatch({
-        db.query(query = paste("UPDATE ", table, " SET ", write.coln,"='", write.value, "' WHERE ",  key, "=", key.value, sep=""),
-                 con = con)
-        invisible(TRUE)
-      }, error = function(e) {
-        PEcAn.logger::logger.error("Could not write to database.\n\t", e)
-        invisible(FALSE)
-      })
-    } else {
-      result <- TRUE
+  # Write permission requested. Was it granted?
+  if ("INSERT" %in% user_privilege && "UPDATE" %in% user_privilege ) {
+    write.perm <- TRUE
+  }
+  # Write permission not granted
+  if (!write.perm) return(invisible(FALSE))
+
+  # Write permission granted, but does it actually work?
+  key <- get.key$attname
+  key.value <- read.result[key]
+  coln.name <- names(read.result)
+  write.coln <- ""
+  for (name in coln.name) {
+    if (name != key) {
+      write.coln <- name
+      break
     }
   }
-
-  else{
-    result <- TRUE
-  }
+  write.value <- read.result[write.coln]
+  result <- tryCatch({
+    db.query(query = paste0("UPDATE ", table, " SET ", write.coln, "='", write.value,
+                            "' WHERE ",  key, "=", key.value),
+             con = con)
+    invisible(TRUE)
+  }, error = function(e) {
+    PEcAn.logger::logger.error("Could not write to database.\n\t", e)
+    invisible(FALSE)
+  })
 
   invisible(result)
 }

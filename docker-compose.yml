@@ -284,27 +284,7 @@ networks:
 # ----------------------------------------------------------------------
 volumes:
   traefik:
-    # driver_opts:
-    #   type: none
-    #   device: ${DATA_DIR:-/tmp}/traefik
-    #   o: bind
   postgres:
-    # driver_opts:
-    #   type: none
-    #   device: ${DATA_DIR:-/tmp}/postgres
-    #   o: bind
   rabbitmq:
-    # driver_opts:
-    #   type: none
-    #   device: ${DATA_DIR:-/tmp}/rabbitmq
-    #   o: bind
   pecan:
-    # driver_opts:
-    #   type: none
-    #   device: ${DATA_DIR:-/tmp}/pecan
-    #   o: bind
   portainer:
-    # driver_opts:
-    #   type: none
-    #   device: ${DATA_DIR:-/tmp}/portainer
-    #   o: bind
