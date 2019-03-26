@@ -7,6 +7,44 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+
+#--------------------------------------------------------------------------------------------------#
+##'
+##' Convert SIPNET DOY to datetime
+##' 
+##' @param sipnet_tval vector of SIPNET DOY values
+##' @param base_year base year to calculate datetime from DOY
+##' @param base_month reference month for converting from DOY to datetime 
+##' @param force_cf force output to follow CF convention. Default FALSE
+##'
+##' @export
+##'
+##' @author Alexey Shiklomanov, Shawn Serbin
+##' 
+sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
+                            force_cf = FALSE) {
+  base_date <- ISOdatetime(base_year, base_month, 1,
+                           0, 0, 0, "UTC")
+  base_date_str <- strftime(base_date, "%F %T %z", tz = "UTC")
+  if (force_cf) {
+    is_cf <- TRUE
+  } else {
+    # HACK: Determine heuristically
+    # Is CF if first time step is zero
+    is_cf <- sipnet_tval[[1]] == 0
+  }
+  
+  if (is_cf) {
+    cfval <- sipnet_tval
+  } else {
+    cfval <- sipnet_tval - 1
+  }
+  
+  PEcAn.utils::cf2datetime(cfval, paste("days since", base_date_str))
+}
+#--------------------------------------------------------------------------------------------------#
+
+
 #--------------------------------------------------------------------------------------------------#
 ##' Convert SIPNET output to netCDF
 ##'
@@ -20,9 +58,11 @@
 ##' @param end_date End time of the simulation
 ##' @param revision model revision
 ##' @param overwrite Flag for overwriting nc files or not
+##'
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, overwrite = FALSE) {
+model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, 
+                                overwrite = FALSE) {
 
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, "sipnet.out")
@@ -69,21 +109,21 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                                 ## all "steps", or
                                                 ## if model run doesnt start 
                                                 ## at 00:00:00
-    # get the run dates based on the sipnet output.  we assume that even if the run is partial, the origin is still day 1 of the subset year
-    start_month <- lubridate::month(as.Date(sub.sipnet.output$day[1], origin = paste0(y,"-01-01"))) # gets month
-    ## using this approach to attempt to deal with inconsistent start index 0/1
-    model_start_date <- base::as.Date(ifelse(sub.sipnet.output$day[1]==0,1,sub.sipnet.output$day[1]), origin = paste0(y,"-01-01"))
-    sub_date_range <- seq(model_start_date, by = "day", length.out = length(unique(sub.sipnet.output$day))) ## create new date range in POSIX format
-    # this catches the fact that the number of outputs per day may be different at the end of the year with leap years, if day starts at 1
-    day_repeats <- as.vector(base::table(sub.sipnet.output$day))  
-    # replicate each date based on previously determined day_repeats
-    sub_dates <- rep(sub_date_range,times=day_repeats)  ## expand new date range to match length of model subset subset and steps per day (out.day)
-    jdates <- lubridate::yday(sub_dates)  # create vector of julian days from start to end by year, based on refomatted output dates
+    
+    # try to determine if DOY is CF compliant (i.e. 0 based index) or not (1 base index)
+    pecan_start_doy <- PEcAn.utils::datetime2cf(start_date, paste0("days since ",lubridate::year(start_date),"-01-01"), 
+                                          tz = "UTC")
+    tvals <- sub.sipnet.output[["day"]] + sub.sipnet.output[["time"]] / 24
+    if (sub.sipnet.output[["day"]][1]-pecan_start_doy==1) {
+      sub_dates <- sipnet2datetime(tvals, y, force_cf = FALSE)
+    } else {
+      sub_dates <- sipnet2datetime(tvals, y, force_cf = TRUE)
+    }
+    sub_dates_cf <- PEcAn.utils::datetime2cf(sub_dates, paste0("days since ",paste0(y,"-01-01")))
 
     # create netCDF time.bounds variable
-    tvals <- (jdates+(sub.sipnet.output$time/24))-1  # for some reason, some years dont have a complete number of steps on the last date
-    bounds <- array(data=NA, dim=c(length(tvals),2))
-    bounds[,1] <- tvals
+    bounds <- array(data=NA, dim=c(length(sub_dates_cf),2))
+    bounds[,1] <- sub_dates_cf
     bounds[,2] <- bounds[,1]+dayfrac
     # create time bounds for each timestep in t, t+1; t+1, t+2... format
     bounds <- round(bounds,4) 
@@ -142,7 +182,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     t <- ncdf4::ncdim_def(name = "time",
                    longname = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
-                   vals = tvals,
+                   vals = round(sub_dates_cf,4),
                    calendar = "standard",
                    unlim = TRUE)
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), 
