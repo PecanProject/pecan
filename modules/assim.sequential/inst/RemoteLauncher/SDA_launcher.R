@@ -8,6 +8,7 @@ library(lubridate)
 library(purrr)
 library(dplyr)
 library(reshape2)
+library(furrr)
 #----------------------------------------------------------------
 # Reading settings and paths
 #---------------------------------------------------------------

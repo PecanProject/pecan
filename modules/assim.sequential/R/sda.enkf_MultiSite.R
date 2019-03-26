@@ -35,7 +35,7 @@ sda.enkf.multisite <- function(settings,
                                             pause=F,
                                             Profiling=F),
                                ...) {
-  plan(multiprocess)
+  plan(multicore)
   if (control$debug) browser()
   tic("Prepration")
   ###-------------------------------------------------------------------###
