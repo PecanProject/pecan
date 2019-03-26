@@ -19,7 +19,8 @@
 ##'
 ##' @export
 ##'
-##' @author Alexey Shiklomanov
+##' @author Alexey Shiklomanov, Shawn Serbin
+##' 
 sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
                             force_cf = FALSE) {
   base_date <- ISOdatetime(base_year, base_month, 1,

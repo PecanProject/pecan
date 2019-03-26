@@ -20,5 +20,5 @@ sipnet2datetime(sipnet_tval, base_year, base_month = 1,
 Convert SIPNET DOY to datetime
 }
 \author{
-Alexey Shiklomanov
+Alexey Shiklomanov, Shawn Serbin
 }

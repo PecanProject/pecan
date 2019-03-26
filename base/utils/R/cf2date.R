@@ -7,6 +7,8 @@
 #' 
 #' @export
 #' 
+#' @author Alexey Shiklomanov
+#' 
 #' @examples
 #' cf2datetime(5, "days since 1981-01-01")
 #' cf2datetime(27, "minutes since 1963-01-03 12:00:00 -05:00")
@@ -55,6 +57,8 @@ datetime2cf <- function(datetime, unit, ...) {
 #' 
 #' @export datetime2doy
 #' 
+#' @author Alexey Shiklomanov
+#' 
 #' @examples
 #' datetime2doy("2010-01-01") # 1
 #' datetime2doy("2010-01-01 12:00:00") # 1.5
@@ -74,4 +78,7 @@ datetime2doy <- function(datetime, tz = "UTC") {
 #' Convert from CF to DOY
 #' @rdname datetime2doy
 #' @export cf2doy
+#' 
+#' @author Alexey Shiklomanov
+#' 
 cf2doy <- function(value, unit, tz = "UTC") datetime2doy(cf2datetime(value, unit, tz), tz)
