@@ -218,9 +218,9 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
         # remove job
         if (is_modellauncher) {
-          for (x in run_list) {
-            jobids[x] <- NULL
-          }          
+          jobids<-jobids %>% 
+            purrr::discard(~ .x==jobids[run])
+          
         } else {
           jobids[run] <- NULL
         }
