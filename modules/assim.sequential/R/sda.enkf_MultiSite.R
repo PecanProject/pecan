@@ -50,6 +50,10 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   names(var.names) <- NULL
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
   readsFF<-NULL # this keeps the forward forecast
+  nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 1e6, settings$state.data.assimilation$nitrGEF %>%as.numeric)
+  nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 100, settings$state.data.assimilation$nthin %>%as.numeric)
+  nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 1e4, settings$state.data.assimilation$nburnin %>%as.numeric)
+  censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), TRUE, settings$state.data.assimilation$censored.data %>% as.logical)
   #------------------------------Multi - site specific - settings
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
@@ -361,14 +365,21 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
       
-      an.method<-EnKF.MultiSite
+
+      if(processvar == FALSE){an.method<-EnKF.MultiSite  }else{    an.method<-GEF.MultiSite   }  
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
                                        FUN=an.method,
                                        Forecast=list(Q=Q, X=X),
                                        Observed=list(R=R, Y=Y),
                                        H=H,
-                                       extraArg=list(aqq=aqq, bqq=bqq, t=t),
+                                       extraArg=list(aqq=aqq,
+                                                     bqq=bqq,
+                                                     t=t,
+                                                     nitr.GEF=nitr.GEF,
+                                                     nthin=nthin,
+                                                     nburnin=nburnin,
+                                                     censored.data=censored.data),
                                        choose=choose,
                                        nt=nt,
                                        obs.mean=obs.mean,
@@ -387,7 +398,6 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       if (processvar) {
         aqq<-enkf.params[[t]]$aqq
         bqq<-enkf.params[[t]]$bqq
-        X.new<-enkf.params[[t]]$X.new
       }
       ###-------------------------------------------------------------------###
       ### Trace                                                             ###
@@ -460,10 +470,10 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
     
     save(site.locs, t, FORECAST, ANALYSIS, enkf.params, new.state, new.params,
-         out.configs, ensemble.samples, inputs,Viz.output,Viz.output,
+         out.configs, ensemble.samples, inputs, Viz.output,
          file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or nor :)
-    if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+    if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
   } ### end loop over time
   
 } # sda.enkf
