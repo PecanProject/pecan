@@ -117,6 +117,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 
 ### Changed
+- Updated models/fates/R/model2netcdf.FATES.R to increase supported model outputs. Added longname to nc file variables
 - Updated models/dalec/R/model2netcdf.DALEC.R to add time_bounds variable
 - Updated models/maat/R/write.config.MAAT.R to improve flow, remove bugs, and to work with the release version of the MAAT model.
 - Minor update to modules/data.atmosphere/R/met2CF.csv.R to include recursive=TRUE for outfolder.  Seemed to work better
@@ -214,13 +215,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - shiny/Data-Ingest/DESCRIPTION no longer `DEPENDS` on `shinyFiles` or `shinycssloaders`
 
 ### Changed
-
+- PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
 - Fixed Git instructions and remote execution instructions.
 - Five functions from PEcAn.utils functions have been moved to other packages. The versions in PEcAn.utils are deprecated, will not be updated with any new features, and will be removed in a future release.
   - run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow 
   - read.ensemble.output, get.ensemble.samples and write.ensemble.configs have been moved to PEcAn.uncertainty
 - Change the way packages are checked for and called in SHINY apps. DESCRIPTION files in SHINY apps are not the place to declare pacakge dpendencies.    
-
 
 ## [1.5.3] - 2018-05-15
 
