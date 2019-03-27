@@ -171,6 +171,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     Sys.sleep(10)
     
     for (run in names(jobids)) {
+      
       if (is.null(jobids[run])) next;
       
       run_id_string <- format(run, scientific = FALSE)
@@ -187,9 +188,14 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
         # Copy data back to local
         if (!is_local) {
-          PEcAn.remote::remote.copy.from(host = settings$host,
-                                         src = file.path(settings$host$outdir, run_id_string),
-                                         dst = settings$modeloutdir)
+          xruns <- jobids[which(jobids == jobids[run])]
+          
+          for (x in xruns) {
+            PEcAn.remote::remote.copy.from(host = settings$host,
+                                           src = file.path(settings$host$outdir, x),
+                                           dst = settings$modeloutdir)
+          }
+          
         }
 
         # TODO check output log
