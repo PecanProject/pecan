@@ -89,7 +89,6 @@ install2.r -e -s -n -1\
     rjags \
     rjson \
     rlang \
-    RMySQL \
     rnoaa \
     RPostgreSQL \
     Rpreles \

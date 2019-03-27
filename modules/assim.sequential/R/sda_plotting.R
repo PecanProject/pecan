@@ -498,16 +498,20 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL, facetg=F, readsFF=NULL){
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=F, readsFF=NULL){
 
   if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
 
   #Defining some colors
   t1         <- 1
   generate_colors_sda()
+  varnames <- settings$state.data.assimilation$state.variable
+  #just a check
+  if (is.null(varnames)) varnames <- settings[[1]]$state.data.assimilation$state.variable
   
-  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
+  ylab.names <- unlist(sapply(varnames, 
                               function(x) { x })[2, ], use.names = FALSE)
+  
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   site.ids <- attr(FORECAST[[1]], 'Site')
   site.names <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('name') %>% unlist() %>% as.character()
@@ -536,7 +540,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
               Upper=quantile(Value,0.975, na.rm=T))
           
         })%>%mutate(Type=paste0("SDA_",listFA),
-                    Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids)))
+                    Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids)))%>% as.POSIXct()
         )
     
     })
@@ -563,7 +567,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
         mutate(Upper=Means+(Sd*1.96),
                Lower=Means-(Sd*1.96))%>%
         mutate(Type="SDA_Data",
-               Date=one.day.data$Date%>%as.POSIXct())
+               Date=one.day.data$Date %>% as.POSIXct())
       
       
     })%>% 

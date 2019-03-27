@@ -7,7 +7,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Fixes
+- Fixed issue that prevented modellauncher from working properly #2262
+
 ### Changed
+- Updated models/sipnet/R/model2netcdf.SIPNET.R to address issues in PR #2254 
 - Improved testing (#2281). Automatic Travis CI builds of PEcAn on are now run using three versions of R in parallel. This should mean fewer issues with new releases and better backwards compatibility, but note that we still only guarantee full compatibility with the current release version of R. The tested versions are:
   - `release`, the current public release of R (currently R 3.5). Build failures in this version are fixed before merging the change that caused them. When we say PEcAn is fully tested and working, this is the build we mean.
   - `devel`, the newest available development build of R. We will fix issues with this version before the next major R release.
@@ -27,10 +31,17 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
 - Added unit tests for `met2model.<MODEL>` functions for most models.
 - Added MAESPA model to docker build
+- `PEcAn.DB` functions now support `RPostgres` (in addition to `RPostgreSQL`).
+- `PEcAn.DB::db.query` now optionally supports prepared statements (#395).
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
 - Removed package `PEcAn.data.mining` from the Make build. It can still be installed directly from R if desired, but is skipped by default because it is in early development, does not yet export any functions, and creates a dependency on the (large, often annoying to install) ImageMagick library.
+- Fully deprecate support for `MySQL` database driver. Now, only `PostgreSQL` (and, experimentally, `RPostgres`) are supported. With this, remove `RMySQL` dependency in several places.
+
+### Fixed
+- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
+- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
 
 ## [1.7.0] - 2018-12-09
 
