@@ -155,10 +155,12 @@ site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
     #Check if startdate year is within the inerval of that is given
     in_date = between(as.numeric(year(startdate)),as.numeric(start_year),as.numeric(end_year))
   ) %>%
-  dplyr::filter(in_date)
+  dplyr::filter(in_date & as.numeric(end_year) - as.numeric(start_year) > 1) 
+  
+  
 
 
-site_id <- "772"
+site_id <- site_id_noinput$id.x
 
 #Create permutations of arg combinations
 options(scipen = 999)
@@ -170,8 +172,4 @@ tab <-run_table %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...)
   create_exec_test_xml(list(...))
 },otherwise =NA))
 )
-
-## Turn into a html table
-as_hux(tab)
-
 
