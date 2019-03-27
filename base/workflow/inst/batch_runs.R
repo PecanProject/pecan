@@ -137,65 +137,25 @@ sensitivity <- FALSE
 ## Find Sites
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
 site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
-  
-site_id_noinput<- tbl(bety, "sites")%>%
-      inner_join(tbl(bety, "sitegroups_sites") %>% 
-      filter(sitegroup_id == 1),
+  inner_join(tbl(bety, "sitegroups_sites") %>% 
+               filter(sitegroup_id == 1),
              by = c("id" = "site_id")) %>%
-      dplyr::select("id.x", "notes", "sitename") %>%
-      dplyr::filter(grepl("TOWER_BEGAN", notes))  %>% 
-     collect()  
-
-  #test <- dplyr::mutate(site_id_noinput,
-   #                     start_year = substring(stringi::stri_extract_first_regex(notes, "[0-9]+"),1:4),
-    #                    end_year = if_else(
-     #                     substring(stringi::stri_extract_last_regex(notes, "[0-9]+"), 1:4)== start_year,
-      #                    as.character(lubridate::year(Sys.Date())),
-       #                   stringi::stri_extract_last_regex(notes, "[0-9]+")
-        #                ))
-  #"IGBP = MF  CLIMATE_KOEPPEN = Dfb  TOWER_BEGAN = 1999  TOWER_END = 2004"
-  test <- dplyr::mutate(site_id_noinput,
-                        start_year = substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_BEGAN = ).*(?=  TOWER_END)")),1,4),
-                        end_year = dplyr::if_else(
-                          substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4) == "",
-                          as.character(lubridate::year(Sys.Date())),
-                          substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4)
-                        ),
-                        in_interval = between(as.numeric(year(startdate)), as.numeric(test$start_year),as.numeric(test$end_year))
-  ) 
-                            
-                         
-  apply(as.matrix(test), MARGIN = c(test$start_year,test$end_year),test_f<-function(){
-  between(startdate,test$start_year,test$end_year)
-})
-  
-  
-
- test_1<- for(i in 1:128){
-   between(as.numeric(year(startdate)),as.numeric(test$start_year[i]),as.numeric(test$end_year[i]))
- }
-  
- 
- 
-  between(as.numeric(year(startdate)),as.numeric(test$start_year[1]),as.numeric(test$end_year[1]))
-  
-                                                
-dplyr::select(test,)
-filter(test,dplyr::between(lubridate::year(startdate), test$start_year, test$end_year)) 
-
-
- contains_run = if_else(
-      between(lubridate::year(startdate), as.numeric(start_year), end_year),
-      "TRUE",
-      "FALSE"
-    )),
-    len = as.integer(end_year) - as.integer(start_year)
-  ) 
-%>%
-  filter(contains_run == TRUE) %>%
-  filter(str_length(end_year) == 4) %>%
-  filter(len == max(len)) %>%
-  select("id.x")
+  dplyr::select("id.x", "notes", "sitename") %>%
+  dplyr::filter(grepl("TOWER_BEGAN", notes)) %>% 
+  collect() %>%
+  dplyr::mutate(
+    # Grab years from string within the notes
+    start_year = substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_BEGAN = ).*(?=  TOWER_END)")),1,4),
+    #Empty tower end in the notes means that it goes until present day so if empty enter curent year.
+    end_year = dplyr::if_else(
+      substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4) == "",
+      as.character(lubridate::year(Sys.Date())),
+      substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4)
+    ),
+    #Check if startdate year is within the inerval of that is given
+    in_date = between(as.numeric(year(startdate)),as.numeric(start_year),as.numeric(end_year))
+  ) %>%
+  dplyr::filter(in_date)
 
 
 site_id <- "772"
