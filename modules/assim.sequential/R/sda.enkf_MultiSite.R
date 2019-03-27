@@ -321,7 +321,7 @@ sda.enkf.multisite <- function(settings,
     }
     #------------- Reading - every iteration and for SDA
     reads <- out.configs %>%
-      purrr::map(function(configs) {
+      furrr::future_map(function(configs) {
         X_tmp <- vector("list", 2)
         
         for (i in seq_len(nens)) {
