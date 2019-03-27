@@ -220,7 +220,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         
         # Copy data back to local
         if (!is_local) {
-          xruns <- jobids[which(jobids == jobids[run])]
+          xruns <- jobids[which(jobids == jobids[[run]])]
           
           for (x in xruns) {
             PEcAn.remote::remote.copy.from(host = settings$host,
