@@ -8,11 +8,11 @@ Author: Mike Dietze, Bailey Morrison
 Maintainer: Bailey Morrison <bmorrison@bnl.gov>
 Description: PEcAn module for processing remote data. Python module requirements: requests, json, re, ast, panads, sys. If any of these modules are missing, install using pip install <module name>.
 Imports:
-    MODISTools,
+    MODISTools (>= 1.1.0),
     reticulate,
     PEcAn.logger,
     PEcAn.remote,
-    stringr(>= 1.1.0)
+    stringr (>= 1.1.0)
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE

@@ -11,7 +11,7 @@ match_colnames(values, table, con)
 
 \item{table}{Name of target SQL table, as character}
 
-\item{con}{database connection object}
+\item{con}{Database connection object}
 }
 \description{
 Match names of local data frame to SQL table
