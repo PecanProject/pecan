@@ -324,7 +324,7 @@ To customize the thredds server for your installation edit the file in /home/car
 </threddsConfig>
 ```
 
-#### Update the catalog
+### Update the catalog
 
 For example to update the catalog with the latest data, run the following command from the root crontab. This cronjob will also synchronize the database with remote servers and dump your database (by default in /home/carya/dump)
 
@@ -332,12 +332,12 @@ For example to update the catalog with the latest data, run the following comman
 0 * * * * /home/carya/pecan/scripts/cron.sh -o /home/carya/dump
 ```
 
-#### Troubleshooting
+### Troubleshooting
 
 Refer to the log files for Tomcat (`/var/log/tomcat8/*`) and Thredds (`/home/carya/thredds/logs`).
 
 
-#### Further reading
+### Further reading
 
 * [Thredds reference](http://www.unidata.ucar.edu/software/thredds/current/tds/)
 
