@@ -244,7 +244,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         
         # Write finish time to database
         if (is_modellauncher) {
-          xruns <- jobids[which(jobids == jobids[run])]
+          xruns <- jobids[which(jobids == jobids[[run]])]
           
           for (x in xruns) {
             stamp_finished(con = dbcon, run = x)
