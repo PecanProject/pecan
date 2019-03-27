@@ -205,6 +205,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   while (length(jobids) > 0) {
     Sys.sleep(10)
     for (run in names(jobids)) {
+      if(is.null(jobids[run])) next;
       run_id_string <- format(run, scientific = FALSE)
       
       #----------------  check to see if job is done
