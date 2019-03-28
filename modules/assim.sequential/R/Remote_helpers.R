@@ -255,7 +255,9 @@ SDA_remote_launcher <-function(settingPath,
           )
           
           #replace the path
-          settings <<-rapply(settings, function(x) ifelse(x==missing.input, paste0(settings$host$folder,"/",folder_name,"/inputs/",fname) ,x), how = "replace")
+          settings <<-rapply(settings, function(x) ifelse(x==missing.input,
+                                                          paste0(settings$host$folder,"/",folder_name,"/inputs/",fname) ,x),
+                             how = "replace")
           
           
         },

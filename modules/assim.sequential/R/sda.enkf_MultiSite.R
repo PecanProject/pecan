@@ -277,6 +277,10 @@ sda.enkf.multisite <- function(settings,
         )
       })
     
+    #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
+    runs.tmp <- list.dirs(rundir, full.names = F)
+    writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
+    
     if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
     tic(paste0("Running models for cycle = ", t))
