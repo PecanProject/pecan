@@ -277,7 +277,7 @@ extract.LandTrendr.AGB <- function(site_info, dataset = "median", buffer = NULL,
   point_list <- list()
   output_name <- paste0(dataset,"_AGB")
   point_list <- list(agb_pixel)
-  names(point_list)=output_name
+  names(point_list) <- output_name
 
   ## save output to a file?
   if (!is.null(output_file)) {
