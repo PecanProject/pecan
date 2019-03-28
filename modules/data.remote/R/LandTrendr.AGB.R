@@ -214,19 +214,19 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' con <- PEcAn.DB::db.open(bety)
 ##' bety$con <- con
 ##' 
-##' data_dir <- "~/scratch/agb_data/"
 ##' site_ID <- c(2000000023,1000025731,676,1000005149) # BETYdb site IDs
-##' results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=site_ID, 
-##'            data_dir = data_dir, con = con, 
-##'            output_file = file.path(data_dir))
-##'            
+##' suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, 
+##' ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})", 
+##' ids = site_ID, .con = con))
+##' suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
+##' suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
+##' site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat, 
+##' lon=qry_results$lon, time_zone=qry_results$time_zone)
+##' data_dir <- "~/scratch/agb_data/"
 ##' 
-##' # Example 2 - provide arbitrary lon/lat values
-##' coords <- data.frame(lon=c(-90.8,-91.8), lat=c(42.5,43.5))
-##' product_dates <- c(1990,1991)
-##' results <- PEcAn.data.remote::extract.LandTrendr.AGB(coords=coords, 
-##'            data_dir = data_dir, product_dates = product_dates,
-##'            output_file = file.path(data_dir)
+##' results <- extract.LandTrendr.AGB(site_info, "median", buffer = NULL, fun = "mean", 
+##' data_dir, product_dates, output_file)
+##' 
 ##' }
 ##' 
 ##' @export
