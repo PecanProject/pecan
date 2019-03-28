@@ -157,7 +157,7 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
   }
 
   ## Prepare results - clunky, need to refine this
-  downloaded_files <- file.path(outdir,gsub(".zip", ".tif",files_to_download)) 
+  downloaded_files <- file.path(outdir,gsub(".zip", ".tif",files_to_download))
   downloaded_years <- unlist(regmatches(downloaded_files, 
                                         gregexpr("\\d{4}", downloaded_files)))
   total_rows <- length(downloaded_files)
@@ -191,13 +191,13 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' @title extract.LandTrendr.AGB
 ##' @name  extract.LandTrendr.AGB
 ##' 
-##' @param coords vector of BETYdb site IDs or a data frame containing elements 'lon' and 'lat'
-##' @param buffer Optional. operate over desired buffer area [not yet implemented]
+##' @param site_info list of site info for parsing AGB data: list(site_id, lat, lon, time_zone)
+##' @param dataset Which LandTrendr dataset to parse, "median" or "stdv".Default: "median"
+##' @param buffer Optional. operate over desired buffer area (not yet implemented)
 ##' @param fun Optional function to apply to buffer area.  Default - mean
 ##' @param data_dir  directory where input data is located. Can be NUL if con is specified
 ##' @param product_dates Process and extract data only from selected years. Default behavior
 ##' (product_dates = NULL) is to extract data from all availible years in BETYdb or data_dir
-##' @param con connection to PEcAn database. Can be NULL if data_dir is specified
 ##' @param output_file Path to save LandTrendr_AGB_output.RData file containing the 
 ##' output extraction list (see return)
 ##' @param plot_results Optional. Create a simple diagnostic plot showing results of 
@@ -234,9 +234,8 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' @export
 ##' @author Shawn Serbin, Alexey Shiklomanov
 ##' 
-extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir = NULL, 
-                                   con = NULL, product_dates = NULL,
-                                   output_file = NULL, 
+extract.LandTrendr.AGB <- function(site_info, dataset = "median", buffer = NULL, fun = "mean", 
+                                   data_dir = NULL, product_dates = NULL, output_file = NULL, 
                                    plot_results = FALSE, ...) {
   
   ## TODO - allow selection of specific years to process instead of just entire record? 
@@ -244,24 +243,26 @@ extract.LandTrendr.AGB <- function(coords, buffer = NULL, fun = "mean", data_dir
   ## pass to variable data_dir for processing
   
   ## Site ID vector or long/lat data.frame?
-  if (is.null(names(coords))) {
-    site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, 
-                               ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})", 
-                               ids = site_ID, .con = con)
-    qry_results <- DBI::dbSendQuery(con,site_qry)
-    qry_results <- DBI::dbFetch(qry_results)
-    site_IDs <- qry_results$id
-    site_names <- qry_results$sitename
-    site_coords <- data.frame(cbind(qry_results$lon, qry_results$lat))
-    names(site_coords) <- c("Longitude","Latitude")
-  } else {
-    site_IDs <- dplyr::mutate(coords, IDs = paste(lon, lat, sep=","))[[3]]
-    site_coords <- coords
-    names(site_coords) <- c("Longitude","Latitude")
-    site_names <- rep(NA,length=length(site_IDs))
-  }
+  # if (is.null(names(coords))) {
+  #   site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, 
+  #                              ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})", 
+  #                              ids = site_ID, .con = con)
+  #   qry_results <- DBI::dbSendQuery(con,site_qry)
+  #   qry_results <- DBI::dbFetch(qry_results)
+  #   site_IDs <- qry_results$id
+  #   site_names <- qry_results$sitename
+  #   site_coords <- data.frame(cbind(qry_results$lon, qry_results$lat))
+  #   names(site_coords) <- c("Longitude","Latitude")
+  # } else {
+  #   site_IDs <- dplyr::mutate(coords, IDs = paste(lon, lat, sep=","))[[3]]
+  #   site_coords <- coords
+  #   names(site_coords) <- c("Longitude","Latitude")
+  #   site_names <- rep(NA,length=length(site_IDs))
+  # }
 
-  ## apply coord info
+  ## get coordinates and provide spatial info
+  site_coords <- data.frame(site_info$lon, site_info$lat)
+  names(site_coords) <- c("Longitude","Latitude")
   coords_latlong <- sp::SpatialPoints(site_coords)
   sp::proj4string(coords_latlong) <- sp::CRS("+init=epsg:4326")
   
