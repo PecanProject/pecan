@@ -191,7 +191,7 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' @title extract.LandTrendr.AGB
 ##' @name  extract.LandTrendr.AGB
 ##' 
-##' @param site_info list of site info for parsing AGB data: list(site_id, lat, lon, time_zone)
+##' @param site_info list of site info for parsing AGB data: list(site_id, site_name, lat, lon, time_zone)
 ##' @param dataset Which LandTrendr dataset to parse, "median" or "stdv".Default: "median"
 ##' @param buffer Optional. operate over desired buffer area (not yet implemented)
 ##' @param fun Optional function to apply to buffer area.  Default - mean
@@ -200,8 +200,6 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' (product_dates = NULL) is to extract data from all availible years in BETYdb or data_dir
 ##' @param output_file Path to save LandTrendr_AGB_output.RData file containing the 
 ##' output extraction list (see return)
-##' @param plot_results Optional. Create a simple diagnostic plot showing results of 
-##' data extraction by site/coordinate pair
 ##' 
 ##' @return list of two containing the median AGB values per pixel and the corresponding 
 ##' standard deviation values (uncertainties)
@@ -236,29 +234,7 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' 
 extract.LandTrendr.AGB <- function(site_info, dataset = "median", buffer = NULL, fun = "mean", 
                                    data_dir = NULL, product_dates = NULL, output_file = NULL, 
-                                   plot_results = FALSE, ...) {
-  
-  ## TODO - allow selection of specific years to process instead of just entire record? 
-  ## TODO - get file location info from BETYdb based on machine and format names, find all local file records
-  ## pass to variable data_dir for processing
-  
-  ## Site ID vector or long/lat data.frame?
-  # if (is.null(names(coords))) {
-  #   site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, 
-  #                              ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})", 
-  #                              ids = site_ID, .con = con)
-  #   qry_results <- DBI::dbSendQuery(con,site_qry)
-  #   qry_results <- DBI::dbFetch(qry_results)
-  #   site_IDs <- qry_results$id
-  #   site_names <- qry_results$sitename
-  #   site_coords <- data.frame(cbind(qry_results$lon, qry_results$lat))
-  #   names(site_coords) <- c("Longitude","Latitude")
-  # } else {
-  #   site_IDs <- dplyr::mutate(coords, IDs = paste(lon, lat, sep=","))[[3]]
-  #   site_coords <- coords
-  #   names(site_coords) <- c("Longitude","Latitude")
-  #   site_names <- rep(NA,length=length(site_IDs))
-  # }
+                                   ...) {
 
   ## get coordinates and provide spatial info
   site_coords <- data.frame(site_info$lon, site_info$lat)
@@ -268,90 +244,47 @@ extract.LandTrendr.AGB <- function(site_info, dataset = "median", buffer = NULL,
   
   ## Subset list of years to process if requested by user
   if (!is.null(product_dates)) {
-    agb_median_files <- list.files(file.path(data_dir), pattern = "*median.tif$", 
-                                   full.names = TRUE)
-    availible_years_med <- unlist(regmatches(agb_median_files, 
-                                         gregexpr("\\d{4}", agb_median_files)))
-    agb_median_files <- agb_median_files[availible_years_med %in% product_dates]
-    
-    
-    agb_sdev_files <- list.files(file.path(data_dir), pattern = "*stdv.tif$", 
-                                 full.names = TRUE)
-    availible_years_sd <- unlist(regmatches(agb_sdev_files, 
-                                             gregexpr("\\d{4}", agb_sdev_files)))
-    agb_sdev_files <- agb_sdev_files[availible_years_sd %in% product_dates]
-    
+    agb_files <- list.files(file.path(data_dir), pattern = paste0("*",dataset,".tif$"), 
+                            full.names = TRUE)
+    availible_years <- unlist(regmatches(agb_files, 
+                                         gregexpr("\\d{4}", agb_files)))
+    agb_files <- agb_files[availible_years %in% product_dates]
   } else {
-    agb_median_files <- list.files(file.path(data_dir), pattern = "*median.tif$", 
-                                   full.names = TRUE)
-    agb_sdev_files <- list.files(file.path(data_dir), pattern = "*stdv.tif$", 
-                                 full.names = TRUE)
+    agb_files <- list.files(file.path(data_dir), pattern = paste0("*",dataset,".tif$"), 
+                            full.names = TRUE)
   }
 
   ## load gridded AGB data
-  biomass_median <- lapply(agb_median_files, raster::raster)
-  biomass_stdv <- lapply(agb_sdev_files, raster::raster)
+  raster_data <- lapply(agb_files, raster::raster)
   
   ## reproject Lat/Long site coords to AGB Albers Equal-Area
   coords_AEA <- sp::spTransform(coords_latlong,
-                                raster::crs(raster::raster(biomass_median[[1]])))
+                                raster::crs(raster::raster(raster_data[[1]])))
   
-  ## prepare product for extraction - stack requested years, 
-  #  need to make this work for 1 or 2+ years
-  biomass_median_stack <- raster::stack(biomass_median)
-  biomass_stdv_stack <- raster::stack(biomass_stdv)
+  ## prepare product for extraction - stack requested years
+  raster_data_stack <- raster::stack(raster_data)
   
   ## extract
-  agb_median_pixel <- raster::extract(x = biomass_median_stack, 
+  agb_pixel <- raster::extract(x = raster_data_stack, 
                                       y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
-  processed_years <- unlist(regmatches(names(data.frame(agb_median_pixel)), 
-                                       gregexpr("\\d{4}", names(data.frame(agb_median_pixel)))))
-  agb_median_pixel <- data.frame(agb_median_pixel)
-  names(agb_median_pixel) <- paste0("Year_",processed_years)
-  agb_median_pixel <- data.frame(Site_ID=site_IDs, Site_Name=site_names, agb_median_pixel)
-
-  agb_stdv_pixel <- raster::extract(x = biomass_stdv_stack, 
-                                    y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
-  agb_stdv_pixel <- data.frame(agb_stdv_pixel)
-  names(agb_stdv_pixel) <- paste0("Year_",processed_years)
-  agb_stdv_pixel <- data.frame(Site_ID=site_IDs, Site_Name=site_names, 
-                               agb_stdv_pixel)
+  processed_years <- unlist(regmatches(names(data.frame(agb_pixel)), 
+                                       gregexpr("\\d{4}", names(data.frame(agb_pixel)))))
+  agb_pixel <- data.frame(agb_pixel)
+  names(agb_pixel) <- paste0("Year_",processed_years)
+  agb_pixel <- data.frame(Site_ID=site_info$site_id, Site_Name=site_info$site_name, agb_pixel)
   
   ## output list
-  point_list <- list(median_AGB=list(agb_median_pixel), 
-                     stdv_AGB=list(agb_stdv_pixel))
-  
+  point_list <- list()
+  output_name <- paste0(dataset,"_AGB")
+  point_list <- list(agb_pixel)
+  names(point_list)=output_name
+
   ## save output to a file?
   if (!is.null(output_file)) {
-    save("point_list",file = file.path(output_file,'LandTrendr_AGB_output.RData'))
-  }
-  
-  if (plot_results) {
-    ## plot results - needs cleanup, needs to be flexible to move to a new page if a large number of sites selected
-    melted_med <- reshape::melt(agb_median_pixel, id.vars = c( 'Site_ID', 'Site_Name'))
-    melted_med$year <- rep(processed_years,each=length(site_IDs))
-    names(melted_med)[4] <- "AGB_med"
-    melted_sd <- reshape::melt(agb_stdv_pixel, id.vars = c( 'Site_ID', 'Site_Name'))
-    all <- data.frame(melted_med,AGB_sd=melted_sd$value)
-    all$AGB_kg_m2 <- all$AGB_med/10
-    all$AGBsd_kg_m2 <- all$AGB_sd/10
-    
-    result_plot <- ggplot2::ggplot(all, ggplot2::aes(x=year, y=AGB_kg_m2, group=Site_ID)) + 
-      ggplot2::geom_line(size=2) + 
-      ggplot2::facet_wrap(~Site_ID) + ggplot2::theme_bw() + 
-      ggplot2::geom_errorbar(ggplot2::aes(ymin=AGB_kg_m2-AGBsd_kg_m2, ymax=AGB_kg_m2+AGBsd_kg_m2), 
-                             width=.2,position=ggplot2::position_dodge(0.05)) + 
-      ggplot2::labs(x="Year",
-           y="Aboveground Woody Biomass (kg / m2)") + 
-      ggplot2::theme(text = ggplot2::element_text(size=15), 
-                     panel.border = ggplot2::element_rect(linetype = "solid", size = 2), 
-                     axis.text.x=ggplot2::element_text(angle=90,hjust=1) )
-
-    ggplot2::ggsave(filename=file.path(output_file,'LandTrendr_AGB_output.pdf'), 
-                    device = "pdf", plot=result_plot, w = 15, h = 13) # need to select h/w dynamically
-    grDevices::dev.off()  # keeps opening a blank device window and not sure why? so this makes sure that closes
+    save("point_list",file = file.path(output_file,paste0('LandTrendr_',dataset,'_AGB_output.RData')))
   }
   
   ## return output list
   return(point_list)
 }
+###
