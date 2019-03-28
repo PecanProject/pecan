@@ -111,7 +111,7 @@ sda.enkf.multisite <- function(settings,
   ###-------------------------------------------------------------------###
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
-  conf.settings %>%
+  conf.settings<-conf.settings %>%
     furrr::future_map(function(settings) {
       inputs.split <- list()
       if (!no_split) {
@@ -132,8 +132,9 @@ sda.enkf.multisite <- function(settings,
       } else{
         inputs.split <- inputs
       }
-      inputs.split
+      settings
     })
+  conf.settings<-PEcAn.settings::as.MultiSettings(conf.settings)
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###----  
