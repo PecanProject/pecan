@@ -128,6 +128,10 @@ sda.enkf.multisite <- function(settings,
               overwrite =F
             )
           )
+          # changing the start and end date which will be used for model2netcdf.model
+          settings$run$start.date <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
+          settings$run$end.date <- lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3)
+          
         }
       } else{
         inputs.split <- inputs
