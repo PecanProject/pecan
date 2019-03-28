@@ -107,14 +107,14 @@ create_exec_test_xml <- function(run_list){
 ##Create Run Args
 pecan_path <- "/fs/data3/tonygard/work/pecan"
 config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.example.php"))
-bety <- betyConnect(paste0(pecan_path,"/web/config.example.php"))
+bety <- PEcAn.DB::betyConnect(paste0(pecan_path,"/web/config.example.php"))
 
 bety <- dplyr::src_postgres(dbname   = 'bety', 
                             host     = 'psql-pecan.bu.edu', 
                             user     = 'bety', 
                             password = 'bety')
 con <- bety$con
-
+library(tidyverse)
 ## Find name of Machine R is running on
 mach_name <- Sys.info()[[4]]
 mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(id)
@@ -153,7 +153,7 @@ site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
       substring(stringr::str_extract(notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4)
     ),
     #Check if startdate year is within the inerval of that is given
-    in_date = between(as.numeric(year(startdate)),as.numeric(start_year),as.numeric(end_year))
+    in_date = data.table::between(as.numeric(lubridate::year(startdate)),as.numeric(start_year),as.numeric(end_year))
   ) %>%
   dplyr::filter(in_date & as.numeric(end_year) - as.numeric(start_year) > 1) 
   
