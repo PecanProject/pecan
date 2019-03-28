@@ -219,7 +219,9 @@ sda.enkf.multisite <- function(settings,
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
     if (t>1){
       #removing old simulations
-      unlink(list.files(outdir, "*.nc", recursive = T, full.names = T))
+      list.files(outdir, "*.nc", recursive = T, full.names = T) %>%
+        furrr::future_map(~ unlink(.x))
+      
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
         purrr::map2(inputs, function(settings, inputs) {
