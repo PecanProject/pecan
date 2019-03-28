@@ -145,12 +145,12 @@ site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
   collect() %>%
   dplyr::mutate(
     # Grab years from string within the notes
-    start_year = substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_BEGAN = ).*(?=  TOWER_END)")),1,4),
+    start_year = substring(stringr::str_extract(notes,pattern = ("(?<=TOWER_BEGAN = ).*(?=  TOWER_END)")),1,4),
     #Empty tower end in the notes means that it goes until present day so if empty enter curent year.
     end_year = dplyr::if_else(
-      substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4) == "",
+      substring(stringr::str_extract(notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4) == "",
       as.character(lubridate::year(Sys.Date())),
-      substring(stringr::str_extract(test$notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4)
+      substring(stringr::str_extract(notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4)
     ),
     #Check if startdate year is within the inerval of that is given
     in_date = between(as.numeric(year(startdate)),as.numeric(start_year),as.numeric(end_year))
