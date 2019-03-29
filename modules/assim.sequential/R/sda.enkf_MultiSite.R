@@ -364,8 +364,9 @@ sda.enkf.multisite <- function(settings,
         X.tmp %>%
           map_dfc(function(col.tmp){
             #naive way of finding the outlier 
-            OutVals <- boxplot(col.tmp)$out
+            OutVals <- boxplot(col.tmp, plot=FALSE, range = 10)$out
             col.tmp[which((col.tmp %in% OutVals))] <- NA
+            col.tmp
           })
         
       })
