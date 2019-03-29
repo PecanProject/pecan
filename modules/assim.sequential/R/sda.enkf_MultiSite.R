@@ -363,9 +363,9 @@ sda.enkf.multisite <- function(settings,
         #X.tmp is all the state variables for each site
         X.tmp %>%
           map_dfc(function(col.tmp){
-            #naive way of finding the outlier 
+            #naive way of finding the outlier - 10 * IQR
             OutVals <- boxplot(col.tmp, plot=FALSE, range = 10)$out
-            col.tmp[which((col.tmp %in% OutVals))] <- NA
+            col.tmp[which((col.tmp %in% OutVals))] <- mean(col.tmp, na.rm=T)
             col.tmp
           })
         
