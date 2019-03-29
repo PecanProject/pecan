@@ -357,6 +357,19 @@ sda.enkf.multisite <- function(settings,
     # Now let's read the state variables of site/ens
     X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
     
+    #removing crazy outliers before it's too late
+    X<-X %>% 
+      map(function(X.tmp){
+        #X.tmp is all the state variables for each site
+        X.tmp %>%
+          map_dfc(function(col.tmp){
+            #naive way of finding the outlier 
+            OutVals <- boxplot(col.tmp)$out
+            col.tmp[which((col.tmp %in% OutVals))] <- NA
+          })
+        
+      })
+    
     # Now we have a matrix that columns are state variables and rows are ensembles.
     # this matrix looks like this
     #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
