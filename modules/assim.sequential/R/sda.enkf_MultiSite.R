@@ -364,8 +364,10 @@ sda.enkf.multisite <- function(settings,
         X.tmp %>%
           map_dfc(function(col.tmp){
             #naive way of finding the outlier - 10 * IQR
-            OutVals <- boxplot(col.tmp, plot=FALSE, range = 10)$out
-            col.tmp[which((col.tmp %in% OutVals))] <- mean(col.tmp, na.rm=T)
+            OutVals <- boxplot(col.tmp, plot=FALSE, range = 5)$out
+            # if I make this NA then it would stay NA for ever.
+            #bc adjustment uses X to and comes up with new analysis
+            col.tmp[which((col.tmp %in% OutVals))] <- median(col.tmp, na.rm=T)
             col.tmp
           })
         
