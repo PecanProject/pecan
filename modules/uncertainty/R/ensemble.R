@@ -385,7 +385,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       #changing the structure of input tag to what the models are expecting
       for(input_i in seq_along(settings$run$inputs)){
         input_tag <- names(settings$run$inputs)[[input_i]]
-        settings$run$inputs[[input_tag]][["path"]] <- samples[[input_tag]][["samples"]][[i]]
+        if (!is.null(samples[[input_tag]]))
+          settings$run$inputs[[input_tag]][["path"]] <-
+            samples[[input_tag]][["samples"]][[i]]
       }
 
       

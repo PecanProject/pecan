@@ -12,15 +12,19 @@ write_restart.SIPNET(outdir, runid, start.time, stop.time, settings,
 
 \item{runid}{run ID}
 
+\item{start.time}{start date and time for each SDA ensemble}
+
+\item{stop.time}{stop date and time for each SDA ensemble}
+
 \item{settings}{PEcAn settings object}
 
 \item{new.state}{analysis state vector}
 
 \item{RENAME}{flag to either rename output file or not}
 
-\item{time}{year that is being read}
+\item{new.params}{list of parameters to convert between different states}
 
-\item{met}{}
+\item{inputs}{list of model inputs to use in write.configs.SIPNET}
 }
 \value{
 NONE
