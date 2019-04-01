@@ -1,4 +1,4 @@
-## PEcAn standard formats {#pecan-standards}
+# PEcAn standard formats {#pecan-standards}
 
 ### Defining new input formats
 

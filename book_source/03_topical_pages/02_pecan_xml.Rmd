@@ -1,4 +1,4 @@
-## The PEcAn XML {#pecanXML}
+# The PEcAn XML {#pecanXML}
 
 The PEcAn system is configured using a XML file, often called `pecan.xml`.
 It contains the following major sections ("nodes"):

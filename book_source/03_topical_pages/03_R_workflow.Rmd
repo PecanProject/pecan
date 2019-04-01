@@ -1,4 +1,4 @@
-## PEcAn workflow (web/workflow.R) {#workflow}
+# PEcAn workflow (web/workflow.R) {#workflow}
 
 - How the workflow works
 - How each module is called
