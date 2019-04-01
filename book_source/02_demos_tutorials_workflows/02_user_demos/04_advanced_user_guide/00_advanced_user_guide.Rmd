@@ -1,4 +1,4 @@
-#### Advanced User Guide {#advanced-user}
+## Advanced User Guide {#advanced-user}
 
 
 - [Adding to PEcAn as a user](#adding-to-pecan)

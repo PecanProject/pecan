@@ -1,4 +1,4 @@
-## User Tutorial Section {#user-section}
+# User Tutorial Section {#user-section}
 
 The user Section contains the following sections:
 [Basic Web Workflow Usage](#basic-web-wrokflow)
