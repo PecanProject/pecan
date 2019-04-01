@@ -357,7 +357,7 @@ sda.enkf.multisite <- function(settings,
     # Now let's read the state variables of site/ens
     X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
     
-    #removing crazy outliers before it's too late
+    #replacing crazy outliers before it's too late
     X<-X %>% 
       map(function(X.tmp){
         #X.tmp is all the state variables for each site
@@ -397,6 +397,11 @@ sda.enkf.multisite <- function(settings,
       Y <- Obs.cons$Y
       R <- Obs.cons$R
 
+      
+      if (length(Y) > 1) {
+        PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
+        diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+      }
       # making the mapping oprator
       H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
      
@@ -441,6 +446,10 @@ sda.enkf.multisite <- function(settings,
         aqq<-enkf.params[[t]]$aqq
         bqq<-enkf.params[[t]]$bqq
       }
+      # Adding obs elements to the enkf.params
+      #This can later on help with diagnostics
+      enkf.params[[t]] <-c(enkf.params[[t]], R)
+      enkf.params[[t]] <-c(enkf.params[[t]], Y)
       ###-------------------------------------------------------------------###
       ### Trace                                                             ###
       ###-------------------------------------------------------------------###----      

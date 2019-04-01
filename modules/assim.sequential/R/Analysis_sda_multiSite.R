@@ -56,7 +56,6 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   
   if (length(Y) > 1) {
     PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
-    diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
     diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
   }
   
