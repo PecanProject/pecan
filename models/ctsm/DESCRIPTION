@@ -1,6 +1,6 @@
 Package: PEcAn.CTSM
 Type: Package
-Title: PEcAn package for integration of the CTSM models. Will support CLM 5, and will provide helper functions for PEcAn.ELM, PEcAn.CTSM_ FATES, and PEcAn.ELM_FATES
+Title: PEcAn package for integration of the CTSM models. Will support CLM 5, and will provide helper functions for PEcAn.ELM, PEcAn.CTSM_FATES, and PEcAn.ELM_FATES
 Version: 1.7.0
 Date: 2018-12-03
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
@@ -29,12 +29,14 @@ Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      comment = c(ORCID = "0000-0003-4022-5979")),
              person("Tony", "Gardella", role = c("aut"),
                      email = "tonygard@bu.edu"))
+
 Description: The Predictive Ecosystem Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PEcAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. This package provides functions to
     link the Community Terrestrial System Model, versions 5, to PEcAn.
+
 Depends:
     PEcAn.logger,
     PEcAn.utils
