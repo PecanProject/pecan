@@ -358,7 +358,7 @@ sda.enkf.multisite <- function(settings,
     X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
     
     #naive outlier detection for the first step
-    if (t<3){
+    if (t==1){
       #replacing crazy outliers before it's too late
       X<-X %>% 
         map(function(X.tmp){
@@ -390,10 +390,9 @@ sda.enkf.multisite <- function(settings,
           `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
     
     # finding outlier based on last step ensembles.
-    if (t>=3){
+    if (t>1){
       site.ids %>%
         walk(function(site){# walking thorugh the sites
-          browser()
           # columns of X for this site
           col.inds <- which(attr(FORECAST[[t - 1]], 'Site') %in% site)
           # previous step X

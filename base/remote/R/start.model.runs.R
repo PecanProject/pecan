@@ -213,7 +213,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     
     for (run in names(jobids)) {
       # if it was null it means it was removed because it had a similar qsub job id to another run
-      if(is.null(jobids[run])) next;
+      if(is.null(jobids[[run]])) next;
       
       run_id_string <- format(run, scientific = FALSE)
       
