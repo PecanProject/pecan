@@ -180,7 +180,12 @@ Create diagnostics
 ### State Data Assimilation Tags Descriptions
 
 * **adjustment** : [optional] TRUE/FLASE flag for if ensembles needs to be adjusted based on weights estimated given their likelihood during analysis step. The defualt is TRUE for this flag.
-* **process.variance** : [optional] TRUE/FLASE flag for if process variance should be estimated (TRUE) or not (FALSE). If TRUE, a generalized ensemble filter will be used. If FALSE, an ensemble Kalman filter will be used. Default is FALSE.
+* **process.variance** : [optional] TRUE/FLASE flag for if process variance should be estimated (TRUE) or not (FALSE). If TRUE, a generalized ensemble filter will be used. If FALSE, an ensemble Kalman filter will be used. Default is FALSE. If you use the TRUE argument you can set three more optional tags to control the MCMCs built for the generalized esnsemble filter.
+* **nitrGEF** : [optional] numeric defining the length of the MCMC chains.
+* **nthin** : [optional] numeric defining thining length for the MCMC chains.
+* **nburnin** : [optional] numeric defining the number of burnins during the MCMCs.
+* **censored.data** : [optional] logical set TRUE for censored state variables.
+
 * **sample.parameters** : [optional] TRUE/FLASE flag for if parameters should be sampled for each ensemble member or not. This allows for more spread in the initial conditions of the forecast.
 * **state.variable** : [required] State variable that is to be assimilated (in PEcAn standard format).
 * **spin.up** : [required] start.date and end.date for initial model runs.
