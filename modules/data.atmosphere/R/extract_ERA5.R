@@ -43,9 +43,9 @@ ERA5_extract <-
               nc_data <- nc_open(ncfile)
               # time stamp
               t <- ncvar_get(nc_data, "time")
-              tunits <- ncatt_get(nc_data, 'time')
+              tunits <- ncatt_get(nc_data, "time")
               tustr <- strsplit(tunits$units, " ")
-              timestamp = as.POSIXct(t * 3600, tz = 'GMT', origin = tustr[[1]][3])
+              timestamp <- as.POSIXct(t * 3600, tz = "UTC", origin = tustr[[1]][3])
               try(nc_close(nc_data))
               
               
@@ -58,7 +58,7 @@ ERA5_extract <-
                   brick.tmp <-
                     brick(ncfile, varname = vname, level = ens)
                   nn <-
-                    raster::extract(brick.tmp, SpatialPoints(cbind(long, lat)), method = 'simple') %>%
+                    raster::extract(brick.tmp, SpatialPoints(cbind(long, lat)), method = "simple") %>%
                     as.numeric()
                   # replacing the missing/filled values with NA
                   nn[nn == nc_data$var[[vname]]$missval] <- NA
@@ -66,7 +66,7 @@ ERA5_extract <-
                   nn
                   
                 }) %>%
-                `colnames<-`(paste0(vars))
+                `colnames<-`(vars)
               #close the connection
               
               # send out as xts object
@@ -74,7 +74,7 @@ ERA5_extract <-
             })
           
           #binding the years
-          point.data <- do.call("rbind.xts", point.data)
+          point.data <- do.call(rbind, point.data)
           #Merge mean and the speard
           return(point.data)
           
@@ -84,7 +84,6 @@ ERA5_extract <-
       
     }, error = function(e) {
       PEcAn.logger::logger.severe(paste0(conditionMessage(e)))
-      
     })
     
   }
