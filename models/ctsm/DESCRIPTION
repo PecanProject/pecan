@@ -1,6 +1,6 @@
 Package: PEcAn.CTSM
 Type: Package
-Title: PEcAn package for integration of the CTSM models. Will support CLM 5, and will provide helper functions for PEcAn.ELM, PEcAn.CTSM_FATES, and PEcAn.ELM_FATES
+Title: PEcAn package for integration of the CTSM models.
 Version: 1.7.0
 Date: 2018-12-03
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
@@ -19,24 +19,22 @@ Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "ecowdery@bu.edu",
                      comment = c(ORCID = "0000-0002-6538-6296")),
              person("Baily", "Morrison", role = c("aut"),
-                     email = "bmorrison@bnl.gov",
-                     comment = c(ORCID = "0000-0002-5226-6041")),
-             person("Istem", "Fer", role = c("aut"),
-                     email = "kristinariemer@email.arizona.edu",
-                     comment = c(ORCID = "0000-0001-8236-303X")),
+                     email = "bmorrison@bnl.gov"),
+             person("Kristina", "Riemer", role = c("aut"),
+                     email = "kristinariemer@email.arizona.edu"),
              person("Tonantzin", "Tarin", role = c("aut"),
-                     email = "ttarin@udel.edu",
-                     comment = c(ORCID = "0000-0003-4022-5979")),
+                     email = "ttarin@udel.edu"),
              person("Tony", "Gardella", role = c("aut"),
-                     email = "tonygard@bu.edu"))
-
+                     email = "tonygard@bu.edu",
+                     comment = c(ORCID = "0000-0003-4380-3412")))
 Description: The Predictive Ecosystem Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PEcAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. This package provides functions to
-    link the Community Terrestrial System Model, versions 5, to PEcAn.
-
+    link the Community Terrestrial System Model, versions 5, to PEcAn. Will 
+    support CLM 5, and will provide helper functions for PEcAn.ELM, PEcAn.CTSM_FATES,
+    and PEcAn.ELM_FATES.
 Depends:
     PEcAn.logger,
     PEcAn.utils
