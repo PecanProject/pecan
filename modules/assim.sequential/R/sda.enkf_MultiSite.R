@@ -357,21 +357,25 @@ sda.enkf.multisite <- function(settings,
     # Now let's read the state variables of site/ens
     X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
     
-    #replacing crazy outliers before it's too late
-    X<-X %>% 
-      map(function(X.tmp){
-        #X.tmp is all the state variables for each site
-        X.tmp %>%
-          map_dfc(function(col.tmp){
-            #naive way of finding the outlier - 10 * IQR
-            OutVals <- boxplot(col.tmp, plot=FALSE, range = 5)$out
-            # if I make this NA then it would stay NA for ever.
-            #bc adjustment uses X to and comes up with new analysis
-            col.tmp[which((col.tmp %in% OutVals))] <- median(col.tmp, na.rm=T)
-            col.tmp
-          })
-        
-      })
+    #naive outlier detection for the first step
+    if (t<3){
+      #replacing crazy outliers before it's too late
+      X<-X %>% 
+        map(function(X.tmp){
+          #X.tmp is all the state variables for each site
+          X.tmp %>%
+            map_dfc(function(col.tmp){
+              #naive way of finding the outlier - 10 * IQR
+              OutVals <- boxplot(col.tmp, plot=FALSE, range = 5)$out
+              # if I make this NA then it would stay NA for ever.
+              #bc adjustment uses X to and comes up with new analysis
+              col.tmp[which((col.tmp %in% OutVals))] <- median(col.tmp, na.rm=T)
+              col.tmp
+            })
+          
+        })
+    }
+
     
     # Now we have a matrix that columns are state variables and rows are ensembles.
     # this matrix looks like this
@@ -385,6 +389,40 @@ sda.enkf.multisite <- function(settings,
           `colnames<-`(c(rep(var.names, length(X)))) %>%
           `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
     
+    # finding outlier based on last step ensembles.
+    if (t>=3){
+      site.ids %>%
+        walk(function(site){# walking thorugh the sites
+          browser()
+          # columns of X for this site
+          col.inds <- which(attr(FORECAST[[t - 1]], 'Site') %in% site)
+          # previous step X
+          old.X <- (FORECAST[[t - 1]])[, col.inds]
+          #Foreach column
+          X[, col.inds] <<- col.inds %>%
+            map_dfc(function(col) {
+              
+              tmp.v <- X[, col]
+              # if there was an ens which was higher or lower of 3*sd of mean of last step
+              HB <-
+                mean(FORECAST[[t - 1]][, col], na.rm = T) + (3 * sd(FORECAST[[t - 1]][, col] , na.rm =
+                                                                      T))
+              # not checking for lower because of disturbance
+              #LB <- mean(FORECAST[[t - 1]][, col], na.rm=T) - (2*sd(FORECAST[[t - 1]][, col] , na.rm=T))
+              outies <- which(tmp.v > HB)
+              # if there was outliers replace them with the median of previous step
+              if (length(outies) > 0)
+                tmp.v[outies] <- median(FORECAST[[t - 1]][, col], na.rm = T)
+              
+              tmp.v
+              
+            }) %>%
+            as.matrix()
+          
+        })
+    }
+
+    
     FORECAST[[t]] <- X
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
@@ -397,7 +435,6 @@ sda.enkf.multisite <- function(settings,
       Y <- Obs.cons$Y
       R <- Obs.cons$R
 
-      
       if (length(Y) > 1) {
         PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
