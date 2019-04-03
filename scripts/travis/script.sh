@@ -49,5 +49,6 @@ if [[ `git status -s` ]]; then
     echo "These files were changed by the build process:";
     git status -s;
     echo "Have you run devtools::check and commited any updated Roxygen outputs?";
+    git diff
     exit 1; 
 fi
