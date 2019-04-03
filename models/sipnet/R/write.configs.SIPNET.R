@@ -388,7 +388,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
     if (all(plant_wood_vars %in% ic.names)) {
   
-      
+      if (round(IC$AbvGrndWood)>0 & round(IC$abvGrndWoodFrac)==0)
+        PEcAn.logger::logger.severe("There is a major problem with either the model's parameters or IC. Because the ABG is greater than zero but it's fraction is zero. ")
       # reconstruct total wood C
       wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
       #Sanity check
