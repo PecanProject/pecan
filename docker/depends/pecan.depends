@@ -23,9 +23,9 @@ install2.r -e -s -n -1\
     BioCro \
     car \
     coda \
-    data.table \
     dataone \
     datapack \
+    data.table \
     DBI \
     dbplyr \
     doParallel \
@@ -33,6 +33,7 @@ install2.r -e -s -n -1\
     ellipse \
     fields \
     foreach \
+    furrr \
     geonames \
     getPass \
     ggmap \
@@ -102,6 +103,7 @@ install2.r -e -s -n -1\
     stringr \
     testthat \
     tibble \
+    tictoc \
     tidyr \
     tidyverse \
     tools \
