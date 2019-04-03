@@ -231,9 +231,9 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         if (!is_local) {
           # find and copy back all the job finished in case it is not local
           jobids %>%
-            keep( ~ .x == jobids[run]) %>%
+            purrr::keep( ~ .x == jobids[run]) %>%
             names %>%
-            walk(~ PEcAn.remote::remote.copy.from(host = settings$host,
+            purrr::walk(~ PEcAn.remote::remote.copy.from(host = settings$host,
                                                   src = file.path(settings$host$outdir, .x),
                                                   dst = settings$modeloutdir))
 
