@@ -206,7 +206,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
                                unlist(jobids, use.names = FALSE) %>% 
                                  unique())
   }
-  #---------------------------------3- Checking the job / Checking the status of submitted jobs 
+  #---------------------------------3- Checking the status of submitted jobs 
   while (length(jobids) > 0) {
     # Wait for 10 sec
     Sys.sleep(10)
@@ -217,14 +217,14 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       
       run_id_string <- format(run, scientific = FALSE)
       
-      #----------------  check to see if job is done
+      #----------------  check to see if the jobs are done
       job_finished <- FALSE
       if (is_rabbitmq) {
         job_finished <- file.exists(file.path(jobids[run], "rabbitmq.out"))
       } else if (is_qsub) {
         job_finished <- qsub_run_finished(run = jobids[run], host = settings$host, qstat = settings$host$qstat)
       }
-      #----------------- check to see if job is done
+      #----------------- if the jobs are done
       if (job_finished) {
         
         # Copy data back to local
