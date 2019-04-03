@@ -8,12 +8,10 @@ ENV RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F" \
 
 EXPOSE 9999
 
-RUN pip install pika==0.11.2 \
-                requests==2.18.4 \
-                psycopg2-binary==2.7.6.1 \
-                python-dateutil==2.7.5
-
 WORKDIR /src
-COPY monitor.py /src/
 
+COPY requirements.txt /src/
+RUN pip install -r /src/requirements.txt
+
+COPY monitor.py /src/
 CMD python monitor.py
