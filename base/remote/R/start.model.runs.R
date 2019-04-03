@@ -20,7 +20,7 @@
 ##' @author Shawn Serbin, Rob Kooper, David LeBauer, Alexey Shiklomanov
 ##'
 start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
-  #Notes: This function takes 3 main steps : 1-Writing the configs 2-Running the jobs 3- Checking the jobs
+  
   run_file <- file.path(settings$rundir, "runs.txt")
   # check if runs need to be done
   if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
@@ -74,7 +74,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   # launcher folder
   jobfile <- NULL
   firstrun <- NULL
-  #---------------------------------------------------------------------1-Writing the configs
+  
   # launch each of the jobs
   for (run in run_list) {
     run_id_string <- format(run, scientific = FALSE)
@@ -149,7 +149,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     
   } # end loop over runs
   close(pb)
-  #---------------------------------------------------------------2-Running the jobs
+  
   # need to actually launch the model launcher
   if (is_modellauncher) {
     
@@ -162,11 +162,8 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       for (run in run_list){
         if (run %in% job_modellauncher) {
           # copy launcher and joblist
-          PEcAn.remote::remote.copy.to(settings$host,
-                                       file.path(settings$rundir,
-                                                 format(run, scientific = FALSE)),
-                                       settings$host$rundir,
-                                       delete = TRUE)
+          PEcAn.remote::remote.copy.to(settings$host, file.path(settings$rundir,
+                                                                format(run, scientific = FALSE)), settings$host$rundir, delete = TRUE)
           
         }
       }
@@ -202,41 +199,29 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   
   # wait for all jobs to finish
   if (length(jobids) > 0) {
-    PEcAn.logger::logger.debug("Waiting for the following jobs:",
-                               unlist(jobids, use.names = FALSE) %>% 
-                                 unique())
+    PEcAn.logger::logger.debug("Waiting for the following jobs:", unlist(jobids, use.names = FALSE))
   }
-  #---------------------------------3- Checking the job / Checking the status of submitted jobs 
+  
   while (length(jobids) > 0) {
-    # Wait for 10 sec
     Sys.sleep(10)
-    
     for (run in names(jobids)) {
-      # if it was null it means it was removed because it had a similar qsub job id to another run
-      if(is.null(jobids[[run]])) next;
-      
       run_id_string <- format(run, scientific = FALSE)
       
-      #----------------  check to see if job is done
+      # check to see if job is done
       job_finished <- FALSE
       if (is_rabbitmq) {
         job_finished <- file.exists(file.path(jobids[run], "rabbitmq.out"))
       } else if (is_qsub) {
         job_finished <- qsub_run_finished(run = jobids[run], host = settings$host, qstat = settings$host$qstat)
       }
-      #----------------- check to see if job is done
+      
       if (job_finished) {
         
         # Copy data back to local
         if (!is_local) {
-          # find and copy back all the job finished in case it is not local
-          jobids %>%
-            keep( ~ .x == jobids[run]) %>%
-            names %>%
-            walk(~ PEcAn.remote::remote.copy.from(host = settings$host,
-                                                  src = file.path(settings$host$outdir, .x),
-                                                  dst = settings$modeloutdir))
-
+          PEcAn.remote::remote.copy.from(host = settings$host,
+                                         src = file.path(settings$host$outdir, run_id_string),
+                                         dst = settings$modeloutdir)
         }
         
         # TODO check output log
@@ -250,24 +235,31 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
               PEcAn.logger::logger.error(msg)
             }
           }
-        } else if (is_modellauncher) {
-
-          # Update database in one call for the finished runs
-          stamp_finished(con = dbcon,
-                         run = names (jobids[which(jobids == jobids[[run]])]))
-          
-          #removing the job
-          jobids <- jobids %>%
-            purrr::discard( ~ .x == jobids[run])    
-
+        }
+        
+        # Write finish time to database
+        if (is_modellauncher) {
+          for (x in run_list) {
+            stamp_finished(con = dbcon, run = x)
+          }
         } else {
           stamp_finished(con = dbcon, run = run)
-          jobids[run] <- NULL #removing the job
-          pbi <- pbi + 1 # move progress bar
         }
-
+        
+        # move progress bar
+        if (!is_modellauncher) {
+          pbi <- pbi + 1
+        }
         setTxtProgressBar(pb, pbi)
-
+        
+        # remove job
+        if (is_modellauncher) {
+          for (x in run_list) {
+            jobids[x] <- NULL
+          }          
+        } else {
+          jobids[run] <- NULL
+        }
       } # End job finished
     }  # end loop over runs
   }  # end while loop checking runs
