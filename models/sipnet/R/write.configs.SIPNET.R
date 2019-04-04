@@ -391,6 +391,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       
       # reconstruct total wood C
       wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
+      if (is.na(wood_total_C) | is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C <0) wood_total_C <- 0
       param[which(param[, 1] == "plantWoodInit"),  2] <- wood_total_C
       param[which(param[, 1] == "coarseRootFrac"), 2] <- IC$coarseRootFrac
       param[which(param[, 1] == "fineRootFrac"),   2] <- IC$fineRootFrac
