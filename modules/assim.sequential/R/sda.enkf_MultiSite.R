@@ -138,6 +138,7 @@ sda.enkf.multisite <- function(settings,
       }
       settings
     })
+  
   conf.settings<-PEcAn.settings::as.MultiSettings(conf.settings)
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
@@ -250,7 +251,7 @@ sda.enkf.multisite <- function(settings,
         })
           
       #---------------- setting up the restart argument for each site separatly and keeping them in a list
-      restart.list <- furrr:future_pmap(list(out.configs, conf.settings, params.list, inputs.split), 
+      restart.list <- furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split), 
                                   function(configs, settings, new.params, inputs){
                             
                                     list(runid = configs$runs$id, 
