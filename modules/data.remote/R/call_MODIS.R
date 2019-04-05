@@ -73,6 +73,71 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     dates <- as.Date(as.character(substr(dates, 2, nchar(dates))), format = "%Y%j")
     #list total range of dates available for product
     print(paste("Range of dates for product are ", dates[1], " - ", dates[length(dates)], sep = ""))
+    
+    #case where user only wants one date:
+    if (start_date == end_date & as.numeric(start_date) >= dates[1] & as.numeric(end_date) <= dates[length(dates)])
+    {
+      bands <- MODISTools::mt_bands(product = product)
+      if (!(band %in% bands$band))
+      {
+        print(bands$band)
+        stop("Band selected is not avialable. Please selected from the bands listed above that correspond with the data product.")
+      } else {
+        print("Check #3: Band Exists!")
+      }
+      
+      
+      print("Extracting data")
+      
+      start <- as.Date(start_date, "%Y%j")
+      end <- as.Date(end_date, "%Y%j")
+      
+      # extract main band data from api
+      dat <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band,
+                                   start=start, end=end, km_ab=size, km_lr=size)
+      # extract QC data
+      if(band_qc != ""){
+        qc <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_qc,
+                                    start=start, end=end, km_ab=size, km_lr=size)
+      }
+      
+      # extract stdev data
+      if(band_sd != ""){
+        sd <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_sd,
+                                    start=start, end=end, km_ab=size, km_lr=size)
+      }
+      
+      
+      if (band_qc == "")
+      {
+        QC <- rep("nan", nrow(dat))
+      } else {
+        QC <- as.numeric(qc$value)
+      }
+      
+      if (band_sd == "")
+      {
+        SD <- rep("nan", nrow(dat))
+      } else {
+        SD <- as.numeric(sd$value) * as.numeric(sd$scale) #formatC(sd$data$data*scale, digits = 2, format = 'f')
+      }
+      
+      output <- as.data.frame(cbind(dat$modis_date, dat$calendar_date, dat$band, dat$tile, dat$latitude, dat$longitude, dat$pixel, dat$value, QC, SD), stringsAsFactors = F)
+      names(output) <- c("modis_date", "calendar_date", "band", "tile", "lat", "lon", "pixels", "data", "qc", "sd")
+      
+      output[,5:10] <- lapply(output[,5:10], as.numeric)
+      
+      # scale the data + stdev to proper units
+      output$data <- output$data * (as.numeric(dat$scale))
+      output$sd <- output$sd * (as.numeric(dat$scale))
+      output$lat <- round(output$lat, 4)
+      output$lon <- round(output$lon, 4)
+      
+      fname <- paste(product, "_", band, "output_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
+      fname <- paste0(outfolder, "/", fname)
+      write.csv(output, fname, row.names = F)
+      return(output)
+    } else {
     # Best case scenario: the start_date and end_date parameters fall within available MODIS data dates
     if (as.numeric(start_date)>=dates[1] & as.numeric(end_date)<=dates[length(dates)])
     {
@@ -93,9 +158,9 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     # Unacceptable scenario: start_date and end_date does not fall within the availa MODIS data product date range. There is no data to extract in this scenario.
     if ((as.numeric(start_date)<dates[1] & as.numeric(end_date <dates[1])) | (as.numeric(start_date)>dates[length(dates)] & as.numeric(end_date)>dates[length(dates)]))
     {
-           stop("No MODIS data available start_date and end_date parameterized.")
+      stop("No MODIS data available start_date and end_date parameterized.")
     }
-        
+    
     bands <- MODISTools::mt_bands(product = product)
     if (!(band %in% bands$band))
     {
@@ -104,7 +169,7 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     } else {
       print("Check #3: Band Exists!")
     }
-  
+    
     
     print("Extracting data")
     
@@ -113,13 +178,13 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     
     # extract main band data from api
     dat <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band,
-                                  start=start, end=end, km_ab=size, km_lr=size)
+                                 start=start, end=end, km_ab=size, km_lr=size)
     # extract QC data
     if(band_qc != ""){
       qc <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_qc,
                                   start=start, end=end, km_ab=size, km_lr=size)
     }
-   
+    
     # extract stdev data
     if(band_sd != ""){
       sd <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_sd,
@@ -154,8 +219,11 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     
     fname <- paste(product, "_", band, "output_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
     fname <- paste0(outfolder, "/", fname)
-    write.csv(output, fname)
-    return(output)}
+    write.csv(output, fname, row.names = F)
+    return(output)
+    }
+    
+    }
 
   
   if (package_method == "reticulate"){
@@ -170,8 +238,8 @@ call_MODIS <- function(outfolder = ".", start_date, end_date, lat, lon, size = 0
     output$lat <- round(output$lat, 4)
     output$lon <- round(output$lon, 4)
     
-    fname <- paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
-    fname <- paste0(outfolder, "/", fname)
-    write.csv(output, fname)
+    #fname <- paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
+    #fname <- paste0(outfolder, "/", fname)
+    #write.csv(output, fname)
     return(output)}
 }
