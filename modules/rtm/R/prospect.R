@@ -70,7 +70,7 @@ params.prospect5b <- c("N", "Cab", "Car", "Cbrown", "Cw", "Cm")
 #' @name params.prospectd
 #' @title PROSPECT D parameters
 #' @export
-params.prospectd <- c("N", "Cab", "Car", "Anth, "Cbrown", "Cw", "Cm")
+params.prospectd <- c("N", "Cab", "Car", "Anth", "Cbrown", "Cw", "Cm")
 
 #' Default settings for PROSPECT inversion
 #' @name default.settings.prospect
