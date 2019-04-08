@@ -14,6 +14,7 @@ SOURCES = \
     RTM/twostream/gamma.functions.f90 \
     RTM/twostream/two.stream.f90 \
     RTM/prosail/prosail.main.f90 \
+    RTM/prosail/prosaild.main.f90 \
     RTM/sail/sail.refltrans.f90 \
     RTM/sail/sail.volscatt.f90 \
     RTM/sail/sail.lidf.f90 \
@@ -46,6 +47,7 @@ NON_MODULE_OBJECTS = \
     RTM/twostream/gamma.functions.o \
     RTM/twostream/two.stream.o \
     RTM/prosail/prosail.main.o \
+    RTM/prosail/prosaild.main.o \
     RTM/sail/sail.refltrans.o \
     RTM/sail/sail.volscatt.o \
     RTM/sail/sail.lidf.o \
