@@ -16,6 +16,7 @@
 ##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ##' @param siteID string value of a PEcAn site ID. Currently only used for output filename.
 ##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.
 =======
@@ -24,6 +25,10 @@
 ##' @param siteID string value of a PEcAn site ID. Currently only used for output filename.
 ##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.
 >>>>>>> parent of ab371da... Delete call_MODIS.R
+=======
+##' @param siteID string value of a PEcAn site ID. Currently only used for output filename.
+##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.
+>>>>>>> parent of 40b62d7... fix
 ##' 
 ##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
 ##' depends on the MODISTools package version 1.1.0
@@ -44,8 +49,11 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
   
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> parent of ab371da... Delete call_MODIS.R
+=======
+>>>>>>> parent of 40b62d7... fix
   
   # reformat start and end date if they are in YYYY/MM/DD format instead of YYYYJJJ
   if (grepl("/", start_date) == T)
@@ -66,6 +74,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
         #################### FUNCTION PARAMETER PRECHECKS #################### 
     #1. check that modis product is available
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   # set start and end dates to correct format
   if (package_method == "MODISTools"){
@@ -73,11 +82,14 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
 >>>>>>> parent of 3463070... updated date format and alternative date range issues
 =======
 >>>>>>> parent of ab371da... Delete call_MODIS.R
+=======
+>>>>>>> parent of 40b62d7... fix
     products = MODISTools::mt_products()
     if (!(product %in% products$product))
     {
       print(products)
       stop("Product not available for MODIS API. Please chose a product from the list above.")
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     } 
@@ -105,6 +117,11 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
     
     #2. check that modis produdct band is available
 >>>>>>> parent of ab371da... Delete call_MODIS.R
+=======
+    } 
+    
+    #2. check that modis produdct band is available
+>>>>>>> parent of 40b62d7... fix
     bands <- MODISTools::mt_bands(product = product)
     if (!(band %in% bands$band))
     {
