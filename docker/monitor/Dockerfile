@@ -11,7 +11,7 @@ EXPOSE 9999
 WORKDIR /src
 
 COPY requirements.txt /src/
-RUN pip install -r /src/requirements.txt
+RUN pip3 install -r /src/requirements.txt
 
 COPY monitor.py /src/
-CMD python monitor.py
+CMD python3 monitor.py
