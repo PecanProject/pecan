@@ -29,12 +29,14 @@ call_MODIS(outfolder = NULL, start_date, end_date, lat, lon, size = 0,
 
 \item{band_sd}{string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)}
 
-\item{siteID}{string value of a PEcAn site ID. Currently only used for output filename.
+\item{siteID}{string value of a PEcAn site ID. Currently only used for output filename.}
+
+\item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)}
+
+\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.
 
 depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
 depends on the MODISTools package version 1.1.0}
-
-\item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)}
 }
 \description{
 Get MODIS data by date and location
