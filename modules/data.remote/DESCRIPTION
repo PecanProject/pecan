@@ -13,7 +13,8 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     stringr (>= 1.1.0),
-    spatial.tools
+    spatial.tools,
+    binaryLogic
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
