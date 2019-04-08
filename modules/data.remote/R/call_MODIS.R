@@ -14,21 +14,8 @@
 ##' @param band_qc string value for which quality control band, or use "NA" if you do not know or do not need QC information (optional)
 ##' @param band_sd string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)
 ##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 ##' @param siteID string value of a PEcAn site ID. Currently only used for output filename.
 ##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.
-=======
->>>>>>> parent of 3463070... updated date format and alternative date range issues
-=======
-##' @param siteID string value of a PEcAn site ID. Currently only used for output filename.
-##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.
->>>>>>> parent of ab371da... Delete call_MODIS.R
-=======
-##' @param siteID string value of a PEcAn site ID. Currently only used for output filename.
-##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.
->>>>>>> parent of 40b62d7... fix
 ##' 
 ##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
 ##' depends on the MODISTools package version 1.1.0
@@ -46,16 +33,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size <- 0
-  
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> parent of ab371da... Delete call_MODIS.R
-=======
->>>>>>> parent of 40b62d7... fix
-  
-  # reformat start and end date if they are in YYYY/MM/DD format instead of YYYYJJJ
+# reformat start and end date if they are in YYYY/MM/DD format instead of YYYYJJJ
   if (grepl("/", start_date) == T)
   {
     start_date = as.Date(paste0(lubridate::year(start_date), spatial.tools::add_leading_zeroes(lubridate::yday(start_date), 3)), format = "%Y%j")
@@ -67,61 +45,21 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
   }
   start_date = as.Date(start_date, format = "%Y%j")
   end_date = as.Date(end_date, format = "%Y%j")
-  
+
+
   #################### if package_method == MODISTools option ####################
   if (package_method == "MODISTools")
   {
-        #################### FUNCTION PARAMETER PRECHECKS #################### 
+    #################### FUNCTION PARAMETER PRECHECKS #################### 
     #1. check that modis product is available
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  # set start and end dates to correct format
-  if (package_method == "MODISTools"){
-    
->>>>>>> parent of 3463070... updated date format and alternative date range issues
-=======
->>>>>>> parent of ab371da... Delete call_MODIS.R
-=======
->>>>>>> parent of 40b62d7... fix
     products = MODISTools::mt_products()
     if (!(product %in% products$product))
     {
       print(products)
       stop("Product not available for MODIS API. Please chose a product from the list above.")
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     } 
     
     #2. check that modis produdct band is available
-=======
-    } else {
-      print("Check #1: Product exists!")
-    }
-    
-
-    dates <- MODISTools::mt_dates(product = product, lat = lat, lon = lon)$modis_date
-    dates <- as.numeric(substr(dates, 2, nchar(dates)))
-    if (as.numeric(start_date) <= dates[1] | as.numeric(end_date) >= dates[length(dates)])
-    {
-      print(paste("Range of dates for product are ", dates[1], " - ", dates[length(dates)], sep = ""))
-      stop("Please choose dates between the date range listed above.")
-    } else {
-      print("Check #2: Dates are available!")
-    }
-    
->>>>>>> parent of 3463070... updated date format and alternative date range issues
-=======
-    } 
-    
-    #2. check that modis produdct band is available
->>>>>>> parent of ab371da... Delete call_MODIS.R
-=======
-    } 
-    
-    #2. check that modis produdct band is available
->>>>>>> parent of 40b62d7... fix
     bands <- MODISTools::mt_bands(product = product)
     if (!(band %in% bands$band))
     {
