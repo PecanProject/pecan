@@ -10,10 +10,16 @@ setup_modellauncher <- function(run, rundir, host_rundir, mpirun, binary) {
   run_string <- format(run, scientific = FALSE)
   run_id_dir <- file.path(rundir, run_string)
   launcherfile <- file.path(run_id_dir, "launcher.sh")
-  file.remove(file.path(run_id_dir, "joblist.txt"))
+  if (file.exists(file.path(run_id_dir, "joblist.txt"))) {
+    file.remove(file.path(run_id_dir, "joblist.txt"))
+  }
   jobfile <- file(file.path(run_id_dir, "joblist.txt"), "w")
 
   writeLines(c("#!/bin/bash", paste(mpirun, binary, file.path(host_rundir, run_string, "joblist.txt"))),
              con = launcherfile)
+  # making sure we can run the file.
+  Sys.chmod(launcherfile, "755") # or 744 for letting just the owner
+  # writing the job
   writeLines("./job.sh", con = jobfile)
+  return(invisible(jobfile))
 }
