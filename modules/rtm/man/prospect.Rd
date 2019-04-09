@@ -11,7 +11,8 @@ prospect(param, version)
 * N: Effective number of leaf layers (>1)
 * Cab: Leaf chlorophyll content (ug/cm2) (>0)
 * (5) Car: Leaf carotenoid content (ug/cm2) (>0)
-* (5B) Cbrown: Leaf brown matter content (ug/cm2) (>0)
+* (D) Canth: Leaf anthocyanin content (ug/cm2) (>0)
+* (5B, D) Cbrown: Leaf brown matter content (ug/cm2) (>0)
 * Cw: Leaf water content (cm) (>0)
 * Cm: Leaf dry matter content (ug/cm2) (>0)}
 
