@@ -29,7 +29,7 @@
 ##' 
 ##' @author Bailey Morrison
 ##'  
-call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 0, product, band, band_qc = "", band_sd = "", siteID = NULL, package_method = "MODISTools", QC_filter = F) {
+call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, product, band, band_qc = "", band_sd = "", siteID = "", package_method = "MODISTools", QC_filter = F) {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size <- 0
@@ -183,7 +183,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
       }
     }
     
-    if (!(is.null(outfolder)))
+    if (!(outfolder == ""))
     {
       fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, ".csv", sep = "")
       fname <- paste0(outfolder, "/", fname)
