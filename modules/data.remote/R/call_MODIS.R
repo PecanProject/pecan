@@ -181,7 +181,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
       }
     }
     
-    if (!(is.null(outfolder)))
+    if (!(outfolder == ""))
     {
       fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, ".csv", sep = "")
       fname <- paste0(outfolder, "/", fname)
