@@ -5,6 +5,11 @@
 * New formats can be defined on the ['formats' page of BETYdb](http://betydb.org/formats)
 * After creating a new format, the contents should be defined by specifying the BETYdb variable name and the name used in the file/
 
+### Time Standard
+Internal PEcAn standard time follows ISO_8601 format for dates and time (https://en.wikipedia.org/wiki/ISO_8601).  For example ordinal dates go from 1 365/366 (https://en.wikipedia.org/wiki/ISO_8601#Ordinal_dates). However, time used in met drivers or model outputs follows CF convention with julian dates following the 0 to 364/365 format
+
+To aid in the conversion between PEcAn internal ISO_8601 standard and CF convention used in all met drivers and PEcAn standard output you can utilize the functions: "cf2datetime","datetime2doy","cf2doy", and for SIPNET "sipnet2datetime"
+
 ### Input Standards
 
 ####Meterology Standards
