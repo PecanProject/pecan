@@ -44,11 +44,13 @@ ERA5_extract <-
               #open the file
               nc_data <- ncdf4::nc_open(ncfile)
               # time stamp
+
               t <- ncdf4::ncvar_get(nc_data, "time")
               tunits <- ncdf4::ncatt_get(nc_data, 'time')
               tustr <- strsplit(tunits$units, " ")
               timestamp = as.POSIXct(t * 3600, tz = 'GMT', origin = tustr[[1]][3])
               try(ncdf4::nc_close(nc_data))
+
               
               
               # set the vars
@@ -71,13 +73,14 @@ ERA5_extract <-
                     ))
                   }
                   
+
                   # replacing the missing/filled values with NA
                   nn[nn == nc_data$var[[vname]]$missval] <- NA
                   # send out the extracted var as a new col
                   nn
                   
                 }) %>%
-                `colnames<-`(paste0(vars))
+                `colnames<-`(vars)
               #close the connection
               
               # send out as xts object
@@ -85,7 +88,9 @@ ERA5_extract <-
             })
           
           #binding the years
+
           point.data <- do.call("rbind", point.data)
+
           #Merge mean and the speard
           return(point.data)
           
@@ -95,7 +100,6 @@ ERA5_extract <-
       
     }, error = function(e) {
       PEcAn.logger::logger.severe(paste0(conditionMessage(e)))
-      
     })
     
   }

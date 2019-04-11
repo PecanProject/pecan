@@ -32,7 +32,7 @@ met2cf.ERA5 <- function(lat,
   out <- ERA5_extract_ENS(lat = lat,
                           long = long,
                           years = years, 
-                          data.folder=data.folder)
+                          data.folder = data.folder)
   #start and end date
   start_date <- min(index(out[[1]]))
   end_date <- max(index(out[[1]]))
@@ -94,7 +94,7 @@ met2cf.ERA5 <- function(lat,
   
   #These are the cf standard names
   cf_var_names = colnames(out.new[[1]])
-  cf_var_units = c("K", "Pa", "kgm-2s-1", "ms-1", "ms-1", "Wm-2", "Wm-2", "1")  #Negative numbers indicate negative exponents
+  cf_var_units = c("K", "Pa", "kg m-2 s-1", "m s-1", "m s-1", "W m-2", "W m-2", "1")  #Negative numbers indicate negative exponents
   
   # Create a data frame with information about the file.  This data frame's format is an internal PEcAn standard, and is stored in the BETY database to
   # locate the data file. 
@@ -122,7 +122,7 @@ met2cf.ERA5 <- function(lat,
   #create a list of all ens
   nc_var_list <- purrr::map2(cf_var_names,
                       cf_var_units,
-                      ~ ncdf4::ncvar_def(.x, .y, list(time_dim, lat_dim, lon_dim), missval =NaN)
+                      ~ ncdf4::ncvar_def(.x, .y, list(time_dim, lat_dim, lon_dim), missval = NA_real_)
                       )
   
   #For each ensemble
@@ -156,13 +156,13 @@ met2cf.ERA5 <- function(lat,
     results$dbfile.name <- flname
     
     
-    if (!file.exists(flname) | overwrite) {
+    if (!file.exists(flname) || overwrite) {
       
       tryCatch({
           nc_flptr <- ncdf4::nc_create(flname, nc_var_list, verbose = verbose)
           
           #For each variable associated with that ensemble
-          for (j in 1:length(cf_var_names)) {
+          for (j in seq_along(cf_var_names)) {
             # "j" is the variable number.  "i" is the ensemble number. 
             ncdf4::ncvar_put(nc_flptr, nc_var_list[[j]], coredata(out.new[[i]])[, nc_var_list[[j]]$name])
           }
