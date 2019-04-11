@@ -4,8 +4,7 @@
 \alias{ERA5_extract}
 \title{ERA5_extract}
 \usage{
-ERA5_extract(lat = 40, long = -120, years = c(2006), vars = NULL,
-  data.folder)
+ERA5_extract(lat, long, years, vars = NULL, data.folder)
 }
 \arguments{
 \item{lat}{latitude}
@@ -31,7 +30,7 @@ For the list of variables check out the documentation at \link{https://confluenc
 \dontrun{
 point.data <- ERA5_extract(lat=40, long=-120, years=c(1990:1995), vars=NULL, data.folder=".")
 
- map(~xts::apply.daily(.x, mean))
+ purrr::map(~xts::apply.daily(.x, mean))
 
 }
 }

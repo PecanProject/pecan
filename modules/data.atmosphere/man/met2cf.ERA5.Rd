@@ -4,8 +4,8 @@
 \alias{met2cf.ERA5}
 \title{met2cf.ERA5}
 \usage{
-met2cf.ERA5(lat = 40, long = -120, years = c(2015:2017),
-  overwrite = FALSE, verbose = T, sitename, data.folder, outfolder)
+met2cf.ERA5(lat, long, years, sitename, data.folder, outfolder,
+  overwrite = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{lat}{latitude}
@@ -14,15 +14,15 @@ met2cf.ERA5(lat = 40, long = -120, years = c(2015:2017),
 
 \item{years}{years to be extracted}
 
-\item{overwrite}{Logical flag definign if the files need to be overwriten in case they were downloaded before.}
-
-\item{verbose}{Logical flag defining if ouput of function be extra verbose.}
-
 \item{sitename}{The name of the site used for making the identifier.}
 
 \item{data.folder}{Path to the directory where ERA5 nc files are located.}
 
 \item{outfolder}{Path to directory where nc files need to be saved.}
+
+\item{overwrite}{Logical flag definign if the files need to be overwriten in case they were downloaded before.}
+
+\item{verbose}{Logical flag defining if ouput of function be extra verbose.}
 }
 \description{
 met2cf.ERA5

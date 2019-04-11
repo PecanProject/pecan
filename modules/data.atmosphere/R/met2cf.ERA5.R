@@ -19,15 +19,15 @@
 #'                   outfolder = "./metfiles")
 #'
 #' }
-met2cf.ERA5 <- function(lat = 40,
-                        long = -120,
-                        years = c(2015:2017),
-                        overwrite = FALSE,
-                        verbose = T,
+met2cf.ERA5 <- function(lat,
+                        long,
+                        years,
                         sitename,
                         data.folder,
-                        outfolder) {
-  
+                        outfolder,
+                        overwrite = FALSE,
+                        verbose = TRUE) {
+  ensemblesN <- seq(1, 10)
   # Extracting the raw data - The output would be a list of xts objects for each ensemble
   out <- ERA5_extract_ENS(lat = lat,
                           long = long,
@@ -41,26 +41,38 @@ met2cf.ERA5 <- function(lat = 40,
   out.new <- names(out) %>%
     purrr::map(function(ensi) {
  
-      ens <- out[[ensi]]
-      # Solar radation conversions 
-      #https://confluence.ecmwf.int/pages/viewpage.action?pageId=104241513
-      #For ERA5 daily ensemble data, the accumulation period is 3 hours. Hence to convert to W/m2:
-      ens[, "ssrd"] <- ens[, "ssrd"]/ (3 * 3600)
-      ens[, "strd"] <- ens[, "strd"]/ (3 * 3600)
-      #precipitation it's originaly in meters. Meters times the density will give us the kg/m2
-      ens[, "tp"] <- ens[, "tp"]*1000/3 # divided by 3 because we have 3 hours data
-      ens[, "tp"] <- udunits2::ud.convert(ens[, "tp"], "kg m-2 hr-1", "kg m-2 6 s-1")  #There are 21600 seconds in 6 hours
-      #RH
-      #Adopted from weathermetrics/R/moisture_conversions.R
-      t <- udunits2::ud.convert(ens[, "t2m"] %>% as.numeric(), "K", "degC")
-      dp <- udunits2::ud.convert(ens[, "d2m"] %>% as.numeric(), "K", "degC")
-      beta <- (112 - (0.1 * t) + dp) / (112 + (0.9 * t))
-      relative.humidity <- 100 * beta ^ 8
-      #specific humidity
-      specific_humidity <- PEcAn.data.atmosphere::rh2qair(relative.humidity,
-                                                          ens[, "t2m"] %>% as.numeric(),
-                                                          ens[, "sp"] %>% as.numeric()
-                                                          ) # Pressure in Pa
+      
+      tryCatch({
+        ens <- out[[ensi]]
+        # Solar radation conversions
+        #https://confluence.ecmwf.int/pages/viewpage.action?pageId=104241513
+        #For ERA5 daily ensemble data, the accumulation period is 3 hours. Hence to convert to W/m2:
+        ens[, "ssrd"] <- ens[, "ssrd"] / (3 * 3600)
+        ens[, "strd"] <- ens[, "strd"] / (3 * 3600)
+        #precipitation it's originaly in meters. Meters times the density will give us the kg/m2
+        ens[, "tp"] <-
+          ens[, "tp"] * 1000 / 3 # divided by 3 because we have 3 hours data
+        ens[, "tp"] <-
+          udunits2::ud.convert(ens[, "tp"], "kg m-2 hr-1", "kg m-2 6 s-1")  #There are 21600 seconds in 6 hours
+        #RH
+        #Adopted from weathermetrics/R/moisture_conversions.R
+        t <-
+          udunits2::ud.convert(ens[, "t2m"] %>% as.numeric(), "K", "degC")
+        dewpoint  <-
+          udunits2::ud.convert(ens[, "d2m"] %>% as.numeric(), "K", "degC")
+        beta <- (112 - (0.1 * t) + dewpoint) / (112 + (0.9 * t))
+        relative.humidity <- 100 * beta ^ 8
+        #specific humidity
+        specific_humidity <-
+          PEcAn.data.atmosphere::rh2qair(relative.humidity,
+                                         ens[, "t2m"] %>% as.numeric(),
+                                         ens[, "sp"] %>% as.numeric()) # Pressure in Pa
+      },
+      error = function(e) {
+        PEcAn.logger::logger.severe("Something went wrong during the unit conversion.",
+                                    conditionMessage(e))
+      })
+
 
       #adding humidity
       xts::merge.xts(ens[,-c(3)], (specific_humidity)) %>%
@@ -91,8 +103,8 @@ met2cf.ERA5 <- function(lat = 40,
     host = PEcAn.remote::fqdn(), 
     mimetype = "application/x-netcdf", 
     formatname = "CF Meteorology", 
-    startdate = paste0(format(start_date, "%Y-%m-%dT%H:%M:00")), 
-    enddate = paste0(format(end_date, "%Y-%m-%dT%H:%M:00")), 
+    startdate = paste0(format(start_date, "%Y-%m-%dT%H:%M:00 %z")), 
+    enddate = paste0(format(end_date, "%Y-%m-%dT%H:%M:00 %z")), 
     dbfile.name = "ERA5", 
     stringsAsFactors = FALSE
   )
@@ -108,18 +120,25 @@ met2cf.ERA5 <- function(lat = 40,
   lon_dim = ncdf4::ncdim_def("longitude", "degree_east", long, create_dimvar = TRUE)
   
   #create a list of all ens
-  nc_var_list <- map2(cf_var_names,
+  nc_var_list <- purrr::map2(cf_var_names,
                       cf_var_units,
                       ~ ncdf4::ncvar_def(.x, .y, list(time_dim, lat_dim, lon_dim), missval =NaN)
                       )
   
   #For each ensemble
-  results_list <- map(1:10,
+  results_list <- purrr::map(ensemblesN,
                       function(i) {
     # i is the ensemble number
     #Generating a unique identifier string that characterizes a particular data set.
-    identifier <- paste( "ERA5", sitename, i, format(start_date, "%Y-%m-%dT%H:%M"),
-                        format(end_date, "%Y-%m-%dT%H:%M"), sep = ".")
+    identifier <-
+      paste(
+        "ERA5",
+        sitename,
+        i,
+        format(start_date, "%Y-%m-%dT%H:%M"),
+        format(end_date, "%Y-%m-%dT%H:%M"),
+        sep = "."
+      )
     
     ensemble_folder <- file.path(outfolder, identifier)
     
