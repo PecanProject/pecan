@@ -337,6 +337,9 @@ SDA_remote_launcher <-function(settingPath,
      stderr = FALSE
    )
    
+   
+   cmd.qsub <- paste0(settings$host$qsub, " ",
+                      paste0(settings$host$folder, "/", folder_name, "/RunBash.sh"))
    #calling qusb SDA
    # out<-remote.execute.R(paste0("system(\" ",cmd, "\")"),
    #                       my_host,
