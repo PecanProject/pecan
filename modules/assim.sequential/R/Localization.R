@@ -13,7 +13,8 @@
 Local.support <-function(Pf, distance.mat, scalef=1){
   #making a matrix as the size of the Pf
   rho <- exp((-1*distance.mat^2)/(2*scalef^2))
-  
+  # zeroing out values that are really small
+  rho <- round(rho, 3)
   return(Pf*rho)
 }
 

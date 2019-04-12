@@ -56,6 +56,7 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   
   if (length(Y) > 1) {
     PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
+    diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
     diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
   }
   
@@ -238,17 +239,28 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
   #--- This is where the localization needs to happen - After imputing Pf
-  if (exists('blocked.dis'))
+  elements.W.Data <-  which(apply(H, 2, sum) == 1)
+  if (exists('blocked.dis')){
+    #localizing the q 
+    if(t>1)
+      aqq[, , t] <- Local.support(
+        aqq[, , t],
+        block_matrix(distances %>% as.numeric(), H[H != 0]),
+        settings$state.data.assimilation$scalef %>% as.numeric()
+      )
+    
+    
         Pf <-
       Local.support(Pf,
                     blocked.dis,
                     settings$state.data.assimilation$scalef %>% as.numeric())
+  }
   ###-------------------------------------------------------------------###
   # Generalized Ensemble Filter                                       ###-----
   ###-------------------------------------------------------------------###
 
   #### initial conditions
-  elements.W.Data <-  which( apply(H, 2, sum) == 1)
+
   bqq[1]     <- length(elements.W.Data)
   if(is.null(aqq)){
     aqq      <- array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
