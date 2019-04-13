@@ -11,7 +11,7 @@ db_merge_into(values, table, con, by = NULL, drop = FALSE, ...)
 
 \item{table}{Name of target SQL table, as character}
 
-\item{con}{database connection object}
+\item{con}{Database connection object}
 
 \item{by}{Character vector of columns by which to perform merge. Defaults to all columns in `values`}
 
@@ -24,7 +24,7 @@ db_merge_into(values, table, con, by = NULL, drop = FALSE, ...)
   \item{coerce_col_class}{logical, whether or not to coerce local data columns 
 to SQL classes. Default = `TRUE.`}
   \item{drop}{logical. If `TRUE` (default), drop columns not found in SQL table.}
-  \item{con}{database connection object}
+  \item{con}{Database connection object}
 }}
 }
 \value{
