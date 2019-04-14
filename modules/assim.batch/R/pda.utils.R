@@ -1023,3 +1023,132 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   
 }
 
+# This is a helper function partly uses pda.emulator code
+# It returns couple of objects that are to be passed externally to the pda.emulator for multi-site runs
+# These objects either require DB connection or should be common across sites
+# This function does require DB connection
+##' @export
+return_multi_site_objects <- function(multi.settings){
+  
+  settings <- multi.settings[[1]] # first one is as good as any
+  
+  ## check if scaling factors are gonna be used
+  any.scaling <- sapply(settings$assim.batch$param.names, `[[`, "scaling")
+  sf <- unique(unlist(any.scaling))
+  
+  bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
+                              host = settings$database$bety$host, 
+                              user = settings$database$bety$user, 
+                              password = settings$database$bety$password)
+  
+  # get prior.list
+  temp        <- pda.load.priors(settings, bety$con, TRUE)
+  prior_list  <- temp$prior
+  
+  # extract other indices to fenerate knots
+  pname       <- lapply(prior_list, rownames)
+  n.param.all <- sapply(prior_list, nrow)
+  
+  ## Select parameters to constrain
+  all_pft_names <- sapply(settings$pfts, `[[`, "name")
+  prior.ind <- prior.ind.orig <- vector("list", length(settings$pfts)) 
+  names(prior.ind) <- names(prior.ind.orig) <- all_pft_names
+  for(i in seq_along(settings$pfts)){
+    pft.name <- settings$pfts[[i]]$name
+    if(pft.name %in% names(settings$assim.batch$param.names)){
+      prior.ind[[i]]      <- which(pname[[i]] %in% settings$assim.batch$param.names[[pft.name]])
+      prior.ind.orig[[i]] <- which(pname[[i]] %in% settings$assim.batch$param.names[[pft.name]] |
+                                     pname[[i]] %in% any.scaling[[pft.name]])
+    }
+  }
+  
+  n.param <- sapply(prior.ind, length)
+  n.param.orig <- sapply(prior.ind.orig, length)
+  
+  ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
+  prior.fn <- lapply(prior_list, pda.define.prior.fn)
+  
+  # get format.list
+  input_ids   <- sapply(settings$assim.batch$inputs, `[[`, "input.id")
+  format_list <- lapply(input_ids, PEcAn.DB::query.format.vars, bety = bety)
+
+  # get knots
+  # if this is the initial round we will draw from priors
+  if(TRUE){
+    
+    ## Propose parameter knots (X) for emulator design
+    knots.list <- lapply(seq_along(settings$pfts), 
+                         function(x) pda.generate.knots(as.numeric(settings$assim.batch$n.knot), NULL, NULL,
+                                                        n.param.all[x], 
+                                                        prior.ind.orig[[x]], 
+                                                        prior.fn[[x]], 
+                                                        pname[[x]]))
+    names(knots.list) <- sapply(settings$pfts,"[[",'name')
+    external_knots <- lapply(knots.list, `[[`, "params")
+    
+  }else{
+    # if not, we have to bring all the MCMC samples from all sites and draw from them.
+  }
+  
+  ensembleid_list <- sapply(multi.settings, function(x) pda.create.ensemble(x, bety$con, x$workflow$id))
+  
+  return(list(priorlist = prior_list,
+              formatlist = format_list,
+              externalknots = external_knots,
+              ensembleidlist = ensembleid_list))
+}
+
+
+# helper function for submitting remote pda runs
+##' @export
+prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
+  
+  multi_site_objects$settings <- settings
+  
+  #save
+  local_object_file  <- paste0(settings$outdir, "/multi_site_objects_s",site,".Rdata")
+  remote_object_file <- paste0(settings$host$folder, "/" , settings$workflow$id, "/multi_site_objects_s",site,".Rdata")
+  save(multi_site_objects, file = local_object_file)
+  
+  ######## prepare the sub.sh
+  # this will need generalization over other machines, can parse some of these from settings$host$qsub
+  local_sub_file <- paste0(settings$outdir, "/sub" , site, ".sh")
+  cat("#!/bin/sh\n", file = local_sub_file)
+  remote_dir <- paste0(settings$host$folder, "/" , settings$workflow$id)
+  cat(paste0("#$ -wd ", remote_dir, "\n"), file = local_sub_file, append = TRUE)
+  cat("#$ -j y\n", file = local_sub_file, append = TRUE)
+  cat("#$ -S /bin/bash\n", file = local_sub_file, append = TRUE)
+  cat("#$ -V\n", file = local_sub_file, append = TRUE)
+  # parse 'geo*' from settings$host$qsub
+  # gsub( " .*$", "", sub(".*-q ", "", settings$host$qsub))
+  cat("#$ -q 'geo*'\n", file = local_sub_file, append = TRUE) 
+  cat(paste0("#$ -N emulator_s", site,"\n"), file = local_sub_file, append = TRUE)
+  #cat("#$ -pe omp 3\n", file = local_sub_file, append = TRUE)
+  cat(paste0("#cd ", remote_dir, "\n"), file = local_sub_file, append = TRUE)
+  cat(paste0("#", settings$host$prerun, "\n"), file = local_sub_file, append = TRUE)
+  cat(paste0("Rscript remote_emulator_s",site,".R\n"), file = local_sub_file, append = TRUE)
+  cat(paste0("rm remote_emulator_s",site,".R\n"), file = local_sub_file, append = TRUE)
+  remote_sub_file <- paste0(settings$host$folder, "/", settings$workflow$id, "/sub" , site, ".sh")
+  
+  ######## create R script
+  pdaemulator <- readLines('~/pecan/modules/assim.batch/R/pda.emulator.R',-1)
+  local_script_file <- paste0(settings$outdir, "/remote_emulator_s",site,".R")
+  first_lines <- c("rm(list=ls(all=TRUE))\n", "library(PEcAn.all)\n", paste0("load(\"",remote_object_file,"\")\n"),
+    "settings <- multi_site_objects$settings\n", "external_priors <- multi_site_objects$priorlist\n", 
+    "external_knots  <- multi_site_objects$externalknots\n", "external_formats <- multi_site_objects$formatlist\n",
+    paste0("ensemble_id   <- multi_site_objects$ensembleidlist[", site, "]\n"))
+  last_lines <- c("pda.emulator(settings, external.priors = external_priors, 
+                         external.knots = external_knots, external.formats = external_formats,
+                         ensemble.id = ensemble_id, remote = TRUE)")
+  writeLines(c(first_lines, pdaemulator, last_lines), local_script_file)
+  remote_script_file <- paste0(settings$host$folder, "/", settings$workflow$id, "/remote_emulator_s", site,".R")
+  
+  ######## copy to remote
+  remote.execute.cmd(settings$host, paste0("mkdir -p ", settings$host$folder, "/", settings$workflow$id))
+  remote.copy.to(settings$host, local_sub_file, remote_sub_file)
+  remote.copy.to(settings$host, local_script_file, remote_script_file)
+  remote.copy.to(settings$host, local_object_file, remote_object_file)
+  
+  return(remote_sub_file)
+  
+}
