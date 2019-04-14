@@ -8,7 +8,7 @@
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.get.model.output <- function(settings, run.id, bety, inputs) {
+pda.get.model.output <- function(settings, run.id, bety, inputs, external.formats = NULL) {
   
   input.info <- settings$assim.batch$inputs
   
@@ -30,10 +30,13 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     # if no derivation is requested expr will be the same as variable name
     expr <- lapply(variable.name, `[[`, "expression")
     
-    format <- PEcAn.DB::query.format.vars(bety = bety,
-                                input.id = settings$assim.batch$inputs[[k]]$input.id)
+    if(is.null(bety$con)){
+      format <- external.formats[[k]]
+    }else{
+      format <- PEcAn.DB::query.format.vars(bety = bety,
+                                            input.id = settings$assim.batch$inputs[[k]]$input.id)
+    }
 
-    
     for(l in seq_along(model.var)){
       
       if(length(model.var[[l]][model.var[[l]] %in% format$vars$bety_name]) != 0){

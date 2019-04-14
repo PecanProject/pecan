@@ -12,18 +12,21 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.emulator <- function(settings, external.data = NULL, external.priors = NULL, external.knots = NULL,
-                         params.id = NULL, param.names = NULL, prior.id = NULL, 
+pda.emulator <- function(settings, external.data = NULL, external.priors = NULL, 
+                         external.knots = NULL, external.formats = NULL,
+                         ensemble.id = NULL, params.id = NULL, param.names = NULL, prior.id = NULL, 
                          chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
-                         ar.target = NULL, jvar = NULL, n.knot = NULL, individual = TRUE) {
+                         ar.target = NULL, jvar = NULL, n.knot = NULL, 
+                         individual = TRUE, remote = FALSE) {
   
   ## this bit of code is useful for defining the variables passed to this function if you are
   ## debugging
   if (FALSE) {
-    external.data <- external.priors <- NULL
-    params.id <- param.names <- prior.id <- chain <- iter <- NULL
+    external.data <- external.priors <- external.knots <- external.formats <- NULL
+    ensemble.id <- params.id <- param.names <- prior.id <- chain <- iter <- NULL
     n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
     individual <- TRUE
+    remote <- FALSE
   }
   
   # handle extention flags
@@ -76,7 +79,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   pass2bias <- NULL
   
   ## Open database connection
-  if (settings$database$bety$write) {
+  if (as.logical(settings$database$bety$write) & !remote) {
     con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
     if (inherits(con, "try-error")) {
       con <- NULL
@@ -87,10 +90,16 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     con <- NULL
   }
   
-  bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
-                       host = settings$database$bety$host, 
-                       user = settings$database$bety$user, 
-                       password = settings$database$bety$password)
+  if(!remote){
+    bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
+                                host = settings$database$bety$host, 
+                                user = settings$database$bety$user, 
+                                password = settings$database$bety$password)
+  }else{
+    bety     <- list()
+    bety$con <- NULL
+  }
+
   
   ## Load priors
   if(is.null(external.priors)){
@@ -105,7 +114,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   
   if(is.null(external.data)){
-    inputs <- load.pda.data(settings, bety)
+    inputs <- load.pda.data(settings, bety, external.formats)
   }else{
     inputs <- external.data
   }
@@ -146,7 +155,12 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   }
   
   ## Create an ensemble id
-  settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  if(is.null(ensemble.id)){
+    settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  }else{
+    settings$assim.batch$ensemble.id <- ensemble.id
+  }
+
   
   ## history restart
   pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
@@ -254,7 +268,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
     
     ## start model runs
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    PEcAn.remote::start.model.runs(settings, (as.logical(settings$database$bety$write) & !remote))
     
     ## Retrieve model outputs and error statistics
     model.out <- list()
@@ -263,7 +277,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     ## read model outputs    
     for (i in seq_len(settings$assim.batch$n.knot)) {
-      align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
+      align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs, external.formats)
       model.out[[i]] <- align.return$model.out
       if(all(!is.na(model.out[[i]]))){
         inputs <- align.return$inputs
@@ -711,6 +725,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }
   }
   
+  settings$assim.batch$round_counter <- which_round
+    
   settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig)
   
   ## close database connection
@@ -721,6 +737,13 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   ## Output an updated settings list
   current.step <- "pda.finish"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
-  return(settings)
+  
+  if(!remote){
+    return(settings)
+  }else{
+    #sync back
+    return(settings)
+  }
+  
   
 }  ## end pda.emulator
