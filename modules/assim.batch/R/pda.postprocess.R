@@ -117,7 +117,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
   XML::saveXML(
     PEcAn.settings::listToXml(settings, "pecan"),
     file = file.path(
-      settings$outdir,
+      dirname(settings$modeloutdir),
       paste0("pecan.pda", settings$assim.batch$ensemble.id, ".xml")))
 
   return(settings)

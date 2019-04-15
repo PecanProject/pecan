@@ -1103,20 +1103,16 @@ return_multi_site_objects <- function(multi.settings){
 ##' @export
 prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   
-  settings$rundir      <- settings$host$rundir
-  settings$modeloutdir <- settings$host$outdir
-  multi_site_objects$settings <- settings
+  remote_dir <- paste0(settings$host$folder, "/" , settings$workflow$id)
   
   #save
   local_object_file  <- paste0(settings$outdir, "/multi_site_objects_s",site,".Rdata")
-  remote_object_file <- paste0(settings$host$folder, "/" , settings$workflow$id, "/multi_site_objects_s",site,".Rdata")
-  save(multi_site_objects, file = local_object_file)
+  remote_object_file <- paste0(remote_dir, "/multi_site_objects_s",site,".Rdata")
   
   ######## prepare the sub.sh
   # this will need generalization over other machines, can parse some of these from settings$host$qsub
   local_sub_file <- paste0(settings$outdir, "/sub" , site, ".sh")
   cat("#!/bin/sh\n", file = local_sub_file)
-  remote_dir <- paste0(settings$host$folder, "/" , settings$workflow$id)
   cat(paste0("#$ -wd ", remote_dir, "\n"), file = local_sub_file, append = TRUE)
   cat("#$ -j y\n", file = local_sub_file, append = TRUE)
   cat("#$ -S /bin/bash\n", file = local_sub_file, append = TRUE)
@@ -1145,11 +1141,29 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   writeLines(c(first_lines, pdaemulator, last_lines), local_script_file)
   remote_script_file <- paste0(settings$host$folder, "/", settings$workflow$id, "/remote_emulator_s", site,".R")
   
+
+  #cheating. needs to be done after extracting all paths
+  host_info <- settings$host
+  
+  remote.execute.cmd(host_info, paste0("mkdir -p ", remote_dir,"/pft"))
+  for(i in seq_along(settings$pfts)){
+    settings$pfts[[i]]$outdir <- file.path(remote_dir, "pft", basename(settings$pfts[[i]]$outdir))
+    remote.execute.cmd(host_info, paste0("mkdir -p ", settings$pfts[[i]]$outdir))
+  }
+  
+  settings$host$name   <- "localhost"
+  settings$rundir      <- settings$host$rundir
+  settings$modeloutdir <- settings$host$outdir
+  
+  multi_site_objects$settings <- settings
+  save(multi_site_objects, file = local_object_file)
+  
   ######## copy to remote
-  remote.execute.cmd(settings$host, paste0("mkdir -p ", settings$host$folder, "/", settings$workflow$id))
-  remote.copy.to(settings$host, local_sub_file, remote_sub_file)
-  remote.copy.to(settings$host, local_script_file, remote_script_file)
-  remote.copy.to(settings$host, local_object_file, remote_object_file)
+  remote.execute.cmd(host_info, paste0("mkdir -p ", settings$host$folder, "/", settings$workflow$id))
+  remote.copy.to(host_info, local_sub_file, remote_sub_file)
+  remote.copy.to(host_info, local_script_file, remote_script_file)
+  remote.copy.to(host_info, local_object_file, remote_object_file)
+
   
   return(remote_sub_file)
   

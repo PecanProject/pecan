@@ -164,10 +164,14 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   ## history restart
   if(!remote){
-    pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
+    settings_outdir <- settings$outdir
+    
+    pda.restart.file <- file.path(settings_outdir, paste0("history.pda",
                                                          settings$assim.batch$ensemble.id, ".Rdata"))
+    
   }else{
-    pda.restart.file <- paste0(settings$host$folder, "/", settings$workflow$id, "/history.pda",
+    settings_outdir <-  paste0(settings$host$folder, "/", settings$workflow$id, "/")
+    pda.restart.file <- paste0(settings_outdir, "history.pda",
                                                          settings$assim.batch$ensemble.id, ".Rdata")
   }
 
@@ -545,9 +549,12 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
   
-  PEcAn.logger::logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+
+  logfile_path <- file.path(settings_outdir, "pda.log")
   
-  cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
+  PEcAn.logger::logger.setOutputFile(logfile_path)
+  
+  cl <- parallel::makeCluster(ncores, type="FORK", outfile = logfile_path)
   
   ## Sample posterior from emulator
   mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
@@ -651,25 +658,25 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Save emulator, outputs files
-  settings$assim.batch$emulator.path <- file.path(settings$outdir,
+  settings$assim.batch$emulator.path <- file.path(settings_outdir,
                                                   paste0("emulator.pda", 
                                                          settings$assim.batch$ensemble.id, 
                                                          ".Rdata"))
   save(gp, file = settings$assim.batch$emulator.path)
   
-  settings$assim.batch$ss.path <- file.path(settings$outdir, 
+  settings$assim.batch$ss.path <- file.path(settings_outdir, 
                                             paste0("ss.pda", 
                                                    settings$assim.batch$ensemble.id, 
                                                    ".Rdata"))
   save(SS, file = settings$assim.batch$ss.path)
   
-  settings$assim.batch$mcmc.path <- file.path(settings$outdir, 
+  settings$assim.batch$mcmc.path <- file.path(settings_outdir, 
                                               paste0("mcmc.list.pda", 
                                                      settings$assim.batch$ensemble.id, 
                                                      ".Rdata"))
   save(mcmc.samp.list, file = settings$assim.batch$mcmc.path)
   
-  settings$assim.batch$resume.path <- file.path(settings$outdir, 
+  settings$assim.batch$resume.path <- file.path(settings_outdir, 
                                                 paste0("resume.pda", 
                                                        settings$assim.batch$ensemble.id, 
                                                        ".Rdata"))
@@ -678,14 +685,14 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   # save inputs list, this object has been processed for autocorrelation correction 
   # this can take a long time depending on the data, re-load and skip in next iteration
   external.data <- inputs
-  save(external.data, file = file.path(settings$outdir,
+  save(external.data, file = file.path(settings_outdir,
                                        paste0("external.", 
                                               settings$assim.batch$ensemble.id, 
                                               ".Rdata")))
   
   # save prior.list with bias term
   if(any(unlist(any.mgauss) == "multipGauss")){
-    settings$assim.batch$bias.path <- file.path(settings$outdir, 
+    settings$assim.batch$bias.path <- file.path(settings_outdir, 
                                                 paste0("bias.pda", 
                                                        settings$assim.batch$ensemble.id, 
                                                        ".Rdata"))
@@ -694,9 +701,9 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   # save sf posterior
   if(!is.null(sf)){
-    sf.post.filename <- file.path(settings$outdir, 
+    sf.post.filename <- file.path(settings_outdir, 
                              paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
-    sf.samp.filename <- file.path(settings$outdir, 
+    sf.samp.filename <- file.path(settings_outdir, 
                              paste0("samples.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
     sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.samp.filename)
@@ -731,7 +738,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }
   }
   
-  settings$assim.batch$round_counter <- which_round
+  # will I need a counter?
+  #settings$assim.batch$round_counter <- which_round
     
   settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig)
   
