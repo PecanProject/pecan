@@ -1103,6 +1103,8 @@ return_multi_site_objects <- function(multi.settings){
 ##' @export
 prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   
+  settings$rundir      <- settings$host$rundir
+  settings$modeloutdir <- settings$host$outdir
   multi_site_objects$settings <- settings
   
   #save

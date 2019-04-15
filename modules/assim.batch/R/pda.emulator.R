@@ -163,8 +163,14 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
 
   
   ## history restart
-  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
-                                                       settings$assim.batch$ensemble.id, ".Rdata"))
+  if(!remote){
+    pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
+                                                         settings$assim.batch$ensemble.id, ".Rdata"))
+  }else{
+    pda.restart.file <- paste0(settings$host$folder, "/", settings$workflow$id, "/history.pda",
+                                                         settings$assim.batch$ensemble.id, ".Rdata")
+  }
+
   current.step <- "START" 
   
   ## Set up likelihood functions
