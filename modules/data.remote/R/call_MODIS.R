@@ -124,21 +124,21 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     cat(paste("Product =", product, "\n", "Band =", band, "\n", "Date Range =", start, "-", end, "\n", "Latitude =", lat, "\n", "Longitude =", lon, sep = " "))
     
     # extract main band data from api
-    dat <- PEcAn.utils::retry.func(MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band,
-                                 start=start_date, end=end_date, km_ab=size, km_lr=size, progress = F), maxErrors = 10, sleep = 2)
+    dat <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band,
+                                 start=start_date, end=end_date, km_ab=size, km_lr=size, progress = F)
     
     # extract QC data
     if(band_qc != "")
     {
-      qc <- PEcAn.utils::retry.function(MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_qc,
-                                  start=start, end=end, km_ab=size, km_lr=size, progress =F), maxErrors  = 10, sleep = 2)
+      qc <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_qc,
+                                  start=start, end=end, km_ab=size, km_lr=size, progress =F)
     }
     
     # extract stdev data
     if(band_sd != "")
     {
-      sd <- PEcAn.utils::retry.function(MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_sd,
-                                  start=start, end=end, km_ab=size, km_lr=size, progress = F), maxErrors = 10, sleep = 2)
+      sd <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_sd,
+                                  start=start, end=end, km_ab=size, km_lr=size, progress = F)
     }
     
     if (band_qc == "")
@@ -185,13 +185,13 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     
     if (!(outfolder == "") & !(is.null(siteID)))
     {
-      fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, "_", iter, ".csv", sep = "")
+      fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, "_", spatial.tools::add_leading_zeroes(iter, 4), ".csv", sep = "")
       fname <- paste0(outfolder, "/", fname)
       write.csv(output, fname, row.names = F)
     }
     if (!(outfolder == "") & is.null(siteID))
     {
-      fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, "_", iter, ".csv", sep = "")
+      fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, "_", spatial.tools::add_leading_zeroes(iter, 2), ".csv", sep = "")
       fname <- paste0(outfolder, "/", fname)
       write.csv(output, fname, row.names = F)
     }
