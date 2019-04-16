@@ -4,8 +4,8 @@
 \alias{call_MODIS}
 \title{call_MODIS}
 \usage{
-call_MODIS(outfolder = NULL, start_date, end_date, lat, lon, size = 0,
-  product, band, band_qc = "", band_sd = "", siteID = NULL,
+call_MODIS(outfolder = "", start_date, end_date, lat, lon, size = 0,
+  product, band, band_qc = "", band_sd = "", siteID = "",
   package_method = "MODISTools", QC_filter = F)
 }
 \arguments{

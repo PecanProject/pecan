@@ -22,18 +22,18 @@
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools")
+##' test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, iter = 1, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools", QC_filter = T)
 ##' plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
 ##' test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
 ##' }
 ##' 
 ##' @author Bailey Morrison
 ##'  
-call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, product, band, band_qc = "", band_sd = "", siteID = "", package_method = "MODISTools", QC_filter = F) {
+call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, iter = i, product, band, band_qc = "", band_sd = "", siteID = "", package_method = "MODISTools", QC_filter = F) {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size <- 0
-  
+  require(PEcAn.all)
   
   # reformat start and end date if they are in YYYY/MM/DD format instead of YYYYJJJ
   if (grepl("/", start_date) == T)
@@ -124,21 +124,21 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     cat(paste("Product =", product, "\n", "Band =", band, "\n", "Date Range =", start, "-", end, "\n", "Latitude =", lat, "\n", "Longitude =", lon, sep = " "))
     
     # extract main band data from api
-    dat <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band,
-                                 start=start_date, end=end_date, km_ab=size, km_lr=size)
+    dat <- PEcAn.utils::retry.func(MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band,
+                                 start=start_date, end=end_date, km_ab=size, km_lr=size, progress = F), maxErrors = 10, sleep = 2)
     
     # extract QC data
     if(band_qc != "")
     {
-      qc <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_qc,
-                                  start=start, end=end, km_ab=size, km_lr=size)
+      qc <- PEcAn.utils::retry.function(MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_qc,
+                                  start=start, end=end, km_ab=size, km_lr=size, progress =F), maxErrors  = 10, sleep = 2)
     }
     
     # extract stdev data
     if(band_sd != "")
     {
-      sd <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_sd,
-                                  start=start, end=end, km_ab=size, km_lr=size)
+      sd <- PEcAn.utils::retry.function(MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_sd,
+                                  start=start, end=end, km_ab=size, km_lr=size, progress = F), maxErrors = 10, sleep = 2)
     }
     
     if (band_qc == "")
@@ -183,9 +183,15 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       }
     }
     
-    if (!(outfolder == ""))
+    if (!(outfolder == "") & !(is.null(siteID)))
     {
-      fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, ".csv", sep = "")
+      fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, "_", iter, ".csv", sep = "")
+      fname <- paste0(outfolder, "/", fname)
+      write.csv(output, fname, row.names = F)
+    }
+    if (!(outfolder == "") & is.null(siteID))
+    {
+      fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, "_", iter, ".csv", sep = "")
       fname <- paste0(outfolder, "/", fname)
       write.csv(output, fname, row.names = F)
     }
