@@ -15,6 +15,3 @@ This function writes down a csv file with three columns: 1- message sepecified i
 \description{
 This function finds all the tic functions called before and estimates the time elapsed for each one saves/appends it to a csv file.
 }
-\examples{
-
-}

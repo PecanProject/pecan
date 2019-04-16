@@ -405,26 +405,30 @@ sda.enkf.multisite <- function(settings,
       
       if(processvar == FALSE){an.method<-EnKF.MultiSite  }else{    an.method<-GEF.MultiSite   }  
       
-      #-analysis function
-      enkf.params[[t]] <- Analysis.sda(settings,
-                                       FUN=an.method,
-                                       Forecast=list(Q=Q, X=X),
-                                       Observed=list(R=R, Y=Y),
-                                       H=H,
-                                       extraArg=list(aqq=aqq,
-                                                     bqq=bqq,
-                                                     t=t,
-                                                     nitr.GEF=nitr.GEF,
-                                                     nthin=nthin,
-                                                     nburnin=nburnin,
-                                                     censored.data=censored.data),
-                                       choose=choose,
-                                       nt=nt,
-                                       obs.mean=obs.mean,
-                                       obs.cov=obs.cov,
-                                       site.ids=site.ids,
-                                       blocked.dis=blocked.dis
-      )
+                    #-analysis function
+                    enkf.params[[t]] <- Analysis.sda(
+                                                    settings,
+                                                    FUN = an.method,
+                                                    Forecast = list(Q = Q, X = X),
+                                                    Observed = list(R = R, Y = Y),
+                                                    H = H,
+                                                    extraArg = list(
+                                                      aqq = aqq,
+                                                      bqq = bqq,
+                                                      t = t,
+                                                      nitr.GEF = nitr.GEF,
+                                                      nthin = nthin,
+                                                      nburnin = nburnin,
+                                                      censored.data = censored.data
+                                                    ),
+                                                    choose = choose,
+                                                    nt = nt,
+                                                    obs.mean = obs.mean,
+                                                    obs.cov = obs.cov,
+                                                    site.ids = site.ids,
+                                                    blocked.dis = blocked.dis,
+                                                    distances = distances
+                                                  )
       tic(paste0("Preparing for Adjustment for cycle = ", t))
       #Forecast
       mu.f <- enkf.params[[t]]$mu.f
