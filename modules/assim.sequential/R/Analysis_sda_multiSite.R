@@ -242,12 +242,16 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   elements.W.Data <-  which(apply(H, 2, sum) == 1)
   if (exists('blocked.dis')){
     #localizing the q 
-    if(t>1)
+    if(t>1){
+
       aqq[, , t] <- Local.support(
         aqq[, , t],
-        block_matrix(distances %>% as.numeric(), H[H != 0]),
+        distances[ceiling(elements.W.Data/length(var.names)), # finding sites with data
+                  ceiling(elements.W.Data/length(var.names))],
         settings$state.data.assimilation$scalef %>% as.numeric()
       )
+    }
+
     
     
         Pf <-
@@ -426,7 +430,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       WV[i, j] <- wish.df(q.bar, X = mq, i = i, j = j, col = col[i, j])
     }
   }
-  
+
   n <- mean(WV)
   if (n < length(mu.f)) {
     n <- length(mu.f)

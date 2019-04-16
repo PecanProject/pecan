@@ -272,25 +272,26 @@ SDA_remote_launcher <-function(settingPath,
   # Cleaning up the settings and getting it ready
   #---------------------------------------------------------------
   #Create the scratch dir
+  remote_settings <- settings
   out <-remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"//scratch","\")"),
                          host = my_host,
                          user = my_host$user,
                          scratchdir = ".")
   
-  settings$outdir <- paste0(settings$host$folder,"/", folder_name)
+  remote_settings$outdir <- paste0(settings$host$folder,"/", folder_name)
   
-  settings$host$name <- "localhost"
+  remote_settings$host$name <- "localhost"
   #setting the new run and out dirs
-  settings$host$rundir <- paste0(settings$host$folder,"/", folder_name,"/run")
-  settings$host$outdir <- paste0(settings$host$folder,"/", folder_name,"/out")
-  settings$rundir <- paste0(settings$host$folder,"/", folder_name,"/run")
-  settings$modeloutdir  <-paste0(settings$host$folder,"/", folder_name,"/out")
+  remote_settings$host$rundir <- paste0(settings$host$folder,"/", folder_name,"/run")
+  remote_settings$host$outdir <- paste0(settings$host$folder,"/", folder_name,"/out")
+  remote_settings$rundir <- paste0(settings$host$folder,"/", folder_name,"/run")
+  remote_settings$modeloutdir  <-paste0(settings$host$folder,"/", folder_name,"/out")
   
   
-  settings$scratchdir <-paste0(settings$host$folder,"/", folder_name,"/scratch")
+  remote_settings$scratchdir <-paste0(settings$host$folder,"/", folder_name,"/scratch")
   
   save.setting.dir <- tempdir()
-  PEcAn.settings::write.settings(settings, basename(settingPath), save.setting.dir)
+  PEcAn.settings::write.settings(remote_settings, basename(settingPath), save.setting.dir)
   
   # copying over the settings
   remote.copy.to(
@@ -338,39 +339,29 @@ SDA_remote_launcher <-function(settingPath,
    )
    
    
-   cmd.qsub <- paste0(settings$host$qsub, " ",
-                      paste0(settings$host$folder, "/", folder_name, "/RunBash.sh"))
-   #calling qusb SDA
-   # out<-remote.execute.R(paste0("system(\" ",cmd, "\")"),
-   #                       my_host,
-   #                       user = my_host$user,
-   #                       scratchdir = ".")
-   
-   
-   
+# I'm tricking the remote::start_qsub to let me submit my job
+   out.job.id <- remote::start_qsub(
+                                     run = "",
+                                     qsub_string = settings$host$qsub,
+                                     rundir = NULL,
+                                     host = settings$host,
+                                     host_rundir = paste0(settings$host$folder, "/", folder_name),
+                                     host_outdir = "",
+                                     stdout_log = "",
+                                     stderr_log = "",
+                                     job_script = "RunBash.sh"
+                                   )
+
    # Let's see what is the PID of the job doing the nohup
-   # I'll use this to track the progress of my SDA job
-   PIDS<-remote.execute.cmd(my_host, cmd = "lsof",
-                      args = c(paste0(settings$outdir,"/log.qlog")))
-   
-   if (length(PIDS)>1){
-     #some cleaning
-     PID<-PIDS[-1] %>% 
-       map_dbl(function(line){
-         ll <- strsplit(line, " ")[[1]]
-         ll <- ll[nchar(ll)>0]
-         ll[2] %>% 
-           as.numeric()
-       }) %>%
-       unique()
-   }else{
+
+   if (length(out.job.id)==0 | is.null(out.job.id)){
      PEcAn.logger::logger.severe("Something broke the run before it starts!")
      PEcAn.logger::logger.severe(paste0("In order to get a better sense of what happened you can check out ",settings$outdir,"/log.qlog"))
    }
 
    #This where you can find your SDA
    return(list(Remote.Path = settings$outdir,
-               PID = PID))
+               PID = out.job.id))
   
 }
 
