@@ -59,12 +59,26 @@ sda.enkf.multisite <- function(settings,
   readsFF<-NULL # this keeps the forward forecast
   
   is.local <-PEcAn.remote::is.localhost(settings$host)
-  
+  #------------------Reading up the MCMC settings
   nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 1e6, settings$state.data.assimilation$nitrGEF %>%as.numeric)
   nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 100, settings$state.data.assimilation$nthin %>%as.numeric)
   nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 1e4, settings$state.data.assimilation$nburnin %>%as.numeric)
   censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), TRUE, settings$state.data.assimilation$censored.data %>% as.logical)
-  
+  #--------Initialization
+  FORECAST    <- ANALYSIS <- list()
+  enkf.params <- list()
+  aqq         <- NULL
+  bqq         <- numeric(nt + 1)
+  CI.X1       <- matrix(0, 3, nt) # it was taken care of
+  CI.X2       <- CI.X1            # it was taken care of
+  #q.bar        <- NULL #default process covariance matrix
+  ##### Creating matrices that describe the bounds of the state variables
+  ##### interval is remade everytime depending on the data at time t
+  ##### state.interval stays constant and converts new.analysis to be within the correct bounds
+  interval    <- NULL
+  state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
+                          as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
+  rownames(state.interval) <- var.names
   #------------------------------Multi - site specific - settings
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
@@ -159,28 +173,14 @@ sda.enkf.multisite <- function(settings,
     }
   }
   obs.times <- obs.times.POSIX
-  ###-------------------------------------------------------------------###
-  ### set up for data assimilation                                      ###
-  ###-------------------------------------------------------------------###-----  
   nt          <- length(obs.times)
   if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
-  FORECAST    <- ANALYSIS <- list()
-  enkf.params <- list()
-  aqq         <- NULL
-  bqq         <- numeric(nt + 1)
-  CI.X1       <- matrix(0, 3, nt) # it was taken care of
-  CI.X2       <- CI.X1            # it was taken care of
-  #q.bar        <- NULL #default process covariance matrix
-  ##### Creating matrices that describe the bounds of the state variables
-  ##### interval is remade everytime depending on the data at time t
-  ##### state.interval stays constant and converts new.analysis to be within the correct bounds
-  interval    <- NULL
-  state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
-                          as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
-  rownames(state.interval) <- var.names
+  ###-------------------------------------------------------------------###
+  ### set up for data assimilation                                      ###
+  ###-------------------------------------------------------------------###----
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
-  
+  # Reading param samples------------------------------- 
   if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
   #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
   load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples

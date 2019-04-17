@@ -79,6 +79,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
+  q.type <- settings$state.data.assimilation$q.type
   #Loading nimbles functions
   if (!exists('GEF.MultiSite.Nimble')) PEcAn.assim.sequential:::load_nimble()
   #load_nimble()
@@ -107,8 +108,9 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   nthin<-extraArg$nthin
   nburnin <- extraArg$nburnin
   censored.data <- extraArg$censored.data
-  
+  ###-------------------------------------------------------------------###
   # if we had censored data
+  ###-------------------------------------------------------------------###----
   if (censored.data) {
     intervalX <- matrix(NA, ncol(X), 2)
     rownames(intervalX) <- colnames(X)
@@ -237,43 +239,51 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       matrix(colMeans(dat.tobit2space[, iycens]), nrow(X), ncol(X))
   } # end of if we have censored data
   
+  
+  ###-------------------------------------------------------------------###
+  # Generalized Ensemble Filter                                       ###-----
+  ###-------------------------------------------------------------------###
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
   #--- This is where the localization needs to happen - After imputing Pf
   elements.W.Data <-  which(apply(H, 2, sum) == 1)
   if (exists('blocked.dis')){
-    #localizing the q 
-    if(t>1){
-
-      aqq[, , t] <- Local.support(
-        aqq[, , t],
-        distances[ceiling(elements.W.Data/length(var.names)), # finding sites with data
-                  ceiling(elements.W.Data/length(var.names))],
-        settings$state.data.assimilation$scalef %>% as.numeric()
-      )
-    }
-
-    
-    
         Pf <-
       Local.support(Pf,
                     blocked.dis,
                     settings$state.data.assimilation$scalef %>% as.numeric())
   }
-  ###-------------------------------------------------------------------###
-  # Generalized Ensemble Filter                                       ###-----
-  ###-------------------------------------------------------------------###
 
   #### initial conditions
+  ## We are figuring out the aqq here 
+  if (t == 1) {
+    bqq[1]     <- length(elements.W.Data)
+    
+    if (is.null(aqq)) {
+      if (is.null(q.type) | q.type=="Site") { # if we wanna estimate a q per site
+        aqq      <-
+          array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
+      }else{ # if we wanna estimate a q per PFT
+        aqq      <-
+          array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
+      }
 
-  bqq[1]     <- length(elements.W.Data)
-  if(is.null(aqq)){
-    aqq      <- array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
-  }else{
-    if(length(elements.W.Data)!= dim(aqq)[1] | length(elements.W.Data)!= dim(aqq)[2]){
-      PEcAn.logger::logger.warn('error: X has changed dimensions')
+    } else{
+      if (length(elements.W.Data) != dim(aqq)[1] |
+          length(elements.W.Data) != dim(aqq)[2]) {
+        PEcAn.logger::logger.warn('error: X has changed dimensions')
+      }
     }
+    aqq[, , 1] <- diag(length(elements.W.Data)) * bqq[1] #Q
+  } else{
+    aqq[, , t] <- Local.support(
+      aqq[, , t],
+      distances[ceiling(elements.W.Data/length(var.names)), # finding sites with data
+                ceiling(elements.W.Data/length(var.names))],
+      settings$state.data.assimilation$scalef %>% as.numeric()
+    )
   }
-  aqq[, ,1] <- diag(length(elements.W.Data)) * bqq[1] #Q
+
+
   
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
