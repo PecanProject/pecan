@@ -11,6 +11,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed issue that prevented modellauncher from working properly #2262
 
 ### Changed
+- Updated modules/rtm PROSPECT docs
 - Updated models/sipnet/R/model2netcdf.SIPNET.R to address issues in PR #2254 
 - Improved testing (#2281). Automatic Travis CI builds of PEcAn on are now run using three versions of R in parallel. This should mean fewer issues with new releases and better backwards compatibility, but note that we still only guarantee full compatibility with the current release version of R. The tested versions are:
   - `release`, the current public release of R (currently R 3.5). Build failures in this version are fixed before merging the change that caused them. When we say PEcAn is fully tested and working, this is the build we mean.
@@ -27,8 +28,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - `scripts/generate_dependencies.R` is now used to generate dependencies for make and docker
 
 ### Added
-- Models will not advertise themselvs, so no need to register them a-priori with the database (#2158)
-- Added simple Docker container to show all containers that are available (`http://localhost:8000/monitor/`). This will also take care of registering the models with the BETY database.
+
+- Dockerize the BioCro model.
+- Added PRO4SAIL-D model, using existing 4SAIL src and coupling with PROSPECT-D Fortran code
+- Models will not advertise themselvs, so no need to register them a-priori with the database #2158
+- Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
 - Added unit tests for `met2model.<MODEL>` functions for most models.
 - Added MAESPA model to docker build
 - PEcAn has more robust support for `RPostgres::Postgres` backend. The backend is officially supported by `db.query`, and basic workflows run top-to-bottom with the `Postgres` backend. However, `RPostgreSQL` is still the default until we do more robust testing of all modules.
@@ -108,6 +112,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added missing ncdf4 library calls in model2netcdf.JULES
 
 ### Added
+- Added download.LandTrendr.AGB and extract.LandTrendr.AGB functions in modules/data.remote
 - Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
 - Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
