@@ -1,4 +1,4 @@
-### Logging
+## Logging
 
 During development we often add many print statements to check to see how the code is doing, what is happening, what intermediate results there are etc. When done with the development it would be nice to turn this additional code off, but have the ability to quickly turn it back on if we discover a problem. This is where logging comes into play. Logging allows us to use "rules" to say what information should be shown. For example when I am working on the code to create graphs, I do not have to see any debugging information about the SQL command being sent, however trying to figure out what goes wrong during a SQL statement it would be nice to show the SQL statements without adding any additional code.
 

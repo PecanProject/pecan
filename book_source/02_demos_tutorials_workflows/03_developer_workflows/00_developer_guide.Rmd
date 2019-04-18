@@ -1,4 +1,4 @@
-## Developer user guide {#developer-guide}
+# Developer guide {#developer-guide}
 
 [Update BETY]{#updatebety}
 [Update PEcAn Code]{#pecan-make}

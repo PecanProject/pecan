@@ -1,4 +1,4 @@
-### Testing
+## Testing
 
 PEcAn uses the testthat package developed by Hadley Wickham. Hadley has
 written instructions for using this package in his

@@ -1,4 +1,4 @@
-#### Using Git {#using-git}
+### Using Git {#using-git}
 
 This document describes the steps required to download PEcAn, make changes to code, and submit your changes.
 

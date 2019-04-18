@@ -1,1 +1,1 @@
-#### Coding Practices {#coding-practices}
+## Coding Practices {#coding-practices}

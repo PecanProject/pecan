@@ -1,4 +1,4 @@
-### Roxygen2
+## Roxygen2
 
 This is the standard method of documentation used in PEcAn development, it provides inline documentation similar to doxygen.
 
