@@ -58,3 +58,51 @@ outlier.detector.boxplot<-function(X) {
 #       
 #     })
 # }
+
+
+#' SDA.arguments
+#'
+#' @param trace Logical if code should print out the progress of SDA .
+#' @param ForewardForecast Logical if the foreward forecast estimates needs to be read and visulized in time series plots.
+#' @param interactivePlot Logical if time series plots need to be generated.
+#' @param TimeseriesPlot Logical if time series plots need to be generated.
+#' @param BiasPlot Logical if bias plots need to be generated
+#' @param plot.title Character defining the title of times series plots
+#' @param facet.plots Logical if the timeseries plots should be faceted based on state variables
+#' @param debug Logical if the code should stop at some milestones and open an interactive debugging environment
+#' @param pause Logical if code needs to be puased and wait for further instruction after the analysis step
+#' @param Profiling Logical if code should keep track of how much time each step took
+#'
+#' @return list of all arguments needed to setup the SDA function
+#' @export
+#'
+SDA.arguments <-
+  function(trace = T,
+           ForewardForecast = F,
+           interactivePlot = F,
+           TimeseriesPlot = F,
+           BiasPlot = F,
+           plot.title = NULL,
+           facet.plots = F,
+           debug = FALSE,
+           pause = F,
+           Profiling = F) {
+    
+    return(
+      list(
+        trace = trace,
+        FF = ForewardForecast,
+        interactivePlot = interactivePlot,
+        TimeseriesPlot = TimeseriesPlot,
+        BiasPlot = BiasPlot,
+        plot.title = plot.title,
+        facet.plots = facet.plots,
+        debug = debug,
+        pause = pause,
+        Profiling = Profiling
+      )
+    )
+  }
+
+
+
