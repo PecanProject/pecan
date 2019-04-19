@@ -1,5 +1,5 @@
 ## Function to Create and execute pecan xml
-create_exec_test_xml <- function(run_list){
+create_execute_test_xml <- function(run_list){
   library(PEcAn.DB)
   library(dplyr)
   library(PEcAn.utils)
@@ -41,7 +41,7 @@ create_exec_test_xml <- function(run_list){
   #Database BETY
   settings$database$bety$user <- config.list$db_bety_username
   settings$database$bety$password <- config.list$db_bety_password
-  settings$database$bety$host <- config.list$db_bety_hostname
+  settings$database$bety$host <- "localhost"
   settings$database$bety$dbname <- config.list$db_bety_database
   settings$database$bety$driver <- "PostgreSQL"
   settings$database$bety$write <- FALSE
@@ -90,29 +90,28 @@ create_exec_test_xml <- function(run_list){
   settings$run$inputs$met$username <- "pecan" 
   settings$run$start.date <- start_date
   settings$run$end.date <- end_date
-  settings$host$name <-config.list$db_bety_hostname
+  settings$host$name <-"localhost"
   
   #create file and Run
   saveXML(listToXml(settings, "pecan"), file=paste0(outdir,"/","pecan.xml"))
   file.copy(paste0(config.list$pecan_home,"web/","workflow.R"),to = outdir)
   setwd(outdir)
   ##Name log file
-  log <- file("workflow.Rout", open = "wt")
-  sink(log)
-  sink(log, type = "message")
-  source("workflow.R")
-  sink()
+  #log <- file("workflow.Rout", open = "wt")
+  #sink(log)
+  #sink(log, type = "message")
+  
+  system("./workflow.R 2>&1 | tee workflow.Rout")
+  #source("workflow.R")
+  #sink()
 }
 
 ##Create Run Args
-pecan_path <- "/fs/data3/tonygard/work/pecan"
-config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.example.php"))
-bety <- PEcAn.DB::betyConnect(paste0(pecan_path,"/web/config.example.php"))
 
-bety <- dplyr::src_postgres(dbname   = 'bety', 
-                            host     = 'psql-pecan.bu.edu', 
-                            user     = 'bety', 
-                            password = 'bety')
+## Insert your path to base pecan
+pecan_path <- "/fs/data3/tonygard/work/pecan"
+config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.php"))
+bety <- PEcAn.DB::betyConnect(paste0(pecan_path,"/web/config.php"))
 con <- bety$con
 library(tidyverse)
 ## Find name of Machine R is running on
@@ -121,8 +120,10 @@ mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(i
 
 ## Find Models
 #devtools::install_github("pecanproject/pecan", subdir = "api")
-model_ids <- tbl(bety, "dbfiles") %>% filter(machine_id == mach_id) %>% 
-  filter(container_type == "Model") %>% pull(container_id)
+model_ids <- tbl(bety, "dbfiles") %>% 
+  filter(machine_id == mach_id) %>% 
+  filter(container_type == "Model") %>%
+  pull(container_id)
 
 
 
@@ -169,7 +170,7 @@ run_table <- expand.grid(models,met_name,site_id, startdate, enddate,
 #Execute function to spit out a table with a column of NA or success
 
 tab <-run_table %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
-  create_exec_test_xml(list(...))
+  create_execute_test_xml(list(...))
 },otherwise =NA))
 )
 
