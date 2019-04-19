@@ -80,6 +80,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   q.type <- settings$state.data.assimilation$q.type
+  if(is.null(q.type)) q.type <-""
   #Loading nimbles functions
   if (!exists('GEF.MultiSite.Nimble')) PEcAn.assim.sequential:::load_nimble()
   #load_nimble()
@@ -259,12 +260,31 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     bqq[1]     <- length(elements.W.Data)
     
     if (is.null(aqq)) {
-      if (is.null(q.type) | q.type=="Site") { # if we wanna estimate a q per site
+      
+      if (q.type=="Site") { # if we wanna estimate a q per site
         aqq      <-
-          array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
-      }else{ # if we wanna estimate a q per PFT
-        aqq      <-
-          array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
+          array(1, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
+      }else if(q.type=="PFT"){ # if we wanna estimate a q per PFT
+        
+        site.pfts <- settings %>%
+          map( ~ .x[['run']]) %>%
+          map('site') %>%
+          map('site.pft') %>%
+          map('pft.name') %>%
+          modify(as.factor) %>%
+          modify(as.numeric) %>%
+          modify_if(function(x) {
+            if (length(x) > 0) {
+              return(FALSE)
+            } else{
+              return(TRUE)
+            }
+          },  ~ 1) %>%
+          unlist()
+        
+        aqq<- array(1, dim = c(max(site.pfts), max(site.pfts), nt))
+      }else{ # This is where we estimate just one q for all
+        aqq<- array(1, dim = c(1, 1, nt))
       }
 
     } else{
@@ -273,8 +293,9 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
         PEcAn.logger::logger.warn('error: X has changed dimensions')
       }
     }
-    aqq[, , 1] <- diag(length(elements.W.Data)) * bqq[1] #Q
+
   } else{
+    if (ncol(aqq)>1 & nrow(aqq)>1)
     aqq[, , t] <- Local.support(
       aqq[, , t],
       distances[ceiling(elements.W.Data/length(var.names)), # finding sites with data
@@ -319,11 +340,22 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
 
+    # intial Q depends on the size of aqq
+    q.tmp <-diag(1, nrow(aqq), ncol(aqq))
+
+    q.type <- 2
+    if (q.type==1){
+      aq.arg <-1
+    }else if(q.type==2){
+      aq.arg <-aqq[,,t]
+    }
+    
     #Initial values
     inits.pred <-
       list(
         X.mod = as.vector(mu.f),
-        q = diag(1, length(elements.W.Data), length(elements.W.Data)),
+        q =q.tmp ,
+        qq = 6,
         X = as.vector(mu.f)[length(elements.W.Data)],
         Xall = as.vector(mu.f),
         Xs = as.vector(mu.f)[length(elements.W.Data)]
@@ -331,7 +363,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     
     dimensions.tobit = list(X = length(elements.W.Data),
                             X.mod = ncol(X),
-                            Q = c(length(elements.W.Data), length(elements.W.Data))
+                            Q = c(nrow(aqq), ncol(aqq))
                             )
     
     # Contants defined in the model
@@ -342,19 +374,21 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
         nH = length(elements.W.Data),
         H = elements.W.Data,
         NotH = which(!(1:ncol(X) %in% elements.W.Data )),
-        nNotH = which(!(1:ncol(X) %in% elements.W.Data )) %>% length()
+        nNotH = which(!(1:ncol(X) %in% elements.W.Data )) %>% length(),
+        q.type=1
       )
     # Data used for setting the likelihood and other stuff
     data.tobit <-
       list(
         muf = as.vector(mu.f),
         pf = Pf,
-        aq = aqq[,,t],
+        aq = aq.arg,
         bq = bqq[t],
         y.ind = y.ind,
         y.censored = y.censored,
         r = solve(R)
       )
+    browser()
   # This is the first step in making the nimble model - Nimble does some preliminary checks on the code    
     model_pred <- nimbleModel(GEF.MultiSite.Nimble,
                               data = data.tobit,

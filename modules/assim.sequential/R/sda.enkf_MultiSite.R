@@ -68,9 +68,7 @@ sda.enkf.multisite <- function(settings,
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
   aqq         <- NULL
-  bqq         <- numeric(nt + 1)
-  CI.X1       <- matrix(0, 3, nt) # it was taken care of
-  CI.X2       <- CI.X1            # it was taken care of
+
   #q.bar        <- NULL #default process covariance matrix
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
@@ -175,6 +173,7 @@ sda.enkf.multisite <- function(settings,
   obs.times <- obs.times.POSIX
   nt          <- length(obs.times)
   if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
+  bqq         <- numeric(nt + 1)
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###----

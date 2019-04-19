@@ -389,7 +389,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if (all(plant_wood_vars %in% ic.names)) {
   
       if (round(IC$AbvGrndWood)>0 & round(IC$abvGrndWoodFrac, 3)==0)
-        PEcAn.logger::logger.severe(paste0("There is a major problem with either the model's parameters or IC.",
+        PEcAn.logger::logger.severe(paste0("There is a major problem with ",run.id," in either the model's parameters or IC.",
         "Because the ABG is estimated=",IC$AbvGrndWood," while AGB Frac is estimated=",IC$abvGrndWoodFrac))
       # reconstruct total wood C
       wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
