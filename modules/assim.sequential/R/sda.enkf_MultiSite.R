@@ -272,7 +272,7 @@ sda.enkf.multisite <- function(settings,
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
     if (control$debug) browser()
     out.configs <- conf.settings %>%
-      furrr::future_map2(restart.list, function(settings, restart.arg) {
+      future_map2(restart.list, function(settings, restart.arg) {
         
         # wrtting configs for each settings - this does not make a difference with the old code
         write.ensemble.configs(
@@ -283,7 +283,8 @@ sda.enkf.multisite <- function(settings,
           write.to.db = settings$database$bety$write,
           restart = restart.arg
         )
-      })
+      }) %>%
+          setNames(site.ids)
     
     #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
     runs.tmp <- list.dirs(rundir, full.names = F)
@@ -443,8 +444,12 @@ sda.enkf.multisite <- function(settings,
       }
       # Adding obs elements to the enkf.params
       #This can later on help with diagnostics
-      enkf.params[[t]] <-c(enkf.params[[t]], R)
-      enkf.params[[t]] <-c(enkf.params[[t]], Y)
+      enkf.params[[t]] <-c(enkf.params[[t]], list(R))
+      enkf.params[[t]] <-c(enkf.params[[t]], list(Y))
+      #setting names
+      FORECAST <-FORECAST %>% setNames(names(obs.mean)[1:t])
+
+      enkf.params <-enkf.params%>% setNames(names(obs.mean)[1:t])
       ###-------------------------------------------------------------------###
       ### Trace                                                             ###
       ###-------------------------------------------------------------------###----      
@@ -510,12 +515,18 @@ sda.enkf.multisite <- function(settings,
     ## in the future will have to be separated from analysis
     new.state  <- as.data.frame(analysis)
     ANALYSIS[[t]] <- analysis
+    ANALYSIS <-ANALYSIS%>% setNames(names(obs.mean)[1:t])
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
     Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
     
-    save(site.locs, t, FORECAST, ANALYSIS, enkf.params, new.state, new.params,
+    save(site.locs,
+         t,
+         FORECAST,
+         ANALYSIS,
+         enkf.params,
+         new.state, new.params,
          out.configs, ensemble.samples, inputs, Viz.output,
          file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     

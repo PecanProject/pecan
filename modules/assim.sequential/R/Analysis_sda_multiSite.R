@@ -460,7 +460,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
                   length(elements.W.Data),
                   length(elements.W.Data)
                   )  # Mean Omega, Precision
-  browser()
+
   # Setting up the prior for the next step from the posterior of this step
   if (t<nt){
     if (q.type==1){ #if it's a gamma case
