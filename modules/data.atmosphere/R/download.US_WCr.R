@@ -31,7 +31,7 @@ download.US_WCr <- function(start_date, end_date, timestep = 1) {
   
   # Data is found here
   # Original url: http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek2018_flux.txt
-  base_url <- "http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
+  base_url <- "http://co2.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
   
   flux = NULL;
   
