@@ -640,6 +640,13 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     jobsh <- gsub("@FORCE_CMTNUM@", paste0("--force-cmt ", cmtnum), jobsh)
   }
 
+  if (is.null(settings$model$dvmdostem_outvarstopecanify)){
+    PEcAn.logger::logger.info("No output variables specified for processing from dvmdostem format to pecan format. Using defaults.")
+    jobsh <- gsub("@OUTVARSTOPECANIFY@", "\"GPP NPP RH SOC LAI VEGC\"", jobsh)
+  } else {
+    PEcAn.logger::logger.info("Use client specified list of variables for processing from dvmdostem format to pecan format.")
+    jobsh <- gsub("@OUTVARSTOPECANIFY@", settings$model$dvmdostem_outvarstopecanify, jobsh)
+  }
   # Really no idea what the defaults should be for these if the user
   # does not specify them in the pecan.xml file...
   if (is.null(settings$run$start.date)) {

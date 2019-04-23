@@ -13,7 +13,8 @@
 ##' @param outdir Location of dvmdostem model output
 ##' @param runstart ??
 ##' @param runend ??
-##' 
+##' @param outvars2pecanify is a space separated string of variables (using dvmdostem
+##'        names) to process into PEcAn shape.
 ##' @examples  
 ##' \dontrun{
 ##' # example code here?
@@ -24,7 +25,7 @@
 ##' @author Tobey Carman, Shawn Serbin
 ##'
 library(lubridate)
-model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
+model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify) {
 
   PEcAn.logger::logger.info(paste0("Run start: ", runstart, " Run end: ", runend))
   PEcAn.logger::logger.info(paste0("Processing dvmdostem outputs in: ", outdir))
@@ -99,7 +100,11 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
 
   monthly_dvmdostem_outputs <- list.files(outdir, "*_monthly_*")
   yearly_dvmdostem_outputs <- list.files(outdir, "*_yearly_*")
-  dvmdostem_outputs <- c("GPP", "NPP", "RH", "SOC", "LAI") # NOT SURE YET WHERE THIS LIST SHOULD BE SETUP??
+
+  # outvars2pecanify is a space separated string of variables 
+  # (using dvmdostem names) to process into PEcAn shape.
+  dvmdostem_outputs <- unlist(strsplit(outvars2pecanify, " +"))
+
 
   # Build a mapping from dvmdostem names to PEcAn names, units, etc.
   # The temunits should (is) looked up from the dvmdostem output file's units
@@ -109,11 +114,16 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
     "NPP"=c(newname="NPP", longname="Net Primary Productivity", newunits="kg C m-2 s-1"),
     "RH"=c(newname="HeteroResp", longname="Heterotrophic Respiration", newunits="kg C m-2 s-1"),
     "SOC"=c(newname="SoilOrgC", longname="Soil Organic Carbon", newunits="kg C m-2"),
-    "LAI"=c(newname="LAI", longname="Leaf Area Index", newunits="m-2/m-2")
+    "LAI"=c(newname="LAI", longname="Leaf Area Index", newunits="m2/m2"),
+    "VEGC"=c(newname="VegC", longname="Vegetation Carbon", newunits="kg C m-2"),
+    "DEEPC"=c(newname="DeepC", longname="Deep (amporphous) Soil C", newunits="kg C m-2"),
+    "AVLN"=c(newname="AvlN", longname="Available Nitrogen", newunits="kg N m-2")
   )
 
   # Look at the first dvmdostem output, see if it is was provided by dvmdostem
   # as monthly or yearly, and adjust accordingly.
+  # NOTE: Assumes that all dvmdostem output files are at the same 
+  # time resolution!
   if(TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",dvmdostem_outputs[1],"_"), x))) {
     trfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_monthly_tr.nc"))
     scfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_monthly_sc.nc"))
