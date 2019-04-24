@@ -72,7 +72,12 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
     stop()
   }
 
-  print("STOP here to verify length of outvar list")
+  # Check that at least one variable is enabled.
+  if( length(unlist((strsplit(outvars2pecanify, " ")))) < 1 ){ 
+    PEcAn.logger::logger.error("ERROR! No output variables enabled!")
+    PEcAn.logger::logger.error("Try adding the <dvmdostem_outvarstopecanify> tag to your pecan.xml file!")
+    stop()
+  }
 
   # Copy the base file to a run-specific output spec file
   if (! file.exists(file.path(run_directory, run_id, "config")) ) {
@@ -82,7 +87,15 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
   file.copy(outspec_path, rs_outspec_path)
 
   # check that all variables specified in list exist in the run specific output spec file.
-  print("STOP here to attempt this feat...")
+  a <- read.csv(outspec_path)
+  for (j in unlist(strsplit(outvars2pecanify, " "))) {
+    if (! j %in% a[["Name"]]) {
+      PEcAn.logger::logger.error(paste0("ERROR! Can't find variable: '", j, "' in the output spec file: ", outspec_path))
+      stop()
+    }
+  }
+  # A more sophisticated test will verify that all the variables 
+  # are valid at the correct dimensions(month and year??)
 
   # Empty the run specific output spec file
   system2(file.path(appbinary_path, "scripts/outspec_utils.py"), 
