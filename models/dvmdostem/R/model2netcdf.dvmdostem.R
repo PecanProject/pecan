@@ -119,6 +119,16 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify) {
     "DEEPC"=c(newname="DeepC", longname="Deep (amporphous) Soil C", newunits="kg C m-2"),
     "AVLN"=c(newname="AvlN", longname="Available Nitrogen", newunits="kg N m-2")
   )
+  vmap_reverse <- list(
+    "GPP"        = c(depends_on="GPP", longname="Gross Primary Productivity", newunits="kg C m-2 s-1"),
+    "NPP"        = c(depends_on="NPP", longname="Net Primary Productivity", newunits="kg C m-2 s-1"),
+    "HeteroResp" = c(depends_on="RH", longname="Heterotrophic Respiration", newunits="kg C m-2 s-1"),
+    "SoilOrgC"   = c(depends_on="DEEPC SHLWC SOC", longname="Soil Organic Carbon", newunits="kg C m-2"),
+    "LAI"        = c(depends_on="LAI", longname="Leaf Area Index", newunits="m2/m2"),
+    "VegC"       = c(depends_on="VEGC", longname="Vegetation Carbon", newunits="kg C m-2"),
+    "DeepC"      = c(depends_on="DEEPC", longname="Deep (amporphous) Soil C", newunits="kg C m-2"),
+    "AvlN"       = c(depends_on="AVLN", longname="Available Nitrogen", newunits="kg N m-2")
+  )
 
   # Look at the first dvmdostem output, see if it is was provided by dvmdostem
   # as monthly or yearly, and adjust accordingly.
@@ -197,22 +207,13 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify) {
     PEcAn.logger::logger.info("Creating variables for new PEcAn style files...")
 
     newvars <- c() # Not very efficient, would be better to pre-allocate space
-    for (j in seq_along(1:length(dvmdostem_outputs))) {
-      # Use pecan utility function that can recognize and create proper longname
-      # Need to handle name translation between dvmdostem names and pecan names...
-      # This pecan function doesn't always get the name translation correct
-      # between PEcAn names and dvmdostem names, for example "RH" which in
-      # dvmdostem world is "Heterotrophic Respiration", while
-      # in pecan world, this gets interperted as "Relative Humidity".
-      #ncvar <- PEcAn.utils::to_ncvar(dvmdostem_outputs[j], out_nc_dims)
-
-      curvar <- varmap[[dvmdostem_outputs[j]]]
-
-      ncvar <- ncdf4::ncvar_def(name = curvar[["newname"]],
-                                units = curvar[["newunits"]],
-                                longname = curvar[["longname"]],
+    j <- 0
+    for (name in names(vmap_reverse)){
+      j <- j + 1
+      ncvar <- ncdf4::ncvar_def(name = name,
+                                units = vmap_reverse[[name]][["newunits"]],
+                                longname = vmap_reverse[[name]][["longname"]],
                                 dim = out_nc_dims, -999, prec = "double")
-
       newvars[[j]] <- ncvar
     }
 
