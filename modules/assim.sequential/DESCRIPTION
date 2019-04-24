@@ -20,7 +20,8 @@ Imports:
     nimble,
     tictoc, 
     purrr,
-    furrr
+    furrr,
+    coda
 Suggests:
     testthat
 License: FreeBSD + file LICENSE

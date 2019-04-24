@@ -448,13 +448,19 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
 
 
   dat <-runMCMC(Cmcmc, niter = nitr.GEF, nburnin=nburnin, thin =nthin, nchains = 1)
+  
+  #---- Plotting chains
+  pdf("SDA/XallMCMC.pdf",width = 10, height = 8)
+  lattice::xyplot(dat[, grep("Xall[", colnames(dat), fixed = TRUE)] %>%
+                    `class<-`(c("mcmc.list")))
+  
+  dev.off()
+  
   ## update parameters
   iX   <- grep("Xall[", colnames(dat), fixed = TRUE)
   mu.a <- colMeans(dat[, iX])
   Pa   <- cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
-  
-
   mq <- dat[,  grep("q", colnames(dat))]  # Omega, Precision
   q.bar <- matrix(apply(mq, 2, mean),
                   length(elements.W.Data),
