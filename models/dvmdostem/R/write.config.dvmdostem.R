@@ -79,14 +79,7 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
     stop()
   }
 
-  # Copy the base file to a run-specific output spec file
-  if (! file.exists(file.path(run_directory, run_id, "config")) ) {
-    dir.create(file.path(run_directory, run_id, "config"), recursive = TRUE)
-  }
-  rs_outspec_path <- file.path(run_directory, run_id, "config/", basename(outspec_path))
-  file.copy(outspec_path, rs_outspec_path)
-
-  # check that all variables specified in list exist in the run specific output spec file.
+  # Check that all variables specified in list exist in the base output spec file.
   a <- read.csv(outspec_path)
   for (j in unlist(strsplit(outvars2pecanify, " "))) {
     if (! j %in% a[["Name"]]) {
@@ -94,6 +87,14 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
       stop()
     }
   }
+
+  # Copy the base file to a run-specific output spec file
+  if (! file.exists(file.path(run_directory, "config")) ) {
+    dir.create(file.path(run_directory, "config"), recursive = TRUE)
+  }
+  rs_outspec_path <- file.path(run_directory, "config/", basename(outspec_path))
+  file.copy(outspec_path, rs_outspec_path)
+
   # A more sophisticated test will verify that all the variables 
   # are valid at the correct dimensions(month and year??)
 
