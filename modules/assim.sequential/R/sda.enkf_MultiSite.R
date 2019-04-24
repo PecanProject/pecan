@@ -214,333 +214,351 @@ sda.enkf.multisite <- function(settings,
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
   for(t in seq_len(nt)){
-    tic(paste0("Writing configs for cycle = ", t))
-    # do we have obs for this time - what year is it ?
-    obs <- which(!is.na(obs.mean[[t]]))
-    obs.year <- year(names(obs.mean)[t])
-    ###-------------------------------------------------------------------------###
-    ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
-    ###-------------------------------------------------------------------------###-----  
-    #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
-    if (t>1){
-      #removing old simulations
-      list.files(outdir, "*.nc", recursive = T, full.names = T) %>%
-        furrr::future_map(~ unlink(.x))
+    # if it beaks at least save the trace
+    tryCatch({
       
-      #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
-      inputs.split <- conf.settings %>%
-        purrr::map2(inputs, function(settings, inputs) {
-          inputs.split <- list()
-          if (!no_split) {
-            for (i in seq_len(nens)) {
-              #---------------- model specific split inputs
-              inputs.split$samples[i] <- do.call(
-                my.split_inputs,
-                args = list(
-                  settings = settings,
-                  start.time =(lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
-                  stop.time =   lubridate::ymd_hms(obs.times[t], truncated = 3),
-                  inputs = inputs$samples[[i]])
-              )
-            }
-          } else{
-            inputs.split <- inputs
-          }
-          inputs.split
-        })
-      
-      #---------------- setting up the restart argument for each site separatly and keeping them in a list
-      restart.list <-
-        furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split),
-                           function(configs, settings, new.params, inputs) {
-                             list(
-                               runid = configs$runs$id,
-                               start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S") + lubridate::second(lubridate::hms("00:00:01")),
-                               stop.time = strptime(obs.times[t], format ="%Y-%m-%d %H:%M:%S"),
-                               settings = settings,
-                               new.state = new.state[, which(attr(X, "Site") %in% settings$run$site$id)],
-                               #!!!!!!!!!!
-                               new.params = new.params,
-                               inputs = inputs,
-                               RENAME = TRUE,
-                               ensemble.id = settings$ensemble$ensemble.id
-                             )
-                           })
-      
-      
-    }else{
-      restart.list <- vector("list",length(conf.settings))
-    }
-    #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
-    if (control$debug) browser()
-    out.configs <- conf.settings %>%
-      future_map2(restart.list, function(settings, restart.arg) {
+      tic(paste0("Writing configs for cycle = ", t))
+      # do we have obs for this time - what year is it ?
+      obs <- which(!is.na(obs.mean[[t]]))
+      obs.year <- year(names(obs.mean)[t])
+      ###-------------------------------------------------------------------------###
+      ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
+      ###-------------------------------------------------------------------------###-----  
+      #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
+      if (t>1){
+        #removing old simulations
+        list.files(outdir, "*.nc", recursive = T, full.names = T) %>%
+          furrr::future_map(~ unlink(.x))
         
-        # wrtting configs for each settings - this does not make a difference with the old code
-        write.ensemble.configs(
-          defaults = settings$pfts,
-          ensemble.samples = ensemble.samples,
-          settings = settings,
-          model = settings$model$type,
-          write.to.db = settings$database$bety$write,
-          restart = restart.arg
-        )
-      }) %>%
-          setNames(site.ids)
-    
-    #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
-    runs.tmp <- list.dirs(rundir, full.names = F)
-    writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
-    
-    if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
-    #-------------------------------------------- RUN
-    tic(paste0("Running models for cycle = ", t))
-    if (control$debug) browser()
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
-    tic(paste0("Preparing for Analysis for cycle = ", t))
-    #------------------------------------------- Reading the output
-    if (control$debug) browser()
-    #--- Reading just the first run when we have all years and for VIS
-    
-    if (t==1 & control$FF){
-      readsFF <- out.configs %>%
-        purrr::map(function(configs) {
-          
-          obs.times%>%
-            purrr::map(function(stop.date){
-              X_tmp <- vector("list", 2)
-              
+        #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
+        inputs.split <- conf.settings %>%
+          purrr::map2(inputs, function(settings, inputs) {
+            inputs.split <- list()
+            if (!no_split) {
               for (i in seq_len(nens)) {
-                X_tmp[[i]] <- do.call( my.read_restart,
-                                       args = list(
-                                         outdir = outdir,
-                                         runid = configs$runs$id[i] %>% as.character(),
-                                         stop.time =  stop.date,
-                                         settings = settings,
-                                         var.names = var.names,
-                                         params = new.params[[i]]
-                                       )
+                #---------------- model specific split inputs
+                inputs.split$samples[i] <- do.call(
+                  my.split_inputs,
+                  args = list(
+                    settings = settings,
+                    start.time =(lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
+                    stop.time =   lubridate::ymd_hms(obs.times[t], truncated = 3),
+                    inputs = inputs$samples[[i]])
                 )
-                
               }
-              
-              return(X_tmp %>% map_df(~ .x[['X']] %>% t %>%
-                                        as.data.frame %>% 
-                                        mutate(Date=stop.date,
-                                               Site=(configs$runs$id[i] %>%strsplit('-') %>% unlist())[3] ))
-              )
-            }) %>% setNames(obs.times)
+            } else{
+              inputs.split <- inputs
+            }
+            inputs.split
+          })
+        
+        #---------------- setting up the restart argument for each site separatly and keeping them in a list
+        restart.list <-
+          furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split),
+                             function(configs, settings, new.params, inputs) {
+                               list(
+                                 runid = configs$runs$id,
+                                 start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S") + lubridate::second(lubridate::hms("00:00:01")),
+                                 stop.time = strptime(obs.times[t], format ="%Y-%m-%d %H:%M:%S"),
+                                 settings = settings,
+                                 new.state = new.state[, which(attr(X, "Site") %in% settings$run$site$id)],
+                                 #!!!!!!!!!!
+                                 new.params = new.params,
+                                 inputs = inputs,
+                                 RENAME = TRUE,
+                                 ensemble.id = settings$ensemble$ensemble.id
+                               )
+                             })
+        
+        
+      }else{
+        restart.list <- vector("list",length(conf.settings))
+      }
+      #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
+      if (control$debug) browser()
+      out.configs <- conf.settings %>%
+        future_map2(restart.list, function(settings, restart.arg) {
           
+          # wrtting configs for each settings - this does not make a difference with the old code
+          write.ensemble.configs(
+            defaults = settings$pfts,
+            ensemble.samples = ensemble.samples,
+            settings = settings,
+            model = settings$model$type,
+            write.to.db = settings$database$bety$write,
+            restart = restart.arg
+          )
+        }) %>%
+        setNames(site.ids)
+      
+      #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
+      runs.tmp <- list.dirs(rundir, full.names = F)
+      writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
+      
+      if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
+      #-------------------------------------------- RUN
+      tic(paste0("Running models for cycle = ", t))
+      if (control$debug) browser()
+      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+      tic(paste0("Preparing for Analysis for cycle = ", t))
+      #------------------------------------------- Reading the output
+      if (control$debug) browser()
+      #--- Reading just the first run when we have all years and for VIS
+      
+      if (t==1 & control$FF){
+        readsFF <- out.configs %>%
+          purrr::map(function(configs) {
+            
+            obs.times%>%
+              purrr::map(function(stop.date){
+                X_tmp <- vector("list", 2)
+                
+                for (i in seq_len(nens)) {
+                  X_tmp[[i]] <- do.call( my.read_restart,
+                                         args = list(
+                                           outdir = outdir,
+                                           runid = configs$runs$id[i] %>% as.character(),
+                                           stop.time =  stop.date,
+                                           settings = settings,
+                                           var.names = var.names,
+                                           params = new.params[[i]]
+                                         )
+                  )
+                  
+                }
+                
+                return(X_tmp %>% map_df(~ .x[['X']] %>% t %>%
+                                          as.data.frame %>% 
+                                          mutate(Date=stop.date,
+                                                 Site=(configs$runs$id[i] %>%strsplit('-') %>% unlist())[3] ))
+                )
+              }) %>% setNames(obs.times)
+            
+          })
+        
+      }
+      #------------- Reading - every iteration and for SDA
+      reads <- out.configs %>%
+        furrr::future_map(function(configs) {
+          X_tmp <- vector("list", 2)
+          
+          for (i in seq_len(nens)) {
+            X_tmp[[i]] <- do.call( my.read_restart,
+                                   args = list(
+                                     outdir = outdir,
+                                     runid = configs$runs$id[i] %>% as.character(),
+                                     stop.time = obs.times[t],
+                                     settings = settings,
+                                     var.names = var.names,
+                                     params = new.params[[i]]
+                                   )
+            )
+            
+          }
+          return(X_tmp)
         })
       
-    }
-    #------------- Reading - every iteration and for SDA
-    reads <- out.configs %>%
-      furrr::future_map(function(configs) {
-        X_tmp <- vector("list", 2)
+      if (control$debug) browser()
+      #let's read the parameters of each site/ens
+      params.list <- reads %>% map(~.x %>% map("params"))
+      # Now let's read the state variables of site/ens
+      X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
+      
+      
+      #replacing crazy outliers before it's too late
+      X <- outlier.detector.boxplot(X)
+      
+      # Now we have a matrix that columns are state variables and rows are ensembles.
+      # this matrix looks like this
+      #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
+      #[1,]  3.872521     37.2581  3.872521     37.2581
+      # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
+      if (multi.site.flag)
+        X <- X %>%
+        map_dfc(~.x) %>% 
+        as.matrix() %>%
+        `colnames<-`(c(rep(var.names, length(X)))) %>%
+        `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
+      
+      
+      
+      
+      FORECAST[[t]] <- X
+      ###-------------------------------------------------------------------###
+      ###  preparing OBS                                                    ###
+      ###-------------------------------------------------------------------###---- 
+      if (any(obs)) {
+        if (control$debug) browser()
+        #Making R and Y
+        Obs.cons <-Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
         
-        for (i in seq_len(nens)) {
-          X_tmp[[i]] <- do.call( my.read_restart,
-                                 args = list(
-                                   outdir = outdir,
-                                   runid = configs$runs$id[i] %>% as.character(),
-                                   stop.time = obs.times[t],
-                                   settings = settings,
-                                   var.names = var.names,
-                                   params = new.params[[i]]
-                                 )
-          )
-          
+        Y <- Obs.cons$Y
+        R <- Obs.cons$R
+        
+        if (length(Y) > 1) {
+          PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
+          diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         }
-        return(X_tmp)
-      })
-    
-    if (control$debug) browser()
-    #let's read the parameters of each site/ens
-    params.list <- reads %>% map(~.x %>% map("params"))
-    # Now let's read the state variables of site/ens
-    X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
-    
-    
-    #replacing crazy outliers before it's too late
-    X <- outlier.detector.boxplot(X)
-    
-    # Now we have a matrix that columns are state variables and rows are ensembles.
-    # this matrix looks like this
-    #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
-    #[1,]  3.872521     37.2581  3.872521     37.2581
-    # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
-    if (multi.site.flag)
-      X <- X %>%
-      map_dfc(~.x) %>% 
-      as.matrix() %>%
-      `colnames<-`(c(rep(var.names, length(X)))) %>%
-      `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
-    
-    
-    
-    
-    FORECAST[[t]] <- X
-    ###-------------------------------------------------------------------###
-    ###  preparing OBS                                                    ###
-    ###-------------------------------------------------------------------###---- 
-    if (any(obs)) {
-      if (control$debug) browser()
-      #Making R and Y
-      Obs.cons <-Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
-      
-      Y <- Obs.cons$Y
-      R <- Obs.cons$R
-      
-      if (length(Y) > 1) {
-        PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
-        diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-      }
-      # making the mapping oprator
-      H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
-      
-      ###-------------------------------------------------------------------###
-      ### Analysis                                                          ###
-      ###-------------------------------------------------------------------###----
-      
-      tic(paste0("Analysis for cycle = ", t))
-      
-      if(processvar == FALSE){an.method<-EnKF.MultiSite  }else{    an.method<-GEF.MultiSite   }  
-      
-                    #-analysis function
-                    enkf.params[[t]] <- Analysis.sda(
-                                                    settings,
-                                                    FUN = an.method,
-                                                    Forecast = list(Q = Q, X = X),
-                                                    Observed = list(R = R, Y = Y),
-                                                    H = H,
-                                                    extraArg = list(
-                                                      aqq = aqq,
-                                                      bqq = bqq,
-                                                      t = t,
-                                                      nitr.GEF = nitr.GEF,
-                                                      nthin = nthin,
-                                                      nburnin = nburnin,
-                                                      censored.data = censored.data
-                                                    ),
-                                                    choose = choose,
-                                                    nt = nt,
-                                                    obs.mean = obs.mean,
-                                                    obs.cov = obs.cov,
-                                                    site.ids = site.ids,
-                                                    blocked.dis = blocked.dis,
-                                                    distances = distances
-                                                  )
-      tic(paste0("Preparing for Adjustment for cycle = ", t))
-      #Forecast
-      mu.f <- enkf.params[[t]]$mu.f
-      Pf <- enkf.params[[t]]$Pf
-      #Analysis
-      Pa <- enkf.params[[t]]$Pa
-      mu.a <- enkf.params[[t]]$mu.a
-      #extracting extra outputs
-      if (control$debug) browser()
-      if (processvar) {
-        aqq<-enkf.params[[t]]$aqq
-        bqq<-enkf.params[[t]]$bqq
-      }
-      # Adding obs elements to the enkf.params
-      #This can later on help with diagnostics
-      enkf.params[[t]] <- c(enkf.params[[t]], R = list(R))
-      enkf.params[[t]] <- c(enkf.params[[t]], Y = list(Y))
-      enkf.params[[t]] <- c(enkf.params[[t]], ICs = params.list)
-      
-      #setting names
-      FORECAST <-FORECAST %>% setNames(names(obs.mean)[1:t])
-
-      enkf.params <-enkf.params%>% setNames(names(obs.mean)[1:t])
-      ###-------------------------------------------------------------------###
-      ### Trace                                                             ###
-      ###-------------------------------------------------------------------###----      
-      #-- writing Trace--------------------
-      if(control$trace) {
-        PEcAn.logger::logger.warn ("\n --------------------------- ",obs.year," ---------------------------\n")
-        PEcAn.logger::logger.warn ("\n --------------Obs mean----------- \n")
-        print(Y)
-        PEcAn.logger::logger.warn ("\n --------------Obs Cov ----------- \n")
-        print(R)
-        PEcAn.logger::logger.warn ("\n --------------Forecast mean ----------- \n")
-        print(enkf.params[[t]]$mu.f)
-        PEcAn.logger::logger.warn ("\n --------------Forecast Cov ----------- \n")
-        print(enkf.params[[t]]$Pf)
-        PEcAn.logger::logger.warn ("\n --------------Analysis mean ----------- \n")
-        print(t(enkf.params[[t]]$mu.a))
-        PEcAn.logger::logger.warn ("\n --------------Analysis Cov ----------- \n")
-        print(enkf.params[[t]]$Pa)
-        PEcAn.logger::logger.warn ("\n ------------------------------------------------------\n")
-      }
-      if (control$debug) browser()
-      if (control$pause) readline(prompt="Press [enter] to continue \n")
-    } else {
-      ###-------------------------------------------------------------------###
-      ### No Observations --                                                ###----
-      ###-----------------------------------------------------------------### 
-      ### no process variance -- forecast is the same as the analysis ###
-      if (processvar==FALSE) {
-        mu.a <- mu.f
-        Pa   <- Pf + Q
-        ### yes process variance -- no data
+        # making the mapping oprator
+        H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
+        
+        ###-------------------------------------------------------------------###
+        ### Analysis                                                          ###
+        ###-------------------------------------------------------------------###----
+        
+        tic(paste0("Analysis for cycle = ", t))
+        
+        if(processvar == FALSE){an.method<-EnKF.MultiSite  }else{    an.method<-GEF.MultiSite   }  
+        
+        #-analysis function
+        enkf.params[[t]] <- Analysis.sda(
+          settings,
+          FUN = an.method,
+          Forecast = list(Q = Q, X = X),
+          Observed = list(R = R, Y = Y),
+          H = H,
+          extraArg = list(
+            aqq = aqq,
+            bqq = bqq,
+            t = t,
+            nitr.GEF = nitr.GEF,
+            nthin = nthin,
+            nburnin = nburnin,
+            censored.data = censored.data
+          ),
+          choose = choose,
+          nt = nt,
+          obs.mean = obs.mean,
+          obs.cov = obs.cov,
+          site.ids = site.ids,
+          blocked.dis = blocked.dis,
+          distances = distances
+        )
+        tic(paste0("Preparing for Adjustment for cycle = ", t))
+        #Forecast
+        mu.f <- enkf.params[[t]]$mu.f
+        Pf <- enkf.params[[t]]$Pf
+        #Analysis
+        Pa <- enkf.params[[t]]$Pa
+        mu.a <- enkf.params[[t]]$mu.a
+        #extracting extra outputs
+        if (control$debug) browser()
+        if (processvar) {
+          aqq<-enkf.params[[t]]$aqq
+          bqq<-enkf.params[[t]]$bqq
+        }
+        # Adding obs elements to the enkf.params
+        #This can later on help with diagnostics
+        enkf.params[[t]] <- c(enkf.params[[t]], R = list(R))
+        enkf.params[[t]] <- c(enkf.params[[t]], Y = list(Y))
+        enkf.params[[t]] <- c(enkf.params[[t]], ICs = params.list)
+        
+        #setting names
+        FORECAST <-FORECAST %>% setNames(names(obs.mean)[1:t])
+        
+        enkf.params <-enkf.params%>% setNames(names(obs.mean)[1:t])
+        ###-------------------------------------------------------------------###
+        ### Trace                                                             ###
+        ###-------------------------------------------------------------------###----      
+        #-- writing Trace--------------------
+        if(control$trace) {
+          PEcAn.logger::logger.warn ("\n --------------------------- ",obs.year," ---------------------------\n")
+          PEcAn.logger::logger.warn ("\n --------------Obs mean----------- \n")
+          print(Y)
+          PEcAn.logger::logger.warn ("\n --------------Obs Cov ----------- \n")
+          print(R)
+          PEcAn.logger::logger.warn ("\n --------------Forecast mean ----------- \n")
+          print(enkf.params[[t]]$mu.f)
+          PEcAn.logger::logger.warn ("\n --------------Forecast Cov ----------- \n")
+          print(enkf.params[[t]]$Pf)
+          PEcAn.logger::logger.warn ("\n --------------Analysis mean ----------- \n")
+          print(t(enkf.params[[t]]$mu.a))
+          PEcAn.logger::logger.warn ("\n --------------Analysis Cov ----------- \n")
+          print(enkf.params[[t]]$Pa)
+          PEcAn.logger::logger.warn ("\n ------------------------------------------------------\n")
+        }
+        if (control$debug) browser()
+        if (control$pause) readline(prompt="Press [enter] to continue \n")
       } else {
-        mu.a <- mu.f
-        if(is.null(q.bar)){
-          q.bar <- diag(ncol(X))
-          PEcAn.logger::logger.warn('Process variance not estimated. Analysis has been given uninformative process variance')
-        } 
-        Pa   <- Pf + solve(q.bar)
+        ###-------------------------------------------------------------------###
+        ### No Observations --                                                ###----
+        ###-----------------------------------------------------------------### 
+        ### no process variance -- forecast is the same as the analysis ###
+        if (processvar==FALSE) {
+          mu.a <- mu.f
+          Pa   <- Pf + Q
+          ### yes process variance -- no data
+        } else {
+          mu.a <- mu.f
+          if(is.null(q.bar)){
+            q.bar <- diag(ncol(X))
+            PEcAn.logger::logger.warn('Process variance not estimated. Analysis has been given uninformative process variance')
+          } 
+          Pa   <- Pf + solve(q.bar)
+        }
+        enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
       }
-      enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
-    }
-    
-    ###-------------------------------------------------------------------###
-    ### adjustement/update state matrix                                   ###
-    ###-------------------------------------------------------------------###---- 
-    tic(paste0("Adjustment for cycle = ", t))
-    if(adjustment == TRUE){
-      analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
-    } else {
-      analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
-    }
-    
-    colnames(analysis) <- colnames(X)
-    ##### Mapping analysis vectors to be in bounds of state variables
-    if(processvar==TRUE){
-      for(i in 1:ncol(analysis)){
-        int.save <- state.interval[which(startsWith(colnames(analysis)[i],
-                                                    var.names)),]
-        analysis[analysis[,i] < int.save[1],i] <- int.save[1]
-        analysis[analysis[,i] > int.save[2],i] <- int.save[2]
+      
+      ###-------------------------------------------------------------------###
+      ### adjustement/update state matrix                                   ###
+      ###-------------------------------------------------------------------###---- 
+      tic(paste0("Adjustment for cycle = ", t))
+      if(adjustment == TRUE){
+        analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
+      } else {
+        analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
       }
-    }
-    ## in the future will have to be separated from analysis
-    new.state  <- as.data.frame(analysis)
-    ANALYSIS[[t]] <- analysis
-    ANALYSIS <-ANALYSIS%>% setNames(names(obs.mean)[1:t])
-    ###-------------------------------------------------------------------###
-    ### save outputs                                                      ###
-    ###-------------------------------------------------------------------###---- 
-    Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
+      
+      colnames(analysis) <- colnames(X)
+      ##### Mapping analysis vectors to be in bounds of state variables
+      if(processvar==TRUE){
+        for(i in 1:ncol(analysis)){
+          int.save <- state.interval[which(startsWith(colnames(analysis)[i],
+                                                      var.names)),]
+          analysis[analysis[,i] < int.save[1],i] <- int.save[1]
+          analysis[analysis[,i] > int.save[2],i] <- int.save[2]
+        }
+      }
+      ## in the future will have to be separated from analysis
+      new.state  <- as.data.frame(analysis)
+      ANALYSIS[[t]] <- analysis
+      ANALYSIS <-ANALYSIS%>% setNames(names(obs.mean)[1:t])
+      ###-------------------------------------------------------------------###
+      ### save outputs                                                      ###
+      ###-------------------------------------------------------------------###---- 
+      Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
+      
+      save(site.locs,
+           t,
+           FORECAST,
+           ANALYSIS,
+           enkf.params,
+           new.state, new.params,
+           out.configs, ensemble.samples, inputs, Viz.output,
+           file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+      
+      tic(paste0("Visulization for cycle = ", t))
+      
+      #writing down the image - either you asked for it or nor :)
+      
+      if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+      #Saving the profiling result
+      if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
+    },error = function(e) {
+      # If it breaks at some steps then I lose all the info on the other variables that worked fine up to the step before the break
+      save(site.locs,
+           t,
+           FORECAST,
+           ANALYSIS,
+           enkf.params,
+           new.state, new.params,
+           out.configs, ensemble.samples, inputs, Viz.output,
+           file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+      
+      PEcAn.logger::logger.severe(paste0("Something just broke along the way. See if the message is helpful ", e))
+    })
     
-    save(site.locs,
-         t,
-         FORECAST,
-         ANALYSIS,
-         enkf.params,
-         new.state, new.params,
-         out.configs, ensemble.samples, inputs, Viz.output,
-         file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     
-    tic(paste0("Visulization for cycle = ", t))
-    
-    #writing down the image - either you asked for it or nor :)
-    
-    if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
-    #Saving the profiling result
-    if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
     
   } ### end loop over time
   
