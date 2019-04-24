@@ -250,20 +250,22 @@ sda.enkf.multisite <- function(settings,
         })
       
       #---------------- setting up the restart argument for each site separatly and keeping them in a list
-      restart.list <- furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split), 
-                                         function(configs, settings, new.params, inputs){
-                                           
-                                           list(runid = configs$runs$id, 
-                                                start.time = strptime(obs.times[t-1],format="%Y-%m-%d %H:%M:%S")+ lubridate::second(lubridate::hms("00:00:01")),
-                                                stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
-                                                settings = settings,
-                                                new.state = new.state[, which(attr(X, "Site") %in%
-                                                                                settings$run$site$id)], #!!!!!!!!!!
-                                                new.params = new.params, 
-                                                inputs = inputs, 
-                                                RENAME = TRUE,
-                                                ensemble.id=settings$ensemble$ensemble.id)
-                                         })
+      restart.list <-
+        furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split),
+                           function(configs, settings, new.params, inputs) {
+                             list(
+                               runid = configs$runs$id,
+                               start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S") + lubridate::second(lubridate::hms("00:00:01")),
+                               stop.time = strptime(obs.times[t], format ="%Y-%m-%d %H:%M:%S"),
+                               settings = settings,
+                               new.state = new.state[, which(attr(X, "Site") %in% settings$run$site$id)],
+                               #!!!!!!!!!!
+                               new.params = new.params,
+                               inputs = inputs,
+                               RENAME = TRUE,
+                               ensemble.id = settings$ensemble$ensemble.id
+                             )
+                           })
       
       
     }else{
@@ -444,8 +446,10 @@ sda.enkf.multisite <- function(settings,
       }
       # Adding obs elements to the enkf.params
       #This can later on help with diagnostics
-      enkf.params[[t]] <-c(enkf.params[[t]], list(R))
-      enkf.params[[t]] <-c(enkf.params[[t]], list(Y))
+      enkf.params[[t]] <- c(enkf.params[[t]], R = list(R))
+      enkf.params[[t]] <- c(enkf.params[[t]], Y = list(Y))
+      enkf.params[[t]] <- c(enkf.params[[t]], ICs = params.list)
+      
       #setting names
       FORECAST <-FORECAST %>% setNames(names(obs.mean)[1:t])
 
