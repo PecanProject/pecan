@@ -4,7 +4,7 @@ Title: PEcAn package for integration of the dvmdostem model
 Version: 1.7.0
 Date: 2018-12-03
 Authors@R: c(person("Shawn", "Serbin"),
-             person("Tobey", "Carmen"),
+             person("Tobey", "Carman"),
              person("James", "Simkins"),
              person("Chris", "Black"),
              person("Istem", "Fer"),
