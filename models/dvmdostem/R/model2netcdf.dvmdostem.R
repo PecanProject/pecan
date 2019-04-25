@@ -104,21 +104,11 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify) {
   # outvars2pecanify is a space separated string of variables 
   # (using dvmdostem names) to process into PEcAn shape.
   dvmdostem_outputs <- unlist(strsplit(outvars2pecanify, " +"))
-
+  pecan_vars_to_build <- unlist(strsplit("GPP SoilOrgC", " +"))
 
   # Build a mapping from dvmdostem names to PEcAn names, units, etc.
   # The temunits should (is) looked up from the dvmdostem output file's units
   # attributes...
-  varmap <- list(
-    "GPP"=c(newname="GPP", longname="Gross Primary Productivity", newunits="kg C m-2 s-1"),
-    "NPP"=c(newname="NPP", longname="Net Primary Productivity", newunits="kg C m-2 s-1"),
-    "RH"=c(newname="HeteroResp", longname="Heterotrophic Respiration", newunits="kg C m-2 s-1"),
-    "SOC"=c(newname="SoilOrgC", longname="Soil Organic Carbon", newunits="kg C m-2"),
-    "LAI"=c(newname="LAI", longname="Leaf Area Index", newunits="m2/m2"),
-    "VEGC"=c(newname="VegC", longname="Vegetation Carbon", newunits="kg C m-2"),
-    "DEEPC"=c(newname="DeepC", longname="Deep (amporphous) Soil C", newunits="kg C m-2"),
-    "AVLN"=c(newname="AvlN", longname="Available Nitrogen", newunits="kg N m-2")
-  )
   vmap_reverse <- list(
     "GPP"        = c(depends_on="GPP", longname="Gross Primary Productivity", newunits="kg C m-2 s-1"),
     "NPP"        = c(depends_on="NPP", longname="Net Primary Productivity", newunits="kg C m-2 s-1"),
@@ -233,62 +223,79 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify) {
   # the respective yearly PEcAn output files.
   for (i in seq_along(1:length(y_tr_starts))) {
     ncout <- ncdf4::nc_open(file.path(outdir, paste0(lubridate::year(y_tr_starts[i]), ".nc")), write = TRUE)
-    for (j in dvmdostem_outputs) {
+    for (j in pecan_vars_to_build) {
 
-      if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
-        # The current variable (j) is a monthly output
-        ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_monthly_tr.nc")))
-      } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
-        # The current variable (j) is a yearly output
-        ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_yearly_tr.nc")))
-      } else {
-        PEcAn.logger::logger.error(paste0("ERROR!: ", j, " is not a monthly or yearly variable!"))
-        stop()
+      # Look up the depends_on in the reverse map
+      for (k in vmap_reverse[[j]][["depends_on"]]) {
+        # See that dvmdostem output files are available for each depends_on...
+        print(paste0(j, " depends on ", k))
+        print(paste0("Look for dvmdostem files for ", k))
       }
 
-      vardata <- ncdf4::ncvar_get(ncin_tr_y, j)
+      # Make empty container for new data
+      newVector <- vector(mode = "numeric")
 
-      # Look up the units in dvmdostem world
-      original_units <- ncdf4::ncatt_get(ncin_tr_y, j, "units")
-      original_units <- as.character(unlist(original_units)[2]) # How to avoid hard coded index??
+      for (k in unlist(strsplit(vmap_reverse[[j]][["depends_on"]], " +"))) {
 
-      # This is a temporary hack, till dvm-dos-tem issue is resolved...
-      # See issue #336 (https://github.com/ua-snap/dvm-dos-tem/issues/336)
-      original_units <- gsub("time", "year", original_units)
-      original_units <- gsub("gC", "g C", original_units)
+        # Determine if dvmdostem file is monthly or yearly
+        if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
+          ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(k, "_monthly_tr.nc")))
+        } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
+          ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(k, "_yearly_tr.nc")))
+        } else {
+          PEcAn.logger::logger.error(paste0("ERROR!: ", k, " is not a monthly or yearly variable!"))
+          stop()
+        }
 
-      # Set units in PEcAn world
-      curvar <- varmap[[j]]
+        # Get the data
+        vardata <- ncdf4::ncvar_get(ncin_tr_y, k)
 
-      # Convert the data
-      vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, curvar[["newunits"]])
+        # Look up the units in dvmdostem world
+        original_units <- ncdf4::ncatt_get(ncin_tr_y, k, "units")
+        original_units <- as.character(unlist(original_units)[2]) # How to avoid hard coded index??
 
-      # Coerce the data into the right shape (y, x, time).
-      # With a single pixel run, the Y and X dimensions are lost when
-      # reading from the file with ncdf4::ncvar_get, and the subsequent 
-      # ncdf4::ncvar_put call fails. So here we make sure that the
-      # vardata_new data is a 3D structure:
-      dim_lengths <- sapply(ncin_tr_y$var[[1]]$dim, function(x) x$len)
-      vardata_new <- array(vardata_new, dim = dim_lengths)
+        # This is a temporary hack, till dvm-dos-tem issue is resolved...
+        # See issue #336 (https://github.com/ua-snap/dvm-dos-tem/issues/336)
+        original_units <- gsub("time", "year", original_units)
+        original_units <- gsub("gC", "g C", original_units)
 
-      dim.order <- sapply(ncin_tr_y$var[[j]]$dim, function(x) x$name)
-      starts <-c(y = px_Y, x = px_X, time = 1)
+        # Convert the data
+        vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, vmap_reverse[[j]][["newunits"]])
 
-      # Write the data to the file...
-      if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
-        # The current variable (j) is a monthly output
-        counts <- c(y=1, x=1, time=12)
-        startidx <- ((i-1)*12)+1
-        endidx <- i*12
-        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,startidx:endidx], start = starts[dim.order], count = counts[dim.order])
-      } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",j,"_"), x))) {
-        # The current variable (j) is a yearly output
-        counts <- c(y=1, x=1, time=1)
-        ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], start = starts[dim.order], count = counts[dim.order])
-      } else {
-        PEcAn.logger::logger.error(paste0("ERROR!: ", j, " is not a monthly or yearly variable!"))
-        stop()
+        # Coerce the data into the right shape (y, x, time).
+        # With a single pixel run, the Y and X dimensions are lost when
+        # reading from the file with ncdf4::ncvar_get, and the subsequent 
+        # ncdf4::ncvar_put call fails. So here we make sure that the
+        # vardata_new data is a 3D structure:
+        dim_lengths <- sapply(ncin_tr_y$var[[1]]$dim, function(x) x$len)
+        vardata_new <- array(vardata_new, dim = dim_lengths)
+
+        dim.order <- sapply(ncin_tr_y$var[[k]]$dim, function(x) x$name)
+        starts <-c(y = px_Y, x = px_X, time = 1)
+
+
+        if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
+          # The current variable (j) is a monthly output
+          counts <- c(y=1, x=1, time=12)
+          startidx <- ((i-1)*12)+1
+          endidx <- i*12
+          newVector <- cbind(newVector, vardata_new[px_X, px_Y,startidx:endidx])
+        } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
+          # The current variable (k) is a yearly output
+          counts <- c(y=1, x=1, time=1)
+          newVector <- cbind(newVector, vardata_new[px_X, px_Y, i])
+        } else {
+          PEcAn.logger::logger.error(paste0("ERROR!: ", k, " is not a monthly or yearly variable!"))
+          stop()
+        }
+
       }
+
+      # Maybe we will support more operations in the future besides sum...
+      newVector <- apply(newVector, 1, sum)
+
+      # Add new data to netcdf file...
+      ncdf4::ncvar_put(ncout, j, newVector, start = starts[dim.order], count = counts[dim.order])
     }
     ncdf4::nc_close(ncout)
   }
