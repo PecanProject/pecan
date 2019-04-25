@@ -67,6 +67,7 @@ sda.enkf.multisite <- function(settings,
   #--------Initialization
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
+  restart.list <- NULL
   aqq         <- NULL
 
   #q.bar        <- NULL #default process covariance matrix
