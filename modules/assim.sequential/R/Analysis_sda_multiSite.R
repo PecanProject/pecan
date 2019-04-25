@@ -452,7 +452,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #---- Plotting chains
   pdf("SDA/XallMCMC.pdf",width = 10, height = 8)
   lattice::xyplot(dat[, grep("Xall[", colnames(dat), fixed = TRUE)] %>%
-                    `class<-`(c("mcmc.list")))
+                    `class<-`(c("mcmc.list"))) %>%
+    print
   
   dev.off()
   
