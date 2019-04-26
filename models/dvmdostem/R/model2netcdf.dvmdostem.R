@@ -25,11 +25,14 @@
 ##' @author Tobey Carman, Shawn Serbin
 ##'
 library(lubridate)
-model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify) {
+model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify, pecan_req_vars) {
 
   PEcAn.logger::logger.info(paste0("Run start: ", runstart, " Run end: ", runend))
   PEcAn.logger::logger.info(paste0("Processing dvmdostem outputs in: ", outdir))
+  PEcAn.logger::logger.info(paste0("Building the following PEcAn variables: ", pecan_req_vars))
+  PEcAn.logger::logger.info(paste0("Which will require the following dvmdostem variables: ", outvars2pecanify))
 
+  
   # First things first, we need to check the run_status.nc file and make sure
   # that the a) only one pixel ran, and b) the success code is > 0
   nc_runstatus <- ncdf4::nc_open(file.path(outdir, "run_status.nc"), write=FALSE)
@@ -104,22 +107,9 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify) {
   # outvars2pecanify is a space separated string of variables 
   # (using dvmdostem names) to process into PEcAn shape.
   dvmdostem_outputs <- unlist(strsplit(outvars2pecanify, " +"))
-  pecan_vars_to_build <- unlist(strsplit("GPP SoilOrgC", " +"))
+  pecan_vars_to_build <- unlist(strsplit(pecan_req_vars, " +"))
 
-  # Build a mapping from dvmdostem names to PEcAn names, units, etc.
-  # The temunits should (is) looked up from the dvmdostem output file's units
-  # attributes...
-  vmap_reverse <- list(
-    "GPP"        = c(depends_on="GPP", longname="Gross Primary Productivity", newunits="kg C m-2 s-1"),
-    "NPP"        = c(depends_on="NPP", longname="Net Primary Productivity", newunits="kg C m-2 s-1"),
-    "HeteroResp" = c(depends_on="RH", longname="Heterotrophic Respiration", newunits="kg C m-2 s-1"),
-    "SoilOrgC"   = c(depends_on="DEEPC SHLWC SOC", longname="Soil Organic Carbon", newunits="kg C m-2"),
-    "LAI"        = c(depends_on="LAI", longname="Leaf Area Index", newunits="m2/m2"),
-    "VegC"       = c(depends_on="VEGC", longname="Vegetation Carbon", newunits="kg C m-2"),
-    "DeepC"      = c(depends_on="DEEPC", longname="Deep (amporphous) Soil C", newunits="kg C m-2"),
-    "AvlN"       = c(depends_on="AVLN", longname="Available Nitrogen", newunits="kg N m-2")
-  )
-
+  
   # Look at the first dvmdostem output, see if it is was provided by dvmdostem
   # as monthly or yearly, and adjust accordingly.
   # NOTE: Assumes that all dvmdostem output files are at the same 
@@ -150,7 +140,6 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify) {
   y_sc_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", y_sc_time_start) )
   y_sc_time_end <- y_sc_time_start + (ncin_y_sc$dim$time$len/timedivisor) - 1
   y_sc_starts <- paste0(seq(y_sc_time_start, y_sc_time_end, 1), "-01-01 00:00:00")
-
 
 
   # Check that transient and sceario runs were contiguous...
@@ -198,7 +187,7 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify) {
 
     newvars <- c() # Not very efficient, would be better to pre-allocate space
     j <- 0
-    for (name in names(vmap_reverse)){
+    for (name in pecan_vars_to_build){
       j <- j + 1
       ncvar <- ncdf4::ncvar_def(name = name,
                                 units = vmap_reverse[[name]][["newunits"]],

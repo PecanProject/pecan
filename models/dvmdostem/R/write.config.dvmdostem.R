@@ -6,8 +6,6 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
-
 ##------------------------------------------------------------------------------------------------#
 ##' Setup the output variables that dvmdostem will generate and PEcAn will analyze.
 ##' This function handles the interplay between output variables and output spec file.
@@ -50,7 +48,7 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
   # 2) user specified custom path, no outvars
   if (is.not.null(dvmdostem_output_spec) && is.null(out_vars_to_pecanify)) {
     PEcAn.logger::logger.warn("You probably want to specify output variables as well via the <dvmdostem_outvarstopecanify> tag.")
-    outvars2pecanify <- "GPP NPP RH SOC LAI VEGC"
+    outvars2pecanify <- "GPP NPP SoilOrgC VegC LAI"
     outspec_path <- dvmdostem_output_spec
     if (dirname(outspec_path) == ".") {
       # User specified the name of another file that should be in the inst folder
@@ -79,9 +77,19 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
     stop()
   }
 
+  # Look up the "depends_on" in the output variable mapping, 
+  # accumulate list of dvmdostem variables to turn on to support
+  # the requested variables in the pecan.xml tag
+  req_v_str <- ""
+  for (pov in unlist(strsplit(outvars2pecanify, " "))) {
+    #print(paste("HERE>>>", vmap_reverse[[pov]][["depends_on"]]))
+    req_v_str <- trimws(paste(req_v_str, vmap_reverse[[pov]][["depends_on"]], sep = " "))
+  }
+  req_v_str <- trimws(req_v_str)
+
   # Check that all variables specified in list exist in the base output spec file.
   a <- read.csv(outspec_path)
-  for (j in unlist(strsplit(outvars2pecanify, " "))) {
+  for (j in unlist(strsplit(req_v_str, " +"))) {
     if (! j %in% a[["Name"]]) {
       PEcAn.logger::logger.error(paste0("ERROR! Can't find variable: '", j, "' in the output spec file: ", outspec_path))
       stop()
@@ -103,7 +111,7 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
           args=c("--empty", rs_outspec_path))
 
   # Fill the run specific output spec file according to list
-  for (j in unlist(strsplit(outvars2pecanify, " "))) {
+  for (j in unlist(strsplit(req_v_str, " "))) {
     system2(file.path(appbinary_path, "scripts/outspec_utils.py"),
             args=c(rs_outspec_path, "--on", j, "y", "m"))
   }
@@ -112,8 +120,9 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
   #system2(file.path(appbinary_path, "scripts/outspec_utils.py"), 
   #        args=c("-s", rs_outspec_path))
 
-  return(c(rs_outspec_path, outvars2pecanify))
+  return(c(rs_outspec_path, req_v_str))
 }
+
 ##------------------------------------------------------------------------------------------------#
 ##' convert parameters, do unit conversions and update parameter names from PEcAn database default
 ##' to units/names within dvmdostem
@@ -617,7 +626,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
       rundir, run.id, appbinary_path
   )
   rs_outspec_path <- v[1]
-  outvars2pecanify <- v[2]
+  dvmdostem_req_v_str <- v[2] # and: settings$model$dvmdostem_outvarstopecanify
 
   ## Update dvm-dos-tem config.js file
 
@@ -724,8 +733,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # Make sure the correct output variables are translated.
   # The outvars2peanify list (quoted, space separated string) is curated above.
-  jobsh <- gsub("@OUTVARSTOPECANIFY@", outvars2pecanify, jobsh)  
-
+  jobsh <- gsub("@OUTVARSTOPECANIFY@", dvmdostem_req_v_str, jobsh)
+  jobsh <- gsub("@PECANREQVARS@", settings$model$dvmdostem_outvarstopecanify, jobsh)
+  
   # Really no idea what the defaults should be for these if the user
   # does not specify them in the pecan.xml file...
   if (is.null(settings$run$start.date)) {

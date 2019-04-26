@@ -41,7 +41,7 @@ else
   echo $R_LIBS_USER
   echo "require (PEcAn.dvmdostem)
 	.libPaths()
-        model2netcdf.dvmdostem('@OUTDIR@', '@RUNSTART@', '@RUNEND@','@OUTVARSTOPECANIFY@')
+        model2netcdf.dvmdostem('@OUTDIR@', '@RUNSTART@', '@RUNEND@','@OUTVARSTOPECANIFY@', '@PECANREQVARS@')
         " | R --vanilla
   echo "Done converting ouputs to PEcAn format."
 
