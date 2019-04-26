@@ -112,12 +112,13 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save.mat<-NULL
   }
 
-  
+  print(runid %>% as.character())
+  print(analysis.save.mat)
   do.call(write.config.SIPNET, args = list(defaults = NULL,
                                            trait.values = new.params,
                                            settings = settings,
                                            run.id = runid,
                                            inputs = inputs,
                                            IC = analysis.save.mat))
-  print(runid)
+
 } # write_restart.SIPNET
