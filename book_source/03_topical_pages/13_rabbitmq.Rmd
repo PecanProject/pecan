@@ -1,4 +1,4 @@
-## RabbitMQ {#rabbitmq}
+# RabbitMQ {#rabbitmq}
 
 This section provides additional details about how PEcAn uses RabbitMQ to manage communication between its Docker containers.
 

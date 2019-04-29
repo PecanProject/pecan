@@ -1,4 +1,4 @@
-## Standalone tools (modules)
+# Standalone tools (modules)
 
 - Radiative transfer modeling and remote sensing ([`modules/rtm`](https://pecanproject.github.io/modules/rtm/docs/index.html)); [vignette](https://pecanproject.github.io/modules/rtm/docs/articles/pecanrtm.vignette.html)
 - Photosynthesis ([`modules/photosynthesis`](https://pecanproject.github.io/modules/photosynthesis/docs/index.html)); [vignette](https://pecanproject.github.io/modules/photosynthesis/docs/articles/ResponseCurves.html)

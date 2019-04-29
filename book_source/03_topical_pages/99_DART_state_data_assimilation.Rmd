@@ -1,4 +1,4 @@
-## Data assimilation with DART
+# Data assimilation with DART
 
 In addition to the state assimilation routines found in the assim.sequential module, another approach for state data assimilation in PEcAn is through the DART workflow created by the DARES group in NCAR.
 

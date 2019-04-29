@@ -1,4 +1,4 @@
-## Debugging
+# Debugging
 
 How to identify the source of a problem.
 

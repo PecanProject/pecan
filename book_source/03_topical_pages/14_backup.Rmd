@@ -1,4 +1,4 @@
-## BETY Database Administration {#database}
+# BETY Database Administration {#database}
 
 This section provides additional details about the BETY database used by PEcAn. It will discuss best practices for setting up the BETY database, how to backup the database and how to restore the database.
 

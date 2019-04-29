@@ -1,4 +1,4 @@
-## Workflow modules
+# Workflow modules
 
 NOTE: As of PEcAn 1.2.6 -- needs to be updated significantly
 
