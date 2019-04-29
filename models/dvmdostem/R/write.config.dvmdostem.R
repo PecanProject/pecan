@@ -31,7 +31,11 @@
 ##' @export
 ##' @author Tobey Carman
 ##'
-setup.outputs.dvmdostem <- function(pecan_requested_outputs, dvmdostem_output_spec, run_directory, run_id, appbinary_path) {
+setup.outputs.dvmdostem <- function(pecan_requested_outputs, 
+                                    dvmdostem_output_spec, 
+                                    run_directory,
+                                    run_id,
+                                    appbinary_path) {
 
   is.not.null <- function(x) !is.null(x) # helper for readability
 
@@ -626,7 +630,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
       rundir, run.id, appbinary_path
   )
   rs_outspec_path <- v[1]
-  dvmdostem_req_v_str <- v[2] # and: settings$model$dvmdostem_pecan_outputs
+  PEcAn.logger::logger.info(paste0("Will be generating the following dvmdostem output variables: ", v[2]))
 
   ## Update dvm-dos-tem config.js file
 
