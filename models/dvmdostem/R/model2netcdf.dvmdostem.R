@@ -13,7 +13,7 @@
 ##' @param outdir Location of dvmdostem model output
 ##' @param runstart ??
 ##' @param runend ??
-##' @param pecan_req_vars a space separated string with names of the PEcAn variables to output.
+##' @param pecan_requested_vars a space separated string with names of the PEcAn variables to output.
 ##' @examples  
 ##' \dontrun{
 ##' # example code here?
@@ -28,7 +28,7 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
 
   PEcAn.logger::logger.info(paste0("Run start: ", runstart, " Run end: ", runend))
   PEcAn.logger::logger.info(paste0("Processing dvmdostem outputs in: ", outdir))
-  PEcAn.logger::logger.info(paste0("Building the following PEcAn variables: ", pecan_req_vars))
+  PEcAn.logger::logger.info(paste0("Building the following PEcAn variables: ", pecan_requested_vars))
 
   # Split apart the string of pecan vars passed into the function
   pecan_requested_vars <- unlist(strsplit(pecan_requested_vars, " +"))
