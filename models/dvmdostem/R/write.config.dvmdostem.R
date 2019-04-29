@@ -43,12 +43,12 @@ setup.outputs.dvmdostem <- function(pecan_requested_outputs, dvmdostem_output_sp
   # 1) user specifes outvars, no custom path
   if (is.not.null(pecan_requested_outputs) && is.null(dvmdostem_output_spec)) {
     outspec_path <- file.path(system.file(package = "PEcAn.dvmdostem"), "output_spec.csv")
-    outvars2pecanify <- pecan_requested_outputs
+    pecan_outvars <- pecan_requested_outputs
   }
   # 2) user specified custom path, no outvars
   if (is.not.null(dvmdostem_output_spec) && is.null(pecan_requested_outputs)) {
     PEcAn.logger::logger.warn("You probably want to specify output variables as well via the <dvmdostem_pecan_outputs> tag.")
-    outvars2pecanify <- "GPP NPP SoilOrgC VegC LAI"
+    pecan_outvars <- "GPP NPP SoilOrgC VegC LAI"
     outspec_path <- dvmdostem_output_spec
     if (dirname(outspec_path) == ".") {
       # User specified the name of another file that should be in the inst folder
@@ -59,7 +59,7 @@ setup.outputs.dvmdostem <- function(pecan_requested_outputs, dvmdostem_output_sp
   }
   # 3) user specified both custom output spec and variable list
   if (is.not.null(pecan_requested_outputs) && is.not.null(dvmdostem_output_spec)) {
-    outvars2pecanify <- pecan_requested_outputs
+    pecan_outvars <- pecan_requested_outputs
     outspec_path <- dvmdostem_output_spec
   }
 
@@ -71,7 +71,7 @@ setup.outputs.dvmdostem <- function(pecan_requested_outputs, dvmdostem_output_sp
   }
 
   # Check that at least one variable is enabled.
-  if( length(unlist((strsplit(outvars2pecanify, " ")))) < 1 ){ 
+  if( length(unlist((strsplit(pecan_outvars, " ")))) < 1 ){ 
     PEcAn.logger::logger.error("ERROR! No output variables enabled!")
     PEcAn.logger::logger.error("Try adding the <dvmdostem_pecan_outputs> tag to your pecan.xml file!")
     stop()
@@ -81,7 +81,7 @@ setup.outputs.dvmdostem <- function(pecan_requested_outputs, dvmdostem_output_sp
   # accumulate list of dvmdostem variables to turn on to support
   # the requested variables in the pecan.xml tag
   req_v_str <- ""
-  for (pov in unlist(strsplit(outvars2pecanify, " "))) {
+  for (pov in unlist(strsplit(pecan_outvars, " "))) {
     #print(paste("HERE>>>", vmap_reverse[[pov]][["depends_on"]]))
     req_v_str <- trimws(paste(req_v_str, vmap_reverse[[pov]][["depends_on"]], sep = " "))
   }
