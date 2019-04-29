@@ -33,8 +33,8 @@ create_execute_test_xml <- function(run_list){
   outdir_base<-config.list$output_folder
   outdir_pre <- paste(model.new$model_name,format(as.Date(start_date), "%Y-%m"),
                       format(as.Date(end_date), "%Y-%m"),
-                      met,site_id,"_test_runs",
-                      sep="",collapse =NULL)
+                      met,site_id,"test_runs",
+                      sep="_",collapse =NULL)
   outdir <-  paste0(outdir_base,outdir_pre)
   dir.create(outdir)
   settings$outdir <- outdir
@@ -157,7 +157,7 @@ site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
     in_date = data.table::between(as.numeric(lubridate::year(startdate)),as.numeric(start_year),as.numeric(end_year))
   ) %>%
   dplyr::filter(in_date & as.numeric(end_year) - as.numeric(start_year) > 1) 
-  
+
   
 
 
@@ -174,3 +174,7 @@ tab <-run_table %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...)
 },otherwise =NA))
 )
 
+## print to table
+tux_tab <- huxtable::hux(tab)
+html_table <- huxtable::print_html(tux_tab)
+htmlTable::htmlTable(tab)
