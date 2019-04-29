@@ -88,7 +88,7 @@
 
     <!-- Control the outputs. -->
     <dvmdostem_output_spec></dvmdostem_output_spec>
-    <dvmdostem_outvarstopecanify></dvmdostem_outvarstopecanify>
+    <dvmdostem_pecan_outputs></dvmdostem_pecan_outputs>
 
     <!--The dynamic modeled lai setting controls whether LAI is calculated
     internally, or set each year from static initialization values. -->

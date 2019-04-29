@@ -47,7 +47,7 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
   }
   # 2) user specified custom path, no outvars
   if (is.not.null(dvmdostem_output_spec) && is.null(out_vars_to_pecanify)) {
-    PEcAn.logger::logger.warn("You probably want to specify output variables as well via the <dvmdostem_outvarstopecanify> tag.")
+    PEcAn.logger::logger.warn("You probably want to specify output variables as well via the <dvmdostem_pecan_outputs> tag.")
     outvars2pecanify <- "GPP NPP SoilOrgC VegC LAI"
     outspec_path <- dvmdostem_output_spec
     if (dirname(outspec_path) == ".") {
@@ -73,7 +73,7 @@ setup.outputs.dvmdostem <- function(out_vars_to_pecanify, dvmdostem_output_spec,
   # Check that at least one variable is enabled.
   if( length(unlist((strsplit(outvars2pecanify, " ")))) < 1 ){ 
     PEcAn.logger::logger.error("ERROR! No output variables enabled!")
-    PEcAn.logger::logger.error("Try adding the <dvmdostem_outvarstopecanify> tag to your pecan.xml file!")
+    PEcAn.logger::logger.error("Try adding the <dvmdostem_pecan_outputs> tag to your pecan.xml file!")
     stop()
   }
 
@@ -621,12 +621,12 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # setup the variables to output based on tags in xml file.
   v <- setup.outputs.dvmdostem(
-      settings$model$dvmdostem_outvarstopecanify, 
+      settings$model$dvmdostem_pecan_outputs, 
       settings$model$dvmdostem_output_spec,
       rundir, run.id, appbinary_path
   )
   rs_outspec_path <- v[1]
-  dvmdostem_req_v_str <- v[2] # and: settings$model$dvmdostem_outvarstopecanify
+  dvmdostem_req_v_str <- v[2] # and: settings$model$dvmdostem_pecan_outputs
 
   ## Update dvm-dos-tem config.js file
 
@@ -731,7 +731,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     jobsh <- gsub("@FORCE_CMTNUM@", paste0("--force-cmt ", cmtnum), jobsh)
   }
 
-  jobsh <- gsub("@PECANREQVARS@", settings$model$dvmdostem_outvarstopecanify, jobsh)
+  jobsh <- gsub("@PECANREQVARS@", settings$model$dvmdostem_pecan_outputs, jobsh)
   
   # Really no idea what the defaults should be for these if the user
   # does not specify them in the pecan.xml file...
