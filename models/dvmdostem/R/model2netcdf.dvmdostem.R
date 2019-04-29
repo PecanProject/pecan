@@ -13,8 +13,7 @@
 ##' @param outdir Location of dvmdostem model output
 ##' @param runstart ??
 ##' @param runend ??
-##' @param outvars2pecanify is a space separated string of variables (using dvmdostem
-##'        names) to process into PEcAn shape.
+##' @param pecan_req_vars a space separated string with names of the PEcAn variables to output.
 ##' @examples  
 ##' \dontrun{
 ##' # example code here?
@@ -25,13 +24,11 @@
 ##' @author Tobey Carman, Shawn Serbin
 ##'
 library(lubridate)
-model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify, pecan_req_vars) {
+model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_req_vars) {
 
   PEcAn.logger::logger.info(paste0("Run start: ", runstart, " Run end: ", runend))
   PEcAn.logger::logger.info(paste0("Processing dvmdostem outputs in: ", outdir))
   PEcAn.logger::logger.info(paste0("Building the following PEcAn variables: ", pecan_req_vars))
-  PEcAn.logger::logger.info(paste0("Which will require the following dvmdostem variables: ", outvars2pecanify))
-
   
   # First things first, we need to check the run_status.nc file and make sure
   # that the a) only one pixel ran, and b) the success code is > 0
@@ -104,10 +101,15 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, outvars2pecanify, p
   monthly_dvmdostem_outputs <- list.files(outdir, "*_monthly_*")
   yearly_dvmdostem_outputs <- list.files(outdir, "*_yearly_*")
 
-  # outvars2pecanify is a space separated string of variables 
-  # (using dvmdostem names) to process into PEcAn shape.
-  dvmdostem_outputs <- unlist(strsplit(outvars2pecanify, " +"))
+  # Split apart the string of pecan vars passed into the function
   pecan_vars_to_build <- unlist(strsplit(pecan_req_vars, " +"))
+
+  # Look up the required dvmdostem variables.
+  dvmdostem_outputs <- ""
+  for (pov in pecan_vars_to_build) {
+    dvmdostem_outputs <- trimws(paste(dvmdostem_outputs, vmap_reverse[[pov]][["depends_on"]], sep = " "))
+  }
+  dvmdostem_outputs <- unlist(strsplit(trimws(dvmdostem_outputs), " +"))
 
   
   # Look at the first dvmdostem output, see if it is was provided by dvmdostem

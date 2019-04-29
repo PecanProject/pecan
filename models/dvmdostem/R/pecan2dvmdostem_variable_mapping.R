@@ -13,5 +13,5 @@ vmap_reverse <- list(
   "LAI"        = c(depends_on="LAI", longname="Leaf Area Index", newunits="m2/m2"),
   "VegC"       = c(depends_on="VEGC", longname="Vegetation Carbon", newunits="kg C m-2"),
   "DeepC"      = c(depends_on="DEEPC", longname="Deep (amporphous) Soil C", newunits="kg C m-2"),
-  "AvailN"       = c(depends_on="AVLN", longname="Available Nitrogen", newunits="kg N m-2")
+  "AvailN"     = c(depends_on="AVLN", longname="Available Nitrogen", newunits="kg N m-2")
 )

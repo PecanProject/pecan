@@ -731,9 +731,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     jobsh <- gsub("@FORCE_CMTNUM@", paste0("--force-cmt ", cmtnum), jobsh)
   }
 
-  # Make sure the correct output variables are translated.
-  # The outvars2peanify list (quoted, space separated string) is curated above.
-  jobsh <- gsub("@OUTVARSTOPECANIFY@", dvmdostem_req_v_str, jobsh)
   jobsh <- gsub("@PECANREQVARS@", settings$model$dvmdostem_outvarstopecanify, jobsh)
   
   # Really no idea what the defaults should be for these if the user
