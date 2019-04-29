@@ -24,12 +24,23 @@
 ##' @author Tobey Carman, Shawn Serbin
 ##'
 library(lubridate)
-model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_req_vars) {
+model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_vars) {
 
   PEcAn.logger::logger.info(paste0("Run start: ", runstart, " Run end: ", runend))
   PEcAn.logger::logger.info(paste0("Processing dvmdostem outputs in: ", outdir))
   PEcAn.logger::logger.info(paste0("Building the following PEcAn variables: ", pecan_req_vars))
+
+  # Split apart the string of pecan vars passed into the function
+  pecan_requested_vars <- unlist(strsplit(pecan_requested_vars, " +"))
   
+  # Look up the required dvmdostem variables.
+  dvmdostem_outputs <- ""
+  for (pov in pecan_requested_vars) {
+    dvmdostem_outputs <- trimws(paste(dvmdostem_outputs, vmap_reverse[[pov]][["depends_on"]], sep = " "))
+  }
+  dvmdostem_outputs <- unlist(strsplit(trimws(dvmdostem_outputs), " +"))
+
+
   # First things first, we need to check the run_status.nc file and make sure
   # that the a) only one pixel ran, and b) the success code is > 0
   nc_runstatus <- ncdf4::nc_open(file.path(outdir, "run_status.nc"), write=FALSE)
@@ -101,17 +112,6 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_req_vars) {
   monthly_dvmdostem_outputs <- list.files(outdir, "*_monthly_*")
   yearly_dvmdostem_outputs <- list.files(outdir, "*_yearly_*")
 
-  # Split apart the string of pecan vars passed into the function
-  pecan_vars_to_build <- unlist(strsplit(pecan_req_vars, " +"))
-
-  # Look up the required dvmdostem variables.
-  dvmdostem_outputs <- ""
-  for (pov in pecan_vars_to_build) {
-    dvmdostem_outputs <- trimws(paste(dvmdostem_outputs, vmap_reverse[[pov]][["depends_on"]], sep = " "))
-  }
-  dvmdostem_outputs <- unlist(strsplit(trimws(dvmdostem_outputs), " +"))
-
-  
   # Look at the first dvmdostem output, see if it is was provided by dvmdostem
   # as monthly or yearly, and adjust accordingly.
   # NOTE: Assumes that all dvmdostem output files are at the same 
@@ -189,7 +189,7 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_req_vars) {
 
     newvars <- c() # Not very efficient, would be better to pre-allocate space
     j <- 0
-    for (name in pecan_vars_to_build){
+    for (name in pecan_requested_vars){
       j <- j + 1
       ncvar <- ncdf4::ncvar_def(name = name,
                                 units = vmap_reverse[[name]][["newunits"]],
@@ -214,7 +214,7 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_req_vars) {
   # the respective yearly PEcAn output files.
   for (i in seq_along(1:length(y_tr_starts))) {
     ncout <- ncdf4::nc_open(file.path(outdir, paste0(lubridate::year(y_tr_starts[i]), ".nc")), write = TRUE)
-    for (j in pecan_vars_to_build) {
+    for (j in pecan_requested_vars) {
 
       # Look up the depends_on in the reverse map
       for (k in vmap_reverse[[j]][["depends_on"]]) {
@@ -295,7 +295,7 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_req_vars) {
   # the respective yearly PEcAn output files.
   for (i in seq_along(1:length(y_sc_starts))) {
     ncout <- ncdf4::nc_open(file.path(outdir, paste0(lubridate::year(y_sc_starts[i]), ".nc")), write = TRUE)
-    for (j in pecan_vars_to_build) {
+    for (j in pecan_requested_vars) {
 
       # Look up the depends_on in the reverse map
       for (k in vmap_reverse[[j]][["depends_on"]]) {
