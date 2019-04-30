@@ -449,13 +449,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
 
   dat <-runMCMC(Cmcmc, niter = nitr.GEF, nburnin=nburnin, thin =nthin, nchains = 1)
   
-  #---- Plotting chains
-  pdf("SDA/XallMCMC.pdf",width = 10, height = 8)
-  lattice::xyplot(dat[, grep("Xall[", colnames(dat), fixed = TRUE)] %>%
-                    `class<-`(c("mcmc.list"))) %>%
-    print
-  
-  dev.off()
+  #---- Saving the chains
+  save(dat, file=paste0("SDA/Chains_", t, ".RData"))
   
   ## update parameters
   iX   <- grep("Xall[", colnames(dat), fixed = TRUE)
