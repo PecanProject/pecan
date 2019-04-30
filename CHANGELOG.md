@@ -7,7 +7,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Fixes
+- Fixed issue that prevented modellauncher from working properly #2262
+
 ### Changed
+- Updated modules/rtm PROSPECT docs
+- Updated models/sipnet/R/model2netcdf.SIPNET.R to address issues in PR #2254 
 - Improved testing (#2281). Automatic Travis CI builds of PEcAn on are now run using three versions of R in parallel. This should mean fewer issues with new releases and better backwards compatibility, but note that we still only guarantee full compatibility with the current release version of R. The tested versions are:
   - `release`, the current public release of R (currently R 3.5). Build failures in this version are fixed before merging the change that caused them. When we say PEcAn is fully tested and working, this is the build we mean.
   - `devel`, the newest available development build of R. We will fix issues with this version before the next major R release.
@@ -23,10 +28,14 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - scripts/generate_dependencies.R is now used to generate dependencies for make and docker
 
 ### Added
+- Dockerize the BioCro model.
+- Added PRO4SAIL-D model, using existing 4SAIL src and coupling with PROSPECT-D Fortran code
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
 - Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
 - Added unit tests for `met2model.<MODEL>` functions for most models.
 - Added MAESPA model to docker build
+- `PEcAn.DB` functions now support `RPostgres` (in addition to `RPostgreSQL`).
+- `PEcAn.DB::db.query` now optionally supports prepared statements (#395).
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
@@ -102,6 +111,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added missing ncdf4 library calls in model2netcdf.JULES
 
 ### Added
+- Added download.LandTrendr.AGB and extract.LandTrendr.AGB functions in modules/data.remote
 - Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
 - Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
@@ -111,6 +121,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 
 ### Changed
+- Updated models/fates/R/model2netcdf.FATES.R to increase supported model outputs. Added longname to nc file variables
 - Updated models/dalec/R/model2netcdf.DALEC.R to add time_bounds variable
 - Updated models/maat/R/write.config.MAAT.R to improve flow, remove bugs, and to work with the release version of the MAAT model.
 - Minor update to modules/data.atmosphere/R/met2CF.csv.R to include recursive=TRUE for outfolder.  Seemed to work better
@@ -208,13 +219,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - shiny/Data-Ingest/DESCRIPTION no longer `DEPENDS` on `shinyFiles` or `shinycssloaders`
 
 ### Changed
-
+- PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
 - Fixed Git instructions and remote execution instructions.
 - Five functions from PEcAn.utils functions have been moved to other packages. The versions in PEcAn.utils are deprecated, will not be updated with any new features, and will be removed in a future release.
   - run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow 
   - read.ensemble.output, get.ensemble.samples and write.ensemble.configs have been moved to PEcAn.uncertainty
 - Change the way packages are checked for and called in SHINY apps. DESCRIPTION files in SHINY apps are not the place to declare pacakge dpendencies.    
-
 
 ## [1.5.3] - 2018-05-15
 

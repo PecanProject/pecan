@@ -160,13 +160,13 @@ done
 # MODEL BUILD SECTION
 # --------------------------------------------------------------------------------
 
-# build sipnet
-for version in 136; do
+# build biocro
+for version in 0.95; do
     ${DEBUG} docker build \
-        --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
+        --tag pecan/model-biocro-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
-        models/sipnet
+        models/biocro
 done
 
 # build ed2
@@ -185,4 +185,13 @@ for version in git; do
         --build-arg MODEL_VERSION="${version}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
         models/maespa
+done
+
+# build sipnet
+for version in 136; do
+    ${DEBUG} docker build \
+        --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
+        --build-arg MODEL_VERSION="${version}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        models/sipnet
 done
