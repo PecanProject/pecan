@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Use docker.sh -h for instructions on how to use this script.
+
 # exit script if error occurs (-e) in any command of pipeline (pipefail)
 set -o pipefail
 set -e
@@ -26,11 +28,66 @@ VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
 # check for branch and set IMAGE_VERSION
 if [ "${PECAN_GIT_BRANCH}" == "master" ]; then
     IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
-elif [ "${PECAN_GIT_BRANCH}" == "master" ]; then
+elif [ "${PECAN_GIT_BRANCH}" == "develop" ]; then
     IMAGE_VERSION=${IMAGE_VERSION:-"develop"}
 else
     IMAGE_VERSION=${IMAGE_VERSION:-"testing"}
 fi
+
+# read command line options, overriding any environment variables
+while getopts dfhi:r: opt; do
+    case $opt in
+    d)
+        DEBUG="echo"
+        ;;
+    f)
+        DEPEND="build"
+        ;;
+    h)
+        cat << EOF
+$0 [-dfh] [-i <IMAGE_VERSION>] [-r <R VERSION]
+
+The following script can be used to create all docker images. Without any
+options this will build all images and tag them based on the branch you
+are on. The master branch will be tagged with latest, develop branch will
+be tagged with develop and any other branch will be tagged with testing.
+Most options can be set using either an environment variable or using
+command line options. If both are set, the command line options will
+override the environmnet variables.
+
+You can change the docker image tag using the environment variable
+IMAGE_VERSION or the option -i.
+
+To run the script in debug mode without actually building any images you
+can use the environment variable DEBUG or option -d.
+
+By default the docker.sh process will try and use a prebuild dependency
+image since this image takes a long time to build. To force this image
+to be build use the DEPEND="build" environment flag, or use option -f.
+
+To set the version used of R when building the dependency image use
+the environment option R_VERSION (as well as DEPEND). You can also use
+the -r option which will make sure the dependency image is build.
+
+You can use the FROM_IMAGE environment variable to also specify what
+image should be used when building the base image. You can for example
+use the previous base image which will speed up the compile process of
+PEcAn.
+EOF
+        exit 1
+        ;;
+    i)
+        IMAGE_VERSION="$OPTARG"
+        ;;
+    n)
+        DEBUG="echo"
+        ;;
+    r)
+        R_VERSION="$OPTARG"
+        DEPEND="build"
+        ;;
+    esac
+done
 
 # information for user before we build things
 echo "# ----------------------------------------------------------------------"
@@ -103,13 +160,13 @@ done
 # MODEL BUILD SECTION
 # --------------------------------------------------------------------------------
 
-# build sipnet
-for version in 136; do
+# build biocro
+for version in 0.95; do
     ${DEBUG} docker build \
-        --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
+        --tag pecan/model-biocro-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
-        models/sipnet
+        models/biocro
 done
 
 # build ed2
@@ -128,4 +185,13 @@ for version in git; do
         --build-arg MODEL_VERSION="${version}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
         models/maespa
+done
+
+# build sipnet
+for version in 136; do
+    ${DEBUG} docker build \
+        --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
+        --build-arg MODEL_VERSION="${version}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        models/sipnet
 done

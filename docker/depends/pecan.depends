@@ -83,13 +83,13 @@ install2.r -e -s -n -1\
     RCurl \
     REddyProc \
     redland \
+    reshape \
     reshape2 \
     reticulate \
     rgdal \
     rjags \
     rjson \
     rlang \
-    RMySQL \
     rnoaa \
     RPostgreSQL \
     Rpreles \
