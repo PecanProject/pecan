@@ -115,9 +115,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     }
   }
   obs.times <- obs.times.POSIX
-  obs.times[1] <- strptime('0950-12-31 23:59:59',format="%Y-%m-%d %H:%M:%S",tz="UTC")
-  obs.times[2] <- strptime('0970-12-31 23:59:59',format="%Y-%m-%d %H:%M:%S",tz="UTC")
-  obs.times[3] <- strptime('0990-12-31 23:59:59',format="%Y-%m-%d %H:%M:%S",tz="UTC")
   
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
@@ -153,25 +150,24 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###-------------------------------------------------------------------###----   
   if (restart){
     if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
+    
     load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    if(length(FORECAST)==length(ANALYSIS)) t = t + 1
+    load(file.path(settings$outdir,"SDA", "outconfig.Rdata"))
+    run.id <- outconfig$runs$id
+    ensemble.id <- outconfig$ensemble.id
+    
     #--- Updating the nt and etc
     if(!dir.exists(file.path(settings$outdir,"SDA",assimyears[t]))) dir.create(file.path(settings$outdir,"SDA",assimyears[t]))
+    
     # finding/moving files to it's end year dir
     files.last.sda<-list.files.nodir(file.path(settings$outdir,"SDA"))
+    
     #copying
     file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
-              file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda))
-    )
-    if (processvar) {
-      
-      if(length(enkf.params) > 1){
-        aqq<-enkf.params[[t-1]]$aqq
-        bqq<-enkf.params[[t-1]]$bqq
-        X.new<-enkf.params[[t-1]]$X.new
-      }
-      
-    }
+              file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda)))
+    
+    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + 1 #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
+    
   }else{
     t = 1
   }
@@ -190,12 +186,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     # Why t>1 is different ? Because the ensemble.write.config would be different. It has the restart argument and it needs it's own setup.
     # Also, assumes that sda has gotten through at least one analysis step
     # plus in t>1 we split the met data for the models that they need that.
-    if (t>1){
+    
+    ## First question, do we have forecast output to compare to our data?
+    ## If not, need to run forecast
+    ## using paste because dont want to confuse with ensemble ids
+    if (length(grep(paste0('/',obs.year,'.nc'),list.files(outdir,"*.nc",recursive = T,full.names = F))) == 0){ #removing:t > 1
+      
       #removing old simulations #why? don't we need them to restart?
       #unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- list()
-      if(!no_split){
+      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+      if(!no_split & exists('outconfig')){
         for(i in seq_len(nens)){
           #---------------- model specific split inputs
           inputs.split$samples[i] <-do.call(my.split_inputs, 
@@ -210,54 +212,21 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         inputs.split<-inputs
       }
       #---------------- setting up the restart argument
-      # TO DO Need it to not rerun if gets in here and forcast is > then analysis
-      restart.arg<-list(runid = run.id, 
-                        start.time = strptime(obs.times[t-1],format="%Y-%m-%d %H:%M:%S"),
-                        stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
-                        settings = settings,
-                        new.state = new.state, 
-                        new.params = new.params, 
-                        inputs = inputs.split, 
-                        RENAME = TRUE,
-                        ensemble.id=ensemble.id)
       
-    }else{
-      if(restart == TRUE & length(FORECAST) < t){
-        #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
-        inputs.split <- list()
-        if(!no_split){
-          for(i in seq_len(nens)){
-            #---------------- model specific split inputs
-            inputs.split$samples[i] <-do.call(my.split_inputs, 
-                                              args = list(settings = settings, 
-                                                          start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + lubridate::second(hms("00:00:01"))), 
-                                                          stop.time = obs.times[t],
-                                                          inputs = inputs$samples[[i]])) 
-            
-            
-          } 
-        }else{
-          inputs.split<-inputs
-        }
-        
-        restart.arg <- list(runid = run.id, 
-                            start.time = settings$run$start.date, #assuming t=1
-                            stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
-                            settings = settings,
-                            new.state = NULL, 
-                            new.params = new.params, #this needs to !=NULL because of t=1?
-                            inputs = inputs.split, 
-                            RENAME = TRUE,
-                            ensemble.id=ensemble.id)
-      }else{
-        restart.arg <- NULL
-        new.state <- NULL
-        new.params <- new.params #this needs to !=NULL because of t=1?
+      if(exists('new.state')){ #Has the analysis been run? Yes, then restart from analysis.
+        restart.arg<-list(runid = run.id, 
+                          start.time = strptime(obs.times[t-1],format="%Y-%m-%d %H:%M:%S"),
+                          stop.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
+                          settings = settings,
+                          new.state = new.state, 
+                          new.params = new.params, 
+                          inputs = inputs.split, 
+                          RENAME = TRUE,
+                          ensemble.id=ensemble.id)
+      }else{ #The analysis has not been run. Start from beginning with no restart.
+        restart.arg = NULL
       }
       
-    }
-    
-    if(length(FORECAST)<t){
       #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
       outconfig <- write.ensemble.configs(defaults = settings$pfts, 
                                           ensemble.samples = ensemble.samples, 
@@ -268,13 +237,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       
       save(outconfig, file = file.path(settings$outdir,"SDA", "outconfig.Rdata"))
       
-      
       run.id <- outconfig$runs$id
       ensemble.id <- outconfig$ensemble.id
-      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+      
       #-------------------------------------------- RUN
       PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
-      #------------------------------------------- Reading the output
+      
+    }
+    
+    #------------------------------------------- Reading the output
       X_tmp <- vector("list", 2) 
       X <- list()
       for (i in seq_len(nens)) {
@@ -293,30 +264,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       }
       X <- do.call(rbind, X)
       FORECAST[[t]] <- X
-    }else{
-      X <- FORECAST[[t]]
-      print('Using FORECAST[[t]] from sda.output.Rdata')
-      load(file.path(settings$outdir,"SDA", "outconfig.Rdata"))
-      run.id <- outconfig$runs$id
-      ensemble.id <- outconfig$ensemble.id
-      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+      mu.f <- colMeans(X)
+      Pf <- cov(X)
       
-      if (processvar && t > 1) {
-        aqq<-enkf.params[[t-1]]$aqq
-        bqq<-enkf.params[[t-1]]$bqq
+      if(sum(X,na.rm=T) == 0){
+        logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
       }
-    }
-    
-    if(!exists('Cmcmc_tobit2space') | !exists('Cmcmc')) {
-      recompile = TRUE
-    }else{
-      recompile = FALSE
-    }
-    save(t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id, ensemble.id, ensemble.samples, inputs, file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
-    ###-------------------------------------------------------------------###---- 
+    ###-------------------------------------------------------------------###
+      
     if (any(obs)) {
       # finding obs data
       
@@ -355,6 +313,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
       if(processvar == FALSE){an.method<-EnKF  }else{    an.method<-GEF   }  
+      #-extraArgs
+      if (processvar && t > 1) {
+        aqq <- enkf.params[[t-1]]$aqq
+        bqq <- enkf.params[[t-1]]$bqq
+        X.new<-enkf.params[[t-1]]$X.new
+      }
+      
+      if(!exists('Cmcmc_tobit2space') | !exists('Cmcmc')) {
+        recompile = TRUE
+      }else{
+        recompile = FALSE
+      }
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
                                        FUN=an.method,
@@ -364,9 +334,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                                        extraArg=list(aqq=aqq, bqq=bqq, t=t, recompile=recompile),
                                        nt=nt,
                                        obs.mean=obs.mean,
-                                       obs.cov=obs.cov
-                                       
-      )
+                                       obs.cov=obs.cov)
+      
       #Reading back mu.f/Pf and mu.a/Pa
       #Forecast
       mu.f <- enkf.params[[t]]$mu.f
@@ -414,7 +383,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         ### yes process variance -- no data
       } else {
         mu.a <- mu.f
-        if(is.null(q.bar)){
+        if(!exists('q.bar')){
           q.bar <- diag(ncol(X))
           PEcAn.logger::logger.info('Process variance not estimated. Analysis has been given uninformative process variance')
         } 
@@ -428,7 +397,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     
     if(adjustment == TRUE){
       #if we have process var then x is x.new
-      if (processvar) {X.adj.arg <- X.new }else{ X.adj.arg <- X }
+      if (processvar & exists('X.new')) {X.adj.arg <- X.new }else{ X.adj.arg <- X ; print('using X not X.new. Assuming GEF was skipped this iteration?')}
       analysis <-adj.ens(Pf, X.adj.arg, mu.f, mu.a, Pa)
     }else{
       analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
@@ -459,7 +428,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     
     save(site.locs, t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id,
          ensemble.id, ensemble.samples, inputs, Viz.output,  file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    #writing down the image - either you asked for it or nor :)
+    #writing down the image - either you asked for it or not :)
     #post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
   } ### end loop over time
