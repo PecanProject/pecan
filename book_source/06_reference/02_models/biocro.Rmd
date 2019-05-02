@@ -1,31 +1,39 @@
 ## BioCro {#models-biocro}
 
-| Model Information ||
-| -- | -- |
-| Home Page | |
-| Source Code | |
-| License |  |
-| Authors | |
-| PEcAn Integration | |
+| Model Information |                                                                   |
+| --                | --                                                                |
+| Home Page         | http://biocro.r-forge.r-project.org/                              |
+| Source Code       | https://github.com/ebimodeling/biocro                             |
+| License           |                                                                   |
+| Authors           | Fernando E. Miguez, Deepak Jaiswal, Justin McGrath, David LeBauer |
+| PEcAn Integration | David LeBauer, Dan Wang                                           |
 
-**Introduction**
+### Introduction
 
-Introduction about model
+BioCro is a model that estimates photosynthesis at the leaf, canopy, and ecosystem levels and determines plant biomass allocation and crop yields, using underlying physiological and ecological processes to do so. 
 
-**PEcAn configuration file additions**
+### PEcAn configuration file additions
 
-Should list the model specific additions to the PEcAn file here
+The following sections of the PEcAn XML are relevant to the BioCro model: 
 
-**Model specific input files**
+- `model`
+  - `revision` -- Model version number
+- `run`
+  - `site/id` -- ID associated with desired site from BETYdb site entry
+  - `inputs`
+    - `met/output` -- Set as BIOCRO
+    - `met/path` -- Path to file containing meteorological data
+
+### Model specific input files
 
 List of inputs required by model, such as met, etc.
 
-**Model configuration files**
+### Model configuration files
 
 BioCro uses a config.xml file similar to ED2. At this time, no other template files are required.
 
-**Installation notes**
+### Installation notes
 
 This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
 
-**VM**
+#### VM
