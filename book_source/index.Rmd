@@ -12,7 +12,7 @@ author: "By: PEcAn Team"
 
 **Ecosystem science, policy, and management informed by the best available data and models**
 
-```{r, out.height= "50%", out.width="50%", fig.align='center'}
+```{r, echo=FALSE, out.height= "50%", out.width="50%", fig.align='center'}
 knitr::include_graphics(rep("figures/PecanLogo.png"))
 ```
 
