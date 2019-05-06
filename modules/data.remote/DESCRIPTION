@@ -16,7 +16,10 @@ Imports:
     spatial.tools,
     binaryLogic
 Suggests:
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    ggplot2,
+    rgdal,
+    reshape
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
