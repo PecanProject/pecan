@@ -75,7 +75,7 @@ setup.outputs.dvmdostem <- function(pecan_requested_outputs,
   }
 
   # Check that at least one variable is enabled.
-  if( length(unlist((strsplit(pecan_outvars, " ")))) < 1 ){ 
+  if( length(unlist((strsplit(pecan_outvars, ",")))) < 1 ){ 
     PEcAn.logger::logger.error("ERROR! No output variables enabled!")
     PEcAn.logger::logger.error("Try adding the <dvmdostem_pecan_outputs> tag to your pecan.xml file!")
     stop()
@@ -85,15 +85,18 @@ setup.outputs.dvmdostem <- function(pecan_requested_outputs,
   # accumulate list of dvmdostem variables to turn on to support
   # the requested variables in the pecan.xml tag
   req_v_str <- ""
-  for (pov in unlist(strsplit(pecan_outvars, " "))) {
+  for (pov in unlist(lapply(unlist(strsplit(pecan_outvars, ",")), trimws))) {
     #print(paste("HERE>>>", vmap_reverse[[pov]][["depends_on"]]))
-    req_v_str <- trimws(paste(req_v_str, vmap_reverse[[pov]][["depends_on"]], sep = " "))
+    req_v_str <- trimws(paste(req_v_str, vmap_reverse[[pov]][["depends_on"]], sep = ","))
   }
+  # Ugly, but basically jsut takes care of stripping out empty strings and 
+  # making sure the final result is a 1D list, not nested.
   req_v_str <- trimws(req_v_str)
+  req_v_list <- unlist(lapply(unlist(strsplit(req_v_str, ",")), function(x){x[!x== ""]}))
 
   # Check that all variables specified in list exist in the base output spec file.
   a <- read.csv(outspec_path)
-  for (j in unlist(strsplit(req_v_str, " +"))) {
+  for (j in req_v_list) {
     if (! j %in% a[["Name"]]) {
       PEcAn.logger::logger.error(paste0("ERROR! Can't find variable: '", j, "' in the output spec file: ", outspec_path))
       stop()
@@ -115,7 +118,7 @@ setup.outputs.dvmdostem <- function(pecan_requested_outputs,
           args=c("--empty", rs_outspec_path))
 
   # Fill the run specific output spec file according to list
-  for (j in unlist(strsplit(req_v_str, " "))) {
+  for (j in req_v_list) {
     system2(file.path(appbinary_path, "scripts/outspec_utils.py"),
             args=c(rs_outspec_path, "--on", j, "y", "m"))
   }

@@ -38,7 +38,7 @@ write.data2pecan.file <- function(y_starts, outdir, pecan_requested_vars, monthl
       # Make empty container for new data
       newVector <- vector(mode = "numeric")
 
-      for (k in unlist(strsplit(vmap_reverse[[j]][["depends_on"]], " +"))) {
+      for (k in unlist(strsplit(vmap_reverse[[j]][["depends_on"]], ","))) {
 
         # Determine if dvmdostem file is monthly or yearly
         if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
@@ -128,15 +128,14 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
   PEcAn.logger::logger.info(paste0("Building the following PEcAn variables: ", pecan_requested_vars))
 
   # Split apart the string of pecan vars passed into the function
-  pecan_requested_vars <- unlist(strsplit(pecan_requested_vars, " +"))
-  
+  pecan_requested_vars <- unlist(lapply(unlist(strsplit(pecan_requested_vars, ",")), trimws))
+  pecan_requested_vars <- unlist(lapply(pecan_requested_vars, function(x){x[!x==""]}))
   # Look up the required dvmdostem variables.
   dvmdostem_outputs <- ""
   for (pov in pecan_requested_vars) {
-    dvmdostem_outputs <- trimws(paste(dvmdostem_outputs, vmap_reverse[[pov]][["depends_on"]], sep = " "))
+    dvmdostem_outputs <- trimws(paste(dvmdostem_outputs, vmap_reverse[[pov]][["depends_on"]], sep = ","))
   }
-  dvmdostem_outputs <- unlist(strsplit(trimws(dvmdostem_outputs), " +"))
-
+  dvmdostem_outputs <- unlist(lapply(unlist(strsplit(trimws(dvmdostem_outputs), ",")), function(x){x[!x== ""]}))
 
   # First things first, we need to check the run_status.nc file and make sure
   # that the a) only one pixel ran, and b) the success code is > 0

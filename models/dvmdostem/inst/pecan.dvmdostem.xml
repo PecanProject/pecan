@@ -86,9 +86,12 @@
     It is not reccomended to use anything more verbose than 'warn'. -->
     <dvmdostem_loglevel>err</dvmdostem_loglevel>
 
-    <!-- Control the outputs. -->
+    <!-- Comma separated string of output variables, using PEcAn names. -->
+    <dvmdostem_pecan_outputs></dvmdostem_pecan_outputs> 
+
+    <!-- Deprecated. -->
     <dvmdostem_output_spec></dvmdostem_output_spec>
-    <dvmdostem_pecan_outputs></dvmdostem_pecan_outputs>
+
 
     <!--The dynamic modeled lai setting controls whether LAI is calculated
     internally, or set each year from static initialization values. -->
