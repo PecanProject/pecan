@@ -13,7 +13,7 @@ library(lubridate)
 ##' @title Write data into PEcAn shaped output file.
 ##' @param y_starts a list of years, i.e.: 1901, 1902, 1903, etc.
 ##' @param outdir a path to the location where were we will look for dvmdostem outputs and write PEcAn outputs.
-##' @param pecan_requested_vars space separated string listing the variables to process (PEcAn names).
+##' @param pecan_requested_vars comma separated string listing the variables to process (PEcAn names).
 ##' @param monthly_dvmdostem_outputs list of files available from dvmdostem at monthly resolution.
 ##' @param yearly_dvmdostem_outputs list of files available from dvmdostem at yearly resolution.
 ##' @param px_Y the pixel offset, Y (latitude) dimension.
