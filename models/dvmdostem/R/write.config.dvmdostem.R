@@ -237,7 +237,6 @@ adjust.runmask.dvmdostem <- function(siteDataPath, rundir, pixel_X, pixel_Y) {
 ##' vegetation/community type of the chosen PFTs.
 ##' 
 ##' @name enforce.runmask.cmt.vegmap.harmony
-##' @title 
 ##' @param siteDataPath is the path to the folder where we expect to find the dvmdostem input data files.
 ##' @param rundir is the path to the local running directory where customized files (config, parameters, 
 ##' runmask etc) are copied to.

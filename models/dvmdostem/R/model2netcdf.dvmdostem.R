@@ -9,7 +9,6 @@
 library(lubridate)
 
 ##-------------------------------------------------------------------------------------------------#
-##' @name 
 ##' @title Write data into PEcAn shaped output file.
 ##' @param y_starts a list of years, i.e.: 1901, 1902, 1903, etc.
 ##' @param outdir a path to the location where were we will look for dvmdostem outputs and write PEcAn outputs.
