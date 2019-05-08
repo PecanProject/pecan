@@ -1,6 +1,6 @@
-#### Troubleshooting Docker {#docker-troubleshooting}
+## Troubleshooting Docker {#docker-troubleshooting}
 
-#### "Package not available" while building images
+### "Package not available" while building images
 
 **PROBLEM**: Packages fail to install while building `pecan/depends` and/or `pecan/base` with an error like the following:
 

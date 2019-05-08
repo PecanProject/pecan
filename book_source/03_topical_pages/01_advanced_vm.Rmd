@@ -1,56 +1,12 @@
-## PEcAn Virtual Machine {#pecanvm}
+# VM configuration and maintenance {#working-with-vm}
 
-This section includes the following VM related documentation:
+## Updating the VM {#maintain-vm}
 
-* [Maintaining your PEcAn VM](#maintain-vm)
-* [Connecting to the VM via SSH](#ssh-vm)
-* [Connecting to bety on the VM via SSh](#ssh-vm-bety)
-* [Using Amazon Web Services for a VM (AWS)](#awsvm)
-* [Creating a Virtual Machine](#createvm)
-* [VM Desktop Conversion](#vm-dektop-conversion)
-* [Install RStudio Desktop](#install-rstudio)
+<!-- TODO: With better organization, this section can probably be removed -->
 
+The PEcAn VM is distributed with specific versions of PEcAn compiled. However, you do not need to constantly download the VM in order to update your code and verion of BETY. To update and maintain your code you can follow the steps found in the Developer section in [Updating PecAn and Code and BETY Database]{#updatebety}
 
-The PEcAn virtual machine consists of all of PEcAn pre-compiled within a Linux operating system and saved in a "virtual machine" (VM). Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
-
-1. **Install VirtualBox** This is the software that runs the virtual machine. You can find the download link and instructions at [http://www.virtualbox.org](http://www.virtualbox.org). *NOTE: On Windows you may see a warning about Logo testing, it is okay to ignore the warning.*
-  
-2. **Download the PEcAn VM** You can find the download link at [http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN), under the "**Files**" header. Click the ".ova" file to begin the download. Note that the file is ~7 GB, so this download can take several minutes to hours depending on your connection speed. Also, the VM requires >4 GB of RAM to operate correctly. Please check current usage of RAM and shutdown processes as needed.
-
-3. **Import the VM** Once the download is complete, open VirtualBox. In the VirtualBox menus, go to "File" → "Import Appliance" and locate the downloaded ".ova" file. 
-
-
-For Virtualbox version 5.x: In the Appliance Import Settings, make sure you select "Reinitialize the MAC address of all network cards" (picture below). This is not selected by default and can result in networking issues since multiple machines might claim to have the same network MAC Address. 
-
-```{r, echo=FALSE, fig.align='center'}
-knitr::include_graphics(rep("figures/pic1.jpg"))
-```
-
-For Virtualbox versions starting with 6.0, there is a slightly different interface (see figure). Select "Generate new MAC addresses for all network adapters" from the MAC Address Policy:
-  
-```{r, echo=FALSE, fig.align='center'}
-knitr::include_graphics(rep("figures/pic1v2.png"))
-```
-
-NOTE: If you experience network connection difficulties in the VM with this enabled, try re-importing the VM without this setting selected). 
-
-Finally, click "Import" to build the Virtual Machine from its image.
-
-4. **Launch PEcAn** Double click the icon for the PEcAn VM. A terminal window will pop up showing the machine booting up which may take a minute. It is done booting when you get to the `pecan login:` prompt. You do not need to login as the VM behaves like a server that we will be accessing through you web browser. Feel free to minimize the VM window.
-
-* If you _do_ want to login to the VM, the credentials are as follows: `username: carya`, `password: illinois` (after the pecan tree, [Carya illinoinensis][pecan-wikipedia]).
-
-5. **Open the PEcAn web interface** With the VM running in the background, open any web browser on the same machine and navigate to `localhost:6480/pecan/` to start the PEcAn workflow. (NOTE: The trailing backslash may be necessary depending on your browser)
-
-* To ssh into the VM, open up a terminal on your machine and execute `ssh -l carya -p 6422 localhost`. Username and password are the same as when you log into the machine.
-
-### Maintaining your PEcAn VM {#maintain-vm}
-
-The PEcAn VM is distributed with specific versions of PEcAn compiled. However, you do not need to constantly download the VM in order to update your code and verion of BETY. To update and maintain your code you can follow the steps found in the Developer section in [Updating PecAn and Code and BETY Database]{#updatepecan}
-
-### Working with the VM {#working-with-vm}
-
-#### Connecting to the VM via SSH {#ssh-vm}
+## Connecting to the VM via SSH {#ssh-vm}
 
 Once the VM is running anywhere on your machine, you can connect to it from a separate terminal via SSH as follows:
 
@@ -72,7 +28,7 @@ Host pecan-vm
 
 This will allow you to SSH into the VM with the simplified command, `ssh pecan-vm`.
 
-#### Connecting to bety on the VM via SSh {#ssh-vm-bety}
+## Connecting to bety on the VM via SSh {#ssh-vm-bety}
 
 Sometimes, you may want to develop code locally but connect to an instance of Bety on the VM.
 To do this, first open a new terminal and connect to the VM while enabling port forwarding (with the `-L` flag) and setting XXXX to any available port (more or less any 4 digit number -- a reasonable choice is 3333).
@@ -299,7 +255,7 @@ sudo /mnt/VBoxLinuxAdditions.run
 sudo umount /mnt
 ```
 
-#### Install RStudio Desktop {#install-rstudio}
+### Install RStudio Desktop {#install-rstudio}
 
 ```bash
 wget http://download1.rstudio.org/rstudio-0.97.551-amd64.deb

@@ -1,50 +1,6 @@
-#### Quickstart for Docker and PEcAn {#docker-quickstart}
+## The PEcAn docker install process in detail {#docker-quickstart}
 
-This is a short documentation on how to start with Docker and PEcAn. This will not go into much detail about about how to use docker. The previous section will talk more about [`docker`](#docker-intro) and [`docker-compose`](#docker-compose). The quickstart below assumes you have a basic understanding of both of these technologies.
-
-[Install Docker](#install-docker)
-[Start model runs using curl](#curl-model-runs)
-[Setup PEcAn using docker-compose](#pecan-setup-compose)
-[Initialize the PEcAn database (first time only)](#pecan-docker-quickstart-init)
-[Start PEcAn](#start-pecan)
-
-
-
-#### Install Docker {#install-docker}
-
-
-You will need to install docker first. See https://www.docker.com/community-edition#/download
-
-Once Docker is installed, make sure it is running.
-To test that Docker is installed and running, open a terminal and run the following commands:
-
-```bash
-docker run hello-world
-```
-
-If successful, this should return a message starting with `"Hello from Docker!"`.
-If this doesn't work, there is something wrong with your configuration.
-Refer to the Docker documentation for debugging.
-
-NOTE: Depending on how Docker is installed and configured, you may have to run this command as `sudo`.
-Try running the command without `sudo` first.
-If that fails, but running as `sudo` succeeds, see [these instructions](https://docs.docker.com/install/linux/linux-postinstall/) for steps to use Docker as a non-root user.
-
-
-#### Setup PEcAn using docker-compose {#pecan-setup-compose}
-
-Next make sure you have docker-compose installed. If you are running this on a Mac or Windows this might be already installed. On Linux you will need to install this , see separately https://docs.docker.com/compose/install/.
-
-You can check to see if docker-compose is installed using
-
-```bash
-docker-compose -v
-```
-
-This should print the current version of docker-compose. We have tested the instruction below with versions of docker-compose 1.22 and above.
-
-
-### Setup PEcAn using docker-compose
+### Configure docker-compose {#pecan-setup-compose-configure}
 
 This section will let you download some configuration files. The documentation provides links to the latest released version (master branch in GitHub) or the develop version that we are working on (develop branch in GitHub) which will become the next release. If you cloned the PEcAn GitHub repository you can use `git checkout <branch>` to switch branches.
 
@@ -80,6 +36,7 @@ In the rest of this section we will use a few arguments for the `docker-compose`
 - `-d` : *ARGUMENTS FOR `up` COMMAND* : Will start all the containers in the background and return back to the command shell.
 
 If no services as added to the docker-compose command all services possible will be started.
+
 
 ### Initialize PEcAn (first time only) {#pecan-docker-quickstart-init}
 

@@ -1,23 +1,23 @@
-#### PEcAn Docker Architecture {#pecan-docker}
+## PEcAn Docker Architecture {#pecan-docker}
 
-[Overview](#pecan-docker-overview)
-[PEcAn's `docker-compose`](#pecan-docker-compose)
-[Top-level structure](#pecan-dc-structure)
-[`traefik`](#pecan-dc-traefik)
-[`portainer`](#pecan-dc-portainer)
-[`minio`](#pecan-dc-minio)
-[`thredds`](#pecan-dc-thredds)
-[`postgres`](#pecan-dc-postgres)
-[`rabbitmq`](#pecan-dc-rabbitmq)
-[`bety`](#pecan-dc-bety)
-[`docs`](#pecan-dc-docs)
-[`web`](#pecan-dc-web)
-[`executor`](#pecan-dc-executor)
-[`monitor`](#pecan-dc-monitor)
-[Model-specific containers](#pecan-dc-models)
+* [Overview](#pecan-docker-overview)
+* [PEcAn's `docker-compose`](#pecan-docker-compose)
+* [Top-level structure](#pecan-dc-structure)
+* [`traefik`](#pecan-dc-traefik)
+* [`portainer`](#pecan-dc-portainer)
+* [`minio`](#pecan-dc-minio)
+* [`thredds`](#pecan-dc-thredds)
+* [`postgres`](#pecan-dc-postgres)
+* [`rabbitmq`](#pecan-dc-rabbitmq)
+* [`bety`](#pecan-dc-bety)
+* [`docs`](#pecan-dc-docs)
+* [`web`](#pecan-dc-web)
+* [`executor`](#pecan-dc-executor)
+* [`monitor`](#pecan-dc-monitor)
+* [Model-specific containers](#pecan-dc-models)
 
 
-#### Overview {#pecan-docker-overview}
+### Overview {#pecan-docker-overview}
 
 The PEcAn docker architecture consists of many containers (see figure below) that will communicate with each other. The goal of this architecture is to easily expand the PEcAn system by deploying new model containers and registering them with PEcAn. Once this is done the user can now use these new models in their work. The PEcAn framework will setup the configurations for the models, and send a message to the model containers to start execution. Once the execution is finished the PEcAn framework will continue. This is exactly as if the model is running on a HPC machine. Models can be executed in parallel by launching multiple model containers.
 
@@ -38,7 +38,7 @@ The PEcAn framework containers consist of multiple unique ways to interact with 
 
 The model containers contain the actual models that are executed as well as small wrappers to make them work in the PEcAn framework. The containers will run the model based on the parameters received from the message bus and convert the outputs back to the standard PEcAn output format. Once the container is finished processing a message it will immediatly get the next message and start processing it.
 
-#### PEcAn's `docker-compose` {#pecan-docker-compose}
+### PEcAn's `docker-compose` {#pecan-docker-compose}
 
 ```{r comment='', echo = FALSE, results = 'hide'}
 docker_compose_file <- file.path("..", "docker-compose.yml")
@@ -89,7 +89,7 @@ volumes:
       o: bind
 ```
 
-#### Top-level structure {#pecan-dc-structure}
+### Top-level structure {#pecan-dc-structure}
 
 The root of the `docker-compose.yml` file contains three sections:
 
@@ -126,7 +126,7 @@ Here, we define three volumes:
 	- `pecan` -- This volume contains PEcAn's `dbfiles`, which include downloaded and converted model inputs, processed configuration files, and outputs.
 	It is used by almost all of the services in the PEcAn stack, and is typically mounted to `/data`.
  
-#### `traefik` {#pecan-dc-traefik}
+### `traefik` {#pecan-dc-traefik}
 
 [Traefik](https://traefik.io/) manages communication among the different PEcAn services and between PEcAn and the web.
 Among other things, `traefik` facilitates the setup of web access to each PEcAn service via common and easy-to-remember URLs.
@@ -145,7 +145,7 @@ yaml::write_yaml(dc_yaml$services["traefik"], stdout())
 ```
 
  
-#### `portainer` {#pecan-dc-portainer}
+### `portainer` {#pecan-dc-portainer}
 
 [portainer](https://portainer.io/) is lightweight management UI that allows you to manage the docker host (or swarm). You can use this service to monitor the different containers, see the logfiles, and start and stop containers.
 
@@ -157,7 +157,7 @@ yaml::write_yaml(dc_yaml$services["portainer"], stdout())
 
 Portainer is accessible by browsing to `localhost:8000/portainer/`. You can either set the password in the `.env` file (for an example see env.example) or you can use the web browser and go to the portainer url. If this is the first time it will ask for your password.
 
-#### `minio` {#pecan-dc-minio}
+### `minio` {#pecan-dc-minio}
 
 [Minio](https://github.com/minio/minio) is a service that provides access to the a folder on disk through a variety of protocols, including S3 buckets and web-based access.
 We mainly use Minio to facilitate access to PEcAn data using a web browser without the need for CLI tools.
@@ -181,7 +181,7 @@ docker run -it --rm --volumes pecan_pecan:/data --volumes /path/to/local/directo
 # Now, you can move files between `/data` and `/localdir`, create new directories, etc.
 ```
 
-#### `thredds` {#pecan-dc-thredds}
+### `thredds` {#pecan-dc-thredds}
 
 This service allows PEcAn model outputs to be accessible via the [THREDDS data server (TDS)](https://www.unidata.ucar.edu/software/thredds/current/tds/).
 When the PEcAn stack is running, the catalog can be explored in a web browser at http://localhost:8000/thredds/catalog.html.
@@ -204,7 +204,7 @@ yaml::write_yaml(dc_yaml$services["thredds"], stdout())
 ```
 
 
-#### `postgres` {#pecan-dc-postgres}
+### `postgres` {#pecan-dc-postgres}
 
 This service provides a working PostGIS database.
 Our configuration is fairly straightforward:
@@ -224,7 +224,7 @@ As mentioned above, the hostname of this service is just its name, i.e. `postgre
 
 - `volumes` -- Note that the PostgreSQL data files (which store the values in the SQL database) are stored on a _volume_ called `postgres` (which is _not_ the same as the `postgres` _service_, even though they share the same name).
 
-#### `rabbitmq` {#pecan-dc-rabbitmq}
+### `rabbitmq` {#pecan-dc-rabbitmq}
 
 [RabbitMQ](https://www.rabbitmq.com/) is a message broker service.
 In PEcAn, RabbitMQ functions as a task manager and scheduler, coordinating the execution of different tasks (such as running models and analyzing results) associated with the PEcAn workflow.
@@ -240,7 +240,7 @@ Note that the `traefik.frontend.rule` indicates that browsing to http://localhos
 By default, the RabbitMQ management console has username/password `guest/guest`, which is highly insecure.
 For production instances of PEcAn, we highly recommend changing these credentials to something more secure, and removing access to the RabbitMQ management console via Traefik.
 
-#### `bety` {#pecan-dc-bety}
+### `bety` {#pecan-dc-bety}
 
 This service operates the BETY web interface, which is effectively a web-based front-end to the PostgreSQL database.
 Unlike the `postgres` service, which contains all the data needed to run PEcAn models, this service is not essential to the PEcAn workflow.
@@ -254,7 +254,7 @@ yaml::write_yaml(dc_yaml$services["bety"], stdout())
 
 The BETY container Dockerfile is located in the root directory of the [BETY GitHub repository](https://github.com/pecan/bety) ([direct link](https://github.com/PecanProject/bety/blob/master/Dockerfile)).
 
-#### `docs` {#pecan-dc-docs}
+### `docs` {#pecan-dc-docs}
 
 This service will show the documentation for the version of PEcAn running as well as a homepage with links to all relevant endpoints. You can access this at http://localhost:8000/. You can find the documentation for PEcAn at http://localhost:8000/docs/pecan/.
 
@@ -264,7 +264,7 @@ Our current configuration is as follows:
 yaml::write_yaml(dc_yaml$services["docs"], stdout())
 ```
 
-#### `web` {#pecan-dc-web}
+### `web` {#pecan-dc-web}
 
 This service runs the PEcAn web interface.
 It is effectively a thin wrapper around a standard Apache web server container from Docker Hub that installs some additional dependencies and copies over the necessary files from the PEcAn source code.
@@ -279,7 +279,7 @@ Its Dockerfile ships with the PEcAn source code, in [`docker/base/Dockerfile.web
 
 In terms of [actively developing PEcAn using Docker](#pecan-docker-develop), this is the service to modify when making changes to the web interface (i.e. PHP, HTML, and JavaScript code located in the PEcAn `web` directory).
 
-#### `executor` {#pecan-dc-executor}
+### `executor` {#pecan-dc-executor}
 
 This service is in charge of running the R code underlying the core PEcAn workflow.
 However, it is _not_ in charge of executing the models themselves -- model binaries are located on their [own dedicated Docker containers](#pecan-dc-models), and model execution is coordinated by RabbitMQ.
@@ -297,7 +297,7 @@ To facilitate caching, the `pecan/base` image is itself built on top of the `pec
 In terms of [actively developing PEcAn using Docker](#pecan-docker-develop), this is the service to modify when making changes to the PEcAn R source code.
 Note that, unlike changes to the `web` image's PHP code, changes to the R source code do not immediately propagate to the PEcAn container; instead, you have to re-compile the code by running `make` inside the container.
 
-#### `monitor` {#pecan-dc-monitor}
+### `monitor` {#pecan-dc-monitor}
 
 This service will show all models that are currently running http://localhost:8000/monitor/. This list returned is JSON and shows all models (grouped by type and version) that are currently running, or where seen in the past. This list will also contain a list of all current active containers, as well as how many jobs are waiting to be processed.
 
@@ -309,7 +309,7 @@ Our current configuration is as follows:
 yaml::write_yaml(dc_yaml$services["monitor"], stdout())
 ```
 
-#### Model-specific containers {#pecan-dc-models}
+### Model-specific containers {#pecan-dc-models}
 
 Additional models are added as additional services.
 In general, their configuration should be similar to the following configuration for SIPNET, which ships with PEcAn:
