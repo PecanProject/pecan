@@ -743,6 +743,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
   settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig)
   
+  
   ## close database connection
   if (!is.null(con)) {
     PEcAn.DB::db.close(con)

@@ -39,14 +39,77 @@ pda.emulator.ms <- function(multi.settings) {
   ## -------------------------------------- Individual runs and calibration ------------------------------------------
   
   if(individual){
-    # NOTE: individual flag is not used currently, prepearation for future use
+    # NOTE: individual flag -mode functionality in general- is not currently in use, 
+    # preparation for future use, the idea is to skip site-level fitting if we've already done it
     # if this flag is FALSE, pda.emulator will not fit GP and run MCMC, 
-    # but will run LHC ensembles, calculate SS and return settings list with saved SS paths etc.
-    # this requires some re-arrangement in pda.emulator, 
+    # but this requires some re-arrangement in pda.emulator function 
     # for now we will always run site-level calibration
-    multi.settings[[i]] <- pda.emulator(multi.settings[[i]], individual = individual)
+    
+    
+    # number of sites will probably get big real quick, so some multi-site PDA runs should be run on the cluster
+    # unfortunately pda.emulator function was not fully designed for remote runs, so first we need to prepare a few things it needs
+    # (1) all sites should be running the same knots
+    # (2) all sites will use the same prior.list
+    # (3) the format information for the assimilated data (pda.emulator needs DB connection to query it if it's not externally provided)
+    # (4) ensemble ids (they provide unique trackers for emulator functions)
+    multi_site_objects <- return_multi_site_objects(multi.settings) # using the first site is enough
+    
+    # the default implementation is that we will iteratively run the rounds until improvement in site-level fits slows down.
+    #if(one_round){
+      #multi.settings <- papply(multi.settings, pda.emulator, individual = individual)
+    #}else{
+      
+      # Open the tunnel (might not need)
+      PEcAn.remote::open_tunnel(multi.settings[[1]]$host$name,
+                                user = multi.settings[[1]]$host$user,
+                                tunnel_dir = dirname(multi.settings[[1]]$host$tunnel))
+      
+      emulator_jobs <- rep(NA, length(multi.settings))
+      for(ms in seq_along(multi.settings)){
 
-    multi.settings <- papply(multi.settings, pda.emulator, individual = individual)
+        # Sync to remote
+        subfile <- prepare_pda_remote(multi.settings[[ms]], site = ms, multi_site_objects)
+        
+        # Submit emulator scripts
+        tmp <- PEcAn.remote::remote.execute.cmd(multi.settings[[ms]]$host, paste0("qsub ", subfile))
+        emulator_jobs[ms] <- as.numeric( sub("\\D*(\\d+).*", "\\1", tmp))
+      }
+      
+      # listen
+      repeat{
+        PEcAn.logger::logger.info("Multi-site calibration running. Please wait.")
+        Sys.sleep(1000)
+        check_all_sites <- sapply(emulator_jobs, qsub_run_finished,  multi.settings[[1]]$host, multi.settings[[1]]$host$qstat)
+        if(all(check_all_sites)) break
+      }
+      
+      
+      # Sync regular files back
+      args <- c("-e", paste0("ssh -o ControlPath=\"", multi.settings[[1]]$host$tunnel, "\"", collapse = ""))
+      args <- c(args, paste0(multi.settings[[1]]$host$name, ":", dirname(multi.settings[[1]]$host$outdir)), 
+                multi.settings[[1]]$outdir)
+      system2("rsync", shQuote(args), stdout = TRUE, stderr = FALSE)
+      
+      # update multi.settings
+      for(ms in seq_along(multi.settings)){
+       tmp_settings  <- read.settings(paste0(multi.settings[[ms]]$outdir,"/pecan.pda", 
+                                                     multi_site_objects$ensembleidlist[[ms]],".xml"))
+      multi.settings[[ms]]$assim.batch <- tmp_settings$assim.batch
+      multi.settings[[ms]]$pfts <- tmp_settings$pfts
+      }
+      #repeat(
+
+        #emulator_r_check <- round_check(multi.settings)
+        #if(emulator_r_check) break
+        # external.knots <- sample_multi_site_MCMC
+        # add round tag
+      #)
+      # Close the tunnel
+      PEcAn.remote::kill.tunnel(settings)
+    #}
+    #multi.settings[[i]] <- pda.emulator(multi.settings[[i]], individual = individual)
+
+    
   }
   
   # write multi.settings with individual-pda info
