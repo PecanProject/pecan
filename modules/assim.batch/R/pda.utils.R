@@ -1119,8 +1119,11 @@ return_multi_site_objects <- function(multi.settings){
 ##' @export
 prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   
-  remote_dir <- paste0(settings$host$folder, "/" , settings$workflow$id)
-  
+  # not everyone might be working with workflowid
+  # remote_dir <- paste0(settings$host$folder, "/" , settings$workflow$id)
+  # instead find this directory from remote rundir so that it's consistent
+  remote_dir <- dirname(settings$host$rundir)
+    
   #save
   local_object_file  <- paste0(settings$outdir, "/multi_site_objects_s",site,".Rdata")
   remote_object_file <- paste0(remote_dir, "/multi_site_objects_s",site,".Rdata")
