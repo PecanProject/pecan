@@ -262,25 +262,28 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
 ##--------------------------------------------------------------------------------------------------#
 ##' Get trait data from the database.
 ##'
-##' This will use the following items from setings:
-##' - settings$pfts
-##' - settings$model$type
-##' - settings$database$bety
-##' - settings$database$dbfiles
-##' - settings$meta.analysis$update
-##' @name get.trait.data
-##' @title Gets trait data from the database
+##' This will use the following items from settings:
+##' - `settings$pfts`
+##' - `settings$model$type`
+##' - `settings$database$bety`
+##' - `settings$database$dbfiles`
+##' - `settings$meta.analysis$update`
 ##' @param pfts the list of pfts to get traits for
 ##' @param modeltype type of model that is used, this is is used to distinguis between different pfts with the same name.
 ##' @param dbfiles location where previous results are found
-##' @param database database connection parameters
-##' @param forceupdate set this to true to force an update, false to check to see if an update is needed.
-##' @param trait.names list of traits to query. If TRUE, uses trait.dictionary
-##' @return list of pfts with update posteriorids
-##' @author David LeBauer, Shawn Serbin
+##' @param database database connection parameters (see `params`
+##'   argument to [db.query()])
+##' @param forceupdate (Logical) If `TRUE`, force a database update
+##'   whether or not it is needed. If `FALSE`, only update if an
+##'   update is needed.
+##' @param trait.names Character vector of trait names to search. If
+##'   `NULL` (default), use all traits that have a prior for at least
+##'   one of the `pfts`.
+##' @return list of PFTs with update posteriorids
+##' @author David LeBauer, Shawn Serbin, Alexey Shiklomanov
 ##' @export
-##'
-get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trait.names=NULL) {
+get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
+                           trait.names = NULL) {
   if (!is.list(pfts)) {
     PEcAn.logger::logger.severe('pfts must be a list')
   }
@@ -289,11 +292,13 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trai
   if (any(sapply(pft_outdirs, is.null))) {
     PEcAn.logger::logger.severe('At least one pft in settings is missing its "outdir"')
   }
-  ##---------------- Load trait dictionary --------------#
-  if (is.logical(trait.names)) {
-    if (trait.names) {
-      trait.names <- as.character(PEcAn.utils::trait.dictionary$id)
-    }
+  if (is.null(trait.names)) {
+    PEcAn.logger::logger.debug(paste0(
+      "`trait.names` is NULL, so retrieving all traits ",
+      "that have at least one prior for these PFTs."
+    ))
+    all_priors <- query_priors(pfts, params = database)
+    trait.names <- unique(all_priors[["name"]])
   }
 
   # process all pfts
