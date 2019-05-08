@@ -1147,7 +1147,6 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   remote_sub_file <- paste0(settings$host$folder, "/", settings$workflow$id, "/sub" , site, ".sh")
   
   ######## create R script
-  pdaemulator <- readLines('~/pecan/modules/assim.batch/R/pda.emulator.R',-1)
   local_script_file <- paste0(settings$outdir, "/remote_emulator_s",site,".R")
   first_lines <- c("rm(list=ls(all=TRUE))\n", 
                    "library(PEcAn.assim.batch)\n", 
@@ -1158,7 +1157,7 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   last_lines <- c("pda.emulator(settings, external.priors = external_priors, 
                          external.knots = external_knots, external.formats = external_formats,
                          ensemble.id = ensemble_id, remote = TRUE)")
-  writeLines(c(first_lines, pdaemulator, last_lines), local_script_file)
+  writeLines(c(first_lines, last_lines), local_script_file)
   remote_script_file <- paste0(settings$host$folder, "/", settings$workflow$id, "/remote_emulator_s", site,".R")
   
 
