@@ -4,7 +4,7 @@
 
   <database>
     <bety>
-      <driver>PostgreSQL</driver>
+      <driver>Postgres</driver>
       <user>bety</user>
       <password>bety</password>
       <host>localhost</host>
