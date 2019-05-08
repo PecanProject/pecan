@@ -184,10 +184,10 @@ query_priors <- function(pft_names = NULL, traits = NULL, pft_ids = NULL,
     ntrait <- length(traits)
     if (npft != ntrait || npft == 1 || ntrait == 1) {
       if (!expand) {
-        PEcAn.logger::logger.severe(sprintf(
+        PEcAn.logger::logger.severe(sprintf(paste0(
           "Expand is `FALSE`, but %d PFTs and %d traits were provided. ",
           "Unclear how to recycle, so throwing an error instead."
-        ), npft, ntrait)
+        ), npft, ntrait))
       }
       # Query the full trait x PFT combination
       pfts_traits <- expand.grid(pft = pft_val, trait = traits, stringsAsFactors = FALSE)
@@ -201,13 +201,13 @@ query_priors <- function(pft_names = NULL, traits = NULL, pft_ids = NULL,
   result_pfts <- unique(result[[pft_col]])
   missing_pfts <- setdiff(pft_val, result_pfts)
   missing_traits <- character(0)
-  if (is.null(traits)) {
+  if (!is.null(traits)) {
     result_traits <- unique(result[["name"]])
     missing_traits <- setdiff(traits, result_traits)
   }
   if (length(missing_pfts) + length(missing_traits) > 0) {
     msg <- paste(
-      "The following inputs were not found in the database:",
+      "Data for the following inputs were not found in the database:",
       sprintf("* Trait: '%s'", missing_traits),
       sprintf("* PFT: '%s'", missing_pfts),
       sep = "\n", collapse = "\n"
