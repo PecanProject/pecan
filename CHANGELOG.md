@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixes
 - Fixed issue that prevented modellauncher from working properly #2262
+- Use explicit namespacing (`package::function`) throughout `PEcAn.meta.analysis`. Otherwise, many of these functions would fail when trying to run a meta-analysis outside of the PEcAn workflow (i.e. without having loaded the packages first) (#2351).
 
 ### Changed
 - Updated modules/rtm PROSPECT docs
@@ -26,6 +27,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Reorganization of docker folder
   - All dockerfiles now live in their own folder
   - `scripts/generate_dependencies.R` is now used to generate dependencies for make and docker
+- In `PEcAn.DB::get.trait.data`, if `trait.names` is `NULL` or missing, use the traits for which at least one prior is available among the input list of PFTs. (Previously, we were getting this from the `PEcAn.utils::trait.dictionary`, which we are trying to deprecate #1747). (#2351)
+
 
 ### Added
 
@@ -37,6 +40,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added MAESPA model to docker build
 - PEcAn has more robust support for `RPostgres::Postgres` backend. The backend is officially supported by `db.query`, and basic workflows run top-to-bottom with the `Postgres` backend. However, `RPostgreSQL` is still the default until we do more robust testing of all modules.
 - `PEcAn.DB::db.query` now optionally supports prepared statements (#395).
+- New function `PEcAn.DB::query_priors` that is, IMHO, more robust and intuitive than `query.priors` by leveraging `RPostgres` prepared statements, providing more informative errors, and handling inputs in a more sophisticated way. Its output should be a perfect superset of `query.traits`, so I think it should work as a drop-in replacement. Note that a unit test and detailed function documentation are included. (#2351)
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
