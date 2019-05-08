@@ -35,12 +35,10 @@ check.lists <- function(x, y, filename = "species.csv") {
 }
 
 ##--------------------------------------------------------------------------------------------------#
-##' Get trait data from the database for a single pft
+##' Get trait data from the database for a single PFT
 ##'
-##' @name get.trait.data.pft
-##' @title Gets trait data from the database
-##' @details \code{pft} should be a list containing at least `name` and `outdir`, and optionally `posteriorid` and `constants`. BEWARE: All existing files in \code{outir} will be deleted!
-##' @param pft list of settings for the pft whos traits to retrieve. See details
+##' @details `pft` should be a list containing at least `name` and `outdir`, and optionally `posteriorid` and `constants`. BEWARE: All existing files in `outir` will be deleted!
+##' @param pft list of settings for the pft whose traits to retrieve. See details
 ##' @param modeltype type of model that is used, this is used to distinguish between different pfts with the same name.
 ##' @param dbfiles location where previous results are found
 ##' @param dbcon database connection
@@ -49,7 +47,6 @@ check.lists <- function(x, y, filename = "species.csv") {
 ##' @return updated pft with posteriorid
 ##' @author David LeBauer, Shawn Serbin, Rob Kooper
 ##' @export
-##'
 get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
                                forceupdate = FALSE) {
 
