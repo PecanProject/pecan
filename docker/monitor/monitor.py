@@ -299,11 +299,11 @@ def rabbitmq_monitor():
     channel.exchange_declare(exchange='models', exchange_type='fanout', durable=True)
 
     # create anonymous queue
-    result = channel.queue_declare(exclusive=True)
+    result = channel.queue_declare('', exclusive=True)
     channel.queue_bind(exchange='models', queue=result.method.queue)
 
     # listen for messages
-    channel.basic_consume(on_message_callback=callback, queue=result.method.queue, no_ack=True)
+    channel.basic_consume(on_message_callback=callback, queue=result.method.queue)
 
     channel.start_consuming()
 
