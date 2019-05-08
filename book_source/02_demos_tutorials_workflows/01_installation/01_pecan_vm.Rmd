@@ -1,13 +1,14 @@
 ## PEcAn Virtual Machine {#pecanvm}
 
 This section includes the following VM related documentation:
-[Maintaining your PEcAn VM](#maintain-vm)
-[Connecting to the VM via SSH](#ssh-vm)
-[Connecting to bety on the VM via SSh](#ssh-vm-bety)
-[Using Amazon Web Services for a VM (AWS)](#awsvm)
-[Creating a Virtual Machine](#createvm)
-[VM Desktop Conversion](#vm-dektop-conversion)
-[Install RStudio Desktop](#install-rstudio)
+
+* [Maintaining your PEcAn VM](#maintain-vm)
+* [Connecting to the VM via SSH](#ssh-vm)
+* [Connecting to bety on the VM via SSh](#ssh-vm-bety)
+* [Using Amazon Web Services for a VM (AWS)](#awsvm)
+* [Creating a Virtual Machine](#createvm)
+* [VM Desktop Conversion](#vm-dektop-conversion)
+* [Install RStudio Desktop](#install-rstudio)
 
 
 The PEcAn virtual machine consists of all of PEcAn pre-compiled within a Linux operating system and saved in a "virtual machine" (VM). Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
