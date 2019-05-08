@@ -195,7 +195,7 @@ sda.enkf.multisite <- function(settings,
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###----   
   if (restart){
-    
+    browser()
     if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
     load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #--- Updating the nt and etc
