@@ -12,7 +12,8 @@ query_priors(pft_names = NULL, traits = NULL, pft_ids = NULL,
 BETY `pfts` table). You cannot pass both this and `pft_ids`.}
 
 \item{traits}{Character vector of trait names (`name` column of
-BETY `traits` table)}
+BETY `traits` table). If `NULL` (default), return information for
+all traits available for that PFT.}
 
 \item{pft_ids}{Numeric vector of PFT IDs (`id` column of BETY
 `pfts` table). You cannot pass both this and `pft_names`.}
@@ -25,6 +26,10 @@ input `pft_names/ids` or `traits` are missing from the output. If
 `FALSE` (default), only throw a warning.}
 
 \item{...}{Additional arguments to [db.query()]}
+}
+\value{
+`data.frame` containing prior information for the given
+  PFTs and traits.
 }
 \description{
 Query priors using prepared statements
@@ -45,7 +50,7 @@ Query priors using prepared statements
   # every PFT.
   pdat2 <- query_priors(
     c("Optics.Temperate_Early_Hardwood",
-      "Optics.Temperate_North_Mid_Hardwood",
+      "Optics.Temperate_Mid_Hardwood",
       "Optics.Temperate_Late_Hardwood"),
     c("leaf_reflect_vis", "leaf_reflect_nir"),
     con = con
@@ -57,7 +62,7 @@ Query priors using prepared statements
   pdat2 <- query_priors(
     c("Optics.Temperate_Early_Hardwood",
       "Optics.Temperate_Early_Hardwood",
-      "Optics.Temperate_North_Mid_Hardwood",
+      "Optics.Temperate_Mid_Hardwood",
       "Optics.Temperate_Late_Hardwood"),
     c("leaf_reflect_vis",
       "leaf_reflect_nir",

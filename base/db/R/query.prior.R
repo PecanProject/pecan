@@ -92,7 +92,8 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 #' @param pft_names Character vector of PFT names (`name` column of
 #'   BETY `pfts` table). You cannot pass both this and `pft_ids`.
 #' @param traits Character vector of trait names (`name` column of
-#'   BETY `traits` table)
+#'   BETY `traits` table). If `NULL` (default), return information for
+#'   all traits available for that PFT. 
 #' @param pft_ids Numeric vector of PFT IDs (`id` column of BETY
 #'   `pfts` table). You cannot pass both this and `pft_names`.
 #' @param expand (Logical) If `TRUE` (default), search every trait-PFT
@@ -101,6 +102,8 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 #'   input `pft_names/ids` or `traits` are missing from the output. If
 #'   `FALSE` (default), only throw a warning.
 #' @param ... Additional arguments to [db.query()]
+#' @return `data.frame` containing prior information for the given
+#'   PFTs and traits.
 #' @examples
 #' \dontrun{
 #'   con <- db.open(...)
@@ -117,7 +120,7 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 #'   # every PFT.
 #'   pdat2 <- query_priors(
 #'     c("Optics.Temperate_Early_Hardwood",
-#'       "Optics.Temperate_North_Mid_Hardwood",
+#'       "Optics.Temperate_Mid_Hardwood",
 #'       "Optics.Temperate_Late_Hardwood"),
 #'     c("leaf_reflect_vis", "leaf_reflect_nir"),
 #'     con = con
@@ -129,7 +132,7 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 #'   pdat2 <- query_priors(
 #'     c("Optics.Temperate_Early_Hardwood",
 #'       "Optics.Temperate_Early_Hardwood",
-#'       "Optics.Temperate_North_Mid_Hardwood",
+#'       "Optics.Temperate_Mid_Hardwood",
 #'       "Optics.Temperate_Late_Hardwood"),
 #'     c("leaf_reflect_vis",
 #'       "leaf_reflect_nir",
@@ -158,12 +161,12 @@ query_priors <- function(pft_names = NULL, traits = NULL, pft_ids = NULL,
     pft_col <- "pft_name"
   }
   query_string <- paste(
-    # These columns are not in `query.traits`
-    "SELECT pfts.id AS pft_id, pfts.name AS pft_name,",
-    "variables.id AS variable_id,",
     # These columns are back-compatible with `query.traits`
-    "variables.name AS name,",
-    "distn, parama, paramb, n",
+    "SELECT variables.name AS name,",
+    "distn, parama, paramb, n,",
+    # These columns are not in `query.traits`
+    "pfts.id AS pft_id, pfts.name AS pft_name,",
+    "variables.id AS variable_id,", "pfts.modeltype_id AS modeltype_id",
     "FROM priors",
     "JOIN variables ON priors.variable_id = variables.id",
     "JOIN pfts_priors ON pfts_priors.prior_id = priors.id",
@@ -188,10 +191,10 @@ query_priors <- function(pft_names = NULL, traits = NULL, pft_ids = NULL,
       }
       # Query the full trait x PFT combination
       pfts_traits <- expand.grid(pft = pft_val, trait = traits, stringsAsFactors = FALSE)
-      pfts <- pfts_traits[["pft"]]
+      pft_val <- pfts_traits[["pft"]]
       traits <- pfts_traits[["trait"]]
     }
-    result <- db.query(query_string, values = list(pfts, traits), ...)
+    result <- db.query(query_string, values = list(pft_val, traits), ...)
   }
 
   # Check that all inputs are present in output
