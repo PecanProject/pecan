@@ -12,7 +12,7 @@ This book is organized four main topics:
 
 **Appendix** - External documentation and sources of information and a FAQ section.
 
-### General Feedback/Comments/Suggestions
+## General Feedback/Comments/Suggestions
 
 *We want your ideas, thoughts, comments, and suggestions!* As a community we are committed to creating an inclusive and supportive atmosphere so we all to reach out to us in the following ways:
 
@@ -22,7 +22,7 @@ This is the main hub of communication surrounding PEcAn development. Check out t
 **Slack:** [https://pecanproject.slack.com/](https://pecanproject.slack.com/)
 Slack serves as our day to day mode of communication. To join us in slack you will need to create an account first. This is done in 3 steps:
 
-1. Request an [inivitation](https://publicslack.com/slacks/pecanproject/invites/new) to join slack, this will be send by email to address you provided.
+1. Request an [inivitation](https://publicslack.com/slacks/pecanproject/invites/new) to join Slack, this will be send by email to address you provided.
 2. <a id="slackreturn"></a>Check your inbox for an email from Slack with subject "Rob Kooper has invited you to join a Slack workspace". This email should have a link that you can click to join slack.
 3. When you click a webpage will open up that asks you to create an account, once that is done you can login into the slack chatrooms.
 
