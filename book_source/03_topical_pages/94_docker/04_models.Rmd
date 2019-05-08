@@ -1,4 +1,4 @@
-#### Models using Docker {#model-docker}
+## Models using Docker {#model-docker}
 
 This section will discuss how to add new models to PEcAn docker. To be able to add a new model to PEcAn when using docker is as simple as starting a new container. The model will come online and let the PEcAn framework know there is a new model available, there is no need to go through the process of registering this model with PEcAn. Users will be able to select this new model from web interface and run with this model selected.
 
@@ -9,7 +9,7 @@ For this process to work a docker image of the model will need to be created as 
 [Common problems](#common-docker-problems)
 
 
-#### Model information {#model-docker-json-file}
+### Model information {#model-docker-json-file}
 
 Each model will have a small json file called model_info.json that is used to describe the model and used by the monitor service to register the model with PEcAn. This file will contain information about the model that is send as part of the heartbeat of the container to the monitor service. Below is an example of this file for the ED model. The required fields are `name`, `type`, `version` and `binary`. The fields `type` and `version` are used by PEcAn to send the messages to RabbitMQ. There is no need to specify the queue name explicitly. The queue name will be created by combining these two fields with an underscore. The field `binary` is used to point to the actual binary in the docker container.
 
@@ -42,7 +42,7 @@ Other fields that are recommended, but currently not used yet, are:
 - `citation` : how the model should be cited in publications.
 
 
-#### Model build {#model-docker-Dockerfile}
+### Model build {#model-docker-Dockerfile}
 
 
 In general we try to minimize the size of the images. To be able to do this we split the process of creating the building of the model images into two pieces (or leverage of an image that exists from the original model developers). If you look at the example Dockerfile you will see that there are 2 sections, the first section will build the model binary, the second section will build the actual PEcAn model, which copies the binary from the first section.
@@ -166,11 +166,11 @@ docker run \
 	pecan/model-ed2-git
 ```
 
-#### Common problems {#common-docker-problems}
+### Common problems {#common-docker-problems}
 
 Following are some solutions for common problems that you might encounter when building the docker images for a model.
 
-#### Debugging missing libraries
+### Debugging missing libraries
 
 When building the model binary it might require specific libraries to be installed. In the second stage the model binary is copied into a new image, which could result in the binary missing specific libraries. In the case of the ED2 model the following was used to find the libraries that are needed to be installed (libgfortran5 and libopenmpi3).
 

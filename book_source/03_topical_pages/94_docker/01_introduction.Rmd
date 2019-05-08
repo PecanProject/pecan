@@ -1,10 +1,10 @@
-#### Introduction to Docker? {#docker-intro}
+## Introduction to Docker? {#docker-intro}
 
-[What is Docker](#what-is-docker)
-[Working with Docker](#working-with-docker)
-[`docker-compose`]{#docker-compose}
+* [What is Docker](#what-is-docker)
+* [Working with Docker](#working-with-docker)
+* [`docker-compose`]{#docker-compose}
 
-#### What is Docker? {#what-is-docker}
+### What is Docker? {#what-is-docker}
 
 For a quick and accessible introduction to Docker, we suggest this YouTube video: [Learn Docker in 12 Minutes](https://www.youtube.com/watch?v=YFl2mCHdv24).
 
@@ -39,7 +39,7 @@ Furthermore, using separate Docker containers for each ecosystem model helps avo
 
 The full PEcAn Docker stack is described in more detail in the [next section](#pecan-docker).
 
-#### Working with Docker {#working-with-docker}
+### Working with Docker {#working-with-docker}
 
 To run an image, you can use the Docker command line interface.
 For example, the following runs a PostgreSQL image based on the [pre-existing PostGIS image](https://hub.docker.com/r/mdillon/postgis/) by `mdillon`:
@@ -92,7 +92,7 @@ docker stop postgresql
 
 Containers that are running in the foreground (without the `--detach`) can be stopped by pressing `Ctrl-C`. Any containers running in the background (with `--detach`) will continue running until the machine is restarted or the container is stopped using `docker stop`.
 
-#### `docker-compose` {#docker-compose}
+### `docker-compose` {#docker-compose}
 
 For a quick introduction to `docker-compose`, we recommend the following YouTube video: [Docker Compose in 12 Minutes](https://www.youtube.com/watch?v=Qw9zlE3t8Ko).
 
