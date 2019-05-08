@@ -738,8 +738,13 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }
   }
   
-  # will I need a counter?
-  #settings$assim.batch$round_counter <- which_round
+  # I can use a counter
+  if(is.null(settings$assim.batch$round_counter){
+    settings$assim.batch$round_counter <- 1
+  }else{
+    settings$assim.batch$round_counter <- 1 +  as.numeric(settings$assim.batch$round_counter)
+  }
+
     
   settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig)
   
@@ -753,12 +758,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   current.step <- "pda.finish"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
-  if(!remote){
-    return(settings)
-  }else{
-    #sync back
-    return(settings)
-  }
-  
+  return(settings)
+
   
 }  ## end pda.emulator
