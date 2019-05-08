@@ -1,10 +1,34 @@
-## Function to Create and execute pecan xml
+## This script contains the Following parts:
+## Part 1 - Write Main Function
+## A. takes in a list defining specifications for a single run and assigns them to objects
+## B. The function then writes out a pecan settings list object
+## C. A directory is created from the ouput folder defined in a users config.php file
+## D. Settings object gets written into pecan.xml file and put in output directory.
+## E. workflow.R is copied into this directory and executed.
+## F. console output is stored in a file called workflow.Rout
+## Part 2 - Write run settings
+## A. Set BETY connection object. Needs user to define path to their pecan directory.
+## B. Find Machine ID
+## C. Find Models ids based on machine
+## D. Manually Define Met, right now CRUNCEP and AMerifluxlbl
+## E. Manually Define start and end date
+## F. Manually Define Output var
+## G. Manually Define Sensitivity and enesmble 
+## H. Find sites not associated with any inputs(meaning data needs to be downloaded), part of ameriflux network, and have data for start-end year range.
+## Available ameriflux data is found by parsing the notes section of the sites table where ameriflux sites have a year range.
+## Part 3 - Create Run table
+## A. Create table that contains combinations of models,met_name,site_id, startdate, enddate, pecan_path,out.var, ensemble, ens_size, sensitivity args that the function above will use to do runs.
+## Part 4 - Run the Function across the table 
+## A. Use the pmap function to apply the function across each row of arguments and append a pass or fail outcome column to the original table of runs
+## Part 5 - (In progress) Turn output table into a table 
 create_execute_test_xml <- function(run_list){
   library(PEcAn.DB)
   library(dplyr)
   library(PEcAn.utils)
   library(XML)
   library(PEcAn.settings)
+  
+  #Read in Table 
   model_id <- run_list[[1]]
   met <- run_list[[2]]
   site_id<- run_list[[3]]
@@ -114,6 +138,7 @@ config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.php")
 bety <- PEcAn.DB::betyConnect(paste0(pecan_path,"/web/config.php"))
 con <- bety$con
 library(tidyverse)
+
 ## Find name of Machine R is running on
 mach_name <- Sys.info()[[4]]
 mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(id)
@@ -156,12 +181,12 @@ site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
     #Check if startdate year is within the inerval of that is given
     in_date = data.table::between(as.numeric(lubridate::year(startdate)),as.numeric(start_year),as.numeric(end_year))
   ) %>%
-  dplyr::filter(in_date & as.numeric(end_year) - as.numeric(start_year) > 1) 
-
-  
+  dplyr::filter(in_date & as.numeric(end_year) - as.numeric(start_year) > 1) %>%
+  mutate(sitename= gsub(" ","_",.$sitename)) %>% rename_at(id.x = site_id)
 
 
 site_id <- site_id_noinput$id.x
+site_name <- gsub(" ","_",site_id_noinput$sitename)
 
 #Create permutations of arg combinations
 options(scipen = 999)
