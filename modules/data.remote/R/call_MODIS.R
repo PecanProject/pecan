@@ -38,15 +38,15 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
   # reformat start and end date if they are in YYYY/MM/DD format instead of YYYYJJJ
   if (grepl("/", start_date) == TRUE)
   {
-    start_date = as.Date(paste0(lubridate::year(start_date), spatial.tools::add_leading_zeroes(lubridate::yday(start_date), 3)), format = "%Y%j")
+    start_date <- as.Date(paste0(lubridate::year(start_date), spatial.tools::add_leading_zeroes(lubridate::yday(start_date), 3)), format = "%Y%j")
   }
   
   if (grepl("/", end_date) == TRUE)
   {
-    end_date = as.Date(paste0(lubridate::year(end_date), spatial.tools::add_leading_zeroes(lubridate::yday(end_date), 3)), format = "%Y%j")
+    end_date <- as.Date(paste0(lubridate::year(end_date), spatial.tools::add_leading_zeroes(lubridate::yday(end_date), 3)), format = "%Y%j")
   }
-  start_date = as.Date(start_date, format = "%Y%j")
-  end_date = as.Date(end_date, format = "%Y%j")
+  start_date <- as.Date(start_date, format = "%Y%j")
+  end_date <- as.Date(end_date, format = "%Y%j")
   
   #################### if package_method == MODISTools option ####################
   if (package_method == "MODISTools")
@@ -54,7 +54,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     
     #################### FUNCTION PARAMETER PRECHECKS #################### 
     #1. check that modis product is available
-    products = MODISTools::mt_products()
+    products <- MODISTools::mt_products()
     if (!(product %in% products$product))
     {
       print(products)
@@ -101,12 +101,12 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       # MODIS data dates
       if (as.numeric(start_date)<=dates[1] & as.numeric(end_date)>=dates[1])
       {
-        start_date = dates[1]
+        start_date <- dates[1]
         print("WARNING: Dates are only partially available. Start date before modis data product is available.")
       } 
       if (as.numeric(end_date)>=dates[length(dates)] & as.numeric(start_date) <= dates[length(dates)])
       {
-        end_date = dates[length(dates)]
+        end_date <- dates[length(dates)]
         print("WARNING: Dates are only partially available. End date befire modis data product is available.")
       } 
       
@@ -168,16 +168,16 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     
     if (QC_filter == T)
     {
-      output$qc == as.character(output$qc)
+      output$qc <- as.character(output$qc)
       for (i in seq_len(nrow(output)))
       {
-        convert = paste(binaryLogic::as.binary(as.integer(output$qc[i]), n = 8), collapse = "")
-        output$qc[i] = substr(convert, nchar(convert)-2, nchar(convert))
+        convert <- paste(binaryLogic::as.binary(as.integer(output$qc[i]), n = 8), collapse = "")
+        output$qc[i] <- substr(convert, nchar(convert)-2, nchar(convert))
       }
-      good = which(output$qc == "000" | output$qc == "001")
+      good <- which(output$qc == "000" | output$qc == "001")
       if (length(good) > 0 | !(is.null(good)))
       {
-        output = output[good,]
+        output <- output[good,]
       } else {
         print("All QC values are bad. No data to output with QC filter == TRUE.")
       }
@@ -192,7 +192,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     if (!(outfolder == "") & is.null(siteID))
     {
       fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, "_", spatial.tools::add_leading_zeroes(iter, 2), ".csv", sep = "")
-      fname <- paste0(outfolder, "/", fname)
+      fname <- file.path(outfolder, fname)
       write.csv(output, fname, row.names = FALSE)
     }
     
@@ -203,7 +203,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
   if (package_method == "reticulate"){
     # load in python script
     script.path <- file.path(system.file("extract_modis_data.py", package = "PEcAn.data.remote"))
-    #script.path = file.path('/Users/bmorrison/pecan/modules/data.remote/inst/extract_modis_data.py')
+    #script.path <- file.path('/Users/bmorrison/pecan/modules/data.remote/inst/extract_modis_data.py')
     reticulate::source_python(script.path)
     
     # extract the data
@@ -215,7 +215,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     if (!(is.null(outfolder)))
     {
       fname <- paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
-      fname <- paste0(outfolder, "/", fname)
+      fname <- file.path(outfolder, fname)
       write.csv(output, fname)
     }
    
