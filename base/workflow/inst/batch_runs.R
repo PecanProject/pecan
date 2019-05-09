@@ -21,6 +21,7 @@
 ## Part 4 - Run the Function across the table 
 ## A. Use the pmap function to apply the function across each row of arguments and append a pass or fail outcome column to the original table of runs
 ## Part 5 - (In progress) Turn output table into a table 
+
 create_execute_test_xml <- function(run_list){
   library(PEcAn.DB)
   library(dplyr)
