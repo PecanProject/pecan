@@ -22,26 +22,26 @@
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, iter = 1, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools", QC_filter = T)
+##' test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, iter = 1, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools", QC_filter = TRUE)
 ##' plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
 ##' test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
 ##' }
 ##' 
 ##' @author Bailey Morrison
 ##'  
-call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, iter = i, product, band, band_qc = "", band_sd = "", siteID = "", package_method = "MODISTools", QC_filter = F, progress = T) {
+call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, iter = i, product, band, band_qc = "", band_sd = "", siteID = "", package_method = "MODISTools", QC_filter = FALSE, progress = TRUE) {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size <- 0
   require(PEcAn.all)
   
   # reformat start and end date if they are in YYYY/MM/DD format instead of YYYYJJJ
-  if (grepl("/", start_date) == T)
+  if (grepl("/", start_date) == TRUE)
   {
     start_date = as.Date(paste0(lubridate::year(start_date), spatial.tools::add_leading_zeroes(lubridate::yday(start_date), 3)), format = "%Y%j")
   }
   
-  if (grepl("/", end_date) == T)
+  if (grepl("/", end_date) == TRUE)
   {
     end_date = as.Date(paste0(lubridate::year(end_date), spatial.tools::add_leading_zeroes(lubridate::yday(end_date), 3)), format = "%Y%j")
   }
@@ -155,7 +155,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       SD <- as.numeric(sd$value) * as.numeric(sd$scale) #formatC(sd$data$data*scale, digits = 2, format = 'f')
     }
     
-    output <- as.data.frame(cbind(dat$modis_date, dat$calendar_date, dat$band, dat$tile, dat$latitude, dat$longitude, dat$pixel, dat$value, QC, SD), stringsAsFactors = F)
+    output <- as.data.frame(cbind(dat$modis_date, dat$calendar_date, dat$band, dat$tile, dat$latitude, dat$longitude, dat$pixel, dat$value, QC, SD), stringsAsFactors = FALSE)
     names(output) <- c("modis_date", "calendar_date", "band", "tile", "lat", "lon", "pixels", "data", "qc", "sd")
     
     output[,5:10] <- lapply(output[,5:10], as.numeric)
@@ -187,13 +187,13 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     {
       fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, "_", spatial.tools::add_leading_zeroes(iter, 4), ".csv", sep = "")
       fname <- paste0(outfolder, "/", fname)
-      write.csv(output, fname, row.names = F)
+      write.csv(output, fname, row.names = FALSE)
     }
     if (!(outfolder == "") & is.null(siteID))
     {
       fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, "_", spatial.tools::add_leading_zeroes(iter, 2), ".csv", sep = "")
       fname <- paste0(outfolder, "/", fname)
-      write.csv(output, fname, row.names = F)
+      write.csv(output, fname, row.names = FALSE)
     }
     
     return(output)
