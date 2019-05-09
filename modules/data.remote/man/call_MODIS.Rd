@@ -6,7 +6,7 @@
 \usage{
 call_MODIS(outfolder = "", start_date, end_date, lat, lon, size = 0,
   iter = i, product, band, band_qc = "", band_sd = "", siteID = "",
-  package_method = "MODISTools", QC_filter = F)
+  package_method = "MODISTools", QC_filter = F, progress = T)
 }
 \arguments{
 \item{outfolder}{where the output file will be stored}
