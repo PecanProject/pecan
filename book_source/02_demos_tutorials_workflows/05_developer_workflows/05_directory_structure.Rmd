@@ -1,6 +1,6 @@
 ## Directory structure
 
-#### Overview of PEcAn repository as of PEcAn 1.5.3
+### Overview of PEcAn repository as of PEcAn 1.5.3
 
 <!--Should Also include a guideline to structures so that people know where to put things as they add them-->
 ```
@@ -41,7 +41,7 @@ pecan/
 ```
 
 
-#### Generic R package structure:
+### Generic R package structure:
 
 see the R development wiki for more information on writing code and adding data.
 
