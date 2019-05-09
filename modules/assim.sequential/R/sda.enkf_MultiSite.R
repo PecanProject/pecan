@@ -468,7 +468,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     save(site.locs, t, FORECAST, ANALYSIS, enkf.params, new.state, new.params,
          out.configs, ensemble.samples, inputs, Viz.output,
          file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    #writing down the image - either you asked for it or nor :)
+    #writing down the image - either you asked for it or not :)
     if (control$plot == T & (t%%2==0 | t==nt)) post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
    # if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
   } ### end loop over time
