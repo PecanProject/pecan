@@ -43,6 +43,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - `PEcAn.DB::db.query` now optionally supports prepared statements (#395).
 - New function `PEcAn.DB::query_priors` that is, IMHO, more robust and intuitive than `query.priors` by leveraging `RPostgres` prepared statements, providing more informative errors, and handling inputs in a more sophisticated way. Its output should be a perfect superset of `query.traits`, so I think it should work as a drop-in replacement. Note that a unit test and detailed function documentation are included. (#2351)
 - New function `PEcAn.DB::query_pfts` for finding PFT IDs and types from the PFT name and (optionally) model type (#2351).
+- Run Travis integration tests with both Postgres and PostgreSQL drivers (#2351).
 
 ### Removed
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
