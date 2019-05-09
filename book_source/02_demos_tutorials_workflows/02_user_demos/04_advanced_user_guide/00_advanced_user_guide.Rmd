@@ -1,0 +1,5 @@
+## Advanced User Guide {#advanced-user}
+
+
+- [Adding to PEcAn as a user](#adding-to-pecan)
+- [Workflow curl submission](#web-curl-submission)
