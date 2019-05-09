@@ -29,7 +29,7 @@
 ##' 
 ##' @author Bailey Morrison
 ##'  
-call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, iter = i, product, band, band_qc = "", band_sd = "", siteID = "", package_method = "MODISTools", QC_filter = F) {
+call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, iter = i, product, band, band_qc = "", band_sd = "", siteID = "", package_method = "MODISTools", QC_filter = F, progress = T) {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size <- 0
@@ -125,20 +125,20 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     
     # extract main band data from api
     dat <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band,
-                                 start=start_date, end=end_date, km_ab=size, km_lr=size, progress = F)
+                                 start=start_date, end=end_date, km_ab=size, km_lr=size, progress = progress)
     
     # extract QC data
     if(band_qc != "")
     {
       qc <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_qc,
-                                  start=start, end=end, km_ab=size, km_lr=size, progress =F)
+                                  start=start, end=end, km_ab=size, km_lr=size, progress =progress)
     }
     
     # extract stdev data
     if(band_sd != "")
     {
       sd <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_sd,
-                                  start=start, end=end, km_ab=size, km_lr=size, progress = F)
+                                  start=start, end=end, km_ab=size, km_lr=size, progress = progress)
     }
     
     if (band_qc == "")

@@ -189,6 +189,8 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
     
     if(is.null(obs.names)) next;
     
+    choose <- sapply(var.names, agrep, x = names(obs.t.mean[[site]]),
+                       max = 1, USE.NAMES = F) %>% unlist
     choose.col <- sapply(obs.names, agrep, x = var.names, max = 1, USE.NAMES = F) %>% unlist
     choose.row <- sapply(var.names, agrep, x = obs.names, max = 1, USE.NAMES = F) %>% unlist
     

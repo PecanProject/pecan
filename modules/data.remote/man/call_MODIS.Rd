@@ -5,7 +5,7 @@
 \title{call_MODIS}
 \usage{
 call_MODIS(outfolder = "", start_date, end_date, lat, lon, size = 0,
-  product, band, band_qc = "", band_sd = "", siteID = "",
+  iter = i, product, band, band_qc = "", band_sd = "", siteID = "",
   package_method = "MODISTools", QC_filter = F)
 }
 \arguments{
@@ -43,7 +43,7 @@ Get MODIS data by date and location
 }
 \examples{
 \dontrun{
-test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools")
+test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, iter = 1, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools", QC_filter = T)
 plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
 test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
 }
