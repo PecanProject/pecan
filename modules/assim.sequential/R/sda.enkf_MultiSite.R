@@ -19,12 +19,16 @@
 #' @import nimble
 #' @export
 #' 
-sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F, 
-                               control=list(trace=T,
-                                            FF=F,
-                                            plot=F,
+sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = FALSE, 
+                               control=list(trace = TRUE,
+                                            FF = FALSE,
+					    interactivePlot = FALSE,
+                                            TimeseriesPlot = FALSE,
+					    BiasPlot = FALSE,
+					    plot.title = NULL,
+					    facet.plots = FALSE,
                                             debug=FALSE,
-                                            pause=F),
+                                            pause=FALSE),
                                ...) {
   if (control$debug) browser()
   ###-------------------------------------------------------------------###
@@ -65,7 +69,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   }
   
   #Finding the distance between the sites
-  distances <- sp::spDists(site.locs, longlat=T)
+  distances <- sp::spDists(site.locs, longlat=TRUE)
   #turn that into a blocked matrix format
   blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
   
@@ -74,14 +78,14 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   obs.mean <- obs.mean[sapply(year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
   obs.cov <- obs.cov[sapply(year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
   # dir address based on the end date
-  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = F)
+  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = FALSE)
   #--get model specific functions
   do.call("library", list(paste0("PEcAn.", model)))
   my.write_restart <- paste0("write_restart.", model)
   my.read_restart <- paste0("read_restart.", model)
   my.split_inputs  <- paste0("split_inputs.", model)
   #- Double checking some of the inputs
-  if (is.null(adjustment)) adjustment<-T
+  if (is.null(adjustment)) adjustment<-TRUE
   # models that don't need split_inputs, check register file for that
   register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
   register <- XML::xmlToList(XML::xmlParse(register.xml))
@@ -110,7 +114,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
               start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3),
               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
               inputs =  settings$run$inputs$met$path[[i]],
-              overwrite =F
+              overwrite =FALSE
             )
           )
         }
@@ -204,7 +208,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
     if (t>1){
       #removing old simulations
-      unlink(list.files(outdir, "*.nc", recursive = T, full.names = T))
+      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
         purrr::map2(inputs, function(settings, inputs) {
@@ -468,9 +472,8 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     save(site.locs, t, FORECAST, ANALYSIS, enkf.params, new.state, new.params,
          out.configs, ensemble.samples, inputs, Viz.output,
          file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    #writing down the image - either you asked for it or nor :)
-    if (control$plot == T & (t%%2==0 | t==nt)) post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
-   # if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+    #writing down the image - either you asked for it or not :)
+    if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
   } ### end loop over time
   
 } # sda.enkf
