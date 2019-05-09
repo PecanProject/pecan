@@ -1,4 +1,4 @@
-## PEcAn Web Interface {#intermediate-user}
+# More on the PEcAn Web Interface {#intermediate-user}
 
 This section will provide information to those wanting to take advantage of PEcAn's customizations from the web interface.
 
