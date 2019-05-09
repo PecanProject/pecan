@@ -1,22 +1,15 @@
-#### Additional web configuration
+## Additional web configuration
 
 Additional settings for web configuration:
 
-- [Brown Dog]
-- [Editing model configuration files]
-- [Advanced setup]
-    - [Sensitivity analysis]
-    - [Uncertainty analysis]
+- [Web interface setup]{#intermediate-web-setup}
+- [Brown Dog]{#browndog}
+- [Advanced setup]{#intermediate-advanced-setup}
+    - [Sensitivity analysis] (TODO)
+    - [Uncertainty analysis] (TODO)
+- [Editing model configuration files]{#intermediate-model-config}
 
-#### Brown Dog {#browndog}
-
-The Browndog service provides PEcAn with access to large and diverse sets of data at the click of a button in the format that PEcAn needs. By clicking the checkbox you will be using the Browndog Service to process data.
-
-For more information regarding meteorological data check out [Available Meteorological Drivers]
-
-** [More Informatoin can be found at the Browndog website](http://browndog.ncsa.illinois.edu/)**
-
-#### Basic Setups
+### Web interface setup {#intermediate-web-setup}
 
 There are few options which you can change via web interface.
 
@@ -38,10 +31,18 @@ The list of configuration available
 
 Still work on the adding other editing feature going on, this page will be updated as new configuration will be available. 
 
-#### Advanced Setup
+### Brown Dog {#browndog}
+
+The Browndog service provides PEcAn with access to large and diverse sets of data at the click of a button in the format that PEcAn needs. By clicking the checkbox you will be using the Browndog Service to process data.
+
+For more information regarding meteorological data check out [Available Meteorological Drivers]
+
+More information can be found at the [Browndog website](http://browndog.ncsa.illinois.edu/).
+
+### Advanced Setup {#intermediate-advanced-setup}
 
 (TODO: Under construction...)
 
-#### Editing model configurations
+### Editing model configurations {#intermediate-model-config}
 
 (TODO: Under construction...)
