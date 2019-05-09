@@ -455,7 +455,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       ## litterWFracInit fraction
       litterWFrac <- soilWFrac
-
+`
       ## snowInit cm water equivalent (cm = g / cm2 because 1 g water = 1 cm3 water)
       snow = try(ncdf4::ncvar_get(IC.nc,"SWE"),silent = TRUE)
       if (!is.na(snow) && is.numeric(snow)) {

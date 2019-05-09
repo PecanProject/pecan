@@ -38,12 +38,12 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
   # reformat start and end date if they are in YYYY/MM/DD format instead of YYYYJJJ
   if (grepl("/", start_date) == TRUE)
   {
-    start_date <- as.Date(paste0(lubridate::year(start_date), spatial.tools::add_leading_zeroes(lubridate::yday(start_date), 3)), format = "%Y%j")
+    start_date <- as.Date(paste0(lubridate::year(start_date), sprintf("%03d",lubridate::yday(start_date))), format = "%Y%j")
   }
   
   if (grepl("/", end_date) == TRUE)
   {
-    end_date <- as.Date(paste0(lubridate::year(end_date), spatial.tools::add_leading_zeroes(lubridate::yday(end_date), 3)), format = "%Y%j")
+    end_date <- as.Date(paste0(lubridate::year(end_date), sprintf("%03d",lubridate::yday(end_date))), format = "%Y%j")
   }
   start_date <- as.Date(start_date, format = "%Y%j")
   end_date <- as.Date(end_date, format = "%Y%j")
@@ -184,14 +184,13 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     }
     
     if (!(outfolder == "") & !(is.null(siteID)))
-    {
-      fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, "_", spatial.tools::add_leading_zeroes(iter, 4), ".csv", sep = "")
+    {fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, "_", sprintf("%04d",iter), ".csv", sep = "")
       fname <- paste0(outfolder, "/", fname)
       write.csv(output, fname, row.names = FALSE)
     }
     if (!(outfolder == "") & is.null(siteID))
     {
-      fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, "_", spatial.tools::add_leading_zeroes(iter, 2), ".csv", sep = "")
+      fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, "_", sprintf("%04d", iter), ".csv", sep = "")
       fname <- file.path(outfolder, fname)
       write.csv(output, fname, row.names = FALSE)
     }
