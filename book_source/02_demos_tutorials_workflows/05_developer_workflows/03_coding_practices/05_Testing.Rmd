@@ -1,4 +1,4 @@
-## Testing
+### Testing {#developer-testing}
 
 PEcAn uses the testthat package developed by Hadley Wickham. Hadley has
 written instructions for using this package in his
@@ -11,8 +11,7 @@ written instructions for using this package in his
 *  saves time by allowing computer to take over error checking once a
     test has been made
 *  improves code quality
-*  Further reading: [Aruliah et al 2012 Best Practices for Scientific
-    Computing](http://arxiv.org/pdf/1210.0530v3.pdf)
+*  Further reading: [Aruliah et al 2012 Best Practices for Scientific Computing](http://arxiv.org/pdf/1210.0530v3.pdf)
 
 #### Tests makes development easier and less error prone
 
