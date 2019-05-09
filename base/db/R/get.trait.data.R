@@ -60,30 +60,21 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   file.remove(old.files)
 
   # find appropriate pft
-  pftres <- (dplyr::tbl(dbcon, "pfts")
-    %>% dplyr::filter(name == pft$name))
-  if (!is.null(modeltype)) {
-    pftres <- (pftres %>% dplyr::semi_join(
-      (dplyr::tbl(dbcon, "modeltypes") %>% dplyr::filter(name == modeltype)),
-      by = c("modeltype_id" = "id")))
-  }
-  pftres <- (pftres
-    %>% dplyr::select(.data$id, .data$pft_type)
-    %>% dplyr::collect())
-  pfttype <- pftres[['pft_type']]
-  pftid <- pftres[['id']]
+  pftres <- query_pfts(dbcon, pft[["name"]], modeltype)
+  pfttype <- pftres[["pft_type"]]
+  pftid <- pftres[["id"]]
 
-  if(nrow(pftres) > 1){
+  if (nrow(pftres) > 1) {
     PEcAn.logger::logger.severe(
-      "Multiple PFTs named", pft$name,  "found,",
-      "with ids", PEcAn.utils::vecpaste(pftres$id), ".",
+      "Multiple PFTs named", pft[["name"]], "found,",
+      "with ids", PEcAn.utils::vecpaste(pftres[["id"]]), ".",
       "Specify modeltype to fix this.")
   }
 
-  if (is.null(pftid)) {
-    PEcAn.logger::logger.severe("Could not find pft", pft$name)
+  if (nrow(pftres) == 0) {
+    PEcAn.logger::logger.severe("Could not find pft", pft[["name"]])
     return(NA)
-  }
+ }
 
  # get the member species/cultivars, we need to check if anything changed
   if (pfttype == "plant") {
