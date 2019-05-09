@@ -43,15 +43,13 @@ Runs heirarchical meta-analysis of plant trait data
 }
 \details{
 \code{pecan.ma} runs a hierarchical Bayesian meta-analytical model.
-This model combines prior information with data from studies on
-the particular species or group of interest. Data that is
-incorporated into the meta-analysis include the mean (\code{Y}), sample
-size (\code{n}), and precision (\code{obs.prec}). Where a set of data
-includes more than one level of treatment, comes from more than
-one site, or comes from both field and greenhouse studies, these
-variables are included as random (\code{treatment}, \code{site}) or fixed
-(\code{greenhouse}) effects. The \code{pecan.ma} function writes a model for
-each specific data set and prior using the \code{\link[=write.ma.model]{write.ma.model()}}
+This model combines prior information with data from studies on the particular species or group of interest.
+Data that is incorporated into the meta-analysis include the mean (\code{Y}), sample size (\code{n}),
+and precision (\code{obs.prec}).
+Where a set of data includes more than one level of treatment, comes from more than one site,
+or comes from both field and greenhouse studies, these variables are included as random (\code{treatment}, \code{site})
+or fixed (\code{greenhouse}) effects.
+The \code{pecan.ma} function writes a model for each specific data set and prior using the \code{\link[=write.ma.model]{write.ma.model()}}
 function to modify the \code{ma.model.template.bug} generic model.
 }
 \examples{
