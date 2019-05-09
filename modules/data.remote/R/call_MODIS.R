@@ -33,7 +33,6 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size <- 0
-  require(PEcAn.all)
   
   # reformat start and end date if they are in YYYY/MM/DD format instead of YYYYJJJ
   if (grepl("/", start_date) == TRUE)
