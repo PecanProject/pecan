@@ -69,7 +69,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
   }
   
   #Finding the distance between the sites
-  distances <- sp::spDists(site.locs, longlat=TRUE)
+  distances <- sp::spDists(site.locs, longlat = TRUE)
   #turn that into a blocked matrix format
   blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
   
