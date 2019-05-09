@@ -5,7 +5,7 @@ Release notes for all releases can be found [here](https://github.com/PecanProje
 This page will only list any steps you have to do to upgrade an existing system. When updating PEcAn it is highly encouraged to update BETY. You can find instructions on how to do this, as well on how to update the database in the [Updating BETYdb](https://pecan.gitbooks.io/betydb-documentation/content/updating_betydb_when_new_versions_are_released.html) gitbook page.
 
 
-#### Updating PEcAn {#pecan-make}
+### Updating PEcAn {#pecan-make}
 
 The latest version of PEcAn code can be obtained from the PEcAn repository on GitHub:
 
@@ -44,8 +44,3 @@ The following are some additional `make` tricks that may be useful:
 
 All instructions for the `make` build system are contained in the `Makefile` in the PEcAn root directory.
 For full documentation on `make`, see the man pages by running `man make` from a terminal.
-
-_Point of contact:
-Alexey Shiklomanov
-GitHub/Gitter: @ashiklom
-email: ashiklom@bu.edu_

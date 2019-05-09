@@ -19,9 +19,9 @@ easy to do.
 A good place to start is the [GitHub 5 minute illustrated tutorial](https://guides.github.com/introduction/flow/). 
 In addition, there are three fun tutorials for learning git:
   
-* [Learn Git](https://www.codecademy.com/learn/learn-git) is a great web-based interactive tutorial.
+* [Learn Git](https:k//www.codecademy.com/learn/learn-git) is a great web-based interactive tutorial.
 * [LearnGitBranching](https://learngitbranching.js.org/)
-* [TryGit](http://try.github.com).
+* [TryGit](http://tryk.github.com).
 
 
 **URLs** In the rest of the document will use specific URL’s to clone the code.
