@@ -27,7 +27,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
 					    BiasPlot = FALSE,
 					    plot.title = NULL,
 					    facet.plots = FALSE,
-                                            debug=FALSE,
+                                            debug = FALSE,
                                             pause=FALSE),
                                ...) {
   if (control$debug) browser()
