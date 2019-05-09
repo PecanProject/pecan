@@ -1,16 +1,8 @@
 context("get.trait.data.pft")
 
-con <- tryCatch(db.open(params = list(
-  user = "bety",
-  password = "bety",
-  host = "localhost"
-)), error = function(e) {
-  PEcAn.logger::logger.severe(paste0(
-    "Failed to open local database connection with the following error: `",
-    conditionMessage(e),
-    "`. Database connection required to run these tests."
-  ))
-})
+source("db.setup.R")
+
+con <- check_db_test()
 
 dbdir <- file.path(tempdir(), "dbfiles")
 outdir <- file.path(tempdir(), "outfiles")
@@ -19,19 +11,18 @@ PEcAn.logger::logger.setLevel("OFF")
 
 teardown({
   db.close(con)
-  unlink(c(dbdir, outdir), recursive=TRUE)
+  unlink(c(dbdir, outdir), recursive = TRUE)
   PEcAn.logger::logger.setLevel(loglevel)
 })
 
 get_pft <- function(pftname) {
   get.trait.data.pft(
-      pft = list(name = pftname, outdir=outdir),
+      pft = list(name = pftname, outdir = outdir),
       trait.names = "SLA",
       dbfiles = dbdir,
       modeltype = NULL,
       dbcon = con)
 }
-
 
 test_that("reference species and cultivar PFTs write traits properly",{
   skip("Disabled until Travis bety contains Pavi_alamo and Pavi_all (#1958)")

@@ -1,12 +1,8 @@
 context("query.traits")
 
-con <- tryCatch(db.open(params = list(
-  user = "bety",
-  password = "bety",
-  host = "localhost"
-)), error = function(e) {
-  skip("Skipping tests because unable to establish database connection.")
-})
+source("db.setup.R")
+
+con <- check_db_test()
 
 teardown({
   db.close(con)
