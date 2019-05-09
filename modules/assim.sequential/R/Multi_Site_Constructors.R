@@ -39,7 +39,7 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     #estimated between these two sites
     two.site.cov <- cov( X [, c(rows.in.matrix, cols.in.matrix)],use="complete.obs" )[(nvariable+1):(2*nvariable),1:nvariable]
     # I'm setting the off diag to zero 
-    two.site.cov [which(lower.tri(two.site.cov, diag = FALSE),T) %>% rbind (which(upper.tri(two.site.cov,F),T))] <- 0
+    two.site.cov [which(lower.tri(two.site.cov, diag = FALSE),TRUE) %>% rbind (which(upper.tri(two.site.cov,FALSE),TRUE))] <- 0
     #putting it back to the main matrix
     pf.matrix [rows.in.matrix, cols.in.matrix] <- two.site.cov
   }
@@ -88,7 +88,7 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
   Y<-c()
   
   for (site in site.ids){
-    choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = F) %>% unlist
+    choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = FALSE) %>% unlist
     # if there is no obs for this site
     if(length(choose)==0){
       next;
@@ -190,9 +190,9 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
     if(is.null(obs.names)) next;
     
     choose <- sapply(var.names, agrep, x = names(obs.t.mean[[site]]),
-                       max = 1, USE.NAMES = F) %>% unlist
-    choose.col <- sapply(obs.names, agrep, x = var.names, max = 1, USE.NAMES = F) %>% unlist
-    choose.row <- sapply(var.names, agrep, x = obs.names, max = 1, USE.NAMES = F) %>% unlist
+                       max = 1, USE.NAMES = FALSE) %>% unlist
+    choose.col <- sapply(obs.names, agrep, x = var.names, max = 1, USE.NAMES = FALSE) %>% unlist
+    choose.row <- sapply(var.names, agrep, x = obs.names, max = 1, USE.NAMES = FALSE) %>% unlist
     
     # empty matrix for this site
     H.this.site <- matrix(0, length(choose), nvariable)
