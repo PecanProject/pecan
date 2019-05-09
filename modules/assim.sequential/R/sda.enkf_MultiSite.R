@@ -114,7 +114,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
               start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3),
               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
               inputs =  settings$run$inputs$met$path[[i]],
-              overwrite =FALSE
+              overwrite = FALSE
             )
           )
         }
