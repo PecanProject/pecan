@@ -16,6 +16,7 @@
 ##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
 ##' @param siteID string value of a PEcAn site ID. Currently only used for output filename.
 ##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.
+##' @param iter a value (e.g. i) used to help name files when call_MODIS is used parallelized or in a for loop. Default is NULL.
 ##' 
 ##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
 ##' depends on the MODISTools package version 1.1.0
@@ -29,7 +30,7 @@
 ##' 
 ##' @author Bailey Morrison
 ##'  
-call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, iter = i, product, band, band_qc = "", band_sd = "", siteID = "", package_method = "MODISTools", QC_filter = FALSE, progress = TRUE) {
+call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, iter = NULL, product, band, band_qc = "", band_sd = "", siteID = "", package_method = "MODISTools", QC_filter = FALSE, progress = TRUE) {
   
   # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
   size <- 0
@@ -183,16 +184,27 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     }
     
     if (!(outfolder == "") & !(is.null(siteID)))
-    {fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, "_", sprintf("%04d",iter), ".csv", sep = "")
+    {
+      if (is.null(iter))
+        {
+        fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, ".csv", sep = "")
+        } else {
+          fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, "_", sprintf("%04d",iter), ".csv", sep = "")
+        }
       fname <- paste0(outfolder, "/", fname)
       write.csv(output, fname, row.names = FALSE)
-    }
+      }
     if (!(outfolder == "") & is.null(siteID))
-    {
-      fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, "_", sprintf("%04d", iter), ".csv", sep = "")
+      {
+      if (is.null(iter))
+        {
+        fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, ".csv", sep = "")
+        } else {
+          fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, "_", sprintf("%04d", iter), ".csv", sep = "")
+        }
       fname <- file.path(outfolder, fname)
       write.csv(output, fname, row.names = FALSE)
-    }
+      }
     
     return(output)
   }
