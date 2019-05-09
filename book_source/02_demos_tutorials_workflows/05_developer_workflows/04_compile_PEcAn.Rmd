@@ -12,7 +12,7 @@ mkdir -p ${R_LIBS_USER}
 ```
 
 
-#### Download, compile and install PEcAn from GitHub
+### Download, compile and install PEcAn from GitHub
 
 ```bash
 # download pecan
@@ -50,4 +50,5 @@ cp ../pecan/scripts/workflow.R workflow.R
 rm -rf pecan
 ./workflow.R pecan.xml
 ```
+
 NB: pecan.xml is configured for the virtual machine, you will need to change the <met> field from '/home/carya/' to wherever you installed your 'sites', usually $HOME
