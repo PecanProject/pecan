@@ -131,7 +131,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     if(band_qc != "")
     {
       qc <- MODISTools::mt_subset(lat=lat, lon=lon, product=product, band=band_qc,
-                                  start=start, end=end, km_ab=size, km_lr=size, progress =progress)
+                                  start = start, end = end, km_ab = size, km_lr = size, progress = progress)
     }
     
     # extract stdev data
