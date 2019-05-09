@@ -33,6 +33,11 @@
 ##' }
 query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 
+  if (inherits(pft, "integer64")) {
+    # Convert to character with correct representation
+    pft <- format(pft)
+  }
+  
   if (is.null(con)) {
     params <- list(...)
     if (!length(params)) {
@@ -52,12 +57,12 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
   }
 
   query.text <- paste(
-    "select variables.name, distn, parama, paramb, n",
-      "from priors",
-      "join variables on priors.variable_id = variables.id",
-      "join pfts_priors on pfts_priors.prior_id = priors.id",
-      "join pfts on pfts.id = pfts_priors.pft_id",
-      "where pfts.id = ", pft)
+    "SELECT variables.name, distn, parama, paramb, n",
+      "FROM priors",
+      "JOIN variables ON priors.variable_id = variables.id",
+      "JOIN pfts_priors ON pfts_priors.prior_id = priors.id",
+      "JOIN pfts ON pfts.id = pfts_priors.pft_id",
+      "WHERE pfts.id = ", format(pft))
 
   if (!is.null(trstr) && trstr != "''") {
     if (length(trstr) > 1) {
@@ -67,7 +72,7 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
       ))
       trstr <- PEcAn.utils::vecpaste(trstr)
     }
-    query.text <- paste(query.text, "and variables.name in (", trstr, ");")
+    query.text <- paste(query.text, "AND variables.name IN (", trstr, ");")
   }
 
 

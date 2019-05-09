@@ -280,18 +280,30 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
   if (any(sapply(pft_outdirs, is.null))) {
     PEcAn.logger::logger.severe('At least one pft in settings is missing its "outdir"')
   }
+
+  dbcon <- db.open(database)
+  on.exit(db.close(dbcon))
+
   if (is.null(trait.names)) {
     PEcAn.logger::logger.debug(paste0(
       "`trait.names` is NULL, so retrieving all traits ",
       "that have at least one prior for these PFTs."
     ))
-    all_priors <- query_priors(pfts, params = database)
-    trait.names <- unique(all_priors[["name"]])
+    pft_names <- vapply(pfts, "[[", character(1), "name")
+    pft_ids <- query_pfts(dbcon, pft_names, modeltype, strict = TRUE)[["id"]]
+    # NOTE: Use `format` here to avoid implicit (incorrect) coercion
+    # to double by `lapply`. This works fine if we switch to
+    # `query_priors`, but haven't done so yet because that requires
+    # prepared statements and therefore requires the Postgres driver. 
+    all_priors_list <- lapply(format(pft_ids), query.priors,
+                              con = dbcon, trstr = trait.names)
+    trait.names <- unique(unlist(lapply(all_priors_list, rownames)))
+    # Eventually, can replace with this:
+    # all_priors <- query_priors(pfts, params = database)
+    # trait.names <- unique(all_priors[["name"]])
   }
 
   # process all pfts
-  dbcon <- db.open(database)
-  on.exit(db.close(dbcon))
   result <- lapply(pfts, get.trait.data.pft,
                    modeltype = modeltype,
                    dbfiles = dbfiles,
