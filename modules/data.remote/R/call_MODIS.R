@@ -78,7 +78,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     {
       if (as.numeric(start_date) >= dates[1] & as.numeric(end_date) <= dates[length(dates)])
       {
-        print("Extracting data")
+        PEcAn.logger::logger.info("Extracting data")
         
         start <- as.Date(start_date, "%Y%j")
         end <- as.Date(end_date, "%Y%j")
