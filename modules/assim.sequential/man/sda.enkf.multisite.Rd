@@ -4,8 +4,10 @@
 \alias{sda.enkf.multisite}
 \title{sda.enkf.multisite}
 \usage{
-sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL, restart = F,
-  control = list(trace = T, FF = F, plot = F, debug = FALSE, pause = F),
+sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL,
+  restart = FALSE, control = list(trace = TRUE, FF = FALSE,
+  interactivePlot = FALSE, TimeseriesPlot = FALSE, BiasPlot = FALSE,
+  plot.title = NULL, facet.plots = FALSE, debug = FALSE, pause = FALSE),
   ...)
 }
 \arguments{
