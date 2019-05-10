@@ -1,4 +1,4 @@
-# Demo 02: Sensitivity and Uncertainty Analysis
+## Demo 02: Sensitivity and Uncertainty Analysis
 
 In Demo 2 we will be looking at how PEcAn can use information about parameter uncertainty to perform three automated analyses:
 
@@ -6,7 +6,7 @@ In Demo 2 we will be looking at how PEcAn can use information about parameter un
 *	**Sensitivity Analysis**: Repeats numerous model runs to assess how changes in model parameters will affect model outputs. **Allows us to identify which parameters the model is most sensitive to.**
 *	**Uncertainty Analysis**: Combines information about model sensitivity with information about parameter uncertainty to determine the contribution of each model parameter to the uncertainty in model outputs. **Allow us to identify which parameters are driving model uncertainty.**
 
-## Run Specification
+### Run Specification
 
 1. Return to the main menu for the PEcAn web interface: **URL > Run Models**
 
