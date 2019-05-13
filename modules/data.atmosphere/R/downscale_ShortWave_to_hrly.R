@@ -15,24 +15,25 @@
 
 downscale_ShortWave_to_hrly <- function(debiased, time0, lat, lon, output_tz = "UTC"){
   ## downscale shortwave to hourly
-  library(lubridate)
-
     grouping = append("NOAA.member", "timestamp")
-    ShortWave.hours <- debiased %>%
-      dplyr::group_by_at(grouping) %>%
-      tidyr::expand(hour = 0:23) %>% 
-      dplyr::mutate(date = lubridate::as_date(timestamp))
+    
+    surface_downwelling_shortwave_flux_in_air<- rep(debiased$surface_downwelling_shortwave_flux_in_air, each = 6)
+   
+    ShortWave.hours <- as.data.frame(surface_downwelling_shortwave_flux_in_air)
+    ShortWave.hours$timestamp = rep(seq(from = as.POSIXct(time0 - lubridate::hours(5), tz = output_tz), to = as.POSIXct(time_end, tz = output_tz), by = 'hour'), times = 21)
+    ShortWave.hours$NOAA.member =  rep(debiased$NOAA.member, each = 6)
+    ShortWave.hours$hour = as.numeric(format(time, "%H"))
+    ShortWave.hours$group = rep(seq(1, length(NOAA.member)/6), each= 6)
+
   
-  ShortWave.ds <- debiased %>% 
-    dplyr::select(surface_downwelling_shortwave_flux_in_air, grouping) %>%
-    full_join(ShortWave.hours, by = grouping) %>%
-    dplyr::mutate(timestamp = lubridate::as_datetime(paste(date, " ", hour, ":","00:00", sep = ""), tz = output_tz) - 1*60*60) %>% # subtract one hour to convert times from representing pervious hour to representing the next hour
-    dplyr::mutate(doy = yday(timestamp) + hour/24) %>%
-    dplyr::mutate(rpot = downscale_solar_geom(doy, lon, lat)) %>% # hourly sw flux calculated using solar geometry
-    dplyr::group_by_at(grouping) %>%
+    
+ ShortWave.ds <- ShortWave.hours %>% 
+    dplyr::mutate(doy = lubridate::yday(timestamp) + hour/24) %>%
+    dplyr::mutate(rpot = PEcAn.data.atmosphere::downscale_solar_geom(doy, lon, lat)) %>% # hourly sw flux calculated using solar geometry
+    dplyr::group_by_at(c("group", "NOAA.member")) %>%
     dplyr::mutate(avg.rpot = mean(rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
     ungroup() %>%
-    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(avg.rpot > 0, surface_downwelling_shortwave_flux_in_air* (rpot/avg.rpot),0)) %>%
+    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(avg.rpot > 0, rpot* (surface_downwelling_shortwave_flux_in_air/avg.rpot),0)) %>%
     dplyr::select(timestamp, NOAA.member, surface_downwelling_shortwave_flux_in_air) %>% 
     filter(timestamp >= min(debiased$timestamp) & timestamp <= max(debiased$timestamp))  
   
