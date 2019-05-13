@@ -98,7 +98,18 @@ sda.enkf.multisite <- function(settings,
   blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
   
   #filtering obs data based on years specifited in setting > state.data.assimilation
-  assimyears <- lubridate::year(settings$state.data.assimilation$start.date) : lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
+  
+  if (restart) {
+    start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)-1
+    Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date)-1)
+    
+  }else{
+    start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
+    Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date))
+  }
+  
+  End.Year <-   lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
+  assimyears<-Start.Year:End.Year
   obs.mean <- obs.mean[sapply(year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
   obs.cov <- obs.cov[sapply(year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
   # dir address based on the end date
@@ -122,38 +133,6 @@ sda.enkf.multisite <- function(settings,
     
   }
   ###-------------------------------------------------------------------###
-  ### Splitting/Cutting the mets to the start and the end  of SDA       ###
-  ###-------------------------------------------------------------------###---- 
-  conf.settings<-conf.settings %>%
-    furrr::future_map(function(settings) {
-      inputs.split <- list()
-      if (!no_split) {
-        for (i in length(settings$run$inputs$met$path)) {
-          #---------------- model specific split inputs
-          ### model specific split inputs
-          settings$run$inputs$met$path[[i]] <- do.call(
-            my.split_inputs,
-            args = list(
-              settings = settings,
-              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3),
-              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
-              inputs =  settings$run$inputs$met$path[[i]],
-              overwrite =F
-            )
-          )
-          # changing the start and end date which will be used for model2netcdf.model
-          settings$run$start.date <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
-          settings$run$end.date <- lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3)
-          
-        }
-      } else{
-        inputs.split <- inputs
-      }
-      settings
-    })
-  
-  conf.settings<-PEcAn.settings::as.MultiSettings(conf.settings)
-  ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###----  
   obs.times <- names(obs.mean)
@@ -176,6 +155,66 @@ sda.enkf.multisite <- function(settings,
   if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
   bqq         <- numeric(nt + 1)
   ###-------------------------------------------------------------------###
+  ### If this is a restart - Picking up were we left last time          ###
+  ###-------------------------------------------------------------------###----   
+  if (restart){
+    
+    if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
+    load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    
+    #this is where the old simulation will be moved to
+    old.dir <- lubridate::year(names(FORECAST)) %>% tail(1)
+    #--- Updating the nt and etc
+    if(!dir.exists(file.path(settings$outdir,"SDA",old.dir))) dir.create(file.path(settings$outdir,"SDA",old.dir))
+    # finding/moving files to it's end year dir
+    files.last.sda<-list.files(file.path(settings$outdir,"SDA"))
+    #copying
+    file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
+              file.path(file.path(settings$outdir,"SDA"),paste0(old.dir,"/",files.last.sda))
+    )
+    params<-new.params
+    sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
+    
+    X <-FORECAST[[length(FORECAST)]]
+    
+  }else{
+    sim.time<-seq_len(nt)
+  }
+  
+  ###-------------------------------------------------------------------###
+  ### Splitting/Cutting the mets to the start and the end  of SDA       ###
+  ###-------------------------------------------------------------------###---- 
+  conf.settings<-conf.settings %>%
+    furrr::future_map(function(settings) {
+      inputs.split <- list()
+      if (!no_split) {
+        for (i in length(settings$run$inputs$met$path)) {
+          #---------------- model specific split inputs
+          ### model specific split inputs
+          settings$run$inputs$met$path[[i]] <- do.call(
+            my.split_inputs,
+            args = list(
+              settings = settings,
+              start.time = start.cut, # This depends if we are restart or not
+              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
+              inputs =  settings$run$inputs$met$path[[i]],
+              overwrite =F
+            )
+          )
+          # changing the start and end date which will be used for model2netcdf.model
+          settings$run$start.date <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
+          settings$run$end.date <- lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3)
+          
+        }
+      } else{
+        inputs.split <- inputs
+      }
+      settings
+    })
+  
+  conf.settings<-PEcAn.settings::as.MultiSettings(conf.settings)
+
+  ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###----
   # weight matrix
@@ -191,37 +230,32 @@ sda.enkf.multisite <- function(settings,
       x[i, ] }, n = i)
   } 
   
-  ###-------------------------------------------------------------------###
-  ### If this is a restart - Picking up were we left last time          ###
-  ###-------------------------------------------------------------------###----   
-  if (restart){
-    browser()
-    if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
-    load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    #--- Updating the nt and etc
-    if(!dir.exists(file.path(settings$outdir,"SDA",assimyears[t]))) dir.create(file.path(settings$outdir,"SDA",assimyears[t]))
-    # finding/moving files to it's end year dir
-    files.last.sda<-list.files.nodir(file.path(settings$outdir,"SDA"))
-    #copying
-    file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
-              file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda))
-    )
-    params<-new.params
-  }else{
-    t<-0
-  }
   
+  
+  # This is gonna be used just for the first round
+  inputs <- conf.settings %>% map(function(setting) {
+    input.ens.gen(
+      settings = setting,
+      input = "met",
+      method = setting$ensemble$samplingspace$met$method,
+      parent_ids = NULL 
+    )
+  }) 
+  
+
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
-  for(t in seq_len(nt)){
+  for(t in sim.time){
+
     # if it beaks at least save the trace
-    tryCatch({
+   # tryCatch({
       
       tic(paste0("Writing configs for cycle = ", t))
       # do we have obs for this time - what year is it ?
       obs <- which(!is.na(obs.mean[[t]]))
       obs.year <- year(names(obs.mean)[t])
+ 
       ###-------------------------------------------------------------------------###
       ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
       ###-------------------------------------------------------------------------###-----  
@@ -234,6 +268,7 @@ sda.enkf.multisite <- function(settings,
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
         inputs.split <- conf.settings %>%
           purrr::map2(inputs, function(settings, inputs) {
+      
             inputs.split <- list()
             if (!no_split) {
               for (i in seq_len(nens)) {
@@ -242,7 +277,7 @@ sda.enkf.multisite <- function(settings,
                   my.split_inputs,
                   args = list(
                     settings = settings,
-                    start.time =(lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
+                    start.time = (lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
                     stop.time =   lubridate::ymd_hms(obs.times[t], truncated = 3),
                     inputs = inputs$samples[[i]])
                 )
@@ -252,7 +287,7 @@ sda.enkf.multisite <- function(settings,
             }
             inputs.split
           })
-        
+        #browser()
         #---------------- setting up the restart argument for each site separatly and keeping them in a list
         restart.list <-
           furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split),
@@ -273,7 +308,7 @@ sda.enkf.multisite <- function(settings,
         
         
       }else{
-        restart.list <- vector("list",length(conf.settings))
+        restart.list <- vector("list", length(conf.settings))
       }
       #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
       if (control$debug) browser()
@@ -296,7 +331,7 @@ sda.enkf.multisite <- function(settings,
       runs.tmp <- list.dirs(rundir, full.names = F)
       writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
       
-      if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
+      #if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
       #-------------------------------------------- RUN
       tic(paste0("Running models for cycle = ", t))
       if (control$debug) browser()
@@ -534,7 +569,7 @@ sda.enkf.multisite <- function(settings,
            FORECAST,
            ANALYSIS,
            enkf.params,
-           new.state, new.params,
+           new.state, new.params,params.list,
            out.configs, ensemble.samples, inputs, Viz.output,
            file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
       
@@ -545,19 +580,20 @@ sda.enkf.multisite <- function(settings,
       if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
-    },error = function(e) {
-      # If it breaks at some steps then I lose all the info on the other variables that worked fine up to the step before the break
-      save(site.locs,
-           t,
-           FORECAST,
-           ANALYSIS,
-           enkf.params,
-           new.state, new.params,
-           out.configs, ensemble.samples, inputs, Viz.output,
-           file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
       
-      PEcAn.logger::logger.severe(paste0("Something just broke along the way. See if the message is helpful ", e))
-    })
+    # },error = function(e) {
+    #   # If it breaks at some steps then I lose all the info on the other variables that worked fine up to the step before the break
+    #   save(site.locs,
+    #        t,
+    #        FORECAST,
+    #        ANALYSIS,
+    #        enkf.params,
+    #        new.state, new.params, params.list,
+    #        out.configs, ensemble.samples, inputs, Viz.output,
+    #        file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    #   
+    #   PEcAn.logger::logger.severe(paste0("Something just broke along the way. See if the message is helpful ", e))
+    # })
     
     
     
