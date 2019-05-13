@@ -79,7 +79,7 @@ This menu shows the contents of the root workflow folder that are not in one of 
  + ```ensemble.analysis.[RunID].[Variable].[StarYear].[EndYear].pdf``` contains the ensemble prediction as both a histogram and a boxplot.
  + ```ensemble.ts.[RunID].[Variable].[StartYear].[EndYear].pdf``` contains a time-series plot of the ensemble mean, median, and 95% CI
 
-##	Global Sensitivity: Shiny
+###	Global Sensitivity: Shiny
 
 **Navigate to URL/shiny/global-sensitivity.**
  

@@ -21,8 +21,6 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 *	If you followed instructions found in [Install PEcAn by hand], **URL is your server’s IP**
 
 
-## Basic Run
-
 ### Start PEcAn:
 
 1. **Enter URL in your web browser**
