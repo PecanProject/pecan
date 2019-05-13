@@ -254,7 +254,8 @@ sda.enkf.multisite <- function(settings,
       tic(paste0("Writing configs for cycle = ", t))
       # do we have obs for this time - what year is it ?
       obs <- which(!is.na(obs.mean[[t]]))
-      obs.year <- year(names(obs.mean)[t])
+      obs.t<-names(obs.mean)[t]
+      obs.year <- year(obs.t)
  
       ###-------------------------------------------------------------------------###
       ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
@@ -419,7 +420,7 @@ sda.enkf.multisite <- function(settings,
       
       
       
-      FORECAST[[t]] <- X
+      FORECAST[[obs.t]] <- X
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
@@ -447,7 +448,7 @@ sda.enkf.multisite <- function(settings,
         if(processvar == FALSE){an.method<-EnKF.MultiSite  }else{    an.method<-GEF.MultiSite   }  
         
         #-analysis function
-        enkf.params[[t]] <- Analysis.sda(
+        enkf.params[[obs.t]] <- Analysis.sda(
           settings,
           FUN = an.method,
           Forecast = list(Q = Q, X = X),
@@ -472,27 +473,27 @@ sda.enkf.multisite <- function(settings,
         )
         tic(paste0("Preparing for Adjustment for cycle = ", t))
         #Forecast
-        mu.f <- enkf.params[[t]]$mu.f
-        Pf <- enkf.params[[t]]$Pf
+        mu.f <- enkf.params[[obs.t]]$mu.f
+        Pf <- enkf.params[[obs.t]]$Pf
         #Analysis
-        Pa <- enkf.params[[t]]$Pa
-        mu.a <- enkf.params[[t]]$mu.a
+        Pa <- enkf.params[[obs.t]]$Pa
+        mu.a <- enkf.params[[obs.t]]$mu.a
         #extracting extra outputs
         if (control$debug) browser()
         if (processvar) {
-          aqq<-enkf.params[[t]]$aqq
-          bqq<-enkf.params[[t]]$bqq
+          aqq<-enkf.params[[obs.t]]$aqq
+          bqq<-enkf.params[[obs.t]]$bqq
         }
         # Adding obs elements to the enkf.params
         #This can later on help with diagnostics
-        enkf.params[[t]] <- c(enkf.params[[t]], R = list(R))
-        enkf.params[[t]] <- c(enkf.params[[t]], Y = list(Y))
-        enkf.params[[t]] <- c(enkf.params[[t]], RestartList = list(restart.list %>% setNames(site.ids) ))
+        enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], R = list(R))
+        enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], Y = list(Y))
+        enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% setNames(site.ids) ))
         
         #setting names
-        FORECAST <-FORECAST %>% setNames(names(obs.mean)[1:t])
+        FORECAST <-FORECAST 
         
-        enkf.params <-enkf.params%>% setNames(names(obs.mean)[1:t])
+        enkf.params <-enkf.params
         ###-------------------------------------------------------------------###
         ### Trace                                                             ###
         ###-------------------------------------------------------------------###----      
@@ -504,13 +505,13 @@ sda.enkf.multisite <- function(settings,
           PEcAn.logger::logger.warn ("\n --------------Obs Cov ----------- \n")
           print(R)
           PEcAn.logger::logger.warn ("\n --------------Forecast mean ----------- \n")
-          print(enkf.params[[t]]$mu.f)
+          print(enkf.params[[obs.t]]$mu.f)
           PEcAn.logger::logger.warn ("\n --------------Forecast Cov ----------- \n")
-          print(enkf.params[[t]]$Pf)
+          print(enkf.params[[obs.t]]$Pf)
           PEcAn.logger::logger.warn ("\n --------------Analysis mean ----------- \n")
-          print(t(enkf.params[[t]]$mu.a))
+          print(t(enkf.params[[obs.t]]$mu.a))
           PEcAn.logger::logger.warn ("\n --------------Analysis Cov ----------- \n")
-          print(enkf.params[[t]]$Pa)
+          print(enkf.params[[obs.t]]$Pa)
           PEcAn.logger::logger.warn ("\n ------------------------------------------------------\n")
         }
         if (control$debug) browser()
@@ -532,7 +533,7 @@ sda.enkf.multisite <- function(settings,
           } 
           Pa   <- Pf + solve(q.bar)
         }
-        enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
+        enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
       }
       
       ###-------------------------------------------------------------------###
@@ -557,8 +558,8 @@ sda.enkf.multisite <- function(settings,
       }
       ## in the future will have to be separated from analysis
       new.state  <- as.data.frame(analysis)
-      ANALYSIS[[t]] <- analysis
-      ANALYSIS <-ANALYSIS%>% setNames(names(obs.mean)[1:t])
+      ANALYSIS[[obs.t]] <- analysis
+      ANALYSIS <-ANALYSIS
       ###-------------------------------------------------------------------###
       ### save outputs                                                      ###
       ###-------------------------------------------------------------------###---- 

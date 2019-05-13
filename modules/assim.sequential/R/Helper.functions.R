@@ -77,16 +77,16 @@ outlier.detector.boxplot<-function(X) {
 #' @export
 #'
 SDA.arguments <-
-  function(trace = T,
-           ForewardForecast = F,
-           interactivePlot = F,
-           TimeseriesPlot = F,
-           BiasPlot = F,
+  function(trace = TRUE,
+           ForewardForecast = FALSE,
+           interactivePlot = FALSE,
+           TimeseriesPlot = FALSE,
+           BiasPlot = FALSE,
            plot.title = NULL,
-           facet.plots = F,
+           facet.plots = FALSE,
            debug = FALSE,
-           pause = F,
-           Profiling = F) {
+           pause = FALSE,
+           Profiling = FALSE) {
     
     return(
       list(

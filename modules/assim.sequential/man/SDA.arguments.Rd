@@ -4,9 +4,10 @@
 \alias{SDA.arguments}
 \title{SDA.arguments}
 \usage{
-SDA.arguments(trace = T, ForewardForecast = F, interactivePlot = F,
-  TimeseriesPlot = F, BiasPlot = F, plot.title = NULL,
-  facet.plots = F, debug = FALSE, pause = F, Profiling = F)
+SDA.arguments(trace = TRUE, ForewardForecast = FALSE,
+  interactivePlot = FALSE, TimeseriesPlot = FALSE, BiasPlot = FALSE,
+  plot.title = NULL, facet.plots = FALSE, debug = FALSE,
+  pause = FALSE, Profiling = FALSE)
 }
 \arguments{
 \item{trace}{Logical if code should print out the progress of SDA .}
