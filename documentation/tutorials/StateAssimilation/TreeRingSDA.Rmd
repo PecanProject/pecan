@@ -158,7 +158,7 @@ $$\tau_{r} \sim Gamma(a_r,r_r)$$
 
 This model is encapsulated in the PEcAn function:
 
-```
+``````{r echo= TRUE, eval=FALSE}
 InventoryGrowthFusion(combined,n,iter)
 ```
 

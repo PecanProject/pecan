@@ -46,7 +46,7 @@ This tutorial assumes you have successfully completed an ensemble and a sensitiv
 ## Defining variables
 
 The following variables need to be set specific to the site being run and the workflow being run
-```{r, eval=FALSE}
+```{r echo= TRUE, eval=FALSE}
 workflow_id <- 99000000002  ## comes from the History table, your successful ensemble run's workflow ID
 
 ## from URL/bety/inputs.  
@@ -65,7 +65,8 @@ outdir      <- "/home/carya/output/"
 A good place to start when thinking about a new PDA analysis is to look at the current model fit to observed data. In fact, we want to compare data to a full ensemble prediction from the model. This is important because our current parameter distributions will be the priors for PDA. While the analysis will translate these priors into more optimal (in terms of producing model output that matches observations) and more confident (i.e. narrower) posterior distributions, these results are inherently constrained by the current parameter distributions. Thus, if reality falls far outside the prior ensemble confidence interval (which reflects the current uncertainty of all model parameters), data assimilation will not be able to fix this. In such cases, the prior parameter estimates must already be over-constrained, or there are structural errors in the model itself that need fixing. 
 To begin, let’s load up some NEE observations so that we can plot them along with our ensemble predictions. In the code below the elements in bold may vary depending on site and your previous runs. 
 
-```{r eval=FALSE}
+```{r echo= TRUE, eval=FALSE}
+
 library(PEcAn.all)
 
 # read settings
@@ -94,7 +95,8 @@ NEEo <- obs$NEE
 ```
 
 Now let's load up our ensemble outputs from the previous ensemble analysis (Demo 2) and plot our ensemble predictions against our NEE observations. 
-```{r eval=FALSE}
+```{r echo= TRUE, eval=FALSE}
+
 # load outputs, try not to delete prePDA ensemble output filename from your environment
 prePDA_ensemble_output_file <- file.path(outdir,paste0("PEcAn_",workflow_id, "/ensemble.ts.", settings$ensemble$ensemble.id, ".NEE.2003.2006.Rdata"))
 load(prePDA_ensemble_output_file)
@@ -184,7 +186,7 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
 ```
 Once you’ve made and saved the changes to your XML, load the file and check that it contains the new settings:
 
-```{r eval=FALSE}
+```{r echo= TRUE, eval=FALSE}
 settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.PDA.xml"))
 settings$assim.batch
 ```
@@ -208,7 +210,7 @@ For now, we just want you to get a glimpse at the overall structure of the code,
 
 Now we can go ahead and run a data assimilation MCMC with emulator. Since you've already loaded the settings containing your modified <assim.batch> XML block, all you need to do to start the PDA is run `pda.emulator(settings)`. But, in the emulator workflow, there is a bit of a time consuming step where we calculate the effective sample size of the input data, and we have already done this step for you. You could load it up and pass it to the function explicitly in order to skip this step:
 
-```{r eval=FALSE}
+```{r echo= TRUE, eval=FALSE}
 # load input data
 load("/home/carya/pda/pda_externals.Rdata")
 postPDA.settings <- pda.emulator(settings, external.data = inputs_w_neff)
@@ -239,7 +241,8 @@ In addition to the outputs of the PDA itself, you may want to conduct ensemble a
 The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xml`) that includes the posterior id to be used in the next round of runs. Locate this file in your run directory and load the file for the post-pda ensemble/sensitivity analysis (if you already have the `settings` list in your working environment you don't need to re-read the settings):
 
 
-```{r eval=FALSE}
+```{r echo= TRUE, eval=FALSE}
+
  # read post-PDA settings if you don't have them in your wotking environment
  # replace the *** with the ensemble id given by the workflow
  # postPDA.settings <- read.settings(file.path(outdir,paste0("PEcAn_", workflow_id),"pecan.pda***.xml"))
