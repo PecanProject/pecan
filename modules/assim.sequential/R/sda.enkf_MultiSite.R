@@ -287,7 +287,7 @@ sda.enkf.multisite <- function(settings,
             }
             inputs.split
           })
-        #browser()
+        ##browser()
         #---------------- setting up the restart argument for each site separatly and keeping them in a list
         restart.list <-
           furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split),
