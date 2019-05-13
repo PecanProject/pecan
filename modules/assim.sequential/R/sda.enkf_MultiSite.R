@@ -487,7 +487,7 @@ sda.enkf.multisite <- function(settings,
         #This can later on help with diagnostics
         enkf.params[[t]] <- c(enkf.params[[t]], R = list(R))
         enkf.params[[t]] <- c(enkf.params[[t]], Y = list(Y))
-        enkf.params[[t]] <- c(enkf.params[[t]], RestartList = restart.list)
+        enkf.params[[t]] <- c(enkf.params[[t]], RestartList = list(restart.list %>% setNames(site.ids) ))
         
         #setting names
         FORECAST <-FORECAST %>% setNames(names(obs.mean)[1:t])

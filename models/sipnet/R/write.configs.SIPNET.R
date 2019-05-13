@@ -387,11 +387,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     ## plantWoodInit gC/m2
     plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
     if (all(plant_wood_vars %in% ic.names)) {
-      
-      PEcAn.logger::logger.info(IC)
-      
-
-
       # reconstruct total wood C
       wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
       #Sanity check
