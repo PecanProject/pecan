@@ -170,7 +170,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                                                          settings$assim.batch$ensemble.id, ".Rdata"))
     
   }else{
-    settings_outdir <-  paste0(settings$host$folder, "/", settings$workflow$id, "/")
+    settings_outdir <-  dirname(settings$host$rundir)
     pda.restart.file <- paste0(settings_outdir, "history.pda",
                                                          settings$assim.batch$ensemble.id, ".Rdata")
   }
