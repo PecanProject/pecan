@@ -9,11 +9,11 @@ Maintainer: Michael Dietze <dietze@bu.edu>
 Depends:
     mvtnorm,
     mlegp,
+    coda (>= 0.18),
+    MASS,
     MCMCpack
 Imports:
     PEcAn.logger,
-    coda (>= 0.18),
-    MASS,
     methods
 Description: Implementation of a Gaussian Process model (both likelihood and
     bayesian approaches) for kriging and model emulation.  Includes functions
