@@ -1166,11 +1166,16 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
                      ".Rdata")),"\")\n")
     first_lines <- c(first_lines, external_data_line)
     settings$assim.batch$extension <- "round" 
-  }
-  
-  last_lines <- c("pda.emulator(settings, external.priors = external_priors, 
+    last_lines <- c("pda.emulator(settings, external.priors = external_priors, external.data = external.data,
                          external.knots = external_knots, external.formats = external_formats,
                          ensemble.id = ensemble_id, remote = TRUE)")
+  }else{
+  
+    last_lines <- c("pda.emulator(settings, external.priors = external_priors, 
+                         external.knots = external_knots, external.formats = external_formats,
+                         ensemble.id = ensemble_id, remote = TRUE)")  
+  }
+  
   writeLines(c(first_lines, last_lines), local_script_file)
   remote_script_file <- paste0(settings$host$folder, "/", settings$workflow$id, "/remote_emulator_s", site,".R")
   
