@@ -1136,15 +1136,13 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   cat("#$ -j y\n", file = local_sub_file, append = TRUE)
   cat("#$ -S /bin/bash\n", file = local_sub_file, append = TRUE)
   cat("#$ -V\n", file = local_sub_file, append = TRUE)
-  # parse 'geo*' from settings$host$qsub
-  # gsub( " .*$", "", sub(".*-q ", "", settings$host$qsub))
-  cat("#$ -q 'geo*'\n", file = local_sub_file, append = TRUE) 
+  # parse queue from settings$host$qsub
+  cat(paste0("#$ -q '", gsub( " .*$", "", sub(".*-q ", "", settings$host$qsub)), "'\n"), file = local_sub_file, append = TRUE) 
   cat(paste0("#$ -N emulator_s", site,"\n"), file = local_sub_file, append = TRUE)
   #cat("#$ -pe omp 3\n", file = local_sub_file, append = TRUE)
   cat(paste0("#cd ", remote_dir, "\n"), file = local_sub_file, append = TRUE)
   cat(paste0("#", settings$host$prerun, "\n"), file = local_sub_file, append = TRUE)
   cat(paste0("Rscript remote_emulator_s",site,".R\n"), file = local_sub_file, append = TRUE)
-  sendbackto <- fqdn()
   cat(paste0("mv ", multi_site_objects$ensembleidlist[site],"/pecan.pda",
              multi_site_objects$ensembleidlist[site], ".xml ", remote_dir), file = local_sub_file, append = TRUE)
   remote_sub_file <- paste0(settings$host$folder, "/", settings$workflow$id, "/sub" , site, ".sh")
