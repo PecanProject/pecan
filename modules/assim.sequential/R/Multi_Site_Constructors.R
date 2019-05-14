@@ -177,29 +177,64 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   #This is used inside the loop below for moving between the sites when populating the big H matrix
   nobs <- obs.t.mean %>% map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites
   nobstotal<-obs.t.mean %>% purrr::flatten() %>% length() # this gives me the total number of obs
-  #H <- matrix(0, (nobs * nsite.ids.with.data), (nvariable*nsite))
-  #big empty H which needs to be filled in.
+  
   #Having the total number of obs as the row number
   H <- matrix(0,  nobstotal, (nvariable*nsite))
   j<-1
-  for(i in seq_along(site.ids)){
-    
+  
+  for(i in seq_along(site.ids))
+    {
     site <- site.ids[i]
     obs.names <- names(obs.t.mean[[site]])
     
     if(is.null(obs.names)) next;
     
-    choose <- sapply(var.names, agrep, x = names(obs.t.mean[[site]]),
-                       max = 1, USE.NAMES = FALSE) %>% unlist
-    choose.col <- sapply(obs.names, agrep, x = var.names, max = 1, USE.NAMES = FALSE) %>% unlist
-    choose.row <- sapply(var.names, agrep, x = obs.names, max = 1, USE.NAMES = FALSE) %>% unlist
+    if (length(obs.names) == 1)
+    {
+      
+      # choose <- sapply(var.names, agrep, x = names(obs.t.mean[[site]]),
+      #                  max = 1, USE.NAMES = FALSE) %>% unlist
+      choose.col <- sapply(obs.names, agrep, x = var.names, max = 1, USE.NAMES = FALSE) %>% unlist
+      choose.row <- sapply(var.names, agrep, x = obs.names, max = 1, USE.NAMES = FALSE) %>% unlist
+      
+      # empty matrix for this site
+      H.this.site <- matrix(0, nrow(H), nvariable)
+      # fill in the ones based on choose
+      H.this.site [choose.row, choose.col] <- 1
+    }
     
-    # empty matrix for this site
-    H.this.site <- matrix(0, length(choose), nvariable)
-    # fill in the ones based on choose
-    H.this.site [choose.row, choose.col] <- 1
-    
-    pos.row<- ((nobs*j)-(nobs-1)):(nobs*j)
+    if (length(obs.names) > 1)
+    {
+      # empty matrix for this site
+      H.this.site <- matrix(0, nobs, nvariable)
+      
+      for (n in seq_along(obs.names))
+      {
+        choose.col <- sapply(obs.names[n], agrep, x = var.names, max = 1, USE.NAMES = FALSE) %>% unlist
+        H.this.site[n, choose.col] = 1
+
+      }
+      H.this.site = do.call(rbind, replicate(length(obs.names), H.this.site, simplify = FALSE))
+      }
+
+    # for (n in seq_along(obs.names))
+    # {
+    #   choose.col <- sapply(obs.names[n], agrep, x = var.names, max = 1, USE.NAMES = FALSE) %>% unlist
+    #   H.this.obs[n, choose.col] = 1
+    #   
+    # }
+    #   H.this.site = data.frame()
+    #   for (x in seq_along(obs.names))
+    #   {
+    #     test = do.call(rbind, replicate(length(obs.names), H.this.obs[x,], simplify = FALSE))
+    #     H.this.site = rbind(H.this.site, test)
+    #     
+    #   }
+    #   H.this.site = as.matrix(H.this.site)
+    # }
+    # 
+    pos.row = 1:nobstotal
+    #pos.row<- ((nobs*j)-(nobs-1)):(nobs*j)
     pos.col<- ((nvariable*i)-(nvariable-1)):(nvariable*i)
     
     H[pos.row,pos.col] <-H.this.site

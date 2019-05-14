@@ -35,7 +35,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   last <- length(ens[[1]])
   
   forecast <- list()
-
+  
   #### PEcAn Standard Outputs
   if ("GWBI" %in% var.names) {
     forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
@@ -45,17 +45,17 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   if ("AbvGrndWood" %in% var.names) {
     forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
-   
+    
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
-    
+    if (wood_total_C==0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.    
     abvGrndWoodFrac <- ens$AbvGrndWood[last]  / wood_total_C
     coarseRootFrac  <- ens$coarse_root_carbon_content[last] / wood_total_C
     fineRootFrac    <- ens$fine_root_carbon_content[last]   / wood_total_C
     params$restart <- c(abvGrndWoodFrac, coarseRootFrac, fineRootFrac)
-
+    
     if (length(params$restart)>0)
-    names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
+      names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
   }
   
   if ("leaf_carbon_content" %in% var.names) {

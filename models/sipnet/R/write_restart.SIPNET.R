@@ -58,6 +58,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   if ("AbvGrndWood" %in% variables) {
     AbvGrndWood <- udunits2::ud.convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
     analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 
+    if (new.state$AbvGrndWood < 0) analysis.save[[length(analysis.save)]] <- 0
     names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
     
     analysis.save[[length(analysis.save) + 1]] <- IC_extra$abvGrndWoodFrac
@@ -103,7 +104,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     if (new.state$SWE < 0) analysis.save[[length(analysis.save)]] <- 0
     names(analysis.save[[length(analysis.save)]]) <- c("snow")
   }
-
+  
   if ("LAI" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
     if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
@@ -116,7 +117,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }else{
     analysis.save.mat<-NULL
   }
-
+  
   
   do.call(write.config.SIPNET, args = list(defaults = NULL,
                                            trait.values = new.params,
