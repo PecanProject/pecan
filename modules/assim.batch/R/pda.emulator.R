@@ -738,7 +738,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }
   }
   
-  # I can use a counter
+  # I can use a counter to run pre-defined number of emulator rounds
   if(is.null(settings$assim.batch$round_counter)){
     settings$assim.batch$round_counter <- 1
   }else{

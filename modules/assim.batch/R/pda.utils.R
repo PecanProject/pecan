@@ -1086,7 +1086,7 @@ return_multi_site_objects <- function(multi.settings){
     names(knots.list) <- sapply(settings$pfts,"[[",'name')
     external_knots <- lapply(knots.list, `[[`, "params")
     
-    if(FALSE){
+    if(!is.null(settings$assim.batch$round_counter)){
     collect_site_knots <- list()  
     for(i in seq_along(multi.settings)){
       settings <- multi.settings[[i]]
@@ -1157,6 +1157,17 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
     "settings <- multi_site_objects$settings\n", "external_priors <- multi_site_objects$priorlist\n", 
     "external_knots  <- multi_site_objects$externalknots\n", "external_formats <- multi_site_objects$formatlist\n",
     paste0("ensemble_id   <- multi_site_objects$ensembleidlist[", site, "]\n"))
+  
+  # if this is another round
+  if(!is.null(settings$assim.batch$round_counter)){ 
+    external_data_line <- paste0("load(\"",file.path(remote_dir,
+              paste0("external.", 
+                     settings$assim.batch$ensemble.id, 
+                     ".Rdata")),"\")\n")
+    first_lines <- c(first_lines, external_data_line)
+    settings$assim.batch$extension <- "round" 
+  }
+  
   last_lines <- c("pda.emulator(settings, external.priors = external_priors, 
                          external.knots = external_knots, external.formats = external_formats,
                          ensemble.id = ensemble_id, remote = TRUE)")
@@ -1178,10 +1189,6 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   newoutdir <- paste0(remote_dir, "/", multi_site_objects$ensembleidlist[site], "/out/")
   settings$host$rundir <- settings$rundir <- newrundir
   settings$host$outdir <- settings$modeloutdir <- newoutdir
-  
-  if(FALSE){ 
-    settings$assim.batch$extension <- "round" 
-  }
   
   multi_site_objects$settings <- settings
   save(multi_site_objects, file = local_object_file)
