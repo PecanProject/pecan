@@ -141,7 +141,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
   enough.iter <- TRUE
   
   for (i in seq_along(prior.ind)) {
-    params.subset[[i]] <- coda::as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
+    params.subset[[i]] <- coda::as.mcmc.list(lapply(mcmc.param.list[[i]], coda::mcmc))
     
     burnin <- getBurnin(params.subset[[i]], method = "gelman.plot")
     

@@ -259,7 +259,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       
       ## propose new parameters
       repeat {
-        xnew <- mvrnorm(1, unlist(xcurr), jcov)
+        xnew <- MASS::mvrnorm(1, unlist(xcurr), jcov)
         if (bounded(xnew, rng)) {
           break
         }
