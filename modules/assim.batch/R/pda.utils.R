@@ -1145,7 +1145,7 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   cat(paste0("Rscript remote_emulator_s",site,".R\n"), file = local_sub_file, append = TRUE)
   cat(paste0("mv ", multi_site_objects$ensembleidlist[site],"/pecan.pda",
              multi_site_objects$ensembleidlist[site], ".xml ", remote_dir), file = local_sub_file, append = TRUE)
-  remote_sub_file <- paste0(settings$host$folder, "/", settings$workflow$id, "/sub" , site, ".sh")
+  remote_sub_file <- paste0(remote_dir, "/sub" , site, ".sh")
   
   ######## create R script
   local_script_file <- paste0(settings$outdir, "/remote_emulator_s",site,".R")
@@ -1175,7 +1175,7 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   }
   
   writeLines(c(first_lines, last_lines), local_script_file)
-  remote_script_file <- paste0(settings$host$folder, "/", settings$workflow$id, "/remote_emulator_s", site,".R")
+  remote_script_file <- paste0(remote_dir, "/remote_emulator_s", site,".R")
   
 
   #cheating. needs to be done after extracting all paths
@@ -1197,7 +1197,7 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   save(multi_site_objects, file = local_object_file)
   
   ######## copy to remote
-  remote.execute.cmd(host_info, paste0("mkdir -p ", settings$host$folder, "/", settings$workflow$id))
+  remote.execute.cmd(host_info, paste0("mkdir -p ", remote_dir))
   remote.copy.to(host_info, local_sub_file, remote_sub_file)
   remote.copy.to(host_info, local_script_file, remote_script_file)
   remote.copy.to(host_info, local_object_file, remote_object_file)
