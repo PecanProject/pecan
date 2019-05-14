@@ -739,7 +739,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   }
   
   # I can use a counter
-  if(is.null(settings$assim.batch$round_counter){
+  if(is.null(settings$assim.batch$round_counter)){
     settings$assim.batch$round_counter <- 1
   }else{
     settings$assim.batch$round_counter <- 1 +  as.numeric(settings$assim.batch$round_counter)
