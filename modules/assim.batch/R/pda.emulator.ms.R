@@ -82,11 +82,14 @@ pda.emulator.ms <- function(multi.settings) {
         if(all(check_all_sites)) break
       }
       
-      # Sync fcn
+      # Sync from remote
       multi.settings <- sync_pda_remote(multi.settings, multi_site_objects$ensembleidlist)
+    
       
       # continue or stop
       r_counter <- as.numeric(multi.settings[[1]]$assim.batch$round_counter)
+      # write multi.settings with individual-pda info
+      PEcAn.settings::write.settings(multi.settings, outputfile = paste0('pecan.PDA_MS', r_counter, '.xml'))
       PEcAn.logger::logger.info("Round", r_counter, "finished.")
       if(r_counter == n_rounds) break 
     }
@@ -96,8 +99,7 @@ pda.emulator.ms <- function(multi.settings) {
 
   }
   
-  # write multi.settings with individual-pda info
-  PEcAn.settings::write.settings(multi.settings, outputfile='pecan.PDA_MS.xml')
+
   
 
   ## -------------------------------- Prepare for Joint and Hierarchical ----------------------------------------- 
