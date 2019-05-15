@@ -1207,3 +1207,36 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   
 }
 
+# helper function for syncing remote pda runs
+# this function resembles remote.copy.from but we don't want to sync everything back
+# if register==TRUE, the last files returned will be registered to the DB
+##' @export
+sync_pda_remote <- function(multi.settings, ensembleidlist, register = FALSE){
+  
+  args <- c("-qa")
+  args <- c(args, "--include=\"pecan.pda*\"")
+  args <- c(args, "--include=\"history*\"")
+  args <- c(args, "--include 'pft/***'")
+  args <- c(args, "--include=\"mcmc.list*\"")
+  args <- c(args, "--exclude=\"*\"") #exclude everything else
+  args <- c(args, "-e", paste0("'ssh -o ControlPath=", multi.settings[[1]]$host$tunnel, "'"))
+  args <- c(args, paste0(multi.settings[[1]]$host$name, ":", dirname(multi.settings[[1]]$host$outdir),"/"), 
+            multi.settings[[1]]$outdir)
+  res <- system2("rsync", paste(args), stdout = TRUE, stderr = FALSE)
+  if(attr(res,"status") == 255) PEcAn.logger::logger.error("Tunnel closed. Reopen and try again.")
+  
+  # update multi.settings
+  for(ms in seq_along(multi.settings)){
+    tmp_settings  <- read.settings(paste0(multi.settings[[ms]]$outdir,"/pecan.pda", 
+                                          ensembleidlist[[ms]],".xml"))
+    multi.settings[[ms]]$assim.batch <- tmp_settings$assim.batch
+    multi.settings[[ms]]$pfts <- tmp_settings$pfts
+  }
+
+  if(register){
+    # fcn needs conenction to DB
+  }  
+  
+  return(multi.settings)
+}
+

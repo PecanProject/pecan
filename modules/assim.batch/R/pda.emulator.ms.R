@@ -83,20 +83,9 @@ pda.emulator.ms <- function(multi.settings) {
         if(all(check_all_sites)) break
       }
       
-      
-      # Sync regular files back
-      args <- c("-e", paste0("ssh -o ControlPath=\"", multi.settings[[1]]$host$tunnel, "\"", collapse = ""))
-      args <- c(args, paste0(multi.settings[[1]]$host$name, ":", dirname(multi.settings[[1]]$host$outdir)), 
-                multi.settings[[1]]$outdir)
-      system2("rsync", shQuote(args), stdout = TRUE, stderr = FALSE)
-      
-      # update multi.settings
-      for(ms in seq_along(multi.settings)){
-       tmp_settings  <- read.settings(paste0(multi.settings[[ms]]$outdir,"/pecan.pda", 
-                                                     multi_site_objects$ensembleidlist[[ms]],".xml"))
-      multi.settings[[ms]]$assim.batch <- tmp_settings$assim.batch
-      multi.settings[[ms]]$pfts <- tmp_settings$pfts
-      }
+      # Sync fcn
+      multi.settings <- sync_pda_remote(multi.settings, multi_site_objects$ensembleidlist)
+
       #repeat(
 
         #emulator_r_check <- round_check(multi.settings)
