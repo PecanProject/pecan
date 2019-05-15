@@ -1218,6 +1218,8 @@ sync_pda_remote <- function(multi.settings, ensembleidlist, register = FALSE){
   args <- c(args, "--include=\"history*\"")
   args <- c(args, "--include 'pft/***'")
   args <- c(args, "--include=\"mcmc.list*\"")
+  args <- c(args, "--include=\"ss.pda*\"")
+  args <- c(args, "--include=\"emulator.pda*\"")
   args <- c(args, "--exclude=\"*\"") #exclude everything else
   args <- c(args, "-e", paste0("'ssh -o ControlPath=", multi.settings[[1]]$host$tunnel, "'"))
   args <- c(args, paste0(multi.settings[[1]]$host$name, ":", dirname(multi.settings[[1]]$host$outdir),"/"), 
