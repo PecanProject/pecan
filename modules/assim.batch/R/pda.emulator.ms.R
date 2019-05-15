@@ -45,28 +45,27 @@ pda.emulator.ms <- function(multi.settings) {
     # but this requires some re-arrangement in pda.emulator function 
     # for now we will always run site-level calibration
     
+    # Open the tunnel (might not need)
+    PEcAn.remote::open_tunnel(multi.settings[[1]]$host$name,
+                              user = multi.settings[[1]]$host$user,
+                              tunnel_dir = dirname(multi.settings[[1]]$host$tunnel))
     
-    # number of sites will probably get big real quick, so some multi-site PDA runs should be run on the cluster
-    # unfortunately pda.emulator function was not fully designed for remote runs, so first we need to prepare a few things it needs
-    # (1) all sites should be running the same knots
-    # (2) all sites will use the same prior.list
-    # (3) the format information for the assimilated data (pda.emulator needs DB connection to query it if it's not externally provided)
-    # (4) ensemble ids (they provide unique trackers for emulator functions)
-    multi_site_objects <- return_multi_site_objects(multi.settings) # using the first site is enough
-    
-    # the default implementation is that we will iteratively run the rounds until improvement in site-level fits slows down.
-    #if(one_round){
-      #multi.settings <- papply(multi.settings, pda.emulator, individual = individual)
-    #}else{
-      
-      # Open the tunnel (might not need)
-      PEcAn.remote::open_tunnel(multi.settings[[1]]$host$name,
-                                user = multi.settings[[1]]$host$user,
-                                tunnel_dir = dirname(multi.settings[[1]]$host$tunnel))
+    # Until a check function is implemented, run a predefined number of emulator rounds
+    n_rounds <- ifelse(is.null(multi.settings[[1]]$assim.batch$n_rounds), 3, as.numeric(multi.settings[[1]]$assim.batch$n_rounds))
+    PEcAn.logger::logger.info(n_rounds, " individual PDA rounds will be run per site. Please wait.")
+    repeat{
+     
+      # number of sites will probably get big real quick, so some multi-site PDA runs should be run on the cluster
+      # unfortunately pda.emulator function was not fully designed for remote runs, so first we need to prepare a few things it needs
+      # (1) all sites should be running the same knots
+      # (2) all sites will use the same prior.list
+      # (3) the format information for the assimilated data (pda.emulator needs DB connection to query it if it's not externally provided)
+      # (4) ensemble ids (they provide unique trackers for emulator functions)
+      multi_site_objects <- return_multi_site_objects(multi.settings) 
       
       emulator_jobs <- rep(NA, length(multi.settings))
       for(ms in seq_along(multi.settings)){
-
+        
         # Sync to remote
         subfile <- prepare_pda_remote(multi.settings[[ms]], site = ms, multi_site_objects)
         
@@ -85,20 +84,16 @@ pda.emulator.ms <- function(multi.settings) {
       
       # Sync fcn
       multi.settings <- sync_pda_remote(multi.settings, multi_site_objects$ensembleidlist)
+      
+      # continue or stop
+      r_counter <- multi.settings[[1]]$assim.batch$round_counter
+      PEcAn.logger::logger.info("Round", r_counter, "finished.")
+      if(r_counter == n_rounds) break 
+    }
 
-      #repeat(
+    # Close the tunnel
+    PEcAn.remote::kill.tunnel(settings)
 
-        #emulator_r_check <- round_check(multi.settings)
-        #if(emulator_r_check) break
-        # external.knots <- sample_multi_site_MCMC
-        # add round tag
-      #)
-      # Close the tunnel
-      PEcAn.remote::kill.tunnel(settings)
-    #}
-    #multi.settings[[i]] <- pda.emulator(multi.settings[[i]], individual = individual)
-
-    
   }
   
   # write multi.settings with individual-pda info

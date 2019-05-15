@@ -1234,7 +1234,7 @@ sync_pda_remote <- function(multi.settings, ensembleidlist, register = FALSE){
   }
 
   if(register){
-    # fcn needs conenction to DB
+    # fcn needs connection to DB
   }  
   
   return(multi.settings)
