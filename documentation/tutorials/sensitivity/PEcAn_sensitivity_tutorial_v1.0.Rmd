@@ -1,12 +1,12 @@
-# PEcAn: Testing the Sensitivity Analysis Against Observations"
+### PEcAn: Testing the Sensitivity Analysis Against Observations"
 
-### Author: "Ankur Desai"
+#### Author: "Ankur Desai"
 
 
-##Flux Measurements and Modeling Course, *Tutorial Part 2*
+#### Flux Measurements and Modeling Course, *Tutorial Part 2*
 This tutorial assumes you have successfully completed the Demo01, Demo02 and the modelVSdata tutorial.
 
-## Introduction
+#### Introduction
 Now that you have successfully run PEcAn through the web interface and have learned how to do a simple comparison of flux tower observations to model output, let’s start looking at how data assimilation and parameter estimation would work with an ecosystem model.
 
 Before we start a full data assimilation exercise, let’s try something simple – single parameter selection by hand.
@@ -89,7 +89,7 @@ arun <- PEcAn.utils::read.output(runids[1], paste(settings$outdir, "out", runids
 plot(arun$posix,arun$NEE)
 ```
 
-####B. Now let’s bring in the actual observations
+#### B. Now let’s bring in the actual observations
 
 Recall reading Ameriflux NEE in the modelVSdata tutorial. 
 ```{r echo= TRUE, eval=FALSE}
@@ -107,7 +107,7 @@ head(plottable)
 ```
 
 
-####C. Finally, we can finally compare model to data
+#### C. Finally, we can finally compare model to data
 
 In the modelVSdata, you also compared NEE to the ensemble model run. Here we will do the same except we include each sensitivity run. 
 
