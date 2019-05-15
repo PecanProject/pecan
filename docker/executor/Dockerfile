@@ -12,7 +12,7 @@ MAINTAINER Rob Kooper <kooper@illinois.edu>
 # ----------------------------------------------------------------------
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3-pip \
-    && pip3 install pika \
+    && pip3 install pika==1.0.0 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /work
