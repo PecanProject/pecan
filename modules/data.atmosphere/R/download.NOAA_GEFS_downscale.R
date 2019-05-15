@@ -246,6 +246,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
                   specific_humidity = ifelse(specific_humidity <0, 0, specific_humidity),
                   air_temperature = ifelse(air_temperature > 320, NA, air_temperature),
                   air_temperature = ifelse(air_temperature < 240, NA, air_temperature),
+                  precipitation_flux = ifelse(precipitation_flux < 0, 0, precipitation_flux),
                   surface_downwelling_longwave_flux_in_air = ifelse(surface_downwelling_longwave_flux_in_air < 0, NA, surface_downwelling_longwave_flux_in_air),
                   wind_speed = ifelse(wind_speed <0, 0, wind_speed)) %>%
     filter(is.na(timestamp) == FALSE)
