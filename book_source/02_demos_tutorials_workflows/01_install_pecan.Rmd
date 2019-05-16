@@ -119,6 +119,16 @@ This will not go into much detail about about how to use Docker -- for more deta
         ```bash
         docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
         ```
+        
+        This will produce a lot of output describing file operations.
+        This command succeeded if the output ends with the following:
+        
+        ```
+        ######################################################################
+        Done!
+        ###################################################################### 
+        ```
+
 5. **Start the PEcAn stack**. Assuming all of the steps above completed successfully, start the full stack by running the following shell command:
 
     ```bash
