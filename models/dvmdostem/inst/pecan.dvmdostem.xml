@@ -72,16 +72,31 @@
     <binary>/home/carya/dvm-dos-tem/dvmdostem</binary>
 
     <dvmdostem_site>/home/carya/dvm-dos-tem/DATA/SewardPen_10x10</dvmdostem_site>
-    <dvmdostem_pixel_y>2</dvmdostem_pixel_y> <!-- Remember R uses 1 based indexing -->
+    <dvmdostem_pixel_y>2</dvmdostem_pixel_y> <!-- Remember R uses 1 based indexing! -->
     <dvmdostem_pixel_x>2</dvmdostem_pixel_x>
 
+    <!-- Set the number of years each stage of dvmdostem will run. -->
     <dvmdostem_prerun>2</dvmdostem_prerun>
     <dvmdostem_equil>4</dvmdostem_equil>
     <dvmdostem_spinup>6</dvmdostem_spinup>
     <dvmdostem_transient>109</dvmdostem_transient>
     <dvmdostem_scenerio>91</dvmdostem_scenerio>
+
+    <!--Set the log level verbosity for dvmdostem.
+    It is not reccomended to use anything more verbose than 'warn'. -->
     <dvmdostem_loglevel>err</dvmdostem_loglevel>
+
+    <!-- Comma separated string of output variables, using PEcAn names. -->
+    <dvmdostem_pecan_outputs></dvmdostem_pecan_outputs> 
+
+    <!-- Deprecated. -->
+    <dvmdostem_output_spec></dvmdostem_output_spec>
+
+
+    <!--The dynamic modeled lai setting controls whether LAI is calculated
+    internally, or set each year from static initialization values. -->
     <dvmdostem_dynamic_modeled_lai>1</dvmdostem_dynamic_modeled_lai>
+
     <!--
     If the forcecmtnum tag is present, and has value 'yes' or 'y' (case insensitive)
     then PEcAn will force dvmdostem to use community number (CMT) that is deduced 
