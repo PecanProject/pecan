@@ -1,17 +1,12 @@
 # Follow instructions on:
 # https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
 
-# A few blocks in here can be removed when Travis updates its Ubuntu image past 
-# trusty. They are marked with TRUSTY for easy grepping.
-
 language: r
 r:
   - release
   - devel
   - oldrel
 
-# TRUSTY: Change version when 16.04 image is available.
-dist: trusty
 sudo: required
 
 env:
