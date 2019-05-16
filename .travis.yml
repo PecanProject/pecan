@@ -7,6 +7,7 @@ r:
   - devel
   - oldrel
 
+dist: xenial
 sudo: required
 
 env:
