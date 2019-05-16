@@ -36,7 +36,6 @@ cache:
 addons:
   apt:
     sources:
-      - sourceline: 'ppa:nschloe/hdf5-backports'
       - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
     packages:
       - bc
