@@ -134,8 +134,10 @@ pda.emulator.ms <- function(multi.settings) {
   # collect GPs and SSs
   for(s in seq_along(multi.settings)){
     
-    load(multi.settings[[s]]$assim.batch$emulator.path)
-    load(multi.settings[[s]]$assim.batch$ss.path)
+    load(file.path(multi.settings[[s]]$outdir, 
+                   basename(multi.settings[[s]]$assim.batch$emulator.path)))
+    load(file.path(multi.settings[[s]]$outdir,
+                   basename(multi.settings[[s]]$assim.batch$ss.path)))
     gp.stack[[s]] <- gp
     SS.stack[[s]] <- SS
     remove(gp, SS)
@@ -169,7 +171,7 @@ pda.emulator.ms <- function(multi.settings) {
     tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
     
     ## history restart
-    hbc.restart.file <- file.path(tmp.settings$outdir,paste0("history.hbc",
+    hbc.restart.file <- file.path(tmp.settings$outdir,paste0("history.joint",
                                                            tmp.settings$assim.batch$ensemble.id, ".Rdata"))
     
     gp <- unlist(gp.stack, recursive = FALSE)
