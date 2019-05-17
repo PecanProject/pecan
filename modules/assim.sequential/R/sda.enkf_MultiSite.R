@@ -22,11 +22,11 @@
 sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = FALSE, 
                                control=list(trace = TRUE,
                                             FF = FALSE,
-					    interactivePlot = FALSE,
+                                            interactivePlot = FALSE,
                                             TimeseriesPlot = FALSE,
-					    BiasPlot = FALSE,
-					    plot.title = NULL,
-					    facet.plots = FALSE,
+                                            BiasPlot = FALSE,
+                                            plot.title = NULL,
+                                            facet.plots = FALSE,
                                             debug = FALSE,
                                             pause=FALSE),
                                ...) {
@@ -343,8 +343,14 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     X <- X %>%
           map_dfc(~.x) %>% 
           as.matrix() %>%
-          `colnames<-`(c(rep(var.names, length(X)))) %>%
+          `colnames<-`(c(rep(colnames(X[[names(X)[1]]]), length(X)))) %>%
           `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
+    
+    # X <- X %>%
+    #   map_dfc(~.x) %>% 
+    #   as.matrix() %>%
+    #   `colnames<-`(c(rep(var.names, length(X)))) %>%
+    #   `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
     
     FORECAST[[t]] <- X
     ###-------------------------------------------------------------------###
