@@ -10,7 +10,7 @@ set -e
     travis_time_end
 )
 
-# INSTALL SPECIFIC DBPLYER AND LATEST RGDAL
+# INSTALL SPECIFIC DBPLYR AND LATEST RGDAL
 (
     travis_time_start "pecan_install_dbplyr" "Installing dbplyr version 1.3.0 see #2349"
     # fix for #2349
