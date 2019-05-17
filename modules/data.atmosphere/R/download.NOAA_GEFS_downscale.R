@@ -228,20 +228,20 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   nonSW.flux.hrly <- forecasts %>%
     dplyr::select(timestamp, NOAA.member, surface_downwelling_longwave_flux_in_air) %>%
     PEcAn.data.atmosphere::downscale_repeat_6hr_to_hrly() %>% dplyr::group_by_at(c("NOAA.member", "timestamp")) %>% 
-    summarize(surface_downwelling_longwave_flux_in_air = mean(surface_downwelling_longwave_flux_in_air))
+    dplyr::summarize(surface_downwelling_longwave_flux_in_air = mean(surface_downwelling_longwave_flux_in_air))
   
   ## downscale shortwave to hourly
   time0 = min(forecasts$timestamp)
   time_end = max(forecasts$timestamp)
-  ShortWave.ds = PEcAn.data.atmosphere::downscale_ShortWave_to_hrly(forecasts, time0, lat = 45.805925, lon = -90.07961, output_tz= "UTC")%>% 
+  ShortWave.ds = PEcAn.data.atmosphere::downscale_ShortWave_to_hrly(forecasts, time0, time_end, lat = 45.805925, lon = -90.07961, output_tz= "UTC")%>% 
     dplyr::group_by_at(c("NOAA.member", "timestamp")) %>% 
-    summarize(surface_downwelling_shortwave_flux_in_air = mean(surface_downwelling_shortwave_flux_in_air))
+    dplyr::summarize(surface_downwelling_shortwave_flux_in_air = mean(surface_downwelling_shortwave_flux_in_air))
   
   
   joined<-  dplyr::inner_join(gefs_hour, nonSW.flux.hrly, by = c("NOAA.member", "timestamp"))
   
   joined <- dplyr::inner_join(joined, ShortWave.ds, by = c("NOAA.member", "timestamp")) %>% 
-    distinct() %>% 
+    dplyr::distinct() %>% 
     dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(surface_downwelling_shortwave_flux_in_air < 0, 0, surface_downwelling_shortwave_flux_in_air),
                   specific_humidity = ifelse(specific_humidity <0, 0, specific_humidity),
                   air_temperature = ifelse(air_temperature > 320, NA, air_temperature),
@@ -249,7 +249,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
                   precipitation_flux = ifelse(precipitation_flux < 0, 0, precipitation_flux),
                   surface_downwelling_longwave_flux_in_air = ifelse(surface_downwelling_longwave_flux_in_air < 0, NA, surface_downwelling_longwave_flux_in_air),
                   wind_speed = ifelse(wind_speed <0, 0, wind_speed)) %>%
-    filter(is.na(timestamp) == FALSE)
+    dplyr::filter(is.na(timestamp) == FALSE)
   
   
   
@@ -272,7 +272,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
     formatname = "CF Meteorology",        #Type of data
     startdate = paste0(format(start_date, "%Y-%m-%dT%H:%M:00")),    #starting date and time, down to the second
     enddate = paste0(format(end_date, "%Y-%m-%dT%H:%M:00")),        #ending date and time, down to the second
-    dbfile.name = "NOAA_GEFS",            #Source of data (ensemble number will be added later)
+    dbfile.name = "NOAA_GEFS_downscale",            #Source of data (ensemble number will be added later)
     stringsAsFactors = FALSE
   )
   
@@ -299,12 +299,12 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   #For each ensemble
   for (i in 1:21) { # i is the ensemble number
     #Generating a unique identifier string that characterizes a particular data set.
-    identifier = paste("NOAA_GEFS", sitename, i, format(start_date, "%Y-%m-%dT%H:%M"), 
+    identifier = paste("NOAA_GEFS_downscale", sitename, i, format(start_date, "%Y-%m-%dT%H:%M"), 
                        format(end_date, "%Y-%m-%dT%H:%M"), sep=".")
     
     ensemble_folder = file.path(outfolder, identifier)
     data = as.data.frame(joined %>% dplyr::select(NOAA.member, cf_var_names1) %>% 
-                           filter(NOAA.member == i) %>% 
+                           dplyr::filter(NOAA.member == i) %>% 
                            dplyr::select(-NOAA.member))
     
     #Each file will go in its own folder.

@@ -13,7 +13,7 @@
 ##' 
 
 
-downscale_ShortWave_to_hrly <- function(debiased, time0, lat, lon, output_tz = "UTC"){
+downscale_ShortWave_to_hrly <- function(debiased, time0, time_end, lat, lon, output_tz = "UTC"){
   ## downscale shortwave to hourly
     grouping = append("NOAA.member", "timestamp")
     
@@ -24,7 +24,7 @@ downscale_ShortWave_to_hrly <- function(debiased, time0, lat, lon, output_tz = "
     ShortWave.hours$timestamp = time
     ShortWave.hours$NOAA.member =  rep(debiased$NOAA.member, each = 6)
     ShortWave.hours$hour = as.numeric(format(time, "%H"))
-    ShortWave.hours$group = rep(seq(1, length(NOAA.member)/6), each= 6)
+    ShortWave.hours$group = rep(seq(1, length(debiased$NOAA.member)/6), each= 6)
 
   
     
@@ -33,10 +33,10 @@ downscale_ShortWave_to_hrly <- function(debiased, time0, lat, lon, output_tz = "
     dplyr::mutate(rpot = PEcAn.data.atmosphere::downscale_solar_geom(doy, lon, lat)) %>% # hourly sw flux calculated using solar geometry
     dplyr::group_by_at(c("group", "NOAA.member")) %>%
     dplyr::mutate(avg.rpot = mean(rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
-    ungroup() %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(avg.rpot > 0, rpot* (surface_downwelling_shortwave_flux_in_air/avg.rpot),0)) %>%
     dplyr::select(timestamp, NOAA.member, surface_downwelling_shortwave_flux_in_air) %>% 
-    filter(timestamp >= min(debiased$timestamp) & timestamp <= max(debiased$timestamp))  
+    dplyr::filter(timestamp >= min(debiased$timestamp) & timestamp <= max(debiased$timestamp))  
   
 
   }
