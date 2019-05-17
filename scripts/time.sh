@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 FOLD_NAME=$( echo "make_$1" | sed -e 's#[^a-z0-9]#_#g' )
 shift
 
