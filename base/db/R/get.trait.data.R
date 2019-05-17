@@ -110,7 +110,8 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
         dplyr::pull(id)
     }
     if (!is.null(pft$posteriorid)) {
-      files <- dbfile.check(type = "Posterior", container.id = pft$posteriorid, con = dbcon, hostname = "docker")
+      files <- dbfile.check(type = "Posterior", container.id = pft$posteriorid, con = dbcon,
+                            return.all = TRUE)
       need_files <- c(
         trait_data = "trait.data.Rdata",
         priors = "prior.distns.Rdata",
@@ -320,7 +321,8 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   store_files <- setdiff(store_files_all, old.files)
   PEcAn.logger::logger.debug(
     "The following posterior files found in PFT outdir ",
-    "(", shQuote(pft[["outdir"]]), ") will be registered in BETY: ",
+    "(", shQuote(pft[["outdir"]]), ") will be registered in BETY ",
+    "under posterior ID ", format(pft[["posteriorid"]]), ": ",
     paste(shQuote(store_files), collapse = ", "), ". ",
     "The following files (if any) will not be registered because they already existed: ",
     paste(shQuote(intersect(store_files, old.files)), collapse = ", "),
@@ -402,6 +404,38 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
                    trait.names = trait.names)
 
   invisible(result)
+}
+
+#' Symmetric set difference of two data frames
+#'
+#' @param x,y `data.frame`s to compare
+#' @param xname Label for data in x but not y. Default = "x"
+#' @param yname Label for data in y but not x. Default = "y"
+#' @param namecol Name of label column. Default = "source".
+#' @return `data.frame` of data not common to x and y, with additional
+#'   column (`namecol`) indicating whether data are only in x
+#'   (`xname`) or y (`yname`)
+#' @export
+#' @examples
+#' xdf <- data.frame(a = c("a", "b", "c"),
+#'                   b = c(1, 2, 3),
+#'                   stringsAsFactors = FALSE)
+#' ydf <- data.frame(a = c("a", "b", "d"),
+#'                   b = c(1, 2.5, 3),
+#'                   stringsAsFactors = FALSE)
+#' symmetric_setdiff(xdf, ydf)
+symmetric_setdiff <- function(x, y, xname = "x", yname = "y",
+                              namecol = "source") {
+  stopifnot(is.data.frame(x), is.data.frame(y),
+            is.character(xname), is.character(yname),
+            length(xname) == 1, length(yname) == 1)
+  namecol <- dplyr::sym(namecol)
+  xy <- dplyr::setdiff(x, y) %>%
+    dplyr::mutate(!!namecol := xname)
+  yx <- dplyr::setdiff(y, x) %>%
+    dplyr::mutate(!!namecol := yname)
+  dplyr::bind_rows(xy, yx) %>%
+    dplyr::select(!!namecol, dplyr::everything())
 }
 
 ####################################################################################################
