@@ -17,7 +17,7 @@
 #'   host <- list(name='geo.bu.edu', user='kooper', tunnel='/tmp/geo.tunnel')
 #'   remote.copy.to(host, '/tmp/kooper', '/tmp/kooper', delete=TRUE)
 #' }
-remote.copy.to <- function(host, src, dst, options = c(), delete = FALSE, stderr = FALSE) {
+remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stderr = FALSE) {
   args <- c("-a", "-q", options)
   if (as.logical(delete)) {
     args <- c(args, "--delete")

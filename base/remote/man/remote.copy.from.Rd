@@ -4,7 +4,7 @@
 \alias{remote.copy.from}
 \title{Copy file from remote to local}
 \usage{
-remote.copy.from(host, src, dst, options = c(), delete = FALSE,
+remote.copy.from(host, src, dst, options = NULL, delete = FALSE,
   stderr = FALSE)
 }
 \arguments{
