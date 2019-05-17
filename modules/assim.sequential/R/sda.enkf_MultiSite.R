@@ -206,9 +206,10 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
     ###-------------------------------------------------------------------------###-----  
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
+    
     if (t>1){
       #removing old simulations
-      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+      unlink(list.files(outdir, "*.nc.var", recursive = TRUE, full.names = TRUE))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
         purrr::map2(inputs, function(settings, inputs) {
@@ -226,6 +227,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
             )
             }
           } else{
+            #unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
             inputs.split <- inputs
           }
           inputs.split
@@ -367,6 +369,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
       # making the mapping oprator
       H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
      
+      
       ###-------------------------------------------------------------------###
       ### Analysis                                                          ###
       ###-------------------------------------------------------------------###----
@@ -481,7 +484,9 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     #writing down the image - either you asked for it or not :)
 
    if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
-
+    if (t == 1){
+      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+    }
   } ### end loop over time
   
 } # sda.enkf

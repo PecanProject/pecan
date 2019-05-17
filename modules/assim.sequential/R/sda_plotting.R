@@ -540,11 +540,12 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
               Upper=quantile(Value,0.975, na.rm=T))
           
         # dropped the "_" from "SDA_" in plot legends
-        })%>%mutate(Type=paste0("SDA ",listFA),
+        })%>%mutate(Type=listFA,
                     Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids)))%>% as.POSIXct()
-        # })%>%mutate(Type=paste0("SDA_",listFA),
+                    )
+        # })%>%mutate(Type=paste0("SDA ",listFA),
         #             Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids)))%>% as.POSIXct()
-        )
+        # )
     
     })
       
@@ -570,7 +571,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
         mutate(Upper=Means+(Sd*1.96),
                Lower=Means-(Sd*1.96))%>%
         # dropped the "_" from "SDA_Data"
-        mutate(Type="SDA Data",
+        mutate(Type="Data",
                Date=one.day.data$Date %>% as.POSIXct())
         # mutate(Type="SDA_Data",
         #        Date=one.day.data$Date %>% as.POSIXct())

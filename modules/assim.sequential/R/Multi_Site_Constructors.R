@@ -185,7 +185,7 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   for(i in seq_along(site.ids))
     {
     site <- site.ids[i]
-    choose <- sapply(var.names, agrep, x = names(obs.t.mean[[site]]),
+    choose <- sapply(names(obs.t.mean[[site]]), agrep, x = var.names,
                      max = 1, USE.NAMES = FALSE) %>% unlist  
     
     if(is.null(choose)) next;
@@ -194,17 +194,16 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
     
     for (n in seq_along(choose))
     {
-      choose.col <- sapply(choose[n], agrep, x = var.names, max = 1, USE.NAMES = FALSE) %>% unlist
-      H.this.site[n, choose.col] = 1
-      
+      H.this.site[n, choose[n]] <- 1
+      #sapply(choose[n], agrep, x = seq_along(var.names), max = 1, USE.NAMES = FALSE) %>% unlist
+      #H.this.site[n, choose.col] = 1
     }
     
-    #pos.row = 1:nobstotal
-    pos.row<- ((nobs*j)-(nobs-1)):(nobs*j)
-    pos.col<- ((nvariable*i)-(nvariable-1)):(nvariable*i)
+    pos.row <- ((nobs*j)-(nobs-1)):(nobs*j)
+    pos.col <- ((nvariable*i)-(nvariable-1)):(nvariable*i)
     
-    H[pos.row,pos.col] <-H.this.site
-    
+    H[pos.row,pos.col] <- H.this.site
+    j <- j+1
   }
     
   return(H)
