@@ -147,15 +147,11 @@ create_execute_test_xml <- function(model_id,
   #create file and Run
   saveXML(listToXml(settings, "pecan"), file = file.path(outdir, "pecan.xml"))
   file.copy(file.path(pecan_path, "web", "workflow.R"), outdir)
+  cwd <- getwd()
   setwd(outdir)
-  ##Name log file
-  #log <- file("workflow.Rout", open = "wt")
-  #sink(log)
-  #sink(log, type = "message")
+  on.exit(setwd(cwd), add = TRUE)
 
-  system("./workflow.R 2>&1 | tee workflow.Rout")
-  #source("workflow.R")
-  #sink()
+  system("Rscript workflow.R 2>&1 | tee workflow.Rout")
 }
 
 library(tidyverse)
@@ -167,8 +163,10 @@ library(PEcAn.settings)
 ##Create Run Args
 
 ## Insert your path to base pecan
-pecan_path <- "/fs/data3/tonygard/work/pecan"
-config.list <- PEcAn.utils::read_web_config(paste0(pecan_path,"/web/config.php"))
+## pecan_path <- "/fs/data3/tonygard/work/pecan"
+pecan_path <- "../.."
+php_file <- file.path(pecan_path, "web", "config.php")
+config.list <- PEcAn.utils::read_web_config(php_file)
 bety <- PEcAn.DB::betyConnect(paste0(pecan_path,"/web/config.php"))
 con <- bety$con
 

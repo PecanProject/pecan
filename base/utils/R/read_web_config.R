@@ -10,20 +10,28 @@
 read_web_config = function(php.config = "../../web/config.php") {
 
   ## Read PHP config file for webserver
-  config <- scan(php.config, what = "character", sep = "\n")
+  config <- readLines(php.config)
   config <- config[grep("^\\$", config)]  ## find lines that begin with $ (variables)
+
+  rxp <- paste0("^\\$([[:graph:]]+)[[:space:]]*",
+                "=[[:space:]]*(.*?);?(?:[[:space:]]*//+.*)?$")
+  rxp_matches <- gregexpr(rxp, config, perl = TRUE)
+  results <- Map(extract_matches, config, rxp_matches)
+  list_names <- vapply(results, `[[`, character(1), 1, USE.NAMES = FALSE)
+  list_vals <- vapply(results, `[[`, character(1), 2, USE.NAMES = FALSE)
 
   ## replacements
   config <- gsub("^\\$", "", config)  ## remove leading $
   config <- gsub(";.*$", "", config)  ## remove ; and everything afterwards
   config <- sub("false", "FALSE", config, fixed = TRUE)  ##  Boolean capitalization
   config <- sub("true", "TRUE", config, fixed = TRUE)  ##  Boolean capitalization
-  config <- gsub(pattern = "DIRECTORY_SEPARATOR",replacement = "/",config)
+  config <- gsub(pattern = "DIRECTORY_SEPARATOR", replacement = "/", config)
 
   ## subsetting
   config <- config[!grepl("exec", config, fixed = TRUE)]  ## lines 'exec' fail
   config <- config[!grepl("dirname", config, fixed = TRUE)]  ## lines 'dirname' fail
   config <- config[!grepl("array", config, fixed = TRUE)]  ## lines 'array' fail
+  ## config <- config[!grepl(":", config, fixed = TRUE)]  ## lines with colons fail
 
   ##references
   ref <- grep("$", config, fixed = TRUE)
@@ -43,3 +51,8 @@ read_web_config = function(php.config = "../../web/config.php") {
   return(config.list)
 }
 
+extract_matches <- function(string, rxp) {
+  start <- attr(rxp, "capture.start")
+  len <- attr(rxp, "capture.length")
+  Map(function(s, l) substring(string, s, s + l - 1), start, len)
+}
