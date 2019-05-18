@@ -105,6 +105,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   if (!forceupdate) {
     if (is.null(pft$posteriorid)) {
       pft$posteriorid <- dplyr::tbl(dbcon, "posteriors") %>%
+        dplyr::filter(pft_id == !!pftid) %>%
         dplyr::arrange(dplyr::desc(created_at)) %>%
         head(1) %>%
         dplyr::pull(id)
