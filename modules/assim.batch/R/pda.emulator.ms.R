@@ -312,28 +312,21 @@ pda.emulator.ms <- function(multi.settings) {
     tmp.settings$assim.batch$ensemble.id <- pda.create.ensemble(tmp.settings, con, workflow.id)
     
     ## history restart
-    hbc.restart.file <- file.path(tmp.settings$outdir,paste0("history.hbc",
+    hbc.restart.file <- file.path(tmp.settings$outdir,paste0("history.hier",
                                                            tmp.settings$assim.batch$ensemble.id, ".Rdata"))
 
     
     ## Transform values from non-normal distributions to standard Normal
     ## it won't do anything if all priors are already normal
+    ## edit: actually hierarchical sampling may be assuming standard normal, test for this later
     norm_transform <- norm_transform_priors(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list)
     if(!norm_transform$normF){ # means SS values are transformed
       
-      prior.all    <- norm_transform$prior.all
-      prior.fn.all <- norm_transform$prior.fn.all
+      ## Previously emulator was refitted on the standard normal domain
+      ## Instead I now use original emulators, but switch back and forth between domains
       
-      ## get new SS.stack with transformed values
-      SS.stack <- norm_transform$normSS
-      
-      ## re-fit GP on new param space
-      for(i in seq_along(SS.stack)){
-        gp.stack[[i]] <- lapply(SS.stack[[i]], function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
-      }
-      
-      ## re-define rng
-      rng <- norm_transform$rng
+      ## range limits on standard normal domain
+      rng_stdnorm <- norm_transform$rng[,,1] #all same, maybe return just one from norm_transform_priors
       
       ## get new init.list and jmp.list
       init.list <- norm_transform$init
