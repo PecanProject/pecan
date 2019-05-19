@@ -163,6 +163,14 @@ pda.emulator.ms <- function(multi.settings) {
     workflow.id <- -1
   }
   
+  ## remote hack for now
+  ## currently site-level PDA runs on remote but joint and hierarchical runs locally
+  ## this will change soon (before this PR is finalized)
+  ## but I'm still developing the code so for now let's change the paths back to local
+  for(i in seq_along(tmp.settings$pfts)){
+    tmp.settings$pfts[[i]]$outdir <- file.path(tmp.settings$outdir, "pft", basename(tmp.settings$pfts[[i]]$outdir))
+  }
+  tmp.settings$modeloutdir <- file.path(tmp.settings$outdir, basename(tmp.settings$modeloutdir))
 
   ## -------------------------------------- Joint calibration -------------------------------------------------- 
   if(joint){ # joint - if begin
