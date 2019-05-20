@@ -45,6 +45,7 @@ addons:
       - libcurl4-openssl-dev
       - libgdal-dev
       - libgl1-mesa-dev
+      - libglu1-mesa-dev
       - libgmp-dev
       - libhdf5-dev
       - liblapack-dev
