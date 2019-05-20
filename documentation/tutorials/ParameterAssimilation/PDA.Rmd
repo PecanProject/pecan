@@ -1,12 +1,12 @@
 ### Parameter Data Assimilation
 
 
-### Objectives
+#### Objectives
 * Gain hands-on experience in using Bayesian MCMC techniques to calibrate a simple ecosystem model using parameter data assimilation (PDA)
 * Set up and run a PDA in PEcAn using model emulation technique, assimilating NEE data from Niwot Ridge
 * Examine outputs from a PDA for the SIPNET model and evaluation of the calibrated model against i) data used to constrain model, ii) additional data for the same site
 
-### Larger Context
+#### Larger Context
 Parameter data assimilation (PDA) occurs as one step in the larger process of model calibration, validation, and application. The goal of PDA is to update our estimates of the posterior distributions of the model parameters using data that correspond to model outputs. This differs from our previous use of PEcAn to constrain a simple model using data that map directly to the model parameters. Briefly, the recommended overall approach for model calibration and validation consists of the following steps:
 
 1. Assemble and process data sets required by the model as drivers
