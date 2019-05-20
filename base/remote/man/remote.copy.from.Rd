@@ -4,7 +4,8 @@
 \alias{remote.copy.from}
 \title{Copy file from remote to local}
 \usage{
-remote.copy.from(host, src, dst, delete = FALSE, stderr = FALSE)
+remote.copy.from(host, src, dst, options = NULL, delete = FALSE,
+  stderr = FALSE)
 }
 \arguments{
 \item{host}{list with server, user and optionally tunnel to use.}
@@ -12,6 +13,8 @@ remote.copy.from(host, src, dst, delete = FALSE, stderr = FALSE)
 \item{src}{remote file/dir to copy}
 
 \item{dst}{local file/dir to copy to}
+
+\item{options}{to be passed to rsync command, if nothing is specified everything will be rsynced}
 
 \item{delete}{in case of local dir should all non-existent files be removed}
 
