@@ -83,7 +83,7 @@ addons:
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-rsqlite
-      - r-cran-sf
+      # - r-cran-sf
       - r-cran-shiny
       - r-cran-sirt
       - r-cran-testthat
