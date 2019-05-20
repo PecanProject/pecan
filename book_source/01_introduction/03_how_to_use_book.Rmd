@@ -17,6 +17,7 @@ This book is organized around these main topics:
 **Appendix** - Supplementary materials for the developer section.
 
 ## How to Contribute
+
 If you wish to contribute to this book, we greatly welcome it! The same general steps to contributing PEcAn code to the main line can be used to contribute to this book.
 
 ### Editing the book yourself
@@ -34,9 +35,10 @@ If you wish to contribute to this book, we greatly welcome it! The same general 
 
 6. [Create a pull request](https://help.github.com/articles/creating-a-pull-request/) using GitHub with a description of the changes you have made.
 
-
+Please see the [Editing this book](#bookediting) section for information about the file structure of this documentation's source as well as other guidelines for how we expect this manual to be written and organized.
 
 ### Feedback/Comments/Suggestions
+
 We want your ideas, thoughts, comments, and suggestions! This is an open-sourced project so please feel free to reach out
 to us in the following ways:
 
@@ -52,6 +54,3 @@ Slack serves as our day to day mode of communication. To join us in slack you wi
 
 **Email:** pecanproj[at]gmail.com
 If you do not wish your communication with the team to be public, send us an email at the  address above and we will get back to you as soon as possible.
-
-
-

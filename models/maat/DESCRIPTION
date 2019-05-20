@@ -1,8 +1,8 @@
 Package: PEcAn.MAAT
 Type: Package
 Title: PEcAn package for integration of the MAAT model
-Version: 1.6.0
-Date: 2018-08-20
+Version: 1.7.0
+Date: 2018-12-03
 Authors@R: as.person(c(
     "Shawn Serbin <sserbin@bnl.gov> [aut, cre]", 
     "Anthony Walker <walkerap@ornl.gov> [aut]"
@@ -10,6 +10,7 @@ Authors@R: as.person(c(
 Maintainer: Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to wrap the MAAT model into the PEcAn workflows.
 Imports:
+    PEcAn.data.atmosphere,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,

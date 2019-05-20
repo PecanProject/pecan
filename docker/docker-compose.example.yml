@@ -1,0 +1,72 @@
+# you need a version entry, and this should be the same version as the
+# docker-compose.yml file.
+version: "3"
+
+# if you change any of the services you will need the services header.
+services:
+
+  # mount PEcAn web folder into web server, this allows for
+  # editing code in PHP and immediatly test the new code.
+  web:
+    volumes:
+      - ${HOME}/git/pecan/web:/var/www/html/pecan
+      - ${HOME}/git/pecan/docker/config.docker.php:/var/www/html/pecan/config.php
+
+  # mount PEcAn folder into executor, this allows for sending
+  # a rebuild command to rebuild the executor for development.
+  executor:
+    volumes:
+      - ${HOME}/git/pecan/Makefile:/pecan/Makefile
+      - ${HOME}/git/pecan/base:/pecan/base
+      - ${HOME}/git/pecan/modules:/pecan/modules
+      - ${HOME}/git/pecan/models:/pecan/models
+
+  # expose database to localhost for ease of access
+  postgres:
+    ports:
+      - 5432:5432
+
+  # For BETY development, modify files on local machine. Do
+  # a `touch tmp/restart.txt` to reload BETY with new code.
+  bety:
+    volumes:
+      - ${HOME}/git/bety:/home/bety
+      - ${HOME}/git/bety/docker/database.yml:/home/bety/config/database.yml
+      - ${HOME}/git/bety/docker/config.ru:/home/bety/config.ru
+
+  # Allow to do a docker-compose build for this specific model
+  # for testing purposes.
+  sipnet:
+   build:
+     context: .
+     dockerfile: models/sipnet/Dockerfile
+
+# if you change any of the volumes you will need the volumes header.
+volumes:
+
+  # use a local subfolders in data folder to store the volumes.
+  traefik:
+    driver_opts:
+      type: none
+      device: ${HOME}/docker/pecan/traefik
+      o: bind
+  postgres:
+    driver_opts:
+      type: none
+      device: ${HOME}/docker/pecan/postgres
+      o: bind
+  rabbitmq:
+    driver_opts:
+      type: none
+      device: ${HOME}/docker/pecan/rabbitmq
+      o: bind
+  pecan:
+    driver_opts:
+      type: none
+      device: ${HOME}/docker/pecan/pecan
+      o: bind
+  portainer:
+    driver_opts:
+      type: none
+      device: ${HOME}/docker/pecan/portainer
+      o: bind

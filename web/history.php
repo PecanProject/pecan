@@ -144,7 +144,7 @@ close_database();
       </form>
 <?php } ?>
       <div class="spacer"></div>
-<?php whoami(); ?>    
+      <?php left_footer(); ?>    
     </div>
     <div id="output">
       <h2>Execution Status <span id="workflows"></span></h2>

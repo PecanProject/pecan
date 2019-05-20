@@ -5,15 +5,61 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
-## Unreleased
+## [Unreleased]
 
 ### Fixes
+- Fixed issue that prevented modellauncher from working properly #2262
+
+### Changed
+- Updated modules/rtm PROSPECT docs
+- Updated models/sipnet/R/model2netcdf.SIPNET.R to address issues in PR #2254 
+- Improved testing (#2281). Automatic Travis CI builds of PEcAn on are now run using three versions of R in parallel. This should mean fewer issues with new releases and better backwards compatibility, but note that we still only guarantee full compatibility with the current release version of R. The tested versions are:
+  - `release`, the current public release of R (currently R 3.5). Build failures in this version are fixed before merging the change that caused them. When we say PEcAn is fully tested and working, this is the build we mean.
+  - `devel`, the newest available development build of R. We will fix issues with this version before the next major R release.
+  - `oldrel`, the previous major release of R (currently R 3.4). We will fix issues with this version as time allows, but we do not guarantee that it will stay compatible.
+- Reverting back from PR (#2137) to fix issues with MAAT wrappers.
+- Moved docker files for models into model specific folder, for example Dockerfile for sipnet now is in models/sipnet/Dockerfile.
+- `PEcAn.utils`:
+  - Remove, or make "Suggests", a bunch of relatively underutilized R package dependencies.
+- Add template for documentation issues and add button to edit book.
+- Conditionally skip unit tests for downloading raw met data or querying the database when the required remote connection is not available.
+- Reorganization of docker folder
+  - All dockerfiles now live in their own folder
+  - `scripts/generate_dependencies.R` is now used to generate dependencies for make and docker
+
+### Added
+
+- Dockerize the BioCro model.
+- Added PRO4SAIL-D model, using existing 4SAIL src and coupling with PROSPECT-D Fortran code
+- Models will not advertise themselvs, so no need to register them a-priori with the database #2158
+- Added simple Docker container to show all containers that are available (http://localhost:8000/monitor/). This will also take care of registering the models with the BETY database.
+- Added unit tests for `met2model.<MODEL>` functions for most models.
+- Added MAESPA model to docker build
+- PEcAn has more robust support for `RPostgres::Postgres` backend. The backend is officially supported by `db.query`, and basic workflows run top-to-bottom with the `Postgres` backend. However, `RPostgreSQL` is still the default until we do more robust testing of all modules.
+- `PEcAn.DB::db.query` now optionally supports prepared statements (#395).
+
+### Removed
+- Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
+- Removed package `PEcAn.data.mining` from the Make build. It can still be installed directly from R if desired, but is skipped by default because it is in early development, does not yet export any functions, and creates a dependency on the (large, often annoying to install) ImageMagick library.
+- Fully deprecate support for `MySQL` database driver. Now, only `PostgreSQL` (and, experimentally, `RPostgres`) are supported. With this, remove `RMySQL` dependency in several places.
+
+### Fixed
+- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
+- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+
+## [1.7.0] - 2018-12-09
+
+### Fixes
+- Fixed minor bug in query.trait.data related to stem respiration covariates (https://github.com/PecanProject/pecan/issues/2269)
+- Removed google maps and replaced with leaflet #2105
+- Added ability to add a new site from web interface
 - Small updated to models/ed/R/model2netcdf.ED2.R to fix issue realted to writing the time_bounds time attribute. Needed to add a check for which file types exitst (e.g. -E-, -T-, etc) and only write the appropriate attribute(s).
 - Fixed error in `read_web_config` which would filter out all variables.
 - Docker:
   - Make sure web interface posts RabbitMQ messages even after editing files (fixes #2151)
   - Can specify name of docker cluster using PECAN_FQDN and PECAN_NAME (fixes #2128)
   - Fixed issue where setting username/password for rabbitmq would break web submit (fixes #2185)
+  - data image only registers sipnet and ed, has all data pre-downloaded
 - ED2:
   - Fix processing of `ed2in_tags` from XML. Now numbers (e.g. `<TRAIT_PLASTICITY_SCHEME>0</TRAIT_PLASTICITY_SCHEME>`) and numeric vectors (e.g. `<INCLUDE_THESE_PFT>9,10,11,12</INCLUDE_THESE_PFT>`) are correctly written to ED2IN _without_ quotes.
 
@@ -32,6 +78,13 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added a prototype of the THREDDS data server (TDS) to the PEcAn Docker stack.
 - Added portainer to the PEcAn Docker stack to easily look at running containers.
 - Added ability to specify short name for a host (hostlist->displayname)
+- Added `PEcAn.logger::print2string` function -- capture the output
+- Cleanup and enhancements to `PEcAn.utils::read.output`:
+  - Pass `variables = NULL` to try to read _all_ variables from file
+  - New argument `ncfiles` for passing file names explicitly (useful for remote file access where `list.files` doesn't work; e.g. THREDDS)
+  - Variable summary stats are only calculated if new argument `print_summary` is `TRUE` (default). Summary is rendered nicely as a variable x statistic matrix.
+  - New argument `verbose` (default = `FALSE`) to print out (`logger.debug`) at every variable and year
+  - Minor code cleanup for style (spacing, long lines, etc.) and logic (replace several `else` statements with early returns)
 - ED2:
   - Add ability to pass arbitrary arguments to the ED binary through the `pecan.xml` (#2183; fixes #2146).
   - Add new `model` tag `<all_pfts>`. If "false" (default), set ED2IN's `INCLUDE_THESE_PFT` to only PFTs explicitly configured through PEcAn. If "true", use all 17 of ED2's PFTs.
@@ -41,6 +94,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 ### Changed
+- Updated MAAT model model2netcdf.MAAT.R to reflect general changes to the netCDF time variable in PEcAn standard output. Added time_bounds attribute and variable.  Updated inst/ scripts for created MAAT drivers from NGEE-Tropics met sources (WIP)
 - `PEcAn.utils::do_conversions` has been moved to `PEcAn.workflow::do_conversions`.
   `PEcAn.utils::do_conversions` still works for now with a warning, but is deprecated and will be removed in the future.
 - Docker:
@@ -58,6 +112,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added missing ncdf4 library calls in model2netcdf.JULES
 
 ### Added
+- Added download.LandTrendr.AGB and extract.LandTrendr.AGB functions in modules/data.remote
 - Added new time_bounds variable in SIPNET output netCDF files to define the exact start time and end time for each model timestep.
 - Updated models/ed/R/model2netcdf.ED2.R to include new time_bounds variable
 - Added a first vignette to models/maat with the plan to add more examples
@@ -67,6 +122,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed unused PEcAn.utils::counter(), which existed to increment a global variable that is also unused.
 
 ### Changed
+- Updated models/fates/R/model2netcdf.FATES.R to increase supported model outputs. Added longname to nc file variables
 - Updated models/dalec/R/model2netcdf.DALEC.R to add time_bounds variable
 - Updated models/maat/R/write.config.MAAT.R to improve flow, remove bugs, and to work with the release version of the MAAT model.
 - Minor update to modules/data.atmosphere/R/met2CF.csv.R to include recursive=TRUE for outfolder.  Seemed to work better
@@ -164,13 +220,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - shiny/Data-Ingest/DESCRIPTION no longer `DEPENDS` on `shinyFiles` or `shinycssloaders`
 
 ### Changed
-
+- PEcAn.utils functions run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow. The versions in PEcAn.utils are deprecated and will be removed in a future release.
 - Fixed Git instructions and remote execution instructions.
 - Five functions from PEcAn.utils functions have been moved to other packages. The versions in PEcAn.utils are deprecated, will not be updated with any new features, and will be removed in a future release.
   - run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow 
   - read.ensemble.output, get.ensemble.samples and write.ensemble.configs have been moved to PEcAn.uncertainty
 - Change the way packages are checked for and called in SHINY apps. DESCRIPTION files in SHINY apps are not the place to declare pacakge dpendencies.    
-
 
 ## [1.5.3] - 2018-05-15
 

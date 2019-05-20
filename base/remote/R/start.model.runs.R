@@ -43,6 +43,18 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   is_qsub <- !is.null(settings$host$qsub)
   is_rabbitmq <- !is.null(settings$host$rabbitmq)
   is_modellauncher <- !is.null(settings$host$modellauncher)
+  
+  # Check if Njobmax tag exists in seetings
+  if (is_modellauncher){
+    if (!is.null(settings$host$modellauncher$Njobmax)){
+      Njobmax <- settings$host$modellauncher$Njobmax
+    } else {
+      Njobmax <- nruns
+    }
+    compt_run <- 0
+    compt_run_modellauncher <- 1
+    job_modellauncher <- list()
+  }
 
   # loop through runs and either call start run, or launch job on remote machine
   jobids <- list()
@@ -87,8 +99,13 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       # set up launcher script if we use modellauncher
       if (is.null(firstrun)) {
         firstrun <- run
-        setup_modellauncher(run = run, rundir = settings$rundir, host_rundir = settings$host$rundir,
-                                       mpirun = settings$host$modellauncher$mpirun, binary = settings$host$modellauncher$binary)
+        jobfile <- setup_modellauncher(run = run,
+                                       rundir = settings$rundir,
+                                       host_rundir = settings$host$rundir,
+                                       mpirun = settings$host$modellauncher$mpirun,
+                                       binary = settings$host$modellauncher$binary)
+        job_modellauncher[compt_run_modellauncher] <- run
+        compt_run_modellauncher <- compt_run_modellauncher+1
       }
       writeLines(c(file.path(settings$host$rundir, run_id_string)), con = jobfile)
       pbi <- pbi + 1
@@ -98,7 +115,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
                         host = settings$host,  host_rundir = settings$host$rundir, host_outdir = settings$host$outdir,
                         stdout_log = "stdout.log", stderr_log = "stderr.log", job_script = "job.sh")
       PEcAn.logger::logger.debug("JOB.SH submit status:", out)
-      jobids[run] <- qsub_get_jobid(out = out, qsub.jobid = settings$host$qsub.jobid, stop.on.error = stop.on.error)
+      jobids[run] <- qsub_get_jobid(out = out[length(out)], qsub.jobid = settings$host$qsub.jobid, stop.on.error = stop.on.error)
 
     } else {
       # if qsub option is not invoked.  just start model runs in serial.
@@ -118,30 +135,52 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       pbi <- pbi + 1
       setTxtProgressBar(pb, pbi)
     }
+    
+    # Check if compt_run has reached Njobmax
+    if (is_modellauncher){
+      compt_run <- compt_run + 1
+      if (compt_run == Njobmax){
+        close(jobfile)
+        firstrun <- NULL
+        compt_run <- 0
+        jobfile <- NULL
+      }      
+    }
+    
   } # end loop over runs
   close(pb)
 
   # need to actually launch the model launcher
   if (is_modellauncher) {
-    close(jobfile)
-
-    if (!is_local) {
-      # copy launcher and joblist
-      PEcAn.remote::remote.copy.to(settings$host, file.path(settings$rundir,
-                                              format(firstrun, scientific = FALSE)), settings$host$rundir, delete = TRUE)
+    
+    # Only close if not already closed
+    if (compt_run != 0){
+      close(jobfile)
     }
 
-    if (is_qsub) {
-      out <- start_qsub(run = firstrun, qsub_string = settings$host$qsub, rundir = settings$rundir,
-                        host = settings$host, host_rundir = settings$host$rundir, host_outdir = settings$host$outdir,
-                        stdout_log = "launcher.out.log", stderr_log = "launcher.err.log", job_script = "launcher.sh",
-                        qsub_extra = settings$host$modellauncher$qsub)
-
-      # HACK: Code below gets 'run' from names(jobids) so need an entry for each run.
-      # But when using modellauncher all runs have the same jobid
-      for (run in run_list) {
-        jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out)
+    if (!is_local) {
+      for (run in run_list){
+        if (run %in% job_modellauncher) {
+          # copy launcher and joblist
+          PEcAn.remote::remote.copy.to(settings$host, file.path(settings$rundir,
+                                                                format(run, scientific = FALSE)), settings$host$rundir, delete = TRUE)
+          
+        }
       }
+    }
+    if (is_qsub) {
+      for (run in run_list){
+        if (run %in% job_modellauncher) {
+          out <- start_qsub(run = run, qsub_string = settings$host$qsub, rundir = settings$rundir,
+                            host = settings$host, host_rundir = settings$host$rundir, host_outdir = settings$host$outdir,
+                            stdout_log = "launcher.out.log", stderr_log = "launcher.err.log", job_script = "launcher.sh",
+                            qsub_extra = settings$host$modellauncher$qsub)
+        }
+        # HACK: Code below gets 'run' from names(jobids) so need an entry for each run.
+        # But when using modellauncher all runs have the same jobid
+        jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out[length(out)])
+      }
+      
     } else {
       out <- start_serial(run = run, host = settings$host, rundir = settings$rundir,  host_rundir = settings$host$rundir,
                           job_script = "launcher.sh")
@@ -200,19 +239,27 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
         # Write finish time to database
         if (is_modellauncher) {
-          for (run in run_list) {
-            stamp_finished(con = dbcon, run = run)
+          for (x in run_list) {
+            stamp_finished(con = dbcon, run = x)
           }
         } else {
           stamp_finished(con = dbcon, run = run)
         }
 
+        # move progress bar
         if (!is_modellauncher) {
           pbi <- pbi + 1
         }
         setTxtProgressBar(pb, pbi)
 
-        jobids[run] <- NULL
+        # remove job
+        if (is_modellauncher) {
+          for (x in run_list) {
+            jobids[x] <- NULL
+          }          
+        } else {
+          jobids[run] <- NULL
+        }
       } # End job finished
     }  # end loop over runs
   }  # end while loop checking runs

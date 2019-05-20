@@ -41,6 +41,7 @@ $met = array('ED2'      => 12,
 $host = isset($_REQUEST['host']) ? $_REQUEST['host'] : "";
 $model = isset($_REQUEST['model']) ? $_REQUEST['model'] : "";
 $sitegroup = isset($_REQUEST['sitegroup']) ? $_REQUEST['sitegroup'] : "";
+if ($sitegroup == "-1") $sitegroup = "";
 
 // Start XML file, create parent node
 $dom = new DOMDocument("1.0");

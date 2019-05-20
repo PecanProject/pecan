@@ -1,113 +1,114 @@
-"Variable.Name","standard_name","Units","Long.name","Category","var_type","dim1","dim2","dim3","dim4","Description"
-"lon","longitude","degrees_east","Longitude","Dimension","real",NA,NA,NA,NA,"longitude at center of each grid cell"
-"lat","latitude","degrees_north","Latitude","Dimension","real",NA,NA,NA,NA,"latitude at center of each grid cell"
-"depth","depth","m","Depth","Dimension","real",NA,NA,NA,NA,"depth to bottom of soil layer"
-"pft","pft","(-)","Plant Functional Type","Dimension","character",NA,NA,NA,NA,"Name of each plant function type or species included in the model"
-"time","time","days since 1700-01-01 00:00:00 UTC","Time middle averaging period","Dimension","double",NA,NA,NA,NA,"julian days days since 1700-01-01 00:00:00 UTC for middle of time averaging period Proleptic_Gregorianc calendar"
-"rtsize","rtsize","m","Root Size Class","Dimension","real",NA,NA,NA,NA,"Minimum threshold of root size class"
-"wdsize","wdsize","m","Woody Debris Size Class","Dimension","real",NA,NA,NA,NA,"Minimum threshold of woody debris size class"
-"lon_bnds",NA,"degrees_east","Longitude west-east bounds","Deprecated","real","nbnds","lon",NA,NA,"(west boundary of grid cell, east boundary of grid cell)"
-"lat_bnds",NA,"degrees_north","Latitude south-north bounds","Deprecated","real","nbnds","lat",NA,NA,"(south boundary of grid cell, north boundary of grid cell)"
-"time_bnds",NA,"days since 1700-01-01 00:00:00 UTC","Time beginning-end bounds","Deprecated","double","nbnds","time",NA,NA,"(julian days days since 1700-01-01 beginning time ave period, julian days days since 1700-01-01 end time ave period)"
-"dec_date",NA,"yr","Decimal date middle averaging period","Deprecated","double","time",NA,NA,NA,"decimal date in fractional years for middle of time averaging period"
-"dec_date_bnds",NA,"yr","Decimal date beginning-end bounds","Deprecated","double","nbnds","time",NA,NA,"(decimal date beginning time ave period, decimal date end time ave period)"
-"cal_date_mid",NA,"yr, mon, day, hr, min, sec","Calender date middle averaging period","Deprecated","integer","ncal","time",NA,NA,"calender date middle of time ave period: year, month, day, hour, minute, second for UTC time zone"
-"cal_date_beg",NA,"yr, mon, day, hr, min, sec","Calender date beginning averaging period","Deprecated","integer","ncal","time",NA,NA,"calender date beginning of time ave period: year, month, day, hour, minute, second for UTC time zone"
-"cal_date_end",NA,"yr, mon, day, hr, min, sec","Calender date end averaging period","Deprecated","integer","ncal","time",NA,NA,"calender date end of time ave period: year, month, day, hour, minute, second for UTC time zone"
-"GPP",NA,"kg C m-2 s-1","Gross Primary Productivity","Carbon Fluxes","real","lon","lat","time",NA,"Rate of photosynthesis (always positive)"
-"NEE",NA,"kg C m-2 s-1","Net Ecosystem Exchange","Carbon Fluxes","real","lon","lat","time",NA,"Net Ecosystem Exchange (NEE=HeteroResp+AutoResp-GPP, positive into atmosphere)"
-"TotalResp",NA,"kg C m-2 s-1","Total Respiration","Carbon Fluxes","real","lon","lat","time",NA,"Total respiration (TotalResp=AutoResp+heteroResp, always positive)"
-"AutoResp","plant_respiration_carbon_flux","kg C m-2 s-1","Autotrophic Respiration","Carbon Fluxes","real","lon","lat","time",NA,"Autotrophic respiration rate (always positive)"
-"HeteroResp","heterotrophic_respiration_carbon_flux","kg C m-2 s-1","Heterotrophic Respiration","Carbon Fluxes","real","lon","lat","time",NA,"Heterotrophic respiration rate (always positive)"
-"SoilResp","soil_respiration_carbon_flux","kg C m-2 s-1","Soil Respiration","Carbon Fluxes","real","lon","lat","time",NA,"Sum of respiration in the soil by heterotrophs and by the roots of plants (autotrophs)"
-"DOC_flux",NA,"kg C m-2 s-1","Dissolved Organic Carbon flux","Carbon Fluxes","real","lon","lat","time",NA,"Loss of organic carbon dissolved in ground water or rivers (positive out of grid cell)"
-"Fire_flux",NA,"kg C m-2 s-1","Fire emissions","Carbon Fluxes","real","lon","lat","time",NA,"Flux of carbon due to fires (always positive)"
-"litter_carbon_flux","litter_carbon_flux","kg C m-2 s-1","Litter Carbon Flux","Carbon Fluxes","real","lon","lat","time",NA,"Total carbon flux of litter, excluding coarse woody debris"
-"surface_litter_carbon_flux","surface_litter_carbon_flux","kg C m-2 s-1","Surface Litter Carbon Flux","Carbon Fluxes","real","lon","lat","time",NA,"Total carbon flux of surface litter"
-"subsurface_litter_carbon_flux","subsurface_litter_carbon_flux","kg C m-2 s-1","Subsurface Litter Carbon Flux","Carbon Fluxes","real","lon","lat","time","depth","Total carbon flux of subsurface litter"
-"leaf_litter_carbon_flux","leaf_litter_carbon_flux","kg C m-2 s-1","Leaf Litter Carbon Flux","Carbon Fluxes","real","lon","lat","time",NA,"Carbon flux of leaf litter"
-"WoodyLitter","wood_litter_carbon_flux","kg C m-2 s-1","Wood Litter Carbon Flux","Deprecated","real","lon","lat","time",NA,"DALEC output; haven't yet resolved standard woody litter flux"
-"wood_debris_carbon_flux","wood_debris_carbon_flux","kg C m-2 s-1","Wood Debris Carbon Flux","Carbon Fluxes","real","lon","lat","time","wdsize","Total carbon flux of woody debris, including downed woody debris and standing deadwood; excludes litter; size class defined by wdsize dimension"
-"NPP",NA,"kg C m-2 s-1","Net Primary Productivity","Carbon Fluxes","real","lon","lat","time",NA,"Net Primary Productivity (NPP=GPP-AutoResp, positive into plants)"
-"GWBI",NA,"kg C m-2 month-1","Gross Woody Biomass Increment","Carbon Fluxes","real","lon","lat","time",NA,"Variable most analogous to tree-ring-derived change in stem biomass (before mortality/CWD flux)"
-"CWDI",NA,"kg C m-2 month-1","Coarse Woody Debris Increment","Carbon Fluxes","real","lon","lat","time",NA,"Variable most analogous to flux of woody material material to the detrital pool resulting from mortality"
-"CropYield",NA,"kg m-2","CropYield","Carbon Fluxes","real","lon","lat","time","pft","Crop yield; ED2 output variable"
-"poolname",NA,"(-)","Name of each Carbon Pool","Deprecated","character","nchar","npool",NA,NA,"Name of each carbon pool (i.e., wood or Coarse Woody Debris)"
-"CarbPools",NA,"kg C m-2","Size of each carbon pool","Deprecated","real","lon","lat","npool","time","Total size of each carbon pool vertically integrated over the entire soil column"
-"TotLivBiom",NA,"kg C m-2","Total living biomass","Carbon Pools","real","lon","lat","time",NA,"Total carbon content of the living biomass (leaves+roots+wood)"
-"AGB",NA,"kg C m-2","Total aboveground biomass","Carbon Pools","real","lon","lat","time",NA,"aboveground biomass"
-"LAI",NA,"m2 m-2","Leaf Area Index","Carbon Pools","real","lon","lat","time",NA,"Area of leaves per area ground"
-"leaf_carbon_content","leaf_carbon_content","kg C m-2","Leaf Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Leaf carbon content"
-"root_carbon_content","root_carbon_content_of_size_class","kg C m-2","Root Carbon Content","Carbon Pools","real","lon","lat","time","rtsize","
-Root carbon content, optionally by size class; alternatively specify fine_ and coarse_root_carbon_content"
-"fine_root_carbon_content","fine_root_carbon_content","kg C m-2","Fine Root Carbon Content","Carbon Pools","real","lon","lat","time","depth","Carbon content of fine roots (2 mm and smaller); alternative to providing dimensions for root_carbon_content"
-"coarse_root_carbon_content","coarse_root_carbon_content","kg C m-2","Coarse Root Carbon Content","Carbon Pools","real","lon","lat","time","depth","Carbon content of coarse roots (larger than 2 mm); alternative to providing dimensions for root_carbon_content"
-"wood_carbon_content","wood_carbon_content","kg C m-2","Wood Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Wood carbon content including above (AbvGrndWood) and below ground (coarse roots, shared with root_carbon_content)"
-"AbvGrndWood",NA,"kg C m-2","Above ground woody biomass","Carbon Pools","real","lon","lat","time",NA,"Total above ground wood biomass"
-"TotSoilCarb",NA,"kg C m-2","Total Soil Carbon","Carbon Pools","real","lon","lat","time",NA,"Total soil and litter carbon content vertically integrated over the enire soil column"
-"litter_carbon_content","litter_carbon_content","kg C m-2","Litter Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Total carbon content of litter pool, excluding coarse woody debris"
-"surface_litter_carbon_content","surface_litter_carbon_content","kg C m-2","Surface Litter Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Carbon content of surface litter pool"
-"subsurface_litter_carbon_content","subsurface_litter_carbon_content","kg C m-2","Subsurface Litter Carbon Content","Carbon Pools","real","lon","lat","time","depth","Carbon content of subsurface litter pool; depth dimension optional"
-"leaf_litter_carbon_content","leaf_litter_carbon_content","kg C m-2","Leaf Litter Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Carbon content of leaf litter pool"
-"reproductive_litter_carbon_content","reproductive_litter_carbon_content","kg C m-2","Reproductive Litter Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Carbon content of reproductive litter pool (e.g. seeds, flowers, cones, pollen)"
-"other_litter_carbon_content","other_litter_carbon_content","kg C m-2","Other Litter Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Carbon content of uncategorized litter pool (e.g. insect excreta)"
-"wood_debris_carbon_content","wood_debris_carbon_content","kg C m-2","Wood Debris Carbon Content","Carbon Pools","real","lon","lat","time","wdsize","Carbon content of downed woody debris and standing deadwood; excludes litter; size classes defined by wdsize dimension"
-"soil_carbon_content","soil_carbon_content_of_soil_layer","kg C m-2","Soil Carbon Content by Layer","Carbon Pools","real","lon","lat","time","depth","Total carbon content of soil layer, excluding litter"
-"soil_inorganic_carbon_content","soil_inorganic_carbon_content_of_soil_layer","kg C m-2","Soil Inorganic Carbon Content by Layer","Carbon Pools","real","lon","lat","time","depth","Total inorganic carbon content of soil layer (mineralized carbon such as carbonate)"
-"soil_organic_carbon_content","soil_organic_carbon_content_of_soil_layer","kg C m-2","Soil Organic Carbon Content by Layer","Carbon Pools","real","lon","lat","time","depth","Total organic carbon content of soil layer, excluding litter"
-"slow_soil_pool_carbon_content","slow_soil_pool_carbon_content_of_soil_layer","kg C m-2","Slow Soil Pool Carbon Content by Layer","Carbon Pools","real","lon","lat","time","depth","Slow soil pool carbon content of soil layer"
-"fast_soil_pool_carbon_content","fast_soil_pool_carbon_content_of_soil_layer","kg C m-2","Fast Soil Pool Carbon Content by Layer","Carbon Pools","real","lon","lat","time","depth","Fast soil pool carbon content of soil layer"
-"structural_soil_pool_carbon_content","structural_soil_pool_carbon_content_of_soil_layer","kg C m-2","Structural Soil Pool Carbon Content by Layer","Carbon Pools","real","lon","lat","time","depth","Structural soil pool carbon content of soil layer"
-"soil_nitrogen_content","soil_nitrogen_content_of_soil_layer","kg N m-2","Soil Nitrogen Content by Layer","Nitrogen Pools","real","lon","lat","time","depth","Total nitrogen content of soil layer"
-"soil_phosphorus_content","soil_phosphorus_content_of_soil_layer","kg P m-2","Soil Phosphorus Content by Layer","Phosphorus Pools","real","lon","lat","time","depth","Total phosphorus content of soil layer"
-"Qh",NA,"W m-2","Sensible heat","Energy Fluxes","real","lon","lat","time",NA,"Sensible heat flux into the boundary layer (positive into atmosphere)"
-"Qle",NA,"W m-2","Latent heat","Energy Fluxes","real","lon","lat","time",NA,"Latent heat flux into the boundary layer (positive into atmosphere)"
-"Qg",NA,"W m-2","Ground heat","Energy Fluxes","real","lon","lat","time",NA,"Ground heat flux; ED2 output variable"
-"stomatal_conductance",NA,"kg m-2 s-1","Stomatal Conductance","Energy Fluxes","real","lon","lat","time",NA,"Rate of leaf conductance of water vapor from the leaf sub-stomatal cavities to the atmosphere"
-"Evap",NA,"kg m-2 s-1","Total Evaporation","Energy Fluxes","real","lon","lat","time",NA,"Sum of all evaporation sources (positive into atmosphere)"
-"TVeg",NA,"kg m-2 s-1","Transpiration","Deprecated","real","lon","lat","time",NA,"Deprecated, to be replaced by Transp. Total Plant transpiration (always positive)"
-"Transp",NA,"kg m-2 s-1","Total transpiration","Energy Fluxes","real","lon","lat","time","pft","Total transpiration of each PFT within each grid cell"
-"LW_albedo",NA,"(-)","Longwave Albedo","Energy Fluxes","real","lon","lat","time",NA,"Longwave Albedo"
-"SW_albedo",NA,"(-)","Shortwave Albedo","Energy Fluxes","real","lon","lat","time",NA,"Shortwave albedo"
-"Lwnet",NA,"W m-2","Net Longwave Radiation","Energy Fluxes","real","lon","lat","time",NA,"Incident longwave radiation minus simulated outgoing longwave radiation (positive into grnd)"
-"SWnet",NA,"W m-2","Net shortwave radiation","Energy Fluxes","real","lon","lat","time",NA,"Incident shortwave radiation minus simulated outgoing shortwave radiation (positive into grnd)"
-"fPAR",NA,"(-)","Absorbed fraction incoming PAR","Energy Fluxes","real","lon","lat","time",NA,"absorbed fraction incoming photosyntetically active radiation"
-"z_top",NA,"m","Soil Layer Top Depth","Deprecated","real","depth",NA,NA,NA,"Depth from soil surface to top of soil layer"
-"z_node",NA,"m","Soil Layer Node Depth","Deprecated","real","depth",NA,NA,NA,"Depth from soil surface to layer prognostic variables, typically center of soil layer"
-"z_bottom",NA,"m","Soil Layer Bottom Depth","Deprecated","real","depth",NA,NA,NA,"Depth from soil surface to bottom of soil layer"
-"SoilMoist",NA,"kg m-2","Average Layer Soil Moisture","Physical Variables","real","lon","lat","depth","time","Soil water content in each soil layer, including liquid, vapor and ice"
-"SoilMoistFrac",NA,"(-)","Average Layer Fraction of Saturation","Physical Variables","real","lon","lat","depth","time","Fraction of saturation of soil water in each soil layer, including liquid and ice"
-"SoilWet",NA,"(-)","Total Soil Wetness","Physical Variables","real","lon","lat","time",NA,"Vertically integrated soil moisture divided by maximum allowable soil moisture above wilting point"
-"Qs",NA,"kg m-2 s-1","Surface runoff","Physical Variables","real","lon","lat","time",NA,"Runoff from the landsurface and/or subsurface stormflow"
-"Qsb",NA,"kg m-2 s-1","Subsurface runoff","Physical Variables","real","lon","lat","time",NA,"Gravity soil water drainage and/or soil water lateral flow"
-"SoilTemp",NA,"K","Average Layer Soil Temperature","Physical Variables","real","lon","lat","depth","time","Average soil temperature in each soil layer"
-"Tdepth",NA,"m","Active Layer Thickness","Physical Variables","real","lon","lat","time",NA,"Thaw depth to zero centigrade isotherm in permafrost"
-"Fdepth",NA,"m","Frozen Thickness","Physical Variables","real","lon","lat","time",NA,"Freeze depth to zero centigrade isotherm in non-permafrost"
-"Tcan",NA,"K","Canopy Temperature","Physical Variables","real","lon","lat","time",NA,"Canopy or vegetation temperature (or temperature used in photosynthesis calculations)"
-"SWE",NA,"kg m-2","Snow Water Equivalent","Physical Variables","real","lon","lat","time",NA,"Total water mass of snow pack, including ice and liquid water"
-"SnowDen",NA,"kg m-3","Bulk Snow Density","Physical Variables","real","lon","lat","time",NA,"Overall bulk density of the snow pack, including ice and liquid water"
-"SnowDepth",NA,"m","Total snow depth","Physical Variables","real","lon","lat","time",NA,"Total snow depth"
-"CO2CAS",NA,"ppmv","CO2CAS","Physical Variables","real","lon","lat","time",NA,"CO2 in canopy air space; ED2 output variable"
-"CO2air",NA,"micromol mol-1","Near surface CO2 concentration","Driver","real","lon","lat","time",NA,"Near surface dry air CO2 mole fraction"
-"LWdown","surface_downwelling_longwave_flux_in_air","W/m2","Surface incident longwave radiation","Driver","real","lon","lat","time",NA,"Surface incident longwave radiation"
-"Psurf","air_pressure","Pa","Surface pressure","Driver","real","lon","lat","time",NA,"Surface pressure"
-"Qair","specific_humidity","kg kg-1","Near surface specific humidity","Driver","real","lon","lat","time",NA,"Near surface specific humidity"
-"Rainf","precipitation_flux","kg m-2 s-1","Rainfall rate","Driver","real","lon","lat","time",NA,"Rainfall rate"
-"SWdown","surface_downwelling_shortwave_flux_in_air","W m-2","Surface incident shortwave radiation","Driver","real","lon","lat","time",NA,"Surface incident shortwave radiation"
-"Tair","air_temperature","K","Near surface air temperature","Driver","real","lon","lat","time",NA,"Near surface air temperature"
-"Wind","wind_speed","m s-1","Near surface module of the wind","Driver","real","lon","lat","time",NA,"Near surface wind magnitude"
-"Tmin","air_temperature_max","K","Daily Maximum Temperature","Driver","real","lon","lat","time",NA,"Daily Maximum Temperature"
-"Tmax","air_temperature_min","K","Daily Minimum Temperature","Driver","real","lon","lat","time",NA,"Daily Minimum Temperature"
-"Uwind","northward_wind","m s-1","Northward Component of Wind","Driver","real","lon","lat","time",NA,"Northward Component of Wind"
-"Vwind","eastward_wind","m s-1","Eastward Component of Wind","Driver","real","lon","lat","time",NA,"Eastward Component of Wind"
-"RH","relative_humidity","%","Relative Humidity","Driver","real","lon","lat","time",NA,"Relative Humidity"
-"PAR","surface_downwelling_photosynthetic_photon_flux_in_air","mol m-2 s-1","Photosynthetically Active Radiation","Driver","real","lon","lat","time",NA,"Photosynthetically Active Radiation"
-"precipf",NA,"kg m-2 s-1","Precipitation","Driver","real","lon","lat","time",NA,"The per unit area and time precipitation representing the sum of convective rainfall, stratiform rainfall, and snowfall"
-"BA",NA,"m2 ha-1","Basal area","Diversity","real","lon","lat","time","pft","Basal area by PFT"
-"Dens",NA,"1 ha-1","Stem Density","Diversity","real","lon","lat","time","pft","Stem Density by PFT"
-"DBH",NA,"cm","Diameter at Breast Height","Diversity","real","lon","lat","time","pft","NA","DBH by PFT"
-"Fcomp",NA,"kgC kgC-1","Aboveground Biomass Fractional Composition","Diversity","real","lon","lat","time","pft","Aboveground biomass Fractional composition of each PFT within each grid cell"
-"Estab",NA,"1 ha-1","New Individuals","Diversity","real","lon","lat","time","pft","New Individuals"
-"Mort",NA,"1 ha-1","Mortality","Diversity","real","lon","lat","time","pft","Individuals lost through death"
-"SoilDepth",NA,"m","Soil Depth Layer","Deprecated","real","depth",NA,NA,NA,"Depth to the bottom of each model-defined soil layer"
-"assimilation_rate",NA,"kg C m-2 s-1","Leaf assimilation rate","Carbon Fluxes","real","lon","lat","time",NA,"Rate of leaf photosynthesis / carbon assimilation"
+Variable.Name,standard_name,Units,Long.name,Category,var_type,dim1,dim2,dim3,dim4,Description,
+lon,longitude,degrees_east,Longitude,Dimension,real,NA,NA,NA,NA,longitude at center of each grid cell,
+lat,latitude,degrees_north,Latitude,Dimension,real,NA,NA,NA,NA,latitude at center of each grid cell,
+depth,depth,m,Depth,Dimension,real,NA,NA,NA,NA,depth to bottom of soil layer,
+pft,pft,(-),Plant Functional Type,Dimension,character,NA,NA,NA,NA,Name of each plant function type or species included in the model,
+time,time,days since [year]-01-01 00:00:00 UTC,Time middle averaging period,Dimension,double,NA,NA,NA,NA,julian days days since [year]-01-01 00:00:00 UTC for middle of time averaging period Proleptic_Gregorian calendar,
+rtsize,rtsize,m,Root Size Class,Dimension,real,NA,NA,NA,NA,Minimum threshold of root size class,
+wdsize,wdsize,m,Woody Debris Size Class,Dimension,real,NA,NA,NA,NA,Minimum threshold of woody debris size class,
+lon_bnds,NA,degrees_east,Longitude west-east bounds,Deprecated,real,nbnds,lon,NA,NA,"(west boundary of grid cell, east boundary of grid cell)",
+lat_bnds,NA,degrees_north,Latitude south-north bounds,Deprecated,real,nbnds,lat,NA,NA,"(south boundary of grid cell, north boundary of grid cell)",
+time_bnds,NA,days since 1700-01-01 00:00:00 UTC,Time beginning-end bounds,Deprecated,double,nbnds,time,NA,NA,"(julian days days since 1700-01-01 beginning time ave period, julian days days since 1700-01-01 end time ave period)",
+time_bounds,time_bounds,days since [year]-01-01 00:00:00 UTC,history time interval endpoints,Attribute,double,time,hist_interval,NA,NA,"Start and end fractional DOY for each model averaging period (i.e. timepoint), starting from the base ""time"" start date used in the output netCDF file (e.g. days since 2000-01-01 00:00:00). E.g. 1, 1.25; 1.25, 1.5 ",
+dec_date,NA,yr,Decimal date middle averaging period,Deprecated,double,time,NA,NA,NA,decimal date in fractional years for middle of time averaging period,
+dec_date_bnds,NA,yr,Decimal date beginning-end bounds,Deprecated,double,nbnds,time,NA,NA,"(decimal date beginning time ave period, decimal date end time ave period)",
+cal_date_mid,NA,"yr, mon, day, hr, min, sec",Calender date middle averaging period,Deprecated,integer,ncal,time,NA,NA,"calender date middle of time ave period: year, month, day, hour, minute, second for UTC time zone",
+cal_date_beg,NA,"yr, mon, day, hr, min, sec",Calender date beginning averaging period,Deprecated,integer,ncal,time,NA,NA,"calender date beginning of time ave period: year, month, day, hour, minute, second for UTC time zone",
+cal_date_end,NA,"yr, mon, day, hr, min, sec",Calender date end averaging period,Deprecated,integer,ncal,time,NA,NA,"calender date end of time ave period: year, month, day, hour, minute, second for UTC time zone",
+GPP,NA,kg C m-2 s-1,Gross Primary Productivity,Carbon Fluxes,real,lon,lat,time,NA,Rate of photosynthesis (always positive),
+NEE,NA,kg C m-2 s-1,Net Ecosystem Exchange,Carbon Fluxes,real,lon,lat,time,NA,"Net Ecosystem Exchange (NEE=HeteroResp+AutoResp-GPP, positive into atmosphere)",
+TotalResp,NA,kg C m-2 s-1,Total Respiration,Carbon Fluxes,real,lon,lat,time,NA,"Total respiration (TotalResp=AutoResp+heteroResp, always positive)",
+AutoResp,plant_respiration_carbon_flux,kg C m-2 s-1,Autotrophic Respiration,Carbon Fluxes,real,lon,lat,time,NA,Autotrophic respiration rate (always positive),
+HeteroResp,heterotrophic_respiration_carbon_flux,kg C m-2 s-1,Heterotrophic Respiration,Carbon Fluxes,real,lon,lat,time,NA,Heterotrophic respiration rate (always positive),
+SoilResp,soil_respiration_carbon_flux,kg C m-2 s-1,Soil Respiration,Carbon Fluxes,real,lon,lat,time,NA,Sum of respiration in the soil by heterotrophs and by the roots of plants (autotrophs),
+DOC_flux,NA,kg C m-2 s-1,Dissolved Organic Carbon flux,Carbon Fluxes,real,lon,lat,time,NA,Loss of organic carbon dissolved in ground water or rivers (positive out of grid cell),
+Fire_flux,NA,kg C m-2 s-1,Fire emissions,Carbon Fluxes,real,lon,lat,time,NA,Flux of carbon due to fires (always positive),
+litter_carbon_flux,litter_carbon_flux,kg C m-2 s-1,Litter Carbon Flux,Carbon Fluxes,real,lon,lat,time,NA,"Total carbon flux of litter, excluding coarse woody debris",
+surface_litter_carbon_flux,surface_litter_carbon_flux,kg C m-2 s-1,Surface Litter Carbon Flux,Carbon Fluxes,real,lon,lat,time,NA,Total carbon flux of surface litter,
+subsurface_litter_carbon_flux,subsurface_litter_carbon_flux,kg C m-2 s-1,Subsurface Litter Carbon Flux,Carbon Fluxes,real,lon,lat,time,depth,Total carbon flux of subsurface litter,
+leaf_litter_carbon_flux,leaf_litter_carbon_flux,kg C m-2 s-1,Leaf Litter Carbon Flux,Carbon Fluxes,real,lon,lat,time,NA,Carbon flux of leaf litter,
+WoodyLitter,wood_litter_carbon_flux,kg C m-2 s-1,Wood Litter Carbon Flux,Deprecated,real,lon,lat,time,NA,DALEC output; haven't yet resolved standard woody litter flux,
+wood_debris_carbon_flux,wood_debris_carbon_flux,kg C m-2 s-1,Wood Debris Carbon Flux,Carbon Fluxes,real,lon,lat,time,wdsize,"Total carbon flux of woody debris, including downed woody debris and standing deadwood; excludes litter; size class defined by wdsize dimension",
+NPP,NA,kg C m-2 s-1,Net Primary Productivity,Carbon Fluxes,real,lon,lat,time,NA,"Net Primary Productivity (NPP=GPP-AutoResp, positive into plants)",
+GWBI,NA,kg C m-2 month-1,Gross Woody Biomass Increment,Carbon Fluxes,real,lon,lat,time,NA,Variable most analogous to tree-ring-derived change in stem biomass (before mortality/CWD flux),
+CWDI,NA,kg C m-2 month-1,Coarse Woody Debris Increment,Carbon Fluxes,real,lon,lat,time,NA,Variable most analogous to flux of woody material material to the detrital pool resulting from mortality,
+CropYield,NA,kg m-2,CropYield,Carbon Fluxes,real,lon,lat,time,pft,Crop yield; ED2 output variable,
+poolname,NA,(-),Name of each Carbon Pool,Deprecated,character,nchar,npool,NA,NA,"Name of each carbon pool (i.e., wood or Coarse Woody Debris)",
+CarbPools,NA,kg C m-2,Size of each carbon pool,Deprecated,real,lon,lat,npool,time,Total size of each carbon pool vertically integrated over the entire soil column,
+TotLivBiom,NA,kg C m-2,Total living biomass,Carbon Pools,real,lon,lat,time,NA,Total carbon content of the living biomass (leaves+roots+wood),
+AGB,NA,kg C m-2,Total aboveground biomass,Carbon Pools,real,lon,lat,time,NA,aboveground biomass,
+LAI,NA,m2 m-2,Leaf Area Index,Carbon Pools,real,lon,lat,time,NA,Area of leaves per area ground,
+leaf_carbon_content,leaf_carbon_content,kg C m-2,Leaf Carbon Content,Carbon Pools,real,lon,lat,time,NA,Leaf carbon content,
+root_carbon_content,root_carbon_content_of_size_class,kg C m-2,Root Carbon Content,Carbon Pools,real,lon,lat,time,rtsize,"
+Root carbon content, optionally by size class; alternatively specify fine_ and coarse_root_carbon_content",
+fine_root_carbon_content,fine_root_carbon_content,kg C m-2,Fine Root Carbon Content,Carbon Pools,real,lon,lat,time,depth,Carbon content of fine roots (2 mm and smaller); alternative to providing dimensions for root_carbon_content,
+coarse_root_carbon_content,coarse_root_carbon_content,kg C m-2,Coarse Root Carbon Content,Carbon Pools,real,lon,lat,time,depth,Carbon content of coarse roots (larger than 2 mm); alternative to providing dimensions for root_carbon_content,
+wood_carbon_content,wood_carbon_content,kg C m-2,Wood Carbon Content,Carbon Pools,real,lon,lat,time,NA,"Wood carbon content including above (AbvGrndWood) and below ground (coarse roots, shared with root_carbon_content)",
+AbvGrndWood,NA,kg C m-2,Above ground woody biomass,Carbon Pools,real,lon,lat,time,NA,Total above ground wood biomass,
+TotSoilCarb,NA,kg C m-2,Total Soil Carbon,Carbon Pools,real,lon,lat,time,NA,Total soil and litter carbon content vertically integrated over the enire soil column,
+litter_carbon_content,litter_carbon_content,kg C m-2,Litter Carbon Content,Carbon Pools,real,lon,lat,time,NA,"Total carbon content of litter pool, excluding coarse woody debris",
+surface_litter_carbon_content,surface_litter_carbon_content,kg C m-2,Surface Litter Carbon Content,Carbon Pools,real,lon,lat,time,NA,Carbon content of surface litter pool,
+subsurface_litter_carbon_content,subsurface_litter_carbon_content,kg C m-2,Subsurface Litter Carbon Content,Carbon Pools,real,lon,lat,time,depth,Carbon content of subsurface litter pool; depth dimension optional,
+leaf_litter_carbon_content,leaf_litter_carbon_content,kg C m-2,Leaf Litter Carbon Content,Carbon Pools,real,lon,lat,time,NA,Carbon content of leaf litter pool,
+reproductive_litter_carbon_content,reproductive_litter_carbon_content,kg C m-2,Reproductive Litter Carbon Content,Carbon Pools,real,lon,lat,time,NA,"Carbon content of reproductive litter pool (e.g. seeds, flowers, cones, pollen)",
+other_litter_carbon_content,other_litter_carbon_content,kg C m-2,Other Litter Carbon Content,Carbon Pools,real,lon,lat,time,NA,Carbon content of uncategorized litter pool (e.g. insect excreta),
+wood_debris_carbon_content,wood_debris_carbon_content,kg C m-2,Wood Debris Carbon Content,Carbon Pools,real,lon,lat,time,wdsize,Carbon content of downed woody debris and standing deadwood; excludes litter; size classes defined by wdsize dimension,
+soil_carbon_content,soil_carbon_content_of_soil_layer,kg C m-2,Soil Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,"Total carbon content of soil layer, excluding litter",
+soil_inorganic_carbon_content,soil_inorganic_carbon_content_of_soil_layer,kg C m-2,Soil Inorganic Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,Total inorganic carbon content of soil layer (mineralized carbon such as carbonate),
+soil_organic_carbon_content,soil_organic_carbon_content_of_soil_layer,kg C m-2,Soil Organic Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,"Total organic carbon content of soil layer, excluding litter",
+slow_soil_pool_carbon_content,slow_soil_pool_carbon_content_of_soil_layer,kg C m-2,Slow Soil Pool Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,Slow soil pool carbon content of soil layer,
+fast_soil_pool_carbon_content,fast_soil_pool_carbon_content_of_soil_layer,kg C m-2,Fast Soil Pool Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,Fast soil pool carbon content of soil layer,
+structural_soil_pool_carbon_content,structural_soil_pool_carbon_content_of_soil_layer,kg C m-2,Structural Soil Pool Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,Structural soil pool carbon content of soil layer,
+soil_nitrogen_content,soil_nitrogen_content_of_soil_layer,kg N m-2,Soil Nitrogen Content by Layer,Nitrogen Pools,real,lon,lat,time,depth,Total nitrogen content of soil layer,
+soil_phosphorus_content,soil_phosphorus_content_of_soil_layer,kg P m-2,Soil Phosphorus Content by Layer,Phosphorus Pools,real,lon,lat,time,depth,Total phosphorus content of soil layer,
+Qh,NA,W m-2,Sensible heat,Energy Fluxes,real,lon,lat,time,NA,Sensible heat flux into the boundary layer (positive into atmosphere),
+Qle,NA,W m-2,Latent heat,Energy Fluxes,real,lon,lat,time,NA,Latent heat flux into the boundary layer (positive into atmosphere),
+Qg,NA,W m-2,Ground heat,Energy Fluxes,real,lon,lat,time,NA,Ground heat flux; ED2 output variable,
+stomatal_conductance,NA,kg m-2 s-1,Stomatal Conductance,Energy Fluxes,real,lon,lat,time,NA,Rate of leaf conductance of water vapor from the leaf sub-stomatal cavities to the atmosphere,
+Evap,NA,kg m-2 s-1,Total Evaporation,Energy Fluxes,real,lon,lat,time,NA,Sum of all evaporation sources (positive into atmosphere),
+TVeg,NA,kg m-2 s-1,Transpiration,Deprecated,real,lon,lat,time,NA,"Deprecated, to be replaced by Transp. Total Plant transpiration (always positive)",
+Transp,NA,kg m-2 s-1,Total transpiration,Energy Fluxes,real,lon,lat,time,pft,Total transpiration of each PFT within each grid cell,
+LW_albedo,NA,(-),Longwave Albedo,Energy Fluxes,real,lon,lat,time,NA,Longwave Albedo,
+SW_albedo,NA,(-),Shortwave Albedo,Energy Fluxes,real,lon,lat,time,NA,Shortwave albedo,
+Lwnet,NA,W m-2,Net Longwave Radiation,Energy Fluxes,real,lon,lat,time,NA,Incident longwave radiation minus simulated outgoing longwave radiation (positive into grnd),
+SWnet,NA,W m-2,Net shortwave radiation,Energy Fluxes,real,lon,lat,time,NA,Incident shortwave radiation minus simulated outgoing shortwave radiation (positive into grnd),
+fPAR,NA,(-),Absorbed fraction incoming PAR,Energy Fluxes,real,lon,lat,time,NA,absorbed fraction incoming photosyntetically active radiation,
+z_top,NA,m,Soil Layer Top Depth,Deprecated,real,depth,NA,NA,NA,Depth from soil surface to top of soil layer,
+z_node,NA,m,Soil Layer Node Depth,Deprecated,real,depth,NA,NA,NA,"Depth from soil surface to layer prognostic variables, typically center of soil layer",
+z_bottom,NA,m,Soil Layer Bottom Depth,Deprecated,real,depth,NA,NA,NA,Depth from soil surface to bottom of soil layer,
+SoilMoist,NA,kg m-2,Average Layer Soil Moisture,Physical Variables,real,lon,lat,depth,time,"Soil water content in each soil layer, including liquid, vapor and ice",
+SoilMoistFrac,NA,(-),Average Layer Fraction of Saturation,Physical Variables,real,lon,lat,depth,time,"Fraction of saturation of soil water in each soil layer, including liquid and ice",
+SoilWet,NA,(-),Total Soil Wetness,Physical Variables,real,lon,lat,time,NA,Vertically integrated soil moisture divided by maximum allowable soil moisture above wilting point,
+Qs,NA,kg m-2 s-1,Surface runoff,Physical Variables,real,lon,lat,time,NA,Runoff from the landsurface and/or subsurface stormflow,
+Qsb,NA,kg m-2 s-1,Subsurface runoff,Physical Variables,real,lon,lat,time,NA,Gravity soil water drainage and/or soil water lateral flow,
+SoilTemp,NA,K,Average Layer Soil Temperature,Physical Variables,real,lon,lat,depth,time,Average soil temperature in each soil layer,
+Tdepth,NA,m,Active Layer Thickness,Physical Variables,real,lon,lat,time,NA,Thaw depth to zero centigrade isotherm in permafrost,
+Fdepth,NA,m,Frozen Thickness,Physical Variables,real,lon,lat,time,NA,Freeze depth to zero centigrade isotherm in non-permafrost,
+Tcan,NA,K,Canopy Temperature,Physical Variables,real,lon,lat,time,NA,Canopy or vegetation temperature (or temperature used in photosynthesis calculations),
+SWE,NA,kg m-2,Snow Water Equivalent,Physical Variables,real,lon,lat,time,NA,"Total water mass of snow pack, including ice and liquid water",
+SnowDen,NA,kg m-3,Bulk Snow Density,Physical Variables,real,lon,lat,time,NA,"Overall bulk density of the snow pack, including ice and liquid water",
+SnowDepth,NA,m,Total snow depth,Physical Variables,real,lon,lat,time,NA,Total snow depth,
+CO2CAS,NA,ppmv,CO2CAS,Physical Variables,real,lon,lat,time,NA,CO2 in canopy air space; ED2 output variable,
+CO2air,NA,micromol mol-1,Near surface CO2 concentration,Driver,real,lon,lat,time,NA,Near surface dry air CO2 mole fraction,
+LWdown,surface_downwelling_longwave_flux_in_air,W/m2,Surface incident longwave radiation,Driver,real,lon,lat,time,NA,Surface incident longwave radiation,
+Psurf,air_pressure,Pa,Surface pressure,Driver,real,lon,lat,time,NA,Surface pressure,
+Qair,specific_humidity,kg kg-1,Near surface specific humidity,Driver,real,lon,lat,time,NA,Near surface specific humidity,
+Rainf,precipitation_flux,kg m-2 s-1,Rainfall rate,Driver,real,lon,lat,time,NA,Rainfall rate,
+SWdown,surface_downwelling_shortwave_flux_in_air,W m-2,Surface incident shortwave radiation,Driver,real,lon,lat,time,NA,Surface incident shortwave radiation,
+Tair,air_temperature,K,Near surface air temperature,Driver,real,lon,lat,time,NA,Near surface air temperature,
+Wind,wind_speed,m s-1,Near surface module of the wind,Driver,real,lon,lat,time,NA,Near surface wind magnitude,
+Tmin,air_temperature_max,K,Daily Maximum Temperature,Driver,real,lon,lat,time,NA,Daily Maximum Temperature,
+Tmax,air_temperature_min,K,Daily Minimum Temperature,Driver,real,lon,lat,time,NA,Daily Minimum Temperature,
+Uwind,northward_wind,m s-1,Northward Component of Wind,Driver,real,lon,lat,time,NA,Northward Component of Wind,
+Vwind,eastward_wind,m s-1,Eastward Component of Wind,Driver,real,lon,lat,time,NA,Eastward Component of Wind,
+RH,relative_humidity,%,Relative Humidity,Driver,real,lon,lat,time,NA,Relative Humidity,
+PAR,surface_downwelling_photosynthetic_photon_flux_in_air,mol m-2 s-1,Photosynthetically Active Radiation,Driver,real,lon,lat,time,NA,Photosynthetically Active Radiation,
+precipf,NA,kg m-2 s-1,Precipitation,Driver,real,lon,lat,time,NA,"The per unit area and time precipitation representing the sum of convective rainfall, stratiform rainfall, and snowfall",
+BA,NA,m2 ha-1,Basal area,Diversity,real,lon,lat,time,pft,Basal area by PFT,
+Dens,NA,1 ha-1,Stem Density,Diversity,real,lon,lat,time,pft,Stem Density by PFT,
+DBH,NA,cm,Diameter at Breast Height,Diversity,real,lon,lat,time,pft,NA,DBH by PFT
+Fcomp,NA,kgC kgC-1,Aboveground Biomass Fractional Composition,Diversity,real,lon,lat,time,pft,Aboveground biomass Fractional composition of each PFT within each grid cell,
+Estab,NA,1 ha-1,New Individuals,Diversity,real,lon,lat,time,pft,New Individuals,
+Mort,NA,1 ha-1,Mortality,Diversity,real,lon,lat,time,pft,Individuals lost through death,
+SoilDepth,NA,m,Soil Depth Layer,Deprecated,real,depth,NA,NA,NA,Depth to the bottom of each model-defined soil layer,
+assimilation_rate,NA,kg C m-2 s-1,Leaf assimilation rate,Carbon Fluxes,real,lon,lat,time,NA,Rate of leaf photosynthesis / carbon assimilation,

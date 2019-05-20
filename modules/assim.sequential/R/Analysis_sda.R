@@ -59,18 +59,18 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
   for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
 
-    #Forecast inputs 
+  #Forecast inputs 
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
-
   # Enkf---------------------------------------------------
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
   Pf <- cov(X)
-  diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
 
+  
+  diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
   # for those elements with zero value
   if (length(Y) > 1) {
     
@@ -161,7 +161,6 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   }
   
   if(t == 1){
-
     #The purpose of this step is to impute data for mu.f 
     #where there are zero values so that 
     #mu.f is in 'tobit space' in the full model
@@ -173,7 +172,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
                             mu_0 = rep(0,length(mu.f)),
                             lambda_0 = diag(10,length(mu.f)),
                             nu_0 = 3)#some measure of prior obs
-
+    
     inits.tobit2space <<- list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
     #set.seed(0)
     #ptm <- proc.time()
@@ -227,13 +226,8 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     }
     
   }
-
-  dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr, nburnin=nburnin,  progressBar=TRUE)
   
-  # pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
-  # 
-  # assessParams(dat = dat.tobit2space[1000:5000,], Xt = X)
-  # dev.off()
+  dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = nitr, nburnin=nburnin,  progressBar=TRUE)
   
   ## update parameters
   #dat.tobit2space  <- dat.tobit2space[1000:5000, ]
@@ -241,9 +235,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   mu.f <- colMeans(dat.tobit2space[, imuf])
   iPf   <- grep("pf", colnames(dat.tobit2space))
   Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
-  
   iycens <- grep("y.censored",colnames(dat.tobit2space))
-  
   X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
   
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
@@ -279,18 +271,23 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
   
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
+    # Contants defined in the model
     constants.tobit = list(N = ncol(X), YN = length(y.ind))
+    
     dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
                             Q = c(length(mu.f),length(mu.f)))
-    
+    # Data need to be used in the model
     data.tobit = list(muf = as.vector(mu.f),
                       pf = solve(Pf), 
                       aq = aqq[t,,], bq = bqq[t],
                       y.ind = y.ind,
                       y.censored = y.censored,
                       r = solve(R))
-    inits.pred = list(q = diag(length(mu.f)), X.mod = as.vector(mu.f),
-                      X = rnorm(length(mu.f),0,1)) #
+    #initial values
+    inits.pred = list(q = diag(length(mu.f)),
+                      X.mod = as.vector(mu.f),
+                      X = as.vector(mu.f) # This was this before rnorm(length(mu.f),0,1), I thought the mu.f would be a better IC for something like abv ground biomass than something close to zero.
+    ) #
     
     model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
                               constants = constants.tobit, inits = inits.pred,
@@ -348,7 +345,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     }
     
   }
-
+  
   dat <- runMCMC(Cmcmc, niter = nitr, nburnin=nburnin)
   
   ## update parameters
@@ -376,12 +373,12 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
     n <- length(mu.f)
   }
   V <- solve(q.bar) * n
- 
+  
   if (t<nt){
-   aqq[t + 1, , ]   <- V
-   bqq[t + 1]       <- n
+    aqq[t + 1, , ]   <- V
+    bqq[t + 1]       <- n
   }
-
+  
   return(list(mu.f = mu.f,
               Pf = Pf,
               mu.a = mu.a,
@@ -421,3 +418,4 @@ Construct_H <- function(choose, Y, X){
   
   return(H)
 }
+
