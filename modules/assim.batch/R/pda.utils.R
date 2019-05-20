@@ -1214,19 +1214,17 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
 ##' @export
 sync_pda_remote <- function(multi.settings, ensembleidlist, register = FALSE){
   
-  args <- c("-qa")
-  args <- c(args, "--include=\"pecan.pda*\"")
-  args <- c(args, "--include=\"history*\"")
-  args <- c(args, "--include 'pft/***'")
-  args <- c(args, "--include=\"mcmc.list*\"")
-  args <- c(args, "--include=\"ss.pda*\"")
-  args <- c(args, "--include=\"emulator.pda*\"")
-  args <- c(args, "--exclude=\"*\"") #exclude everything else
-  args <- c(args, "-e", paste0("'ssh -o ControlPath=", multi.settings[[1]]$host$tunnel, "'"))
-  args <- c(args, paste0(multi.settings[[1]]$host$name, ":", dirname(multi.settings[[1]]$host$outdir),"/"), 
-            multi.settings[[1]]$outdir)
-  res <- system2("rsync", paste(args), stdout = TRUE, stderr = FALSE)
-  if(attr(res,"status") == 255) PEcAn.logger::logger.error("Tunnel closed. Reopen and try again.")
+  options <- "--include=pecan.pda*"
+  options <- c(options, "--include=history*")
+  options <- c(options, "--include=pft/***")
+  options <- c(options, "--include=mcmc.list*")
+  options <- c(options, "--include=ss.pda*")
+  options <- c(options, "--include=emulator.pda*")
+  options <- c(options, "--exclude=*") #exclude everything else
+  PEcAn.remote::remote.copy.from(host    = multi.settings[[1]]$host,
+                                 src     =  paste0(dirname(multi.settings[[1]]$host$outdir),"/"),
+                                 dst     =  multi.settings[[1]]$outdir,
+                                 options = options)
   
   # update multi.settings
   for(ms in seq_along(multi.settings)){
