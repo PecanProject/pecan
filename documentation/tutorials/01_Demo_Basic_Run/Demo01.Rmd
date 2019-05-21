@@ -1,4 +1,4 @@
-## PEcAn Hands-On Demo 01: Basic Run
+## Demo 01: Basic Run PEcAn
 
 ```{r echo = FALSE,warning=FALSE}
 library(knitr)

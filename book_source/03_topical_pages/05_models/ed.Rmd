@@ -209,7 +209,7 @@ The ED2IN template can contain the following variables. These will be replaced w
 * **@OUTDIR@** :  location where output files are written (**without the runid**), from \<run\>\<host\>\<outdir\>, should not be used.  
 * **@SCRATCH@** : local scratch space for outputs, generated /scratch/\<username\>/run\$scratch, should not be used right now since it only works on ebi-cluster  
 
-### Installation notes
+#### Installation notes
 
 This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
 

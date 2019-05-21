@@ -100,3 +100,19 @@ In other words, if `myimage.png` was in the same directory as this file, I would
 The size, caption, and other properties of the rendered image can be controlled via [chunk options](https://yihui.name/knitr/options/#plots).
 
 For additional information about how `bookdown` works (including information about its syntax), see the [Bookdown free online book](https://bookdown.org/yihui/bookdown/).
+
+#### How to create your own version of Documentation
+To create your own version of documentation to view a final rendering you'll need to follow these steps:
+	1. Create a github repository named pecan-documentation
+	2. Create a GITHUB token and enter it as a variable within TRAVIS
+	3. Create a branch from your Fork of PEcAn that starts with the pattern "release/"
+	4. Make your changes to documentation, push them to your fork and let TRAVIS build your documentation.
+
+These procedures assume you have an github account, you forked pecan, you have cloned pecan locally, and have a TRAVIS account. 
+	1. Create a repository under your github account with the name "pecan-documentation". Clear it of any files. Set up the repository with Github Pages under the settings for that repository.
+	2. Create a personal access token for github: https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line and copy it.
+	3. Create a TRAVIS environment variable called `GITHUB_PAT` and save the access token you made has a secret variable.
+	4. Create a branch from your local pecan repository with a name that starts with  `release/`. (ie. Release/vtonydoc)
+	5. Make whichever changes you would like to the documentation and push it up to your fork.
+
+From here TRAVIS will build your documentation. The web version of your documentation will be rendered with the url following the structure: username.github.io/pecan-documentation/pattern_after_release/
