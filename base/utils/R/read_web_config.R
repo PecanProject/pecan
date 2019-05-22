@@ -1,11 +1,11 @@
-#' Read `config.php` file into an R list 
+#' Read `config.php` file into an R list
 #'
 #' @author Alexey Shiklomanov, Michael Dietze, Rob Kooper
 #' @param php.config Path to `config.php` file
 #' @param parse Logical. If `TRUE` (default), try to parse numbers and
 #'   unquote strings.
 #' @param expand Logical. If `TRUE` (default), try to perform some
-#'   variable substitutions. 
+#'   variable substitutions (only done if parse = TRUE).
 #' @return Named list of variable-value pairs set in `config.php`
 #' @export
 #' @examples
@@ -28,24 +28,29 @@ read_web_config <- function(php.config = "../../web/config.php",
   config_list <- lapply(results, `[[`, 3)
   names(config_list) <- list_names
 
-  # Convert to numeric if possible
+  # always remove the \"
+  config_list <- lapply(config_list, gsub,
+                        pattern = "\"(.*?)\"", replacement = "\\1")
+
+  # parse data and cleanup
   if (parse) {
-    # Remove surrounding quotes
-    config_list <- lapply(config_list, gsub,
-                          pattern = "\"(.*?)\"", replacement = "\\1")
+    # try to conver to number/boolean (as.numeric(FALSE) == 0)
+    config_list <- lapply(config_list, function(s) {
+      s <- tryCatch(as.numeric(s), warning = function(e) {
+        b = as.logical(s)
+        ifelse(is.na(b), s, b)
+      })
+    })
 
-    # Try to convert numbers to numeric
-    config_list <- lapply(
-      config_list,
-      function(x) tryCatch(as.numeric(x), warning = function(e) x)
-    )
-  }
-
-  if (expand) {
-    # Replace $output_folder with its value, and concatenate strings
-    config_list <- lapply(config_list, gsub,
-                          pattern = "\\$output_folder *\\. *",
-                          replacement = config_list[["output_folder"]])
+    if (expand) {
+      of <- config_list[["output_folder"]]
+      if (!is.null(of)) {
+        modify <- grep("\\$output_folder *\\. *", config_list)
+        # gsub will force all fields to character
+        config_list[modify] <- lapply(config_list[modify], gsub,
+                                      pattern = "\\$output_folder *\\. *", replacement = of)
+      }
+    }
   }
 
   config_list
