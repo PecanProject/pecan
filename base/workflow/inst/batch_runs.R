@@ -164,15 +164,18 @@ library(PEcAn.settings)
 
 ## Insert your path to base pecan
 ## pecan_path <- "/fs/data3/tonygard/work/pecan"
-pecan_path <- "../.."
+pecan_path <- file.path("..", "..")
 php_file <- file.path(pecan_path, "web", "config.php")
+stopifnot(file.exists(php_file))
 config.list <- PEcAn.utils::read_web_config(php_file)
-bety <- PEcAn.DB::betyConnect(paste0(pecan_path,"/web/config.php"))
+bety <- PEcAn.DB::betyConnect(php_file)
 con <- bety$con
 
 ## Find name of Machine R is running on
 mach_name <- Sys.info()[[4]]
-mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(id)
+mach_id <- tbl(bety, "machines") %>%
+  filter(grepl(mach_name,hostname)) %>%
+  pull(id)
 
 ## Find Models
 #devtools::install_github("pecanproject/pecan", subdir = "api")
@@ -181,19 +184,18 @@ model_ids <- tbl(bety, "dbfiles") %>%
   filter(container_type == "Model") %>%
   pull(container_id)
 
-
-
 models <- model_ids
-met_name <- c("CRUNCEP","AmerifluxLBL")
-startdate<-"2004/01/01"
-enddate<-"2004/12/31"
+met_name <- c("CRUNCEP", "AmerifluxLBL")
+startdate <- "2004-01-01"
+enddate <- "2004-12-31"
 out.var <- "NPP"
 ensemble <- FALSE
 ens_size <- 100
 sensitivity <- FALSE
+
 ## Find Sites
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
-site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
+site_id_noinput <- anti_join(tbl(bety, "sites"), tbl(bety, "inputs")) %>%
   inner_join(tbl(bety, "sitegroups_sites") %>%
                filter(sitegroup_id == 1),
              by = c("id" = "site_id")) %>%
@@ -213,11 +215,12 @@ site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
     in_date = data.table::between(as.numeric(lubridate::year(startdate)),as.numeric(start_year),as.numeric(end_year))
   ) %>%
   dplyr::filter(in_date & as.numeric(end_year) - as.numeric(start_year) > 1) %>%
-  mutate(sitename= gsub(" ","_",.$sitename)) %>% rename_at(id.x = site_id)
+  mutate(sitename = gsub(" ", "_", sitename)) %>%
+  rename(id.x = site_id)
 
 
 site_id <- site_id_noinput$id.x
-site_name <- gsub(" ","_",site_id_noinput$sitename)
+site_name <- gsub(" ", "_", site_id_noinput$sitename)
 
 #Create permutations of arg combinations
 options(scipen = 999)
@@ -236,10 +239,11 @@ run_table <- expand.grid(
 )
 #Execute function to spit out a table with a column of NA or success
 
-tab <-run_table %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
-  create_execute_test_xml(list(...))
-},otherwise =NA))
-)
+tab <- run_table %>%
+  mutate(outcome = purrr::pmap(., purrr::possibly(function(...) {
+    create_execute_test_xml(list(...))
+  }, otherwise = NA))
+  )
 
 ## print to table
 tux_tab <- huxtable::hux(tab)
