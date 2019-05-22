@@ -1,58 +1,52 @@
-#' read_web_config
+#' Read `config.php` file into an R list 
 #'
-#' @author Michael Dietze and Rob Kooper
-#' @param php.config Path to `config.php`
-#'
-#' @return config.list
+#' @author Alexey Shiklomanov, Michael Dietze, Rob Kooper
+#' @param php.config Path to `config.php` file
+#' @param parse Logical. If `TRUE` (default), try to parse numbers and
+#'   unquote strings.
+#' @param expand Logical. If `TRUE` (default), try to perform some
+#'   variable substitutions. 
+#' @return Named list of variable-value pairs set in `config.php`
 #' @export
-#'
-#'
-read_web_config = function(php.config = "../../web/config.php") {
+#' @examples
+#' # Read Docker configuration and extract the `dbfiles` and output folders.
+#' docker_config <- read_web_config(file.path("..", "..", "docker", "web", "config.docker.php"))
+#' docker_config[["dbfiles_folder"]]
+#' docker_config[["output_folder"]]
+read_web_config <- function(php.config = "../../web/config.php",
+                            parse = TRUE,
+                            expand = TRUE) {
 
-  ## Read PHP config file for webserver
   config <- readLines(php.config)
   config <- config[grep("^\\$", config)]  ## find lines that begin with $ (variables)
 
-  rxp <- paste0("^\\$([[:graph:]]+)[[:space:]]*",
+  rxp <- paste0("^\\$([[:graph:]]+?)[[:space:]]*",
                 "=[[:space:]]*(.*?);?(?:[[:space:]]*//+.*)?$")
-  rxp_matches <- gregexpr(rxp, config, perl = TRUE)
-  results <- Map(extract_matches, config, rxp_matches)
-  list_names <- vapply(results, `[[`, character(1), 1, USE.NAMES = FALSE)
-  list_vals <- vapply(results, `[[`, character(1), 2, USE.NAMES = FALSE)
+  rxp_matches <- regexec(rxp, config, perl = TRUE)
+  results <- regmatches(config, rxp_matches)
+  list_names <- vapply(results, `[[`, character(1), 2, USE.NAMES = FALSE)
+  config_list <- lapply(results, `[[`, 3)
+  names(config_list) <- list_names
 
-  ## replacements
-  config <- gsub("^\\$", "", config)  ## remove leading $
-  config <- gsub(";.*$", "", config)  ## remove ; and everything afterwards
-  config <- sub("false", "FALSE", config, fixed = TRUE)  ##  Boolean capitalization
-  config <- sub("true", "TRUE", config, fixed = TRUE)  ##  Boolean capitalization
-  config <- gsub(pattern = "DIRECTORY_SEPARATOR", replacement = "/", config)
+  # Convert to numeric if possible
+  if (parse) {
+    # Remove surrounding quotes
+    config_list <- lapply(config_list, gsub,
+                          pattern = "\"(.*?)\"", replacement = "\\1")
 
-  ## subsetting
-  config <- config[!grepl("exec", config, fixed = TRUE)]  ## lines 'exec' fail
-  config <- config[!grepl("dirname", config, fixed = TRUE)]  ## lines 'dirname' fail
-  config <- config[!grepl("array", config, fixed = TRUE)]  ## lines 'array' fail
-  ## config <- config[!grepl(":", config, fixed = TRUE)]  ## lines with colons fail
-
-  ##references
-  ref <- grep("$", config, fixed = TRUE)
-  if(length(ref) > 0){
-    refsplit = strsplit(config[ref],split = " . ",fixed=TRUE)[[1]]
-    refsplit = sub(pattern = '\"',replacement = "",x = refsplit)
-    refsplit = sub(pattern = '$',replacement = '\"',refsplit,fixed=TRUE)
-    config[ref] <- paste0(refsplit,collapse = "")  ## lines with variable references fail
+    # Try to convert numbers to numeric
+    config_list <- lapply(
+      config_list,
+      function(x) tryCatch(as.numeric(x), warning = function(e) x)
+    )
   }
 
-  ## convert to list
-  config.list <- eval(parse(text = paste("list(", paste0(config, collapse = ","), ")")))
+  if (expand) {
+    # Replace $output_folder with its value, and concatenate strings
+    config_list <- lapply(config_list, gsub,
+                          pattern = "\\$output_folder *\\. *",
+                          replacement = config_list[["output_folder"]])
+  }
 
-  ## replacements
-  config.list <- lapply(X = config.list,FUN = sub,pattern="output_folder",replacement=config.list$output_folder,fixed=TRUE)
-
-  return(config.list)
-}
-
-extract_matches <- function(string, rxp) {
-  start <- attr(rxp, "capture.start")
-  len <- attr(rxp, "capture.length")
-  Map(function(s, l) substring(string, s, s + l - 1), start, len)
+  config_list
 }
