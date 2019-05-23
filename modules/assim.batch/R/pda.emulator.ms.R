@@ -108,14 +108,14 @@ pda.emulator.ms <- function(multi.settings) {
   # we need some objects that are common to all calibrations
   obj_names <- c("init.list", "rng", "jmp.list", "prior.fn.all", "prior.ind.all", "llik.fn", 
     "settings", "prior.ind.all.ns", "sf", "prior.list", "n.param.orig", "pname", "prior.ind.orig",
-    "hyper.pars")
+    "hyper.pars", "resume.list")
   
   need_obj <- load_pda_history(workdir = multi.settings$outdir,  
                    ensemble.id = multi.settings[[1]]$assim.batch$ensemble.id, 
                    objects = obj_names)
   
   init.list        <- need_obj$init.list
-  rng_ori          <- need_obj$rng
+  rng_orig         <- need_obj$rng
   jmp.list         <- need_obj$jmp.list
   prior.list       <- need_obj$prior.list
   prior.fn.all     <- need_obj$prior.fn.all
@@ -337,6 +337,7 @@ pda.emulator.ms <- function(multi.settings) {
     
     ## proposing starting points from knots
     mu_site_init <- list()
+    jump_init    <- list()
     if(nrow(SS.stack[[1]][[1]]) > nsites*tmp.settings$assim.batch$chain){
       # sample without replacement
       sampind <- sample(seq_len(nrow(SS.stack[[1]][[1]])), nsites*tmp.settings$assim.batch$chain)
@@ -348,6 +349,7 @@ pda.emulator.ms <- function(multi.settings) {
     
     for(i in seq_len(tmp.settings$assim.batch$chain)){
       mu_site_init[[i]] <- SS.stack[[1]][[1]][sampind[((i-1) * nsites + 1):((i-1) * nsites + nsites)], 1:nparam]
+      jump_init[[i]]    <- need_obj$resume.list[[i]]$jump
     }
 
     current.step <- "HIERARCHICAL MCMC PREP"
@@ -358,7 +360,7 @@ pda.emulator.ms <- function(multi.settings) {
     
     
     hier.mcmc <- function(settings, gp.stack, nstack, nmcmc, rng_stdn, rng_orig,
-                          mu0, jmp0, mu_site_init,  nparam, nsites, prior.fn.all, prior.ind.all){
+                          mu0, jmp0, mu_site_init, nparam, nsites, prior.fn.all, prior.ind.all){
 
       pos.check <- sapply(settings$assim.batch$inputs, `[[`, "ss.positive")
       
@@ -390,36 +392,40 @@ pda.emulator.ms <- function(multi.settings) {
       
       ###### (hierarchical) global mu priors
       #
-      #      mu_f    : prior mean vector
-      #      P_f     : prior covariance matrix
-      #      P_f_inv : prior precision matrix
+      #      mu_global_mean      : prior mean vector
+      #      mu_global_sigma     : prior covariance matrix
+      #      mu_global_tau       : prior precision matrix
       #
-      #      mu_global ~ MVN (mu_f, P_f)
-      #
-
-      mu_f    <- rep(0, nparam)
-      P_f     <- diag(1, nparam)
-      P_f_inv <- solve(P_f) 
+      #      mu_global ~ MVN (mu_global_mean, mu_global_tau)
+      
+      ### these are all in the STANDARD NORMAL DOMAIN
+      # we want MVN for mu_global for conjugacy
+      # stdandard normal to avoid singularity (param units may differ on orders of magnitudes)
+      
+      mu_global_mean   <- as.matrix(rep(0, nparam))
+      mu_global_sigma  <- diag(1, nparam)
+      mu_global_tau    <- solve(mu_global_sigma) 
+      
       
       ## initialize mu_global (nparam)
-      mu_global <- mu0
+      mu_global <- as.matrix(unlist(mu0))
       
       ######  (hierarchical) global tau priors
       #
-      #      tau_df    : Wishart degrees of freedom
-      #      tau_V     : Wishart scale matrix
+      #      tau_global_df        : Wishart degrees of freedom
+      #      tau_global_sigma     : Wishart scale matrix
       #
-      #      tau_global ~ W (tau_df, tau_scale)
+      #      tau_global ~ W (tau_global_df, tau_global_sigma)
       #      sigma_global <- solve(tau_global)
       #
       
-      tau_df <- nparam + 1
-      tau_V  <- P_f_inv
-      V_inv  <- solve(tau_V)  # will be used in gibbs updating
+      tau_global_df     <- nparam + 1
+      tau_global_sigma  <- diag(1, nparam)
+      tau_global_tau    <- solve(tau_global_sigma)  # will be used in gibbs updating
       
       # initialize tau_global (nparam x nparam)
-      tau_global   <- rWishart(1, tau_df, tau_V)[,,1]
-      
+      tau_global   <- rWishart(1, tau_global_df, tau_global_sigma)[,,1]
+      sigma_global <- solve(tau_global)
       
       # initialize jcov.arr (jump variances per site)
       jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
@@ -583,10 +589,19 @@ pda.emulator.ms <- function(multi.settings) {
     
     ## Sample posterior from emulator
     mcmc.out <- parallel::parLapply(cl, seq_len(tmp.settings$assim.batch$chain), function(chain) {
-      hier.mcmc(settings = tmp.settings, gp.stack = gp.stack, nstack = NULL, 
-                nmcmc = tmp.settings$assim.batch$iter, rng = rng,
-                mu0 = unlist(init.list[[chain]]), jmp0 = jmp.list[[chain]], 
-                nparam = length(prior.ind.all), nsites = nsites)
+      hier.mcmc(settings      = tmp.settings, 
+                gp.stack      = gp.stack, 
+                nstack        = NULL, 
+                nmcmc         = 150000, 
+                rng_stdn      = rng_stdn, 
+                rng_orig      = rng_orig,
+                mu0           = init.list[[chain]], 
+                jmp0          = jump_init[[chain]], 
+                mu_site_init  = mu_site_init[[chain]],
+                nparam        = length(prior.ind.all), 
+                nsites        = nsites, 
+                prior.fn.all  = prior.fn.all, 
+                prior.ind.all = prior.ind.all)
     })
     
     parallel::stopCluster(cl)
