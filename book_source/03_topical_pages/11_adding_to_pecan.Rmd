@@ -22,7 +22,7 @@
     - Formats
     - (Link each section to relevant Bety tables)
 
-#### Adding An Ecosystem Model {#adding-model}
+## Adding An Ecosystem Model {#adding-model}
 
 **Adding a model to PEcAn involves two activities:**
 
@@ -150,7 +150,7 @@ Once the MODEL modules are written, you should follow the [Using-Git](Using-Git.
 
 
 
-#### Adding input data {#NewInput}
+## Adding input data {#NewInput}
 
 #### Input records in BETY
 
@@ -197,7 +197,7 @@ Three Types of data conversions are discussed below: Meteorological data, Vegeta
 
 Also, see [PEcAn standard formats].
 
-#### Meterological Data
+### Meterological Data
 
 ##### Adding a function to PEcAn to convert a met data source
 
@@ -324,7 +324,7 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
 ```
 
 
-#### Vegetation Data
+### Vegetation Data
 
 Vegetation data will be required to parameterize your model. In these examples we will go over how to produce a standard initial condition file.
 
@@ -480,7 +480,7 @@ pool_ic_list2netcdf(input = input, outdir = outdir, siteid = siteid)
 
 You should now have a netcdf file with initial conditions.
 
-#### Soil Data
+### Soil Data
 
 ###### Example 1: Converting Data in hand 
 
@@ -525,7 +525,7 @@ In addition to location-specific soil data, PEcAn can extract soil texture infor
 
 
 
-#### Pecan Data Ingest via Web Interface {#adding-data-web} 
+## Pecan Data Ingest via Web Interface {#adding-data-web} 
 
 This tutorial explains the process of ingesting data into PEcAn via our Data-Ingest Application. In order to ingest data, the users must first select data that they wish to upload. Then, they enter metadata to help PEcAn parse and load the data into the main PEcAn workflow.
 
@@ -624,7 +624,7 @@ knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studi
 Finally, the path to the ingest data is displayed in the `Select Files` box. 
 
 
-#### Creating a new format {#NewFormat}
+## Creating a new format {#NewFormat}
 ##### Formats in BETY
 
 The PEcAn database keeps track of all the input files passed to models, as well as any data used in model validation or data assimilation. Before we start to register these files with PEcAn we need to define the format these files will be in.
