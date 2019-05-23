@@ -9,10 +9,12 @@
 #' @return Named list of variable-value pairs set in `config.php`
 #' @export
 #' @examples
-#' # Read Docker configuration and extract the `dbfiles` and output folders.
-#' docker_config <- read_web_config(file.path("..", "..", "docker", "web", "config.docker.php"))
+#' # Read Docker configuration and extract the `dbfiles` and output folders
+#' \dontrun{
+#' docker_config <- read_web_config("/home/carya/web/config.php")
 #' docker_config[["dbfiles_folder"]]
 #' docker_config[["output_folder"]]
+#' }
 read_web_config <- function(php.config = "../../web/config.php",
                             parse = TRUE,
                             expand = TRUE) {

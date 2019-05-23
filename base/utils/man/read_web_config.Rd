@@ -14,7 +14,7 @@ read_web_config(php.config = "../../web/config.php", parse = TRUE,
 unquote strings.}
 
 \item{expand}{Logical. If \code{TRUE} (default), try to perform some
-variable substitutions.}
+variable substitutions (only done if parse = TRUE).}
 }
 \value{
 Named list of variable-value pairs set in \code{config.php}
@@ -23,10 +23,12 @@ Named list of variable-value pairs set in \code{config.php}
 Read \code{config.php} file into an R list
 }
 \examples{
-# Read Docker configuration and extract the `dbfiles` and output folders.
-docker_config <- read_web_config(file.path("..", "..", "docker", "web", "config.docker.php"))
+# Read Docker configuration and extract the `dbfiles` and output folders
+\dontrun{
+docker_config <- read_web_config("/home/carya/web/config.php")
 docker_config[["dbfiles_folder"]]
 docker_config[["output_folder"]]
+}
 }
 \author{
 Alexey Shiklomanov, Michael Dietze, Rob Kooper
