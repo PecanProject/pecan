@@ -115,7 +115,7 @@ pda.emulator.ms <- function(multi.settings) {
                    objects = obj_names)
   
   init.list        <- need_obj$init.list
-  rng              <- need_obj$rng
+  rng_ori          <- need_obj$rng
   jmp.list         <- need_obj$jmp.list
   prior.list       <- need_obj$prior.list
   prior.fn.all     <- need_obj$prior.fn.all
@@ -326,7 +326,7 @@ pda.emulator.ms <- function(multi.settings) {
       ## Instead I now use original emulators, but switch back and forth between domains
       
       ## range limits on standard normal domain
-      rng_stdnorm <- norm_transform$rng[,,1] #all same, maybe return just one from norm_transform_priors
+      rng_stdn <- norm_transform$rng[,,1] #all same, maybe return just one from norm_transform_priors
       
       ## get new init.list and jmp.list
       init.list <- norm_transform$init
@@ -335,6 +335,21 @@ pda.emulator.ms <- function(multi.settings) {
       
     }
     
+    ## proposing starting points from knots
+    mu_site_init <- list()
+    if(nrow(SS.stack[[1]][[1]]) > nsites*tmp.settings$assim.batch$chain){
+      # sample without replacement
+      sampind <- sample(seq_len(nrow(SS.stack[[1]][[1]])), nsites*tmp.settings$assim.batch$chain)
+    }else{
+      # this would hardly happen, usually we have a lot more knots than nsites*tmp.settings$assim.batch$chain
+      # but to make this less error-prone sample with replacement if we have fewer, combinations should still be different enough
+      sampind <- sample(seq_len(nrow(SS.stack[[1]][[1]])), nsites*tmp.settings$assim.batch$chain, replace = TRUE)
+    }
+    
+    for(i in seq_len(tmp.settings$assim.batch$chain)){
+      mu_site_init[[i]] <- SS.stack[[1]][[1]][sampind[((i-1) * nsites + 1):((i-1) * nsites + nsites)], 1:nparam]
+    }
+
     current.step <- "HIERARCHICAL MCMC PREP"
     save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
@@ -342,8 +357,8 @@ pda.emulator.ms <- function(multi.settings) {
     ########### hierarchical MCMC function with Gibbs ##############
     
     
-    hier.mcmc <- function(settings, gp.stack, nstack, nmcmc, rng, 
-                          mu0, jmp0, nparam, nsites){
+    hier.mcmc <- function(settings, gp.stack, nstack, nmcmc, rng_stdn, rng_orig,
+                          mu0, jmp0, mu_site_init,  nparam, nsites, prior.fn.all, prior.ind.all){
 
       pos.check <- sapply(settings$assim.batch$inputs, `[[`, "ss.positive")
       
@@ -382,16 +397,12 @@ pda.emulator.ms <- function(multi.settings) {
       #      mu_global ~ MVN (mu_f, P_f)
       #
 
-      mu_f    <- unlist(mu0)
+      mu_f    <- rep(0, nparam)
       P_f     <- diag(1, nparam)
       P_f_inv <- solve(P_f) 
       
-      # # initialize mu_global (nparam)
-      repeat{
-        mu_global <- mvtnorm::rmvnorm(1, mu_f, P_f)
-        check.that <- (mu_global > apply(rng,1:2,max)[, 1] & mu_global < apply(rng,1:2,min)[, 2])
-        if(all(check.that)) break
-      }
+      ## initialize mu_global (nparam)
+      mu_global <- mu0
       
       ######  (hierarchical) global tau priors
       #
@@ -403,7 +414,7 @@ pda.emulator.ms <- function(multi.settings) {
       #
       
       tau_df <- nparam + 1
-      tau_V  <- diag(1, nparam)
+      tau_V  <- P_f_inv
       V_inv  <- solve(tau_V)  # will be used in gibbs updating
       
       # initialize tau_global (nparam x nparam)
@@ -412,12 +423,18 @@ pda.emulator.ms <- function(multi.settings) {
       
       # initialize jcov.arr (jump variances per site)
       jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
-      for(j in seq_len(nsites)) jcov.arr[,,j] <- diag(jmp0)
-      
+      for(j in seq_len(nsites)) jcov.arr[,,j] <- diag(jmp0) 
       
       # initialize mu_site (nsite x nparam)
       mu_site_curr <- matrix(NA_real_, nrow = nsites, ncol= nparam)
       mu_site_new  <- matrix(NA_real_, nrow = nsites, ncol= nparam)
+      
+      mu_global_temp <- sapply(seq_len(nsites), function(x){
+        norm.quantiles   <- pnorm(mu_global)
+        orig.vals <- eval(prior.fn.all$qprior[[prior.ind.all[x]]], list(p = norm.quantiles[,x]))
+        return(orig.vals)
+      })
+      
       for(ns in 1:nsites){
         repeat{
           mu_site_curr[ns,] <- mvtnorm::rmvnorm(1, mu_global, jcov.arr[,,ns]) # site mean
@@ -568,7 +585,7 @@ pda.emulator.ms <- function(multi.settings) {
     mcmc.out <- parallel::parLapply(cl, seq_len(tmp.settings$assim.batch$chain), function(chain) {
       hier.mcmc(settings = tmp.settings, gp.stack = gp.stack, nstack = NULL, 
                 nmcmc = tmp.settings$assim.batch$iter, rng = rng,
-                mu0 = init.list[[chain]], jmp0 = jmp.list[[chain]], 
+                mu0 = unlist(init.list[[chain]]), jmp0 = jmp.list[[chain]], 
                 nparam = length(prior.ind.all), nsites = nsites)
     })
     
