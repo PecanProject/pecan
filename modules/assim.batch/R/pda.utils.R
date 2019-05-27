@@ -1127,6 +1127,13 @@ return_multi_site_objects <- function(multi.settings){
 ##' @export
 prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   
+  # Check the dimensions of the proposed knots and the number of knots requested
+  # mistakes can happen when the user changes the settings$assim.batch$n.knot only for the first site in the xml
+  if(settings$assim.batch$n.knot != nrow(multi_site_objects$externalknots[[1]])){
+    PEcAn.logger::logger.warn("The number of knots requested and proposed number of knots do not match. Changing settings$assim.batch$n.knot from ", settings$assim.batch$n.knot, "to", nrow(multi_site_objects$externalknots[[1]]))
+    settings$assim.batch$n.knot <- nrow(multi_site_objects$externalknots[[1]])
+  }
+  
   # not everyone might be working with workflowid
   # remote_dir <- paste0(settings$host$folder, "/" , settings$workflow$id)
   # instead find this directory from remote rundir so that it's consistent
