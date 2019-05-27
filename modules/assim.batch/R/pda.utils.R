@@ -66,6 +66,14 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
   # An explicit argument overrides whatever is in settings, if anything.
   # If neither an argument or a setting is provided, set a default value in settings. 
   
+  # When there are more than 1 PFT, make sure they are in the same order in PDA tags to avoid index problems 
+  if(length(settings$assim.batch$param.names) > 1){
+    # here I assume if a PFT is listed under the PFT tag, we want to constrain at least one of its parameters
+    non_match <- which(names(settings$assim.batch$param.names) != sapply(settings$pfts,`[[`, "name"))
+    if(length(non_match) > 0){
+      PEcAn.logger::logger.severe("Please make sure the ORDER of the PFT name tags match under <assim.batch> and <pft> sections in your pecan.xml and try again.")
+    }
+  }
   # Each assignment below includes an explicit type conversion to avoid problems later. 
   
   # params.id: Either null or an ID used to query for a matrix of MCMC samples later
