@@ -1,6 +1,5 @@
 context("Checking PFT lookup")
 
-source("db.setup.R")
 con <- check_db_test()
 
 teardown(

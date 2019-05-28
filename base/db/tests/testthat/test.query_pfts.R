@@ -1,7 +1,5 @@
 context("Query PFTs")
 
-source("db.setup.R")
-
 dbcon <- check_db_test()
 
 test_that("Querying PFT IDs works", {

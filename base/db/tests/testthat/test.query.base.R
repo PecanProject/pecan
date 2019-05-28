@@ -6,8 +6,6 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-source('db.setup.R')
-
 context("test db.query")
 
 test_that("db.query can execute a trivial SQL statement and return results",{  

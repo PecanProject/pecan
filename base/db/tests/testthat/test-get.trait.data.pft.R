@@ -1,7 +1,5 @@
 context("get.trait.data.pft")
 
-source("db.setup.R")
-
 con <- check_db_test()
 
 dbdir <- file.path(tempdir(), "dbfiles")

@@ -1,7 +1,5 @@
 context("query.traits")
 
-source("db.setup.R")
-
 con <- check_db_test()
 
 teardown({
