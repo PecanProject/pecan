@@ -8,7 +8,6 @@
 #' @author Alexey Shiklomanov, Chris Black
 #' @export
 query_pfts <- function(dbcon, pft_names, modeltype = NULL, strict = FALSE) {
-  pft_names <- pft_names # Force evaluation here to avoid dbplyr issues
   pftres <- (dplyr::tbl(dbcon, "pfts")
     %>% dplyr::filter(name %in% pft_names))
   if (!is.null(modeltype)) {
@@ -29,9 +28,10 @@ query_pfts <- function(dbcon, pft_names, modeltype = NULL, strict = FALSE) {
       paste0("'", missing_pfts, "'", collapse = ", ")
     )
     if (strict) {
-      PEcAn.logger::logger.severe("Strict matching requested, but failed with message:\n",
-                                  msg,
-                                  wrap = FALSE)
+      PEcAn.logger::logger.severe(
+        "Strict matching requested, but failed with message:\n",
+        msg, wrap = FALSE
+      )
     } else {
       PEcAn.logger::logger.warn(msg, wrap = FALSE)
     }
