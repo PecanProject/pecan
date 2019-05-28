@@ -16,22 +16,22 @@ write_params_ctsm <-
            settings,
            run.id) {
     ## COPY AND OPEN DEFAULT PARAMETER FILES
-    # TODO: update this to read param files (CLM and FATES) out of the refcase directory, not the PEcAn package
-    # TODO: update to allow it to pick between CLM4.5 and CLM5 parameter set based on refcase, user selection
+    # TODO: update this to read param files (CTSM and FATES) out of the refcase directory, not the PEcAn package
+    # TODO: update to allow it to pick between CLM4.5 and CLM5 (CLM5 == CTSM) parameter set based on refcase, user selection
     ## See issue https://github.com/PecanProject/pecan/issues/1008
     # CLM5
-    clm.param.default <-
+    ctsm.param.default <-
       system.file('clm5_params.c171117_0001.nc', package = 'PEcAn.CTSM')
     # when we implement ability to use specific refcase, do some ifelse and allow the follow option:
-    # clm.param.default <- file.path(refcase,"clm5_params.c171117.nc") # probably need to allow custom param file names here (pecan.xml?)
+    # ctsm.param.default <- file.path(refcase,"clm5_params.c171117.nc") # probably need to allow custom param file names here (pecan.xml?)
     if (!exists('local.rundir'))
       local.rundir <- tempdir()
     if (!exists('run.id'))
       run.id <- 1
-    clm.param.file <-
-      file.path(local.rundir, paste0("clm_params.", run.id, ".nc"))
-    file.copy(clm.param.default, clm.param.file)
-    clm.param.nc <- ncdf4::nc_open(clm.param.file, write = TRUE)
+    ctsm.param.file <-
+      file.path(local.rundir, paste0("ctsm_params.", run.id, ".nc"))
+    file.copy(ctsm.param.default, ctsm.param.file)
+    ctsm.param.nc <- ncdf4::nc_open(ctsm.param.file, write = TRUE)
     
     ## Loop over PFTS
     # for testing
@@ -42,7 +42,7 @@ write_params_ctsm <-
                                'PFTs in this run, they are named:',
                                names(trait.values))
     ctsm_pftnames <-
-      stringr::str_trim(tolower(ncdf4::ncvar_get(clm.param.nc, "pftname")))
+      stringr::str_trim(tolower(ncdf4::ncvar_get(ctsm.param.nc, "pftname")))
     for (i in seq_len(npft)) {
       pft <- trait.values[[i]]
       pft.name <- names(trait.values)[i]
@@ -52,7 +52,7 @@ write_params_ctsm <-
         PEcAn.logger::logger.info(paste("PFT =", pft.name))
         ## need to find a better way to match PEcAn pft names w/ CTSM pft names
         ## probably using the clm5_pfts.csv file
-        PEcAn.logger::logger.debug(paste0("fates-clm PFT number: ", which(ctsm_pftnames == pft.name)))
+        PEcAn.logger::logger.debug(paste0("fates-ctsm PFT number: ", which(ctsm_pftnames == pft.name)))
       }
       if (pft.name == 'env')
         next   ## HACK, need to remove env from default
@@ -76,7 +76,7 @@ write_params_ctsm <-
       
       # determine photo pathway
       photo_flag <-
-        ncdf4::ncvar_get(clm.param.nc,
+        ncdf4::ncvar_get(ctsm.param.nc,
                          varid = "c3psn",
                          start = ipft,
                          count = 1)
@@ -492,7 +492,7 @@ write_params_ctsm <-
           )
         }
         if (var == "roota_par") {
-          # CLM rooting distribution parameter [1/m]
+          # CTSM rooting distribution parameter [1/m]
           ncdf4::ncvar_put(
             nc = fates.param.nc,
             varid = 'roota_par',
@@ -502,7 +502,7 @@ write_params_ctsm <-
           )
         }
         if (var == "rootb_par") {
-          # CLM rooting distribution parameter [1/m]
+          # CTSM rooting distribution parameter [1/m]
           ncdf4::ncvar_put(
             nc = fates.param.nc,
             varid = 'rootb_par',
@@ -946,9 +946,9 @@ write_params_ctsm <-
         
         ## ALLPFT indexed (size = 1)
         if (var == "veg_respiration_Q10") {
-          ## Q10 for maintenance respiration. CLM param. q10_mr(allpfts)
+          ## Q10 for maintenance respiration. CTSM param. q10_mr(allpfts)
           ncdf4::ncvar_put(
-            nc = clm.param.nc,
+            nc = ctsm.param.nc,
             varid = 'q10_mr',
             start = 1,
             count = 1,
@@ -976,9 +976,9 @@ write_params_ctsm <-
           )
         }
         if (var == "c2n_som1") {
-          ## C:N for SOM pool 1. CLM param
+          ## C:N for SOM pool 1. CTSM param
           ncdf4::ncvar_put(
-            nc = clm.param.nc,
+            nc = ctsm.param.nc,
             varid = 'cn_s1_bgc',
             start = 1,
             count = 1,
@@ -986,9 +986,9 @@ write_params_ctsm <-
           )
         }
         if (var == "c2n_som2") {
-          ## C:N for SOM pool 2. CLM param
+          ## C:N for SOM pool 2. CTSM param
           ncdf4::ncvar_put(
-            nc = clm.param.nc,
+            nc = ctsm.param.nc,
             varid = 'cn_s2_bgc',
             start = 1,
             count = 1,
@@ -996,9 +996,9 @@ write_params_ctsm <-
           )
         }
         if (var == "c2n_som3") {
-          ## C:N for SOM pool 3. CLM param
+          ## C:N for SOM pool 3. CTSM param
           ncdf4::ncvar_put(
-            nc = clm.param.nc,
+            nc = ctsm.param.nc,
             varid = 'cn_s3_bgc',
             start = 1,
             count = 1,
@@ -1006,9 +1006,9 @@ write_params_ctsm <-
           )
         }
         if (var == "cnscalefactor") {
-          ## Scale factor on CN decomposition for assigning methane flux . CLM param
+          ## Scale factor on CN decomposition for assigning methane flux . CTSM param
           ncdf4::ncvar_put(
-            nc = clm.param.nc,
+            nc = ctsm.param.nc,
             varid = 'cnscalefactor',
             start = 1,
             count = 1,
@@ -1017,9 +1017,9 @@ write_params_ctsm <-
         }
         if (var == "decomp_depth_efolding") {
           ## e-folding depth for reduction in decomposition.
-          ## Set to large number for depth-independance. CLM param
+          ## Set to large number for depth-independance. CTSM param
           ncdf4::ncvar_put(
-            nc = clm.param.nc,
+            nc = ctsm.param.nc,
             varid = 'decomp_depth_efolding',
             start = 1,
             count = 1,
@@ -1027,9 +1027,9 @@ write_params_ctsm <-
           )
         }
         if (var == "CWD_fragmentation_rate") {
-          ## Fragmentation rate for CWD. units = "1/day", CLM param
+          ## Fragmentation rate for CWD. units = "1/day", CTSM param
           ncvar_put(
-            nc = clm.param.nc,
+            nc = ctsm.param.nc,
             varid = 'k_frag',
             start = 1,
             count = 1,
@@ -1270,7 +1270,7 @@ write_params_ctsm <-
       } ## end loop over VARIABLES
     } ## end loop over PFTs
     #ncdf4::nc_close(param.nc)
-    ncdf4::nc_close(clm.param.nc)
+    ncdf4::nc_close(ctsm.param.nc)
     
     
   }
