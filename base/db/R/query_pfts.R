@@ -29,8 +29,8 @@ query_pfts <- function(dbcon, pft_names, modeltype = NULL, strict = FALSE) {
       paste0("'", missing_pfts, "'", collapse = ", ")
     )
     if (strict) {
-      PEcAn.logger::logger.severe(msg, "\n",
-                                  "Throwing error because `strict` is `TRUE`.",
+      PEcAn.logger::logger.severe("Strict matching requested, but failed with message:\n",
+                                  msg,
                                   wrap = FALSE)
     } else {
       PEcAn.logger::logger.warn(msg, wrap = FALSE)
