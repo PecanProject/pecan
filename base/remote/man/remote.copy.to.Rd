@@ -4,7 +4,8 @@
 \alias{remote.copy.to}
 \title{Copy file/dir to remote server from local server}
 \usage{
-remote.copy.to(host, src, dst, delete = FALSE, stderr = FALSE)
+remote.copy.to(host, src, dst, options = NULL, delete = FALSE,
+  stderr = FALSE)
 }
 \arguments{
 \item{host}{host structure to execute command on}
@@ -12,6 +13,8 @@ remote.copy.to(host, src, dst, delete = FALSE, stderr = FALSE)
 \item{src}{local file/dir to copy}
 
 \item{dst}{remote file/dir to copy to}
+
+\item{options}{additional arguments to be passed to rsync command}
 
 \item{delete}{in case of local dir should all non-existent files be removed}
 
