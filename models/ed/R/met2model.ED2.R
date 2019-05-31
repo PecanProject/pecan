@@ -53,9 +53,11 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   dl <- c(0, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367)
   month <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
   mon_num <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
+
+
   day2mo <- function(year, day, leap_year) {
-    mo        <- rep(NA, length(day))
-    if ( !leap_year) {
+    mo <- rep(NA, length(day))
+    if (!leap_year) {
       mo <- findInterval(day, dm)
       return(mo)
     } else {
@@ -69,20 +71,58 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   # get start/end year since inputs are specified on year basis
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
+  year_seq <- seq(start_year, end_year)
   day_secs <- udunits2::ud.convert(1, "day", "seconds")
 
-  ## loop over files
-  for (year in start_year:end_year) {
-    ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
-    if (!file.exists(ncfile)) {
-      PEcAn.logger::logger.severe(
-        "Input file ", ncfile, "(year ", year, ") ", "not found."
-      )
-    }
+  # Check that we have all the input files we need
+  need_input_files <- file.path(in.path, paste(in.prefix, year_seq, "nc", sep = "."))
+  have_input_files <- file.exists(need_input_files)
+  if (!all(have_input_files)) {
+    PEcAn.logger::logger.severe(
+      "Missing the following required input files: ",
+      paste(sprintf("'%s'", need_input_files[!have_input_files]), collapse = ", ")
+    )
+  }
 
-    ## extract file root name froot <- substr(files[i],1,28) print(c(i,froot))
+  # Check which years need to be processed
+  # Need `floor_date` here to make sure we include all months
+  # (otherwise, `seq.Date(..., by = "month")` might accidentally skip shorter months)
+  month_seq <- seq(
+    lubridate::floor_date(start_date, "month"),
+    lubridate::floor_date(end_date, "month"),
+    by = "1 month"
+  )
+  target_fnames <- paste0(toupper(strftime(month_seq, "%Y%b", tz = "UTC")), ".h5")
+  target_out_files <- file.path(met_folder, target_fnames)
+  have_target_out_files <- file.exists(target_out_files)
+  if (any(have_target_out_files)) {
+    if (overwrite) {
+      PEcAn.logger::logger.warn(
+        "The following existing target output files will be overwritten:",
+        paste(sprintf("'%s'", target_out_files[have_target_out_files]), collapse = ", ")
+      )
+    } else {
+      have_output_byyear <- split(have_target_out_files, lubridate::year(month_seq))
+      complete_years <- vapply(have_output_byyear, all, logical(1))
+      skip_years <- tryCatch(
+        as.numeric(names(complete_years[complete_years])),
+        warning = function(e) PEcAn.logger::logger.severe(e)
+      )
+      PEcAn.logger::logger.warn(
+        "The following output files already exist:",
+        paste(target_out_files[have_target_out_files]),
+        ". This means the following complete years will be skipped: ",
+        skip_years
+      )
+      year_seq <- setdiff(year_seq, skip_years)
+    }
+  }
+
+  ## loop over files
+  for (year in year_seq) {
 
     ## open netcdf
+    ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
     nc <- ncdf4::nc_open(ncfile)
 
     # check lat/lon
