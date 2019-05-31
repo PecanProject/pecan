@@ -35,7 +35,7 @@ sda.enkf.multisite <- function(settings,
                                             pause=F,
                                             Profiling=F),
                                ...) {
-  plan(multicore)
+  plan(multiprocess)
   if (control$debug) browser()
   tic("Prepration")
   ###-------------------------------------------------------------------###
@@ -185,7 +185,9 @@ sda.enkf.multisite <- function(settings,
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
   conf.settings<-conf.settings %>%
+    `class<-`(c("list")) %>%
     furrr::future_map(function(settings) {
+      library(paste0("PEcAn.",model), character.only = TRUE)
       inputs.split <- list()
       if (!no_split) {
         for (i in length(settings$run$inputs$met$path)) {
@@ -268,8 +270,11 @@ sda.enkf.multisite <- function(settings,
         
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
         inputs.split <- conf.settings %>%
+          `class<-`(c("list")) %>%
           purrr::map2(inputs, function(settings, inputs) {
-      
+            # Loading the model package - this is required bc of the furrr
+            library(paste0("PEcAn.",model), character.only = TRUE)
+            
             inputs.split <- list()
             if (!no_split) {
               for (i in seq_len(nens)) {
@@ -291,7 +296,7 @@ sda.enkf.multisite <- function(settings,
         ##browser()
         #---------------- setting up the restart argument for each site separatly and keeping them in a list
         restart.list <-
-          furrr::future_pmap(list(out.configs, conf.settings, params.list, inputs.split),
+          furrr::future_pmap(list(out.configs, conf.settings %>% `class<-`(c("list")), params.list, inputs.split),
                              function(configs, settings, new.params, inputs) {
                                list(
                                  runid = configs$runs$id,
@@ -314,8 +319,10 @@ sda.enkf.multisite <- function(settings,
       #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
       if (control$debug) browser()
       out.configs <- conf.settings %>%
-        future_map2(restart.list, function(settings, restart.arg) {
-          
+        `class<-`(c("list")) %>%
+        furrr::future_map2(restart.list, function(settings, restart.arg) {
+          # Loading the model package - this is required bc of the furrr
+          library(paste0("PEcAn.",model), character.only = TRUE)
           # wrtting configs for each settings - this does not make a difference with the old code
           write.ensemble.configs(
             defaults = settings$pfts,
@@ -376,9 +383,13 @@ sda.enkf.multisite <- function(settings,
       }
       #------------- Reading - every iteration and for SDA
       reads <- out.configs %>%
+        `class<-`(c("list")) %>%
         furrr::future_map(function(configs) {
-          X_tmp <- vector("list", 2)
+          # Loading the model package - this is required bc of the furrr
+          library(paste0("PEcAn.",model), character.only = TRUE)
           
+          X_tmp <- vector("list", 2)
+
           for (i in seq_len(nens)) {
             X_tmp[[i]] <- do.call( my.read_restart,
                                    args = list(
