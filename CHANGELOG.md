@@ -46,6 +46,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Fixed
 - Replace deprecated `rlang::UQ` syntax with the recommended `!!`
 - Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+- `PEcAn.ED2::met2model.ED2` now skips processing of years for which all output files are already present (unless `overwrite = TRUE`). This prevents a lot of unnecessary work when extending an existing ED met record.
 
 ## [1.7.0] - 2018-12-09
 
