@@ -38,14 +38,15 @@ if (is.na(args[3])){
 # Copying over the luncher and sending the command
 #---------------------------------------------------------------
 # Let's see if the PID is still running
-is.active <-remote.execute.cmd(my_host, cmd = "ps", args = c("-o","pid=","-p",PID))
+
+is.active <-qsub_run_finished(run = PID, host = my_host, qstat = settings$host$qstat)
 is.active<-ifelse (nchar(is.active)>1, TRUE, FALSE)
 
 #----------------------------------------------------------------
 # looping 
 #---------------------------------------------------------------
 while(is.active){
-  is.active <-remote.execute.cmd(my_host, cmd = "ps", args = c("-o","pid=","-p",PID))
+  is.active <-qsub_run_finished(run = PID, host = my_host, qstat = settings$host$qstat)
   is.active<-ifelse (nchar(is.active)>1, TRUE, FALSE)
   
   remote.copy.from(my_host,

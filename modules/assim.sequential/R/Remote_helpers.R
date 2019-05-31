@@ -352,8 +352,9 @@ SDA_remote_launcher <-function(settingPath,
                                      job_script = "RunBash.sh"
                                    )
 
-   # Let's see what is the job id of the job doing the nohup
-
+   # Let's see what is the job id of the job doing
+   out.job.id<-qsub_get_jobid(out = out.job.id[length(out.job.id)], qsub.jobid = settings$host$qsub.jobid, stop.on.error = stop.on.error)
+   
    if (length(out.job.id)==0 | is.null(out.job.id)){
      PEcAn.logger::logger.severe("Something broke the run before it starts!")
      PEcAn.logger::logger.severe(paste0("In order to get a better sense of what happened you can check out ",settings$outdir,"/log.qlog"))
