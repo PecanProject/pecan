@@ -251,7 +251,7 @@ sda.enkf.multisite <- function(settings,
   for(t in sim.time){
 
     # if it beaks at least save the trace
-   # tryCatch({
+   tryCatch({
       
       tic(paste0("Writing configs for cycle = ", t))
       # do we have obs for this time - what year is it ?
@@ -589,23 +589,23 @@ sda.enkf.multisite <- function(settings,
       
       #writing down the image - either you asked for it or nor :)
       
-      if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+      if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
       
-    # },error = function(e) {
-    #   # If it breaks at some steps then I lose all the info on the other variables that worked fine up to the step before the break
-    #   save(site.locs,
-    #        t,
-    #        FORECAST,
-    #        ANALYSIS,
-    #        enkf.params,
-    #        new.state, new.params, params.list,
-    #        out.configs, ensemble.samples, inputs, Viz.output,
-    #        file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    #   
-    #   PEcAn.logger::logger.severe(paste0("Something just broke along the way. See if the message is helpful ", e))
-    # })
+    },error = function(e) {
+      # If it breaks at some steps then I lose all the info on the other variables that worked fine up to the step before the break
+      save(site.locs,
+           t,
+           FORECAST,
+           ANALYSIS,
+           enkf.params,
+           new.state, new.params, params.list,
+           out.configs, ensemble.samples, inputs, Viz.output,
+           file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+
+      PEcAn.logger::logger.severe(paste0("Something just broke along the way. See if the message is helpful ", e))
+    })
     
     
     
