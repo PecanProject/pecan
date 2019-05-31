@@ -128,6 +128,7 @@ pda.emulator.ms <- function(multi.settings) {
   prior.ind.orig   <- need_obj$prior.ind.orig
   pname            <- need_obj$pname
   hyper.pars       <- need_obj$hyper.pars
+  nparam           <- length(prior.ind.all)
   
   resume.list <- vector("list", multi.settings[[1]]$assim.batch$chain)
   
@@ -200,7 +201,7 @@ pda.emulator.ms <- function(multi.settings) {
       mcmc.GP(gp          = gp, ## Emulator(s)
               x0          = init.list[[chain]],     ## Initial conditions
               nmcmc       = as.numeric(multi.settings[[1]]$assim.batch$iter),  ## Number of iters
-              rng         = rng,       ## range
+              rng         = rng_orig,       ## range
               format      = "lin",      ## "lin"ear vs "log" of LogLikelihood 
               mix         = "joint",     ## Jump "each" dimension independently or update them "joint"ly
               jmp0        = jmp.list[[chain]],  ## Initial jump size
@@ -419,7 +420,7 @@ pda.emulator.ms <- function(multi.settings) {
       #      sigma_global <- solve(tau_global)
       #
       
-      tau_global_df     <- nparam + 1
+      tau_global_df     <- nparam # the least informative choice
       tau_global_sigma  <- diag(1, nparam)
       tau_global_tau    <- solve(tau_global_sigma)  # will be used in gibbs updating
       
@@ -428,26 +429,14 @@ pda.emulator.ms <- function(multi.settings) {
       sigma_global <- solve(tau_global)
       
       # initialize jcov.arr (jump variances per site)
-      jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
-      for(j in seq_len(nsites)) jcov.arr[,,j] <- diag(jmp0) 
+      #jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
+      #for(j in seq_len(nsites)) jcov.arr[,,j] <- jmp0
       
-      # initialize mu_site (nsite x nparam)
-      mu_site_curr <- matrix(NA_real_, nrow = nsites, ncol= nparam)
+      # prepare mu_site (nsite x nparam)
       mu_site_new  <- matrix(NA_real_, nrow = nsites, ncol= nparam)
+      mu_site_new_stdn  <- matrix(NA_real_, nrow = nsites, ncol= nparam)
       
-      mu_global_temp <- sapply(seq_len(nsites), function(x){
-        norm.quantiles   <- pnorm(mu_global)
-        orig.vals <- eval(prior.fn.all$qprior[[prior.ind.all[x]]], list(p = norm.quantiles[,x]))
-        return(orig.vals)
-      })
-      
-      for(ns in 1:nsites){
-        repeat{
-          mu_site_curr[ns,] <- mvtnorm::rmvnorm(1, mu_global, jcov.arr[,,ns]) # site mean
-          check.that <- (mu_site_curr[ns,] > rng[, 1, ns] & mu_site_curr[ns,] < rng[, 2, ns])
-          if(all(check.that)) break
-        }
-      }
+      mu_site_curr <- mu_site_init
       
       # values for each site will be accepted/rejected in themselves
       currSS    <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
@@ -456,96 +445,121 @@ pda.emulator.ms <- function(multi.settings) {
       currllp   <- lapply(seq_len(nsites), function(v) PEcAn.assim.batch::pda.calc.llik.par(settings, nstack[[v]], currSS[,v]))
       
       # storage
-      mu_site_samp <-  array(NA_real_, c(nmcmc, nparam, nsites))
-      # tau_site_samp <- array(NA_real_, c(nmcmc, nsites, nsites))
+      mu_site_samp    <-  array(NA_real_, c(nmcmc, nparam, nsites))
+      mu_site_samp_stdn <-  array(NA_real_, c(nmcmc, nparam, nsites)) # for exploring
       mu_global_samp  <-  matrix(NA_real_, nrow = nmcmc, ncol= nparam)
       tau_global_samp <-  array(NA_real_, c(nmcmc, nparam, nparam))
       
       musite.accept.count    <- rep(0, nsites)
+      
 
       ########################## Start MCMC ########################
       
-      for(g in seq_len(nmcmc)){
-        
-        # jump adaptation step
-        if ((g > 2) && ((g - 1) %% settings$assim.batch$jump$adapt == 0)) {
-          
-          # update site level jvars
-          params.recent <- mu_site_samp[(g - settings$assim.batch$jump$adapt):(g - 1), , ]
-          #colnames(params.recent) <- names(x0)
-          jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], musite.accept.count[v], params.recent[,,v]))
-          jcov.arr  <- abind::abind(jcov.list, along=3)
-          musite.accept.count <- rep(0, nsites)  # Reset counter
-
-        }
-        
+      for(g in 10001:50000){
         
         
         ########################################
-        # update tau_global | mu_global, mu_site
+        # gibbs update tau_global | mu_global, mu_site
         #
         # W(tau_global | mu_global, mu_site) ~ MVN( mu_site | mu_global, tau_global) * W(tau_global | tau_df, tau_V)
         # 
-        # tau_global   : error precision matrix
+        #
+        # using MVN-Wishart conjugacy
+        # prior hyperparameters:     tau_global_df, tau_global_sigma
+        # posterior hyperparameters: tau_global_df_gibbs, tau_global_sigma_gibbs
+        #
+        # update:
+        # tau_global ~ W(tau_global_df_gibbs, tau_global_sigma_gibbs)
+        
+        tau_global_df_gibbs <- tau_global_df + nsites
+        
+        # transform from original domain to standard normal
+        mu_site_curr_stdn <- sapply(seq_len(nparam), function(x){
+          orig.quantiles <- eval(prior.fn.all$pprior[[prior.ind.all[x]]], list(q = mu_site_curr[,x]))
+          norm.vals   <- qnorm(orig.quantiles)
+          return(norm.vals)
+        })
         
         # sum of pairwise deviation products
-        pairwise_deviation <- apply(mu_site_curr, 1, function(r) r - mu_global)
+        pairwise_deviation <- apply(mu_site_curr_stdn, 1, function(r) r - t(mu_global))
         sum_term <- pairwise_deviation %*% t(pairwise_deviation)
         
-        tau_sigma <- solve(V_inv + sum_term)
+        tau_global_sigma_gibbs <- solve(tau_global_tau + sum_term)
         
         # update tau
-        tau_global <- rWishart(1, df = tau_df + nsites, Sigma = tau_sigma)[,,1] # site precision
-        sigma_global <- solve(tau_global) # site covariance, new prior sigma to be used below for prior prob. calc.
-         
-
+        tau_global <- rWishart(1, df = tau_global_df_gibbs, Sigma = tau_global_sigma_gibbs)[,,1] # across-site precision
+        sigma_global <- solve(tau_global) # across-site covariance, to be used below
+        
         
         ########################################
         # update mu_global | mu_site, tau_global
+        #
+        # MVN(mu_global | mu_site, tau_global) ~ MVN( mu_site | mu_global, tau_global) * W(tau_global | tau_df, tau_V)
         #
         # mu_global ~ MVN(global_mu, global_Sigma)
         #
         # mu_global     : global parameters
         # global_mu     : precision weighted average between the data (mu_site) and prior mean (mu_f)
-        # global_Sigma  : sum of mu_site and mu_f precision
+        # global_Sigma  : sum of mu_site and mu_f precision      
         #
-        # MVN(mu_global | mu_site, tau_global) ~ MVN( mu_site | mu_global, tau_global) * W(tau_global | tau_df, tau_V)
+        # Dietze, 2017, Eqn 13.6
+        # mu_global ~ MVN(solve((nsites * sigma_global) + P_f_inv)) * ((nsites * sigma_global) + P_f_inv * mu_f),  
+        #                 solve((nsites * sigma_global) + P_f_inv))
         
+        # prior hyperparameters      : mu_global_mean, mu_global_sigma
+        # posterior hyperparameters  : mu_global_mean_gibbs, mu_global_sigma_gibbs
+        #
+        # update:
+        # mu_global ~ MVN(mu_global_mean_gibbs, mu_global_sigma_gibbs)
 
+        # calculate mu_global_sigma_gibbs from prior hyperparameters and tau_global
+        mu_global_sigma_gibbs <- solve(mu_global_tau + nsites * tau_global)
         
-
-        global_Sigma <- solve(P_f + (nsites * sigma_global))
+        # Jensen's inequality: take the mean of mu_site_curr, then transform
+        mu_site_bar     <- apply(mu_site_curr, 2, mean)
+        mu_site_bar_std <- sapply(seq_len(nparam), function(x){
+          prior.quantiles <- eval(prior.fn.all$pprior[[prior.ind.all[x]]], list(q = mu_site_bar[x]))
+          norm.vals    <- qnorm(prior.quantiles)
+          return(norm.vals)
+        })
+        mu_site_bar_std <- as.matrix(mu_site_bar_std)
         
-        global_mu <- global_Sigma %*% ((sigma_global %*% colSums(mu_site_curr)) + (P_f %*% mu_f))
-
-        mu_global <- mvtnorm::rmvnorm(1, global_mu, global_Sigma) # new prior mu to be used below for prior prob. calc.
-
-          
+        # calculate mu_global_mean_gibbs from prior hyperparameters, mu_site_means and tau_global
+        mu_global_mean_gibbs <- mu_global_sigma_gibbs %*% (mu_global_tau %*% mu_global_mean + (tau_global * nsites) %*% mu_site_bar_std)
+        
+        # update mu_global
+        mu_global <- mvtnorm::rmvnorm(1, mu_global_mean_gibbs, mu_global_sigma_gibbs) # new prior mu to be used below for prior prob. calc.
+        
         
         # site level M-H
         ########################################
         
-        # propose mu_site 
-        
+        # propose new mu_site on standard normal domain
         for(ns in seq_len(nsites)){
           repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
-            mu_site_new[ns,] <- mvtnorm::rmvnorm(1, mu_site_curr[ns,], jcov.arr[,,ns])
-            check.that <- (mu_site_new[ns,] > rng[, 1, ns] & mu_site_new[ns,] < rng[, 2, ns])
+            mu_site_new_stdn[ns,] <- mvtnorm::rmvnorm(1, mu_global,  sigma_global)
+            check.that <- (mu_site_new_stdn[ns,] > rng_stdn[, 1] & mu_site_new_stdn[ns, ] < rng_stdn[, 2])
             if(all(check.that)) break
           }
         }
         
+        # transform back to original domain
+        mu_site_new <- sapply(seq_len(nparam), function(x){
+          norm.quantiles   <- pnorm(mu_site_new_stdn[,x])
+          orig.vals <- eval(prior.fn.all$qprior[[prior.ind.all[x]]], list(p = norm.quantiles))
+          return(orig.vals)
+        })
         
         # re-predict current SS
-        currSS    <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
+        currSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
         currSS <- matrix(currSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
         
         # calculate posterior
         currLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(currSS[,v], llik.fn, currllp[[v]]))
         # use new priors for calculating prior probability
-        currPrior <- mvtnorm::dmvnorm(mu_site_curr, mu_global, sigma_global, log = TRUE)
+        currPrior <- dmvnorm(mu_site_curr_stdn, mu_global, sigma_global, log = TRUE)
+        #currPrior <- unlist(lapply(seq_len(nsites), function(v) mvtnorm::dmvnorm(mu_site_curr_stdn[v,], mu_s, s_sigma[[v]], log = TRUE)))
         currPost  <- currLL + currPrior
-        
         
         # predict new SS
         newSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_new[v,], pos.check))
@@ -555,20 +569,21 @@ pda.emulator.ms <- function(multi.settings) {
         newllp   <- lapply(seq_len(nsites), function(v) pda.calc.llik.par(settings, nstack[[v]], newSS[,v]))
         newLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(newSS[,v], llik.fn, newllp[[v]]))
         # use new priors for calculating prior probability
-        newPrior <- dmvnorm(mu_site_new, mu_global, sigma_global, log = TRUE)
+        newPrior <- dmvnorm(mu_site_new_stdn, mu_global, sigma_global, log = TRUE)
+        #newPrior <- unlist(lapply(seq_len(nsites), function(v) mvtnorm::dmvnorm(mu_site_new_stdn[v,], mu_s, s_sigma[[v]], log = TRUE)))
         newPost  <- newLL + newPrior
         
         ar <- is.accepted(currPost, newPost)
         mu_site_curr[ar, ] <- mu_site_new[ar, ]
+        mu_site_curr_stdn[ar, ] <- mu_site_new_stdn[ar, ]
         musite.accept.count <- musite.accept.count + ar
         
-        
         mu_site_samp[g, , seq_len(nsites)] <- t(mu_site_curr)[,seq_len(nsites)]
-        # tau_site_samp <-
-        mu_global_samp[g,]   <- mu_global  # 100% acceptance for gibbs
-        tau_global_samp[g,,] <- tau_global # 100% acceptance for gibbs
+        mu_site_samp_stdn[g, , seq_len(nsites)] <- t(mu_site_curr_stdn)[,seq_len(nsites)]
+        mu_global_samp[g,]       <- mu_global  # 100% acceptance for gibbs
+        tau_global_samp[g, , ]   <- tau_global # 100% acceptance for gibbs
         
-        if(g %% 500 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
+        if(g %% 100 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
       }
       
       return(list(mu_site_samp = mu_site_samp, mu_global_samp = mu_global_samp, tau_global_samp = tau_global_samp,
@@ -596,7 +611,7 @@ pda.emulator.ms <- function(multi.settings) {
                 rng_stdn      = rng_stdn, 
                 rng_orig      = rng_orig,
                 mu0           = init.list[[chain]], 
-                jmp0          = jump_init[[chain]], 
+                #jmp0          = jump_init[[chain]], 
                 mu_site_init  = mu_site_init[[chain]],
                 nparam        = length(prior.ind.all), 
                 nsites        = nsites, 
