@@ -4,7 +4,7 @@
 
 <!-- TODO: With better organization, this section can probably be removed -->
 
-The PEcAn VM is distributed with specific versions of PEcAn compiled. However, you do not need to constantly download the VM in order to update your code and verion of BETY. To update and maintain your code you can follow the steps found in the Developer section in [Updating PecAn and Code and BETY Database](#updatebety).
+The PEcAn VM is distributed with specific versions of PEcAn compiled. However, you do not need to constantly download the VM in order to update your code and version of BETY. To update and maintain your code you can follow the steps found in the Developer section in [Updating PecAn and Code and BETY Database](#updatebety). However, if you are using the latest version of the PEcAn VM (>=1.7) you have the Dockerized versoin of PEcAn and need to follow the instructions under the [DOCKER](#docker-index) section to update your PEcAn and BETY containers.
 
 ## Connecting to the VM via SSH {#ssh-vm}
 
