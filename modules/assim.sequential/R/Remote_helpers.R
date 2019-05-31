@@ -340,7 +340,7 @@ SDA_remote_launcher <-function(settingPath,
    
    
 # I'm tricking the remote::start_qsub to let me submit my job
-   out.job.id <- remote::start_qsub(
+   out.job.id <- PEcAn.remote::start_qsub(
                                      run = "",
                                      qsub_string = settings$host$qsub,
                                      rundir = NULL,
@@ -352,7 +352,7 @@ SDA_remote_launcher <-function(settingPath,
                                      job_script = "RunBash.sh"
                                    )
 
-   # Let's see what is the PID of the job doing the nohup
+   # Let's see what is the job id of the job doing the nohup
 
    if (length(out.job.id)==0 | is.null(out.job.id)){
      PEcAn.logger::logger.severe("Something broke the run before it starts!")
