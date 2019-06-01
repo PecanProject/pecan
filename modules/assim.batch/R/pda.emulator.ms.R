@@ -429,8 +429,8 @@ pda.emulator.ms <- function(multi.settings) {
       sigma_global <- solve(tau_global)
       
       # initialize jcov.arr (jump variances per site)
-      #jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
-      #for(j in seq_len(nsites)) jcov.arr[,,j] <- jmp0
+      jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
+      for(j in seq_len(nsites)) jcov.arr[,,j] <- jmp0
       
       # prepare mu_site (nsite x nparam)
       mu_site_new  <- matrix(NA_real_, nrow = nsites, ncol= nparam)
@@ -455,8 +455,20 @@ pda.emulator.ms <- function(multi.settings) {
 
       ########################## Start MCMC ########################
       
-      for(g in 10001:50000){
+      for(g in 1:nmcmc){
         
+         # jump adaptation step
+         if ((g > 2) && ((g - 1) %% settings$assim.batch$jump$adapt == 0)) {
+         
+           # update site level jvars
+           params.recent <- mu_site_samp[(g - settings$assim.batch$jump$adapt):(g - 1), , ]
+           #colnames(params.recent) <- names(x0)
+           jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], musite.accept.count[v], params.recent[,,v]))
+           jcov.arr  <- abind::abind(jcov.list, along=3)
+           musite.accept.count <- rep(0, nsites)  # Reset counter
+         
+         }
+         
         
         ########################################
         # gibbs update tau_global | mu_global, mu_site
@@ -534,21 +546,35 @@ pda.emulator.ms <- function(multi.settings) {
         # site level M-H
         ########################################
         
-        # propose new mu_site on standard normal domain
-        for(ns in seq_len(nsites)){
-          repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
-            mu_site_new_stdn[ns,] <- mvtnorm::rmvnorm(1, mu_global,  sigma_global)
-            check.that <- (mu_site_new_stdn[ns,] > rng_stdn[, 1] & mu_site_new_stdn[ns, ] < rng_stdn[, 2])
-            if(all(check.that)) break
-          }
-        }
+        # # propose new mu_site on standard normal domain
+        # for(ns in seq_len(nsites)){
+        #   repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
+        #     mu_site_new_stdn[ns,] <- mvtnorm::rmvnorm(1, mu_global,  sigma_global)
+        #     check.that <- (mu_site_new_stdn[ns,] > rng_stdn[, 1] & mu_site_new_stdn[ns, ] < rng_stdn[, 2])
+        #     if(all(check.that)) break
+        #   }
+        # }
         
-        # transform back to original domain
-        mu_site_new <- sapply(seq_len(nparam), function(x){
-          norm.quantiles   <- pnorm(mu_site_new_stdn[,x])
-          orig.vals <- eval(prior.fn.all$qprior[[prior.ind.all[x]]], list(p = norm.quantiles))
-          return(orig.vals)
-        })
+        # propose new site parameter vectors
+         for(ns in seq_len(nsites)){
+           repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
+             mu_site_new[ns,] <- mvtnorm::rmvnorm(1, mu_site_curr[ns,], jcov.arr[,,ns])
+             check.that <- (mu_site_new[ns,] > rng_orig[, 1] & mu_site_new[ns, ] < rng_orig[, 2])
+             if(all(check.that)) break
+           }
+         }
+        # # transform back to original domain
+        # mu_site_new <- sapply(seq_len(nparam), function(x){
+        #   norm.quantiles   <- pnorm(mu_site_new_stdn[,x])
+        #   orig.vals <- eval(prior.fn.all$qprior[[prior.ind.all[x]]], list(p = norm.quantiles))
+        #   return(orig.vals)
+        # })
+        
+         mu_site_new_stdn <- sapply(seq_len(nparam), function(x){
+           orig.quantiles <- eval(prior.fn.all$pprior[[prior.ind.all[x]]], list(q = mu_site_new[,x]))
+           norm.vals   <- qnorm(orig.quantiles)
+           return(norm.vals)
+         })
         
         # re-predict current SS
         currSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
@@ -558,7 +584,7 @@ pda.emulator.ms <- function(multi.settings) {
         currLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(currSS[,v], llik.fn, currllp[[v]]))
         # use new priors for calculating prior probability
         currPrior <- dmvnorm(mu_site_curr_stdn, mu_global, sigma_global, log = TRUE)
-        #currPrior <- unlist(lapply(seq_len(nsites), function(v) mvtnorm::dmvnorm(mu_site_curr_stdn[v,], mu_s, s_sigma[[v]], log = TRUE)))
+        #currPrior <- unlist(lapply(seq_len(nsites), function(v) mvtnorm::dmvnorm(mu_site_curr_stdn[v,], mu_global, sigma_global, log = TRUE)))
         currPost  <- currLL + currPrior
         
         # predict new SS
@@ -607,11 +633,11 @@ pda.emulator.ms <- function(multi.settings) {
       hier.mcmc(settings      = tmp.settings, 
                 gp.stack      = gp.stack, 
                 nstack        = NULL, 
-                nmcmc         = 150000, 
+                nmcmc         = tmp.settings$assim.batch$iter, 
                 rng_stdn      = rng_stdn, 
                 rng_orig      = rng_orig,
                 mu0           = init.list[[chain]], 
-                #jmp0          = jump_init[[chain]], 
+                jmp0          = jump_init[[chain]], 
                 mu_site_init  = mu_site_init[[chain]],
                 nparam        = length(prior.ind.all), 
                 nsites        = nsites, 
@@ -632,12 +658,12 @@ pda.emulator.ms <- function(multi.settings) {
     mcmc.out2 <- back_transform_posteriors(prior.all, prior.fn.all, prior.ind.all, mcmc.out)
     
     # Collect global params in their own list and postprocess
-    mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+    mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
     tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical")
     
     # Collect site-level params in their own list and postprocess
     for(ns in seq_len(nsites)){
-      mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "mu_site_samp", ns = ns, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+      mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_site_samp", ns = ns, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
       settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = paste0("_hierarchical_SL",ns))
     }
     
