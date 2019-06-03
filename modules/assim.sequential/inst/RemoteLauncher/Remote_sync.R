@@ -54,7 +54,7 @@ while(is.active){
                    paste0(settings$outdir)
   )
   PEcAn.logger::logger.info(paste0("SDA folder was synced at ------------------- ", Sys.time()))
-  Sys.sleep(300)
+  Sys.sleep(3000)
 }
 #----------------------------------------------------------------
 # Final Copying 
