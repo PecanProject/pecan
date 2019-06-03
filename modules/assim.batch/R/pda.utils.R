@@ -906,33 +906,40 @@ norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.st
 ##' @export
 back_transform_posteriors <- function(prior.all, prior.fn.all, prior.ind.all, mcmc.out){
   
-  # check for non-normals
-  psel       <- prior.all[prior.ind.all, 1] != "norm"
-  norm.check <- all(!psel) # if all are norm do nothing
-  
-  if(!norm.check){
-    for(i in seq_along(mcmc.out)){
-      mu_global_samp <- mcmc.out[[i]]$mu_global_samp
-      mu_site_samp   <- mcmc.out[[i]]$mu_site_samp
-      
-      mu_sample_tmp <- abind::abind(array(mu_global_samp, dim = c(dim(mu_global_samp), 1)), mu_site_samp, along = 3)
-      for(ms in seq_len(dim(mu_sample_tmp)[3])){
-        mcmc.vals         <- mu_sample_tmp[,,ms]
-        stdnorm.quantiles <- pnorm(mcmc.vals)
-        # counter, because all cols need transforming back
-        for(ps in seq_along(psel)){
-          prior.quantiles <- eval(prior.fn.all$qprior[[prior.ind.all[ps]]], list(p = stdnorm.quantiles[,ps]))
-          mcmc.vals[,ps] <- prior.quantiles
-        }
-        mu_sample_tmp[,,ms] <- mcmc.vals
-      }
-
-
-      mcmc.out[[i]]$mu_global_samp <- mu_sample_tmp[,,1]
-      mcmc.out[[i]]$mu_site_samp   <- mu_sample_tmp[,,-1]
+  for(i in seq_along(mcmc.out)){
+    mu_global_samp  <- mcmc.out[[i]]$mu_global_samp
+    tau_global_samp <- mcmc.out[[i]]$tau_global_samp
+    
+    iter_size <- dim(tau_global_samp)[1]
+    
+    sigma_global_samp <- tau_global_samp 
+    for(si in seq_len(iter_size)){
+      sigma_global_samp[si,,] <- solve(tau_global_samp[si,,])
     }
+    
+    # first calculate hierarchical posteriors from mu_global_samp and tau_global_samp
+    hierarchical_samp <- mu_global_samp 
+    for(si in seq_len(iter_size)){
+      hierarchical_samp[si,] <- mvtnorm::rmvnorm(1, mean = mu_global_samp[si,], sigma = sigma_global_samp[si,,])
+    }
+    
+    # back transform all parameter values from standard normal to the original domain
+    mu_sample_tmp <- abind::abind(array(mu_global_samp, dim = c(dim(mu_global_samp), 1)), hierarchical_samp, along = 3)
+    for(ms in seq_len(dim(mu_sample_tmp)[3])){
+      mcmc.vals         <- mu_sample_tmp[,,ms]
+      stdnorm.quantiles <- pnorm(mcmc.vals)
+      # counter, because all cols need transforming back
+      for(ps in seq_along(prior.ind.all)){
+        prior.quantiles <- eval(prior.fn.all$qprior[[prior.ind.all[ps]]], list(p = stdnorm.quantiles[,ps]))
+        mcmc.vals[,ps] <- prior.quantiles
+      }
+      mu_sample_tmp[,,ms] <- mcmc.vals
+    }
+    
+    mcmc.out[[i]]$mu_global_samp     <- mu_sample_tmp[,,1]
+    mcmc.out[[i]]$hierarchical_samp  <- mu_sample_tmp[,,-1]
   }
-  
+
   return(mcmc.out)
   
 }
