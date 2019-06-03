@@ -924,7 +924,8 @@ back_transform_posteriors <- function(prior.all, prior.fn.all, prior.ind.all, mc
     }
     
     # back transform all parameter values from standard normal to the original domain
-    mu_sample_tmp <- abind::abind(array(mu_global_samp, dim = c(dim(mu_global_samp), 1)), hierarchical_samp, along = 3)
+    mu_sample_tmp <- abind::abind(array(mu_global_samp, dim = c(dim(mu_global_samp), 1)), 
+                                  array(hierarchical_samp, dim = c(dim(hierarchical_samp), 1)), along = 3)
     for(ms in seq_len(dim(mu_sample_tmp)[3])){
       mcmc.vals         <- mu_sample_tmp[,,ms]
       stdnorm.quantiles <- pnorm(mcmc.vals)
