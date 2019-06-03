@@ -1,4 +1,4 @@
-# PEcAn Project use to teach Ecological model-data synthesis
+# PEcAn Project Used in Courses
 
 ### University classes
 

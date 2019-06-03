@@ -1,5 +1,0 @@
-# (PART) Appendix {-}
-
-## TODO: 
-
-* Add list of developers
