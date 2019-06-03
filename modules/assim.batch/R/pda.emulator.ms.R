@@ -331,8 +331,6 @@ pda.emulator.ms <- function(multi.settings) {
       
       ## get new init.list and jmp.list
       init.list <- norm_transform$init
-      jmp.list  <- norm_transform$jmp
-
       
     }
     
@@ -446,7 +444,6 @@ pda.emulator.ms <- function(multi.settings) {
       
       # storage
       mu_site_samp    <-  array(NA_real_, c(nmcmc, nparam, nsites))
-      mu_site_samp_stdn <-  array(NA_real_, c(nmcmc, nparam, nsites)) # for exploring
       mu_global_samp  <-  matrix(NA_real_, nrow = nmcmc, ncol= nparam)
       tau_global_samp <-  array(NA_real_, c(nmcmc, nparam, nparam))
       
@@ -605,11 +602,10 @@ pda.emulator.ms <- function(multi.settings) {
         musite.accept.count <- musite.accept.count + ar
         
         mu_site_samp[g, , seq_len(nsites)] <- t(mu_site_curr)[,seq_len(nsites)]
-        mu_site_samp_stdn[g, , seq_len(nsites)] <- t(mu_site_curr_stdn)[,seq_len(nsites)]
         mu_global_samp[g,]       <- mu_global  # 100% acceptance for gibbs
         tau_global_samp[g, , ]   <- tau_global # 100% acceptance for gibbs
         
-        if(g %% 100 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
+        if(g %% 500 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
       }
       
       return(list(mu_site_samp = mu_site_samp, mu_global_samp = mu_global_samp, tau_global_samp = tau_global_samp,
@@ -659,6 +655,9 @@ pda.emulator.ms <- function(multi.settings) {
     
     # Collect global params in their own list and postprocess
     mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+    tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical_mean")
+    
+    mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "hierarchical_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
     tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical")
     
     # Collect site-level params in their own list and postprocess
