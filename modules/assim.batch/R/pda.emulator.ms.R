@@ -655,7 +655,8 @@ pda.emulator.ms <- function(multi.settings) {
     
     # Collect global params in their own list and postprocess
     mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
-    tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical_mean")
+    # processing these just for further analysis later, but con=NULL because these samples shouldn't be used for new runs later
+    tmp.settings <- pda.postprocess(tmp.settings, con = NULL, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical_mean")
     
     mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "hierarchical_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
     tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical")
