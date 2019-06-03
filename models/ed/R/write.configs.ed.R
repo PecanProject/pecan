@@ -363,14 +363,13 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   if (!is.null(custom_tags)) {
     # Convert numeric tags to numeric
     # Anything that isn't converted to NA via `as.numeric` is numeric
-    try_numeric <- suppressWarnings(vapply(custom_tags, as.numeric, numeric(1)))
-    are_numeric <- !is.na(try_numeric)
-    custom_tags[are_numeric] <- lapply(custom_tags[are_numeric], as.numeric)
+    custom_tags <- lapply(custom_tags,
+                          tryCatch(as.numeric(x), warning = function(e) x))
     # Figure out what is a numeric vector
     # Look for a list of numbers like: "1,2,5"
-    # Works for decimals, and arbitrary spacing: "1.3,2.6,   7.8  ,  8.1"
-    numvec_rxp <- paste0("^ *[[:digit:]]+.?[[:digit:]]*",
-                         "([[:space:]]*,[[:space:]]*[[:digit:]]+.?[[:digit:]]*)+")
+    # Works for decimals, negatives, and arbitrary spacing: "1.3,2.6,   -7.8  ,  8.1"
+    numvec_rxp <- paste0("^ *-?[[:digit:]]+.?[[:digit:]]*",
+                         "([[:space:]]*,[[:space:]]*-?[[:digit:]]+.?[[:digit:]]*)+")
     are_numvec <- vapply(custom_tags, function(x) grepl(numvec_rxp, x), logical(1))
     custom_tags[are_numvec] <- lapply(
       custom_tags[are_numvec],
