@@ -86,7 +86,7 @@ services:
 
   # THREDDS data server
   thredds:
-    image: pecan/thredds:${PECAN_VERSION:-latest}
+    image: pecan/thredds:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
