@@ -75,7 +75,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
       }
       posteriors[trait, "parama"] <- fit$estimate[1]
       posteriors[trait, "paramb"] <- fit$estimate[2]
-    } else if (pdist %in% zerobound | (pdist == "unif" & pparm[1] > 0)) {
+    } else if (pdist %in% zerobound | (pdist == "unif" & pparm[1] >= 0)) {
       dist.names <- c("exp", "lnorm", "weibull", "norm")
       fit <- list()
       fit[[1]] <- try(suppressWarnings(fitdistr(dat, "exponential")), silent = TRUE)
