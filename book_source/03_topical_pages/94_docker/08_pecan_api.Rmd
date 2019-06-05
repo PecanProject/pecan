@@ -1,4 +1,4 @@
-#k# The PEcAn Docker API {#pecan-api}
+## The PEcAn Docker API {#pecan-api}
 
 If you have a running instance of Dockerized PEcAn (or other setup where PEcAn workflows are submitted via [RabbitMQ](#rabbitmq)),
 you have the option of running and managing PEcAn workflows using the `pecanapi` package.
