@@ -33,6 +33,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - `scripts/generate_dependencies.R` is now used to generate dependencies for make and docker
 - In `PEcAn.DB::get.trait.data`, if `trait.names` is `NULL` or missing, use the traits for which at least one prior is available among the input list of PFTs. (Previously, we were getting this from the `PEcAn.utils::trait.dictionary`, which we are trying to deprecate #1747). (#2351)
 - Cleanup and improve logging and code readability in parts of `PEcAn.DB` related to getting trait data, including replacing many manual database queries with `dplyr` calls.
+- Reorganization of PEcAn documentation in accordance with isue #2253.
 
 
 ### Added
