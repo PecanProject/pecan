@@ -111,11 +111,11 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
     }
   }
   
-  ### Generate summaries and diagnostics
-  pecan.ma.summary(trait.mcmc, pft$name, pft$outdir, threshold)
-  
   ### Save the meta.analysis output
   save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
+  
+  ### Generate summaries and diagnostics
+  pecan.ma.summary(trait.mcmc, pft$name, pft$outdir, threshold)
   
   post.distns <- approx.posterior(trait.mcmc, prior.distns, jagged.data, pft$outdir)
   dist_MA_path <- file.path(pft$outdir, "post.distns.MA.Rdata")
