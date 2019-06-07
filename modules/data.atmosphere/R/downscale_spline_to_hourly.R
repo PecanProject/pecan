@@ -39,7 +39,7 @@ downscale_spline_to_hourly <- function(df,VarNamesStates){
   interp.df <- interp.df.days
   
   for(Var in 1:length(VarNamesStates)){
-    assign(paste0("interp.df.",VarNamesStates[Var]), dplyr::do(by.ens, var = interpolate(.$days_since_t0,unlist(.[,VarNamesStates[Var]]))) %>% dplyr::rename(!!VarNamesStates[Var] := "var")
+    assign(paste0("interp.df.",VarNamesStates[Var]), dplyr::do(by.ens, var = interpolate(.$days_since_t0,unlist(.[,VarNamesStates[Var]]))) %>% dplyr::rename(!!VarNamesStates[Var] := "var"))
     if("dscale.member" %in% colnames(df)){
         interp.df <- dplyr::inner_join(interp.df, get(paste0("interp.df.",VarNamesStates[Var])), by = c("NOAA.member", "dscale.member"))
     }else{
