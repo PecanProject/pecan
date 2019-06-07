@@ -28,7 +28,8 @@
 ##' @author David LeBauer, Shawn Serbin
 pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE) {
   
-  fail <- FALSE
+  fail <- rep(FALSE, length(mcmc.object))
+  names(fail) <- names(mcmc.object)
   sink(file = file.path(outdir, "meta-analysis.log"), append = TRUE, split = TRUE)
   for (trait in names(mcmc.object)) {
     
@@ -52,11 +53,11 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
     
     ## plots for mcmc diagnosis
     pdf(file.path(outdir, paste0("ma.summaryplots.", trait, ".pdf")))
-    
+
     for (i in maparms) {
-      plot(mcmc.object[[trait]][, i], 
+      plot(mcmc.object[[trait]][, i],
            trace = FALSE,
-           density = TRUE, 
+           density = TRUE,
            main = paste("summary plots of", i, "for", pft, trait))
       box(lwd = 2)
       plot(mcmc.object[[trait]][, i], density = FALSE)
@@ -68,7 +69,7 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
     lattice::densityplot(mcmc.object[[trait]])
     coda::acfplot(mcmc.object[[trait]])
     dev.off()
-    
+
     ## G-R diagnostics to ensure convergence
     gd            <- coda::gelman.diag(mcmc.object[[trait]])
     mpsrf         <- round(gd$mpsrf, digits = 3)
@@ -80,15 +81,18 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
       not.converged <- rbind(not.converged, data.frame(pft = pft, trait = trait, mpsrf = mpsrf))
       PEcAn.logger::logger.info(paste("JAGS model did not converge for", pft, trait, 
                         "\nGD MPSRF = ", mpsrf, "\n"))
-      fail <- TRUE
+      fail[trait] <- TRUE
     }
   }
   
-  if (fail) {
+  if (any(fail)) {
     PEcAn.logger::logger.warn("JAGS model failed to converge for one or more pft.")
     for (i in seq_len(nrow(not.converged))) {
       with(not.converged[i, ], PEcAn.logger::logger.info(paste(pft, trait, "MPSRF = ", mpsrf)))
     }
+    mcmc.object[fail] <- NULL #discard samples
+    trait.mcmc <- mcmc.object
+    save(trait.mcmc, file = file.path(outdir, "trait.mcmc.Rdata"))
   }
   sink()
 } # pecan.ma.summary
