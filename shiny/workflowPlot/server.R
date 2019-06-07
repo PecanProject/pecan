@@ -20,7 +20,8 @@ lapply(c( "shiny",
           "ncdf4",
           "scales",
           "lubridate",
-          "shinythemes"
+          "shinythemes",
+          "shinytoastr"
           ),function(pkg){
             if (!(pkg %in% installed.packages()[,1])){
                   install.packages(pkg)

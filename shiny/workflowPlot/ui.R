@@ -3,6 +3,7 @@ library(plotly)
 library(shinythemes)
 library(knitr)
 library(shinyjs)
+library(shinytoastr)
 
 source("ui_utils.R", local = TRUE)
 
@@ -10,6 +11,8 @@ source("ui_utils.R", local = TRUE)
 ui <- fluidPage(theme = shinytheme("simplex"),
                 # Initializing shinyJs
                 useShinyjs(),
+                # Initializing shinytoastr
+                useToastr(),
                 # Adding CSS to head
                 tags$head(
                   tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
