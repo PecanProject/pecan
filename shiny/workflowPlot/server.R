@@ -33,6 +33,9 @@ lapply(c( "shiny",
 # Maximum size of file allowed to be uploaded: 100MB
 options(shiny.maxRequestSize=100*1024^2)
 
+options(shiny.port = 6438)
+options(shiny.launch.browser = 'FALSE')
+
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
