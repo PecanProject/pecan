@@ -50,10 +50,23 @@ observeEvent(input$load_model,{
 
 # When button to register run is clicked, create.BRR is run and the button is removed.
 observeEvent(input$create_bm,{
-  bm$BRR <- PEcAn.benchmark::create_BRR(bm$ens_wf, con = bety$con)
-  bm$brr_message <- sprintf("This run has been successfully registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
-  bm$button_BRR <- FALSE
-  bm$ready <- bm$ready + 1
+  tryCatch({
+    withProgress(message = 'Calculation in progress',
+                 detail = 'This may take a while...',
+                 value = 0,{
+                   bm$BRR <- PEcAn.benchmark::create_BRR(bm$ens_wf, con = bety$con)
+                   incProgress( 10/ 15)
+                   bm$brr_message <- sprintf("This run has been successfully registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
+                   bm$button_BRR <- FALSE
+                   bm$ready <- bm$ready + 1
+                   incProgress(5/15) 
+                 })
+    #Signaling the success of the operation
+    toastr_success("Registered reference run")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
 
 observeEvent({
@@ -188,59 +201,78 @@ observeEvent({
 }, ignoreNULL = FALSE)
 
 observeEvent(input$calc_bm,{
-  req(input$all_input_id)
-  req(input$all_site_id)
-  bm$calc_bm_message <- sprintf("Setting up benchmarks")
-  output$reportvars <- renderText(paste(bm$bm_vars, seq_along(bm$bm_vars)))
-  output$reportmetrics <- renderText(paste(bm$bm_metrics))
+  tryCatch({
+    withProgress(message = 'Calculation in progress',
+                 detail = 'This may take a while...',
+                 value = 0,{
+                   req(input$all_input_id)
+                   req(input$all_site_id)
+                   bm$calc_bm_message <- sprintf("Setting up benchmarks")
+                   output$reportvars <- renderText(paste(bm$bm_vars, seq_along(bm$bm_vars)))
+                   output$reportmetrics <- renderText(paste(bm$bm_metrics))
+                   incProgress(1 / 15) 
+                   
+                   inputs_df <- getInputs(bety,c(input$all_site_id)) %>% 
+                     dplyr::filter(input_selection_list == input$all_input_id)
+                   output$inputs_df_table <- renderTable(inputs_df)
+                   incProgress(1 / 15) 
+                   
+                   config.list <- PEcAn.utils::read_web_config("../../web/config.php")
+                   output$config_list_table <- renderTable(as.data.frame.list(config.list))
+                   incProgress(1 / 15)
+                   
+                   bm$bm_settings$info <- list(userid = 1000000003) # This is my user id. I have no idea how to get people to log in to their accounts through the web interface and right now the benchmarking code has sections dependent on user id - I will fix this.
+                   bm$bm_settings$database <- list(
+                     bety = list(
+                       user = config.list$db_bety_username,
+                       password = config.list$db_bety_password,
+                       host = config.list$db_bety_hostname,
+                       dbname = config.list$db_bety_database,
+                       driver = config.list$db_bety_type,
+                       write = TRUE
+                     ),
+                     dbfiles = config.list$dbfiles_folder
+                   )
+                   bm$bm_settings$benchmarking <- list(
+                     ensemble_id = bm$ens_wf$ensemble_id,
+                     new_run = FALSE
+                   )
+                   incProgress(3 / 15)
+                   
+                   for(i in seq_along(bm$bm_vars)){
+                     benchmark <- list(
+                       input_id = inputs_df$input_id,
+                       variable_id = bm$bm_vars[i],
+                       site_id = inputs_df$site_id,
+                       metrics = list()
+                     )
+                     for(j in seq_along(bm$bm_metrics)){
+                       benchmark$metrics = append(benchmark$metrics, list(metric_id = bm$bm_metrics[j]))
+                     }
+                     bm$bm_settings$benchmarking <- append(bm$bm_settings$benchmarking,list(benchmark = benchmark))
+                   }
+                   incProgress(6 / 15)
+                   
+                   # output$calc_bm_button <- renderUI({})
+                   output$print_bm_settings <- renderPrint(bm$bm_settings)
+                   incProgress(1 / 15)
+                   
+                   basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
+                   
+                   settings_path <- file.path(basePath, "pecan.BENCH.xml")
+                   saveXML(PEcAn.settings::listToXml(bm$bm_settings,"pecan"), file = settings_path)
+                   bm$settings_path <- settings_path
+                   
+                   bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
+                   incProgress(2 / 15) 
+                 })
+    #Signaling the success of the operation
+    toastr_success("Setup benchmarks")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
   
-  inputs_df <- getInputs(bety,c(input$all_site_id)) %>% 
-    dplyr::filter(input_selection_list == input$all_input_id)
-  output$inputs_df_table <- renderTable(inputs_df)
-  
-  config.list <- PEcAn.utils::read_web_config("../../web/config.php")
-  output$config_list_table <- renderTable(as.data.frame.list(config.list))
-  
-  bm$bm_settings$info <- list(userid = 1000000003) # This is my user id. I have no idea how to get people to log in to their accounts through the web interface and right now the benchmarking code has sections dependent on user id - I will fix this.
-  bm$bm_settings$database <- list(
-    bety = list(
-      user = config.list$db_bety_username,
-      password = config.list$db_bety_password,
-      host = config.list$db_bety_hostname,
-      dbname = config.list$db_bety_database,
-      driver = config.list$db_bety_type,
-      write = TRUE
-    ),
-    dbfiles = config.list$dbfiles_folder
-  )
-  bm$bm_settings$benchmarking <- list(
-    ensemble_id = bm$ens_wf$ensemble_id,
-    new_run = FALSE
-  )
-  
-  for(i in seq_along(bm$bm_vars)){
-    benchmark <- list(
-      input_id = inputs_df$input_id,
-      variable_id = bm$bm_vars[i],
-      site_id = inputs_df$site_id,
-      metrics = list()
-    )
-    for(j in seq_along(bm$bm_metrics)){
-      benchmark$metrics = append(benchmark$metrics, list(metric_id = bm$bm_metrics[j]))
-    }
-    bm$bm_settings$benchmarking <- append(bm$bm_settings$benchmarking,list(benchmark = benchmark))
-  }
-  
-  # output$calc_bm_button <- renderUI({})
-  output$print_bm_settings <- renderPrint(bm$bm_settings)
-  
-  basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
-  
-  settings_path <- file.path(basePath, "pecan.BENCH.xml")
-  saveXML(PEcAn.settings::listToXml(bm$bm_settings,"pecan"), file = settings_path)
-  bm$settings_path <- settings_path
-  
-  bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
   
   ##############################################################################
   # Run the benchmarking functions
@@ -281,43 +313,76 @@ observeEvent(bm$results_message,{
 })
 
 observeEvent(bm$load_results,{
-  if(bm$load_results > 0){
-    load(file.path(bm$ens_wf$folder,"benchmarking",bm$input$input_id,"benchmarking.output.Rdata"))
-    bm$bench.results <- result.out$bench.results
-    bm$aligned.dat <- result.out$aligned.dat
-    output$results_table <- DT::renderDataTable(DT::datatable(bm$bench.results))
-    plots_used <- grep("plot", result.out$bench.results$metric) 
-    if(length(plots_used) > 0){
-      plot_list <- apply(
-        result.out$bench.results[plots_used,c("variable", "metric")],
-        1, paste, collapse = " ")
-      selection <- as.list(as.numeric(names(plot_list)))
-      names(selection) <- as.vector(plot_list)
-      output$bm_plots <-  renderUI({
-        selectInput("bench_plot", "Benchmark Plot", multiple = FALSE,
-                     choices = selection)
-      })
-    }
-  }
+  tryCatch({
+    withProgress(message = 'Calculation in progress',
+                 detail = 'This may take a while...',
+                 value = 0,{
+                   if(bm$load_results > 0){
+                     load(file.path(bm$ens_wf$folder,"benchmarking",bm$input$input_id,"benchmarking.output.Rdata"))
+                     incProgress(1/3) 
+                     
+                     bm$bench.results <- result.out$bench.results
+                     bm$aligned.dat <- result.out$aligned.dat
+                     output$results_table <- DT::renderDataTable(DT::datatable(bm$bench.results))
+                     plots_used <- grep("plot", result.out$bench.results$metric) 
+                     incProgress(1/3) 
+                     
+                     if(length(plots_used) > 0){
+                       plot_list <- apply(
+                         result.out$bench.results[plots_used,c("variable", "metric")],
+                         1, paste, collapse = " ")
+                       selection <- as.list(as.numeric(names(plot_list)))
+                       names(selection) <- as.vector(plot_list)
+                       output$bm_plots <-  renderUI({
+                         selectInput("bench_plot", "Benchmark Plot", multiple = FALSE,
+                                     choices = selection)
+                       })
+                     }
+                     incProgress(1/3) 
+                   }
+                   incProgress(1) 
+                 })
+    #Signaling the success of the operation
+    toastr_success("Calculated Scores")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
 
 observeEvent(input$bench_plot,{
-  var <- bm$bench.results[input$bench_plot,"variable"]
-  metric_dat = bm$aligned.dat[[var]]
-  names(metric_dat)[grep("[.]m", names(metric_dat))] <- "model"
-  names(metric_dat)[grep("[.]o", names(metric_dat))] <- "obvs"
-  names(metric_dat)[grep("posix", names(metric_dat))] <- "time"
-  fcn <- get(paste0("metric_",bm$bench.results[input$bench_plot,"metric"]), asNamespace("PEcAn.benchmark"))
-  # fcn <- paste0("metric_",bm$bench.results[input$bench_plot,"metric"])
-  args <- list(
-    metric_dat = metric_dat,
-    var = var,
-    filename = NA,
-    draw.plot = TRUE
-  )
-  p <- do.call(fcn, args)
-  output$bmPlot <- renderPlotly({
-    plotly::ggplotly(p)
+  tryCatch({
+    withProgress(message = 'Calculation in progress',
+                 detail = 'This may take a while...',
+                 value = 0,{
+                   var <- bm$bench.results[input$bench_plot,"variable"]
+                   metric_dat = bm$aligned.dat[[var]]
+                   names(metric_dat)[grep("[.]m", names(metric_dat))] <- "model"
+                   names(metric_dat)[grep("[.]o", names(metric_dat))] <- "obvs"
+                   names(metric_dat)[grep("posix", names(metric_dat))] <- "time"
+                   incProgress(2 / 15)
+                   
+                   fcn <- get(paste0("metric_",bm$bench.results[input$bench_plot,"metric"]), asNamespace("PEcAn.benchmark"))
+                   # fcn <- paste0("metric_",bm$bench.results[input$bench_plot,"metric"])
+                   args <- list(
+                     metric_dat = metric_dat,
+                     var = var,
+                     filename = NA,
+                     draw.plot = TRUE
+                   )
+                   p <- do.call(fcn, args)
+                   incProgress(9 / 15)
+                   
+                   output$bmPlot <- renderPlotly({
+                     plotly::ggplotly(p)
+                   })
+                   incProgress(4 / 15)
+                 })
+    #Signaling the success of the operation
+    toastr_success("Generated Plot")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
   })
 })
 
