@@ -129,6 +129,7 @@ pda.emulator.ms <- function(multi.settings) {
   pname            <- need_obj$pname
   hyper.pars       <- need_obj$hyper.pars
   nparam           <- length(prior.ind.all)
+  prior.all        <- do.call("rbind", prior.list)
   
   resume.list <- vector("list", multi.settings[[1]]$assim.batch$chain)
   
