@@ -69,6 +69,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   #Set the end forecast date (default is the full 16 days)
   if (end_date > start_date + lubridate::days(16)) {
     end_date = start_date + lubridate::days(16)
+    PEcAn.logger::logger.info(paste0("Updated end date is ", end_date))
   }
   
   #Round the starting date/time down to the previous block of 6 hours.  Adjust the time frame to match.
@@ -86,6 +87,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   
   end_date = start_date + lubridate::hours(increments * 6)
   
+
   #Bounds date checking
   #NOAA's GEFS database maintains a rolling 12 days of forecast data for access through this function.
   #We do want Sys.Date() here - NOAA makes data unavaliable days at a time, not forecasts at a time.
@@ -135,9 +137,11 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   
   #Downloading the data here.  It is stored in a matrix, where columns represent time in intervals of 6 hours, and rows represent
   #each ensemble member.  Each variable getxs its own matrix, which is stored in the list noaa_data.
-  for (i in 1:length(noaa_var_names)) {
-    noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1:increments, forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
-  }
+ 
+  
+   for (i in 1:length(noaa_var_names)) {
+     noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = seq_len(increments), forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
+   }
   
   #Fills in data with NaNs if there happens to be missing columns.
   for (i in 1:length(noaa_var_names)) {
@@ -242,13 +246,13 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   
   joined <- dplyr::inner_join(joined, ShortWave.ds, by = c("NOAA.member", "timestamp")) %>% 
     dplyr::distinct() %>% 
-    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(surface_downwelling_shortwave_flux_in_air < 0, 0, surface_downwelling_shortwave_flux_in_air),
-                  specific_humidity = ifelse(specific_humidity <0, 0, specific_humidity),
-                  air_temperature = ifelse(air_temperature > 320, NA, air_temperature),
-                  air_temperature = ifelse(air_temperature < 240, NA, air_temperature),
-                  precipitation_flux = ifelse(precipitation_flux < 0, 0, precipitation_flux),
-                  surface_downwelling_longwave_flux_in_air = ifelse(surface_downwelling_longwave_flux_in_air < 0, NA, surface_downwelling_longwave_flux_in_air),
-                  wind_speed = ifelse(wind_speed <0, 0, wind_speed)) %>%
+    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = dplyr::if_else(surface_downwelling_shortwave_flux_in_air < 0, 0, surface_downwelling_shortwave_flux_in_air),
+                  specific_humidity = dplyr::if_else(specific_humidity <0, 0, specific_humidity),
+                  air_temperature = dplyr::if_else(air_temperature > 320, NA_real_, air_temperature),
+                  air_temperature = dplyr::if_else(air_temperature < 240, NA_real_, air_temperature),
+                  precipitation_flux = dplyr::if_else(precipitation_flux < 0, 0, precipitation_flux),
+                  surface_downwelling_longwave_flux_in_air = dplyr::if_else(surface_downwelling_longwave_flux_in_air < 0, NA_real_, surface_downwelling_longwave_flux_in_air),
+                  wind_speed = dplyr::if_else(wind_speed <0, 0, wind_speed)) %>%
     dplyr::filter(is.na(timestamp) == FALSE)
   
   
@@ -283,7 +287,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   #The data is really one-dimensional for each file (though we include lattitude and longitude dimensions
   #to comply with the PEcAn standard).
   time_dim = ncdf4::ncdim_def(name="time", 
-                              paste(units="hours since", format(start_date, "%Y-%m-%dT%H:%M")), 
+                              units = paste("hours since", format(start_date, "%Y-%m-%dT%H:%M")), 
                               seq(from = 6, length.out = length(unique(joined$timestamp))), #GEFS forecast starts 6 hours from start time 
                               create_dimvar = TRUE)
   lat_dim = ncdf4::ncdim_def("latitude", "degree_north", lat.in, create_dimvar = TRUE)

@@ -12,6 +12,17 @@
 ##' 
 ##' 
 
+downscale_solar_geom <- function(doy, lon, lat) {
+  
+  dt <- median(diff(doy)) * 86400 # average number of seconds in time interval
+  hr <- (doy - floor(doy)) * 24 # hour of day for each element of doy
+  
+  ## calculate potential radiation
+  PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lon, lat, dt, hr)
+  rpot <- 1366 * cosz
+  return(rpot)
+}
+
 
 downscale_ShortWave_to_hrly <- function(debiased, time0, time_end, lat, lon, output_tz = "UTC"){
   ## downscale shortwave to hourly
@@ -26,11 +37,11 @@ downscale_ShortWave_to_hrly <- function(debiased, time0, time_end, lat, lon, out
     ShortWave.hours$hour = as.numeric(format(time, "%H"))
     ShortWave.hours$group = rep(seq(1, length(debiased$NOAA.member)/6), each= 6)
 
-  
+
     
  ShortWave.ds <- ShortWave.hours %>% 
     dplyr::mutate(doy = lubridate::yday(timestamp) + hour/24) %>%
-    dplyr::mutate(rpot = PEcAn.data.atmosphere::downscale_solar_geom(doy, lon, lat)) %>% # hourly sw flux calculated using solar geometry
+    dplyr::mutate(rpot = downscale_solar_geom(doy, lon, lat)) %>% # hourly sw flux calculated using solar geometry
     dplyr::group_by_at(c("group", "NOAA.member")) %>%
     dplyr::mutate(avg.rpot = mean(rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
     dplyr::ungroup() %>%
