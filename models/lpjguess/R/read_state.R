@@ -34,6 +34,7 @@ LPJ_GUESS_CLASSES <- c("Gridcell", "Climate", "Gridcellpft", "Stand", "Standpft"
 
 lpjguess_classes <- list()
 ctr <- 1
+# NOTE THAT THESE PATTERNS ASSUME SOME CODING STYLE, thanks to LPJ-GUESS developers this might not be an issue in the future 
 for(i in seq_along(guessh_in)){
   # search for "class XXX : public Serializable {"
   res <- str_match(guessh_in[i], "class (.*?) : public Serializable")
@@ -50,4 +51,25 @@ for(i in seq_along(guessh_in)){
 # all match?
 if(!setequal(unlist(lpjguess_classes), LPJ_GUESS_CLASSES)){
   PEcAn.logger::logger.severe("This function can only read the following class objects: ", paste(LPJ_GUESS_CLASSES, collapse="--"))
+}
+
+# Gridcell is the top-level container, start parsing from there
+beg_end <- serialize_starts_ends(file_in = guesscpp_in, pattern = "void Gridcell::serialize")
+
+# now we will parse the stuff between these lines
+
+# helper function that scans LPJ-GUESS that returns the beginning and the ending lines of serialized object
+serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize"){
+  # find the starting line from the given pattern
+  starting_line <- which(!is.na(str_match(file_in, pattern)))
+  
+  # screen for the closing curly bracket after function started 
+  # closing bracket it i its own line without any tabs, note that this again assumes a certain coding style
+  ending_line <- starting_line
+  repeat{
+    ending_line <- ending_line + 1
+    if(file_in[ending_line] == "}") break
+  }
+  
+  return(c(starting_line, ending_line))
 }
