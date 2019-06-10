@@ -45,10 +45,10 @@ write_params_ctsm <-
                                'PFTs in this run, they are named:',
                                names(trait.values))
     ctsm_pftnames <-
-      stringr::str_trim(tolower(ncdf4::ncvar_get(ctsm.param.nc, "pftname")))
+      trimws(tolower(ncdf4::ncvar_get(ctsm.param.nc, "pftname")))
     for (i in seq_len(npft)) {
-      pft.name <- names(trait.values)[i]
-      if (is.null(pft.name) | is.na(pft.name)) {
+      pft.name <- names(trait.values)[[i]]
+      if (is.null(pft.name) || is.na(pft.name)) {
         PEcAn.logger::logger.error("pft.name missing")
       } else {
         PEcAn.logger::logger.info(paste("PFT =", pft.name))
