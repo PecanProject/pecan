@@ -12,21 +12,21 @@
 ##' 
 ##' 
 
-downscale_solar_geom <- function(doy, lon, lat) {
-  
-  dt <- median(diff(doy)) * 86400 # average number of seconds in time interval
-  hr <- (doy - floor(doy)) * 24 # hour of day for each element of doy
-  
-  ## calculate potential radiation
-  PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lon, lat, dt, hr)
-  rpot <- 1366 * cosz
-  return(rpot)
-}
-
-
 downscale_ShortWave_to_hrly <- function(debiased, time0, time_end, lat, lon, output_tz = "UTC"){
   ## downscale shortwave to hourly
-    grouping = append("NOAA.member", "timestamp")
+   
+  
+  downscale_solar_geom <- function(doy, lon, lat) {
+    
+    dt <- median(diff(doy)) * 86400 # average number of seconds in time interval
+    hr <- (doy - floor(doy)) * 24 # hour of day for each element of doy
+    
+    ## calculate potential radiation
+    PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lon, lat, dt, hr)
+    rpot <- 1366 * cosz
+    return(rpot)
+  }
+   grouping = append("NOAA.member", "timestamp")
     
     surface_downwelling_shortwave_flux_in_air<- rep(debiased$surface_downwelling_shortwave_flux_in_air, each = 6)
     time = rep(seq(from = as.POSIXct(time0 - lubridate::hours(5), tz = output_tz), to = as.POSIXct(time_end, tz = output_tz), by = 'hour'), times = 21)
@@ -50,4 +50,6 @@ downscale_ShortWave_to_hrly <- function(debiased, time0, time_end, lat, lon, out
     dplyr::filter(timestamp >= min(debiased$timestamp) & timestamp <= max(debiased$timestamp))  
   
 
-  }
+}
+
+
