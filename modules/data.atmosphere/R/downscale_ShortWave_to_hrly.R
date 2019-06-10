@@ -3,6 +3,7 @@
 ##'
 ##' @param debiased, data frame of variables 
 ##' @param time0, first timestep
+##' @param time_end, last time step
 ##' @param lat, lat of site
 ##' @param lon, long of site
 ##' @param output_tz, output timezone
@@ -22,7 +23,7 @@ downscale_ShortWave_to_hrly <- function(debiased, time0, time_end, lat, lon, out
     hr <- (doy - floor(doy)) * 24 # hour of day for each element of doy
     
     ## calculate potential radiation
-    PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lon, lat, dt, hr)
+    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lon, lat, dt, hr)
     rpot <- 1366 * cosz
     return(rpot)
   }
