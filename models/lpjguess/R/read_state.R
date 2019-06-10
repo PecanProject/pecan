@@ -58,22 +58,33 @@ beg_end <- serialize_starts_ends(file_in = guesscpp_in, pattern = "void Gridcell
 
 # now we will parse the stuff between these lines
 # first find what is being written
-find_stream <- function(file_in = guesscpp_in, line_nos = beg_end)
+streamined_vars <- find_stream(file_in = guesscpp_in, line_nos = beg_end)
+  
+  
   
 # helper function that lists streamed variables, it just returns the names, types are checked by other fucntion
 find_stream <- function(file_in, line_nos){
   
   streaming_list <- list()
   str.i <- 1
-  arch_save <- FALSE
+  when_here <- NULL
+  not_skipping <- TRUE
   
-  for(i in line_nos[1]:line_nos[2]){
+  i <- line_nos[1]
+  repeat{
+    i <- i + 1
+    if(!is.null(when_here)){
+      if(i == when_here){
+        i <- skip_to
+        when_here <- NULL
+      }
+    }
     
     # some functions (Vegetation, Patch, Stand, Gridcell) have two modes: saving / reading
     # we only need the stream that is saved
     if(grepl("arch.save()", file_in[i])){
-      arch_save <- TRUE
-      find_closing()
+      when_here  <- find_closing("}", i, file_in)
+      skip_to    <- find_closing("}", i, file_in, if_else_check = TRUE)
     } 
     
     # all streams start with arch &
@@ -84,15 +95,23 @@ find_stream <- function(file_in, line_nos){
       # check for ampersand for the subsequent variable names
       repeat{
         i <- i + 1
-        if(!grepl(".*& ", file_in[i])) break # ONLEY NEED TO READ arch.save()e
+        if(!is.null(when_here)){
+          if(i == when_here){
+            i <- skip_to
+            when_here <- NULL
+          }
+        }
+        if(!grepl(".*& ", file_in[i])) break # when there are no subsequent stream
         streaming_list[[str.i]] <- sub(".*& ", "", file_in[i])
         str.i <- str.i + 1
       }
     }
-    sub("arch & ", "", file_in[1071])
+    if(i == line_nos[2]) break
   }
+  return(unlist(streaming_list))
 }
 
+######################## Helper functions ########################
 
 # helper function that scans LPJ-GUESS that returns the beginning and the ending lines of serialized object
 serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize"){
@@ -103,7 +122,7 @@ serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize")
   }
     
   # screen for the closing curly bracket after function started 
-  # closing bracket it i its own line without any tabs, note that this again assumes a certain coding style
+  # closing bracket it in its own line without any tab characters, note that this again assumes a certain coding style
   ending_line <- starting_line
   repeat{
     ending_line <- ending_line + 1
@@ -111,12 +130,13 @@ serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize")
   }
   
   # probably a check is required, alternatively keep track of opening-closing brackets
+  # ending_line <- find_closing(find = "}", starting_line, file_in)
   
   return(c(starting_line, ending_line))
 }
 
 
-find_closing <- function(find = "}", line_no, file_in){
+find_closing <- function(find = "}", line_no, file_in, if_else_check = FALSE){
   opened <- 1
   closed <- 0
   if(find == "}"){
@@ -129,6 +149,16 @@ find_closing <- function(find = "}", line_no, file_in){
     line_no <- line_no + 1
     if(grepl(start_char, file_in[line_no], fixed = TRUE))  opened <- opened + 1
     if(grepl(end_char,   file_in[line_no], fixed = TRUE))  closed <- closed + 1
+    if(if_else_check){
+      else_found <- FALSE
+      same_line_check <- grepl("else",   file_in[line_no], fixed = TRUE) #same line
+      next_line_check <- grepl("else",   file_in[line_no + 1], fixed = TRUE) #next line
+      if(same_line_check | next_line_check){
+        closed <- closed - 1
+        if(next_line_check) line_no <- line_no + 1
+      }
+
+    }
     if(opened == closed) break
   }
   return(line_no)
