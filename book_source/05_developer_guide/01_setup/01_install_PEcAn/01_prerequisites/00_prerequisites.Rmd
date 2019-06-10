@@ -1,7 +1,0 @@
-### Installation Prerequisites
-
-Please review the following topics before starting PEcAn installation
-
-- [VM Creation][Creating a Virtual Machine]
-- [Installing PEcAn Data][Installing data for PEcAn]
-- [Enabling Remote Execution][Remote Execution with PEcAn]
