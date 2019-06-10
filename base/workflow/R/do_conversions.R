@@ -21,6 +21,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   dbfiles.local <- settings$database$dbfiles
   dbfiles <- ifelse(!PEcAn.remote::is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, dbfiles.local)
   PEcAn.logger::logger.debug("do.conversion outdir",dbfiles)
+  # For each input
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
     if (is.null(input)) {
@@ -31,12 +32,12 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     PEcAn.logger::logger.info("PROCESSING: ",input.tag)
     
     
-    ic.flag <- fia.flag <- FALSE
+    ed.ic.flag <- fia.flag <- FALSE
     
     if ((input.tag %in% c("css", "pss", "site")) && 
         is.null(input$path) && !is.null(input$source)) {
       if(!is.null(input$useic)){ # set <useic>TRUE</useic> if IC Workflow, leave empty if not
-        ic.flag  <- TRUE
+        ed.ic.flag  <- TRUE
       }else if(input$source == "FIA"){
         fia.flag <- TRUE
         # possibly a warning for deprecation in the future
@@ -45,7 +46,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     
     # IC conversion : for now for ED only, hence the css/pss/site check
     # <useic>TRUE</useic>
-    if (ic.flag) {
+    if (ed.ic.flag) {
       settings <- PEcAn.data.land::ic_process(settings, input, dir = dbfiles, overwrite  = overwrite.ic)
       needsave <- TRUE
     }
@@ -54,6 +55,16 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     if (fia.flag) {
       settings <- PEcAn.data.land::fia.to.psscss(settings, overwrite = overwrite.fia)
       needsave <- TRUE
+    }
+    
+    # BADM IC
+    if(input.tag == "poolinitcond" && is.null(input$path)){
+      settings$run$inputs[[i]]$path <- PEcAn.data.land::BADM_IC_process(settings, dir=dbfiles, overwrite=FALSE)
+      needsave <- TRUE
+      ## NOTES: at the moment only processing soil locally. Need to think about how to generalize this
+      ## because many models will read PEcAn standard in write.configs and write out into settings
+      ## which is done locally in rundir and then rsync'ed to remote
+      ## rather than having a model-format soils file that is processed remotely
     }
     
     # soil extraction
