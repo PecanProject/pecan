@@ -201,26 +201,36 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
 
         # Check if trait data have changed
         PEcAn.logger::logger.debug("Checking if trait data have changed")
-        current_traits <- dplyr::bind_rows(trait.data.check, .id = "trait") %>%
-          dplyr::select(-mean, -stat)
-        existing_traits <- PEcAn.utils::load_local(
-          need_paths[["trait_data"]]
-        )[["trait.data"]] %>%
-          dplyr::bind_rows(.id = "trait") %>%
-          dplyr::select(-mean, -stat)
-        diff_traits <- symmetric_setdiff(current_traits, existing_traits)
-
-        if (nrow(diff_traits) > 0) {
-          diff_summary <- diff_traits %>%
-            dplyr::count(source, trait)
-          PEcAn.logger::logger.error(
-            "\n Prior has changed. \n",
-            "Here are the number of differing trait records by trait:\n",
-            PEcAn.logger::print2string(diff_summary),
-            wrap = FALSE
+        if (length(trait.data.check) != length(trait.data)) {
+          PEcAn.logger::logger.warn(
+            "Lengths of new and existing `trait.data` differ. ",
+            "Re-running meta-analysis."
           )
           foundallfiles <- FALSE
+        } else if (length(trait.data.check) == 0) {
+          PEcAn.logger::logger.warn("New and existing `trait.data` are both empty. Skipping this check.")
+        } else {
+          current_traits <- dplyr::bind_rows(trait.data.check, .id = "trait") %>%
+            dplyr::select(-mean, -stat)
+          existing_traits <- PEcAn.utils::load_local(
+            need_paths[["trait_data"]]
+          )[["trait.data"]] %>%
+            dplyr::bind_rows(.id = "trait") %>%
+            dplyr::select(-mean, -stat)
+          diff_traits <- symmetric_setdiff(current_traits, existing_traits)
+          if (nrow(diff_traits) > 0) {
+            diff_summary <- diff_traits %>%
+              dplyr::count(source, trait)
+            PEcAn.logger::logger.error(
+              "\n Prior has changed. \n",
+              "Here are the number of differing trait records by trait:\n",
+              PEcAn.logger::print2string(diff_summary),
+              wrap = FALSE
+            )
+            foundallfiles <- FALSE
+          }
         }
+        
 
         if (foundallfiles) {
           PEcAn.logger::logger.info(
