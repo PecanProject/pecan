@@ -7,7 +7,7 @@
 #' @export
 stamp_started <- function(con, run) {
   if (!is.null(con)) {
-    run_id_string <- format(run, scientific = TRUE)
+    run_id_string <- format(run, scientific = FALSE)
     db.query(query = paste("UPDATE runs SET started_at = NOW() WHERE id = ", run_id_string), con = con)
   } else {
     PEcAn.logger::logger.debug("Connection is null. Not actually writing timestamps to database")
@@ -18,7 +18,7 @@ stamp_started <- function(con, run) {
 #' @export
 stamp_finished <- function(con, run) {
   if (!is.null(con)) {
-    run_id_string <- format(run, scientific = TRUE)
+    run_id_string <- format(run, scientific = FALSE)
     db.query(query = paste("UPDATE runs SET finished_at = NOW() WHERE id = ", run_id_string), con = con)
   } else {
     PEcAn.logger::logger.debug("Connection is null. Not actually writing timestamps to database")

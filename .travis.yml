@@ -1,17 +1,13 @@
 # Follow instructions on:
 # https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
 
-# A few blocks in here can be removed when Travis updates its Ubuntu image past 
-# trusty. They are marked with TRUSTY for easy grepping.
-
 language: r
 r:
   - release
   - devel
   - oldrel
 
-# TRUSTY: Change version when 16.04 image is available.
-dist: trusty
+dist: xenial
 sudo: required
 
 env:
@@ -40,7 +36,6 @@ cache:
 addons:
   apt:
     sources:
-      - sourceline: 'ppa:nschloe/hdf5-backports'
       - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
     packages:
       - bc
@@ -49,6 +44,8 @@ addons:
       - jags
       - libcurl4-openssl-dev
       - libgdal-dev
+      - libgl1-mesa-dev
+      - libglu1-mesa-dev
       - libgmp-dev
       - libhdf5-dev
       - liblapack-dev
@@ -79,10 +76,11 @@ addons:
       - r-cran-rcpp
       - r-cran-rcurl
       - r-cran-redland
+      - r-cran-rjags
       - r-cran-rncl
       - r-cran-roxygen2
       - r-cran-rsqlite
-      - r-cran-sf
+      # - r-cran-sf
       - r-cran-shiny
       - r-cran-sirt
       - r-cran-testthat
