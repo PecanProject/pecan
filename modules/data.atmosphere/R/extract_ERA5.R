@@ -48,7 +48,7 @@ ERA5_extract <-
               t <- ncdf4::ncvar_get(nc_data, "time")
               tunits <- ncdf4::ncatt_get(nc_data, 'time')
               tustr <- strsplit(tunits$units, " ")
-              timestamp = as.POSIXct(t * 3600, tz = 'GMT', origin = tustr[[1]][3])
+              timestamp <- as.POSIXct(t * 3600, tz = "UTC", origin = tustr[[1]][3])
               try(ncdf4::nc_close(nc_data))
 
               
