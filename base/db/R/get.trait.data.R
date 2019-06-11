@@ -265,6 +265,23 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
                              ids_are_cultivars = (pfttype == "cultivar"))
   traits <- names(trait.data)
 
+  if (length(trait.data) > 0) {
+    trait_counts <- trait.data %>%
+      dplyr::bind_rows(.id = "trait") %>%
+      dplyr::count(trait)
+
+    PEcAn.logger::logger.info(
+      "\n Number of observations per trait for PFT ", shQuote(pft[["name"]]), ":\n",
+      PEcAn.logger::print2string(trait_counts, n = Inf),
+      wrap = FALSE
+    )
+  } else {
+    PEcAn.logger::logger.warn(
+      "None of the requested traits were found for PFT ",
+      format(pft_members[["id"]], scientific = FALSE)
+    )
+  }
+
   # get list of existing files so they get ignored saving
   old.files <- list.files(path = pft$outdir)
 
@@ -304,17 +321,6 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
     dplyr::bind_rows(trait.data),
     file.path(pft$outdir, "trait.data.csv"),
     row.names = FALSE
-  )
-
-  trait_counts <- trait.data %>%
-    dplyr::bind_rows(.id = "trait") %>%
-    dplyr::count(trait)
-
-  PEcAn.logger::logger.info(
-    "\n Number of observations per trait for PFT ",
-    shQuote(pft[["name"]]), ":\n",
-    PEcAn.logger::print2string(trait_counts, n = Inf),
-    wrap = FALSE
   )
 
   ### save and store in database all results except those that were there already
