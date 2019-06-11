@@ -23,7 +23,7 @@ downscale_ShortWave_to_hrly <- function(debiased, time0, time_end, lat, lon, out
     hr <- (doy - floor(doy)) * 24 # hour of day for each element of doy
     
     ## calculate potential radiation
-    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lon, lat, dt, hr)
+    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
     rpot <- 1366 * cosz
     return(rpot)
   }
