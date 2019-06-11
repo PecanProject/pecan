@@ -237,7 +237,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   ## downscale shortwave to hourly
   time0 = min(forecasts$timestamp)
   time_end = max(forecasts$timestamp)
-  ShortWave.ds = PEcAn.data.atmosphere::downscale_ShortWave_to_hrly(forecasts, time0, time_end, lat = 45.805925, lon = -90.07961, output_tz= "UTC")%>% 
+  ShortWave.ds = PEcAn.data.atmosphere::downscale_ShortWave_to_hrly(forecasts, time0, time_end, lat = lat.in, lon = lon.in, output_tz= "UTC")%>% 
     dplyr::group_by_at(c("NOAA.member", "timestamp")) %>% 
     dplyr::summarize(surface_downwelling_shortwave_flux_in_air = mean(surface_downwelling_shortwave_flux_in_air))
   
