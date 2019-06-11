@@ -29,7 +29,7 @@ Imports:
     ggplot2,
     gridExtra,
     reshape2,
-    dbplyr,
+    dbplyr (== 1.3.0),
     SimilarityMeasures,
     zoo
 Suggests:

@@ -110,7 +110,7 @@ def receiver():
 
     # receive 1 message at a time, call callback function
     channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(callback, queue=rabbitmq_queue)
+    channel.basic_consume(on_message_callback=callback, queue=rabbitmq_queue)
 
     # receive messages
     worker = None
