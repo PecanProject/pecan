@@ -5,6 +5,7 @@
 #' \code{data.frame(vmax = 1, b0 = 2)} or \code{list(vmax = 1, b0 = 2)}
 #' @param settings
 #' @param run.id
+#' @param local.rundir location to store copied parameter file
 #'
 #' @return
 #' @export
@@ -24,15 +25,12 @@ write_params_ctsm <-
   function(defaults = system.file('clm5_params.c171117_0001.nc', package = 'PEcAn.CTSM'),
            trait.values,
            settings,
-           run.id) {
+           run.id = 1, 
+           local.rundir = tempdir()) {
     
     ## Copy and open default parameter files
     ctsm.param.default <-
       system.file('clm5_params.c171117_0001.nc', package = 'PEcAn.CTSM')
-    if (!exists('local.rundir'))
-      local.rundir <- tempdir()
-    if (!exists('run.id'))
-      run.id <- 1
     ctsm.param.file <-
       file.path(local.rundir, paste0("ctsm_params.", run.id, ".nc"))
     file.copy(ctsm.param.default, ctsm.param.file)
