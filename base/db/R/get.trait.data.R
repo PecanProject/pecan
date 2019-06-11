@@ -87,6 +87,13 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
     PEcAn.logger::logger.severe("Unknown pft type! Expected 'plant' or 'cultivar', got", pfttype)
   }
 
+  # ANS: Need to do this conversion for the check against existing
+  # membership later on. Otherwise, `NA` from the CSV is interpreted
+  # as different from `""` returned here, even though they are really
+  # the same thing.
+  pft_members <- pft_members %>%
+    dplyr::mutate_if(is.character, ~dplyr::na_if(., ""))
+
   # get the priors
   prior.distns <- PEcAn.DB::query.priors(pft = pftid, trstr = PEcAn.utils::vecpaste(trait.names), con = dbcon)
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
@@ -145,15 +152,20 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
         if (!foundallfiles) {
           PEcAn.logger::logger.warn(
             "The following files are in database but not found on disk: ",
-            paste(shQuote(full_paths[!files_exist]), collapse = ", "), ". ",
+            paste(shQuote(need_files[!files_exist]), collapse = ", "), ". ",
             "Re-running meta-analysis."
           )
         }
 
         # Check if PFT membership has changed
         PEcAn.logger::logger.debug("Checking if PFT membership has changed.")
-        existing_membership <- utils::read.csv(need_paths[["pft_membership"]],
-                                               stringsAsFactors = FALSE)
+        existing_membership <- utils::read.csv(
+          need_paths[["pft_membership"]],
+          # Columns are: id, genus, species, scientificname
+          # Need this so NA values are
+          colClasses = c("double", "character", "character", "character"),
+          stringsAsFactors = FALSE
+        )
         diff_membership <- symmetric_setdiff(
           existing_membership,
           pft_members,
