@@ -323,7 +323,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   PEcAn.logger::logger.debug(
     "The following posterior files found in PFT outdir ",
     "(", shQuote(pft[["outdir"]]), ") will be registered in BETY ",
-    "under posterior ID ", format(pft[["posteriorid"]]), ": ",
+    "under posterior ID ", format(pft[["posteriorid"]], scientific = FALSE), ": ",
     paste(shQuote(store_files), collapse = ", "), ". ",
     "The following files (if any) will not be registered because they already existed: ",
     paste(shQuote(intersect(store_files, old.files)), collapse = ", "),
@@ -388,7 +388,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
     # to double by `lapply`. This works fine if we switch to
     # `query_priors`, but haven't done so yet because that requires
     # prepared statements and therefore requires the Postgres driver. 
-    all_priors_list <- lapply(format(pft_ids), query.priors,
+    all_priors_list <- lapply(format(pft_ids, scientific = FALSE), query.priors,
                               con = dbcon, trstr = trait.names)
     trait.names <- unique(unlist(lapply(all_priors_list, rownames)))
     # Eventually, can replace with this:

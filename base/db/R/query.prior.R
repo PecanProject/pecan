@@ -35,7 +35,7 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 
   if (inherits(pft, "integer64")) {
     # Convert to character with correct representation
-    pft <- format(pft)
+    pft <- format(pft, scientific = FALSE)
   }
   
   if (is.null(con)) {
@@ -62,7 +62,7 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
       "JOIN variables ON priors.variable_id = variables.id",
       "JOIN pfts_priors ON pfts_priors.prior_id = priors.id",
       "JOIN pfts ON pfts.id = pfts_priors.pft_id",
-      "WHERE pfts.id = ", format(pft))
+      "WHERE pfts.id = ", format(pft, scientific = FALSE))
 
   if (!is.null(trstr) && trstr != "''") {
     if (length(trstr) > 1) {
