@@ -4,7 +4,7 @@
 \alias{netcdf.writer.BADM}
 \title{netcdf.writer.BADAM}
 \usage{
-netcdf.writer.BADM(lat, long, siteid, outdir)
+netcdf.writer.BADM(lat, long, siteid, outdir, ens)
 }
 \arguments{
 \item{lat}{numeric latitude}

@@ -186,7 +186,7 @@ entries <- entries[-which(ind),]
 #' @return a dataframe with file, host, mimetype, formatname, startdate, enddate and dbfile.name columns
 #' @export
 #'
-netcdf.writer.BADM <- function(lat, long, siteid, outdir){
+netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
  
   
   #Reading in the BADM data
@@ -219,11 +219,13 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir){
   input$dims <- dims
   input$vals <- variables
   
+
   return(pool_ic_list2netcdf(
     input = input,
     outdir = outdir,
-    siteid = siteid
-  ))
+    siteid = siteid,
+    ens
+  )$file)
 }
 
 
@@ -242,22 +244,18 @@ BADM_IC_process <- function(settings, dir, overwrite=TRUE){
   
   new.site <-
     data.frame(
-      id = settings$run$site$id %>% as.character(),
-      lat = settings$run$site$lat %>% as.numeric(),
-      lon = settings$run$site$long %>% as.numeric()
+      id = settings$run$site$id %>% as.numeric(),
+      lat = settings$run$site$lat ,
+      lon = settings$run$site$lon %>% as.numeric()
     )
   
-  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
-  
-  outfolder <-
-    file.path(dbfiles, paste0("BADM_IC_site_", str_ns))
-  
-  
+
   out.ense <- seq_len(settings$ensemble$size) %>%
-    map(~ netcdf.writer.BADM(new.site$lat,
+    purrr::map(~ netcdf.writer.BADM(new.site$lat,
                              new.site$lon,
                              new.site$id,
-                             outfolder))
+                             outdir=dir,
+                             ens=.x))
   
   out.ense <- out.ense %>%
     setNames(rep("path", length(out.ense)))

@@ -32,21 +32,26 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     PEcAn.logger::logger.info("PROCESSING: ",input.tag)
     
     
-    ed.ic.flag <- fia.flag <- FALSE
+    ic.flag <- fia.flag <- FALSE
     
     if ((input.tag %in% c("css", "pss", "site")) && 
         is.null(input$path) && !is.null(input$source)) {
       if(!is.null(input$useic)){ # set <useic>TRUE</useic> if IC Workflow, leave empty if not
-        ed.ic.flag  <- TRUE
+        ic.flag  <- TRUE
       }else if(input$source == "FIA"){
         fia.flag <- TRUE
         # possibly a warning for deprecation in the future
       }
     }
     
+    # BADM IC
+    if(input.tag == "poolinitcond" && is.null(input$path)){
+      ic.flag  <- TRUE
+    }
+    
     # IC conversion : for now for ED only, hence the css/pss/site check
     # <useic>TRUE</useic>
-    if (ed.ic.flag) {
+    if (ic.flag) {
       settings <- PEcAn.data.land::ic_process(settings, input, dir = dbfiles, overwrite  = overwrite.ic)
       needsave <- TRUE
     }
@@ -57,15 +62,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       needsave <- TRUE
     }
     
-    # BADM IC
-    if(input.tag == "poolinitcond" && is.null(input$path)){
-      settings$run$inputs[[i]]$path <- PEcAn.data.land::BADM_IC_process(settings, dir=dbfiles, overwrite=FALSE)
-      needsave <- TRUE
-      ## NOTES: at the moment only processing soil locally. Need to think about how to generalize this
-      ## because many models will read PEcAn standard in write.configs and write out into settings
-      ## which is done locally in rundir and then rsync'ed to remote
-      ## rather than having a model-format soils file that is processed remotely
-    }
+
     
     # soil extraction
     if(input.tag == "soil" && is.null(input$path)){
