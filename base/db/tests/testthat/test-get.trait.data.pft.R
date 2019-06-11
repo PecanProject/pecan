@@ -62,6 +62,11 @@ test_that("error cases complain",{
 })
 
 test_that("PFT with no trait data (SIPNET soil) works.", {
+  soil_pft <- dplyr::tbl(con, "pfts") %>%
+    dplyr::filter(name == "soil.ALL") %>%
+    dplyr::count() %>%
+    dplyr::pull()
+  skip_if_not(soil_pft == 1, "`soil.ALL` PFT not present in BETY.")
   sipnet_soil <- get.trait.data(list(pft = list(name = "soil.ALL",
                                                 outdir = outdir)),
                                 modeltype = "SIPNET",

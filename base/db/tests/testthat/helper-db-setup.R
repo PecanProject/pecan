@@ -17,7 +17,8 @@ get_db_params <- function() {
   if (!is.null(option_params)) {
     return(option_params)
   } else if (is_ci) {
-    return(list(host = "localhost", user = "bety", password = "bety"))
+    return(list(host = "localhost", user = "bety", password = "bety",
+                driver = "Postgres"))
   } else {
     if (PEcAn.remote::fqdn() == "pecan2.bu.edu") {
       return(list(host = "psql-pecan.bu.edu", driver = "PostgreSQL",
