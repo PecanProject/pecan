@@ -60,3 +60,17 @@ test_that("error cases complain",{
   expect_error(get_pft("NOTAPFT"), "Could not find pft")
   expect_error(get_pft("soil"), "Multiple PFTs named soil")
 })
+
+test_that("PFT with no trait data (SIPNET soil) works.", {
+  sipnet_soil <- get.trait.data(list(pft = list(name = "soil.ALL",
+                                                outdir = outdir)),
+                                modeltype = "SIPNET",
+                                dbfiles = dbdir,
+                                database = get_db_params(),
+                                forceupdate = FALSE)
+  # Remove new record
+  DBI::dbExecute(con, "DELETE FROM dbfiles WHERE container_type = 'Posterior' AND container_id = $1",
+                 list(sipnet_soil[[1]][["posteriorid"]]))
+  DBI::dbExecute(con, "DELETE FROM posteriors WHERE id = $1",
+                 list(sipnet_soil[[1]][["posteriorid"]]))
+})

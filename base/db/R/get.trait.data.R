@@ -155,79 +155,80 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
             paste(shQuote(need_files[!files_exist]), collapse = ", "), ". ",
             "Re-running meta-analysis."
           )
-        }
-
-        # Check if PFT membership has changed
-        PEcAn.logger::logger.debug("Checking if PFT membership has changed.")
-        existing_membership <- utils::read.csv(
-          need_paths[["pft_membership"]],
-          # Columns are: id, genus, species, scientificname
-          # Need this so NA values are
-          colClasses = c("double", "character", "character", "character"),
-          stringsAsFactors = FALSE
-        )
-        diff_membership <- symmetric_setdiff(
-          existing_membership,
-          pft_members,
-          xname = "existing",
-          yname = "current"
-        )
-        if (nrow(diff_membership) > 0) {
-          PEcAn.logger::logger.error(
-            "\n PFT membership has changed. \n",
-            "Difference is:\n",
-            PEcAn.logger::print2string(diff_membership),
-            wrap = FALSE
-          )
-          foundallfiles <- FALSE
-        }
-
-        # Check if priors have changed
-        PEcAn.logger::logger.debug("Checking if priors have changed")
-        existing_prior <- PEcAn.utils::load_local(need_paths[["priors"]])[["prior.distns"]]
-        diff_prior <- symmetric_setdiff(
-          dplyr::as_tibble(prior.distns, rownames = "trait"),
-          dplyr::as_tibble(existing_prior, rownames = "trait")
-        )
-        if (nrow(diff_prior) > 0) {
-          PEcAn.logger::logger.error(
-            "\n Prior has changed. \n",
-            "Difference is:\n",
-            PEcAn.logger::print2string(diff_prior),
-            wrap = FALSE
-          )
-          foundallfiles <- FALSE
-        }
-
-        # Check if trait data have changed
-        PEcAn.logger::logger.debug("Checking if trait data have changed")
-        if (length(trait.data.check) != length(trait.data)) {
-          PEcAn.logger::logger.warn(
-            "Lengths of new and existing `trait.data` differ. ",
-            "Re-running meta-analysis."
-          )
-          foundallfiles <- FALSE
-        } else if (length(trait.data.check) == 0) {
-          PEcAn.logger::logger.warn("New and existing `trait.data` are both empty. Skipping this check.")
         } else {
-          current_traits <- dplyr::bind_rows(trait.data.check, .id = "trait") %>%
-            dplyr::select(-mean, -stat)
-          existing_traits <- PEcAn.utils::load_local(
-            need_paths[["trait_data"]]
-          )[["trait.data"]] %>%
-            dplyr::bind_rows(.id = "trait") %>%
-            dplyr::select(-mean, -stat)
-          diff_traits <- symmetric_setdiff(current_traits, existing_traits)
-          if (nrow(diff_traits) > 0) {
-            diff_summary <- diff_traits %>%
-              dplyr::count(source, trait)
+          # Check if PFT membership has changed
+          PEcAn.logger::logger.debug("Checking if PFT membership has changed.")
+          existing_membership <- utils::read.csv(
+            need_paths[["pft_membership"]],
+            # Columns are: id, genus, species, scientificname
+            # Need this so NA values are
+            colClasses = c("double", "character", "character", "character"),
+            stringsAsFactors = FALSE,
+            na.strings = ""
+          )
+          diff_membership <- symmetric_setdiff(
+            existing_membership,
+            pft_members,
+            xname = "existing",
+            yname = "current"
+          )
+          if (nrow(diff_membership) > 0) {
             PEcAn.logger::logger.error(
-              "\n Prior has changed. \n",
-              "Here are the number of differing trait records by trait:\n",
-              PEcAn.logger::print2string(diff_summary),
+              "\n PFT membership has changed. \n",
+              "Difference is:\n",
+              PEcAn.logger::print2string(diff_membership),
               wrap = FALSE
             )
             foundallfiles <- FALSE
+          }
+
+          # Check if priors have changed
+          PEcAn.logger::logger.debug("Checking if priors have changed")
+          existing_prior <- PEcAn.utils::load_local(need_paths[["priors"]])[["prior.distns"]]
+          diff_prior <- symmetric_setdiff(
+            dplyr::as_tibble(prior.distns, rownames = "trait"),
+            dplyr::as_tibble(existing_prior, rownames = "trait")
+          )
+          if (nrow(diff_prior) > 0) {
+            PEcAn.logger::logger.error(
+              "\n Prior has changed. \n",
+              "Difference is:\n",
+              PEcAn.logger::print2string(diff_prior),
+              wrap = FALSE
+            )
+            foundallfiles <- FALSE
+          }
+
+          # Check if trait data have changed
+          PEcAn.logger::logger.debug("Checking if trait data have changed")
+          existing_trait_data <- PEcAn.utils::load_local(
+            need_paths[["trait_data"]]
+          )[["trait.data"]]
+          if (length(trait.data.check) != length(existing_trait_data)) {
+            PEcAn.logger::logger.warn(
+              "Lengths of new and existing `trait.data` differ. ",
+              "Re-running meta-analysis."
+            )
+            foundallfiles <- FALSE
+          } else if (length(trait.data.check) == 0) {
+            PEcAn.logger::logger.warn("New and existing trait data are both empty. Skipping this check.")
+          } else {
+            current_traits <- dplyr::bind_rows(trait.data.check, .id = "trait") %>%
+              dplyr::select(-mean, -stat)
+            existing_traits <- dplyr::bind_rows(existing_trait_data, .id = "trait") %>%
+              dplyr::select(-mean, -stat)
+            diff_traits <- symmetric_setdiff(current_traits, existing_traits)
+            if (nrow(diff_traits) > 0) {
+              diff_summary <- diff_traits %>%
+                dplyr::count(source, trait)
+              PEcAn.logger::logger.error(
+                "\n Prior has changed. \n",
+                "Here are the number of differing trait records by trait:\n",
+                PEcAn.logger::print2string(diff_summary),
+                wrap = FALSE
+              )
+              foundallfiles <- FALSE
+            }
           }
         }
         
