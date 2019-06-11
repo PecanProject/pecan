@@ -85,7 +85,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     run_id <- basename(outdir)
     workflow_dir <- dirname(dirname(outdir))
     rundir <- file.path(workflow_dir, "run", run_id)
-    readme <- file(file.path(rundir, "README.txt"))
+    readme <- file.path(rundir, "README.txt")
     runtype <- readLines(readme, n = 1)
     if (grepl("ensemble", runtype)) {
       PEcAn.logger::logger.info("This is an ensemble run. ",
