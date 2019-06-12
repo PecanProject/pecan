@@ -4,10 +4,12 @@
 \alias{jagify}
 \title{Prepare trait data for JAGS meta-analysis}
 \usage{
-jagify(result)
+jagify(result, use_ghs = FALSE)
 }
 \arguments{
 \item{result}{input trait data}
+
+\item{use_ghs}{do not exclude greenhouse data if TRUE}
 }
 \value{
 result transformed to meet requirements of PEcAn meta-analysis model

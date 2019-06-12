@@ -12,7 +12,7 @@ This will use the following items from setings:
 }}
 \usage{
 run.meta.analysis(pfts, iterations, random = TRUE, threshold = 1.2,
-  dbfiles, database)
+  dbfiles, database, use_ghs = FALSE)
 }
 \arguments{
 \item{pfts}{the list of pfts to get traits for}
@@ -27,6 +27,8 @@ run.meta.analysis(pfts, iterations, random = TRUE, threshold = 1.2,
 \item{dbfiles}{location where previous results are found}
 
 \item{database}{database connection parameters}
+
+\item{use_ghs}{do not exclude greenhouse data if TRUE}
 }
 \value{
 nothing, as side effect saves \code{trait.mcmc} created by
