@@ -464,6 +464,25 @@ symmetric_setdiff <- function(x, y, xname = "x", yname = "y",
     dplyr::mutate(!!namecol := xname)
   yx <- dplyr::setdiff(y, x) %>%
     dplyr::mutate(!!namecol := yname)
+  is_i64 <- c(
+    vapply(xy, inherits, logical(1), what = "integer64"),
+    vapply(yx, inherits, logical(1), what = "integer64"),
+  )
+  if (any(is_i64)) {
+    PEcAn.logger::logger.debug(
+      "Detected at least one `integer64` column. ",
+      "Converting to `numeric` for comparison."
+    )
+    if (requireNamespace("bit64", quietly = TRUE)) {
+      xy <- dplyr::mutate_if(xy, bit64::is.integer64, as.numeric)
+      yx <- dplyr::mutate_if(xy, bit64::is.integer64, as.numeric)
+    } else {
+      PEcAn.logger::logger.warn(
+        '"bit64" package required for `integer64` conversion, but not installed. ',
+        "Skipping conversion, which may produce weird results!"
+      )
+    }
+  }
   dplyr::bind_rows(xy, yx) %>%
     dplyr::select(!!namecol, dplyr::everything())
 }
