@@ -19,11 +19,18 @@
 ##' @author David LeBauer
 jagify <- function(result, use_ghs = FALSE) {
   
+
   ## Rename 'name' column from 'treatment' table to trt_id.  Remove NAs. Assign treatments.
   ## Finally, summarize the results by calculating summary statistics from experimental replicates
   r <- result[!is.na(result$mean), ]
   colnames(r)[colnames(r) == "name"] <- "trt_id"
   r <- transform.nas(r)
+  
+  # exclude greenhouse data unless requested otherwise
+  if(!use_ghs){
+    r <- r[r$greenhouse != 1, ]
+  }
+  
   r <- PEcAn.DB::assign.treatments(r)
   r <- PEcAn.utils::summarize.result(r)
   r <- subset(transform(r, 
