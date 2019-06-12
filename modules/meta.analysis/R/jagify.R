@@ -13,10 +13,11 @@
 ##' @name jagify
 ##' @title Prepare trait data for JAGS meta-analysis
 ##' @param result input trait data
+##' @param use_ghs do not exclude greenhouse data if TRUE
 ##' @return result transformed to meet requirements of PEcAn meta-analysis model
 ##' @export
 ##' @author David LeBauer
-jagify <- function(result) {
+jagify <- function(result, use_ghs = FALSE) {
   
   ## Rename 'name' column from 'treatment' table to trt_id.  Remove NAs. Assign treatments.
   ## Finally, summarize the results by calculating summary statistics from experimental replicates
