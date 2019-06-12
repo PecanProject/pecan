@@ -307,7 +307,9 @@ check.settings <- function(settings, force=FALSE) {
     } else {
       # everything is used as defined
       settings$meta.analysis$random.effects$on      <- as.logical(settings$meta.analysis$random.effects$on)
-      settings$meta.analysis$random.effects$use_ghs <- as.logical(settings$meta.analysis$random.effects$use_ghs)
+      if(!is.null(settings$meta.analysis$random.effects$use_ghs)){
+        settings$meta.analysis$random.effects$use_ghs <- as.logical(settings$meta.analysis$random.effects$use_ghs)
+      }
     }
     if (is.null(settings$meta.analysis$threshold)) {
       settings$meta.analysis$threshold <- 1.2
