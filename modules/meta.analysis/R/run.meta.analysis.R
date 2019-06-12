@@ -50,7 +50,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
   
   ## Convert data to format expected by pecan.ma
-  jagged.data <- lapply(trait.data, PEcAn.MA::jagify, use_ghs)
+  jagged.data <- lapply(trait.data, PEcAn.MA::jagify, use_ghs = use_ghs)
   
   if(!use_ghs){
     # check if any data left after excluding greenhouse
@@ -58,7 +58,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
     if(any(all_trait_check == 0)){
       nodat <- which(all_trait_check == 0)
       jagged.data[nodat] <- NULL
-      PEcAn.logger::logger.info("No more data left after excluding greenhouse data for the following traits:", names(all_trait_check)[nodat])
+      PEcAn.logger::logger.info("No more data left after excluding greenhouse data for the following traits:", paste(names(all_trait_check)[nodat], collapse = ", "))
     }
   }
 

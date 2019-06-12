@@ -13,7 +13,7 @@
 ##' @name jagify
 ##' @title Prepare trait data for JAGS meta-analysis
 ##' @param result input trait data
-##' @param use_ghs do not exclude greenhouse data if TRUE
+##' @param use_ghs (Logical) If `FALSE`, exclude all greenhouse data. If `TRUE`, use all data, including greenhouse data.
 ##' @return result transformed to meet requirements of PEcAn meta-analysis model
 ##' @export
 ##' @author David LeBauer
