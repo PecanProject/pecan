@@ -53,7 +53,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   jagged.data <- lapply(trait.data, PEcAn.MA::jagify, use_ghs)
   
   if(!use_ghs){
-    # check if any data eft after excluding greenhouse
+    # check if any data left after excluding greenhouse
     all_trait_check <- sapply(jagged.data, nrow)
     if(any(all_trait_check == 0)){
       nodat <- which(all_trait_check == 0)
