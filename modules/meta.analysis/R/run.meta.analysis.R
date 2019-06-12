@@ -29,6 +29,12 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
     return(NA)
   }
   
+  # make sure random and use_ghs is logical, and threshold is numeric
+  # when someone re-reads xml and continues from meta.analysis these can cause bugs (especially the threshold bug is very subtle)
+  random    <- as.logical(random)
+  use_ghs   <- as.logical(use_ghs)
+  threshold <- as.numeric(threshold)
+  
   # get list of existing files so they get ignored saving
   old.files <- list.files(path = pft$outdir)
   
