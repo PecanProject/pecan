@@ -26,7 +26,6 @@ jagify <- function(result, use_ghs = FALSE) {
   r <- transform.nas(r)
   r <- PEcAn.DB::assign.treatments(r)
   r <- PEcAn.utils::summarize.result(r)
-  r$greenhouse[is.na(r$greenhouse)] <- 0
   r <- subset(transform(r, 
                         stat = as.numeric(stat), 
                         n = as.numeric(n), 
