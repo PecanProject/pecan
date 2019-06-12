@@ -22,5 +22,5 @@ The algorithm (incorrectly) assumes that each site has a unique set of experimen
 treatments.
 }
 \author{
-David LeBauer, Carl Davidson
+David LeBauer, Carl Davidson, Alexey Shiklomanov
 }

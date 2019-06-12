@@ -4,30 +4,37 @@
 \alias{query.priors}
 \title{Query Priors}
 \usage{
-query.priors(pft, trstr = NULL, out = NULL, con = NULL, ...)
+query.priors(pft, trstr = NULL, con = NULL, ...)
 }
 \arguments{
 \item{pft}{ID number of the PFT in the database}
 
-\item{trstr}{string of traits to query priors for}
+\item{trstr}{String of traits to query priors for. If passed as a
+character vector, it will be concatenated to a single string
+using [PEcAn.utils::vecpaste()].}
 
-\item{out}{output location}
+\item{con}{Database connection object.}
 
-\item{con}{database connection, can be list of arguments for connecting to database}
-
-\item{...}{optional arguments for connecting to database (e.g. password, user name, database)}
+\item{...}{Optional arguments for connecting to database (e.g.
+password, user name, database).}
 }
 \value{
-priors for a given pft
+`data.frame` of priors for each trait and the given PFT.
 }
 \description{
-Query priors associated with a string of traits and plant functional type
+Query priors associated with a plant functional type and a set of traits.
+}
+\details{
+If neither `con` nor `...` are provided, this will try to
+  connect to BETY using a `settings` object in the current
+  environment.
 }
 \examples{
 \dontrun{
-query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
+  con <- db.open(...)
+  query.priors("ebifarm.pavi", c("SLA", "Vcmax", "leaf_width"), con = con)
 }
 }
 \author{
-David LeBauer
+David LeBauer, Alexey Shiklomanov
 }
