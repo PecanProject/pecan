@@ -9,7 +9,7 @@ jagify(result, use_ghs = FALSE)
 \arguments{
 \item{result}{input trait data}
 
-\item{use_ghs}{do not exclude greenhouse data if TRUE}
+\item{use_ghs}{(Logical) If \code{FALSE}, exclude all greenhouse data. If \code{TRUE}, use all data, including greenhouse data.}
 }
 \value{
 result transformed to meet requirements of PEcAn meta-analysis model
