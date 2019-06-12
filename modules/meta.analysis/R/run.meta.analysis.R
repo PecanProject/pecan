@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon) {
+run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = FALSE) {
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, "trait.data.Rdata")) || 
       !file.exists(file.path(pft$outdir, "prior.distns.Rdata"))) {
@@ -155,6 +155,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' @param pfts the list of pfts to get traits for
 ##' @param iterations the number of iterations for the mcmc analysis
 ##' @param random should random effects be used?
+##' @param use_ghs do not exclude greenhouse data if TRUE
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
 ##' @param threshold Gelman-Rubin convergence diagnostic, passed on to
@@ -165,12 +166,12 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database) {
+run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database, use_ghs = FALSE) {
   # process all pfts
   dbcon <- db.open(database)
   on.exit(db.close(dbcon))
 
-  result <- lapply(pfts, run.meta.analysis.pft, iterations, random, threshold, dbfiles, dbcon)
+  result <- lapply(pfts, run.meta.analysis.pft, iterations, random, threshold, dbfiles, dbcon, use_ghs)
 } # run.meta.analysis.R
 ## ==================================================================================================#
 
@@ -191,19 +192,21 @@ runModule.run.meta.analysis <- function(settings) {
                        paste(pft.names, collapse = ", ")))
     
     iterations <- settings$meta.analysis$iter
-    random     <- settings$meta.analysis$random.effects
+    random     <- settings$meta.analysis$random.effects$on
+    use_ghs    <- settings$meta.analysis$random.effects$use_ghs
     threshold  <- settings$meta.analysis$threshold
     dbfiles    <- settings$database$dbfiles
     database   <- settings$database$bety
-    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database)
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database, use_ghs)
   } else if (is.Settings(settings)) {
     pfts       <- settings$pfts
     iterations <- settings$meta.analysis$iter
-    random     <- settings$meta.analysis$random.effects
+    random     <- settings$meta.analysis$random.effects$on
+    use_ghs    <- settings$meta.analysis$random.effects$use_ghs
     threshold  <- settings$meta.analysis$threshold
     dbfiles    <- settings$database$dbfiles
     database   <- settings$database$bety
-    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database)
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database, use_ghs)
   } else {
     stop("runModule.run.meta.analysis only works with Settings or MultiSettings")
   }
