@@ -121,8 +121,8 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
     }
   }
   
-  ### Generate summaries and diagnostics
-  pecan.ma.summary(trait.mcmc, pft$name, pft$outdir, threshold)
+  ### Generate summaries and diagnostics, discard samples if trait failed to converge
+  trait.mcmc <- pecan.ma.summary(trait.mcmc, pft$name, pft$outdir, threshold)
   
   ### Save the meta.analysis output
   save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
