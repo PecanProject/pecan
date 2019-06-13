@@ -15,6 +15,27 @@ round.to.six.hours <- function(date = Sys.time() - lubridate::hours(2)) {
 }
 
 
+ploting_fluxes <- function(obs.raw){
+  obs.plot <- obs.raw %>%
+    tidyr::gather(Param, Value, -c(Date)) %>%
+    filter(!(Param %in% c("FjDay", "U","Day","DoY","FC","FjFay","Hour","Month",
+                          "SC","Ustar","Year","H","Flag")),
+           Value!=-999) %>%
+    #filter((Date %>% as.Date) %in% (names(prep.data) %>% as.Date())) %>%
+    ggplot(aes(Date, Value)) +
+    geom_line(aes(color = Param), lwd = 1) +
+    geom_point(aes(color = Param), size = 3) +
+    facet_wrap( ~ Param, scales = "free",ncol = 1) +
+    scale_x_datetime(breaks = scales::date_breaks("1 hour"),labels = scales::date_format("%j-%H"))+
+    scale_color_brewer(palette = "Set1") +
+    theme_minimal(base_size = 15) +
+    labs(y = "") +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 90, hjust = 1))
+  
+  return(obs.plot)
+}
+
 # # Settings file (including path) is passed in on the command line.
 # args <- commandArgs(trailingOnly = TRUE)
 # if (length(args) < 1) {

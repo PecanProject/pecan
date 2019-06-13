@@ -61,7 +61,6 @@
   <username></username>
   <date>2018/09/07 14:52:35 +0000</date>
  </info>
- <outdir>/fs/data3/kzarada/ouput/PEcAn_1000009774/</outdir>
  <database>
   <bety>
    <user>bety</user>
@@ -69,17 +68,16 @@
    <host>psql-pecan.bu.edu</host>
    <dbname>bety</dbname>
    <driver>PostgreSQL</driver>
-   <write>false</write>
+   <write>TRUE</write>
   </bety>
   <dbfiles>/fs/data3/kzarada/pecan.data/dbfiles/</dbfiles>
  </database>
  <pfts>
   <pft>
-   <name>soil.ALL</name>
+   <name>temperate.deciduous.ALL</name>
    <constants>
     <num>1</num>
    </constants>
-   <posteriorid>1000013117</posteriorid>
   </pft>
  </pfts>
  <meta.analysis>
@@ -87,7 +85,7 @@
   <random.effects>FALSE</random.effects>
  </meta.analysis>
  <ensemble>
-  <size>50</size>
+  <size>20</size>
   <variable>NEE</variable>
   <start.year>2018</start.year>
   <end.year>2018</end.year>
@@ -98,21 +96,12 @@
    <met>
     <method>sampling</method>
    </met>
-   <soil>
-    <parent>parameters</parent>
-   </soil>
-   <vegetation>
-    <parent>soil</parent>
-   </vegetation>
   </samplingspace>
  </ensemble>
  <model>
   <id>10</id>
   <default.param>/fs/data3/kzarada/US_WCr/data/WillowCreek.param</default.param>
  </model>
- <workflow>
-  <id>1000009774</id>
- </workflow>
  <run>
   <site>
    <id>676</id>

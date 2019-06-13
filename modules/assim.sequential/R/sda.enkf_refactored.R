@@ -23,11 +23,11 @@
 sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F, 
                      control=list(trace=T,
                                   interactivePlot=T,
-                                  TimeseriesPlot=T,
-                                  BiasPlot=F,
+                                  TimeseriesPlot=TRUE,
+                                  BiasPlot=FALSE,
                                   plot.title=NULL,
                                   debug=FALSE,
-                                  pause=F),...) {
+                                  pause=FALSE),...) {
 
   if (control$debug) browser()
   ###-------------------------------------------------------------------###
@@ -42,7 +42,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   host       <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
-  processvar <- settings$state.data.assimilation$process.variance
+  processvar <- settings$state.data.assimilation$process.variance %>% as.logical()
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
   # Site location first col is the long second is the lat and row names are the site ids
@@ -315,6 +315,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       if (control$pause) readline(prompt="Press [enter] to continue \n")
       
     } else {
+      mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
+      Pf <- cov(X)
       ###-------------------------------------------------------------------###
       ### No Observations --                                                ###----
       ###-----------------------------------------------------------------### 

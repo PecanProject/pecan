@@ -52,8 +52,8 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwri
 
   #@Hamze, I added the Date variable by using year, doy, and hour and filtered the clim based that and then removed it afterwards.
   dat<-dat %>% 
-    mutate(Date = strptime(paste(V2, V3), format = "%Y %j",   tz = "EST")%>% as.POSIXct()) %>%
-    mutate(Date = as.POSIXct(paste0(Date,  V4, ":00"), format = "%Y-%m-%d %H:%M", tz = "EST")) %>% 
+    mutate(Date = strptime(paste(V2, V3), format = "%Y %j",   tz = "UTC")%>% as.POSIXct()) %>%
+    mutate(Date = as.POSIXct(paste0(Date,  V4, ":00"), format = "%Y-%m-%d %H:%M", tz = "UTC")) %>% 
     filter(Date >= start.time, Date < stop.time) %>% 
     dplyr::select(-Date)
   

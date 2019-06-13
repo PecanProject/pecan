@@ -347,27 +347,35 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   
   #Observed data
   #first merging mean and conv based on the day
-  ready.to.plot <- names(obs.mean)%>%
-    purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
-                 setNames(c('means','covs','Date')))%>%
-    setNames(names(obs.mean))%>%
-    purrr::map_df(function(one.day.data){
-      #CI
-      
-      purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
-                     function(sd, mean){
-                       data.frame(mean-(sd*1.96), mean+(sd*1.96))
-                       
-                     })%>%
-        mutate(Variables=names(one.day.data$means))%>%
-        `colnames<-`(c('2.5%','97.5%','Variables'))%>%
-        mutate(means=one.day.data$means%>%unlist,
-               Type="Data",
-               Date=one.day.data$Date%>%as.POSIXct(tz="EST"))
-      
-      
-    })%>%
-    #filter(Variables %in% var.names)%>%
+  
+  tryCatch({
+      ready.OBS<- names(obs.mean)%>%
+        purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
+                     setNames(c('means','covs','Date')))%>%
+        setNames(names(obs.mean))%>%
+        purrr::map_df(function(one.day.data){
+          #CI
+          
+          purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
+                         function(sd, mean){
+                           data.frame(mean-(sd*1.96), mean+(sd*1.96))
+                           
+                         })%>%
+            mutate(Variables=names(one.day.data$means))%>%
+            `colnames<-`(c('2.5%','97.5%','Variables'))%>%
+            mutate(means=one.day.data$means%>%unlist,
+                   Type="Data",
+                   Date=one.day.data$Date%>%as.POSIXct(tz="EST"))
+          
+          
+        })
+    },
+    error = function(e) {
+      ready.OBS<-NULL
+    }
+  )
+
+  ready.to.plot <- ready.OBS %>%
     bind_rows(ready.FA)
   
   ready.to.plot$Variables%>%unique()%>%
