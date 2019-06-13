@@ -101,8 +101,8 @@ clean:
 # When these are fixed, can go back to simple `dependencies = TRUE`
 depends_R_pkg = ./scripts/time.sh "${1}" Rscript -e " \
 	deps <- if (grepl('base/utils', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; \
-	devtools::install_deps('$(strip $(1))', Ncpus = ${NCPUS}, dependencies = deps);"
-install_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
+	devtools::install_deps('$(strip $(1))', Ncpus = ${NCPUS}, dependencies = deps, upgrade=FALSE);"
+install_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS}, upgrade=FALSE);"
 check_R_pkg = ./scripts/time.sh "${1}" Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::test('"$(strip $(1))"', stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 doc_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::document('"$(strip $(1))"')"

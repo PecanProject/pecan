@@ -1,20 +1,12 @@
 # PEcAn.CTSM
 
-The goal of PEcAn.CTSM is to ...
+The goal of the PEcAn.CTSM is to support CLM5 coupling to PEcAn. These functions will be brought in from the PEcAn.ELM, PEcAn.CTSM_ FATES, and  PEcAn.ELM_FATES packages.
+
 
 ## Installation
 
-You can install the released version of PEcAn.CTSM from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of PEcAn.CTSM from PEcAn.
 
 ``` r
-install.packages("PEcAn.CTSM")
+devtools::install_github("pecanproject/pecan", subdir = 'models/ctsm')
 ```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-## basic example code
-```
-
