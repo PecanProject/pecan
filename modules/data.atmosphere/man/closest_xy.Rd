@@ -10,5 +10,5 @@ closest_xy(slat, slon, infolder, infile)
 Given latitude and longitude coordinates, find NARR x and y indices
 }
 \author{
-Betsy Cowdery
+Betsy Cowdery, Ankur Desai
 }

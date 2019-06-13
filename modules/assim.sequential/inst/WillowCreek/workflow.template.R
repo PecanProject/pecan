@@ -1,37 +1,74 @@
 # ----------------------------------------------------------------------
-# Load required libraries
+#------------------------------------------ Load required libraries-----
 # ----------------------------------------------------------------------
 library(PEcAn.all)
 library(PEcAn.utils)
 library(RCurl)
 library(REddyProc)
-library(purrr)
-#------------------------------------------
-setwd("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek")
-#setwd("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek")
-source('Utils.R')
-source('download_WCr_flux.R')
-source('download_WCr_met.R')
-source("gapfill_WCr.R")
-source('prep.data.assim.R')
-outputPath <- "/fs/data3/kzarada/Projects/WillowCreek"
-xmlPath <-"gefs.sipnet.template.xml"
-#------------------------------------------------------ Preparing the pecan xml
-# Open and read in settings file for PEcAn run.
+library(tidyverse)
+library(furrr)
+plan(multiprocess)
+# ----------------------------------------------------------------------------------------------
+#------------------------------------------ That's all we need xml path and the out folder -----
+# ----------------------------------------------------------------------------------------------
 args <- commandArgs(trailingOnly = TRUE)
+
 if (is.na(args[1])){
-  settings <- PEcAn.settings::read.settings(xmlPath) 
+  xmlTempName <-"gefs.sipnet.template.xml"
 } else {
-  settings.file = args[1]
-  settings <- PEcAn.settings::read.settings(settings.file)
+  xmlTempName = args[1]
 }
 
-#--------------------------- Calling in prepped data 
-sda.start <- as.Date("2018-05-15")
-sda.end <- Sys.Date()
+if (is.na(args[2])){
+  outputPath <- "/fs/data3/kzarada/output"
+} else {
+  outputPath = args[2]
+}
 
+#------------------------------------------------------------------------------------------------
+#------------------------------------------ sourcing the required tools -------------------------
+#------------------------------------------------------------------------------------------------
+c(
+  'Utils.R',
+  'download_WCr.R',
+  "gapfill_WCr.R",
+  'prep.data.assim.R'
+) %>% walk( ~ source(
+  system.file("WillowCreek",
+              .x,
+              package = "PEcAn.assim.sequential")
+))
+#reading xml
+settings <- read.settings(system.file("WillowCreek",
+                                      xmlTempName,
+                                      package ="PEcAn.assim.sequential" ))
+#connecting to DB
+con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+#------------------------------------------------------------------------------------------------
+#------------------------------------------ Preparing the pecan xml -----------------------------
+#------------------------------------------------------------------------------------------------
+#------------------------------------------------------ 
+#--------------------------- Calling in prepped data 
+
+
+all.previous.sims <-list.dirs(outputPath, recursive = F)
+
+if (length(all.previous.sims)>0 & !inherits(con, "try-error")){
+  # Looking through all the old simulations and find the most recent
+  sda.start <-all.previous.sims %>%
+    map_chr( ~ strsplit(.x, "_")[[1]][2]) %>%
+    map_dfr(~db.query(query = paste("SELECT started_at FROM workflows WHERE id =", .x), con = con)) %>%
+    mutate(started_at=as.Date(started_at)) %>% 
+    arrange(desc(started_at)) %>%
+    head(1) %>%
+    pull
+}else{
+  sda.start <-Sys.Date()-14
+}
+
+sda.end <- Sys.Date()
 #if (!exists("prep.data"))
-prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
+prep.data <- prep.data.assim(sda.start-90, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
 #--------------------------- Preparing OBSdata
 obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs
@@ -123,16 +160,6 @@ if (!is.null(settings$meta.analysis)) {
 #sample from parameters used for both sensitivity analysis and Ens
 get.parameter.samples(settings, ens.sample.method = settings$ensemble$samplingspace$parameters$method)
 # 
-# # Write model specific configs
-# # if (PEcAn.utils::status.check("CONFIG") == 0){
-# #   PEcAn.utils::status.start("CONFIG")
-# #   settings <- runModule.run.write.configs(settings)
-# #   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
-# #   PEcAn.utils::status.end()
-# # } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
-# #   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
-# # }
-# # print("---------- Writting Configs Completed ----------")
 setwd(settings$outdir)
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
 settings$state.data.assimilation$start.date <-as.character(met.start)

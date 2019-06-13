@@ -2,8 +2,8 @@ Package: PEcAn.utils
 Type: Package
 Title: PEcAn functions used for ecological forecasts and
     reanalysis
-Version: 1.6.0
-Date: 2018-08-20
+Version: 1.7.0
+Date: 2018-12-03
 Authors@R: c(person("Mike","Dietze"),
              person("David","LeBauer"),
              person("Xiaohui", "Feng"),
@@ -23,38 +23,36 @@ Description: The Predictive Ecosystem Carbon Analyzer
     investigation.
 Imports:
     abind (>= 1.4.5),
-    coda (>= 0.18),
-    data.table,
     dplyr,
-    ggplot2,
     lubridate (>= 1.6.0),
     magrittr,
     ncdf4 (>= 1.15),
     PEcAn.logger,
     PEcAn.remote,
-    PeriodicTable,
-    plyr (>= 1.8.4),
     purrr,
-    randtoolbox,
-    raster,
     RCurl,
-    rjags,
-    sp,
     stringi,
     udunits2 (>= 0.11),
-    xtable,
     XML
 Suggests:
+    coda (>= 0.18),
+    data.table,
+    ggplot2,
     MASS,
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.emulator,
     PEcAn.settings,
     PEcAn.DB,
-    testthat (>= 2.0.0)
+    randtoolbox,
+    raster,
+    rjags,
+    sp,
+    testthat (>= 2.0.0),
+    xtable
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyData: true
-Require: hdf5, plyr
 Encoding: UTF-8
 RoxygenNote: 6.1.1
+Roxygen: list(markdown = TRUE)

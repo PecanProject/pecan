@@ -57,7 +57,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
     # Addin Rhizome an Grain to avoid error in subsequent script processing results
     tmp.result$Rhizome <- 0
     tmp.result$Grain <- 0
-  } else if (genus == "Salix") {
+  } else if (genus %in% c("Salix", "Populus")) {
     if (year_in_run == 1) {
       iplant <- config$pft$iPlantControl
     } else {
@@ -87,7 +87,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
       seneControl = l2n(config$pft$seneControl),
       photoControl = l2n(config$pft$photoParms))
 
-  } else if (genus == "Miscanthus") {
+  } else if (genus %in% c("Miscanthus", "Panicum")) {
     if (year_in_run == 1) {
       iRhizome <- config$pft$iPlantControl$iRhizome
     } else {
@@ -121,7 +121,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
   } else {
     PEcAn.logger::logger.severe(
       "Genus '", genus, "' is not supported by PEcAn.BIOCRO when using BioCro 0.9x.",
-      "Supported genera: Saccharum, Salix, Sorghum, Miscanthus")
+      "Supported genera: Saccharum, Salix, Populus, Sorghum, Miscanthus, Panicum")
   }
   names(tmp.result) <- sub("DayofYear", "doy", names(tmp.result))
   names(tmp.result) <- sub("Hour", "hour", names(tmp.result))

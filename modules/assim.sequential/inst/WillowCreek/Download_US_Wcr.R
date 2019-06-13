@@ -10,7 +10,7 @@
 #'
 #' @examples
 download_US_WCr <- function(start_date, end_date) {
-  base_url <- "http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
+  base_url <- "http://co2.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
   
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)

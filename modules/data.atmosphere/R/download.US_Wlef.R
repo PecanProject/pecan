@@ -102,4 +102,4 @@ download.US_Wlef <- function(start_date, end_date, timestep = 1) {
 } # download.US_Syv.R
 
 # This line is great for testing.
-download.US_Wlef('2018-07-23 06:00', '2018-08-08 06:00', timestep=12)
+#download.US_Wlef('2018-07-23 06:00', '2018-08-08 06:00', timestep=12)

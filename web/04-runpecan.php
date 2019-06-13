@@ -161,12 +161,11 @@ $modeltype=$row['name'];
 $stmt->closeCursor();
 
 // create the workflow execution
-$params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
 $userid=get_userid();
 if ($userid != -1) {
-  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW(), :userid)");
+  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at, created_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW(), NOW(), :userid)");
 } else {
-  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at, created_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW(), NOW())");
 }
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
@@ -174,7 +173,6 @@ $q->bindParam(':notes', $notes_db, PDO::PARAM_STR);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
 $q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
-$q->bindParam(':params', trim($params), PDO::PARAM_STR);
 if ($userid != -1) {
   $q->bindParam(':userid', $userid, PDO::PARAM_INT);
 }
@@ -193,6 +191,15 @@ if ($db_bety_type == 'pgsql') {
 $folder = $output_folder . DIRECTORY_SEPARATOR . 'PEcAn_' . $workflowid;
 if ($pdo->query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}") === FALSE) {
   die('Can\'t update workflow : ' . (error_database()));
+}
+
+# parameters
+$params=json_encode($_REQUEST);
+$ins = $pdo->prepare("INSERT INTO attributes(container_type, container_id, value) VALUES ('workflows', :id, :params);");
+$ins->bindParam(':id', $workflowid, PDO::PARAM_INT);
+$ins->bindParam(':params', $params, PDO::PARAM_STR);
+if ($ins->execute() === FALSE) {
+  die('Can\'t insert attributes : ' . (error_database()));
 }
 
 # quick check on dbfiles_folder
@@ -360,16 +367,22 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    </config.header>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
-if (isset($hostoptions['models']) && isset($hostoptions['models'][$modeltype])) {
-  if (is_array($hostoptions['models'][$modeltype])) {
-    if (isset($hostoptions['models'][$modeltype]['prerun'])) {
-      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]['prerun']) . "</prerun>" . PHP_EOL);      
+if (isset($hostoptions['models'])) {
+  $model_version="${modeltype}";
+  if (isset($hostoptions['models']["${modeltype} (r${revision})"])) {
+    $model_version="${modeltype} (r${revision})";
+  }
+  if (isset($hostoptions['models'][$model_version])) {
+    if (is_array($hostoptions['models'][$model_version])) {
+      if (isset($hostoptions['models'][$model_version]['prerun'])) {
+        fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$model_version]['prerun']) . "</prerun>" . PHP_EOL);      
+      }
+      if (isset($hostoptions['models'][$model_version]['postrun'])) {
+        fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$model_version]['postrun']) . "</postrun>" . PHP_EOL);      
+      }
+    } else {
+      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$model_version]) . "</prerun>" . PHP_EOL);      
     }
-    if (isset($hostoptions['models'][$modeltype]['postrun'])) {
-      fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$modeltype]['postrun']) . "</postrun>" . PHP_EOL);      
-    }
-  } else {
-    fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]) . "</prerun>" . PHP_EOL);      
   }
 }
 fwrite($fh, "  </model>" . PHP_EOL);

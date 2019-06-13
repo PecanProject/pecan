@@ -33,7 +33,7 @@ $xaxis=isset($_REQUEST['xaxis']);
 $xaxis=TRUE;
 
 // get run information
-$stmt = $pdo->prepare("SELECT * FROM workflows WHERE workflows.id=?");
+$stmt = $pdo->prepare("SELECT * FROM workflows LEFT OUTER JOIN attributes ON workflows.id=attributes.container_id AND attributes.container_type='workflows' WHERE workflows.id=?");
 if (!$stmt->execute(array($workflowid))) {
   die('Invalid query: ' . error_database());
 }
@@ -43,6 +43,14 @@ $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
 $notes = htmlspecialchars($workflow['notes']);
+if ($workflow['value'] != '') {
+  $params = json_decode($workflow['value'], true);
+} else {
+  $params = array();
+}
+if (isset($params['hostname'])) {
+    $hostname = "&hostname=${params['hostname']}";
+}
 
 # check to make sure all is ok
 $error=false;
@@ -59,6 +67,7 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
     }
   }
 } else {
+  $status = array();
   $error=true;
 }
 
@@ -595,8 +604,8 @@ foreach ($status as $line) {
   <h2>Still running</h2>
   <p>It looks like the model is still running, you can still look at some of the intermediate
   results, however most of the results will not be available until the end. You can also go
-  <a href="05-running.php?workflowid=<?php echo $workflowid; ?>">back</a> to the running page
-  which will update continously.</p>
+  <a href="05-running.php?workflowid=<?php echo $workflowid . $hostname; ?>">back</a> to the
+  running page which will update continuously.</p>
 <?php } ?>
   <h2>Workflow Results</h2>
 <?php if ($finished && !$error) { ?>

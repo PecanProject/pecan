@@ -42,7 +42,7 @@ $hostoptions = $hostlist[$hostname];
 $loglines = isset($_REQUEST['loglines']) ? $_REQUEST['loglines'] : 20;
 
 // get run information
-$stmt = $pdo->prepare("SELECT folder, params FROM workflows WHERE workflows.id=?");
+$stmt = $pdo->prepare("SELECT folder, value FROM workflows LEFT OUTER JOIN attributes ON workflows.id=attributes.container_id AND attributes.container_type='workflows' WHERE workflows.id=?");
 if (!$stmt->execute(array($workflowid))) {
   die('Invalid query: ' . error_database());
 }
@@ -50,7 +50,12 @@ $workflow = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
 
 $folder = $workflow['folder'];
-$params = eval("return ${workflow['params']};");
+if ($workflow['value'] != '') {
+  $params = json_decode($workflow['value'], true);
+} else {
+  $params = array();
+}
+  
 
 // check result
 if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
@@ -127,7 +132,7 @@ if (!$finished) {
 
   function refresh() {
     var url="<?php echo $_SERVER["SCRIPT_NAME"] . '?workflowid=' . $workflowid; ?>";
-    url += "&hostname=${hostname}&loglines=" + $("#loglines").val();
+    url += "&hostname=<?php echo $hostname; ?>&loglines=" + $("#loglines").val();
     window.location.replace(url);
     return false;
   }
@@ -164,14 +169,7 @@ if (!$finished) {
     <input id="next" type="button" value="Results" onclick="nextStep();" />
 <?php } ?>
     <div class="spacer"></div>
-<?php whoami(); ?>    
-<p>
-  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
-  <br>
-  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
-  <br>
-  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
-</p>
+    <?php left_footer(); ?>    
   </div>
   <div id="output">
   <h2>Execution Status</h2>

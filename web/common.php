@@ -12,7 +12,7 @@ function get_footer() {
   return "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
     (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA
     Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.6.0</span>";
+    <span style=\"float:right\">PEcAn Version 1.7.0</span>";
 }
 
 function whoami() {
@@ -25,6 +25,27 @@ function whoami() {
     echo "Not Logged in.";
     echo "<a style=\"float: right;\" href=\"login.php\">login</a>";
   }
+}
+
+function left_footer() {
+  if (check_login()) {
+    echo "<p></p>";
+    echo "Logged in as " . get_user_name();
+    echo "<a style=\"float: right;\" href=\"index.php?logout\" id=\"logout\">logout</a>";
+  } else {
+    echo "<p></p>";
+    echo "Not Logged in.";
+    echo "<a style=\"float: right;\" href=\"login.php\">login</a>";
+  }
+
+?>
+<p></p>
+  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
+  <br>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+<?php
 }
 
 function passvars($ignore) {

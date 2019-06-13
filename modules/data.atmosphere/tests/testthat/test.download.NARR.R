@@ -10,20 +10,25 @@ outfolder <- tempfile()
 dir.create(outfolder)
 teardown(unlink(outfolder, recursive = TRUE, force = TRUE))
 
-test_that(
-  "NARR download works as expected",
-  {
+test_url <- generate_narr_url(as.POSIXct("2000-01-01"), TRUE)[["url"]]
+test_nc <- tryCatch(ncdf4::nc_open(test_url), error = function(e) {
+  skip("Unable to reach NARR server")
+})
+ncdf4::nc_close(test_nc)
 
-    r <- download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
-                            progress = TRUE, parallel = TRUE, ncores = 2)
+test_that("NARR download works as expected", {
+  # Download is too slow for travis
+  # Please run locally to test!
+  skip_on_travis()
+  r <- download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
+                          progress = TRUE, parallel = TRUE, ncores = 2)
 
-    expect_equal(nrow(r), 1)
-    expect_true(file.exists(r$file[1]))
-    nc <- ncdf4::nc_open(r$file)
-    temp <- ncdf4::ncvar_get(nc, "air_temperature")
-    precip <- ncdf4::ncvar_get(nc, "precipitation_flux")
-    expect_true(all(!is.na(temp)), all(temp > 0), length(temp) == ntime)
-    expect_true(all(!is.na(precip)), length(precip) == ntime)
-    ncdf4::nc_close(nc)
-  }
-)
+  expect_equal(nrow(r), 1)
+  expect_true(file.exists(r$file[1]))
+  nc <- ncdf4::nc_open(r$file)
+  temp <- ncdf4::ncvar_get(nc, "air_temperature")
+  precip <- ncdf4::ncvar_get(nc, "precipitation_flux")
+  expect_true(all(!is.na(temp)), all(temp > 0), length(temp) == ntime)
+  expect_true(all(!is.na(precip)), length(precip) == ntime)
+  ncdf4::nc_close(nc)
+})

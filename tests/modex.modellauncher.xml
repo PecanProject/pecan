@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+  <database>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>FALSE</write>
+    </bety>
+    <dbfiles>/data/Model_Output/pecan.output/dbfiles</dbfiles>
+  </database>
+
+  <host>
+    <name>localhost</name>
+    <prerun>module load gcc/5.4.0 jags/4.3.0 udunits/2.2.25 python/2.7.14 redland hdf5/1.8.19-gcc540 netcdf/4.4.1.1-gnu540 libtiff/4.0.8 geos/3.6.3 proj/5.1.0 gdal/2.3.1 openmpi/2.1.1-gnu540</prerun>
+    <qsub>qsub -l walltime=36:00:00,nodes=2:ppn=10 -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub>
+    <qsub.jobid>([[:digit:]]+)\.modex\.bnl\.gov</qsub.jobid>
+    <qstat>qstat @JOBID@ || echo DONE</qstat>
+    <modellauncher>
+      <binary>/data/software/modellauncher</binary>
+      <qsub.extra>-l ncpus=10</qsub.extra>
+    </modellauncher>
+  </host>
+
+  <pfts>
+    <pft>
+      <name>temperate.coniferous</name> 
+    </pft>
+  </pfts>
+
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>AUTO</update>
+  </meta.analysis>
+
+  <ensemble>
+    <size>200</size>
+    <variable>NPP</variable>
+  </ensemble>
+
+  <model>
+    <binary>/data/software/SIPNET/sipnet_r136/sipnet.r136</binary>
+    <type>SIPNET</type>
+  </model>
+
+  <run>
+    <site>
+      <id>772</id>
+    </site>
+    <inputs>
+      <met>/data/Model_Data/sites/US-NR1/niwot.clim</met>
+    </inputs>
+    <start.date>2002-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+  </run>
+</pecan>
