@@ -105,7 +105,7 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
     streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
     
     #for(sv_i in seq_along(streamed_vars)){
-    for(sv_i in 11:17){
+    for(sv_i in 1:26){
       current_stream <- streamed_vars[sv_i] #it's OK to overwrite
       current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
       if(current_stream_type$type == "class"){
@@ -116,14 +116,14 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
       }else{
         current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES)
         # and read!
-        if(specs$single){
+        if(current_stream_specs$single){
           Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- readBin(con  = zz, 
                                                                               what = current_stream_specs$what, 
                                                                               n    = current_stream_specs$n, 
                                                                               size = current_stream_specs$size)
         }else{
           for(css.i in seq_along(current_stream_specs$what)){
-            Gridcell[[length(Gridcell)]][[current_stream_specs$name[css.i]]] <- readBin(con  = zz, 
+            Gridcell[[length(Gridcell)]][[current_stream_specs$names[css.i]]] <- readBin(con  = zz, 
                                                                                 what = current_stream_specs$what[css.i], 
                                                                                 n    = current_stream_specs$n[css.i], 
                                                                                 size = current_stream_specs$size[css.i])
@@ -145,7 +145,7 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES){
   
   possible_types <- c("double", "bool", "int")
   possible_types <- c(possible_types, LPJ_GUESS_TYPES)
-  n_sizes  <- c(8, 1, 4, rep(1, length(LPJ_GUESS_TYPES) ))
+  n_sizes  <- c(8, 1, 4, rep(4, length(LPJ_GUESS_TYPES) ))
   rbin_tbl <- c("double", "logical", "integer", rep("integer", length(LPJ_GUESS_TYPES)))
   
   specs <- list()
@@ -159,19 +159,6 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES){
     specs$what <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
     specs$size <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
     specs$single <- TRUE
-    # if(current_stream_type$type == "double"){
-    #   specs$what <- "double"
-    #   specs$size <- 8
-    # }else if(current_stream_type$type == "int"){
-    #   specs$what <- "integer"
-    #   specs$size <- 4
-    # }else if(current_stream_type$type == "bool"){
-    #   specs$what <- "logical"
-    #   specs$size <- 1
-    # }else if(current_stream_type$type %in% LPJ_GUESS_TYPES){
-    #   specs$what <- "integer"
-    #   specs$size <- 4
-    # }
     
   }else if(current_stream_type$type == "Historic"){
     # Historic types are special to LPJ-GUESS
@@ -180,7 +167,7 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES){
     # always three, this is a type defined in guessmath.h
     specs$what[1] <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)] # I haven't seen any Historic that doesn't store double but...
     specs$size[1] <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$name[1] <- current_stream_type$name
+    specs$names[1] <- current_stream_type$name
     # n is tricky, it can be hardcoded it can be one of the const ints
     to_read <- str_match(sub_string, paste0("Historic<", specs$what[1], ", (.*?)>.*"))[,2]
     #if(to_read %in% LPJ_GUESS_CONST_INTS){
@@ -188,22 +175,26 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES){
     #}else{
       specs$n[1]   <- as.numeric(to_read)
     #}
-    specs$what[2] <- "integer"
-    specs$size[2] <- 4
+    specs$what[2] <- "integer" #need to check what size_t is
+    specs$size[2] <- 8
     specs$n[2]    <- 1
-    specs$name[2] <- "current_index"
+    specs$names[2] <- "current_index"
     
     specs$what[3] <- "logical"
     specs$size[3] <- 1
     specs$n[3]    <- 1
-    specs$name[3] <- "full"    
+    specs$names[3] <- "full"   
+    
     specs$single <- FALSE
     
   }else{
-    # other things gonna happen
-    specs$single <- FALSE
+    # reading a vector
+    specs$what   <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$size   <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$n      <- as.numeric(sub(".*\\[(.*)\\].*", "\\1", sub_string, perl=TRUE) )
+    specs$single <- TRUE
   }
-
+  
   return(specs)
 } # find_stream_size
 
@@ -224,13 +215,21 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
   if(current_stream_var %in% tolower(LPJ_GUESS_CLASSES)){
     stream_type <- "class"
     stream_name <- current_stream_var
+    sub_string  <- NULL
   }else {# find type from guess.h
     beg_end <- serialize_starts_ends(file_in = guessh_in, 
                                      pattern = paste0("class ",
                                                       tools::toTitleCase(class), 
                                                       " : public "))
     # subset 
-    sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var, ";"), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    if(length(sub_string) == 0){
+      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    }
+    if(length(sub_string) > 1){
+      PEcAn.logger::logger.severe("Check this out.")
+    }
+    
     # clean from tabs
     sub_string <- gsub("\t", "", sub_string)
     # clean from commented out lines
