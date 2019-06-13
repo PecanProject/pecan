@@ -89,7 +89,7 @@ Gridcell <- list()
 for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
   
   current_stream <- streamed_vars_gridcell[g_i]
-  current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, guessh_in)
+  current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
   
   Gridcell[[length(Gridcell)+1]] <- list()
   names(Gridcell)[length(Gridcell)] <- current_stream_type$name
@@ -107,14 +107,14 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
     
     for(sv_i in seq_along(streamed_vars)){
       current_stream <- streamed_vars[sv_i] #it's OK to overwrite
-      current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, guessh_in)
+      current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
       if(current_stream_type$type == "class"){
         
         # CLASS
         class_name <- current_stream_type$name
         
       }else{
-        current_stream_specs <- find_stream_size(current_stream_type, guessh_in)
+        current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES)
         # and read!
         Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- readBin(con  = zz, 
                                                                             what = current_stream_specs$what, 
@@ -131,7 +131,7 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
 } # Gridcell-loop ends
   
 # helper function that determines the stream size to read
-find_stream_size <- function(current_stream_type, guessh_in){
+find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES){
   
   specs <- list()
   specs$what <- current_stream_type$type
@@ -148,6 +148,9 @@ find_stream_size <- function(current_stream_type, guessh_in){
       specs$what <- "double"
       specs$size <- 8
     }else if(current_stream_type$type == "integer"){
+      specs$what <- "integer"
+      specs$size <- 4
+    }else if(current_stream_type$type %in% LPJ_GUESS_TYPES){
       specs$what <- "integer"
       specs$size <- 4
     }
@@ -168,9 +171,7 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
   # there are not that many to check
   possible_types <- c("class", "double", "bool", "int", "Historic<double, 31>")
   
-
-  
-  guessh_in, "typedef enum {*} "
+  possible_types <- c(possible_types, LPJ_GUESS_TYPES)
   
   beg_end <- NULL # not going to need it always
   
