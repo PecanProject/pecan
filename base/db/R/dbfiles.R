@@ -487,79 +487,60 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
   return(file.id)
 }
 
-##' Function to check to see if a file exists in the dbfiles table
+##' List files associated with a container and machine exist in
+##' `dbfiles` table
 ##'
-##' This will check the dbfiles and machines to see if the file exists
-##' @name dbfile.check
-##' @title Check for a file in the dbfiles tables
-##' @param type the type of dbfile (Input, Posterior)
-##' @param container.id the id of container type
+##' @param type The type of `dbfile`, as a character. Must be either
+##'   "Input", "Posterior", or "Model".
+##' @param container.id the ID of container type. E.g. if `type` is
+##'   "Input", this will correspond to the `id` column from the
+##'   `inputs` table.
 ##' @param con database connection object
-##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param machine.check setting to check for file on named host, otherwise will check for any file given container id
-##' @param return.all logical flag, if TRUE will return all the files in the directory, not only the max(dbfiles$updated_at) subset
-##' @return data.frame with the id, filename and pathname of all the files that are associated
-##' @author Rob Kooper
+##' @param hostname the name of the host where the file is stored,
+##'   this will default to the name of the current machine
+##' @param machine.check setting to check for file on named host,
+##'   otherwise will check for any file given container id
+##' @param return.all (Logical) If `TRUE`, return all files. If
+##'   `FALSE`, return only the most recent files.
+##' @return `data.frame` with the id, filename and pathname of all the files that are associated
+##' @author Rob Kooper, Alexey Shiklomanov
 ##' @export
 ##' @examples
 ##' \dontrun{
-##'   dbfile.check('Input', 7, dbcon)
+##'   dbfile.check("Input", 7, dbcon)
 ##' }
+dbfile.check <- function(type, container.id, con,
+                         hostname = PEcAn.remote::fqdn(),
+                         machine.check = TRUE,
+                         return.all = FALSE) {
 
-dbfile.check <- function(type, container.id, con, hostname = PEcAn.remote::fqdn(), machine.check = TRUE, return.all = FALSE) {
+  type <- match.arg(type, c("Input", "Posterior", "Model"))
 
   hostname <- default_hostname(hostname)
 
   # find appropriate host
   hostid <- get.id(table = "machines", colnames = "hostname", values = hostname, con = con)
-  if (is.null(hostid)) {
-    return(data.frame())
-  } else if (machine.check) {
+  if (is.null(hostid)) return(data.frame())
 
-    dbfiles <- db.query(
-      query = paste0(
-        "SELECT * FROM dbfiles WHERE container_type='", type,
-        "' AND container_id IN (", paste(container.id, collapse = ", "),
-        ") AND machine_id=", hostid
-      ),
-      con = con
-    )
+  dbfiles <- dplyr::tbl(con, "dbfiles") %>%
+    dplyr::filter(container_type == !!type,
+                  container_id %in% !!container.id)
 
-    if (nrow(dbfiles) > 1 && !return.all) {
-
-      PEcAn.logger::logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
-      return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
-
-    } else {
-
-      return(dbfiles)
-
-    }
-
-  } else {
-
-    dbfiles <- db.query(
-      query = paste0(
-        "SELECT * FROM dbfiles WHERE container_type='", type,
-        "' AND container_id IN (", paste(container.id, collapse = ", "), ")"
-      ),
-      con = con
-    )
-
-    if (nrow(dbfiles) > 1 && !return.all) {
-
-      PEcAn.logger::logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
-      return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
-
-    } else {
-
-      return(dbfiles)
-
-    }
+  if (machine.check) {
+    dbfiles <- dbfiles %>%
+      dplyr::filter(machine_id == !!hostid)
   }
+
+  dbfiles <- dplyr::collect(dbfiles)
+
+  if (nrow(dbfiles) > 1 && !return.all) {
+    PEcAn.logger::logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
+    dbfiles <- dbfiles %>%
+      dplyr::filter(updated_at == max(updated_at))
+  }
+
+  dbfiles
 }
-
-
 
 ##' Convert between file paths and ids
 ##'

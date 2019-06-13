@@ -8,8 +8,6 @@ single.MA(data, j.chains, j.iter, tauA, tauB, prior, jag.model.file,
   overdispersed = TRUE)
 }
 \arguments{
-\item{data}{}
-
 \item{j.chains}{number of chains in meta-analysis}
 
 \item{j.iter}{number of mcmc samples}

@@ -101,8 +101,8 @@ build_insert_query <- function(values, table, .con) {
 
   insert_list <- value_list %>%
     purrr::map(unname) %>%
-    purrr::map(dbplyr::escape) %>%
-    purrr::map(dbplyr::sql_vector)
+    purrr::map(dbplyr::escape, con = .con) %>%
+    purrr::map(dbplyr::sql_vector, con = .con)
 
   glue::glue_sql(
     "INSERT INTO {`table`} ({`colnames(values)`*}) ",
