@@ -6,8 +6,6 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-source('db.setup.R')
-
 context("Basic Sanity tests for PEcAn functions that query BETYdb")
 test_that("append.covariates appends managements to yields",{
   con <- check_db_test()
