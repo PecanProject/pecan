@@ -58,12 +58,51 @@ beg_end <- serialize_starts_ends(file_in = guesscpp_in, pattern = "void Gridcell
 
 # now we will parse the stuff between these lines
 # first find what is being written
-streamined_vars <- find_stream(file_in = guesscpp_in, line_nos = beg_end)
+streamed_vars_gridcell <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+
+# Now I can use streamed_vars_gridcell to loop over them
+# We read everything in this loop, Gridcell list is going to be the top container
+# the hierarchy will follow LPJ-GUESS architecture
+Gridcell <- list()
+for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
+  
+  current_stream <- streamed_vars_gridcell[g_i]
+  current_stream_type <- find_stream_type(Gridcell, current_stream_var, LPJ_GUESS_CLASSES)
+  
+  Gridcell[[length(Gridcell)+1]] <- current_stream_type$name
+  if(current_stream_type$type == "class"){
+    beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
+                                     pattern = paste0("void ",
+                                                      tools::toTitleCase(current_stream_type$name), 
+                                                      "::serialize"))
+    streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+  }
+
   
   
+} # Gridcell-loop ends
   
+# helper function to decide the type of the stream
+# this function relies on the architecture of LPJ-GUESS and has bunch of harcoded checks, see model documentation
+find_stream_type <- function(Gridcell, current_stream_var, LPJ_GUESS_CLASSES){
+
+  # class or not?
+  if(current_stream %in% tolower(LPJ_GUESS_CLASSES)){
+    stream_type <- "class"
+    stream_name <- current_stream
+  }
+  
+  
+  return(list(type = stream_type, name = stream_name))
+} # find_stream_type
+  
+  
+
+
+######################## Helper functions ########################
+
 # helper function that lists streamed variables, it just returns the names, types are checked by other fucntion
-find_stream <- function(file_in, line_nos){
+find_stream_var <- function(file_in, line_nos){
   
   streaming_list <- list()
   str.i <- 1
@@ -90,7 +129,7 @@ find_stream <- function(file_in, line_nos){
     # all streams start with arch &
     if(grepl("arch & ", file_in[i])){
       # get variable name
-      streaming_list[[str.i]] <- sub(".*arch & ", "", file_in[i])
+      streaming_list[[str.i]] <- sub(".*arch & ", "", file_in[i]) # always one var after arch?
       str.i <- str.i + 1
       # check for ampersand for the subsequent variable names
       repeat{
@@ -102,16 +141,24 @@ find_stream <- function(file_in, line_nos){
           }
         }
         if(!grepl(".*& ", file_in[i])) break # when there are no subsequent stream
-        streaming_list[[str.i]] <- sub(".*& ", "", file_in[i])
-        str.i <- str.i + 1
+        this_line <- gsub("[[:space:]]", "", strsplit(file_in[i], "& ")[[1]])
+        for(var in this_line){
+          if(var != ""){
+            streaming_list[[str.i]] <- var
+            str.i <- str.i + 1
+          }
+        }
       }
     }
     if(i == line_nos[2]) break
   }
-  return(unlist(streaming_list))
-}
+  
+  #unlist and nix the ;
+  returnin_stream <- gsub(";", "", unlist(streaming_list), fixed = TRUE)
+  return(returnin_stream)
+} # find_stream_var
 
-######################## Helper functions ########################
+
 
 # helper function that scans LPJ-GUESS that returns the beginning and the ending lines of serialized object
 serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize"){
@@ -133,9 +180,9 @@ serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize")
   # ending_line <- find_closing(find = "}", starting_line, file_in)
   
   return(c(starting_line, ending_line))
-}
+} # serialize_starts_ends
 
-
+# helper function that finds the closing bracket, can work over if-else
 find_closing <- function(find = "}", line_no, file_in, if_else_check = FALSE){
   opened <- 1
   closed <- 0
@@ -162,4 +209,5 @@ find_closing <- function(find = "}", line_no, file_in, if_else_check = FALSE){
     if(opened == closed) break
   }
   return(line_no)
-}
+} # find_closing
+
