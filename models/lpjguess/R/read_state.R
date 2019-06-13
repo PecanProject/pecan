@@ -26,6 +26,13 @@ guessh_loc   <- "/fs/data5/pecan.models/LPJ-GUESS/framework/guess.h"
 guesscpp_in <- readLines(guesscpp_loc)
 # guess.h has the types so that we know what streamsize to read
 guessh_in <- readLines(guessh_loc)
+
+############ open
+
+# open connection to the binary state file
+zz <- file("0.state", "rb")
+
+
 ################################ check class compatibility ################################
 # between model versions we don't expect major classes or hierarchy to change
 # but give check and fail if necessary
@@ -62,38 +69,106 @@ streamed_vars_gridcell <- find_stream_var(file_in = guesscpp_in, line_nos = beg_
 
 # Now I can use streamed_vars_gridcell to loop over them
 # We read everything in this loop, Gridcell list is going to be the top container
-# the hierarchy will follow LPJ-GUESS architecture
+# there will be nested loops, the hierarchy will follow LPJ-GUESS architecture
 Gridcell <- list()
 for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
   
   current_stream <- streamed_vars_gridcell[g_i]
-  current_stream_type <- find_stream_type(Gridcell, current_stream_var, LPJ_GUESS_CLASSES)
+  current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, guessh_in)
   
-  Gridcell[[length(Gridcell)+1]] <- current_stream_type$name
+  Gridcell[[length(Gridcell)+1]] <- list()
+  names(Gridcell)[length(Gridcell)] <- current_stream_type$name
   if(current_stream_type$type == "class"){
+    # CLASS
     beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
                                      pattern = paste0("void ",
                                                       tools::toTitleCase(current_stream_type$name), 
                                                       "::serialize"))
     streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+    
+    
+    for(sv_i in seq_along(streamed_vars)){
+      current_stream <- streamed_vars[sv_i] #it's OK to overwrite
+      current_stream_type <- find_stream_type(current_stream_type$name, current_stream, LPJ_GUESS_CLASSES, guessh_in)
+      if(current_stream_type$type == "class"){
+        
+      }else{
+        current_stream_specs <- find_stream_size(current_stream_type, guessh_in)
+        # and read!
+        Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- readBin(con  = zz, 
+                                                                            what = current_stream_specs$what, 
+                                                                            n    = current_stream_specs$n, 
+                                                                            size = current_stream_specs$size)
+      }
+    }
+  }else{
+    # NOT CLASS
   }
 
   
   
 } # Gridcell-loop ends
   
+# helper function that determines the stream size to read
+find_stream_size <- function(current_stream_type, guessh_in){
+  
+  specs <- list()
+  specs$what <- current_stream_type$type
+  
+  beg_end <- current_stream_type$beg_end
+  
+  sub_string <- current_stream_type$substring
+  
+  #is there a ; immediately after?
+  if(grepl(paste0(current_stream_type$type, " ", current_stream_type$name, ";"), sub_string, fixed = TRUE)){
+    # this is only length 1
+    specs$n <- 1
+    if(current_stream_type$type == "double"){
+      specs$what <- "double"
+      specs$size <- 8
+    }else if(current_stream_type$type == "integer"){
+      specs$what <- "integer"
+      specs$size <- 4
+    }
+    
+  }else{
+    # other things gonna happen
+  }
+
+  return(specs)
+} # find_stream_size
+
+
 # helper function to decide the type of the stream
 # this function relies on the architecture of LPJ-GUESS and has bunch of harcoded checks, see model documentation
-find_stream_type <- function(Gridcell, current_stream_var, LPJ_GUESS_CLASSES){
+find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES, guessh_in){
 
+  # it might be difficult to extract the "type" before the varname
+  # there are not that many to check
+  possible_types <- c("class", "double", "bool", "int", "Historic<double, 31>")
+  
+  beg_end <- NULL # not going to need it always
+  
   # class or not?
-  if(current_stream %in% tolower(LPJ_GUESS_CLASSES)){
+  if(current_stream_var %in% tolower(LPJ_GUESS_CLASSES)){
     stream_type <- "class"
-    stream_name <- current_stream
+    stream_name <- current_stream_var
+  }else {# find type from guess.h
+    beg_end <- serialize_starts_ends(file_in = guessh_in, 
+                                     pattern = paste0("class ",
+                                                      tools::toTitleCase(class), 
+                                                      " : public "))
+    # subset 
+    sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var, ";"), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    # clean from tabs
+    sub_string <- gsub("\t", "", sub_string)
+    # clean from commented out lines
+    stream_type <- possible_types[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    stream_name <- current_stream_var
   }
   
   
-  return(list(type = stream_type, name = stream_name))
+  return(list(type = stream_type, name = stream_name, substring = sub_string))
 } # find_stream_type
   
   
@@ -169,15 +244,8 @@ serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize")
   }
     
   # screen for the closing curly bracket after function started 
-  # closing bracket it in its own line without any tab characters, note that this again assumes a certain coding style
-  ending_line <- starting_line
-  repeat{
-    ending_line <- ending_line + 1
-    if(file_in[ending_line] == "}") break
-  }
-  
-  # probably a check is required, alternatively keep track of opening-closing brackets
-  # ending_line <- find_closing(find = "}", starting_line, file_in)
+  # keep track of opening-closing brackets
+  ending_line <- find_closing(find = "}", starting_line, file_in)
   
   return(c(starting_line, ending_line))
 } # serialize_starts_ends
