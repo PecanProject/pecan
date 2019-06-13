@@ -60,6 +60,21 @@ if(!setequal(unlist(lpjguess_classes), LPJ_GUESS_CLASSES)){
   PEcAn.logger::logger.severe("This function can only read the following class objects: ", paste(LPJ_GUESS_CLASSES, collapse="--"))
 }
 
+# there are couple of LPJ-GUESS specific types that we'll need below
+lpjguess_types <- list()
+ctr <- 1
+# NOTE THAT THESE PATTERNS ASSUME SOME CODING STYLE, thanks to LPJ-GUESS developers this might not be an issue in the future 
+for(i in seq_along(guessh_in)){
+  if(grepl("typedef enum {", guessh_in[i], fixed = TRUE)){
+    this_line <- find_closing("}", i, guessh_in)
+    l_type <- gsub(".*}(.*?);.*", "\\1", guessh_in[this_line]) 
+    l_type <- gsub(" ", "", l_type)
+    lpjguess_types[[ctr]] <- l_type
+    ctr <- ctr + 1  
+  }
+}
+LPJ_GUESS_TYPES <- unlist(lpjguess_types)
+
 # Gridcell is the top-level container, start parsing from there
 beg_end <- serialize_starts_ends(file_in = guesscpp_in, pattern = "void Gridcell::serialize")
 
@@ -79,7 +94,10 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
   Gridcell[[length(Gridcell)+1]] <- list()
   names(Gridcell)[length(Gridcell)] <- current_stream_type$name
   if(current_stream_type$type == "class"){
+
     # CLASS
+    class_name <- current_stream_type$name
+    
     beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
                                      pattern = paste0("void ",
                                                       tools::toTitleCase(current_stream_type$name), 
@@ -89,8 +107,11 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
     
     for(sv_i in seq_along(streamed_vars)){
       current_stream <- streamed_vars[sv_i] #it's OK to overwrite
-      current_stream_type <- find_stream_type(current_stream_type$name, current_stream, LPJ_GUESS_CLASSES, guessh_in)
+      current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, guessh_in)
       if(current_stream_type$type == "class"){
+        
+        # CLASS
+        class_name <- current_stream_type$name
         
       }else{
         current_stream_specs <- find_stream_size(current_stream_type, guessh_in)
@@ -141,11 +162,15 @@ find_stream_size <- function(current_stream_type, guessh_in){
 
 # helper function to decide the type of the stream
 # this function relies on the architecture of LPJ-GUESS and has bunch of harcoded checks, see model documentation
-find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES, guessh_in){
+find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in){
 
   # it might be difficult to extract the "type" before the varname
   # there are not that many to check
   possible_types <- c("class", "double", "bool", "int", "Historic<double, 31>")
+  
+
+  
+  guessh_in, "typedef enum {*} "
   
   beg_end <- NULL # not going to need it always
   
@@ -260,6 +285,10 @@ find_closing <- function(find = "}", line_no, file_in, if_else_check = FALSE){
   }else{
     #there can be else-ifs, find closing paranthesis / square breacket etc
   }
+  
+  # check the immediate line and return if closed there already
+  if(grepl(end_char,   file_in[line_no], fixed = TRUE))   return(line_no)
+  
   repeat{
     line_no <- line_no + 1
     if(grepl(start_char, file_in[line_no], fixed = TRUE))  opened <- opened + 1
@@ -272,7 +301,6 @@ find_closing <- function(find = "}", line_no, file_in, if_else_check = FALSE){
         closed <- closed - 1
         if(next_line_check) line_no <- line_no + 1
       }
-
     }
     if(opened == closed) break
   }
