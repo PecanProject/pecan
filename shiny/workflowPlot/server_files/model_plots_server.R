@@ -41,30 +41,39 @@ observeEvent(input$ex_plot_model,{
   req(input$units_model)
 
   output$modelPlot <- renderPlotly({
+    
     input$ex_plot_model
     isolate({
-      df <- dplyr::filter(load.model(), var_name == input$var_name_model)
-
-      updateSliderInput(session,"smooth_n_model", min = 0, max = nrow(df))
-
-      title <- unique(df$title)
-      xlab <- unique(df$xlab)
-      ylab <- unique(df$ylab)
-
-      unit <- ylab
-      if(input$units_model != unit & udunits2::ud.are.convertible(unit, input$units_model)){
-        df$vals <- udunits2::ud.convert(df$vals,unit,input$units_model)
-        ylab <- input$units_model
-      }
-
-      data_geom <- switch(input$plotType_model, point = geom_point, line = geom_line)
-
-      plt <- ggplot(df, aes(x = dates, y = vals, color = run_id))
-      plt <- plt + data_geom()
-      plt <- plt + labs(title=title, x=xlab, y=ylab)
-      plt <- plt + geom_smooth(n=input$smooth_n_model)
-      ply <- ggplotly(plt)
+      tryCatch({
+        df <- dplyr::filter(load.model(), var_name == input$var_name_model)
+        
+        updateSliderInput(session,"smooth_n_model", min = 0, max = nrow(df))
+        
+        title <- unique(df$title)
+        xlab <- unique(df$xlab)
+        ylab <- unique(df$ylab)
+        
+        unit <- ylab
+        if(input$units_model != unit & udunits2::ud.are.convertible(unit, input$units_model)){
+          df$vals <- udunits2::ud.convert(df$vals,unit,input$units_model)
+          ylab <- input$units_model
+        }
+        
+        data_geom <- switch(input$plotType_model, point = geom_point, line = geom_line)
+        
+        plt <- ggplot(df, aes(x = dates, y = vals, color = run_id))
+        plt <- plt + data_geom()
+        plt <- plt + labs(title=title, x=xlab, y=ylab)
+        plt <- plt + geom_smooth(n=input$smooth_n_model)
+        ply <- ggplotly(plt)
+        #Signaling the success of the operation
+        toastr_success("Generate interactive plots")
+      },
+      error = function(e) {
+        toastr_error(title = "Error", conditionMessage(e))
+      })
     })
+    ply
   })
 
   output$modelPlotStatic <- renderPlotly({
@@ -101,7 +110,7 @@ observeEvent(input$ex_plot_model,{
                        incProgress(9/15)
                      })
         #Signaling the success of the operation
-        toastr_success("Generated plots")
+        toastr_success("Generate static plots")
       },
       error = function(e) {
         toastr_error(title = "Error", conditionMessage(e))
@@ -114,16 +123,10 @@ observeEvent(input$ex_plot_model,{
 
 observeEvent(input$model_toggle_plot,{
   tryCatch({
-    withProgress(message = 'Calculation in progress',
-                 detail = 'This may take a while...',
-                 value = 0,{
-                   toggleElement("model_plot_static")
-                   incProgress(7 / 15)
-                   toggleElement("model_plot_interactive")
-                   incProgress(8 / 15)
-                 })
+    toggleElement("model_plot_static")
+    toggleElement("model_plot_interactive")
     #Signaling the success of the operation
-    toastr_success("Toggled plots")
+    toastr_success("Toggle plots")
   },
   error = function(e) {
     toastr_error(title = "Error", conditionMessage(e))

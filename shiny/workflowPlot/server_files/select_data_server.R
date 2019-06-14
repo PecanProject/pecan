@@ -43,7 +43,7 @@ observeEvent(input$load_model,{
                  })
     
     #Signaling the success of the operation
-    toastr_success("Loaded model outputs")
+    toastr_success("Load model outputs")
   },
   error = function(e) {
     toastr_error(title = "Error", conditionMessage(e))

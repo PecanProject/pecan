@@ -8,44 +8,51 @@ bm <- reactiveValues()
 ## as a reference run. If not, create the record upon button click
 
 observeEvent(input$load_model,{
-  req(input$all_run_id)
-  ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-  button <- FALSE
-  if(nrow(ids_DF) == 1){
-    
-    # Check to see if the run has been saved as a reference run 
-    ens_id <- dplyr::tbl(bety, 'runs') %>% dplyr::filter(id == ids_DF$runID) %>% dplyr::pull(ensemble_id)
-    ens_wf <- dplyr::tbl(bety, 'ensembles') %>% dplyr::filter(id == ens_id) %>%
-      dplyr::rename(ensemble_id = id) %>%
-      dplyr::left_join(.,tbl(bety, "workflows") %>% dplyr::rename(workflow_id = id), by="workflow_id") %>% dplyr::collect()
-    bm$model_vars <- var_names_all(bety,ids_DF$wID,ids_DF$runID)
-    
-    clean <- PEcAn.benchmark::clean_settings_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"))
-    settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
-    ref_run <- PEcAn.benchmark::check_BRR(settings_xml, bety$con)
-    
-    if(length(ref_run) == 0){
-      # If not registered, button appears with option to run create.BRR
-      brr_message <- sprintf("Would you like to save this run (run id = %.0f, ensemble id = %0.f) as a reference run?", ids_DF$runID, ens_id) 
-      button <- TRUE
-    }else if(dim(ref_run)[1] == 1){
-      bm$BRR <- ref_run %>% rename(.,reference_run_id = id)
-      bm$BRR
-      brr_message <- sprintf("This run has been registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
-    }else if(dim(ref_run)[1] > 1){ # There shouldn't be more than one reference run per run
-      brr_message <- ("There is more than one reference run in the database for this run. Review for duplicates.")
+  tryCatch({
+    req(input$all_run_id)
+    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+    button <- FALSE
+    if(nrow(ids_DF) == 1){
+      
+      # Check to see if the run has been saved as a reference run 
+      ens_id <- dplyr::tbl(bety, 'runs') %>% dplyr::filter(id == ids_DF$runID) %>% dplyr::pull(ensemble_id)
+      ens_wf <- dplyr::tbl(bety, 'ensembles') %>% dplyr::filter(id == ens_id) %>%
+        dplyr::rename(ensemble_id = id) %>%
+        dplyr::left_join(.,tbl(bety, "workflows") %>% dplyr::rename(workflow_id = id), by="workflow_id") %>% dplyr::collect()
+      bm$model_vars <- var_names_all(bety,ids_DF$wID,ids_DF$runID)
+      
+      clean <- PEcAn.benchmark::clean_settings_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"))
+      settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
+      ref_run <- PEcAn.benchmark::check_BRR(settings_xml, bety$con)
+      
+      if(length(ref_run) == 0){
+        # If not registered, button appears with option to run create.BRR
+        brr_message <- sprintf("Would you like to save this run (run id = %.0f, ensemble id = %0.f) as a reference run?", ids_DF$runID, ens_id) 
+        button <- TRUE
+      }else if(dim(ref_run)[1] == 1){
+        bm$BRR <- ref_run %>% rename(.,reference_run_id = id)
+        bm$BRR
+        brr_message <- sprintf("This run has been registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
+      }else if(dim(ref_run)[1] > 1){ # There shouldn't be more than one reference run per run
+        brr_message <- ("There is more than one reference run in the database for this run. Review for duplicates.")
+      }
+    }else if(nrow(ids_DF) > 1){
+      brr_message <- "Benchmarking currently only works when one run is selected."
+    }else{
+      brr_message <- "Cannot do benchmarking"
     }
-  }else if(nrow(ids_DF) > 1){
-    brr_message <- "Benchmarking currently only works when one run is selected."
-  }else{
-    brr_message <- "Cannot do benchmarking"
-  }
-  
-  # This is redundant but better for debugging
-  bm$brr_message <- brr_message
-  bm$button_BRR <- button
-  bm$ens_wf <- ens_wf
-  bm$ready <- 0
+    
+    # This is redundant but better for debugging
+    bm$brr_message <- brr_message
+    bm$button_BRR <- button
+    bm$ens_wf <- ens_wf
+    bm$ready <- 0
+    #Signaling the success of the operation
+    toastr_success("Check for reference run")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
 
 # When button to register run is clicked, create.BRR is run and the button is removed.
@@ -84,25 +91,32 @@ observeEvent({
 ## have already been run. In addition, setup and run new benchmarks.
 
 observeEvent(input$load_data,{
-  req(input$all_input_id)
-  req(input$all_site_id)
-  
-  bm$metrics <- dplyr::tbl(bety,'metrics') %>% dplyr::select(one_of("id","name","description")) %>% collect()
-  
-  # Need to write warning message that can only use one input id
-  bm$input <- getInputs(bety,c(input$all_site_id)) %>% 
-    dplyr::filter(input_selection_list == input$all_input_id)
-  format <- PEcAn.DB::query.format.vars(bety = bety, input.id = bm$input$input_id)
-  # Are there more human readable names?
-  bm$vars <- dplyr::inner_join(
-    data.frame(read_name = names(bm$model_vars), 
-               pecan_name = bm$model_vars, stringsAsFactors = FALSE),
-    format$vars[-grep("%",format$vars$storage_type), 
-                c("variable_id", "pecan_name")], 
-    by = "pecan_name")
-  
-  #This will be a longer set of conditions
-  bm$ready <- bm$ready + 1
+  tryCatch({
+    req(input$all_input_id)
+    req(input$all_site_id)
+    
+    bm$metrics <- dplyr::tbl(bety,'metrics') %>% dplyr::select(one_of("id","name","description")) %>% collect()
+    
+    # Need to write warning message that can only use one input id
+    bm$input <- getInputs(bety,c(input$all_site_id)) %>% 
+      dplyr::filter(input_selection_list == input$all_input_id)
+    format <- PEcAn.DB::query.format.vars(bety = bety, input.id = bm$input$input_id)
+    # Are there more human readable names?
+    bm$vars <- dplyr::inner_join(
+      data.frame(read_name = names(bm$model_vars), 
+                 pecan_name = bm$model_vars, stringsAsFactors = FALSE),
+      format$vars[-grep("%",format$vars$storage_type), 
+                  c("variable_id", "pecan_name")], 
+      by = "pecan_name")
+    
+    #This will be a longer set of conditions
+    bm$ready <- bm$ready + 1
+    #Signaling the success of the operation
+    toastr_success("Check for benchmarks")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
 
 observeEvent(bm$ready,{
@@ -267,7 +281,7 @@ observeEvent(input$calc_bm,{
                    incProgress(2 / 15) 
                  })
     #Signaling the success of the operation
-    toastr_success("Setup benchmarks")
+    toastr_success("Calculate benchmarks")
   },
   error = function(e) {
     toastr_error(title = "Error", conditionMessage(e))
@@ -343,7 +357,7 @@ observeEvent(bm$load_results,{
                    incProgress(1) 
                  })
     #Signaling the success of the operation
-    toastr_success("Calculated Scores")
+    toastr_success("Calculate Scores")
   },
   error = function(e) {
     toastr_error(title = "Error", conditionMessage(e))
@@ -379,7 +393,7 @@ observeEvent(input$bench_plot,{
                    incProgress(4 / 15)
                  })
     #Signaling the success of the operation
-    toastr_success("Generated Plot")
+    toastr_success("Generate Plots")
   },
   error = function(e) {
     toastr_error(title = "Error", conditionMessage(e))

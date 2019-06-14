@@ -4,15 +4,22 @@
 
 # Update workflow ids
 observe({
-  # get_workflow_ids function (line 137) in db/R/query.dplyr.R takes a flag to check
-  # if we want to load all workflow ids.
-  # get_workflow_id function from query.dplyr.R
-  all_ids <- get_workflow_ids(bety, query, all.ids=TRUE)
-  updateSelectizeInput(session, "all_workflow_id", choices = all_ids)
-  # Get URL prameters
-  query <- parseQueryString(session$clientData$url_search)
-  # Pre-select workflow_id from URL prams
-  updateSelectizeInput(session, "all_workflow_id", selected = query[["workflow_id"]])
+  tryCatch({
+    # get_workflow_ids function (line 137) in db/R/query.dplyr.R takes a flag to check
+    # if we want to load all workflow ids.
+    # get_workflow_id function from query.dplyr.R
+    all_ids <- get_workflow_ids(bety, query, all.ids=TRUE)
+    updateSelectizeInput(session, "all_workflow_id", choices = all_ids)
+    # Get URL prameters
+    query <- parseQueryString(session$clientData$url_search)
+    # Pre-select workflow_id from URL prams
+    updateSelectizeInput(session, "all_workflow_id", selected = query[["workflow_id"]])
+    #Signaling the success of the operation
+    toastr_success("Update workflow IDs")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
 
 # Update run ids
@@ -36,14 +43,21 @@ all_run_ids <- reactive({
   return(run_id_list)
 })
 # Update all run_ids ('workflow ',w_id,', run ',r_id)
-observe({
-  updateSelectizeInput(session, "all_run_id", choices = all_run_ids())
-  # Get URL parameters
-  query <- parseQueryString(session$clientData$url_search)
-  # Make the run_id string with workflow_id
-  url_run_id <- paste0('workflow ', query[["workflow_id"]],', run ', query[["run_id"]])
-  # Pre-select run_id from URL params
-  updateSelectizeInput(session, "all_run_id", selected = url_run_id)
+observeEvent(input$all_workflow_id,{
+  tryCatch({
+    updateSelectizeInput(session, "all_run_id", choices = all_run_ids())
+    # Get URL parameters
+    query <- parseQueryString(session$clientData$url_search)
+    # Make the run_id string with workflow_id
+    url_run_id <- paste0('workflow ', query[["workflow_id"]],', run ', query[["run_id"]])
+    # Pre-select run_id from URL params
+    updateSelectizeInput(session, "all_run_id", selected = url_run_id)
+    #Signaling the success of the operation
+    toastr_success("Update run IDs")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
 
 
@@ -65,27 +79,41 @@ load.model <- eventReactive(input$load_model,{
 
 # Update all variable names
 observeEvent(input$load_model, {
-  req(input$all_run_id)
-  # All information about a model is contained in 'all_run_id' string
-  ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-  var_name_list <- c()
-  for(row_num in 1:nrow(ids_DF)){
-    var_name_list <- c(var_name_list, var_names_all(bety, ids_DF$wID[row_num], ids_DF$runID[row_num]))
-  }
-  updateSelectizeInput(session, "var_name_model", choices = var_name_list)
+  tryCatch({
+    req(input$all_run_id)
+    # All information about a model is contained in 'all_run_id' string
+    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+    var_name_list <- c()
+    for(row_num in 1:nrow(ids_DF)){
+      var_name_list <- c(var_name_list, var_names_all(bety, ids_DF$wID[row_num], ids_DF$runID[row_num]))
+    }
+    updateSelectizeInput(session, "var_name_model", choices = var_name_list)
+    #Signaling the success of the operation
+    toastr_success("Update variable names")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
 
 observeEvent(input$load_model,{
-  # Retrieves all site ids from multiple seleted run ids when load button is pressed
-  req(input$all_run_id)
-  ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-  site_id_list <- c()
-  for(row_num in 1:nrow(ids_DF)){
-    settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[row_num])
-    site.id <- c(settings$run$site$id)
-    site_id_list <- c(site_id_list,site.id)
-  }
-  updateSelectizeInput(session, "all_site_id", choices=site_id_list)
+  tryCatch({
+    # Retrieves all site ids from multiple seleted run ids when load button is pressed
+    req(input$all_run_id)
+    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+    site_id_list <- c()
+    for(row_num in 1:nrow(ids_DF)){
+      settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[row_num])
+      site.id <- c(settings$run$site$id)
+      site_id_list <- c(site_id_list,site.id)
+    }
+    updateSelectizeInput(session, "all_site_id", choices=site_id_list)
+    #Signaling the success of the operation
+    toastr_success("Retrieve site IDs")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
 # Update input id list as (input id, name)
 observe({
@@ -119,7 +147,7 @@ load.model.data <- eventReactive(input$load_data, {
   File_path <- inputs_df$filePath
   # TODO There is an issue with the db where file names are not saved properly.
   # To make it work with the VM, uncomment the line below
-  # File_path <- paste0(inputs_df$filePath,'.csv')
+  File_path <- paste0(inputs_df$filePath,'.csv')
   site.id <- inputs_df$site_id
   site <- PEcAn.DB::query.site(site.id,bety$con)
   observations <- PEcAn.benchmark::load_data(
@@ -133,8 +161,22 @@ load.model.data <- eventReactive(input$load_data, {
 
 # Update all variable names
 observeEvent(input$load_data, {
-  model.df <- load.model()
-  obvs.df <- load.model.data()
-  updateSelectizeInput(session, "var_name_modeldata",
-                       choices = intersect(model.df$var_name, names(obvs.df)))
+  tryCatch({
+    withProgress(message = 'Calculation in progress',
+                 detail = 'This may take a while...',
+                 value = 0,{
+                   model.df <- load.model()
+                   incProgress(7 / 15)
+                   obvs.df <- load.model.data()
+                   incProgress(7 / 15)
+                   updateSelectizeInput(session, "var_name_modeldata",
+                                        choices = intersect(model.df$var_name, names(obvs.df)))
+                   incProgress(1 / 15)
+                 })
+    #Signaling the success of the operation
+    toastr_success("Update variable names")
+  },
+  error = function(e) {
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
