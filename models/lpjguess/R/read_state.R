@@ -103,6 +103,8 @@ for(i in seq_along(guessh_in)){
 # few cleaning
 dont_need <- c("COLDEST_DAY_NHEMISPHERE", "COLDEST_DAY_SHEMISPHERE", "WARMEST_DAY_NHEMISPHERE", "WARMEST_DAY_SHEMISPHERE", "data[]")
 lpjguess_consts[match(dont_need, names(lpjguess_consts))] <-  NULL
+# this probably needs to be extracted from parameters.h:48-49 or somewhere else, but hardcoding for now
+lpjguess_consts$NLANDCOVERTYPES <- 6
 LPJ_GUESS_CONST_INTS <- data.frame(var = names(lpjguess_consts), val = as.numeric(unlist(lpjguess_consts)), stringsAsFactors = FALSE)
 
 
@@ -164,6 +166,19 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
   }else{
     # NOT CLASS
     current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
+    # and read!
+    if(current_stream_specs$single){
+      Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- readBin(con  = zz, 
+                                                                          what = current_stream_specs$what, 
+                                                                          n    = current_stream_specs$n, 
+                                                                          size = current_stream_specs$size)
+    }else{
+      for(css.i in seq_along(current_stream_specs$what)){
+        Gridcell[[length(Gridcell)]][[current_stream_specs$names[css.i]]] <- readBin(con  = zz, 
+                                                                                     what = current_stream_specs$what[css.i], 
+                                                                                     n    = current_stream_specs$n[css.i], 
+                                                                                     size = current_stream_specs$size[css.i])
+      }
   }
 
   
@@ -173,10 +188,10 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
 # helper function that determines the stream size to read
 find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS){
   
-  possible_types <- c("double", "bool", "int")
+  possible_types <- c("double", "bool", "int", "long")
   possible_types <- c(possible_types, LPJ_GUESS_TYPES)
-  n_sizes  <- c(8, 1, 4, rep(4, length(LPJ_GUESS_TYPES) ))
-  rbin_tbl <- c("double", "logical", "integer", rep("integer", length(LPJ_GUESS_TYPES)))
+  n_sizes  <- c(8, 1, 4, 8, rep(4, length(LPJ_GUESS_TYPES) ))
+  rbin_tbl <- c("double", "logical", "integer", "integer", rep("integer", length(LPJ_GUESS_TYPES)))
   
   specs <- list()
   
@@ -238,6 +253,10 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
 # this function relies on the architecture of LPJ-GUESS and has bunch of harcoded checks, see model documentation
 find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in){
 
+  if(current_stream_var == "seed"){
+    return(list(type = "long", name = "seed", substring = "long seed;"))
+  }
+  
   # it might be difficult to extract the "type" before the varname
   # there are not that many to check
   possible_types <- c("class", "double", "bool", "int")
