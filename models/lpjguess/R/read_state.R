@@ -21,11 +21,14 @@ library(stringr)
 # maybe put guess.h and guess.cpp for each model version into the model package
 guesscpp_loc <- "/fs/data5/pecan.models/LPJ-GUESS/framework/guess.cpp"
 guessh_loc   <- "/fs/data5/pecan.models/LPJ-GUESS/framework/guess.h"
+paramh_loc   <- "/fs/data5/pecan.models/LPJ-GUESS/framework/parameters.h"
 
 # guess.cpp has the info of what is being written
 guesscpp_in <- readLines(guesscpp_loc)
 # guess.h has the types so that we know what streamsize to read
 guessh_in <- readLines(guessh_loc)
+# parameters.h has some more types
+paramh_in <- readLines(paramh_loc)
 
 ############ open
 
@@ -67,6 +70,15 @@ for(i in seq_along(guessh_in)){
   if(grepl("typedef enum {", guessh_in[i], fixed = TRUE)){
     this_line <- find_closing("}", i, guessh_in)
     l_type <- gsub(".*}(.*?);.*", "\\1", guessh_in[this_line]) 
+    l_type <- gsub(" ", "", l_type)
+    lpjguess_types[[ctr]] <- l_type
+    ctr <- ctr + 1  
+  }
+}
+for(i in seq_along(paramh_in)){ #do same for parameters.h
+  if(grepl("typedef enum {", paramh_in[i], fixed = TRUE)){
+    this_line <- find_closing("}", i, paramh_in)
+    l_type <- gsub(".*}(.*?);.*", "\\1", paramh_in[this_line]) 
     l_type <- gsub(" ", "", l_type)
     lpjguess_types[[ctr]] <- l_type
     ctr <- ctr + 1  
@@ -123,8 +135,7 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
                                                       "::serialize"))
     streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
     
-    #for(sv_i in seq_along(streamed_vars)){
-    for(sv_i in 33:37){
+    for(sv_i in seq_along(streamed_vars)){
       current_stream <- streamed_vars[sv_i] #it's OK to overwrite
       current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
       if(current_stream_type$type == "class"){
@@ -148,11 +159,11 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
                                                                                 size = current_stream_specs$size[css.i])
           }
         }
-
       }
     }
   }else{
     # NOT CLASS
+    current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
   }
 
   
@@ -241,12 +252,18 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
     stream_name <- current_stream_var
     sub_string  <- NULL
   }else {# find type from guess.h
-    beg_end <- serialize_starts_ends(file_in = guessh_in, 
-                                     pattern = paste0("class ",
-                                                      tools::toTitleCase(class), 
-                                                      " : public "))
-    # subset 
-    sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var, ";"), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    
+    if(is.null(class)){
+      sub_string <- guessh_in[grepl(paste0(" ", current_stream_var), guessh_in, fixed = TRUE)]
+    }else{
+      beg_end <- serialize_starts_ends(file_in = guessh_in, 
+                                       pattern = paste0("class ",
+                                                        tools::toTitleCase(class), 
+                                                        " : public "))
+      # subset 
+      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var, ";"), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    }
+
     if(length(sub_string) == 0){
       sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
     }
@@ -261,7 +278,7 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
     
     # clean from tabs
     sub_string <- gsub("\t", "", sub_string)
-    # clean from commented out lines
+    # clean from commented out lines?
     
     if(grepl("Historic", sub_string, fixed = TRUE)){
       # Historic types has the form Historic<T, capacity>& data)
