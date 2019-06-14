@@ -35,13 +35,59 @@ lapply(c( "shiny",
 options(shiny.maxRequestSize=100*1024^2)
 
 # Port forwarding
-#options(shiny.port = 6438)
-#options(shiny.launch.browser = 'FALSE')
+# options(shiny.port = 6438)
+# options(shiny.launch.browser = 'FALSE')
 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
-  bety <- betyConnect()
-
+  
+  # Try `betyConnect` function. 
+  # If it breaks, ask user to enter user, password and host information
+  # then use the `db.open` function to connect to the database
+  tryCatch({
+    bety <- betyConnect()
+  },
+  error = function(e){
+    
+    #---- shiny modal----
+    showModal(
+      modalDialog(
+        title = "Connect to Database",
+        fluidRow(column(12,textInput('user', h4('User:'), width = "100%", value = "bety"))),
+        fluidRow(column(12,textInput('password', h4('Password:'), width = "100%", value = "bety"))),
+        fluidRow(column(12,textInput('host', h4('Host:'), width = "100%", value = "localhost"))),
+        fluidRow(
+          column(3),
+          column(6,br(),actionButton('submitInfo', h4('Submit'), width = "100%", class="btn-primary")),
+          column(3)
+        ),
+        footer = NULL,
+        size = 's'
+      )
+    )
+    
+    # --- connect to database ---
+    observeEvent(input$submitInfo,{
+      tryCatch(
+        {
+          bety <- PEcAn.DB::db.open(
+            list(
+              user = input$user,
+              password = input$password,
+              host = input$host
+            )
+          )
+          removeModal()
+          toastr_success("Connect to Database")
+        },
+        error = function(e) {
+          toastr_error(title = "Error", conditionMessage(e))
+        }
+      )
+    })
+    
+  })
+  
   # Hiding the animation and showing the application content
   hide(id = "loading-content", anim = TRUE, animType = "fade")
   showElement("app")
