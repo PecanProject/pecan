@@ -63,7 +63,6 @@ if(!setequal(unlist(lpjguess_classes), LPJ_GUESS_CLASSES)){
 # there are couple of LPJ-GUESS specific types that we'll need below
 lpjguess_types <- list()
 ctr <- 1
-# NOTE THAT THESE PATTERNS ASSUME SOME CODING STYLE, thanks to LPJ-GUESS developers this might not be an issue in the future 
 for(i in seq_along(guessh_in)){
   if(grepl("typedef enum {", guessh_in[i], fixed = TRUE)){
     this_line <- find_closing("}", i, guessh_in)
@@ -74,6 +73,26 @@ for(i in seq_along(guessh_in)){
   }
 }
 LPJ_GUESS_TYPES <- unlist(lpjguess_types)
+
+
+lpjguess_consts <- list()
+ctr <- 1
+for(i in seq_along(guessh_in)){
+  if(grepl("const int ", guessh_in[i], fixed = TRUE)){ # probably won't need "const double"s
+    cnst_val <- gsub(".*=(.*?);.*", "\\1", guessh_in[i]) 
+    cnst_val <- gsub(" ", "", cnst_val) # get rid of the space if there is one
+    cnst_nam <- gsub(".*int(.*?)=.*", "\\1", guessh_in[i]) 
+    cnst_nam <- gsub(" ", "", cnst_nam) 
+    lpjguess_consts[[ctr]]      <- cnst_val
+    names(lpjguess_consts)[ctr] <- cnst_nam
+    ctr <- ctr + 1  
+  }
+}
+# few cleaning
+dont_need <- c("COLDEST_DAY_NHEMISPHERE", "COLDEST_DAY_SHEMISPHERE", "WARMEST_DAY_NHEMISPHERE", "WARMEST_DAY_SHEMISPHERE", "data[]")
+lpjguess_consts[match(dont_need, names(lpjguess_consts))] <-  NULL
+LPJ_GUESS_CONST_INTS <- data.frame(var = names(lpjguess_consts), val = as.numeric(unlist(lpjguess_consts)), stringsAsFactors = FALSE)
+
 
 # Gridcell is the top-level container, start parsing from there
 beg_end <- serialize_starts_ends(file_in = guesscpp_in, pattern = "void Gridcell::serialize")
@@ -105,7 +124,7 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
     streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
     
     #for(sv_i in seq_along(streamed_vars)){
-    for(sv_i in 1:26){
+    for(sv_i in 33:37){
       current_stream <- streamed_vars[sv_i] #it's OK to overwrite
       current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
       if(current_stream_type$type == "class"){
@@ -114,7 +133,7 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
         class_name <- current_stream_type$name
         
       }else{
-        current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES)
+        current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
         # and read!
         if(current_stream_specs$single){
           Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- readBin(con  = zz, 
@@ -141,7 +160,7 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
 } # Gridcell-loop ends
   
 # helper function that determines the stream size to read
-find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES){
+find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS){
   
   possible_types <- c("double", "bool", "int")
   possible_types <- c(possible_types, LPJ_GUESS_TYPES)
@@ -165,8 +184,8 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES){
     # They have stored values, current index, and a boolean in that order
     specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 3)
     # always three, this is a type defined in guessmath.h
-    specs$what[1] <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)] # I haven't seen any Historic that doesn't store double but...
-    specs$size[1] <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$what[1]  <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)] # I haven't seen any Historic that doesn't store double but...
+    specs$size[1]  <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
     specs$names[1] <- current_stream_type$name
     # n is tricky, it can be hardcoded it can be one of the const ints
     to_read <- str_match(sub_string, paste0("Historic<", specs$what[1], ", (.*?)>.*"))[,2]
@@ -175,14 +194,14 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES){
     #}else{
       specs$n[1]   <- as.numeric(to_read)
     #}
-    specs$what[2] <- "integer" #need to check what size_t is
-    specs$size[2] <- 8
-    specs$n[2]    <- 1
+    specs$what[2]  <- "integer" #need to check what size_t is
+    specs$size[2]  <- 8
+    specs$n[2]     <- 1
     specs$names[2] <- "current_index"
     
-    specs$what[3] <- "logical"
-    specs$size[3] <- 1
-    specs$n[3]    <- 1
+    specs$what[3]  <- "logical"
+    specs$size[3]  <- 1
+    specs$n[3]     <- 1
     specs$names[3] <- "full"   
     
     specs$single <- FALSE
@@ -191,7 +210,12 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES){
     # reading a vector
     specs$what   <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
     specs$size   <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$n      <- as.numeric(sub(".*\\[(.*)\\].*", "\\1", sub_string, perl=TRUE) )
+    if(any(sapply(LPJ_GUESS_CONST_INTS$var, grepl, sub_string,  fixed = TRUE))){ # uses one of the constant ints
+      specs$n      <- LPJ_GUESS_CONST_INTS$val[sapply(LPJ_GUESS_CONST_INTS$var, grepl, sub_string,  fixed = TRUE)]
+    }else{
+      specs$n      <- as.numeric(sub(".*\\[(.*)\\].*", "\\1", sub_string, perl=TRUE))
+    }
+
     specs$single <- TRUE
   }
   
@@ -227,7 +251,12 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
       sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
     }
     if(length(sub_string) > 1){
-      PEcAn.logger::logger.severe("Check this out.")
+      # some varnames are very common characters unfortunately like u, v... check if [] comes after
+      if(any(grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE))){
+        sub_string <- sub_string[grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE)]
+      }else{
+        PEcAn.logger::logger.severe("Check this out.")
+      }
     }
     
     # clean from tabs
