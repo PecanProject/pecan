@@ -35,6 +35,7 @@ paramh_in <- readLines(paramh_loc)
 # open connection to the binary state file
 zz <- file("0.state", "rb")
 
+npft <- 11 # read from params.ins
 
 ################################ check class compatibility ################################
 # between model versions we don't expect major classes or hierarchy to change
@@ -119,9 +120,26 @@ streamed_vars_gridcell <- find_stream_var(file_in = guesscpp_in, line_nos = beg_
 # We read everything in this loop, Gridcell list is going to be the top container
 # there will be nested loops, the hierarchy will follow LPJ-GUESS architecture
 Gridcell <- list()
-for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
-  
+level <- "Gridcell"
+#for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
+for(g_i in 1:8){   
   current_stream <- streamed_vars_gridcell[g_i]
+  if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
+  if(grepl(glob2rx("(*this)[*].landcover"), current_stream)){ # s counter might change, using wildcard
+    # not sure how to handle this better. If we see this, it means we are now looping over Stands
+    # this function considers "NATURAL" vegetation only, so there is only one stand
+    # this is an integer that tells us which landcover type this stand is
+    # so it should be the indice of NATURAL in typedef enum landcovertype (I believe indexing starts from 0)
+
+    num_stnd <- as.numeric(Gridcell$nstands)
+    Gridcell[["Stand"]] <- vector("list", num_stnd) 
+    
+    # note that this is streamed under Gridcell, not Stand in guess.cpp, 
+    # but I think this info needs to go together with the Stand sublist
+    # so find_stream_var will prepend landcover to the streamed_vars
+    
+    next
+  } 
   current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
   
   Gridcell[[length(Gridcell)+1]] <- list()
@@ -136,33 +154,44 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
                                                       tools::toTitleCase(current_stream_type$name), 
                                                       "::serialize"))
     streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+    num_pft <- ifelse(grepl("pft", current_stream_type$name, fixed = TRUE), n_pft, 1)
+
+    for(varname in streamed_vars){
+      Gridcell[[length(Gridcell)]][[varname]] <- varname
+      Gridcell[[length(Gridcell)]][[varname]] <- vector("list", num_pft) 
+    }
     
-    for(sv_i in seq_along(streamed_vars)){
-      current_stream <- streamed_vars[sv_i] #it's OK to overwrite
-      current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
-      if(current_stream_type$type == "class"){
-        
-        # CLASS
-        class_name <- current_stream_type$name
-        
-      }else{
-        current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
-        # and read!
-        if(current_stream_specs$single){
-          Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- readBin(con  = zz, 
-                                                                              what = current_stream_specs$what, 
-                                                                              n    = current_stream_specs$n, 
-                                                                              size = current_stream_specs$size)
+    for(pft_i in seq_len(num_pft)){
+      for(sv_i in seq_along(streamed_vars)){
+      #for(sv_i in 21:37){
+        current_stream <- streamed_vars[sv_i] #it's OK to overwrite
+        current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+
+        if(current_stream_type$type == "class"){
+          
+          # CLASS
+          class_name <- current_stream_type$name
+          
         }else{
-          for(css.i in seq_along(current_stream_specs$what)){
-            Gridcell[[length(Gridcell)]][[current_stream_specs$names[css.i]]] <- readBin(con  = zz, 
-                                                                                what = current_stream_specs$what[css.i], 
-                                                                                n    = current_stream_specs$n[css.i], 
-                                                                                size = current_stream_specs$size[css.i])
+          current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
+          # and read!
+          if(current_stream_specs$single){
+            Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]] <- readBin(con  = zz, 
+                                                                                what = current_stream_specs$what, 
+                                                                                n    = current_stream_specs$n, 
+                                                                                size = current_stream_specs$size)
+          }else{
+            for(css.i in seq_along(current_stream_specs$what)){
+              Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
+                                                                                                                               what = current_stream_specs$what[css.i], 
+                                                                                                                               n    = current_stream_specs$n[css.i], 
+                                                                                                                               size = current_stream_specs$size[css.i])
+            }
           }
         }
-      }
-    }
+      } # streamed_vars-loop ends
+    } # pft-loop ends
+    
   }else{
     # NOT CLASS
     current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
@@ -172,17 +201,15 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
                                                                           what = current_stream_specs$what, 
                                                                           n    = current_stream_specs$n, 
                                                                           size = current_stream_specs$size)
-    }else{
+    }else{ # probably don't need this but let's keep
       for(css.i in seq_along(current_stream_specs$what)){
         Gridcell[[length(Gridcell)]][[current_stream_specs$names[css.i]]] <- readBin(con  = zz, 
                                                                                      what = current_stream_specs$what[css.i], 
                                                                                      n    = current_stream_specs$n[css.i], 
                                                                                      size = current_stream_specs$size[css.i])
       }
-  }
-
-  
-  
+    }
+  }# if-class
 } # Gridcell-loop ends
   
 # helper function that determines the stream size to read
@@ -253,10 +280,13 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
 # this function relies on the architecture of LPJ-GUESS and has bunch of harcoded checks, see model documentation
 find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in){
 
-  if(current_stream_var == "seed"){
+  if(current_stream_var == "seed"){ # a bit of a special case
     return(list(type = "long", name = "seed", substring = "long seed;"))
   }
-  
+
+  if(current_stream_var == "nstands"){ # a bit of a special case, it is read by guess.cpp
+    return(list(type = "int", name = "nstands", substring = "int nstands;")) #there is not substring like that in guess.h
+  }  
   # it might be difficult to extract the "type" before the varname
   # there are not that many to check
   possible_types <- c("class", "double", "bool", "int")
@@ -266,7 +296,7 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
   beg_end <- NULL # not going to need it always
   
   # class or not?
-  if(current_stream_var %in% tolower(LPJ_GUESS_CLASSES)){
+  if(tools::toTitleCase(current_stream_var) %in% LPJ_GUESS_CLASSES){
     stream_type <- "class"
     stream_name <- current_stream_var
     sub_string  <- NULL
