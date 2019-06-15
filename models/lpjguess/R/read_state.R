@@ -221,16 +221,59 @@ for(g_i in 1:8){
                   # VEGETATION
                   # Vegetation class has a bit of a different structure, it has one more depth, see model documentation
                   streamed_vars_veg <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
-                  for(svv_i in seq_along(streamed_vars_veg)){
-                    current_stream <- streamed_vars_veg[svv_i]
-                    if(current_stream == "nobj"){
-                      # nobj points to different things under different levels, here it is the number of individuals
-                      Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["number_of_individuals"]] <- readBin(zz, integer(), 1, size = 4) 
-                      next
-                    }
-                    current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+                  
+                  # NOTE : Unlike other parts, this bit is a lot less generalized!!!
+                  # I'm gonna asumme Vegetation class won't change much in the future
+                  # indiv.pft.id and indiv needs to be looped over nobj times
+                  if(!setequal(streamed_vars_veg, c("nobj", "indiv.pft.id", "indiv"))){
+                    PEcAn.logger::logger.severe("Vegetation class object changed in this model version, you need to fix read.state")
+                  }
+
+                  # nobj points to different things under different levels, here it is the number of individuals
+                  number_of_individuals <- readBin(zz, integer(), 1, size = 4) 
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["number_of_individuals"]] <- number_of_individuals
+                  if(number_of_individuals < 1){
+                  # if number of individuals is 0 it's a bit suspicious. Not sure if ever will get negative but that'd definitely be wrong
+                     PEcAn.logger::logger.warn("Number of individuals under vegetation is", number_of_individuals)
+                  }
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]] <- vector("list", number_of_individuals) 
+
+                  beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
+                                                   pattern = paste0("void Individual::serialize"))
+                  streamed_vars_indv <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+                  
+                  # loop over nobj
+                  for(indv_i in seq_len(number_of_individuals)){
+                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]] <- list()
+                    # which PFT is this?
+                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]][["indiv.pft.id"]] <- readBin(zz, integer(), 1, size = 4)
+                    # read all the individual class
+                    for(svi_i in 1:11){ # seq_along(streamed_vars_indv)
+                      current_stream <- streamed_vars_indv[svi_i] 
+                      
+                      current_stream_type  <- find_stream_type("individual", current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+                      current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
+                      
+                      if(current_stream_specs$single){
+                        Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]][[current_stream_type$name]] <- readBin(con  = zz, 
+                                                                                                     what = current_stream_specs$what, 
+                                                                                                     n    = current_stream_specs$n, 
+                                                                                                     size = current_stream_specs$size)
+                      }else{
+                        for(css.i in seq_along(current_stream_specs$what)){
+                          Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
+                                                                                                                                           what = current_stream_specs$what[css.i], 
+                                                                                                                                           n    = current_stream_specs$n[css.i], 
+                                                                                                                                           size = current_stream_specs$size[css.i])
+                        }
+                      }
+                      
+                    }# end loop over stream vars individual
+                  } # end loop over number_of_individuals
                     
-                  } # end for-loop over streamed_vars_veg
+                    
+                    
+                
                   
                 }else{
                   # NOT VEGETATION
@@ -565,6 +608,8 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
       # some varnames are very common characters unfortunately like u, v... check if [] comes after
       if(any(grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE))){
         sub_string <- sub_string[grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE)]
+      }else if(any(grepl(paste0("double ", current_stream_var), sub_string, fixed = TRUE))){ # just fishing, double is the most common type
+        sub_string <- sub_string[grepl(paste0("double ", current_stream_var), sub_string, fixed = TRUE)]
       }else{
         PEcAn.logger::logger.severe("Check this out.")
       }
