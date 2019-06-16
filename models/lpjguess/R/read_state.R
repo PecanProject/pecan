@@ -126,7 +126,7 @@ streamed_vars_gridcell <- find_stream_var(file_in = guesscpp_in, line_nos = beg_
 Gridcell <- list()
 level <- "Gridcell"
 #for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
-for(g_i in 1:8){   
+for(g_i in 1:9){   
   current_stream <- streamed_vars_gridcell[g_i]
   if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
   if(grepl(glob2rx("(*this)[*].landcover"), current_stream)){ # s counter might change, using wildcard
@@ -162,7 +162,7 @@ for(g_i in 1:8){
     
     
     for(stnd_i in seq_len(num_stnd)){ #looping over the stands
-      for(svs_i in seq_along(streamed_vars_stand)){ #looping over the streamed stand vars
+      for(svs_i in seq_along(streamed_vars_stand)){ # looping over the streamed stand vars
         
         current_stream <- streamed_vars_stand[svs_i]
         if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
@@ -248,7 +248,7 @@ for(g_i in 1:8){
                     # which PFT is this?
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]][["indiv.pft.id"]] <- readBin(zz, integer(), 1, size = 4)
                     # read all the individual class
-                    for(svi_i in 1:11){ # seq_along(streamed_vars_indv)
+                    for(svi_i in seq_along(streamed_vars_indv)){ # 
                       current_stream <- streamed_vars_indv[svi_i] 
                       
                       current_stream_type  <- find_stream_type("individual", current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
@@ -261,7 +261,7 @@ for(g_i in 1:8){
                                                                                                      size = current_stream_specs$size)
                       }else{
                         for(css.i in seq_along(current_stream_specs$what)){
-                          Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
+                          Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
                                                                                                                                            what = current_stream_specs$what[css.i], 
                                                                                                                                            n    = current_stream_specs$n[css.i], 
                                                                                                                                            size = current_stream_specs$size[css.i])
@@ -414,8 +414,8 @@ for(g_i in 1:8){
         } # end patch-if 
 
         
-      }# end for-loop over the streamed stand vars
-    }# end for-loop over the stands
+      }# end for-loop over the streamed stand vars (svs_i, L.165)
+    }# end for-loop over the stands (stnd_i, L.164)
     
   }else{ #not reading in Stand variables
     
@@ -498,7 +498,7 @@ for(g_i in 1:8){
 # helper function that determines the stream size to read
 find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS){
   
-  possible_types <- c("double", "bool", "int", "long")
+  possible_types <- c("double ", "bool ", "int " , "long ") # space because these can be part of other words
   possible_types <- c(possible_types, LPJ_GUESS_TYPES)
   n_sizes  <- c(8, 1, 4, 8, rep(4, length(LPJ_GUESS_TYPES) ))
   rbin_tbl <- c("double", "logical", "integer", "integer", rep("integer", length(LPJ_GUESS_TYPES)))
@@ -516,20 +516,23 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
     specs$single <- TRUE
     
   }else if(current_stream_type$type == "Historic"){
+    possible_types <- c("double", "bool", "int" , "long") # # I haven't seen any Historic that doesn't store double but... historic has a comma after type: double,
+    possible_types <- c(possible_types, LPJ_GUESS_TYPES)
+    
     # Historic types are special to LPJ-GUESS
     # They have stored values, current index, and a boolean in that order
     specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 3)
     # always three, this is a type defined in guessmath.h
-    specs$what[1]  <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)] # I haven't seen any Historic that doesn't store double but...
+    specs$what[1]  <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)] 
     specs$size[1]  <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
     specs$names[1] <- current_stream_type$name
     # n is tricky, it can be hardcoded it can be one of the const ints
     to_read <- str_match(sub_string, paste0("Historic<", specs$what[1], ", (.*?)>.*"))[,2]
-    #if(to_read %in% LPJ_GUESS_CONST_INTS){
-      
-    #}else{
+    if(to_read %in% LPJ_GUESS_CONST_INTS$var){
+      specs$n      <- LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var == to_read]
+    }else{
       specs$n[1]   <- as.numeric(to_read)
-    #}
+    }
     specs$what[2]  <- "integer" #need to check what size_t is
     specs$size[2]  <- 8
     specs$n[2]     <- 1
@@ -577,7 +580,7 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
   
   # it might be difficult to extract the "type" before the varname
   # there are not that many to check
-  possible_types <- c("class", "double", "bool", "int")
+  possible_types <- c("class ", "double ", "bool ", "int ")
   
   possible_types <- c(possible_types, LPJ_GUESS_TYPES)
   
@@ -630,7 +633,7 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
 
   }
   
-  return(list(type = stream_type, name = stream_name, substring = sub_string))
+  return(list(type = gsub(" ", "", stream_type), name = stream_name, substring = sub_string))
 } # find_stream_type
   
   
