@@ -498,7 +498,37 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=F, readsFF=NULL){
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=F, readsFF=NULL, observed_vars){
+  
+  # fix obs.mean/obs.cov for multivariable plotting issues when there is NA data
+  for (name in names(obs.mean))
+  {
+    data_mean = obs.mean[name]
+    data_cov = obs.cov[name]
+    sites = names(data_mean[[1]])
+    for (site in sites)
+    {
+      d_mean = data_mean[[1]][[site]]
+      d_cov = data_cov[[1]][[site]]
+      colnames = names(d_mean)
+      if (length(colnames) < length(observed_vars))
+      {
+        missing = which(!(observed_vars %in% colnames))
+        missing_mean = as.data.frame(NA)
+        colnames(missing_mean) = observed_vars[missing]
+        d_mean = cbind(d_mean, missing_mean)
+        
+        missing_cov = matrix(0, nrow = length(observed_vars), ncol = length(observed_vars))
+        diag(missing_cov) = c(diag(d_cov), NA)
+        d_cov = missing_cov
+      }
+      data_mean[[1]][[site]] = d_mean
+      data_cov[[1]][[site]] = d_cov
+    }
+    obs.mean[name] = data_mean
+    obs.cov[name] = data_cov
+  }
+  
 
   if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
 

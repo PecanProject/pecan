@@ -48,7 +48,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
   scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
-  multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
+  multi.site.flag <- T#PEcAn.settings::is.MultiSettings(settings)
   readsFF<-NULL # this keeps the forward forecast
   nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 1e6, settings$state.data.assimilation$nitrGEF %>%as.numeric)
   nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 100, settings$state.data.assimilation$nthin %>%as.numeric)
@@ -207,7 +207,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     ###-------------------------------------------------------------------------###-----  
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
     
-    if (t>1){
+    if (t > 1){
       #removing old simulations
       unlink(list.files(outdir, "*.nc.var", recursive = TRUE, full.names = TRUE))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
@@ -268,7 +268,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
         )
       })
     
-    if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
+    if (t == 1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
    
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
@@ -277,7 +277,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     if (control$debug) browser()
     #--- Reading just the first run when we have all years and for VIS
 
-    if (t==1 & control$FF){
+    if (t == 1 & control$FF){
       readsFF <- out.configs %>%
         purrr::map(function(configs) {
  
@@ -342,17 +342,12 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     #[1,]  3.872521     37.2581  3.872521     37.2581
     # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
     if (multi.site.flag)
-    X <- X %>%
-          map_dfc(~.x) %>% 
-          as.matrix() %>%
-          `colnames<-`(c(rep(colnames(X[[names(X)[1]]]), length(X)))) %>%
-          `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
-    
-    # X <- X %>%
-    #   map_dfc(~.x) %>% 
-    #   as.matrix() %>%
-    #   `colnames<-`(c(rep(var.names, length(X)))) %>%
-    #   `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
+      X <- X %>%
+      map_dfc(~.x) %>%
+      as.matrix() %>%
+#      `colnames<-`(c(rep(var.names, length(X)))) %>%
+      `colnames<-`(c(rep(colnames(X[[names(X)[1]]]), length(X)))) %>%
+      `attr<-`('Site',c(rep(site.ids, each=length(var.names))))         
     
     FORECAST[[t]] <- X
     ###-------------------------------------------------------------------###
@@ -418,6 +413,8 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
         print(Y)
         PEcAn.logger::logger.warn ("\n --------------Obs Cov ----------- \n")
         print(R)
+        PEcAn.logger::logger.warn ("\n --------------Obs H ----------- \n")
+        print(H)
         PEcAn.logger::logger.warn ("\n --------------Forecast mean ----------- \n")
         print(enkf.params[[t]]$mu.f)
         PEcAn.logger::logger.warn ("\n --------------Forecast Cov ----------- \n")
@@ -483,7 +480,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
          file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     #writing down the image - either you asked for it or not :)
 
-   if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+#   if (t%%2==0 | t==nt)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
     if (t == 1){
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }

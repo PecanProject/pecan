@@ -55,10 +55,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("NPP")
   }
   
- if ("AbvGrndWood" %in% variables) {
-     AbvGrndWood <- udunits2::ud.convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
-     analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 	  
-    if (new.state$AbvGrndWood < 0) analysis.save[[length(analysis.save)]] <- 0.0001
+if (new.state$AbvGrndWood < 0) analysis.save[[length(analysis.save)]] <- 0.0001
      names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
     
     analysis.save[[length(analysis.save) + 1]] <- IC_extra$abvGrndWoodFrac

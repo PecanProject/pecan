@@ -15,7 +15,6 @@
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
                                 restart = NULL, spinup = NULL) {
-  
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package = "PEcAn.SIPNET")
   config.text <- readLines(con = template.in, n = -1)
@@ -30,7 +29,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       template.clim <- inputs$met$path
     }
   }
-  
   PEcAn.logger::logger.info(paste0("Writing SIPNET configs with input ", template.clim))
   
   # find out where to write run/ouput
@@ -64,7 +62,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(settings$host$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
-  
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
@@ -101,8 +98,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   
   param <- read.table(template.param)
-  
-  
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
@@ -159,7 +154,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     } else {
       Amax <- param[id, 2] * SLA
     }
-    
     # Daily fraction of maximum photosynthesis
     if ("AmaxFrac" %in% pft.names) {
       param[which(param[, 1] == "aMaxFrac"), 2] <- pft.traits[which(pft.names == "AmaxFrac")]
@@ -191,7 +185,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("growth_resp_factor" %in% pft.names) {
       param[which(param[, 1] == "growthRespFrac"), 2] <- pft.traits[which(pft.names == "growth_resp_factor")]
     }
-    
     ### !!! NOT YET USED
     #Jmax = NA
     #if("Jmax" %in% pft.names){
@@ -244,7 +237,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("wueConst" %in% pft.names) {
       param[which(param[, 1] == "wueConst"), 2] <- pft.traits[which(pft.names == "wueConst")]
     }
-    
     # vegetation respiration Q10.
     if ("veg_respiration_Q10" %in% pft.names) {
       param[which(param[, 1] == "vegRespQ10"), 2] <- pft.traits[which(pft.names == "veg_respiration_Q10")]
@@ -291,7 +283,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("coarse_root_respiration_Q10" %in% pft.names) {
       param[which(param[, 1] == "coarseRootQ10"), 2] <- pft.traits[which(pft.names == "coarse_root_respiration_Q10")]
     }
-    
     # WARNING: fineRootAllocation + woodAllocation + leafAllocation isn't supposed to exceed 1
     # see sipnet.c code L2005 :
     # fluxes.coarseRootCreation=(1-params.leafAllocation-params.fineRootAllocation-params.woodAllocation)*npp;
@@ -351,7 +342,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("soilWHC" %in% pft.names) {
       param[which(param[, 1] == "soilWHC"), 2] <- pft.traits[which(pft.names == "soilWHC")]
     }
-    
     # 10/31/2017 IF: these were the two assumptions used in the emulator paper in order to reduce dimensionality
     # These results in improved winter soil respiration values
     # they don't affect anything when the seasonal soil respiration functionality in SIPNET is turned-off
@@ -380,8 +370,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }  ## end loop over PFTS
   ####### end parameter update
   
-  
-  #### write INITIAL CONDITIONS here ####
   if (!is.null(IC)) {
     ic.names <- names(IC)
     ## plantWoodInit gC/m2
@@ -390,21 +378,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       # reconstruct total wood C
       wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
       #Sanity check
-      if (is.na(wood_total_C) | is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C <0) {
-        wood_total_C <- 0
-        if (round(IC$AbvGrndWood)>0 & round(IC$abvGrndWoodFrac, 3)==0)
-          PEcAn.logger::logger.warn(
-            paste0(
-              "There is a major problem with ",
-              run.id,
-              " in either the model's parameters or IC.",
-              "Because the ABG is estimated=",
-              IC$AbvGrndWood,
-              " while AGB Frac is estimated=",
-              IC$abvGrndWoodFrac
-            )
-          )
-      }
+      if (is.na(wood_total_C) | is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C <0) wood_total_C <- 0
       param[which(param[, 1] == "plantWoodInit"),  2] <- wood_total_C
       param[which(param[, 1] == "coarseRootFrac"), 2] <- IC$coarseRootFrac
       param[which(param[, 1] == "fineRootFrac"),   2] <- IC$fineRootFrac
@@ -493,8 +467,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
               quote = FALSE)
 } # write.config.SIPNET
-
-
 #--------------------------------------------------------------------------------------------------#
 ##'
 ##' Clear out previous SIPNET config and parameter files.
@@ -524,4 +496,4 @@ remove.config.SIPNET <- function(main.outdir, settings) {
   } else {
     print("*** WARNING: Removal of files on remote host not yet implemented ***")
   }
-} # remove.config.SIPNET
+} # remove.config.SIPNET 
