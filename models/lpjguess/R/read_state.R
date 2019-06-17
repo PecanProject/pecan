@@ -292,7 +292,7 @@ for(g_i in 1:8){
                   
                   # maybe try modifying this bit later to make it a function
                   for(pft_i in seq_len(num_pft)){
-                    for(sv_i in 1:16){#seq_along(streamed_vars)){ 
+                    for(sv_i in 1:19){#seq_along(streamed_vars)){ 
                       current_stream <- streamed_vars[sv_i] #it's OK to overwrite
                       current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
                       
@@ -560,6 +560,23 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
     specs$size <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
     specs$single <- TRUE
     
+  }else if(length(regmatches(sub_string, gregexpr("\\[.+?\\]", sub_string))[[1]]) > 1){
+    #looks like we have a matrix
+    spec_dims <- regmatches(sub_string, gregexpr("\\[.+?\\]", sub_string))[[1]]
+    spec_dims <- gsub("\\].*", "", gsub(".*\\[", "", spec_dims))
+    for(spec_dims_i in seq_along(spec_dims)){
+      if(any(sapply(LPJ_GUESS_CONST_INTS$var, grepl, spec_dims[spec_dims_i],  fixed = TRUE))){ # uses one of the constant ints
+        spec_dims[spec_dims_i] <- LPJ_GUESS_CONST_INTS$val[sapply(LPJ_GUESS_CONST_INTS$var, grepl, spec_dims[spec_dims_i],  fixed = TRUE)]
+      }else{
+        spec_dims[spec_dims_i] <- as.numeric(sub(".*\\[(.*)\\].*", "\\1", spec_dims[spec_dims_i], perl=TRUE))
+      }
+    }
+    spec_dims <- as.numeric(spec_dims)
+    
+    specs$n      <- prod(spec_dims)
+    specs$what   <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$size   <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$single <- TRUE
   }else{
     # reading a vector
     specs$what   <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
