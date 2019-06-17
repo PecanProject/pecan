@@ -32,11 +32,15 @@ paramh_in <- readLines(paramh_loc)
 
 ############ open
 
+# test path
+out.path = "/fs/data2/output/PEcAn_1000002393/out/1000458390"
+setwd(out.path)
+
 # open connection to the binary state file
 zz <- file("0.state", "rb")
 
 ### these are the values read from params.ins, passed to this fcn
-npft     <- 11 
+n_pft     <- 11 
 npatches <- 5 
 
 ################################ check class compatibility ################################
@@ -197,7 +201,7 @@ for(g_i in 1:8){
           Gridcell[["Stand"]][[stnd_i]][["Patch"]] <- vector("list", npatches) 
           
           for(ptch_i in seq_len(npatches)){ #looping over the patches
-            for(svp_i in 1){#seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
+            for(svp_i in 2){#seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
               current_stream <- streamed_vars_patch[svp_i]
               if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
               
@@ -288,7 +292,7 @@ for(g_i in 1:8){
                   
                   # maybe try modifying this bit later to make it a function
                   for(pft_i in seq_len(num_pft)){
-                    for(sv_i in seq_along(streamed_vars)){ 
+                    for(sv_i in 1:16){#seq_along(streamed_vars)){ 
                       current_stream <- streamed_vars[sv_i] #it's OK to overwrite
                       current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
                       
@@ -510,7 +514,8 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
   sub_string <- current_stream_type$substring
   
   #is there a ; immediately after?
-  if(grepl(paste0(current_stream_type$type, " ", current_stream_type$name, ";"), sub_string, fixed = TRUE)){
+  if(grepl(paste0(current_stream_type$type, " ", current_stream_type$name, ";"), sub_string, fixed = TRUE) |
+     grepl(paste0(current_stream_type$type, " ", current_stream_type$name, ","), sub_string, fixed = TRUE)){ # e.g. "double alag, exp_alag;"
     # this is only length 1
     specs$n <- 1
     specs$what <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
@@ -546,6 +551,14 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
     specs$names[3] <- "full"   
     
     specs$single <- FALSE
+    
+  }else if(grepl(glob2rx(paste0(current_stream_type$type, "*", current_stream_type$name, ";")), sub_string)){
+
+    # this is only length 1
+    specs$n <- 1
+    specs$what <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$size <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$single <- TRUE
     
   }else{
     # reading a vector
