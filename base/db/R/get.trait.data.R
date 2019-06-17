@@ -466,7 +466,7 @@ symmetric_setdiff <- function(x, y, xname = "x", yname = "y",
     dplyr::mutate(!!namecol := yname)
   is_i64 <- c(
     vapply(xy, inherits, logical(1), what = "integer64"),
-    vapply(yx, inherits, logical(1), what = "integer64"),
+    vapply(yx, inherits, logical(1), what = "integer64")
   )
   if (any(is_i64)) {
     PEcAn.logger::logger.debug(
