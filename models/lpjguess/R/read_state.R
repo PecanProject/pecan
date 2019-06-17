@@ -292,15 +292,43 @@ for(g_i in 1:8){
                   
                   # maybe try modifying this bit later to make it a function
                   for(pft_i in seq_len(num_pft)){
-                    for(sv_i in 1:19){#seq_along(streamed_vars)){ 
+                    for(sv_i in 1:24){#seq_along(streamed_vars)){ 
                       current_stream <- streamed_vars[sv_i] #it's OK to overwrite
                       current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
                       
                       if(current_stream_type$type == "class"){
                         
-                        # CLASS, NOT EVER GOING HERE?
+                        # ONLY SOMPOOL HERE SO FAR ******************************************************************
                         class_name <- current_stream_type$name
                         
+                        beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
+                                                         pattern = paste0("void ",
+                                                                          tools::toTitleCase(current_stream_type$name), 
+                                                                          "::serialize"))
+                        streamed_vars_sompool <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+                        
+                        ###################### LOOP OVER class_name
+                        for(sv_sompool_i in seq_along(streamed_vars_sompool)){ # 
+                          current_stream <- streamed_vars_indv[sv_sompool_i] 
+                          
+                          current_stream_type  <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+                          current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
+                          
+                          if(current_stream_specs$single){
+                            Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[class_name]][[current_stream_type$name]] <- readBin(con  = zz,
+                                                                                                                          what = current_stream_specs$what, 
+                                                                                                                          n    = current_stream_specs$n, 
+                                                                                                                          size = current_stream_specs$size)
+                          }else{
+                            for(css.i in seq_along(current_stream_specs$what)){
+                              Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
+                                                                                                                                                                           what = current_stream_specs$what[css.i], 
+                                                                                                                                                                           n    = current_stream_specs$n[css.i], 
+                                                                                                                                                                           size = current_stream_specs$size[css.i])
+                            }
+                          }
+                          
+                        }
                       }else{
                         current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                         # and read!
@@ -638,6 +666,17 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
 
     if(length(sub_string) == 0){
       sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    }
+    # e.g. "sompool[i]" in guess.cpp, Sompool sompool[NSOMPOOL]; in guess.h
+    if(length(sub_string) == 0){
+      current_stream_var <- gsub("\\[|.\\]", "", current_stream_var)
+      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+      if(tools::toTitleCase(current_stream_var) %in% LPJ_GUESS_CLASSES){
+        stream_type <- "class"
+        stream_name <- current_stream_var
+        sub_string  <- NULL
+        return(list(type = gsub(" ", "", stream_type), name = stream_name, substring = sub_string))
+      }
     }
     if(length(sub_string) > 1){
       # some varnames are very common characters unfortunately like u, v... check if [] comes after
