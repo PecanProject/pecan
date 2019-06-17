@@ -20,9 +20,13 @@
 #' @export
 #' 
 
-sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F, 
-                     control=list(trace=T,
-                                  interactivePlot=T,
+sda.enkf <- function(settings,
+                     obs.mean,
+                     obs.cov,
+                     Q = NULL,
+                     restart=FALSE, 
+                     control=list(trace=TRUE,
+                                  interactivePlot=TRUE,
                                   TimeseriesPlot=TRUE,
                                   BiasPlot=FALSE,
                                   plot.title=NULL,
@@ -85,8 +89,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       ### model specific split inputs
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
-                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3,tz="EST"), 
-                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3,tz="EST"),
+                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3,tz="UTC"), 
+                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3,tz="UTC"),
                                                               inputs =  settings$run$inputs$met$path[[i]],
                                                               overwrite=F)) 
     }
@@ -176,12 +180,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- list()
       if(!no_split){
+   
         for(i in seq_len(nens)){
           #---------------- model specific split inputs
           inputs.split$samples[i] <-do.call(my.split_inputs, 
                                             args = list(settings = settings, 
-                                                        start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3,tz="EST")), 
-                                                        stop.time = (lubridate::ymd_hms(obs.times[t],truncated = 3,tz="EST")),
+                                                        start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3,tz="UTC")), 
+                                                        stop.time = (lubridate::ymd_hms(obs.times[t],truncated = 3,tz="UTC")),
                                                         inputs = inputs$samples[[i]])) 
           
 
@@ -222,7 +227,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     X <- list()
     if (control$debug) browser()
     for (i in seq_len(nens)) {
-      
+     
       X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
                                                          runid = run.id[i], 
                                                          stop.time = obs.times[t], 

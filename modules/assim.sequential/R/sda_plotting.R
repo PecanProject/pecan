@@ -317,6 +317,7 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
 
   t1         <- 1
   #Defining some colors
+  ready.OBS<-NULL
   generate_colors_sda()
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)

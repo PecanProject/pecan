@@ -42,6 +42,8 @@ c(
 settings <- read.settings(system.file("WillowCreek",
                                       xmlTempName,
                                       package ="PEcAn.assim.sequential" ))
+
+#settings <- read.settings('/home/hamzed/R/library/PEcAn.assim.sequential/WillowCreek/gefs.sipnet.template.xml')
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 
@@ -73,15 +75,20 @@ sda.end <- Sys.Date()
 #-----------------------------------------------------------------------------------------------
 #Fluxes
 if(!exists('prep.data'))
-prep.data <- prep.data.assim(sda.start-90, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
+prep.data <- prep.data.assim(sda.start-90, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 168) 
 obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs
+# This line is what makes the SDA to run daily
+prep.data<-prep.data %>%
+  discard(~lubridate::hour(.x$Date)!=0)
+
+
 # Finding the right end and start date
 met.start <- obs.raw$Date%>% head(1) %>% lubridate::floor_date(unit = "day")
 met.end <- obs.raw$Date %>% tail(1) %>% lubridate::ceiling_date(unit = "day")
 
 #Downloading met
-met.raw <- download_US_WCr_met(met.start, met.end)
+#met.raw <- download_US_WCr_met(met.start, met.end)
 #-----------------------------------------------------------------------------------------------
 #------------------------------------------ Fixing the settings --------------------------------
 #-----------------------------------------------------------------------------------------------
@@ -170,7 +177,7 @@ if ('state.data.assimilation' %in% names(settings)) {
         interactivePlot =FALSE,
         TimeseriesPlot =TRUE,
         BiasPlot =FALSE,
-        debug = TRUE,
+        debug = FALSE,
         pause=FALSE
       )
     )

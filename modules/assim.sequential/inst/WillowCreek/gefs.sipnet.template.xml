@@ -33,19 +33,13 @@
    <max_value>9999</max_value>
    </variable>
     <variable>
-   <variable.name>SoilMoistFrac</variable.name>
-   <unit>m/m</unit>
-    <min_value>0</min_value>
-   <max_value>9999</max_value>
-   </variable>
-    <variable>
-   <variable.name>SWE</variable.name>
-   <unit>kg/m^2</unit>
-    <min_value>0</min_value>
-   <max_value>9999</max_value>
-   </variable>
-    <variable>
    <variable.name>litter_carbon_content</variable.name>
+   <unit>kgC/m2</unit>
+    <min_value>0</min_value>
+   <max_value>9999</max_value>
+   </variable>
+       <variable>
+   <variable.name>SoilMoistFrac</variable.name>
    <unit>kgC/m2</unit>
     <min_value>0</min_value>
    <max_value>9999</max_value>
@@ -85,7 +79,7 @@
   <random.effects>FALSE</random.effects>
  </meta.analysis>
  <ensemble>
-  <size>20</size>
+  <size>3</size>
   <variable>NEE</variable>
   <start.year>2018</start.year>
   <end.year>2018</end.year>
@@ -100,7 +94,6 @@
  </ensemble>
  <model>
   <id>10</id>
-  <default.param>/fs/data3/kzarada/US_WCr/data/WillowCreek.param</default.param>
  </model>
  <run>
   <site>
