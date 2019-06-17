@@ -126,7 +126,7 @@ streamed_vars_gridcell <- find_stream_var(file_in = guesscpp_in, line_nos = beg_
 Gridcell <- list()
 level <- "Gridcell"
 #for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
-for(g_i in 1:9){   
+for(g_i in 1:8){   
   current_stream <- streamed_vars_gridcell[g_i]
   if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
   if(grepl(glob2rx("(*this)[*].landcover"), current_stream)){ # s counter might change, using wildcard
@@ -162,7 +162,7 @@ for(g_i in 1:9){
     
     
     for(stnd_i in seq_len(num_stnd)){ #looping over the stands
-      for(svs_i in seq_along(streamed_vars_stand)){ # looping over the streamed stand vars
+      for(svs_i in 1:3){#seq_along(streamed_vars_stand)){ # looping over the streamed stand vars
         
         current_stream <- streamed_vars_stand[svs_i]
         if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
@@ -197,7 +197,7 @@ for(g_i in 1:9){
           Gridcell[["Stand"]][[stnd_i]][["Patch"]] <- vector("list", npatches) 
           
           for(ptch_i in seq_len(npatches)){ #looping over the patches
-            for(svp_i in seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
+            for(svp_i in 1){#seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
               current_stream <- streamed_vars_patch[svp_i]
               if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
               
@@ -232,9 +232,11 @@ for(g_i in 1:9){
                   # nobj points to different things under different levels, here it is the number of individuals
                   number_of_individuals <- readBin(zz, integer(), 1, size = 4) 
                   Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["number_of_individuals"]] <- number_of_individuals
-                  if(number_of_individuals < 1){
+                  
+                  # few checks for sensible vals
+                  if(number_of_individuals < 1 | number_of_individuals > 10000){ # should there be an upper limit here too?
                   # if number of individuals is 0 it's a bit suspicious. Not sure if ever will get negative but that'd definitely be wrong
-                     PEcAn.logger::logger.warn("Number of individuals under vegetation is", number_of_individuals)
+                    PEcAn.logger::logger.warn("Number of individuals under vegetation is", number_of_individuals)
                   }
                   Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]] <- vector("list", number_of_individuals) 
 
@@ -680,12 +682,23 @@ find_stream_var <- function(file_in, line_nos){
             when_here <- NULL
           }
         }
-        if(!grepl(".*& ", file_in[i])) break # when there are no subsequent stream
+        check1 <- !grepl(".*& ", file_in[i]) # when there are no subsequent stream
+        check2 <- !grepl(".*& ", file_in[i+1]) # sometimes following line is empty or commented, check the next one too
+        if(check1 & !check2) i <- i+1
+        if(check1 &  check2) break # looks like there are no subsequent stream
         this_line <- gsub("[[:space:]]", "", strsplit(file_in[i], "& ")[[1]])
         for(var in this_line){
           if(var != ""){
-            streaming_list[[str.i]] <- var
-            str.i <- str.i + 1
+            if(var != "arch"){
+              streaming_list[[str.i]] <- var
+              str.i <- str.i + 1
+            }
+          }
+        }
+        if(!is.null(when_here)){ # now that increased i check this just in case
+          if(i == when_here){
+            i <- skip_to
+            when_here <- NULL
           }
         }
       }
