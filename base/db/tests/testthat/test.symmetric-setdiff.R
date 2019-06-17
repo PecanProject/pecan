@@ -1,9 +1,7 @@
 context("Symmetric setdiff")
 
-setup(con <- check_db_test())
-teardown(DBI::dbDisconnect(con))
-
 test_that("Symmetric setdiff works", {
+  con <- check_db_test()
   x <- dplyr::tbl(con, "traits") %>%
     dplyr::filter(!is.na(time)) %>%
     dplyr::arrange(dplyr::desc(created_at)) %>%
