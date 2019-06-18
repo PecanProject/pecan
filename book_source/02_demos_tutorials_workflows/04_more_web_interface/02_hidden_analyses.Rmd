@@ -475,7 +475,7 @@ In general, the idea is that sending, running and monitoring an SDA job should a
 `Additionally, the Remote_Sync_launcher` function follows the progress of the remote job by executing a nohup command on a template R script and keeps the R console open for further use. This R script, as mentioned above, constantly pings the given PID every 5 minutes and copies over the SDA output.
 
 Several points on how to prepare your xml settings for the remote SDA run:
-1- Going through the main pecan workflow.R, if you were able to generate `pecan.TRAIT.xml` your setting is ready to be used for a SDA run. All you need to do extra is adding your state data assimilation tags.
+1 - In the main pecan workflow.R, if you were able to generate `pecan.TRAIT.xml`, your settings are ready to be used for an SDA run. All you need to add is your state data assimilation tags.
 2- Inside the xml setting `<outdir>` is and will need to be pointing to a local directory where `SDA_remote_launcher` will look for either a `sample.Rdata` file or a `pft` folder.
 3- You need to setup your `<host>` tag accroding to desired remote machine. You can learn more about that on the `Remote execution with PEcAn` section of the documenation. Please make sure that `<folder>` tag inside `<host>` is poitning to a directory where you want to store and run your SDA job. 
 4- Finally make sure the <binary> tag inside the <model> tag is set to the right path on the remote machine.
