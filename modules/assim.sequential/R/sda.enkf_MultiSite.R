@@ -29,7 +29,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
                                             plot.title = NULL,
                                             facet.plots = FALSE,
                                             debug = FALSE,
-                                            pause=FALSE),
+                                            pause = FALSE),
                                ...) {
   if (control$debug) browser()
   ###-------------------------------------------------------------------###
@@ -86,7 +86,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
   my.read_restart <- paste0("read_restart.", model)
   my.split_inputs  <- paste0("split_inputs.", model)
   #- Double checking some of the inputs
-  if (is.null(adjustment)) adjustment<-TRUE
+  if (is.null(adjustment)) adjustment <- TRUE
   # models that don't need split_inputs, check register file for that
   register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
   register <- XML::xmlToList(XML::xmlParse(register.xml))
