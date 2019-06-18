@@ -287,8 +287,36 @@ for(g_i in 1:8){
                     
                 
                   
+                }else if(class_name == "Fluxes"){
+                  # FLUXES
+                  # this is not generalized at all
+                  streamed_vars_flux <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+                  
+                  if(!setequal(streamed_vars_flux, c("annual_fluxes_per_pft", "monthly_fluxes_patch",  "monthly_fluxes_pft"))){
+                    PEcAn.logger::logger.severe("Fluxes class object changed in this model version, you need to fix read.state")
+                  }
+                  
+                  # annual_fluxes_per_pft loops over 
+                  # parse from guess.h
+                  PerPFTFluxType <- c("NPP", "GPP", "RA", "ISO", "MON")
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]] <- list()
+                  key1 <- readBin(zz, "integer", 1, 8)
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][["key1"]] <- key1
+                  for(fpft_i in seq_len(key1)){ # key1 11 PFTs
+                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[fpft_i]] <- list()
+                    key2 <- readBin(zz, "integer", 1, 8)
+                    if(key2 > 10000){ #make sure you dind't read a weird number, this is supposed to be number of fluxes per pft, can't have too many
+                      PEcAn.logger::logger.severe("Number of fluxes per pft read from the state file is too high. Check read.state function")
+                    }
+                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[fpft_i]][["key2"]] <- key2
+                    for(flux_i in seq_len(key2)){
+                      # is this double?
+                      Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[fpft_i]][[PerPFTFluxType[flux_i]]] <- readBin(zz, "double", 1, 8)
+                    }
+                  }
+               
                 }else{
-                  # NOT VEGETATION
+                  # NOT VEGETATION OR FLUX
                   streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
                   num_pft <- ifelse(grepl("pft", current_stream_type$name, fixed = TRUE), n_pft, 1)
                   
@@ -616,7 +644,7 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
     
    
     specs$n <- 1
-    specs$what <- "double"
+    specs$what <- "integer"
     specs$size <- 8
     specs$single <- TRUE
     
