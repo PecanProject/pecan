@@ -207,11 +207,16 @@ for(g_i in 1:8){
           Gridcell[["Stand"]][[stnd_i]][["Patch"]] <- vector("list", npatches) 
           
           for(ptch_i in seq_len(npatches)){ #looping over the patches
-            for(svp_i in 1:3){#seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
+            for(svp_i in seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
               current_stream <- streamed_vars_patch[svp_i]
               if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
               
-              current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+              if(tools::toTitleCase(current_stream) %in% LPJ_GUESS_CLASSES){
+                current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+              }else{
+                current_stream_type <- find_stream_type("Patch", current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+              }
+              
               
               Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[length(Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]])+1]] <- list()
               names(Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]])[length(Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]])] <- current_stream_type$name
@@ -301,7 +306,7 @@ for(g_i in 1:8){
                   PerPFTFluxType <- c("NPP", "GPP", "RA", "ISO", "MON")
                   Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]] <- list()
                   key1 <- readBin(zz, "integer", 1, 8)
-                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][["key1"]] <- key1
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][["n_pft"]] <- key1
                   for(fpft_i in seq_len(key1)){ # key1 11 PFTs
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[fpft_i]] <- list()
                     key2 <- readBin(zz, "integer", 1, 8)
@@ -314,7 +319,19 @@ for(g_i in 1:8){
                       Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[fpft_i]][[PerPFTFluxType[flux_i]]] <- readBin(zz, "double", 1, 8)
                     }
                   }
-               
+                  
+                  # monthly_fluxes_patch read as a vector at once
+                  # double monthly_fluxes_patch[12][NPERPATCHFLUXTYPES];
+                  # maybe read this as a matrix?
+                  n_monthly_fluxes_patch <- 12 * LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var =="PerPatchFluxType"]
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["monthly_fluxes_patch"]] <- readBin(zz, "double", n_monthly_fluxes_patch, 8)
+                  
+                  # monthly_fluxes_pft read as a vector at once
+                  # double monthly_fluxes_pft[12][NPERPFTFLUXTYPES];
+                  # maybe read this as a matrix?
+                  n_monthly_fluxes_pft <- 12 * LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var =="PerPFTFluxType"]
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["monthly_fluxes_pft"]] <- readBin(zz, "double", n_monthly_fluxes_pft, 8)
+                  
                 }else{
                   # NOT VEGETATION OR FLUX
                   streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
@@ -399,13 +416,15 @@ for(g_i in 1:8){
                 current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                 # and read!
                 if(current_stream_specs$single){
-                  Gridcell[["Stand"]][[stnd_i]][[current_stream_type$name]] <- readBin(con  = zz, 
+    
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[current_stream_type$name]] <- readBin(con  = zz, 
                                                                                        what = current_stream_specs$what, 
                                                                                        n    = current_stream_specs$n, 
                                                                                        size = current_stream_specs$size)
                 }else{ # probably don't need this but let's keep
                   for(css_i in seq_along(current_stream_specs$what)){
-                    Gridcell[[length(Gridcell)]][[current_stream_specs$names[css_i]]] <- readBin(con  = zz, 
+                    # CHANGE ALL THESE HISTORIC TYPES SO THAT cirrent_index and full goes together with the variable
+                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[current_stream_specs$names[css_i]]] <- readBin(con  = zz, 
                                                                                                  what = current_stream_specs$what[css_i], 
                                                                                                  n    = current_stream_specs$n[css_i], 
                                                                                                  size = current_stream_specs$size[css_i])
@@ -750,14 +769,21 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
       sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(",", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
     }
     if(length(sub_string) > 1){
+
       # some varnames are very common characters unfortunately like u, v... check if [] comes after
       if(any(grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE))){
         sub_string <- sub_string[grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE)]
       }else if(any(grepl(paste0("double ", current_stream_var), sub_string, fixed = TRUE))){ # just fishing, double is the most common type
         sub_string <- sub_string[grepl(paste0("double ", current_stream_var), sub_string, fixed = TRUE)]
+      }else if(any(grepl("///", sub_string, fixed = TRUE))){ # three slashes are very common in commented out code
+        sub_string <- sub_string[!grepl("///", sub_string, fixed = TRUE)]
+      }
+      
+      if(length(unique(sub_string)) == 1){
+        sub_string <- unique(sub_string)
       }else{
         PEcAn.logger::logger.severe("Check this out.")
-      }
+      } 
     }
     
     # clean from tabs
