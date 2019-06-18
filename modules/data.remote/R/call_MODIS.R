@@ -167,7 +167,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
     if (QC_filter == T)
     {
       output$qc == as.character(output$qc)
-      for (i in 1:nrow(output))
+      for (i in seq_len(nrow(output)))
       {
         convert = paste(binaryLogic::as.binary(as.integer(output$qc[i]), n = 8), collapse = "")
         output$qc[i] = substr(convert, nchar(convert)-2, nchar(convert))
