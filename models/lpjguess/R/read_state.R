@@ -135,8 +135,7 @@ streamed_vars_gridcell <- find_stream_var(file_in = guesscpp_in, line_nos = beg_
 # there will be nested loops, the hierarchy will follow LPJ-GUESS architecture
 Gridcell <- list()
 level <- "Gridcell"
-#for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
-for(g_i in 1:8){   
+for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
   current_stream <- streamed_vars_gridcell[g_i]
   if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
   if(grepl(glob2rx("(*this)[*].landcover"), current_stream)){ # s counter might change, using wildcard
@@ -172,7 +171,7 @@ for(g_i in 1:8){
     
     
     for(stnd_i in seq_len(num_stnd)){ #looping over the stands
-      for(svs_i in 1:3){#seq_along(streamed_vars_stand)){ # looping over the streamed stand vars
+      for(svs_i in seq_along(streamed_vars_stand)){ # looping over the streamed stand vars
         
         current_stream <- streamed_vars_stand[svs_i]
         if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
@@ -437,7 +436,11 @@ for(g_i in 1:8){
         }else{
           # NOT PATCH
           
-          current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+          if(tools::toTitleCase(current_stream) %in% LPJ_GUESS_CLASSES){
+            current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+          }else{
+            current_stream_type <- find_stream_type("Stand", current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+          }
           
           Gridcell[["Stand"]][[stnd_i]][[length(Gridcell[["Stand"]][[stnd_i]])+1]] <- list()
           names(Gridcell[["Stand"]][[stnd_i]])[length(Gridcell[["Stand"]][[stnd_i]])] <- current_stream_type$name
