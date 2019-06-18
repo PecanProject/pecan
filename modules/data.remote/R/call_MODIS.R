@@ -172,7 +172,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
         convert = paste(binaryLogic::as.binary(as.integer(output$qc[i]), n = 8), collapse = "")
         output$qc[i] = substr(convert, nchar(convert)-2, nchar(convert))
       }
-      good = which(output$qc == "000" | output$qc == "001")
+      good <- which(output$qc == "000" | output$qc == "001")
       if (length(good) > 0 | !(is.null(good)))
       {
         output = output[good,]
