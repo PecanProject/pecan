@@ -112,6 +112,8 @@ dont_need <- c("COLDEST_DAY_NHEMISPHERE", "COLDEST_DAY_SHEMISPHERE", "WARMEST_DA
 lpjguess_consts[match(dont_need, names(lpjguess_consts))] <-  NULL
 # this probably needs to be extracted from parameters.h:48-49 or somewhere else, but hardcoding for now
 lpjguess_consts$NLANDCOVERTYPES <- 6
+# this probably needs to be extracted from parameters.h:94 , but hardcoding for now
+lpjguess_consts$NSOMPOOL <- 12
 LPJ_GUESS_CONST_INTS <- data.frame(var = names(lpjguess_consts), val = as.numeric(unlist(lpjguess_consts)), stringsAsFactors = FALSE)
 
 
@@ -298,6 +300,9 @@ for(g_i in 1:8){
                       
                       if(current_stream_type$type == "class"){
                         
+                        if(current_stream_type$name != "sompool"){
+                          PEcAn.logger::logger.debug("Classes other than sompool enter here.")
+                        }
                         # ONLY SOMPOOL HERE SO FAR ******************************************************************
                         class_name <- current_stream_type$name
                         
@@ -307,28 +312,31 @@ for(g_i in 1:8){
                                                                           "::serialize"))
                         streamed_vars_sompool <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
                         
-                        ###################### LOOP OVER class_name
-                        for(sv_sompool_i in seq_along(streamed_vars_sompool)){ # 
-                          current_stream <- streamed_vars_indv[sv_sompool_i] 
-                          
-                          current_stream_type  <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
-                          current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
-                          
-                          if(current_stream_specs$single){
-                            Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[class_name]][[current_stream_type$name]] <- readBin(con  = zz,
-                                                                                                                          what = current_stream_specs$what, 
-                                                                                                                          n    = current_stream_specs$n, 
-                                                                                                                          size = current_stream_specs$size)
-                          }else{
-                            for(css.i in seq_along(current_stream_specs$what)){
-                              Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
-                                                                                                                                                                           what = current_stream_specs$what[css.i], 
-                                                                                                                                                                           n    = current_stream_specs$n[css.i], 
-                                                                                                                                                                           size = current_stream_specs$size[css.i])
+                        nsompool <- LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var == "NSOMPOOL"]
+                        
+                        for(varname in streamed_vars_sompool){
+                          Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["soil"]][["sompool"]][[varname]] <- vector("list", nsompool) 
+                        }
+                     
+                        ###################### LOOP OVER NSOMPOOL
+                        for(som_i in seq_len(nsompool)){
+                          for(sv_sompool_i in seq_along(streamed_vars_sompool)){ 
+                            current_stream <- streamed_vars_sompool[sv_sompool_i] 
+                            
+                            current_stream_type  <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+                            current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
+                            
+                            if(current_stream_specs$single){
+                              Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["soil"]][["sompool"]][[current_stream_type$name]][[som_i]] <- readBin(con  = zz,
+                                                                                                                                      what = current_stream_specs$what, 
+                                                                                                                                      n    = current_stream_specs$n, 
+                                                                                                                                      size = current_stream_specs$size)
+                            }else{
+                              PEcAn.logger::logger.debug("Historic under sompool.")
                             }
                           }
-                          
                         }
+
                       }else{
                         current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                         # and read!
@@ -677,6 +685,9 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
         sub_string  <- NULL
         return(list(type = gsub(" ", "", stream_type), name = stream_name, substring = sub_string))
       }
+    }
+    if(length(sub_string) == 0){
+      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(",", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
     }
     if(length(sub_string) > 1){
       # some varnames are very common characters unfortunately like u, v... check if [] comes after
