@@ -29,7 +29,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
                                             plot.title = NULL,
                                             facet.plots = FALSE,
                                             debug = FALSE,
-                                            pause=FALSE),
+                                            pause = FALSE),
                                ...) {
   if (control$debug) browser()
   ###-------------------------------------------------------------------###
