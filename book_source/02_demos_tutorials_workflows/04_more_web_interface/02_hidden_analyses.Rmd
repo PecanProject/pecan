@@ -472,7 +472,7 @@ In general, the idea is that sending, running and monitoring an SDA job should a
 
 `SDA_remote_launcher` sets up the job by copying a template SDA workflow R script and a bash file template that are ready for submission to the remote machine. This function checks the paths to all inputs including met, soil, `site_pft` and etc., testing whether they exists on the remote machine or not. If they do not exist, the function copies the missing paths over and replaces the settings accordingly. After submitting the bash script, the function returns the PID of the job writing the log file, allowing the `Remote_Sync_launcher` to monitor the progress of the run, checks to see if the job is still alive, and determines if `sda.output.rdata` has been updated since the last check or not.
 
-`Remote_Sync_launcher` function also follows the progress of the remote job by executing a nohup command on a template R script and keeping the R console open for further use. This R script as it was mentioned above constantly pings the given PID every 5 minutes and copies over the SDA output.
+`Additionally, the Remote_Sync_launcher` function follows the progress of the remote job by executing a nohup command on a template R script and keeps the R console open for further use. This R script, as mentioned above, constantly pings the given PID every 5 minutes and copies over the SDA output.
 
 Several points on how to prepare your xml settings for the remote SDA run:
 1- Going through the main pecan workflow.R, if you were able to generate `pecan.TRAIT.xml` your setting is ready to be used for a SDA run. All you need to do extra is adding your state data assimilation tags.
