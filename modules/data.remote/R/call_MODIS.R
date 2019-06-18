@@ -164,7 +164,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
     output$lat <- round(output$lat, 4)
     output$lon <- round(output$lon, 4)
     
-    if (QC_filter == T)
+    if (QC_filter)
     {
       output$qc == as.character(output$qc)
       for (i in seq_len(nrow(output)))
