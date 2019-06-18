@@ -207,7 +207,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
     if (!(is.null(outfolder)))
     {
       fname <- paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
-      fname <- paste0(outfolder, "/", fname)
+      fname <- file.path(outfolder, fname)
       write.csv(output, fname)
     }
     
