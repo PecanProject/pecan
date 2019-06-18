@@ -277,19 +277,19 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     if (forceRun == TRUE)
     {
       # quick fix for job.sh files not getting run
-      folders = list.files(path = paste0(settings$outdir, "/SDA/out"), include.dirs = TRUE, full.names = TRUE)
+      folders <- list.files(path = paste0(settings$outdir, "/SDA/out"), include.dirs = TRUE, full.names = TRUE)
       for (i in seq_along(folders))
       {
-        files = list.files(path = folders[i], pattern = ".nc")
-        remove = grep(files, pattern = '.nc.var')
+        files <- list.files(path = folders[i], pattern = ".nc")
+        remove <- grep(files, pattern = '.nc.var')
         if (length(remove) > 0)
         {
-          files = files[-remove]
+          files <- files[-remove]
         }
         if (!(paste0(obs.year, '.nc') %in% files))
         {
-          bad = print(paste0("missing these .nc files: ", folders[i], "/", obs.year, ".nc"))
-          file = paste0(gsub("out", "run", folders[i]), "/", "job.sh")
+          bad <- print(paste0("missing these .nc files: ", folders[i], "/", obs.year, ".nc"))
+          file <- paste0(gsub("out", "run", folders[i]), "/", "job.sh")
           system(paste0("sh ", file))
         }
       }
