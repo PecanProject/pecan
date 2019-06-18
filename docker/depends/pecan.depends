@@ -91,6 +91,7 @@ install2.r -e -s -n -1\
     rjson \
     rlang \
     rnoaa \
+    RPostgres \
     RPostgreSQL \
     Rpreles \
     RSQLite \
