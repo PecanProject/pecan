@@ -468,7 +468,7 @@ An example of multi-settings pecan xml file also may look like below:
 ```
 
 ### Running SDA on remote
-In general, the idea is that sending, running and monitoring a SDA job should be all done using just two functions (`SDA_remote_launcher` and `Remote_Sync_launcher`). `SDA_remote_launcher` checks for the XML settings defining the run and sets up the SDA on the remote machine and sends a qusb command for running the job. `Remote_Sync_launcher` on the other hand sits on the local machine and monitors the progress of the job and brings back the outputs as long as the job is running. 
+In general, the idea is that sending, running and monitoring an SDA job should all be done using two functions (`SDA_remote_launcher` and `Remote_Sync_launcher`). `SDA_remote_launcher` checks the XML settings defining the run, sets up the SDA on the remote machine, and then sends a qusb command for running the job. `Remote_Sync_launcher`, on the other hand, sits on the local machine and monitors the progress of the job(s) and brings back the outputs as long as the job is running. 
 
 `SDA_remote_launcher` sets up the job by copying a template SDA workflow R script as well as a bash file template ready for submission to the remote machine. This functions checks the paths to the all inputs including met, soil, `site_pft` and etc testing whether they exists on the remote machine or not; If they don't it copies them over and replace the settings accordingly. After submitting the bash script it returns the PID of the job writing the log file, allowing the `Remote_Sync_launcher` to monitor the progress of the run and check to see if the job is still alive and if the `sda.output.rdata` is being updated since the last check or not.
 
