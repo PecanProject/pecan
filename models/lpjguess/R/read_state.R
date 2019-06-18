@@ -203,7 +203,7 @@ for(g_i in 1:8){
           Gridcell[["Stand"]][[stnd_i]][["Patch"]] <- vector("list", npatches) 
           
           for(ptch_i in seq_len(npatches)){ #looping over the patches
-            for(svp_i in 2){#seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
+            for(svp_i in 1:3){#seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
               current_stream <- streamed_vars_patch[svp_i]
               if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
               
@@ -294,7 +294,7 @@ for(g_i in 1:8){
                   
                   # maybe try modifying this bit later to make it a function
                   for(pft_i in seq_len(num_pft)){
-                    for(sv_i in 1:24){#seq_along(streamed_vars)){ 
+                    for(sv_i in seq_along(streamed_vars)){ 
                       current_stream <- streamed_vars[sv_i] #it's OK to overwrite
                       current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
                       
@@ -304,7 +304,7 @@ for(g_i in 1:8){
                           PEcAn.logger::logger.debug("Classes other than sompool enter here.")
                         }
                         # ONLY SOMPOOL HERE SO FAR ******************************************************************
-                        class_name <- current_stream_type$name
+                        #class_name <- # don't overwrite class_name
                         
                         beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
                                                          pattern = paste0("void ",
@@ -323,7 +323,7 @@ for(g_i in 1:8){
                           for(sv_sompool_i in seq_along(streamed_vars_sompool)){ 
                             current_stream <- streamed_vars_sompool[sv_sompool_i] 
                             
-                            current_stream_type  <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+                            current_stream_type  <- find_stream_type(current_stream_type$name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
                             current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                             
                             if(current_stream_specs$single){
@@ -340,14 +340,14 @@ for(g_i in 1:8){
                       }else{
                         current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                         # and read!
-                        if(current_stream_specs$single){
+                        if(current_stream_specs$single){ # maybe use current_stream in sublist names to find correct place
                           Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[length( Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]])]][[current_stream_type$name]][[pft_i]] <- readBin(con  = zz, 
                                                                                                                                                                                             what = current_stream_specs$what, 
                                                                                                                                                                                             n    = current_stream_specs$n, 
                                                                                                                                                                                             size = current_stream_specs$size)
                         }else{ # only for historic type?
-                          for(css.i in seq_along(current_stream_specs$what)){
-                            Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
+                          for(css.i in seq_along(current_stream_specs$what)){ # maybe use current_stream in sublist names to find correct place
+                            Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[length( Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]])]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
                                                                                                                                              what = current_stream_specs$what[css.i], 
                                                                                                                                              n    = current_stream_specs$n[css.i], 
                                                                                                                                              size = current_stream_specs$size[css.i])
@@ -588,6 +588,24 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
     
     specs$single <- FALSE
     
+  }else if(current_stream_type$type == "struct"){
+    if(current_stream_type$name != "solvesom"){
+      PEcAn.logger::logger.debug("Another struct type.")
+    }
+    #for now hardcoding this will be back
+    specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 2)
+    specs$what[1]  <- "double"
+    specs$size[1]  <- 8
+    specs$names[1] <- "clitter"
+    specs$n[1]     <- 12 #NSOMPOOL
+    
+    specs$what[2]  <- "double"
+    specs$size[2]  <- 8
+    specs$names[2] <- "nlitter"
+    specs$n[2]     <- 12 #NSOMPOOL
+    
+    specs$single <- FALSE
+    
   }else if(grepl(glob2rx(paste0(current_stream_type$type, "*", current_stream_type$name, ";")), sub_string)){
 
     # this is only length 1
@@ -707,6 +725,9 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
     if(grepl("Historic", sub_string, fixed = TRUE)){
       # Historic types has the form Historic<T, capacity>& data)
       stream_type <- "Historic"
+      stream_name <- current_stream_var
+    }else if(grepl("std::vector", sub_string, fixed = TRUE)){
+      stream_type <- "struct"
       stream_name <- current_stream_var
     }else{
       stream_type <- possible_types[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
