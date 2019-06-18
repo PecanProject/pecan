@@ -43,7 +43,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
   {
     end_date <- as.Date(paste0(lubridate::year(end_date), spatial.tools::add_leading_zeroes(lubridate::yday(end_date), 3)), format = "%Y%j")
   }
-  start_date = as.Date(start_date, format = "%Y%j")
+  start_date <- as.Date(start_date, format = "%Y%j")
   end_date = as.Date(end_date, format = "%Y%j")
 
 
