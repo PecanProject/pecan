@@ -7,6 +7,7 @@
 #' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
 #' @param Q         Process covariance matrix given if there is no data to estimate it.
 #' @param restart   Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.
+#' @param forceRun  Used to force job.sh files that were not run for ensembles in SDA (quick fix) 
 #' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 #' TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.
 #'
@@ -19,7 +20,7 @@
 #' @import nimble
 #' @export
 #' 
-sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = FALSE, 
+sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = FALSE, forceRun = TRUE, 
                                control=list(trace = TRUE,
                                             FF = FALSE,
                                             interactivePlot = FALSE,
@@ -272,6 +273,27 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     #-------------------------------------------- RUN
    
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    
+    if (forceRun == TRUE)
+    {
+      # quick fix for job.sh files not getting run
+      folders = list.files(path = paste0(settings$outdir, "/SDA/out"), include.dirs = TRUE, full.names = TRUE)
+      for (i in seq_along(folders))
+      {
+        files = list.files(path = folders[i], pattern = ".nc")
+        remove = grep(files, pattern = '.nc.var')
+        if (length(remove) > 0)
+        {
+          files = files[-remove]
+        }
+        if (!(paste0(obs.year, '.nc') %in% files))
+        {
+          bad = print(paste0("missing these .nc files: ", folders[i], "/", obs.year, ".nc"))
+          file = paste0(gsub("out", "run", folders[i]), "/", "job.sh")
+          system(paste0("sh ", file))
+        }
+      }
+    }
    
     #------------------------------------------- Reading the output
     if (control$debug) browser()

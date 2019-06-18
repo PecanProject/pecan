@@ -5,8 +5,8 @@
 \title{sda.enkf.multisite}
 \usage{
 sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL,
-  restart = FALSE, control = list(trace = TRUE, FF = FALSE,
-  interactivePlot = FALSE, TimeseriesPlot = FALSE, BiasPlot = FALSE,
+  restart = FALSE, forceRun = TRUE, control = list(trace = TRUE, FF =
+  FALSE, interactivePlot = FALSE, TimeseriesPlot = FALSE, BiasPlot = FALSE,
   plot.title = NULL, facet.plots = FALSE, debug = FALSE, pause = FALSE),
   ...)
 }
@@ -20,6 +20,8 @@ sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL,
 \item{Q}{Process covariance matrix given if there is no data to estimate it.}
 
 \item{restart}{Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.}
+
+\item{forceRun}{Used to force job.sh files that were not run for ensembles in SDA (quick fix)}
 
 \item{control}{List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.}
