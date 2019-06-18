@@ -6,6 +6,9 @@
 #' @param settings
 #' @param run.id
 #' @param local.rundir location to store copied parameter file
+#' @param leafC
+#' @param fnr conversion constant value for mass ratio of total Rubisco molecular mass to nitrogen in Rubisco (g Rubisco g-1 N in Rubisco)
+#' @param ar conversion constant value for specific activity of Rubisco (µmol CO2 g-1 Rubisco s-1)
 #'
 #' @return
 #' @export
@@ -26,7 +29,10 @@ write_params_ctsm <-
            trait.values,
            settings,
            run.id = 1, 
-           local.rundir = tempdir()) {
+           local.rundir = tempdir(), 
+           leafC = 0.48, 
+           fnr = 7.16, 
+           ar = 60)) {
     
     ## Copy and open default parameter files
     ctsm.param.default <-
@@ -69,25 +75,20 @@ write_params_ctsm <-
         )
       }
       
-      ## Special variables used in conversions
-      leafC <- 0.48
-      fnr <- 7.16 # mass ratio of total Rubisco molecular mass to nitrogen in Rubisco (g Rubisco g-1 N in Rubisco)
-      ar <- 60 # specific activity of Rubisco (µmol CO2 g-1 Rubisco s-1)
-      
       ## Loop over VARIABLES
       pft_pecan_vals <- trait.values[[i]]
       for (v in seq_along(pft_pecan_vals)) {
         pecan_var <- names(pft_pecan_vals)[v]
 
         ### ----- Leaf physiological parameters
-        update_vars <- function(nc = ctsm.param.nc, ctsm_var, ctsm_vals, start = ipft, count = 1){
+        update_vars <- function(ctsm_var, ctsm_vals, nc = ctsm.param.nc, start = ipft, count = 1){
           ncdf4::ncvar_put(nc, varid = ctsm_var, vals = ctsm_vals, start, count)  
         }
-        if (pecan_var == "sla") {update_vars(ctsm_var = "slatop", ctsm_vals = udunits2::ud.convert(pft_pecan_vals[v], "m2 kg-1", "m2 g-1") / leafC)} ## default 0.03846
-        if (pecan_var == "c2n_leaf") {update_vars(ctsm_var = "leafcn", ctsm_vals = pft_pecan_vals[v])} ## default 35.36068
-        if (pecan_var == "stom_slope") {update_vars(ctsm_var = "mbbopt", ctsm_vals = pft_pecan_vals[v])} ## default 9.757532
-        if (pecan_var == "fineroot2leaf") {update_vars(ctsm_var = "froot_leaf", ctsm_vals = pft_pecan_vals[v])} ## default 1.5
-        if (pecan_var == "vcmax") {update_vars(ctsm_var = "flnr", ctsm_vals = as.numeric(pft_pecan_vals[v]) / ((1/(ncdf4::ncvar_get(ctsm.param.nc, varid = "leafcn")[ipft] * ncdf4::ncvar_get(ctsm.param.nc, varid = "slatop")[ipft])) * fnr * ar))} ## default 0.09
+        if (pecan_var == "sla") {update_vars("slatop", udunits2::ud.convert(pft_pecan_vals[v], "m2 kg-1", "m2 g-1") / leafC)} ## default 0.03846
+        if (pecan_var == "c2n_leaf") {update_vars("leafcn", pft_pecan_vals[v])} ## default 35.36068
+        if (pecan_var == "stom_slope") {update_vars("mbbopt", pft_pecan_vals[v])} ## default 9.757532
+        if (pecan_var == "fineroot2leaf") {update_vars("froot_leaf", pft_pecan_vals[v])} ## default 1.5
+        if (pecan_var == "vcmax") {update_vars("flnr", as.numeric(pft_pecan_vals[v]) / ((1/(ncdf4::ncvar_get(ctsm.param.nc, varid = "leafcn")[ipft] * ncdf4::ncvar_get(ctsm.param.nc, varid = "slatop")[ipft])) * fnr * ar))} ## default 0.09
       } 
     } 
   }
