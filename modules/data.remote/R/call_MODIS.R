@@ -82,7 +82,7 @@ call_MODIS <- function(outfolder = NULL, start_date, end_date, lat, lon, size = 
         end <- as.Date(end_date, "%Y%j")
       }
       ########## For Date case 1: if only one date is asked for, but date is not within modis data prodate date range ##########
-      if (as.numeric(start_date)< dates[1] | as.numeric(end_date)> dates[length(dates)])
+      if (as.numeric(start_date)< dates[1] || as.numeric(end_date)> dates[length(dates)])
       {
         print(start)
         stop("start or end date are not within MODIS data product date range. Please choose another date.")
