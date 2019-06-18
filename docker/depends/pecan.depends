@@ -112,4 +112,5 @@ install2.r -e -s -n -1\
     utils \
     XML \
     xtable \
+    xts \
     zoo

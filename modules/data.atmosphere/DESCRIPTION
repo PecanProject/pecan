@@ -52,6 +52,7 @@ Imports:
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
+    xts,
     zoo
 Suggests:
     doParallel,
