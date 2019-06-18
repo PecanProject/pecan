@@ -110,10 +110,14 @@ for(i in seq_along(guessh_in)){
 # few cleaning
 dont_need <- c("COLDEST_DAY_NHEMISPHERE", "COLDEST_DAY_SHEMISPHERE", "WARMEST_DAY_NHEMISPHERE", "WARMEST_DAY_SHEMISPHERE", "data[]")
 lpjguess_consts[match(dont_need, names(lpjguess_consts))] <-  NULL
-# this probably needs to be extracted from parameters.h:48-49 or somewhere else, but hardcoding for now
+# this needs to be extracted from parameters.h:48-49 or somewhere else, but hardcoding for now
 lpjguess_consts$NLANDCOVERTYPES <- 6
-# this probably needs to be extracted from parameters.h:94 , but hardcoding for now
+# this needs to be extracted from guess.h:94 , but hardcoding for now
 lpjguess_consts$NSOMPOOL <- 12
+# this needs to be extracted from guess.h:644 , but hardcoding for now NOTE that new versions has 13 flux types
+lpjguess_consts$PerPatchFluxType <- 12
+# this needs to be extracted from guess.h:659 , but hardcoding for now
+lpjguess_consts$PerPFTFluxType <- 5
 LPJ_GUESS_CONST_INTS <- data.frame(var = names(lpjguess_consts), val = as.numeric(unlist(lpjguess_consts)), stringsAsFactors = FALSE)
 
 
@@ -223,7 +227,7 @@ for(g_i in 1:8){
                                                                   "::serialize"))
                 
                 
-                if(class_name == "vegetation"){
+                if(class_name == "Vegetation"){
                   # VEGETATION
                   # Vegetation class has a bit of a different structure, it has one more depth, see model documentation
                   streamed_vars_veg <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
@@ -237,14 +241,14 @@ for(g_i in 1:8){
 
                   # nobj points to different things under different levels, here it is the number of individuals
                   number_of_individuals <- readBin(zz, integer(), 1, size = 4) 
-                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["number_of_individuals"]] <- number_of_individuals
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["number_of_individuals"]] <- number_of_individuals
                   
                   # few checks for sensible vals
                   if(number_of_individuals < 1 | number_of_individuals > 10000){ # should there be an upper limit here too?
                   # if number of individuals is 0 it's a bit suspicious. Not sure if ever will get negative but that'd definitely be wrong
                     PEcAn.logger::logger.warn("Number of individuals under vegetation is", number_of_individuals)
                   }
-                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]] <- vector("list", number_of_individuals) 
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]] <- vector("list", number_of_individuals) 
 
                   beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
                                                    pattern = paste0("void Individual::serialize"))
@@ -252,9 +256,9 @@ for(g_i in 1:8){
                   
                   # loop over nobj
                   for(indv_i in seq_len(number_of_individuals)){
-                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]] <- list()
+                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]] <- list()
                     # which PFT is this?
-                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]][["indiv.pft.id"]] <- readBin(zz, integer(), 1, size = 4)
+                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][["indiv.pft.id"]] <- readBin(zz, integer(), 1, size = 4)
                     # read all the individual class
                     for(svi_i in seq_along(streamed_vars_indv)){ # 
                       current_stream <- streamed_vars_indv[svi_i] 
@@ -263,13 +267,13 @@ for(g_i in 1:8){
                       current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                       
                       if(current_stream_specs$single){
-                        Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]][[current_stream_type$name]] <- readBin(con  = zz, 
+                        Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][[current_stream_type$name]] <- readBin(con  = zz, 
                                                                                                      what = current_stream_specs$what, 
                                                                                                      n    = current_stream_specs$n, 
                                                                                                      size = current_stream_specs$size)
                       }else{
                         for(css.i in seq_along(current_stream_specs$what)){
-                          Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["vegetation"]][["Individuals"]][[indv_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
+                          Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
                                                                                                                                            what = current_stream_specs$what[css.i], 
                                                                                                                                            n    = current_stream_specs$n[css.i], 
                                                                                                                                            size = current_stream_specs$size[css.i])
@@ -304,7 +308,8 @@ for(g_i in 1:8){
                           PEcAn.logger::logger.debug("Classes other than sompool enter here.")
                         }
                         # ONLY SOMPOOL HERE SO FAR ******************************************************************
-                        #class_name <- # don't overwrite class_name
+                        # code below is very sompool specific
+                        # class_name <- # don't overwrite class_name
                         
                         beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
                                                          pattern = paste0("void ",
@@ -315,24 +320,26 @@ for(g_i in 1:8){
                         nsompool <- LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var == "NSOMPOOL"]
                         
                         for(varname in streamed_vars_sompool){
-                          Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["soil"]][["sompool"]][[varname]] <- vector("list", nsompool) 
+                          Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Soil"]][["sompool[i]"]][[varname]] <- vector("list", nsompool) 
                         }
+                        
+                        names( Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Soil"]])[names( Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Soil"]]) == "sompool[i]"] <- "Sompool"
                      
                         ###################### LOOP OVER NSOMPOOL
                         for(som_i in seq_len(nsompool)){
                           for(sv_sompool_i in seq_along(streamed_vars_sompool)){ 
                             current_stream <- streamed_vars_sompool[sv_sompool_i] 
                             
-                            current_stream_type  <- find_stream_type(current_stream_type$name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+                            current_stream_type  <- find_stream_type("Sompool", current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
                             current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                             
                             if(current_stream_specs$single){
-                              Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["soil"]][["sompool"]][[current_stream_type$name]][[som_i]] <- readBin(con  = zz,
+                              Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Soil"]][["Sompool"]][[current_stream_type$name]][[som_i]] <- readBin(con  = zz,
                                                                                                                                       what = current_stream_specs$what, 
                                                                                                                                       n    = current_stream_specs$n, 
                                                                                                                                       size = current_stream_specs$size)
                             }else{
-                              PEcAn.logger::logger.debug("Historic under sompool.")
+                              PEcAn.logger::logger.severe("Historic under sompool.") # Not expecting any
                             }
                           }
                         }
@@ -593,18 +600,25 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
       PEcAn.logger::logger.debug("Another struct type.")
     }
     #for now hardcoding this will be back
-    specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 2)
-    specs$what[1]  <- "double"
-    specs$size[1]  <- 8
-    specs$names[1] <- "clitter"
-    specs$n[1]     <- 12 #NSOMPOOL
+    # specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 2)
+    # specs$what[1]  <- "double"
+    # specs$size[1]  <- 8
+    # specs$names[1] <- "clitter"
+    # specs$n[1]     <- 12 #NSOMPOOL
+    # 
+    # specs$what[2]  <- "double"
+    # specs$size[2]  <- 8
+    # specs$names[2] <- "nlitter"
+    # specs$n[2]     <- 12 #NSOMPOOL
+    # 
+    # LOOKS LIKE THIS ONE IS NOT SERIALIZED PROPERLY
+    # just return 8
     
-    specs$what[2]  <- "double"
-    specs$size[2]  <- 8
-    specs$names[2] <- "nlitter"
-    specs$n[2]     <- 12 #NSOMPOOL
-    
-    specs$single <- FALSE
+   
+    specs$n <- 1
+    specs$what <- "double"
+    specs$size <- 8
+    specs$single <- TRUE
     
   }else if(grepl(glob2rx(paste0(current_stream_type$type, "*", current_stream_type$name, ";")), sub_string)){
 
@@ -675,7 +689,7 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
   # class or not?
   if(tools::toTitleCase(current_stream_var) %in% LPJ_GUESS_CLASSES){
     stream_type <- "class"
-    stream_name <- current_stream_var
+    stream_name <- tools::toTitleCase(current_stream_var)
     sub_string  <- NULL
   }else {# find type from guess.h
     
