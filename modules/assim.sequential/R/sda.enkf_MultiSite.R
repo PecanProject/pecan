@@ -56,7 +56,7 @@ sda.enkf.multisite <- function(settings,
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
-  readsFF<-NULL # this keeps the forward forecast
+  readsFF <- NULL # this keeps the forward forecast
   
   is.local <- PEcAn.remote::is.localhost(settings$host)
   #------------------Reading up the MCMC settings
