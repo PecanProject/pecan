@@ -289,7 +289,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
         }
         if (!(paste0(obs.year, '.nc') %in% files))
         {
-          bad <- print(paste0("missing these .nc files: ", folders[i], "/", obs.year, ".nc"))
+          write.csv(paste0("missing these .nc files: ", folders[i], "/", obs.year, ".nc"), file = paste0(getwd(), '/SDA/forced_job_output.csv'), append = TRUE)
           file <- paste0(gsub("out", "run", folders[i]), "/", "job.sh")
           system(paste0("sh ", file))
         }
