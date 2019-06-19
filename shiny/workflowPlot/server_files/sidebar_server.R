@@ -69,7 +69,15 @@ load.model <- eventReactive(input$load_model,{
   req(input$all_run_id)
   # Get IDs DF from 'all_run_id' string
   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-  globalDF <- map2_df(ids_DF$wID, ids_DF$runID, ~load_data_single_run(bety, .x, .y))
+  globalDF <- map2_df(ids_DF$wID, ids_DF$runID,
+                      ~tryCatch({
+                        load_data_single_run(bety, .x, .y)
+                        },
+                        error = function(e){
+                          toastr_error(title = paste("Error in WorkflowID", .x), 
+                                       conditionMessage(e))
+                          return()
+                        }))
   print("Yay the model data is loaded!")
   print(head(globalDF))
   globalDF$var_name <- as.character(globalDF$var_name)
@@ -79,41 +87,39 @@ load.model <- eventReactive(input$load_model,{
 
 # Update all variable names
 observeEvent(input$load_model, {
-  tryCatch({
-    req(input$all_run_id)
-    # All information about a model is contained in 'all_run_id' string
-    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-    var_name_list <- c()
-    for(row_num in 1:nrow(ids_DF)){
-      var_name_list <- c(var_name_list, var_names_all(bety, ids_DF$wID[row_num], ids_DF$runID[row_num]))
-    }
-    updateSelectizeInput(session, "var_name_model", choices = var_name_list)
-    #Signaling the success of the operation
-    toastr_success("Update variable names")
-  },
-  error = function(e) {
-    toastr_error(title = "Error", conditionMessage(e))
-  })
+  req(input$all_run_id)
+  # All information about a model is contained in 'all_run_id' string
+  ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+  var_name_list <- c()
+  for(row_num in 1:nrow(ids_DF)){
+    var_name_list <- c(var_name_list, 
+                       tryCatch({
+                         var_names_all(bety, ids_DF$wID[row_num], ids_DF$runID[row_num])
+                       },
+                       error = function(e){
+                         return(NULL)
+                       }))
+  }
+  updateSelectizeInput(session, "var_name_model", choices = var_name_list)
 })
 
 observeEvent(input$load_model,{
-  tryCatch({
-    # Retrieves all site ids from multiple seleted run ids when load button is pressed
-    req(input$all_run_id)
-    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-    site_id_list <- c()
-    for(row_num in 1:nrow(ids_DF)){
-      settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[row_num])
-      site.id <- c(settings$run$site$id)
-      site_id_list <- c(site_id_list,site.id)
-    }
-    updateSelectizeInput(session, "all_site_id", choices=site_id_list)
-    #Signaling the success of the operation
-    toastr_success("Retrieve site IDs")
-  },
-  error = function(e) {
-    toastr_error(title = "Error", conditionMessage(e))
-  })
+  # Retrieves all site ids from multiple seleted run ids when load button is pressed
+  req(input$all_run_id)
+  ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+  site_id_list <- c()
+  for(row_num in 1:nrow(ids_DF)){
+    settings <- 
+      tryCatch({
+        getSettingsFromWorkflowId(bety,ids_DF$wID[row_num])
+      },
+      error = function(e){
+        return(NULL)
+      })
+    site.id <- c(settings$run$site$id)
+    site_id_list <- c(site_id_list,site.id)
+  }
+  updateSelectizeInput(session, "all_site_id", choices=site_id_list)
 })
 # Update input id list as (input id, name)
 observe({

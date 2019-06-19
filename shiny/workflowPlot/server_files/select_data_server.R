@@ -29,7 +29,12 @@ observeEvent(input$load_model,{
                      README.text <- c(README.text, 
                                       paste("SELECTION",i), 
                                       "============",
-                                      readLines(file.path(wf.folder, 'run', ids_DF$runID[i], "README.txt")),
+                                      tryCatch({
+                                        readLines(file.path(wf.folder, 'run', ids_DF$runID[i], "README.txt"))
+                                        },
+                                        error = function(e){
+                                          return(NULL)
+                                        }),
                                       diff_message,
                                       ""
                      )
