@@ -1,12 +1,6 @@
 context("Checking PFT lookup")
 
-con <- tryCatch(db.open(params = list(
-  user = "bety",
-  password = "bety",
-  host = "localhost"
-)), error = function(e) {
-  skip("Skipping tests because unable to establish database connection.")
-})
+con <- check_db_test()
 
 teardown(
   db.close(con)
@@ -16,8 +10,9 @@ test_that("query.pft_species finds species for a PFT", {
   one_sp <- query.pft_species(pft = "salix-miyabeana", modeltype = NULL, con)
   expect_is(one_sp, "data.frame")
   expect_equal(nrow(one_sp), 1)
-  expect_equal(one_sp$id, 2871)
-  expect_equal(one_sp$scientificname, "Salix miyabeana")
+  # Need "as.numeric" here to reconcile integer64
+  expect_equivalent(as.numeric(one_sp$id), 2871)
+  expect_equivalent(one_sp$scientificname, "Salix miyabeana")
 
   multi_sp <- query.pft_species(pft = "salix", modeltype = NULL, con)
   expect_is(multi_sp, "data.frame")

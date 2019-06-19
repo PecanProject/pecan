@@ -2,38 +2,43 @@
 % Please edit documentation in R/dbfiles.R
 \name{dbfile.check}
 \alias{dbfile.check}
-\title{Check for a file in the dbfiles tables}
+\title{List files associated with a container and machine exist in
+`dbfiles` table}
 \usage{
 dbfile.check(type, container.id, con, hostname = PEcAn.remote::fqdn(),
   machine.check = TRUE, return.all = FALSE)
 }
 \arguments{
-\item{type}{the type of dbfile (Input, Posterior)}
+\item{type}{The type of `dbfile`, as a character. Must be either
+"Input", "Posterior", or "Model".}
 
-\item{container.id}{the id of container type}
+\item{container.id}{the ID of container type. E.g. if `type` is
+"Input", this will correspond to the `id` column from the
+`inputs` table.}
 
 \item{con}{database connection object}
 
-\item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
+\item{hostname}{the name of the host where the file is stored,
+this will default to the name of the current machine}
 
-\item{machine.check}{setting to check for file on named host, otherwise will check for any file given container id}
+\item{machine.check}{setting to check for file on named host,
+otherwise will check for any file given container id}
 
-\item{return.all}{logical flag, if TRUE will return all the files in the directory, not only the max(dbfiles$updated_at) subset}
+\item{return.all}{(Logical) If `TRUE`, return all files. If
+`FALSE`, return only the most recent files.}
 }
 \value{
-data.frame with the id, filename and pathname of all the files that are associated
+`data.frame` with the id, filename and pathname of all the files that are associated
 }
 \description{
-Function to check to see if a file exists in the dbfiles table
-}
-\details{
-This will check the dbfiles and machines to see if the file exists
+List files associated with a container and machine exist in
+`dbfiles` table
 }
 \examples{
 \dontrun{
-  dbfile.check('Input', 7, dbcon)
+  dbfile.check("Input", 7, dbcon)
 }
 }
 \author{
-Rob Kooper
+Rob Kooper, Alexey Shiklomanov
 }

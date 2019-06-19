@@ -42,7 +42,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
   ensemble.output <- list()
   for (row in rownames(ens.run.ids)) {
     run.id <- ens.run.ids[row, "id"]
-    PEcAn.logger::logger.info("reading ensemble output from run id: ", format(run.id))
+    PEcAn.logger::logger.info("reading ensemble output from run id: ", format(run.id, scientific = FALSE))
 
     for(var in seq_along(variables)){
       out.tmp <- PEcAn.utils::read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
@@ -365,15 +365,15 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       dir.create(file.path(settings$modeloutdir, run.id), recursive = TRUE)
       # write run information to disk
       cat("runtype     : ensemble\n",
-          "workflow id : ", format(workflow.id), "\n",
-          "ensemble id : ", format(ensemble.id), "\n",
+          "workflow id : ", format(workflow.id, scientific = FALSE), "\n",
+          "ensemble id : ", format(ensemble.id, scientific = FALSE), "\n",
           "run         : ", i, "/", settings$ensemble$size, "\n",
-          "run id      : ", format(run.id), "\n",
+          "run id      : ", format(run.id, scientific = FALSE), "\n",
           "pft names   : ", as.character(lapply(settings$pfts, function(x) x[["name"]])), "\n",
           "model       : ", model, "\n",
-          "model id    : ", format(settings$model$id), "\n",
+          "model id    : ", format(settings$model$id, scientific = FALSE), "\n",
           "site        : ", settings$run$site$name, "\n",
-          "site  id    : ", format(settings$run$site$id), "\n",
+          "site  id    : ", format(settings$run$site$id, scientific = FALSE), "\n",
           "met data    : ", samples$met$samples[[i]], "\n",
           "start date  : ", settings$run$start.date, "\n",
           "end date    : ", settings$run$end.date, "\n",
@@ -397,7 +397,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                             run.id = run.id
       )
       )
-      cat(format(run.id), file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
+      cat(format(run.id, scientific = FALSE), file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
 
     }
     return(invisible(list(runs = runs, ensemble.id = ensemble.id, samples=samples)))
