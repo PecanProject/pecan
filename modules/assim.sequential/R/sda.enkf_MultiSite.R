@@ -313,7 +313,7 @@ sda.enkf.multisite <- function(settings,
                              })
         
         
-      }else{
+      } else {
         restart.list <- vector("list", length(conf.settings))
       }
       #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
