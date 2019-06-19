@@ -493,7 +493,7 @@ sda.enkf.multisite <- function(settings,
         if (control$debug) browser()
         if (processvar) {
           aqq<-enkf.params[[obs.t]]$aqq
-          bqq<-enkf.params[[obs.t]]$bqq
+          bqq <- enkf.params[[obs.t]]$bqq
         }
         # Adding obs elements to the enkf.params
         #This can later on help with diagnostics
