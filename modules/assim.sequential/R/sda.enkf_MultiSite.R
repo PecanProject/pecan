@@ -100,7 +100,7 @@ sda.enkf.multisite <- function(settings,
   #filtering obs data based on years specifited in setting > state.data.assimilation
   
   if (restart) {
-    start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)-1
+    start.cut <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)-1
     Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date)-1)
     
   }else{
