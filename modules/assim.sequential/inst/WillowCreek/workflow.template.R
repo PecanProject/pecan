@@ -175,6 +175,7 @@ if ('state.data.assimilation' %in% names(settings)) {
     PEcAn.utils::status.start("SDA")
   PEcAn.assim.sequential::sda.enkf(
       settings,
+      restart="/fs/data3/kzarada/ouput/PEcAn_1000010465",
       Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,

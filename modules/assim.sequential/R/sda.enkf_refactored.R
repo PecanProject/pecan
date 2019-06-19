@@ -160,26 +160,37 @@ sda.enkf <- function(settings,
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###   
-
+  if (control$debug) browser()
   if (!is.null(restart)){
     
-    if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
-    load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    
+    if(!file.exists( file.path(restart,"SDA","sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
+    load( file.path(restart,"SDA","sda.output.Rdata"))
+   
     #this is where the old simulation will be moved to
-    old.dir <- lubridate::year(names(FORECAST)) %>% tail(1)
+    old.dir <- lubridate::ymd_hms(names(Viz.output[[3]]) %>% tail(1)) %>% as.character()
     #--- Updating the nt and etc
     if(!dir.exists(file.path(settings$outdir,"SDA",old.dir))) dir.create(file.path(settings$outdir,"SDA",old.dir))
-    # finding/moving files to it's end year dir
-    files.last.sda<-list.files(file.path(settings$outdir,"SDA"))
-    #copying
-    file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
-              file.path(file.path(settings$outdir,"SDA"),paste0(old.dir,"/",files.last.sda))
+    #copying-----
+    #SDA
+    file.copy( file.path(restart,"SDA","sda.output.Rdata"),
+              file.path(file.path(settings$outdir,"SDA",old.dir)
+                        )
     )
+    #run folder
+    if(!dir.exists(file.path(settings$outdir,"run"))) dir.create(file.path(settings$outdir,"run"))
+    file.copy(file.path(restart,"run"),
+               file.path(file.path(settings$outdir)
+               ), recursive=TRUE
+    )
+
+    
     params<-new.params
     sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
-    
     X <-FORECAST[[length(FORECAST)]]
+    #------------- Keeping the last ones
+    enkf.params <- enkf.params[length(enkf.params)]
+    ANALYSIS <- ANALYSIS[length(ANALYSIS)] 
+    FORECAST <- FORECAST[length(FORECAST)]   
     
   }else{
     sim.time<-seq_len(nt)
@@ -248,6 +259,7 @@ sda.enkf <- function(settings,
     if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    if (control$debug) browser()
     #------------------------------------------- Reading the output
     X_tmp <- vector("list", 2) 
     X <- list()
@@ -269,7 +281,9 @@ sda.enkf <- function(settings,
       if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
       
     }
+    
     X <- do.call(rbind, X)
+    
     FORECAST[[t]] <- X
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
@@ -425,6 +439,7 @@ sda.enkf <- function(settings,
     post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
   } ### end loop over time
+  if (control$debug) browser()
   ###-------------------------------------------------------------------###
   ### time series plots                                                 ###
   ###-------------------------------------------------------------------###----- 
