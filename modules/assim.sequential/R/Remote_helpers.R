@@ -285,10 +285,10 @@ SDA_remote_launcher <-function(settingPath,
   remote_settings$host$rundir <- paste0(settings$host$folder,"/", folder_name,"/run")
   remote_settings$host$outdir <- paste0(settings$host$folder,"/", folder_name,"/out")
   remote_settings$rundir <- paste0(settings$host$folder,"/", folder_name,"/run")
-  remote_settings$modeloutdir  <-paste0(settings$host$folder,"/", folder_name,"/out")
+  remote_settings$modeloutdir <- paste0(settings$host$folder,"/", folder_name,"/out")
   
   
-  remote_settings$scratchdir <-paste0(settings$host$folder,"/", folder_name,"/scratch")
+  remote_settings$scratchdir <- paste0(settings$host$folder,"/", folder_name,"/scratch")
   
   save.setting.dir <- tempdir()
   PEcAn.settings::write.settings(remote_settings, basename(settingPath), save.setting.dir)
