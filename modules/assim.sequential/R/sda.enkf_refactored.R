@@ -24,14 +24,15 @@ sda.enkf <- function(settings,
                      obs.mean,
                      obs.cov,
                      Q = NULL,
-                     restart=FALSE, 
+                     restart=NULL, 
                      control=list(trace=TRUE,
                                   interactivePlot=TRUE,
                                   TimeseriesPlot=TRUE,
                                   BiasPlot=FALSE,
                                   plot.title=NULL,
                                   debug=FALSE,
-                                  pause=FALSE),...) {
+                                  pause=FALSE),
+                     ...) {
 
   if (control$debug) browser()
   ###-------------------------------------------------------------------###
@@ -56,8 +57,19 @@ sda.enkf <- function(settings,
                           Lat=settings$run$site$lat %>% as.numeric) %>%
     `colnames<-`(c("Lon","Lat")) %>%
     `rownames<-`(site.ids)
+  
+  if (!is.null(restart)) {
+    start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)-1
+    Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date)-1)
+    
+  }else{
+    start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
+    Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date))
+  }
+  
+  End.Year <-   lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
   # filtering obs data based on years specifited in setting > state.data.assimilation
-  assimyears <- lubridate::year(settings$state.data.assimilation$start.date) : lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
+  assimyears<-Start.Year:End.Year
   obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
   obs.cov <- obs.cov[sapply(lubridate::year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
   # dir address based on the end date
@@ -81,7 +93,7 @@ sda.enkf <- function(settings,
   }
   ###-------------------------------------------------------------------###
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
-  ###-------------------------------------------------------------------###---- 
+  ###-------------------------------------------------------------------###
 
   if(!no_split){ 
     for(i in seq_along(settings$run$inputs$met$path)){
@@ -89,8 +101,8 @@ sda.enkf <- function(settings,
       ### model specific split inputs
       settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
-                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3,tz="UTC"), 
-                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3,tz="UTC"),
+                                                              start.time = start.cut, 
+                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3, tz="UTC"),
                                                               inputs =  settings$run$inputs$met$path[[i]],
                                                               overwrite=F)) 
     }
@@ -128,6 +140,7 @@ sda.enkf <- function(settings,
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
+  #### This needs to be moved to GEF
   interval    <- NULL
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables, '[[', 'min_value')),
                           as.numeric(lapply(settings$state.data.assimilation$state.variables, '[[', 'max_value')))
@@ -146,24 +159,37 @@ sda.enkf <- function(settings,
 
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
-  ###-------------------------------------------------------------------###----   
-  if (restart){
+  ###-------------------------------------------------------------------###   
+
+  if (!is.null(restart)){
+    
     if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
     load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    
+    #this is where the old simulation will be moved to
+    old.dir <- lubridate::year(names(FORECAST)) %>% tail(1)
     #--- Updating the nt and etc
-    if(!dir.exists(file.path(settings$outdir,"SDA",assimyears[t]))) dir.create(file.path(settings$outdir,"SDA",assimyears[t]))
+    if(!dir.exists(file.path(settings$outdir,"SDA",old.dir))) dir.create(file.path(settings$outdir,"SDA",old.dir))
     # finding/moving files to it's end year dir
-    files.last.sda<-list.files.nodir(file.path(settings$outdir,"SDA"))
+    files.last.sda<-list.files(file.path(settings$outdir,"SDA"))
     #copying
     file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
-              file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda))
+              file.path(file.path(settings$outdir,"SDA"),paste0(old.dir,"/",files.last.sda))
     )
+    params<-new.params
+    sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
+    
+    X <-FORECAST[[length(FORECAST)]]
+    
+  }else{
+    sim.time<-seq_len(nt)
   }
   
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
-  for(t in seq_len(nt)){
+  for(t in sim.time){
+    
     if (control$debug) browser()
     # do we have obs for this time - what year is it ?
     obs <- which(!is.na(obs.mean[[t]]))
@@ -346,8 +372,12 @@ sda.enkf <- function(settings,
     
     if(adjustment == TRUE){
       #if we have process var then x is x.new
-      if (processvar) {X.adj.arg <- X.new }else{ X.adj.arg <- X }
-      analysis <-adj.ens(Pf, X.adj.arg, mu.f, mu.a, Pa)
+      if (processvar) {
+        X.adj.arg <- X.new
+      } else{
+        X.adj.arg <- X
+      }
+      analysis <- adj.ens(Pf, X.adj.arg, mu.f, mu.a, Pa)
     }else{
       analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
     }
@@ -375,8 +405,22 @@ sda.enkf <- function(settings,
     ###-------------------------------------------------------------------###---- 
     Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
     
-    save(site.locs, t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id,
-         ensemble.id, ensemble.samples, inputs, Viz.output,  file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    save(
+      site.locs,
+      t,
+      X,
+      FORECAST,
+      ANALYSIS,
+      enkf.params,
+      new.state,
+      new.params,
+      run.id,
+      ensemble.id,
+      ensemble.samples,
+      inputs,
+      Viz.output,
+      file = file.path(settings$outdir, "SDA", "sda.output.Rdata")
+    )
     #writing down the image - either you asked for it or nor :)
     post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     

@@ -379,18 +379,23 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   ready.to.plot <- ready.OBS %>%
     bind_rows(ready.FA)
   
-  ready.to.plot$Variables%>%unique()%>%
-    purrr::map(function(vari){
-      
-      varin<-vari
-      unit<-""
-      if (substr(vari,1,8)=="AGB.pft.") varin <- "AGB.pft"
-      #finding the unit
+  #Adding the units to the variables
+  ready.to.plot$Variable %>% unique() %>% 
+    walk(function(varin){
+      #find the unit
       unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
-      if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
-      #plotting
-      ready.to.plot%>%
-        filter(Variables==vari)%>%
+      if (length(unitp)>0) {
+        unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
+        
+        #replace it in the dataframe
+        ready.to.plot$Variable[ready.to.plot$Variable==varin] <<- paste(varin,"(",unit,")")
+      }
+      
+    })
+  
+  
+
+      p<-ready.to.plot%>%
         ggplot(aes(x=Date))+
         geom_ribbon(aes(ymin=`2.5%`,ymax=`97.5%`,fill=Type),color="black")+
         geom_line(aes(y=means, color=Type),lwd=1.02,linetype=2)+
@@ -398,20 +403,20 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
         scale_fill_manual(values = c(alphapink,alphagreen,alphablue),name="")+
         scale_color_manual(values = c(alphapink,alphagreen,alphablue),name="")+
         theme_bw(base_size = 17)+
-        labs(y=paste(vari,'(',unit,')'))+
+        facet_wrap(~Variables, scales = "free", ncol=2)+
         theme(legend.position = "top",
               strip.background = element_blank())->p
       if (!is.null(plot.title)) p <- p + labs(title=plot.title)
-      p
-    })->all.plots
+
+
   
   
-  pdf("SDA/SDA.pdf",width = 10,height = 8)
-  all.plots %>% purrr::map(~print(.x))
+  pdf("SDA/SDA.pdf", width = 14, height = 10, onefile = TRUE)
+  print(p)
   dev.off()
   
   #saving plot data
-  save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
+  save(p, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
   
   
 }
@@ -467,40 +472,44 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
     })#%>%
   #filter(Variables %in% var.names)
   
-  
-  
-  ready.FA$Variables%>%unique()%>%
-    purrr::map(function(vari){
-      varin<-vari
-      unit<-""
-      if (substr(vari,1,8)=="AGB.pft.") varin <- "AGB.pft"
-      #finding the unit
+  #Adding the units to the variables
+  ready.FA$Variable %>% unique() %>% 
+    walk(function(varin){
+      #find the unit
       unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
-      if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
-      #plotting
-      ready.FA%>%
-        filter(Variables==vari)%>%
+      if (length(unitp)>0) {
+        unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
+        
+        #replace it in the dataframe
+        ready.FA$Variable[ready.FA$Variable==varin] <<- paste(varin,"(",unit,")")
+      }
+      
+    })
+
+
+      p<-ready.FA%>%
+#        filter(Variables==vari)%>%
         ggplot(aes(Date,Value))+
-        geom_ribbon(aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df %>% filter(Variables==vari), color="black")+
-        geom_line(aes(y=means, color=Type),data=obs.df%>% filter(Variables==vari),lwd=1.02,linetype=2)+
+        geom_ribbon(aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df, color="black")+
+        geom_line(aes(y=means, color=Type),data=obs.df,lwd=1.02,linetype=2)+
         geom_violin(aes(x=Date,fill=Type,group=interaction(Date,Type)), position = position_dodge(width=0.9))+
         geom_jitter(aes(color=Type), position=position_jitterdodge(dodge.width=0.9))+
         scale_fill_manual(values = c(alphapink,alphagreen,alphablue))+
         scale_color_manual(values = c(alphapink,alphagreen,alphablue))+
+        facet_wrap(~Variables, scales = "free", ncol=2)+
         theme_bw(base_size = 17)+
-        labs(y=paste(vari,'(',unit,')'))+
+      #  labs(y=paste(vari,'(',unit,')'))+
         theme(legend.position = "top",
-              strip.background = element_blank())->p
+              strip.background = element_blank())
       if (!is.null(plot.title)) p <- p + labs(title=plot.title)
-      p
-    })->all.plots
+
   
-  pdf("SDA/SDA.Violin.pdf", width = 10, height = 8, onefile = TRUE)
-  all.plots %>% purrr::map(~print(.x))
+  pdf("SDA/SDA.Violin.pdf", width = 14, height = 10, onefile = TRUE)
+   print(p)
   dev.off()
   
   #saving plot data
-  save(all.plots, ready.FA, obs.df, file = file.path(settings$outdir,"SDA", "timeseries.violin.plot.data.Rdata"))
+  save(p, ready.FA, obs.df, file = file.path(settings$outdir,"SDA", "timeseries.violin.plot.data.Rdata"))
   
 }
 

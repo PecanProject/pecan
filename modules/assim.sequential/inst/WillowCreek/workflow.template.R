@@ -14,15 +14,15 @@ plan(multiprocess)
 args <- commandArgs(trailingOnly = TRUE)
 
 if (is.na(args[1])){
-  xmlTempName <-"gefs.sipnet.template.xml"
+  outputPath <- "/fs/data3/kzarada/ouput"
 } else {
-  xmlTempName = args[1]
+  outputPath = args[1]
 }
 
 if (is.na(args[2])){
-  outputPath <- "/fs/data3/kzarada/ouput"
+  xmlTempName <-"gefs.sipnet.template.xml"
 } else {
-  outputPath = args[2]
+  xmlTempName = args[2]
 }
 setwd(outputPath)
 #------------------------------------------------------------------------------------------------
@@ -75,7 +75,13 @@ sda.end <- Sys.Date()
 #-----------------------------------------------------------------------------------------------
 #Fluxes
 if(!exists('prep.data'))
-prep.data <- prep.data.assim(sda.start-90, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 168) 
+  prep.data <- prep.data.assim(
+    sda.start - 90,
+    sda.end,
+    numvals = 100,
+    vars = c("NEE", "LE"),
+    data.len = 168 # This is 7 days
+  ) 
 obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs
 # This line is what makes the SDA to run daily
@@ -154,10 +160,10 @@ prep.data <- prep.data %>%
 obs.mean <-prep.data %>% map('means') %>% setNames(names(prep.data))
 obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 
-if (TRUE) {
-  obs.mean <- obs.mean %>% map(function(x)return(NA))
-  obs.cov <- obs.cov %>% map(function(x)return(NA))
-}
+# if (TRUE) {
+#   obs.mean <- obs.mean %>% map(function(x)return(NA))
+#   obs.cov <- obs.cov %>% map(function(x)return(NA))
+# }
 # --------------------------------------------------------------------------------------------------
 #--------------------------------- Run state data assimilation -------------------------------------
 # --------------------------------------------------------------------------------------------------
