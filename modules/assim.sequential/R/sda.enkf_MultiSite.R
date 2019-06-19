@@ -109,7 +109,7 @@ sda.enkf.multisite <- function(settings,
   }
   
   End.Year <-   lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
-  assimyears<-Start.Year:End.Year
+  assimyears <- Start.Year:End.Year
   obs.mean <- obs.mean[sapply(year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
   obs.cov <- obs.cov[sapply(year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
   # dir address based on the end date
