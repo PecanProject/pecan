@@ -105,7 +105,7 @@ sda.enkf.multisite <- function(settings,
     
   }else{
     start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
-    Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date))
+    Start.Year <- (lubridate::year(settings$state.data.assimilation$start.date))
   }
   
   End.Year <- lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
