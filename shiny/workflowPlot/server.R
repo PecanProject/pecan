@@ -70,7 +70,7 @@ server <- shinyServer(function(input, output, session) {
     observeEvent(input$submitInfo,{
       tryCatch(
         {
-          bety <- PEcAn.DB::db.open(
+          bety$con <- PEcAn.DB::db.open(
             list(
               user = input$user,
               password = input$password,
