@@ -167,7 +167,7 @@ sda.enkf.multisite <- function(settings,
     #--- Updating the nt and etc
     if(!dir.exists(file.path(settings$outdir,"SDA",old.dir))) dir.create(file.path(settings$outdir,"SDA",old.dir))
     # finding/moving files to it's end year dir
-    files.last.sda<-list.files(file.path(settings$outdir,"SDA"))
+    files.last.sda <- list.files(file.path(settings$outdir,"SDA"))
     #copying
     file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
               file.path(file.path(settings$outdir,"SDA"),paste0(old.dir,"/",files.last.sda))
