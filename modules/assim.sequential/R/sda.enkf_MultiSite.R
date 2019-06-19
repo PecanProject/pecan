@@ -438,7 +438,7 @@ sda.enkf.multisite <- function(settings,
       if (any(obs)) {
         if (control$debug) browser()
         #Making R and Y
-        Obs.cons <-Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
+        Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
         
         Y <- Obs.cons$Y
         R <- Obs.cons$R
