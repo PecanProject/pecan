@@ -353,7 +353,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     inits.pred <-
       list(
         X.mod = as.vector(mu.f),
-        qq = 6,
+        qq = 1,
         X = as.vector(mu.f)[length(elements.W.Data)],
         Xall = as.vector(mu.f),
         Xs = as.vector(mu.f)[length(elements.W.Data)],
