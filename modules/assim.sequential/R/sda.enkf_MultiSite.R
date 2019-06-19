@@ -95,7 +95,7 @@ sda.enkf.multisite <- function(settings,
   #Finding the distance between the sites
   distances <- sp::spDists(site.locs, longlat=T)
   #turn that into a blocked matrix format
-  blocked.dis<-block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
+  blocked.dis <- block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
   
   #filtering obs data based on years specifited in setting > state.data.assimilation
   
