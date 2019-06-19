@@ -36,11 +36,27 @@ paramh_in <- readLines(paramh_loc)
 out.path = "/fs/data2/output/PEcAn_1000002393/out/1000458390"
 setwd(out.path)
 
+######################################
+## read meta.bin
+# not sure if the content will change under guessserializer.cpp
+close(meta_bin_con)
+meta_data    <- list()
+meta_bin_con <- file("meta.bin", "rb")
+meta_data$num_processes    <- readBin(meta_bin_con, integer(), 1, size = 4)
+meta_data$vegmode    <- readBin(meta_bin_con, integer(), 1, size = 4)
+meta_data$npft    <- readBin(meta_bin_con, integer(), 1, size = 4)
+meta_data$pft <- list()
+for(i in seq_len(meta_data$npft)){
+  char_len    <- readBin(meta_bin_con, integer(), 1, size = 8)
+  meta_data$pft[[i]]  <- readChar(meta_bin_con, char_len)
+}
+close(meta_bin_con)
+
 # open connection to the binary state file
 zz <- file("0.state", "rb")
 
 ### these are the values read from params.ins, passed to this fcn
-n_pft     <- 11 
+n_pft     <- meta_data$npft
 npatches <- 5 
 
 ################################ check class compatibility ################################
