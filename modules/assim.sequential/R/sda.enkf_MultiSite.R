@@ -104,7 +104,7 @@ sda.enkf.multisite <- function(settings,
     Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date)-1)
     
   }else{
-    start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
+    start.cut <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
     Start.Year <- (lubridate::year(settings$state.data.assimilation$start.date))
   }
   
