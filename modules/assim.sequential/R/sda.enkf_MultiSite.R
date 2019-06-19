@@ -58,7 +58,7 @@ sda.enkf.multisite <- function(settings,
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
   readsFF<-NULL # this keeps the forward forecast
   
-  is.local <-PEcAn.remote::is.localhost(settings$host)
+  is.local <- PEcAn.remote::is.localhost(settings$host)
   #------------------Reading up the MCMC settings
   nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 1e6, settings$state.data.assimilation$nitrGEF %>%as.numeric)
   nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 100, settings$state.data.assimilation$nthin %>%as.numeric)
