@@ -68,7 +68,7 @@ calculateGridcellVariablePerPFT <- function(model.state, variable) {
           # calculate the total cmass and density of individuals per PFT
           if(variable == "biomass") {
             gc.sum[this.pft.id+1] <- gc.sum[this.pft.id+1] + ((this.individual$cmass_leaf+this.individual$cmass_root+
-                                                                 this.individual$cmass_heart+this.individual$cmass_sap)/npatches)
+                                                                 this.individual$cmass_heart+this.individual$cmass_sap-this.individual$cmass_debt)/npatches)
           }
           else  gc.sum[this.pft.id+1] <- gc.sum[this.pft.id+1] + (this.individual[[variable]]/npatches)
           
