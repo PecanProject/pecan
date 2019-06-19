@@ -1,3 +1,346 @@
+
+######################## Helper functions ########################
+
+
+# helper function that lists streamed variables, it just returns the names, types are checked by other fucntion
+find_stream_var <- function(file_in, line_nos){
+  
+  streaming_list <- list()
+  str.i <- 1
+  when_here <- NULL
+  not_skipping <- TRUE
+  
+  i <- line_nos[1]
+  repeat{
+    i <- i + 1
+    if(!is.null(when_here)){
+      if(i == when_here){
+        i <- skip_to
+        when_here <- NULL
+      }
+    }
+    
+    # some functions (Vegetation, Patch, Stand, Gridcell) have two modes: saving / reading
+    # we only need the stream that is saved
+    if(grepl("arch.save()", file_in[i])){
+      when_here  <- find_closing("}", i, file_in)
+      skip_to    <- find_closing("}", i, file_in, if_else_check = TRUE)
+    } 
+    
+    # all streams start with arch &
+    if(grepl("arch & ", file_in[i])){
+      # get variable name
+      streaming_list[[str.i]] <- sub(".*arch & ", "", file_in[i]) # always one var after arch?
+      str.i <- str.i + 1
+      # check for ampersand for the subsequent variable names
+      repeat{
+        i <- i + 1
+        if(!is.null(when_here)){
+          if(i == when_here){
+            i <- skip_to
+            when_here <- NULL
+          }
+        }
+        check1 <- !grepl(".*& ", file_in[i]) # when there are no subsequent stream
+        check2 <- !grepl(".*& ", file_in[i+1]) # sometimes following line is empty or commented, check the next one too
+        if(check1 & !check2) i <- i+1
+        if(check1 &  check2) break # looks like there are no subsequent stream
+        this_line <- gsub("[[:space:]]", "", strsplit(file_in[i], "& ")[[1]])
+        for(var in this_line){
+          if(var != ""){
+            if(var != "arch"){
+              streaming_list[[str.i]] <- var
+              str.i <- str.i + 1
+            }
+          }
+        }
+        if(!is.null(when_here)){ # now that increased i check this just in case
+          if(i == when_here){
+            i <- skip_to
+            when_here <- NULL
+          }
+        }
+      }
+    }
+    if(i == line_nos[2]) break
+  }
+  
+  #unlist and nix the ;
+  returnin_stream <- gsub(";", "", unlist(streaming_list), fixed = TRUE)
+  return(returnin_stream)
+} # find_stream_var
+
+
+
+# helper function that scans LPJ-GUESS that returns the beginning and the ending lines of serialized object
+serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize"){
+  # find the starting line from the given pattern
+  starting_line <- which(!is.na(str_match(file_in, pattern)))
+  if(length(starting_line) != 1){ # check what's going on 
+    PEcAn.logger::logger.severe("Couldn't find the starting line with this pattern ***",pattern, "***.")
+  }
+  
+  # screen for the closing curly bracket after function started 
+  # keep track of opening-closing brackets
+  ending_line <- find_closing(find = "}", starting_line, file_in)
+  
+  return(c(starting_line, ending_line))
+} # serialize_starts_ends
+
+
+# helper function that finds the closing bracket, can work over if-else
+find_closing <- function(find = "}", line_no, file_in, if_else_check = FALSE){
+  opened <- 1
+  closed <- 0
+  if(find == "}"){
+    start_char <- "{"
+    end_char   <- "}"
+  }else{
+    #there can be else-ifs, find closing paranthesis / square breacket etc
+  }
+  
+  # check the immediate line and return if closed there already
+  if(grepl(end_char,   file_in[line_no], fixed = TRUE))   return(line_no)
+  
+  repeat{
+    line_no <- line_no + 1
+    if(grepl(start_char, file_in[line_no], fixed = TRUE))  opened <- opened + 1
+    if(grepl(end_char,   file_in[line_no], fixed = TRUE))  closed <- closed + 1
+    if(if_else_check){
+      else_found <- FALSE
+      same_line_check <- grepl("else",   file_in[line_no], fixed = TRUE) #same line
+      next_line_check <- grepl("else",   file_in[line_no + 1], fixed = TRUE) #next line
+      if(same_line_check | next_line_check){
+        closed <- closed - 1
+        if(next_line_check) line_no <- line_no + 1
+      }
+    }
+    if(opened == closed) break
+  }
+  return(line_no)
+} # find_closing
+
+
+#' @export
+# helper function that determines the stream size to read
+find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS){
+  
+  possible_types <- c("double ", "bool ", "int " , "long ") # space because these can be part of other words
+  possible_types <- c(possible_types, LPJ_GUESS_TYPES)
+  n_sizes  <- c(8, 1, 4, 8, rep(4, length(LPJ_GUESS_TYPES) ))
+  rbin_tbl <- c("double", "logical", "integer", "integer", rep("integer", length(LPJ_GUESS_TYPES)))
+  
+  specs <- list()
+  
+  sub_string <- current_stream_type$substring
+  
+  #is there a ; immediately after?
+  if(grepl(paste0(current_stream_type$type, " ", current_stream_type$name, ";"), sub_string, fixed = TRUE) |
+     grepl(paste0(current_stream_type$type, " ", current_stream_type$name, ","), sub_string, fixed = TRUE)){ # e.g. "double alag, exp_alag;"
+    # this is only length 1
+    specs$n <- 1
+    specs$what <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$size <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$single <- TRUE
+    
+  }else if(current_stream_type$type == "Historic"){
+    possible_types <- c("double", "bool", "int" , "long") # # I haven't seen any Historic that doesn't store double but... historic has a comma after type: double,
+    possible_types <- c(possible_types, LPJ_GUESS_TYPES)
+    
+    # Historic types are special to LPJ-GUESS
+    # They have stored values, current index, and a boolean in that order
+    specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 3)
+    # always three, this is a type defined in guessmath.h
+    specs$what[1]  <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)] 
+    specs$size[1]  <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$names[1] <- current_stream_type$name
+    # n is tricky, it can be hardcoded it can be one of the const ints
+    to_read <- str_match(sub_string, paste0("Historic<", specs$what[1], ", (.*?)>.*"))[,2]
+    if(to_read %in% LPJ_GUESS_CONST_INTS$var){
+      specs$n      <- LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var == to_read]
+    }else{
+      specs$n[1]   <- as.numeric(to_read)
+    }
+    specs$what[2]  <- "integer" #need to check what size_t is
+    specs$size[2]  <- 8
+    specs$n[2]     <- 1
+    specs$names[2] <- "current_index"
+    
+    specs$what[3]  <- "logical"
+    specs$size[3]  <- 1
+    specs$n[3]     <- 1
+    specs$names[3] <- "full"   
+    
+    specs$single <- FALSE
+    
+  }else if(current_stream_type$type == "struct"){
+    if(current_stream_type$name != "solvesom"){
+      PEcAn.logger::logger.debug("Another struct type.")
+    }
+    #for now hardcoding this will be back
+    # specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 2)
+    # specs$what[1]  <- "double"
+    # specs$size[1]  <- 8
+    # specs$names[1] <- "clitter"
+    # specs$n[1]     <- 12 #NSOMPOOL
+    # 
+    # specs$what[2]  <- "double"
+    # specs$size[2]  <- 8
+    # specs$names[2] <- "nlitter"
+    # specs$n[2]     <- 12 #NSOMPOOL
+    # 
+    # LOOKS LIKE THIS ONE IS NOT SERIALIZED PROPERLY
+    # just return 8
+    
+    
+    specs$n <- 1
+    specs$what <- "integer"
+    specs$size <- 8
+    specs$single <- TRUE
+    
+  }else if(grepl(glob2rx(paste0(current_stream_type$type, "*", current_stream_type$name, ";")), sub_string)){
+    
+    # this is only length 1
+    specs$n <- 1
+    specs$what <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$size <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$single <- TRUE
+    
+  }else if(length(regmatches(sub_string, gregexpr("\\[.+?\\]", sub_string))[[1]]) > 1){
+    #looks like we have a matrix
+    spec_dims <- regmatches(sub_string, gregexpr("\\[.+?\\]", sub_string))[[1]]
+    spec_dims <- gsub("\\].*", "", gsub(".*\\[", "", spec_dims))
+    for(spec_dims_i in seq_along(spec_dims)){
+      if(any(sapply(LPJ_GUESS_CONST_INTS$var, grepl, spec_dims[spec_dims_i],  fixed = TRUE))){ # uses one of the constant ints
+        spec_dims[spec_dims_i] <- LPJ_GUESS_CONST_INTS$val[sapply(LPJ_GUESS_CONST_INTS$var, grepl, spec_dims[spec_dims_i],  fixed = TRUE)]
+      }else{
+        spec_dims[spec_dims_i] <- as.numeric(sub(".*\\[(.*)\\].*", "\\1", spec_dims[spec_dims_i], perl=TRUE))
+      }
+    }
+    spec_dims <- as.numeric(spec_dims)
+    
+    specs$n      <- prod(spec_dims)
+    specs$what   <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$size   <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$single <- TRUE
+  }else{
+    # reading a vector
+    specs$what   <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$size   <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    if(any(sapply(LPJ_GUESS_CONST_INTS$var, grepl, sub_string,  fixed = TRUE))){ # uses one of the constant ints
+      specs$n      <- LPJ_GUESS_CONST_INTS$val[sapply(LPJ_GUESS_CONST_INTS$var, grepl, sub_string,  fixed = TRUE)]
+    }else{
+      specs$n      <- as.numeric(sub(".*\\[(.*)\\].*", "\\1", sub_string, perl=TRUE))
+    }
+    
+    specs$single <- TRUE
+  }
+  
+  return(specs)
+} # find_stream_size
+
+
+# helper function to decide the type of the stream
+# this function relies on the architecture of LPJ-GUESS and has bunch of harcoded checks, see model documentation
+find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in){
+  
+  if(current_stream_var == "seed"){ # a bit of a special case
+    return(list(type = "long", name = "seed", substring = "long seed;"))
+  }
+  
+  if(current_stream_var == "nstands"){ # a bit of a special case, it is read by guess.cpp
+    return(list(type = "int", name = "nstands", substring = "int nstands;")) #there is not substring like that in guess.h
+  }  
+  
+  if(current_stream_var == "landcover"){ # a bit of a special case
+    return(list(type = "landcovertype", name = "landcover", substring = "landcovertype landcover;"))
+  } 
+  
+  # it might be difficult to extract the "type" before the varname
+  # there are not that many to check
+  possible_types <- c("class ", "double ", "bool ", "int ")
+  
+  possible_types <- c(possible_types, LPJ_GUESS_TYPES)
+  
+  beg_end <- NULL # not going to need it always
+  
+  # class or not?
+  if(tools::toTitleCase(current_stream_var) %in% LPJ_GUESS_CLASSES){
+    stream_type <- "class"
+    stream_name <- tools::toTitleCase(current_stream_var)
+    sub_string  <- NULL
+  }else {# find type from guess.h
+    
+    if(is.null(class)){
+      sub_string <- guessh_in[grepl(paste0(" ", current_stream_var), guessh_in, fixed = TRUE)]
+    }else{
+      beg_end <- serialize_starts_ends(file_in = guessh_in, 
+                                       pattern = paste0("class ",
+                                                        tools::toTitleCase(class), 
+                                                        " : public "))
+      # subset 
+      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var, ";"), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    }
+    
+    if(length(sub_string) == 0){
+      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    }
+    # e.g. "sompool[i]" in guess.cpp, Sompool sompool[NSOMPOOL]; in guess.h
+    if(length(sub_string) == 0){
+      current_stream_var <- gsub("\\[|.\\]", "", current_stream_var)
+      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+      if(tools::toTitleCase(current_stream_var) %in% LPJ_GUESS_CLASSES){
+        stream_type <- "class"
+        stream_name <- current_stream_var
+        sub_string  <- NULL
+        return(list(type = gsub(" ", "", stream_type), name = stream_name, substring = sub_string))
+      }
+    }
+    if(length(sub_string) == 0){
+      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(",", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
+    }
+    if(length(sub_string) > 1){
+      
+      # some varnames are very common characters unfortunately like u, v... check if [] comes after
+      if(any(grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE))){
+        sub_string <- sub_string[grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE)]
+      }else if(any(grepl(paste0("double ", current_stream_var), sub_string, fixed = TRUE))){ # just fishing, double is the most common type
+        sub_string <- sub_string[grepl(paste0("double ", current_stream_var), sub_string, fixed = TRUE)]
+      }else if(any(grepl("///", sub_string, fixed = TRUE))){ # three slashes are very common in commented out code
+        sub_string <- sub_string[!grepl("///", sub_string, fixed = TRUE)]
+      }
+      
+      if(length(unique(sub_string)) == 1){
+        sub_string <- unique(sub_string)
+      }else{
+        PEcAn.logger::logger.severe("Check this out.")
+      } 
+    }
+    
+    # clean from tabs
+    sub_string <- gsub("\t", "", sub_string)
+    # clean from commented out lines?
+    
+    if(grepl("Historic", sub_string, fixed = TRUE)){
+      # Historic types has the form Historic<T, capacity>& data)
+      stream_type <- "Historic"
+      stream_name <- current_stream_var
+    }else if(grepl("std::vector", sub_string, fixed = TRUE)){
+      stream_type <- "struct"
+      stream_name <- current_stream_var
+    }else{
+      stream_type <- possible_types[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+      stream_name <- current_stream_var
+    }
+    
+  }
+  
+  return(list(type = gsub(" ", "", stream_type), name = stream_name, substring = sub_string))
+} # find_stream_type
+
+
+###################################### READ STATE
+
 library(stringr)
 
 # this fcn is for potential natural vegetation only
@@ -39,7 +382,6 @@ setwd(out.path)
 ######################################
 ## read meta.bin
 # not sure if the content will change under guessserializer.cpp
-close(meta_bin_con)
 meta_data    <- list()
 meta_bin_con <- file("meta.bin", "rb")
 meta_data$num_processes    <- readBin(meta_bin_con, integer(), 1, size = 4)
@@ -610,341 +952,8 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
   } # Stand if-else ends
 } # Gridcell-loop ends
   
-# helper function that determines the stream size to read
-find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS){
-  
-  possible_types <- c("double ", "bool ", "int " , "long ") # space because these can be part of other words
-  possible_types <- c(possible_types, LPJ_GUESS_TYPES)
-  n_sizes  <- c(8, 1, 4, 8, rep(4, length(LPJ_GUESS_TYPES) ))
-  rbin_tbl <- c("double", "logical", "integer", "integer", rep("integer", length(LPJ_GUESS_TYPES)))
-  
-  specs <- list()
-  
-  sub_string <- current_stream_type$substring
-  
-  #is there a ; immediately after?
-  if(grepl(paste0(current_stream_type$type, " ", current_stream_type$name, ";"), sub_string, fixed = TRUE) |
-     grepl(paste0(current_stream_type$type, " ", current_stream_type$name, ","), sub_string, fixed = TRUE)){ # e.g. "double alag, exp_alag;"
-    # this is only length 1
-    specs$n <- 1
-    specs$what <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$size <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$single <- TRUE
-    
-  }else if(current_stream_type$type == "Historic"){
-    possible_types <- c("double", "bool", "int" , "long") # # I haven't seen any Historic that doesn't store double but... historic has a comma after type: double,
-    possible_types <- c(possible_types, LPJ_GUESS_TYPES)
-    
-    # Historic types are special to LPJ-GUESS
-    # They have stored values, current index, and a boolean in that order
-    specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 3)
-    # always three, this is a type defined in guessmath.h
-    specs$what[1]  <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)] 
-    specs$size[1]  <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$names[1] <- current_stream_type$name
-    # n is tricky, it can be hardcoded it can be one of the const ints
-    to_read <- str_match(sub_string, paste0("Historic<", specs$what[1], ", (.*?)>.*"))[,2]
-    if(to_read %in% LPJ_GUESS_CONST_INTS$var){
-      specs$n      <- LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var == to_read]
-    }else{
-      specs$n[1]   <- as.numeric(to_read)
-    }
-    specs$what[2]  <- "integer" #need to check what size_t is
-    specs$size[2]  <- 8
-    specs$n[2]     <- 1
-    specs$names[2] <- "current_index"
-    
-    specs$what[3]  <- "logical"
-    specs$size[3]  <- 1
-    specs$n[3]     <- 1
-    specs$names[3] <- "full"   
-    
-    specs$single <- FALSE
-    
-  }else if(current_stream_type$type == "struct"){
-    if(current_stream_type$name != "solvesom"){
-      PEcAn.logger::logger.debug("Another struct type.")
-    }
-    #for now hardcoding this will be back
-    # specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 2)
-    # specs$what[1]  <- "double"
-    # specs$size[1]  <- 8
-    # specs$names[1] <- "clitter"
-    # specs$n[1]     <- 12 #NSOMPOOL
-    # 
-    # specs$what[2]  <- "double"
-    # specs$size[2]  <- 8
-    # specs$names[2] <- "nlitter"
-    # specs$n[2]     <- 12 #NSOMPOOL
-    # 
-    # LOOKS LIKE THIS ONE IS NOT SERIALIZED PROPERLY
-    # just return 8
-    
-   
-    specs$n <- 1
-    specs$what <- "integer"
-    specs$size <- 8
-    specs$single <- TRUE
-    
-  }else if(grepl(glob2rx(paste0(current_stream_type$type, "*", current_stream_type$name, ";")), sub_string)){
 
-    # this is only length 1
-    specs$n <- 1
-    specs$what <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$size <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$single <- TRUE
-    
-  }else if(length(regmatches(sub_string, gregexpr("\\[.+?\\]", sub_string))[[1]]) > 1){
-    #looks like we have a matrix
-    spec_dims <- regmatches(sub_string, gregexpr("\\[.+?\\]", sub_string))[[1]]
-    spec_dims <- gsub("\\].*", "", gsub(".*\\[", "", spec_dims))
-    for(spec_dims_i in seq_along(spec_dims)){
-      if(any(sapply(LPJ_GUESS_CONST_INTS$var, grepl, spec_dims[spec_dims_i],  fixed = TRUE))){ # uses one of the constant ints
-        spec_dims[spec_dims_i] <- LPJ_GUESS_CONST_INTS$val[sapply(LPJ_GUESS_CONST_INTS$var, grepl, spec_dims[spec_dims_i],  fixed = TRUE)]
-      }else{
-        spec_dims[spec_dims_i] <- as.numeric(sub(".*\\[(.*)\\].*", "\\1", spec_dims[spec_dims_i], perl=TRUE))
-      }
-    }
-    spec_dims <- as.numeric(spec_dims)
-    
-    specs$n      <- prod(spec_dims)
-    specs$what   <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$size   <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$single <- TRUE
-  }else{
-    # reading a vector
-    specs$what   <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$size   <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    if(any(sapply(LPJ_GUESS_CONST_INTS$var, grepl, sub_string,  fixed = TRUE))){ # uses one of the constant ints
-      specs$n      <- LPJ_GUESS_CONST_INTS$val[sapply(LPJ_GUESS_CONST_INTS$var, grepl, sub_string,  fixed = TRUE)]
-    }else{
-      specs$n      <- as.numeric(sub(".*\\[(.*)\\].*", "\\1", sub_string, perl=TRUE))
-    }
-
-    specs$single <- TRUE
-  }
-  
-  return(specs)
-} # find_stream_size
-
-
-# helper function to decide the type of the stream
-# this function relies on the architecture of LPJ-GUESS and has bunch of harcoded checks, see model documentation
-find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in){
-
-  if(current_stream_var == "seed"){ # a bit of a special case
-    return(list(type = "long", name = "seed", substring = "long seed;"))
-  }
-
-  if(current_stream_var == "nstands"){ # a bit of a special case, it is read by guess.cpp
-    return(list(type = "int", name = "nstands", substring = "int nstands;")) #there is not substring like that in guess.h
-  }  
-  
-  if(current_stream_var == "landcover"){ # a bit of a special case
-    return(list(type = "landcovertype", name = "landcover", substring = "landcovertype landcover;"))
-  } 
-  
-  # it might be difficult to extract the "type" before the varname
-  # there are not that many to check
-  possible_types <- c("class ", "double ", "bool ", "int ")
-  
-  possible_types <- c(possible_types, LPJ_GUESS_TYPES)
-  
-  beg_end <- NULL # not going to need it always
-  
-  # class or not?
-  if(tools::toTitleCase(current_stream_var) %in% LPJ_GUESS_CLASSES){
-    stream_type <- "class"
-    stream_name <- tools::toTitleCase(current_stream_var)
-    sub_string  <- NULL
-  }else {# find type from guess.h
-    
-    if(is.null(class)){
-      sub_string <- guessh_in[grepl(paste0(" ", current_stream_var), guessh_in, fixed = TRUE)]
-    }else{
-      beg_end <- serialize_starts_ends(file_in = guessh_in, 
-                                       pattern = paste0("class ",
-                                                        tools::toTitleCase(class), 
-                                                        " : public "))
-      # subset 
-      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var, ";"), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
-    }
-
-    if(length(sub_string) == 0){
-      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
-    }
-    # e.g. "sompool[i]" in guess.cpp, Sompool sompool[NSOMPOOL]; in guess.h
-    if(length(sub_string) == 0){
-      current_stream_var <- gsub("\\[|.\\]", "", current_stream_var)
-      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(" ", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
-      if(tools::toTitleCase(current_stream_var) %in% LPJ_GUESS_CLASSES){
-        stream_type <- "class"
-        stream_name <- current_stream_var
-        sub_string  <- NULL
-        return(list(type = gsub(" ", "", stream_type), name = stream_name, substring = sub_string))
-      }
-    }
-    if(length(sub_string) == 0){
-      sub_string <- guessh_in[beg_end[1]:beg_end[2]][grepl(paste0(",", current_stream_var), guessh_in[beg_end[1]:beg_end[2]], fixed = TRUE)]
-    }
-    if(length(sub_string) > 1){
-
-      # some varnames are very common characters unfortunately like u, v... check if [] comes after
-      if(any(grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE))){
-        sub_string <- sub_string[grepl(paste0(" ", current_stream_var, "["), sub_string, fixed = TRUE)]
-      }else if(any(grepl(paste0("double ", current_stream_var), sub_string, fixed = TRUE))){ # just fishing, double is the most common type
-        sub_string <- sub_string[grepl(paste0("double ", current_stream_var), sub_string, fixed = TRUE)]
-      }else if(any(grepl("///", sub_string, fixed = TRUE))){ # three slashes are very common in commented out code
-        sub_string <- sub_string[!grepl("///", sub_string, fixed = TRUE)]
-      }
-      
-      if(length(unique(sub_string)) == 1){
-        sub_string <- unique(sub_string)
-      }else{
-        PEcAn.logger::logger.severe("Check this out.")
-      } 
-    }
-    
-    # clean from tabs
-    sub_string <- gsub("\t", "", sub_string)
-    # clean from commented out lines?
-    
-    if(grepl("Historic", sub_string, fixed = TRUE)){
-      # Historic types has the form Historic<T, capacity>& data)
-      stream_type <- "Historic"
-      stream_name <- current_stream_var
-    }else if(grepl("std::vector", sub_string, fixed = TRUE)){
-      stream_type <- "struct"
-      stream_name <- current_stream_var
-    }else{
-      stream_type <- possible_types[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-      stream_name <- current_stream_var
-    }
-
-  }
-  
-  return(list(type = gsub(" ", "", stream_type), name = stream_name, substring = sub_string))
-} # find_stream_type
   
   
 
-
-######################## Helper functions ########################
-
-# helper function that lists streamed variables, it just returns the names, types are checked by other fucntion
-find_stream_var <- function(file_in, line_nos){
-  
-  streaming_list <- list()
-  str.i <- 1
-  when_here <- NULL
-  not_skipping <- TRUE
-  
-  i <- line_nos[1]
-  repeat{
-    i <- i + 1
-    if(!is.null(when_here)){
-      if(i == when_here){
-        i <- skip_to
-        when_here <- NULL
-      }
-    }
-    
-    # some functions (Vegetation, Patch, Stand, Gridcell) have two modes: saving / reading
-    # we only need the stream that is saved
-    if(grepl("arch.save()", file_in[i])){
-      when_here  <- find_closing("}", i, file_in)
-      skip_to    <- find_closing("}", i, file_in, if_else_check = TRUE)
-    } 
-    
-    # all streams start with arch &
-    if(grepl("arch & ", file_in[i])){
-      # get variable name
-      streaming_list[[str.i]] <- sub(".*arch & ", "", file_in[i]) # always one var after arch?
-      str.i <- str.i + 1
-      # check for ampersand for the subsequent variable names
-      repeat{
-        i <- i + 1
-        if(!is.null(when_here)){
-          if(i == when_here){
-            i <- skip_to
-            when_here <- NULL
-          }
-        }
-        check1 <- !grepl(".*& ", file_in[i]) # when there are no subsequent stream
-        check2 <- !grepl(".*& ", file_in[i+1]) # sometimes following line is empty or commented, check the next one too
-        if(check1 & !check2) i <- i+1
-        if(check1 &  check2) break # looks like there are no subsequent stream
-        this_line <- gsub("[[:space:]]", "", strsplit(file_in[i], "& ")[[1]])
-        for(var in this_line){
-          if(var != ""){
-            if(var != "arch"){
-              streaming_list[[str.i]] <- var
-              str.i <- str.i + 1
-            }
-          }
-        }
-        if(!is.null(when_here)){ # now that increased i check this just in case
-          if(i == when_here){
-            i <- skip_to
-            when_here <- NULL
-          }
-        }
-      }
-    }
-    if(i == line_nos[2]) break
-  }
-  
-  #unlist and nix the ;
-  returnin_stream <- gsub(";", "", unlist(streaming_list), fixed = TRUE)
-  return(returnin_stream)
-} # find_stream_var
-
-
-
-# helper function that scans LPJ-GUESS that returns the beginning and the ending lines of serialized object
-serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize"){
-  # find the starting line from the given pattern
-  starting_line <- which(!is.na(str_match(file_in, pattern)))
-  if(length(starting_line) != 1){ # check what's going on 
-    PEcAn.logger::logger.severe("Couldn't find the starting line with this pattern ***",pattern, "***.")
-  }
-    
-  # screen for the closing curly bracket after function started 
-  # keep track of opening-closing brackets
-  ending_line <- find_closing(find = "}", starting_line, file_in)
-  
-  return(c(starting_line, ending_line))
-} # serialize_starts_ends
-
-# helper function that finds the closing bracket, can work over if-else
-find_closing <- function(find = "}", line_no, file_in, if_else_check = FALSE){
-  opened <- 1
-  closed <- 0
-  if(find == "}"){
-    start_char <- "{"
-    end_char   <- "}"
-  }else{
-    #there can be else-ifs, find closing paranthesis / square breacket etc
-  }
-  
-  # check the immediate line and return if closed there already
-  if(grepl(end_char,   file_in[line_no], fixed = TRUE))   return(line_no)
-  
-  repeat{
-    line_no <- line_no + 1
-    if(grepl(start_char, file_in[line_no], fixed = TRUE))  opened <- opened + 1
-    if(grepl(end_char,   file_in[line_no], fixed = TRUE))  closed <- closed + 1
-    if(if_else_check){
-      else_found <- FALSE
-      same_line_check <- grepl("else",   file_in[line_no], fixed = TRUE) #same line
-      next_line_check <- grepl("else",   file_in[line_no + 1], fixed = TRUE) #next line
-      if(same_line_check | next_line_check){
-        closed <- closed - 1
-        if(next_line_check) line_no <- line_no + 1
-      }
-    }
-    if(opened == closed) break
-  }
-  return(line_no)
-} # find_closing
 
