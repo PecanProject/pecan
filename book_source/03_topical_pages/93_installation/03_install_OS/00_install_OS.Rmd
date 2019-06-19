@@ -1,0 +1,8 @@
+### OS Specific Installations {#osinstall}
+
+- [Ubuntu](#ubuntu)
+- [CentOS](#centos/redhat)
+- [OSX](#macosx)
+- [Install BETY](#install-bety) THIS PAGE IS DEPRECATED
+- [Install Models](#install-models)
+- [Install Data](#install-data)
