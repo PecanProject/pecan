@@ -537,10 +537,10 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             summarise(
               Means=mean(Value, na.rm=T),
               Lower=quantile(Value,0.025, na.rm=T),
-              Upper=quantile(Value,0.975, na.rm=T))
+              Upper = quantile(Value, 0.975,  na.rm = TRUE))
           
-        })%>%mutate(Type=paste0("SDA_",listFA),
-                    Date=rep(as.Date(names(FORECAST)), each=colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids)))%>% as.POSIXct()
+        }) %>% mutate(Type = paste0("SDA_", listFA),
+                    Date = rep(as.Date(names(FORECAST)), each = colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids))) %>% as.POSIXct()
         )
     
     })

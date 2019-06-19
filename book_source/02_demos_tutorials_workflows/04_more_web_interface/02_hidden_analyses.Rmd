@@ -478,17 +478,17 @@ Several points on how to prepare your xml settings for the remote SDA run:
 1 - In the main pecan workflow.R, if you were able to generate `pecan.TRAIT.xml`, your settings are ready to be used for an SDA run. All you need to add is your state data assimilation tags.
 2 - Inside the xml setting an `<outdir>` flag needs to be included and point to a local directory where `SDA_remote_launcher` will look for either a `sample.Rdata` file or a `pft` folder.
 3 - You need to set your `<host>` tag according to the desired remote machine. You can learn more about this on the `Remote execution with PEcAn` section of the documentation. Please make sure that the `<folder>` tag inside `<host>` is pointing to a directory where you would like to store and run your SDA job(s). 
-4- Finally make sure the <binary> tag inside the <model> tag is set to the right path on the remote machine.
+4 - Finally, make sure the <binary> tag inside the <model> tag is set to the correct path on the remote machine.
 
 ### Restart functionality in SDA
-In case you prefer to run your SDA analysis in multiple stages where each phase picks up where the previous one left, you can use the `restart` argument in the `sda.enkf.multisite` function. All you need to do is make sure that the output from previous step exists in the `SDA` folder (in the `outfolder`) and the `<start.date>` is the same as `<end.date>` of previous step. When you run SDA with the restart functionality, it loads  the output from previous step in and it uses configs already written in the run folder to sets itself up for the next step. Using the restart argument could be as easy as :
+If you prefer to run your SDA analysis in multiple stages, where each phase picks up where the previous one left off, you can use the `restart` argument in the `sda.enkf.multisite` function. You need to make sure that the output from previous step exists in the `SDA` folder (in the `outfolder`), and the `<start.date>` is the same as `<end.date>` from the previous step. When you run the SDA with the restart parameter, it will load the output from the previous step and use configs already written in the run folder to set itself up for the next step. Using the restart argument could be as easy as :
 
 ```
 sda.enkf.multisite(settings,
                    obs.mean =obs.mean ,
                    obs.cov = obs.cov,
-                   control = SDA.arguments(debug = F, TimeseriesPlot=F),
-                   restart = F
+                   control = SDA.arguments(debug = FALSE, TimeseriesPlot = FALSE),
+                   restart = FALSE
         )
 
 ```

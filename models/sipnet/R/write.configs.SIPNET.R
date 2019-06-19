@@ -392,7 +392,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       #Sanity check
       if (is.na(wood_total_C) | is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C <0) {
         wood_total_C <- 0
-        if (round(IC$AbvGrndWood)>0 & round(IC$abvGrndWoodFrac, 3)==0)
+        if (round(IC$AbvGrndWood) > 0 & round(IC$abvGrndWoodFrac, 3) == 0)
           PEcAn.logger::logger.warn(
             paste0(
               "There is a major problem with ",

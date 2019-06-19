@@ -70,13 +70,13 @@ load_nimble <- function(){
   #tobit.model--This does the GEF for multi Site -------------------------------------
   GEF.MultiSite.Nimble <<- nimbleCode({ 
     
-    if (q.type==1){
+    if (q.type == 1){
       # Sorting out qs
       qq ~ dgamma(aq, bq) ## aq and bq are estimated over time
       q[1:YN, 1:YN] <- qq * diag(YN)
-    }else if (q.type==2){
+    } else if (q.type == 2){
       # Sorting out qs
-      q[1:YN, 1:YN]  ~ dwish(R = aq[1:YN, 1:YN], df = bq) ## aq and bq are estimated over time
+      q[1:YN, 1:YN] ~ dwish(R = aq[1:YN, 1:YN], df = bq) ## aq and bq are estimated over time
       
     }
 

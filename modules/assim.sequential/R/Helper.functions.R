@@ -8,16 +8,16 @@
 #' @export
 #'
 outlier.detector.boxplot<-function(X) {
-  X<-X %>% 
+  X <- X  %>% 
     map(function(X.tmp){
       #X.tmp is all the state variables for each element of the list (site)
       X.tmp %>%
         map_dfc(function(col.tmp){
           #naive way of finding the outlier - 10 * IQR
-          OutVals <- boxplot(col.tmp, plot=FALSE)$out
+          OutVals <- boxplot(col.tmp, plot = FALSE)$out
           # if I make this NA then it would stay NA for ever.
           #bc adjustment uses X to and comes up with new analysis
-          col.tmp[which((col.tmp %in% OutVals))] <- median(col.tmp, na.rm=T)
+          col.tmp[which((col.tmp %in% OutVals))] <- median(col.tmp, na.rm = TRUE)
           col.tmp
         })
       

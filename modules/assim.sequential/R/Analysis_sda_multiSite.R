@@ -76,7 +76,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
-  if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
+  if (length(dots) > 0) lapply(names(dots),function(name){assign(name,dots[[name]], pos = 1 )})
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   # What type of Q needs to be estimated ? if it's defined then it's either Site or PFT based if not then it's one for all.
@@ -247,7 +247,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   ###-------------------------------------------------------------------###
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
   #--- This is where the localization needs to happen - After imputing Pf
-  elements.W.Data <-  which(apply(H, 2, sum) == 1)
+  elements.W.Data <- which(apply(H, 2, sum) == 1)
   if (exists('blocked.dis')){
         Pf <-
       Local.support(Pf,
@@ -258,14 +258,14 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #### initial conditions
   ## We are figuring out the aqq here 
   if (t == 1) {
-    bqq[1]     <- length(elements.W.Data)
+    bqq[1] <- length(elements.W.Data)
     
     if (is.null(aqq)) {
       
       if (q.type==2) { # if we wanna estimate a q per site
-        aqq      <-
+        aqq <-
           array(1, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
-      }else if(q.type==3){ # if we wanna estimate a q per PFT
+      } else if(q.type == 3){ # if we wanna estimate a q per PFT
         
         site.pfts <- settings %>%
           map( ~ .x[['run']]) %>%
@@ -296,7 +296,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     }
 
   } else{
-    if (ncol(aqq)>1 & nrow(aqq)>1)
+    if (ncol(aqq) > 1 & nrow(aqq) > 1)
     aqq[, , t] <- Local.support(
       aqq[, , t],
       distances[ceiling(elements.W.Data/length(var.names)), # finding sites with data
@@ -341,11 +341,11 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
   # intial Q depends on the size of aqq
-    q.tmp <-diag(1, nrow(aqq), ncol(aqq))
+    q.tmp <- diag(1, nrow(aqq), ncol(aqq))
 
-    if (q.type==1){
-      aq.arg <-1
-    }else if(q.type==2){
+    if (q.type == 1){
+      aq.arg <- 1
+    } else if(q.type == 2){
       aq.arg <-aqq[,,t]
     }
     
@@ -421,7 +421,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     
     save(inits.pred, dimensions.tobit, constants.tobit, data.tobit,  model_pred, conf, Rmcmc, Cmodel, Cmcmc, file="SDA/NimbleVars.RData" )
     # if t>1 in GEF --------------------------------------------   
-  }else{
+  } else {
 
     Cmodel$y.ind <- y.ind
     Cmodel$y.censored <- y.censored
@@ -447,7 +447,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   }
 
 
-  dat <-runMCMC(Cmcmc, niter = nitr.GEF, nburnin=nburnin, thin =nthin, nchains = 1)
+  dat <- runMCMC(Cmcmc, niter = nitr.GEF, nburnin = nburnin, thin = nthin, nchains = 1)
   
   #---- Saving the chains
   save(dat, file=paste0("SDA/Chains_", t, ".RData"))
@@ -464,13 +464,13 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
                   )  # Mean Omega, Precision
 
   # Setting up the prior for the next step from the posterior of this step
-  if (t<nt){
-    if (q.type==1){ #if it's a gamma case
+  if (t < nt){
+    if (q.type == 1){ #if it's a gamma case
       
-      aqq[1, 1, t + 1]   <- mean(mq)
-      bqq[t + 1]       <- var(mq %>% as.numeric())
+      aqq[1, 1, t + 1] <- mean(mq)
+      bqq[t + 1] <- var(mq  %>%  as.numeric())
       
-    }else { # if it's a wish case
+    } else { # if it's a wish case
       col <- matrix(1:length(elements.W.Data) ^ 2,
                     length(elements.W.Data),
                     length(elements.W.Data))
@@ -490,8 +490,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       V <- solve(q.bar) * n
       
       
-      aqq[, ,t + 1]   <- V
-      bqq[t + 1]       <- n
+      aqq[, ,t + 1] <- V
+      bqq[t + 1] <- n
     }
 
   }

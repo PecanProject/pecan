@@ -31,7 +31,7 @@ if (is.na(args[2])){
 # Setup
 #---------------------------------------------------------------
 setwd(settings$outdir)
-unlink(c('run','out','SDA'),recursive = T)
+unlink(c('run', 'out', 'SDA'), recursive = TRUE)
 #----------------------------------------------------------------
 # Find what sites we are running for
 #---------------------------------------------------------------

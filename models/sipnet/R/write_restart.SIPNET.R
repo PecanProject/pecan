@@ -109,7 +109,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
     colnames(analysis.save.mat) <- names(unlist(analysis.save))
   }else{
-    analysis.save.mat<-NULL
+    analysis.save.mat <- NULL
   }
 
   print(runid %>% as.character())

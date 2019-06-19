@@ -6,7 +6,7 @@ suppressPackageStartupMessages({
   library(PEcAn.remote)
   library(PEcAn.assim.sequential)
 })
-is.active <-FALSE
+is.active <- FALSE
 args <- commandArgs(trailingOnly = TRUE)
 #----------------------------------------------------------------
 # Copying over the luncher and sending the command
@@ -17,7 +17,7 @@ if (is.na(args[1])){
 } else {
   settings.file = args[1]
   settings <- PEcAn.settings::read.settings(settings.file)
-  my_host <- list(name =settings$host$name , tunnel = settings$host$tunnel, user=settings$host$user)
+  my_host <- list(name = settings$host$name, tunnel = settings$host$tunnel, user = settings$host$user)
 }
 
 #Settings
@@ -39,15 +39,15 @@ if (is.na(args[3])){
 #---------------------------------------------------------------
 # Let's see if the PID is still running
 
-is.active <-qsub_run_finished(run = PID, host = my_host, qstat = settings$host$qstat)
-is.active<-ifelse (nchar(is.active)>1, TRUE, FALSE)
+is.active <- qsub_run_finished(run = PID, host = my_host, qstat = settings$host$qstat)
+is.active <- ifelse (nchar(is.active) > 1, TRUE, FALSE)
 
 #----------------------------------------------------------------
 # looping 
 #---------------------------------------------------------------
 while(is.active){
-  is.active <-qsub_run_finished(run = PID, host = my_host, qstat = settings$host$qstat)
-  is.active<-ifelse (nchar(is.active)>1, TRUE, FALSE)
+  is.active <- qsub_run_finished(run = PID, host = my_host, qstat = settings$host$qstat)
+  is.active <- ifelse (nchar(is.active) > 1, TRUE, FALSE)
   
   remote.copy.from(my_host,
                    paste0(remote.path,"/SDA"),
@@ -59,7 +59,7 @@ while(is.active){
 #----------------------------------------------------------------
 # Final Copying 
 #---------------------------------------------------------------
-sda.dir.exists <-remote.execute.R(sda.path,
+sda.dir.exists <- remote.execute.R(sda.path,
                  my_host,
                  user = my_host$user,
                  scratchdir = ".")
