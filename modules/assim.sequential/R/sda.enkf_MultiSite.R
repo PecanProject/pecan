@@ -89,7 +89,7 @@ sda.enkf.multisite <- function(settings,
       `colnames<-`(c("Lon","Lat")) %>%
       `rownames<-`(site.ids)
   }else{
-    conf.settings<-list(settings)
+    conf.settings <- list(settings)
   }
   
   #Finding the distance between the sites
