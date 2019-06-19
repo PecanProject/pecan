@@ -1,5 +1,6 @@
+#' @useDynLib PEcAn.LPJGUESS
 #' @importFrom Rcpp sourceCpp
-#' @export
+NULL
 
 # compile the LPJ-GUESS allocation function using Rcpp
-sourceCpp("~/Projects/PalEON/LPJ-GUESS/allocation.cpp")
+sourceCpp("src/allocation.LPJGUESS.cpp")

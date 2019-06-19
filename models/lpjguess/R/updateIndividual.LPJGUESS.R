@@ -129,6 +129,7 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass
           biomass.inc <- (biomass.total * biomass.rel.change[this.pft.id+1]) - biomass.total
           print(biomass.inc)
           
+          cmass_leaf_inc <- 0
           cmass_root_inc <- 0
           cmass_sap_inc <- 0 
           cmass_debt_inc <- 0
@@ -137,25 +138,34 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass
           litter_root_inc <- 0
           exceeds_cmass <- 0
           
-          # updated.pools <- allocation(bminc = as.numeric(biomass.inc),
-          #                             cmass_leaf = as.numeric(this.individual$cmass_leaf),                                     ,
-          #                             cmass_root = as.numeric(this.individual$cmass_sap),
-          #                             cmass_sap = as.numeric(this.individual$cmass_sap),
-          #                             cmass_debt  = as.numeric(this.individual$cmass_heart),
-          #                             cmass_heart = as.numeric(this.individual$cmass_heart),
-          #                             ltor = as.numeric(this.individual$ltor),
-          #                             height = as.numeric(this.individual$height),
-          #                             sla = as.numeric(this.individual$sla),
-          #                             wooddens = as.numeric(this.individual$wooddens),
-          #                             lifeform = as.integer(1), # BLARP
-          #                             cmass_root_inc = as.numeric(cmass_root_inc),
-          #                             cmass_sap_inc = as.numeric(cmass_sap_inc),
-          #                             cmass_debt_inc = as.numeric(cmass_debt_inc),
-          #                             cmass_heart_inc = as.numeric(cmass_heart_inc),
-          #                             litter_leaf_inc = as.numeric(litter_leaf_inc),
-          #                             litter_root_inc = as.numeric(litter_root_inc),
-          #                             exceeds_cmass = as.numeric(exceeds_cmass))
-          # print(updated.pools)
+          #sourceCpp("~/Projects/PalEON/LPJ-GUESS/allocation.cpp")
+          print(str(allocation))
+          
+          
+          updated.pools <- allocation(bminc = as.numeric(biomass.inc),
+            cmass_leaf = as.numeric(this.individual$cmass_leaf),              
+            cmass_root = as.numeric(this.individual$cmass_sap),
+            cmass_sap = as.numeric(this.individual$cmass_sap),
+            cmass_debt  = as.numeric(this.individual$cmass_heart),
+            cmass_heart = as.numeric(this.individual$cmass_heart),
+            ltor = as.numeric(this.individual$ltor),
+            height = as.numeric(this.individual$height),
+            sla = as.numeric(this.individual$sla),
+            wooddens = as.numeric(this.individual$wooddens),
+            lifeform = as.integer(1), # BLARP
+            k_latosa = as.numeric(this.individual$k_latosa),
+            k_allom2 = as.numeric(this.individual$k_allom2),
+            k_allom3 = as.numeric(this.individual$k_allom3),
+            cmass_leaf_inc = as.numeric(cmass_leaf_inc),
+            cmass_root_inc = as.numeric(cmass_root_inc),
+            cmass_sap_inc = as.numeric(cmass_sap_inc),
+            cmass_debt_inc = as.numeric(cmass_debt_inc),
+            cmass_heart_inc = as.numeric(cmass_heart_inc),
+            litter_leaf_inc = as.numeric(litter_leaf_inc),
+            litter_root_inc = as.numeric(litter_root_inc),
+            exceeds_cmass = as.numeric(exceeds_cmass))
+          
+          print(updated.pools)
           
           
           # STEP 3 - adjust the various associated C pools based on the results of the previous step

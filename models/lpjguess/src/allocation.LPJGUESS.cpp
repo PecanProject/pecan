@@ -145,7 +145,6 @@ inline double f(double& cmass_leaf_inc) {
 }
 
 
-
 // [[Rcpp::export]]
 List allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sap,
                 double cmass_debt,double cmass_heart,double ltor,double height,double sla,
