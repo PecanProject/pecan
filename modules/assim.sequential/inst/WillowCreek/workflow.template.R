@@ -91,8 +91,6 @@ if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
   # if there was no older sims
   if (is.na(sda.start))
     sda.start <- Sys.Date() - 14
-} else{
-  sda.start <- Sys.Date() - 14
 }
 
 sda.end <- Sys.Date()
