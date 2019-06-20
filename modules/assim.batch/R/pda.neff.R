@@ -80,10 +80,10 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     # converting back C fluxes from  kg C m-2 s-1 to umol C m-2 s-1 
     # reduces the code and makes model fitting easier
     if(input$variable.id %in% c(297, 1000000042)){
-      obs <- misc.convert(obs, "kg C m-2 s-1", "umol C m-2 s-1")
+      obs <- PEcAn.utils::misc.convert(obs, "kg C m-2 s-1", "umol C m-2 s-1")
       AMFq  <- rep(0, length(obs))
       flags <- TRUE
-      AMF.params <- flux.uncertainty(obs, AMFq, flags, bin.num = 20)
+      AMF.params <- PEcAn.uncertainty::flux.uncertainty(obs, AMFq, flags, bin.num = 20)
       alpha_0 <- AMF.params$intercept[[1]]
       alpha_p <- AMF.params$slopeP[[1]]
       alpha_n <- AMF.params$slopeN[[1]]
@@ -99,10 +99,10 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     init <- list()
     for(i in 1:nchain){
       y.samp    <- sample(obs, length(obs), replace=TRUE)
-      init[[i]] <- list(tau_add=1/var(diff(y.samp), na.rm=TRUE)) 
+      init[[i]] <- list(tau_add=1/stats::var(diff(y.samp), na.rm=TRUE)) 
     }
     
-    j.model   <- jags.model(file     = textConnection(HLModel),
+    j.model   <- rjags::jags.model(file     = textConnection(HLModel),
                             data     = data,
                             inits    = init,
                             n.chains = 3)
@@ -143,11 +143,11 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     init <- list()
     for(i in 1:nchain){
       y.samp    <- sample(obs,length(obs),replace=TRUE)
-      init[[i]] <- list(tau_add=1/var(diff(y.samp), na.rm=TRUE), 
-                        tau_obs=1/var(diff(y.samp), na.rm=TRUE))
+      init[[i]] <- list(tau_add=1/stats::var(diff(y.samp), na.rm=TRUE), 
+                        tau_obs=1/stats::var(diff(y.samp), na.rm=TRUE))
     }
     
-    j.model   <- jags.model(file     = textConnection(GaussianModel),
+    j.model   <- rjags::jags.model(file     = textConnection(GaussianModel),
                             data     = data,
                             inits    = init,
                             n.chains = 3)
@@ -156,16 +156,17 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     PEcAn.logger::logger.error(model, "is not data available as data model.")
   }
   
-  jags.out   <- coda.samples (model          = j.model,
-                              variable.names = c("x"),
-                              n.iter         = 5000,
-                              thin           = 100)
+  jags.out <- rjags::coda.samples(
+    model          = j.model,
+    variable.names = c("x"),
+    n.iter         = 5000,
+    thin           = 100)
   
   
   out <- as.matrix(jags.out)
-  median.out <- apply(out, 2, median)
+  median.out <- apply(out, 2, stats::median)
   
-  ar  <- acf(median.out)
+  ar  <- stats::acf(median.out)
   rho <- as.numeric(ar$acf[2])
   return(rho)
   

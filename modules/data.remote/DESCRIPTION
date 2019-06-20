@@ -1,18 +1,23 @@
 Package: PEcAn.data.remote
 Type: Package
-Title: PEcAn functions used for remote sensing
+Title: PEcAn functions used for extracting remote sensing data
 Version: 1.7.0
-Date: 2018-12-03
-Authors@R: c(person("Mike","Dietze"))
-Author: Mike Dietze
-Maintainer: Mike Dietze <dietze@bu.edu>
-Description: PEcAn module for processing remote data
+Date: 2019-02-06
+Authors@R: c(person("Mike","Dietze"), person("Bailey", "Morrison"))
+Author: Mike Dietze, Bailey Morrison
+Maintainer: Bailey Morrison <bmorrison@bnl.gov>
+Description: PEcAn module for processing remote data. Python module requirements: requests, json, re, ast, panads, sys. If any of these modules are missing, install using pip install <module name>.
 Imports:
+    MODISTools (>= 1.1.0),
+    reticulate,
     PEcAn.logger,
     PEcAn.remote,
-    stringr(>= 1.1.0)
+    stringr (>= 1.1.0)
 Suggests:
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    ggplot2,
+    rgdal,
+    reshape
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

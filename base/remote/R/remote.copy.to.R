@@ -6,6 +6,7 @@
 #' @inheritParams remote.execute.cmd
 #' @param src local file/dir to copy
 #' @param dst remote file/dir to copy to
+#' @param options additional arguments to be passed to rsync command
 #' @param delete in case of local dir should all non-existent files be removed
 #' @return output of command executed
 #'
@@ -16,8 +17,8 @@
 #'   host <- list(name='geo.bu.edu', user='kooper', tunnel='/tmp/geo.tunnel')
 #'   remote.copy.to(host, '/tmp/kooper', '/tmp/kooper', delete=TRUE)
 #' }
-remote.copy.to <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
-  args <- c("-a", "-q")
+remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stderr = FALSE) {
+  args <- c("-a", "-q", options)
   if (as.logical(delete)) {
     args <- c(args, "--delete")
   }

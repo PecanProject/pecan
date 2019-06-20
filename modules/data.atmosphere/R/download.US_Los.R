@@ -112,5 +112,5 @@ download.US_Los <- function(start_date, end_date, timestep = 1) {
 } # download.US_los.R
 
 # This line is great for testing.
- download.US_Los('2018-07-23 06:00', '2018-08-08 06:00', timestep=12)
+ #download.US_Los('2018-07-23 06:00', '2018-08-08 06:00', timestep=12)
  

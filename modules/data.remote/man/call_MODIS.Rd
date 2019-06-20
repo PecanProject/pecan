@@ -4,43 +4,47 @@
 \alias{call_MODIS}
 \title{call_MODIS}
 \usage{
-call_MODIS(outfolder = ".", fname = "m_data.nc", start_date, end_date,
-  lat, lon, size = 0, product = "MOD15A2", band = "Lai_1km",
-  qc_band = NA, sd_band = NA, verbose = TRUE)
+call_MODIS(outfolder = ".", start_date, end_date, lat, lon, size = 0,
+  product, band, band_qc = "", band_sd = "",
+  package_method = "MODISTools")
 }
 \arguments{
 \item{outfolder}{where the output file will be stored}
 
-\item{fname}{name of netcdf file to output}
+\item{start_date}{string value for beginning of date range for download in unambiguous date format (YYYYJJJ)}
 
-\item{start_date}{beginning of date range for LAI download in unambiguous date format}
-
-\item{end_date}{end of date range for LAI download in unambiguous date format}
+\item{end_date}{string value for end of date range for download in unambiguous date format (YYYYJJJ)}
 
 \item{lat}{Latitude of the pixel}
 
 \item{lon}{Longitude of the pixel}
 
-\item{size}{NS and WE distance in km to be included}
+\item{size}{kmAboveBelow and kmLeftRight distance in km to be included}
 
-\item{product}{MODIS product number}
+\item{product}{string value for MODIS product number}
 
-\item{band}{which measurement to extract}
+\item{band}{string value for which measurement to extract}
 
-\item{qc_band}{which quality control band (optional)}
+\item{band_qc}{string value for which quality control band, or use "NA" if you do not know or do not need QC information (optional)}
 
-\item{sd_band}{which standard deviation band (optional)}
+\item{band_sd}{string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)}
 
-\item{verbose}{tell python whether or not to print debug statements (all or nothing)
+\item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
 
-depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4}
+depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
+depends on the MODISTools package version 1.1.0}
 }
 \description{
 Get MODIS data by date and location
 }
 \examples{
 \dontrun{
-test <- call_MODIS(start="2001001",end="2016366",lat=44.0646,lon=-71.28808,size=3,qc_band = "FparLai_QC",sd_band = "LaiStdDev_1km")
+test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools")
+plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
+test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
 }
 
+}
+\author{
+Bailey Morrison
 }

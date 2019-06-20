@@ -52,12 +52,14 @@ Imports:
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
+    xts,
     zoo
 Suggests:
     doParallel,
     foreach,
     parallel,
     progress,
+    reticulate,
     rlang (>= 0.2.0)
 Remotes:
     github::ropensci/geonames,

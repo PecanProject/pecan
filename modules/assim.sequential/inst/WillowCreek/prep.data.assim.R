@@ -107,7 +107,11 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
                map_dfc(~row[,.x] %>% unlist %>% as.numeric) %>%
                setNames(vars) 
               # mean and the cov between all the state variables is estimated here 
-             return(list(Date=Date1%>%unique(), covs=cov(alldata),  means=apply(alldata,2,mean)) )
+              return(list(
+                Date = Date1 %>% unique(),
+                covs = cov(alldata),
+                means = apply(alldata, 2, mean)
+              ))
            })
   
   outlist <- list(obs=outlist, rawobs=gapfilled.vars.out )

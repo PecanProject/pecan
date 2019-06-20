@@ -24,6 +24,8 @@ Depends:
     PEcAn.DB,
     PEcAn.utils,
     redland,
+    sirt,
+    sf
 Imports:
     dplyr,
     magrittr,
@@ -32,6 +34,8 @@ Imports:
     PEcAn.remote,
     purrr,
     rlang,
+    sp,
+    sf,
     XML (>= 3.98-1.4)
 Suggests:
     fields,

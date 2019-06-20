@@ -14,13 +14,26 @@
     <min_value>-9999</min_value>
     <max_value>9999</max_value>
    </variable>
+<<<<<<< HEAD
    <variable>
     <variable.name>TotSoilCarb</variable.name>
     <unit>KgC/m^2</unit>
+=======
+    <variable>
+    <variable.name>Qle</variable.name>
+    <unit>MW/m2</unit>
+    <min_value>-9999</min_value>
+    <max_value>9999</max_value>
+   </variable>
+  <variable>
+   <variable.name>SoilMoistFrac</variable.name>
+   <unit>m/m</unit>
+>>>>>>> b2502138928d03585677f39c8d67d9d94b709f7f
     <min_value>0</min_value>
     <max_value>9999</max_value>
    </variable>
    <variable>
+<<<<<<< HEAD
     <variable.name>SoilMoistFrac</variable.name>
     <unit></unit>
     <min_value>0</min_value>
@@ -32,6 +45,19 @@
     <min_value>0</min_value>
     <max_value>9999</max_value>
    </variable>
+=======
+  <variable.name>SWE</variable.name>
+  <unit>kg/m^2</unit>
+  <min_value>0</min_value>
+  <max_value>9999</max_value>
+  </variable>
+  <variable>
+  <variable.name>litter_carbon_content</variable.name>
+  <unit>kgC/m2</unit>
+  <min_value>0</min_value>
+  <max_value>9999</max_value>
+  </variable>
+>>>>>>> b2502138928d03585677f39c8d67d9d94b709f7f
   </state.variables>
   <forecast.time.step>year</forecast.time.step>
   <start.date>2017-01-01</start.date>
@@ -44,7 +70,6 @@
   <username></username>
   <date>2019/01/04 10:19:35 +0000</date>
  </info>
- <outdir>/fs/data3/kzarada/ouput/PEcAn_1000009774/</outdir>
  <database>
   <bety>
    <user>bety</user>
@@ -52,13 +77,21 @@
    <host>psql-pecan.bu.edu</host>
    <dbname>bety</dbname>
    <driver>PostgreSQL</driver>
+<<<<<<< HEAD
    <write>true</write>
+=======
+   <write>TRUE</write>
+>>>>>>> b2502138928d03585677f39c8d67d9d94b709f7f
   </bety>
   <dbfiles>/fs/data3/kzarada/pecan.data/dbfiles/</dbfiles>
  </database>
  <pfts>
   <pft>
+<<<<<<< HEAD
    <name>temperate.coniferous</name>
+=======
+   <name>temperate.deciduous</name>
+>>>>>>> b2502138928d03585677f39c8d67d9d94b709f7f
    <constants>
     <num>1</num>
    </constants>
@@ -80,21 +113,12 @@
    <met>
     <method>sampling</method>
    </met>
-   <soil>
-    <parent>parameters</parent>
-   </soil>
-   <vegetation>
-    <parent>soil</parent>
-   </vegetation>
   </samplingspace>
  </ensemble>
  <model>
   <id>10</id>
-  <default.param>/fs/data3/kzarada/US_WCr/data/WillowCreek.param</default.param>
+    <default.param>/fs/data3/kzarada/US_WCr/data/WillowCreek.param</default.param>
  </model>
- <workflow>
-  <id>1000009774</id>
- </workflow>
  <run>
   <site>
    <id>676</id>

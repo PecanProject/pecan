@@ -1,96 +1,145 @@
 # ----------------------------------------------------------------------
-# Load required libraries
+#------------------------------------------ Load required libraries-----
 # ----------------------------------------------------------------------
 library(PEcAn.all)
 library(PEcAn.utils)
 library(RCurl)
 library(REddyProc)
-library(purrr)
-#------------------------------------------
-setwd("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek")
-#setwd("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek")
-source('Utils.R')
-source('download_WCr_flux.R')
-source('download_WCr_met.R')
-source("gapfill_WCr.R")
-source('prep.data.assim.R')
-outputPath <- "/fs/data3/kzarada/Projects/WillowCreek"
-xmlPath <-"gefs.sipnet.template.xml"
-#------------------------------------------------------ Preparing the pecan xml
-# Open and read in settings file for PEcAn run.
+library(tidyverse)
+library(furrr)
+plan(multiprocess)
+# ----------------------------------------------------------------------------------------------
+#------------------------------------------ That's all we need xml path and the out folder -----
+# ----------------------------------------------------------------------------------------------
 args <- commandArgs(trailingOnly = TRUE)
+
 if (is.na(args[1])){
-  settings <- PEcAn.settings::read.settings(xmlPath) 
+  outputPath <- "/fs/data3/kzarada/ouput"
 } else {
-  settings.file = args[1]
-  settings <- PEcAn.settings::read.settings(settings.file)
+  outputPath <- args[1]
 }
 
-#--------------------------- Calling in prepped data 
-sda.start <- as.Date("2018-05-15")
+if (is.na(args[2])){
+  nodata <- FALSE
+} else {
+  nodata <-as.logical(args[2])
+}
+
+if (is.na(args[3])){
+  xmlTempName <-"gefs.sipnet.template.xml"
+} else {
+  xmlTempName <- args[2]
+}
+setwd(outputPath)
+#------------------------------------------------------------------------------------------------
+#------------------------------------------ sourcing the required tools -------------------------
+#------------------------------------------------------------------------------------------------
+c(
+  'Utils.R',
+  'download_WCr.R',
+  "gapfill_WCr.R",
+  'prep.data.assim.R'
+) %>% walk( ~ source(
+  system.file("WillowCreek",
+              .x,
+              package = "PEcAn.assim.sequential")
+))
+#reading xml
+settings <- read.settings(system.file("WillowCreek",
+                                      xmlTempName,
+                                      package ="PEcAn.assim.sequential" ))
+
+#connecting to DB
+con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+
+#------------------------------------------------------------------------------------------------
+#------------------------------------------ Preparing the pecan xml -----------------------------
+#------------------------------------------------------------------------------------------------
+#--------------------------- Finding old sims
+all.previous.sims <- list.dirs(outputPath, recursive = F)
+
+if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
+  
+  tryCatch({
+    # Looking through all the old simulations and find the most recent
+    all.previous.sims <- all.previous.sims %>%
+      map(~ list.files(path = file.path(.x, "SDA"))) %>%
+      setNames(all.previous.sims) %>%
+      discard( ~ !"sda.output.Rdata" %in% .x) # I'm throwing out the ones that they did not have a SDA output
+    
+    last.sim <-
+      names(all.previous.sims) %>%  
+      map_chr( ~ strsplit(.x, "_")[[1]][2]) %>%
+      map_dfr(~ db.query(
+        query = paste("SELECT started_at FROM workflows WHERE id =", .x),
+        con = con
+      ) %>% 
+        mutate(ID=.x)) %>%
+      mutate(started_at = as.Date(started_at)) %>%
+      arrange(desc(started_at)) %>%
+      head(1)
+    # pulling the date and the path to the last SDA
+    restart.path <-grep(last.sim$ID, names(all.previous.sims), value = T)
+    sda.start <- last.sim$started_at
+    },
+    error = function(e) {
+      restart.path <- NULL
+      sda.start <- Sys.Date() - 14
+      PEcAn.logger::logger.warn(paste0("There was a problem with finding the last successfull SDA.",conditionMessage(e)))
+      })
+
+  # if there was no older sims
+  if (is.na(sda.start))
+    sda.start <- Sys.Date() - 14
+} else{
+  sda.start <- Sys.Date() - 14
+}
+
 sda.end <- Sys.Date()
 
-#if (!exists("prep.data"))
-prep.data <- prep.data.assim(sda.start, sda.end, numvals = 100, vars = c("NEE", "LE"), data.len = 72) 
-#--------------------------- Preparing OBSdata
+#-----------------------------------------------------------------------------------------------
+#------------------------------------------ Download met and flux ------------------------------
+#-----------------------------------------------------------------------------------------------
+#Fluxes
+if(!exists('prep.data'))
+  prep.data <- prep.data.assim(
+    sda.start - 90,# it needs at least 90 days for gap filling 
+    sda.end,
+    numvals = 100,
+    vars = c("NEE", "LE"),
+    data.len = 168 # This is 7 days
+  ) 
 obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs
+# This line is what makes the SDA to run daily  ***** IMPORTANT CODE OVER HERE
+prep.data<-prep.data %>%
+  discard(~lubridate::hour(.x$Date)!=0)
 
-
+# Finding the right end and start date
 met.start <- obs.raw$Date%>% head(1) %>% lubridate::floor_date(unit = "day")
 met.end <- obs.raw$Date %>% tail(1) %>% lubridate::ceiling_date(unit = "day")
-
-#--------- DOwnloading met
-#met.raw <- download_US_WCr_met(met.start, met.end)
-# Using the found dates to run - this will help to download mets
+#-----------------------------------------------------------------------------------------------
+#------------------------------------------ Fixing the settings --------------------------------
+#-----------------------------------------------------------------------------------------------
+#Using the found dates to run - this will help to download mets
 settings$run$start.date <- as.character(met.start)
 settings$run$end.date <- as.character(met.end)
 #info
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
-#-- Setting the out dir
-settings$outdir <- file.path(outputPath, Sys.time() %>% as.numeric()%>% round)
-print(settings$outdir)
-#--------- Making a plot
-# obs.plot <- obs.raw %>%
-#             tidyr::gather(Param, Value, -c(Date)) %>%
-#             filter(!(Param %in% c("FjDay", "U","Day","DoY","FC","FjFay","Hour","Month",
-#                                   "SC","Ustar","Year","H","Flag")),
-#                    Value!=-999) %>%
-#             #filter((Date %>% as.Date) %in% (names(prep.data) %>% as.Date())) %>%
-#             ggplot(aes(Date, Value)) +
-#             geom_line(aes(color = Param), lwd = 1) +
-#             geom_point(aes(color = Param), size = 3) +
-#             facet_wrap( ~ Param, scales = "free",ncol = 1) +
-#             scale_x_datetime(breaks = scales::date_breaks("1 hour"),labels = scales::date_format("%j-%H"))+
-#             scale_color_brewer(palette = "Set1") +
-#             theme_minimal(base_size = 15) +
-#             labs(y = "") +
-#             theme(legend.position = "none",
-#                   axis.text.x = element_text(angle = 90, hjust = 1))
-# # 
-# # # Make sure you have the premission - chmod is right
-  if (!dir.exists(settings$outdir)) dir.create(settings$outdir)
-#  ggsave(file.path(settings$outdir,"Obs_plot.pdf"), obs.plot , width = 18, height = 10)
-# ----------------------------------------------------------------------
-# PEcAn Workflow
-# ----------------------------------------------------------------------
-
-# Check for additional modules that will require adding settings
-if("benchmarking" %in% names(settings)){
-  library(PEcAn.benchmark)
-  settings <- papply(settings, read_settings_BRR)
-}
-if("sitegroup" %in% names(settings)){
-  if(is.null(settings$sitegroup$nSite)){
-    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id)
-  } else {
-    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id,nSite = settings$sitegroup$nSite)
-  }
-  settings$sitegroup <- NULL ## zero out so don't expand a second time if re-reading
-}
-# Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
+# --------------------------------------------------------------------------------------------------
+#---------------------------------------------- PEcAn Workflow -------------------------------------
+# --------------------------------------------------------------------------------------------------
+#Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
 settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
-# Write pecan.CHECKED.xml
+setwd(settings$outdir)
+ggsave(
+  file.path(settings$outdir, "Obs_plot.pdf"),
+  ploting_fluxes(obs.raw) ,
+  width = 16,
+  height = 9
+)
+
+#Write pecan.CHECKED.xml
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
 # start from scratch if no continue is passed in
 statusFile <- file.path(settings$outdir, "STATUS")
@@ -110,8 +159,6 @@ if (PEcAn.utils::status.check("TRAIT") == 0) {
   settings <-
     PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
 }
-# 
-# 
 # Run the PEcAn meta.analysis
 if (!is.null(settings$meta.analysis)) {
   if (PEcAn.utils::status.check("META") == 0) {
@@ -122,22 +169,10 @@ if (!is.null(settings$meta.analysis)) {
 }
 #sample from parameters used for both sensitivity analysis and Ens
 get.parameter.samples(settings, ens.sample.method = settings$ensemble$samplingspace$parameters$method)
-# 
-# # Write model specific configs
-# # if (PEcAn.utils::status.check("CONFIG") == 0){
-# #   PEcAn.utils::status.start("CONFIG")
-# #   settings <- runModule.run.write.configs(settings)
-# #   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
-# #   PEcAn.utils::status.end()
-# # } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
-# #   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
-# # }
-# # print("---------- Writting Configs Completed ----------")
-setwd(settings$outdir)
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
 settings$state.data.assimilation$start.date <-as.character(met.start)
 settings$state.data.assimilation$end.date <-as.character(met.end - lubridate::hms("06:00:00"))
-# Changing LE to Qle whih what sipnet understands
+# Changing LE to Qle which is what sipnet expects
 prep.data <- prep.data %>%
   map(function(day.data) {
     names(day.data$means)[names(day.data$means) == "LE"] <- "Qle"
@@ -150,26 +185,37 @@ prep.data <- prep.data %>%
     day.data
   })
 
-obs.mean <-prep.data %>% map('means') %>% setNames(names(prep.data))
+obs.mean <- prep.data %>% map('means') %>% setNames(names(prep.data))
 obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
-# 
-# 
-# 
-# # Run state data assimilation
+
+if (nodata) {
+  obs.mean <- obs.mean %>% map(function(x)
+    return(NA))
+  obs.cov <- obs.cov %>% map(function(x)
+    return(NA))
+}
+# --------------------------------------------------------------------------------------------------
+#--------------------------------- Run state data assimilation -------------------------------------
+# --------------------------------------------------------------------------------------------------
+
+unlink(c('run','out','SDA'), recursive = T)
+
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
   PEcAn.assim.sequential::sda.enkf(
       settings,
+      restart=restart.path,
+      Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,
       control = list(
-        trace = T,
-        interactivePlot =F,
-        TimeseriesPlot =T,
-        BiasPlot =F,
-        debug = F,
-        pause=T
+        trace = TRUE,
+        interactivePlot =FALSE,
+        TimeseriesPlot =TRUE,
+        BiasPlot =FALSE,
+        debug = FALSE,
+        pause=FALSE
       )
     )
     PEcAn.utils::status.end()
