@@ -50,7 +50,7 @@ lambertbeer <- function(lai) {
 # for a vegetation individual change.
 allometry <- function(
   # initial allometry/pools
-  lifeform = "TREE", 
+  lifeform, 
   cmass_leaf, 
   cmass_sap, 
   cmass_heart, 
@@ -125,8 +125,9 @@ allometry <- function(
   
   # MF - added for providing the error code
   error.string <- "OK"
+  vol = 0
   
-  if (lifeform == "TREE") {
+  if (lifeform == 1) {
     
     # TREES
     
@@ -143,6 +144,20 @@ allometry <- function(
       
       # Stem volume
       vol = height * pi * diam * diam * 0.25
+      
+      
+      # print("-----------------------------------------------------")
+      # print(paste0("height = ", height))
+      # print(paste0("vol = ", vol))
+      # print(paste0("wooddens = ", wooddens))
+      # print(paste0("densindiv = ", densindiv))
+      # print(paste0("age = ", age))
+      # print(paste0("cmass_heart = ", cmass_heart))
+      # print(paste0("cmass_sap = ", cmass_sap))
+      # print("-----------------------------------------------------")
+      
+      
+      
       
       if (age > 0 & (cmass_heart + cmass_sap) / densindiv / vol < wooddens * 0.9) {
         error.string <- "LowWoodDensity"
@@ -193,7 +208,7 @@ allometry <- function(
   }
   
   # 
-  else if (lifeform == "GRASS") {
+  else if (lifeform == 2) {
     
     # GRASSES
     

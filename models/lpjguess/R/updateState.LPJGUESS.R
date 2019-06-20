@@ -46,14 +46,15 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass
   
   # hard coded veg parameters for testing
   wooddens <- rep(200, 11)
+  crownarea_max <- rep(50, 11)
   lifeform <- c(1,1,1,1,1,1,1,1,1,2,2)
-  k_latosa <- c(5000, 5000,  5000, 6000, 6000,  6000, 6000,6000, 6000, 6000, 6000)
+  k_latosa <- c(5000, 5000, 5000, 6000, 6000,  6000, 6000,6000, 6000, 6000, 6000)
+  k_rp <- rep(1.6, 11)
+  k_allom1 <-  c(150, 150, 150, 250, 250, 250, 250, 250, 250, 250, 250)
   k_allom2 <- rep(60, 11)
   k_allom3 <- rep(0.67, 11)
-  leaflong <- c()
-  leafphysiognomy <- c()
-  
-  # get proper SLA
+
+  # calculate SLA using leaf longevity and leaf physiognomy
   leaflong <- c(3, 3, 0.5, 0.5, 0.5, 3, 2, 2, 0.5, 0.5, 0.5)
   leafphysiognomy <- c("NEEDLELEAF", "NEEDLELEAF",  "NEEDLELEAF", "BROADLEAF", "BROADLEAF",  "BROADLEAF", "BROADLEAF","BROADLEAF", "BROADLEAF", "BROADLEAF", "BROADLEAF")
   sla <- c()
@@ -102,41 +103,42 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass
       # for each individual
       for(individual.counter in 1:this.patch$Vegetation$number_of_individuals) {
         
-        # IMPORTANT: note that this is for convenience to *read* variables from an individual but not write to
-        # it also needs to be updated after the main state (model.state) is updated
-        this.individual <- this.patch$Vegetation$Individuals[[individual.counter]]
+        # IMPORTANT: note that this is for convenience to *read* variables from the original individual 
+        # but it should not be written to.  Instead the 'updated.individual' (defined in the loop below)
+        # should be updated and then used to update the main state (model.state)
+        original.individual <- this.patch$Vegetation$Individuals[[individual.counter]]
         
-        if(this.individual$alive) {
+        if(original.individual$alive) {
           
-          this.pft.id <- this.individual$indiv.pft.id
+          this.pft.id <- original.individual$indiv.pft.id
           #print(paste("PFT id = ", this.pft.id))
           
           if(!this.pft.id %in% active.PFTs) stop(paste0("Found individual of PFT id = ",this.pft.id, 
                                                         " but this doesn't seem to be active in the LPJ-GUESS run"))
           
           
-          # STEP 1 - nudge density of stems by adjusting the "indiv.densindiv" and also scaling the biomass pools appropriately
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$densindiv <- this.individual$densindiv * dens.rel.change[this.pft.id+1]
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_leaf <- this.individual$cmass_leaf * dens.rel.change[this.pft.id+1]
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$nmass_leaf <- this.individual$nmass_leaf * dens.rel.change[this.pft.id+1]
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_root <- this.individual$cmass_root * dens.rel.change[this.pft.id+1]
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$nmass_root <- this.individual$nmass_root * dens.rel.change[this.pft.id+1]
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_sap <- this.individual$cmass_sap * dens.rel.change[this.pft.id+1]
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$nmass_sap <- this.individual$nmass_sap * dens.rel.change[this.pft.id+1]
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_heart <- this.individual$cmass_heart * dens.rel.change[this.pft.id+1]
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$nmass_heart <- this.individual$nmass_heart * dens.rel.change[this.pft.id+1]
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_debt <- this.individual$cmass_debt * dens.rel.change[this.pft.id+1]
+          updated.individual <- original.individual
           
-          # IMPORTANT: update the this.individual to include the density adjustments above
-          this.individual <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]
-          
-          
+          # STEP 1 - nudge density of stems by adjusting the "densindiv" and also scaling the biomass pools appropriately
+          updated.individual$densindiv <- original.individual$densindiv * dens.rel.change[this.pft.id+1]
+          updated.individual$cmass_leaf <- original.individual$cmass_leaf * dens.rel.change[this.pft.id+1]
+          updated.individual$nmass_leaf <- original.individual$nmass_leaf * dens.rel.change[this.pft.id+1]
+          updated.individual$cmass_root <- original.individual$cmass_root * dens.rel.change[this.pft.id+1]
+          updated.individual$nmass_root <- original.individual$nmass_root * dens.rel.change[this.pft.id+1]
+          updated.individual$cmass_sap <- original.individual$cmass_sap * dens.rel.change[this.pft.id+1]
+          updated.individual$nmass_sap <- original.individual$nmass_sap * dens.rel.change[this.pft.id+1]
+          updated.individual$cmass_heart <- original.individual$cmass_heart * dens.rel.change[this.pft.id+1]
+          updated.individual$nmass_heart <- original.individual$nmass_heart * dens.rel.change[this.pft.id+1]
+          updated.individual$cmass_debt <- original.individual$cmass_debt * dens.rel.change[this.pft.id+1]
+
           # STEP 2 - nudge biomass by performing the LPJ-GUESS allocation routine
           
-          # calculate the total biomass and the absolute change based on this
-          biomass.total <- this.individual$cmass_leaf+this.individual$cmass_root+this.individual$cmass_heart+this.individual$cmass_sap-this.individual$cmass_debt
+          # calculate the total biomass (after the densindiv nudging above) and the absolute change based on this
+          biomass.total <- updated.individual$cmass_leaf+updated.individual$cmass_root+updated.individual$cmass_heart+updated.individual$cmass_sap-updated.individual$cmass_debt
           biomass.inc <- (biomass.total * biomass.rel.change[this.pft.id+1]) - biomass.total
           
+          # dummy input values to the allocation function below
+          # note that they are not actually updated by the function, the updated values are in the returned list
           cmass_leaf_inc <- 0
           cmass_root_inc <- 0
           cmass_sap_inc <- 0 
@@ -146,23 +148,20 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass
           litter_root_inc <- 0
           exceeds_cmass <- 0
           
-          
-          #print(this.individual$cmass_leaf/)
-          
           updated.pools <- allocation(
             # vegetation state
-            bminc = as.numeric(biomass.inc/this.individual$densindiv),
-            cmass_leaf = as.numeric(this.individual$cmass_leaf/this.individual$densindiv),              
-            cmass_root = as.numeric(this.individual$cmass_root/this.individual$densindiv),
-            cmass_sap = as.numeric(this.individual$cmass_sap/this.individual$densindiv),
-            cmass_debt  = as.numeric(this.individual$cmass_debt/this.individual$densindiv),
-            cmass_heart = as.numeric(this.individual$cmass_heart/this.individual$densindiv),
-            ltor = as.numeric(this.individual$ltor),
-            height = as.numeric(this.individual$height),
+            bminc = as.numeric(biomass.inc/updated.individual$densindiv),
+            cmass_leaf = as.numeric(updated.individual$cmass_leaf/updated.individual$densindiv),              
+            cmass_root = as.numeric(updated.individual$cmass_root/updated.individual$densindiv),
+            cmass_sap = as.numeric(updated.individual$cmass_sap/updated.individual$densindiv),
+            cmass_debt  = as.numeric(updated.individual$cmass_debt/updated.individual$densindiv),
+            cmass_heart = as.numeric(updated.individual$cmass_heart/updated.individual$densindiv),
+            ltor = as.numeric(updated.individual$ltor),
+            height = as.numeric(updated.individual$height),
             # PFT parameters
             sla = as.numeric(sla[this.pft.id+1]),
             wooddens = as.numeric(wooddens[this.pft.id+1]),
-            lifeform = as.integer(lifeform[this.pft.id+1]), # BLARP
+            lifeform = as.integer(lifeform[this.pft.id+1]),
             k_latosa = as.numeric(k_latosa[this.pft.id+1]),
             k_allom2 = as.numeric(k_allom2[this.pft.id+1]),
             k_allom3 = as.numeric(k_allom3[this.pft.id+1]),
@@ -180,54 +179,51 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass
           # STEP 3 - adjust the various associated C (and N) pools based on the results of the previous step
           
           # leaf
-          original.cmass_leaf <- this.individual$cmass_leaf
-          new.cmass_leaf <- this.individual$cmass_leaf + (updated.pools[["cmass_leaf_inc"]] * this.individual$densindiv)
+          original.cmass_leaf <- updated.individual$cmass_leaf
+          new.cmass_leaf <- updated.individual$cmass_leaf + (updated.pools[["cmass_leaf_inc"]] * updated.individual$densindiv)
           leaf.scaling <- new.cmass_leaf / original.cmass_leaf
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_leaf <- new.cmass_leaf
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$nmass_leaf <- this.individual$nmass_leaf * leaf.scaling
+          updated.individual$cmass_leaf <- new.cmass_leaf
+          updated.individual$nmass_leaf <- updated.individual$nmass_leaf * leaf.scaling
           
           # root
-          original.cmass_root <- this.individual$cmass_root
-          new.cmass_root <- this.individual$cmass_root + (updated.pools[["cmass_root_inc"]] * this.individual$densindiv)
+          original.cmass_root <- updated.individual$cmass_root
+          new.cmass_root <- updated.individual$cmass_root + (updated.pools[["cmass_root_inc"]] * updated.individual$densindiv)
           root.scaling <- new.cmass_root / original.cmass_root
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_root <- new.cmass_root
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$nmass_root <- this.individual$nmass_root * root.scaling
+          updated.individual$cmass_root <- new.cmass_root
+          updated.individual$nmass_root <- updated.individual$nmass_root * root.scaling
           
           # sap
-          original.cmass_sap <- this.individual$cmass_sap
-          new.cmass_sap <- this.individual$cmass_sap + (updated.pools[["cmass_sap_inc"]] * this.individual$densindiv)
+          original.cmass_sap <- updated.individual$cmass_sap
+          new.cmass_sap <- updated.individual$cmass_sap + (updated.pools[["cmass_sap_inc"]] * updated.individual$densindiv)
           sap.scaling <- new.cmass_sap / original.cmass_sap
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_sap <- new.cmass_sap
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$nmass_sap <- this.individual$nmass_sap * sap.scaling
-          
+          updated.individual$cmass_sap <- new.cmass_sap
+          updated.individual$nmass_sap <- updated.individual$nmass_sap * sap.scaling
           
           # heart
-          original.cmass_heart <- this.individual$cmass_heart
-          new.cmass_heart <- this.individual$cmass_heart + (updated.pools[["cmass_heart_inc"]] * this.individual$densindiv)
+          original.cmass_heart <- updated.individual$cmass_heart
+          new.cmass_heart <- updated.individual$cmass_heart + (updated.pools[["cmass_heart_inc"]] * updated.individual$densindiv)
           heart.scaling <- new.cmass_heart / original.cmass_heart
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_heart <- new.cmass_heart
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$nmass_heart <- this.individual$nmass_heart * heart.scaling
+          updated.individual$cmass_heart <- new.cmass_heart
+          updated.individual$nmass_heart <- updated.individual$nmass_heart * heart.scaling
           
           # debt - no equivalant n debt
-          original.cmass_debt <- this.individual$cmass_debt
-          new.cmass_debt <- this.individual$cmass_debt + (updated.pools[["cmass_debt_inc"]] * this.individual$densindiv)
-          model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]$cmass_debt <- new.cmass_debt
+          original.cmass_debt <- updated.individual$cmass_debt
+          new.cmass_debt <- updated.individual$cmass_debt + (updated.pools[["cmass_debt_inc"]] * updated.individual$densindiv)
+          updated.individual$cmass_debt <- new.cmass_debt
           
-          # IMPORTANT: update the this.individual to after biomass changes above before the checks
-          this.individual <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]]
-          
+        
           # checks
           if(FALSE) {
             
-            biomass.final <- this.individual$cmass_leaf+this.individual$cmass_root+this.individual$cmass_heart+this.individual$cmass_sap-this.individual$cmass_debt
+            biomass.final <- updated.individual$cmass_leaf+updated.individual$cmass_root+updated.individual$cmass_heart+updated.individual$cmass_sap-updated.individual$cmass_debt
             if(abs((biomass.final/biomass.total) - 1.1) < 0.001) {
               print("--- okay ---")
             }
             else {
               print("--- not okay ---")
             }
-            print(this.individual$indiv.pft.id)
-            lifeform[this.individual$indiv.pft.id+1]
+            print(updated.individual$indiv.pft.id)
+            print(lifeform[updated.individual$indiv.pft.id+1])
             print(biomass.final/biomass.total)
             print(unlist(updated.pools))
             print("--- end ---")
@@ -237,6 +233,34 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass
           # STEP 5 - adjust the allometry of the individual based on the updated pools
           # QUESTION: what to do if allometry returns FALSE?
           
+          allometry.results <- allometry(
+            # initial allometry/pools
+            cmass_leaf = updated.individual$cmass_leaf, 
+            cmass_sap = updated.individual$cmass_sap, 
+            cmass_heart = updated.individual$cmass_heart, 
+            densindiv = updated.individual$densindiv, 
+            age = updated.individual$age, 
+            fpc = updated.individual$fpc,
+            deltafpc = updated.individual$deltafpc,
+            # parameter values
+            lifeform = lifeform[this.pft.id+1], 
+            sla = sla[this.pft.id+1], 
+            k_latosa = k_latosa[this.pft.id+1], 
+            k_rp = k_rp[this.pft.id+1],
+            k_allom1 = k_allom1[this.pft.id+1],
+            k_allom2 = k_allom2[this.pft.id+1], 
+            k_allom3 = k_allom3[this.pft.id+1], 
+            wooddens = wooddens[this.pft.id+1],
+            crownarea_max = crownarea_max[this.pft.id+1]) 
+          
+            # if not okay print a warning, and should actually start another iteration with new multipliers
+            if(allometry.results$error.string != "OK") {
+              print(allometry.results$error.string)
+            }
+            # else update the individual, the litter pools and break
+            else {
+              model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]] <- updated.individual
+            }
           
           
         }
