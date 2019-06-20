@@ -53,11 +53,7 @@ sda.enkf <- function(settings,
   # Site location first col is the long second is the lat and row names are the site ids
   site.ids <- settings$run$site$id
     
-  site.locs <- data.frame(Lon=settings$run$site$lon %>% as.numeric,
-                          Lat=settings$run$site$lat %>% as.numeric) %>%
-    `colnames<-`(c("Lon","Lat")) %>%
-    `rownames<-`(site.ids)
-  
+
   if (!is.null(restart)) {
     start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)-1
     Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date)-1)
@@ -458,7 +454,6 @@ sda.enkf <- function(settings,
     Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
     
     save(
-      site.locs,
       t,
       X,
       FORECAST,
