@@ -28,7 +28,7 @@ if (is.na(args[2])){
 if (is.na(args[3])){
   xmlTempName <-"gefs.sipnet.template.xml"
 } else {
-  xmlTempName <- args[2]
+  xmlTempName <- args[3]
 }
 setwd(outputPath)
 #------------------------------------------------------------------------------------------------
