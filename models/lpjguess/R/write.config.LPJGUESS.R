@@ -98,7 +98,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   
   guessins  <- readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
   paramsins <- readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
-  pftindx   <- 152:222 # should grab automatically
+  pftindx   <- 152:223 # should grab automatically
   pftblock  <- paramsins[pftindx] # lines with pft params
   
   # cp the grid indices file
@@ -115,7 +115,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   
   # these are strings, should they be passed via xml?
   # e.g. defaults lifeform=tree phenology=evergreen leafphysiognomy=broadleaf landcover=natural pathway=c3
-  noprior_params <- c("lifeform", "phenology", "leafphysiognomy", "landcover", "pathway")
+  noprior_params <- c("lifeform", "landcover", "pathway")
   
   write2pftblock <-  vector("list", length(settings$pfts))
   # write params with values from trait.values
@@ -228,6 +228,28 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
 #' @author Istem Fer
 pecan2lpjguess <- function(trait.values){
   
+  # leafphysiognomy and phenology are special cases
+  # these are binary flags
+  ph_params <- c("evergreen", "cold_deciduous", "broad_leaved")
+  if(any(ph_params %in% unlist(lapply(trait.values, names)))){
+    for(i in seq_along(trait.values)){
+      if("evergreen" %in% names(trait.values[[i]])){
+        # "any" might be unexpected here, grasses can be "any" phenology
+        trait.values[[i]][names(trait.values[[i]]) == "evergreen"] <- ifelse(trait.values[[i]][names(trait.values[[i]]) == "evergreen"], "evergreen", "any")
+        names(trait.values[[i]])[names(trait.values[[i]]) == "evergreen"] <- "phenology"
+      }
+      if("cold_deciduous" %in% names(trait.values[[i]])){
+        trait.values[[i]][names(trait.values[[i]]) == "cold_deciduous"] <- ifelse(trait.values[[i]][names(trait.values[[i]]) == "cold_deciduous"], "summergreen", "raingreen")
+        names(trait.values[[i]])[names(trait.values[[i]]) == "cold_deciduous"] <- "phenology"
+      }
+      if("broad_leaved" %in% names(trait.values[[i]])){
+        trait.values[[i]][names(trait.values[[i]]) == "broad_leaved"] <- ifelse(trait.values[[i]][names(trait.values[[i]]) == "broad_leaved"], "broadleaf", "needleleaf")
+        names(trait.values[[i]])[names(trait.values[[i]]) == "broad_leaved"] <- "leafphysiognomy"
+      }
+    }
+  }
+  
+  
   # TODO :match all lpjguess and pecan names
   vartable <- tibble::tribble(
     ~pecanname, ~lpjguessname, ~pecanunits, ~lpjguessunits, 
@@ -289,7 +311,11 @@ pecan2lpjguess <- function(trait.values){
     "eps_iso", "eps_iso", NA, NA,
     "seas_iso", "seas_iso", NA, NA,
     "eps_mon", "eps_mon", NA, NA,
-    "storfrac_mon", "storfrac_mon", NA, NA)
+    "storfrac_mon", "storfrac_mon", NA, NA,
+    "minmoist_est", "minmoist_est", NA, NA,
+    "phenology", "phenology", NA, NA, # these two lines are hacks
+    "leafphysiognomy", "leafphysiognomy", NA, NA
+    )
   
   trait.values <- lapply(trait.values, function(x){
     names(x) <- vartable$lpjguessname[match(names(x), vartable$pecanname)]
