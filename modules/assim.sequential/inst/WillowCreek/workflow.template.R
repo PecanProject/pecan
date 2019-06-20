@@ -28,7 +28,7 @@ if (is.na(args[2])){
 if (is.na(args[3])){
   xmlTempName <-"gefs.sipnet.template.xml"
 } else {
-  xmlTempName <- args[2]
+  xmlTempName <- args[3]
 }
 setwd(outputPath)
 #------------------------------------------------------------------------------------------------
@@ -212,7 +212,7 @@ if ('state.data.assimilation' %in% names(settings)) {
         interactivePlot =FALSE,
         TimeseriesPlot =TRUE,
         BiasPlot =FALSE,
-        debug = FALSE,
+        debug = TRUE,
         pause=FALSE
       )
     )
