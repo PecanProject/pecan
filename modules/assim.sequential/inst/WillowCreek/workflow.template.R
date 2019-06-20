@@ -49,7 +49,6 @@ settings <- read.settings(system.file("WillowCreek",
                                       xmlTempName,
                                       package ="PEcAn.assim.sequential" ))
 
-#settings <- read.settings('/home/hamzed/R/library/PEcAn.assim.sequential/WillowCreek/gefs.sipnet.template.xml')
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 
@@ -61,23 +60,34 @@ all.previous.sims <- list.dirs(outputPath, recursive = F)
 
 if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
   
-  # Looking through all the old simulations and find the most recent
-  all.previous.sims <- all.previous.sims %>%
-    map(~ list.files(path = file.path(.x, "SDA"))) %>%
-    setNames(all.previous.sims) %>%
-    discard( ~ !"sda.output.Rdata" %in% .x) # I'm throwing out the ones that they did not have a SDA output
-  
-  sda.start <-
-    names(all.previous.sims) %>%  
-    map_chr( ~ strsplit(.x, "_")[[1]][2]) %>%
-    map_dfr(~ db.query(
-      query = paste("SELECT started_at FROM workflows WHERE id =", .x),
-      con = con
-    )) %>%
-    mutate(started_at = as.Date(started_at)) %>%
-    arrange(desc(started_at)) %>%
-    head(1) %>%
-    pull
+  tryCatch({
+    # Looking through all the old simulations and find the most recent
+    all.previous.sims <- all.previous.sims %>%
+      map(~ list.files(path = file.path(.x, "SDA"))) %>%
+      setNames(all.previous.sims) %>%
+      discard( ~ !"sda.output.Rdata" %in% .x) # I'm throwing out the ones that they did not have a SDA output
+    
+    last.sim <-
+      names(all.previous.sims) %>%  
+      map_chr( ~ strsplit(.x, "_")[[1]][2]) %>%
+      map_dfr(~ db.query(
+        query = paste("SELECT started_at FROM workflows WHERE id =", .x),
+        con = con
+      ) %>% 
+        mutate(ID=.x)) %>%
+      mutate(started_at = as.Date(started_at)) %>%
+      arrange(desc(started_at)) %>%
+      head(1)
+    # pulling the date and the path to the last SDA
+    restart.path <-grep(last.sim$ID, names(all.previous.sims), value = T)
+    sda.start <- last.sim$started_at
+    },
+    error = function(e) {
+      restart.path <- NULL
+      sda.start <- Sys.Date() - 14
+      PEcAn.logger::logger.warn(paste0("There was a problem with finding the last successfull SDA.",conditionMessage(e)))
+      })
+
   # if there was no older sims
   if (is.na(sda.start))
     sda.start <- Sys.Date() - 14
@@ -93,7 +103,7 @@ sda.end <- Sys.Date()
 #Fluxes
 if(!exists('prep.data'))
   prep.data <- prep.data.assim(
-    sda.start - 90,
+    sda.start - 90,# it needs at least 90 days for gap filling 
     sda.end,
     numvals = 100,
     vars = c("NEE", "LE"),
@@ -195,7 +205,7 @@ if ('state.data.assimilation' %in% names(settings)) {
     PEcAn.utils::status.start("SDA")
   PEcAn.assim.sequential::sda.enkf(
       settings,
-      restart="/fs/data3/kzarada/ouput/PEcAn_1000010465",
+      restart=restart.path,
       Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,
