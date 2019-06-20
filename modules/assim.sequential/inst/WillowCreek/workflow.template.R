@@ -16,13 +16,19 @@ args <- commandArgs(trailingOnly = TRUE)
 if (is.na(args[1])){
   outputPath <- "/fs/data3/kzarada/ouput"
 } else {
-  outputPath = args[1]
+  outputPath <- args[1]
 }
 
 if (is.na(args[2])){
+  nodata <- FALSE
+} else {
+  nodata <-as.logical(args[2])
+}
+
+if (is.na(args[3])){
   xmlTempName <-"gefs.sipnet.template.xml"
 } else {
-  xmlTempName = args[2]
+  xmlTempName <- args[2]
 }
 setwd(outputPath)
 #------------------------------------------------------------------------------------------------
@@ -51,21 +57,32 @@ con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 #------------------------------------------ Preparing the pecan xml -----------------------------
 #------------------------------------------------------------------------------------------------
 #--------------------------- Finding old sims
-all.previous.sims <-list.dirs(outputPath, recursive = F)
+all.previous.sims <- list.dirs(outputPath, recursive = F)
 
-if (length(all.previous.sims)>0 & !inherits(con, "try-error")){
+if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
+  
   # Looking through all the old simulations and find the most recent
-  sda.start <-all.previous.sims %>%
+  all.previous.sims <- all.previous.sims %>%
+    map(~ list.files(path = file.path(.x, "SDA"))) %>%
+    setNames(all.previous.sims) %>%
+    discard( ~ !"sda.output.Rdata" %in% .x) # I'm throwing out the ones that they did not have a SDA output
+  
+  sda.start <-
+    names(all.previous.sims) %>%  
     map_chr( ~ strsplit(.x, "_")[[1]][2]) %>%
-    map_dfr(~db.query(query = paste("SELECT started_at FROM workflows WHERE id =", .x), con = con)) %>%
-    mutate(started_at=as.Date(started_at)) %>% 
+    map_dfr(~ db.query(
+      query = paste("SELECT started_at FROM workflows WHERE id =", .x),
+      con = con
+    )) %>%
+    mutate(started_at = as.Date(started_at)) %>%
     arrange(desc(started_at)) %>%
     head(1) %>%
     pull
   # if there was no older sims
-  if (is.na(sda.start))  sda.start <-Sys.Date()-14
-}else{
-  sda.start <-Sys.Date()-14
+  if (is.na(sda.start))
+    sda.start <- Sys.Date() - 14
+} else{
+  sda.start <- Sys.Date() - 14
 }
 
 sda.end <- Sys.Date()
@@ -84,17 +101,13 @@ if(!exists('prep.data'))
   ) 
 obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs
-# This line is what makes the SDA to run daily
+# This line is what makes the SDA to run daily  ***** IMPORTANT CODE OVER HERE
 prep.data<-prep.data %>%
   discard(~lubridate::hour(.x$Date)!=0)
-
 
 # Finding the right end and start date
 met.start <- obs.raw$Date%>% head(1) %>% lubridate::floor_date(unit = "day")
 met.end <- obs.raw$Date %>% tail(1) %>% lubridate::ceiling_date(unit = "day")
-
-#Downloading met
-#met.raw <- download_US_WCr_met(met.start, met.end)
 #-----------------------------------------------------------------------------------------------
 #------------------------------------------ Fixing the settings --------------------------------
 #-----------------------------------------------------------------------------------------------
@@ -109,7 +122,12 @@ settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 #Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
 settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
 setwd(settings$outdir)
-ggsave(file.path(settings$outdir,"Obs_plot.pdf"), ploting_fluxes(obs.raw) , width = 18, height = 10)
+ggsave(
+  file.path(settings$outdir, "Obs_plot.pdf"),
+  ploting_fluxes(obs.raw) ,
+  width = 16,
+  height = 9
+)
 
 #Write pecan.CHECKED.xml
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
@@ -144,7 +162,7 @@ get.parameter.samples(settings, ens.sample.method = settings$ensemble$samplingsp
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
 settings$state.data.assimilation$start.date <-as.character(met.start)
 settings$state.data.assimilation$end.date <-as.character(met.end - lubridate::hms("06:00:00"))
-# Changing LE to Qle whih what sipnet understands
+# Changing LE to Qle which is what sipnet expects
 prep.data <- prep.data %>%
   map(function(day.data) {
     names(day.data$means)[names(day.data$means) == "LE"] <- "Qle"
@@ -157,13 +175,15 @@ prep.data <- prep.data %>%
     day.data
   })
 
-obs.mean <-prep.data %>% map('means') %>% setNames(names(prep.data))
+obs.mean <- prep.data %>% map('means') %>% setNames(names(prep.data))
 obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 
-# if (TRUE) {
-#   obs.mean <- obs.mean %>% map(function(x)return(NA))
-#   obs.cov <- obs.cov %>% map(function(x)return(NA))
-# }
+if (nodata) {
+  obs.mean <- obs.mean %>% map(function(x)
+    return(NA))
+  obs.cov <- obs.cov %>% map(function(x)
+    return(NA))
+}
 # --------------------------------------------------------------------------------------------------
 #--------------------------------- Run state data assimilation -------------------------------------
 # --------------------------------------------------------------------------------------------------

@@ -160,40 +160,42 @@ sda.enkf <- function(settings,
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###   
-  if (control$debug) browser()
-  if (!is.null(restart)){
+  if (control$debug)
+    browser()
+  if (!is.null(restart)) {
+    if (!file.exists(file.path(restart, "SDA", "sda.output.Rdata")))
+      PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
+    load(file.path(restart, "SDA", "sda.output.Rdata"))
     
-    if(!file.exists( file.path(restart,"SDA","sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
-    load( file.path(restart,"SDA","sda.output.Rdata"))
-   
     #this is where the old simulation will be moved to
-    old.dir <- lubridate::ymd_hms(names(Viz.output[[3]]) %>% tail(1)) %>% as.character()
+    old.dir <-
+      lubridate::ymd_hms(names(Viz.output[[3]]) %>% tail(1)) %>% as.character()
     #--- Updating the nt and etc
-    if(!dir.exists(file.path(settings$outdir,"SDA",old.dir))) dir.create(file.path(settings$outdir,"SDA",old.dir))
+    if (!dir.exists(file.path(settings$outdir, "SDA", old.dir)))
+      dir.create(file.path(settings$outdir, "SDA", old.dir))
     #copying-----
     #SDA
-    file.copy( file.path(restart,"SDA","sda.output.Rdata"),
-              file.path(file.path(settings$outdir,"SDA",old.dir)
-                        )
-    )
+    file.copy(file.path(restart, "SDA", "sda.output.Rdata"),
+              file.path(file.path(settings$outdir, "SDA", old.dir)))
     #run folder
-    if(!dir.exists(file.path(settings$outdir,"run"))) dir.create(file.path(settings$outdir,"run"))
-    file.copy(file.path(restart,"run"),
-               file.path(file.path(settings$outdir)
-               ), recursive=TRUE
-    )
-
+    if (!dir.exists(file.path(settings$outdir, "run")))
+      dir.create(file.path(settings$outdir, "run"))
+    file.copy(file.path(restart, "run"),
+              file.path(file.path(settings$outdir)),
+              recursive = TRUE)
     
-    params<-new.params
-    sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
-    X <-FORECAST[[length(FORECAST)]]
+    
+    params <- new.params
+    sim.time <-
+      2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
+    X <- FORECAST[[length(FORECAST)]]
     #------------- Keeping the last ones
     enkf.params <- enkf.params[length(enkf.params)]
-    ANALYSIS <- ANALYSIS[length(ANALYSIS)] 
-    FORECAST <- FORECAST[length(FORECAST)]   
+    ANALYSIS <- ANALYSIS[length(ANALYSIS)]
+    FORECAST <- FORECAST[length(FORECAST)]
     
-  }else{
-    sim.time<-seq_len(nt)
+  } else{
+    sim.time <- seq_len(nt)
   }
   
   ###------------------------------------------------------------------------------------------------###
@@ -213,72 +215,91 @@ sda.enkf <- function(settings,
     # plus in t>1 we split the met data for the models that they need that.
     if (t>1){
       #removing old simulations
-      unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
+      unlink(list.files(outdir, "*.nc", recursive = T, full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- list()
-      if(!no_split){
-   
-        for(i in seq_len(nens)){
+      if (!no_split) {
+        for (i in seq_len(nens)) {
           #---------------- model specific split inputs
-          inputs.split$samples[i] <-do.call(my.split_inputs, 
-                                            args = list(settings = settings, 
-                                                        start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3,tz="UTC")), 
-                                                        stop.time = (lubridate::ymd_hms(obs.times[t],truncated = 3,tz="UTC")),
-                                                        inputs = inputs$samples[[i]])) 
+          inputs.split$samples[i] <- do.call(
+            my.split_inputs,
+            args = list(
+              settings = settings,
+              start.time = (lubridate::ymd_hms(
+                obs.times[t - 1], truncated = 3, tz = "UTC"
+              )),
+              stop.time = (lubridate::ymd_hms(
+                obs.times[t], truncated = 3, tz = "UTC"
+              )),
+              inputs = inputs$samples[[i]]
+            )
+          )
           
-
-        } 
-      }else{
-        inputs.split<-inputs
+          
+        }
+      } else{
+        inputs.split <- inputs
       }
       #---------------- setting up the restart argument
-      restart.arg<-list(runid = run.id, 
-                        start.time = lubridate::ymd_hms(obs.times[t-1],truncated = 3), # The reason I'm changing is that at the midnight POSIXct removes the hours and then this (strptime(,format="%Y-%m-%d %H:%M:%S")) throws a NA,
-                        stop.time = lubridate::ymd_hms(obs.times[t],truncated = 3), #strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"), 
-                        settings = settings,
-                        new.state = new.state, 
-                        new.params = new.params, 
-                        inputs = inputs.split, 
-                        RENAME = TRUE,
-                        ensemble.id=ensemble.id)
+      restart.arg <- list(
+        runid = run.id,
+        start.time = lubridate::ymd_hms(obs.times[t - 1], truncated = 3),
+        # The reason I'm changing is that at the midnight POSIXct removes the hours and then this (strptime(,format="%Y-%m-%d %H:%M:%S")) throws a NA,
+        stop.time = lubridate::ymd_hms(obs.times[t], truncated = 3),
+        #strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"),
+        settings = settings,
+        new.state = new.state,
+        new.params = new.params,
+        inputs = inputs.split,
+        RENAME = TRUE,
+        ensemble.id = ensemble.id
+      )
       
     }else{
       restart.arg <- NULL
     }
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
-    outconfig <- write.ensemble.configs(defaults = settings$pfts, 
-                                        ensemble.samples = ensemble.samples, 
-                                        settings = settings,
-                                        model = settings$model$type, 
-                                        write.to.db = settings$database$bety$write,
-                                        restart = restart.arg)
+    outconfig <- write.ensemble.configs(
+      defaults = settings$pfts,
+      ensemble.samples = ensemble.samples,
+      settings = settings,
+      model = settings$model$type,
+      write.to.db = settings$database$bety$write,
+      restart = restart.arg
+    )
     
     
     run.id <- outconfig$runs$id
     ensemble.id <- outconfig$ensemble.id
-    if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+    if (t == 1)
+      inputs <-
+      outconfig$samples$met # for any time after t==1 the met is the splitted met
     #-------------------------------------------- RUN
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     if (control$debug) browser()
     #------------------------------------------- Reading the output
-    X_tmp <- vector("list", 2) 
+    X_tmp <- vector("list", 2)
     X <- list()
-    if (control$debug) browser()
+    if (control$debug)
+      browser()
     for (i in seq_len(nens)) {
-     
-      X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
-                                                         runid = run.id[i], 
-                                                         stop.time = obs.times[t], 
-                                                         settings = settings, 
-                                                         var.names = var.names, 
-                                                         params = new.params[[i]]
-                                                         )
-                            )
-
+      X_tmp[[i]] <- do.call(
+        my.read_restart,
+        args = list(
+          outdir = outdir,
+          runid = run.id[i],
+          stop.time = obs.times[t],
+          settings = settings,
+          var.names = var.names,
+          params = new.params[[i]]
+        )
+      )
+      
       # states will be in X, but we also want to carry some deterministic relationships to write_restart
       # these will be stored in params
       X[[i]]      <- X_tmp[[i]]$X
-      if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
+      if (!is.null(X_tmp[[i]]$params))
+        new.params[[i]] <- X_tmp[[i]]$params
       
     }
     
@@ -289,19 +310,28 @@ sda.enkf <- function(settings,
     ###  preparing OBS                                                    ###
     ###-------------------------------------------------------------------###---- 
     if (any(obs)) {
-      # finding obs data 
-      choose <- sapply(colnames(X), agrep, x=names(obs.mean[[t]]), max=1, USE.NAMES = F) %>% unlist
-
-      # droping the ones that their means are zero 
+      # finding obs data
+      choose <-
+        sapply(
+          colnames(X),
+          agrep,
+          x = names(obs.mean[[t]]),
+          max = 1,
+          USE.NAMES = F
+        ) %>% unlist
+      
+      # droping the ones that their means are zero
       na.obs.mean <- which(is.na(unlist(obs.mean[[t]][choose])))
-      if (length(na.obs.mean)>0) choose <- choose [-na.obs.mean]
+      if (length(na.obs.mean) > 0)
+        choose <- choose [-na.obs.mean]
       
       Y <- unlist(obs.mean[[t]][choose])
       
-      R <- as.matrix(obs.cov[[t]][choose,choose])
-      R[is.na(R)]<-0.1
+      R <- as.matrix(obs.cov[[t]][choose, choose])
+      R[is.na(R)] <- 0.1
       
-      if (control$debug) browser()
+      if (control$debug)
+        browser()
       
       # making the mapping matrix
       H <- Construct_H(choose, Y, X)
@@ -310,16 +340,18 @@ sda.enkf <- function(settings,
       ###-------------------------------------------------------------------###----
       if(processvar == FALSE){an.method<-EnKF  }else{    an.method<-GEF   }  
       #-analysis function
-      enkf.params[[t]] <- Analysis.sda(settings,
-                                       FUN=an.method,
-                                       Forecast=list(Q=Q, X=X),
-                                       Observed=list(R=R, Y=Y),
-                                       H=H,
-                                       extraArg=list(aqq=aqq, bqq=bqq, t=t),
-                                       nt=nt,
-                                       obs.mean=obs.mean,
-                                       obs.cov=obs.cov
-                                       
+      enkf.params[[t]] <- Analysis.sda(
+        settings,
+        FUN = an.method,
+        Forecast = list(Q = Q, X = X),
+        Observed = list(R = R, Y = Y),
+        H = H,
+        extraArg = list(aqq = aqq, bqq =
+                          bqq, t = t),
+        nt = nt,
+        obs.mean = obs.mean,
+        obs.cov = obs.cov
+        
       )
       #Reading back mu.f/Pf and mu.a/Pa
       #Forecast
@@ -329,19 +361,22 @@ sda.enkf <- function(settings,
       Pa <- enkf.params[[t]]$Pa
       mu.a <- enkf.params[[t]]$mu.a
       
-      diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
+      diag(Pf)[which(diag(Pf) == 0)] <-
+        0.1 ## hack for zero variance
       #extracting extra outputs
       if (processvar) {
-        aqq<-enkf.params[[t]]$aqq
-        bqq<-enkf.params[[t]]$bqq
-        X.new<-enkf.params[[t]]$X.new
+        aqq <- enkf.params[[t]]$aqq
+        bqq <- enkf.params[[t]]$bqq
+        X.new <- enkf.params[[t]]$X.new
       }
       ###-------------------------------------------------------------------###
       ### Trace                                                             ###
       ###-------------------------------------------------------------------###----      
       #-- writing Trace--------------------
-      if(control$trace) {
-        PEcAn.logger::logger.info ("\n --------------------------- ",obs.year," ---------------------------\n")
+      if (control$trace) {
+        PEcAn.logger::logger.info ("\n --------------------------- ",
+                                   obs.year,
+                                   " ---------------------------\n")
         PEcAn.logger::logger.info ("\n --------------Obs mean----------- \n")
         print(Y)
         PEcAn.logger::logger.info ("\n --------------Obs Cov ----------- \n")
