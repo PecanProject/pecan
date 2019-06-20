@@ -14,11 +14,9 @@
     <min_value>-9999</min_value>
     <max_value>9999</max_value>
    </variable>
-<<<<<<< HEAD
    <variable>
     <variable.name>TotSoilCarb</variable.name>
     <unit>KgC/m^2</unit>
-=======
     <variable>
     <variable.name>Qle</variable.name>
     <unit>MW/m2</unit>
@@ -28,12 +26,10 @@
   <variable>
    <variable.name>SoilMoistFrac</variable.name>
    <unit>m/m</unit>
->>>>>>> b2502138928d03585677f39c8d67d9d94b709f7f
     <min_value>0</min_value>
     <max_value>9999</max_value>
    </variable>
    <variable>
-<<<<<<< HEAD
     <variable.name>SoilMoistFrac</variable.name>
     <unit></unit>
     <min_value>0</min_value>
@@ -45,7 +41,6 @@
     <min_value>0</min_value>
     <max_value>9999</max_value>
    </variable>
-=======
   <variable.name>SWE</variable.name>
   <unit>kg/m^2</unit>
   <min_value>0</min_value>
@@ -57,7 +52,6 @@
   <min_value>0</min_value>
   <max_value>9999</max_value>
   </variable>
->>>>>>> b2502138928d03585677f39c8d67d9d94b709f7f
   </state.variables>
   <forecast.time.step>year</forecast.time.step>
   <start.date>2017-01-01</start.date>
@@ -77,21 +71,15 @@
    <host>psql-pecan.bu.edu</host>
    <dbname>bety</dbname>
    <driver>PostgreSQL</driver>
-<<<<<<< HEAD
    <write>true</write>
-=======
    <write>TRUE</write>
->>>>>>> b2502138928d03585677f39c8d67d9d94b709f7f
   </bety>
   <dbfiles>/fs/data3/kzarada/pecan.data/dbfiles/</dbfiles>
  </database>
  <pfts>
   <pft>
-<<<<<<< HEAD
    <name>temperate.coniferous</name>
-=======
    <name>temperate.deciduous</name>
->>>>>>> b2502138928d03585677f39c8d67d9d94b709f7f
    <constants>
     <num>1</num>
    </constants>
