@@ -4,9 +4,9 @@
 \alias{allometry}
 \title{LPJ-GUESS allometry}
 \usage{
-allometry(lifeform = "TREE", cmass_leaf, cmass_sap, cmass_heart,
-  densindiv, age, fpc, deltafpc, sla, k_latosa, k_rp, k_allom1, k_allom2,
-  k_allom3, wooddens, crownarea_max)
+allometry(lifeform, cmass_leaf, cmass_sap, cmass_heart, densindiv, age,
+  fpc, deltafpc, sla, k_latosa, k_rp, k_allom1, k_allom2, k_allom3,
+  wooddens, crownarea_max)
 }
 \description{
 LPJ-GUESS allometry
