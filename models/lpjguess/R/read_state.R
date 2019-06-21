@@ -176,22 +176,9 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
     if(current_stream_type$name != "solvesom"){
       PEcAn.logger::logger.debug("Another struct type.")
     }
-    #for now hardcoding this will be back
-    # specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 2)
-    # specs$what[1]  <- "double"
-    # specs$size[1]  <- 8
-    # specs$names[1] <- "clitter"
-    # specs$n[1]     <- 12 #NSOMPOOL
-    # 
-    # specs$what[2]  <- "double"
-    # specs$size[2]  <- 8
-    # specs$names[2] <- "nlitter"
-    # specs$n[2]     <- 12 #NSOMPOOL
-    # 
-    # LOOKS LIKE THIS ONE IS NOT SERIALIZED PROPERLY
-    # just return 8
-    
-    
+
+    # with these you're supposed to first read the dimensions of the array and then the values stored
+    # hardcoding this for now
     specs$n <- 1
     specs$what <- "integer"
     specs$size <- 8
@@ -360,29 +347,34 @@ library(stringr)
 # Fluxes : The Fluxes class stores accumulated monthly and annual fluxes. One object of type Fluxes is defined for each patch.
 # Individual : Stores state variables for an average individual plant. In cohort mode, it is the average individual of a cohort of plants approximately the same age and from the same patch.
 
-# maybe put guess.h and guess.cpp for each model version into the model package
-guesscpp_loc <- "/fs/data5/pecan.models/LPJ-GUESS/framework/guess.cpp"
-guessh_loc   <- "/fs/data5/pecan.models/LPJ-GUESS/framework/guess.h"
-paramh_loc   <- "/fs/data5/pecan.models/LPJ-GUESS/framework/parameters.h"
-
-# guess.cpp has the info of what is being written
-guesscpp_in <- readLines(guesscpp_loc)
-# guess.h has the types so that we know what streamsize to read
-guessh_in <- readLines(guessh_loc)
-# parameters.h has some more types
-paramh_in <- readLines(paramh_loc)
-
-############ open
 
 # test path
-out.path = "/fs/data2/output/PEcAn_1000002393/out/1000458390"
-setwd(out.path)
+outdir <- "/fs/data2/output/PEcAn_1000010473/out/1002655714"
+
+# outdir, at least model version, maybe also settings
+read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
+  
+}
+
+# find rundir too, params.ins is in there and we need to get some values from there
+rundir <- file.path(dirname(dirname(outdir)), "run", basename(outdir))
+
+# guess.cpp has the info of what is being written
+guesscpp_name <- paste0("guess.", version, ".cpp")  # these are gonna be in the package guess.VERSION.cpp
+guesscpp_in   <- readLines(con = system.file(guesscpp_name, package = "PEcAn.LPJGUESS"), n = -1)
+# guess.h has the types so that we know what streamsize to read
+guessh_name <- paste0("guess.", version, ".h") 
+guessh_in   <- readLines(con = system.file(guessh_name, package = "PEcAn.LPJGUESS"), n = -1)
+# parameters.h has some more types
+paramh_name <- paste0("parameters.", version, ".h") 
+paramh_in   <- readLines(con = system.file(paramh_name, package = "PEcAn.LPJGUESS"), n = -1)
+
 
 ######################################
 ## read meta.bin
 # not sure if the content will change under guessserializer.cpp
 meta_data    <- list()
-meta_bin_con <- file("meta.bin", "rb")
+meta_bin_con <- file(file.path(outdir, "meta.bin"), "rb")
 meta_data$num_processes    <- readBin(meta_bin_con, integer(), 1, size = 4)
 meta_data$vegmode    <- readBin(meta_bin_con, integer(), 1, size = 4)
 meta_data$npft    <- readBin(meta_bin_con, integer(), 1, size = 4)
@@ -393,14 +385,25 @@ for(i in seq_len(meta_data$npft)){
 }
 close(meta_bin_con)
 
+# how many PFTs are there in this run
+n_pft     <- meta_data$npft
+
 # open connection to the binary state file
-zz <- file("0.state", "rb")
+if(meta_data$num_processes == 1){
+  zz <- file(file.path(outdir,"0.state"), "rb")
+}else{
+  # then file names would be different 1.state etc etc
+  PEcAn.logger::logger.severe("This function is implemented to read state from 1 process only.")
+}
+
 
 ### these are the values read from params.ins, passed to this fcn
-n_pft     <- meta_data$npft
-npatches <- 5 
+paramsins <- readLines(file.path(rundir, "params.ins"), n = -1)
+npatches  <- as.numeric(gsub(".*([0-9]+).*$", "\\1", paramsins[grepl("npatch", paramsins, fixed = TRUE)]))
 
-################################ check class compatibility ################################
+
+################################ CHECKS AND EXTRACTIONS ################################
+
 # between model versions we don't expect major classes or hierarchy to change
 # but give check and fail if necessary
 LPJ_GUESS_CLASSES <- c("Gridcell", "Climate", "Gridcellpft", "Stand", "Standpft", "Patch", "Patchpft",
@@ -468,13 +471,37 @@ for(i in seq_along(guessh_in)){
 dont_need <- c("COLDEST_DAY_NHEMISPHERE", "COLDEST_DAY_SHEMISPHERE", "WARMEST_DAY_NHEMISPHERE", "WARMEST_DAY_SHEMISPHERE", "data[]")
 lpjguess_consts[match(dont_need, names(lpjguess_consts))] <-  NULL
 # this needs to be extracted from parameters.h:48-49 or somewhere else, but hardcoding for now
-lpjguess_consts$NLANDCOVERTYPES <- 6
-# this needs to be extracted from guess.h:94 , but hardcoding for now
+
+# need to parse out few  more constants
+for(i in seq_along(paramh_in)){ #do same for parameters.h
+  res <- str_match(paramh_in[i], "typedef enum \\{(.*?)\\} landcovertype\\;")
+  if(!is.na(res[,2])){
+    lpjguess_consts$NLANDCOVERTYPES <- length(strsplit(res[,2], ",")[[1]]) - 1 # last element is NLANDCOVERTYPES
+  }
+}
+for(i in seq_along(guessh_in)){ 
+  if(grepl("enum PerPatchFluxType {", guessh_in[i], fixed = TRUE)){
+    cl_i <- find_closing("}", i, guessh_in)
+    #get rid of commented out lines
+    sub_string <- guessh_in[i:cl_i][!grepl("///", guessh_in[i:cl_i], fixed = TRUE)]
+    # split and count
+    lpjguess_consts$PerPatchFluxType <- length(strsplit(paste(sub_string, collapse = " "), ",")[[1]]) - 1
+  }
+  if(grepl("enum PerPFTFluxType {", guessh_in[i], fixed = TRUE)){
+    cl_i <- find_closing("}", i, guessh_in)
+    #get rid of commented out lines
+    sub_string <- guessh_in[i:cl_i][!grepl("///", guessh_in[i:cl_i], fixed = TRUE)]
+    # split and count
+    lpjguess_consts$PerPFTFluxType <- length(strsplit(paste(sub_string, collapse = " "), ",")[[1]]) - 1
+  }
+
+}
+
+# this needs to be extracted from guess.h:93-94 , but hardcoding for now 
+# hopefully CENTURY pool names might not change for a while
 lpjguess_consts$NSOMPOOL <- 12
-# this needs to be extracted from guess.h:644 , but hardcoding for now NOTE that new versions has 13 flux types
-lpjguess_consts$PerPatchFluxType <- 12
-# this needs to be extracted from guess.h:659 , but hardcoding for now
-lpjguess_consts$PerPFTFluxType <- 5
+
+
 LPJ_GUESS_CONST_INTS <- data.frame(var = names(lpjguess_consts), val = as.numeric(unlist(lpjguess_consts)), stringsAsFactors = FALSE)
 
 
