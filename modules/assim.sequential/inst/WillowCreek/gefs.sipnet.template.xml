@@ -72,7 +72,6 @@
    <dbname>bety</dbname>
    <driver>PostgreSQL</driver>
    <write>true</write>
-   <write>TRUE</write>
   </bety>
   <dbfiles>/fs/data3/kzarada/pecan.data/dbfiles/</dbfiles>
  </database>
