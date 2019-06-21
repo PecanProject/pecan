@@ -1,0 +1,3 @@
+## Git and GitHub Workflow {#pecan-git}
+
+[Using Git]{#using-git}

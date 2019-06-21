@@ -270,7 +270,7 @@ pecan2lpjguess <- function(trait.values){
     "alphar", "alphar", NA, NA,
     "greff_min", "greff_min", NA, NA, 
     "k_allom1", "k_allom1", NA, NA,
-    "k_latosa", "k_latosa", NA, NA,        
+    "sapwood_ratio", "k_latosa", NA, NA,        
     "gcmin", "gmin", "m s-1", "mm s-1",               
     "intc", "intc", NA, NA,
     "ga", "ga", NA, NA,
