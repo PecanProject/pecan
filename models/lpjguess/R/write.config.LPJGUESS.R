@@ -22,7 +22,7 @@
 ##' @return configuration file for LPJ-GUESS for given run
 ##' @export
 ##' @author Istem Fer, Tony Gardella
-write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id) {
+write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id, restart = NULL) {
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
@@ -98,8 +98,24 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   
   guessins  <- readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
   paramsins <- readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
-  pftindx   <- 152:223 # should grab automatically
+  pftindx   <- 154:224 # should grab automatically
   pftblock  <- paramsins[pftindx] # lines with pft params
+  
+  # fill save state flags
+  if(!is.null(settings$model$save_state)){
+    save_state <- as.logical(settings$model$save_state)
+    if(save_state){
+      paramsins  <- gsub("@SAVE_STATE_OPTION@", 1, paramsins)
+      paramsins  <- gsub("@STATE_PATH@", paste0("state_path '", outdir, "'"), paramsins)
+    }else{
+      paramsins  <- gsub("@RESTART_OPTION@", 0, paramsins)
+      paramsins  <- gsub("@STATE_PATH@", "!state_path", paramsins)
+    }
+  }else{
+    # wouldn't hurt to save state by default?
+    paramsins  <- gsub("@SAVE_STATE_OPTION@", 1, paramsins)
+    paramsins  <- gsub("@STATE_PATH@", paste0("state_path '", outdir, "'"), paramsins)
+  }
   
   # cp the grid indices file
   grid.file <- file.path(settings$host$rundir, "gridind.txt")
@@ -212,6 +228,14 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   guessins <- gsub("@SOIL_FILE@", soil.file, guessins)
   
   settings$model$insfile <- file.path(settings$rundir, run.id, "guess.ins")
+  
+  # version check
+  if(!is.null(settings$model$revision)){
+    if(settings$model$revision == "PalEON"){
+      rm_inds <- which(grepl("@@@@@ Remove in PalEON version @@@@@", paramsins))
+      paramsins <- paramsins[-(rm_inds[1]:rm_inds[2])]
+    }
+  }
   
   writeLines(paramsins, con = file.path(settings$rundir, run.id, "params.ins"))
   writeLines(guessins, con = file.path(settings$rundir, run.id, "guess.ins"))

@@ -121,7 +121,6 @@ find_closing <- function(find = "}", line_no, file_in, if_else_check = FALSE){
 } # find_closing
 
 
-#' @export
 # helper function that determines the stream size to read
 find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS){
   
