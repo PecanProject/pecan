@@ -83,12 +83,3 @@ download_US_WCr_flux <- function(start_date, end_date) {
   
   return(raw.data)
 }
-# start_date <- as.Date("2017-01-01")
-# end_date <- as.Date("2018-10-01")
-# 
-# download_US_WCr(start_date, end_date) ->pp
-# 
-# tail(pp)
-#download_US_WCr_met(start_date, end_date) ->met
-# 
-# tail(pp)

@@ -8,8 +8,7 @@ xmlfile="./gefs.sipnet.source.xml" #Path to, and name of, the base xml file.
 workflow_path="./../../../../scripts/"                     #Path to workflow.R (in pecan/web for the standard version or pecan/scripts for the custom version).
 output_path="/fs/data3/kzarada/output/"               #Path to the directory where all PEcAn output is put.
 xmlscript="./generate.gefs.xml.R"                          #Path to, and name of, the script that modifies the xml.
-# Could also be just workflow.R in pecan/web
-workflow_name="workflow.wcr.assim.R"      #"workflow.wcr.assim.R"                       #Name of the workflow.R version
+workflow_name="workflow.wcr.assim.R"      #"workflow.wcr.assim.R" Name of the workflow.R version# Could also be just workflow.R in pecan/web
 
 # Generates the xml file based on a given input file.  Overwrites the
 # input file.

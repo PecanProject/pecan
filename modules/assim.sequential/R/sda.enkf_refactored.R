@@ -52,8 +52,8 @@ sda.enkf <- function(settings,
   names(var.names) <- NULL
   # Site location first col is the long second is the lat and row names are the site ids
   site.ids <- settings$run$site$id
-    
-
+  
+  # start cut determines what is the best year to start spliting the met based on if we start  with a restart or not.  
   if (!is.null(restart)) {
     start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)-1
     Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date)-1)
@@ -279,8 +279,7 @@ sda.enkf <- function(settings,
     #------------------------------------------- Reading the output
     X_tmp <- vector("list", 2)
     X <- list()
-    if (control$debug)
-      browser()
+    if (control$debug) browser()
     for (i in seq_len(nens)) {
       X_tmp[[i]] <- do.call(
         my.read_restart,

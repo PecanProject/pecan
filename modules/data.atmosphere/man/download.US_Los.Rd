@@ -4,7 +4,7 @@
 \alias{download.US_Los}
 \title{download.US-Los}
 \usage{
-download.US_Los(start_date, end_date, timestep = 1)
+download.US_Los(start_date, end_date, timestep = 1, base_url = NULL)
 }
 \arguments{
 \item{start_date}{Start date/time data should be downloaded for}

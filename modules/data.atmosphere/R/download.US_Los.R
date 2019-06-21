@@ -15,7 +15,7 @@
 ##' @export
 ##' 
 ##' @author Luke Dramko and K Zarada
-download.US_Los <- function(start_date, end_date, timestep = 1) {
+download.US_Los <- function(start_date, end_date, timestep = 1, base_url=NULL) {
   timestep = 2 * timestep #data is actually every half hour
   
   if (timestep != as.integer(timestep)) {
@@ -31,7 +31,7 @@ download.US_Los <- function(start_date, end_date, timestep = 1) {
   
   # Data is found here
   # Original url: http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek2018_flux.txt
-  base_url <- "http://flux.aos.wisc.edu/data/cheas/lcreek/flux/prelim/lcreek"
+  if (is.null(base_url)) base_url <- "http://flux.aos.wisc.edu/data/cheas/lcreek/flux/prelim/lcreek"
   
   flux = NULL;
   
