@@ -1,6 +1,6 @@
 
 
-adjustBiomass <- function(individual, biomass.increment,  sla, wooddens, lifeform, k_latosa, k_allom2, k_allom3){
+adjustBiomass <- function(individual, rel.change,  sla, wooddens, lifeform, k_latosa, k_allom2, k_allom3){
   
   # dummy input values to the allocation function below
   # note that they are not actually updated by the function, the updated values are in the returned list
@@ -13,9 +13,14 @@ adjustBiomass <- function(individual, biomass.increment,  sla, wooddens, lifefor
   litter_root_inc <- 0
   exceeds_cmass <- 0
   
+  # calculate the total biomass and the absolute change based on this
+  biomass.total <- individual$cmass_leaf+individual$cmass_root+individual$cmass_heart+individual$cmass_sap-individual$cmass_debt
+  biomass.inc <- (biomass.total * rel.change) - biomass.total
+  
+  
   updated.pools <- allocation(
     # vegetation state
-    bminc = as.numeric(biomass.increment/individual$densindiv),
+    bminc = as.numeric(biomass.inc/individual$densindiv),
     cmass_leaf = as.numeric(individual$cmass_leaf/individual$densindiv),              
     cmass_root = as.numeric(individual$cmass_root/individual$densindiv),
     cmass_sap = as.numeric(individual$cmass_sap/individual$densindiv),
@@ -57,24 +62,49 @@ adjustBiomass <- function(individual, biomass.increment,  sla, wooddens, lifefor
   individual$cmass_root <- new.cmass_root
   individual$nmass_root <- individual$nmass_root * root.scaling
   
-  # sap
-  original.cmass_sap <- individual$cmass_sap
-  new.cmass_sap <- individual$cmass_sap + (updated.pools[["cmass_sap_inc"]] * individual$densindiv)
-  sap.scaling <- new.cmass_sap / original.cmass_sap
-  individual$cmass_sap <- new.cmass_sap
-  individual$nmass_sap <- individual$nmass_sap * sap.scaling
   
-  # heart
-  original.cmass_heart <- individual$cmass_heart
-  new.cmass_heart <- individual$cmass_heart + (updated.pools[["cmass_heart_inc"]] * individual$densindiv)
-  heart.scaling <- new.cmass_heart / original.cmass_heart
-  individual$cmass_heart <- new.cmass_heart
-  individual$nmass_heart <- individual$nmass_heart * heart.scaling
+  # sap, heart and debt only for trees
+  if(lifeform == 1) {
+    
+    # sap
+    original.cmass_sap <- individual$cmass_sap
+    new.cmass_sap <- individual$cmass_sap + (updated.pools[["cmass_sap_inc"]] * individual$densindiv)
+    sap.scaling <- new.cmass_sap / original.cmass_sap
+    individual$cmass_sap <- new.cmass_sap
+    individual$nmass_sap <- individual$nmass_sap * sap.scaling
+    
+    
+    # heart
+    original.cmass_heart <- individual$cmass_heart
+    new.cmass_heart <- individual$cmass_heart + (updated.pools[["cmass_heart_inc"]] * individual$densindiv)
+    heart.scaling <- new.cmass_heart / original.cmass_heart
+    individual$cmass_heart <- new.cmass_heart
+    individual$nmass_heart <- individual$nmass_heart * heart.scaling
+    
+    # debt - note no equivalant N debt
+    original.cmass_debt <- individual$cmass_debt
+    new.cmass_debt <- individual$cmass_debt + (updated.pools[["cmass_debt_inc"]] * individual$densindiv)
+    individual$cmass_debt <- new.cmass_debt
+    
+  }
+  else {
+    # define these for later
+    original.cmass_sap <- 0
+    original.cmass_heart <- 0
+    original.cmass_debt <- 0
+  }
   
-  # debt - note no equivalant N debt
-  original.cmass_debt <- individual$cmass_debt
-  new.cmass_debt <- individual$cmass_debt + (updated.pools[["cmass_debt_inc"]] * individual$densindiv)
-  individual$cmass_debt <- new.cmass_debt
+  # N labile and long term storage - note no equivalant C pools and they are not determined by allocation upgrade,
+  # so simply scale by the overall biomass change
+  individual$nstore_labile <- individual$nstore_labile * rel.change
+  individual$nstore_longterm <- individual$nstore_longterm * rel.change
+  
+  
+  # TODO (potentially): MF - for simulations involving managed forestry and harvest the variable 'cmass_wood_inc_5'
+  # should also be updated. This is a vector, and I am not sure if the increment should go at the start or the end of it.
+  # But also, how to deal simultaneously with harvesting and nudging will probably require some thought, and maybe
+  # it is not necessary or appropriate to update this variable
+  #print(individual$cmass_wood_inc_5)
   
   
   # checks
@@ -94,7 +124,11 @@ adjustBiomass <- function(individual, biomass.increment,  sla, wooddens, lifefor
     print("--- end ---")
   }
   
-  return(individual)
+  
+  return(list(individual = individual,
+              litter_leaf_inc = updated.pools[["litter_leaf_inc"]],
+              litter_root_inc = updated.pools[["litter_root_inc"]],
+              exceeds_cmass = updated.pools[["exceeds_cmass"]]
+  ))
   
 }
-        

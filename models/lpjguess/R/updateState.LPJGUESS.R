@@ -22,10 +22,10 @@
 #' @param dens.target A numeric vector of the target stand-level stem densities (indiv/m^2) as named numeric vector 
 #' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
 #' using state data assimilation from function XXXXXX 
-#' @param biomass.target A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
+#' @param cmass.target A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
 #' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
 #' using state data assimilation from function XXXXXX 
-#' @param biomass.target A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
+#' @param cmass.target A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
 #' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
 #' using state data assimilation from function XXXXXX 
 #' @return  And updated model state (as a big old list o' lists)
@@ -34,12 +34,12 @@
 
 
 
-updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass.initial, biomass.target) {
+updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, cmass.initial, cmass.target) {
   
   
   # calculate relative increases to be applied later on (per PFT)
   dens.rel.change <- dens.target/dens.initial
-  biomass.rel.change <- biomass.target/biomass.initial
+  biomass.rel.change <- cmass.target/cmass.initial
   #print(dens.rel.change)
   #print(biomass.rel.change)
   
@@ -124,21 +124,23 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass
           
           # STEP 2 - nudge biomass by performing the LPJ-GUESS allocation routine
           
-          # calculate the total biomass (after the densindiv nudging above) and the absolute change based on this
-          biomass.total <- updated.individual$cmass_leaf+updated.individual$cmass_root+updated.individual$cmass_heart+updated.individual$cmass_sap-updated.individual$cmass_debt
-          biomass.inc <- (biomass.total * biomass.rel.change[this.pft.id+1]) - biomass.total
-          
-          # this function call runs the LPJ-GUESS allocation routine and ajusts the pools accordingly
-          updated.individual <- adjustBiomass(individual = updated.individual, 
-                                              biomass.increment = biomass.inc,  
-                                              sla = sla[this.pft.id+1], 
-                                              wooddens = wooddens[this.pft.id+1], 
-                                              lifeform = lifeform[this.pft.id+1], 
-                                              k_latosa = k_latosa[this.pft.id+1], 
-                                              k_allom2 = k_allom2[this.pft.id+1], 
-                                              k_allom3 = k_allom3[this.pft.id+1])
-          
-          
+          # this function call runs the LPJ-GUESS allocation routine and adjusts the pools vegetation pools accordingly
+          # however, it doesn't adjust the litter pools or do anything with 'exceeds_cmass', these are returned
+          # as elements of the list, because they should only be applied to the state *if* this was a valid allocation
+          updated.list <- adjustBiomass(individual = updated.individual, 
+                                        rel.change = biomass.rel.change[this.pft.id+1],  
+                                        sla = sla[this.pft.id+1], 
+                                        wooddens = wooddens[this.pft.id+1], 
+                                        lifeform = lifeform[this.pft.id+1], 
+                                        k_latosa = k_latosa[this.pft.id+1], 
+                                        k_allom2 = k_allom2[this.pft.id+1], 
+                                        k_allom3 = k_allom3[this.pft.id+1])
+          # extract the elements from the return list
+          updated.individual <- updated.list[["individual"]]
+          litter_root_inc <- updated.list[["litter_root_inc"]]
+          litter_leaf_inc <- updated.list[["litter_leaf_inc"]]
+          exceeds_cmass <- updated.list[["exceeds_cmass"]]
+          rm(updated.list)
           
           # STEP 3 - adjust the allometry of the individual based on the updated pools
           # QUESTION: what to do if allometry returns FALSE?
@@ -167,9 +169,28 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, biomass
           if(allometry.results$error.string != "OK") {
             print(allometry.results$error.string)
           }
-          # else update the individual, the litter pools and break
+          # else update the individual, the litter pools, exceeds_cmass and break
           else {
+            # first the individual
             model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]] <- updated.individual
+            
+            # now the litter pools (determine N based on intial C:N ratio)
+            # C:N ratios
+            leaf_litter_cton <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_leaf[[this.pft.id+1]] / model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$nmass_litter_leaf[[this.pft.id+1]]
+            root_litter_cton <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_root[[this.pft.id+1]] / model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$nmass_litter_root[[this.pft.id+1]]
+            # update the C pools based on the calculated increments
+            model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_leaf[[this.pft.id+1]]  <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_leaf[[this.pft.id+1]] + (litter_leaf_inc * updated.individual$densindiv) 
+            model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_root[[this.pft.id+1]]  <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_root[[this.pft.id+1]] + (litter_root_inc * updated.individual$densindiv) 
+            # update the N pools simple by dividing the new C pool by the C:N ratio
+            model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$nmass_litter_leaf[[this.pft.id+1]]  <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_leaf[[this.pft.id+1]] / leaf_litter_cton
+            model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$nmass_litter_root[[this.pft.id+1]]  <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_root[[this.pft.id+1]] / root_litter_cton
+         
+            # and finally exceeds_cmass
+            # - not currently dealing with this because it is only used to maintin mass balance which
+            # we *probably* don't need to do here, but print a warning if it is non-zero
+            if(!exceeds_cmass == 0) warning(paste("Non-zero exceeds_cmass following allocation, exceeds_cmass =", exceeds_cmass))
+            
+            
           }
           
           

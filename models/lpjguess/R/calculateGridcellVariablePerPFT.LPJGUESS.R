@@ -66,9 +66,29 @@ calculateGridcellVariablePerPFT <- function(model.state, variable) {
           if(!this.pft.id %in% active.PFTs) stop(paste0("Found individual of PFT id = ",this.pft.id, 
                                                         " but this doesn't seem to be active in the LPJ-GUESS run"))
           # calculate the total cmass and density of individuals per PFT
-          if(variable == "biomass") {
+          if(variable == "cmass") {
             gc.sum[this.pft.id+1] <- gc.sum[this.pft.id+1] + ((this.individual$cmass_leaf+this.individual$cmass_root+
                                                                  this.individual$cmass_heart+this.individual$cmass_sap-this.individual$cmass_debt)/npatches)
+      
+            #print(paste("leaf =" , this.individual$cmass_leaf))
+            #print(paste("root =" , this.individual$cmass_root))
+            #print(paste("sap =" , this.individual$cmass_sap))
+            #print(paste("heart =" , this.individual$cmass_heart)) 
+            #print(paste("id = ", this.individual$indiv.pft.id, "debt =" , this.individual$cmass_debt)) 
+            
+         }
+          else if(variable == "nmass") {
+            gc.sum[this.pft.id+1] <- gc.sum[this.pft.id+1] + ((this.individual$nmass_leaf+this.individual$nmass_root+this.individual$nmass_heart+
+                                                                 this.individual$nmass_sap+this.individual$nstore_labile+this.individual$nstore_longterm)/npatches)
+            #gc.sum[this.pft.id+1] <- gc.sum[this.pft.id+1] + ((this.individual$nmass_leaf+this.individual$nmass_root+this.individual$nmass_heart+
+            #                                                     this.individual$nmass_sap)/npatches)
+            
+            
+            #print(paste("leaf =" , this.individual$nmass_leaf))
+            #print(paste("root =" , this.individual$nmass_root))
+            #print(paste("sap =" , this.individual$nmass_sap))
+            #print(paste("heart =" , this.individual$nmass_heart))
+            
           }
           else  gc.sum[this.pft.id+1] <- gc.sum[this.pft.id+1] + (this.individual[[variable]]/npatches)
           
