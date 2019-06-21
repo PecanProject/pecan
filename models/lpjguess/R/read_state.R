@@ -1,4 +1,3 @@
-
 ######################## Helper functions ########################
 
 
@@ -1035,9 +1034,6 @@ for(g_i in 1:4){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
     
   } # Stand if-else ends
 } # Gridcell-loop ends
-  
-
-  
   
 
 
