@@ -1,4 +1,4 @@
-#!/usr/bin/env RScript
+#!/usr/bin/env Rscript
 
 SUGGESTS <- TRUE
 INSTALL <- FALSE
@@ -58,7 +58,7 @@ if (SUGGESTS) {
                   })
   s <- sort(unique(unlist(s)))
   s <- s[!grepl('^PEcAn.', s)]
-  s <- s[!s %in% c('BioCro', 'linkages', 'Maeswrap', 'Rpreles', 'RMySQL')]
+  s <- s[!s %in% c('BioCro', 'linkages', 'Maeswrap', 'Rpreles')]
   s <- s[!s %in% d]
 
   if (INSTALL) {
