@@ -142,9 +142,9 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, cmass.i
           exceeds_cmass <- updated.list[["exceeds_cmass"]]
           rm(updated.list)
           
-          # STEP 3 - adjust the allometry of the individual based on the updated pools
-          # QUESTION: what to do if allometry returns FALSE?
           
+          # STEP 3 - calculate the new allometry of the individual based on the updated pools
+
           allometry.results <- allometry(
             # initial allometry/pools
             cmass_leaf = updated.individual$cmass_leaf, 
@@ -165,40 +165,57 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, cmass.i
             wooddens = wooddens[this.pft.id+1],
             crownarea_max = crownarea_max[this.pft.id+1]) 
           
+          
+          # STEP 4 - check if new allometry is valid. If yes, update state and move on,
+          # if not adjust the nudging and start again
+          
           # if not okay print a warning, and should actually start another iteration with new multipliers
           if(allometry.results$error.string != "OK") {
             print(allometry.results$error.string)
+            
+            # HERE 
+            
+            
           }
-          # else update the individual, the litter pools, exceeds_cmass and break
+          # else update the allometry, save the individual back to the state, update the litter pools, 
+          # deal with exceeds_cmass and finally break
           else {
-            # first the individual
+            
+            # first update the allometry
+            updated.individual$height <- allometry.results$height
+            updated.individual$crownarea <- allometry.results$crownarea
+            updated.individual$lai_indiv <- allometry.results$lai_indiv
+            updated.individual$lai <- allometry.results$lai
+            updated.individual$deltafpc <- allometry.results$deltafpc
+            updated.individual$fpc <- allometry.results$fpc
+            updated.individual$boleht <- allometry.results$boleht
+            
+            # save the individual back to the state
             model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Vegetation$Individuals[[individual.counter]] <- updated.individual
             
             # now the litter pools (determine N based on intial C:N ratio)
             # C:N ratios
             leaf_litter_cton <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_leaf[[this.pft.id+1]] / model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$nmass_litter_leaf[[this.pft.id+1]]
             root_litter_cton <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_root[[this.pft.id+1]] / model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$nmass_litter_root[[this.pft.id+1]]
-            # update the C pools based on the calculated increments
+            # update the C pools based on the calculated increments from the allocation call (these will only be non-zero in 'abnormal cases)
             model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_leaf[[this.pft.id+1]]  <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_leaf[[this.pft.id+1]] + (litter_leaf_inc * updated.individual$densindiv) 
             model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_root[[this.pft.id+1]]  <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_root[[this.pft.id+1]] + (litter_root_inc * updated.individual$densindiv) 
             # update the N pools simple by dividing the new C pool by the C:N ratio
             model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$nmass_litter_leaf[[this.pft.id+1]]  <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_leaf[[this.pft.id+1]] / leaf_litter_cton
             model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$nmass_litter_root[[this.pft.id+1]]  <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]$Patchpft$litter_root[[this.pft.id+1]] / root_litter_cton
-         
-            # and finally exceeds_cmass
-            # - not currently dealing with this because it is only used to maintin mass balance which
+            
+            # and finally exceeds_cmass - not currently dealing with this because it is only used to maintin mass balance which
             # we *probably* don't need to do here, but print a warning if it is non-zero
             if(!exceeds_cmass == 0) warning(paste("Non-zero exceeds_cmass following allocation, exceeds_cmass =", exceeds_cmass))
             
             
-          }
+          } # if allometry valid
           
-          
-        }
+        } # if individual is alive
         
-      }
+      } # for each individual
       
-    }
+    } # for each patch
     
   } # for each stand
   

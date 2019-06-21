@@ -1,5 +1,24 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
 
+#' Adjust LPJ-GUESS individual's density
+#' 
+#' Very simple function that just scales the density of individuals and the associated C and N pools 
+#' by a relative amount
+#' 
+#' @param individual A nested list which encapsulates an LPJ-GUESS 'Individual' as read from a binary state file
+#' @param rel.change A numeric by which to scale the density and C and N pools
+#' 
+#' 
 #' @keywords internal
+#' @return the scaled 'individual' (the initial nested list with update values)
+#' @author Matthew Forrest
 adjustDensity.LPJGUESS  <- function(individual, rel.change) {
   
   # the density

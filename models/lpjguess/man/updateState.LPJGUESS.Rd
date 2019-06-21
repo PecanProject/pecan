@@ -4,8 +4,8 @@
 \alias{updateState.LPJGUESS}
 \title{updateState.LPJGUESS}
 \usage{
-updateState.LPJGUESS(model.state, dens.initial, dens.target,
-  biomass.initial, biomass.target)
+updateState.LPJGUESS(model.state, dens.initial, dens.target, cmass.initial,
+  cmass.target)
 }
 \arguments{
 \item{model.state}{A large multiply-nested list containing the entire LPJ-GUESS state as read by 
@@ -19,11 +19,11 @@ using state data assimilation from function XXXXXX.}
 with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
 using state data assimilation from function XXXXXX}
 
-\item{biomass.target}{A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
+\item{cmass.target}{A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
 with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
 using state data assimilation from function XXXXXX}
 
-\item{biomass.target}{A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
+\item{cmass.target}{A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
 with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
 using state data assimilation from function XXXXXX}
 }

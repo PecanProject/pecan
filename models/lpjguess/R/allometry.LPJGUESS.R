@@ -16,38 +16,60 @@ lambertbeer <- function(lai) {
 
 
 
-## Matthew Forrest 2019-06-19 This function was transcribed from LPJ-GUESS (v4.0) C++ to R for the purpose of nudging the LPJ-GUESS state offline.
-## The idea id of course to use the output from the analysis step from an SDA routine to provide the nudged values, although that isn't
-## relevant to the following code.
-##
-## Since the original C++ code took as its only argument an LPJ-GUESS C++ class of type 'Individual' there was no way (to my knowledge)
-## of directly compiling using Rcpp (unlike for allocation.cpp/allocation.R. which was easy to compile from the native C++ using 
-## Rcpp with very few changes).
-##
-## As noted in the original function header taken from the the C++ code below, this function should be run after its biomass values 
-## have been updated.  In this case that means after the allocation() function has been applied to an individual.
-##  
-## This function can return FALSE for following reasons:
-##  1.  The individual has negligible leaf biomass.
-##  2.  The 
-##
-## 
-## In LPJ-GUESS this individual would be killed as a result of any of these happening.  
-## What to do in such a case with SDA in PEcAn is not immediately clear.
 
+## 
+## In LPJ-GUESS this individual would be killed as a result of any of these happening.  So instead PEcAn should
+## modify the ratio of nudged biomass and density and try again.
+
+
+
+###########################################
+# // ALLOMETRY
+# // Should be called to update allometry, FPC and FPC increment whenever biomass values
+# // for a vegetation individual (cohort) change.
 
 #' LPJ-GUESS allometry
+#' 
+#' The LPJ-GUESS allometry function transcribed into R.
 #'
+#' @param lifeform An integer code for the lifeform of this individual (cohort): 1 = Tree, 2 = Grass
+#' @param cmass_leaf The leaf C pool size (kgC/m^2)
+#' @param cmass_sap The sapwood C pool size (kgC/m^2)
+#' @param cmass_heart The heartwood C pool size (kgC/m^2)
+#' @param densindiv The density of individuals in the cohort (indiv/m^2) 
+#' @param age The age of the coort
+#' @param fpc The folar projective cover
+#' @param deltafpc The change in foliar projective cover
+#' @param sla The SLA (specific leaf area) (per PFT parameter)
+#' @param k_latosa The leaf area to sapwood area ratio (per PFT parameter)
+#' @param k_rp,k_allom1,k_allom2,k_allom3, Allometry coefficients (per PFT parameters)
+#' @param wooddens Wood density (kgC/m^2) (per PFT parameter)
+#' @param crownarea_max Maximum allowed crown area (m^2)  (per PFT parameter)
+#' 
+#' This function was transcribed from LPJ-GUESS (v4.0) C++ to R for the purpose of nudging the LPJ-GUESS state offline.
+#' The idea is of course to use the output from the analysis step from an SDA routine to provide the nudged values, although that isn't
+#' relevant to the following code.
 #'
+#' Since the original C++ code took as its only argument an LPJ-GUESS C++ class of type 'Individual' there was no way (to my knowledge)
+#' of directly compiling using Rcpp (unlike for allocation.cpp/allocation.R. which was easy to compile from the native C++ using 
+#' Rcpp with very few changes).
 #'
+#' As noted in the original function header taken from the the C++ code (copied above), this function should be run after its biomass values 
+#' have been updated.  In this case that means after the allocation() function has been applied to an individual.
+#'  
+#' This function can return following error codes:
+#'  1.  "NegligibleLeafMass" - The individual has negligible leaf biomass.
+#'  2.  "MaxHeightExceeded" - The indidual exceeds the maximum allowed height
+#'  3.  "LowWoodDensity" - The individual's *actual* wood density drops below 90% of prescribed value.  This (slighty weird
+#'  and unphysical) requirement is necessary because sometimes LPJ-GUESS can take carbon from the heartwood to
+#'  ensure C-balance.  I think.  Or some other hockery-pockery.
+#' 
+#'  If all is well the code is simply "OK".
 #'
 #' @keywords internal
+#' @return A named list of updated state variables for the individual/cohort.  The first value in the list is the error code. 
+#' @author Matthew Forrest
 #' 
-
-###########################################/
-# ALLOMETRY
-# Should be called to update allometry, FPC and FPC increment whenever biomass values
-# for a vegetation individual change.
 allometry <- function(
   # initial allometry/pools
   lifeform, 
@@ -254,9 +276,7 @@ allometry <- function(
   return(
     list(
       error.string = error.string,
-      vol = vol,
       height = height,
-      diam =diam,
       crownarea = crownarea,
       lai_indiv = lai_indiv,
       lai = lai,
