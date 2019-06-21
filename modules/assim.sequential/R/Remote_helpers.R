@@ -127,7 +127,7 @@ SDA_remote_launcher <-function(settingPath,
   fname_p1 <- basename(settings$outdir)
 
   
-  if (!is.null( settings$workflow$id)) {
+  if (!is.null(settings$workflow$id)) {
     fname_p2<-settings$workflow$id
   } else {
     fname_p2<-""
