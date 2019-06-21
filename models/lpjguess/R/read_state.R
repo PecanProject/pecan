@@ -77,7 +77,12 @@ serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize")
   # find the starting line from the given pattern
   starting_line <- which(!is.na(str_match(file_in, pattern)))
   if(length(starting_line) != 1){ # check what's going on 
-    PEcAn.logger::logger.severe("Couldn't find the starting line with this pattern ***",pattern, "***.")
+    # new versions serialize structs too
+    pattern <- gsub("class", "struct", pattern)
+    starting_line <- which(!is.na(str_match(file_in, pattern)))
+    if(length(starting_line) != 1){
+      PEcAn.logger::logger.severe("Couldn't find the starting line with this pattern ***", pattern, "***.")
+    }
   }
   
   # screen for the closing curly bracket after function started 
@@ -139,7 +144,9 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
     # this is only length 1
     specs$n <- 1
     specs$what <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$what <- unique(specs$what)
     specs$size <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+    specs$size <- unique(specs$size)
     specs$single <- TRUE
     
   }else if(current_stream_type$type == "Historic"){
@@ -148,29 +155,66 @@ find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LP
     
     # Historic types are special to LPJ-GUESS
     # They have stored values, current index, and a boolean in that order
-    specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 3)
-    # always three, this is a type defined in guessmath.h
-    specs$what[1]  <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)] 
-    specs$size[1]  <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
-    specs$names[1] <- current_stream_type$name
-    # n is tricky, it can be hardcoded it can be one of the const ints
-    to_read <- str_match(sub_string, paste0("Historic<", specs$what[1], ", (.*?)>.*"))[,2]
-    if(to_read %in% LPJ_GUESS_CONST_INTS$var){
-      specs$n      <- LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var == to_read]
-    }else{
-      specs$n[1]   <- as.numeric(to_read)
+
+    #is there a following bracket? 
+    if(grepl("\\[*\\]", sub_string)){ # e.g. "Historic<double, 20> hmtemp_20[12];"
+      to_read <- str_match(sub_string, paste0("Historic<double, (.*?)>.*"))[,2]
+      if(to_read %in% LPJ_GUESS_CONST_INTS$var){
+        nvar <- LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var == to_read]
+      }else{
+        nvar <- as.numeric(to_read)
+      }
+
+      ntimes <- as.numeric(str_match(sub_string, paste0("Historic<.*>.*\\[(.*?)\\]"))[,2])
+      
+      specs <- vector("list", ntimes)
+      for(specs.i in seq_len(ntimes)){
+        specs[[specs.i]] <- list()
+        if(specs.i %% 3 == 1){
+          specs[[specs.i]]$what <- "double"
+          specs[[specs.i]]$n    <- 20
+          specs[[specs.i]]$size <- 8
+        }else if(specs.i %% 3 == 2){
+          specs[[specs.i]]$what <- "integer"
+          specs[[specs.i]]$n    <- 1
+          specs[[specs.i]]$size <- 8
+        }else if(specs.i %% 3 == 0){
+          specs[[specs.i]]$what <- "logical"
+          specs[[specs.i]]$n    <- 1
+          specs[[specs.i]]$size <- 8
+        }
+
+      }
+      specs$name   <- current_stream_type$name
+      specs$single <- FALSE
+    }else{ # e.g. "Historic<double, 31> deet_31;"
+      
+      specs$n <- specs$what <- specs$size <- specs$names <- rep(NA, 3)
+      # always three, this is a type defined in guessmath.h
+      specs$what[1]  <- rbin_tbl[sapply(possible_types, grepl, sub_string,  fixed = TRUE)] 
+      specs$size[1]  <- n_sizes[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+      specs$names[1] <- current_stream_type$name
+      # n is tricky, it can be hardcoded it can be one of the const ints
+      to_read <- str_match(sub_string, paste0("Historic<", specs$what[1], ", (.*?)>.*"))[,2]
+      if(to_read %in% LPJ_GUESS_CONST_INTS$var){
+        specs$n      <- LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var == to_read]
+      }else{
+        specs$n[1]   <- as.numeric(to_read)
+      }
+      specs$what[2]  <- "integer" #need to check what size_t is
+      specs$size[2]  <- 8
+      specs$n[2]     <- 1
+      specs$names[2] <- "current_index"
+      
+      specs$what[3]  <- "logical"
+      specs$size[3]  <- 1
+      specs$n[3]     <- 1
+      specs$names[3] <- "full"   
+      
+      specs$single <- FALSE
     }
-    specs$what[2]  <- "integer" #need to check what size_t is
-    specs$size[2]  <- 8
-    specs$n[2]     <- 1
-    specs$names[2] <- "current_index"
-    
-    specs$what[3]  <- "logical"
-    specs$size[3]  <- 1
-    specs$n[3]     <- 1
-    specs$names[3] <- "full"   
-    
-    specs$single <- FALSE
+
+
     
   }else if(current_stream_type$type == "struct"){
     if(current_stream_type$name != "solvesom"){
@@ -238,15 +282,16 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
     return(list(type = "int", name = "nstands", substring = "int nstands;")) #there is not substring like that in guess.h
   }  
   
-  if(current_stream_var == "landcover"){ # a bit of a special case
-    return(list(type = "landcovertype", name = "landcover", substring = "landcovertype landcover;"))
-  } 
+  # This is an older version thing!!!
+  # if(current_stream_var == "landcover"){ # a bit of a special case
+  #   return(list(type = "landcovertype", name = "landcover", substring = "landcovertype landcover;"))
+  # } 
   
   # it might be difficult to extract the "type" before the varname
   # there are not that many to check
   possible_types <- c("class ", "double ", "bool ", "int ")
   
-  possible_types <- c(possible_types, LPJ_GUESS_TYPES)
+  possible_types <- c(possible_types, paste0(LPJ_GUESS_TYPES, " "))
   
   beg_end <- NULL # not going to need it always
   
@@ -316,6 +361,14 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
       stream_name <- current_stream_var
     }else{
       stream_type <- possible_types[sapply(possible_types, grepl, sub_string,  fixed = TRUE)]
+      if(length(stream_type) == 2){ # one string nested in the other?
+        # try the longer
+        if(grepl(stream_type[which.max(nchar(stream_type))], sub_string,  fixed = TRUE)){
+          stream_type <- stream_type[which.max(nchar(stream_type))]
+        }
+      }else if(length(stream_type) > 2){ # haven't seen anything like that yet
+        PEcAn.logger::logger.severe("Check this out.")
+      }
       stream_name <- current_stream_var
     }
     
@@ -349,7 +402,7 @@ library(stringr)
 
 
 # test path
-outdir <- "/fs/data2/output/PEcAn_1000010473/out/1002655714"
+outdir <- "/fs/data2/output/PEcAn_1000010473/out/1002656304"
 
 # outdir, at least model version, maybe also settings
 read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
@@ -368,6 +421,10 @@ guessh_in   <- readLines(con = system.file(guessh_name, package = "PEcAn.LPJGUES
 # parameters.h has some more types
 paramh_name <- paste0("parameters.", version, ".h") 
 paramh_in   <- readLines(con = system.file(paramh_name, package = "PEcAn.LPJGUESS"), n = -1)
+
+### these are the values read from params.ins, passed to this fcn
+paramsins <- readLines(file.path(rundir, "params.ins"), n = -1)
+npatches  <- as.numeric(gsub(".*([0-9]+).*$", "\\1", paramsins[grepl("npatch", paramsins, fixed = TRUE)]))
 
 
 ######################################
@@ -397,9 +454,6 @@ if(meta_data$num_processes == 1){
 }
 
 
-### these are the values read from params.ins, passed to this fcn
-paramsins <- readLines(file.path(rundir, "params.ins"), n = -1)
-npatches  <- as.numeric(gsub(".*([0-9]+).*$", "\\1", paramsins[grepl("npatch", paramsins, fixed = TRUE)]))
 
 
 ################################ CHECKS AND EXTRACTIONS ################################
@@ -412,13 +466,9 @@ LPJ_GUESS_CLASSES <- c("Gridcell", "Climate", "Gridcellpft", "Stand", "Standpft"
 lpjguess_classes <- list()
 ctr <- 1
 # NOTE THAT THESE PATTERNS ASSUME SOME CODING STYLE, thanks to LPJ-GUESS developers this might not be an issue in the future 
-for(i in seq_along(guessh_in)){
+for(i in seq_along(guesscpp_in)){
   # search for "class XXX : public Serializable {"
-  res <- str_match(guessh_in[i], "class (.*?) : public Serializable")
-  if(is.na(res[,2])){
-    # try "class XXX : public ..., public Serializable {" pattern
-    res <- str_match(guessh_in[i], "class (.*?) : public .* Serializable")
-  }
+  res <- str_match(guesscpp_in[i], "void (.*?)::serialize\\(ArchiveStream\\& arch\\)")
   if(!is.na(res[,2])){
     lpjguess_classes[[ctr]] <- res[,2]
     ctr <- ctr + 1  
@@ -519,8 +569,12 @@ streamed_vars_gridcell <- find_stream_var(file_in = guesscpp_in, line_nos = beg_
 # there will be nested loops, the hierarchy will follow LPJ-GUESS architecture
 Gridcell <- list()
 level <- "Gridcell"
-for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
+for(g_i in 1:4){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
+  ## SOMETHING IS OFFF AT Gridcellpft
   current_stream <- streamed_vars_gridcell[g_i]
+  # hackkkk, only one stand
+  if(current_stream == "st[i]")   current_stream <- "Gridcellst" 
+  if(current_stream == "balance") current_stream <- "MassBalance" #not sure how to make this name matching otherwise
   if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
   if(grepl(glob2rx("(*this)[*].landcover"), current_stream)){ # s counter might change, using wildcard
     # not sure how to handle this better. If we see this, it means we are now looping over Stands
@@ -927,32 +981,36 @@ for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
       
       for(pft_i in seq_len(num_pft)){
         for(sv_i in seq_along(streamed_vars)){
-          #for(sv_i in 21:37){
           current_stream <- streamed_vars[sv_i] #it's OK to overwrite
           current_stream_type <- find_stream_type(class_name, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
           
-          if(current_stream_type$type == "class"){
-            
-            # CLASS, NOT EVER GOING HERE?
-            class_name <- current_stream_type$name
-            
+          current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
+          # and read!
+          if(current_stream_specs$single){
+            Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]] <- readBin(con  = zz, 
+                                                                                         what = current_stream_specs$what, 
+                                                                                         n    = current_stream_specs$n, 
+                                                                                         size = current_stream_specs$size)
+          }else if(current_stream_specs$name %in% c("hmtemp_20", "hmprec_20", "hmeet_20")){
+            # these three are just too different, maybe extract their names in the beginning
+            # be careful while writing back to the binary
+            Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- readBin(con = zz, double(), 264, 8)
+            # Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- vector("list", length(current_stream_specs) - 2)
+            # for(css.i in seq_len(length(current_stream_specs) - 2)){
+            #   Gridcell[[length(Gridcell)]][[current_stream_type$name]][[css.i]] <- readBin(con  = zz, 
+            #                                                   what = current_stream_specs[[css.i]]$what, 
+            #                                                   n    = current_stream_specs[[css.i]]$n, 
+            #                                                   size = current_stream_specs[[css.i]]$size)
+            #}
           }else{
-            current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
-            # and read!
-            if(current_stream_specs$single){
-              Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]] <- readBin(con  = zz, 
-                                                                                           what = current_stream_specs$what, 
-                                                                                           n    = current_stream_specs$n, 
-                                                                                           size = current_stream_specs$size)
-            }else{
-              for(css.i in seq_along(current_stream_specs$what)){
-                Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
+            for(css.i in seq_along(current_stream_specs$what)){
+              Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
                                                                                                                                  what = current_stream_specs$what[css.i], 
                                                                                                                                  n    = current_stream_specs$n[css.i], 
                                                                                                                                  size = current_stream_specs$size[css.i])
-              }
             }
           }
+          
         } # streamed_vars-loop ends
       } # pft-loop ends
       
