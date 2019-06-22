@@ -568,11 +568,10 @@ streamed_vars_gridcell <- find_stream_var(file_in = guesscpp_in, line_nos = beg_
 # there will be nested loops, the hierarchy will follow LPJ-GUESS architecture
 Gridcell <- list()
 level <- "Gridcell"
-for(g_i in 1:4){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
-  ## SOMETHING IS OFFF AT Gridcellpft
+for(g_i in 1:8){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
   current_stream <- streamed_vars_gridcell[g_i]
-  # hackkkk, only one stand
-  if(current_stream == "st[i]")   current_stream <- "Gridcellst" 
+  # weird, it doesn't go into Gridcell st
+  if(current_stream == "st[i]")   next #current_stream <- "Gridcellst" 
   if(current_stream == "balance") current_stream <- "MassBalance" #not sure how to make this name matching otherwise
   if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
   if(grepl(glob2rx("(*this)[*].landcover"), current_stream)){ # s counter might change, using wildcard
@@ -581,12 +580,12 @@ for(g_i in 1:4){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
     # this is an integer that tells us which landcover type this stand is
     # so it should be the indice of NATURAL in typedef enum landcovertype (I believe indexing starts from 0)
 
-    num_stnd <- as.numeric(Gridcell$nstands)
-    Gridcell[["Stand"]] <- vector("list", num_stnd) 
-    
     # note that this is streamed under Gridcell, not Stand in guess.cpp, 
     # but I think this info needs to go together with the Stand sublist
-    # so prepend landcovertype to the streamed_vars_stand
+    # so prepend landcovertype to the streamed_vars_stand EDIT: I'll actually just read it here
+    Gridcell[["Stand"]][["landcovertype"]] <- readBin(zz, what = integer(), n = 1, size = 4)
+    num_stnd <- as.numeric(Gridcell$nstands)
+    Gridcell[["Stand"]] <- vector("list", num_stnd) 
     
     next
   } 
@@ -604,11 +603,12 @@ for(g_i in 1:4){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
                                                       tools::toTitleCase(current_stream_type$name), 
                                                       "::serialize"))
     streamed_vars_stand <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
-    streamed_vars_stand <- c("landcover", streamed_vars_stand) # prepending landcovertype to the streamed_vars_stand
+    # this was previous version
+    # streamed_vars_stand <- c("landcover", streamed_vars_stand) # prepending landcovertype to the streamed_vars_stand
     
     
     for(stnd_i in seq_len(num_stnd)){ #looping over the stands
-      for(svs_i in seq_along(streamed_vars_stand)){ # looping over the streamed stand vars
+      for(svs_i in 1:2){#seq_along(streamed_vars_stand)){ # looping over the streamed stand vars
         
         current_stream <- streamed_vars_stand[svs_i]
         if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
@@ -643,7 +643,7 @@ for(g_i in 1:4){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
           Gridcell[["Stand"]][[stnd_i]][["Patch"]] <- vector("list", npatches) 
           
           for(ptch_i in seq_len(npatches)){ #looping over the patches
-            for(svp_i in seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
+            for(svp_i in 1){#seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
               current_stream <- streamed_vars_patch[svp_i]
               if(grepl(glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
               
@@ -689,11 +689,15 @@ for(g_i in 1:4){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
                   # if number of individuals is 0 it's a bit suspicious. Not sure if ever will get negative but that'd definitely be wrong
                     PEcAn.logger::logger.warn("Number of individuals under vegetation is", number_of_individuals)
                   }
+                  Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]] <- list()
                   Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]] <- vector("list", number_of_individuals) 
 
                   beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
                                                    pattern = paste0("void Individual::serialize"))
                   streamed_vars_indv <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+                  
+                  # NO CROPS
+                  if("*cropindiv" %in% streamed_vars_indv) streamed_vars_indv <- streamed_vars_indv[!(streamed_vars_indv == "*cropindiv")]
                   
                   # loop over nobj
                   for(indv_i in seq_len(number_of_individuals)){
@@ -702,25 +706,64 @@ for(g_i in 1:4){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][["indiv.pft.id"]] <- readBin(zz, integer(), 1, size = 4)
                     # read all the individual class
                     for(svi_i in seq_along(streamed_vars_indv)){ # 
+                      
                       current_stream <- streamed_vars_indv[svi_i] 
-                      
-                      current_stream_type  <- find_stream_type("individual", current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
-                      current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
-                      
-                      if(current_stream_specs$single){
-                        Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][[current_stream_type$name]] <- readBin(con  = zz, 
-                                                                                                     what = current_stream_specs$what, 
-                                                                                                     n    = current_stream_specs$n, 
-                                                                                                     size = current_stream_specs$size)
+                      if(current_stream == "photosynthesis") current_stream <- "PhotosynthesisResult"
+                        
+                      if(tools::toTitleCase(current_stream) %in% LPJ_GUESS_CLASSES){
+                          current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
                       }else{
-                        for(css.i in seq_along(current_stream_specs$what)){
-                          Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
-                                                                                                                                           what = current_stream_specs$what[css.i], 
-                                                                                                                                           n    = current_stream_specs$n[css.i], 
-                                                                                                                                           size = current_stream_specs$size[css.i])
+                          # Only Individual class under Vegetation
+                          current_stream_type <- find_stream_type("Individual", current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+                      }
+
+                      if(current_stream_type$type == "class"){
+                        
+                        if(current_stream_type$name != "PhotosynthesisResult"){
+                          PEcAn.logger::logger.debug("Classes other than PhotosynthesisResult enter here.")
+                        }
+                        # ONLY PhotosynthesisResult HERE SO FAR ******************************************************************
+                        beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
+                                                         pattern = paste0("void ",
+                                                                          tools::toTitleCase(current_stream_type$name), 
+                                                                          "::serialize"))
+                        streamed_vars_photo <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+                        
+                        Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][["PhotosynthesisResult"]] <- list()
+                        for(photo_i in seq_along(streamed_vars_photo)){
+                          current_stream <- streamed_vars_photo[photo_i] #it's OK to overwrite
+                          current_stream_type <- find_stream_type("PhotosynthesisResult", current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+                          
+                          current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
+                          # and read!
+
+                          Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][["PhotosynthesisResult"]][[current_stream_type$name]] <- readBin(con  = zz, 
+                                                                                                                                                     what = current_stream_specs$what, 
+                                                                                                                                                     n    = current_stream_specs$n, 
+                                                                                                                                                     size = current_stream_specs$size)
+
+                        }# streamed_vars_photo-loop ends
+                        
+                      }else{
+
+                        
+                        current_stream_type  <- find_stream_type("individual", current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+                        current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
+                        
+                        if(current_stream_specs$single){
+                          Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][[current_stream_type$name]] <- readBin(con  = zz, 
+                                                                                                                                                               what = current_stream_specs$what, 
+                                                                                                                                                               n    = current_stream_specs$n, 
+                                                                                                                                                               size = current_stream_specs$size)
+                        }else{
+                          for(css.i in seq_along(current_stream_specs$what)){
+                            Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
+                                                                                                                                                                         what = current_stream_specs$what[css.i], 
+                                                                                                                                                                         n    = current_stream_specs$n[css.i], 
+                                                                                                                                                                         size = current_stream_specs$size[css.i])
+                          }
                         }
                       }
-                      
                     }# end loop over stream vars individual
                   } # end loop over number_of_individuals
                     
@@ -771,6 +814,8 @@ for(g_i in 1:4){#seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
                 }else{
                   # NOT VEGETATION OR FLUX
                   streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
+                  # NO CROPS, NATURAL VEG
+                  if("*cropphen" %in% streamed_vars) streamed_vars <- streamed_vars[!(streamed_vars == "*cropphen")]
                   num_pft <- ifelse(grepl("pft", current_stream_type$name, fixed = TRUE), n_pft, 1)
                   
                   for(varname in streamed_vars){
