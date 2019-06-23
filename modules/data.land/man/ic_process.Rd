@@ -17,5 +17,5 @@ ic_process(settings, input, dir, overwrite = FALSE)
 ic_process
 }
 \author{
-Istem Fer
+Istem Fer, Hamze Dokoohaki
 }
