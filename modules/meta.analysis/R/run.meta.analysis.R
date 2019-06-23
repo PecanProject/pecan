@@ -196,7 +196,7 @@ runModule.run.meta.analysis <- function(settings) {
     dbfiles    <- settings$database$dbfiles
     database   <- settings$database$bety
     run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database)
-  } else if (is.Settings(settings)) {
+  } else if (PEcAn.settings::is.Settings(settings)) {
     pfts       <- settings$pfts
     iterations <- settings$meta.analysis$iter
     random     <- settings$meta.analysis$random.effects
