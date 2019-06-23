@@ -87,6 +87,13 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
     PEcAn.logger::logger.severe("Unknown pft type! Expected 'plant' or 'cultivar', got", pfttype)
   }
 
+  # ANS: Need to do this conversion for the check against existing
+  # membership later on. Otherwise, `NA` from the CSV is interpreted
+  # as different from `""` returned here, even though they are really
+  # the same thing.
+  pft_members <- pft_members %>%
+    dplyr::mutate_if(is.character, ~dplyr::na_if(., ""))
+
   # get the priors
   prior.distns <- PEcAn.DB::query.priors(pft = pftid, trstr = PEcAn.utils::vecpaste(trait.names), con = dbcon)
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
@@ -145,70 +152,86 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
         if (!foundallfiles) {
           PEcAn.logger::logger.warn(
             "The following files are in database but not found on disk: ",
-            paste(shQuote(full_paths[!files_exist]), collapse = ", "), ". ",
+            paste(shQuote(need_files[!files_exist]), collapse = ", "), ". ",
             "Re-running meta-analysis."
           )
-        }
-
-        # Check if PFT membership has changed
-        PEcAn.logger::logger.debug("Checking if PFT membership has changed.")
-        existing_membership <- utils::read.csv(need_paths[["pft_membership"]],
-                                               stringsAsFactors = FALSE)
-        diff_membership <- symmetric_setdiff(
-          existing_membership,
-          pft_members,
-          xname = "existing",
-          yname = "current"
-        )
-        if (nrow(diff_membership) > 0) {
-          PEcAn.logger::logger.error(
-            "\n PFT membership has changed. \n",
-            "Difference is:\n",
-            PEcAn.logger::print2string(diff_membership),
-            wrap = FALSE
+        } else {
+          # Check if PFT membership has changed
+          PEcAn.logger::logger.debug("Checking if PFT membership has changed.")
+          existing_membership <- utils::read.csv(
+            need_paths[["pft_membership"]],
+            # Columns are: id, genus, species, scientificname
+            # Need this so NA values are
+            colClasses = c("double", "character", "character", "character"),
+            stringsAsFactors = FALSE,
+            na.strings = ""
           )
-          foundallfiles <- FALSE
-        }
-
-        # Check if priors have changed
-        PEcAn.logger::logger.debug("Checking if priors have changed")
-        existing_prior <- PEcAn.utils::load_local(need_paths[["priors"]])[["prior.distns"]]
-        diff_prior <- symmetric_setdiff(
-          dplyr::as_tibble(prior.distns, rownames = "trait"),
-          dplyr::as_tibble(existing_prior, rownames = "trait")
-        )
-        if (nrow(diff_prior) > 0) {
-          PEcAn.logger::logger.error(
-            "\n Prior has changed. \n",
-            "Difference is:\n",
-            PEcAn.logger::print2string(diff_prior),
-            wrap = FALSE
+          diff_membership <- symmetric_setdiff(
+            existing_membership,
+            pft_members,
+            xname = "existing",
+            yname = "current"
           )
-          foundallfiles <- FALSE
-        }
+          if (nrow(diff_membership) > 0) {
+            PEcAn.logger::logger.error(
+              "\n PFT membership has changed. \n",
+              "Difference is:\n",
+              PEcAn.logger::print2string(diff_membership),
+              wrap = FALSE
+            )
+            foundallfiles <- FALSE
+          }
 
-        # Check if trait data have changed
-        PEcAn.logger::logger.debug("Checking if trait data have changed")
-        current_traits <- dplyr::bind_rows(trait.data.check, .id = "trait") %>%
-          dplyr::select(-mean, -stat)
-        existing_traits <- PEcAn.utils::load_local(
-          need_paths[["trait_data"]]
-        )[["trait.data"]] %>%
-          dplyr::bind_rows(.id = "trait") %>%
-          dplyr::select(-mean, -stat)
-        diff_traits <- symmetric_setdiff(current_traits, existing_traits)
-
-        if (nrow(diff_traits) > 0) {
-          diff_summary <- diff_traits %>%
-            dplyr::count(source, trait)
-          PEcAn.logger::logger.error(
-            "\n Prior has changed. \n",
-            "Here are the number of differing trait records by trait:\n",
-            PEcAn.logger::print2string(diff_summary),
-            wrap = FALSE
+          # Check if priors have changed
+          PEcAn.logger::logger.debug("Checking if priors have changed")
+          existing_prior <- PEcAn.utils::load_local(need_paths[["priors"]])[["prior.distns"]]
+          diff_prior <- symmetric_setdiff(
+            dplyr::as_tibble(prior.distns, rownames = "trait"),
+            dplyr::as_tibble(existing_prior, rownames = "trait")
           )
-          foundallfiles <- FALSE
+          if (nrow(diff_prior) > 0) {
+            PEcAn.logger::logger.error(
+              "\n Prior has changed. \n",
+              "Difference is:\n",
+              PEcAn.logger::print2string(diff_prior),
+              wrap = FALSE
+            )
+            foundallfiles <- FALSE
+          }
+
+          # Check if trait data have changed
+          PEcAn.logger::logger.debug("Checking if trait data have changed")
+          existing_trait_data <- PEcAn.utils::load_local(
+            need_paths[["trait_data"]]
+          )[["trait.data"]]
+          if (length(trait.data.check) != length(existing_trait_data)) {
+            PEcAn.logger::logger.warn(
+              "Lengths of new and existing `trait.data` differ. ",
+              "Re-running meta-analysis."
+            )
+            foundallfiles <- FALSE
+          } else if (length(trait.data.check) == 0) {
+            PEcAn.logger::logger.warn("New and existing trait data are both empty. Skipping this check.")
+          } else {
+            current_traits <- dplyr::bind_rows(trait.data.check, .id = "trait") %>%
+              dplyr::select(-mean, -stat)
+            existing_traits <- dplyr::bind_rows(existing_trait_data, .id = "trait") %>%
+              dplyr::select(-mean, -stat)
+            diff_traits <- symmetric_setdiff(current_traits, existing_traits)
+            if (nrow(diff_traits) > 0) {
+              diff_summary <- diff_traits %>%
+                dplyr::count(source, trait)
+              PEcAn.logger::logger.error(
+                "\n Prior has changed. \n",
+                "Here are the number of differing trait records by trait:\n",
+                PEcAn.logger::print2string(diff_summary),
+                wrap = FALSE
+              )
+              foundallfiles <- FALSE
+            }
+          }
         }
+        
 
         if (foundallfiles) {
           PEcAn.logger::logger.info(
@@ -265,6 +288,23 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
                              ids_are_cultivars = (pfttype == "cultivar"))
   traits <- names(trait.data)
 
+  if (length(trait.data) > 0) {
+    trait_counts <- trait.data %>%
+      dplyr::bind_rows(.id = "trait") %>%
+      dplyr::count(trait)
+
+    PEcAn.logger::logger.info(
+      "\n Number of observations per trait for PFT ", shQuote(pft[["name"]]), ":\n",
+      PEcAn.logger::print2string(trait_counts, n = Inf),
+      wrap = FALSE
+    )
+  } else {
+    PEcAn.logger::logger.warn(
+      "None of the requested traits were found for PFT ",
+      format(pft_members[["id"]], scientific = FALSE)
+    )
+  }
+
   # get list of existing files so they get ignored saving
   old.files <- list.files(path = pft$outdir)
 
@@ -306,24 +346,13 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
     row.names = FALSE
   )
 
-  trait_counts <- trait.data %>%
-    dplyr::bind_rows(.id = "trait") %>%
-    dplyr::count(trait)
-
-  PEcAn.logger::logger.info(
-    "\n Number of observations per trait for PFT ",
-    shQuote(pft[["name"]]), ":\n",
-    PEcAn.logger::print2string(trait_counts, n = Inf),
-    wrap = FALSE
-  )
-
   ### save and store in database all results except those that were there already
   store_files_all <- list.files(path = pft[["outdir"]])
   store_files <- setdiff(store_files_all, old.files)
   PEcAn.logger::logger.debug(
     "The following posterior files found in PFT outdir ",
     "(", shQuote(pft[["outdir"]]), ") will be registered in BETY ",
-    "under posterior ID ", format(pft[["posteriorid"]]), ": ",
+    "under posterior ID ", format(pft[["posteriorid"]], scientific = FALSE), ": ",
     paste(shQuote(store_files), collapse = ", "), ". ",
     "The following files (if any) will not be registered because they already existed: ",
     paste(shQuote(intersect(store_files, old.files)), collapse = ", "),
@@ -388,7 +417,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
     # to double by `lapply`. This works fine if we switch to
     # `query_priors`, but haven't done so yet because that requires
     # prepared statements and therefore requires the Postgres driver. 
-    all_priors_list <- lapply(format(pft_ids), query.priors,
+    all_priors_list <- lapply(format(pft_ids, scientific = FALSE), query.priors,
                               con = dbcon, trstr = trait.names)
     trait.names <- unique(unlist(lapply(all_priors_list, rownames)))
     # Eventually, can replace with this:
@@ -413,6 +442,8 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
 #' @param xname Label for data in x but not y. Default = "x"
 #' @param yname Label for data in y but not x. Default = "y"
 #' @param namecol Name of label column. Default = "source".
+#' @param simplify_types (Logical) If `TRUE`, coerce anything that
+#'   isn't numeric to character, to facilitate comparison.
 #' @return `data.frame` of data not common to x and y, with additional
 #'   column (`namecol`) indicating whether data are only in x
 #'   (`xname`) or y (`yname`)
@@ -426,10 +457,33 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
 #'                   stringsAsFactors = FALSE)
 #' symmetric_setdiff(xdf, ydf)
 symmetric_setdiff <- function(x, y, xname = "x", yname = "y",
-                              namecol = "source") {
+                              namecol = "source", simplify_types = TRUE) {
   stopifnot(is.data.frame(x), is.data.frame(y),
             is.character(xname), is.character(yname),
             length(xname) == 1, length(yname) == 1)
+  is_i64 <- c(
+    vapply(x, inherits, logical(1), what = "integer64"),
+    vapply(y, inherits, logical(1), what = "integer64")
+  )
+  if (any(is_i64)) {
+    PEcAn.logger::logger.debug(
+      "Detected at least one `integer64` column. ",
+      "Converting to `numeric` for comparison."
+    )
+    if (requireNamespace("bit64", quietly = TRUE)) {
+      x <- dplyr::mutate_if(x, bit64::is.integer64, as.numeric)
+      y <- dplyr::mutate_if(y, bit64::is.integer64, as.numeric)
+    } else {
+      PEcAn.logger::logger.warn(
+        '"bit64" package required for `integer64` conversion, but not installed. ',
+        "Skipping conversion, which may produce weird results!"
+      )
+    }
+  }
+  if (simplify_types) {
+    x <- dplyr::mutate_if(x, ~!is.numeric(.), as.character)
+    y <- dplyr::mutate_if(x, ~!is.numeric(.), as.character)
+  }
   namecol <- dplyr::sym(namecol)
   xy <- dplyr::setdiff(x, y) %>%
     dplyr::mutate(!!namecol := xname)
