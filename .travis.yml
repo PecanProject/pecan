@@ -87,6 +87,7 @@ addons:
       - r-cran-tidyverse
       - r-cran-xml
       - r-cran-xml2
+      - r-cran-xts
 
   
 ## notifications should go to slack
