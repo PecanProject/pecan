@@ -127,7 +127,7 @@ SDA_remote_launcher <-function(settingPath,
   fname_p1 <- basename(settings$outdir)
 
   
-  if (!is.null( settings$workflow$id)) {
+  if (!is.null(settings$workflow$id)) {
     fname_p2<-settings$workflow$id
   } else {
     fname_p2<-""
@@ -210,7 +210,7 @@ SDA_remote_launcher <-function(settingPath,
   # Finding all the met paths in your settings
   if (is.MultiSettings(settings)){
     input.paths <-settings %>% map(~.x[['run']] ) %>% map(~.x[['inputs']] %>% map(~.x[['path']])) %>% unlist()
-  }else{
+  } else {
     input.paths <-settings$run$inputs %>% map(~.x[['path']]) %>% unlist()
   }
 
