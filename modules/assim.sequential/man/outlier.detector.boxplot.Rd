@@ -10,5 +10,5 @@ outlier.detector.boxplot(X)
 \item{X}{A list of dataframes}
 }
 \description{
-This function performs a simple outlier replacement on all the colmuns of dataframes inside a list
+This function performs a simple outlier replacement on all the columns of dataframes inside a list
 }

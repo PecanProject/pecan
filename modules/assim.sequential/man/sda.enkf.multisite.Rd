@@ -7,8 +7,8 @@
 sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL,
   restart = FALSE, control = list(trace = T, FF = F, interactivePlot =
   FALSE, TimeseriesPlot = FALSE, BiasPlot = FALSE, plot.title = NULL,
-  facet.plots = FALSE, debug = FALSE, pause = FALSE, Profiling = FALSE),
-  ...)
+  facet.plots = FALSE, debug = FALSE, pause = FALSE, Profiling = FALSE,
+  OutlierDetection = FALSE), ...)
 }
 \arguments{
 \item{settings}{PEcAn settings object}
@@ -28,7 +28,7 @@ TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlat
 NONE
 }
 \description{
-State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
+State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter. Check out SDA_control function for more details on the control arguments.
 }
 \author{
 Michael Dietze and Ann Raiho \email{dietze@bu.edu}

@@ -153,6 +153,7 @@ Create diagnostics
   <adjustment>TRUE</adjustment>
   <process.variance>FALSE</process.variance>
   <sample.parameters>FALSE</sample.parameters>
+  <q.type>Single</q.type>
    <state.variables>
     <variable>
       <variable.name>AGB.pft</variable.name>
@@ -184,6 +185,7 @@ Create diagnostics
 * **nitrGEF** : [optional] numeric defining the length of the MCMC chains.
 * **nthin** : [optional] numeric defining thining length for the MCMC chains.
 * **nburnin** : [optional] numeric defining the number of burnins during the MCMCs.
+* **q.type** : [optional] If the `process.variance` is set to TRUE then this can take values of Single, Site or PFT.
 * **censored.data** : [optional] logical set TRUE for censored state variables.
 
 * **sample.parameters** : [optional] TRUE/FLASE flag for if parameters should be sampled for each ensemble member or not. This allows for more spread in the initial conditions of the forecast.
@@ -284,6 +286,8 @@ $\boldsymbol{V}_{t+1}	=	n_{t}\bar{\boldsymbol{Q}}_{t}$
 $n_{t+1}	=	\frac{\sum_{i=1}^{I}\sum_{j=1}^{J}\frac{v_{ijt}^{2}+v_{iit}v_{jjt}}{Var(\boldsymbol{\bar{Q}}_{t})}}{I\times J}$
 
 where we calculate the mean of the process covariance matrix $\left(\bar{\boldsymbol{Q}_{t}}\right)$ from the posterior samples at time t. Degrees of freedom for the Wishart are typically calculated element by element where $v_{ij}$ are the elements of $\boldsymbol{V}_{t}$. $I$ and $J$ index rows and columns of $\boldsymbol{V}$. Here, we calculate a mean number of degrees of freedom for $t+1$ by summing over all the elements of the scale matrix $\left(\boldsymbol{V}\right)$ and dividing by the count of those elements $\left(I\times J\right)$. We fit this model sequentially through time in the R computing environment using R package 'rjags.'
+
+Users have control over how they think is the best way to estimate $Q$. Our code will look for the tag `q.type` in the XML settings under `state.data.assimilation` which can take 3 values of Single, PFT or Site. If `q.type` is set to single then one value of process variance will be estimated across all different sites or PFTs. On the other hand, when q.type` is set to Site or PFT then a process variance will be estimated for each site or PFT at a cost of more time and computation power.
 
 #### Multi-site State data assimilation.
 `sda.enkf.multisite` function allows for assimilation of observed data at multiple sites at the same time. In order to run a multi-site SDA, one needs to send a multisettings pecan xml file to this function. This multisettings xml file needs to contain information required for running at least two sites under `run` tag. The code will automatically run the ensembles for all the sites and reformats the outputs matching the required formats for analysis step. 

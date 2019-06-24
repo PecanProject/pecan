@@ -80,11 +80,16 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   # What type of Q needs to be estimated ? if it's defined then it's either Site or PFT based if not then it's one for all.
-  q.type <- settings$state.data.assimilation$q.type
-  if (is.null(q.type)) {
-    q.type <- 1
+  q.type <- toupper(settings$state.data.assimilation$q.type)
+  
+  single.q <-1
+  Site.q <-2
+  pft.q <-3
+  
+  if (is.null(q.type) | q.type=="SINGLE") {
+    q.type <- single.q
   } else{
-    q.type <- ifelse(toupper(q.type) == "SITE", 2, 3)
+    q.type <- ifelse(q.type == "SITE", Site.q, pft.q)
   } 
   #Loading nimbles functions
   if (!exists('GEF.MultiSite.Nimble')) PEcAn.assim.sequential:::load_nimble()
