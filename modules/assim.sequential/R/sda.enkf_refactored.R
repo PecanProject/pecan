@@ -20,6 +20,7 @@
 #' @export
 #' 
 
+
 sda.enkf <- function(settings,
                      obs.mean,
                      obs.cov,
@@ -33,6 +34,7 @@ sda.enkf <- function(settings,
                                   debug=FALSE,
                                   pause=FALSE),
                      ...) {
+
 
   if (control$debug) browser()
   ###-------------------------------------------------------------------###
