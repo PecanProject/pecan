@@ -1,12 +1,6 @@
 context("query.traits")
 
-con <- tryCatch(db.open(params = list(
-  user = "bety",
-  password = "bety",
-  host = "localhost"
-)), error = function(e) {
-  skip("Skipping tests because unable to establish database connection.")
-})
+con <- check_db_test()
 
 teardown({
   db.close(con)
@@ -65,3 +59,45 @@ test_that("returns empty list if no trait data found", {
   expect_equal(query.traits(ids=1, priors="not_a_trait", con=con), list())
 })
 
+# Test `query_traits` function, which has a slightly different API
+test_that("query_traits works as expected", {
+  # NOTE: Capture output used here to avoid polluting the testthat
+  # output. The error messages ARE checked with `expect_error`.
+  test_that("query_traits throws errors with invalid inputs when `strict` is TRUE.", {
+    expect_error(
+      capture.output(query_priors(
+        c("temperate.Early_Hardwood", "not_a_real_PFT"),
+        con = con, strict = TRUE
+      ), type = "m"),
+      regexp = "PFT: 'not_a_real_PFT'"
+    )
+    expect_error(
+      capture.output(query_priors(
+        "temperate.Early_Hardwood", c("sla", "not_a_real_trait"),
+        con = con, strict = TRUE
+      ), type = "m"),
+      regexp = "Trait: 'not_a_real_trait'"
+    )
+  })
+
+  test_that("query_traits expand argument works as expected", {
+    pft <- c("Optics.Temperate_Early_Hardwood",
+             "Optics.Temperate_Mid_Hardwood",
+             "Optics.Temperate_Late_Hardwood")
+    trait <- c("leaf_reflect_vis", "leaf_reflect_nir")
+    pdat2 <- query_priors(pft, trait, con = con)
+    expect_equal(nrow(pdat2), length(pft) * length(trait))
+    expect_true(setequal(pdat2[["pft_name"]], pft))
+    expect_true(setequal(pdat2[["name"]], trait))
+
+    expect_error(
+      capture.output(query_priors(pft, trait, con = con, expand = FALSE), type = "m"),
+      regexp = "Unclear how to recycle"
+    )
+    pft_sub <- pft[1:2]
+    pdat3 <- query_priors(pft_sub, trait, con = con, expand = FALSE)
+    expect_equal(nrow(pdat3), length(pft_sub))
+    expect_equal(pdat3[["pft_name"]], pft_sub)
+    expect_equal(pdat3[["name"]], trait)
+  })
+})

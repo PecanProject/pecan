@@ -1,6 +1,0 @@
-### OS Specific Installations
-
-- [Ubuntu][Ubuntu]
-- [CentOS][CentOS/RedHat]
-- [OSX][Mac OSX]
-- [RedHat][CentOS / RHEL] Check this vs. CentOS ... ?
