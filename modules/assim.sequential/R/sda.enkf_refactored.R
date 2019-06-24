@@ -22,11 +22,11 @@
 
 sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F, 
                      control=list(trace=T,
-                                  interactivePlot=T,
-                                  TimeseriesPlot=T,
-                                  BiasPlot=F,
-                                  plot.title=NULL,
-                                  debug=FALSE),...) {
+                                  interactivePlot = FALSE,
+                                  TimeseriesPlot = FALSE,
+                                  BiasPlot = FALSE,
+                                  plot.title = NULL,
+                                  debug = FALSE),...) {
 
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
