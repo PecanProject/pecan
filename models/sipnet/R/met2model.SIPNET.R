@@ -296,6 +296,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       #doy <- doy[doy.start:doy.end]
       tmp[,3] <- doy
     }
+  }
 
     
     if (is.null(out)) {
