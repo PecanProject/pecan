@@ -13,18 +13,17 @@
 ##' @param band   string value for which measurement to extract
 ##' @param band_qc string value for which quality control band, or use "NA" if you do not know or do not need QC information (optional)
 ##' @param band_sd string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)
-##' @param siteID numeric value of BETY site id value to use for output file name. Default is NULL
+##' @param siteID numeric value of BETY site id value to use for output file name. Default is NULL. Only MODISTools option.
 ##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
-##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.
-##' @param progress TRUE reports the download progress bar of the dataset, FALSE omits the download progress bar. Default is TRUE.
+##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False. Only MODISTools option.
+##' @param progress TRUE reports the download progress bar of the dataset, FALSE omits the download progress bar. Default is TRUE. Only MODISTools option.
 ##' 
 ##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
 ##' depends on the MODISTools package version 1.1.0
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools")
-##' plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
+##' test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools", progress = TRUE, QC_filter = FALSE)
 ##' test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
 ##' }
 ##' 
@@ -158,7 +157,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     output <- as.data.frame(cbind(dat$modis_date, dat$calendar_date, dat$band, dat$tile, dat$latitude, dat$longitude, dat$pixel, dat$value, QC, SD), stringsAsFactors = FALSE)
     names(output) <- c("modis_date", "calendar_date", "band", "tile", "lat", "lon", "pixels", "data", "qc", "sd")
     
-    output[ ,5:10] <- lapply(output[,5:10], as.numeric)
+    output[ ,5:10] <- lapply(output[ ,5:10], as.numeric)
     
     # scale the data + stdev to proper units
     output$data <- output$data * (as.numeric(dat$scale))
@@ -172,7 +171,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       for (i in seq_len(nrow(output)))
       {
         convert <- paste(binaryLogic::as.binary(as.integer(output$qc[i]), n = 8), collapse = "")
-        output$qc[i] <- substr(convert, nchar(convert)-2, nchar(convert))
+        output$qc[i] <- substr(convert, nchar(convert) - 2, nchar(convert))
       }
       good <- which(output$qc %in% c("000", "001"))
       if (length(good) > 0 || !(is.null(good)))
