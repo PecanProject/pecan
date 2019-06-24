@@ -12,7 +12,6 @@ sda.enkf(settings, obs.mean, obs.cov, Q = NULL, restart = NULL,
   control = list(trace = TRUE, interactivePlot = TRUE, TimeseriesPlot =
   TRUE, BiasPlot = FALSE, plot.title = NULL, debug = FALSE, pause = FALSE),
   ...)
-
 }
 \arguments{
 \item{settings}{PEcAn settings object}
