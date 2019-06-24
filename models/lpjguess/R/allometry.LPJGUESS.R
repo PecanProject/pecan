@@ -45,6 +45,9 @@ lambertbeer <- function(lai) {
 #' @param k_rp,k_allom1,k_allom2,k_allom3, Allometry coefficients (per PFT parameters)
 #' @param wooddens Wood density (kgC/m^2) (per PFT parameter)
 #' @param crownarea_max Maximum allowed crown area (m^2)  (per PFT parameter)
+#' @param HEIGHT_MAX Maximum allowed height of an individual.  This is the maximum height that a tree
+#' can have.  This is hard-coded in LPJ-GUESS to 150 m, but for SDA that might be unrealistically big, 
+#' so this argument allows adjustment. 
 #' 
 #' This function was transcribed from LPJ-GUESS (v4.0) C++ to R for the purpose of nudging the LPJ-GUESS state offline.
 #' The idea is of course to use the output from the analysis step from an SDA routine to provide the nudged values, although that isn't
@@ -88,7 +91,8 @@ allometry <- function(
   k_allom2, 
   k_allom3, 
   wooddens,
-  crownarea_max) {
+  crownarea_max,
+  HEIGHT_MAX = 150) {
   
   # DESCRIPTION
   # Calculates tree allometry (height and crown area) and fractional projective
@@ -142,7 +146,8 @@ allometry <- function(
   fpc_new = 0.0 # updated FPC
   
   # guess2008 - max tree height allowed (metre).
-  HEIGHT_MAX = 150.0
+  # MF - removed to make this tuneable
+  # HEIGHT_MAX = 150.0
 
   
   # MF - added for providing the error code
