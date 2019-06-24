@@ -84,7 +84,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   if (is.null(q.type)) {
     q.type <- 1
   } else{
-    q.type <- ifelse(q.type == "Site", 2, 3)
+    q.type <- ifelse(toupper(q.type) == "SITE", 2, 3)
   } 
   #Loading nimbles functions
   if (!exists('GEF.MultiSite.Nimble')) PEcAn.assim.sequential:::load_nimble()
@@ -340,7 +340,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   y.censored <- as.numeric(ifelse(Y > interval[, 1], Y, 0))
   
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
-  # intial Q depends on the size of aqq
+  # initial Q depends on the size of aqq
     q.tmp <- diag(1, nrow(aqq), ncol(aqq))
 
     if (q.type == 1){
@@ -419,7 +419,18 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
     }
     
-    save(inits.pred, dimensions.tobit, constants.tobit, data.tobit,  model_pred, conf, Rmcmc, Cmodel, Cmcmc, file="SDA/NimbleVars.RData" )
+    save(
+      inits.pred,
+      dimensions.tobit,
+      constants.tobit,
+      data.tobit,
+      model_pred,
+      conf,
+      Rmcmc,
+      Cmodel,
+      Cmcmc,
+      file = file.path(settings$outdir,"SDA","NimbleVars.RData")
+    )
     # if t>1 in GEF --------------------------------------------   
   } else {
 

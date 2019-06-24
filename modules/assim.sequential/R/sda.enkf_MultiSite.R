@@ -13,7 +13,7 @@
 #’ @details
 #’ Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast), a new workflow folder is created and the previous forecast for the start_time is copied over. During restart the initial run before the loop is skipped, with the info being populated from the previous run. The function then dives right into the first Analysis, then continues on like normal.
 #' 
-#' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
+#' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter. Check out SDA_control function for more details on the control arguments.
 #' 
 #' @return NONE
 #' @import nimble tictoc furrr
@@ -33,7 +33,8 @@ sda.enkf.multisite <- function(settings,
                                             facet.plots = FALSE,
                                             debug=FALSE,
                                             pause = FALSE,
-                                            Profiling = FALSE),
+                                            Profiling = FALSE,
+                                            OutlierDetection=FALSE),
                                ...) {
   plan(multiprocess)
   if (control$debug) browser()
@@ -414,7 +415,7 @@ sda.enkf.multisite <- function(settings,
       
       
       #replacing crazy outliers before it's too late
-      X <- outlier.detector.boxplot(X)
+      if (control$OutlierDetection) X <- outlier.detector.boxplot(X)
       
       # Now we have a matrix that columns are state variables and rows are ensembles.
       # this matrix looks like this
@@ -447,7 +448,7 @@ sda.enkf.multisite <- function(settings,
           PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
           diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         }
-        # making the mapping oprator
+        # making the mapping operator
         H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
         
         ###-------------------------------------------------------------------###
@@ -497,14 +498,14 @@ sda.enkf.multisite <- function(settings,
         }
         # Adding obs elements to the enkf.params
         #This can later on help with diagnostics
-        enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], R = list(R))
-        enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], Y = list(Y))
-        enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% setNames(site.ids) ))
+        enkf.params[[obs.t]] <-
+          c(
+            enkf.params[[obs.t]],
+            R = list(R),
+            Y = list(Y),
+            RestartList = list(restart.list %>% setNames(site.ids))
+          )
         
-        #setting names
-        FORECAST <-FORECAST 
-        
-        enkf.params <-enkf.params
         ###-------------------------------------------------------------------###
         ### Trace                                                             ###
         ###-------------------------------------------------------------------###----      

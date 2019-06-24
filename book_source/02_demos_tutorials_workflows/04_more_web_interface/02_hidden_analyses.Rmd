@@ -288,7 +288,9 @@ where we calculate the mean of the process covariance matrix $\left(\bar{\boldsy
 #### Multi-site State data assimilation.
 `sda.enkf.multisite` function allows for assimilation of observed data at multiple sites at the same time. In order to run a multi-site SDA, one needs to send a multisettings pecan xml file to this function. This multisettings xml file needs to contain information required for running at least two sites under `run` tag. The code will automatically run the ensembles for all the sites and reformats the outputs matching the required formats for analysis step. 
 
-The observed mean and cov needs to be formatted as list of different dates with observations. For each element of this list also there needs to be a list with mean and cov matrices of different sites named by their siteid. This would look like something like this:
+The observed mean and cov needs to be formatted as list of different dates with observations. For each element of this list also there needs to be a list with mean and cov matrices of different sites named by their siteid. In case that zero variance was estimated for a variable inside the obs.cov, the SDA code will automatically replace that with half of the minimum variance from other non-zero variables in that time step.
+
+This would look like something like this:
 ```
 > obs.mean
 
