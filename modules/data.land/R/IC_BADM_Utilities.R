@@ -181,12 +181,12 @@ entries <- entries[-which(ind),]
 #' @param lat numeric latitude
 #' @param long numeric longitude
 #' @param siteid site id as a string
-#' @param outdir outputdir which you want to store the IC netcdf file
+#' @param outdir output dir which you want to store the IC netcdf file
 #'
 #' @return a dataframe with file, host, mimetype, formatname, startdate, enddate and dbfile.name columns
 #' @export
 #'
-netcdf.writer.BADM <- function(lat, long, siteid, outdir){
+netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
  
   
   #Reading in the BADM data
@@ -219,14 +219,49 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir){
   input$dims <- dims
   input$vals <- variables
   
+
   return(pool_ic_list2netcdf(
     input = input,
     outdir = outdir,
-    siteid = siteid
-  ))
+    siteid = siteid,
+    ens
+  )$file)
 }
 
 
+
+#' BADM_IC_process
+#'
+#' @param settings pecan xml settings
+#' @param dir output dir which you want to store the IC netcdf file
+#' @param overwrite Flag for overwriting the IC file.
+#'
+#' @return a list of paths to generated and stored IC files.
+#' @export
+#'
+BADM_IC_process <- function(settings, dir, overwrite=TRUE){
+  
+  
+  new.site <-
+    data.frame(
+      id = settings$run$site$id %>% as.numeric(),
+      lat = settings$run$site$lat ,
+      lon = settings$run$site$lon %>% as.numeric()
+    )
+  
+
+  out.ense <- seq_len(settings$ensemble$size) %>%
+    purrr::map(~ netcdf.writer.BADM(new.site$lat,
+                             new.site$lon,
+                             new.site$id,
+                             outdir=dir,
+                             ens=.x))
+  
+  out.ense <- out.ense %>%
+    setNames(rep("path", length(out.ense)))
+  
+  return(out.ense)
+}
 
 #' EPA_ecoregion_finder
 #'
