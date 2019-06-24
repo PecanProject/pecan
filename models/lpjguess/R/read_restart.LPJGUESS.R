@@ -1,0 +1,27 @@
+
+# developing
+outdir = "/fs/data2/output//PEcAn_1000010473/out"
+runid = 1002656610
+stop.time = "1960-12-31 23:59:59 UTC"
+load("/fs/data2/output/PEcAn_1000010473/SDAsettings_develop.Rdata")
+var.names = c("AGB.pft", "TotSoilCarb")
+load("/fs/data2/output/PEcAn_1000010473/SDAparams_develop.Rdata")
+
+
+read_restart.LPJGUESS <- function(outdir, runid, stop.time, settings, var.names, params){
+  
+  # which LPJ-GUESS version, the structure of state file depends a lot on version
+  lpjguess_ver <- settings$model$revision
+  
+  # check if files required by read_binary_LPJGUESS exist
+  needed_files <- paste0(c("guess.", "guess.", "parameters."), lpjguess_ver, c(".cpp", ".h", ".h"))
+
+  file_check <- file.exists(system.file(needed_files, package = "PEcAn.LPJGUESS"))
+  if(!all(file_check)){
+    PEcAn.logger::logger.severe("read_binary_LPJGUESS need :", paste(needed_files[!file_check], collapse = " "))
+  }
+  
+  
+  
+  
+}
