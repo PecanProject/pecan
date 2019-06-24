@@ -427,6 +427,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       if (!is.na(lai) && is.numeric(lai)) {
         param[which(param[, 1] == "laiInit"), 2] <- lai
       }
+      ## neeInit gC/m2
+      nee <- try(ncdf4::ncvar_get(IC.nc,"nee"),silent = TRUE)
+      if (!is.na(nee) && is.numeric(nee)) {
+        param[which(param[, 1] == "neeInit"), 2] <- nee
+      }
       ## litterInit gC/m2
       if ("litter" %in% names(IC.pools)) {
         param[which(param[, 1] == "litterInit"), 2] <- udunits2::ud.convert(IC.pools$litter, 'kg m-2', 'g m-2') # BETY: kgC m-2
