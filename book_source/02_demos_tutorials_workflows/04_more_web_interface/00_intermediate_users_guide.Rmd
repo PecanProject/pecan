@@ -1,0 +1,13 @@
+# More on the PEcAn Web Interface {#intermediate-user}
+
+This section will provide information to those wanting to take advantage of PEcAn's customizations from the web interface.
+
+* [Additional web configuration] - Advanced options available from the web interface
+    - [Brown Dog](#browndog)
+    - [Sensitivity and ensemble analyses][Advanced Setup][TODO: Under construction...]
+    - [Editing model configurations][TODO: Under construction...]
+* [Settings-configured analyses] - Analyses only available by manually editing `pecan.xml`
+    - [Parameter data assimilation (PDA)](#pda)
+    - [State data assimilation (SDA)](#sda)
+* [Remote execution with PEcAn](#pecan-remote) - Running analyses and generally working with external machines (HPC) in the context of PEcAn.
+

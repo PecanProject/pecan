@@ -181,7 +181,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        host = host, 
                                        overwrite = overwrite$download,
                                        site = site, username = username)
-    if (met %in% c("CRUNCEP", "GFDL")) {
+    if (met %in% c("CRUNCEP", "GFDL","NOAA_GEFS_downscale")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
       input_met$id <- raw.id
