@@ -1,11 +1,11 @@
 
 # developing
-outdir = "/fs/data2/output//PEcAn_1000010473/out"
-runid = 1002656610
-stop.time = "1960-12-31 23:59:59 UTC"
-load("/fs/data2/output/PEcAn_1000010473/SDAsettings_develop.Rdata")
-var.names = c("AGB.pft", "TotSoilCarb")
-load("/fs/data2/output/PEcAn_1000010473/SDAparams_develop.Rdata")
+# outdir = "/fs/data2/output//PEcAn_1000010473/out"
+# runid = 1002656610
+# stop.time = "1960-12-31 23:59:59 UTC"
+# load("/fs/data2/output/PEcAn_1000010473/SDAsettings_develop.Rdata")
+# var.names = c("AGB.pft", "TotSoilCarb")
+# load("/fs/data2/output/PEcAn_1000010473/SDAparams_develop.Rdata")
 
 
 read_restart.LPJGUESS <- function(outdir, runid, stop.time, settings, var.names, params){
@@ -21,7 +21,20 @@ read_restart.LPJGUESS <- function(outdir, runid, stop.time, settings, var.names,
     PEcAn.logger::logger.severe("read_binary_LPJGUESS need :", paste(needed_files[!file_check], collapse = " "))
   }
   
+  # read binary state file, takes a couple of minutes
+  Gridcell_container <- read_binary_LPJGUESS(outdir  = file.path(outdir, runid), 
+                                             version = lpjguess_ver)
   
+  forecast <- list()
   
+  # for (var_name in var.names) {}
   
-}
+  params$LPJGUESS_state <- Gridcell_container
+  
+  PEcAn.logger::logger.info("Finished --", runid)
+  
+  X_tmp <- list(X = unlist(forecast), params = params)
+  
+  return(X_tmp)
+  
+} # read_restart.LPJGUESS

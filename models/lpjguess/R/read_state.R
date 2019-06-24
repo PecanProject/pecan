@@ -401,7 +401,7 @@ library(stringr)
 
 
 # test path
-outdir <- "/fs/data2/output/PEcAn_1000010473/out/1002656304"
+#outdir <- "/fs/data2/output/PEcAn_1000010473/out/1002656304"
 
 # outdir, at least model version, maybe also settings
 read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
