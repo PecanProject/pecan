@@ -1,5 +1,6 @@
 library(shiny)
 library(plotly)
+library(highcharter)
 library(shinythemes)
 library(knitr)
 library(shinyjs)

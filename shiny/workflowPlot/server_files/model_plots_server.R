@@ -40,32 +40,53 @@ observeEvent(input$units_model,{
 observeEvent(input$ex_plot_model,{
   req(input$units_model)
 
-  output$modelPlot <- renderPlotly({
-    
+  #output$modelPlot <- renderPlotly({
+   output$modelPlot <- renderHighchart({
+   
     input$ex_plot_model
     isolate({
       tryCatch({
         df <- dplyr::filter(load.model(), var_name == input$var_name_model)
-        
+
         updateSliderInput(session,"smooth_n_model", min = 0, max = nrow(df))
-        
+
         title <- unique(df$title)
         xlab <- unique(df$xlab)
         ylab <- unique(df$ylab)
-        
+
         unit <- ylab
         if(input$units_model != unit & udunits2::ud.are.convertible(unit, input$units_model)){
           df$vals <- udunits2::ud.convert(df$vals,unit,input$units_model)
           ylab <- input$units_model
         }
+
+        # data_geom <- switch(input$plotType_model, point = geom_point, line = geom_line)
+        # 
+        # plt <- ggplot(df, aes(x = dates, y = vals, color = run_id))
+        # plt <- plt + data_geom()
+        # plt <- plt + labs(title=title, x=xlab, y=ylab)
+        # plt <- plt + geom_smooth(n=input$smooth_n_model)
+        # ply <- ggplotly(plt)
+      
         
-        data_geom <- switch(input$plotType_model, point = geom_point, line = geom_line)
+        df$run_id <- as.numeric(as.character(df$run_id))
+        xts.df <- xts(df[,c("vals", "run_id")], order.by = df$dates)
         
-        plt <- ggplot(df, aes(x = dates, y = vals, color = run_id))
-        plt <- plt + data_geom()
-        plt <- plt + labs(title=title, x=xlab, y=ylab)
-        plt <- plt + geom_smooth(n=input$smooth_n_model)
-        ply <- ggplotly(plt)
+        plot_type <- switch(input$plotType_model, point = "scatter", line = "line")
+        # not sure if this method to calcualte smoothing parameter is correct
+        smooth_param <- input$smooth_n_model / nrow(df)
+        
+        ply <- highchart(type = "stock") %>%
+          hc_add_series(xts.df$vals, type = plot_type, name = title, regression = TRUE, 
+                        regressionSettings = list(type = "loess", loessSmooth = smooth_param)) %>% 
+          hc_add_dependency("plugins/highcharts-regression.js") %>% 
+          hc_title(text = title) %>% 
+          hc_xAxis(title = list(text = xlab), type = 'datetime') %>% 
+          hc_yAxis(title = list(text = ylab)) %>% 
+          hc_tooltip(pointFormat = " Date: {point.x:%Y-%m-%d %H:%M} <br> y: {point.y}") %>% 
+          hc_exporting(enabled = TRUE)
+        
+        
         #Signaling the success of the operation
         toastr_success("Generate interactive plots")
       },
