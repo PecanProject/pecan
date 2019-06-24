@@ -267,10 +267,10 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     
     if (is.null(aqq)) {
       
-      if (q.type==2) { # if we wanna estimate a q per site
+      if (q.type==Site.q) { # if we wanna estimate a q per site
         aqq <-
           array(1, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
-      } else if(q.type == 3){ # if we wanna estimate a q per PFT
+      } else if(q.type == pft.q){ # if we wanna estimate a q per PFT
         
         site.pfts <- settings %>%
           map( ~ .x[['run']]) %>%
@@ -348,9 +348,9 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   # initial Q depends on the size of aqq
     q.tmp <- diag(1, nrow(aqq), ncol(aqq))
 
-    if (q.type == 1){
+    if (q.type == single.q ){
       aq.arg <- 1
-    } else if(q.type == 2){
+    } else{
       aq.arg <-aqq[,,t]
     }
     
@@ -481,7 +481,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
 
   # Setting up the prior for the next step from the posterior of this step
   if (t < nt){
-    if (q.type == 1){ #if it's a gamma case
+    if (q.type == single.q){ #if it's a gamma case
       
       aqq[1, 1, t + 1] <- mean(mq)
       bqq[t + 1] <- var(mq  %>%  as.numeric())
