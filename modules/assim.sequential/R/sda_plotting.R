@@ -466,7 +466,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
         `colnames<-`(c('2.5%','97.5%','Variables'))%>%
         mutate(means=one.day.data$means%>%unlist,
                Type="Data",
-               Date=one.day.data$Date%>%as.POSIXct(tz="EST"))
+               Date=one.day.data$Date%>%as.POSIXct(tz="UTC"))
       
       
     })#%>%
