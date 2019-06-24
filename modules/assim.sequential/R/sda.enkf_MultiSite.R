@@ -30,6 +30,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
                                             facet.plots = FALSE,
                                             debug = FALSE,
                                             pause = FALSE),
+                               keepNC = TRUE,
                                ...) {
   if (control$debug) browser()
   ###-------------------------------------------------------------------###
@@ -211,7 +212,10 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     if (t > 1){
       #removing old simulations
       ## keep all old simulations right now since there is debugging going on
-      #unlink(list.files(outdir, "*.nc.var", recursive = TRUE, full.names = TRUE))
+      if (!(keepNC))
+      {
+        unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+      }
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
         purrr::map2(inputs, function(settings, inputs) {
