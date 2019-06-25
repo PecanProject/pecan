@@ -19,7 +19,6 @@
 ##' 
 ##' @return Returns whatever the FUN is returning. In case of EnKF and GEF, this function returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-
 Analysis.sda<-function(settings,
                        FUN,
                        Forecast=list(Pf=NULL,mu.f=NULL,Q=NULL,X=NULL),

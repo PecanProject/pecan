@@ -489,7 +489,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet",Sys.time()%>%as.numeric,".param")))
   
-  
+
   write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
               quote = FALSE)
 } # write.config.SIPNET
