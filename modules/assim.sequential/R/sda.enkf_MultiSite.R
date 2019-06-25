@@ -461,7 +461,12 @@ sda.enkf.multisite <- function(settings,
         
         tic(paste0("Analysis for cycle = ", t))
         
-        if(processvar == FALSE){an.method<-EnKF.MultiSite  }else{    an.method<-GEF.MultiSite   }  
+        if(processvar == FALSE) {
+          an.method <- EnKF.MultiSite
+        } else{
+          an.method <-ifelse(nsites>1, GEF.MultiSite, GEF)
+ 
+        }
         
         #-analysis function
         enkf.params[[obs.t]] <- Analysis.sda(
