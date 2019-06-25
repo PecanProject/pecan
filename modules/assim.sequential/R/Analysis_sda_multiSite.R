@@ -36,7 +36,6 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE)) %>%
     `attr<-`('Site', c(rep(site.ids, each=length(var.names))))
   # I make the Pf in a separate function
-  if(length(site.ids)>1){
     # This the function makes the Pf by creating blocks in a matrix for different sites
     # We can also send a localization functions to this 
     # for extra argumnets like distance matrix for localization use elipsis
@@ -45,9 +44,7 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
                        t=extraArg$t,
                        blocked.dis,
                        scalef)
-  }else{
-    PEcAn.logger::logger.severe("You need to send this function a multisetting object containing multiple sites/runs.")
-  }
+
   ## process error
   if (!is.null(Q)) {
     Pf <- Pf + Q

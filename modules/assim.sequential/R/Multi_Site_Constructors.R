@@ -32,7 +32,7 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   site.cov.orders <- expand.grid(site.ids,site.ids) %>%
                         filter( Var1 != Var2)
 
-  for (i in 1:nrow(site.cov.orders)){
+  for (i in seq_len(nrow(site.cov.orders))){
     # first we need to find out where to put it in the big matrix
     rows.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,1])
     cols.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,2])
@@ -45,7 +45,7 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   }
   
   # if I see that there is a localization function passed to this - I run it by the function.
-  if (!is.null(localization.FUN)) {
+  if (!is.null(localization.FUN) & nsite>1) {
     pf.matrix.out <- localization.FUN (pf.matrix, blocked.dis, ...)
   } else{
     pf.matrix.out <- pf.matrix
