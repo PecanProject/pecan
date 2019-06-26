@@ -56,7 +56,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     products = MODISTools::mt_products()
     if (!(product %in% products$product))
     {
-      print(products)
+      PEcAn.logger::logger.warn(products)
       stop("Product not available for MODIS API. Please chose a product from the list above.")
     } 
     
@@ -64,7 +64,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     bands <- MODISTools::mt_bands(product = product)
     if (!(band %in% bands$band))
     {
-      print(bands$band)
+      PEcAn.logger::logger.warn(bands$band)
       stop("Band selected is not avialable. Please selected from the bands listed above that correspond with the data product.")
     } 
     
@@ -77,7 +77,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     {
       if (as.numeric(start_date) >= dates[1] && as.numeric(end_date) <= dates[length(dates)])
       {
-        print("Extracting data")
+        PEcAn.logger::logger.warn("Extracting data")
         
         start <- as.Date(start_date, "%Y%j")
         end <- as.Date(end_date, "%Y%j")
@@ -85,7 +85,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       ########## For Date case 1: if only one date is asked for, but date is not within modis data prodate date range ##########
       if (as.numeric(start_date) < dates[1] || as.numeric(end_date) > dates[length(dates)])
       {
-        print(start)
+        PEcAn.logger::logger.warn(start)
         stop("start or end date are not within MODIS data product date range. Please choose another date.")
       }
     } else { 
@@ -93,7 +93,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       # Best case scenario: Start and end date asked for fall with available date range of modis data product.
       if (as.numeric(start_date) >= dates[1] && as.numeric(end_date) <= dates[length(dates)])
       {
-        print("Check #2: All dates are available!")
+        PEcAn.logger::logger.warn("Check #2: All dates are available!")
       }
       
       # Okay scenario: Some MODIS data is available for parameter start_date and end_date range, but either the start_date or end_date falls outside the range of availble 
@@ -101,12 +101,12 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       if (as.numeric(start_date) <= dates[1] && as.numeric(end_date) >= dates[1])
       {
         start_date = dates[1]
-        print("WARNING: Dates are only partially available. Start date before modis data product is available.")
+        PEcAn.logger::logger.warn("WARNING: Dates are only partially available. Start date before modis data product is available.")
       } 
       if (as.numeric(end_date) >= dates[length(dates)] && as.numeric(start_date) <= dates[length(dates)])
       {
         end_date <- dates[length(dates)]
-        print("WARNING: Dates are only partially available. End date befire modis data product is available.")
+        PEcAn.logger::logger.warn("WARNING: Dates are only partially available. End date befire modis data product is available.")
       } 
       
       # Unacceptable scenario: start_date and end_date does not fall within the availa MODIS data product date range. There is no data to extract in this scenario.
@@ -119,7 +119,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       end <- as.Date(end_date, "%Y%j")
     }
     
-    print("Extracting data")
+    PEcAn.logger::logger.warn("Extracting data")
     cat(paste("Product =", product, "\n", "Band =", band, "\n", "Date Range =", start, "-", end, "\n", "Latitude =", lat, "\n", "Longitude =", lon, sep = " "))
     
     # extract main band data from api
@@ -178,7 +178,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       {
         output = output[good, ]
       } else {
-        print("All QC values are bad. No data to output with QC filter == TRUE.")
+        PEcAn.logger::logger.warn("All QC values are bad. No data to output with QC filter == TRUE.")
       }
     }
     
