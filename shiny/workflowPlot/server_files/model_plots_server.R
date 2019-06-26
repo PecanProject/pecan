@@ -74,11 +74,18 @@ observeEvent(input$ex_plot_model,{
         
         plot_type <- switch(input$plotType_model, point = "scatter", line = "line")
         # not sure if this method to calcualte smoothing parameter is correct
-        smooth_param <- input$smooth_n_model / nrow(df)
+        smooth_param <- input$smooth_n_model / nrow(df) *100
         
-        ply <- highchart(type = "stock") %>%
-          hc_add_series(xts.df$vals, type = plot_type, name = title, regression = TRUE, 
-                        regressionSettings = list(type = "loess", loessSmooth = smooth_param)) %>% 
+        ply <- highchart() 
+        
+        for(i in unique(xts.df$run_id)){
+          ply <- ply %>% 
+            hc_add_series(xts.df[xts.df$run_id ==  i, "vals"], 
+                        type = plot_type, name = i, regression = TRUE, 
+                        regressionSettings = list(type = "loess", loessSmooth = smooth_param)) 
+        }
+         
+        ply <- ply %>%
           hc_add_dependency("plugins/highcharts-regression.js") %>% 
           hc_title(text = title) %>% 
           hc_xAxis(title = list(text = xlab), type = 'datetime') %>% 
