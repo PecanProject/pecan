@@ -681,14 +681,15 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                     
                     # nobj points to different things under different levels, here it is the number of individuals
                     number_of_individuals <- readBin(zz, integer(), 1, size = 4) 
+                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]] <- list()
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["number_of_individuals"]] <- number_of_individuals
                     
                     # few checks for sensible vals
-                    if(number_of_individuals < 1 | number_of_individuals > 10000){ # should there be an upper limit here too?
+                    if(number_of_individuals < 0 | number_of_individuals > 10000){ # should there be an upper limit here too?
                       # if number of individuals is 0 it's a bit suspicious. Not sure if ever will get negative but that'd definitely be wrong
                       PEcAn.logger::logger.warn("Number of individuals under vegetation is", number_of_individuals)
                     }
-                    Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]] <- list()
+                    #Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]] <- list()
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]] <- vector("list", number_of_individuals) 
                     
                     beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
@@ -1080,6 +1081,9 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
   } # Gridcell-loop ends
   
   close(zz)
+  
+  Gridcell$meta_data <- meta_data
+  
   return(Gridcell)
 } # read_binary_LPJGUESS end
 
