@@ -77,7 +77,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     {
       if (as.numeric(start_date) >= dates[1] && as.numeric(end_date) <= dates[length(dates)])
       {
-        PEcAn.logger::logger.warn("Extracting data")
+        PEcAn.logger::logger.info("Extracting data")
         
         start <- as.Date(start_date, "%Y%j")
         end <- as.Date(end_date, "%Y%j")
@@ -93,7 +93,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       # Best case scenario: Start and end date asked for fall with available date range of modis data product.
       if (as.numeric(start_date) >= dates[1] && as.numeric(end_date) <= dates[length(dates)])
       {
-        PEcAn.logger::logger.warn("Check #2: All dates are available!")
+        PEcAn.logger::logger.info("Check #2: All dates are available!")
       }
       
       # Okay scenario: Some MODIS data is available for parameter start_date and end_date range, but either the start_date or end_date falls outside the range of availble 
@@ -119,7 +119,7 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
       end <- as.Date(end_date, "%Y%j")
     }
     
-    PEcAn.logger::logger.warn("Extracting data")
+    PEcAn.logger::logger.info("Extracting data")
     cat(paste("Product =", product, "\n", "Band =", band, "\n", "Date Range =", start, "-", end, "\n", "Latitude =", lat, "\n", "Longitude =", lon, sep = " "))
     
     # extract main band data from api
