@@ -127,7 +127,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   # if we had censored data
   ###-------------------------------------------------------------------###----
   if (censored.data) {
-    out.cens<-tobit_model_censored (settings, X, var.names, mu.f, Pf)
+    out.cens<-tobit_model_censored (settings, X, var.names, mu.f, Pf, t)
     mu.f <- out.cens$mu.f
     Pf <- out.cens$Pf
     iycens <- out.cens$iycens

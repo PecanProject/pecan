@@ -53,20 +53,35 @@ load_nimble <- function(){
     X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
     
     #observation operator
-    y_star[1:YN] <- y_star_create(X[1:YN])
+    if(YN==1){
+      y_star[1] <- X[YN]
+    }else{
+      y_star[1:YN] <- y_star_create(X[1:YN])
+    }
     
+   
     ## Analysis
-    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) 
-    
+    if(YN==1){
+      y.censored ~ dnorm(y_star[1], tau = r)
+    }else{
+      y.censored[1:YN] ~ dmnorm(y_star[1:YN],
+                                 cholesky = r[1:YN,1:YN],
+                                 prec_param = 1)
+     }
     #don't flag y.censored as data, y.censored in inits
     #remove y.censored samplers and only assign univariate samplers on NAs
-    
-    for(i in 1:YN){
-      y.ind[i] ~ dinterval(y.censored[i], 0)
+    if (YN==1){
+       y.ind ~ dinterval(y.censored, 0)
+    }else{
+      for(i in 1:YN){
+       y.ind[i] ~ dinterval(y.censored[i], 0)
+      }
     }
+
     
   })
   
+
   #tobit.model--This does the GEF for multi Site -------------------------------------
   GEF.MultiSite.Nimble <<- nimbleCode({ 
     

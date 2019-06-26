@@ -147,7 +147,7 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   # if we had censored data
   ###-------------------------------------------------------------------###----
   if (censored.data) {
-    out.cens<-tobit_model_censored (settings, X, var.names, mu.f, Pf)
+    out.cens<-tobit_model_censored (settings, X, var.names, mu.f, Pf, t)
     mu.f <- out.cens$mu.f
     Pf <- out.cens$Pf
     iycens <- out.cens$iycens
@@ -172,13 +172,22 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
-  rownames(interval) <- names(obs.mean[[t]])
-  for(i in 1:length(var.names)){
+  rownames(interval) <- names(obs.mean[[t]][[1]]) # I have a one here because 
+  for(i in seq_len(length(var.names))){
     interval[which(startsWith(rownames(interval),
-                              var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
-                                                            as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
-                                                          length(which(startsWith(rownames(interval),
-                                                                                  var.names[i]))),2,byrow = TRUE)
+                              var.names[i])),] <-
+      matrix(c(
+        as.numeric(
+          settings$state.data.assimilation$state.variables[[i]]$min_value
+        ),
+        as.numeric(
+          settings$state.data.assimilation$state.variables[[i]]$max_value
+        )
+      ),
+      length(which(startsWith(
+        rownames(interval),
+        var.names[i]
+      ))), 2, byrow = TRUE)
   }
   #### These vectors are used to categorize data based on censoring 
   #### from the interval matrix
@@ -187,26 +196,47 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
   
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
     # Contants defined in the model
-    constants.tobit = list(N = ncol(X), YN = length(y.ind))
+
+    constants.tobit <- list(N = ncol(X),
+                            YN = length(y.ind)
+                           )
     
-    dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
-                            Q = c(length(mu.f),length(mu.f)))
+    dimensions.tobit <- list(X = length(mu.f),
+                            X.mod = ncol(X),
+                            Q = c(length(mu.f),
+                                  length(mu.f))
+                            )
     # Data need to be used in the model
-    data.tobit = list(muf = as.vector(mu.f),
-                      pf = solve(Pf), 
-                      aq = aqq[t,,], bq = bqq[t],
-                      y.ind = y.ind,
-                      y.censored = y.censored,
-                      r = solve(R))
+    if (length(y.ind)==1) {
+      RR <- as.numeric(chol(solve(R)))
+    }else{
+      RR <-chol(solve(R))
+    }
+    
+    data.tobit = list(
+      muf = as.vector(mu.f),
+      pf = solve(Pf),
+      aq = aqq[t, , ],
+      bq = bqq[t] %>% as.vector(),
+      y.ind = y.ind ,
+      y.censored = y.censored ,
+      r = RR
+    )
     #initial values
     inits.pred = list(q = diag(length(mu.f)),
                       X.mod = as.vector(mu.f),
-                      X = as.vector(mu.f) # This was this before rnorm(length(mu.f),0,1), I thought the mu.f would be a better IC for something like abv ground biomass than something close to zero.
-    ) #
+                      X = as.vector(mu.f)
+                      ) # This was this before rnorm(length(mu.f),0,1), I thought the mu.f would be a better IC for something like abv ground biomass than something close to zero.) #
     
-    model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
-                              constants = constants.tobit, inits = inits.pred,
-                              name = 'base')
+    model_pred <-
+      nimbleModel(
+        tobit.model,
+        data = data.tobit,
+        dimensions = dimensions.tobit,
+        constants = constants.tobit,
+        inits = inits.pred,
+        name = 'base'
+      )
     ## Adding X.mod,q,r as data for building model.
     conf <- configureMCMC(model_pred, print=TRUE)
     conf$addMonitors(c("X","q","Q")) 
@@ -221,14 +251,10 @@ GEF<-function(setting,Forecast,Observed, H, extraArg, nitr=50000, nburnin=10000,
       ## could instead use slice samplers, or any combination thereof, e.g.:
       ##conf$addSampler(node, 'toggle', control=list(type='slice'))
     }
-    
     conf$printSamplers()
-    
     ## can monitor y.censored, if you wish, to verify correct behaviour
     #conf$addMonitors('y.censored')
-    
     Rmcmc <<- buildMCMC(conf)
-    
     Cmodel <<- compileNimble(model_pred)
     Cmcmc <<- compileNimble(Rmcmc, project = model_pred)
     

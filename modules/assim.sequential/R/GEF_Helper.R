@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-tobit_model_censored <- function(settings, X, var.names, mu.f, Pf) {
+tobit_model_censored <- function(settings, X, var.names, mu.f, Pf, t) {
   intervalX <- matrix(NA, ncol(X), 2)
   rownames(intervalX) <- colnames(X)
   outdir     <- settings$modeloutdir

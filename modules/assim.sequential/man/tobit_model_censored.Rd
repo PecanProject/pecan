@@ -4,7 +4,7 @@
 \alias{tobit_model_censored}
 \title{tobit_model_censored}
 \usage{
-tobit_model_censored(settings, X, var.names, mu.f, Pf)
+tobit_model_censored(settings, X, var.names, mu.f, Pf, t)
 }
 \arguments{
 \item{settings}{}

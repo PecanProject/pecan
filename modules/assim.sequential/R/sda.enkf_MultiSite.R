@@ -467,7 +467,7 @@ sda.enkf.multisite <- function(settings,
           an.method <-ifelse(nsites>1, GEF.MultiSite, GEF)
  
         }
-        
+  
         #-analysis function
         enkf.params[[obs.t]] <- Analysis.sda(
           settings,
