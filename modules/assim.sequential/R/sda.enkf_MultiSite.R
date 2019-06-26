@@ -90,8 +90,14 @@ sda.enkf.multisite <- function(settings,
       `colnames<-`(c("Lon","Lat")) %>%
       `rownames<-`(site.ids)
   }else{
+    site.ids<- settings$run$site$id
+    site.locs <- matrix(c(settings$run$site$lon%>%as.numeric,
+                          settings$run$site$lat%>%as.numeric), ncol = 2)%>%
+      `colnames<-`(c("Lon","Lat")) %>%
+      `rownames<-`(site.ids)
     conf.settings <- list(settings)
   }
+  nsites <- length(site.ids) # number of sites
   
   #Finding the distance between the sites
   distances <- sp::spDists(site.locs, longlat=T)
@@ -252,7 +258,7 @@ sda.enkf.multisite <- function(settings,
   for(t in sim.time){
 
     # if it beaks at least save the trace
-   tryCatch({
+   #tryCatch({
       
       tic(paste0("Writing configs for cycle = ", t))
       # do we have obs for this time - what year is it ?
@@ -422,16 +428,14 @@ sda.enkf.multisite <- function(settings,
       #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
       #[1,]  3.872521     37.2581  3.872521     37.2581
       # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
-      if (multi.site.flag)
+
         X <- X %>%
         map_dfc(~.x) %>% 
         as.matrix() %>%
         `colnames<-`(c(rep(var.names, length(X)))) %>%
         `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
       
-      
-      
-      
+
       FORECAST[[obs.t]] <- X
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
@@ -457,8 +461,13 @@ sda.enkf.multisite <- function(settings,
         
         tic(paste0("Analysis for cycle = ", t))
         
-        if(processvar == FALSE){an.method<-EnKF.MultiSite  }else{    an.method<-GEF.MultiSite   }  
-        
+        if(processvar == FALSE) {
+          an.method <- EnKF.MultiSite
+        } else{
+          an.method <-ifelse(nsites>1, GEF.MultiSite, GEF)
+ 
+        }
+  
         #-analysis function
         enkf.params[[obs.t]] <- Analysis.sda(
           settings,
@@ -594,19 +603,19 @@ sda.enkf.multisite <- function(settings,
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
       
-    },error = function(e) {
-      # If it breaks at some steps then I lose all the info on the other variables that worked fine up to the step before the break
-      save(site.locs,
-           t,
-           FORECAST,
-           ANALYSIS,
-           enkf.params,
-           new.state, new.params, params.list,
-           out.configs, ensemble.samples, inputs, Viz.output,
-           file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-
-      PEcAn.logger::logger.severe(paste0("Something just broke along the way. See if the message is helpful ", e))
-    })
+    # },error = function(e) {
+    #   # If it breaks at some steps then I lose all the info on the other variables that worked fine up to the step before the break
+    #   save(site.locs,
+    #        t,
+    #        FORECAST,
+    #        ANALYSIS,
+    #        enkf.params,
+    #        new.state, new.params, params.list,
+    #        out.configs, ensemble.samples, inputs, Viz.output,
+    #        file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    # 
+    #   PEcAn.logger::logger.severe(paste0("Something just broke along the way. See if the message is helpful ", e))
+    # })
     
     
     
