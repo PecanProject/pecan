@@ -6,7 +6,7 @@
 \usage{
 allometry(lifeform, cmass_leaf, cmass_sap, cmass_heart, densindiv, age,
   fpc, deltafpc, sla, k_latosa, k_rp, k_allom1, k_allom2, k_allom3,
-  wooddens, crownarea_max)
+  wooddens, crownarea_max, HEIGHT_MAX = 150)
 }
 \arguments{
 \item{lifeform}{An integer code for the lifeform of this individual (cohort): 1 = Tree, 2 = Grass}
@@ -33,7 +33,11 @@ allometry(lifeform, cmass_leaf, cmass_sap, cmass_heart, densindiv, age,
 
 \item{wooddens}{Wood density (kgC/m^2) (per PFT parameter)}
 
-\item{crownarea_max}{Maximum allowed crown area (m^2)  (per PFT parameter)
+\item{crownarea_max}{Maximum allowed crown area (m^2)  (per PFT parameter)}
+
+\item{HEIGHT_MAX}{Maximum allowed height of an individual.  This is the maximum height that a tree
+can have.  This is hard-coded in LPJ-GUESS to 150 m, but for SDA that might be unrealistically big, 
+so this argument allows adjustment. 
 
 This function was transcribed from LPJ-GUESS (v4.0) C++ to R for the purpose of nudging the LPJ-GUESS state offline.
 The idea is of course to use the output from the analysis step from an SDA routine to provide the nudged values, although that isn't

@@ -7,37 +7,34 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-#' Adjust LPJ-GUESS state
-#'
-#' @title updateState.LPJGUESS
-#'
-#' @description 
-#'
-#'
-#' @param model.state A large multiply-nested list containing the entire LPJ-GUESS state as read by 
-#' function \code{readStateBinary.LPJGUESS} 
-#' @param dens.initial A numeric vector of the initial stand-level stem densities (indiv/m^2) as named numeric vector 
-#' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
-#' using state data assimilation from function XXXXXX.  
-#' @param dens.target A numeric vector of the target stand-level stem densities (indiv/m^2) as named numeric vector 
-#' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
-#' using state data assimilation from function XXXXXX 
-#' @param cmass.target A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
-#' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
-#' using state data assimilation from function XXXXXX 
-#' @param cmass.target A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
-#' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
-#' using state data assimilation from function XXXXXX 
-#' @param HEIGHT_MAX Maximum allowed height of an individual.  This is the maximum height that a tree
-#' can have.  This is hard-coded in LPJ-GUESS to 150 m, but for SDA that might be unrealistically big, 
-#' so this argument allows adjustment. 
-#' @return  And updated model state (as a big old list o' lists)
-#' @export
-#' @author Matthew Forrest
-
-
-
-updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, cmass.initial, cmass.target, HEIGHT_MAX = 150) {
+##' Adjust LPJ-GUESS state
+##'
+##' @title updateState.LPJGUESS
+##'
+##' @description 
+##'
+##'
+##' @param model.state A large multiply-nested list containing the entire LPJ-GUESS state as read by 
+##' function \code{readStateBinary.LPJGUESS} 
+##' @param dens.initial A numeric vector of the initial stand-level stem densities (indiv/m^2) as named numeric vector 
+##' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
+##' using state data assimilation from function XXXXXX.  
+##' @param dens.target A numeric vector of the target stand-level stem densities (indiv/m^2) as named numeric vector 
+##' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
+##' using state data assimilation from function XXXXXX 
+##' @param cmass.target A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
+##' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
+##' using state data assimilation from function XXXXXX 
+##' @param cmass.target A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
+##' with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
+##' using state data assimilation from function XXXXXX 
+##' @param HEIGHT_MAX Maximum allowed height of an individual.  This is the maximum height that a tree
+##' can have.  This is hard-coded in LPJ-GUESS to 150 m, but for SDA that might be unrealistically big, 
+##' so this argument allows adjustment. 
+##' @return  And updated model state (as a big old list o' lists)
+##' @export update.state.LPJGUESS 
+##' @author Matthew Forrest
+update.state.LPJGUESS <- function(model.state, dens.initial, dens.target, cmass.initial, cmass.target, HEIGHT_MAX = 150) {
   
   
   # calculate relative increases to be applied later on (per PFT)
@@ -104,7 +101,7 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, cmass.i
       
       
       # for each individual
-      for(individual.counter in 1:this.patch$Vegetation$number_of_individuals) {
+      for(individual.counter in 1:length(this.patch$Vegetation)) {
         
         
         # IMPORTANT: note that this is for convenience to *read* variables from the original individual 
@@ -186,7 +183,7 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, cmass.i
             
             
             # STEP 1 - nudge density of stems by adjusting the "densindiv" and also scaling the biomass pools appropriately
-            updated.individual <- adjustDensity.LPJGUESS(original.individual, current.target.densindiv.rel.change)
+            updated.individual <- adjust.density.LPJGUESS(original.individual, current.target.densindiv.rel.change)
             
             
             # STEP 2 - nudge biomass by performing the LPJ-GUESS allocation routine
@@ -194,7 +191,7 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, cmass.i
             # this function call runs the LPJ-GUESS allocation routine and adjusts the pools vegetation pools accordingly
             # however, it doesn't adjust the litter pools or do anything with 'exceeds_cmass', these are returned
             # as elements of the list, because they should only be applied to the state *if* this was a valid allocation
-            updated.list <- adjustBiomass(individual = updated.individual, 
+            updated.list <- adjust.biomass.LPJGUESS(individual = updated.individual, 
                                           rel.change = current.target.biomass.rel.change,  
                                           sla = sla[this.pft.id+1], 
                                           wooddens = wooddens[this.pft.id+1], 
@@ -242,6 +239,16 @@ updateState.LPJGUESS <- function(model.state, dens.initial, dens.target, cmass.i
             # deal with exceeds_cmass, the code will break out of the while loop
             # if not, there will be a new iteration with new multipliers
             if(result.code == "OK") {
+              
+              
+              # check if the change in the wood compartment is close to the nudge
+              wood.before <- original.individual$cmass_sap + original.individual$cmass_heart
+              wood.after <- updated.individual$cmass_sap + updated.individual$cmass_heart
+              
+              print("--------------------------------------------")
+              print(paste("wood change = ", wood.after/ wood.before))
+              print(paste("nudge = ", current.target.biomass.rel.change ))
+              
               
               # first update the allometry
               updated.individual$height <- allometry.results$height
