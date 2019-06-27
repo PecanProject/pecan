@@ -1,5 +1,5 @@
-#' @useDynLib PEcAn.LPJGUESS
-#' @importFrom Rcpp sourceCpp
+##' @useDynLib PEcAn.LPJGUESS
+##' @importFrom Rcpp sourceCpp
 NULL
 
 # compile the LPJ-GUESS allocation function using Rcpp

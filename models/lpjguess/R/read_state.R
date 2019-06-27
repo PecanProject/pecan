@@ -1,3 +1,4 @@
+
 ######################## Helper functions ########################
 
 
@@ -1086,6 +1087,8 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
   
   return(Gridcell)
 } # read_binary_LPJGUESS end
+
+
 
 
 
