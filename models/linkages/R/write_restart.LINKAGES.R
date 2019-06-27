@@ -110,7 +110,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
       sltb <- default.params[default.params$Spp_Name == pft, ]$SLTB
     }
     if ("SLA" %in% names(new.params[[as.character(pft)]])) {
-      fwt <- (1 / new.params[[as.character(pft)]]$SLA) * 10000
+      fwt <- (1 / new.params[[as.character(pft)]]$SLA) * 1000 #(1 / new.params[[as.character(pft)]]$SLA) * 10000
     } else {
       fwt <- default.params[default.params$Spp_Name == pft, ]$FWT
     }
@@ -153,7 +153,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   if(sum(ntrees)==0) {
     #reloads spin up if theres nothing in the output file
     print('No survivors. Reusing spinup.')
-    load(file.path(outdir, runid,list.files(file.path(outdir, runid))[1]))
+    load(file.path(outdir, runid,list.files(file.path(outdir, runid))[grep(list.files(file.path(outdir, runid)),pattern='linkages')][1]))
     ntrees <- ntrees.kill[, ncol(ntrees.kill), 1]  # number of trees
     
   }
@@ -232,7 +232,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
       fix_adjust <- new.state[s] / mean.biomass.spp[mean.biomass.spp[, 1] == s.select, 2]
     }
     new.ntrees[s] <- as.numeric(ceiling(fix_adjust-.01))  #new number of ind. of each species
-    if(new.ntrees[s]>100&!is.na(new.ntrees[s])){
+    if(new.ntrees[s]>200&!is.na(new.ntrees[s])){
       new.ntrees[s] = sample(size = 1, x = 50:150)
     } 
     print(s)
@@ -240,7 +240,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   #making sure to stick with density dependence rules in linkages (< 198 trees per 800/m^2)
   #someday we could think about estimating this parameter from data
-  if(sum(new.ntrees,na.rm = T) > 98) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,95,98))
+  if(sum(new.ntrees,na.rm = T) > 198) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,195,198))
   
   print(paste0("new.ntrees =", new.ntrees))
   
@@ -249,7 +249,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     new.n.index <- c(new.n.index, rep(i, new.ntrees[i]))
   }
   
-  n.ind <- 100
+  n.ind <- 200
   
   dbh.temp <- numeric(n.ind)
   iage.temp <- numeric(n.ind)
@@ -338,7 +338,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   # translate agb to dbh
   
-  # dbh_spp[s] <- optimize(merit, c(0,200))$minimum bcorr = new.state[i,] /
+  #dbh_spp[s] <- optimize(merit, c(0,200))$minimum bcorr = new.state[i,] /
   # agb.pft[,ncol(agb.pft),1] *(bcorr[s]/ntrees[s]) dbh.temp1[j] <- optimize(merit,
   # c(0,200))$minimum
   
@@ -368,6 +368,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   }
   restart.file <- file.path(settings$rundir, runid, "linkages.restart.Rdata")
   sprintf("%s", restart.file)
+  
   
   save(dbh, tyl, ntrees, nogro, ksprt, iage, C.mat, ncohrt, file = restart.file)
   
