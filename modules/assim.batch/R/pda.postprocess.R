@@ -45,14 +45,14 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
     
 
     ## create a new Posteriors DB entry
-    pft.id <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='",
+    pft.id <- PEcAn.DB::db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='",
                               settings$pfts[[i]]$name, 
                               "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", 
                               settings$model$type, "'"), 
                          con)[["id"]]
 
 
-    posteriorid <-  db.query(paste0("INSERT INTO posteriors (pft_id) VALUES (",
+    posteriorid <-  PEcAn.DB::db.query(paste0("INSERT INTO posteriors (pft_id) VALUES (",
                     pft.id, ") RETURNING id"), con)
     
     
@@ -68,7 +68,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
     filename <- file.path(settings$pfts[[i]]$outdir, 
                           paste0("post.distns.pda.", settings$pfts[[i]]$name, "_", settings$assim.batch$ensemble.id, ".Rdata"))
     save(post.distns, file = filename)
-    dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
+    PEcAn.DB::dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
     
     # Symlink to post.distns.Rdata (no ensemble.id identifier)
     if (file.exists(file.path(dirname(filename), "post.distns.Rdata"))) {
@@ -83,10 +83,10 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
       beta.o <- array(params.subset[[i]][[v]], c(length(params.subset[[i]][[v]]), 1))
       colnames(beta.o) <- "beta.o"
       if (pname[prior.ind[[i]][v]] %in% names(trait.mcmc)) {
-        trait.mcmc[[pname[prior.ind[[i]][v]]]] <- mcmc.list(as.mcmc(beta.o))
+        trait.mcmc[[pname[prior.ind[[i]][v]]]] <- coda::mcmc.list(coda::as.mcmc(beta.o))
       } else {
         k <- length(trait.mcmc) + 1
-        trait.mcmc[[k]] <- mcmc.list(as.mcmc(beta.o))
+        trait.mcmc[[k]] <- coda::mcmc.list(coda::as.mcmc(beta.o))
         names(trait.mcmc)[k] <- pname[prior.ind[[i]]][v]
       }
     }
@@ -99,13 +99,16 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
                                  "_", settings$assim.batch$ensemble.id, 
                                  ".Rdata"))
     save(trait.mcmc, file = filename)
-    dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
+    PEcAn.DB::dbfile.insert(dirname(filename), basename(filename), "Posterior", posteriorid, con)
   }  #end of loop over PFTs
   
   ## save updated settings XML
-  saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, paste0("pecan.pda", settings$assim.batch$ensemble.id,
-                                                                                 ".xml")))
-  
+  XML::saveXML(
+    PEcAn.settings::listToXml(settings, "pecan"),
+    file = file.path(
+      settings$outdir,
+      paste0("pecan.pda", settings$assim.batch$ensemble.id, ".xml")))
+
   return(settings)
 } # pda.postprocess
 
@@ -127,7 +130,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
   enough.iter <- TRUE
   
   for (i in seq_along(prior.ind)) {
-    params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
+    params.subset[[i]] <- coda::as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
     burnin <- getBurnin(params.subset[[i]], method = "gelman.plot")
     
@@ -137,7 +140,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
       PEcAn.logger::logger.severe(paste0("*** Burn-in is the same as the length of the chain, please run a longer chain ***"))
     }
     
-    params.subset[[i]] <- window(params.subset[[i]], start = max(burnin, na.rm = TRUE))
+    params.subset[[i]] <- stats::window(params.subset[[i]], start = max(burnin, na.rm = TRUE))
     
     # chek number of iterations left after throwing the burnin, gelman.plot requires > 50
     if (nrow(params.subset[[i]][[1]]) < 50) {
@@ -146,22 +149,22 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
     }
     
     if(i <= length(settings$pfts)){
-      pdf(file.path(settings$pfts[[i]]$outdir, 
-                    paste0("mcmc.diagnostics.pda.", 
-                           settings$pfts[[i]]$name, 
+      grDevices::pdf(file.path(settings$pfts[[i]]$outdir,
+                    paste0("mcmc.diagnostics.pda.",
+                           settings$pfts[[i]]$name,
                            "_", settings$assim.batch$ensemble.id,
                            ".pdf")))
     } else {
-      pdf(file.path(par.file.name, 
-                    paste0("mcmc.diagnostics.pda.par_", 
+      grDevices::pdf(file.path(par.file.name,
+                    paste0("mcmc.diagnostics.pda.par_",
                            settings$assim.batch$ensemble.id,
                            ".pdf")))
     }
 
-    layout(matrix(c(1, 2, 3, 4, 5, 6), ncol = 2, byrow = TRUE))
-    
-    plot(params.subset[[i]], auto.layout = FALSE)
-    
+    graphics::layout(matrix(c(1, 2, 3, 4, 5, 6), ncol = 2, byrow = TRUE))
+
+    graphics::plot(params.subset[[i]], auto.layout = FALSE)
+
     dm <- do.call("rbind", params.subset[[i]])
     
     if (length(prior.ind[[i]]) > 1) {
@@ -172,8 +175,8 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
       coda::gelman.plot(params.subset[[i]], auto.layout = FALSE, autoburnin = FALSE)
     }
     
-    layout(1)
-    dev.off()
+    graphics::layout(1)
+    grDevices::dev.off()
     
     # Write out convergence diagnostics to a txt file
     if(i <= length(settings$pfts)){
@@ -190,24 +193,24 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
 
     
     cat("Summary statistics\n", file = filename.mcmc.temp)
-    capture.output(summary(params.subset[[i]]), file = filename.mcmc.temp, append = TRUE)
+    utils::capture.output(summary(params.subset[[i]]), file = filename.mcmc.temp, append = TRUE)
     cat("\n\n\n", file = filename.mcmc.temp, append = TRUE)
     
     if (length(prior.ind[[i]]) > 1) {
       cat("Covariance matrix :\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(cov(dm), file = filename.mcmc.temp, append = TRUE)
+      utils::capture.output(stats::cov(dm), file = filename.mcmc.temp, append = TRUE)
       cat("\n\n\n", file = filename.mcmc.temp, append = TRUE)
     }
     
     if (length(prior.ind[[i]]) > 1) {
       cat("Correlation matrix :\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(cor(dm), file = filename.mcmc.temp, append = TRUE)
+      utils::capture.output(stats::cor(dm), file = filename.mcmc.temp, append = TRUE)
       cat("\n\n\n", file = filename.mcmc.temp, append = TRUE)
     }
     
     if (length(params.subset[[i]]) > 1) {
       cat("Gelman and Rubin convergence diagnostics\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(coda::gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp, 
+      utils::capture.output(coda::gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp,
                      append = TRUE)
     }
     
@@ -228,14 +231,14 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
 ##' @export
 write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
   
-  sf.samp <- as.mcmc.list(lapply(sf.samp.list, mcmc))
+  sf.samp <- coda::as.mcmc.list(lapply(sf.samp.list, mcmc))
   
   # saving this before discarding burnin, because in resampling we want to keep the samples together
   save(sf.samp, file = sf.samp.filename)
   
   burnin <- getBurnin(sf.samp, method = "gelman.plot")
   
-  sf.samp <- window(sf.samp, start = max(burnin, na.rm = TRUE))
+  sf.samp <- stats::window(sf.samp, start = max(burnin, na.rm = TRUE))
   
   # convert mcmc.list to list of matrices
   sf.subset.list <- list()

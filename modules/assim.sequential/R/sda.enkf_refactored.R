@@ -20,14 +20,23 @@
 #' @export
 #' 
 
-sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F, 
-                     control=list(trace=T,
-                                  interactivePlot=T,
-                                  TimeseriesPlot=T,
-                                  BiasPlot=F,
+
+sda.enkf <- function(settings,
+                     obs.mean,
+                     obs.cov,
+                     Q = NULL,
+                     restart=NULL, 
+                     control=list(trace=TRUE,
+                                  interactivePlot=TRUE,
+                                  TimeseriesPlot=TRUE,
+                                  BiasPlot=FALSE,
                                   plot.title=NULL,
-                                  debug=FALSE),...) {
-  
+                                  debug=FALSE,
+                                  pause=FALSE),
+                     ...) {
+
+
+  if (control$debug) browser()
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -40,7 +49,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   host       <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
-  processvar <- as.logical(settings$state.data.assimilation$process.variance)
+  processvar <- settings$state.data.assimilation$process.variance %>% as.logical()
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
   
@@ -54,9 +63,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
                           Lat=settings$run$site$lat %>% as.numeric) %>%
     `colnames<-`(c("Lon","Lat")) %>%
     `rownames<-`(site.ids)
+  # start cut determines what is the best year to start spliting the met based on if we start  with a restart or not.  
+  if (!is.null(restart)) {
+    start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)-1
+    Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date)-1)
+    
+  }else{
+    start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
+    Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date))
+  }
   
+  End.Year <-   lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
   # filtering obs data based on years specifited in setting > state.data.assimilation
-  assimyears <- lubridate::year(settings$state.data.assimilation$start.date) : lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
+  assimyears<-Start.Year:End.Year
   obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
   obs.cov <- obs.cov[sapply(lubridate::year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
   # dir address based on the end date
@@ -76,20 +95,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   if (!exists(my.split_inputs)  &  !no_split) {
     PEcAn.logger::logger.warn(my.split_inputs, "does not exist")
     PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
-    PEcAn.logger::logger.warn(my.split_inputs, "If your model does not need the split function you can specify that in register.Model.xml in model's inst folder by adding <exact.dates>FALSE</exact.dates> tag.")
+    PEcAn.logger::logger.warn(
+      my.split_inputs,
+      "If your model does not need the split function you can specify that in register.Model.xml in model's inst folder by adding <exact.dates>FALSE</exact.dates> tag."
+    )
   }
   ###-------------------------------------------------------------------###
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
-  ###-------------------------------------------------------------------###---- 
-  
+  ###-------------------------------------------------------------------### 
+ 
   if(!no_split){ 
     for(i in seq_along(settings$run$inputs$met$path)){
       
       ### model specific split inputs
       settings$run$inputs$met$path[[i]] <- do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
-                                                              start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3), 
-                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
+                                                              start.time = start.cut, 
+                                                              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3, tz="UTC"),
                                                               inputs =  settings$run$inputs$met$path[[i]],
                                                               overwrite=F)) 
     }
@@ -132,6 +154,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
+  #### This needs to be moved to GEF
   interval    <- NULL
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables, '[[', 'min_value')),
                           as.numeric(lapply(settings$state.data.assimilation$state.variables, '[[', 'max_value')))
@@ -194,6 +217,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
   for(t in t:nt){
+    if (control$debug) browser()
     # do we have obs for this time - what year is it ?
     obs <- which(!is.na(obs.mean[[t]]))
     obs.year <- lubridate::year(names(obs.mean)[t])
@@ -204,7 +228,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     # Why t>1 is different ? Because the ensemble.write.config would be different. It has the restart argument and it needs it's own setup.
     # Also, assumes that sda has gotten through at least one analysis step
     # plus in t>1 we split the met data for the models that they need that.
-    
+
     ## First question, do we have forecast output to compare to our data?
     ## If not, need to run forecast
     ## using paste because dont want to confuse with ensemble ids
@@ -242,12 +266,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       if(!no_split & exists('outconfig')){
         for(i in seq_len(nens)){
           #---------------- model specific split inputs
-          inputs.split$samples[i] <-do.call(my.split_inputs, 
-                                            args = list(settings = settings, 
-                                                        start.time = (lubridate::ymd_hms(obs.times[t-1],truncated = 3) + lubridate::second(hms("00:00:01"))), 
-                                                        stop.time = obs.times[t],
-                                                        inputs = inputs$samples[[i]])) 
-          
+          inputs.split$samples[i] <- do.call(
+            my.split_inputs,
+            args = list(
+              settings = settings,
+              start.time = (lubridate::ymd_hms(
+                obs.times[t - 1], truncated = 3, tz = "UTC"
+              )),
+              stop.time = (lubridate::ymd_hms(
+                obs.times[t], truncated = 3, tz = "UTC"
+              )),
+              inputs = inputs$samples[[i]]
+            )
+          )
           
         } 
         
@@ -289,25 +320,32 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
       
     }
-    
     #------------------------------------------- Reading the output
-    X_tmp <- vector("list", 2) 
+    X_tmp <- vector("list", 2)
     X <- list()
     for (i in seq_len(nens)) {
+      X_tmp[[i]] <- do.call(
+        my.read_restart,
+        args = list(
+          outdir = outdir,
+          runid = run.id[i],
+          stop.time = obs.times[t],
+          settings = settings,
+          var.names = var.names,
+          params = new.params[[i]]
+        )
+      )
       
-      X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
-                                                         runid = run.id[i], 
-                                                         stop.time = obs.times[t], 
-                                                         settings = settings, 
-                                                         var.names = var.names, 
-                                                         params = new.params[[i]]))
       # states will be in X, but we also want to carry some deterministic relationships to write_restart
       # these will be stored in params
       X[[i]]      <- X_tmp[[i]]$X
-      if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
+      if (!is.null(X_tmp[[i]]$params))
+        new.params[[i]] <- X_tmp[[i]]$params
       
     }
+    
     X <- do.call(rbind, X)
+    
     FORECAST[[t]] <- X
     mu.f <- colMeans(X)
     Pf <- cov(X)
@@ -342,14 +380,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       }
       # droping the ones that their means are zero 
       na.obs.mean <- which(is.na(unlist(obs.mean[[t]][choose])))
-      if (length(na.obs.mean)>0) choose <- choose [-na.obs.mean]
+      if (length(na.obs.mean) > 0)
+        choose <- choose [-na.obs.mean]
       
       Y <- unlist(obs.mean[[t]][choose])
-      
+    
       R <- as.matrix(obs.cov[[t]][choose.cov,choose.cov])
       R[is.na(R)]<-0.1
       
-      if (control$debug) browser()
+      if (control$debug)
+        browser()
       
       # making the mapping matrix
       #TO DO: doesn't work unless it's one to one
@@ -395,19 +435,22 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       Pa <- enkf.params[[t]]$Pa
       mu.a <- enkf.params[[t]]$mu.a
       
-      diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
+      diag(Pf)[which(diag(Pf) == 0)] <-
+        0.1 ## hack for zero variance
       #extracting extra outputs
       if (processvar) {
-        aqq<-enkf.params[[t]]$aqq
-        bqq<-enkf.params[[t]]$bqq
-        X.new<-enkf.params[[t]]$X.new
+        aqq <- enkf.params[[t]]$aqq
+        bqq <- enkf.params[[t]]$bqq
+        X.new <- enkf.params[[t]]$X.new
       }
       ###-------------------------------------------------------------------###
       ### Trace                                                             ###
       ###-------------------------------------------------------------------###----      
       #-- writing Trace--------------------
-      if(control$trace) {
-        PEcAn.logger::logger.info ("\n --------------------------- ",obs.year," ---------------------------\n")
+      if (control$trace) {
+        PEcAn.logger::logger.info ("\n --------------------------- ",
+                                   obs.year,
+                                   " ---------------------------\n")
         PEcAn.logger::logger.info ("\n --------------Obs mean----------- \n")
         print(Y)
         PEcAn.logger::logger.info ("\n --------------Obs Cov ----------- \n")
@@ -423,7 +466,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
         PEcAn.logger::logger.info ("\n ------------------------------------------------------\n")
       }
       if (control$debug) browser()
+      if (control$pause) readline(prompt="Press [enter] to continue \n")
+      
     } else {
+      mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
+      Pf <- cov(X)
       ###-------------------------------------------------------------------###
       ### No Observations --                                                ###----
       ###-----------------------------------------------------------------### 
@@ -483,16 +530,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     if (t > 1 & control$interactivePlot) { #
       print(interactive.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS))
     }
-    #writing down the image - either you asked for it or not :)
-    #post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
   } ### end loop over time
+  if (control$debug) browser()
   ###-------------------------------------------------------------------###
   ### time series plots                                                 ###
   ###-------------------------------------------------------------------###----- 
   if(control$TimeseriesPlot) post.analysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
   if(control$TimeseriesPlot) PEcAn.assim.sequential:::post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
-  #if(control$TimeseriesPlot) postana.timeser.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
   ###-------------------------------------------------------------------###
   ### bias diagnostics                                                  ###
   ###-------------------------------------------------------------------###----

@@ -19,7 +19,6 @@
 ##' 
 ##' @return Returns whatever the FUN is returning. In case of EnKF and GEF, this function returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-
 Analysis.sda<-function(settings,
                        FUN,
                        Forecast=list(Pf=NULL,mu.f=NULL,Q=NULL,X=NULL),
@@ -97,7 +96,7 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 ##' @author Michael Dietze \email{dietze@@bu.edu}, Ann Raiho and Hamze Dokoohaki
 ##' 
 ##' @param settings  pecan standard settings list.  
-##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
+##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecast state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
 ##' @param extraArg This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the process covariance and t gives the time in terms of index of obs.list. See Details.
 ##' @param nitr Number of iterations to run each MCMC chain.
@@ -187,7 +186,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                             nu_0 = 3,
                             wts = wts)#some measure of prior obs
     
-    inits.tobit2space <<- list(pf = cov(X), muf = colMeans(X)) #pf = cov(X)
+    inits.tobit2space <<- list(pf = cov(X), muf = colMeans(X))
     #set.seed(0)
     #ptm <- proc.time()
     
@@ -264,6 +263,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
   #--- This is where the localization needs to happen - After imputing Pf
   
+
   iycens <- grep("y.censored",colnames(dat.tobit2space))
   X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
   
@@ -505,6 +505,7 @@ for(i in 1:length(y.ind)) {
   if (n < length(mu.f)) {
     n <- length(mu.f)
   }
+
   V <- solve(q.bar) * n 
   
   aqq   <- V
@@ -566,3 +567,4 @@ Construct_H <- function(choose, Y, X){
   
   return(H)
 }
+

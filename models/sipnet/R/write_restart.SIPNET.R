@@ -11,16 +11,15 @@
 ##' @name  write_restart.SIPNET
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##'
-##' @param outdir         output directory
-##' @param runid           run ID
-##' @param time            year that is being read
-##' @param settings        PEcAn settings object
-##' @param new.state       analysis state vector
-##' @param RENAME          flag to either rename output file or not
-##' @param variables
-##' @param sample_parameters
-##' @param trait.values
-##' @param met
+##' @param outdir output directory
+##' @param runid run ID
+##' @param start.time start date and time for each SDA ensemble
+##' @param stop.time stop date and time for each SDA ensemble
+##' @param settings PEcAn settings object
+##' @param new.state analysis state vector
+##' @param RENAME flag to either rename output file or not
+##' @param new.params list of parameters to convert between different states 
+##' @param inputs list of model inputs to use in write.configs.SIPNET
 ##'
 ##' @description Write restart files for SIPNET
 ##'
@@ -32,7 +31,8 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
   # values that will be used for updating other states deterministically depending on the SDA states
-  IC_extra <- data.frame(t(new.params$restart))
+  IC_extra <- ifelse(length(new.params$restart)>0, data.frame(t(new.params$restart)), data.frame())
+  
   
   if (RENAME) {
     file.rename(file.path(outdir, runid, "sipnet.out"),
@@ -110,15 +110,16 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
     colnames(analysis.save.mat) <- names(unlist(analysis.save))
   }else{
-    analysis.save.mat<-NULL
+    analysis.save.mat <- NULL
   }
 
-  
+  print(runid %>% as.character())
+  print(analysis.save.mat)
   do.call(write.config.SIPNET, args = list(defaults = NULL,
                                            trait.values = new.params,
                                            settings = settings,
                                            run.id = runid,
                                            inputs = inputs,
                                            IC = analysis.save.mat))
-  print(runid)
+
 } # write_restart.SIPNET
