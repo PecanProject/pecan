@@ -140,6 +140,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   path.to.models <- file.path(settings$outdir,"SDA","GEF")
   aqq <- extraArg$aqq
   bqq <- extraArg$bqq
+  wts <- extraArg$wts
   interval <- NULL
   t <- extraArg$t
   intervalX <- matrix(NA, ncol(X), 2)
@@ -176,18 +177,20 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     #The purpose of this step is to impute data for mu.f 
     #where there are zero values so that 
     #mu.f is in 'tobit space' in the full model
-    constants.tobit2space = list(N = nrow(X),
+    constants.tobit2space <<- list(N = nrow(X),
                                  J = length(mu.f))
     
-    data.tobit2space = list(y.ind = x.ind,
+    data.tobit2space <<- list(y.ind = x.ind,
                             y.censored = x.censored,
                             mu_0 = rep(0,length(mu.f)),
                             lambda_0 = diag(length(mu.f),length(mu.f)+1),
-                            nu_0 = 3)#some measure of prior obs
+                            nu_0 = 3,
+                            wts = wts)#some measure of prior obs
     
     inits.tobit2space <<- list(pf = cov(X), muf = colMeans(X)) #pf = cov(X)
     #set.seed(0)
     #ptm <- proc.time()
+    
     tobit2space_pred <<- nimbleModel(tobit2space.model, data = data.tobit2space,
                                      constants = constants.tobit2space, inits = inits.tobit2space,
                                      name = 'space')
@@ -224,6 +227,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     
   }else{
     
+    Cmodel_tobit2space$wts <- wts
     Cmodel_tobit2space$y.ind <- x.ind
     Cmodel_tobit2space$y.censored <- x.censored
     
@@ -270,22 +274,25 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   ###-------------------------------------------------------------------###
   
   #### initial conditions
-  bqq[1]     <- length(mu.f)
-  if(is.null(aqq)){
-    aqq      <- array(0, dim = c(nt,ncol(X),ncol(X)))
+  
+  if(length(aqq)==0){
+    aqq      <- list() #array(0, dim = c(nt,ncol(X),ncol(X)))
   }else{
-    if(ncol(X)!=dim(aqq)[2]|ncol(X)!=dim(aqq)[3]){
+    if(ncol(X)!=dim(aqq)[1]|ncol(X)!=dim(aqq)[2]){
       print('error: X has changed dimensions')
     }
   }
-  aqq[1, , ] <- diag(length(mu.f)) * bqq[1] #Q
-  
+  if(t == 1){
+    bqq    <- length(mu.f)
+    aqq <- diag(length(mu.f)) * bqq #Q
+  }
+
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
   rownames(interval) <- names(obs.mean[[t]])
   for(i in 1:length(input.vars)){
     interval[grep(x=rownames(interval),
-                  pattern=input.vars[i]), ] <- matrix(c(as.numeric(settings$state.data.assimilation$inputs[[i]]$min_value),
+                  pattern=input.vars[i]), ] <- matrix(c(as.numeric(settings$state.data.assimilation$inputs[[i]]$min_value), #needs to be inputs because sometimes the observation is on a different scale than the state variable
                                                         as.numeric(settings$state.data.assimilation$inputs[[i]]$max_value)),
                                                       length(grep(x=rownames(interval),pattern=input.vars[i])),2,byrow = TRUE)
   }
@@ -293,6 +300,10 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   #### from the interval matrix
   y.ind <- as.numeric(Y > interval[,1])
   y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
+  
+  if(sum(y.censored,na.rm=T)==0){
+    logger.warn('NO DATA. Check y.censored in Analysis_sda.R')
+  }
   
   #which type of observation do we have at this time point?
   input.order <- lapply(input.vars, grep, x=names(obs.mean[[t]])) # not going to work if AbvGrnWood is given in two different ways like tree rings and refab
@@ -373,15 +384,15 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     
     data.tobit <<- list(muf = as.vector(mu.f),
                       pf = solve(Pf), 
-                      aq = aqq[t,,], bq = bqq[t],
+                      aq = aqq, bq = bqq,
                       y.ind = y.ind,
                       y.censored = y.censored,
                       r = R) #precision
     
     inits.pred <<- list(q = diag(length(mu.f))*(length(mu.f)+1),
-                      X.mod = rnorm(length(mu.f),mu.f,10),
-                      X = rnorm(length(mu.f),2.5,10),
-                      y_star = rnorm(length(y.censored),0,10))
+                      X.mod = rnorm(length(mu.f),mu.f,1),
+                      X = rnorm(length(mu.f),mu.f,1),
+                      y_star = rnorm(length(y.censored),0,1))
 
 model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
                           constants = constants.tobit, inits = inits.pred,
@@ -435,16 +446,16 @@ for(i in 1:length(y.ind)) {
   }else{
     Cmodel$y.ind <- y.ind
     Cmodel$y.censored <- y.censored
-    Cmodel$aq <- aqq[t,,]
-    Cmodel$bq <- bqq[t]
+    Cmodel$aq <- aqq
+    Cmodel$bq <- bqq
     Cmodel$muf <- mu.f
     Cmodel$pf <- solve(Pf)
     Cmodel$r <- (R) #precision
     
     inits.pred = list(q = diag(length(mu.f))*(length(mu.f)+1),
-                      X.mod = rnorm(length(mu.f),2.5,10),
-                      X = rnorm(ncol(X),mu.f,10),
-                      y_star = rnorm(length(y.censored),mu.f,10)) #
+                      X.mod = rnorm(length(mu.f),mu.f,1),
+                      X = rnorm(ncol(X),mu.f,1),
+                      y_star = rnorm(length(y.censored),mu.f,1)) #
     
     Cmodel$setInits(inits.pred)
     
@@ -468,6 +479,14 @@ for(i in 1:length(y.ind)) {
   iX.mod <- grep("X.mod", colnames(dat), fixed = TRUE)
   
   mu.a <- colMeans(dat[, iX])
+  HACK = FALSE
+  if(HACK==TRUE){
+    adjusts <- sum(mu.a[1:9]) / sum(mu.f[mu.f[1:9]>0]) #+ rnorm(1, 0, sigma_biomass_process)
+    mu.a[1:9] <- colMeans(dat[, iX[1:9]] / adjusts)
+    if(sum(mu.a[1:9])<=0) browser()
+  }
+
+  ystar.a <- colMeans(dat[, iystar])
   Pa   <- cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
   
@@ -486,25 +505,23 @@ for(i in 1:length(y.ind)) {
   if (n < length(mu.f)) {
     n <- length(mu.f)
   }
-  V <- solve(q.bar) * n
+  V <- solve(q.bar) * n 
   
-  if (t<nt){
-    aqq[t + 1, , ]   <- V
-    bqq[t + 1]       <- n
-  }
+  aqq   <- V
+  bqq   <- n
   
   pdf(file.path(outdir, paste0('dat_plot', t, '.pdf')))
   par(mfrow = c(2, 2))
   for (rr in 1:length(iX)) {
     plot(dat[, iX[rr]], typ = 'l')
   }
-  for (i in 1:length(iystar)) {
-    plot(dat[,iystar[i]], type = 'l')
-    abline(h=alr(mu.a)[i],col='red')
+  for (rr in 1:length(iystar)) {
+    plot(dat[,iystar[rr]], type = 'l')
+    abline(h=(mu.a)[rr],col='red')
   }
-  for (i in 1:4) {
-    plot(dat[,iX.mod[i]], type = 'l')
-    abline(h=mu.f[i],col='red')
+  for (rr in 1:length(iX)) {
+    plot(dat[,iX.mod[rr]], type = 'l')
+    abline(h=mu.f[rr],col='red')
   }
   dev.off()
   
