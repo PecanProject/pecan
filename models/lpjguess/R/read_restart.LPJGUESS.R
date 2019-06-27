@@ -1,7 +1,7 @@
 
 # developing
 # outdir = "/fs/data2/output//PEcAn_1000010473/out"
-# runid = 1002656610
+# runid = 1002656839
 # stop.time = "1960-12-31 23:59:59 UTC"
 # load("/fs/data2/output/PEcAn_1000010473/SDAsettings_develop.Rdata")
 # var.names = c("AGB.pft", "TotSoilCarb")
@@ -27,7 +27,28 @@ read_restart.LPJGUESS <- function(outdir, runid, stop.time, settings, var.names,
   
   forecast <- list()
   
-  # for (var_name in var.names) {}
+  # additional varnames for LPJ-GUESS?
+  
+  for (var_name in var.names) {
+    
+    if (var_name == "AGB.pft") {
+      
+      cmass_sap_perpft   <- calculateGridcellVariablePerPFT(model.state = Gridcell_container, variable = "cmass_sap")
+      cmass_heart_perpft <- calculateGridcellVariablePerPFT(model.state = Gridcell_container, variable = "cmass_heart")
+      
+      cmass_wood <- cmass_sap_perpft + cmass_heart_perpft
+      cmass_wood <- udunits2::ud.convert(cmass_wood, "kg/m^2", "Mg/ha")
+      
+      # calculate below ground and subtract
+      # 0.23 magic number from Chojnacky Table 6
+      cmass_blwg_wood <- cmass_wood * 0.23
+      cmass_abvg_wood <- cmass_wood - cmass_blwg_wood
+      
+      forecast[[length(forecast) + 1]]    <- cmass_abvg_wood
+      names(forecast[[length(forecast)]]) <- paste0("AGB.pft.", unlist(Gridcell_container$meta_data$pft))
+      
+    }
+  }
   
   params$LPJGUESS_state <- Gridcell_container
   

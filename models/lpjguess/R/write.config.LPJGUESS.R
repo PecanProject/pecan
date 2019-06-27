@@ -36,7 +36,7 @@ write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id, rest
   
   #-----------------------------------------------------------------------
   # write LPJ-GUESS specific instruction file
-  settings <- write.insfile.LPJGUESS(settings, trait.values, rundir, outdir, run.id)
+  settings <- write.insfile.LPJGUESS(settings, trait.values, rundir, outdir, run.id, restart)
   
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
@@ -94,7 +94,7 @@ write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id, rest
 #' @param run.id PEcAn run ID
 #' @return settings Updated list
 #' @author Istem Fer
-write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.id) {
+write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.id, restart = NULL) {
   
   guessins  <- readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
   paramsins <- readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
@@ -102,19 +102,33 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   pftblock  <- paramsins[pftindx] # lines with pft params
   
   # fill save state flags
+  if(is.null(restart)){
+    year_string <- substring(basename(settings$run$inputs$met[[1]]), 
+                             nchar(basename(settings$run$inputs$met[[1]]))-15,
+                             nchar(basename(settings$run$inputs$met[[1]]))-7)
+    #spinup plus simulation years, extract from defult, or pass it here if you'll be varying this in the future
+    spinup_years <- as.numeric(gsub("[^[:digit:].]", "", paramsins[grepl("nyear_spinup", paramsins, fixed = TRUE)]))
+    state_year   <- spinup_years + diff(as.numeric(strsplit(year_string, split = ".", fixed = TRUE)[[1]])) + 1
+  }else{
+    # read previous year's params.ins and add 1 or?
+  }
+  
   if(!is.null(settings$model$save_state)){
     save_state <- as.logical(settings$model$save_state)
     if(save_state){
       paramsins  <- gsub("@SAVE_STATE_OPTION@", 1, paramsins)
       paramsins  <- gsub("@STATE_PATH@", paste0("state_path '", outdir, "'"), paramsins)
+      paramsins  <- gsub("@STATE_YEAR@", paste0("state_year '", state_year, "'"), paramsins)
     }else{
       paramsins  <- gsub("@RESTART_OPTION@", 0, paramsins)
       paramsins  <- gsub("@STATE_PATH@", "!state_path", paramsins)
+      paramsins  <- gsub("@STATE_PATH@", "!state_year", paramsins)
     }
   }else{
     # wouldn't hurt to save state by default?
     paramsins  <- gsub("@SAVE_STATE_OPTION@", 1, paramsins)
     paramsins  <- gsub("@STATE_PATH@", paste0("state_path '", outdir, "'"), paramsins)
+    paramsins  <- gsub("@STATE_YEAR@", paste0("state_year '", state_year, "'"), paramsins)
   }
   
   # cp the grid indices file
@@ -156,6 +170,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
               upper_layer_fraction = 1 - lower_layer_fraction
               pecan_sample <- paste(upper_layer_fraction, lower_layer_fraction)
             }
+            
             
             if(trait_name == "wooddens"){  # convert from relative density to sapwood and heartwood density (kgC/m3)
               pecan_sample <- pecan_sample*997 # density of water

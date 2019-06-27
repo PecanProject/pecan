@@ -16,20 +16,20 @@ outputdirectory "./"
 
 ! Prefined yearly output
 ! These files may be outcommented if their output is not required. 
-!file_cmass "cmass.out"
-!file_anpp "anpp.out"
+file_cmass "cmass.out"
+file_anpp "anpp.out"
 file_agpp "agpp.out"
-!file_fpc "fpc.out"
-!file_aaet "aaet.out"
-!file_lai "lai.out"
-!file_cflux "cflux.out"
-!file_dens "dens.out"
-!file_runoff "tot_runoff.out"
-!file_cpool "cpool.out"
-!file_clitter "clitter.out"
-!file_firert "firert.out"
-!file_aiso "aiso.out"
-!file_amon "amon.out"
+file_fpc "fpc.out"
+file_aaet "aaet.out"
+file_lai "lai.out"
+file_cflux "cflux.out"
+file_dens "dens.out"
+file_runoff "tot_runoff.out"
+file_cpool "cpool.out"
+file_clitter "clitter.out"
+file_firert "firert.out"
+file_aiso "aiso.out"
+file_amon "amon.out"
 !file_speciesheights "height.out"
 
 !file_nmass "nmass.out"
@@ -83,7 +83,7 @@ npatch 5				! number of replicate patches to simulate
 patcharea 1000			! patch area (m2)
 estinterval 5			! years between establishment events in cohort mode
 ifdisturb 1				! whether generic patch-destroying disturbances enabled
-distinterval 100		! average return time for generic patch-destroying disturbances
+distinterval 500		! average return time for generic patch-destroying disturbances
 disturb_year -1
 ifbgestab 1				! whether background establishment enabled
 ifsme 1					! whether spatial mass effect enabled
@@ -108,7 +108,7 @@ nrelocfrac 0.5			! fraction of N retranslocated prior to leaf and root shedding
 !///////////////////////////////////////////////////////////////////////////////
 ! SERIALIZATION SETTINGS 
 !///////////////////////////////////////////////////////////////////////////////
-!state_year 500			! year to save/start state file (no setting = after spinup)
+@STATE_YEAR@			! year to save/start state file (no setting = after spinup)
 restart 0				! wheter to start from a state file
 save_state @SAVE_STATE_OPTION@			! wheter to save a state file
 @STATE_PATH@			! directory to put state files in
