@@ -2,14 +2,14 @@
 
 # NEGLIGABLE
 # Returns true if |dval| < exp(limit), otherwise false
-#' @keywords internal
+##' @keywords internal
 negligible <- function(dval, limit = -30) {
   if(abs(dval) < exp(limit)) return(TRUE)
   else return(FALSE)
 }
 
 # LAMBERT-BEER
-#' @keywords internal
+##' @keywords internal
 lambertbeer <- function(lai) {
   return(exp(-.5 * lai))
 }
@@ -28,48 +28,51 @@ lambertbeer <- function(lai) {
 # // Should be called to update allometry, FPC and FPC increment whenever biomass values
 # // for a vegetation individual (cohort) change.
 
-#' LPJ-GUESS allometry
-#' 
-#' The LPJ-GUESS allometry function transcribed into R.
-#'
-#' @param lifeform An integer code for the lifeform of this individual (cohort): 1 = Tree, 2 = Grass
-#' @param cmass_leaf The leaf C pool size (kgC/m^2)
-#' @param cmass_sap The sapwood C pool size (kgC/m^2)
-#' @param cmass_heart The heartwood C pool size (kgC/m^2)
-#' @param densindiv The density of individuals in the cohort (indiv/m^2) 
-#' @param age The age of the coort
-#' @param fpc The folar projective cover
-#' @param deltafpc The change in foliar projective cover
-#' @param sla The SLA (specific leaf area) (per PFT parameter)
-#' @param k_latosa The leaf area to sapwood area ratio (per PFT parameter)
-#' @param k_rp,k_allom1,k_allom2,k_allom3, Allometry coefficients (per PFT parameters)
-#' @param wooddens Wood density (kgC/m^2) (per PFT parameter)
-#' @param crownarea_max Maximum allowed crown area (m^2)  (per PFT parameter)
-#' 
-#' This function was transcribed from LPJ-GUESS (v4.0) C++ to R for the purpose of nudging the LPJ-GUESS state offline.
-#' The idea is of course to use the output from the analysis step from an SDA routine to provide the nudged values, although that isn't
-#' relevant to the following code.
-#'
-#' Since the original C++ code took as its only argument an LPJ-GUESS C++ class of type 'Individual' there was no way (to my knowledge)
-#' of directly compiling using Rcpp (unlike for allocation.cpp/allocation.R. which was easy to compile from the native C++ using 
-#' Rcpp with very few changes).
-#'
-#' As noted in the original function header taken from the the C++ code (copied above), this function should be run after its biomass values 
-#' have been updated.  In this case that means after the allocation() function has been applied to an individual.
-#'  
-#' This function can return following error codes:
-#'  1.  "NegligibleLeafMass" - The individual has negligible leaf biomass.
-#'  2.  "MaxHeightExceeded" - The indidual exceeds the maximum allowed height
-#'  3.  "LowWoodDensity" - The individual's *actual* wood density drops below 90% of prescribed value.  This (slighty weird
-#'  and unphysical) requirement is necessary because sometimes LPJ-GUESS can take carbon from the heartwood to
-#'  ensure C-balance.  I think.  Or some other hockery-pockery.
-#' 
-#'  If all is well the code is simply "OK".
-#'
-#' @keywords internal
-#' @return A named list of updated state variables for the individual/cohort.  The first value in the list is the error code. 
-#' @author Matthew Forrest
-#' 
+##' LPJ-GUESS allometry
+##' 
+##' The LPJ-GUESS allometry function transcribed into R.
+##'
+##' @param lifeform An integer code for the lifeform of this individual (cohort): 1 = Tree, 2 = Grass
+##' @param cmass_leaf The leaf C pool size (kgC/m^2)
+##' @param cmass_sap The sapwood C pool size (kgC/m^2)
+##' @param cmass_heart The heartwood C pool size (kgC/m^2)
+##' @param densindiv The density of individuals in the cohort (indiv/m^2) 
+##' @param age The age of the coort
+##' @param fpc The folar projective cover
+##' @param deltafpc The change in foliar projective cover
+##' @param sla The SLA (specific leaf area) (per PFT parameter)
+##' @param k_latosa The leaf area to sapwood area ratio (per PFT parameter)
+##' @param k_rp,k_allom1,k_allom2,k_allom3, Allometry coefficients (per PFT parameters)
+##' @param wooddens Wood density (kgC/m^2) (per PFT parameter)
+##' @param crownarea_max Maximum allowed crown area (m^2)  (per PFT parameter)
+##' @param HEIGHT_MAX Maximum allowed height of an individual.  This is the maximum height that a tree
+##' can have.  This is hard-coded in LPJ-GUESS to 150 m, but for SDA that might be unrealistically big, 
+##' so this argument allows adjustment. 
+##' 
+##' This function was transcribed from LPJ-GUESS (v4.0) C++ to R for the purpose of nudging the LPJ-GUESS state offline.
+##' The idea is of course to use the output from the analysis step from an SDA routine to provide the nudged values, although that isn't
+##' relevant to the following code.
+##'
+##' Since the original C++ code took as its only argument an LPJ-GUESS C++ class of type 'Individual' there was no way (to my knowledge)
+##' of directly compiling using Rcpp (unlike for allocation.cpp/allocation.R. which was easy to compile from the native C++ using 
+##' Rcpp with very few changes).
+##'
+##' As noted in the original function header taken from the the C++ code (copied above), this function should be run after its biomass values 
+##' have been updated.  In this case that means after the allocation() function has been applied to an individual.
+##'  
+##' This function can return following error codes:
+##'  1.  "NegligibleLeafMass" - The individual has negligible leaf biomass.
+##'  2.  "MaxHeightExceeded" - The indidual exceeds the maximum allowed height
+##'  3.  "LowWoodDensity" - The individual's *actual* wood density drops below 90% of prescribed value.  This (slighty weird
+##'  and unphysical) requirement is necessary because sometimes LPJ-GUESS can take carbon from the heartwood to
+##'  ensure C-balance.  I think.  Or some other hockery-pockery.
+##' 
+##'  If all is well the code is simply "OK".
+##'
+##' @keywords internal
+##' @return A named list of updated state variables for the individual/cohort.  The first value in the list is the error code. 
+##' @author Matthew Forrest
+##' 
 allometry <- function(
   # initial allometry/pools
   lifeform, 
@@ -88,7 +91,8 @@ allometry <- function(
   k_allom2, 
   k_allom3, 
   wooddens,
-  crownarea_max) {
+  crownarea_max,
+  HEIGHT_MAX = 150) {
   
   # DESCRIPTION
   # Calculates tree allometry (height and crown area) and fractional projective
@@ -142,7 +146,8 @@ allometry <- function(
   fpc_new = 0.0 # updated FPC
   
   # guess2008 - max tree height allowed (metre).
-  HEIGHT_MAX = 150.0
+  # MF - removed to make this tuneable
+  # HEIGHT_MAX = 150.0
 
   
   # MF - added for providing the error code

@@ -1,6 +1,41 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
 
-
-adjustBiomass <- function(individual, rel.change,  sla, wooddens, lifeform, k_latosa, k_allom2, k_allom3){
+##' Adjust LPJ-GUESS individual's biomass
+##' 
+##' This function adjusts an LPJ-GUESS individual by calling the LPJ-GUESS allocation function (compiled C++)
+##' with a given biomass change.  It updates the individual biomass pools directly, and also returns, in a list further 
+##' adjustments to the litter pools.
+##' 
+##' @param individual A nested list which encapsulates an LPJ-GUESS 'Individual' as read from a binary state file
+##' @param rel.change A numeric by which to scale the density and C and N pools
+##' @param sla The SLA (specific leaf area) (per PFT parameter)
+##' @param k_latosa The leaf area to sapwood area ratio (per PFT parameter)
+##' @param k_allom2,k_allom3, Allometry coefficients (per PFT parameters)
+##' @param wooddens Wood density (kgC/m^2) (per PFT parameter)
+##' @param crownarea_max Maximum allowed crown area (m^2)  (per PFT parameter)
+##' @param lifeform An integer code for the lifeform of this individual (cohort): 1 = Tree, 2 = Grass
+##' 
+##' The changes in C pools are determined by the allocation.  The changes in the N pools are designed to 
+##' maintain the pre-exisiing C:N ratios, so N is just scaled using the updated C with the initial C:N ratio.
+##' The N storage pools (nstore_longterm and nstore_labile) don't have pre-existing C:N ratios, so they are 
+##' just scaled by the overall biomass change (the 'rel.change' argument to the function).
+##' 
+##' Note that after this function is called the function \code{allometry} should be used to update the individual
+##' and to check that the newly updated individual has a 'valid' allometry. The litter pools should also be updated.
+##' This is implemented in the \code{updateState} function following the call to this \code{adjustBiomass} function. 
+##' 
+##' 
+##' @keywords internal
+##' @return the scaled 'individual' (the initial nested list with update values)
+##' @author Matthew Forrest
+adjust.biomass.LPJGUESS <- function(individual, rel.change,  sla, wooddens, lifeform, k_latosa, k_allom2, k_allom3){
   
   # dummy input values to the allocation function below
   # note that they are not actually updated by the function, the updated values are in the returned list
@@ -87,12 +122,7 @@ adjustBiomass <- function(individual, rel.change,  sla, wooddens, lifeform, k_la
     individual$cmass_debt <- new.cmass_debt
     
   }
-  else {
-    # define these for later
-    original.cmass_sap <- 0
-    original.cmass_heart <- 0
-    original.cmass_debt <- 0
-  }
+ 
   
   # N labile and long term storage - note no equivalant C pools and they are not determined by allocation upgrade,
   # so simply scale by the overall biomass change
@@ -105,25 +135,6 @@ adjustBiomass <- function(individual, rel.change,  sla, wooddens, lifeform, k_la
   # But also, how to deal simultaneously with harvesting and nudging will probably require some thought, and maybe
   # it is not necessary or appropriate to update this variable
   #print(individual$cmass_wood_inc_5)
-  
-  
-  # checks
-  if(FALSE) {
-    
-    biomass.final <- individual$cmass_leaf+individual$cmass_root+individual$cmass_heart+individual$cmass_sap-individual$cmass_debt
-    if(abs((biomass.final/biomass.total) - 1.1) < 0.001) {
-      print("--- okay ---")
-    }
-    else {
-      print("--- not okay ---")
-    }
-    print(individual$indiv.pft.id)
-    print(lifeform[individual$indiv.pft.id+1])
-    print(biomass.final/biomass.total)
-    print(unlist(updated.pools))
-    print("--- end ---")
-  }
-  
   
   return(list(individual = individual,
               litter_leaf_inc = updated.pools[["litter_leaf_inc"]],
