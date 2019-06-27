@@ -199,6 +199,11 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
+  if (forceRun)
+  {
+    bad_run = vector()
+  }
+  
   for(t in seq_len(nt)){
   
     # do we have obs for this time - what year is it ?
@@ -209,13 +214,9 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
     ###-------------------------------------------------------------------------###-----  
     #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
     
+    
     if (t > 1){
-      #removing old simulations
-      ## keep all old simulations right now since there is debugging going on
-      if (!(keepNC) && t != 1)
-      {
-        unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
-      }
+      
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- conf.settings %>%
         purrr::map2(inputs, function(settings, inputs) {
@@ -238,7 +239,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
           }
           inputs.split
         })
-          
+      
       #---------------- setting up the restart argument for each site separatly and keeping them in a list
       restart.list <- purrr::pmap(list(out.configs, conf.settings, params.list, inputs.split), 
                                   function(configs, settings, new.params, inputs){
@@ -255,7 +256,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
                                   })
       
       
-    }else{
+    } else{
       restart.list <- vector("list",length(conf.settings))
     }
     #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
@@ -279,7 +280,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
    
     PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     
-    if (forceRun == TRUE)
+    if (forceRun)
     {
       # quick fix for job.sh files not getting run
       folders <- list.files(path = paste0(settings$outdir, "/SDA/out"), include.dirs = TRUE, full.names = TRUE)
@@ -291,19 +292,19 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
         {
           files <- files[-remove]
         }
-        missing = vector()
         if (!(paste0(obs.year, '.nc') %in% files))
         {
-          bad <- (paste0("missing these .nc files: ", folders[i], "/", obs.year, ".nc"))
+          bad <- paste0("job.sh file not run for this .nc file ", folders[i], "/", obs.year, ".nc")
+          PEcAn.logger::logger.warn(paste0("WARNING: ", bad))
           file <- paste0(gsub("out", "run", folders[i]), "/", "job.sh")
           system(paste0("sh ", file))
+          bad_run = c(bad_run, bad)
         }
-        missing = c(missing, bad)
       }
-      write.csv(missing, file = paste0(getwd(), '/SDA/forced_job_output.csv'), append = TRUE)
     }
-    
-    #------------------------------------------- Reading the output
+      #------------------------------------------- Reading the output
+      
+        
     if (control$debug) browser()
     #--- Reading just the first run when we have all years and for VIS
 
@@ -380,6 +381,7 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
       `attr<-`('Site',c(rep(site.ids, each=length(var.names))))         
     
     FORECAST[[t]] <- X
+    
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
     ###-------------------------------------------------------------------###---- 
@@ -512,6 +514,22 @@ sda.enkf.multisite <- function(settings, obs.mean, obs.cov, Q = NULL, restart = 
 
     if (t%%2==0 || t==nt && control$TimeseriesPlot)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
    
+    # remove files as SDA runs
+    if (!(keepNC))
+    {
+      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+    } 
+    # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
+    if (keepNC && t == 1)
+    {
+      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+    }
+    
   } ### end loop over time
+  #output list of job.sh files that were force run
+  if (forceRun)
+  {
+    write.csv(bad_run, file = paste0(getwd(), "/SDA/job_files_force_run.csv"))
+  }
   
 } # sda.enkf

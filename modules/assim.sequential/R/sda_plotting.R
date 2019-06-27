@@ -498,9 +498,22 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=F, readsFF=NULL, observed_vars){
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL){
   
-  # fix obs.mean/obs.cov for multivariable plotting issues when there is NA data
+  # fix obs.mean/obs.cov for multivariable plotting issues when there is NA data. When more than 1 data set is assimilated, but there are missing data
+  # for some sites/years/etc. the plotting will fail and crash the SDA because the numbers of columns are not consistent across all sublists within obs.mean
+  # or obs.cov.
+  observed_vars =  vector()
+  for (date in names(obs.mean))
+  {
+    for (site in names(obs.mean[[date]]))
+    {
+      vars = names(obs.mean[[date]][[site]])
+      observed_vars = c(observed_vars, vars)
+    }
+  }
+  observed_vars = unique(observed_vars)
+  
   for (name in names(obs.mean))
   {
     data_mean = obs.mean[name]
