@@ -86,7 +86,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     for(i in seq_along(settings$run$inputs$met$path)){
       
       ### model specific split inputs
-      settings$run$inputs$met$path[[i]] <-do.call(my.split_inputs, 
+      settings$run$inputs$met$path[[i]] <- do.call(my.split_inputs, 
                                                   args = list(settings = settings, 
                                                               start.time = lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3), 
                                                               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
@@ -115,6 +115,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     }
   }
   obs.times <- obs.times.POSIX
+  #obs.times[1] <- strptime('0950-12-31 23:59:59',format="%Y-%m-%d %H:%M:%S",tz="UTC")
+  #obs.times[2] <- strptime('0970-12-31 23:59:59',format="%Y-%m-%d %H:%M:%S",tz="UTC")
+  #obs.times[3] <- strptime('0990-12-31 23:59:59',format="%Y-%m-%d %H:%M:%S",tz="UTC")
   
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
@@ -124,8 +127,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
   #The aqq and bqq are shape parameters estimated over time for the proccess covariance. #see GEF help
-  aqq         <- NULL
-  bqq         <- numeric(nt + 1)
+  aqq         <- list()
+  bqq         <- list()
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
@@ -133,8 +136,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables, '[[', 'min_value')),
                           as.numeric(lapply(settings$state.data.assimilation$state.variables, '[[', 'max_value')))
   rownames(state.interval) <- var.names
-  # weight matrix
-  wt.mat <- matrix(NA, nrow = nens, ncol = nt)
+  
+  #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
+  if(!file.exists(file.path(settings$outdir, "ensemble_weights.Rdata"))){
+    PEcAn.logger::logger.warn("ensemble_weights.Rdata cannot be found. Make sure you generate samples by running the get.ensemble.weights function before running SDA if you want the ensembles to be weighted.")
+    #create null list
+    for(tt in 1:length(obs.times)){
+      weight_list[[tt]] <- rep(1,nens) #no weights
+    }
+  } else{
+    load(file.path(settings$outdir, "ensemble_weights.Rdata"))  ## loads ensemble.samples
+  }
   #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
   if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
   load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
@@ -147,31 +159,37 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
-  ###-------------------------------------------------------------------###----   
+  ###-------------------------------------------------------------------### 
   if (restart){
-    if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
+    if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))){
+      PEcAn.logger::logger.warn("The SDA output from the older simulation doesn't exist.")
+      t <- 1
+    } else {
+      load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    }
     
-    load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
     load(file.path(settings$outdir,"SDA", "outconfig.Rdata"))
     run.id <- outconfig$runs$id
     ensemble.id <- outconfig$ensemble.id
     
-    #--- Updating the nt and etc
-    if(!dir.exists(file.path(settings$outdir,"SDA",assimyears[t]))) dir.create(file.path(settings$outdir,"SDA",assimyears[t]))
-    
-    # finding/moving files to it's end year dir
-    files.last.sda<-list.files.nodir(file.path(settings$outdir,"SDA"))
-    
-    #copying
-    file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
-              file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda)))
+    if(FALSE){ # I think let's do this outside of the sda function because sometimes you might want to restart from what you've set up to restart from and it's confusing if your file systems change within the function
+      #--- Updating the nt and etc
+      if(!dir.exists(file.path(settings$outdir,"SDA",assimyears[t]))) dir.create(file.path(settings$outdir,"SDA",assimyears[t]))
+      
+      # finding/moving files to it's end year dir
+      files.last.sda<-list.files.nodir(file.path(settings$outdir,"SDA"))
+      
+      #copying
+      file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
+                file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda)))
+    }
     
     if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + 1 #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
     
   }else{
     t = 1
   }
-  
+
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
@@ -190,13 +208,37 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     ## First question, do we have forecast output to compare to our data?
     ## If not, need to run forecast
     ## using paste because dont want to confuse with ensemble ids
-    if (length(grep(paste0('/',obs.year,'.nc'),list.files(outdir,"*.nc",recursive = T,full.names = F))) == 0){ #removing:t > 1
+    if(file.exists('run') & file.exists(file.path(settings$outdir,"SDA", "outconfig.Rdata"))){
+      
+      load(file.path(settings$outdir,"SDA", "outconfig.Rdata")) #need to load these in case during t==1 the analysis crashed so you have a forecast but didn't get to save the sda.output.Rdata
+      run.id <- outconfig$runs$id
+      ensemble.id <- outconfig$ensemble.id
+      if(t==1) inputs <- outconfig$samples$met 
+      
+      sum_files <-
+        sum(unlist(sapply(
+          X = run.id,
+          FUN = function(x){
+            pattern = paste0(x, '/', obs.year, '.nc')[1]
+            grep(
+              pattern = pattern,
+              x = list.files(file.path(outdir,x), "*.nc", recursive = F, full.names = T)
+            )
+          },
+          simplify = T
+        )))
+      
+    }else{
+      sum_files <- 0 #if rundir hasn't been created yet
+    }
+    
+    
+    if (sum_files == 0){ #removing:t > 1
       
       #removing old simulations #why? don't we need them to restart?
       #unlink(list.files(outdir,"*.nc",recursive = T,full.names = T))
       #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
       inputs.split <- list()
-      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
       if(!no_split & exists('outconfig')){
         for(i in seq_len(nens)){
           #---------------- model specific split inputs
@@ -208,8 +250,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
           
           
         } 
+        
       }else{
-        inputs.split<-inputs
+        if(t > 1) inputs.split <- inputs
       }
       #---------------- setting up the restart argument
       
@@ -239,42 +282,44 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       
       run.id <- outconfig$runs$id
       ensemble.id <- outconfig$ensemble.id
+      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
       
+      if(control$debug) browser()
       #-------------------------------------------- RUN
       PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
       
     }
     
     #------------------------------------------- Reading the output
-      X_tmp <- vector("list", 2) 
-      X <- list()
-      for (i in seq_len(nens)) {
-        
-        X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
-                                                           runid = run.id[i], 
-                                                           stop.time = obs.times[t], 
-                                                           settings = settings, 
-                                                           var.names = var.names, 
-                                                           params = new.params[[i]]))
-        # states will be in X, but we also want to carry some deterministic relationships to write_restart
-        # these will be stored in params
-        X[[i]]      <- X_tmp[[i]]$X
-        if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
-        
-      }
-      X <- do.call(rbind, X)
-      FORECAST[[t]] <- X
-      mu.f <- colMeans(X)
-      Pf <- cov(X)
+    X_tmp <- vector("list", 2) 
+    X <- list()
+    for (i in seq_len(nens)) {
       
-      if(sum(X,na.rm=T) == 0){
-        logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
-      }
+      X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
+                                                         runid = run.id[i], 
+                                                         stop.time = obs.times[t], 
+                                                         settings = settings, 
+                                                         var.names = var.names, 
+                                                         params = new.params[[i]]))
+      # states will be in X, but we also want to carry some deterministic relationships to write_restart
+      # these will be stored in params
+      X[[i]]      <- X_tmp[[i]]$X
+      if (!is.null(X_tmp[[i]]$params)) new.params[[i]] <- X_tmp[[i]]$params
+      
+    }
+    X <- do.call(rbind, X)
+    FORECAST[[t]] <- X
+    mu.f <- colMeans(X)
+    Pf <- cov(X)
+    
+    if(sum(X,na.rm=T) == 0){
+      logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
+    }
     
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
     ###-------------------------------------------------------------------###
-      
+    
     if (any(obs)) {
       # finding obs data
       
@@ -325,13 +370,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
       }else{
         recompile = FALSE
       }
+      
+      
+      wts <- unlist(weight_list[[t]][outconfig$samples$met$ids])
+      
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
                                        FUN=an.method,
                                        Forecast=list(Q=Q, X=X),
                                        Observed=list(R=R, Y=Y),
                                        H=H,
-                                       extraArg=list(aqq=aqq, bqq=bqq, t=t, recompile=recompile),
+                                       extraArg=list(aqq=aqq, bqq=bqq, t=t,
+                                                     recompile=recompile,
+                                                     wts = wts),
                                        nt=nt,
                                        obs.mean=obs.mean,
                                        obs.cov=obs.cov)
@@ -415,12 +466,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     }
     
     ## in the future will have to be separated from analysis
+    
     new.state  <- as.data.frame(analysis)
     ANALYSIS[[t]] <- analysis
-    ### Interactive plotting ------------------------------------------------------   
-    if (t > 1 & control$interactivePlot) { #
-      print(interactive.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS))
-    }
+    
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
@@ -428,6 +477,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
     
     save(site.locs, t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id,
          ensemble.id, ensemble.samples, inputs, Viz.output,  file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    
+    
+    ### Interactive plotting ------------------------------------------------------   
+    if (t > 1 & control$interactivePlot) { #
+      print(interactive.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS))
+    }
     #writing down the image - either you asked for it or not :)
     #post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=control$plot.title)
     
@@ -435,7 +490,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###-------------------------------------------------------------------###
   ### time series plots                                                 ###
   ###-------------------------------------------------------------------###----- 
-  post.analysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
+  if(control$TimeseriesPlot) post.analysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
   if(control$TimeseriesPlot) PEcAn.assim.sequential:::post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
   #if(control$TimeseriesPlot) postana.timeser.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
   ###-------------------------------------------------------------------###
@@ -445,6 +500,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, Q = NULL, restart=F,
   ###-------------------------------------------------------------------###
   ### process variance plots                                            ###
   ###-------------------------------------------------------------------###----- 
-  if (processvar) postana.bias.plotting.sda.corr(t,obs.times,X,aqq,bqq)
+  if (processvar & control$BiasPlot) postana.bias.plotting.sda.corr(t,obs.times,X,aqq,bqq)
   
 } # sda.enkf
