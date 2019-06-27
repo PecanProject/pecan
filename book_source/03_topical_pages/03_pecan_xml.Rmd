@@ -55,7 +55,10 @@ A basic example looks like this:
   </pfts>
   <meta.analysis>
     <iter>3000</iter>
-    <random.effects>FALSE</random.effects>
+    <random.effects>
+     <on>FALSE</on>
+     <use_ghs>TRUE</use_ghs>
+    </random.effects>
   </meta.analysis>
   <ensemble>
    <size>1</size>
@@ -266,14 +269,20 @@ Conversely, if you do not want to do a trait meta-analysis (e.g. if you want to 
 ```xml
   <meta.analysis>
     <iter>3000</iter>
-    <random.effects>FALSE</random.effects>
+    <random.effects>
+      <on>FALSE</on>
+      <use_ghs>TRUE</use_ghs>
+    </random.effects>
   </meta.analysis>
+
 ```
 
 Some of the tags that can go in this section are:
 
 * `iter`: [MCMC](http:/en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) (Markov Chain Monte Carlo) chain length, i.e. the total number of posterior samples in the meta-analysis, default is 3000. Smaller numbers will run faster but produce larger errors.
-* `random.effects`: Whether to include random effects (site, treatment) in meta-analysis model. Can be set to FALSE to work around convergence problems caused by an over parameterized model (e.g. too many sites, not enough data). The default value is TRUE.
+* `random.effects`: Settings related to whether to include random effects (site, treatment) in meta-analysis model. 
+- `on`: Default is set to FALSE to work around convergence problems caused by an over parameterized model (e.g. too many sites, not enough data). Can be turned to TRUE for including hierarchical random effects.
+- `use_ghs`: Default is set to TRUE to include greenhouse measurements. Can be set to FALSE to exclude cases where all data is from greenhouse.
 * `update`: Should previous results of meta.analysis and get.traits be re-used. If set to TRUE the meta-analysis and get.trait.data will always be executed. Setting this to FALSE will try and reuse existing results. Future versions will allow for AUTO as well which will try and reuse if the PFT/traits have not changed. The default value is FALSE.
 * `threshold`: threshold for Gelman-Rubin convergence diagnostic (MGPRF); default is 1.2.
 
