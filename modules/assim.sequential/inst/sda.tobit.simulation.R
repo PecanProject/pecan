@@ -128,14 +128,21 @@ registerDistributions(list(ddirchmulti = list(BUGSdist = "ddirchmulti(alpha, siz
                                               types = c('value = double(1)', 'alpha = double(1)'))))
 
 dwtmnorm <- nimbleFunction(
-  run = function(x = double(1), mean = double(1), cov = double(2), wt = double(0), log = integer(0)){
+  run = function(x = double(1), mean = double(1), 
+                 cov = double(2), wt = double(0), log = integer(0)){
     returnType(double(0))
     Prob <- dmnorm_chol(x, mean, chol(cov), prec_param = FALSE) * wt
     return(Prob)
   }
 )
+
+
+
+
+
 rwtmnorm <- nimbleFunction(
-  run = function(n = integer(0), mean = double(1), cov = double(2), wt = double(0)){
+  run = function(n = integer(0), mean = double(1),
+                 cov = double(2), wt = double(0)){
     returnType(double(1))
     if(n != 1) nimPrint("rdirchmulti only allows n = 1; using n = 1.")
     Prob <- rmnorm_chol(n, mean, chol(cov), prec_param = FALSE) * wt
@@ -144,17 +151,36 @@ rwtmnorm <- nimbleFunction(
 )
 
 dwtmnorm <- nimbleFunction(
-  run = function(x = double(1), mean = double(1), cov = double(2), wt = double(0), log = integer(0)){
+  run = function(x = double(1), mean = double(1), cov = double(2),
+                 wt = double(0), log = integer(0)){
     returnType(double(0))
-    n <- nrow(cov)
-    logProb <- n * log(2 * pi) + log(det(cov)) + (x-mean) %*% inverse(cov) %*% t(x-mean) 
-    logProb <- -1/2 * wt * Prob
+ 
+    logProb <- dmnorm_chol(x = x, mean = mean, cholesky = chol(cov), prec_param = FALSE,log = log) * wt
     
-    if(log) return(logProb) else return(exp(logProb))
+    if(log){return((logProb))} else {return((exp(logProb)))}
   }
 )
+
 registerDistributions(list(dwtmnorm = list(BUGSdist = "dwtmnorm(mean, cov, wt)", 
                                               types = c('value = double(1)','mean = double(1)', 'cov = double(2)', 'wt = double(0)'))))
+#more likely
+(dwtmnorm(x=c(10,10),mean = c(20,10), cov = diag(2), wt = 1,log=1))
+#less likely
+(dwtmnorm(x=c(100,100),mean = c(20,10), cov = diag(2), wt = 1,log=1))
+
+dw_test <- nimbleCode({
+  
+  y[1:2] ~ dwtmnorm(mean = muf[1:2], cov = pf[1:2,1:2], wt = 1)
+  
+})
+dw_test_pred <- nimbleModel(dw_test, 
+                                data = list(muf = c(10,20),
+                                            pf=diag(2)*5),
+                                name = 'dw')
+conf_dw_test <- configureMCMC(dw_test_pred, print=TRUE)
+Rmcmc_dw_test <- buildMCMC(conf_dw_test)
+Cmodel_dw_test <- compileNimble(dw_test_pred,showCompilerOutput = TRUE)
+
 
 
 tobit2space.model <- nimbleCode({
@@ -165,7 +191,7 @@ tobit2space.model <- nimbleCode({
     #d[i] <- myCalculation(grid[1:N], s[i])
     y.censored[i,1:J] ~ dwtmnorm(mean = muf[1:J], cov = pf[1:J,1:J], wt = wts[i])
     for(j in 1:J){
-      y.ind[i,j] ~ dinterval(y.censored[i,j], 0)
+      y.ind[i,j] ~ dinterval(y.censored[i,j],0)
     }
   }
   
@@ -189,11 +215,7 @@ for(j in seq_along(mu.f)){
 }
 
 
-wts <- matrix(NA,nens,nens)
-for(i in 1:nens){
-  wts[i,] <- sample(size = nens,x=1:nens,replace = F)
-}
-
+#all equal
 wts <- rep(1,nens)
 
 constants.tobit2space = list(N = nrow(X),
@@ -233,9 +255,24 @@ for(j in seq_along(mu.f)){
 
 Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
 
-Cmodel_tobit2space <- compileNimble(tobit2space_pred)
+Cmodel_tobit2space <- compileNimble(tobit2space_pred,showCompilerOutput = TRUE)
 
 Cmcmc_tobit2space <- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
+
+#somewhat sampled
+set.seed(0)
+wts_samps <- sample(size = nens,x=1:nens,replace = F)
+wts <- rdirch(n=1,alpha = wts_samps)*50
+
+#really sampled
+set.seed(0)
+wts_samps <- sample(size = nens,x=c(rep(1,49),50),replace = F)
+wts <- rdirch(n=1,alpha = wts_samps)*50
+
+#equal weights
+wts <- rep(1,nens)
+
+Cmodel_tobit2space$wts <- wts
 
 for(i in seq_along(X)) {
   ## ironically, here we have to "toggle" the value of y.ind[i]
@@ -246,6 +283,9 @@ for(i in seq_along(X)) {
 
 set.seed(0)
 dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 50000, progressBar=TRUE)
+
+paste('1) posteior mean =',mean(dat.tobit2space[,1]),'weighted mean = ', stats::weighted.mean(X[,1],wts),'unweighted mean = ',mu.f[1])
+paste('2) posteior mean =',mean(dat.tobit2space[,2]),'weighted mean = ', stats::weighted.mean(X[,2],wts),'unweighted mean = ',mu.f[2])
 
 #pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
 assessParams(dat = dat.tobit2space[1000:5000,], Xt = X)

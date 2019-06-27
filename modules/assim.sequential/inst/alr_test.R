@@ -124,7 +124,7 @@ data.tobit = list(muf = as.vector(mu.f),
 inits.pred = list(q = diag(length(mu.f))*(n.state + 1),
                   X.mod = rnorm(length(mu.f),mu.f,100),
                   X = rnorm(length(mu.f),mu.f,100), 
-                  y_star = rnorm(n.state-1,0,1)) #
+                  y_star = rnorm(n.state-2,0,1)) #
 
 save(constants.tobit,dimensions.tobit,data.tobit,inits.pred, file='use_this.Rdata')
 
@@ -141,7 +141,7 @@ if(!exists('Cmcmc')){
   ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
   ## important!
   ## this is needed for correct indexing later
-  x.char <- paste0('X[1:',ncol(X),']')
+  x.char <- paste0('X[1:',10,']')
   
   #### setting custom proposal distribution
   # conf$removeSamplers(x.char)
@@ -181,15 +181,17 @@ if(!exists('Cmcmc')){
 
 diff.comp <- c(900,100,10,1)
 
-Cmodel$y.censored <- alr(diff.comp)#test different composition data
+y.censored <- Cmodel$y.censored
+
+Cmodel$y.censored <- y.censored#alr(diff.comp)#test different composition data
 Cmodel$muf <- mu.f
 Cmodel$pf <- solve(Pf)
-Cmodel$r <- rwish(20, diag(3)*1000) #precision
+Cmodel$r <- rwish(20, diag(8)*1000) #precision
 
 inits.pred = list(q = diag(length(mu.f))*(length(mu.f)+1),
                   X.mod = rnorm(length(mu.f),rep(100, 4),100),
                   X = rnorm(length(mu.f),mu.f,100), 
-                  y_star = rnorm(n.state-1,0,1)) #
+                  y_star = rnorm(n.state-2,0,1)) #
 # X.mod = rnorm(length(mu.f),mu.f,100),
 #                   X = rnorm(length(mu.f),mu.f,100)) #
 Cmodel$setInits(inits.pred)
@@ -201,9 +203,13 @@ for(i in 1:length(y.ind)) {
 }
 
 
-dat <- runMCMC(Cmcmc, niter = 50000, nburnin=10000) #need to make sure you run for awhile to avoid autocorrelation problems
+dat <- runMCMC(Cmcmc, niter = 100000, nburnin=20000) #need to make sure you run for awhile to avoid autocorrelation problems
 
 plot(dat[,grep('y.censored',colnames(dat))[3]]) #should be a line
+
+
+burnin <- .2*nrow(dat)
+
 
 ## update parameters
 iystar <- grep("y_star", colnames(dat), fixed = TRUE)
@@ -220,11 +226,9 @@ ystar.a <- colMeans(dat[, iystar])
 Pa   <- cov(dat[, iX])
 Pa[is.na(Pa)] <- 0
 
-burnin <- .2*nrow(dat)
-
-rbind(mu.a/sum(mu.a),mu.f/sum(mu.f))
+rbind(mu.a/sum(mu.a[1:9]),mu.f/sum(mu.f[1:9]))
 layout(matrix(1:4, 2, 2))
-for (i in 10:7) {
+for (i in 1:9) {
   plot(dat[burnin:nrow(dat),iX[i]], type = 'l')
 }
 
