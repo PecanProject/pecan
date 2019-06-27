@@ -20,11 +20,13 @@ load_nimble <- function(){
     run = function(y = double(1)) {
       returnType(double(1))
       
-      y[y<0] <- .000000001
-      y_alr <- log(y[1:(length(y)-1)] / y[length(y)])
+      y[y < .00001] <- .000001
       
-      return(y_alr)
+      y_out <- log(y[1:(length(y)-1)] / y[length(y)])
+      
+      return(y_out)
     })
+  
   
   inv.alr <<-  nimbleFunction(
     run = function(alr = double(1)) {
@@ -35,11 +37,34 @@ load_nimble <- function(){
       return(y)
     })
   
+  rwtmnorm <<- nimbleFunction(
+    run = function(n = integer(0), mean = double(1),
+                   cov = double(2), wt = double(0)){
+      returnType(double(1))
+      if(n != 1) nimPrint("rdirchmulti only allows n = 1; using n = 1.")
+      Prob <- rmnorm_chol(n, mean, chol(cov), prec_param = FALSE) * wt
+      return(Prob)
+    }
+  )
+  
+  dwtmnorm <<- nimbleFunction(
+    run = function(x = double(1), mean = double(1), cov = double(2),
+                   wt = double(0), log = integer(0)){
+      returnType(double(0))
+      
+      logProb <- dmnorm_chol(x = x, mean = mean, cholesky = chol(cov), prec_param = FALSE,log = log) * wt
+      
+      if(log){return((logProb))} else {return((exp(logProb)))}
+    }
+  )
+  
+  registerDistributions(list(dwtmnorm = list(BUGSdist = "dwtmnorm(mean, cov, wt)", 
+                                             types = c('value = double(1)','mean = double(1)', 'cov = double(2)', 'wt = double(0)'))))
   
     #tobit2space.model------------------------------------------------------------------------------------------------
   tobit2space.model <<- nimbleCode({
     for(i in 1:N){
-      y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
+      y.censored[i,1:J] ~ dwtmnorm(mean = muf[1:J], cov = pf[1:J,1:J], wt = wts[i])
       for(j in 1:J){
         y.ind[i,j] ~ dinterval(y.censored[i,j], 0)
       }
