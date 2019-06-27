@@ -69,14 +69,14 @@ sda_rewind <- function(settings,run.id,time_to_rewind){
   
   load(file.path(settings$outdir,"SDA",'sda.output.Rdata'))
   
-  X <- FORECAST[[16]]
-  FORECAST[17:t] <- NULL
-  ANALYSIS[17:t] <- NULL
-  enkf.params[17:t] <- NULL
+  X <- FORECAST[[t]]
+  FORECAST[t] <- NULL
+  ANALYSIS[t] <- NULL
+  enkf.params[t] <- NULL
   
-  for(i in 1:length(new.state)) new.state[[i]] <- ANALYSIS[[16]][,i]
+  for(i in 1:length(new.state)) new.state[[i]] <- ANALYSIS[[t]][,i]
   
-  t = 16
+  t = t-1
   
   save(site.locs, t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id,
        ensemble.id, ensemble.samples, inputs, Viz.output,  file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
