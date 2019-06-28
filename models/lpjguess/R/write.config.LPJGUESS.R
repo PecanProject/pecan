@@ -118,7 +118,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
     if(save_state){
       paramsins  <- gsub("@SAVE_STATE_OPTION@", 1, paramsins)
       paramsins  <- gsub("@STATE_PATH@", paste0("state_path '", outdir, "'"), paramsins)
-      paramsins  <- gsub("@STATE_YEAR@", paste0("state_year '", state_year, "'"), paramsins)
+      paramsins  <- gsub("@STATE_YEAR@", paste0("state_year ", state_year), paramsins)
     }else{
       paramsins  <- gsub("@RESTART_OPTION@", 0, paramsins)
       paramsins  <- gsub("@STATE_PATH@", "!state_path", paramsins)
@@ -128,7 +128,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
     # wouldn't hurt to save state by default?
     paramsins  <- gsub("@SAVE_STATE_OPTION@", 1, paramsins)
     paramsins  <- gsub("@STATE_PATH@", paste0("state_path '", outdir, "'"), paramsins)
-    paramsins  <- gsub("@STATE_YEAR@", paste0("state_year '", state_year, "'"), paramsins)
+    paramsins  <- gsub("@STATE_YEAR@", paste0("state_year ", state_year), paramsins)
   }
   
   # cp the grid indices file
