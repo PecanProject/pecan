@@ -1,4 +1,4 @@
-#' Title site.pft.link.settings
+#' site.pft.link.settings
 #'
 #' @param settings settings list
 #'
@@ -38,6 +38,7 @@ site.pft.link.settings <- function(settings) {
        purrr::map(~list(name = as.character(.x), constants = 1)) %>%
        setNames(rep("pft", length(.)))
      
+
     #add them to the list
     settings$pfts <- c(settings$pfts, new.pfts)
     

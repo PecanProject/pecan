@@ -39,6 +39,7 @@ observeEvent(input$units_modeldata,{
 
 
 observeEvent(input$ex_plot_modeldata,{
+  
   output$modelDataPlot <- renderPlotly({
     input$ex_plot_modeldata
     isolate({
