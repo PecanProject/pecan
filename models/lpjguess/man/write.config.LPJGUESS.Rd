@@ -4,7 +4,8 @@
 \alias{write.config.LPJGUESS}
 \title{Write LPJ-GUESS configuration files}
 \usage{
-write.config.LPJGUESS(defaults, trait.values, settings, run.id)
+write.config.LPJGUESS(defaults, trait.values, settings, run.id,
+  restart = NULL)
 }
 \arguments{
 \item{defaults}{list of defaults to process}
