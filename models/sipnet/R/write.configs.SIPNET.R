@@ -378,7 +378,21 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       # reconstruct total wood C
       wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
       #Sanity check
-      if (is.na(wood_total_C) | is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C <0) wood_total_C <- 0
+      if (is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C < 0) {
+        wood_total_C <- 0
+        if (round(IC$AbvGrndWood) > 0 & round(IC$abvGrndWoodFrac, 3) == 0)
+          PEcAn.logger::logger.warn(
+            paste0(
+              "There is a major problem with ",
+              run.id,
+              " in either the model's parameters or IC.",
+              "Because the ABG is estimated=",
+              IC$AbvGrndWood,
+              " while AGB Frac is estimated=",
+              IC$abvGrndWoodFrac
+            )
+          )
+        }
       param[which(param[, 1] == "plantWoodInit"),  2] <- wood_total_C
       param[which(param[, 1] == "coarseRootFrac"), 2] <- IC$coarseRootFrac
       param[which(param[, 1] == "fineRootFrac"),   2] <- IC$fineRootFrac
@@ -468,7 +482,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet",Sys.time()%>%as.numeric,".param")))
   
-  
+
   write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
               quote = FALSE)
 } # write.config.SIPNET

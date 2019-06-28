@@ -31,7 +31,8 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
   # values that will be used for updating other states deterministically depending on the SDA states
-  IC_extra <- data.frame(t(new.params$restart))
+  IC_extra <- ifelse(length(new.params$restart)>0, data.frame(t(new.params$restart)), data.frame())
+  
   
   if (RENAME) {
     file.rename(file.path(outdir, runid, "sipnet.out"),
@@ -121,10 +122,11 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
     colnames(analysis.save.mat) <- names(unlist(analysis.save))
   }else{
-    analysis.save.mat<-NULL
+    analysis.save.mat <- NULL
   }
 
-  
+  print(runid %>% as.character())
+  print(analysis.save.mat)
   do.call(write.config.SIPNET, args = list(defaults = NULL,
                                            trait.values = new.params,
                                            settings = settings,
