@@ -23,9 +23,9 @@ install2.r -e -s -n -1\
     BioCro \
     car \
     coda \
+    data.table \
     dataone \
     datapack \
-    data.table \
     DBI \
     dbplyr \
     doParallel \
@@ -80,7 +80,6 @@ install2.r -e -s -n -1\
     pwr \
     randtoolbox \
     raster \
-    Rcpp \
     rcrossref \
     RCurl \
     REddyProc \
@@ -117,3 +116,4 @@ install2.r -e -s -n -1\
     xtable \
     xts \
     zoo
+
