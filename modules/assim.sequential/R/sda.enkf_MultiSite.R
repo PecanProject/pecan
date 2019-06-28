@@ -40,7 +40,7 @@ sda.enkf.multisite <- function(settings,
                                             Profiling = FALSE,
                                             OutlierDetection=FALSE),
                                ...) {
-  plan(multiprocess)
+  future::plan(multiprocess)
   if (control$debug) browser()
   tic("Prepration")
   ###-------------------------------------------------------------------###
@@ -137,6 +137,29 @@ sda.enkf.multisite <- function(settings,
     PEcAn.logger::logger.warn(my.split_inputs, "If your model does not need the split function you can specify that in register.Model.xml in model's inst folder by adding <exact.dates>FALSE</exact.dates> tag.")
     
   }
+  
+  ###-------------------------------------------------------------------###
+  ### tests before data assimilation                                    ###
+  ###-------------------------------------------------------------------###----  
+  obs.times <- names(obs.mean)
+  obs.times.POSIX <- lubridate::ymd_hms(obs.times)
+  
+  for (i in seq_along(obs.times)) {
+    if (is.na(obs.times.POSIX[i])) {
+      if (is.na(lubridate::ymd(obs.times[i]))) {
+        PEcAn.logger::logger.warn("Error: no dates associated with observations")
+      } else {
+        ### Data does not have time associated with dates 
+        ### Adding 12:59:59PM assuming next time step starts one second later
+        PEcAn.logger::logger.warn("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
+        obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
+      }
+    }
+  }
+  obs.times <- obs.times.POSIX
+  nt          <- length(obs.times)
+  if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
+  bqq         <- numeric(nt + 1)
   
 
   ###-------------------------------------------------------------------###
@@ -334,6 +357,7 @@ sda.enkf.multisite <- function(settings,
       if (control$debug) browser()
       PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
       
+      # this is the option to force job.sh files that are randomly not being run by the SDA
       if (forceRun)
       {
         # quick fix for job.sh files not getting run
@@ -622,16 +646,7 @@ sda.enkf.multisite <- function(settings,
       
       PEcAn.logger::logger.severe(paste0("Something just broke along the way. See if the message is helpful ", e))
     })
-    
-    
-    
-    save(site.locs, t, FORECAST, ANALYSIS, enkf.params, new.state, new.params,
-         out.configs, ensemble.samples, inputs, Viz.output,
-         file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    #writing down the image - either you asked for it or not :)
-    
-    if (t%%2==0 || t==nt && control$TimeseriesPlot)  post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
-    
+
     # remove files as SDA runs
     if (!(keepNC))
     {
