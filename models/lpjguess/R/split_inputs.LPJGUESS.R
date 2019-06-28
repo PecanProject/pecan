@@ -1,12 +1,17 @@
-
-# developing
-# settings = settings
-# start.time = "1920-01-01 UTC"
-# stop.time = "1960-12-31 UTC"
-# inputs = "/fs/data3/istfer/LPJGUESS_ShortRuns/LPJGUESS_bcc-csm1-1_031.03/bcc-csm1-1_031.03.1960.2010.tmp.nc"
-# overwrite = F
-
-split_inputs.LPJGUESS <- function(settings, start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL, version = "PalEON"){
+## split LPJ-GUESS ncdf files into smaller time units to use in KF
+##' @author Istem Fer
+##' 
+##' @param settings PEcAn settings object
+##' @param start.time start date and time for each SDA ensemble
+##' @param stop.time stop date and time for each SDA ensemble
+##' @param inputs list of model inputs to use in write.configs.LPJGUESS
+##' @param overwrite Default FALSE
+##' @param outpath if specified, write output to a new directory. Default NULL writes back to the directory being read
+##' @description Splits climate met for LPJGUESS
+##' 
+##' @return name of the split met file
+##' @export
+split_inputs.LPJGUESS <- function(settings, start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL){
   
   #### Lubridate start and end times
   start.day  <- lubridate::yday(start.time)
@@ -59,17 +64,10 @@ split_inputs.LPJGUESS <- function(settings, start.time, stop.time, inputs, overw
   }
 
   # split
-  if(version != "PalEON"){
-    nc.tmp <- nc.tmp[1,1,inds]
-    nc.pre <- nc.pre[1,1,inds]
-    nc.cld <- nc.cld[1,1,inds]
-  }else{
-    nc.tmp <- nc.tmp[inds]
-    nc.pre <- nc.pre[inds]
-    nc.cld <- nc.cld[inds]
-  }
+  nc.tmp <- nc.tmp[1,1,inds]
+  nc.pre <- nc.pre[1,1,inds]
+  nc.cld <- nc.cld[1,1,inds]
 
-  
   var.list <- list(nc.tmp, nc.pre, nc.cld)
   
   # not that these will be different than "K", "kg m-2 s-1", "W m-2"
@@ -104,13 +102,11 @@ split_inputs.LPJGUESS <- function(settings, start.time, stop.time, inputs, overw
     # create netCD file for LPJ-GUESS
     ncfile <- ncdf4::nc_create(files.out[[n]], vars = var.def, force_v4 = TRUE)
     
-    if(version != "PalEON"){
-      # put variable, rep(...,each=4) is a hack to write the same data for all grids (which all are the
-      # same)
-      ncdf4::ncvar_put(ncfile, var.def, rep(var.list[[n]], each = 4))
-    }else{
-      ncdf4::ncvar_put(ncfile, var.def, var.list[[n]])
-    }
+
+    # put variable, rep(...,each=4) is a hack to write the same data for all grids (which all are the
+    # same)
+    ncdf4::ncvar_put(ncfile, var.def, rep(var.list[[n]], each = 4))
+
     
     # additional attributes for LPJ-GUESS
     ncdf4::ncatt_put(nc = ncfile, varid = var.names[n], attname = "standard_name", long.names[n])
