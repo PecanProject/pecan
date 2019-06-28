@@ -23,9 +23,9 @@ install2.r -e -s -n -1\
     BioCro \
     car \
     coda \
-    data.table \
     dataone \
     datapack \
+    data.table \
     DBI \
     dbplyr \
     doParallel \
@@ -92,6 +92,7 @@ install2.r -e -s -n -1\
     rjson \
     rlang \
     rnoaa \
+    RPostgres \
     RPostgreSQL \
     Rpreles \
     RSQLite \
@@ -113,5 +114,5 @@ install2.r -e -s -n -1\
     utils \
     XML \
     xtable \
+    xts \
     zoo
-    
