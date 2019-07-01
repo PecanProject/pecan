@@ -80,7 +80,6 @@ install2.r -e -s -n -1\
     pwr \
     randtoolbox \
     raster \
-    Rcpp \
     rcrossref \
     RCurl \
     REddyProc \
