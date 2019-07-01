@@ -63,11 +63,31 @@
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 
-convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
-                          end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
-                          format.vars, overwrite = FALSE, exact.dates = FALSE, 
-                          allow.conflicting.dates = TRUE, insert.new.file = FALSE, pattern = NULL,
-                          forecast = FALSE, ensemble = FALSE, ensemble_name = NULL, ...) {
+convert.input <-
+  function(input.id,
+           outfolder,
+           formatname,
+           mimetype,
+           site.id,
+           start_date,
+           end_date,
+           pkg,
+           fcn,
+           con = con,
+           host,
+           browndog,
+           write = TRUE,
+           format.vars,
+           overwrite = FALSE,
+           exact.dates = FALSE,
+           allow.conflicting.dates = TRUE,
+           insert.new.file = FALSE,
+           pattern = NULL,
+           forecast = FALSE,
+           ensemble = FALSE,
+           ensemble_name = NULL,
+           ...
+  ) {
   input.args <- list(...)
   
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
@@ -601,7 +621,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     cmdFcn <- paste0(pkg, "::", fcn, "(", arg.string, ")")
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
-    result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+    result <-
+      PEcAn.remote::remote.execute.R(
+        script = cmdFcn,
+        host,
+        user = NA,
+        verbose = TRUE,
+        R = Rbinary,
+        scratchdir = outfolder
+      )
     
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
     # code below can process everything as if it were a list without worrying about data types.

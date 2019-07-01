@@ -20,42 +20,56 @@
   }
   
   if (register$scale == "regional") {
-    raw.id <- PEcAn.utils::convert.input(input.id = NA,
-                            outfolder = outfolder, 
-                            formatname = register$format$name, 
-                            mimetype = register$format$mimetype,
-                            site.id = site.id, 
-                            start_date = start_date, end_date = end_date, 
-                            pkg = pkg, fcn = fcn, 
-                            con = con, host = host, browndog = NULL,
-                            write = TRUE, overwrite = overwrite, 
-                            site_id = site.id, 
-                            lat.in = lat.in, lon.in = lon.in, 
-                            model = input_met$model, 
-                            scenario = input_met$scenario, 
-                            ensemble_member = input_met$ensemble_member,
-                            method = input_met$method,
-                            pattern = met)
+    raw.id <- PEcAn.utils::convert.input(
+      input.id = NA,
+      outfolder = outfolder,
+      formatname = register$format$name,
+      mimetype = register$format$mimetype,
+      site.id = site.id,
+      start_date = start_date,
+      end_date = end_date,
+      pkg = pkg,
+      fcn = fcn,
+      con = con,
+      host = host,
+      browndog = NULL,
+      write = TRUE,
+      overwrite = overwrite,
+      site_id = site.id,
+      lat.in = lat.in,
+      lon.in = lon.in,
+      model = input_met$model,
+      scenario = input_met$scenario,
+      ensemble_member = input_met$ensemble_member,
+      method = input_met$method,
+      pattern = met
+    )
     
   } else if (register$scale == "site") {
     # Site-level met
-    raw.id <- PEcAn.utils::convert.input(input.id = NA,
-                            outfolder = outfolder, 
-                            formatname = register$format$name, 
-                            mimetype = register$format$mimetype,
-                            site.id = site.id, 
-                            start_date = start_date, end_date = end_date, 
-                            pkg = pkg, 
-                            fcn = fcn, 
-                            con = con, host = host, browndog = NULL, 
-                            write = TRUE, overwrite = overwrite, 
-                            forecast = forecast,
-                            ensemble = ensemble,
-                            sitename = site$name, 
-                            username = username,
-                            lat.in = lat.in,
-                            lon.in = lon.in,
-                            pattern = met)
+    raw.id <- PEcAn.utils::convert.input(
+      input.id = NA,
+      outfolder = outfolder,
+      formatname = register$format$name,
+      mimetype = register$format$mimetype,
+      site.id = site.id,
+      start_date = start_date,
+      end_date = end_date,
+      pkg = pkg,
+      fcn = fcn,
+      con = con,
+      host = host,
+      browndog = NULL,
+      write = TRUE,
+      overwrite = overwrite,
+      forecast = forecast,
+      ensemble = ensemble,
+      sitename = site$name,
+      username = username,
+      lat.in = lat.in,
+      lon.in = lon.in,
+      pattern = met
+    )
     
   } else {
     PEcAn.logger::logger.severe("Unknown register$scale")

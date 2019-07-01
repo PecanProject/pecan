@@ -133,8 +133,12 @@ met.process <- function(site, input_met, start_date, end_date, model,
     format.vars <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
     # Is there a situation in which the input ID could be given but not the file path? 
     # I'm assuming not right now
-    assign(stage$id.name, list(inputid = input_met$id,
-                               dbfileid = PEcAn.DB::dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
+    assign(stage$id.name,
+           list(
+             inputid = input_met$id,
+             dbfileid = PEcAn.DB::dbfile.check("Input", input_met$id, hostname = machine.host, con =
+                                                 con)$id
+           ))
   }
   PEcAn.logger::logger.debug(stage)
   
@@ -181,6 +185,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        host = host, 
                                        overwrite = overwrite$download,
                                        site = site, username = username)
+    
     if (met %in% c("CRUNCEP", "GFDL","NOAA_GEFS_downscale")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
