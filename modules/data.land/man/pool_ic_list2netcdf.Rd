@@ -4,7 +4,7 @@
 \alias{pool_ic_list2netcdf}
 \title{pool_ic_list2netcdf}
 \usage{
-pool_ic_list2netcdf(input, outdir, siteid)
+pool_ic_list2netcdf(input, outdir, siteid, ens = NA)
 }
 \arguments{
 \item{input}{list with two elements: list of netcdf dimensions (dims, with named values) and list of variables (vals, with named values)}

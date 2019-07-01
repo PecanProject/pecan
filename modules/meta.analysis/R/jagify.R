@@ -23,7 +23,7 @@ jagify <- function(result) {
   r <- result[!is.na(result$mean), ]
   colnames(r)[colnames(r) == "name"] <- "trt_id"
   r <- transform.nas(r)
-  r <- assign.treatments(r)
+  r <- PEcAn.DB::assign.treatments(r)
   r <- PEcAn.utils::summarize.result(r)
   r$greenhouse[is.na(r$greenhouse)] <- 0
   r <- subset(transform(r, 
@@ -46,7 +46,7 @@ jagify <- function(result) {
     r$stat[r$stat <= 0] <- NA
   }
   
-  rename_jags_columns(r)
+  PEcAn.DB::rename_jags_columns(r)
 } # jagify
 # ==================================================================================================#
 

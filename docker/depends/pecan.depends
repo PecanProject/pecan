@@ -33,6 +33,7 @@ install2.r -e -s -n -1\
     ellipse \
     fields \
     foreach \
+    furrr \
     geonames \
     getPass \
     ggmap \
@@ -91,6 +92,7 @@ install2.r -e -s -n -1\
     rjson \
     rlang \
     rnoaa \
+    RPostgres \
     RPostgreSQL \
     Rpreles \
     RSQLite \
@@ -103,6 +105,7 @@ install2.r -e -s -n -1\
     stringr \
     testthat \
     tibble \
+    tictoc \
     tidyr \
     tidyverse \
     tools \
@@ -111,4 +114,5 @@ install2.r -e -s -n -1\
     utils \
     XML \
     xtable \
+    xts \
     zoo

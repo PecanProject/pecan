@@ -28,9 +28,9 @@ Depends:
 Imports:
     coda (>= 0.18),
     PEcAn.logger,
-    PEcAn.settings
+    PEcAn.settings,
+    rjags
 Suggests:
-    rjags,
     testthat (>= 1.0.2),
     PEcAn.priors
 SystemRequirements: JAGS
@@ -39,3 +39,4 @@ Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 6.1.1
+Roxygen: list(markdown = TRUE)
