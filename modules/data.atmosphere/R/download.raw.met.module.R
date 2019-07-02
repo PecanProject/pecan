@@ -1,6 +1,22 @@
-.download.raw.met.module <- function(dir, met, register, machine, start_date, end_date, str_ns,
-                                     con, input_met, site.id, lat.in, lon.in, host, site, username, overwrite = FALSE) {
-  
+.download.raw.met.module <-
+  function(dir,
+           met,
+           register,
+           machine,
+           start_date,
+           end_date,
+           str_ns,
+           con,
+           input_met,
+           site.id,
+           lat.in,
+           lon.in,
+           host,
+           site,
+           username,
+           overwrite = FALSE,
+           dbparms) {
+    
   outfolder <- file.path(dir,paste0(met, "_site_", str_ns))
   
   pkg <- "PEcAn.data.atmosphere"
@@ -42,7 +58,8 @@
       scenario = input_met$scenario,
       ensemble_member = input_met$ensemble_member,
       method = input_met$method,
-      pattern = met
+      pattern = met,
+      dbparms=dbparms
     )
     
   } else if (register$scale == "site") {

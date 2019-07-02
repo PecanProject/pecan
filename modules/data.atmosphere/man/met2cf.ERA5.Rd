@@ -4,15 +4,13 @@
 \alias{met2cf.ERA5}
 \title{met2cf.ERA5}
 \usage{
-met2cf.ERA5(lat, long, years, sitename, data.folder, outfolder,
-  overwrite = FALSE, verbose = TRUE)
+met2cf.ERA5(lat, long, start_date, end_date, sitename, data.folder,
+  outfolder, overwrite = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{lat}{latitude}
 
 \item{long}{longitude}
-
-\item{years}{years to be extracted}
 
 \item{sitename}{The name of the site used for making the identifier.}
 
@@ -23,6 +21,8 @@ met2cf.ERA5(lat, long, years, sitename, data.folder, outfolder,
 \item{overwrite}{Logical flag definign if the files need to be overwriten in case they were downloaded before.}
 
 \item{verbose}{Logical flag defining if ouput of function be extra verbose.}
+
+\item{years}{years to be extracted}
 }
 \description{
 met2cf.ERA5

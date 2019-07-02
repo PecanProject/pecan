@@ -21,22 +21,29 @@
 #' }
 met2cf.ERA5 <- function(lat,
                         long,
-                        years,
+                        start_date,
+                        end_date,
                         sitename,
                         data.folder,
                         outfolder,
                         overwrite = FALSE,
                         verbose = TRUE) {
   ensemblesN <- seq(1, 10)
+  
+  years <- seq(
+    lubridate::year(start_date),
+    lubridate::year(end_date)
+  )
   # Extracting the raw data - The output would be a list of xts objects for each ensemble
-  out <- ERA5_extract_ENS(lat = lat,
+  out <- ERA5_extract(lat = lat,
                           long = long,
                           years = years, 
                           data.folder = data.folder)
-  #start and end date
-  start_date <- min(index(out[[1]]))
-  end_date <- max(index(out[[1]]))
   
+
+  #filter based on start and end date
+  out<-out %>% 
+    map(~ .x[paste0(as.Date(start_date),"/",as.Date(end_date))])
   # adding RH and converting rain
   out.new <- names(out) %>%
     purrr::map(function(ensi) {

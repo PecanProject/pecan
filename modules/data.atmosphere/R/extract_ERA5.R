@@ -38,6 +38,10 @@ ERA5_extract <-
                        "/ERA5_",
                        year,
                        ".nc")
+           
+              PEcAn.logger::logger.info(paste0("Trying to open :", ncfile," "))
+              
+              if(!file.exists(ncfile)) PEcAn.logger::logger.severe("The nc file was not found.")
               
               #msg
               PEcAn.logger::logger.info(paste0(year, " is being processed ","for ensemble #", ens," "))
@@ -57,8 +61,11 @@ ERA5_extract <-
               if (is.null(vars))
                 vars <- names(nc_data$var)
               # for the variables extract the data
+             
               all.data.point <- vars %>%
                 purrr::map_dfc(function(vname) {
+                 
+                  
                   brick.tmp <-
                     raster::brick(ncfile, varname = vname, level = ens)
                   nn <-
@@ -77,7 +84,7 @@ ERA5_extract <-
                   # replacing the missing/filled values with NA
                   nn[nn == nc_data$var[[vname]]$missval] <- NA
                   # send out the extracted var as a new col
-                  nn
+                  t(nn)
                   
                 }) %>%
                 `colnames<-`(vars)

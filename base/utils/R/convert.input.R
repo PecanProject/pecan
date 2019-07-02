@@ -86,6 +86,7 @@ convert.input <-
            forecast = FALSE,
            ensemble = FALSE,
            ensemble_name = NULL,
+           dbparms=NULL,
            ...
   ) {
   input.args <- list(...)
@@ -497,6 +498,7 @@ convert.input <-
   
   #--------------------------------------------------------------------------------------------------#
   # Perform Conversion
+  browser()
   conversion <- "local.remote"  #default
   
   if (!is.null(browndog) && host$name == "localhost") {
@@ -607,6 +609,7 @@ convert.input <-
     fcn.args$outfolder  <- outfolder
     fcn.args$start_date <- start_date
     fcn.args$end_date   <- end_date
+    fcn.args$dbparms   <- dbparms
     
     if (forecast && !is.null(input.id) && !is.na(input.id)) { # for downstream code adapted to handle forecast file conventions
       fcn.args$year.fragment = TRUE                           # such as met2model conversions; arguments will be extraneous otherwise.

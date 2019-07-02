@@ -25,6 +25,7 @@
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
+
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
@@ -173,20 +174,27 @@ met.process <- function(site, input_met, start_date, end_date, model,
     raw.data.site.id <- ifelse(is.null(register$siteid), new.site$id, register$siteid)
     str_ns_download <- ifelse(is.null(register$siteid), str_ns, register$siteid)
     
-    raw.id <- .download.raw.met.module(dir = dir,
-                                       met = met, 
-                                       register = register, 
-                                       machine = machine, 
-                                       start_date = start_date, end_date = end_date,
-                                       str_ns =str_ns_download, con = con, 
-                                       input_met = input_met, 
-                                       site.id = raw.data.site.id, 
-                                       lat.in = new.site$lat, lon.in = new.site$lon, 
-                                       host = host, 
-                                       overwrite = overwrite$download,
-                                       site = site, username = username)
+    raw.id <- .download.raw.met.module(
+      dir = dir,
+      met = met,
+      register = register,
+      machine = machine,
+      start_date = start_date,
+      end_date = end_date,
+      str_ns = str_ns_download,
+      con = con,
+      input_met = input_met,
+      site.id = raw.data.site.id,
+      lat.in = new.site$lat,
+      lon.in = new.site$lon,
+      host = host,
+      overwrite = overwrite$download,
+      site = site,
+      username = username,
+      dbparms=dbparms
+    )
     
-    if (met %in% c("CRUNCEP", "GFDL","NOAA_GEFS_downscale")) {
+    if (met %in% c("CRUNCEP", "GFDL","NOAA_GEFS_downscale","ERA5")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
       input_met$id <- raw.id
