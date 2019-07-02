@@ -1,5 +1,0 @@
-#### LPJ-GUESS
-
-Instructions to download source code
-
-Go to [LPJ-GUESS website](http://web.nateko.lu.se/lpj-guess/download.html) for instructions to access code. 

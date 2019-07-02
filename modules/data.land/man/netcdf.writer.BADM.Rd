@@ -4,7 +4,7 @@
 \alias{netcdf.writer.BADM}
 \title{netcdf.writer.BADAM}
 \usage{
-netcdf.writer.BADM(lat, long, siteid, outdir)
+netcdf.writer.BADM(lat, long, siteid, outdir, ens)
 }
 \arguments{
 \item{lat}{numeric latitude}
@@ -13,7 +13,7 @@ netcdf.writer.BADM(lat, long, siteid, outdir)
 
 \item{siteid}{site id as a string}
 
-\item{outdir}{outputdir which you want to store the IC netcdf file}
+\item{outdir}{output dir which you want to store the IC netcdf file}
 }
 \value{
 a dataframe with file, host, mimetype, formatname, startdate, enddate and dbfile.name columns
