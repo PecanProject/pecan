@@ -179,15 +179,18 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param exact.dates setting to include start and end date in input query
 ##' @param pattern text to seach for in the file name (default NULL = no check).
+##' @param return.all (Logical) If 'TRUE', return all files. If 'FALSE', return only the most recent files.
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
-##' @author Rob Kooper, Tony Gardella
+##' @author Rob Kooper, Tony Gardella, Hamze Dokoohaki
 ##' @examples
 ##' \dontrun{
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA,
-                               con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL) {
+                               con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL, return.all=FALSE) {
+  
+
   
   hostname <- default_hostname(hostname)
   
@@ -250,12 +253,20 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
     if (length(inputs$id) > 1) {
       PEcAn.logger::logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
       print(inputs)
-      #      ni = length(inputs$id)
-      #      dbfile = list()
-      #      for(i in seq_len(ni)){
-      #        dbfile[[i]] <- dbfile.check(type = 'Input', container.id = inputs$id[i], con = con, hostname = hostname, machine.check = TRUE)
-      #    }
-      dbfile <- dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = TRUE)
+         #   ni = length(inputs$id)
+         #   dbfile = list()
+         #   for(i in seq_len(ni)){
+         #     dbfile[[i]] <- dbfile.check(type = 'Input', container.id = inputs$id[i], con = con, hostname = hostname, machine.check = TRUE)
+         # }
+      dbfile <-
+        dbfile.check(
+          type = 'Input',
+          container.id = inputs$id,
+          con = con,
+          hostname = hostname,
+          machine.check = TRUE,
+          return.all = return.all
+        )
       
       
       if (nrow(dbfile) == 0) {

@@ -8,6 +8,7 @@
 #' @details For the list of variables check out the documentation at \link{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
 #'
 #' @return a list of xts objects with all the variables for the requested years
+#' @import xts
 #' @export
 #' @examples
 #' \dontrun{
@@ -60,7 +61,6 @@ ERA5_extract <-
               try(ncdf4::nc_close(nc_data))
               
               
-              
               # set the vars
               if (is.null(vars))
                 vars <- names(nc_data$var)
@@ -104,12 +104,14 @@ ERA5_extract <-
         },.progress = T) %>%
         setNames(years)
       
+   
       # The order of one.year.out is year and then Ens - Mainly because of the spead  / I wanted to touch each file just once.
       # This now changes the order to ens - year
       OUT <- ensemblesN %>%
         purrr::map(function(Ensn) {
-          one.year.out %>% map( ~ .x [[Ensn]]) %>%
-            do.call("rbind", .)
+          one.year.out %>% 
+            purrr::map( ~ .x [[Ensn]]) %>%
+            do.call("rbind.xts", .)
         })
       
       return(OUT)

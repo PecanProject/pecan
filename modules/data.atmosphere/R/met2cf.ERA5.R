@@ -29,7 +29,7 @@ met2cf.ERA5 <- function(lat,
                         overwrite = FALSE,
                         verbose = TRUE) {
   ensemblesN <- seq(1, 10)
-  
+
   years <- seq(lubridate::year(start_date),
                lubridate::year(end_date))
   # Extracting the raw data - The output would be a list of xts objects for each ensemble
@@ -40,18 +40,20 @@ met2cf.ERA5 <- function(lat,
     data.folder = data.folder
   )
   
-  
+ 
   #filter based on start and end date
   out <- out %>%
-    map( ~ .x[paste0(as.Date(start_date), "/", as.Date(end_date))])
+    purrr::map( ~ .x[paste0(as.Date(start_date), "/", as.Date(end_date))])
   
   
   start_date <- start_date %>% as.Date()
   end_date <- end_date %>% as.Date()
   # adding RH and converting rain
-  out.new <- names(out) %>%
+ 
+  out.new <- ensemblesN %>%
     purrr::map(function(ensi) {
       tryCatch({
+
         ens <- out[[ensi]]
         # Solar radation conversions
         #https://confluence.ecmwf.int/pages/viewpage.action?pageId=104241513
@@ -78,7 +80,7 @@ met2cf.ERA5 <- function(lat,
                                          ens[, "sp"] %>% as.numeric()) # Pressure in Pa
       },
       error = function(e) {
-        PEcAn.logger::logger.severe("Something went wrong during the unit conversion.",
+        PEcAn.logger::logger.severe("Something went wrong during the unit conversion in met2cf ERA5.",
                                     conditionMessage(e))
       })
       
@@ -128,9 +130,9 @@ met2cf.ERA5 <- function(lat,
   time_dim = ncdf4::ncdim_def(
     name = "time",
     paste(units = "hours since", format(start_date, "%Y-%m-%dT%H:%M")),
-    seq(0, (length(index(
+    seq(0, (length(zoo::index(
       out.new[[1]]
-    )) * 3) - 1 , length.out = length(index(out.new[[1]]))),
+    )) * 3) - 1 , length.out = length(zoo::index(out.new[[1]]))),
     create_dimvar = TRUE
   )
   lat_dim = ncdf4::ncdim_def("latitude", "degree_north", lat, create_dimvar = TRUE)
@@ -180,7 +182,7 @@ met2cf.ERA5 <- function(lat,
                                    #For each variable associated with that ensemble
                                    for (j in seq_along(cf_var_names)) {
                                      # "j" is the variable number.  "i" is the ensemble number.
-                                     ncdf4::ncvar_put(nc_flptr, nc_var_list[[j]], coredata(out.new[[i]])[, nc_var_list[[j]]$name])
+                                     ncdf4::ncvar_put(nc_flptr, nc_var_list[[j]], zoo::coredata(out.new[[i]])[, nc_var_list[[j]]$name])
                                    }
                                    
                                    ncdf4::nc_close(nc_flptr)  #Write to the disk/storage

@@ -26,7 +26,7 @@ download.ERA5 <-
     #
     input.args <- list(...)
     
-    
+    browser()
     tryCatch({
       bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
                                   host     = dbparms$host, 
@@ -50,27 +50,30 @@ download.ERA5 <-
       con,
       hostname = PEcAn.remote::fqdn(),
       exact.dates = FALSE,
-      pattern = NULL
+      pattern = "ERA5",
+      return.all=TRUE
     ) %>%
       as.data.frame()%>% 
-      dplyr::filter(file_name=="ERA5")
+      dplyr::filter(grepl("ERA5",file_name))
     
     
     if (nrow(db.file) >0){
       list.of.files <-db.file
     }else{
+    
       #--- If there is no data for this site, then lets find the big raw tile.
       raw.tiles <- PEcAn.DB::dbfile.input.check(
         siteid = "1000026755",
-        startdate = start_date,
-        enddate = end_date,
+        startdate = start_date %>% as.Date(),
+        enddate = end_date %>% as.Date(),
         parentid = NA,
         mimetype = "application/x-netcdf",
         formatname = "CF Meteorology",
         con,
         hostname = PEcAn.remote::fqdn(),
         exact.dates = FALSE,
-        pattern = NULL
+        pattern = "ERA5",
+        return.all=TRUE
       ) %>%
         as.data.frame() %>%
         dplyr::filter(file_name == "ERA5")
@@ -81,7 +84,7 @@ download.ERA5 <-
         PEcAn.logger::logger.severe("The raw ERA5 tiles needs to be downloaded and registered in the BETY under `USA`` site with 1000026755 id.")
       }
       
-      
+
       #-- extract the site 
       list.of.files <- met2cf.ERA5(
         lat = lat.in,
