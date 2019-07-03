@@ -1,16 +1,18 @@
-# Renders ggplotly
+# Renders highcharter
 
-output$modelPlotStatic <- renderPlotly({
+output$modelPlot <- renderHighchart({
   validate(
     need(input$all_workflow_id, 'Select workflow id'),
     need(input$all_run_id, 'Select Run id'),
     need(input$load_model > 0, 'Select Load Model Outputs')
   )
 
-  plt <- ggplot(data.frame(x = 0, y = 0), aes(x,y)) +
-    annotate("text", x = 0, y = 0, label = "Ready to plot!",
-             size = 10, color = "grey")
-  ggplotly(plt)
+  highchart() %>% 
+    hc_add_series(data = c(), showInLegend = F) %>% 
+    hc_xAxis(title = list(text = "Time")) %>% 
+    hc_yAxis(title = list(text = "y")) %>% 
+    hc_title(text = "Ready to plot!") %>% 
+    hc_add_theme(hc_theme_flat())
 })
 
 # Update units every time a variable is selected
@@ -39,82 +41,18 @@ observeEvent(input$units_model,{
 
 observeEvent(input$ex_plot_model,{
   req(input$units_model)
-
-  #output$modelPlot <- renderPlotly({
-   output$modelPlot <- renderHighchart({
-   
-    input$ex_plot_model
-    isolate({
-      tryCatch({
-        df <- dplyr::filter(load.model(), var_name == input$var_name_model)
-
-        updateSliderInput(session,"smooth_n_model", min = 0, max = nrow(df))
-
-        title <- unique(df$title)
-        xlab <- unique(df$xlab)
-        ylab <- unique(df$ylab)
-
-        unit <- ylab
-        if(input$units_model != unit & udunits2::ud.are.convertible(unit, input$units_model)){
-          df$vals <- udunits2::ud.convert(df$vals,unit,input$units_model)
-          ylab <- input$units_model
-        }
-
-        # data_geom <- switch(input$plotType_model, point = geom_point, line = geom_line)
-        # 
-        # plt <- ggplot(df, aes(x = dates, y = vals, color = run_id))
-        # plt <- plt + data_geom()
-        # plt <- plt + labs(title=title, x=xlab, y=ylab)
-        # plt <- plt + geom_smooth(n=input$smooth_n_model)
-        # ply <- ggplotly(plt)
-      
-        
-        df$run_id <- as.numeric(as.character(df$run_id))
-        xts.df <- xts(df[,c("vals", "run_id")], order.by = df$dates)
-        
-        plot_type <- switch(input$plotType_model, point = "scatter", line = "line")
-        # not sure if this method to calcualte smoothing parameter is correct
-        smooth_param <- input$smooth_n_model / nrow(df) *100
-        
-        ply <- highchart() 
-        
-        for(i in unique(xts.df$run_id)){
-          ply <- ply %>% 
-            hc_add_series(xts.df[xts.df$run_id ==  i, "vals"], 
-                        type = plot_type, name = i, regression = TRUE, 
-                        regressionSettings = list(type = "loess", loessSmooth = smooth_param)) 
-        }
-         
-        ply <- ply %>%
-          hc_add_dependency("plugins/highcharts-regression.js") %>% 
-          hc_title(text = title) %>% 
-          hc_xAxis(title = list(text = xlab), type = 'datetime') %>% 
-          hc_yAxis(title = list(text = ylab)) %>% 
-          hc_tooltip(pointFormat = " Date: {point.x:%Y-%m-%d %H:%M} <br> y: {point.y}") %>% 
-          hc_exporting(enabled = TRUE)
-        
-        
-        #Signaling the success of the operation
-        toastr_success("Generate interactive plots")
-      },
-      error = function(e) {
-        toastr_error(title = "Error", conditionMessage(e))
-      })
-    })
-    ply
-  })
-
-  output$modelPlotStatic <- renderPlotly({
+  
+  output$modelPlot <- renderHighchart({
+    
     input$ex_plot_model
     isolate({
       tryCatch({
         withProgress(message = 'Calculation in progress',
-                     detail = 'This may take a while...', value = 0, {
+                     detail = 'This may take a while...',{
+                       
                        df <- dplyr::filter(load.model(), var_name == input$var_name_model)
-                       incProgress(2/15)
                        
                        updateSliderInput(session,"smooth_n_model", min = 0, max = nrow(df))
-                       incProgress(2/15)
                        
                        title <- unique(df$title)
                        xlab <- unique(df$xlab)
@@ -125,41 +63,45 @@ observeEvent(input$ex_plot_model,{
                          df$vals <- udunits2::ud.convert(df$vals,unit,input$units_model)
                          ylab <- input$units_model
                        }
-                       incProgress(2/15)
                        
-                       data_geom <- switch(input$plotType_model, point = geom_point, line = geom_line)
+                       df$run_id <- as.numeric(as.character(df$run_id))
+                       xts.df <- xts(df[,c("vals", "run_id")], order.by = df$dates)
                        
-                       plt <- ggplot(df, aes(x = dates, y = vals, color = run_id))
-                       plt <- plt + data_geom()
-                       plt <- plt + labs(title=title, x=xlab, y=ylab)
-                       plt <- plt + geom_smooth(n=input$smooth_n_model)
-                       ply <- ggplotly(plt)
-                       ply <- plotly::config(ply, collaborate = F, doubleClick = F, displayModeBar = F, staticPlot = T)
-                       incProgress(9/15)
+                       plot_type <- switch(input$plotType_model, point = "scatter", line = "line")
+                       # not sure if this method to calcualte smoothing parameter is correct
+                       smooth_param <- input$smooth_n_model / nrow(df) *100
+                       
+                       ply <- highchart() 
+                       
+                       for(i in unique(xts.df$run_id)){
+                         ply <- ply %>% 
+                           hc_add_series(xts.df[xts.df$run_id ==  i, "vals"], 
+                                         type = plot_type, name = i, regression = TRUE, 
+                                         regressionSettings = list(type = "loess", loessSmooth = smooth_param)) 
+                       }
+                       
+                       ply <- ply %>%
+                         hc_add_dependency("plugins/highcharts-regression.js") %>% 
+                         hc_title(text = title) %>% 
+                         hc_xAxis(title = list(text = xlab), type = 'datetime') %>% 
+                         hc_yAxis(title = list(text = ylab)) %>% 
+                         hc_tooltip(pointFormat = " Date: {point.x:%Y-%m-%d %H:%M} <br> y: {point.y}") %>% 
+                         hc_exporting(enabled = TRUE) %>% 
+                         hc_chart(zoomType = "x")
+                       
+                       
                      })
         #Signaling the success of the operation
-        toastr_success("Generate static plots")
+        toastr_success("Generate plot")
       },
       error = function(e) {
         toastr_error(title = "Error", conditionMessage(e))
       })
-      
-      ply
     })
+    ply
   })
 })
 
-observeEvent(input$model_toggle_plot,{
-  tryCatch({
-    toggleElement("model_plot_static")
-    toggleElement("model_plot_interactive")
-    #Signaling the success of the operation
-    toastr_success("Toggle plots")
-  },
-  error = function(e) {
-    toastr_error(title = "Error", conditionMessage(e))
-  })
-})
 
 # masterDF <- loadNewData()
 # # Convert from factor to character. For subsetting
