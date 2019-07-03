@@ -15,7 +15,8 @@
            site,
            username,
            overwrite = FALSE,
-           dbparms) {
+           dbparms,
+           Ens.Flag=FALSE) {
     
   outfolder <- file.path(dir,paste0(met, "_site_", str_ns))
   
@@ -59,7 +60,8 @@
       ensemble_member = input_met$ensemble_member,
       method = input_met$method,
       pattern = met,
-      dbparms=dbparms
+      dbparms=dbparms,
+      ensemble = ensemble
     )
     
   } else if (register$scale == "site") {

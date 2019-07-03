@@ -90,7 +90,7 @@ convert.input <-
            ...
   ) {
   input.args <- list(...)
-  
+
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
@@ -351,16 +351,51 @@ convert.input <-
     
   } else {
     
-    existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
-                                          mimetype = mimetype, 
-                                          formatname = formatname,
-                                          parentid = input.id,
-                                          startdate = start_date,
-                                          enddate = end_date, 
-                                          con = con, 
-                                          hostname = host$name,
-                                          pattern = pattern
-                                         )
+    browser()
+    
+    #exsiting file for ensembles takes an advantage of the pattern argument
+    if (!is.null(ensemble) && ensemble) {
+      
+      existing.dbfile <-seq_len(ensemble) %>%
+        purrr::map_dfr(function(i){
+          # pattern is the name of the data product
+          filename_pattern = paste0(pattern, "\\.([^.]*\\.)?") #double backslash for regex
+          
+          # Specify ensemble name/number and add termination sequence to ensure each number is recognized uniquely (e.g.
+          # 12 is not recognized as 1).
+          if (!is.null(ensemble_name)) {
+            filename_pattern = paste0(filename_pattern, ensemble_name, "($|\\.)")
+          } else if (ensemble > 1) {
+            filename_pattern = paste0(filename_pattern, i, "($|\\.)")
+          }
+          
+          PEcAn.DB::dbfile.input.check(
+            siteid = site.id,
+            mimetype = mimetype,
+            formatname = formatname,
+            parentid = input.id,
+            startdate = start_date,
+            enddate = end_date,
+            con = con,
+            hostname = host$name,
+            pattern = filename_pattern
+          )
+          
+        })
+      
+    }else{
+      existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+                                                      mimetype = mimetype, 
+                                                      formatname = formatname,
+                                                      parentid = input.id,
+                                                      startdate = start_date,
+                                                      enddate = end_date, 
+                                                      con = con, 
+                                                      hostname = host$name,
+                                                      pattern = pattern
+      )
+    }
+
     
     PEcAn.logger::logger.debug("File id =", existing.dbfile$id,
                  " File name =", existing.dbfile$file_name,
@@ -498,7 +533,7 @@ convert.input <-
   
   #--------------------------------------------------------------------------------------------------#
   # Perform Conversion
-  browser()
+ 
   conversion <- "local.remote"  #default
   
   if (!is.null(browndog) && host$name == "localhost") {
@@ -624,6 +659,8 @@ convert.input <-
     cmdFcn <- paste0(pkg, "::", fcn, "(", arg.string, ")")
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
+  
+    
     result <-
       PEcAn.remote::remote.execute.R(
         script = cmdFcn,
@@ -633,7 +670,7 @@ convert.input <-
         R = Rbinary,
         scratchdir = outfolder
       )
-    
+
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
     # code below can process everything as if it were a list without worrying about data types.
     if (is.data.frame(result)) {

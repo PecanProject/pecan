@@ -124,7 +124,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # read in registration xml for met specific information
   register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
   register     <- read.register(register.xml, con)
-  
   # first attempt at function that designates where to start met.process
   if (is.null(input_met$id)) {
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
@@ -173,7 +172,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (stage$download.raw) {
     raw.data.site.id <- ifelse(is.null(register$siteid), new.site$id, register$siteid)
     str_ns_download <- ifelse(is.null(register$siteid), str_ns, register$siteid)
-    
+
     raw.id <- .download.raw.met.module(
       dir = dir,
       met = met,
@@ -206,7 +205,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       stage$met2cf <- FALSE
     }
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Change to CF Standards
   if (stage$met2cf) {

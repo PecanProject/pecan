@@ -25,8 +25,7 @@ download.ERA5 <-
  
     #
     input.args <- list(...)
-    
-    browser()
+
     tryCatch({
       bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
                                   host     = dbparms$host, 
@@ -49,7 +48,7 @@ download.ERA5 <-
       formatname="CF Meteorology",
       con,
       hostname = PEcAn.remote::fqdn(),
-      exact.dates = FALSE,
+      exact.dates = TRUE,
       pattern = "ERA5",
       return.all=TRUE
     ) %>%
