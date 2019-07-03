@@ -22,7 +22,7 @@ download.ERA5 <-
            dbparms=NULL,
            overwrite = FALSE,
            ...) {
-    browser()
+ 
     #
     input.args <- list(...)
     
@@ -56,22 +56,48 @@ download.ERA5 <-
       dplyr::filter(file_name=="ERA5")
     
     
-    if (nrow>0){
-      
+    if (nrow(db.file) >0){
+      list.of.files <-db.file
     }else{
-      met2cf.ERA5 (
-        lat=lat.in,
-        long=lon.in,
-        years,
-        sitename,
-        data.folder,
-        outfolder,
+      #--- If there is no data for this site, then lets find the big raw tile.
+      raw.tiles <- PEcAn.DB::dbfile.input.check(
+        siteid = "1000026755",
+        startdate = start_date,
+        enddate = end_date,
+        parentid = NA,
+        mimetype = "application/x-netcdf",
+        formatname = "CF Meteorology",
+        con,
+        hostname = PEcAn.remote::fqdn(),
+        exact.dates = FALSE,
+        pattern = NULL
+      ) %>%
+        as.data.frame() %>%
+        dplyr::filter(file_name == "ERA5")
+      
+      if (nrow(raw.tiles) > 0 ){
+        data.folder <- dirname(raw.tiles$file_path)
+      }else{
+        PEcAn.logger::logger.severe("The raw ERA5 tiles needs to be downloaded and registered in the BETY under `USA`` site with 1000026755 id.")
+      }
+      
+      
+      #-- extract the site 
+      list.of.files <- met2cf.ERA5(
+        lat = lat.in,
+        long = lon.in,
+        start_date = start_date,
+        end_date = end_date,
+        sitename = site_id %>% as.character(),
+        data.folder = data.folder,
+        outfolder = outfolder,
         overwrite = FALSE,
         verbose = TRUE
       )
+      
     }
     
-
+return(list.of.files)
     
     
   }

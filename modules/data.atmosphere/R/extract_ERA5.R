@@ -23,64 +23,67 @@ ERA5_extract <-
            years ,
            vars = NULL, 
            data.folder) {
-    
+    # Distributing the job between whatever core is available. 
+     
+    future::plan(future::multiprocess)
     ensemblesN <- seq(1, 10)
     
     tryCatch({
       # for each ensemble
-      one.year.out <- ensemblesN %>%
-        purrr::map(function(ens) {
+      one.year.out <- years %>%
+        furrr::future_map(function(year) {
           # for each year
-          point.data <- years %>%
-            purrr::map(function(year) {
+          point.data <-  ensemblesN %>%
+            purrr::map(function(ens) {
               ncfile <-
                 paste0(data.folder,
                        "/ERA5_",
                        year,
                        ".nc")
-           
-              PEcAn.logger::logger.info(paste0("Trying to open :", ncfile," "))
               
-              if(!file.exists(ncfile)) PEcAn.logger::logger.severe("The nc file was not found.")
+              PEcAn.logger::logger.info(paste0("Trying to open :", ncfile, " "))
+              
+              if (!file.exists(ncfile))
+                PEcAn.logger::logger.severe("The nc file was not found.")
               
               #msg
-              PEcAn.logger::logger.info(paste0(year, " is being processed ","for ensemble #", ens," "))
+              PEcAn.logger::logger.info(paste0(year, " is being processed ", "for ensemble #", ens, " "))
               #open the file
               nc_data <- ncdf4::nc_open(ncfile)
               # time stamp
-
+              
               t <- ncdf4::ncvar_get(nc_data, "time")
               tunits <- ncdf4::ncatt_get(nc_data, 'time')
               tustr <- strsplit(tunits$units, " ")
-              timestamp <- as.POSIXct(t * 3600, tz = "UTC", origin = tustr[[1]][3])
+              timestamp <-
+                as.POSIXct(t * 3600, tz = "UTC", origin = tustr[[1]][3])
               try(ncdf4::nc_close(nc_data))
-
+              
               
               
               # set the vars
               if (is.null(vars))
                 vars <- names(nc_data$var)
               # for the variables extract the data
-             
+              
               all.data.point <- vars %>%
                 purrr::map_dfc(function(vname) {
-                 
-                  
                   brick.tmp <-
                     raster::brick(ncfile, varname = vname, level = ens)
                   nn <-
                     raster::extract(brick.tmp,
                                     sp::SpatialPoints(cbind(long, lat)),
-                                    method = 'simple') 
+                                    method = 'simple')
                   
                   if (!is.numeric(nn)) {
                     PEcAn.logger::logger.severe(paste0(
                       "Expected raster object to be numeric, but it has type `",
-                      paste0(typeof(nn), collapse = " "), "`"
+                      paste0(typeof(nn), collapse = " "),
+                      "`"
                     ))
                   }
                   
-
+                  
                   # replacing the missing/filled values with NA
                   nn[nn == nc_data$var[[vname]]$missval] <- NA
                   # send out the extracted var as a new col
@@ -92,18 +95,24 @@ ERA5_extract <-
               
               # send out as xts object
               xts::xts(all.data.point, order.by = timestamp)
-            })
+            }) %>%
+            setNames(paste0("ERA_ensemble_", ensemblesN))
           
-          #binding the years
-
-          point.data <- do.call("rbind", point.data)
-
           #Merge mean and the speard
           return(point.data)
           
-        }) %>%
-        setNames(paste0("ERA_ensemble_",ensemblesN))
+        },.progress = T) %>%
+        setNames(years)
       
+      # The order of one.year.out is year and then Ens - Mainly because of the spead  / I wanted to touch each file just once.
+      # This now changes the order to ens - year
+      OUT <- ensemblesN %>%
+        purrr::map(function(Ensn) {
+          one.year.out %>% map( ~ .x [[Ensn]]) %>%
+            do.call("rbind", .)
+        })
+      
+      return(OUT)
       
     }, error = function(e) {
       PEcAn.logger::logger.severe(paste0(conditionMessage(e)))
