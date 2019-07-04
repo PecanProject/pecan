@@ -11,7 +11,7 @@ output$modelPlot <- renderHighchart({
     hc_add_series(data = c(), showInLegend = F) %>% 
     hc_xAxis(title = list(text = "Time")) %>% 
     hc_yAxis(title = list(text = "y")) %>% 
-    hc_title(text = "Ready to plot!") %>% 
+    hc_title(text = "You are ready to plot!") %>% 
     hc_add_theme(hc_theme_flat())
 })
 
@@ -88,8 +88,7 @@ observeEvent(input$ex_plot_model,{
                          hc_tooltip(pointFormat = " Date: {point.x:%Y-%m-%d %H:%M} <br> y: {point.y}") %>% 
                          hc_exporting(enabled = TRUE) %>% 
                          hc_chart(zoomType = "x")
-                       
-                       
+ 
                      })
         #Signaling the success of the operation
         toastr_success("Generate plot")
