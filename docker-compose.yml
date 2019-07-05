@@ -177,7 +177,7 @@ services:
       - pecan
     environment:
       - USER=${PECAN_RSTUDIO_USER:-carya}
-      - PASSWORD=${PECAN_RSTUDIO_PASS:-ilinois}
+      - PASSWORD=${PECAN_RSTUDIO_PASS:-illinois}
     entrypoint: /init
     volumes:
       - pecan:/data
