@@ -43,11 +43,15 @@ options(shiny.maxRequestSize=100*1024^2)
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   
+  dbConnect <- reactiveValues(bety = NULL)
+  
   # Try `betyConnect` function. 
   # If it breaks, ask user to enter user, password and host information
   # then use the `db.open` function to connect to the database
   tryCatch({
-    bety <- betyConnect()
+    #dbConnect$bety <- betyConnect()
+    #For betyConnect to break to test shiny modal
+    dbConnect$bety <- betyConnect(".")
   },
   error = function(e){
     
@@ -72,13 +76,17 @@ server <- shinyServer(function(input, output, session) {
     observeEvent(input$submitInfo,{
       tryCatch(
         {
-          bety$con <- PEcAn.DB::db.open(
-            list(
-              user = input$user,
-              password = input$password,
-              host = input$host
-            )
-          )
+          # dbConnect$bety$con <- PEcAn.DB::db.open(
+          #   list(
+          #     user = input$user,
+          #     password = input$password,
+          #     host = input$host
+          #   )
+          # )
+          
+          # For testing reactivity of bety connection
+          dbConnect$bety <- betyConnect()
+          
           removeModal()
           toastr_success("Connect to Database")
         },

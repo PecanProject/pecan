@@ -24,7 +24,7 @@ observeEvent(input$load_model,{
                      diff_units.m = units(mode.m)
                      
                      diff_message <- sprintf("timestep: %.2f %s", mode.m, diff_units.m)
-                     wf.folder <- workflow(bety, ids_DF$wID[i]) %>% collect() %>% pull(folder)
+                     wf.folder <- workflow(dbConnect$bety, ids_DF$wID[i]) %>% collect() %>% pull(folder)
                      
                      README.text <- c(README.text, 
                                       paste("SELECTION",i), 

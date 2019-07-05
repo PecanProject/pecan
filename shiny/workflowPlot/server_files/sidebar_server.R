@@ -2,13 +2,14 @@
 
 # Loading Model Output(s) -----------------------------------------------------#
 
+
 # Update workflow ids
 observe({
   tryCatch({
     # get_workflow_ids function (line 137) in db/R/query.dplyr.R takes a flag to check
     # if we want to load all workflow ids.
     # get_workflow_id function from query.dplyr.R
-    all_ids <- get_workflow_ids(bety, query, all.ids=TRUE)
+    all_ids <- get_workflow_ids(dbConnect$bety, query, all.ids=TRUE)
     updateSelectizeInput(session, "all_workflow_id", choices = all_ids)
     # Get URL prameters
     query <- parseQueryString(session$clientData$url_search)
@@ -32,7 +33,7 @@ all_run_ids <- reactive({
   run_id_list <- c()
   for(w_id in w_ids){
     # For all the workflow ids
-    r_ids <- get_run_ids(bety, w_id)
+    r_ids <- get_run_ids(dbConnect$bety, w_id)
     for(r_id in r_ids){
       # Each workflow id can have more than one run ids
       # ',' as a separator between workflow id and run id
@@ -71,7 +72,7 @@ load.model <- eventReactive(input$load_model,{
   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
   globalDF <- map2_df(ids_DF$wID, ids_DF$runID,
                       ~tryCatch({
-                        load_data_single_run(bety, .x, .y)
+                        load_data_single_run(dbConnect$bety, .x, .y)
                         },
                         error = function(e){
                           toastr_error(title = paste("Error in WorkflowID", .x), 
@@ -94,7 +95,7 @@ observeEvent(input$load_model, {
   for(row_num in 1:nrow(ids_DF)){
     var_name_list <- c(var_name_list, 
                        tryCatch({
-                         var_names_all(bety, ids_DF$wID[row_num], ids_DF$runID[row_num])
+                         var_names_all(dbConnect$bety, ids_DF$wID[row_num], ids_DF$runID[row_num])
                        },
                        error = function(e){
                          return(NULL)
@@ -111,7 +112,7 @@ observeEvent(input$load_model,{
   for(row_num in 1:nrow(ids_DF)){
     settings <- 
       tryCatch({
-        getSettingsFromWorkflowId(bety,ids_DF$wID[row_num])
+        getSettingsFromWorkflowId(dbConnect$bety,ids_DF$wID[row_num])
       },
       error = function(e){
         return(NULL)
@@ -124,8 +125,8 @@ observeEvent(input$load_model,{
 # Update input id list as (input id, name)
 observe({
   req(input$all_site_id)
-  inputs_df <- getInputs(bety, c(input$all_site_id))
-  formats_1 <- dplyr::tbl(bety, 'formats_variables') %>%
+  inputs_df <- getInputs(dbConnect$bety, c(input$all_site_id))
+  formats_1 <- dplyr::tbl(dbConnect$bety, 'formats_variables') %>%
     dplyr::filter(format_id %in% inputs_df$format_id)
   if (dplyr.count(formats_1) == 0) {
     logger.warn("No inputs found. Returning NULL.")
@@ -142,12 +143,12 @@ observe({
 load.model.data <- eventReactive(input$load_data, {
   req(input$all_input_id)
 
-  inputs_df <- getInputs(bety,c(input$all_site_id))
+  inputs_df <- getInputs(dbConnect$bety,c(input$all_site_id))
   inputs_df <- inputs_df %>% dplyr::filter(input_selection_list == input$all_input_id)
 
   input_id <- inputs_df$input_id
   # File_format <- getFileFormat(bety,input_id)
-  File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_id)
+  File_format <- PEcAn.DB::query.format.vars(bety = dbConnect$bety, input.id = input_id)
   start.year <- as.numeric(lubridate::year(inputs_df$start_date))
   end.year <- as.numeric(lubridate::year(inputs_df$end_date))
   File_path <- inputs_df$filePath
@@ -155,7 +156,7 @@ load.model.data <- eventReactive(input$load_data, {
   # To make it work with the VM, uncomment the line below
   File_path <- paste0(inputs_df$filePath,'.csv')
   site.id <- inputs_df$site_id
-  site <- PEcAn.DB::query.site(site.id,bety$con)
+  site <- PEcAn.DB::query.site(site.id,dbConnect$bety$con)
   observations <- PEcAn.benchmark::load_data(
     data.path = File_path, format = File_format, time.row = File_format$time.row,
     site = site, start_year = start.year, end_year = end.year)

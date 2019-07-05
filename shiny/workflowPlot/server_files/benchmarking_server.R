@@ -15,15 +15,15 @@ observeEvent(input$load_model,{
     if(nrow(ids_DF) == 1){
       
       # Check to see if the run has been saved as a reference run 
-      ens_id <- dplyr::tbl(bety, 'runs') %>% dplyr::filter(id == ids_DF$runID) %>% dplyr::pull(ensemble_id)
-      ens_wf <- dplyr::tbl(bety, 'ensembles') %>% dplyr::filter(id == ens_id) %>%
+      ens_id <- dplyr::tbl(dbConnect$bety, 'runs') %>% dplyr::filter(id == ids_DF$runID) %>% dplyr::pull(ensemble_id)
+      ens_wf <- dplyr::tbl(dbConnect$bety, 'ensembles') %>% dplyr::filter(id == ens_id) %>%
         dplyr::rename(ensemble_id = id) %>%
-        dplyr::left_join(.,tbl(bety, "workflows") %>% dplyr::rename(workflow_id = id), by="workflow_id") %>% dplyr::collect()
-      bm$model_vars <- var_names_all(bety,ids_DF$wID,ids_DF$runID)
+        dplyr::left_join(.,tbl(dbConnect$bety, "workflows") %>% dplyr::rename(workflow_id = id), by="workflow_id") %>% dplyr::collect()
+      bm$model_vars <- var_names_all(dbConnect$bety,ids_DF$wID,ids_DF$runID)
       
       clean <- PEcAn.benchmark::clean_settings_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"))
       settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
-      ref_run <- PEcAn.benchmark::check_BRR(settings_xml, bety$con)
+      ref_run <- PEcAn.benchmark::check_BRR(settings_xml, dbConnect$bety$con)
       
       if(length(ref_run) == 0){
         # If not registered, button appears with option to run create.BRR
@@ -61,7 +61,7 @@ observeEvent(input$create_bm,{
     withProgress(message = 'Calculation in progress',
                  detail = 'This may take a while...',
                  value = 0,{
-                   bm$BRR <- PEcAn.benchmark::create_BRR(bm$ens_wf, con = bety$con)
+                   bm$BRR <- PEcAn.benchmark::create_BRR(bm$ens_wf, con = dbConnect$bety$con)
                    incProgress( 10/ 15)
                    bm$brr_message <- sprintf("This run has been successfully registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
                    bm$button_BRR <- FALSE
@@ -95,12 +95,12 @@ observeEvent(input$load_data,{
     req(input$all_input_id)
     req(input$all_site_id)
     
-    bm$metrics <- dplyr::tbl(bety,'metrics') %>% dplyr::select(one_of("id","name","description")) %>% collect()
+    bm$metrics <- dplyr::tbl(dbConnect$bety,'metrics') %>% dplyr::select(one_of("id","name","description")) %>% collect()
     
     # Need to write warning message that can only use one input id
-    bm$input <- getInputs(bety,c(input$all_site_id)) %>% 
+    bm$input <- getInputs(dbConnect$bety,c(input$all_site_id)) %>% 
       dplyr::filter(input_selection_list == input$all_input_id)
-    format <- PEcAn.DB::query.format.vars(bety = bety, input.id = bm$input$input_id)
+    format <- PEcAn.DB::query.format.vars(bety = dbConnect$bety, input.id = bm$input$input_id)
     # Are there more human readable names?
     bm$vars <- dplyr::inner_join(
       data.frame(read_name = names(bm$model_vars), 
@@ -226,7 +226,7 @@ observeEvent(input$calc_bm,{
                    output$reportmetrics <- renderText(paste(bm$bm_metrics))
                    incProgress(1 / 15) 
                    
-                   inputs_df <- getInputs(bety,c(input$all_site_id)) %>% 
+                   inputs_df <- getInputs(dbConnect$bety,c(input$all_site_id)) %>% 
                      dplyr::filter(input_selection_list == input$all_input_id)
                    output$inputs_df_table <- renderTable(inputs_df)
                    incProgress(1 / 15) 
@@ -271,7 +271,7 @@ observeEvent(input$calc_bm,{
                    output$print_bm_settings <- renderPrint(bm$bm_settings)
                    incProgress(1 / 15)
                    
-                   basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
+                   basePath <- dplyr::tbl(dbConnect$bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
                    
                    settings_path <- file.path(basePath, "pecan.BENCH.xml")
                    saveXML(PEcAn.settings::listToXml(bm$bm_settings,"pecan"), file = settings_path)
@@ -294,8 +294,8 @@ observeEvent(input$calc_bm,{
   # "the benchmarking workflow" in its entirety  
   
   settings <- PEcAn.settings::read.settings(bm$settings_path)
-  bm.settings <- PEcAn.benchmark::define_benchmark(settings,bety)
-  settings <- PEcAn.benchmark::add_workflow_info(settings,bety)
+  bm.settings <- PEcAn.benchmark::define_benchmark(settings,dbConnect$bety)
+  settings <- PEcAn.benchmark::add_workflow_info(settings,dbConnect$bety)
 
   settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
   settings <- PEcAn.benchmark::read_settings_BRR(settings)
@@ -313,7 +313,7 @@ observeEvent(input$calc_bm,{
   settings$host$name <- "localhost" # This may not be the best place to set this, but it isn't set by any of the other functions. Another option is to have it set by the default_hostname function (if input is NULL, set to localhost)
   # results <- PEcAn.settings::papply(settings, function(x) calc_benchmark(x, bety, start_year = input$start_year, end_year = input$end_year))
   results <- PEcAn.settings::papply(settings, function(x) 
-    calc_benchmark(settings = x, bety = bety))
+    calc_benchmark(settings = x, bety = dbConnect$bety))
   bm$load_results <- bm$load_results + 1
   
 })
