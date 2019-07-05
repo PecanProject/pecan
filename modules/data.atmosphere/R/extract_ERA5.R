@@ -4,7 +4,6 @@
 #' @param long longitude
 #' @param years years to be extracted
 #' @param vars variables to be extarcted. If NULL all the variables will be returned.
-#' @param data.folder Path to the directory where ERA5 nc files are located.
 #' @details For the list of variables check out the documentation at \link{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
 #'
 #' @return a list of xts objects with all the variables for the requested years
@@ -12,7 +11,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' point.data <- ERA5_extract(lat=40, long=-120, years=c(1990:1995), vars=NULL, data.folder=".")
+#' point.data <- ERA5_extract(lat=40, long=-120, years=c(1990:1995), vars=NULL)
 #' 
 #  point.data %>% 
 #'  purrr::map(~xts::apply.daily(.x, mean))
@@ -22,25 +21,52 @@ ERA5_extract <-
   function(lat ,
            long ,
            years ,
-           vars = NULL, 
-           data.folder) {
+           dbparms,
+           vars = NULL) {
     # Distributing the job between whatever core is available. 
      
     future::plan(future::multiprocess)
     ensemblesN <- seq(1, 10)
-    
+
     tryCatch({
       # for each ensemble
       one.year.out <- years %>%
         furrr::future_map(function(year) {
+          
+          tryCatch({
+            bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
+                                        host     = dbparms$host, 
+                                        user     = dbparms$user, 
+                                        password = dbparms$password)
+            
+            con <- bety$con
+          },
+          error = function(e) {
+            PEcAn.logger::logger.severe(paste0("",e))
+          }
+          )
+          
+          #--- lets find the big raw tile.
+          raw.tiles <- PEcAn.DB::dbfile.input.check(
+            siteid = "1000026755",
+            startdate = paste0(year,"-01-01")  %>% as.Date(),
+            enddate = paste0(year,"-12-31")  %>% as.Date(),
+            parentid = NA,
+            mimetype = "application/x-netcdf",
+            formatname = "CF Meteorology",
+            con,
+            hostname = PEcAn.remote::fqdn(),
+            exact.dates = FALSE,
+            pattern = "ERA5",
+            return.all=TRUE
+          ) %>%
+            as.data.frame() %>%
+            dplyr::filter(file_name == "ERA5")
+          
           # for each year
           point.data <-  ensemblesN %>%
-            purrr::map(function(ens) {
-              ncfile <-
-                paste0(data.folder,
-                       "/ERA5_",
-                       year,
-                       ".nc")
+            furrr::future_map(function(ens) {
+              ncfile <- raw.tiles$file_path
               
               PEcAn.logger::logger.info(paste0("Trying to open :", ncfile, " "))
               
@@ -101,7 +127,7 @@ ERA5_extract <-
           #Merge mean and the speard
           return(point.data)
           
-        },.progress = T) %>%
+        }, .progress = T) %>%
         setNames(years)
       
    

@@ -24,8 +24,8 @@ met2cf.ERA5 <- function(lat,
                         start_date,
                         end_date,
                         sitename,
-                        data.folder,
                         outfolder,
+                        dbparms,
                         overwrite = FALSE,
                         verbose = TRUE) {
   ensemblesN <- seq(1, 10)
@@ -37,7 +37,7 @@ met2cf.ERA5 <- function(lat,
     lat = lat,
     long = long,
     years = years,
-    data.folder = data.folder
+    dbparms=dbparms
   )
   
   start_date <- paste0(lubridate::year(start_date),"-01-01")  %>% as.Date()
