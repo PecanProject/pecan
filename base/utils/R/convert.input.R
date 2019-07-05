@@ -350,9 +350,6 @@ convert.input <-
     ##-------------------------end of exact.dates chunk------------------------------------#
     
   } else {
-    
-    browser()
-    
     #exsiting file for ensembles takes an advantage of the pattern argument
     if (!is.null(ensemble) && ensemble) {
       
@@ -406,8 +403,19 @@ convert.input <-
     PEcAn.logger::logger.info("end CHECK for existing input record.")
     
     if (nrow(existing.dbfile) > 0) {
+
+      if (!is.null(ensemble) && ensemble) {
+        
+        existing.input <- existing.dbfile[["container_id"]] %>%
+          purrr::map_dfr(function(one.cont.id) {
+            PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", one.cont.id), con)
+          })
+        
+      } else{
+        existing.input <-
+          PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]), con)
+      }
       
-      existing.input <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
       
       # Convert dates to Date objects and strip all time zones
       # (DB values are timezone-free)
@@ -649,6 +657,9 @@ convert.input <-
     if (forecast && !is.null(input.id) && !is.na(input.id)) { # for downstream code adapted to handle forecast file conventions
       fcn.args$year.fragment = TRUE                           # such as met2model conversions; arguments will be extraneous otherwise.
     }
+     
+    if (grepl("ERA5", fcn.args$in.prefix) ) fcn.args$year.fragment = TRUE 
+
     
     arg.string <- listToArgString(fcn.args)
     

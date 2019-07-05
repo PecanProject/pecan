@@ -40,14 +40,8 @@ met2cf.ERA5 <- function(lat,
     data.folder = data.folder
   )
   
- 
-  #filter based on start and end date
-  out <- out %>%
-    purrr::map( ~ .x[paste0(as.Date(start_date), "/", as.Date(end_date))])
-  
-  
-  start_date <- start_date %>% as.Date()
-  end_date <- end_date %>% as.Date()
+  start_date <- paste0(lubridate::year(start_date),"-01-01")  %>% as.Date()
+  end_date <- paste0(lubridate::year(end_date),"-01-01") %>% as.Date()
   # adding RH and converting rain
  
   out.new <- ensemblesN %>%
