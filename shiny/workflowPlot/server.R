@@ -74,18 +74,14 @@ server <- shinyServer(function(input, output, session) {
     
     # --- connect to database ---
     observeEvent(input$submitInfo,{
-      tryCatch(
-        {
-          # dbConnect$bety$con <- PEcAn.DB::db.open(
-          #   list(
-          #     user = input$user,
-          #     password = input$password,
-          #     host = input$host
-          #   )
-          # )
-          
+      tryCatch({
+                 
+          dbConnect$bety <- dplyr::src_postgres(dbname ='bety' , 
+                                                host =input$host, user = input$user, 
+                                                password = input$password)
+
           # For testing reactivity of bety connection
-          dbConnect$bety <- betyConnect()
+          #dbConnect$bety <- betyConnect()
           
           removeModal()
           toastr_success("Connect to Database")
