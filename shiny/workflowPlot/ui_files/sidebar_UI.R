@@ -1,5 +1,5 @@
-sidebarPanel(
-  h3("Load Model Output"),
+tagList(
+  h4("Load Model Output"),
   wellPanel(
     p("Please select the workflow IDs to continue. You can select multiple IDs"),
     selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(), multiple=TRUE),
@@ -7,7 +7,7 @@ sidebarPanel(
     selectizeInput("all_run_id", "Mutliple Run IDs", c(), multiple=TRUE),
     actionButton("load_model", "Load Model outputs")
   ),
-  h3("Load External Data"),
+  h4("Load External Data"),
   wellPanel(
     selectizeInput("all_site_id", "Select Site ID", c()),
     # If loading multiple sites in future
