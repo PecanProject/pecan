@@ -117,3 +117,4 @@ install2.r -e -s -n -1\
     xtable \
     xts \
     zoo
+    
