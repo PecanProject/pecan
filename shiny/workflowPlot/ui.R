@@ -10,7 +10,7 @@ library(bsplus)
 source("ui_utils.R", local = TRUE)
 
 # Define UI
-ui <- fluidPage(theme = shinytheme("simplex"),
+ui <- fluidPage(theme = shinytheme("yeti"),
                 # Initializing shinyJs
                 useShinyjs(),
                 # Initializing shinytoastr
