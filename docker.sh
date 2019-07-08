@@ -188,7 +188,7 @@ for version in git; do
 done
 
 # build sipnet
-for version in 136; do
+for version in git r136; do
     ${DEBUG} docker build \
         --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
