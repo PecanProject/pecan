@@ -1,6 +1,10 @@
 # Select_Data
 
 tagList(
-  column(6, htmlOutput("README")),
-  column(6, verbatimTextOutput("dim_message"))
+  #column(6, htmlOutput("README")),
+  DT::dataTableOutput("datatable"),
+  br(),
+  br(),
+  br(),
+  verbatimTextOutput("dim_message")
 )

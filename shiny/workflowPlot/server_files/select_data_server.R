@@ -27,23 +27,31 @@ observeEvent(input$load_model,{
                      wf.folder <- workflow(dbConnect$bety, ids_DF$wID[i]) %>% collect() %>% pull(folder)
                      
                      README.text <- c(README.text, 
-                                      paste("SELECTION",i), 
-                                      "============",
                                       tryCatch({
                                         readLines(file.path(wf.folder, 'run', ids_DF$runID[i], "README.txt"))
                                         },
                                         error = function(e){
                                           return(NULL)
                                         }),
-                                      diff_message,
-                                      ""
+                                      diff_message
                      )
                    }
+                   
+                   select.data <- read.delim(textConnection(README.text),
+                                             header=FALSE,sep=":",strip.white=TRUE) %>%
+                     unstack(V2 ~ V1) %>%  
+                     dplyr::rename(site.id = site..id) %>% 
+                     select(runtype, workflow.id, ensemble.id, pft.name, quantile, trait, run.id, 
+                            model, site.id, start.date, end.date, hostname, timestep, rundir, outdir)
+                     
                     
+                   output$datatable <- DT::renderDataTable(
+                     DT::datatable(select.data,options = list(scrollX = TRUE))
+                     )
+                  
+                   #output$README <- renderUI({HTML(paste(README.text, collapse = '<br/>'))})
                    
-                   output$README <- renderUI({HTML(paste(README.text, collapse = '<br/>'))})
-                   
-                   output$dim_message <- renderText({sprintf("This data has %.0f rows, think about skipping exploratory plots if this is a large number...", dim(df)[1])})
+                   output$dim_message <- renderText({sprintf("This data has %.0f rows,\nthink about skipping exploratory plots if this is a large number...", dim(df)[1])})
                    incProgress(4 / 15) 
                  })
     
