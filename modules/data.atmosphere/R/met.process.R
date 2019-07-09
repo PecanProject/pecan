@@ -277,13 +277,39 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
-
+    
     ## Get Model Registration
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
     
-    met2model.result = list()
-    for (i in 1:length(ready.id[[1]])) {
+      met2model.result = list()
+    # Here I assume ensembles have one input id and multiple files related to them
+    if (!is.null(register$ensemble)){
+   
+      for (i in seq_along(ready.id[[2]])) {
+     
+        met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[1],
+                                                                   dbfile.id = ready.id$dbfile.id[i]
+                                                                   ), 
+                                                   model = model, 
+                                                   con = con,
+                                                   host = host, 
+                                                   dir = dir, 
+                                                   met = met, 
+                                                   str_ns = str_ns,
+                                                   site = site, 
+                                                   start_date = start_date, end_date = end_date, 
+                                                   browndog = browndog, 
+                                                   new.site = new.site,
+                                                   overwrite = overwrite$met2model,
+                                                   exact.dates = reg.model$exact.dates,
+                                                   spin = spin,
+                                                   register = register,
+                                                   ensemble_name = i)
+      }
+    }else{
+        
+    for (i in seq_along(ready.id[[1]])) {
       met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[i], dbfile.id = ready.id$dbfile.id[i]), 
                                     model = model, 
                                     con = con,
@@ -300,7 +326,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     spin = spin,
                                     register = register,
                                     ensemble_name = i)
+      }
     }
+    
     
     model.id = list()
     model.file.info = list()

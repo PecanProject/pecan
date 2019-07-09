@@ -25,14 +25,16 @@ ERA5_extract <-
            vars = NULL) {
     # Distributing the job between whatever core is available. 
      
-    future::plan(future::multiprocess)
+
     ensemblesN <- seq(1, 10)
+    
 
     tryCatch({
-      # for each ensemble
+       #for each ensemble
       one.year.out <- years %>%
-        furrr::future_map(function(year) {
+        purrr::map(function(year) {
           
+        
           tryCatch({
             bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
                                         host     = dbparms$host, 
@@ -45,7 +47,8 @@ ERA5_extract <-
             PEcAn.logger::logger.severe(paste0("",e))
           }
           )
-          
+         
+
           #--- lets find the big raw tile.
           raw.tiles <- PEcAn.DB::dbfile.input.check(
             siteid = "1000026755",
@@ -56,16 +59,16 @@ ERA5_extract <-
             formatname = "CF Meteorology",
             con,
             hostname = PEcAn.remote::fqdn(),
-            exact.dates = FALSE,
+            exact.dates = TRUE,
             pattern = "ERA5",
             return.all=TRUE
-          ) %>%
-            as.data.frame() %>%
-            dplyr::filter(file_name == "ERA5")
-          
+          ) 
+
           # for each year
           point.data <-  ensemblesN %>%
-            furrr::future_map(function(ens) {
+            purrr::map(function(ens) {
+              
+            
               ncfile <- raw.tiles$file_path
               
               PEcAn.logger::logger.info(paste0("Trying to open :", ncfile, " "))
@@ -94,6 +97,8 @@ ERA5_extract <-
               
               all.data.point <- vars %>%
                 purrr::map_dfc(function(vname) {
+                  PEcAn.logger::logger.info(paste0(" \t ",vname, "is being extracted ! "))
+                  
                   brick.tmp <-
                     raster::brick(ncfile, varname = vname, level = ens)
                   nn <-
@@ -127,7 +132,7 @@ ERA5_extract <-
           #Merge mean and the speard
           return(point.data)
           
-        }, .progress = T) %>%
+        }) %>%
         setNames(years)
       
    
@@ -142,8 +147,8 @@ ERA5_extract <-
       
       return(OUT)
       
-    }, error = function(e) {
+     }, error = function(e) {
       PEcAn.logger::logger.severe(paste0(conditionMessage(e)))
-    })
+     })
     
   }

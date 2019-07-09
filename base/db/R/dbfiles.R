@@ -24,6 +24,7 @@
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param allow.conflicting.dates Whether to allow a new input record with same siteid, name, and format but different start/end dates
+##' @param ens In case of ensembles we could let to have more than one file associated with one input.
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
 ##' @author Rob Kooper, Betsy Cowdery
@@ -32,7 +33,7 @@
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname,
-                                parentid=NA, con, hostname=PEcAn.remote::fqdn(), allow.conflicting.dates=FALSE) {
+                                parentid=NA, con, hostname=PEcAn.remote::fqdn(), allow.conflicting.dates=FALSE, ens=FALSE) {
   name <- basename(in.path)
   hostname <- default_hostname(hostname)
   
@@ -135,14 +136,14 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname)
   
-  if (nrow(dbfile) > 0) {
-    if (nrow(dbfile) > 1) {
+  if (nrow(dbfile) > 0 & !ens) {
+    if (nrow(dbfile) > 1 & !ens) {
       print(dbfile)
       PEcAn.logger::logger.warn("Multiple dbfiles found. Using last.")
       dbfile <- dbfile[nrow(dbfile),]
     }
     
-    if (dbfile$file_name != in.prefix || dbfile$file_path != in.path) {
+    if (dbfile$file_name != in.prefix || dbfile$file_path != in.path ) {
       print(dbfile, digits = 10)
       PEcAn.logger::logger.error(paste0(
         "The existing dbfile record printed above has the same machine_id and container ",
@@ -191,7 +192,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
                                con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL, return.all=FALSE) {
   
 
-  
+ 
   hostname <- default_hostname(hostname)
   
   mimetypeid <- get.id(table = 'mimetypes', colnames = 'type_string', values = mimetype, con = con)
@@ -258,6 +259,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
          #   for(i in seq_len(ni)){
          #     dbfile[[i]] <- dbfile.check(type = 'Input', container.id = inputs$id[i], con = con, hostname = hostname, machine.check = TRUE)
          # }
+   
       dbfile <-
         dbfile.check(
           type = 'Input',
@@ -287,7 +289,14 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       
       PEcAn.logger::logger.warn("Found possible matching input. Checking if its associate files are on host machine")
       print(inputs)
-      dbfile <- dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = TRUE)
+      dbfile <- dbfile.check(
+        type = 'Input',
+        container.id = inputs$id,
+        con = con,
+        hostname = hostname,
+        machine.check = TRUE,
+        return.all = return.all
+      )
       
       if (nrow(dbfile) == 0) {
         ## With the possibility of dbfile.check returning nothing,

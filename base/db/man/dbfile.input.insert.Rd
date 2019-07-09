@@ -6,7 +6,8 @@
 \usage{
 dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate,
   mimetype, formatname, parentid = NA, con,
-  hostname = PEcAn.remote::fqdn(), allow.conflicting.dates = FALSE)
+  hostname = PEcAn.remote::fqdn(), allow.conflicting.dates = FALSE,
+  ens = FALSE)
 }
 \arguments{
 \item{in.path}{path to the directory containing the file to be inserted}
@@ -30,6 +31,8 @@ dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate,
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
 
 \item{allow.conflicting.dates}{Whether to allow a new input record with same siteid, name, and format but different start/end dates}
+
+\item{ens}{In case of ensembles we could let to have more than one file associated with one input.}
 }
 \value{
 data.frame with the id, filename and pathname of the input that is requested

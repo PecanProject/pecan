@@ -38,7 +38,7 @@ download.ERA5 <-
        PEcAn.logger::logger.severe(paste0("",e))
       }
     )
-    
+
     db.file <- PEcAn.DB::dbfile.input.check(
       siteid=site_id %>% as.character(),
       startdate = start_date,
@@ -52,8 +52,7 @@ download.ERA5 <-
       pattern = "ERA5",
       return.all=TRUE
     ) %>%
-      as.data.frame()%>% 
-      dplyr::filter(grepl("ERA5",file_name))
+      as.data.frame()
     
     
     if (nrow(db.file) >0){
