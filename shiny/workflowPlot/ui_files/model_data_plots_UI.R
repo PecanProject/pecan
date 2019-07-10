@@ -1,14 +1,7 @@
 tabPanel(
   "Model-Data Plots",
   column(
-    12,
-    highchartOutput("modelDataPlot")
-  ),
-  column(12, wellPanel(
-    actionButton("ex_plot_modeldata", "Generate Plot")
-  )),
-  column(
-    12,
+    3,
     wellPanel(
       selectInput("var_name_modeldata", "Variable Name", ""),
       textInput("units_modeldata", "Units",
@@ -24,9 +17,15 @@ tabPanel(
         "smooth_n_modeldata",
         "Value for smoothing:",
         min = 0,
-        max = 100,
-        value = 80
-      )
+        max = 1,
+        value = 0.8
+      ),
+      br(),
+      actionButton("ex_plot_modeldata", "Generate Plot", width = "100%", class="btn-primary")
     )
+  ),
+  column(
+    9,
+    highchartOutput("modelDataPlot", height = "500px")
   )
 )

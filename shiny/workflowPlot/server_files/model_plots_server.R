@@ -52,7 +52,7 @@ observeEvent(input$ex_plot_model,{
                        
                        df <- dplyr::filter(load.model(), var_name == input$var_name_model)
                        
-                       updateSliderInput(session,"smooth_n_model", min = 0, max = nrow(df))
+                       #updateSliderInput(session,"smooth_n_model", min = 0, max = nrow(df))
                        
                        title <- unique(df$title)
                        xlab <- unique(df$xlab)
@@ -68,8 +68,9 @@ observeEvent(input$ex_plot_model,{
                        xts.df <- xts(df[,c("vals", "run_id")], order.by = df$dates)
                        
                        plot_type <- switch(input$plotType_model, point = "scatter", line = "line")
-                       # not sure if this method to calcualte smoothing parameter is correct
-                       smooth_param <- input$smooth_n_model / nrow(df) *100
+                   
+                       #smooth_param <- input$smooth_n_model / nrow(df) *100
+                       smooth_param <- input$smooth_n_model * 100
                        
                        ply <- highchart() 
                        

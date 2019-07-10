@@ -53,7 +53,7 @@ observeEvent(input$ex_plot_modeldata,{
                        
                        model_data <- dplyr::filter(load.model(), var_name == var)
                        
-                       updateSliderInput(session,"smooth_n_modeldata", min = 0, max = nrow(model_data))
+                       #updateSliderInput(session,"smooth_n_modeldata", min = 0, max = nrow(model_data))
                        title <- unique(model_data$title)
                        xlab  <- unique(model_data$xlab)
                        ylab  <- unique(model_data$ylab)
@@ -86,8 +86,9 @@ observeEvent(input$ex_plot_modeldata,{
                        
                        
                        plot_type <- switch(input$plotType_model, point = "scatter", line = "line")
-                       # not sure if this method to calcualte smoothing parameter is correct
-                       smooth_param <- input$smooth_n_model / nrow(df) *100
+                      
+                       #smooth_param <- input$smooth_n_model / nrow(df) *100
+                       smooth_param <- input$smooth_n_model * 100
                        
                        ply <- highchart() %>% 
                          hc_add_series(model.xts, name = "model", type = plot_type, 
