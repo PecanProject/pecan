@@ -1,5 +1,6 @@
 tabPanel(
   "Model Plots",
+  br(),
   column(
     3,
     wellPanel(
