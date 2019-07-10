@@ -30,7 +30,7 @@ observeEvent(input$load_model,{
         brr_message <- sprintf("Would you like to save this run (run id = %.0f, ensemble id = %0.f) as a reference run?", ids_DF$runID, ens_id) 
         button <- TRUE
       }else if(dim(ref_run)[1] == 1){
-        bm$BRR <- ref_run %>% rename(.,reference_run_id = id)
+        bm$BRR <- ref_run %>% dplyr::rename(.,reference_run_id = id)
         bm$BRR
         brr_message <- sprintf("This run has been registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
       }else if(dim(ref_run)[1] > 1){ # There shouldn't be more than one reference run per run

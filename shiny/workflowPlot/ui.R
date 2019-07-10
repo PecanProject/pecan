@@ -43,10 +43,10 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                       navbarPage(title = NULL,
                                            tabPanel(h4("Select Data"),
                                                    tagList(
-                                                     column(4,
+                                                     column(3,
                                                             source_ui("sidebar_UI.R")
                                                             ),
-                                                     column(8,
+                                                     column(9,
                                                             source_ui("select_data_UI.R")
                                                             )
                                                    )

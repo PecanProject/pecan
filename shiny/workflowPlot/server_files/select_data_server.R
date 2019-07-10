@@ -37,11 +37,12 @@ observeEvent(input$load_model,{
                      )
                    }
                    
-                   select.data <- read.delim(textConnection(README.text),
-                                             header=FALSE,sep=":",strip.white=TRUE) %>%
-                     unstack(V2 ~ V1) %>%  
-                     dplyr::rename(site.id = site..id) %>% 
-                     select(runtype, workflow.id, ensemble.id, pft.name, quantile, trait, run.id, 
+                    select.data <- read.delim(textConnection(README.text),
+                              header=FALSE,sep=":",strip.white=TRUE) %>% 
+                      dlply(.(V1), function(x) x[[2]]) %>% 
+                      as.data.frame() %>% 
+                      dplyr::rename(site.id = site..id) %>% 
+                      select(runtype, workflow.id, ensemble.id, pft.name, quantile, trait, run.id, 
                             model, site.id, start.date, end.date, hostname, timestep, rundir, outdir)
                      
                     
