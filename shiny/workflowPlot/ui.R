@@ -66,7 +66,8 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                                            ),
                                            tabPanel(h4("Documentation"),
                                                     #withMathJax(includeMarkdown("markdown/workflowPlot_doc.Rmd"))
-                                                    bs_accordion_sidebar(id = "documentation") %>%
+                                                    bs_accordion_sidebar(id = "documentation",
+                                                                         spec_side = c(width = 3, offset = 0)) %>%
                                                       bs_append(
                                                         title_side = "App Documentation", 
                                                         content_side = NULL,
