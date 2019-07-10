@@ -23,8 +23,6 @@ Imports:
     car,
     data.table,
     dplyr,
-    furrr,
-    future,
     geonames (> 0.998),
     ggplot2,
     glue,
