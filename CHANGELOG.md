@@ -37,7 +37,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - SIPNET now is installed from the source code managed in git
 
 ### Added
-
+- Meta analysis functionality to not use greenhouse data.
 - Dockerize the BioCro model.
 - Added PRO4SAIL-D model, using existing 4SAIL src and coupling with PROSPECT-D Fortran code
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
