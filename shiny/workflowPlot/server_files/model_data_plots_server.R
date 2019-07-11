@@ -39,7 +39,16 @@ observeEvent(input$units_modeldata,{
   }
 })
 
-
+# update date range input limit
+observe({
+  df <- load.model()
+  updateDateRangeInput(session, "date_range2",
+                       start = as.Date(min(df$dates)),
+                       end = as.Date(max(df$dates)),
+                       min = as.Date(min(df$dates)), 
+                       max = as.Date(max(df$dates))
+  )
+})
 
 observeEvent(input$ex_plot_modeldata,{
   output$modelDataPlot <- renderHighchart({
@@ -77,6 +86,10 @@ observeEvent(input$ex_plot_modeldata,{
                        
                        model.xts <- xts(model$value, order.by = model$Date)
                        observasions.xts <- xts(observasions$value, order.by = observasions$Date)
+                       
+                       date_range2 <- paste0(input$date_range2, collapse = "/")
+                       model.xts <- model.xts[date_range2]
+                       observasions.xts <- observasions.xts[date_range2]
                        
                        unit <- ylab
                        if(input$units_modeldata != unit & udunits2::ud.are.convertible(unit, input$units_modeldata)){

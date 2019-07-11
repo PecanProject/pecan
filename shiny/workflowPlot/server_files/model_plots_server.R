@@ -38,6 +38,16 @@ observeEvent(input$units_model,{
   }
 })
 
+# update date range input limit
+observe({
+  df <- load.model()
+  updateDateRangeInput(session, "date_range",
+                       start = as.Date(min(df$dates)),
+                       end = as.Date(max(df$dates)),
+                       min = as.Date(min(df$dates)), 
+                       max = as.Date(max(df$dates))
+  )
+})
 
 observeEvent(input$ex_plot_model,{
   req(input$units_model)
@@ -53,7 +63,7 @@ observeEvent(input$ex_plot_model,{
                        df <- dplyr::filter(load.model(), var_name == input$var_name_model)
                        
                        #updateSliderInput(session,"smooth_n_model", min = 0, max = nrow(df))
-                       
+                    
                        title <- unique(df$title)
                        xlab <- unique(df$xlab)
                        ylab <- unique(df$ylab)
@@ -66,6 +76,9 @@ observeEvent(input$ex_plot_model,{
                        
                        df$run_id <- as.numeric(as.character(df$run_id))
                        xts.df <- xts(df[,c("vals", "run_id")], order.by = df$dates)
+                       date_range <- paste0(input$date_range, collapse = "/")
+                       xts.df <- xts.df[date_range]
+
                        
                        plot_type <- switch(input$plotType_model, point = "scatter", line = "line")
                    

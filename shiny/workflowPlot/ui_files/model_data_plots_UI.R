@@ -8,6 +8,7 @@ tabPanel(
       textInput("units_modeldata", "Units",
                 placeholder = "Type units in udunits2 compatible format"),
       verbatimTextOutput("unit_text2"),
+      dateRangeInput("date_range2", "Date Range", separator = " - "),
       radioButtons(
         "plotType_modeldata",
         "Plot Type (for Model Outputs)",
