@@ -28,7 +28,10 @@
 ##' @author David LeBauer, Shawn Serbin
 pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE) {
   
-  fail <- FALSE
+  fail <- rep(FALSE, length(mcmc.object))
+  names(fail) <- names(mcmc.object)
+  not.converged <- data.frame()
+  
   sink(file = file.path(outdir, "meta-analysis.log"), append = TRUE, split = TRUE)
   for (trait in names(mcmc.object)) {
     
@@ -72,7 +75,6 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
     ## G-R diagnostics to ensure convergence
     gd            <- coda::gelman.diag(mcmc.object[[trait]])
     mpsrf         <- round(gd$mpsrf, digits = 3)
-    not.converged <- data.frame()
     if (mpsrf < threshold) {
       PEcAn.logger::logger.info(paste("JAGS model converged for", pft, trait,
                         "\nGD MPSRF = ", mpsrf, "\n"))
@@ -80,15 +82,17 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
       not.converged <- rbind(not.converged, data.frame(pft = pft, trait = trait, mpsrf = mpsrf))
       PEcAn.logger::logger.info(paste("JAGS model did not converge for", pft, trait, 
                         "\nGD MPSRF = ", mpsrf, "\n"))
-      fail <- TRUE
+      fail[trait] <- TRUE
     }
-  }
+  } # trait-loop ends
   
-  if (fail) {
-    PEcAn.logger::logger.warn("JAGS model failed to converge for one or more pft.")
+  if (any(fail)) {
+    PEcAn.logger::logger.warn("JAGS model failed to converge for one or more trait. Discarding samples.")
     for (i in seq_len(nrow(not.converged))) {
       with(not.converged[i, ], PEcAn.logger::logger.info(paste(pft, trait, "MPSRF = ", mpsrf)))
     }
+    mcmc.object[fail] <- NULL #discard samples
   }
   sink()
+  return(mcmc.object)
 } # pecan.ma.summary

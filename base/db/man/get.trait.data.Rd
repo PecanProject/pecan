@@ -2,7 +2,7 @@
 % Please edit documentation in R/get.trait.data.R
 \name{get.trait.data}
 \alias{get.trait.data}
-\title{Gets trait data from the database}
+\title{Get trait data from the database.}
 \usage{
 get.trait.data(pfts, modeltype, dbfiles, database, forceupdate,
   trait.names = NULL)
@@ -14,26 +14,28 @@ get.trait.data(pfts, modeltype, dbfiles, database, forceupdate,
 
 \item{dbfiles}{location where previous results are found}
 
-\item{database}{database connection parameters}
+\item{database}{database connection parameters (see `params`
+argument to [db.query()])}
 
-\item{forceupdate}{set this to true to force an update, false to check to see if an update is needed.}
+\item{forceupdate}{(Logical) If `TRUE`, force a database update
+whether or not it is needed. If `FALSE`, only update if an
+update is needed.}
 
-\item{trait.names}{list of traits to query. If TRUE, uses trait.dictionary}
+\item{trait.names}{Character vector of trait names to search. If
+`NULL` (default), use all traits that have a prior for at least
+one of the `pfts`.}
 }
 \value{
-list of pfts with update posteriorids
+list of PFTs with update posteriorids
 }
 \description{
-Get trait data from the database.
-}
-\details{
-This will use the following items from setings:
-- settings$pfts
-- settings$model$type
-- settings$database$bety
-- settings$database$dbfiles
-- settings$meta.analysis$update
+This will use the following items from settings:
+- `settings$pfts`
+- `settings$model$type`
+- `settings$database$bety`
+- `settings$database$dbfiles`
+- `settings$meta.analysis$update`
 }
 \author{
-David LeBauer, Shawn Serbin
+David LeBauer, Shawn Serbin, Alexey Shiklomanov
 }
