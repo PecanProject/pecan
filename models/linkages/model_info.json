@@ -1,0 +1,16 @@
+{
+  "name": "LINKAGES",
+  "type": "LINKAGES",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "The LINKAGES model is an individual-based forest-gap ecosystem model which simulates changes in stand structure and composition as determined by competition for resources, precipitation, and temperature and their effects on individual trees. The LINKAGES model has been translated into R from FORTRAN and adapted to include a data-assimilation capability.",
+  "creator": "Ann Raiho <ann.raiho@gmail.com>",
+  "contributors": [],
+  "links": {
+    "source": "http://someurl/code",
+    "issues": "http://someurl/issues",
+    "documentation": "http://someurl/wiki"
+  },
+  "inputs": {},
+  "bibtex": []
+}
