@@ -9,6 +9,17 @@ tabPanel(
                 placeholder = "Type units in udunits2 compatible format"),
       verbatimTextOutput("unit_text"),
       dateRangeInput("date_range", "Date Range", separator = " - "),
+      fluidRow(
+        column(6, 
+               selectInput("agg", "Aggregation", 
+                           choices = c("daily", "weekly", "monthly", "quarterly", "annually"), 
+                           selected = "daily")),
+        column(6,
+               selectInput("func", "function", 
+                           choices = c("mean", "sum"), 
+                           selected = "mean")
+               )
+      ),
       radioButtons(
         "plotType_model",
         "Plot Type (for Model Outputs)",
@@ -22,7 +33,6 @@ tabPanel(
         max = 1,
         value = 0.8
       ),
-      br(),
       actionButton("ex_plot_model", "Generate Plot", width = "100%", class="btn-primary")
     )
   ),

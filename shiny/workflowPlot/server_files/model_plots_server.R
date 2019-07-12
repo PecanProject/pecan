@@ -74,23 +74,39 @@ observeEvent(input$ex_plot_model,{
                          ylab <- input$units_model
                        }
                        
-                       df$run_id <- as.numeric(as.character(df$run_id))
-                       xts.df <- xts(df[,c("vals", "run_id")], order.by = df$dates)
                        date_range <- paste0(input$date_range, collapse = "/")
-                       xts.df <- xts.df[date_range]
-
                        
                        plot_type <- switch(input$plotType_model, point = "scatter", line = "line")
-                   
-                       #smooth_param <- input$smooth_n_model / nrow(df) *100
+                       
                        smooth_param <- input$smooth_n_model * 100
                        
+                       # function that converts dataframe to xts object, 
+                       # selects subset of a date range and does data aggregtion
+                       func <- function(df){
+                         xts.df <- xts(df$vals, order.by = df$dates)
+                         xts.df <- xts.df[date_range]
+                         if(input$agg == "daily"){
+                           xts.df <- apply.daily(xts.df, input$func)
+                         }else if(input$agg == "weekly"){
+                           xts.df <- apply.weekly(xts.df, input$func)
+                         }else if(input$agg == "monthly"){
+                           xts.df <- apply.monthly(xts.df, input$func)
+                         }else if(input$agg == "quarterly"){
+                           xts.df <- apply.quarterly(xts.df, input$func)
+                         }else{
+                           xts.df <- apply.yearly(xts.df, input$func)
+                         }
+                       }
+                      
+                       list <- split(df, df$run_id)
+                       xts.list <- lapply(list, func)
+
                        ply <- highchart() 
                        
-                       for(i in unique(xts.df$run_id)){
+                       for(i in 1:length(xts.list)){
                          ply <- ply %>% 
-                           hc_add_series(xts.df[xts.df$run_id ==  i, "vals"], 
-                                         type = plot_type, name = i, regression = TRUE, 
+                           hc_add_series(xts.list[[i]], type = plot_type, name = names(xts.list[i]), 
+                                         regression = TRUE, 
                                          regressionSettings = list(type = "loess", loessSmooth = smooth_param)) 
                        }
                        

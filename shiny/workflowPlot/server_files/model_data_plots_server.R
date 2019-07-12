@@ -84,12 +84,32 @@ observeEvent(input$ex_plot_modeldata,{
                        model <- filter(aligned_data, variable == "model")
                        observasions <- filter(aligned_data, variable == "observations")
                        
+                       #convert dataframe to xts object
                        model.xts <- xts(model$value, order.by = model$Date)
                        observasions.xts <- xts(observasions$value, order.by = observasions$Date)
                        
+                       # subsetting of a date range
                        date_range2 <- paste0(input$date_range2, collapse = "/")
                        model.xts <- model.xts[date_range2]
                        observasions.xts <- observasions.xts[date_range2]
+                       
+                       # Aggregation function
+                       aggr <- function(xts.df){
+                         if(input$agg2 == "daily"){
+                           xts.df <- apply.daily(xts.df, input$func2)
+                         }else if(input$agg2 == "weekly"){
+                           xts.df <- apply.weekly(xts.df, input$func2)
+                         }else if(input$agg2 == "monthly"){
+                           xts.df <- apply.monthly(xts.df, input$func2)
+                         }else if(input$agg2 == "quarterly"){
+                           xts.df <- apply.quarterly(xts.df, input$func2)
+                         }else{
+                           xts.df <- apply.yearly(xts.df, input$func2)
+                         }
+                       }
+                       
+                       model.xts <- aggr(model.xts)
+                       observasions.xts <- aggr(observasions.xts)
                        
                        unit <- ylab
                        if(input$units_modeldata != unit & udunits2::ud.are.convertible(unit, input$units_modeldata)){
