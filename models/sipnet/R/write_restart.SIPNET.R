@@ -31,8 +31,11 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
   # values that will be used for updating other states deterministically depending on the SDA states
-  IC_extra <- ifelse(length(new.params$restart)>0, data.frame(t(new.params$restart)), data.frame())
-  
+  if (length(new.params$restart) > 0) {
+    IC_extra <- data.frame(t(new.params$restart))
+  } else{
+    IC_extra <- data.frame()
+  }  
   
   if (RENAME) {
     file.rename(file.path(outdir, runid, "sipnet.out"),
@@ -65,7 +68,6 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
  if ("AbvGrndWood" %in% variables) {
      AbvGrndWood <- udunits2::ud.convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
      analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 	  
-    if (new.state$AbvGrndWood < 0) analysis.save[[length(analysis.save)]] <- 0.0001
      names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
     
     analysis.save[[length(analysis.save) + 1]] <- IC_extra$abvGrndWoodFrac

@@ -90,12 +90,17 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
   for (site in site.ids){
     choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = FALSE) %>% unlist
     # if there is no obs for this site
-    if(length(choose)==0){
+    if(length(choose) == 0){
       next;
     }else{
       Y <- c(Y, unlist(obs.t.mean[[site]][choose]))
-      # collecting them
-      site.specific.Rs <- c(site.specific.Rs, list(as.matrix(obs.t.cov[[site]][choose,choose])) )
+      #collecting them
+      if (ncol(obs.t.mean[[site]]) > 1)
+      {
+        site.specific.Rs <- c(site.specific.Rs, list(as.matrix(obs.t.cov[[site]][choose,choose])))
+      } else {
+        site.specific.Rs <- c(site.specific.Rs, list(as.matrix(obs.t.cov[[site]][choose])))
+      }
     }
   #make block matrix out of our collection
   R <- Matrix::bdiag(site.specific.Rs) %>% as.matrix()
