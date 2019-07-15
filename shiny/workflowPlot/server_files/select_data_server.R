@@ -8,6 +8,7 @@ observeEvent(input$load_model,{
                    incProgress(1 / 15)
                    
                    df <- load.model()
+                   if (nrow(df)==0) return(NULL)
                    # output$results_table <- DT::renderDataTable(DT::datatable(head(masterDF)))
                    incProgress(10 / 15)
                    
