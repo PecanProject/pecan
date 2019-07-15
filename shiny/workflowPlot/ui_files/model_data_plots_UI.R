@@ -12,7 +12,7 @@ tabPanel(
       fluidRow(
         column(6, 
                selectInput("agg2", "Aggregation", 
-                           choices = c("daily", "weekly", "monthly", "quarterly", "annually"), 
+                           choices = c("NONE", "daily", "weekly", "monthly", "quarterly", "annually"), 
                            selected = "daily")),
         column(6,
                selectInput("func2", "function", 

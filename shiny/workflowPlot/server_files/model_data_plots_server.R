@@ -50,6 +50,15 @@ observe({
   )
 })
 
+# update "function" select box choice according to "agrregation" select box
+observe({
+  if(input$agg2 == "NONE"){
+    updateSelectInput(session, "func2", choices = "NONE")
+  }else{
+    updateSelectInput(session, "func2", choices = c("mean", "sum"))
+  }
+})
+
 observeEvent(input$ex_plot_modeldata,{
   output$modelDataPlot <- renderHighchart({
     input$ex_plot_modeldata
@@ -95,6 +104,8 @@ observeEvent(input$ex_plot_modeldata,{
                        
                        # Aggregation function
                        aggr <- function(xts.df){
+                         if(input$agg2=="NONE") return(xts.df)
+                         
                          if(input$agg2 == "daily"){
                            xts.df <- apply.daily(xts.df, input$func2)
                          }else if(input$agg2 == "weekly"){

@@ -49,6 +49,15 @@ observe({
   )
 })
 
+# update "function" select box choice according to "agrregation" select box
+observe({
+  if(input$agg == "NONE"){
+    updateSelectInput(session, "func", choices = "NONE")
+  }else{
+    updateSelectInput(session, "func", choices = c("mean", "sum"))
+  }
+})
+
 observeEvent(input$ex_plot_model,{
   req(input$units_model)
   
@@ -85,6 +94,9 @@ observeEvent(input$ex_plot_model,{
                        func <- function(df){
                          xts.df <- xts(df$vals, order.by = df$dates)
                          xts.df <- xts.df[date_range]
+                         
+                         if(input$agg=="NONE") return(xts.df)
+                         
                          if(input$agg == "daily"){
                            xts.df <- apply.daily(xts.df, input$func)
                          }else if(input$agg == "weekly"){
