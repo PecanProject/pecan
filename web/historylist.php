@@ -98,9 +98,9 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $status = "UNKNOWN";
   }
   if (($status == "") && ($row['finished_at'] == "")) {
-    $url = "05-running.php?workflowid=" . $row['id'] . $hostname;
+    $url = "05-running.php?workflowid=" . $row['id'];
     if (isset($params['hostname'])) {
-      $hostname = "&hostname=${params['hostname']}";
+      $url .= "&hostname=${params['hostname']}";
     }
     $status = "RUNNING";
   }
