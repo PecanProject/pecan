@@ -17,9 +17,19 @@ output$modelPlot <- renderHighchart({
 
 # Update units every time a variable is selected
 observeEvent(input$var_name_model, {
-  model.df <- load.model()
-  default.unit <- model.df %>% filter(var_name == input$var_name_model) %>% pull(ylab) %>% unique()
-  updateTextInput(session, "units_model", value = default.unit)
+  req(input$var_name_model)
+  tryCatch({
+    model.df <- load.model()
+    default.unit <-
+      model.df %>% filter(var_name == input$var_name_model) %>% pull(ylab) %>% unique()
+    updateTextInput(session, "units_model", value = default.unit)
+    
+    #Signaling the success of the operation
+    toastr_success("Load model outputs")
+  },
+  error = function(e) {
+    toastr_error(title = "Error in reading the run files.", conditionMessage(e))
+  })
 })
 
 # Check that new units are parsible and can be used for conversion
