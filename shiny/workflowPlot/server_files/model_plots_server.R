@@ -25,7 +25,7 @@ observeEvent(input$var_name_model, {
     updateTextInput(session, "units_model", value = default.unit)
     
     #Signaling the success of the operation
-    toastr_success("Load model outputs")
+    toastr_success("Variables were updated.")
   },
   error = function(e) {
     toastr_error(title = "Error in reading the run files.", conditionMessage(e))
