@@ -90,6 +90,9 @@ observeEvent(input$ex_plot_modeldata,{
                        # Melt dataframe to plot two types of columns together
                        aligned_data <- tidyr::gather(aligned_data, variable, value, -Date)
                        
+                       
+                       
+                       
                        model <- filter(aligned_data, variable == "model")
                        observasions <- filter(aligned_data, variable == "observations")
                        
@@ -104,6 +107,7 @@ observeEvent(input$ex_plot_modeldata,{
                        
                        # Aggregation function
                        aggr <- function(xts.df){
+                         
                          if(input$agg2=="NONE") return(xts.df)
                          
                          if(input$agg2 == "daily"){
@@ -122,6 +126,28 @@ observeEvent(input$ex_plot_modeldata,{
                        model.xts <- aggr(model.xts)
                        observasions.xts <- aggr(observasions.xts)
                        
+                       
+                       output$modelDataPlotscatter <- renderHighchart({
+                         scatter.df <- data.frame (
+                           'y' = zoo::coredata(model.xts),
+                           'x' = zoo::coredata(observasions.xts)
+                         )
+                         
+                         highchart() %>%
+                           hc_chart(type = 'scatter') %>%
+                           hc_add_series(scatter.df, name = "Model data comparison", showInLegend = FALSE) %>%
+                           hc_legend(enabled = FALSE) %>%
+                           hc_yAxis(title = list(text = "Simulated",fontSize=19))%>%
+                           hc_exporting(enabled = TRUE, filename=paste0("Model_data_comparison")) %>%
+                           hc_add_theme(hc_theme_elementary(yAxis = list(title = list(style = list(color = "#373b42",fontSize=15)),
+                                                                         labels = list(style = list(color = "#373b42",fontSize=15))),
+                                                            xAxis = list(title = list(style = list(color = "#373b42",fontSize=15)),
+                                                                         labels = list(style = list(color = "#373b42",fontSize=15)))
+                           ))%>%
+                           hc_xAxis(title = list(text ="Observed" ,fontSize=19))
+                         
+                       })
+                       
                        unit <- ylab
                        if(input$units_modeldata != unit & udunits2::ud.are.convertible(unit, input$units_modeldata)){
                          aligned_data$value <- udunits2::ud.convert(aligned_data$value,unit,input$units_modeldata)
@@ -130,7 +156,7 @@ observeEvent(input$ex_plot_modeldata,{
                        
                        
                        plot_type <- switch(input$plotType_model, point = "scatter", line = "line")
-                      
+                       
                        #smooth_param <- input$smooth_n_model / nrow(df) *100
                        smooth_param <- input$smooth_n_model * 100
                        
@@ -268,5 +294,6 @@ observeEvent(input$ex_plot_modeldata,{
 # })
 #
 # })
+
 
 

@@ -38,6 +38,9 @@ tabPanel(
   ),
   column(
     9,
-    highchartOutput("modelDataPlot", height = "500px")
+    h3("Time series"),
+    highchartOutput("modelDataPlot", height = "500px"), br(),
+    h3("Scatter Plot"),
+    highchartOutput("modelDataPlotscatter", height = "500px")
   )
 )
