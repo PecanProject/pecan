@@ -224,16 +224,16 @@ observeEvent(input$calc_bm,{
                    bm$calc_bm_message <- sprintf("Setting up benchmarks")
                    output$reportvars <- renderText(paste(bm$bm_vars, seq_along(bm$bm_vars)))
                    output$reportmetrics <- renderText(paste(bm$bm_metrics))
-                   incProgress(1 / 15) 
+ 
                    
                    inputs_df <- getInputs(dbConnect$bety,c(input$all_site_id)) %>% 
                      dplyr::filter(input_selection_list == input$all_input_id)
                    output$inputs_df_table <- renderTable(inputs_df)
-                   incProgress(1 / 15) 
+      
                    
                    config.list <- PEcAn.utils::read_web_config("../../web/config.php")
                    output$config_list_table <- renderTable(as.data.frame.list(config.list))
-                   incProgress(1 / 15)
+         
                    
                    bm$bm_settings$info <- list(userid = 1000000003) # This is my user id. I have no idea how to get people to log in to their accounts through the web interface and right now the benchmarking code has sections dependent on user id - I will fix this.
                    bm$bm_settings$database <- list(
@@ -251,7 +251,7 @@ observeEvent(input$calc_bm,{
                      ensemble_id = bm$ens_wf$ensemble_id,
                      new_run = FALSE
                    )
-                   incProgress(3 / 15)
+                 
                    
                    for(i in seq_along(bm$bm_vars)){
                      benchmark <- list(
@@ -265,11 +265,11 @@ observeEvent(input$calc_bm,{
                      }
                      bm$bm_settings$benchmarking <- append(bm$bm_settings$benchmarking,list(benchmark = benchmark))
                    }
-                   incProgress(6 / 15)
+                 
                    
                    # output$calc_bm_button <- renderUI({})
                    output$print_bm_settings <- renderPrint(bm$bm_settings)
-                   incProgress(1 / 15)
+                
                    
                    basePath <- dplyr::tbl(dbConnect$bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
                    
@@ -278,7 +278,37 @@ observeEvent(input$calc_bm,{
                    bm$settings_path <- settings_path
                    
                    bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
-                   incProgress(2 / 15) 
+                   incProgress(1/2) 
+                   
+                   ##############################################################################
+                   # Run the benchmarking functions
+                   # The following seven functions are essentially 
+                   # "the benchmarking workflow" in its entirety  
+                   
+                   settings <- PEcAn.settings::read.settings(bm$settings_path)
+                   bm.settings <- PEcAn.benchmark::define_benchmark(settings,dbConnect$bety)
+                   settings <- PEcAn.benchmark::add_workflow_info(settings,dbConnect$bety)
+                   
+                   settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
+                   settings <- PEcAn.benchmark::read_settings_BRR(settings)
+                   
+                   # This is a hack to get old runs that don't have the right pecan.CHECKED.xml data working
+                   if(is.null(settings$settings.info)){
+                     settings$settings.info <- list(
+                       deprecated.settings.fixed = TRUE,
+                       settings.updated = TRUE,
+                       checked = TRUE
+                     )
+                   }
+                   
+                   settings <- PEcAn.settings::prepare.settings(settings)
+                   settings$host$name <- "localhost" # This may not be the best place to set this, but it isn't set by any of the other functions. Another option is to have it set by the default_hostname function (if input is NULL, set to localhost)
+                   # results <- PEcAn.settings::papply(settings, function(x) calc_benchmark(x, bety, start_year = input$start_year, end_year = input$end_year))
+                   results <- PEcAn.settings::papply(settings, function(x) 
+                     calc_benchmark(settings = x, bety = dbConnect$bety))
+                   bm$load_results <- bm$load_results + 1
+                   
+                   incProgress(1/2)
                  })
     #Signaling the success of the operation
     toastr_success("Calculate benchmarks")
@@ -286,36 +316,7 @@ observeEvent(input$calc_bm,{
   error = function(e) {
     toastr_error(title = "Error", conditionMessage(e))
   })
-  
-  
-  ##############################################################################
-  # Run the benchmarking functions
-  # The following seven functions are essentially 
-  # "the benchmarking workflow" in its entirety  
-  
-  settings <- PEcAn.settings::read.settings(bm$settings_path)
-  bm.settings <- PEcAn.benchmark::define_benchmark(settings,dbConnect$bety)
-  settings <- PEcAn.benchmark::add_workflow_info(settings,dbConnect$bety)
-
-  settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
-  settings <- PEcAn.benchmark::read_settings_BRR(settings)
-  
-  # This is a hack to get old runs that don't have the right pecan.CHECKED.xml data working
-  if(is.null(settings$settings.info)){
-    settings$settings.info <- list(
-      deprecated.settings.fixed = TRUE,
-      settings.updated = TRUE,
-      checked = TRUE
-    )
-  }
-  
-  settings <- PEcAn.settings::prepare.settings(settings)
-  settings$host$name <- "localhost" # This may not be the best place to set this, but it isn't set by any of the other functions. Another option is to have it set by the default_hostname function (if input is NULL, set to localhost)
-  # results <- PEcAn.settings::papply(settings, function(x) calc_benchmark(x, bety, start_year = input$start_year, end_year = input$end_year))
-  results <- PEcAn.settings::papply(settings, function(x) 
-    calc_benchmark(settings = x, bety = dbConnect$bety))
-  bm$load_results <- bm$load_results + 1
-  
+ 
 })
 
 observeEvent(bm$calc_bm_message,{
