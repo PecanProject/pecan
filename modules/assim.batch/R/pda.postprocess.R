@@ -304,7 +304,12 @@ pda.sort.params <- function(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, 
         
       }else{
         
-        m[, i] <- mcmc.out[[c]][[sub.sample]][, idx]
+        if(is.null(ns)){
+          m[, i] <- mcmc.out[[c]][[sub.sample]][, idx]
+        }else{
+          m[, i] <- mcmc.out[[c]][[sub.sample]][, idx, ns]
+        }
+        
 
       }
     }
