@@ -51,7 +51,7 @@ pda.emulator.ms <- function(multi.settings) {
                               tunnel_dir = dirname(multi.settings[[1]]$host$tunnel))
     
     # Until a check function is implemented, run a predefined number of emulator rounds
-    n_rounds <- ifelse(is.null(multi.settings[[1]]$assim.batch$n_rounds), 5, as.numeric(multi.settings[[1]]$assim.batch$n_rounds))
+    n_rounds <- ifelse(is.null(multi.settings[[1]]$assim.batch$n_rounds), 3, as.numeric(multi.settings[[1]]$assim.batch$n_rounds))
     PEcAn.logger::logger.info(n_rounds, " individual PDA rounds will be run per site. Please wait.")
     repeat{
      

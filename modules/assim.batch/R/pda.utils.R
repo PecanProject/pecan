@@ -1111,16 +1111,51 @@ return_multi_site_objects <- function(multi.settings){
                                    n.param.orig, prior.ind.orig, 
                                    as.numeric(settings$assim.batch$n.knot), external_knots,
                                    prior.list, prior.fn, sf, NULL)
-      collect_site_knots[[i]] <- sampled_knots$knots.params.temp
+      collect_site_knots[[i]] <- do.call("cbind", sampled_knots$knots.params.temp)
     }
     
-    # bring them all and sample from sites
-    for(p in seq_along(settings$pfts)){
-      tmp <- lapply(collect_site_knots,`[[`, p)
-      foo <- do.call("rbind", tmp)
-      foo_ind <- sample(1:nrow(foo), as.numeric(settings$assim.batch$n.knot))
-      external_knots[[p]] <- foo[foo_ind,]
+    # bring them all together
+    collect_site_knots <- do.call("rbind", collect_site_knots)
+    
+    # sample twice as much
+    collect_site_knots <- collect_site_knots[sample(1:nrow(collect_site_knots), 
+                                                    2*as.numeric(settings$assim.batch$n.knot)), ]
+    
+    # bring the previous set in
+    need_obj <- load_pda_history(workdir = settings$outdir,  
+                                 ensemble.id = settings$assim.batch$ensemble.id, 
+                                 objects = c("SS", "prior.ind.all"))
+    previous_knots <- need_obj$SS[[1]][, -ncol(need_obj$SS[[1]])]
+    new_site_knots <- rbind(previous_knots, collect_site_knots[, need_obj$prior.ind.all])
+    
+    # some knots might end up very close to each other
+    # systematically choose the most distant ones
+    PEcAn.logger::logger.info("Choosing distant points. Please wait.")
+    repeat{
+      n <- dim(new_site_knots)[1]
+      if(n == as.numeric(settings$assim.batch$n.knot) + nrow(previous_knots)) break
+      foo <- combn(seq_len(n), 2)
+      dr <- dist(new_site_knots)
+      if(all(foo[, which.min(dr)] %in% 1:nrow(previous_knots))){
+        new_site_knots <- new_site_knots[-foo[, which.min(dr)],]
+        previous_knots <- previous_knots[-foo[, which.min(dr)],]
+      }else if(any(foo[, which.min(dr)] %in% 1:nrow(previous_knots))){
+        new_site_knots <- new_site_knots[-foo[, which.min(dr)][!(foo[, which.min(dr)]  %in% 1:nrow(previous_knots))],]
+      }else{
+        new_site_knots <- new_site_knots[-sample(foo[, which.min(dr)], 1),]
+      }
+    
     }
+    new_site_knots <- new_site_knots[-(1:nrow(previous_knots)),]
+    these_knots <- apply(new_site_knots, 1, function(x) row.match(x, collect_site_knots[, need_obj$prior.ind.all]) )
+    collect_site_knots <- collect_site_knots[these_knots,]
+    
+    ind <- 0
+    for(p in seq_along(settings$pfts)){
+      external_knots[[p]] <- collect_site_knots[,  (ind + 1):(ind + ncol(external_knots[[p]]))]
+      ind <- ind + ncol(external_knots[[p]])
+    }
+    
     }
   ensembleid_list <- sapply(multi.settings, function(x) pda.create.ensemble(x, bety$con, x$workflow$id))
   
@@ -1191,6 +1226,15 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
     last_lines <- c("pda.emulator(settings, external.priors = external_priors, external.data = external.data,
                          external.knots = external_knots, external.formats = external_formats,
                          ensemble.id = ensemble_id, remote = TRUE)")
+  }else if(!is.null(settings$assim.batch$data.path)){
+    
+    external_data_line <- paste0("load(\"", settings$assim.batch$data.path ,"\")\n")
+    first_lines <- c(first_lines, external_data_line)
+
+    last_lines <- c("pda.emulator(settings, external.priors = external_priors, external.data = external.data,
+                         external.knots = external_knots, external.formats = external_formats,
+                         ensemble.id = ensemble_id, remote = TRUE)")
+    
   }else{
   
     last_lines <- c("pda.emulator(settings, external.priors = external_priors, 
