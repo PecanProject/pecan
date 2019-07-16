@@ -77,7 +77,7 @@ pda.emulator.ms <- function(multi.settings) {
       # listen
       repeat{
         PEcAn.logger::logger.info("Multi-site calibration running. Please wait.")
-        Sys.sleep(1000)
+        Sys.sleep(180)
         check_all_sites <- sapply(emulator_jobs, qsub_run_finished,  multi.settings[[1]]$host, multi.settings[[1]]$host$qstat)
         if(all(check_all_sites)) break
       }
@@ -183,6 +183,9 @@ pda.emulator.ms <- function(multi.settings) {
     ## history restart
     hbc.restart.file <- file.path(tmp.settings$outdir,paste0("history.joint",
                                                            tmp.settings$assim.batch$ensemble.id, ".Rdata"))
+    
+    current.step <- "BEG OF JOINT MCMC"
+    save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
     gp <- unlist(gp.stack, recursive = FALSE)
 
