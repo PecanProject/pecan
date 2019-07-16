@@ -14,6 +14,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Meta-analysis = "AUTO" now correctly skips the meta analysis if the PFT definition has not changed (#1217).
 - Replace deprecated `rlang::UQ` syntax with the recommended `!!`
 - Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+- History page would not pass the hostname parameter when showing a running workflow, this would result in the running page showing an error.
 
 ### Changed
 - Updated modules/rtm PROSPECT docs
@@ -34,7 +35,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - In `PEcAn.DB::get.trait.data`, if `trait.names` is `NULL` or missing, use the traits for which at least one prior is available among the input list of PFTs. (Previously, we were getting this from the `PEcAn.utils::trait.dictionary`, which we are trying to deprecate #1747). (#2351)
 - Cleanup and improve logging and code readability in parts of `PEcAn.DB` related to getting trait data, including replacing many manual database queries with `dplyr` calls.
 - Reorganization of PEcAn documentation in accordance with isue #2253.
-
+- SIPNET now is installed from the source code managed in git
 
 ### Added
 - Meta analysis functionality to not use greenhouse data.

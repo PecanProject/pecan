@@ -2,7 +2,7 @@
 % Please edit documentation in R/site_pft_link_settings.R
 \name{site.pft.link.settings}
 \alias{site.pft.link.settings}
-\title{Title site.pft.link.settings}
+\title{site.pft.link.settings}
 \usage{
 site.pft.link.settings(settings)
 }

@@ -4,7 +4,7 @@
 \alias{jagify}
 \title{Prepare trait data for JAGS meta-analysis}
 \usage{
-jagify(result, use_ghs = FALSE)
+jagify(result, use_ghs = TRUE)
 }
 \arguments{
 \item{result}{input trait data}

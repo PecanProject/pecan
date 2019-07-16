@@ -12,7 +12,7 @@ This will use the following items from setings:
 }}
 \usage{
 run.meta.analysis(pfts, iterations, random = TRUE, threshold = 1.2,
-  dbfiles, database, use_ghs = FALSE)
+  dbfiles, database, use_ghs = TRUE)
 }
 \arguments{
 \item{pfts}{the list of pfts to get traits for}

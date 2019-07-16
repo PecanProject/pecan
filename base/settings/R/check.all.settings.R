@@ -294,7 +294,7 @@ check.settings <- function(settings, force=FALSE) {
     if (is.null(settings$meta.analysis$random.effects)) {
       settings$meta.analysis$random.effects         <- list()
       settings$meta.analysis$random.effects$on      <- FALSE
-      settings$meta.analysis$random.effects$use_ghs <- FALSE
+      settings$meta.analysis$random.effects$use_ghs <- TRUE
       PEcAn.logger::logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects$on)
     } else if(!is.list(settings$meta.analysis$random.effects)){
       # this handles the previous usage
@@ -304,11 +304,14 @@ check.settings <- function(settings, force=FALSE) {
       re_check <- as.logical(settings$meta.analysis$random.effects)
       settings$meta.analysis$random.effects    <- list()
       settings$meta.analysis$random.effects$on <- re_check
+      settings$meta.analysis$random.effects$use_ghs <- TRUE
     } else {
       # everything is used as defined
       settings$meta.analysis$random.effects$on      <- as.logical(settings$meta.analysis$random.effects$on)
       if(!is.null(settings$meta.analysis$random.effects$use_ghs)){
         settings$meta.analysis$random.effects$use_ghs <- as.logical(settings$meta.analysis$random.effects$use_ghs)
+      }else{
+        settings$meta.analysis$random.effects$use_ghs <- TRUE
       }
     }
     if (is.null(settings$meta.analysis$threshold)) {

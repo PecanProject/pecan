@@ -17,7 +17,7 @@
 ##' @return result transformed to meet requirements of PEcAn meta-analysis model
 ##' @export
 ##' @author David LeBauer
-jagify <- function(result, use_ghs = FALSE) {
+jagify <- function(result, use_ghs = TRUE) {
   
 
   ## Rename 'name' column from 'treatment' table to trt_id.  Remove NAs. Assign treatments.
