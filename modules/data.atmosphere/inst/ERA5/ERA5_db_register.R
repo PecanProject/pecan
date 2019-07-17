@@ -7,7 +7,7 @@ settings <-PEcAn.settings::read.settings(file.choose())
 con <- PEcAn.DB::db.open(settings$database$bety)
 
 # Files name format in this folder needs to look like ERA5_1986.nc *** ERA5_(Year).nc
-ids <-list.files(ERA5.files.path, full.names = T)[2:25] %>% 
+ids <-list.files(ERA5.files.path, full.names = T) %>% 
   map(function(file.paths){
     
     Year<-((basename(file.paths) %>%
