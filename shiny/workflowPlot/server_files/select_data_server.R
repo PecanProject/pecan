@@ -13,11 +13,11 @@ observeEvent(input$load_model,{
                    incProgress(10 / 15)
                    
                    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-                   README.text <- c()
                    
-                   
+                   select.df <- data.frame()
+
                    for(i in seq(nrow(ids_DF))){
-                     
+                    
                      dfsub <- df %>% filter(run_id == ids_DF$runID[i])
                      
                      diff.m <- diff(dfsub$dates)
@@ -27,19 +27,35 @@ observeEvent(input$load_model,{
                      diff_message <- sprintf("timestep: %.2f %s", mode.m, diff_units.m)
                      wf.folder <- workflow(dbConnect$bety, ids_DF$wID[i]) %>% collect() %>% pull(folder)
                      
-                     README.text <- c(README.text, 
-                                      tryCatch({
-                                        readLines(file.path(wf.folder, 'run', ids_DF$runID[i], "README.txt"))
-                                        },
-                                        error = function(e){
-                                          return(NULL)
-                                        }),
-                                      diff_message
-                     )
+                     README.text <- tryCatch({
+                       c(readLines(file.path(wf.folder, 'run', ids_DF$runID[i], "README.txt")),
+                         diff_message)
+                     },
+                     error = function(e){
+                       return(NULL)
+                     })
+                     
+                     README.df <- data.frame()
+                     
+                     if(!is.null(README.text)){
+                       README.df <- read.delim(textConnection(README.text),
+                                               header=FALSE,sep=":",strip.white=TRUE)
+                       
+                       if("pft names"  %in% levels(README.df$V1)){
+                         levels(README.df$V1)[levels(README.df$V1)=="pft names"] <- "pft name"
+                       }
+                       if(!"trait" %in% levels(README.df$V1)){
+                         README.df <- rbind(README.df, data.frame(V1 = "trait", V2 = "-"))
+                       }
+                       if(!"quantile" %in% levels(README.df$V1)){
+                         README.df <- rbind(README.df, data.frame(V1 = "quantile", V2 = "-"))
+                       }
+                     }
+                     
+                     select.df <- rbind(select.df, README.df)
                    }
                    
-                    select.data <- read.delim(textConnection(README.text),
-                              header=FALSE,sep=":",strip.white=TRUE) %>% 
+                    select.data <- select.df %>% 
                       dlply(.(V1), function(x) x[[2]]) %>% 
                       as.data.frame() %>% 
                       dplyr::rename(site.id = site..id) %>% 
