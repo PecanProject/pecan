@@ -74,7 +74,7 @@ create_execute_test_xml <- function(run_list){
   settings$database$dbfiles <- config.list$dbfiles_folder
   #PFT
   if (is.na(pft_name)){
-    pft <- tbl(bety, "pfts") %>% filter(modeltype_id == model.new$modeltype_id) %>% collect()
+    pft <- tbl(bety, "pfts") %>% collect() %>% filter(modeltype_id == model.new$modeltype_id)
     pft_name <- pft$name[1]
   }
   settings$pfts$pft$name <- pft_name
@@ -144,6 +144,41 @@ library(tidyverse)
 mach_name <- Sys.info()[[4]]
 mach_id <- tbl(bety, "machines")%>% filter(grepl(mach_name,hostname)) %>% pull(id)
 
+## Test the Demos
+# Site Niwot ridge
+# Temperate COniferous
+# Year 2003/01/01-2006/12/31
+# MET AmerifluxLBL
+# Model - Sipnet
+# Basic Run, then sensitivity and ensemble run.
+##
+models <- 1000000014
+met_name <- "AmerifluxLBL"
+site_id <- 772
+startdate<-"2003/01/01"
+enddate<-"2006/12/31"
+out.var <- "NPP"
+ensemble <- FALSE
+ens_size <- 100
+sensitivity <- FALSE
+demo_one_run_settings <- data.frame(models,met_name, site_id, startdate,enddate,pecan_path, out.var, ensemble,ens_size, sensitivity,stringsAsFactors=FALSE)
+
+demo_one_result <-demo_one_run_settings %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
+  create_execute_test_xml(list(...))
+},otherwise =NA))
+)
+
+ensemble <- TRUE
+ens_size <- 100
+sensitivity <- TRUE
+demo_two_run_settings <- data.frame( models,met_name, site_id, startdate,enddate,out.var,ensemble,ens_size, sensitivity)
+demo_two_result <- demo_two_run_settings %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
+  create_execute_test_xml(list(...))
+},otherwise =NA))
+)
+  
+--------------------------------------------------------------------------
+  
 ## Find Models
 #devtools::install_github("pecanproject/pecan", subdir = "api")
 model_ids <- tbl(bety, "dbfiles") %>% 
@@ -183,11 +218,13 @@ site_id_noinput<- anti_join(tbl(bety, "sites"),tbl(bety, "inputs")) %>%
     in_date = data.table::between(as.numeric(lubridate::year(startdate)),as.numeric(start_year),as.numeric(end_year))
   ) %>%
   dplyr::filter(in_date & as.numeric(end_year) - as.numeric(start_year) > 1) %>%
-  mutate(sitename= gsub(" ","_",.$sitename)) %>% rename_at(id.x = site_id)
+  mutate(sitename= gsub(" ","_",.$sitename)) %>% rename(site_id = id.x)
 
 
-site_id <- site_id_noinput$id.x
+site_id <- site_id_noinput$site_id
 site_name <- gsub(" ","_",site_id_noinput$sitename)
+
+
 
 #Create permutations of arg combinations
 options(scipen = 999)
