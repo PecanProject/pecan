@@ -80,7 +80,7 @@ test_that("check.settings gives sensible defaults",{
   s1$meta.analysis$update <- TRUE # Required to trigger fixes to meta analysis settings
   s2 <- check.settings(s1)
   expect_true(s2$meta.analysis$iter > 1000)
-  expect_false(s2$meta.analysis$random.effects)
+  expect_false(s2$meta.analysis$random.effects$on)
   
 })
 

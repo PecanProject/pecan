@@ -14,6 +14,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Meta-analysis = "AUTO" now correctly skips the meta analysis if the PFT definition has not changed (#1217).
 - Replace deprecated `rlang::UQ` syntax with the recommended `!!`
 - Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+- History page would not pass the hostname parameter when showing a running workflow, this would result in the running page showing an error.
 
 ### Changed
 - Updated modules/rtm PROSPECT docs
@@ -37,7 +38,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - SIPNET now is installed from the source code managed in git
 
 ### Added
-
+- Meta analysis functionality to not use greenhouse data.
 - Dockerize the BioCro model.
 - Added PRO4SAIL-D model, using existing 4SAIL src and coupling with PROSPECT-D Fortran code
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
