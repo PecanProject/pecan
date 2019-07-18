@@ -226,13 +226,17 @@ observeEvent(input$calc_bm,{
                  detail = 'This may take a while...',
                  value = 0,{
                    bm$calc_bm_message <- sprintf("Setting up benchmarks")
-                   output$reportvars <- renderText(paste(bm$bm_vars, seq_along(bm$bm_vars)))
-                   output$reportmetrics <- renderText(paste(bm$bm_metrics))
+                   output$reportvars <- renderText(paste("Variable Id: ", bm$bm_vars, seq_along(bm$bm_vars)))
+                   output$reportmetrics <- renderText(paste("Metrics Id: ", bm$bm_metrics))
  
                    
                    inputs_df <- getInputs(dbConnect$bety,c(input$all_site_id)) %>% 
                      dplyr::filter(input_selection_list == input$all_input_id)
-                   output$inputs_df_table <- renderTable(inputs_df)
+                   output$inputs_df_table <- DT::renderDataTable(
+                     DT::datatable(inputs_df,
+                                   options = list(scrollX = TRUE),
+                                   caption = "Benchmarking Input Data Table")
+                   )
       
                    
                    # config.list <- PEcAn.utils::read_web_config("../../web/config.php")
@@ -283,8 +287,9 @@ observeEvent(input$calc_bm,{
                    }
                  
                    
-                   # output$calc_bm_button <- renderUI({})
-                   output$print_bm_settings <- renderPrint(bm$bm_settings)
+                   output$calc_bm_button <- renderUI({})
+                   output$settings_title <- renderText("Benchmarking Settings:")
+                   output$print_bm_settings <- renderPrint(print(bm$bm_settings))
                 
                    
                    basePath <- dplyr::tbl(dbConnect$bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)

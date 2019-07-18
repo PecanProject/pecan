@@ -15,10 +15,14 @@ tabPanel("Settings",
                 verbatimTextOutput("calc_bm_message"),
                 # verbatimTextOutput("report"),
                 uiOutput("calc_bm_button"),
-                uiOutput("inputs_df_table"),
-                uiOutput("config_list_table"),
+                br(),
+                DT::dataTableOutput("inputs_df_table"),
+                br(),
+                #uiOutput("config_list_table"),
                 uiOutput("reportvars"),
                 uiOutput("reportmetrics"),
-                uiOutput("print_bm_settings")
+                br(),
+                uiOutput("settings_title"),
+                verbatimTextOutput("print_bm_settings")
          )
 )
