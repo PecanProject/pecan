@@ -216,11 +216,15 @@ observeEvent({
 
 observeEvent(input$calc_bm,{
   tryCatch({
+    req(input$all_input_id)
+    req(input$all_site_id)
+    req(input$host)
+    req(input$user)
+    req(input$password)
+    
     withProgress(message = 'Calculation in progress',
                  detail = 'This may take a while...',
                  value = 0,{
-                   req(input$all_input_id)
-                   req(input$all_site_id)
                    bm$calc_bm_message <- sprintf("Setting up benchmarks")
                    output$reportvars <- renderText(paste(bm$bm_vars, seq_along(bm$bm_vars)))
                    output$reportmetrics <- renderText(paste(bm$bm_metrics))
@@ -231,27 +235,39 @@ observeEvent(input$calc_bm,{
                    output$inputs_df_table <- renderTable(inputs_df)
       
                    
-                   config.list <- PEcAn.utils::read_web_config("../../web/config.php")
-                   output$config_list_table <- renderTable(as.data.frame.list(config.list))
+                   # config.list <- PEcAn.utils::read_web_config("../../web/config.php")
+                   # output$config_list_table <- renderTable(as.data.frame.list(config.list))
          
                    
                    bm$bm_settings$info <- list(userid = 1000000003) # This is my user id. I have no idea how to get people to log in to their accounts through the web interface and right now the benchmarking code has sections dependent on user id - I will fix this.
+                   # bm$bm_settings$database <- list(
+                   #   bety = list(
+                   #     user = config.list$db_bety_username,
+                   #     password = config.list$db_bety_password,
+                   #     host = config.list$db_bety_hostname,
+                   #     dbname = config.list$db_bety_database,
+                   #     driver = config.list$db_bety_type,
+                   #     write = TRUE
+                   #   ),
+                   #   dbfiles = config.list$dbfiles_folder
+                   # )
+                   
                    bm$bm_settings$database <- list(
                      bety = list(
-                       user = config.list$db_bety_username,
-                       password = config.list$db_bety_password,
-                       host = config.list$db_bety_hostname,
-                       dbname = config.list$db_bety_database,
-                       driver = config.list$db_bety_type,
+                       user = input$user,
+                       password = input$password,
+                       host = input$host,
+                       dbname = "bety",
+                       driver = "pgsql",
                        write = TRUE
                      ),
-                     dbfiles = config.list$dbfiles_folder
+                     dbfiles = "/home/carya/output//dbfiles"
                    )
                    bm$bm_settings$benchmarking <- list(
                      ensemble_id = bm$ens_wf$ensemble_id,
                      new_run = FALSE
                    )
-                 
+
                    
                    for(i in seq_along(bm$bm_vars)){
                      benchmark <- list(
