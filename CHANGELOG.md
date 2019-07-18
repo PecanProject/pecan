@@ -14,6 +14,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Meta-analysis = "AUTO" now correctly skips the meta analysis if the PFT definition has not changed (#1217).
 - Replace deprecated `rlang::UQ` syntax with the recommended `!!`
 - Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+- History page would not pass the hostname parameter when showing a running workflow, this would result in the running page showing an error.
 
 ### Changed
 - Updated modules/rtm PROSPECT docs
