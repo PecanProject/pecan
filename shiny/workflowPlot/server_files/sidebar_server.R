@@ -187,3 +187,18 @@ observeEvent(input$load_data, {
     toastr_error(title = "Error", conditionMessage(e))
   })
 })
+
+
+# Register external data
+observeEvent(input$register_data,{
+  showModal(
+    modalDialog(
+      title = "Register External Data",
+      footer = tagList(
+        actionButton("register_data", "Register"),
+        modalButton("Cancel")
+      ),
+      size = 'm'
+    )
+  )
+})
