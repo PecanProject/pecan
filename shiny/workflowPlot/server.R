@@ -11,7 +11,6 @@ lapply(c("PEcAn.visualization",
 
 # Shiny and plotting packages
 lapply(c( "shiny",
-          "ggplot2",
           "plotly",
           "highcharter",
           "shinyjs",
@@ -19,10 +18,7 @@ lapply(c( "shiny",
           "plyr",
           "XML",
           "xts",
-          "reshape2",
           "purrr",
-          "ncdf4",
-          "scales",
           "lubridate",
           "shinythemes",
           "shinytoastr"
