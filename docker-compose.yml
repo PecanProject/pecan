@@ -10,7 +10,7 @@ services:
       - --api
       # Entrypoints
       - --defaultentrypoints=https,http
-      - --entryPoints=Name:http Address::${TRAEFIK_HTTP_PORT:-8006} ${TRAEFIK_HTTP_REDIRECT:-""}
+      - --entryPoints=Name:http Address::${TRAEFIK_HTTP_PORT:-8000} ${TRAEFIK_HTTP_REDIRECT:-""}
       - --entryPoints=Name:https Address::${TRAEFIK_HTTPS_PORT:-8444} ${TRAEFIK_HTTPS_OPTIONS:-TLS}
       # Configuration for acme (https://letsencrypt.org/)
       - --acme=${TRAEFIK_ACME_ENABLE:-false}
@@ -31,7 +31,7 @@ services:
     networks:
       - pecan
     ports:
-      - "${TRAEFIK_HTTP_PORT-8006}:${TRAEFIK_HTTP_PORT:-8006}"
+      - "${TRAEFIK_HTTP_PORT-8000}:${TRAEFIK_HTTP_PORT:-8000}"
       - "${TRAEFIK_HTTPS_PORT-8444}:${TRAEFIK_HTTPS_PORT:-8444}"
     labels:
       - "traefik.enable=true"
@@ -86,7 +86,7 @@ services:
 
   # THREDDS data server
   thredds:
-    image: pecan/thredds:${PECAN_VERSION:-develop}
+    image: pecan/thredds:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
@@ -287,6 +287,19 @@ services:
   # PEcAn MAESPA model runner
   maespa:
     image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+        
+  # PEcAn LINKAGES model runner
+  linkages:
+    image: pecan/model-linkages-r_version:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
