@@ -66,8 +66,6 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
 
   month_matrix_precip <- matrix(NA, nyear, 12)
   
-  DOY_vec_hr = c()
-  
   if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
 
   for (i in seq_len(nyear)) {
@@ -81,7 +79,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     dt <- PEcAn.utils::seconds_in_year(as.numeric(year[i])) / length(sec)
     tstep <- 86400 / dt
     
-    DOY_vec_hr <- c(1, c(32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365) * tstep)
+    DOY_vec_hr <- c(1, c(32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365) * as.integer(tstep))
 
     ncprecipf <- ncdf4::ncvar_get(ncin, "precipitation_flux")  # units are kg m-2 s-1
     for (m in 1:12) {

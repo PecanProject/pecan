@@ -8,7 +8,7 @@
 ##'
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 
-do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
+do_conversions <- function(settings, overwrite.met = TRUE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do_conversions))
   }
