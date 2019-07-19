@@ -84,7 +84,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   outname <- utils::tail(unlist(strsplit(outfolder, "/")), n = 1)
   
   PEcAn.logger::logger.info(paste("start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, 
-                    formatname, mimetype, site.id, start_date, end_date, forecast, ensemble))
+                    formatname, mimetype, site.id, start_date, end_date, forecast, ensemble, overwrite))
   
   
   ##----------------------------------------------------------------------------------------------------------------##  
@@ -581,7 +581,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     # perform conversion on local or remote host
     
     fcn.args <- input.args
-    fcn.args$overwrite  <- overwrite
+    fcn.args$overwrite  <- TRUE # MK : hack to make sure that the file is overwritten with new years or the file will not change 
     fcn.args$in.path    <- dbfile$file_path
     fcn.args$in.prefix  <- dbfile$file_name
     fcn.args$outfolder  <- outfolder
