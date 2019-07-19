@@ -234,8 +234,14 @@ observeEvent(input$calc_bm,{
                      dplyr::filter(input_selection_list == input$all_input_id)
                    output$inputs_df_table <- DT::renderDataTable(
                      DT::datatable(inputs_df,
-                                   options = list(scrollX = TRUE),
-                                   caption = "Benchmarking Input Data Table")
+                                   options = list(
+                                     dom = 'ft',
+                                     scrollX = TRUE,
+                                     initComplete = DT::JS(
+                                       "function(settings, json) {",
+                                       "$(this.api().table().header()).css({'background-color': '#404040', 'color': '#fff'});",
+                                       "}")),
+                                   caption = "Table: Benchmarking Input Data")
                    )
       
                    

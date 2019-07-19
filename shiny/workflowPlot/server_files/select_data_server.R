@@ -64,7 +64,16 @@ observeEvent(input$load_model,{
                      
                     
                    output$datatable <- DT::renderDataTable(
-                     DT::datatable(select.data,options = list(scrollX = TRUE))
+                     DT::datatable(select.data,
+                                   options = list(
+                                     dom = 'ft',
+                                     scrollX = TRUE,
+                                     initComplete = DT::JS(
+                                       "function(settings, json) {",
+                                       "$(this.api().table().header()).css({'background-color': '#404040', 'color': '#fff'});",
+                                       "}")
+                                     )
+                                   )
                      )
                   
                    #output$README <- renderUI({HTML(paste(README.text, collapse = '<br/>'))})
