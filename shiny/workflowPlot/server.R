@@ -112,6 +112,7 @@ server <- shinyServer(function(input, output, session) {
   # Page 2: Exploratory Plots
   source("server_files/model_plots_server.R", local = TRUE)
   source("server_files/model_data_plots_server.R", local = TRUE)
+  source("server_files/pdf_viewer_server.R", local = TRUE)
 
   # Page 3: Benchmarking
   observeEvent(input$load_model,{

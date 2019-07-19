@@ -54,7 +54,8 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                                            tabPanel(h4("Exploratory Plots"),
                                                     tabsetPanel(
                                                       source_ui("model_plots_UI.R"),
-                                                      source_ui("model_data_plots_UI.R")
+                                                      source_ui("model_data_plots_UI.R"),
+                                                      source_ui("pdf_viewer_UI.R")
                                                     )
                                            ),
                                            tabPanel(h4("Benchmarking"),
