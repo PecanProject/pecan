@@ -26,6 +26,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
 
+ 
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
@@ -120,7 +121,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       return(invisible(input_met))
     }
   }
-  
+
   # read in registration xml for met specific information
   register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
   register     <- read.register(register.xml, con)
@@ -140,6 +141,14 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                                  con)$id
            ))
   }
+  #--- If the met source is local then there is no need for download
+  if (!is.null(register$Local)){
+    if (as.logical(register$Local)) {
+      stage$download.raw <- FALSE
+      stage$local <- TRUE
+    }
+  }
+  
   PEcAn.logger::logger.debug(stage)
   
   if(is.null(model)){
@@ -166,8 +175,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (is.null(format.vars$site)) {
     format.vars$site <- new.site$id
   }
-  
+ 
   #--------------------------------------------------------------------------------------------------#
+  # Or met source is either downloadable or it's local .
   # Download raw met
   if (stage$download.raw) {
     raw.data.site.id <- ifelse(is.null(register$siteid), new.site$id, register$siteid)
@@ -193,7 +203,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       dbparms=dbparms
     )
     
-    if (met %in% c("CRUNCEP", "GFDL","NOAA_GEFS_downscale","ERA5")) {
+    if (met %in% c("CRUNCEP", "GFDL","NOAA_GEFS_downscale")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
       input_met$id <- raw.id
@@ -204,6 +214,52 @@ met.process <- function(site, input_met, start_date, end_date, model,
       input_met$id <-raw.id
       stage$met2cf <- FALSE
     }
+  }else if (stage$local){ # In parallel to download met module this needs to check if the files are already downloaded or not 
+
+    db.file <- PEcAn.DB::dbfile.input.check(
+      siteid=new.site$id %>% as.character(),
+      startdate = start_date %>% as.Date,
+      enddate = end_date  %>% as.Date,
+      parentid = NA,
+      mimetype="application/x-netcdf",
+      formatname="CF Meteorology",
+      con,
+      hostname = PEcAn.remote::fqdn(),
+      exact.dates = TRUE,
+      pattern = met,
+      return.all=TRUE
+    ) 
+    # If we already had the met downloaded for this site  
+    if (nrow(db.file) >0 ){
+      cf.id <- raw.id <- db.file
+    }else{ 
+      # loop over years - bc each input is asscoiated with one year
+      
+      raw.tiles <- seq(lubridate::year(start_date  %>% as.Date),
+                       lubridate::year(end_date  %>% as.Date)) %>%
+        purrr::map_dfr(function(year) {
+          #--- if not then lets find the big raw tile.
+          raw.tiles <- PEcAn.DB::dbfile.input.check(
+            siteid = register$ParentSite,
+            # This could be set in the register file
+            startdate = paste0(year, "-01-01")  %>% as.Date(),
+            enddate =   paste0(year, "-12-31")  %>% as.Date(),
+            parentid = NA,
+            mimetype = "application/x-netcdf",
+            formatname = "CF Meteorology",
+            con,
+            hostname = PEcAn.remote::fqdn(),
+            exact.dates = TRUE,
+            pattern = met,
+            return.all = TRUE
+          )
+        })
+      #
+      cf.id <- raw.id <- list(input.id = raw.tiles$container_id, dbfile.id = raw.tiles$id)
+    }
+    
+    stage$met2cf <- FALSE 
+    stage$standardize <- TRUE
   }
 
   #--------------------------------------------------------------------------------------------------#
@@ -225,7 +281,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             format.vars = format.vars,
                             bety = bety)
   } else {
-    cf.id = input_met$id
+   if (! met %in% c("ERA5")) cf.id = input_met$id
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -236,7 +292,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
     for (i in 1:length(cf.id[[1]])) {
       if (register$scale == "regional") {
         #### Site extraction
-        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$input.id[i], dbfile.id = cf.id$dbfile.id[i]), 
+        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$input.id[i],
+                                                                   dbfile.id = cf.id$dbfile.id[i]), 
                                        register = register, 
                                        dir = dir, 
                                        met = met, 
@@ -273,7 +330,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   } else {
     ready.id = input_met$id
   }
-  
+  browser()
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {

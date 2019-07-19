@@ -19,39 +19,28 @@
 #'                   outfolder = "./metfiles")
 #'
 #' }
-met2cf.ERA5 <- function(lat,
+met2CF.ERA5<- function(lat,
                         long,
                         start_date,
                         end_date,
                         sitename,
                         outfolder,
-                        dbparms,
+                        out.xts,
                         overwrite = FALSE,
                         verbose = TRUE) {
+  
+
   ensemblesN <- seq(1, 10)
 
-  years <- seq(lubridate::year(start_date),
-               lubridate::year(end_date))
-  
- 
-  # Extracting the raw data - The output would be a list of xts objects for each ensemble
-  out <- ERA5_extract(
-    lat = lat,
-    long = long,
-    years = years,
-    dbparms=dbparms
-  )
-  
-
   start_date <- paste0(lubridate::year(start_date),"-01-01")  %>% as.Date()
-  end_date <- paste0(lubridate::year(end_date),"-01-01") %>% as.Date()
+  end_date <- paste0(lubridate::year(end_date),"-12-31") %>% as.Date()
   # adding RH and converting rain
  
   out.new <- ensemblesN %>%
     purrr::map(function(ensi) {
       tryCatch({
-
-        ens <- out[[ensi]]
+   
+        ens <- out.xts[[ensi]]
         # Solar radation conversions
         #https://confluence.ecmwf.int/pages/viewpage.action?pageId=104241513
         #For ERA5 daily ensemble data, the accumulation period is 3 hours. Hence to convert to W/m2:
@@ -99,7 +88,7 @@ met2cf.ERA5 <- function(lat,
       
     })
   
-  
+
   #These are the cf standard names
   cf_var_names = colnames(out.new[[1]])
   cf_var_units = c("K", "Pa", "kg m-2 s-1", "m s-1", "m s-1", "W m-2", "W m-2", "1")  #Negative numbers indicate negative exponents
@@ -107,12 +96,6 @@ met2cf.ERA5 <- function(lat,
 
      results_list <-  ensemblesN %>%
         purrr::map(function(i) {
-          
-           years %>%
-            purrr::map(function(year) {
-     
-                   start_date <- paste0(year,"-01-01")  %>% as.Date()
-                   end_date <- paste0(year,"-12-31") %>% as.Date()
                    # Create a data frame with information about the file.  This data frame's format is an internal PEcAn standard, and is stored in the BETY database to
                    # locate the data file. 
                    results <- data.frame(
@@ -132,9 +115,7 @@ met2cf.ERA5 <- function(lat,
                    )
                    # Spliting it for this year
                    data.for.this.year.ens <- out.new[[i]]
-                   data.for.this.year.ens <- data.for.this.year.ens[year %>% as.character]
-                   
-                 
+
                    #Each ensemble gets its own file.
                    time_dim = ncdf4::ncdim_def(
                      name = "time",
@@ -153,22 +134,11 @@ met2cf.ERA5 <- function(lat,
                                               ~ ncdf4::ncvar_def(.x, .y, list(time_dim, lat_dim, lon_dim), missval = NA_real_))
                    # i is the ensemble number
                    #Generating a unique identifier string that characterizes a particular data set.
-                   identifier <-
-                     paste(
-                       "ERA5",
-                       sitename,
-                       i,
-                       sep = "."
-                     )
+                   identifier <- paste("ERA5", sitename, i, sep = "_")
                    
-                   identifier.file <-
-                     paste("ERA5",
-                           i,
-                           year,
-                           sep = ".")
+                   identifier.file <- paste("ERA5", i, lubridate::year(start_date), sep = ".")
                    
-                   ensemble_folder <-
-                     file.path(outfolder)
+                   ensemble_folder <- file.path(outfolder, identifier)
                    
                    #Each file will go in its own folder.
                    if (!dir.exists(ensemble_folder)) {
@@ -177,8 +147,7 @@ met2cf.ERA5 <- function(lat,
                                 showWarnings = FALSE)
                    }
                    
-                   flname <-
-                     file.path(ensemble_folder, paste(identifier.file, "nc", sep = "."))
+                   flname <-  file.path(ensemble_folder, paste(identifier.file, "nc", sep = "."))
                    
                    #Each ensemble member gets its own unique data frame, which is stored in results_list
                    results$file <- flname
@@ -213,11 +182,10 @@ met2cf.ERA5 <- function(lat,
                    }
                    return(results)
                    
-                 }) 
+           
       
     })
   #For each ensemble
 
-  return(results_list%>%
-           purrr::flatten())
+  return(results_list)
 }

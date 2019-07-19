@@ -700,6 +700,7 @@ convert.input <-
         scratchdir = outfolder
       )
 
+
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
     # code below can process everything as if it were a list without worrying about data types.
     if (is.data.frame(result)) {
@@ -759,6 +760,7 @@ convert.input <-
   #---------------------------------------------------------------#
   # New arrangement of database adding code to deal with ensembles.
   if (write) {
+
     # Setup newinput.  This list will contain two variables: a vector of input IDs and a vector of DB IDs for each entry in result.
     # This list will be returned.
     newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
@@ -796,7 +798,15 @@ convert.input <-
         }
       }
       
-      parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)
+      # If there is no ensemble then for each record there should be one parent
+      #But when you have ensembles, all of the members have one parent !!
+      if (is.numeric(ensemble)){
+        parent.id <- ifelse(is.null(input[i]), NA, input[1]$id)
+      }else{
+        parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)  
+      }
+      
+      
       
       if ("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])) {
         site.id <- input.args$newsite
@@ -827,8 +837,7 @@ convert.input <-
                                                    parentid = parent.id,
                                                    con = con, 
                                                    hostname = machine$hostname,
-                                                   allow.conflicting.dates = allow.conflicting.dates,
-                                                   ens=TRUE
+                                                   allow.conflicting.dates = allow.conflicting.dates
                                                    )
         
         

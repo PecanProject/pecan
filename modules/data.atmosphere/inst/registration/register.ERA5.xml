@@ -2,6 +2,8 @@
 <ERA5>
   <scale>regional</scale>
   <ensemble>10</ensemble>
+  <Local>TRUE</Local>
+  <ParentSite>1000026755</ParentSite>
   <format>
     <id>33</id>
     <name>CF Meteorology</name>

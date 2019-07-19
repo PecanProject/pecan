@@ -8,7 +8,7 @@ con <- PEcAn.DB::db.open(settings$database$bety)
 
 # Files name format in this folder needs to look like ERA5_1986.nc *** ERA5_(Year).nc
 ids <-list.files(ERA5.files.path, full.names = T) %>% 
-  map(function(file.paths){
+  purrr::map(function(file.paths){
     
     Year<-((basename(file.paths) %>%
       strsplit("\\.") %>%
@@ -21,8 +21,8 @@ ids <-list.files(ERA5.files.path, full.names = T) %>%
       in.path=file.paths,
       in.prefix='ERA5',
       siteid='1000026755', # This site USA
-      startdate=as.Date(paste0(Year,"-01-01")),
-      enddate=as.Date(paste0(Year,"-12-31")),
+      startdate=as.Date(paste0(Year,"-01-01"), tz="UTC"),
+      enddate=as.Date(paste0(Year,"-12-31"), tz="UTC"),
       mimetype="application/x-netcdf",
       formatname="CF Meteorology",
       parentid = NA,

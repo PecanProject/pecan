@@ -136,8 +136,8 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname)
   
-  if (nrow(dbfile) > 0 & !ens) {
-    if (nrow(dbfile) > 1 & !ens) {
+  if (nrow(dbfile) > 0 ) {
+    if (nrow(dbfile) > 1) {
       print(dbfile)
       PEcAn.logger::logger.warn("Multiple dbfiles found. Using last.")
       dbfile <- dbfile[nrow(dbfile),]
