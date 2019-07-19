@@ -86,7 +86,7 @@ services:
 
   # THREDDS data server
   thredds:
-    image: pecan/thredds:${PECAN_VERSION:-latest}
+    image: pecan/thredds:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
@@ -160,7 +160,7 @@ services:
   # RStudio
   # ----------------------------------------------------------------------
   rstudio-nginx:
-    image: pecan/rstudio-nginx:${PECAN_VERSION:-latest}
+    image: pecan/rstudio-nginx:${PECAN_VERSION:-develop}
     networks:
       - pecan
     labels:
@@ -171,7 +171,7 @@ services:
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
 
   rstudio:
-    image: pecan/base:${PECAN_VERSION:-latest}
+    image: pecan/base:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
@@ -189,7 +189,7 @@ services:
 
   # PEcAn documentation as well as PEcAn home page
   docs:
-    image: pecan/docs:${PECAN_VERSION:-latest}
+    image: pecan/docs:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
@@ -200,7 +200,7 @@ services:
 
   # PEcAn web front end, this is just the PHP code
   web:
-    image: pecan/web:${PECAN_VERSION:-latest}
+    image: pecan/web:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
@@ -221,7 +221,7 @@ services:
 
   # PEcAn model monitor
   monitor:
-    image: pecan/monitor:${PECAN_VERSION:-latest}
+    image: pecan/monitor:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
@@ -241,7 +241,7 @@ services:
 
   # PEcAn executor, executes jobs. Does not the actual models
   executor:
-    image: pecan/executor:${PECAN_VERSION:-latest}
+    image: pecan/executor:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
@@ -260,7 +260,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
-    image: pecan/model-sipnet-136:${PECAN_VERSION:-latest}
+    image: pecan/model-sipnet-r136:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
@@ -273,7 +273,7 @@ services:
 
   # PEcAn ED model runner
   ed2:
-    image: pecan/model-ed2-git:${PECAN_VERSION:-latest}
+    image: pecan/model-ed2-git:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
@@ -286,7 +286,7 @@ services:
 
   # PEcAn MAESPA model runner
   maespa:
-    image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
+    image: pecan/model-maespa-git:${PECAN_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
