@@ -283,7 +283,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     start_date = start_date, end_date = end_date, 
                                     browndog = browndog, 
                                     new.site = new.site,
-                                    overwrite = overwrite$met2model,
+                                    overwrite = TRUE, # MK: hack so that files are recreated for correct time periods
                                     exact.dates = reg.model$exact.dates,
                                     spin = spin,
                                     register = register,
