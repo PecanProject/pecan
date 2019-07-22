@@ -8,7 +8,7 @@
 ##'
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 
-do_conversions <- function(settings, overwrite.met = TRUE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
+do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do_conversions))
   }
@@ -71,10 +71,8 @@ do_conversions <- function(settings, overwrite.met = TRUE, overwrite.fia = FALSE
       ## which is done locally in rundir and then rsync'ed to remote
       ## rather than having a model-format soils file that is processed remotely
     }
+    
     # met conversion
-    
-    PEcAn.logger::logger.info("overwrite met is set to",overwrite.met) # MK - trying to understand workflow 
-    
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
       if ( (PEcAn.utils::status.check(name) == 0)) { ## previously is.null(input$path) && 

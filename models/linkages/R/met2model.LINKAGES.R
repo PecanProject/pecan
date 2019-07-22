@@ -26,6 +26,10 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
 
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
+  
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
+  
   out.file <- file.path(outfolder, "climate.Rdata")
   # out.file <- file.path(outfolder, paste(in.prefix, strptime(start_date, '%Y-%m-%d'),
   # strptime(end_date, '%Y-%m-%d'), 'dat', sep='.'))
@@ -41,9 +45,22 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   print("internal results")
   print(results)
 
+  # MK: the following section was originally incompatible with the way in which convert.input is set up
+  # it ignores the possibility of an existing file not containing enough data to span the years needed, as 
+  # convert.input alters the start_date and end_date of the file, but not the length of the data itself
+  
   if (file.exists(out.file) && !overwrite) {
-    PEcAn.logger::logger.debug("File '", out.file, "' already exists, skipping to next file.")
-    return(invisible(results))
+    
+    # get year span for current data file
+    load(out.file)
+    data_start = min(rownames(temp.mat))
+    data_end = max(rownames(temp.mat))
+    
+    # check to see if needed years fall into the current span, if not, rewrite 
+    if ((data_start <= start_year) & (data_end >= end_year)){
+      PEcAn.logger::logger.debug("File '", out.file, "' already exists, skipping to next file.")
+      return(invisible(results))
+    }
   }
 
   library(PEcAn.data.atmosphere)
