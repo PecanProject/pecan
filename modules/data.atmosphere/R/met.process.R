@@ -49,7 +49,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   } else {
     met <-input_met$source
   }
-  
+  PEcAn.logger::logger.info('overwrite is set to ', overwrite) # MK - added to visualize workflow
   # If overwrite is a plain boolean, fill in defaults for each stage
   if (!is.list(overwrite)) {
     if (overwrite) {
@@ -83,6 +83,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
         "all subsequent stages need to be overwritten too. Please correct.")
     }
   }
+  
+  PEcAn.logger::logger.info('after overwrite check, overwrite is set to ', overwrite) # MK - added to visualize workflow
   
   # set up connection and host information
   bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
@@ -283,7 +285,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     start_date = start_date, end_date = end_date, 
                                     browndog = browndog, 
                                     new.site = new.site,
-                                    overwrite = TRUE, # MK: hack so that files are recreated for correct time periods
+                                    overwrite = overwrite$met2model,
                                     exact.dates = reg.model$exact.dates,
                                     spin = spin,
                                     register = register,

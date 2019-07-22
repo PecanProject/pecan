@@ -62,8 +62,6 @@ do_conversions <- function(settings, overwrite.met = TRUE, overwrite.fia = FALSE
       needsave <- TRUE
     }
     
-
-    
     # soil extraction
     if(input.tag == "soil" && is.null(input$path)){
       settings$run$inputs[[i]]$path <- PEcAn.data.land::soil_process(settings, input, dbfiles.local, overwrite=FALSE)
@@ -74,6 +72,8 @@ do_conversions <- function(settings, overwrite.met = TRUE, overwrite.fia = FALSE
       ## rather than having a model-format soils file that is processed remotely
     }
     # met conversion
+    
+    PEcAn.logger::logger.info("overwrite met is set to",overwrite.met) # MK - trying to understand workflow 
     
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")

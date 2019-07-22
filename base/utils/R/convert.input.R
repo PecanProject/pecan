@@ -70,6 +70,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           forecast = FALSE, ensemble = FALSE, ensemble_name = NULL, ...) {
   input.args <- list(...)
   
+  PEcAn.logger::logger.info('overwrite set to', overwrite) # MK - added to visualize workflow
+  
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
@@ -266,6 +268,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       existing.input$end_date   <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
       
       ## Do overwrite if set to TRUE
+      
       if(overwrite){
         # collect files to flag for deletion
         files.to.delete <- PEcAn.remote::remote.execute.R( paste0("list.files('",
@@ -360,6 +363,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       existing.input$start_date <- lubridate::force_tz(lubridate::as_date(existing.input$start_date), "UTC")
       existing.input$end_date   <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
+      
+      PEcAn.logger::logger.info('overwrite in else chunk before deletion',overwrite) # MK - visualize workflow
       
       if (overwrite) {
         # collect files to flag for deletion
@@ -580,8 +585,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   } else if (conversion == "local.remote") {
     # perform conversion on local or remote host
     
+    PEcAn.logger::logger.info('in writing fcn.args, overwrite is', overwrite) # MK - visualizing workflow
+    
     fcn.args <- input.args
-    fcn.args$overwrite  <- TRUE # MK : hack to make sure that the file is overwritten with new years or the file will not change 
+    fcn.args$overwrite  <- overwrite 
     fcn.args$in.path    <- dbfile$file_path
     fcn.args$in.prefix  <- dbfile$file_name
     fcn.args$outfolder  <- outfolder
@@ -593,6 +600,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     }
     
     arg.string <- listToArgString(fcn.args)
+    PEcAn.logger::logger.info('arg.string is',arg.string)
     
     if (!missing(format.vars)) {
       arg.string <- paste0(arg.string, ", format=", paste0(list(format.vars)))

@@ -1,9 +1,9 @@
 ##' @export
 .met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
-                              browndog, new.site, overwrite = TRUE, exact.dates,spin, register, ensemble_name) {
+                              browndog, new.site, overwrite = FALSE, exact.dates, spin, register, ensemble_name) {
   
-  # MK - changed default overwrite to be TRUE because otherwise files are not overwritten when time period expands! 
-  
+  PEcAn.logger::logger.info("overwrite set to",overwrite) # MK - added to visualize workflow
+
   # Determine output format name and mimetype
   model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
                                 " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
@@ -42,6 +42,9 @@
     pkg <- paste0("PEcAn.", model)
     fcn <- paste0("met2model.", model)
     lst <- site.lst(site.id=site$id, con=con)
+    
+    PEcAn.logger::logger.info('right before convert input called, overwrite is',overwrite) # MK - visualize workflow
+    PEcAn.logger::logger.info('exact dates and forecast',exact.dates,forecast) # MK - visualize workflow
     
     model.id <- PEcAn.utils::convert.input(input.id = input.id,
                               outfolder = outfolder,
