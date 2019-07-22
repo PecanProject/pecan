@@ -2,12 +2,15 @@ library(reticulate)
 library(future)
 library(purrr)
 library(furrr)
-setwd("/projectnb/dietzelab/hamzed/ERA5/Data")
+setwd("/projectnb/dietzelab/hamzed/ERA5/Data") # change this to your own working directory
 plan(multiprocess)
 
 c(1986:2010) %>%
   future_map(function(year) {
     
+    # you need to have an account for downloaing the files
+    # Read the documantion for how to setup your account and settings before trying this
+    # https://confluence.ecmwf.int/display/CKB/How+to+download+ERA5#HowtodownloadERA5-3-DownloadERA5datathroughtheCDSAPI
     cdsapi <-import("cdsapi")
     c <- cdsapi$Client()
     

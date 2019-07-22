@@ -367,7 +367,7 @@ convert.input <-
     
   } else {
   
-    #exsiting file for ensembles takes an advantage of the pattern argument
+    #existing file for ensembles takes an advantage of the pattern argument
     if (!is.null(ensemble) && ensemble) {
       return.all <-TRUE
       
