@@ -73,12 +73,12 @@ load.model <- eventReactive(input$load_model,{
   globalDF <- map2_df(ids_DF$wID, ids_DF$runID,
                       ~tryCatch({
                         load_data_single_run(dbConnect$bety, .x, .y)
-                        },
-                        error = function(e){
-                          toastr_error(title = paste("Error in WorkflowID", .x), 
-                                       conditionMessage(e))
-                          return()
-                        }))
+                      },
+                      error = function(e){
+                        toastr_error(title = paste("Error in WorkflowID", .x), 
+                                     conditionMessage(e))
+                        return()
+                      }))
   print("Yay the model data is loaded!")
   print(head(globalDF))
   globalDF$var_name <- as.character(globalDF$var_name)
@@ -142,10 +142,10 @@ observe({
 
 load.model.data <- eventReactive(input$load_data, {
   req(input$all_input_id)
-
+  
   inputs_df <- getInputs(dbConnect$bety,c(input$all_site_id))
   inputs_df <- inputs_df %>% dplyr::filter(input_selection_list == input$all_input_id)
-
+  
   input_id <- inputs_df$input_id
   # File_format <- getFileFormat(bety,input_id)
   File_format <- PEcAn.DB::query.format.vars(bety = dbConnect$bety, input.id = input_id)
@@ -191,14 +191,43 @@ observeEvent(input$load_data, {
 
 # Register external data
 observeEvent(input$register_data,{
+  browser()
+  mt <-tbl(dbConnect$bety,"mimetypes") %>%
+    distinct(type_string, .keep_all = FALSE) %>%
+    collect()
+  
   showModal(
     modalDialog(
       title = "Register External Data",
+      fluidRow(
+        column(12,
+               fileInput("Datafile", "Choose CSV/NC File",
+                         width = "100%",
+                         accept = c(
+                           "text/csv",
+                           "text/comma-separated-values,text/plain",
+                           ".csv",
+                           ".nc")
+               )),
+        tags$hr()
+      ),
+      fluidRow(
+        column(6, dateInput("date4", "Start Date:", value = Sys.Date()-10)),
+        column(6, dateInput("date4", "End Date:", value = Sys.Date()-10) )
+      ),
+      fluidRow(
+        column(6, shinyTime::timeInput("time2", "Start Time:", value = Sys.time())),
+        column(6, shinyTime::timeInput("time2", "End Time:", value = Sys.time()))
+      ),
+      fluidRow(
+        column(6, selectizeInput("mimet_sel", "Mime type", mt) ),
+        column(6, selectizeInput("format_sel", "Format Name", tbl(dbConnect$bety,"formats") %>% pull(name) %>% unique()) )
+      ),
       footer = tagList(
-        actionButton("register_data", "Register"),
+        actionButton("register", "Register"),
         modalButton("Cancel")
       ),
-      size = 'm'
+      size = 'l'
     )
   )
 })
