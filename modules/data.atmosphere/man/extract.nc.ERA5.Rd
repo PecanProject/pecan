@@ -8,11 +8,11 @@ extract.nc.ERA5(slat, slon, in.path, start_date, end_date, outfolder,
   in.prefix, newsite, vars = NULL, overwrite = FALSE, ...)
 }
 \arguments{
-\item{slat}{slatitude}
-
 \item{slon}{slonitude}
 
 \item{vars}{variables to be extarcted. If NULL all the variables will be returned.}
+
+\item{sslat}{sslatitude}
 
 \item{years}{years to be extracted}
 }
@@ -27,7 +27,7 @@ For the list of variables check out the documentation at \link{https://confluenc
 }
 \examples{
 \dontrun{
-point.data <- ERA5_extract(slat=40, slon=-120, years=c(1990:1995), vars=NULL)
+point.data <- ERA5_extract(sslat=40, slon=-120, years=c(1990:1995), vars=NULL)
 
  purrr::map(~xts::apply.daily(.x, mean))
 

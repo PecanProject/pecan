@@ -715,10 +715,10 @@ convert.input <-
     PEcAn.logger::logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
     PEcAn.logger::logger.severe(paste0("Unable to process data using this function:",fcn))
   }
-  
+ 
   #--------------------------------------------------------------------------------------------------#
   # Check if result has empty or missing files
-  
+
   result_sizes <- purrr::map_dfr(
     result,
     ~ dplyr::mutate(
@@ -821,12 +821,15 @@ convert.input <-
         newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
       } else if (id_not_added) {
 
-      if (!is.null(ensemble_name)){
+      # This is to tell input.insert if we are wrting ensembles
+      # Why does it need it ? bc it checks for inputs with the same time period, site and machine
+      # and if it returns somethings it does not insert anymore, but for ensembles it needs to bypass this condition
+      if (!is.null(ensemble) | is.null(ensemble_name)){
         ens.flag <- TRUE
       }else{
         ens.flag <- FALSE
       }
-        
+       
         new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
                                                    in.prefix = result[[i]]$dbfile.name[1], 
                                                    siteid = site.id, 
@@ -837,7 +840,8 @@ convert.input <-
                                                    parentid = parent.id,
                                                    con = con, 
                                                    hostname = machine$hostname,
-                                                   allow.conflicting.dates = allow.conflicting.dates
+                                                   allow.conflicting.dates = allow.conflicting.dates, 
+                                                   ens=ens.flag
                                                    )
         
         

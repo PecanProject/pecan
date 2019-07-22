@@ -40,6 +40,12 @@
     pkg <- paste0("PEcAn.", model)
     fcn <- paste0("met2model.", model)
     lst <- site.lst(site.id=site$id, con=con)
+   
+    # we add the ensemble number to the input name
+    if (!is.null(register$ensemble)) {
+      outfolder <- paste0(outfolder,"_",ensemble_name)
+    }
+
     
     model.id <- PEcAn.utils::convert.input(input.id = input.id,
                               outfolder = outfolder,

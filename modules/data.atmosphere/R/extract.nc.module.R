@@ -20,26 +20,16 @@
   formatname <- "CF Meteorology"
   mimetype   <- "application/x-netcdf"
   
-  if (exists(paste0("extract.nc.", met))) fcn <- paste0("extract.nc.", met)
+if (exists(paste0("extract.nc.", met))) fcn <- paste0("extract.nc.", met)
   
 
-  #-- Double checking the start/end date for everyone and fixing them for ERA5
-  # Why? bc for all sources the downloaded nc file has multiple years in it (the file can span multiple years)
-  # But there are one input/tile per year of ERA5 . So two years has two inputs therefore it's all the tiles that covers the start_date and end_date
-  # not just one. But met.process iterates over each input/tile thefore the start/end is not was it is sent and need to be fixed for ERA5.
-  dates <- dplyr::tbl(con, "inputs") %>%
-    dplyr::filter(id == cf.id$input.id) %>%
-    dplyr::collect() %>%
-    dplyr::select(start_date, end_date)
-  
- 
   ready.id <- PEcAn.utils::convert.input(input.id = input.id, 
                             outfolder = outfolder, 
                             formatname = formatname, 
                             mimetype = mimetype, 
                             site.id = site$id, 
-                            start_date = dates$start_date,
-                            end_date = dates$end_date,
+                            start_date = start_date,
+                            end_date = end_date,
                             pkg = pkg, 
                             fcn = fcn, 
                             con = con, host = host, browndog = NULL, 

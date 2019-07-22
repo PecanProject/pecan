@@ -57,7 +57,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   } else {
     parent <- paste0(" AND parent_id=", parentid)
   }
-  
+
   # find appropriate input, if not in database, insert new input
   existing.input <- db.query(
     query = paste0(
@@ -105,14 +105,16 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     if (parent == "") {
       cmd <- paste0("INSERT INTO inputs ",
                     "(site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "')")
+                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "') RETURNING id")
     } else {
       cmd <- paste0("INSERT INTO inputs ",
                     "(site_id, format_id, created_at, updated_at, start_date, end_date, name, parent_id) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "',", parentid, ")")
+                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "',", parentid, ") RETURNING id")
     }
-    db.query(query = cmd, con = con)
-    
+    # This is the id that we just registered
+    inserted.id <-db.query(query = cmd, con = con)
+    name.s <- name
+
     inputid <- db.query(
       query = paste0(
         "SELECT id FROM inputs WHERE site_id=", siteid,
@@ -123,20 +125,25 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       ),
       con = con
     )$id
+  }else{
+    inserted.id <- data.frame(id=inputid) # in the case that inputid is not null then this means that there was an exsiting input
   }
   
-  if (length(inputid) > 1) {
+  if (length(inputid) > 1 && !ens) {
     PEcAn.logger::logger.warn(paste0("Multiple input files found matching parameters format_id = ", formatid, 
                                      ", startdate = ", startdate, ", enddate = ", enddate, ", parent = ", parent, ".  Selecting the", 
                                      " last input file.  This is normal for when an entire ensemble is inserted iteratively, but ", 
                                      " is likely an error otherwise."))
     inputid = inputid[length(inputid)]
+  } else if (ens){
+    inputid <- inserted.id$id
   }
   
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname)
   
   if (nrow(dbfile) > 0 ) {
+   
     if (nrow(dbfile) > 1) {
       print(dbfile)
       PEcAn.logger::logger.warn("Multiple dbfiles found. Using last.")

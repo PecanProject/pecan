@@ -1,6 +1,6 @@
 #' ERA5_extract
 #'
-#' @param slat slatitude
+#' @param sslat sslatitude
 #' @param slon slonitude
 #' @param years years to be extracted
 #' @param vars variables to be extarcted. If NULL all the variables will be returned.
@@ -11,7 +11,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' point.data <- ERA5_extract(slat=40, slon=-120, years=c(1990:1995), vars=NULL)
+#' point.data <- ERA5_extract(sslat=40, slon=-120, years=c(1990:1995), vars=NULL)
 #' 
 #  point.data %>% 
 #'  purrr::map(~xts::apply.daily(.x, mean))
@@ -29,15 +29,27 @@ extract.nc.ERA5 <-
            vars = NULL,
            overwrite = FALSE,
            ...) {
-    ensemblesN <- seq(1, 10)
-    tryCatch({
 
-       #for each ensemble
+    # Distributing the job between whatever core is available. 
+    
+    years <- seq(lubridate::year(start_date),
+                 lubridate::year(end_date),
+                 1
+                 )
+    ensemblesN <- seq(1, 10)
+    
+    
+    tryCatch({
+      #for each ensemble
+      one.year.out <- years %>%
+        purrr::map(function(year) {
+        
           # for each year
           point.data <-  ensemblesN %>%
             purrr::map(function(ens) {
               
-              ncfile <- in.path
+              
+              ncfile <- file.path(in.path, paste0(in.prefix, year, ".nc"))
               
               PEcAn.logger::logger.info(paste0("Trying to open :", ncfile, " "))
               
@@ -45,7 +57,7 @@ extract.nc.ERA5 <-
                 PEcAn.logger::logger.severe("The nc file was not found.")
               
               #msg
-              PEcAn.logger::logger.info(paste0(start_date, " is being processed ", "for ensemble #", ens, " "))
+              PEcAn.logger::logger.info(paste0(year, " is being processed ", "for ensemble #", ens, " "))
               #open the file
               nc_data <- ncdf4::nc_open(ncfile)
               # time stamp
@@ -96,6 +108,23 @@ extract.nc.ERA5 <-
               xts::xts(all.data.point, order.by = timestamp)
             }) %>%
             setNames(paste0("ERA_ensemble_", ensemblesN))
+          
+          #Merge mean and the speard
+          return(point.data)
+          
+        }) %>%
+        setNames(years)
+      
+      
+      # The order of one.year.out is year and then Ens - Mainly because of the spead  / I wanted to touch each file just once.
+      # This now changes the order to ens - year
+      point.data <- ensemblesN %>%
+        purrr::map(function(Ensn) {
+          one.year.out %>% 
+            purrr::map( ~ .x [[Ensn]]) %>%
+            do.call("rbind.xts", .)
+        })
+
 
 # Calling the met2CF inside extract bc in met process met2CF comes before extract !
        out <-met2CF.ERA5(

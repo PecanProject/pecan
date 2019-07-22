@@ -233,29 +233,28 @@ met.process <- function(site, input_met, start_date, end_date, model,
     if (nrow(db.file) >0 ){
       cf.id <- raw.id <- db.file
     }else{ 
-      # loop over years - bc each input is asscoiated with one year
+      # I did this bc dbfile.input.check does not cover the between two time periods situation
+      mimetypeid <- get.id(table = "mimetypes", colnames = "type_string", 
+                           values = "application/x-netcdf", con = con)
+
+      formatid <- get.id(table = "formats", colnames = c("mimetype_id", "name"),
+                         values = c(mimetypeid, "CF Meteorology"), con = con)
       
-      raw.tiles <- seq(lubridate::year(start_date  %>% as.Date),
-                       lubridate::year(end_date  %>% as.Date)) %>%
-        purrr::map_dfr(function(year) {
-          #--- if not then lets find the big raw tile.
-          raw.tiles <- PEcAn.DB::dbfile.input.check(
-            siteid = register$ParentSite,
-            # This could be set in the register file
-            startdate = paste0(year, "-01-01")  %>% as.Date(),
-            enddate =   paste0(year, "-12-31")  %>% as.Date(),
-            parentid = NA,
-            mimetype = "application/x-netcdf",
-            formatname = "CF Meteorology",
-            con,
-            hostname = PEcAn.remote::fqdn(),
-            exact.dates = TRUE,
-            pattern = met,
-            return.all = TRUE
-          )
-        })
-      #
-      cf.id <- raw.id <- list(input.id = raw.tiles$container_id, dbfile.id = raw.tiles$id)
+      machine.id <- get.id(table = "machines", "hostname", PEcAn.remote::fqdn(), con)
+      # Fidning the tiles.
+      raw.tiles <- tbl(con, "inputs") %>%
+        filter(
+          site_id == register$ParentSite,
+          start_date >= start_date,
+          end_date <= end_date,
+          format_id == formatid
+        ) %>%
+        filter(grepl(met, name)) %>%
+        inner_join(tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
+        filter(machine_id == machine.id) %>%
+        collect()
+      
+      cf.id <- raw.id <- list(input.id = raw.tiles$id.x, dbfile.id = raw.tiles$id.y)
     }
     
     stage$met2cf <- FALSE 
@@ -283,13 +282,14 @@ met.process <- function(site, input_met, start_date, end_date, model,
   } else {
    if (! met %in% c("ERA5")) cf.id = input_met$id
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   if (stage$standardize) {
     standardize_result = list()
     
     for (i in 1:length(cf.id[[1]])) {
+
       if (register$scale == "regional") {
         #### Site extraction
         standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$input.id[i],
@@ -298,9 +298,11 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        dir = dir, 
                                        met = met, 
                                        str_ns = str_ns, 
-                                       site = site, new.site = new.site, 
+                                       site = site,
+                                       new.site = new.site, 
                                        con = con, 
-                                       start_date = start_date, end_date = end_date, 
+                                       start_date = start_date,
+                                       end_date = end_date, 
                                        host = host, 
                                        overwrite = overwrite$standardize)
                                        # Expand to support ensemble names in the future
@@ -330,7 +332,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   } else {
     ready.id = input_met$id
   }
-  browser()
+
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
@@ -340,32 +342,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
     
       met2model.result = list()
-    # Here I assume ensembles have one input id and multiple files related to them
-    if (!is.null(register$ensemble)){
-   
-      for (i in seq_along(ready.id[[2]])) {
-     
-        met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[1],
-                                                                   dbfile.id = ready.id$dbfile.id[i]
-                                                                   ), 
-                                                   model = model, 
-                                                   con = con,
-                                                   host = host, 
-                                                   dir = dir, 
-                                                   met = met, 
-                                                   str_ns = str_ns,
-                                                   site = site, 
-                                                   start_date = start_date, end_date = end_date, 
-                                                   browndog = browndog, 
-                                                   new.site = new.site,
-                                                   overwrite = overwrite$met2model,
-                                                   exact.dates = reg.model$exact.dates,
-                                                   spin = spin,
-                                                   register = register,
-                                                   ensemble_name = i)
-      }
-    }else{
-        
     for (i in seq_along(ready.id[[1]])) {
       met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[i], dbfile.id = ready.id$dbfile.id[i]), 
                                     model = model, 
@@ -375,7 +351,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     met = met, 
                                     str_ns = str_ns,
                                     site = site, 
-                                    start_date = start_date, end_date = end_date, 
+                                    start_date = start_date,
+                                    end_date = end_date, 
                                     browndog = browndog, 
                                     new.site = new.site,
                                     overwrite = overwrite$met2model,
@@ -384,7 +361,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     register = register,
                                     ensemble_name = i)
       }
-    }
+    
     
     
     model.id = list()
@@ -397,7 +374,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
     }
     
-    
+  
     
     # met.process now returns the entire $met portion of settings, updated with parellel lists containing
     # the model-specific data files and their input ids.

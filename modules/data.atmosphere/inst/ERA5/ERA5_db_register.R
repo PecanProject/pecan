@@ -7,30 +7,19 @@ settings <-PEcAn.settings::read.settings(file.choose())
 con <- PEcAn.DB::db.open(settings$database$bety)
 
 # Files name format in this folder needs to look like ERA5_1986.nc *** ERA5_(Year).nc
-ids <-list.files(ERA5.files.path, full.names = T) %>% 
-  purrr::map(function(file.paths){
-    
-    Year<-((basename(file.paths) %>%
-      strsplit("\\.") %>%
-      unlist)[1] %>%
-      strsplit("_")%>%
-      unlist)[2]
-    
-    #adding a record to the input table.
-    added<-PEcAn.DB::dbfile.input.insert(
-      in.path=file.paths,
-      in.prefix='ERA5',
-      siteid='1000026755', # This site USA
-      startdate=as.Date(paste0(Year,"-01-01"), tz="UTC"),
-      enddate=as.Date(paste0(Year,"-12-31"), tz="UTC"),
-      mimetype="application/x-netcdf",
-      formatname="CF Meteorology",
-      parentid = NA,
-      con,
-      hostname = PEcAn.remote::fqdn(),
-      allow.conflicting.dates = FALSE
-    )
-    
-    # adding paths to the db files.
-    added
-  })
+files <-list.files(ERA5.files.path, full.names = T)
+
+#adding a record to the input table.
+added<-PEcAn.DB::dbfile.input.insert(
+  in.path=ERA5.files.path,
+  in.prefix='ERA5_',
+  siteid='1000026755', # This site USA
+  startdate=as.Date(paste0(1986,"-01-01"), tz="UTC"),
+  enddate=as.Date(paste0(2018,"-12-31"), tz="UTC"),
+  mimetype="application/x-netcdf",
+  formatname="CF Meteorology",
+  parentid = NA,
+  con,
+  hostname = PEcAn.remote::fqdn(),
+  allow.conflicting.dates = FALSE
+)
