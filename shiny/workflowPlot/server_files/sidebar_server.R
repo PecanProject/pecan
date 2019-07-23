@@ -212,7 +212,7 @@ observeEvent(input$register_data,{
         tags$hr()
       ),
       fluidRow(
-        column(6, dateInput("date4", "Start Date:", value = Sys.Date()-10)),
+        column(6, dateInput("date3", "Start Date:", value = Sys.Date()-10)),
         column(6, dateInput("date4", "End Date:", value = Sys.Date()-10) )
       ),
       fluidRow(
@@ -220,14 +220,74 @@ observeEvent(input$register_data,{
         column(6, shinyTime::timeInput("time2", "End Time:", value = Sys.time()))
       ),
       fluidRow(
-        column(6, selectizeInput("mimet_sel", "Mime type", mt) ),
-        column(6, selectizeInput("format_sel", "Format Name", tbl(dbConnect$bety,"formats") %>% pull(name) %>% unique()) )
+        column(6, selectizeInput("format_sel", "Format Name", tbl(dbConnect$bety,"formats") %>% pull(name) %>% unique()) ),
+        column(6, selectizeInput("mimet_sel", "Mime type", mt) )
       ),
       footer = tagList(
-        actionButton("register", "Register"),
+        actionButton("register_button", "Register"),
         modalButton("Cancel")
       ),
       size = 'l'
     )
   )
+})
+
+
+# update Mimetype select box choices according to selected format
+observeEvent(input$format_sel,{
+  req(input$format_sel)
+  mt_choices <- tbl(dbConnect$bety,"formats") %>% 
+    left_join(tbl(dbConnect$bety,"mimetypes"), by = c("mimetype_id" = "id")) %>% 
+    filter(name == input$format_sel) %>% 
+    pull(type_string) %>% 
+    unique()
+  
+  updateSelectInput(session, "mimet_sel", choices = mt_choices)
+})
+
+
+# register input file in database
+observeEvent(input$register_button,{
+  tryCatch({
+    inFile <- input$Datafile
+    file.copy(inFile$datapath, 
+              file.path("/home/carya/output/dbfiles", inFile$name), 
+              overwrite = T)
+    
+    PEcAn.DB::dbfile.input.insert(in.path = file.path("/home/carya/output/dbfiles", inFile$name),
+                                  in.prefix = inFile$name,
+                                  siteid =   input$all_site_id, # select box
+                                  startdate = input$date3,
+                                  enddate =   input$date4,
+                                  mimetype = input$mimet_sel,
+                                  formatname = input$format_sel,
+                                  #parentid = input$parentID,
+                                  con = dbConnect$bety$con
+                                  #hostname = localhost #?, #default to localhost for now
+                                  #allow.conflicting.dates#? #default to FALSE for now
+    )
+    removeModal()
+    toastr_success("Register External Data")
+  }, 
+  error = function(e){
+    toastr_error(title = "Error", conditionMessage(e))
+  })
+})
+
+# update input id list when register button is clicked
+observeEvent(input$register_button,{
+  req(input$all_site_id)
+  inputs_df <- getInputs(dbConnect$bety, c(input$all_site_id))
+  formats_1 <- dplyr::tbl(dbConnect$bety, 'formats_variables') %>%
+    dplyr::filter(format_id %in% inputs_df$format_id)
+  if (dplyr.count(formats_1) == 0) {
+    logger.warn("No inputs found. Returning NULL.")
+    return(NULL)
+  } else {
+    formats_sub <- formats_1 %>%
+      dplyr::pull(format_id) %>%
+      unique()
+    inputs_df <- inputs_df %>% dplyr::filter(format_id %in% formats_sub) # Only data sets with formats with associated variables will show up
+    updateSelectizeInput(session, "all_input_id", choices=inputs_df$input_selection_list)
+  }
 })
