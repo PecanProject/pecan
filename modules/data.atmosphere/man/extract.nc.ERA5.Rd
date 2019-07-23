@@ -8,13 +8,25 @@ extract.nc.ERA5(slat, slon, in.path, start_date, end_date, outfolder,
   in.prefix, newsite, vars = NULL, overwrite = FALSE, ...)
 }
 \arguments{
-\item{slon}{slonitude}
+\item{slat}{latitude}
+
+\item{slon}{longitude}
+
+\item{in.path}{path to the directory containing the file to be inserted}
+
+\item{start_date}{start date}
+
+\item{end_date}{end date}
+
+\item{outfolder}{Path to directory where nc files need to be saved.}
+
+\item{in.prefix}{initial portion of the filename that does not vary by date. Does not include directory; specify that as part of in.path.}
+
+\item{newsite}{site name.}
 
 \item{vars}{variables to be extarcted. If NULL all the variables will be returned.}
 
-\item{sslat}{sslatitude}
-
-\item{years}{years to be extracted}
+\item{overwrite}{Logical if files needs to be overwritten.}
 }
 \value{
 a list of xts objects with all the variables for the requested years

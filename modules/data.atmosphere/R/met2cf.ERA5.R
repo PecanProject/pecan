@@ -2,23 +2,19 @@
 #'
 #' @param lat latitude
 #' @param long longitude
-#' @param years years to be extracted
-#' @param overwrite Logical flag definign if the files need to be overwriten in case they were downloaded before.
-#' @param verbose Logical flag defining if ouput of function be extra verbose.
+#' @param start_date start date
+#' @param end_date end date
 #' @param sitename The name of the site used for making the identifier.
-#' @param data.folder Path to the directory where ERA5 nc files are located.
 #' @param outfolder Path to directory where nc files need to be saved.
+#' @param out.xts Output of the extract.nc.ERA5 function which is a list of time series of met variables for each ensemble member.
+#' @param overwrite Logical if files needs to be overwritten.
+#' @param verbose Logical flag defining if ouput of function be extra verbose.
+
+
 #'
 #' @return
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' files.era5 <- met2cf.ERA5(years=2018,
-#'                   data.folder=".",
-#'                   outfolder = "./metfiles")
-#'
-#' }
 met2CF.ERA5<- function(lat,
                         long,
                         start_date,

@@ -1,9 +1,15 @@
 #' ERA5_extract
 #'
-#' @param sslat sslatitude
-#' @param slon slonitude
-#' @param years years to be extracted
+#' @param slat latitude
+#' @param slon longitude
+#' @param in.path path to the directory containing the file to be inserted
+#' @param start_date start date
+#' @param end_date end date
+#' @param outfolder Path to directory where nc files need to be saved.
+#' @param in.prefix initial portion of the filename that does not vary by date. Does not include directory; specify that as part of in.path.
+#' @param newsite site name.
 #' @param vars variables to be extarcted. If NULL all the variables will be returned.
+#' @param overwrite Logical if files needs to be overwritten.
 #' @details For the list of variables check out the documentation at \link{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
 #'
 #' @return a list of xts objects with all the variables for the requested years
