@@ -49,7 +49,7 @@ observeEvent(input$files_cell_clicked, {
     }
 
     output$pdfview <- renderUI({
-      tags$iframe(style = "height:600px; width:100%; border: 1px grey solid;",
+      tags$iframe(style = "height:800px; width:100%; border: 1px grey solid;",
                   src = input$files_cell_clicked$value)
     })
   }
