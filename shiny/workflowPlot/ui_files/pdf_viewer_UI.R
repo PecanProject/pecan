@@ -2,11 +2,11 @@ tabPanel(
   "PDF Viewer",
   br(),
   column(
-    4,
+    3,
     DT::DTOutput("files")
   ),
   column(
-    8,
+    9,
     uiOutput("pdfview")
   )
 )
