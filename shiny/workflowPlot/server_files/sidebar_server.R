@@ -192,9 +192,6 @@ observeEvent(input$load_data, {
 # Register external data
 observeEvent(input$register_data,{
   browser()
-  mt <-tbl(dbConnect$bety,"mimetypes") %>%
-    distinct(type_string, .keep_all = FALSE) %>%
-    collect()
   
   showModal(
     modalDialog(
@@ -220,8 +217,7 @@ observeEvent(input$register_data,{
         column(6, shinyTime::timeInput("time2", "End Time:", value = Sys.time()))
       ),
       fluidRow(
-        column(6, selectizeInput("format_sel", "Format Name", tbl(dbConnect$bety,"formats") %>% pull(name) %>% unique()) ),
-        column(6, selectizeInput("mimet_sel", "Mime type", mt) )
+        column(6, selectizeInput("format_sel", "Format Name", tbl(dbConnect$bety,"formats") %>% pull(name) %>% unique()) )
       ),
       footer = tagList(
         actionButton("register_button", "Register"),
@@ -233,33 +229,26 @@ observeEvent(input$register_data,{
 })
 
 
-# update Mimetype select box choices according to selected format
-observeEvent(input$format_sel,{
-  req(input$format_sel)
-  mt_choices <- tbl(dbConnect$bety,"formats") %>% 
-    left_join(tbl(dbConnect$bety,"mimetypes"), by = c("mimetype_id" = "id")) %>% 
-    filter(name == input$format_sel) %>% 
-    pull(type_string) %>% 
-    unique()
-  
-  updateSelectInput(session, "mimet_sel", choices = mt_choices)
-})
-
 
 # register input file in database
 observeEvent(input$register_button,{
   tryCatch({
     inFile <- input$Datafile
-    file.copy(inFile$datapath, 
-              file.path("/home/carya/output/dbfiles", inFile$name), 
+    file.copy(inFile$datapath,
+              file.path("/home/carya/output/dbfiles", inFile$name),
               overwrite = T)
-    
+
+    mt <- tbl(dbConnect$bety,"formats") %>%
+      left_join(tbl(dbConnect$bety,"mimetypes"), by = c("mimetype_id" = "id")) %>%
+      filter(name == input$format_sel) %>%
+      pull(type_string)
+
     PEcAn.DB::dbfile.input.insert(in.path = file.path("/home/carya/output/dbfiles", inFile$name),
                                   in.prefix = inFile$name,
                                   siteid =   input$all_site_id, # select box
                                   startdate = input$date3,
                                   enddate =   input$date4,
-                                  mimetype = input$mimet_sel,
+                                  mimetype = mt,
                                   formatname = input$format_sel,
                                   #parentid = input$parentID,
                                   con = dbConnect$bety$con
@@ -268,7 +257,7 @@ observeEvent(input$register_button,{
     )
     removeModal()
     toastr_success("Register External Data")
-  }, 
+  },
   error = function(e){
     toastr_error(title = "Error", conditionMessage(e))
   })
