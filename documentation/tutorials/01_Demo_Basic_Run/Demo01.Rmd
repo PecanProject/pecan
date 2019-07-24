@@ -171,17 +171,6 @@ FYI, [adding a new model](https://pecanproject.github.io/pecan-documentation/mas
 5. Try **changing the X-axis** to look at bivariate plots of how different output variables are related to one another. Be aware that PEcAn currently runs a moving min/mean/max through bivariate plots, just as it does with time series plots. In some cases this makes more sense than others.
 
 
-#### Alternative Visualization: R Shiny
-
-1. **Click on Open SHINY**, which will open a new browser window. The shiny app will automatically access your run’s output files and allow you to visualize all output variables as a function of time. 
-
-```{r workflowshiny}
-knitr::include_graphics('extfiles/workflowshiny.png')
-```
-
-2. Use the pull down menu under **Variable Name** to choose whichever output variable you wish to plot.
-
-
 #### Model Run Archive
 
 **Return to the output window and Click on the HISTORY button. Click on any previous run in the “ID” column** to go to the current state of that run's execution -- you can always return to old runs and runs in-progress this way. The run you just did should be the more recent entry in the table. **For the next analysis, make note of the ID number from your run.** 
