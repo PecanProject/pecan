@@ -140,7 +140,7 @@ services:
   # BETY rails frontend to the database
   # ----------------------------------------------------------------------
   bety:
-    image: pecan/bety:${BETY_VERSION:-latest}
+    image: pecan/bety:${BETY_VERSION:-develop}
     restart: unless-stopped
     networks:
       - pecan
