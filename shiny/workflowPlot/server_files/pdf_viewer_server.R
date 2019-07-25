@@ -42,10 +42,14 @@ observeEvent(input$files_cell_clicked, {
   
   if (length(input$files_cell_clicked) > 0) {
     # File needs to be copied to the www folder
-    for(i in length(folder.path)){
-      file.copy(file.path(folder.path[i], input$files_cell_clicked$value),
-                "www",
-                overwrite = T)
+    if(file.access("www", 2) == 0){         #check write permission
+      for(i in length(folder.path)){
+        file.copy(file.path(folder.path[i], input$files_cell_clicked$value),
+                  "www",
+                  overwrite = T)
+      }
+    }else{
+      print("Pdf files cannot not be copied to www folfer. Do not have write permission.")
     }
 
     output$pdfview <- renderUI({
