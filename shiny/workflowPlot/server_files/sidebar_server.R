@@ -192,6 +192,7 @@ observeEvent(input$load_data, {
 # Register external data
 observeEvent(input$register_data,{
   browser()
+  req(input$all_site_id)
   
   showModal(
     modalDialog(
