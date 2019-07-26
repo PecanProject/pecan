@@ -24,10 +24,10 @@ tagList(
     fluidRow(
      column(6,
              actionButton("register_data", h6("Register External Data"), 
-                          width = "70%", class="btn-primary")
+                          width = "90%", class="btn-primary")
              ),
       column(6,
-             actionButton("load_data", h6("Load External Data"), width = "70%")
+             actionButton("load_data", h6("Load External Data"), width = "90%")
              )
     )
   )
