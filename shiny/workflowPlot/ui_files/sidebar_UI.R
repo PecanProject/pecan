@@ -5,7 +5,15 @@ tagList(
     selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(), multiple=TRUE),
     p("Please select the run IDs. You can select multiple IDs"),
     selectizeInput("all_run_id", "Mutliple Run IDs", c(), multiple=TRUE),
-    actionButton("load_model", h5("Load Model outputs"))
+
+        fluidRow(
+     column(6,
+                 actionButton("load_model", h5("Load Model outputs"))
+             ),
+      column(6,
+             actionButton("NewRun", h6("New Run !"), width = "70%", class="btn-primary")
+             )
+    )
   ),
   h4("Load External Data"),
   wellPanel(
@@ -14,12 +22,12 @@ tagList(
     # selectizeInput("all_site_id", "Select Site ID", c(), multiple=TRUE),
     selectizeInput("all_input_id", "Select Input ID", c()),
     fluidRow(
-      column(5,
-             actionButton("load_data", h6("Load External Data"), width = "130px")
-             ),
-      column(7,
+     column(6,
              actionButton("register_data", h6("Register External Data"), 
-                          width = "155px", class="btn-primary")
+                          width = "70%", class="btn-primary")
+             ),
+      column(6,
+             actionButton("load_data", h6("Load External Data"), width = "70%")
              )
     )
   )
