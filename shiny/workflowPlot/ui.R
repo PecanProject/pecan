@@ -19,6 +19,12 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                 tags$head(
                   tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
                 ),
+                tags$head(tags$script(src="scripts.js")),
+                tags$head( tags$style(HTML("
+                               .modal-lg {
+                               width: 95%;
+                               }
+                               "))),
                 # Showing the animation
                 div( id = "loading-content",
                      div(class = "plotlybars-wrapper",
@@ -50,6 +56,9 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                                                             source_ui("select_data_UI.R")
                                                             )
                                                    )
+                                           ),
+                                           tabPanel(h4("History Runs"),
+                                                    DT::DTOutput("historyfiles")
                                            ),
                                            tabPanel(h4("Exploratory Plots"),
                                                     tabsetPanel(

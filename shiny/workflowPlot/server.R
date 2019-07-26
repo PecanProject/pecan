@@ -20,6 +20,7 @@ lapply(c( "shiny",
           "xts",
           "purrr",
           "lubridate",
+          "listviewer",
           "shinythemes",
           "shinytoastr"
           ),function(pkg){
@@ -89,8 +90,8 @@ server <- shinyServer(function(input, output, session) {
         }
       )
     })
-    
   })
+  
   
   # Hiding the animation and showing the application content
   hide(id = "loading-content", anim = TRUE, animType = "fade")
@@ -104,13 +105,16 @@ server <- shinyServer(function(input, output, session) {
 
   # Page 1: Select Data
   source("server_files/select_data_server.R", local = TRUE)
+  
+  # Page 2: History Runs
+  source("server_files/history_server.R", local = TRUE)
 
-  # Page 2: Exploratory Plots
+  # Page 3: Exploratory Plots
   source("server_files/model_plots_server.R", local = TRUE)
   source("server_files/model_data_plots_server.R", local = TRUE)
   source("server_files/pdf_viewer_server.R", local = TRUE)
 
-  # Page 3: Benchmarking
+  # Page 4: Benchmarking
   observeEvent(input$load_model,{
     req(input$all_run_id)
     ids_DF <- parse_ids_from_input_runID(input$all_run_id)
