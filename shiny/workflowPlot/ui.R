@@ -22,7 +22,7 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                 tags$head(tags$script(src="scripts.js")),
                 tags$head( tags$style(HTML("
                                .modal-lg {
-                               width: 95%;
+                               width: 85%;
                                }
                                "))),
                 # Showing the animation
