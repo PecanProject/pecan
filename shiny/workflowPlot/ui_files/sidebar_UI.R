@@ -12,7 +12,7 @@ tagList(
          
              ),
       column(6,
-                  actionButton("load_model", h5("Load Model outputs"), width = "100%")
+                  actionButton("load_model", h5("Load"), width = "100%")
              )
     )
   ),
@@ -24,11 +24,11 @@ tagList(
     selectizeInput("all_input_id", "Select Input ID", c()),
     fluidRow(
      column(6,
-             actionButton("register_data", h6("Register External Data"), 
+             actionButton("register_data", h6("Register"), 
                           width = "100%", class="btn-primary")
              ),
       column(6,
-             actionButton("load_data", h6("Load External Data"), width = "100%")
+             actionButton("load_data", h6("Load"), width = "100%")
              )
     )
   )
