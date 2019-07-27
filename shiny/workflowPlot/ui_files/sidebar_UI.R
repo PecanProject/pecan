@@ -8,11 +8,11 @@ tagList(
 
         fluidRow(
      column(6,
-               actionButton("NewRun", h6("New Run !"), width = "70%", class="btn-primary")
+               actionButton("NewRun", h6("New Run !"), width = "100%", class="btn-primary")
          
              ),
       column(6,
-                  actionButton("load_model", h5("Load Model outputs"))
+                  actionButton("load_model", h5("Load Model outputs"), width = "100%")
              )
     )
   ),
@@ -25,10 +25,10 @@ tagList(
     fluidRow(
      column(6,
              actionButton("register_data", h6("Register External Data"), 
-                          width = "90%", class="btn-primary")
+                          width = "100%", class="btn-primary")
              ),
       column(6,
-             actionButton("load_data", h6("Load External Data"), width = "90%")
+             actionButton("load_data", h6("Load External Data"), width = "100%")
              )
     )
   )
