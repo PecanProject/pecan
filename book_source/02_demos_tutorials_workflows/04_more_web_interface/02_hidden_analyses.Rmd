@@ -380,7 +380,10 @@ An example of multi-settings pecan xml file also may look like below:
  </pfts>
  <meta.analysis>
     <iter>3000</iter>
-    <random.effects>FALSE</random.effects>
+    <random.effects>
+      <on>FALSE</on>
+      <use_ghs>TRUE</use_ghs>
+    </random.effects>
   </meta.analysis>
  <ensemble>
   <size>20</size>
