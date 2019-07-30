@@ -10,74 +10,86 @@ cmd <-  paste0("SELECT workflows.id, workflows.folder, workflows.start_date, wor
 
 
 observeEvent(input$workflowclassrand, {
-  #browser()
-  history <- PEcAn.DB::db.query(cmd, dbConnect$bety$con)
-  workflow_id <- strsplit(input$workflowselected, "_")[[1]]
-  workflow_id <- trimws(workflow_id[2])
-  val.jason <- history$value[history$id == workflow_id]
-  fld <- history$folder[history$id == workflow_id]
-
-  if (!is.na(val.jason)) {
-    # server and ui for the listviewer
-    output$jsed <- renderJsonedit({
-      jsonedit(jsonlite::fromJSON(val.jason))
-
-    })
-
-    showModal(modalDialog(
-      title = "Details",
-      tabsetPanel(
-        tabPanel("Info", br(),
-                 jsoneditOutput("jsed", height = "500px")
-        )),
-      easyClose = TRUE,
-      footer = NULL,
-      size = 'l'
-    ))
-  }
-
+  tryCatch({
+    history <- PEcAn.DB::db.query(cmd, dbConnect$bety$con)
+    workflow_id <- strsplit(input$workflowselected, "_")[[1]]
+    workflow_id <- trimws(workflow_id[2])
+    val.jason <- history$value[history$id == workflow_id]
+    fld <- history$folder[history$id == workflow_id]
+    
+    if (!is.na(val.jason)) {
+      # server and ui for the listviewer
+      output$jsed <- renderJsonedit({
+        jsonedit(jsonlite::fromJSON(val.jason))
+        
+      })
+      
+      showModal(modalDialog(
+        title = "Details",
+        tabsetPanel(
+          tabPanel("Info", br(),
+                   jsoneditOutput("jsed", height = "500px")
+          )),
+        easyClose = TRUE,
+        footer = NULL,
+        size = 'l'
+      ))
+    }
+  },
+  error = function(e){
+    toastr_error(title = "Error", conditionMessage(e))
+  })
 })
 
 
 observeEvent(input$submitInfo, {
-  history <- PEcAn.DB::db.query(cmd, dbConnect$bety$con)
-  output$historyfiles <- DT::renderDT(
-    DT::datatable(history %>%
-                    dplyr::select(-value, -modelname) %>%
-                    mutate(id = id %>% as.character()) %>%
-                    mutate(id=paste0("<button id=\"workflowbtn_",id, " \" type=\"button\" class=\"btn btn-primary btn-sm btn-block action-button workflowclass\" width=\"100%\">",id,"</button>"),
-                           Action= paste0('<div class="btn-group">
-                                          <button type="button" class="btn btn-primary ">Action</button>
-                                          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                                          <span class="caret"></span>
-                                          <span class="sr-only">Toggle Dropdown</span>
-                                          </button>
-                                          <ul class="dropdown-menu" role="menu">
-                                          <li><a href="#" class="expanclass" id=',paste0(history$id,"_btn3"),'>Explore</a></li>
-                                          <li class="divider"></li>
-                                          <li><a href="#" class="labclass" id=',paste0(history$id,"_lab4"),'>Delete</a></li>
-                                          </ul></div>')
-                           
-                           )%>%
-                    dplyr::rename(model=name),
-                  escape = F,
-                  filter = 'top',
-                  selection="none",
-                  style='bootstrap',
-                  rownames = FALSE,
-                  options = list(
-                    autowidth = TRUE,
-                    columnDefs = list(list(width = '90px', targets = -1)),  #set column width for action button 
-                    dom = 'ftp',
-                    pageLength = 10,
-                    scrollX = TRUE,
-                    scrollCollapse = FALSE,
-                    initComplete = DT::JS(
-                      "function(settings, json) {",
-                      "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                      "}")
-                  )
+  tryCatch({
+    history <- PEcAn.DB::db.query(cmd, dbConnect$bety$con)
+    output$historyfiles <- DT::renderDT(
+      DT::datatable(history %>%
+                      dplyr::select(-value, -modelname) %>%
+                      mutate(id = id %>% as.character()) %>%
+                      mutate(id=paste0("<button id=\"workflowbtn_",id, " \" type=\"button\" class=\"btn btn-primary btn-sm btn-block action-button workflowclass\" width=\"100%\">",id,"</button>"),
+                             Action= paste0('<div class="btn-group">
+                                            <button type="button" class="btn btn-primary ">Action</button>
+                                            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                            </button>
+                                            <ul class="dropdown-menu" role="menu">
+                                            <li><a href="#" class="expanclass" id=',paste0(history$id,"_btn3"),'>Explore</a></li>
+                                            <li class="divider"></li>
+                                            <li><a href="#" class="labclass" id=',paste0(history$id,"_lab4"),'>Delete</a></li>
+                                            </ul></div>')
+                             
+                             )%>%
+                      dplyr::rename(model=name),
+                    escape = F,
+                    filter = 'top',
+                    selection="none",
+                    style='bootstrap',
+                    rownames = FALSE,
+                    options = list(
+                      autowidth = TRUE,
+                      columnDefs = list(list(width = '90px', targets = -1)),  #set column width for action button 
+                      dom = 'ftp',
+                      pageLength = 10,
+                      scrollX = TRUE,
+                      scrollCollapse = FALSE,
+                      initComplete = DT::JS(
+                        "function(settings, json) {",
+                        "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                        "}")
                     )
+                      )
+      
+                      )
+    toastr_success("Generate history runs")
+  },
+  error = function(e) {
+    toastr_error(title = "Error in History Runs Page", message = ""
+                 #, conditionMessage(e)
+                 )
+  })
 
-    )
 })
