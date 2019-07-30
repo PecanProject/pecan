@@ -5,9 +5,8 @@
 \title{call_MODIS}
 \usage{
 call_MODIS(outfolder = "", start_date, end_date, lat, lon, size = 0,
-  iter = NULL, product, band, band_qc = "", band_sd = "",
-  siteID = "", package_method = "MODISTools", QC_filter = FALSE,
-  progress = TRUE)
+  product, band, band_qc = "", band_sd = "", siteID = NULL,
+  package_method = "MODISTools", QC_filter = FALSE, progress = TRUE)
 }
 \arguments{
 \item{outfolder}{where the output file will be stored}
@@ -22,11 +21,6 @@ call_MODIS(outfolder = "", start_date, end_date, lat, lon, size = 0,
 
 \item{size}{kmAboveBelow and kmLeftRight distance in km to be included}
 
-\item{iter}{a value (e.g. i) used to help name files when call_MODIS is used parallelized or in a for loop. Default is NULL.
-
-depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
-depends on the MODISTools package version 1.1.0}
-
 \item{product}{string value for MODIS product number}
 
 \item{band}{string value for which measurement to extract}
@@ -35,19 +29,23 @@ depends on the MODISTools package version 1.1.0}
 
 \item{band_sd}{string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)}
 
-\item{siteID}{string value of a PEcAn site ID. Currently only used for output filename.}
+\item{siteID}{numeric value of BETY site id value to use for output file name. Default is NULL. Only MODISTools option.}
 
 \item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)}
 
-\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False.}
+\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False. Only MODISTools option.}
+
+\item{progress}{TRUE reports the download progress bar of the dataset, FALSE omits the download progress bar. Default is TRUE. Only MODISTools option.
+
+depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
+depends on the MODISTools package version 1.1.0}
 }
 \description{
 Get MODIS data by date and location
 }
 \examples{
 \dontrun{
-test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, iter = 1, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools", QC_filter = TRUE)
-plot(lubridate::yday(test_modistools$calendar_date), test_modistools$data, type = 'l', xlab = "day of year", ylab = test_modistools$band[1])
+test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools", progress = TRUE, QC_filter = FALSE)
 test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
 }
 
