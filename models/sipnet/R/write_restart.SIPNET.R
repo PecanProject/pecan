@@ -61,7 +61,6 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
 
   if ("NEE" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$NEE
-    if (new.state$NEE < 0) analysis.save[[length(analysis.save)]] <- 0
     names(analysis.save[[length(analysis.save)]]) <- c("NEE")
   }
   

@@ -55,6 +55,11 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
   }
 
+  if ("GWBI" %in% var.names) {
+       forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
+           names(forecast[[length(forecast)]]) <- c("GWBI")
+  }
+
   # Reading in NET Ecosystem Exchange for SDA - unit is kg C m-2 s-1 and the average is estimated
   if ("NEE" %in% var.names) {
     forecast[[length(forecast) + 1]] <- mean(ens$NEE)  ## 
@@ -83,11 +88,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("Litter")
   }
 
-  if ("NEE" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$NEE[last]  ## gC/m2
-    names(forecast[[length(forecast)]]) <- c("NEE")
-  }
-  
+    
   if ("SoilMoistFrac" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
