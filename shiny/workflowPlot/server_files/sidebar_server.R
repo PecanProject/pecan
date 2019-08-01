@@ -160,6 +160,11 @@ load.model.data <- eventReactive(input$load_data, {
   observations <- PEcAn.benchmark::load_data(
     data.path = File_path, format = File_format, time.row = File_format$time.row,
     site = site, start_year = start.year, end_year = end.year)
+  # Manually select variables to deal with the error
+  # observations <- PEcAn.benchmark::load_data(
+  #   data.path = File_path, format = File_format,
+  #   site = site, start_year = start.year, end_year = end.year,
+  #   vars.used.index = c(1,2,3,5,6,7,9,10,12,13,14,15,16,19))
   print("Yay the observational data is loaded!")
   print(head(observations))
   return(observations)
@@ -191,7 +196,7 @@ observeEvent(input$load_data, {
 
 # Register external data
 observeEvent(input$register_data,{
-  browser()
+  #browser()
   req(input$all_site_id)
   
   showModal(
@@ -235,8 +240,11 @@ observeEvent(input$register_data,{
 observeEvent(input$register_button,{
   tryCatch({
     inFile <- input$Datafile
+    
+    dir.name <- gsub(".[a-z]+", "", inFile$name)
+    dir.create(file.path("/home/carya/output/dbfiles", dir.name))
     file.copy(inFile$datapath,
-              file.path("/home/carya/output/dbfiles", inFile$name),
+              file.path("/home/carya/output/dbfiles", dir.name, inFile$name),
               overwrite = T)
 
     mt <- tbl(dbConnect$bety,"formats") %>%
@@ -244,7 +252,7 @@ observeEvent(input$register_button,{
       filter(name == input$format_sel) %>%
       pull(type_string)
 
-    PEcAn.DB::dbfile.input.insert(in.path = file.path("/home/carya/output/dbfiles", inFile$name),
+    PEcAn.DB::dbfile.input.insert(in.path = file.path("/home/carya/output/dbfiles", dir.name),
                                   in.prefix = inFile$name,
                                   siteid =   input$all_site_id, # select box
                                   startdate = input$date3,
