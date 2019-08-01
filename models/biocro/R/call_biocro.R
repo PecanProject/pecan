@@ -106,7 +106,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
       iRhizome = as.numeric(iRhizome),
       photoControl = config$pft$photoParms)
 
-  } else if (genus == "Sorghum") {
+  } else if (genus %in% c("Sorghum", "Setaria")) {
     ## run BioGro
     tmp.result <- BioCro::BioGro(
       WetDat = WetDat,
@@ -121,7 +121,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
   } else {
     PEcAn.logger::logger.severe(
       "Genus '", genus, "' is not supported by PEcAn.BIOCRO when using BioCro 0.9x.",
-      "Supported genera: Saccharum, Salix, Populus, Sorghum, Miscanthus, Panicum")
+      "Supported genera: Saccharum, Salix, Populus, Sorghum, Miscanthus, Panicum, Setaria")
   }
   names(tmp.result) <- sub("DayofYear", "doy", names(tmp.result))
   names(tmp.result) <- sub("Hour", "hour", names(tmp.result))
