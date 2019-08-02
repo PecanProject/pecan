@@ -105,8 +105,9 @@ observeEvent(input$load_data,{
     bm$vars <- dplyr::inner_join(
       data.frame(read_name = names(bm$model_vars), 
                  pecan_name = bm$model_vars, stringsAsFactors = FALSE),
-      format$vars[-grep("%",format$vars$storage_type), 
-                  c("variable_id", "pecan_name")], 
+      # format$vars[-grep("%",format$vars$storage_type), 
+      #             c("variable_id", "pecan_name")], 
+      format$vars[c("variable_id", "pecan_name")],  #for AmeriFlux.level2.h.nc, format$vars$storage_type is NA
       by = "pecan_name")
     
     #This will be a longer set of conditions
@@ -271,7 +272,7 @@ observeEvent(input$calc_bm,{
                        driver = "pgsql",
                        write = TRUE
                      ),
-                     dbfiles = "/home/carya/output//dbfiles"
+                     dbfiles = "/home/carya/output/dbfiles"
                    )
                    bm$bm_settings$benchmarking <- list(
                      ensemble_id = bm$ens_wf$ensemble_id,

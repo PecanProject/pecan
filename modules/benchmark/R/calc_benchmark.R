@@ -28,7 +28,7 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
     # Retrieve/create benchmark ensemble database record
     bm.ensemble <- tbl(bety,'benchmarks_ensembles') %>% 
       filter(reference_run_id == settings$benchmarking$reference_run_id,
-             ensemble_id == ensemble$id,
+             ensemble_id %in% ensemble$id,  # ensemble$id has more than one element
              model_id == settings$model$id) %>%
       collect()
     
@@ -98,10 +98,11 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
       obvs <- load_data(data.path, format, start_year = start_year, end_year = end_year, site, vars.used.index, time.row)
       dat_vars <- format$vars$pecan_name  # IF : is this line redundant?
       obvs_full <- obvs
-      
+
       # ---- LOAD MODEL DATA ---- #
       
-      model_vars <- format$vars$pecan_name[-time.row]  # IF : what will happen when time.row is NULL? 
+      #model_vars <- format$vars$pecan_name[-time.row]  # IF : what will happen when time.row is NULL? 
+      model_vars <- format$vars$pecan_name # time.row is NULL
       # For example 'AmeriFlux.level2.h.nc' format (38) has time vars year-day-hour listed, 
       # but storage type column is empty and it should be because in load_netcdf we extract
       # the time from netcdf files using the time dimension we can remove time variables from
