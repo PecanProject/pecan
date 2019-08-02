@@ -17,6 +17,23 @@ output$modelDataPlot <- renderHighchart({
     hc_add_theme(hc_theme_flat())
 })
 
+output$modelDataPlotscatter <- renderHighchart({
+  validate(
+    need(length(input$all_workflow_id) == 1, "Select only ONE workflow ID"),
+    need(length(input$all_run_id) == 1, "Select only ONE run ID"),
+    need(input$load_model > 0, 'Select Load Data'),
+    need(length(input$all_site_id) == 1, 'Select only ONE Site ID'),
+    need(length(input$all_input_id) == 1, 'Select only ONE Input ID'),
+    need(input$load_data > 0, 'Select Load External Data')
+  )
+  highchart() %>% 
+    hc_add_series(data = c(), showInLegend = F) %>% 
+    hc_xAxis(title = list(text = "Time")) %>% 
+    hc_yAxis(title = list(text = "y")) %>% 
+    hc_title(text = "You are ready to plot!") %>% 
+    hc_add_theme(hc_theme_flat())
+})
+
 # Update units every time a variable is selected
 observeEvent(input$var_name_modeldata, {
   model.df <- load.model()
