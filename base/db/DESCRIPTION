@@ -48,7 +48,7 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.utils,
-    dbplyr (== 1.3.0),
+    dbplyr,
     dplyr,
     glue,
     lubridate,

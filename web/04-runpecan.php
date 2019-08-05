@@ -311,7 +311,10 @@ fwrite($fh, "  </pfts>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
 fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
-fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
+fwrite($fh, "    <random.effects>" . PHP_EOL);
+fwrite($fh, "     <on>FALSE</on>" . PHP_EOL);
+fwrite($fh, "     <use_ghs>TRUE</use_ghs>" . PHP_EOL);
+fwrite($fh, "    </random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 if (!empty($runs)){

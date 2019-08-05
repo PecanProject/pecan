@@ -57,7 +57,7 @@ assessParams <- function(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL){
   #cor(dat[,1:6])
   
   iPf   <- grep("pf", colnames(dat))
-  Pf <- matrix(colMeans(dat[, iPf]),ncol(X),ncol(X))
+  Pf <- matrix(colMeans(dat[, iPf]),ncol(Xt),ncol(Xt))
   
   PfCI <- apply(dat[,iPf],2,quantile,c(0.025,0.975))
 
