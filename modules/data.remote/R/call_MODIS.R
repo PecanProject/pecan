@@ -9,24 +9,23 @@
 ##' @param product_dates a character vector of the start and end date of the data in YYYYJJJ
 ##' @param run_parallel optional method to download data paralleize. Only works if more than 1 site is needed and there are >1 CPUs available.
 ##' @param ncores number of cpus to use if run_parallel is set to TRUE. If you do not know the number of CPU's available, enter NULL.
-##' @param size   kmAboveBelow and kmLeftRight distance in km to be included
 ##' @param product string value for MODIS product number
 ##' @param band   string value for which measurement to extract
 ##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
 ##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False. Only MODISTools option.
 ##' @param progress TRUE reports the download progress bar of the dataset, FALSE omits the download progress bar. Default is TRUE. Only MODISTools option.
 ##' 
-##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
+##' Requires Python3 for reticulate method option. There are a number of required python libraries. sudo -H pip install numpy suds netCDF4 json
 ##' depends on the MODISTools package version 1.1.0
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(outdir = "/data/Model_Data/modis_lai", var = "lai", site_info, product_dates = c("2001150", "2001365"), run_parallel = TRUE, size = 0, product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
+##' test_modistools <- call_MODIS(var = "lai", site_info = site_info, product_dates = c("2001150", "2001365"), run_parallel = TRUE,  product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
 ##' }
 ##' 
 ##' @author Bailey Morrison
 ##'
-call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run_parallel = FALSE, ncores = NULL, size = 0, product, band,  package_method = "MODISTools", QC_filter = FALSE, progress = FALSE) {
+call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parallel = FALSE, ncores = NULL, product, band,  package_method = "MODISTools", QC_filter = FALSE, progress = FALSE) {
   
   # makes the query search for 1 pixel and not for rasters chunks for now. Will be changed when we provide raster output support.
   size <- 0
@@ -37,12 +36,12 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
   require(doParallel)
   # set up CPUS for parallel runs.
   if (is.null(ncores)) {
-    total_cores = parallel::detectCores(all.tests = FALSE, logical = TRUE)
-    ncores = total_cores/2
+    total_cores <- parallel::detectCores(all.tests = FALSE, logical = TRUE)
+    ncores <- total_cores-2
   }
   if (ncores > 10) # MODIS API has a 10 download limit / computer
   {
-    ncores = 10
+    ncores <- 10
   }
   
   # register CPUS if run_parallel = TRUE
@@ -64,7 +63,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
   {
     #################### FUNCTION PARAMETER PRECHECKS #################### 
     #1. check that modis product is available
-    products = MODISTools::mt_products()
+    products <- MODISTools::mt_products()
     if (!(product %in% products$product))
     {
       PEcAn.logger::logger.warn(products)
@@ -98,18 +97,18 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
     #dates = as.Date(as.character(substr(dates, 2, nchar(dates))), format = "%Y%j")
   } else {
     # if user asked for specific dates, first make sure data is available, then inform user of any missing dates in time period asked for.
-    start_date = as.numeric(product_dates[1])
-    end_date = as.numeric(product_dates[2])
+    start_date <- as.numeric(product_dates[1])
+    end_date <- as.numeric(product_dates[2])
     
     # if all dates are available with user defined time period:
     if (start_date >= modis_dates[1] & end_date <= modis_dates[length(modis_dates)])
     {
       PEcAn.logger::logger.info("Check #2: All dates are available!")
       
-      start_date = modis_dates[which(modis_dates >= start_date)[1]]
+      start_date <- modis_dates[which(modis_dates >= start_date)[1]]
       
-      include = which(modis_dates <= end_date)
-      end_date = modis_dates[include[length(include)]]
+      include <- which(modis_dates <= end_date)
+      end_date <- modis_dates[include[length(include)]]
     }
     
     # if start and end dates fall completely outside of available modis_dates:
@@ -123,25 +122,25 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
     if ((start_date < modis_dates[1] & end_date > modis_dates[1]) | start_date < modis_dates[length(modis_dates)] & end_date > modis_dates[length(modis_dates)])
     {
       PEcAn.logger::logger.warn("WARNING: Dates are  partially available. Start and/or end date extend beyond modis data product availability.")
-      start_date = modis_dates[which(modis_dates >= start_date)[1]]
+      start_date <- modis_dates[which(modis_dates >= start_date)[1]]
       
-      include = which(modis_dates <= end_date)
-      end_date = modis_dates[include[length(include)]]
+      include <- which(modis_dates <= end_date)
+      end_date <- modis_dates[include[length(include)]]
     }
     
-    dates = modis_dates[which(modis_dates >= start_date & modis_dates <= end_date)]
+    dates <- modis_dates[which(modis_dates >= start_date & modis_dates <= end_date)]
       
   }
   
-  modis_dates = as.Date(as.character(modis_dates), format = "%Y%j")
-  dates = as.Date(as.character(dates), format = "%Y%j")
+  modis_dates <- as.Date(as.character(modis_dates), format = "%Y%j")
+  dates <- as.Date(as.character(dates), format = "%Y%j")
   
   #### Start extracting the data
   PEcAn.logger::logger.info("Extracting data")
 
   if (run_parallel)
   {
-    dat = foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
+    dat <- foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
       MODISTools::mt_subset(lat = site_coords$lat[i],lon = site_coords$lon[i],
                             product = product,
                             band = band,
@@ -150,11 +149,11 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
                             km_ab = size, km_lr = size,
                             progress = progress, site_name = as.character(site_info$site_id[i]))
   } else {
-    dat = data.frame()
+    dat <- data.frame()
     
     for (i in seq_along(site_info$site_id))
     {
-      d = MODISTools::mt_subset(lat = site_coords$lat[i],
+      d <- MODISTools::mt_subset(lat = site_coords$lat[i],
                                 lon = site_coords$lon[i],
                                 product = product,
                                 band = band,
@@ -162,7 +161,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
                                 end = dates[length(dates)],
                                 km_ab = size, km_lr = size,
                                 progress = progress)
-      dat = rbind(dat, d)
+      dat <- rbind(dat, d)
     }
   }
   
@@ -180,11 +179,11 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
   # remove bad values if QC filter is on
   if (QC_filter)
   {
-    qc_band = bands$band[which(grepl(var, bands$band, ignore.case = TRUE) & grepl("QC", bands$band, ignore.case = TRUE))]
+    qc_band <- bands$band[which(grepl(var, bands$band, ignore.case = TRUE) & grepl("QC", bands$band, ignore.case = TRUE))]
     
     if (run_parallel) 
     {
-      qc = foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
+      qc <- foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
         MODISTools::mt_subset(lat = site_coords$lat[i],lon = site_coords$lon[i],
                               product = product,
                               band = qc_band,
@@ -203,7 +202,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
         
       }
     
-    output$qc = as.character(qc$value)
+    output$qc <- as.character(qc$value)
     
     #convert QC values and keep only okay values
     for (i in seq_len(nrow(output)))
@@ -214,7 +213,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
     good <- which(output$qc %in% c("000", "001"))
     if (length(good) > 0 || !(is.null(good)))
     {
-      output = output[good, ]
+      output <- output[good, ]
     } else {
       PEcAn.logger::logger.warn("All QC values are bad. No data to output with QC filter == TRUE.")
     }
@@ -236,16 +235,16 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates = NULL, run
         dir.create(file.path(outdir, site_info$site_id[i]))
       }
         
-      site = output[which(output$site_id == site_info$site_id[i]), ]
-      site$modis_date = substr(site$modis_date, 2, length(site$modis_date))
+      site <- output[which(output$site_id == site_info$site_id[i]), ]
+      site$modis_date <- substr(site$modis_date, 2, length(site$modis_date))
       
       if (QC_filter)
       {
-        fname = paste(site_info$site_id[i], "/", product, "_", band, "_", start_date, "-", end_date, "_filtered.csv", sep = "")
+        fname <- paste(site_info$site_id[i], "/", product, "_", band, "_", start_date, "-", end_date, "_filtered.csv", sep = "")
       } else {
-        fname = paste(site_info$site_id[i], "/", product, "_", band, "_", start_date, "-", end_date, "_unfiltered.csv", sep = "")
+        fname <- paste(site_info$site_id[i], "/", product, "_", band, "_", start_date, "-", end_date, "_unfiltered.csv", sep = "")
       }
-      fname = file.path(outdir, fname)
+      fname <- file.path(outdir, fname)
       write.csv(site, fname, row.names = FALSE)
     }
     
