@@ -13,8 +13,9 @@ observe({
     updateSelectizeInput(session, "all_workflow_id", choices = all_ids)
     # Get URL prameters
     query <- parseQueryString(session$clientData$url_search)
+    
     # Pre-select workflow_id from URL prams
-    updateSelectizeInput(session, "all_workflow_id", selected = query[["workflow_id"]])
+   if(length(query)>0) updateSelectizeInput(session, "all_workflow_id", selected = query[["workflow_id"]])
     #Signaling the success of the operation
     toastr_success("Update workflow IDs")
   },
@@ -141,6 +142,7 @@ observe({
 })
 
 load.model.data <- eventReactive(input$load_data, {
+
   req(input$all_input_id)
   
   inputs_df <- getInputs(dbConnect$bety,c(input$all_site_id))
@@ -152,11 +154,13 @@ load.model.data <- eventReactive(input$load_data, {
   start.year <- as.numeric(lubridate::year(inputs_df$start_date))
   end.year <- as.numeric(lubridate::year(inputs_df$end_date))
   File_path <- inputs_df$filePath
+
   # TODO There is an issue with the db where file names are not saved properly.
   # To make it work with the VM, uncomment the line below
   #File_path <- paste0(inputs_df$filePath,'.csv')
   site.id <- inputs_df$site_id
   site <- PEcAn.DB::query.site(site.id,dbConnect$bety$con)
+browser()
   observations <- PEcAn.benchmark::load_data(
     data.path = File_path, format = File_format, time.row = File_format$time.row,
     site = site, start_year = start.year, end_year = end.year)
@@ -194,6 +198,32 @@ observeEvent(input$load_data, {
 })
 
 
+volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
+
+shinyDirChoose(input, "regdirectory", roots = volumes, session = session, restrictions = system.file(package = "base"))
+
+
+output$formatPreview <- DT::renderDT({
+  req(input$format_sel)
+  tryCatch({
+    Fids <-
+      PEcAn.DB::get.id("formats", "name", input$format_sel, dbConnect$bety$con) %>%
+      as.character()
+    
+    if (length(Fids)>1) toastr_warning(title="Format Preview", 
+                                       message = "More than one id was found for this format. The first one will be used.")
+    
+    tbl(dbConnect$bety$con, "formats_variables")  %>%
+      dplyr::filter(format_id == Fids[1]) %>%
+      dplyr::select(-id,-format_id, -variable_id, -created_at, -updated_at) %>%
+      dplyr::filter(name!="")%>%
+      collect()
+  },
+  error = function(e) {
+    toastr_error(title = "Error in format preview", message = conditionMessage(e))
+  })
+})  
+
 # Register external data
 observeEvent(input$register_data,{
   #browser()
@@ -203,7 +233,7 @@ observeEvent(input$register_data,{
     modalDialog(
       title = "Register External Data",
       fluidRow(
-        column(12,
+        column(6,
                fileInput("Datafile", "Choose CSV/NC File",
                          width = "100%",
                          accept = c(
@@ -212,19 +242,23 @@ observeEvent(input$register_data,{
                            ".csv",
                            ".nc")
                )),
+        column(6,br(), 
+               shinyFiles::shinyDirButton("regdirectory", "Choose your target dir", "Please select a folder")
+               ),
         tags$hr()
       ),
       fluidRow(
         column(6, dateInput("date3", "Start Date:", value = Sys.Date()-10)),
         column(6, dateInput("date4", "End Date:", value = Sys.Date()-10) )
-      ),
+      ),tags$hr(),
       fluidRow(
         column(6, shinyTime::timeInput("time2", "Start Time:", value = Sys.time())),
         column(6, shinyTime::timeInput("time2", "End Time:", value = Sys.time()))
-      ),
+      ),tags$hr(),
       fluidRow(
-        column(6, selectizeInput("format_sel", "Format Name", tbl(dbConnect$bety,"formats") %>% pull(name) %>% unique()) )
-      ),
+        column(6, selectizeInput("format_sel", "Format Name", tbl(dbConnect$bety,"formats") %>% pull(name) %>% unique()) ),
+        column(6, DT::dataTableOutput("formatPreview") )
+      ),tags$hr(),
       footer = tagList(
         actionButton("register_button", "Register"),
         modalButton("Cancel")
@@ -234,17 +268,14 @@ observeEvent(input$register_data,{
   )
 })
 
-
-
 # register input file in database
 observeEvent(input$register_button,{
   tryCatch({
     inFile <- input$Datafile
-    
     dir.name <- gsub(".[a-z]+", "", inFile$name)
-    dir.create(file.path("/home/carya/output/dbfiles", dir.name))
+    dir.create(file.path(parseDirPath(volumes, input$regdirectory), dir.name))
     file.copy(inFile$datapath,
-              file.path("/home/carya/output/dbfiles", dir.name, inFile$name),
+              file.path(parseDirPath(volumes, input$regdirectory), dir.name, inFile$name),
               overwrite = T)
 
     mt <- tbl(dbConnect$bety,"formats") %>%
@@ -252,7 +283,7 @@ observeEvent(input$register_button,{
       filter(name == input$format_sel) %>%
       pull(type_string)
 
-    PEcAn.DB::dbfile.input.insert(in.path = file.path("/home/carya/output/dbfiles", dir.name),
+    PEcAn.DB::dbfile.input.insert(in.path = file.path(parseDirPath(volumes, input$regdirectory), dir.name),
                                   in.prefix = inFile$name,
                                   siteid =   input$all_site_id, # select box
                                   startdate = input$date3,
