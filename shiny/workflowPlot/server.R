@@ -23,7 +23,8 @@ lapply(c( "shiny",
           "lubridate",
           "listviewer",
           "shinythemes",
-          "shinytoastr"
+          "shinytoastr",
+          "shinyFiles"
           ),function(pkg){
             if (!(pkg %in% installed.packages()[,1])){
                   install.packages(pkg)
