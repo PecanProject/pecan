@@ -70,9 +70,8 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                                            ),
                                            tabPanel(h4("Benchmarking"),
                                                     tabsetPanel(
-                                                      source_ui("benchmarking_settings_UI.R"),
-                                                      source_ui("benchmarking_scores_UI.R"),
-                                                      source_ui("benchmarking_plots_UI.R")
+                                                      source_ui("benchmarking_ScoresPlots_UI.R"),
+                                                      source_ui("benchmarking_settings_UI.R")
                                                     )
                                            ),
                                            tabPanel(h4("Documentation"),
