@@ -362,8 +362,8 @@ observeEvent(bm$load_results,{
                      
                      bm$bench.results <- result.out$bench.results
                      bm$aligned.dat <- result.out$aligned.dat
-                     output$results_table <- DT::renderDataTable(DT::datatable(bm$bench.results))
-                     plots_used <- grep("plot", result.out$bench.results$metric) 
+                     plots_used <- grep("plot", result.out$bench.results$metric)
+                     output$results_table <- DT::renderDataTable(DT::datatable(bm$bench.results[-plots_used,]))
                      incProgress(1/3) 
                      
                      if(length(plots_used) > 0){
