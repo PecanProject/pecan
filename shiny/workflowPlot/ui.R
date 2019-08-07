@@ -5,6 +5,7 @@ library(shinythemes)
 library(knitr)
 library(shinyjs)
 library(shinytoastr)
+library(shinyWidgets)
 library(bsplus)
 
 source("ui_utils.R", local = TRUE)

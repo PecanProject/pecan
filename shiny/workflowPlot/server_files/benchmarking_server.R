@@ -155,40 +155,36 @@ observeEvent({
   
   plot_ind <- grep("_plot",bm$metrics$name)
   
+  variable_choices <- bm$vars$variable_id
+  names(variable_choices) <- bm$vars$read_name
+  metrics_choices <- bm$metrics$id[-plot_ind]
+  names(metrics_choices) <- bm$metrics$description[-plot_ind]
+  plot_choices <- bm$metrics$id[plot_ind]
+  names(plot_choices) <- bm$metrics$description[plot_ind]
+  
   output$bm_inputs <- renderUI({
     if(bm$ready > 0){
-      list(
-        column(4, wellPanel(
-          checkboxGroupInput("vars", label = "Variables",
-                             choiceNames = bm$vars$read_name,
-                             choiceValues = bm$vars$variable_id),
-          # actionButton("selectall.var","Select /Deselect all variables"),
-          label=h3("Label")
-        )),
-        column(4, wellPanel(
-          checkboxGroupInput("metrics", label = "Numerical Metrics", 
-                             choiceNames = bm$metrics$description[-plot_ind],
-                             choiceValues = bm$metrics$id[-plot_ind]),
-          # actionButton("selectall.num","Select/Deselect all numerical metrics") ,
-          label=h3("Label")
-        )),
-        column(4, wellPanel(
-          checkboxGroupInput("plots", label = "Plot Metrics",
-                             choiceNames = bm$metrics$description[plot_ind],
-                             choiceValues = bm$metrics$id[plot_ind]),
-          # actionButton("selectall.plot","Select/Deselect all plot metrics"),
-          label=h3("Label")
-        ))
-        # column(4, wellPanel(
-        #   textInput("start_year", label = "Benchmarking Start Year",
-        #             value = "don't use this"),          
-        #   label=h3("Label")
-        # )),
-        # column(4, wellPanel(
-        #   textInput("end_year", label = "Benchmarking End Year",
-        #             value = "don't use this"),          
-        #   label=h3("Label")
-        # ))
+      wellPanel(
+        fluidRow(
+          column(4, 
+                 pickerInput("vars", "Variables", 
+                             choices = variable_choices,
+                             multiple = TRUE,
+                             options = list(`actions-box` = TRUE, `dropup-auto` = FALSE))
+          ),
+          column(4, 
+                 pickerInput("metrics", "Numerical Metrics", 
+                             choices = metrics_choices,
+                             multiple = TRUE,
+                             options = list(`actions-box` = TRUE, `dropup-auto` = FALSE))
+          ),
+          column(4,
+                 pickerInput("plots", "Plot Metrics", 
+                             choices  = plot_choices,
+                             multiple = TRUE,
+                             options = list(`actions-box` = TRUE, `dropup-auto` = FALSE))
+          )
+        )
       )
     }
   })

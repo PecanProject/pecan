@@ -8,6 +8,7 @@ tabPanel("Settings",
                 h3("Setup Benchmarks")),
          column(12, 
                 uiOutput("results_message"),
+                br(),
                 uiOutput("bm_inputs")
          ),
          column(12, h3("Calculate Benchmarks")),
