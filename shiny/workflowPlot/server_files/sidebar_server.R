@@ -197,27 +197,65 @@ observeEvent(input$load_data, {
   })
 })
 
-
+# These are required for shinyFiles which allows to select target folder on server machine
 volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
-
 shinyDirChoose(input, "regdirectory", roots = volumes, session = session, restrictions = system.file(package = "base"))
 
 
 output$formatPreview <- DT::renderDT({
-  req(input$format_sel)
+  req(input$format_sel_pre)
   tryCatch({
     Fids <-
-      PEcAn.DB::get.id("formats", "name", input$format_sel, dbConnect$bety$con) %>%
+      PEcAn.DB::get.id("formats",
+                       "name",
+                       input$format_sel_pre,
+                       dbConnect$bety$con) %>%
       as.character()
     
-    if (length(Fids)>1) toastr_warning(title="Format Preview", 
-                                       message = "More than one id was found for this format. The first one will be used.")
+    if (length(Fids) > 1)
+      toastr_warning(title = "Format Preview",
+                     message = "More than one id was found for this format. The first one will be used.")
     
-    tbl(dbConnect$bety$con, "formats_variables")  %>%
-      dplyr::filter(format_id == Fids[1]) %>%
-      dplyr::select(-id,-format_id, -variable_id, -created_at, -updated_at) %>%
-      dplyr::filter(name!="")%>%
-      collect()
+    mimt<-tbl(dbConnect$bety$con,"formats") %>%
+      left_join(tbl(dbConnect$bety$con,"mimetypes"), by=c('mimetype_id'='id'))%>%
+      dplyr::filter(id==Fids[1]) %>%
+      dplyr::pull(type_string)
+    
+    output$mimt_pre<-renderText({
+      mimt
+    })
+    
+    DT::datatable(
+      tbl(dbConnect$bety$con, "formats_variables")  %>%
+        dplyr::filter(format_id == Fids[1]) %>%
+        dplyr::select(-id, -format_id,-variable_id,-created_at,-updated_at) %>%
+        dplyr::filter(name != "") %>%
+        collect(),
+      escape = F,
+      filter = 'none',
+      selection = "none",
+      style = 'bootstrap',
+      rownames = FALSE,
+      options = list(
+        autowidth = TRUE,
+        columnDefs = list(list(
+          width = '90px', targets = -1
+        )),
+        #set column width for action button
+        dom = 'tp',
+        pageLength = 10,
+        scrollX = TRUE,
+        scrollCollapse = FALSE,
+        initComplete = DT::JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+          "}"
+        )
+      )
+    )
+    
+    
+    
   },
   error = function(e) {
     toastr_error(title = "Error in format preview", message = conditionMessage(e))
@@ -232,33 +270,54 @@ observeEvent(input$register_data,{
   showModal(
     modalDialog(
       title = "Register External Data",
-      fluidRow(
-        column(6,
-               fileInput("Datafile", "Choose CSV/NC File",
-                         width = "100%",
-                         accept = c(
-                           "text/csv",
-                           "text/comma-separated-values,text/plain",
-                           ".csv",
-                           ".nc")
-               )),
-        column(6,br(), 
-               shinyFiles::shinyDirButton("regdirectory", "Choose your target dir", "Please select a folder")
-               ),
-        tags$hr()
+      tabsetPanel(
+        tabPanel("Register",
+                 br(),
+                 fluidRow(
+                   column(6,
+                          fileInput("Datafile", "Choose CSV/NC File",
+                                    width = "100%",
+                                    accept = c(
+                                      "text/csv",
+                                      "text/comma-separated-values,text/plain",
+                                      ".csv",
+                                      ".nc")
+                          )),
+                   column(6,br(), 
+                          shinyFiles::shinyDirButton("regdirectory", "Choose your target dir", "Please select a folder")
+                   ),
+                   tags$hr()
+                 ),
+                 fluidRow(
+                   column(6, dateInput("date3", "Start Date:", value = Sys.Date()-10)),
+                   column(6, dateInput("date4", "End Date:", value = Sys.Date()-10) )
+                 ),tags$hr(),
+                 fluidRow(
+                   column(6, shinyTime::timeInput("time2", "Start Time:", value = Sys.time())),
+                   column(6, shinyTime::timeInput("time2", "End Time:", value = Sys.time()))
+                 ),tags$hr(),
+                 fluidRow(
+                   column(6, selectizeInput("format_sel", "Format Name", tbl(dbConnect$bety,"formats") %>%
+                                              pull(name) %>% 
+                                              unique()
+                                            ) ),
+                   column(6)
+                 )
+                 ),
+        tabPanel("Fromat Preview", br(),
+                 fluidRow(
+                   column(6,selectizeInput("format_sel_pre", "Format Name", tbl(dbConnect$bety,"formats") %>%
+                                             pull(name) %>% unique())),
+                   column(6, h5(shiny::tags$b("Mimetypes")), textOutput("mimt_pre"))
+                 ),
+                 fluidRow(
+                   column(12,
+                          DT::dataTableOutput("formatPreview") 
+                          )
+                   
+                 )
+                 )
       ),
-      fluidRow(
-        column(6, dateInput("date3", "Start Date:", value = Sys.Date()-10)),
-        column(6, dateInput("date4", "End Date:", value = Sys.Date()-10) )
-      ),tags$hr(),
-      fluidRow(
-        column(6, shinyTime::timeInput("time2", "Start Time:", value = Sys.time())),
-        column(6, shinyTime::timeInput("time2", "End Time:", value = Sys.time()))
-      ),tags$hr(),
-      fluidRow(
-        column(6, selectizeInput("format_sel", "Format Name", tbl(dbConnect$bety,"formats") %>% pull(name) %>% unique()) ),
-        column(6, DT::dataTableOutput("formatPreview") )
-      ),tags$hr(),
       footer = tagList(
         actionButton("register_button", "Register"),
         modalButton("Cancel")
