@@ -229,16 +229,17 @@ observeEvent(input$calc_bm,{
                    
                    inputs_df <- getInputs(dbConnect$bety,c(input$all_site_id)) %>% 
                      dplyr::filter(input_selection_list == input$all_input_id)
+                   output$inputs_df_title <- renderText("Benchmark Input Data")
                    output$inputs_df_table <- DT::renderDataTable(
                      DT::datatable(inputs_df,
+                                   rownames = FALSE,
                                    options = list(
-                                     dom = 'ft',
+                                     dom = 't',
                                      scrollX = TRUE,
                                      initComplete = DT::JS(
                                        "function(settings, json) {",
                                        "$(this.api().table().header()).css({'background-color': '#404040', 'color': '#fff'});",
-                                       "}")),
-                                   caption = "Table: Benchmarking Input Data")
+                                       "}")))
                    )
       
                    
@@ -363,7 +364,16 @@ observeEvent(bm$load_results,{
                      bm$bench.results <- result.out$bench.results
                      bm$aligned.dat <- result.out$aligned.dat
                      plots_used <- grep("plot", result.out$bench.results$metric)
-                     output$results_table <- DT::renderDataTable(DT::datatable(bm$bench.results[-plots_used,]))
+                     output$results_df_title <- renderText("Benchmark Scores")
+                     output$results_table <- DT::renderDataTable(
+                       DT::datatable(bm$bench.results[-plots_used,],
+                                     rownames = FALSE,
+                                     options = list(dom = 'ft',
+                                                    initComplete = JS(
+                                                      "function(settings, json) {",
+                                                      "$(this.api().table().header()).css({'background-color': '#404040', 'color': '#fff'});",
+                                                      "}")
+                                                    )))
                      incProgress(1/3) 
                      
                      if(length(plots_used) > 0){
@@ -372,9 +382,30 @@ observeEvent(bm$load_results,{
                          1, paste, collapse = " ")
                        selection <- as.list(as.numeric(names(plot_list)))
                        names(selection) <- as.vector(plot_list)
+                       output$plots_tilte <- renderText("Benchmark Plots")
                        output$bm_plots <-  renderUI({
-                         selectInput("bench_plot", "Benchmark Plot", multiple = FALSE,
+                         selectInput("bench_plot", label = NULL, multiple = FALSE,
                                      choices = selection)
+                       })
+                       output$plotlybars <- renderUI({
+                         div(
+                           id = "plot-container",
+                           div(
+                             class = "plotlybars-wrapper",
+                             div(
+                               class = "plotlybars",
+                               div(class = "plotlybars-bar b1"),
+                               div(class = "plotlybars-bar b2"),
+                               div(class = "plotlybars-bar b3"),
+                               div(class = "plotlybars-bar b4"),
+                               div(class = "plotlybars-bar b5"),
+                               div(class = "plotlybars-bar b6"),
+                               div(class = "plotlybars-bar b7")
+                             ),
+                             div(class = "plotlybars-text",
+                                 p("Updating the plot. Hold tight!"))
+                           )
+                         )
                        })
                      }
                      incProgress(1/3) 

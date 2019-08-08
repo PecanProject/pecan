@@ -17,7 +17,26 @@ tabPanel("Scores/Plots",
                 # verbatimTextOutput("report"),
                 uiOutput("calc_bm_button"),
                 br(),
+                textOutput("inputs_df_title"),
+                br(),
                 DT::dataTableOutput("inputs_df_table"),
+                br(),
                 br()
+         ),
+         fluidRow(
+           column(8,
+                  fluidRow(
+                    column(3,offset = 1, textOutput("plots_tilte")),
+                    column(8, uiOutput("bm_plots"))
+                  ),
+                  uiOutput("plotlybars"),
+                  plotlyOutput("bmPlot"),
+                  br()
+                  ),
+           column(4,
+                  textOutput("results_df_title"),
+                  br(),
+                  DT::dataTableOutput("results_table")
+                  )
          )
 )
