@@ -143,25 +143,28 @@ observeEvent(input$ex_plot_modeldata,{
                        model.xts <- aggr(model.xts)
                        observasions.xts <- aggr(observasions.xts)
                        
-                       
+                       #Scatter plot
                        output$modelDataPlotscatter <- renderHighchart({
                          scatter.df <- data.frame (
                            'y' = zoo::coredata(model.xts),
                            'x' = zoo::coredata(observasions.xts)
                          )
+                         hlim <- max(max(scatter.df$y, scatter.df$x))
+                         llim <- min(min(scatter.df$y, scatter.df$x))
+                  
                          
                          highchart() %>%
                            hc_chart(type = 'scatter') %>%
                            hc_add_series(scatter.df, name = "Model data comparison", showInLegend = FALSE) %>%
                            hc_legend(enabled = FALSE) %>%
-                           hc_yAxis(title = list(text = "Simulated",fontSize=19))%>%
+                           hc_yAxis(title = list(text = "Simulated",fontSize=19), min=llim, max=hlim)%>%
                            hc_exporting(enabled = TRUE, filename=paste0("Model_data_comparison")) %>%
                            hc_add_theme(hc_theme_elementary(yAxis = list(title = list(style = list(color = "#373b42",fontSize=15)),
                                                                          labels = list(style = list(color = "#373b42",fontSize=15))),
                                                             xAxis = list(title = list(style = list(color = "#373b42",fontSize=15)),
                                                                          labels = list(style = list(color = "#373b42",fontSize=15)))
                            ))%>%
-                           hc_xAxis(title = list(text ="Observed" ,fontSize=19))
+                           hc_xAxis(title = list(text ="Observed" ,fontSize=19), min=llim, max=hlim)
                          
                        })
                        
