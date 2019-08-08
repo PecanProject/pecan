@@ -10,7 +10,12 @@ observe({
     # if we want to load all workflow ids.
     # get_workflow_id function from query.dplyr.R
     all_ids <- get_workflow_ids(dbConnect$bety, query, all.ids=TRUE)
-    updateSelectizeInput(session, "all_workflow_id", choices = all_ids)
+    selectList <- as.data.table(all_ids)
+    
+    updateSelectizeInput(session,
+                         "all_workflow_id",
+                         choices = all_ids,
+                         server = TRUE)
     # Get URL prameters
     query <- parseQueryString(session$clientData$url_search)
     
@@ -160,7 +165,7 @@ load.model.data <- eventReactive(input$load_data, {
   #File_path <- paste0(inputs_df$filePath,'.csv')
   site.id <- inputs_df$site_id
   site <- PEcAn.DB::query.site(site.id,dbConnect$bety$con)
-browser()
+  
   observations <- PEcAn.benchmark::load_data(
     data.path = File_path, format = File_format, time.row = File_format$time.row,
     site = site, start_year = start.year, end_year = end.year)
