@@ -188,7 +188,20 @@ observeEvent({
       )
     }
   })
-  if(bm$ready > 0){bm$calc_bm_message <- sprintf("Please select at least one variable and one metric")}
+  
+  output$calc_bm <- renderUI({
+    if(bm$ready > 0){
+      fluidRow(
+        column(5),
+        column(2,
+               shinyjs::disabled(
+                 actionButton('calc_bm_button', "Calculate", width = "100%", class="btn-primary")
+                 )
+               ),
+        column(5)
+      )
+    }
+  })
 })
 
 observeEvent({
@@ -200,9 +213,9 @@ observeEvent({
   n <- ifelse(is.null(input$metrics),0,length(input$metrics))
   p <- ifelse(is.null(input$plots),0,length(input$plots))
   m <- n + p
-  output$report <- renderText(sprintf("Number of vars: %0.f, Number of metrics: %0.f", v,m))
+  #output$report <- renderText(sprintf("Number of vars: %0.f, Number of metrics: %0.f", v,m))
   if(v > 0 & m > 0){
-    output$calc_bm_button <- renderUI({actionButton("calc_bm", "Calculate Benchmarks")})
+    shinyjs::enable("calc_bm_button")
     bm$bm_vars <- input$vars
     bm$bm_metrics <- c()
     if(n > 0) bm$bm_metrics <- c(bm$bm_metrics, input$metrics)
@@ -211,7 +224,7 @@ observeEvent({
   
 }, ignoreNULL = FALSE)
 
-observeEvent(input$calc_bm,{
+observeEvent(input$calc_bm_button,{
   tryCatch({
     req(input$all_input_id)
     req(input$all_site_id)
@@ -222,11 +235,7 @@ observeEvent(input$calc_bm,{
     withProgress(message = 'Calculation in progress',
                  detail = 'This may take a while...',
                  value = 0,{
-                   bm$calc_bm_message <- sprintf("Setting up benchmarks")
-                   output$reportvars <- renderText(paste("Variable Id: ", bm$bm_vars, seq_along(bm$bm_vars)))
-                   output$reportmetrics <- renderText(paste("Metrics Id: ", bm$bm_metrics))
- 
-                   
+
                    inputs_df <- getInputs(dbConnect$bety,c(input$all_site_id)) %>% 
                      dplyr::filter(input_selection_list == input$all_input_id)
                    output$inputs_df_title <- renderText("Benchmark Input Data")
@@ -290,9 +299,8 @@ observeEvent(input$calc_bm,{
                      bm$bm_settings$benchmarking <- append(bm$bm_settings$benchmarking,list(benchmark = benchmark))
                    }
                  
-                   
-                   output$calc_bm_button <- renderUI({})
-                   output$settings_title <- renderText("Benchmarking Settings:")
+              
+                   disable("calc_bm_button")
                    output$print_bm_settings <- renderPrint(print(bm$bm_settings))
                 
                    
@@ -302,7 +310,9 @@ observeEvent(input$calc_bm,{
                    saveXML(PEcAn.settings::listToXml(bm$bm_settings,"pecan"), file = settings_path)
                    bm$settings_path <- settings_path
                    
-                   bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
+                   output$settings_path <- renderText({
+                     sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
+                     })
                    incProgress(1/2) 
                    
                    ##############################################################################
@@ -342,10 +352,6 @@ observeEvent(input$calc_bm,{
     toastr_error(title = "Error", conditionMessage(e))
   })
  
-})
-
-observeEvent(bm$calc_bm_message,{
-  output$calc_bm_message <- renderText({bm$calc_bm_message})
 })
 
 observeEvent(bm$results_message,{
