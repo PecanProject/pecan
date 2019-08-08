@@ -24,7 +24,9 @@ lapply(c( "shiny",
           "listviewer",
           "shinythemes",
           "shinytoastr",
-          "shinyFiles"
+          "shinyFiles",
+          "data.table",
+          "shinyWidgets"
           ),function(pkg){
             if (!(pkg %in% installed.packages()[,1])){
                   install.packages(pkg)
