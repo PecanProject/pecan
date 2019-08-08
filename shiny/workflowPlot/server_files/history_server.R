@@ -41,6 +41,24 @@ observeEvent(input$workflowclassrand, {
   })
 })
 
+observeEvent(input$workflow_explor_classrand, {
+  tryCatch({
+    #history <- PEcAn.DB::db.query(cmd, dbConnect$bety$con)
+    workflow_id <- strsplit(input$workflows_explor_selected, "_")[[1]]
+   
+    workflow_id <- trimws(workflow_id[1])
+    
+    updateSelectizeInput(session,
+                         "all_workflow_id",
+                         choices = c(input$all_workflow_id, workflow_id),
+                         selected = c(input$all_workflow_id, workflow_id))
+
+  },
+  error = function(e){
+    toastr_error(title = "Error", conditionMessage(e))
+  })
+})
+
 
 observeEvent(input$submitInfo, {
   tryCatch({
@@ -74,7 +92,7 @@ observeEvent(input$submitInfo, {
                       columnDefs = list(list(width = '90px', targets = -1)),  #set column width for action button 
                       dom = 'ftp',
                       pageLength = 10,
-                      scrollX = TRUE,
+                      scrollX = FALSE,
                       scrollCollapse = FALSE,
                       initComplete = DT::JS(
                         "function(settings, json) {",
