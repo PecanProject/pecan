@@ -101,19 +101,26 @@ observeEvent(input$load_data,{
     bm$input <- getInputs(dbConnect$bety,c(input$all_site_id)) %>% 
       dplyr::filter(input_selection_list == input$all_input_id)
     format <- PEcAn.DB::query.format.vars(bety = dbConnect$bety, input.id = bm$input$input_id)
-    # Are there more human readable names?
-    bm$vars <- dplyr::inner_join(
-      data.frame(read_name = names(bm$model_vars), 
-                 pecan_name = bm$model_vars, stringsAsFactors = FALSE),
-      # format$vars[-grep("%",format$vars$storage_type), 
-      #             c("variable_id", "pecan_name")], 
-      format$vars[c("variable_id", "pecan_name")],  #for AmeriFlux.level2.h.nc, format$vars$storage_type is NA
-      by = "pecan_name")
     
-    #This will be a longer set of conditions
-    bm$ready <- bm$ready + 1
-    #Signaling the success of the operation
-    toastr_success("Check for benchmarks")
+    # If format has Null time.row and NAs for var$column_number, skip loading
+    if(is.null(format$time.row) & is.na(format$var$column_number)){
+      print("File_format has Null time.row and NAs for var$column_number, skip loading")
+      toastr_warning("This file format cannot do benchmarking")
+    }else{
+      # Are there more human readable names?
+      bm$vars <- dplyr::inner_join(
+        data.frame(read_name = names(bm$model_vars), 
+                   pecan_name = bm$model_vars, stringsAsFactors = FALSE),
+        format$vars[-grep("%",format$vars$storage_type),
+                    c("variable_id", "pecan_name")],
+        #format$vars[c("variable_id", "pecan_name")],  #for AmeriFlux.level2.h.nc, format$vars$storage_type is NA
+        by = "pecan_name")
+      
+      #This will be a longer set of conditions
+      bm$ready <- bm$ready + 1
+      #Signaling the success of the operation
+      toastr_success("Check for benchmarks")
+    }
   },
   error = function(e) {
     toastr_error(title = "Error", conditionMessage(e))
