@@ -49,6 +49,7 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                     id = "app",
                       navbarPage(title = NULL,
                                            tabPanel(h4("Select Data"),
+                                                    icon = icon("hand-pointer"),
                                                    tagList(
                                                      column(3,
                                                             source_ui("sidebar_UI.R")
@@ -59,9 +60,11 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                                                    )
                                            ),
                                            tabPanel(h4("History Runs"),
+                                                    icon = icon("history"),
                                                     DT::DTOutput("historyfiles")
                                            ),
                                            tabPanel(h4("Exploratory Plots"),
+                                                    icon = icon("chart-bar"),
                                                     tabsetPanel(
                                                       source_ui("model_plots_UI.R"),
                                                       source_ui("model_data_plots_UI.R"),
@@ -69,12 +72,14 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                                                     )
                                            ),
                                            tabPanel(h4("Benchmarking"),
+                                                    icon = icon("pencil-ruler"),
                                                     tabsetPanel(
                                                       source_ui("benchmarking_ScoresPlots_UI.R"),
                                                       source_ui("benchmarking_settings_UI.R")
                                                     )
                                            ),
                                            tabPanel(h4("Documentation"),
+                                                    icon = icon("book"),
                                                     #withMathJax(includeMarkdown("markdown/workflowPlot_doc.Rmd"))
                                                     bs_accordion_sidebar(id = "documentation",
                                                                          spec_side = c(width = 3, offset = 0)) %>%
