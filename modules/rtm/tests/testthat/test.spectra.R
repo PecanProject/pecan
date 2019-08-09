@@ -1,5 +1,3 @@
-library(PEcAnRTM)
-library(testthat)
 context("Spectra S3 class")
 
 data(testspec, package = "PEcAnRTM")
