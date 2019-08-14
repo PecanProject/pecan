@@ -67,7 +67,7 @@ server <- shinyServer(function(input, output, session) {
         fluidRow(column(12,textInput('host', h4('Host:'), width = "100%", value = "psql-pecan.bu.edu"))),
         fluidRow(
           column(3),
-          column(6,br(),actionButton('submitInfo', h4('Submit'), width = "100%", class="btn-primary")),
+          column(6,br(),actionButton('submitInfo', 'Submit', width = "100%", class="btn-primary")),
           column(3)
         ),
         footer = NULL,

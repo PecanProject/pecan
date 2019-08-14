@@ -5,14 +5,14 @@ tagList(
     selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(), multiple=TRUE),
     p("Please select the run IDs. You can select multiple IDs"),
     selectizeInput("all_run_id", "Mutliple Run IDs", c(), multiple=TRUE),
-
-        fluidRow(
-     column(6,
-               actionButton("NewRun", h6("New Run !"), width = "100%", class="btn-primary")
+    fluidRow(
+      column(6,
+               actionButton("NewRun", "New Run", icon = icon("plus"),
+                            width = "120%", class="btn-primary")
          
              ),
       column(6,
-                  actionButton("load_model", h5("Load"), width = "100%")
+                  actionButton("load_model", "Load", icon = icon("download"), width = "100%")
              )
     )
   ),
@@ -24,11 +24,11 @@ tagList(
     selectizeInput("all_input_id", "Select Input ID", c()),
     fluidRow(
      column(6,
-             actionButton("register_data", h6("Register"), 
-                          width = "100%", class="btn-primary")
+             actionButton("register_data", "Register", icon = icon("upload"),
+                          width = "120%", class="btn-primary")
              ),
       column(6,
-             actionButton("load_data", h6("Load"), width = "100%")
+             actionButton("load_data", "Load", icon = icon("download"), width = "100%")
              )
     )
   )

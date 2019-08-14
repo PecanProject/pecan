@@ -33,7 +33,9 @@ tabPanel(
         max = 1,
         value = 0.8
       ),
-      actionButton("ex_plot_model", "Generate Plot", width = "100%", class="btn-primary")
+      tags$hr(),
+      actionButton("ex_plot_model", "Generate Plot", icon = icon("pencil-alt"),
+                   width = "100%", class="btn-primary")
     )
   ),
   column(

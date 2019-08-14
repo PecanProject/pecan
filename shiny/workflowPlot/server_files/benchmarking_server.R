@@ -202,7 +202,8 @@ observeEvent({
         column(5),
         column(2,
                shinyjs::disabled(
-                 actionButton('calc_bm_button', "Calculate", width = "100%", class="btn-primary")
+                 actionButton('calc_bm_button', "Calculate", icon = icon("calculator"),
+                              width = "100%", class="btn-primary")
                  )
                ),
         column(5)

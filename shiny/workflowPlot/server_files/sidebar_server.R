@@ -324,7 +324,7 @@ observeEvent(input$register_data,{
                  )
       ),
       footer = tagList(
-        actionButton("register_button", "Register"),
+        actionButton("register_button", "Register", class="btn-primary"),
         modalButton("Cancel")
       ),
       size = 'l'
