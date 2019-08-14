@@ -11,6 +11,11 @@ bs_accordion_sidebar(id = "documentation",
     content_main = withMathJax(includeMarkdown("markdown/setup_page.Rmd"))
   ) %>%
   bs_append(
+    title_side = "History Runs", 
+    content_side = NULL,
+    content_main = "This is a page for searching history runs."
+  ) %>%
+  bs_append(
     title_side = "Exploratory Plots", 
     content_side = NULL,
     content_main = withMathJax(includeMarkdown("markdown/exploratory_plot.Rmd"))
