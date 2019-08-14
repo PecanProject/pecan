@@ -5,7 +5,7 @@ output:
     theme: united
 ---
 
-[See additional documentation on benchmarking](https://pecanproject.github.io/pecan-documentation/develop/settings-configured-analyses.html#Benchmarking)
+[See additional documentation on benchmarking](https://pecanproject.github.io/pecan-documentation/develop/intermediate-user.html#benchmarking)
 
 
 All benchmarks that are calcualted are automatcally registered in to the database.
