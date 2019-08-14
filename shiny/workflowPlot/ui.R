@@ -20,12 +20,19 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                 tags$head(
                   tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
                 ),
-                tags$head(tags$script(src="scripts.js")),
-                tags$head( tags$style(HTML("
-                               .modal-lg {
-                               width: 85%;
-                               }
-                               "))),
+                tags$head(
+                  tags$script(src="scripts.js")
+                  ),
+                tags$head(
+                  tags$style(HTML("
+                       .modal-lg {width: 85%;}
+                       .navbar-default .navbar-nav{font-size: 16px;
+                                                   padding-top: 10px;
+                                                   padding-bottom: 10px;
+                                                  }
+                                  ")
+                      )
+                  ),
                 # Showing the animation
                 div( id = "loading-content",
                      div(class = "plotlybars-wrapper",
@@ -48,7 +55,7 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                   div(
                     id = "app",
                       navbarPage(title = NULL,
-                                           tabPanel(h4("Select Data"),
+                                           tabPanel("Select Data",
                                                     icon = icon("hand-pointer"),
                                                    tagList(
                                                      column(3,
@@ -59,11 +66,11 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                                                             )
                                                    )
                                            ),
-                                           tabPanel(h4("History Runs"),
+                                           tabPanel("History Runs",
                                                     icon = icon("history"),
                                                     DT::DTOutput("historyfiles")
                                            ),
-                                           tabPanel(h4("Exploratory Plots"),
+                                           tabPanel("Exploratory Plots",
                                                     icon = icon("chart-bar"),
                                                     tabsetPanel(
                                                       source_ui("model_plots_UI.R"),
@@ -71,14 +78,14 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                                                       source_ui("pdf_viewer_UI.R")
                                                     )
                                            ),
-                                           tabPanel(h4("Benchmarking"),
+                                           tabPanel("Benchmarking",
                                                     icon = icon("pencil-ruler"),
                                                     tabsetPanel(
                                                       source_ui("benchmarking_ScoresPlots_UI.R"),
                                                       source_ui("benchmarking_settings_UI.R")
                                                     )
                                            ),
-                                           tabPanel(h4("Documentation"),
+                                           tabPanel("Documentation",
                                                     icon = icon("book"),
                                                     #withMathJax(includeMarkdown("markdown/workflowPlot_doc.Rmd"))
                                                     bs_accordion_sidebar(id = "documentation",
