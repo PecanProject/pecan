@@ -2,9 +2,8 @@
 
 tagList(
   #column(6, htmlOutput("README")),
-  DT::dataTableOutput("datatable"),
+#  DT::dataTableOutput("datatable"),
   br(),
-  br(),
-  br(),
+  uiOutput("runsui"),
   verbatimTextOutput("dim_message")
 )
