@@ -1,3 +1,6 @@
+.alert h5{margin-top:0;color:inherit}
+.alert h6{margin-top:0;color:inherit}
+
 #loading-content {
     position: absolute;
     background: #ffffff;
