@@ -9,10 +9,10 @@
 #' @export
 query_pfts <- function(dbcon, pft_names, modeltype = NULL, strict = FALSE) {
   pftres <- (dplyr::tbl(dbcon, "pfts")
-    %>% dplyr::filter(name %in% pft_names))
+    %>% dplyr::filter(name %in% !!pft_names))
   if (!is.null(modeltype)) {
     pftres <- (pftres %>% dplyr::semi_join(
-    (dplyr::tbl(dbcon, "modeltypes") %>% dplyr::filter(name == modeltype)),
+    (dplyr::tbl(dbcon, "modeltypes") %>% dplyr::filter(name == !!modeltype)),
     by = c("modeltype_id" = "id")))
   }
   result <- (pftres
