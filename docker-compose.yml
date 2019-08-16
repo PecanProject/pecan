@@ -163,12 +163,15 @@ services:
     image: pecan/rstudio-nginx:${PECAN_VERSION:-develop}
     networks:
       - pecan
-    labels:
-      - "traefik.enable=true"
-      - "traefik.backend=rstudio"
-      - "traefik.port=80"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rstudio"
-      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
+    ports: 
+      - 80:80
+        #labels:
+            #- "traefik.enable=true"
+            #- "traefik.backend=rstudio"
+            #- "traefik.frontend.entryPoints=http,https"
+            #- "traefik.frontend.headers.SSLRedirect=true"
+            #- "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rstudio"
+            #- "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
 
   rstudio:
     image: pecan/base:${PECAN_VERSION:-develop}
@@ -179,9 +182,11 @@ services:
       - USER=${PECAN_RSTUDIO_USER:-carya}
       - PASSWORD=${PECAN_RSTUDIO_PASS:-illinois}
     entrypoint: /init
+    expose: 
+      - "8787"
     volumes:
       - pecan:/data
-      - rstudio:/home
+      - ./:/home/carya
  
   # ----------------------------------------------------------------------
   # PEcAn application
@@ -328,4 +333,3 @@ volumes:
   rabbitmq:
   pecan:
   portainer:
-  rstudio:

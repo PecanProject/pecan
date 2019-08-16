@@ -96,3 +96,8 @@ docker-compose.override.yml
 
 # dont check in modellauncher binaries
 contrib/modellauncher/modellauncher
+
+# rstudio files!
+.rstudio/
+rstudio/
+workflows/
