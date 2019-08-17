@@ -49,7 +49,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   } else {
     met <-input_met$source
   }
-
+  
   # If overwrite is a plain boolean, fill in defaults for each stage
   if (!is.list(overwrite)) {
     if (overwrite) {

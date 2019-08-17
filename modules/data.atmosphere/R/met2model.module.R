@@ -1,6 +1,6 @@
 ##' @export
 .met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
-                              browndog, new.site, overwrite = FALSE, exact.dates, spin, register, ensemble_name) {
+                              browndog, new.site, overwrite = FALSE, exact.dates,spin, register, ensemble_name) {
   
   # Determine output format name and mimetype
   model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 

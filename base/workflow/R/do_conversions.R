@@ -62,6 +62,8 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       needsave <- TRUE
     }
     
+
+    
     # soil extraction
     if(input.tag == "soil" && is.null(input$path)){
       settings$run$inputs[[i]]$path <- PEcAn.data.land::soil_process(settings, input, dbfiles.local, overwrite=FALSE)
@@ -71,8 +73,8 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       ## which is done locally in rundir and then rsync'ed to remote
       ## rather than having a model-format soils file that is processed remotely
     }
-    
     # met conversion
+    
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
       if ( (PEcAn.utils::status.check(name) == 0)) { ## previously is.null(input$path) && 
