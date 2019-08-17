@@ -104,8 +104,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     load(climate_file) 
   }
   
-  temp.mat <- temp.mat[which(rownames(temp.mat)%in%start.year:end.year),]
-  precip.mat <- precip.mat[which(rownames(precip.mat)%in%start.year:end.year),]
+  temp.mat <- matrix(temp.mat[which(rownames(temp.mat)%in%start.year:end.year),])
+  precip.mat <- matrix(precip.mat[which(rownames(precip.mat)%in%start.year:end.year),])
   
   basesc <- 74
   basesn <- 1.64
