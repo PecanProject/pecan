@@ -1,5 +1,6 @@
 bs_accordion_sidebar(id = "documentation",
-                     spec_side = c(width = 3, offset = 0)) %>%
+                     spec_side = c(width = 3, offset = 0),
+                     spec_main = c(width = 9, offset = 0)) %>%
   bs_append(
     title_side = "App Documentation", 
     content_side = NULL,
