@@ -173,8 +173,9 @@ con <- bety$con
 
 ## Find name of Machine R is running on
 mach_name <- Sys.info()[[4]]
+## mach_name <- "docker"
 mach_id <- tbl(bety, "machines") %>%
-  filter(grepl(mach_name,hostname)) %>%
+  filter(grepl(mach_name, hostname)) %>%
   pull(id)
 
 ## Find Models
@@ -195,7 +196,8 @@ sensitivity <- FALSE
 
 ## Find Sites
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
-site_id_noinput <- anti_join(tbl(bety, "sites"), tbl(bety, "inputs")) %>%
+site_id_noinput <- tbl(bety, "sites") %>%
+  anti_join(tbl(bety, "inputs")) %>%
   inner_join(tbl(bety, "sitegroups_sites") %>%
                filter(sitegroup_id == 1),
              by = c("id" = "site_id")) %>%
@@ -214,35 +216,41 @@ site_id_noinput <- anti_join(tbl(bety, "sites"), tbl(bety, "inputs")) %>%
     #Check if startdate year is within the inerval of that is given
     in_date = data.table::between(as.numeric(lubridate::year(startdate)),as.numeric(start_year),as.numeric(end_year))
   ) %>%
-  dplyr::filter(in_date & as.numeric(end_year) - as.numeric(start_year) > 1) %>%
+  dplyr::filter(
+    in_date,
+    as.numeric(end_year) - as.numeric(start_year) > 1
+  ) %>%
   mutate(sitename = gsub(" ", "_", sitename)) %>%
-  rename(id.x = site_id)
+  rename(site_id = id.x)
 
 
-site_id <- site_id_noinput$id.x
+site_id <- site_id_noinput$site_id
 site_name <- gsub(" ", "_", site_id_noinput$sitename)
 
 #Create permutations of arg combinations
 options(scipen = 999)
 run_table <- expand.grid(
-  models,
-  met_name,
-  site_id,
-  startdate,
-  enddate,
-  pecan_path,
-  out.var,
-  ensemble,
-  ens_size,
-  sensitivity,
+  model_id = models,
+  met = met_name,
+  site_id = site_id,
+  start_date = startdate,
+  end_date = enddate,
+  pecan_path = pecan_path,
+  output_variable = out.var,
+  ensemble = ensemble,
+  ens_size = ens_size,
+  sensitivity = sensitivity,
   stringsAsFactors = FALSE
 )
 #Execute function to spit out a table with a column of NA or success
 
 tab <- run_table %>%
-  mutate(outcome = purrr::pmap(., purrr::possibly(function(...) {
-    create_execute_test_xml(list(...))
-  }, otherwise = NA))
+  mutate(
+    outcome = purrr::pmap(
+      .,
+      purrr::possibly(function(...) create_execute_test_xml(list(...)),
+                      otherwise = NA)
+    )
   )
 
 ## print to table
