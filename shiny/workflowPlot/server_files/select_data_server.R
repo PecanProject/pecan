@@ -71,45 +71,45 @@ observeEvent(input$load_model,{
                           function(rown){
 
                             HTML(paste0('
-                                <div class="alert alert-dismissible alert-',sample(c("warning","info"),1),'">
+                                <div class="alert alert-dismissible alert-',sample(c("info"),1),'">
                                  <h4 class="alert-heading">',select.data$workflow.id[rown],'</h4>
                                  <table class="table table-condensed">
 
                               <tbody>
                                 <tr>
-                                  <th scope="col"><h5>Runtype:</h5> </th>
-                                  <th scope="col">',select.data$runtype[rown],'</th>
-                                  <th scope="col"><h5>Ensemble.id:</h5> </th>
-                                  <th scope="col">',select.data$ensemble.id[rown],'</th>
+                                  <th ><h5>Runtype:</h5> </th>
+                                  <td><span class="badge badge-dark">',select.data$runtype[rown],'</span></td>
+                                  <th ><h5>Ensemble.id:</h5> </th>
+                                  <td><span class="badge badge-dark">',select.data$ensemble.id[rown],'</span></td>
                                 </tr>
 
                                 <tr>
                                   <th scope="row"><h5>Pft.name</h5> </th>
-                                  <td>',select.data$pft.name[rown],'</td>
+                                  <td><span class="badge badge-dark">',select.data$pft.name[rown],'</span></td>
                                   <td><h5>Run.id</h5> </td>
-                                  <td>',select.data$run.id[rown],'</td>
+                                  <td><span class="badge badge-dark">',select.data$run.id[rown],'</span></td>
                                 </tr>
                                 <tr>
                                   <th scope="row"><h5>Model</h5> </th>
-                                  <td>',select.data$model[rown],'</td>
+                                  <td><span class="badge badge-dark">',select.data$model[rown],'</span></td>
                                   <td><h5>Site.id</h5> </td>
-                                  <td>',select.data$site.id[rown],'</td>
+                                  <td><span class="badge badge-dark">',select.data$site.id[rown],'</span></td>
                                 </tr>
                                 <tr>
                                   <th scope="row"><h5>Start.date</h5> </th>
-                                  <td>',select.data$start.date[rown],'</td>
+                                  <td><span class="badge badge-dark">',select.data$start.date[rown],'</span></td>
                                   <td><h5>End.date</h5> </td>
-                                  <td>',select.data$end.date[rown],'</td>
+                                  <td><span class="badge badge-dark">',select.data$end.date[rown],'</span></td>
                                 </tr>
                                 <tr>
                                   <th scope="row"><h5>Hostname</h5> </th>
-                                  <td>',select.data$hostname[rown],'</td>
+                                  <td><span class="badge badge-dark">',select.data$hostname[rown],'</span></td>
                                   <td><h5>Outdir</h5> </td>
-                                  <td>',select.data$outdir[rown],'</td>
+                                  <td><span class="badge badge-dark">',select.data$outdir[rown],'</span></td>
                                 </tr>
                               </tbody>
                             </table> 
-                               </div> <br>
+                               </div>
                                         
                                         '))
                           }
