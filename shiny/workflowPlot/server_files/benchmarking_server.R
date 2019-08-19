@@ -346,6 +346,8 @@ observeEvent(input$calc_bm_button,{
                    
                    settings <- PEcAn.settings::prepare.settings(settings)
                    settings$host$name <- "localhost" # This may not be the best place to set this, but it isn't set by any of the other functions. Another option is to have it set by the default_hostname function (if input is NULL, set to localhost)
+                  # browser()
+                   #results <-calc_benchmark(settings, bety = dbConnect$bety)
                    # results <- PEcAn.settings::papply(settings, function(x) calc_benchmark(x, bety, start_year = input$start_year, end_year = input$end_year))
                    results <- PEcAn.settings::papply(settings, function(x) 
                      calc_benchmark(settings = x, bety = dbConnect$bety))
@@ -458,7 +460,8 @@ observeEvent(input$bench_plot,{
                    incProgress(9 / 15)
                    
                    output$bmPlot <- renderPlotly({
-                     plotly::ggplotly(p)
+                     plotly::ggplotly(p)%>%
+                       layout(height = "100%", width = "100%")
                    })
                    incProgress(4 / 15)
                  })
