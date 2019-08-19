@@ -66,14 +66,15 @@ ui <- fluidPage(theme = shinytheme("paper"),
                                                      column(9,
                                                             HTML('
                                                                  <div class="jumbotron" id="intromsg">
-                                                                  <h1 class="display-3">Hello user :) </h1>
+                                                                  <h1 class="display-3">Hello PEcAn user, </h1>
                                                                   <p class="lead">- This app is designed to help you better explore your runs.</p>
                                                                   <p class="lead">- First thing first is to choose your workflow ID. You don\'t know it ? It\'s alright. Use the history runs tab to explore all the runs at all sites. </p>
                                                                   <p class="lead">- You can choose previously registered input files to assess your model\'s performance. You have\'nt registered your file ? It\'s alright. Use the register button to do so.</p>
                                                                   <hr class="my-4">
                                                                   <p>If you are interested to learn more the PEcAn project or maybe become a member of our community use the following links:</p>
                                                                   <p class="lead">
-                                                                    <a class="btn btn-primary btn-lg" href="https://pecanproject.github.io/pecan-documentation/develop/index.html" role="button" target="_blank">Learn more PEcAn</a>
+                                                                    <a class="btn btn-primary btn-lg" href="https://pecanproject.github.io/pecan-documentation/develop/index.html" role="button" target="_blank">Learn more about PEcAn</a>
+                                                                    <a class="btn btn-info btn-lg" href="https://publicslack.com/slacks/pecanproject/invites/new" role="button" target="_blank">Slack Channel</a>
                                                                   </p>
                                                                 </div>
                                                                  '),
