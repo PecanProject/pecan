@@ -19,8 +19,6 @@ tabPanel("Scores/Plots",
                 textOutput("inputs_df_title"),
                 br(),
                 DT::dataTableOutput("inputs_df_table"),
-                br(),
-                br(),
                 br()
          ),
          fluidRow(
