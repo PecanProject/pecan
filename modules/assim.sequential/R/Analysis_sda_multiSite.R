@@ -76,9 +76,21 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
-  if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
+  if (length(dots) > 0) lapply(names(dots),function(name){assign(name,dots[[name]], pos = 1 )})
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
+  # What type of Q needs to be estimated ? if it's defined then it's either Site or PFT based if not then it's one for all.
+  q.type <- toupper(settings$state.data.assimilation$q.type)
+  
+  single.q <-1
+  Site.q <-2
+  pft.q <-3
+  
+  if (is.null(q.type) | q.type=="SINGLE") {
+    q.type <- single.q
+  } else{
+    q.type <- ifelse(q.type == "SITE", Site.q, pft.q)
+  } 
   #Loading nimbles functions
   if (!exists('GEF.MultiSite.Nimble')) PEcAn.assim.sequential:::load_nimble()
   #load_nimble()
@@ -107,8 +119,9 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   nthin<-extraArg$nthin
   nburnin <- extraArg$nburnin
   censored.data <- extraArg$censored.data
-  
+  ###-------------------------------------------------------------------###
   # if we had censored data
+  ###-------------------------------------------------------------------###----
   if (censored.data) {
     intervalX <- matrix(NA, ncol(X), 2)
     rownames(intervalX) <- colnames(X)
@@ -197,10 +210,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
         ## ironically, here we have to "toggle" the value of y.ind[i]
         ## this specifies that when y.ind[i] = 1,
         ## indicator variable is set to 0, which specifies *not* to sample
-        valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space +
-                                                                            i]],
-                                      'toggle',
-                                      1 - x.ind[i])
+        valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space +i]],
+                                      'toggle',1 - x.ind[i])
       }
       
     } else{
@@ -211,10 +222,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       Cmodel_tobit2space$setInits(inits.tobit2space)
       
       for (i in seq_along(X)) {
-        valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space +
-                                                                            i]],
-                                      'toggle',
-                                      1 - x.ind[i])
+        valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space +i]],
+                                      'toggle',1 - x.ind[i])
       }
       
     }
@@ -237,28 +246,71 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       matrix(colMeans(dat.tobit2space[, iycens]), nrow(X), ncol(X))
   } # end of if we have censored data
   
+  
+  ###-------------------------------------------------------------------###
+  # Generalized Ensemble Filter                                       ###-----
+  ###-------------------------------------------------------------------###
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
   #--- This is where the localization needs to happen - After imputing Pf
-  if (exists('blocked.dis'))
+  elements.W.Data <- which(apply(H, 2, sum) == 1)
+  if (exists('blocked.dis')){
         Pf <-
       Local.support(Pf,
                     blocked.dis,
                     settings$state.data.assimilation$scalef %>% as.numeric())
-  ###-------------------------------------------------------------------###
-  # Generalized Ensemble Filter                                       ###-----
-  ###-------------------------------------------------------------------###
+  }
 
   #### initial conditions
-  elements.W.Data <-  which( apply(H, 2, sum) == 1)
-  bqq[1]     <- length(elements.W.Data)
-  if(is.null(aqq)){
-    aqq      <- array(0, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
-  }else{
-    if(length(elements.W.Data)!= dim(aqq)[1] | length(elements.W.Data)!= dim(aqq)[2]){
-      PEcAn.logger::logger.warn('error: X has changed dimensions')
+  ## We are figuring out the aqq here 
+  if (t == 1) {
+    bqq[1] <- length(elements.W.Data)
+    
+    if (is.null(aqq)) {
+      
+      if (q.type==Site.q) { # if we wanna estimate a q per site
+        aqq <-
+          array(1, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
+      } else if(q.type == pft.q){ # if we wanna estimate a q per PFT
+        
+        site.pfts <- settings %>%
+          map( ~ .x[['run']]) %>%
+          map('site') %>%
+          map('site.pft') %>%
+          map('pft.name') %>%
+          modify(as.factor) %>%
+          modify(as.numeric) %>%
+          modify_if(function(x) {
+            if (length(x) > 0) {
+              return(FALSE)
+            } else{
+              return(TRUE)
+            }
+          },  ~ 1) %>%
+          unlist()
+        
+        aqq<- array(1, dim = c(max(site.pfts), max(site.pfts), nt))
+      }else{ # This is where we estimate just one q for all
+        aqq<- array(1, dim = c(1, 1, nt))
+      }
+
+    } else{
+      if (length(elements.W.Data) != dim(aqq)[1] |
+          length(elements.W.Data) != dim(aqq)[2]) {
+        PEcAn.logger::logger.warn('error: X has changed dimensions')
+      }
     }
+
+  } else{
+    if (ncol(aqq) > 1 & nrow(aqq) > 1)
+    aqq[, , t] <- Local.support(
+      aqq[, , t],
+      distances[ceiling(elements.W.Data/length(var.names)), # finding sites with data
+                ceiling(elements.W.Data/length(var.names))],
+      settings$state.data.assimilation$scalef %>% as.numeric()
+    )
   }
-  aqq[, ,1] <- diag(length(elements.W.Data)) * bqq[1] #Q
+
+
   
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
@@ -293,20 +345,29 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   y.censored <- as.numeric(ifelse(Y > interval[, 1], Y, 0))
   
   if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
+  # initial Q depends on the size of aqq
+    q.tmp <- diag(1, nrow(aqq), ncol(aqq))
 
+    if (q.type == single.q ){
+      aq.arg <- 1
+    } else{
+      aq.arg <-aqq[,,t]
+    }
+    
     #Initial values
     inits.pred <-
       list(
         X.mod = as.vector(mu.f),
-        q = diag(1, length(elements.W.Data), length(elements.W.Data)),
+        qq = 1,
         X = as.vector(mu.f)[length(elements.W.Data)],
         Xall = as.vector(mu.f),
-        Xs = as.vector(mu.f)[length(elements.W.Data)]
+        Xs = as.vector(mu.f)[length(elements.W.Data)],
+        q = diag(1, length(elements.W.Data), length(elements.W.Data))
       ) #
     
     dimensions.tobit = list(X = length(elements.W.Data),
                             X.mod = ncol(X),
-                            Q = c(length(elements.W.Data), length(elements.W.Data))
+                            Q = c(nrow(aqq), ncol(aqq))
                             )
     
     # Contants defined in the model
@@ -317,19 +378,21 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
         nH = length(elements.W.Data),
         H = elements.W.Data,
         NotH = which(!(1:ncol(X) %in% elements.W.Data )),
-        nNotH = which(!(1:ncol(X) %in% elements.W.Data )) %>% length()
+        nNotH = which(!(1:ncol(X) %in% elements.W.Data )) %>% length(),
+        q.type=q.type
       )
     # Data used for setting the likelihood and other stuff
     data.tobit <-
       list(
         muf = as.vector(mu.f),
         pf = Pf,
-        aq = aqq[,,t],
+        aq = aq.arg,
         bq = bqq[t],
         y.ind = y.ind,
         y.censored = y.censored,
         r = solve(R)
       )
+
   # This is the first step in making the nimble model - Nimble does some preliminary checks on the code    
     model_pred <- nimbleModel(GEF.MultiSite.Nimble,
                               data = data.tobit,
@@ -343,7 +406,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     ## Adding X.mod,q,r as data for building model.
     conf <- configureMCMC(model_pred, print=TRUE)
     
-    conf$addMonitors(c("X","Xall","q","Q")) 
+    conf$addMonitors(c("X","Xall","q")) 
     samplerNumberOffset <<- length(conf$getSamplers())
     
     for(i in 1:length(y.ind)) {
@@ -361,9 +424,20 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
     }
     
-    
+    save(
+      inits.pred,
+      dimensions.tobit,
+      constants.tobit,
+      data.tobit,
+      model_pred,
+      conf,
+      Rmcmc,
+      Cmodel,
+      Cmcmc,
+      file = file.path(settings$outdir,"SDA","NimbleVars.RData")
+    )
     # if t>1 in GEF --------------------------------------------   
-  }else{
+  } else {
 
     Cmodel$y.ind <- y.ind
     Cmodel$y.censored <- y.censored
@@ -389,45 +463,58 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   }
 
 
-  dat <-runMCMC(Cmcmc, niter = nitr.GEF, nburnin=nburnin, thin =nthin, nchains = 1)
+  dat <- runMCMC(Cmcmc, niter = nitr.GEF, nburnin = nburnin, thin = nthin, nchains = 1)
+  
+  #---- Saving the chains
+  save(dat, file=paste0("SDA/Chains_", t, ".RData"))
+  
   ## update parameters
   iX   <- grep("Xall[", colnames(dat), fixed = TRUE)
   mu.a <- colMeans(dat[, iX])
   Pa   <- cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
-  
-
   mq <- dat[,  grep("q", colnames(dat))]  # Omega, Precision
   q.bar <- matrix(apply(mq, 2, mean),
                   length(elements.W.Data),
                   length(elements.W.Data)
                   )  # Mean Omega, Precision
-  
-  col <- matrix(1:length(elements.W.Data) ^ 2,
-                length(elements.W.Data),
-                length(elements.W.Data))
-  
-  WV  <- matrix(0, length(elements.W.Data),
-                length(elements.W.Data))
-  
-  for (i in seq_along(elements.W.Data)) {
-    for (j in seq_along(elements.W.Data)) {
-      WV[i, j] <- wish.df(q.bar, X = mq, i = i, j = j, col = col[i, j])
+
+  # Setting up the prior for the next step from the posterior of this step
+  if (t < nt){
+    if (q.type == single.q){ #if it's a gamma case
+      
+      aqq[1, 1, t + 1] <- mean(mq)
+      bqq[t + 1] <- var(mq  %>%  as.numeric())
+      
+    } else { # if it's a wish case
+      col <- matrix(1:length(elements.W.Data) ^ 2,
+                    length(elements.W.Data),
+                    length(elements.W.Data))
+      
+      WV  <- matrix(0, length(elements.W.Data), length(elements.W.Data))
+      
+      for (i in seq_along(elements.W.Data)) {
+        for (j in seq_along(elements.W.Data)) {
+          WV[i, j] <- wish.df(q.bar, X = mq, i = i, j = j, col = col[i, j])
+        }
+      }
+      
+      n <- mean(WV)
+      if (n < length(mu.f)) {
+        n <- length(mu.f)
+      }
+      V <- solve(q.bar) * n
+      
+      
+      aqq[, ,t + 1] <- V
+      bqq[t + 1] <- n
     }
+
   }
-  
-  n <- mean(WV)
-  if (n < length(mu.f)) {
-    n <- length(mu.f)
-  }
-  V <- solve(q.bar) * n
   
 
   
-  if (t<nt){
-    aqq[, ,t + 1]   <- V
-    bqq[t + 1]       <- n
-  }
+
   #---- Trying to release some of the memory back to the os 
   gc()
   #

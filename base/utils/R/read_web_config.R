@@ -1,11 +1,11 @@
-#' Read `config.php` file into an R list 
+#' Read `config.php` file into an R list
 #'
 #' @author Alexey Shiklomanov, Michael Dietze, Rob Kooper
 #' @param php.config Path to `config.php` file
 #' @param parse Logical. If `TRUE` (default), try to parse numbers and
 #'   unquote strings.
 #' @param expand Logical. If `TRUE` (default), try to perform some
-#'   variable substitutions. 
+#'   variable substitutions.
 #' @return Named list of variable-value pairs set in `config.php`
 #' @export
 #' @examples

@@ -5,12 +5,14 @@
 \alias{GEF.MultiSite}
 \title{GEF}
 \usage{
-GEF(setting, Forecast, Observed, H, extraArg, nitr = 50000,
+GEF(settings, Forecast, Observed, H, extraArg, nitr = 50000,
   nburnin = 10000, ...)
 
 GEF.MultiSite(setting, Forecast, Observed, H, extraArg, ...)
 }
 \arguments{
+\item{settings}{pecan standard settings list.}
+
 \item{Forecast}{A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecast state variables for different ensemble)}
 
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
@@ -22,8 +24,6 @@ GEF.MultiSite(setting, Forecast, Observed, H, extraArg, ...)
 \item{nburnin}{Number of initial, pre-thinning, MCMC iterations to discard.}
 
 \item{...}{This function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.}
-
-\item{settings}{pecan standard settings list.}
 }
 \value{
 It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .

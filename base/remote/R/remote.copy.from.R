@@ -7,6 +7,7 @@
 #' @param host list with server, user and optionally tunnel to use.
 #' @param src remote file/dir to copy
 #' @param dst local file/dir to copy to
+#' @param options to be passed to rsync command, if nothing is specified everything will be rsynced
 #' @param delete in case of local dir should all non-existent files be removed
 #' @param stderr should stderr be returned
 #' @return output of command executed
@@ -18,8 +19,8 @@
 #'   host <- list(name='geo.bu.edu', user='kooper', tunnel='/tmp/geo.tunnel')
 #'   remote.copy.from(host, '/tmp/kooper', '/tmp/geo.tmp', delete=TRUE)
 #' }
-remote.copy.from <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
-  args <- c("-az", "-q")
+remote.copy.from <- function(host, src, dst, options = NULL, delete = FALSE, stderr = FALSE) {
+  args <- c("-az", "-q", options)
   if (as.logical(delete)) {
     args <- c(args, "--delete")
   }

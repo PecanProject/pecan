@@ -137,7 +137,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           }
           
           if ("SLA" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*10000
+            spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*1000
+            ## If change here need to change in write_restart as well
             }
           
           # replace defaults with traits
@@ -207,9 +208,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("CM5" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM5 <- vals$CM5
           }
-          if ("FWT" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FWT <- vals$FWT
-          }
+          
           if ("SLTA" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SLTA <- vals$SLTA
           }

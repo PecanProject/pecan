@@ -1,0 +1,264 @@
+# Database synchronization
+
+The database synchronization consists of 2 parts:
+- Getting the data from the remote servers to your server
+- Sharing your data with everybody else
+
+### How does it work?
+
+Each server that runs the BETY database will have a unique machine_id and a sequence of ID's associated. Whenever the user creates a new row in BETY it will receive an ID in the sequence. This allows us to uniquely identify where a row came from. This is information is crucial for the code that works with the synchronization since we can now copy those rows that have an ID in the sequence specified. If you have not asked for a unique ID your ID will be 99.
+
+The synchronization code itself is split into two parts, loading data with the `load.bety.sh` script and exporting data using `dump.bety.sh`. If you do not plan to share data, you only need to use `load.bety.sh` to update your database.
+
+### Set up
+
+Requests for new machine ID's is currently handled manually. To request a machine ID contact Rob Kooper <kooper@illinois.edu>. In the examples below this ID is referred to as 'my siteid'.
+
+To setup the database to use this ID you need to call load.bety in 'CREATE' mode (replacing <my siteid> with the ID if your site)
+
+```
+sudo -u postgres {$PECAN}/scripts/load.bety.sh -c -u -m <my siteid> 
+```
+WARNING: At the moment running CREATE deletes all current records in the database. If you are running from the VM this includes both all runs you have done and all information that the database is prepopulated with (e.g. input and model records). Remote records can be fetched (see below), but local records will be lost (we're working on improving this!)
+
+### Fetch latest data
+
+When logged into the machine you can fetch the latest data using the load.bety.sh script. The script will check what site you want to get the data for and will remove all data in the database associated with that id. It will then reinsert all the data from the remote database.
+
+The script is configured using environment variables.  The following variables are recognized:
+- DATABASE: the database where the script should write the results.  The default is `bety`.
+- OWNER: the owner of the database (if it is to be created).  The default is `bety`.
+- PG_OPT: additional options to be added to psql (default is nothing).
+- MYSITE: the (numerical) ID of your site.  If you have not requested an ID, use 99; this is used for all sites that do not want to share their data (i.e. VM). 99 is in fact the default.
+- REMOTESITE: the ID of the site you want to fetch the data from.  The default is 0 (EBI).
+- CREATE: If 'YES', this indicates that the existing database (`bety`, or the one specified by DATABASE) should be removed. Set to YES (in caps) to remove the database.  **THIS WILL REMOVE ALL DATA** in DATABASE.  The default is NO.
+- KEEPTMP: indicates whether the downloaded file should be preserved.  Set to YES (in caps) to keep downloaded files; the default is NO.
+- USERS: determines if default users should be created.  Set to YES (in caps) to create default users with default passwords.  The default is NO.
+
+All of these variables can be specified as command line arguments as well, to see the options use -h.
+
+```
+load.bety.sh -h
+./scripts/load.bety.sh [-c YES|NO] [-d database] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]
+ -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO
+ -d database, default is bety
+ -h this help page
+ -m site id, default is 99 (VM)
+ -o owner of the database, default is bety
+ -p additional psql command line options, default is empty
+ -r remote site id, default is 0 (EBI)
+ -t keep temp folder, default is NO
+ -u create carya users, this will create some default users
+
+dump.bety.sh -h
+./scripts/dump.bety.sh [-a YES|NO] [-d database] [-h] [-l 0,1,2,3,4] [-m my siteid] [-o folder] [-p psql options] [-u YES|NO]
+ -a use anonymous user, default is YES
+ -d database, default is bety
+ -h this help page
+ -l level of data that can be dumped, default is 3
+ -m site id, default is 99 (VM)
+ -o output folder where dumped data is written, default is dump
+ -p additional psql command line options, default is -U bety
+ -u should unchecked data be dumped, default is NO
+```
+
+### Sharing data
+
+Sharing your data requires a few steps. First, before entering any data, you will need to request an ID from the PEcAn developers. Simply open an issue at github and we will generate an ID for you.  If possible, add the URL of your data host.
+
+You will now need to synchronize the database again and use your ID.  For example if you are given ID=42 you can use the following command: `MYID=42 REMOTEID=0 ./scripts/load.bety.sh`. This will load the EBI database and set the ID's such that any data you insert will have the right ID.
+
+To share your data you can now run the dump.bey.sh. The script is configured using environment variables, the following variables are recognized:
+- DATABASE: the database where the script should write the results.  The default is `bety`.
+- PG_OPT: additional options to be added to psql (default is nothing).
+- MYSITE: the ID of your site.  If you have not requested an ID, use 99, which is used for all sites that do not want to share their data (i.e. VM).  99 is the default.
+- LEVEL: the minimum access-protection level of the data to be dumped (0=private, 1=restricted, 2=internal collaborators, 3=external collaborators, 4=public).  The default level for exported data is level 3.
+   - note that currently only the traits and yields tables have restrictions on sharing. If you share data, records from other (meta-data) tables will be shared. If you wish to extend the access_level to other tables please [submit a feature request](https://github.com/pecanproject/bety/issues/new).
+- UNCHECKED: specifies whether unchecked traits and yields be dumped.  Set to YES (all caps) to dump unchecked data.  The default is NO.
+- ANONYMOUS: specifies whether all users be anonymized.  Set to YES (all caps) to keep the original users (**INCLUDING PASSWORD**) in the dump file.  The default is NO.
+- OUTPUT: the location of where on disk to write the result file.  The default is `${PWD}/dump`.
+
+NOTE: If you want your dumps to be accessible to other PEcAn servers you need to perform the following additional steps
+
+1. Open pecan/scripts/load.bety.sh
+2. In the DUMPURL section of the code add a new record indicating where you are dumping your data. Below is the example for SITE number 1 (Boston University)
+```
+ elif [ "${REMOTESITE}" == "1" ]; then
+ DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
+```
+3. Check your Apache settings to make sure this location is public
+4. Commit this code and submit a Pull Request
+5. From the URL in the Pull Request, PEcAn administrators will update the machines table, the status map, and notify other users to update their cron jobs (see Automation below)
+
+Plans to simplify this process are in the works
+
+### Automation
+
+Below is an example of a script to synchronize PEcAn database instances across the network.
+
+db.sync.sh
+```
+#!/bin/bash 
+## make sure psql is in PATH
+export PATH=/usr/pgsql-9.3/bin/:$PATH 
+## move to export directory
+cd /fs/data3/sync 
+## Dump Data
+MYSITE=1 /home/dietze/pecan/scripts/dump.bety.sh 
+## Load Data from other sites
+MYSITE=1 REMOTESITE=2 /home/dietze/pecan/scripts/load.bety.sh 
+MYSITE=1 REMOTESITE=5 /home/dietze/pecan/scripts/load.bety.sh 
+MYSITE=1 REMOTESITE=0 /home/dietze/pecan/scripts/load.bety.sh 
+## Timestamp sync log
+echo $(date +%c) >> /home/dietze/db.sync.log
+```
+
+Typically such a script is set up to run as a cron job. Make sure to schedule this job (`crontab -e`) as the user that has database privileges (typically postgres). The example below is a cron table that runs the sync every hour at 12 min after the hour.
+
+```
+MAILTO=user@yourUniversity.edu
+12 * * * * /home/dietze/db.sync.sh
+```
+
+### Database maintentance
+
+All databases need maintenance performed on them. Depending upon the database type this can happen automatically, or it needs to be run through a scheduler or manually. The BETYdb database is Postgresql and it needs to be reindexed and vacuumed on a regular basis. Reindexing introduces efficiencies back into the database by reorganizing the indexes. Vacuuming the database frees up resources to the database by rearranging and compacting the database. Both of these operations are necessary and safe. As always if there's a concern, a backup of the database should be made ahead of time. While running the reindexing and vacuuming commands, users will notice a slowdown at times. Therefore it's better to run these maintenance tasks during off hours.
+
+#### Reindexing the database
+
+As mentioned above, reindexing allows the database to become more efficient. Over time as data gets updated and deleted, the indexes become less efficient. This has a negative inpact on executed statements. Reindexing makes the indexes efficient again (at least for a while) allowing faster statement execution and reducing the overall load on the database.
+
+The reindex.bety.sh script is provided to simplify reindexing the database.
+
+```
+reindex.bety.sh -h
+./reindex.bety.sh [-c datalog] [-d database] [-h] [-i table names] [-p psql options] [-q] [-s] [-t tablename]
+ -c catalog, database catalog name used to search for tables, default is bety
+ -d database, default is bety
+ -h this help page
+ -i table names, list of space-separated table names to skip over when reindexing
+ -p additional psql command line options, default is -U bety
+ -q the reindexing should be quiet
+ -s reindex the database after reindexing the tables (this should be done sparingly)
+ -t tablename, the name of the one table to reindex
+```
+
+If the database is small enough it's reasonable to reindex the entire database at one time. To do this manually run or schedule the REINDEX statement. For example:
+
+```
+reindex.bety.sh -s
+```
+
+For larger databases it may be desireable to reindex entire tables at a time. An efficient way to do this is to reindex the larger tables and then the entire database. For example:
+
+```
+reindex.bety.sh -t traits; reindex.bety.sh -t yields;
+reindex.bety.sh -s
+```
+
+For very large databases it may be desirable to reindex one or more individual indexes before reindexing tables and the databases. In this case running specific psql commands to reindex those specific indexes, followed by reindexing the table is a possible approach. For example:
+
+```
+psql -U bety -c "REINDEX INDEX index_yields_on_citation_id; REINDEX INDEX index_yields_on_cultivar_id;"
+reindex.bety.sh -t yields;
+```
+
+Splitting up the indexing commands over time allows the database to operate efficiently with minimal impact on users. One approach is to schedule the reindexing of large, complex tables at a spcific off-time during the week, followed by a general reindexing and excluding those large tables on a weekend night.
+
+Please refere to the Automation section above for information on using cron to schedule reindexing commands.
+
+#### Vacuuming the database
+
+Vacuuming the BETYdb Postgresql database reduces the amount of resources it uses and introduces its own efficiencies.
+
+Over time, modified and deleted records leave 'holes' in the storage of the database. This is a common feature for most databases. Each database has its own way of handing this, in Postgresql it's the VACUUM command. The VACUUM command performs two main operations: cleaning up tables to make memory use more efficient, and analyze tables for optimum statement execution. The use of the keyword ANALYZE indicates the second operation should take place.
+
+The vacuum.bety.sh script is provided to simplify vacuuming the database.
+
+```
+vacuum.bety.db -h
+./vacuum.bety.sh [-c datalog] [-d database] [-f] [-h] [-i table names] [-n] [-p psql options] [-q] [-s] [-t tablename] [-z]
+ -c catalog, database catalog name used to search for tables, default is bety
+ -d database, default is bety
+ -f perform a full vacuum to return resources to the system. Specify rarely, if ever
+ -h this help page
+ -i table names, list of space-separated table names to skip over when vacuuming
+ -n only vacuum the tables and do not analyze, default is to first vacuum and then analyze
+ -p additional psql command line options, default is -U bety
+ -q the export should be quiet
+ -s skip vacuuming the database after vacuuming the tables
+ -t tablename, the name of the one table to vacuum
+ -z only perform analyze, do not perform a regular vacuum, overrides -n and -f, sets -s
+```
+
+For small databases with light loads it may be possible to set aside a time for a complete vacuum. During this time, commands executed against the database might fail (a temporary condition as the database gets cleaned up). The following commands can be used to perform all the vaccum operations in one go.
+
+```
+vacuum.bety.sh -f
+```
+
+Generally it's not desireable to have down time. If the system running the database doesn't need resources that the database is using returned to it, a FULL vacuum can be avoided. This is the default behavior of the script 
+
+```
+vacuum.bety.sh
+```
+
+In larger databases, vacuuming the entire database can take a long time causing a negative impact on users. This means that individual tables need to be vacuumed. How often a vacuum needs to be performed is dependent upon a table's activity. The more frequently updates and deletes occur on a table, the more frequent the vaccum should be. For large tables it may be desireable to separate the table cleanup from the analysis. An example for completely vacuuming and analyzing a table is:
+
+```
+psql -U bety -c "VACUUM traits; VACUUM ANALYZE traits;"
+```
+
+Similar to indexes, vacuuming the most active tables followed by general database vacuuming and vacuum analyze may be a desireable approach.
+
+Also note that it isn't necessary to run VACUUM ANALYZE for each vacuum performed. Separating the commands and performing a VACUUM ANALYZE after several regular vacuums may be sufficient, with less load on the database.
+
+If the BETYdb database is running on a system with limited resources, or with resources that have become limited, the VACCUM command can return resources to the system from the database. The normal vacuuming process releases resources back to the database for reuse, but not to the system; generally this isn't a problem. Postgresql has a VACUUM keyword FULL that returns resources back to the system. Requesting a FULL vacuum will lock the table being vacuumed while it is being re-written preventing any statements from being executed against it. If performing VECUUM FULL against the entire database, only the table being actively worked on is locked.
+
+To minimize the impact a VACUUM FULL has on users, it's best to perform a normal vacuum before a FULL vacuum. If this approach is taken, there sould be a minimal time gap between the normal VACUUM and the VACUUM FULL commands. A normal vacuum allows changes to be made thus requiring the full vacuum to handle those changes, extending it's run time. Reducing the time between the two commands lessens the work VACUUM FULL needs to do.
+
+```
+psql -U bety -c "VACUUM yields; VACUUM FULL yields; VACUUM ANALYZE yields;"
+```
+
+Give its impact, it's typically not desireable to perform a VACUUM FULL after every normal vacuum; it should be done on an "as needed" basis or infrequently.
+
+### Troubleshooting
+
+There are several possibilities if a scheduled cron job apepars to be running but isn't producing the expected results. The following are suggestions on what to try to resolve the issue. 
+
+##### Username and password
+
+The user that scheduled a cron job may not have access permissions to the database. This can be easily confirmed by running the command line from the cron job while logged in as the user that scheduled the job. An error message will be shown if the user doesn't have permissions.
+
+To resolve this, be sure to include a valid database user (not a BETYdb user) with their credentials on the command in crontab.
+
+##### db_hba.conf file
+
+Iit's possible that the machine hosting the docker image of the database doesn't have permissions to access the database. This may due to the cron job running on a machine that is not the docker instance of the database.
+
+It may be necessary to look at the loga on the hosting machine to determine if database access permissions are causing a problem. Logs are stored in different locations depending upon the Operating System of the host and upon other environmental factors. This document doesn't provide information on where to find the logs.
+
+To begin, it's best to look at the contents of the relevent database configuration file. The following command will display the contents of the db_hba.conf file.
+
+```
+psql -U postgres -qAt -c "show hba_file" | xargs grep -v -E '^[[:space:]]*#'
+```
+
+This command should return a series of text lines. For each row except those begining with 'local', the fourth item describes the machines that can access the database. In some cases an IP mask is specified in the fifth that further restricts the machines that have access. The special work 'all' in the fourth column grants permissions to all machines. The last column on each line contains the authentication option for the machine(s) specified in the fourth column (with a possible fifth column IP mask modifier).
+
+Ensure that the host machine is listed under the fourth column (machine addresse range, or 'all'), is also included in the IP mask if one was specified, and finally that any authentication option are not set to 'reject'. If the host machine is not included the db_hba.conf file will need to be updated to allow access.
+
+### Network Status Map
+
+https://pecan2.bu.edu/pecan/status.php
+
+Nodes: red = down, yellow = out-of-date schema, green = good
+
+Edges: red = fail, yellow = out-of-date sync, green = good
+
+
+### Tasks
+
+Following is a list of tasks we plan on working on to improve these scripts:
+- [pecanproject/bety#368](https://github.com/PecanProject/bety/issues/368) allow site-specific customization of information and UI elements including title, contacts, logo, color scheme.
