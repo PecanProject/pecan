@@ -1,3 +1,15 @@
+#!/usr/bin/env Rscript
+
+# if (!requireNamespace("huxtable")) {
+#   message("Installing missing package 'huxtable'")
+#   install.packages("huxtable")
+# }
+# 
+# if (!requireNamespace("htmlTable")) {
+#   message("Installing missing package 'htmlTable'")
+#   install.packages("htmlTable")
+# }
+
 ## This script contains the Following parts:
 ## Part 1 - Write Main Function
 ## A. takes in a list defining specifications for a single run and assigns them to objects
@@ -76,7 +88,7 @@ create_execute_test_xml <- function(model_id,
 
   #Outdir
   model.new <- tbl(bety, "models") %>%
-    filter(model_id == id) %>%
+    filter(id == !!model_id) %>%
     collect()
   outdir_pre <- paste(
     model.new[["model_name"]],
@@ -87,10 +99,10 @@ create_execute_test_xml <- function(model_id,
   )
   outdir <-  file.path(output_folder, outdir_pre)
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
-  settings[["outdir"]] <- outdir
+  settings$outdir <- outdir
 
   #Database BETY
-  settings[["database"]] <- list(
+  settings$database <- list(
     bety = list(user = db_bety_username,
                 password = db_bety_password,
                 host = db_bety_hostname,
@@ -104,20 +116,20 @@ create_execute_test_xml <- function(model_id,
   if (is.null(pft_name)){
     # Select the first PFT in the model list.
     pft <- tbl(bety, "pfts") %>%
-      filter(modeltype_id == model.new$modeltype_id) %>%
+      filter(modeltype_id == !!model.new$modeltype_id) %>%
       collect()
     pft_name <- pft$name[[1]]
   }
-  settings[["pfts"]] <- list(
+  settings$pfts <- list(
     pft = list(name = pft_name,
                constants = list(num = 1))
   )
 
   #Meta Analysis
-  settings[["meta.analysis"]] <- list(iter = 3000, random.effects = FALSE)
+  settings$meta.analysis <- list(iter = 3000, random.effects = FALSE)
 
   #Ensemble
-  settings[["ensemble"]] <- list(
+  settings$ensemble <- list(
     size = ensemble_size,
     variable = ensemble_variable,
     samplingspace = list(met = list(method = "sampling"),
@@ -126,23 +138,24 @@ create_execute_test_xml <- function(model_id,
 
   #Sensitivity 
   if (sensitivity) {
-    settings[["sensitivity.analysis"]] <- list(
+    settings$sensitivity.analysis <- list(
       quantiles = list(sigma1 = -2, sigma2 = -1, sigma3 = 1, sigma4 = 2)
     )
   }
 
   #Model
-  settings[[c("model", "id")]] <- model.new[["id"]]
+  settings$model$id <- model.new[["id"]]
 
   #Workflow
-  settings[[c("workflow", "id")]] <- paste0("Test_run_","_",model.new$model_name)
-  settings[["run"]] <- list(
+  settings$workflow$id
+  settings$workflow$id <- paste0("Test_run_","_",model.new$model_name)
+  settings$run <- list(
     site = list(id = site_id, met.start = start_date, met.end = end_date),
     inputs = list(met = list(source = met, output = model.new[["model_name"]],
                              username = "pecan")),
     start.date = start_date, end.date = end_date
   )
-  settings[[c("host", "name")]] <- "localhost"
+  settings$host$name <- "localhost"
 
   #create file and Run
   saveXML(listToXml(settings, "pecan"), file = file.path(outdir, "pecan.xml"))
@@ -160,6 +173,8 @@ library(PEcAn.utils)
 library(XML)
 library(PEcAn.settings)
 
+argv <- commandArgs(trailingOnly = TRUE)
+
 ##Create Run Args
 
 ## Insert your path to base pecan
@@ -172,16 +187,24 @@ bety <- PEcAn.DB::betyConnect(php_file)
 con <- bety$con
 
 ## Find name of Machine R is running on
-mach_name <- Sys.info()[[4]]
-## mach_name <- "docker"
-mach_id <- tbl(bety, "machines") %>%
-  filter(grepl(mach_name, hostname)) %>%
-  pull(id)
+machid_rxp <- "^--machine_id="
+if (any(grepl(machid_rxp, argv))) {
+  machid_raw <- grep(machid_rxp, argv, value = TRUE)
+  mach_id <- as.numeric(gsub(machid_rxp, "", machid_raw))
+  message("Using specified machine ID: ", mach_id)
+} else {
+  mach_name <- Sys.info()[[4]]
+  message("Auto-detected machine name: ", mach_name)
+  ## mach_name <- "docker"
+  mach_id <- tbl(bety, "machines") %>%
+    filter(hostname == !!mach_name) %>%
+    pull(id)
+}
 
 ## Find Models
 #devtools::install_github("pecanproject/pecan", subdir = "api")
 model_ids <- tbl(bety, "dbfiles") %>%
-  filter(machine_id == mach_id) %>%
+  filter(machine_id == !!mach_id) %>%
   filter(container_type == "Model") %>%
   pull(container_id)
 
@@ -193,6 +216,8 @@ out.var <- "NPP"
 ensemble <- FALSE
 ens_size <- 100
 sensitivity <- FALSE
+user_id <- 99000000002   # TODO: Un-hard-code this
+dbfiles_folder <- normalizePath("~/output/dbfiles") # TODO: Un-hard-code this
 
 ## Find Sites
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
@@ -236,24 +261,37 @@ run_table <- expand.grid(
   start_date = startdate,
   end_date = enddate,
   pecan_path = pecan_path,
-  output_variable = out.var,
-  ensemble = ensemble,
-  ens_size = ens_size,
+  ensemble_variable = out.var,
+  # ensemble = ensemble,
+  ensemble_size = ens_size,
   sensitivity = sensitivity,
+  user_id = user_id,
+  dbfiles_folder = dbfiles_folder,
   stringsAsFactors = FALSE
 )
 #Execute function to spit out a table with a column of NA or success
 
-tab <- run_table %>%
-  mutate(
-    outcome = purrr::pmap(
-      .,
-      purrr::possibly(function(...) create_execute_test_xml(list(...)),
-                      otherwise = NA)
-    )
-  )
+for (i in seq_len(NROW(run_table))) {
+  message("\n\n############################################")
+  message("Testing the following configuration:")
+  glimpse(run_table[i, ])
+  do.call(create_execute_test_xml, run_table[i, ])
+  message("Done!")
+  message("############################################\n\n")
+}
+
+# tab <- run_table %>%
+#   mutate(
+#     outcome = purrr::pmap(
+#       .,
+#       purrr::possibly(function(...) create_execute_test_xml(list(...)),
+#                       otherwise = NA)
+#     )
+#   )
+# 
+# print(tab, n = Inf)
 
 ## print to table
-tux_tab <- huxtable::hux(tab)
-html_table <- huxtable::print_html(tux_tab)
-htmlTable::htmlTable(tab)
+# tux_tab <- huxtable::hux(tab)
+# html_table <- huxtable::print_html(tux_tab)
+# htmlTable::htmlTable(tab)
