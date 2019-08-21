@@ -14,7 +14,11 @@ bs_accordion_sidebar(id = "documentation",
   bs_append(
     title_side = "History Runs", 
     content_side = NULL,
-    content_main = "This is a page for searching history runs."
+    content_main = HTML("
+                        <p>This page is for seaching history runs.</p>
+                        <p>If you don\'t know the workflow Id to select in the first panel, use this page to explore all the runs at all sites.
+                        <br>Select the one you wish to explore using the explore button.</p>
+                        ")
   ) %>%
   bs_append(
     title_side = "Exploratory Plots", 
