@@ -61,7 +61,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
   if(all(!is.na(var.ids))){
     # Need to subset the formats table
-    fv <- fv %>% dplyr::filter(variable_id %in% var.ids | storage_type != "")
+    fv <- fv %>% dplyr::filter(variable_id %in% !!var.ids | storage_type != "")
     if(dim(fv)[1] == 0){
       PEcAn.logger::logger.error("None of your requested variables are available")
     }
