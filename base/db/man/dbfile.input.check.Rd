@@ -6,7 +6,7 @@
 \usage{
 dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
   formatname, parentid = NA, con, hostname = PEcAn.remote::fqdn(),
-  exact.dates = FALSE, pattern = NULL)
+  exact.dates = FALSE, pattern = NULL, return.all = FALSE)
 }
 \arguments{
 \item{siteid}{the id of the site that this data is applicable to}
@@ -28,6 +28,8 @@ dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
 \item{exact.dates}{setting to include start and end date in input query}
 
 \item{pattern}{text to seach for in the file name (default NULL = no check).}
+
+\item{return.all}{(Logical) If 'TRUE', return all files. If 'FALSE', return only the most recent files.}
 }
 \value{
 data.frame with the id, filename and pathname of the input that is requested
@@ -45,5 +47,5 @@ file exists
 }
 }
 \author{
-Rob Kooper, Tony Gardella
+Rob Kooper, Tony Gardella, Hamze Dokoohaki
 }
