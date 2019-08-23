@@ -513,7 +513,50 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=F, readsFF=NULL){
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL){
+  
+  # fix obs.mean/obs.cov for multivariable plotting issues when there is NA data. When more than 1 data set is assimilated, but there are missing data
+  # for some sites/years/etc. the plotting will fail and crash the SDA because the numbers of columns are not consistent across all sublists within obs.mean
+  # or obs.cov.
+  observed_vars =  vector()
+  for (date in names(obs.mean))
+  {
+    for (site in names(obs.mean[[date]]))
+    {
+      vars = names(obs.mean[[date]][[site]])
+      observed_vars = c(observed_vars, vars)
+    }
+  }
+  observed_vars = unique(observed_vars)
+  
+  for (name in names(obs.mean))
+  {
+    data_mean = obs.mean[name]
+    data_cov = obs.cov[name]
+    sites = names(data_mean[[1]])
+    for (site in sites)
+    {
+      d_mean = data_mean[[1]][[site]]
+      d_cov = data_cov[[1]][[site]]
+      colnames = names(d_mean)
+      if (length(colnames) < length(observed_vars))
+      {
+        missing = which(!(observed_vars %in% colnames))
+        missing_mean = as.data.frame(NA)
+        colnames(missing_mean) = observed_vars[missing]
+        d_mean = cbind(d_mean, missing_mean)
+        
+        missing_cov = matrix(0, nrow = length(observed_vars), ncol = length(observed_vars))
+        diag(missing_cov) = c(diag(d_cov), NA)
+        d_cov = missing_cov
+      }
+      data_mean[[1]][[site]] = d_mean
+      data_cov[[1]][[site]] = d_cov
+    }
+    obs.mean[name] = data_mean
+    obs.cov[name] = data_cov
+  }
+  
 
   if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
 
@@ -553,7 +596,6 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
               Means=mean(Value, na.rm=T),
               Lower=quantile(Value,0.025, na.rm=T),
               Upper = quantile(Value, 0.975,  na.rm = TRUE))
-          
         }) %>% mutate(Type = paste0("SDA_", listFA),
                     Date = rep(as.Date(names(FORECAST)), each = colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids))) %>% as.POSIXct()
         )
@@ -574,15 +616,18 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
         mutate(Site=names(one.day.data$means)) %>% 
         tidyr::gather(Variable,Means,-c(Site)) %>%
         right_join(one.day.data$covs %>% 
-                     map_dfr(~ t(sqrt(diag(.x))) %>% 
+                     map_dfr(~ t(sqrt(as.numeric(diag(.x)))) %>% 
                                data.frame %>% `colnames<-`(c(obs.var.names))) %>%
                      mutate(Site=names(one.day.data$covs)) %>% 
                      tidyr::gather(Variable,Sd,-c(Site)),
                    by=c('Site','Variable')) %>%
         mutate(Upper=Means+(Sd*1.96),
                Lower=Means-(Sd*1.96))%>%
-        mutate(Type="SDA_Data",
+        # dropped the "_" from "SDA_Data"
+        mutate(Type="Data",
                Date=one.day.data$Date %>% as.POSIXct())
+        # mutate(Type="SDA_Data",
+        #        Date=one.day.data$Date %>% as.POSIXct())
       
       
     })%>% 

@@ -9,7 +9,7 @@ convert.input(input.id, outfolder, formatname, mimetype, site.id,
   write = TRUE, format.vars, overwrite = FALSE, exact.dates = FALSE,
   allow.conflicting.dates = TRUE, insert.new.file = FALSE,
   pattern = NULL, forecast = FALSE, ensemble = FALSE,
-  ensemble_name = NULL, ...)
+  ensemble_name = NULL, dbparms = NULL, ...)
 }
 \arguments{
 \item{input.id}{The database id of the input file of the parent of the file being processed here.  The parent will have the same data, but in a different format.}
