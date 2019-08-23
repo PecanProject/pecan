@@ -20,19 +20,19 @@ find_inputs_without_formats<-function(con, user_id=NULL, created_after=NULL, upd
   format_command<-dplyr::tbl(con, 'formats')
   
   if(!is.null(user_id_code)){
-    input_command<-dplyr::filter(input_command, user_id == user_id_code)
+    input_command<-dplyr::filter(input_command, user_id == !!user_id_code)
   }
   if(!is.null(created_before)){
-    input_command<-dplyr::filter(input_command,created_at < created_before)  
+    input_command<-dplyr::filter(input_command,created_at < !!created_before)  
   }
   if(!is.null(created_after)){
-    input_command<-dplyr::filter(input_command,created_at > created_after)
+    input_command<-dplyr::filter(input_command,created_at > !!created_after)
   }
   if(!is.null(updated_before)){
-    input_command<-dplyr::filter(input_command, updated_at < updated_before)
+    input_command<-dplyr::filter(input_command, updated_at < !!updated_before)
   }
   if(!is.null(updated_after)){
-    input_command<-dplyr::filter(input_command, updated_at > updated_after)
+    input_command<-dplyr::filter(input_command, updated_at > !!updated_after)
   }
   
   format_command<-as.data.frame(format_command)

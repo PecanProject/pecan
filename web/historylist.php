@@ -75,19 +75,16 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
   $url = "";
   $hostname = '';
   if ($row['value'] != '') {
-    $params = json_decode($workflow['value'], true);
+    $params = json_decode($row['value'], true);
   } else {
-    $params = eval("return ${workflow['params']};");
-  }
-  if (isset($params['hostname'])) {
-    $hostname = "&hostname=${array['hostname']}";
+    $params = eval("return ${row['params']};");
   }
   if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
     $statusfile=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
     foreach ($statusfile as $line) {
       $data = explode("\t", $line);
       if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
-        $url="08-finished.php?workflowid=" . $row['id'];
+        $url = "08-finished.php?workflowid=" . $row['id'];
         $status = "ERROR";
       }
     }
@@ -96,18 +93,21 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
       continue;
     }
     if (file_exists($row['folder'])) {
-      $url="08-finished.php?workflowid=" . $row['id'];
+      $url = "08-finished.php?workflowid=" . $row['id'];
     }
     $status = "UNKNOWN";
   }
   if (($status == "") && ($row['finished_at'] == "")) {
-    $url="05-running.php?workflowid=" . $row['id'] . $hostname;
+    $url = "05-running.php?workflowid=" . $row['id'];
+    if (isset($params['hostname'])) {
+      $url .= "&hostname=${params['hostname']}";
+    }
     $status = "RUNNING";
   }
   if ($status == "") {
-    $url="08-finished.php?workflowid=" . $row['id'];
+    $url = "08-finished.php?workflowid=" . $row['id'];
     $status = "DONE";
-  }
+  } 
 
   $node = $dom->createElement("workflow");
   $newnode = $parnode->appendChild($node);   

@@ -64,8 +64,8 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                                   'be appended with ".translation_table" for disambiguation')
       }
       bety_species <- dplyr::tbl(bety, 'species') %>%
-        dplyr::filter_(~id %in% translation_table[['bety_species_id']]) %>%
-        dplyr::select_('bety_species_id' = 'id', 'genus', 'species') %>%
+        dplyr::filter(id %in% !!translation_table[['bety_species_id']]) %>%
+        dplyr::select(bety_species_id = id, genus, species) %>%
         dplyr::collect()
       translation <- dplyr::left_join(translation_table, bety_species,
                                       by = 'bety_species_id',
@@ -76,8 +76,8 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
     if(!is.null(bety)){
       # query BETY for species, id, genus, and latin name
       translation <- dplyr::tbl(bety, 'species') %>%
-        dplyr::select_('bety_species_id' = 'id', 'genus', 'species',
-                       'input_code' = column) %>%
+        dplyr::select(bety_species_id = id, genus, species,
+                       input_code = column) %>%
         dplyr::collect()
        translation<- translation %>% dplyr::mutate(input_code = toupper(input_code)) #match_species_id is case-sensitive, to match species names in obs to translation, 'input_codes' needs to be upper-case since 'latin_names' in obs are upper-case
       colnames(translation) <- c('bety_species_id', 'genus', 'species',"input_codes") #semi_join requires that the column name within the tables being matched have the same name

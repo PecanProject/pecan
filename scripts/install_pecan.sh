@@ -396,29 +396,24 @@ sudo cp ed_2.1-opt /usr/local/bin/ed2.git
 echo "######################################################################"
 echo "SIPNET"
 echo "######################################################################"
-if [ ! -e ${HOME}/sipnet_unk ]; then
+if [ ! -e ${HOME}/sipnet ]; then
   cd
-  curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_unk.tar.gz
-  tar zxf sipnet_unk.tar.gz
-  rm sipnet_unk.tar.gz
+  git clone https://github.com/PecanProject/sipnet.git
+  sed -i 's#$(LD) $(LIBLINKS) \(.*\)#$(LD) \1 $(LIBLINKS)#' ${HOME}/sipnet/Makefile
 fi
-cd ${HOME}/sipnet_unk/
-make clean
-make
-sudo cp sipnet /usr/local/bin/sipnet.runk
-make clean
 
-if [ ! -e ${HOME}/sipnet_r136 ]; then
-  cd
-  curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_r136.tar.gz
-  tar zxf sipnet_r136.tar.gz
-  rm sipnet_r136.tar.gz
-  sed -i 's#$(LD) $(LIBLINKS) \(.*\)#$(LD) \1 $(LIBLINKS)#' ${HOME}/sipnet_r136/Makefile
-fi
-cd ${HOME}/sipnet_r136/
+cd ${HOME}/sipnet/
+git checkout r136
 make clean
 make
 sudo cp sipnet /usr/local/bin/sipnet.r136
+make clean
+
+cd ${HOME}/sipnet/
+git checkout master
+make clean
+make
+sudo cp sipnet /usr/local/bin/sipnet.git
 make clean
 
 echo "######################################################################"

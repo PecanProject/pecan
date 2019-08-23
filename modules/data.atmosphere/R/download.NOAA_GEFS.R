@@ -42,7 +42,7 @@
 ##' @author Luke Dramko
 ##' 
 download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz="UTC") + lubridate::days(16)),
-                             overwrite = FALSE, verbose = FALSE, ...) {
+                               overwrite = FALSE, verbose = FALSE, ...) {
   
   start_date <- as.POSIXct(start_date, tz = "UTC")
   end_date <- as.POSIXct(end_date, tz = "UTC")
@@ -74,7 +74,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   increments = increments + ((lubridate::hour(end_date) - lubridate::hour(start_date)) %/% 6) #These calculations are required to use the rnoaa package.
   
   end_hour = sprintf("%04d", ((forecast_hour + (increments * 6)) %% 24) * 100)  #Calculating the starting hour as a string, which is required type to access the 
-                                                                        #data via the rnoaa package
+  #data via the rnoaa package
   forecast_hour = sprintf("%04d", forecast_hour * 100)  #Having the end date as a string is useful later, too.
   
   #Recreate the adjusted start and end dates.
@@ -110,12 +110,12 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   #We want data for each of the following variables. Here, we're just getting the raw data; later, we will convert it to the 
   #cf standard format when relevant.
   noaa_var_names = c("Temperature_height_above_ground_ens", "Pressure_surface_ens", "Relative_humidity_height_above_ground_ens", "Downward_Long-Wave_Radp_Flux_surface_6_Hour_Average_ens", 
-                   "Downward_Short-Wave_Radiation_Flux_surface_6_Hour_Average_ens", "Total_precipitation_surface_6_Hour_Accumulation_ens",
-                   "u-component_of_wind_height_above_ground_ens", "v-component_of_wind_height_above_ground_ens")
+                     "Downward_Short-Wave_Radiation_Flux_surface_6_Hour_Average_ens", "Total_precipitation_surface_6_Hour_Accumulation_ens",
+                     "u-component_of_wind_height_above_ground_ens", "v-component_of_wind_height_above_ground_ens")
   
   #These are the cf standard names
   cf_var_names = c("air_temperature", "air_pressure", "specific_humidity", "surface_downwelling_longwave_flux_in_air", 
-                      "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", "eastward_wind", "northward_wind")
+                   "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", "eastward_wind", "northward_wind")
   cf_var_units = c("K", "Pa", "1", "Wm-2", "Wm-2", "kgm-2s-1", "ms-1", "ms-1")  #Negative numbers indicate negative exponents
   
   # This debugging loop allows you to check if the cf variables are correctly mapped to the equivalent
@@ -153,7 +153,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   # The following is a list of variables which need to be processed:
   # 1. NOAA's relative humidity must be converted to specific humidity
   # 2. NOAA's measure of precipitation is the accumulation over 6 hours; cf's standard is precipitation per second
-
+  
   #Convert NOAA's relative humidity to specific humidity
   humid_index = which(cf_var_names == "specific_humidity")
   
@@ -161,21 +161,21 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   humid_data = noaa_data[[humid_index]]
   temperature_data = noaa_data[[which(cf_var_names == "air_temperature")]]
   pressure_data = noaa_data[[which(cf_var_names == "air_pressure")]]
-   
+  
   #Depending on the volume and dimensions of data you download, sometimes R stores it as a vector and sometimes
   #as a matrix; the different cases must be processed with different loops.
   #(The specific corner case in which a vector would be generated is if only one hour is requested; for example, 
   #only the data at time_idx 1, for example).
   if (as.logical(nrow(humid_data))) {
-     for (i in 1:length(humid_data)) {
-       humid_data[i] = PEcAn.data.atmosphere::rh2qair(humid_data[i], temperature_data[i], pressure_data[i])
-     }
+    for (i in 1:length(humid_data)) {
+      humid_data[i] = PEcAn.data.atmosphere::rh2qair(humid_data[i], temperature_data[i], pressure_data[i])
+    }
   } else {
-     for (i in 1:nrow(humid_data)) {
-       for (j in 1:ncol(humid_data)) {
-          humid_data[i,j] = PEcAn.data.atmosphere::rh2qair(humid_data[i,j], temperature_data[i,j], pressure_data[i,j])
-        }
+    for (i in 1:nrow(humid_data)) {
+      for (j in 1:ncol(humid_data)) {
+        humid_data[i,j] = PEcAn.data.atmosphere::rh2qair(humid_data[i,j], temperature_data[i,j], pressure_data[i,j])
       }
+    }
   }
   
   #Update the noaa_data list with the correct data
@@ -235,7 +235,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   for (i in 1:21) { # i is the ensemble number
     #Generating a unique identifier string that characterizes a particular data set.
     identifier = paste("NOAA_GEFS", sitename, i, format(start_date, "%Y-%m-%dT%H:%M"), 
-          format(end_date, "%Y-%m-%dT%H:%M"), sep=".")
+                       format(end_date, "%Y-%m-%dT%H:%M"), sep=".")
     
     ensemble_folder = file.path(outfolder, identifier)
     
