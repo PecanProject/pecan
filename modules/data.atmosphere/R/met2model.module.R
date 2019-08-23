@@ -40,6 +40,12 @@
     pkg <- paste0("PEcAn.", model)
     fcn <- paste0("met2model.", model)
     lst <- site.lst(site.id=site$id, con=con)
+   
+    # we add the ensemble number to the input name
+    if (!is.null(register$ensemble)) {
+      outfolder <- paste0(outfolder,"_",ensemble_name)
+    }
+
     
     model.id <- PEcAn.utils::convert.input(input.id = input.id,
                               outfolder = outfolder,
@@ -57,7 +63,8 @@
                               spin_resample = spin$resample,
                               forecast = forecast,
                               ensemble = !is.null(register$ensemble) && as.logical(register$ensemble),
-                              ensemble_name = ensemble_name)
+                              ensemble_name = ensemble_name,
+                              dbfile.id=ready.id$dbfile.id)
   }
   
   PEcAn.logger::logger.info(paste("Finished Model Specific Conversion", model.id[1]))
