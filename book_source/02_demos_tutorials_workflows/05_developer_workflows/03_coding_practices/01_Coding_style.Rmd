@@ -25,7 +25,7 @@ have your name listed after the author tag in the function documentation.
 
 See [Unit_Testing](#developer-testing) for instructions, and [Advanced R: Tests](http://r-pkgs.had.co.nz/tests.html).
 
-* tests provide support for documentation - they define what a function is (and is not) expected to do 
+* tests provide support for documentation - they define what a function is (and is not) expected to do
 * all functions need tests to ensure basic functionality is maintained during development.
 * all bugs should have a test that reproduces the bug, and the test should pass before bug is closed
 
@@ -49,7 +49,7 @@ Because most R code uses <- (except where = is required), we will use <-
 
 #### Use Spaces
 
-* around all binary operators (=, +, -, <-, etc.). 
+* around all binary operators (=, +, -, <-, etc.).
 * after but not before a comma
 
 #### Use curly braces
