@@ -44,17 +44,18 @@ File names should end in `.R`, `.Rdata`, or `.rds` (as appropriate) and should b
 
 #### Use "<-" as an assignment operator
 
-Because most R code uses <- (except where = is required), we will use <-
+Because most R code uses <- (except where = is required), we will use <-.
 `=` is reserved for function arguments
 
 #### Use Spaces
 
-* around all binary operators (=, +, -, <-, etc.).
+* around all binary operators (`=`, `+`, `-`, `<-`, etc.).
 * after but not before a comma
 
 #### Use curly braces
 
 The option to omit curly braces is another shortcut that makes code easier to write but harder to read and more prone to error.
+
 
 #### Package Dependencies
 
