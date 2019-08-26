@@ -125,27 +125,35 @@ A special note about importing functions from the [tidyverse](https://tidyverse.
 
 ##### Loading Code: Don't... But Use `requireNamespace` When You Do
 
-One of the main differences between an interactive R session and programming for an R package is that interactive sessions usually focus on manipulating data in a global environment, whereas when writing packages you want to think about functions operating in a namespace. When functions are called they have access to the user's environment, but do not forget that the user can change their environment in ways you have no control over, and that they will be justifiably angry if you change their environment in ways they were not expecting.
+The very short version of this section: We want to maintain clear separation between the [package's namespace](http://r-pkgs.had.co.nz/namespace.html) (which we control and want to keep predictable) and the global namespace (which the user controls, might change in ways we have no control over, and will be justifiably angry if we change it in ways they were not expecting). Therefore, avoid attaching packages to the search path (so no `Depends` and no `library()` or `require()` inside functions), and do not explicitly load other namespaces if you can help it.
 
-* Attaching vs loading... be careful with terminology, but try to avoid making this section into a lesson about it
-* reasons it's a bad idea:
-	- pollutes namespace -> collisions, load order dependent behavior
-	- doesn't work the way you think it does
-	- in particular, Depends: doesn't attach when your package not attached
-	- Causes R package check messages
+The longer version requires that we make a distinction often glossed over: *Loading* a package makes it possible for *R* to find things in the package namespace and does any actions needed to make it ready for use (e.g. running its .onLoad method, loading DLLs if the package contains compiled code, etc). *Attaching* a package (usually by calling `library("somePackage")`) loads it if it wasn't already loaded, and then adds it to the search path so that the *user* can find things in its namespace. As discussed in the "Declaring Dependancies" section above, dependencies listed in `Depends` will be attached when your package is attached, but they will be *neither attached nor loaded* when your package is loaded without being attached.
 
-* The most common reason to need to load a dependency is that some packages *define* new S3 methods for generic functions defined in other packages, but do not *export* these methods directly. We would prefer that these packages did not do this, but sometimes we have to use them anyway. An [example from PEcAn](https://github.com/PecanProject/pecan/issues/1368) is that PEcAn.meta.analysis contains calls that look like `as.matrix(some_mcmc.list)`. These can be correctly dispatched by `base::as.matrix` to the method `coda:::as.matrix.mcmc.list` when the `coda` namespace is loaded, but will fail when it is not. Unfortunately coda does not export `as.matrix.mcmc.list` so we cannot call it directly or import it into the PEcAn.meta.analysis namespace.
+Loading a dependency into the package namespace is undesirable because it makes it hard to understand our own code -- if we need to use something from elsewhere, we'd prefer call it from its own namespace using `::` (which implicitly loads the dependency!) or explicitly import it with a Rogygen `@import` directive. But in a few cases this isn't enough. The most common reason to need to explicitly load a dependency is that some packages *define* new S3 methods for generic functions defined in other packages, but do not *export* these methods directly. We would prefer that these packages did not do this, but sometimes we have to use them anyway. An [example from PEcAn](https://github.com/PecanProject/pecan/issues/1368) is that PEcAn.MA needs to call `as.matrix` on objects of class `mcmc.list`. When the `coda` namespace is loaded, `as.matrix(some_mcmc.list)` can be correctly dispatched by `base::as.matrix` to the unexported method `coda:::as.matrix.mcmc.list`, but when `coda` is not loaded this dispatch will fail. Unfortunately coda does not export `as.matrix.mcmc.list` so we cannot call it directly or import it into the PEcAn.MA namespace, so instead we [load the `coda` namespace](https://github.com/PecanProject/pecan/pull/1966/files#diff-e0b625a54a8654cc9b22d9c076e7a838R13) whenever PEcAn.MA is loaded.
 
-* If your package uses a dependency that ignores all good practice and wrongly assumes all of its own dependencies are attached (if its DESCRIPTION uses only `Depends` instead of `Imports`, this is often a warning sign), accept first that you are relying on a package that is broken, and you should either convince its maintainer to fix it or find a way to remove the dependency from PEcAn. But as a short-term workaround, it is sometimes possible for your code to attach the direct dependency so that it will behave right with regard to its secondary dependencies.
+Attaching packages to the user's search path is even more problematic because it makes it hard for the user to understand *how your package will affect their own code*. Packages attached by a function stay attached after the function exits, so they can cause name collisions far downstream of the function call, potentially in code that has nothing to do with your package. And worse, since names are looked up in reverse order of package loading, it can cause behavior that differs in strange ways depending on the order of lines that look independent of each other:
 
-* Possible ways:
-	* Depends: bad, affects user's search path and doesn't help when pkg not attached
-	* library(): OK for scripts in inst/. Stops execution if dep not available, affects user's search path.
-	* require(): just like library() but returns FALSE instead of erroring if package load fails. OK for scripts in inst/ that can do *and do* do something useful when a dep is missing. If used as `if(!require(pkg)) stop(...)`, replace it with `library(pkg)`.
-	* requireNamespace():
-		Find out: Does it affect user search path?
-		With quietly=FALSE, avoids (most) annoying load messages
-* If you think you need to attach code, be prepared for questions about it during code review.
+```{r}
+> library(Hmisc)
+> x = ...
+> y = 3
+> summarize(x) # calls Hmisc::summarize
+> y2 <- some_package_that_attaches_dplyr::innocent.looking.function(y)
+Loading required package: dplyr
+> summarize(x) # Looks identical to previous summarize, but calls dplyr::summarize!
+```
+
+This is not to say that users will *never* want your package to attach another one for them, just that it's rare and that attaching dependencies is much more likely to cause bugs than to fix them and additionally doesn't usually save the package author any work.
+
+One possible exception to the do-not-attach-packages rule is a case where your dependency ignores all good practice and wrongly assumes, without checking, that all of its own dependencies are attached; if its DESCRIPTION uses only `Depends` instead of `Imports`, this is often a warning sign. For example, a small-but-surprising number of packages depend on the `methods` package without proper checks (this is probably because most *but not all* R interpreters attach `methods` by default and therefore it's easy for an author to forget it might ever be otherwise unless they happen to test with a but-not-all interpreter).
+
+If you find yourself with a dependency that does this, accept first that you are relying on a package that is broken, and you should either convince its maintainer to fix it or find a way to remove the dependency from PEcAn. But as a short-term workaround, it is sometimes possible for your code to attach the direct dependency so that it will behave right with regard to its secondary dependencies. If so, make sure the attachment happens every time your package is loaded (e.g. by calling `library(depname)` inside your package's `.onLoad` method) and not just when your package is attached (e.g. by putting it in Depends).
+
+When you do need to load or attach a dependency, it is probably better to do it inside your package's `.onLoad` method rather than in individual functions, but this isn't ironclad. To only load, use `requireNamespace(pkgname, quietly=TRUE)` -- this will make it available inside your package's namespace while avoiding (most) annoying loadtime messages and not disturbing the user's search path. To attach when you really can't avoid it, declare the dependency in `Depends` and *also* attach it using `library(pkgname)` in your .onLoad method.
+
+Note that scripts in `inst/` are considered to be sample code rather than part of the package namespace, so it is acceptable for them to explicitly attach packages using `library()`. You may also see code that uses `require(pkgname)`; this is just like `library`, but returns FALSE instead of erroring if package load fails. It is OK for scripts in `inst/` that can do *and do* do something useful when a dependency is missing, but if it is used as `if(!require(pkg)){ stop(...)}` then replace it with `library(pkg)`.
+
+If you think your package needs to load or attach code for any reason, please note why in your pull request description and be prepared for questions about it during code review. If your reviewers can think of an alternate approach that avoids loading or attaching, they will likely ask you to use it even if it creates extra work for you.
 
 ##### Installing dependencies: Let the machines do it
 
