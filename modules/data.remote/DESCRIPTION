@@ -12,7 +12,8 @@ Imports:
     reticulate,
     PEcAn.logger,
     PEcAn.remote,
-    stringr (>= 1.1.0)
+    stringr (>= 1.1.0),
+    binaryLogic
 Suggests:
     testthat (>= 1.0.2),
     ggplot2,
