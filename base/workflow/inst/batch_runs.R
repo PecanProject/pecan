@@ -400,27 +400,32 @@ result_table %>%
 # Model - Sipnet
 # Basic Run, then sensitivity and ensemble run.
 ##
-models <- 1000000014
-met_name <- "AmerifluxLBL"
-site_id <- 772
-startdate<-"2003/01/01"
-enddate<-"2006/12/31"
-out.var <- "NPP"
-ensemble <- FALSE
-ens_size <- 100
-sensitivity <- FALSE
-demo_one_run_settings <- data.frame(models,met_name, site_id, startdate,enddate,pecan_path, out.var, ensemble,ens_size, sensitivity,stringsAsFactors=FALSE)
+demo_model <- 1000000014
+demo_met <- "AmerifluxLBL"
+demo_start <- "2003/01/01"
+demo_end <- "2006/12/31"
+demo_site <- 772
 
-demo_one_result <-demo_one_run_settings %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
-  create_execute_test_xml(list(...))
-},otherwise =NA))
+demo_one_result <- create_execute_test_xml(
+  model_id = demo_model,
+  met = demo_met,
+  site_id = demo_site,
+  start_date = demo_start,
+  end_date = demo_end,
+  dbfiles_folder = dbfiles_folder,
+  user_id = user_id,
+  output_folder = "batch_test_demo1_output",
 )
 
-ensemble <- TRUE
-ens_size <- 100
-sensitivity <- TRUE
-demo_two_run_settings <- data.frame( models,met_name, site_id, startdate,enddate,out.var,ensemble,ens_size, sensitivity)
-demo_two_result <- demo_two_run_settings %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
-  create_execute_test_xml(list(...))
-},otherwise =NA))
+demo_two_result <- create_execute_test_xml(
+  model_id = demo_model,
+  met = demo_met,
+  site_id = demo_site,
+  start_date = demo_start,
+  end_date = demo_end,
+  dbfiles_folder = dbfiles_folder,
+  user_id = user_id,
+  output_folder = "batch_test_demo2_output",
+  ensemble_size = 100,
+  sensitivity = TRUE
 )
