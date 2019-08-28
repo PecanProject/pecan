@@ -133,14 +133,14 @@ Loading a dependency into the package namespace is undesirable because it makes 
 
 Attaching packages to the user's search path is even more problematic because it makes it hard for the user to understand *how your package will affect their own code*. Packages attached by a function stay attached after the function exits, so they can cause name collisions far downstream of the function call, potentially in code that has nothing to do with your package. And worse, since names are looked up in reverse order of package loading, it can cause behavior that differs in strange ways depending on the order of lines that look independent of each other:
 
-```{r}
-> library(Hmisc)
-> x = ...
-> y = 3
-> summarize(x) # calls Hmisc::summarize
-> y2 <- some_package_that_attaches_dplyr::innocent.looking.function(y)
-Loading required package: dplyr
-> summarize(x) # Looks identical to previous summarize, but calls dplyr::summarize!
+```{r eval = FALSE}
+library(Hmisc)
+x = ...
+y = 3
+summarize(x) # calls Hmisc::summarize
+y2 <- some_package_that_attaches_dplyr::innocent.looking.function(y)
+# Loading required package: dplyr
+summarize(x) # Looks identical to previous summarize, but calls dplyr::summarize!
 ```
 
 This is not to say that users will *never* want your package to attach another one for them, just that it's rare and that attaching dependencies is much more likely to cause bugs than to fix them and additionally doesn't usually save the package author any work.
