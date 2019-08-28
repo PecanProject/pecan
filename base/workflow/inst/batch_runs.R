@@ -184,6 +184,15 @@ library(PEcAn.settings)
 argv <- commandArgs(trailingOnly = TRUE)
 
 ##Create Run Args
+met_name <- c("CRUNCEP", "AmerifluxLBL")
+startdate <- "2004-01-01"
+enddate <- "2004-12-31"
+out.var <- "NPP"
+ensemble <- FALSE
+ens_size <- 1 # Run ensemble analysis for some models?
+sensitivity <- FALSE
+user_id <- 99000000002   # TODO: Un-hard-code this
+dbfiles_folder <- normalizePath("~/output/dbfiles") # TODO: Un-hard-code this
 
 ## Insert your path to base pecan
 ## pecan_path <- "/fs/data3/tonygard/work/pecan"
@@ -233,6 +242,8 @@ if (!all(model_df$exists)) {
   model_df <- model_df %>%
     filter(exists)
 }
+
+models <- model_df[["model_id"]]
 
 ## Find Sites
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
@@ -290,18 +301,6 @@ run_table <- expand.grid(
 )
 #Execute function to spit out a table with a column of NA or success
 
-models <- model_df[["model_id"]]
-met_name <- c("CRUNCEP", "AmerifluxLBL")
-startdate <- "2004-01-01"
-enddate <- "2004-12-31"
-out.var <- "NPP"
-ensemble <- FALSE
-ens_size <- 1 # Run ensemble analysis for some models?
-sensitivity <- FALSE
-user_id <- 99000000002   # TODO: Un-hard-code this
-
-dbfiles_folder <- normalizePath("~/output/dbfiles") # TODO: Un-hard-code this
-
 result_table <- as_tibble(run_table) %>%
   mutate(
     outdir = NA_character_,
@@ -358,6 +357,13 @@ for (i in seq_len(nrow(run_table))) {
     next
   }
 }
+
+result_table %>%
+  filter(!is.na(outdir)) %>%
+  # Add model information, to make this easier to read
+  left_join(select(model_df, model_id, model_name, revision),
+            "model_id") %>%
+  write_csv("result_table.csv")
 
 ## out_table <- result_table %>%
 ##   left_join(select(model_df, model_id, model_name, revision),
