@@ -75,7 +75,7 @@ create_execute_test_xml <- function(model_id,
                                     db_bety_driver = "PostgreSQL") {
 
   php_file <- file.path(pecan_path, "web", "config.php")
-  config.list <- read_web_config(php_file)
+  config.list <- PEcAn.utils::read_web_config(php_file)
   bety <- betyConnect(php_file)
   con <- bety$con
 
@@ -97,8 +97,11 @@ create_execute_test_xml <- function(model_id,
     met, site_id, "test_runs",
     sep = "_"
   )
-  outdir <-  file.path(output_folder, outdir_pre)
+  outdir <- file.path(output_folder, outdir_pre)
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+  # Convert to absolute path so I don't end up with unnecessary nested
+  # directories
+  outdir <- normalizePath(outdir)
   settings$outdir <- outdir
 
   #Database BETY
@@ -164,7 +167,12 @@ create_execute_test_xml <- function(model_id,
   setwd(outdir)
   on.exit(setwd(cwd), add = TRUE)
 
-  system("Rscript workflow.R 2>&1 | tee workflow.Rout")
+  sys_out <- system("Rscript workflow.R 2>&1 | tee workflow.Rout")
+
+  list(
+    sys = sys_out,
+    outdir = outdir
+  )
 }
 
 library(tidyverse)
@@ -203,21 +211,28 @@ if (any(grepl(machid_rxp, argv))) {
 
 ## Find Models
 #devtools::install_github("pecanproject/pecan", subdir = "api")
-model_ids <- tbl(bety, "dbfiles") %>%
+model_df <- tbl(bety, "dbfiles") %>%
   filter(machine_id == !!mach_id) %>%
   filter(container_type == "Model") %>%
-  pull(container_id)
+  left_join(tbl(bety, "models"), c("container_id" = "id")) %>%
+  select(model_id = container_id, model_name, revision,
+         file_name, file_path, dbfile_id = id, ) %>%
+  collect() %>%
+  mutate(exists = file.exists(file.path(file_path, file_name)))
 
-models <- model_ids
-met_name <- c("CRUNCEP", "AmerifluxLBL")
-startdate <- "2004-01-01"
-enddate <- "2004-12-31"
-out.var <- "NPP"
-ensemble <- FALSE
-ens_size <- 100
-sensitivity <- FALSE
-user_id <- 99000000002   # TODO: Un-hard-code this
-dbfiles_folder <- normalizePath("~/output/dbfiles") # TODO: Un-hard-code this
+message("Found the following models on the machine:")
+print(model_df)
+
+if (!all(model_df$exists)) {
+  message("WARNING: The following models are registered on the machine ",
+          "but their files do not exist:")
+  model_df %>%
+    filter(!exists) %>%
+    print()
+
+  model_df <- model_df %>%
+    filter(exists)
+}
 
 ## Find Sites
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
@@ -248,6 +263,8 @@ site_id_noinput <- tbl(bety, "sites") %>%
   mutate(sitename = gsub(" ", "_", sitename)) %>%
   rename(site_id = id.x)
 
+message("Running tests at ", nrow(site_id_noinput), " sites:")
+print(site_id_noinput)
 
 site_id <- site_id_noinput$site_id
 site_name <- gsub(" ", "_", site_id_noinput$sitename)
@@ -271,14 +288,83 @@ run_table <- expand.grid(
 )
 #Execute function to spit out a table with a column of NA or success
 
-for (i in seq_len(NROW(run_table))) {
+models <- model_df[["model_id"]]
+met_name <- c("CRUNCEP", "AmerifluxLBL")
+startdate <- "2004-01-01"
+enddate <- "2004-12-31"
+out.var <- "NPP"
+ensemble <- FALSE
+ens_size <- 1 # Run ensemble analysis for some models?
+sensitivity <- FALSE
+user_id <- 99000000002   # TODO: Un-hard-code this
+
+dbfiles_folder <- normalizePath("~/output/dbfiles") # TODO: Un-hard-code this
+
+result_table <- as_tibble(run_table) %>%
+  mutate(
+    outdir = NA_character_,
+    workflow_complete = NA,
+    has_jobsh = NA,
+    model_output_raw = NA,
+    model_output_processed = NA
+  )
+
+for (i in seq_len(nrow(run_table))) {
+  result_table %>%
+    filter(!is.na(outdir)) %>%
+    write_csv("result_table.csv")
   message("\n\n############################################")
   message("Testing the following configuration:")
   glimpse(run_table[i, ])
-  do.call(create_execute_test_xml, run_table[i, ])
-  message("Done!")
-  message("############################################\n\n")
+  raw_result <- do.call(create_execute_test_xml, run_table[i, ])
+  outdir <- raw_result$outdir
+  result_table$outdir[[i]] <- outdir
+  ##################################################
+  # Did the workflow finish?
+  ##################################################
+  raw_output <- readLines(file.path(outdir, "workflow.Rout"))
+  result_table$workflow_complete[[i]] <- any(grepl("PEcAn Workflow Complete", raw_output))
+  ##################################################
+  # Did we write a job.sh file?
+  ##################################################
+  out <- file.path(outdir, "out")
+  run <- file.path(outdir, "run")
+  jobsh <- list.files(run, "job\\.sh", recursive = TRUE)
+  ## pft <- file.path(outdir, "pft")
+  if (length(jobsh) > 0) {
+    result_table$has_jobsh[[i]] <- TRUE
+  } else {
+    next
+  }
+  ##################################################
+  # Did the model produce any output?
+  ##################################################
+  raw_out <- list.files(out, recursive = TRUE)
+  if (length(raw_out) > 0) {
+    result_table$model_output_raw[[i]] <- TRUE
+  } else {
+    next
+  }
+  ##################################################
+  # Did PEcAn post-process the output?
+  ##################################################
+  # Files should have name `YYYY.nc`
+  proc_out <- list.files(out, "[[:digit:]]{4}\\.nc", recursive = TRUE)
+  if (length(proc_out) > 0) {
+    result_table$model_output_processed[[i]] <- TRUE
+  } else {
+    next
+  }
 }
+
+## out_table <- result_table %>%
+##   left_join(select(model_df, model_id, model_name, revision),
+##             "model_id") %>%
+##   select(model = model_name, revision, site_id,
+##          workflow_complete, has_jobsh, model_output_raw,
+##          model_output_processed)
+
+## write_csv(result_table, "result_table.csv")
 
 # tab <- run_table %>%
 #   mutate(
