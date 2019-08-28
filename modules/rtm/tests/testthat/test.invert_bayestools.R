@@ -1,6 +1,4 @@
 # devtools::load_all('.')
-library(PEcAnRTM)
-library(testthat)
 context('Inversion using BayesianTools')
 
 skip_on_travis()

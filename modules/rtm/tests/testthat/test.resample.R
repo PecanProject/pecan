@@ -1,5 +1,3 @@
-library(testthat)
-library(PEcAnRTM)
 context("Resampling functions")
 
 test_that(
