@@ -76,8 +76,9 @@ create_execute_test_xml <- function(model_id,
 
   php_file <- file.path(pecan_path, "web", "config.php")
   config.list <- PEcAn.utils::read_web_config(php_file)
-  bety <- betyConnect(php_file)
+  bety <- PEcAn.DB::betyConnect(php_file)
   con <- bety$con
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
 
   settings <- list(
     info = list(notes = "Test_Run",
