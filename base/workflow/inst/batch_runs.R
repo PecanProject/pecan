@@ -208,7 +208,7 @@ if (any(grepl(machid_rxp, argv))) {
     filter(hostname == !!mach_name) %>%
     pull(id)
 }
-
+  
 ## Find Models
 #devtools::install_github("pecanproject/pecan", subdir = "api")
 model_df <- tbl(bety, "dbfiles") %>%
@@ -268,6 +268,8 @@ print(site_id_noinput)
 
 site_id <- site_id_noinput$site_id
 site_name <- gsub(" ", "_", site_id_noinput$sitename)
+
+
 
 #Create permutations of arg combinations
 options(scipen = 999)
@@ -381,3 +383,37 @@ for (i in seq_len(nrow(run_table))) {
 # tux_tab <- huxtable::hux(tab)
 # html_table <- huxtable::print_html(tux_tab)
 # htmlTable::htmlTable(tab)
+
+
+## Test the Demos
+# Site Niwot ridge
+# Temperate COniferous
+# Year 2003/01/01-2006/12/31
+# MET AmerifluxLBL
+# Model - Sipnet
+# Basic Run, then sensitivity and ensemble run.
+##
+models <- 1000000014
+met_name <- "AmerifluxLBL"
+site_id <- 772
+startdate<-"2003/01/01"
+enddate<-"2006/12/31"
+out.var <- "NPP"
+ensemble <- FALSE
+ens_size <- 100
+sensitivity <- FALSE
+demo_one_run_settings <- data.frame(models,met_name, site_id, startdate,enddate,pecan_path, out.var, ensemble,ens_size, sensitivity,stringsAsFactors=FALSE)
+
+demo_one_result <-demo_one_run_settings %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
+  create_execute_test_xml(list(...))
+},otherwise =NA))
+)
+
+ensemble <- TRUE
+ens_size <- 100
+sensitivity <- TRUE
+demo_two_run_settings <- data.frame( models,met_name, site_id, startdate,enddate,out.var,ensemble,ens_size, sensitivity)
+demo_two_result <- demo_two_run_settings %>% mutate(outcome = purrr::pmap(.,purrr::possibly(function(...){
+  create_execute_test_xml(list(...))
+},otherwise =NA))
+)
