@@ -23,10 +23,12 @@ Named list of variable-value pairs set in \code{config.php}
 Read \code{config.php} file into an R list
 }
 \examples{
+\dontrun{
 # Read Docker configuration and extract the `dbfiles` and output folders.
 docker_config <- read_web_config(file.path("..", "..", "docker", "web", "config.docker.php"))
 docker_config[["dbfiles_folder"]]
 docker_config[["output_folder"]]
+}
 }
 \author{
 Alexey Shiklomanov, Michael Dietze, Rob Kooper
