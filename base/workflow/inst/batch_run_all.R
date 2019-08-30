@@ -34,11 +34,8 @@
 ## A. Use the pmap function to apply the function across each row of arguments and append a pass or fail outcome column to the original table of runs
 ## Part 5 - (In progress) Turn output table into a table
 
+library(PEcAn.workflow)
 library(tidyverse)
-library(PEcAn.DB)
-library(PEcAn.utils)
-library(XML)
-library(PEcAn.settings)
 
 argv <- commandArgs(trailingOnly = TRUE)
 
@@ -132,6 +129,10 @@ site_id_noinput <- tbl(bety, "sites") %>%
   ) %>%
   mutate(sitename = gsub(" ", "_", sitename)) %>%
   rename(site_id = id.x)
+
+site_id_noinput %>%
+  select(site_id, sitename) %>%
+  print(n = Inf)
 
 message("Running tests at ", nrow(site_id_noinput), " sites:")
 print(site_id_noinput)
