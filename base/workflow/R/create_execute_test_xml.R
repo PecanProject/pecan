@@ -139,7 +139,8 @@ create_execute_test_xml <- function(model_id,
   settings$host$name <- "localhost"
 
   #create file and Run
-  saveXML(listToXml(settings, "pecan"), file = file.path(outdir, "pecan.xml"))
+  XML::saveXML(PEcAn.settings::listToXml(settings, "pecan"),
+	       file = file.path(outdir, "pecan.xml"))
   file.copy(file.path(pecan_path, "web", "workflow.R"), outdir)
   cwd <- getwd()
   setwd(outdir)

@@ -1,4 +1,11 @@
+#!/usr/bin/env Rscript
+
 library(dplyr)
+library(PEcAn.workflow)
+stopifnot(
+  requireNamespace("PEcAn.DB", quietly = TRUE),
+  requireNamespace("PEcAn.utils", quietly = TRUE)
+)
 
 ##################################################
 # Parse arguments
@@ -38,11 +45,17 @@ pecan_path <- get_arg(argv, "--pecandir", getwd())
 output_folder <- get_arg(argv, "--outdir", "batch_test_output")
 outfile <- get_arg(argv, "--outfile", "test_result_table.csv")
 ##################################################
+# Establish database connection based on config.php
+php_file <- file.path(pecan_path, "web", "config.php")
+stopifnot(file.exists(php_file))
+config.list <- PEcAn.utils::read_web_config(php_file)
+bety <- PEcAn.DB::betyConnect(php_file)
+con <- bety$con
 
 # Create outfile directory if it doesn't exist
 dir.create(dirname(outfile), recursive = TRUE, showWarnings = FALSE)
 
-input_table <- read_csv(input_table_file)
+input_table <- read.csv(input_table_file, stringsAsFactors = FALSE)
 result_table <- input_table %>%
   mutate(
     outdir = NA_character_,
@@ -58,15 +71,25 @@ for (i in seq_len(nrow(input_table))) {
   # Get model ID
   model <- table_row$model
   revision <- table_row$revision
-  model_id <- tbl(con, "models") %>%
+  message("Model: ", shQuote(model))
+  message("Revision: ", shQuote(revision))
+  model_df <- tbl(con, "models") %>%
     filter(model_name == !!model,
            revision == !!revision) %>%
-    pull(id)
-  if (!length(model_id) == 1) {
-    message("Invalid number of models returned: ",
-            length(model_id), "\n",
-            "Moving on to next row.")
+    collect()
+  if (nrow(model_df) == 0) {
+    message("No models found with name ", model,
+	    " and revision ", revision, ".\n",
+	    "Moving on to next row.")
     next
+  } else if (nrow(model_df) > 1) {
+    print(model_df)
+    message("Multiple models found with name ", model,
+	    " and revision ", revision, ".\n",
+	    "Moving on to next row.")
+    next
+  } else {
+    model_id <- model_df$id
   }
 
   pft <- table_row$pft
@@ -81,12 +104,14 @@ for (i in seq_len(nrow(input_table))) {
     start_date = table_row$start_date,
     end_date = table_row$end_date,
     dbfiles_folder = dbfiles_folder,
+    pecan_path = pecan_path,
     user_id = user_id,
     ensemble_size = table_row$ensemble_size,
     sensitivity = table_row$sensitivity
   )
 
-  result_table$outdir <- raw_result$outdir
+  outdir <- raw_result$outdir
+  result_table$outdir <- outdir
 
   ##################################################
   # Did the workflow finish?
@@ -136,6 +161,6 @@ for (i in seq_len(nrow(input_table))) {
     # This will continuously update the output table with the current results
     result_table %>%
       filter(!is.na(outdir)) %>%
-      write_csv(outfile)
+      write.csv(outfile, row.names = FALSE)
   }
 }
