@@ -71,3 +71,54 @@ message(n_notes, ' notes found in ', pkg, '.')
 if (log_notes && n_notes > 0) {
     cat(notes, '\n')
 }
+
+
+
+# PEcAn has a lot of legacy code that issues check warnings,
+# such that it's not yet practical to break the build on every warning.
+# Cleaning this up is a long-term goal, but will take time.
+# Meanwhile, we compare against a cached historic check output to enforce that
+# no *new* warnings are added. As historic warnings are removed, we will update
+# the cached results to ensure they stay gone.
+
+# Rcmdcheck identifies unique top-level warnings (e.g. "checking Rd cross-references ... WARNING"),
+# but does not compare entire contents of warning (e.g. bad cross-references in one file counted same as in three different files)
+# We want to get fussier and only allow existing *instances* of warnings, so let's parse a little more finely
+msg_lines <- function(msg){
+    msg <- strsplit(
+        gsub("\n  ", " ", msg, fixed = TRUE), #leading double-space indicates line wrap
+        split = "\n",
+        fixed = TRUE)
+    msg <- purrr::map(msg, ~.[. != ""])
+    purrr::flatten_chr(purrr::map(msg, ~paste(.[[1]], .[-1], sep=": ")))
+}
+
+old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
+if (! file.exists(old_file)) {
+   # no reference output available, nothing else to do
+   quit("no")
+}
+
+old <- rcmdcheck::parse_check(old_file)
+cmp <- rcmdcheck::compare_checks(old, chk)
+
+
+if (cmp$status != "+") {
+    print(cmp)
+    stop("R check of ", pkg, " reports new problems. Please fix them and resubmit.")
+} else {
+    # No new messages, but need to check details of pre-existing ones
+    warn_cmp <- dplyr::filter(cmp$cmp, type == "warning") # stopped earlier for errors, notes let slide for now
+    reseen_msgs <- msg_lines(dplyr::filter(warn_cmp, which=="new")$output)
+    prev_msgs <- msg_lines(dplyr::filter(warn_cmp, which=="old")$output)
+
+    lines_changed <- setdiff(reseen_msgs, prev_msgs)
+    if (length(lines_changed) > 0) {
+        print("Package check returned new warnings:")
+        print(lines_changed)
+        print("Please fix these and resubmit.")
+    }
+}
+
+# If want to update saved result to use current check for future comparison:
+# cat(chk$stdout, file = old_file)
