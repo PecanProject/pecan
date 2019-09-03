@@ -15,13 +15,13 @@ Sys.unsetenv(
 log_level <- Sys.getenv('LOGLEVEL', unset = NA)
 die_level <- Sys.getenv('DIELEVEL', unset = NA)
 redocument <- as.logical(Sys.getenv('REBUILD_DOCS', unset = NA))
-runtests <- as.logical(Sys.getenv('RUN_TESTS', unset = FALSE))
+runtests <- as.logical(Sys.getenv('RUN_TESTS', unset = TRUE))
 
 # message('log_level = ', log_level)
 # message('die_level = ', die_level)
 
 # should test se run
-if (as.logical(Sys.getenv('RUN_TESTS', unset = FALSE))) {
+if (!runtests) {
     args <- c('--no-tests', '--timings')
 } else {
     args <- c('--timings') 
@@ -80,10 +80,13 @@ if (log_notes && n_notes > 0) {
 # Meanwhile, we compare against a cached historic check output to enforce that
 # no *new* warnings are added. As historic warnings are removed, we will update
 # the cached results to ensure they stay gone.
+#
+# To compare checks, we take a two-level approach:
+# First by comparing results with rcmdcheck::compare_checks to find any new
+# top-level warnings (e.g. "checking Rd cross-references ... WARNING"),
+# then if those are OK we get fussier and check for new *instances* of existing
+# warnings (e.g. new check increases from 2 bad Rd cross-references to 3).
 
-# Rcmdcheck identifies unique top-level warnings (e.g. "checking Rd cross-references ... WARNING"),
-# but does not compare entire contents of warning (e.g. bad cross-references in one file counted same as in three different files)
-# We want to get fussier and only allow existing *instances* of warnings, so let's parse a little more finely
 msg_lines <- function(msg){
     msg <- strsplit(
         gsub("\n  ", " ", msg, fixed = TRUE), #leading double-space indicates line wrap
@@ -95,7 +98,8 @@ msg_lines <- function(msg){
 
 old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
 if (! file.exists(old_file)) {
-   # no reference output available, nothing else to do
+   cat("No reference check file found. Saving current results as the new standard\n")
+   cat(chk$stdout, file = old_file)
    quit("no")
 }
 
@@ -107,18 +111,18 @@ if (cmp$status != "+") {
     print(cmp)
     stop("R check of ", pkg, " reports new problems. Please fix them and resubmit.")
 } else {
-    # No new messages, but need to check details of pre-existing ones
+    # No new messages, but need to check details of pre-existing ones line by line
     warn_cmp <- dplyr::filter(cmp$cmp, type == "warning") # stopped earlier for errors, notes let slide for now
     reseen_msgs <- msg_lines(dplyr::filter(warn_cmp, which=="new")$output)
     prev_msgs <- msg_lines(dplyr::filter(warn_cmp, which=="old")$output)
+    # avoids false positives from tempdir changes
+    reseen_msgs <- stringr::str_replace_all(reseen_msgs, chk$checkdir, "...")
+    prev_msgs <- stringr::str_replace_all(prev_msgs, old$checkdir, "...")
 
     lines_changed <- setdiff(reseen_msgs, prev_msgs)
     if (length(lines_changed) > 0) {
-        print("Package check returned new warnings:")
-        print(lines_changed)
-        print("Please fix these and resubmit.")
+        cat("Package check returned new warnings:\n")
+        cat(lines_changed, "\n")
+        stop("Please fix these warnings and resubmit.")
     }
 }
-
-# If want to update saved result to use current check for future comparison:
-# cat(chk$stdout, file = old_file)
