@@ -116,7 +116,10 @@ cmp <- rcmdcheck::compare_checks(old, chk)
 if (cmp$status != "+") {
     # rcmdcheck found new messages, so check has failed
     print(cmp)
-    stop("R check of ", pkg, " reports new problems. Please fix them and resubmit.")
+    cat("R check of", pkg, "reports the following new problems.",
+        "Please fix these and resubmit:\n")
+    cat(cmp$cmp$output[cmp$cmp$change == 1], sep="\n")
+    stop("Please fix these and resubmit.")
 } else {
     # No new messages, but need to check details of pre-existing ones
     # We stopped earlier for errors, so all entries here are WARNING or NOTE
