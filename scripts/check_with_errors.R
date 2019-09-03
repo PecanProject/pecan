@@ -97,29 +97,36 @@ msg_lines <- function(msg){
 }
 
 old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
-if (! file.exists(old_file)) {
-   cat("No reference check file found. Saving current results as the new standard\n")
-   cat(chk$stdout, file = old_file)
-   quit("no")
-}
+
+# To update reference files after fixing an old warning:
+# * Run check_with_errors.R to be sure the check is currently passing
+# * Delete the file you want to update
+# * Uncomment this section, run check_with_errors.R, recomment
+# * Commit updated file
+# if (! file.exists(old_file)) {
+#    cat("No reference check file found. Saving current results as the new standard\n")
+#    cat(chk$stdout, file = old_file)
+#    quit("no")
+# }
 
 old <- rcmdcheck::parse_check(old_file)
 cmp <- rcmdcheck::compare_checks(old, chk)
 
 
 if (cmp$status != "+") {
+    # rcmdcheck found new messages, so check has failed
     print(cmp)
     stop("R check of ", pkg, " reports new problems. Please fix them and resubmit.")
 } else {
-    # No new messages, but need to check details of pre-existing ones line by line
-    warn_cmp <- dplyr::filter(cmp$cmp, type == "warning") # stopped earlier for errors, notes let slide for now
-    reseen_msgs <- msg_lines(dplyr::filter(warn_cmp, which=="new")$output)
-    prev_msgs <- msg_lines(dplyr::filter(warn_cmp, which=="old")$output)
+    # No new messages, but need to check details of pre-existing ones
+    # We stopped earlier for errors, so all entries here are WARNING or NOTE
+    cur_msgs <- msg_lines(dplyr::filter(cmp$cmp, which=="new")$output)
+    prev_msgs <- msg_lines(dplyr::filter(cmp$cmp, which=="old")$output)
     # avoids false positives from tempdir changes
-    reseen_msgs <- stringr::str_replace_all(reseen_msgs, chk$checkdir, "...")
+    cur_msgs <- stringr::str_replace_all(cur_msgs, chk$checkdir, "...")
     prev_msgs <- stringr::str_replace_all(prev_msgs, old$checkdir, "...")
 
-    lines_changed <- setdiff(reseen_msgs, prev_msgs)
+    lines_changed <- setdiff(cur_msgs, prev_msgs)
     if (length(lines_changed) > 0) {
         cat("Package check returned new warnings:\n")
         cat(lines_changed, "\n")
