@@ -131,8 +131,8 @@ if (cmp$status != "+") {
 
     lines_changed <- setdiff(cur_msgs, prev_msgs)
     if (length(lines_changed) > 0) {
-        cat("Package check returned new warnings:\n")
+        cat("Package check returned new problems:\n")
         cat(lines_changed, "\n")
-        stop("Please fix these warnings and resubmit.")
+        stop("Please fix these and resubmit.")
     }
 }
