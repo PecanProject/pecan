@@ -92,8 +92,8 @@ msg_lines <- function(msg){
         gsub("\n  ", " ", msg, fixed = TRUE), #leading double-space indicates line wrap
         split = "\n",
         fixed = TRUE)
-    msg <- purrr::map(msg, ~.[. != ""])
-    purrr::flatten_chr(purrr::map(msg, ~paste(.[[1]], .[-1], sep=": ")))
+    msg <- lapply(msg, function(x)x[x != ""])
+    unlist(lapply(msg, function(x)paste(x[[1]], x[-1], sep=": ")))
 }
 
 old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
@@ -123,11 +123,11 @@ if (cmp$status != "+") {
 } else {
     # No new messages, but need to check details of pre-existing ones
     # We stopped earlier for errors, so all entries here are WARNING or NOTE
-    cur_msgs <- msg_lines(dplyr::filter(cmp$cmp, which=="new")$output)
-    prev_msgs <- msg_lines(dplyr::filter(cmp$cmp, which=="old")$output)
+    cur_msgs <- msg_lines(cmp$cmp$output[cmp$cmp$which == "new"])
+    prev_msgs <- msg_lines(cmp$cmp$output[cmp$cmp$which == "old"])
     # avoids false positives from tempdir changes
-    cur_msgs <- stringr::str_replace_all(cur_msgs, chk$checkdir, "...")
-    prev_msgs <- stringr::str_replace_all(prev_msgs, old$checkdir, "...")
+    cur_msgs <- gsub(chk$checkdir, "...", cur_msgs)
+    prev_msgs <- gsub(old$checkdir, "...", prev_msgs)
 
     lines_changed <- setdiff(cur_msgs, prev_msgs)
     if (length(lines_changed) > 0) {
