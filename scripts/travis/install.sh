@@ -3,6 +3,15 @@
 set -e
 . $( dirname $0 )/func.sh
 
+# FIXING R BINARIES
+(
+    travis_time_start "pkg_version_check" "Checking R package binaries"
+
+    Rscript scripts/travis/rebuild_pkg_binaries.R
+
+    travis_time_end
+)
+
 # INSTALLING SIPNET
 (
     travis_time_start "install_sipnet" "Installing SIPNET for testing"
