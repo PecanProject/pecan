@@ -81,13 +81,13 @@ if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
     # pulling the date and the path to the last SDA
     restart.path <-grep(last.sim$ID, names(all.previous.sims), value = T)
     sda.start <- last.sim$started_at
-    },
-    error = function(e) {
-      restart.path <- NULL
-      sda.start <- Sys.Date() - 14
-      PEcAn.logger::logger.warn(paste0("There was a problem with finding the last successfull SDA.",conditionMessage(e)))
-      })
-
+  },
+  error = function(e) {
+    restart.path <- NULL
+    sda.start <- Sys.Date() - 14
+    PEcAn.logger::logger.warn(paste0("There was a problem with finding the last successfull SDA.",conditionMessage(e)))
+  })
+  
   # if there was no older sims
   if (is.na(sda.start))
     sda.start <- Sys.Date() - 14
@@ -183,6 +183,21 @@ prep.data <- prep.data %>%
     day.data
   })
 
+# if there is infinte value then take it out
+prep.data<-prep.data %>% 
+  map(function(day.data){
+    #cheking the mean
+    nan.mean <- which(is.infinite(day.data$means) | is.nan(day.data$means) | is.na(day.data$means))
+    if ( length(nan.mean)>0 ) {
+      
+      day.data$means <- day.data$means[-nan.mean]
+      day.data$covs <- day.data$covs[-nan.mean, -nan.mean] %>%
+        as.matrix() %>%
+        `colnames<-`(c(colnames(day.data$covs)[-nan.mean]))
+    }
+    day.data
+  })
+
 obs.mean <- prep.data %>% map('means') %>% setNames(names(prep.data))
 obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 
@@ -192,6 +207,9 @@ if (nodata) {
   obs.cov <- obs.cov %>% map(function(x)
     return(NA))
 }
+#---------------------- Copy the last SDA simulation outputs using restart.path
+
+
 # --------------------------------------------------------------------------------------------------
 #--------------------------------- Run state data assimilation -------------------------------------
 # --------------------------------------------------------------------------------------------------
@@ -201,9 +219,9 @@ unlink(c('run','out','SDA'), recursive = T)
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-  PEcAn.assim.sequential::sda.enkf(
+    PEcAn.assim.sequential::sda.enkf(
       settings,
-      restart=restart.path,
+      restart=FALSE,
       Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,
@@ -212,7 +230,7 @@ if ('state.data.assimilation' %in% names(settings)) {
         interactivePlot =FALSE,
         TimeseriesPlot =TRUE,
         BiasPlot =FALSE,
-        debug = TRUE,
+        debug =TRUE,
         pause=FALSE
       )
     )

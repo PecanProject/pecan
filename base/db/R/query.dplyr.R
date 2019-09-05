@@ -64,7 +64,7 @@ dbHostInfo <- function(bety) {
 
   # get machine start and end based on hostid
   machine <- dplyr::tbl(bety, "machines") %>%
-    dplyr::filter(sync_host_id == hostid) %>%
+    dplyr::filter(sync_host_id == !!hostid) %>%
     dplyr::select(sync_start, sync_end)
 
   if (is.na(nrow(machine)) || nrow(machine) == 0) {
@@ -92,7 +92,7 @@ workflows <- function(bety, ensemble = FALSE) {
     query <- "SELECT id AS workflow_id, folder FROM workflows"
   }
   dplyr::tbl(bety, dbplyr::sql(query)) %>%
-    dplyr::filter(workflow_id >= hostinfo$start & workflow_id <= hostinfo$end) %>%
+    dplyr::filter(workflow_id >= !!hostinfo$start & workflow_id <= !!hostinfo$end) %>%
     return()
 }  # workflows
 
@@ -103,8 +103,7 @@ workflows <- function(bety, ensemble = FALSE) {
 #' @export
 workflow <- function(bety, workflow_id) {
   workflows(bety) %>%
-    dplyr::filter_(paste("workflow_id ==", workflow_id)) %>%
-    return()
+    dplyr::filter(workflow_id == !!workflow_id)
 }  # workflow
 
 

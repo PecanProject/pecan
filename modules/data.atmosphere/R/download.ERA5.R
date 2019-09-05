@@ -42,7 +42,7 @@
 #'   product_types = "all"
 #' )
 #' }
-download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
+download.ERA5.old <- function(outfolder, start_date, end_date, lat.in, lon.in,
                           product_types = "all",
                           overwrite = FALSE,
                           reticulate_python = NULL,
@@ -87,7 +87,7 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
     )
   })
 
-  all_products <- c("reanalysis", "ensemble members",
+  all_products <- c("reanalysis", "ensemble_members",
                     "ensemble mean", "ensemble_spread")
   
   if (product_types == "all") {
@@ -126,6 +126,7 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
   files <- character()
   dir.create(outfolder, showWarnings = FALSE)
 
+  
   # First, download all the files
   for (i in seq_len(nvar)) {
     var <- variables[["api_name"]][[i]]
@@ -141,24 +142,32 @@ download.ERA5 <- function(outfolder, start_date, end_date, lat.in, lon.in,
       next
     }
     do_next <- tryCatch({
-      cclient$retrieve("reanalysis-era5-single-levels", list(
-        variable = var,
-        product_type = product_types,
-        date = paste(start_date, end_date, sep = "/"),
-        time = "00/to/23/by/1",
-        area = area,
-        grid = c(0.25, 0.25),
-        format = "netcdf"
-      ), fname)
+      cclient$retrieve(
+        "reanalysis-era5-single-levels",
+        list(
+          variable = var,
+          product_type = 'ensemble_members',
+          date = paste(start_date, end_date, sep = "/"),
+          time = "00/to/23/by/1",
+          area = area,
+          grid = c(0.25, 0.25),
+          format = "netcdf"
+        ),
+        fname
+      )
       FALSE
     }, error = function(e) {
-      PEcAn.logger::logger.warn(glue::glue(
-        "Failed to download variable `{var}`. ",
-        "Skipping to next variable. ",
-        "Error message was:\n", conditionMessage(e)
-      ))
+      PEcAn.logger::logger.warn(
+        glue::glue(
+          "Failed to download variable `{var}`. ",
+          "Skipping to next variable. ",
+          "Error message was:\n",
+          conditionMessage(e)
+        )
+      )
       TRUE
     })
+    
     if (isTRUE(do_next)) next
     files <- c(files, fname)
   }

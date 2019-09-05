@@ -23,7 +23,6 @@
 ##' @return file split up climate file
 ##' @export
 split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL) {
-  #browser()
   #### Get met paths
   met <- inputs
   path <- dirname(met)
@@ -47,11 +46,11 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwri
     return(file)
   }
 
-  dat <- read.table(met, header = FALSE)
-  #strptime(paste("1976", 1), format="%Y %j")
+  input.dat <- read.table(met, header = FALSE)
+
 
   #@Hamze, I added the Date variable by using year, doy, and hour and filtered the clim based that and then removed it afterwards.
-  dat<-dat %>% 
+  dat<-input.dat %>% 
     mutate(Date = strptime(paste(V2, V3), format = "%Y %j",   tz = "UTC")%>% as.POSIXct()) %>%
     mutate(Date = as.POSIXct(paste0(Date,  V4, ":00"), format = "%Y-%m-%d %H:%M", tz = "UTC")) %>% 
     filter(Date >= start.time, Date < stop.time) %>% 

@@ -69,12 +69,6 @@ return(CombinedData.F)
 }
 
 
-#LE.g <- gapfill_WCr(start_date = "2017-01-01", end_date = "2017-12-31", var = "NEE")
-
-
-
-
-
 
 
 

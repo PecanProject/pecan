@@ -29,7 +29,9 @@
 ##' @author Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, ...) {
+ 
   
+
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
@@ -288,8 +290,16 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     #check to see if doy matches with downloaded data dims, if not last time is removed
     if(length(doy) != n){d<-doy[doy.start:(doy.end - 1)] }else{d<-(doy[doy.start:(doy.end)])  }
     
-    tmp[,3] <- d
-   }
+    if(year.fragment){ #gets correct DOY for fragmented years using start date, time since start date and end date
+      doy.seq <- as.Date(seq(from = start_date + sec[1], to = end_date, length.out = length(sec)))
+      doy <- as.numeric(strftime(doy.seq, format = "%j")) #starts with 1 on 1-01
+      #doy.start <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) * (86400 / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
+      #doy.end <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(end_date)) * (86400 / dt)
+      #doy <- doy[doy.start:doy.end]
+      tmp[,3] <- doy
+    }
+  }
+
     
     if (is.null(out)) {
       out <- tmp

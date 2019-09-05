@@ -20,6 +20,7 @@ installGithub.r \
 install2.r -e -s -n -1\
     abind \
     BayesianTools \
+    binaryLogic \
     BioCro \
     car \
     coda \
@@ -33,6 +34,7 @@ install2.r -e -s -n -1\
     ellipse \
     fields \
     foreach \
+    furrr \
     geonames \
     getPass \
     ggmap \
@@ -104,6 +106,7 @@ install2.r -e -s -n -1\
     stringr \
     testthat \
     tibble \
+    tictoc \
     tidyr \
     tidyverse \
     tools \

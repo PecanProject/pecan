@@ -19,7 +19,7 @@ template = Settings(
 "constants")), pft = structure(list(name = "temperate.Hydric", 
     constants = structure(list(num = "2"), .Names = "num")), .Names = c("name", 
 "constants"))), .Names = c("pft", "pft")), meta.analysis = structure(list(
-    iter = "3000", random.effects = "FALSE", update = "AUTO", 
+    iter = "3000", random.effects = list(on = FALSE, use_ghs = TRUE), update = "AUTO", 
     threshold = "1.2"), .Names = c("iter", "random.effects", 
 "update", "threshold")), ensemble = structure(list(size = "1", 
     variable = "NPP"), .Names = c("size", "variable")), model = structure(list(
