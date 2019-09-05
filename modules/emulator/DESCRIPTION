@@ -1,8 +1,8 @@
 Package: PEcAn.emulator
 Type: Package
 Title: Gausian Process emulator
-Version: 1.7.0
-Date: 2018-12-03
+Version: 1.7.1
+Date: 2019-09-05
 Authors@R: c(person("Mike","Dietze"))
 Author: Michael Dietze
 Maintainer: Michael Dietze <dietze@bu.edu>
