@@ -1,9 +1,9 @@
-# User Tutorial Section {#user-section}
+# Tutorials {#user-section}
 
-The user Section contains the following sections:
-[Basic Web Workflow Usage](#basic-web-wrokflow)
-[PEcAn Web Interface](#intermediate User Guide)
-[PEcAn from the Command Line](#advanced-user)
+This section contains the following:
+- [Basic Web Workflow Usage](#basic-web-wrokflow)
+- [PEcAn Web Interface](#intermediate User Guide)
+- [PEcAn from the Command Line](#advanced-user)
 
 ## How PEcAn Works in a nutshell
 
