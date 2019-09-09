@@ -5,7 +5,7 @@
 When you're editing one PEcAn package and want to use a function from any other R package (including other PEcAn packages), the standard method is to add the other package to the `Imports:` field of your DESCRIPTION file, spell the function in fully namespaced form (`pkg::function()`) everywhere you call it, and be done. There are a few cases where this isn't enough, but they're rarer than you think. The rest of this section mostly deals with the exceptions to this rule and why not to use them when they can be avoided.
 
 ## Big Picture: What's possible to do
-    
+
 To make one PEcAn package use functionality from another R package (including other PEcAn packages), you must do at least one and up to four things in your own package.
 
 * Always, *declare* which packages your package depends on, so that R can install them as needed when someone installs your package and so that human readers can understand what additional functionality it uses. Declare dependencies by manually adding them to your package's DESCRIPTION file.
@@ -62,7 +62,7 @@ Roxygen will make sure there's only one NAMESPACE entry per imported function no
 
 Please do *not* import entire package namespaces (`#' @import pkg`); it increases the chance of function name collisions and makes it much harder to understand which package a given function was called from.
 
-A special note about importing functions from the [](https://tidyverse.org): Be sure to import from the package(s) that actually contain the functions you want to use, e.g. `Imports: dplyr, magrittr, purrr` / `@importFrom magrittr %>%` / `purrr::map(...)`, not `Imports: tidyverse` / `@importFrom tidyverse %>%` / `tidyverse::map(...)`. The package named `tidyverse` is just a interactive shortcut that loads the whole collection of constituent packages; it doesn't export any functions in its own namespace and therefore importing it into your package doesn't make them available.
+A special note about importing functions from the [tidyverse](https://tidyverse.org): Be sure to import from the package(s) that actually contain the functions you want to use, e.g. `Imports: dplyr, magrittr, purrr` / `@importFrom magrittr %>%` / `purrr::map(...)`, not `Imports: tidyverse` / `@importFrom tidyverse %>%` / `tidyverse::map(...)`. The package named `tidyverse` is just a interactive shortcut that loads the whole collection of constituent packages; it doesn't export any functions in its own namespace and therefore importing it into your package doesn't make them available.
 
 ## Loading Code: Don't... But Use `requireNamespace` When You Do
 
@@ -97,7 +97,7 @@ Note that scripts in `inst/` are considered to be sample code rather than part o
 If you think your package needs to load or attach code for any reason, please note why in your pull request description and be prepared for questions about it during code review. If your reviewers can think of an alternate approach that avoids loading or attaching, they will likely ask you to use it even if it creates extra work for you.
 
 ## Installing dependencies: Let the machines do it
-    
+
 In most cases you won't need to think about how dependencies get installed -- just declare them in your package's DESCRIPTION and the installation will be handled automatically by R and devtools during the build process. In PEcAn packages, the rare cases where this isn't enough will probably fall into one of two categories.
 
 First, some dependencies rely on non-R software that R does not know how to install automatically. For example, rjags relies on JAGS, which might be installed in a different place on every machine. If your dependency falls in this category, you will know (because your CI builds will keep failing until you figure out how to fix it), but the exact details of the fix will differ for every case.
