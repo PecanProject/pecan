@@ -1,4 +1,4 @@
-### `devtools` package {#developer-devtools}
+# `devtools` package {#developer-devtools}
 
 Provides functions to simplify development
 

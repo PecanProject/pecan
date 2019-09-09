@@ -4,7 +4,7 @@ During development we often add many print statements to check to see how the co
 
 PEcAn provides a set of `logger.*` functions that should be used in place of base R's `stop`, `warn`, `print`, and similar functions. The `logger` functions make it easier to print to a system log file, and to control the level of output produced by PEcAn.
 
-* The file [test.logger.R](../blob/master/utils/inst/tests/test.logger.R) provides descriptive examples
+* The file [test.logger.R](https://github.com/PecanProject/pecan/blob/develop/base/logger/tests/testthat/test.logger.R) provides descriptive examples
 * This query provides an current overview of [functions that use logging](https://github.com/PecanProject/pecan/search?q=logger&ref=cmdform)
 * Logger functions and their corresponding levels (in order of increasing level):
  * `logger.debug` (`"DEBUG"`) -- Low-level diagnostic messages that are hidden by default. Good examples of this are expanded file paths and raw results from database queries or other analyses.
