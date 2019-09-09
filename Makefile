@@ -54,6 +54,10 @@ check: $(ALL_PKGS_C) .check/base/all
 test: $(ALL_PKGS_T) .test/base/all
 shiny: $(SHINY_I)
 
+# Render the PEcAn bookdown documentation
+book:
+	cd ./book_source && make build
+
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 # Make the timestamp directories if they don't exist yet
