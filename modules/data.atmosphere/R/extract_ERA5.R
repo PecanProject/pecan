@@ -13,7 +13,6 @@
 #' @details For the list of variables check out the documentation at \link{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
 #'
 #' @return a list of xts objects with all the variables for the requested years
-#' @import xts
 #' @export
 #' @examples
 #' \dontrun{
