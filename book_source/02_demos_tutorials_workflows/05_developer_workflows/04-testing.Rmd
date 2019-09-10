@@ -24,7 +24,7 @@ A unit test *should* be written for each of the following situations:
         error
   * example: `expect_error(sum("foo"))`
   * better : `expect_error(sum("foo"), "invalid 'type' (character)")`
-
+3. Any functionality that you would like to protect over the long term. Functionality that is not tested is more likely to be lost.
 PEcAn uses the `testthat` package for unit testing.
 A general overview of is provided in the ["Testing"](http://adv-r.had.co.nz/Testing.html) chapter of Hadley Wickham's book "R packages".
 Another useful resource is the `testthat` [package documentation website](https://testthat.r-lib.org/).
