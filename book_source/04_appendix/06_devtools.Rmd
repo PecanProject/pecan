@@ -3,7 +3,7 @@
 Provides functions to simplify development
 
 Documentation:
-[The R devtools packate](https://devtools.r-lib.org/)
+[The R devtools package](https://devtools.r-lib.org/)
 
 ```r
 load_all("pkg")
