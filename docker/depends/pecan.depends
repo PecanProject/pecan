@@ -20,6 +20,7 @@ installGithub.r \
 install2.r -e -s -n -1\
     abind \
     BayesianTools \
+    binaryLogic \
     BioCro \
     car \
     coda \

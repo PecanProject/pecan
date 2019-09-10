@@ -33,7 +33,7 @@ search_reference_single <- function(query, limit = 1, min_score = 85) {
   }
   crdata <- crsearch[["data"]] %>%
     dplyr::mutate(score = as.numeric(score)) %>%
-    dplyr::filter(score > min_score)
+    dplyr::filter(score > !!min_score)
   if (nrow(crdata) < 1) {
     PEcAn.logger::logger.info(
       "No matches found. ",

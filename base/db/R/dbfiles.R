@@ -24,6 +24,7 @@
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param allow.conflicting.dates Whether to allow a new input record with same siteid, name, and format but different start/end dates
+##' @param ens In case of ensembles we could let to have more than one file associated with one input.
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
 ##' @author Rob Kooper, Betsy Cowdery
@@ -32,7 +33,7 @@
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname,
-                                parentid=NA, con, hostname=PEcAn.remote::fqdn(), allow.conflicting.dates=FALSE) {
+                                parentid=NA, con, hostname=PEcAn.remote::fqdn(), allow.conflicting.dates=FALSE, ens=FALSE) {
   name <- basename(in.path)
   hostname <- default_hostname(hostname)
   
@@ -56,7 +57,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   } else {
     parent <- paste0(" AND parent_id=", parentid)
   }
-  
+
   # find appropriate input, if not in database, insert new input
   existing.input <- db.query(
     query = paste0(
@@ -104,14 +105,16 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     if (parent == "") {
       cmd <- paste0("INSERT INTO inputs ",
                     "(site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "')")
+                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "') RETURNING id")
     } else {
       cmd <- paste0("INSERT INTO inputs ",
                     "(site_id, format_id, created_at, updated_at, start_date, end_date, name, parent_id) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "',", parentid, ")")
+                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "',", parentid, ") RETURNING id")
     }
-    db.query(query = cmd, con = con)
-    
+    # This is the id that we just registered
+    inserted.id <-db.query(query = cmd, con = con)
+    name.s <- name
+
     inputid <- db.query(
       query = paste0(
         "SELECT id FROM inputs WHERE site_id=", siteid,
@@ -122,27 +125,32 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       ),
       con = con
     )$id
+  }else{
+    inserted.id <- data.frame(id=inputid) # in the case that inputid is not null then this means that there was an exsiting input
   }
   
-  if (length(inputid) > 1) {
+  if (length(inputid) > 1 && !ens) {
     PEcAn.logger::logger.warn(paste0("Multiple input files found matching parameters format_id = ", formatid, 
                                      ", startdate = ", startdate, ", enddate = ", enddate, ", parent = ", parent, ".  Selecting the", 
                                      " last input file.  This is normal for when an entire ensemble is inserted iteratively, but ", 
                                      " is likely an error otherwise."))
     inputid = inputid[length(inputid)]
+  } else if (ens){
+    inputid <- inserted.id$id
   }
   
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname)
   
-  if (nrow(dbfile) > 0) {
+  if (nrow(dbfile) > 0 ) {
+   
     if (nrow(dbfile) > 1) {
       print(dbfile)
       PEcAn.logger::logger.warn("Multiple dbfiles found. Using last.")
       dbfile <- dbfile[nrow(dbfile),]
     }
     
-    if (dbfile$file_name != in.prefix || dbfile$file_path != in.path) {
+    if (dbfile$file_name != in.prefix || dbfile$file_path != in.path ) {
       print(dbfile, digits = 10)
       PEcAn.logger::logger.error(paste0(
         "The existing dbfile record printed above has the same machine_id and container ",
@@ -179,16 +187,19 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param exact.dates setting to include start and end date in input query
 ##' @param pattern text to seach for in the file name (default NULL = no check).
+##' @param return.all (Logical) If 'TRUE', return all files. If 'FALSE', return only the most recent files.
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
-##' @author Rob Kooper, Tony Gardella
+##' @author Rob Kooper, Tony Gardella, Hamze Dokoohaki
 ##' @examples
 ##' \dontrun{
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA,
-                               con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL) {
+                               con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL, return.all=FALSE) {
   
+
+ 
   hostname <- default_hostname(hostname)
   
   mimetypeid <- get.id(table = 'mimetypes', colnames = 'type_string', values = mimetype, con = con)
@@ -250,12 +261,21 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
     if (length(inputs$id) > 1) {
       PEcAn.logger::logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
       print(inputs)
-      #      ni = length(inputs$id)
-      #      dbfile = list()
-      #      for(i in seq_len(ni)){
-      #        dbfile[[i]] <- dbfile.check(type = 'Input', container.id = inputs$id[i], con = con, hostname = hostname, machine.check = TRUE)
-      #    }
-      dbfile <- dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = TRUE)
+         #   ni = length(inputs$id)
+         #   dbfile = list()
+         #   for(i in seq_len(ni)){
+         #     dbfile[[i]] <- dbfile.check(type = 'Input', container.id = inputs$id[i], con = con, hostname = hostname, machine.check = TRUE)
+         # }
+   
+      dbfile <-
+        dbfile.check(
+          type = 'Input',
+          container.id = inputs$id,
+          con = con,
+          hostname = hostname,
+          machine.check = TRUE,
+          return.all = return.all
+        )
       
       
       if (nrow(dbfile) == 0) {
@@ -276,7 +296,14 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       
       PEcAn.logger::logger.warn("Found possible matching input. Checking if its associate files are on host machine")
       print(inputs)
-      dbfile <- dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = TRUE)
+      dbfile <- dbfile.check(
+        type = 'Input',
+        container.id = inputs$id,
+        con = con,
+        hostname = hostname,
+        machine.check = TRUE,
+        return.all = return.all
+      )
       
       if (nrow(dbfile) == 0) {
         ## With the possibility of dbfile.check returning nothing,
