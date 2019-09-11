@@ -45,9 +45,7 @@ c(
               package = "PEcAn.assim.sequential")
 ))
 #reading xml
-settings <- read.settings(system.file("WillowCreek",
-                                      xmlTempName,
-                                      package ="PEcAn.assim.sequential" ))
+settings <- read.settings("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml")
 
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
@@ -207,14 +205,41 @@ if (nodata) {
   obs.cov <- obs.cov %>% map(function(x)
     return(NA))
 }
-#---------------------- Copy the last SDA simulation outputs using restart.path
 
+# --------------------------------------------------------------------------------------------------
+#--------------------------------- Restart -------------------------------------
+# --------------------------------------------------------------------------------------------------
 
+#@Hamze - should we add a if statement here for the times that we don't want to copy the path?
+
+  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = F)
+  
+  file.copy(from= file.path(restart.path, "SDA", "sda.output.Rdata"),
+            to = file.path(settings$outdir, "SDA", "sda.output.Rdata"))
+  
+  file.copy(from= file.path(restart.path, "SDA", "outconfig.Rdata"),
+            to = file.path(settings$outdir, "SDA", "outconfig.Rdata"))
+ 
+#Update the SDA Output 
+  load(file.path(restart.path, "SDA", "sda.output.Rdata"))
+  
+  ANALYSIS1 = list()
+  FORECAST1 = list()
+  enkf.params1 = list()
+  ANALYSIS[[1]]= ANALYSIS[[length(ANALYSIS)]]
+  FORECAST1[[1]] = FORECAST[[length(FORECAST)]]
+  enkf.params1[[1]] = enkf.params[[length(enkf.params)]]
+  t = 1 
+  ANALYSIS = ANALYSIS1
+  FORECAST = FORECAST1
+  enfk.params = enkf.params1
+
+  save(list = c(ANALYSIS, FORECAST, enkf.params, t, ensemble.samples, inputs, new.params, new.state, site.locs, Viz.output, X, ensemble.id, run.id), file = file.path(restart.path, "SDA", "sda.output.Rdata"))  
 # --------------------------------------------------------------------------------------------------
 #--------------------------------- Run state data assimilation -------------------------------------
 # --------------------------------------------------------------------------------------------------
 
-unlink(c('run','out','SDA'), recursive = T)
+unlink(c('run','out', "SDA"), recursive = T)
 
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
@@ -228,12 +253,14 @@ if ('state.data.assimilation' %in% names(settings)) {
       control = list(
         trace = TRUE,
         interactivePlot =FALSE,
-        TimeseriesPlot =TRUE,
+        TimeseriesPlot =FALSE,
         BiasPlot =FALSE,
-        debug =TRUE,
+        debug =FALSE,
         pause=FALSE
       )
     )
     PEcAn.utils::status.end()
   }
 }
+
+  
