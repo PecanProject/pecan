@@ -111,11 +111,18 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   # check to see if we need to update
   if (!forceupdate) {
     if (is.null(pft$posteriorid)) {
-      pft$posteriorid <- dplyr::tbl(dbcon, "posteriors") %>%
-        dplyr::filter(pft_id == !!pftid) %>%
-        dplyr::arrange(dplyr::desc(created_at)) %>%
-        head(1) %>%
-        dplyr::pull(id)
+      recent_posterior <- dplyr::tbl(dbcon, "posteriors") %>%
+        dplyr::filter(pft_id == !!pftid) %>% 
+        dplyr::collect()
+      if (length(recent_posterior) > 0) {
+        pft$posteriorid <- dplyr::tbl(dbcon, "posteriors") %>%
+          dplyr::filter(pft_id == !!pftid) %>%
+          dplyr::arrange(dplyr::desc(created_at)) %>%
+          head(1) %>%
+          dplyr::pull(id)
+      } else {
+        PEcAn.logger::logger.info("No previous posterior found. Forcing update")
+      } 
     }
     if (!is.null(pft$posteriorid)) {
       files <- dbfile.check(type = "Posterior", container.id = pft$posteriorid, con = dbcon,
