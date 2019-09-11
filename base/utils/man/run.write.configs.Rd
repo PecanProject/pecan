@@ -14,8 +14,8 @@ run.write.configs(settings, write = TRUE,
 \item{ens.sample.method}{how to sample the ensemble members('halton' sequence or 'uniform' random)}
 
 \item{posterior.files}{Filenames for posteriors for drawing samples for ensemble and sensitivity
-analysis (e.g. post.distns.Rdata, or prior.distns.Rdata). Defaults to NA, in which case the 
-most recent posterior or prior (in that order) for the workflow is used. Should be a vector, 
+analysis (e.g. post.distns.Rdata, or prior.distns.Rdata). Defaults to NA, in which case the
+most recent posterior or prior (in that order) for the workflow is used. Should be a vector,
 with one entry for each PFT. File name only; PFT outdirs will be appended (this forces use of only
 files within this workflow, to avoid confusion).}
 
@@ -25,7 +25,7 @@ files within this workflow, to avoid confusion).}
 an updated settings list, which includes ensemble IDs for SA and ensemble analysis
 }
 \description{
-Main driver function to call the ecosystem model specific (e.g. ED, SiPNET) 
+Main driver function to call the ecosystem model specific (e.g. ED, SiPNET)
 run and configuration file scripts
 }
 \details{

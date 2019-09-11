@@ -1,0 +1,115 @@
+# Available Meteorological Drivers
+
+### Ameriflux
+
+Scale: site
+
+Resolution: 30 or 60 min
+
+Availability: varies by site http:\/\/ameriflux.lbl.gov\/data\/data-availability\/
+
+Notes: Old ORNL server, use is deprecated
+
+### AmerifluxLBL
+
+Scale: site
+
+Resolution: 30 or 60 min
+
+Availability: varies by site http:\/\/ameriflux.lbl.gov\/data\/data-availability\/
+
+Notes: new Lawrence Berkeley Lab server
+
+### Fluxnet2015
+
+Scale: site
+
+Resolution: 30 or 60 min
+
+Availability: varies by site [http:\/\/fluxnet.fluxdata.org\/sites\/site-list-and-pages](http://fluxnet.fluxdata.org/sites/site-list-and-pages/)
+
+Notes: Fluxnet 2015 synthesis product. Does not cover all FLUXNET sites
+
+### NARR
+
+Scale: North America
+
+Resolution: 3 hr, approx. 32km \(Lambert conical projection\)
+
+Availability: 1979-present
+
+### CRUNCEP
+
+Scale: global
+
+Resolution: 6hr, 0.5 degree
+
+Availability: 1901-2010
+
+### CMIP5
+
+Scale: varies by model
+
+Resolution: 3 hr
+
+Availability: 2006-2100
+
+Currently only GFDL available. Different scenerios and ensemble members can be set via Advanced Edit.
+
+### NLDAS
+
+Scale: Lower 48 + buffer,
+
+Resolution: 1 hour, .125 degree
+
+Availability: 1980-present
+
+### GLDAS
+
+Scale: Global
+
+Resolution: 3hr, 1 degree
+
+Availability: 1948-2010
+
+### PalEON
+
+Scale: -100 to -60 W Lon, 35 to 50 N Latitude \(US northern hardwoods + buffer\)
+
+Resolution: 6hr, 0.5 degree
+
+Availability: 850-2010
+
+### FluxnetLaThuile
+
+Scale: site
+
+Resolution: 30 or 60 min
+
+Availability: varies by site  http:\/\/www.fluxdata.org\/DataInfo\/Dataset%20Doc%20Lib\/SynthDataSummary.aspx
+
+Notes: 2007 synthesis. Fluxnet2015 supercedes this for sites that have been updated
+
+### Geostreams
+
+Scale: site
+
+Resolution: varies
+
+Availability: varies by site
+
+Notes: This is a protocol, not a single archive. The PEcAn functions currently default to querying [https://terraref.ncsa.illinois.edu/clowder/api/geostreams], which requires login and contains data from only two sites (Urbana IL and Maricopa AZ). However the interface can be used with any server that supports the [Geostreams API](https://opensource.ncsa.illinois.edu/confluence/display/CATS/Geostreams+API).
+
+### ERA5
+
+Scale: Global
+
+Resolution: 3 hrs and 31 km
+
+Availability: 1950-present 
+
+Notes: 
+
+It's important to know that the raw ERA5 tiles needs to be downloaded and registered in the database first. Inside the `inst` folder in the data.atmosphere package there are R files for downloading and registering files in the BETY. However, it assumes that you have registered and setup your API requirements. Check out how to setup your API [here] (https://confluence.ecmwf.int/display/CKB/How+to+download+ERA5#HowtodownloadERA5-3-DownloadERA5datathroughtheCDSAPI). 
+In the `inst` folder you can find two files (`ERA5_db_register.R` and `ERA5_USA_download.R`). If you setup your `ecmwf` account as it's explained in the link above, `ERA5_USA_download.R` will help you to download all the tiles with all the variables required for pecan `extract.nc.ERA5` function to generate pecan standard met files. Besides installing the required packages for this file, it should work from top to bottom with no problem. After downloading the tiles, there is simple script in `ERA5_db_register.R` which helps you register your tiles in the bety. `met.process` later on uses that entery to find the required tiles for extracting met data for your sites. There are important points about this file. 1- Make sure you don't change the site id in the script (which is the same the `ParentSite` in ERA5 registeration xml file). 2- Make sure the start and end date in that script matches the downloaded tiles. Set your `ERA5.files.path` to where you downloaded the tiles and then the rest of the script should be working fine.
+

@@ -1,8 +1,8 @@
 Package: PEcAn.data.atmosphere
 Type: Package
 Title: PEcAn functions used for managing climate driver data
-Version: 1.7.0
-Date: 2018-12-03
+Version: 1.7.1
+Date: 2019-09-05
 Authors@R: c(person("Mike","Dietze", role = "aut"),
              person("David","LeBauer", role = c("aut", "cre"),
                 email = "dlebauer@illinois.edu"),
@@ -16,7 +16,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     integrated into PEcAn. As a standalone package, it provides an interface to
     access diverse climate data sets.
 Depends:
-    methods
+    methods,
+    xts
 Imports:
     abind (>= 1.4.5),
     car,
@@ -52,12 +53,14 @@ Imports:
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
+    xts,
     zoo
 Suggests:
     doParallel,
     foreach,
     parallel,
     progress,
+    reticulate,
     rlang (>= 0.2.0)
 Remotes:
     github::ropensci/geonames,

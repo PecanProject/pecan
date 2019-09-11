@@ -96,42 +96,53 @@ check.inputs <- function(settings) {
 ##' @param settings settings file
 ##' @export check.database
 check.database <- function(database) {
-  if (is.null(database)) return(NULL);
+  if (is.null(database)) return(NULL)
   
   ## check database settings
   if (is.null(database$driver)) {
     database$driver <- "PostgreSQL"
-    PEcAn.logger::logger.warn("Please specify a database driver; using default 'PostgreSQL'")
+    PEcAn.logger::logger.info("Database driver unspecified. ",
+                              "Using 'PostgreSQL' (default)")
+  }
+
+  is_postgres_like <- database$driver %in% c("PostgreSQL", "Postgres")
+  is_postgresql <- database$driver == "PostgreSQL"
+
+  if (!is_postgres_like) {
+    PEcAn.logger::logger.severe(
+      "Database driver `", database$driver, "` is not supported. ",
+      "Please use `PostgreSQL` or `Postgres`."
+    )
+  }
+
+  if (database$driver == "Postgres") {
+    PEcAn.logger::logger.warn(
+      "Support for RPostgres is experimental. ",
+      "Use at your own risk!."
+    )
   }
   
   # Attempt to load the driver
-  if (!require(paste0("R", database$driver), character.only=TRUE)) {
-    PEcAn.logger::logger.warn("Could not load the database driver", paste0("R", database$driver))
-  }
-  
-  # MySQL specific checks
-  if (database$driver == "MySQL") {
-    if (!is.null(database$passwd)) {
-      PEcAn.logger::logger.info("passwd in database section should be password for MySQL")
-      database$password <- database$passwd
-      database$passwd <- NULL
-    }
-    if (!is.null(database$name)) {
-      PEcAn.logger::logger.info("name in database section should be dbname for MySQL")
-      database$dbname <- database$name
-      database$name <- NULL
-    }
+  rdriver <- paste0("R", database$driver)
+  if (!requireNamespace(rdriver, quietly = TRUE)) {
+    PEcAn.logger::logger.severe("Could not load the database driver: ", rdriver)
   }
   
   # PostgreSQL specific checks
-  if (database$driver == "PostgreSQL") {
+  if (is_postgres_like) {
     if (!is.null(database$passwd)) {
-      PEcAn.logger::logger.info("passwd in database section should be password for PostgreSQL")
+      PEcAn.logger::logger.warn(
+        "Database field `passwd` is deprecated. ",
+        "Please use `password` instead."
+      )
       database$password <- database$passwd
       database$passwd <- NULL
     }
     if (!is.null(database$name)) {
-      PEcAn.logger::logger.info("name in database section should be dbname for PostgreSQL")
+      PEcAn.logger::logger.warn(
+        "Database field `name` is deprecated. ",
+        "Please use `dbname` instead."
+      )
       database$dbname <- database$name
       database$name <- NULL
     }
@@ -281,10 +292,27 @@ check.settings <- function(settings, force=FALSE) {
       PEcAn.logger::logger.info("Setting meta.analysis iterations to ", settings$meta.analysis$iter)
     }
     if (is.null(settings$meta.analysis$random.effects)) {
-      settings$meta.analysis$random.effects <- FALSE
-      PEcAn.logger::logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
+      settings$meta.analysis$random.effects         <- list()
+      settings$meta.analysis$random.effects$on      <- FALSE
+      settings$meta.analysis$random.effects$use_ghs <- TRUE
+      PEcAn.logger::logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects$on)
+    } else if(!is.list(settings$meta.analysis$random.effects)){
+      # this handles the previous usage
+      #  <meta.analysis>
+      #    <random.effects>FALSE</random.effects>
+      #  </meta.analysis>
+      re_check <- as.logical(settings$meta.analysis$random.effects)
+      settings$meta.analysis$random.effects    <- list()
+      settings$meta.analysis$random.effects$on <- re_check
+      settings$meta.analysis$random.effects$use_ghs <- TRUE
     } else {
-      settings$meta.analysis$random.effects <- as.logical(settings$meta.analysis$random.effects)
+      # everything is used as defined
+      settings$meta.analysis$random.effects$on      <- as.logical(settings$meta.analysis$random.effects$on)
+      if(!is.null(settings$meta.analysis$random.effects$use_ghs)){
+        settings$meta.analysis$random.effects$use_ghs <- as.logical(settings$meta.analysis$random.effects$use_ghs)
+      }else{
+        settings$meta.analysis$random.effects$use_ghs <- TRUE
+      }
     }
     if (is.null(settings$meta.analysis$threshold)) {
       settings$meta.analysis$threshold <- 1.2

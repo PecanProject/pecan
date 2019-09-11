@@ -1,4 +1,3 @@
-#'
 #' @title site.pft.linkage
 #' 
 #' @param settings pecan settings list.

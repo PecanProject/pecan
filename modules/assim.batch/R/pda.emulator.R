@@ -65,17 +65,17 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   ## Open database connection
   if (settings$database$bety$write) {
-    con <- try(db.open(settings$database$bety), silent = TRUE)
-    if (is(con, "try-error")) {
+    con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+    if (inherits(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(db.close(con))
+      on.exit(PEcAn.DB::db.close(con))
     }
   } else {
     con <- NULL
   }
   
-  bety <- src_postgres(dbname = settings$database$bety$dbname, 
+  bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
                        host = settings$database$bety$host, 
                        user = settings$database$bety$user, 
                        password = settings$database$bety$password)
@@ -506,7 +506,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   ## Sample posterior from emulator
   mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
-    mcmc.GP(gp          = gp, ## Emulator(s)
+    PEcAn.emulator::mcmc.GP(gp          = gp, ## Emulator(s)
             x0          = init.list[[chain]],     ## Initial conditions
             nmcmc       = settings$assim.batch$iter,       ## Number of reps
             rng         = rng,       ## range
@@ -682,7 +682,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   ## close database connection
   if (!is.null(con)) {
-    db.close(con)
+    PEcAn.DB::db.close(con)
   }
   
   ## Output an updated settings list

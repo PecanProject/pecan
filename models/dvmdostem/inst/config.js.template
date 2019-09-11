@@ -18,7 +18,7 @@
     "proj_exp_fire_file": "@INPUT_DATA_DIR@/projected-explicit-fire.nc",
     "topo_file":          "@INPUT_DATA_DIR@/topo.nc",
     "output_dir":         "@MODEL_OUTPUT_DIR@/",
-    "output_spec_file":   "config/output_spec.csv",
+    "output_spec_file":   "@CUSTOM_OUTSPEC@",
     "output_monthly":     0, //JSON specific
     "output_nc_eq":       0,
     "output_nc_sp":       0,
@@ -54,6 +54,7 @@
     // can use the compute node-specific /scratch directories and keep different
     // running instances of dvmdostem from overwriting eachothers json files.
   },
+
   "stage_settings": {
     "restart_mode": "restart",   // other options??
     "inter_stage_pause": false
@@ -65,15 +66,15 @@
     // ??
     //"restartfile_dir": "DATA/Toolik_10x10_30yrs/" // location for restart-XX.nc file
 
-  }
+  },
 
-//  "model_settings": {
-//    //"dynamic_climate": 0,
-//    //"varied_co2": 0,
-//    //"dynamic_lai": 1,               // from model (1) or from input (0)
-//    //"fire_severity_as_input": 0,    // fire sev. as input or ??
-//    //"output_starting_year": -9999
-//  }
+  "model_settings": {
+    "dynamic_lai": @DYNAMIC_MODELED_LAI@  // from model (1) or from input (0)
+    //"dynamic_climate": 0,
+    //"varied_co2": 0,
+    //"fire_severity_as_input": 0,    // fire sev. as input or ??
+    //"output_starting_year": -9999
+  }
 
 //  "output_switches": {
 //    "daily_output": 0,
