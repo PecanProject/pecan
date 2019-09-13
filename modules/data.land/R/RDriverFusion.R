@@ -8,11 +8,12 @@
 
 ### prep data files into jags objects
 #setwd("C:/Users/mekevans/Documents/CDrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New")
-setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New")
+#setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New")
 
 ### load in the data for trees with increment cores (and 1 or 2 DBH measurements)
 #AZ.PIPO <- read.csv("AZ_FIA_RWL_PRISM_allinone_04192017.txt", header = T, sep = "\t", stringsAsFactors = F) ### 820 trees
-AZ.PIPO <- read.delim("AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
+main.dir <- "/Users/kah/Documents/GrowthFusion"
+AZ.PIPO <- read.delim("FIA_inc_data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
 
 ### merge together three diameter columns
 AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$TREE_DIA), AZ.PIPO$SITETREE_DIA, AZ.PIPO$TREE_DIA) # combine together FIADB diameter measurements for trees and site trees
@@ -30,7 +31,7 @@ temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
 ### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
-Tree2Tree <- read.csv("Tree2Tree.csv", stringsAsFactors = F)
+#Tree2Tree <- read.csv("/Users/kah/Documents/GrowthFusion/FIA_inc_data/Tree2Tree.csv", stringsAsFactors = F)
 
 ### limit analysis to those trees with second DBH measurement in =< year 2015
 ### this is because as of 7/2017, the available PRISM data (KNMI) go only to Dec 2015
@@ -42,17 +43,20 @@ Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 
 ### NOW go get function that makes jags objects out of the above
 ### setwd to github folder
-setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/pecan/modules/data.land/R")
+setwd("/Users/kah/Documents/GrowthFusion/modules/data.land/R/")
+
+
 ### read in function that creates jags objects from above data
 source("BuildJAGSdataobject.R")
-jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
+#jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
 # if you don't have trees without cores, use the following line
 # or you wish to not include trees without cores
-# jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
+jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
 data <- jags.stuff$data
 z0 <- jags.stuff$z0
 cov.data <- jags.stuff$cov.data
 time_data <- jags.stuff$time_data
+
 
 data$a_dbh <- 512
 data$r_dbh <- 256
@@ -84,86 +88,86 @@ source("InventoryGrowthFusion.R")
 
 ### ppt models
 fullmodelppt.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
-                                   time_varying = "wintP.JJ + SDI*wintP.JJ[t] + SICOND*wintP.JJ[t]",
-                                   burnin_plot=FALSE)
+                                          n.iter=5000, random="(1|PLOT[i])",
+                                          fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
+                                          time_varying = "wintP.JJ + SDI*wintP.JJ[t] + SICOND*wintP.JJ[t]",
+                                          burnin_plot=FALSE)
 
 model2.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
-                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                   burnin_plot=FALSE)
+                                    n.iter=5000, random="(1|PLOT[i])",
+                                    fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
+                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
+                                    burnin_plot=FALSE)
 
 model3.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
-                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                   burnin_plot=FALSE)
+                                    n.iter=5000, random="(1|PLOT[i])",
+                                    fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
+                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
+                                    burnin_plot=FALSE)
 
 model4.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=15000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t]",
-                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                   burnin_plot=FALSE)
+                                    n.iter=15000, random="(1|PLOT[i])",
+                                    fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t]",
+                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
+                                    burnin_plot=FALSE)
 
 model5.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + X*wintP.JJ[t] + SICOND*SDI",
-                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                   burnin_plot=FALSE)
+                                    n.iter=5000, random="(1|PLOT[i])",
+                                    fixed = "~ X + X^2 + SICOND + SDI + X*wintP.JJ[t] + SICOND*SDI",
+                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
+                                    burnin_plot=FALSE)
 
 model6.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + X*wintP.JJ[t]",
-                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                   burnin_plot=FALSE)
+                                    n.iter=5000, random="(1|PLOT[i])",
+                                    fixed = "~ X + X^2 + SICOND + SDI + X*wintP.JJ[t]",
+                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
+                                    burnin_plot=FALSE)
 
 
 ### tmax models
 fullmodeltmax.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
-                                   time_varying = "tmax.JanA + SDI*tmax.JanA[t] + SICOND*tmax.JanA[t]",
-                                   burnin_plot=FALSE)
-
-model8.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
                                            n.iter=5000, random="(1|PLOT[i])",
-                                           fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
-                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                           burnin_plot=FALSE)
-
-model9.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                           n.iter=5000, random="(1|PLOT[i])",
-                                           fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
-                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                           burnin_plot=FALSE)
-
-model10.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                           n.iter=5000, random="(1|PLOT[i])",
-                                           fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*tmax.JanA[t]",
-                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                           burnin_plot=FALSE)
-
-model11.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                           n.iter=5000, random="(1|PLOT[i])",
-                                           fixed = "~ X + X^2 + SICOND + SDI + X*tmax.JanA[t] + SICOND*SDI",
-                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                           burnin_plot=FALSE)
-
-model12.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                           n.iter=5000, n.chunk=5000, save.state=FALSE,
-                                           random="(1|PLOT[i])",
-                                           fixed = "~ X + X^2 + SICOND + SDI + X*tmax.JanA[t]",
-                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                           burnin_plot=FALSE)
-
-#### LONG MCMC RUN WITH TREES WITHOUT CORES
-model7.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                           n.iter=500000, n.chunk=1000, save.state=FALSE, random="(1|PLOT[i])",
                                            fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
                                            time_varying = "tmax.JanA + SDI*tmax.JanA[t] + SICOND*tmax.JanA[t]",
                                            burnin_plot=FALSE)
+
+model8.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                    n.iter=5000, random="(1|PLOT[i])",
+                                    fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
+                                    time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                    burnin_plot=FALSE)
+
+model9.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                    n.iter=5000, random="(1|PLOT[i])",
+                                    fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
+                                    time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                    burnin_plot=FALSE)
+
+model10.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                     n.iter=5000, random="(1|PLOT[i])",
+                                     fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*tmax.JanA[t]",
+                                     time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                     burnin_plot=FALSE)
+
+model11.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                     n.iter=5000, random="(1|PLOT[i])",
+                                     fixed = "~ X + X^2 + SICOND + SDI + X*tmax.JanA[t] + SICOND*SDI",
+                                     time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                     burnin_plot=FALSE)
+
+model12.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                     n.iter=5000, n.chunk=5000, save.state=FALSE,
+                                     random="(1|PLOT[i])",
+                                     fixed = "~ X + X^2 + SICOND + SDI + X*tmax.JanA[t]",
+                                     time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                     burnin_plot=FALSE)
+
+#### LONG MCMC RUN WITH TREES WITHOUT CORES
+model7.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                    n.iter=500000, n.chunk=1000, save.state=FALSE, random="(1|PLOT[i])",
+                                    fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
+                                    time_varying = "tmax.JanA + SDI*tmax.JanA[t] + SICOND*tmax.JanA[t]",
+                                    burnin_plot=FALSE)
 
 model1.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data, z0=z0,
                                     n.iter=500000, n.chunk=1000, save.state=FALSE, random="(1|PLOT[i])",
@@ -228,7 +232,7 @@ hist(X.wintP.int, main = "size*wintP")
 hist(SDI.wintP.int, main = "SDI*wintP")
 hist(SI.wintP.int, main = "SI * wintP interaction")
 hist(SI.SDI.int, main = "SI * SDI interaction")  
- 
+
 hist(out[,"deviance"])
 mean(out[,"deviance"])
 
