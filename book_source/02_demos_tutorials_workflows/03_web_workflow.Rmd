@@ -1,4 +1,4 @@
-# Basic Web workflow {#basic-web-wrokflow}
+# Basic Web workflow {#basic-web-workflow}
 
 This chapter describes the major steps of the PEcAn web-based workflow, which are as follows:
 

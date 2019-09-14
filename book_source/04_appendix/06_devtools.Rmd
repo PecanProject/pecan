@@ -1,9 +1,9 @@
-### `devtools` package {#developer-devtools}
+# `devtools` package {#developer-devtools}
 
 Provides functions to simplify development
 
 Documentation:
-[The R devtools packate](https://github.com/hadley/devtools)
+[The R devtools package](https://devtools.r-lib.org/)
 
 ```r
 load_all("pkg")
