@@ -7,6 +7,7 @@ library(RCurl)
 library(REddyProc)
 library(tidyverse)
 library(furrr)
+library(R.utils)
 plan(multiprocess)
 # ----------------------------------------------------------------------------------------------
 #------------------------------------------ That's all we need xml path and the out folder -----
@@ -220,13 +221,13 @@ if (nodata) {
   file.copy(from= file.path(restart.path, "SDA", "outconfig.Rdata"),
             to = file.path(settings$outdir, "SDA", "outconfig.Rdata"))
  
-#Update the SDA Output 
+#Update the SDA Output to just have last time step 
   load(file.path(restart.path, "SDA", "sda.output.Rdata"))
   
   ANALYSIS1 = list()
   FORECAST1 = list()
   enkf.params1 = list()
-  ANALYSIS[[1]]= ANALYSIS[[length(ANALYSIS)]]
+  ANALYSIS1[[1]]= ANALYSIS[[length(ANALYSIS)]]
   FORECAST1[[1]] = FORECAST[[length(FORECAST)]]
   enkf.params1[[1]] = enkf.params[[length(enkf.params)]]
   t = 1 
@@ -234,19 +235,29 @@ if (nodata) {
   FORECAST = FORECAST1
   enfk.params = enkf.params1
 
-  save(list = c(ANALYSIS, FORECAST, enkf.params, t, ensemble.samples, inputs, new.params, new.state, site.locs, Viz.output, X, ensemble.id, run.id), file = file.path(restart.path, "SDA", "sda.output.Rdata"))  
+  save(list = c("ANALYSIS", "FORECAST", "enkf.params", "t", "ensemble.samples", "inputs", "new.params", "new.state", "site.locs", "Viz.output", "X", "ensemble.id", "run.id"), file = file.path(settings$outdir, "SDA", "sda.output.Rdata"))  
+
+#copy over run and out folders 
+  
+  if(!dir.exists("run")) dir.create("run",showWarnings = F)
+  copyDirectory(from = file.path(restart.path, "run/"), 
+                to = file.path(settings$outdir, "run/"))
+  if(!dir.exists("out")) dir.create("out",showWarnings = F)
+  copyDirectory(from = file.path(restart.path, "out/"), 
+                to = file.path(settings$outdir, "out/"))
+  
 # --------------------------------------------------------------------------------------------------
 #--------------------------------- Run state data assimilation -------------------------------------
 # --------------------------------------------------------------------------------------------------
 
-unlink(c('run','out', "SDA"), recursive = T)
+#unlink(c('run','out', "SDA"), recursive = T)
 
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
     PEcAn.assim.sequential::sda.enkf(
       settings,
-      restart=FALSE,
+      restart=TRUE,
       Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,
