@@ -44,19 +44,10 @@ analysis. Default = `"NPP"`}
 \item{sensitivity}{(logical) Whether or not to perform a sensitivity analysis
 (default = `FALSE`)}
 
-\item{db_bety_username}{(character) BETY username for workflow. Default is
-the value from the `config.php`.}
+\item{db_bety_username, db_bety_password, db_bety_hostname, db_bety_port}{(character) BETY database connection options. Default values for all of
+these are pulled from `<pecan_path>/web/config.php`.}
 
-\item{db_bety_password}{(character) BETY password for workflow. Default is
-the value from `config.php`.}
-
-\item{db_bety_hostname}{(character) BETY hostname for workflow. Default is
-the value from `config.php`}
-
-\item{db_bety_driver}{(character) BETY DBI driver for workflow (default = `"Postgres"`)}
-
-\item{db_bety_hostname}{(character) BETY connection port for workflow.
-Default is the value from `config.php`}
+\item{db_bety_driver}{(character) BETY database connection driver (default = `"Postgres"`)}
 }
 \description{
 Create a PEcAn XML file and use it to run a PEcAn workflow
