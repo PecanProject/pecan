@@ -13,10 +13,9 @@ test_that("parse converts types", {
   expect_type(cfg_example[["pagesize"]], "character")
   expect_equal(cfg_example[["pagesize"]], "30")
 
-  # parse not currently working; uncomment when fixed
-  # cfg_example <- read_web_config(php_config_example, parse = TRUE)
-  # expect_type(cfg_example[["pagesize"]], "double")
-  # expect_equal(cfg_example[["pagesize"]], 30)
+  cfg_example <- read_web_config(php_config_example, parse = TRUE)
+  expect_type(cfg_example[["pagesize"]], "double")
+  expect_equal(cfg_example[["pagesize"]], 30)
 })
 
 test_that("expand replaces output_folder", {
