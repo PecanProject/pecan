@@ -57,7 +57,7 @@ create_execute_test_xml <- function(model_id,
     port = db_bety_port,
     driver = db_bety_driver
   ))
-  on.exit(DBI::dbDisconnect(con), add = TRUE)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
 
   settings <- list(
     info = list(notes = "Test_Run",
