@@ -1,0 +1,36 @@
+### Coding Style {#developer-codestyle}
+
+Consistent coding style improves readability and reduces errors in
+shared code.
+
+Unless otherwise noted, PEcAn follows the [Tidyverse style guide](https://style.tidyverse.org/), so please familiarize yourself with it before contributing.
+In addition, note the following:
+
+- **Document all functions using `roxygen2`**.
+See [Roxygen2](#developer-roxygen) for more details.
+- **Put your name on things**.
+Any function that you create or make a meaningful contribution to should have your name listed after the author tag in the function documentation.
+It is also often a good idea to add your name to extended comments describing particularly complex or strange code.
+- **Write unit tests with `testthat`**.
+Tests are a complement to documentation - they define what a function is (and is not) expected to do.
+Not all functions necessarily need unit tests, but the more tests we have, the more confident we can be that changes don't break existing code.
+Whenever you discover and fix a bug, it is a good idea to write a unit test that makes sure the same bug won't happen again.
+See [Unit_Testing](#developer-testing) for instructions, and [Advanced R: Tests](http://r-pkgs.had.co.nz/tests.html).
+- **Do not use abbreviations**.
+Always write out `TRUE` and `FALSE` (i.e. _do not_ use `T` or `F`).
+Do not rely on partial argument matching -- write out all arguments in full.
+- **Avoid dots in function names**.
+R's S3 methods system uses dots to denote object methods (e.g. `print.matrix` is the `print` method for objects of class `matrix`), which can cause confusion.
+Use underscores instead (e.g. `do_analysis` instead of `do.analysis`).
+(NOTE that many old PEcAn functions violate this convention. The plan is to deprecate those in PEcAn 2.0. See GitHub issue [#392](https://github.com/PecanProject/pecan/issues/392)).
+- **Use informative file names with consistent extensions**.
+Standard file extensions are `.R` for R scripts, `.rds` for individual objects (via `saveRDS` function), and `.RData` (note: capital D!) for multiple objects (via the `save` function).
+For function source code, prefer multiple files with fewer functions in each to large files with lots of files (though it may be a good idea to group closely related functions in a single file).
+File names should match, or at least closely reflect, their files (e.g. function `do_analysis` should be defined in a file called `do_analysis.R`).
+_Do not use spaces in file names_ -- use dashes (`-`) or underscores (`_`). 
+- **For using external packages, add the package to `Imports:` and call the corresponding function with `package::function`**.
+_Do not_ use `@importFrom package function` or, worse yet, `@import package`.
+(The exception is infix operators like `magrittr::%>%` or `ggplot2::%+%`, which can be imported via roxygen2 documentation like `@importFrom magrittr %>%`).
+_Do not_ add packages to `Depends`.
+In general, try to avoid adding new dependencies (especially ones that depend on system libraries) unless they are necessary or already widely used in PEcAn (e.g. GDAL, NetCDF, XML, JAGS, `dplyr`).
+For a more thorough and nuanced discussion, see the [package dependencies appendix](#package-dependencies).
