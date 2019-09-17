@@ -292,12 +292,13 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   time_data$wintP.JJ <- wintP.JJ
   
   # seasonal Tmax variables
-  tmax.fallspr <- (time_data$TMAXAug + time_data$TMAXSep + time_data$TMAXOct + time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul)/6
+  tmax.fallspr <- ( time_data$TMAXSep + time_data$TMAXOct + time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun)/5
   tmax.JanA <- (time_data$TMAXJan + time_data$TMAXFeb + time_data$TMAXMar + time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul + time_data$TMAXAug)/8
   tmax.MJul <- (time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul)/3
   tmax.AprMayJun <- (time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun)/3 # "Arid Foresummer"
-  tmax.fall <- (time_data$TMAXSep + time_data$TMAXOct + time_data$TMAXNov)/3 # "Arid post monsoon"
+  tmax.fall <- (time_data$TMAXSep + time_data$TMAXOct)/2 # "Arid post monsoon"
   tmax.monsoon <- (time_data$TMAXJul + time_data$TMAXAug)/2 # "monsoon"
+  
   
   time_data$tmax.fallspr <- tmax.fallspr
   time_data$tmax.JanA <- tmax.JanA
@@ -305,6 +306,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   time_data$tmax.AprMayJun <- tmax.AprMayJun
   time_data$tmax.fall <- tmax.fall
   time_data$tmax.monsoon <- tmax.monsoon
+  
+  # save the climate/time data to a file so we can look at the raw values as well:
+  saveRDS(time_data, "/Users/kah/Documents/GrowthFusion/FIA_inc_data/PRISM_non_scaled.rds")
   
   # standardize climate data
   if(standardize.cov == TRUE){
