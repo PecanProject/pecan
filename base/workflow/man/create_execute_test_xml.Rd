@@ -8,8 +8,9 @@ create_execute_test_xml(model_id, met, site_id, start_date, end_date,
   dbfiles_folder, user_id, output_folder = "batch_test_output",
   pecan_path = getwd(), pft = NULL, ensemble_size = 1,
   sensitivity_variable = "NPP", sensitivity = FALSE,
-  db_bety_username = "bety", db_bety_password = "bety",
-  db_bety_hostname = "localhost", db_bety_driver = "Postgres")
+  db_bety_username = NULL, db_bety_password = NULL,
+  db_bety_hostname = NULL, db_bety_port = NULL,
+  db_bety_driver = "Postgres")
 }
 \arguments{
 \item{model_id}{(numeric) Model ID (from `models` table)}
@@ -43,13 +44,10 @@ analysis. Default = `"NPP"`}
 \item{sensitivity}{(logical) Whether or not to perform a sensitivity analysis
 (default = `FALSE`)}
 
-\item{db_bety_username}{(character) BETY username for workflow (default = `"bety"`)}
+\item{db_bety_username, db_bety_password, db_bety_hostname, db_bety_port}{(character) BETY database connection options. Default values for all of
+these are pulled from `<pecan_path>/web/config.php`.}
 
-\item{db_bety_password}{(character) BETY password for workflow (default = `"bety"`)}
-
-\item{db_bety_hostname}{(character) BETY hostname for workflow (default = `"localhost"`)}
-
-\item{db_bety_driver}{(character) BETY DBI driver for workflow (default = `"Postgres"`)}
+\item{db_bety_driver}{(character) BETY database connection driver (default = `"Postgres"`)}
 }
 \description{
 Create a PEcAn XML file and use it to run a PEcAn workflow
