@@ -2,16 +2,6 @@
 arg <- commandArgs(trailingOnly = TRUE)
 pkg <- arg[1]
 
-# Workaround for devtools/#1914:
-# check() sets its own values for `_R_CHECK_*` environment variables, without
-# checking whether any are already set. It winds up string-concatenating new
-# onto old (e.g. "FALSE TRUE") instead of either respecting or overriding them.
-# (Fixed in devtools 2.0.1.9000; remove these lines after next CRAN release)
-Sys.unsetenv(
-    c('_R_CHECK_CRAN_INCOMING_',
-    '_R_CHECK_CRAN_INCOMING_REMOTE_',
-    '_R_CHECK_FORCE_SUGGESTS_'))
-
 log_level <- Sys.getenv('LOGLEVEL', unset = NA)
 die_level <- Sys.getenv('DIELEVEL', unset = NA)
 redocument <- as.logical(Sys.getenv('REBUILD_DOCS', unset = NA))
