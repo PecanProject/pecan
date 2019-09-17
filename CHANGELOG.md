@@ -15,6 +15,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Replace deprecated `rlang::UQ` syntax with the recommended `!!`
 - Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
 - History page would not pass the hostname parameter when showing a running workflow, this would result in the running page showing an error.
+- The `parse` option to `PEcAn.utils::read_web_config` had no effect when `expand` was TRUE (#2421).
 
 ### Changed
 - Updated modules/rtm PROSPECT docs

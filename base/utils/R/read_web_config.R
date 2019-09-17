@@ -45,10 +45,10 @@ read_web_config <- function(php.config = "../../web/config.php",
 
   if (expand) {
     # Replace $output_folder with its value, and concatenate strings
-    config_list <- lapply(config_list, gsub,
+    chr <- vapply(config_list, is.character, logical(1))
+    config_list[chr] <- lapply(config_list[chr], gsub,
                           pattern = "\\$output_folder *\\. *",
                           replacement = config_list[["output_folder"]])
   }
-
   config_list
 }
