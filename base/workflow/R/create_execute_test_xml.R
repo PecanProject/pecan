@@ -24,7 +24,7 @@
 #'   the value from `config.php`.
 #' @param db_bety_hostname (character) BETY hostname for workflow. Default is
 #'   the value from `config.php`
-#' @param db_bety_hostname (character) BETY connection port for workflow.
+#' @param db_bety_port (character) BETY connection port for workflow.
 #'   Default is the value from `config.php`
 #' @param db_bety_driver (character) BETY DBI driver for workflow (default = `"Postgres"`)
 #' @return
