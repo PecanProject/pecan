@@ -528,6 +528,10 @@ Files not of a type allowed in a ‘data’ directory:
   ‘lake_states_wgs84.qpj’ ‘lake_states_wgs84.shp’
   ‘lake_states_wgs84.shx’
 Please use e.g. ‘inst/extdata’ for non-R data files
+
+Object named ‘.Random.seed’ found in dataset: ‘soil_class’
+Please remove it.
+
 * checking data for non-ASCII characters ... WARNING
   Warning: found non-ASCII strings
   'US-Bar,272,44.0646,-71.2881,NA,4297,GRP_LOCATION,LOCATION_COMMENT,... Bartlett Experimental Forest. ...The correct location is 44 deg 3' 52.702794\ N     [NOT 43 deg as I had earlier specified]  71 deg 17 17.0766744\" W","5","NORTHERN FORESTS","5.3","ATLANTIC HIGHLANDS"
