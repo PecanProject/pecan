@@ -120,9 +120,13 @@ if (cmp$status != "+") {
     cur_msgs <- gsub(chk$checkdir, "...", cur_msgs)
     prev_msgs <- gsub(old$checkdir, "...", prev_msgs)
 
-    # Different R versions seem to differ on straight vs fancy quotes
+    # R 3.6.0 switched style for lists of packages
+    # from space-separated fancy quotes to comma-separated straight quotes
+    # We'll meet halfway, with space-separated straight quotes
     cur_msgs <- gsub("[‘’]", "'", cur_msgs)
+    cur_msgs <- gsub("', '", "' '", cur_msgs)
     prev_msgs <- gsub("[‘’]", "'", prev_msgs)
+    prev_msgs <- gsub("', '", "' '", prev_msgs)
 
     # Compression warnings report slightly different sizes on different R versions
     # If the only difference is in the numbers, don't complain
