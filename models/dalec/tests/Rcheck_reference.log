@@ -60,10 +60,7 @@ to your NAMESPACE file.
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
-* checking for code/documentation mismatches ... WARNING
-Functions or methods with usage in documentation object 'get.model.output.generic' but not in code:
-  get.model.output.dalec
-
+* checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... WARNING
 Undocumented arguments in documentation object 'met2model.DALEC'
   ‘spin_nyear’ ‘spin_nsample’ ‘spin_resample’ ‘...’
