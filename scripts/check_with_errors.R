@@ -108,7 +108,7 @@ if (cmp$status != "+") {
     print(cmp)
     cat("R check of", pkg, "reports the following new problems.",
         "Please fix these and resubmit:\n")
-    cat(cmp$cmp$output[cmp$cmp$change == 1], sep="\n")
+    cat(cmp$cmp$output[cmp$cmp$change == 1], sep = "\n")
     stop("Please fix these and resubmit.")
 } else {
     # No new messages, but need to check details of pre-existing ones
@@ -122,7 +122,7 @@ if (cmp$status != "+") {
     lines_changed <- setdiff(cur_msgs, prev_msgs)
     if (length(lines_changed) > 0) {
         cat("Package check returned new problems:\n")
-        cat(lines_changed, "\n")
+        cat(lines_changed, sep = "\n")
         stop("Please fix these and resubmit.")
     }
 }
