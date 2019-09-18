@@ -115,9 +115,22 @@ if (cmp$status != "+") {
     # We stopped earlier for errors, so all entries here are WARNING or NOTE
     cur_msgs <- msg_lines(cmp$cmp$output[cmp$cmp$which == "new"])
     prev_msgs <- msg_lines(cmp$cmp$output[cmp$cmp$which == "old"])
+
     # avoids false positives from tempdir changes
     cur_msgs <- gsub(chk$checkdir, "...", cur_msgs)
     prev_msgs <- gsub(old$checkdir, "...", prev_msgs)
+
+    # Compression warnings report slightly different sizes on different R versions
+    # If the only difference is in the numbers, don't complain
+    cmprs_msg <- grepl("significantly better compression", cur_msgs)
+    if(any(cmprs_msg)){
+        prev_cmprs_msg <- grepl("significantly better compression", prev_msgs)
+        cur_cmprs_nodigit <- gsub("[0-9]", "", cur_msgs[cmprs_msg])
+        prev_cmprs_nodigit <- gsub("[0-9]", "", prev_msgs[prev_cmprs_msg])
+        if(all(cur_cmprs_nodigit %in% prev_cmprs_nodigit)){
+            cur_msgs <- cur_msgs[!cmprs_msg]
+        }
+    }
 
     lines_changed <- setdiff(cur_msgs, prev_msgs)
     if (length(lines_changed) > 0) {
