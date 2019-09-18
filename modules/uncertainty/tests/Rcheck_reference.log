@@ -16,15 +16,7 @@
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
 * checking serialization versions ... OK
-* checking whether package ‘PEcAn.uncertainty’ can be installed ... WARNING
-Found the following significant warnings:
-  Warning: /tmp/Rtmpy5mZ7I/PEcAn.uncertainty.Rcheck/00_pkg_src/PEcAn.uncertainty/man/sd.var.Rd:19: unknown macro '\sigma'
-  Warning: /tmp/Rtmpy5mZ7I/PEcAn.uncertainty.Rcheck/00_pkg_src/PEcAn.uncertainty/man/sd.var.Rd:19: unknown macro '\left'
-  Warning: /tmp/Rtmpy5mZ7I/PEcAn.uncertainty.Rcheck/00_pkg_src/PEcAn.uncertainty/man/sd.var.Rd:19: unknown macro '\frac'
-  Warning: /tmp/Rtmpy5mZ7I/PEcAn.uncertainty.Rcheck/00_pkg_src/PEcAn.uncertainty/man/sd.var.Rd:19: unknown macro '\kappa'
-  Warning: /tmp/Rtmpy5mZ7I/PEcAn.uncertainty.Rcheck/00_pkg_src/PEcAn.uncertainty/man/sd.var.Rd:19: unknown macro '\right'
-  Warning: /tmp/Rtmpy5mZ7I/PEcAn.uncertainty.Rcheck/00_pkg_src/PEcAn.uncertainty/man/spline.ensemble.Rd:18: unknown macro '\phi'
-See ‘/tmp/Rtmpy5mZ7I/PEcAn.uncertainty.Rcheck/00install.out’ for details.
+* checking whether package ‘PEcAn.uncertainty’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... NOTE
@@ -240,13 +232,7 @@ Consider adding
              "quantile", "rexp", "sd", "splinefun", "var")
   importFrom("utils", "read.table")
 to your NAMESPACE file.
-* checking Rd files ... WARNING
-prepare_Rd: sd.var.Rd:19: unknown macro '\sigma'
-prepare_Rd: sd.var.Rd:19: unknown macro '\left'
-prepare_Rd: sd.var.Rd:19: unknown macro '\frac'
-prepare_Rd: sd.var.Rd:19: unknown macro '\kappa'
-prepare_Rd: sd.var.Rd:19: unknown macro '\right'
-prepare_Rd: spline.ensemble.Rd:18: unknown macro '\phi'
+* checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... NOTE
 Rd file 'sensitivity.analysis.Rd':
