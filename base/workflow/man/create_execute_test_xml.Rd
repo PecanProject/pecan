@@ -49,6 +49,11 @@ these are pulled from `<pecan_path>/web/config.php`.}
 
 \item{db_bety_driver}{(character) BETY database connection driver (default = `"Postgres"`)}
 }
+\value{
+A list with two entries:
+ * `sys`: Exit value returned by the workflow (0 for sucess).
+ * `outdir`: Path where the workflow results are saved
+}
 \description{
 Create a PEcAn XML file and use it to run a PEcAn workflow
 }
