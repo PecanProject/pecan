@@ -16,7 +16,7 @@
 ##' @param x first list
 ##' @param y second list
 ##' @param filename one of "species.csv" or "cultivars.csv"
-##' @return true if two list are the same
+##' @return true if two lists are the same
 ##' @author Rob Kooper
 ##'
 check.lists <- function(x, y, filename = "species.csv") {
