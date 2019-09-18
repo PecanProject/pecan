@@ -120,6 +120,10 @@ if (cmp$status != "+") {
     cur_msgs <- gsub(chk$checkdir, "...", cur_msgs)
     prev_msgs <- gsub(old$checkdir, "...", prev_msgs)
 
+    # Different R versions seem to differ on straight vs fancy quotes
+    cur_msgs <- gsub("[‘’]", "'", cur_msgs)
+    prev_msgs <- gsub("[‘’]", "'", prev_msgs)
+
     # Compression warnings report slightly different sizes on different R versions
     # If the only difference is in the numbers, don't complain
     cmprs_msg <- grepl("significantly better compression", cur_msgs)
