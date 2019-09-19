@@ -220,7 +220,6 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
                                     "but got", min(dap_time), "..", max(dap_time))
       }
 
-      
       dat.list[[j]] <- PEcAn.utils::retry.func(
         ncdf4::ncvar_get(
           dap,
