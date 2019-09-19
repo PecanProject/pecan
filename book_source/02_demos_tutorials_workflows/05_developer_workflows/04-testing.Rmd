@@ -142,7 +142,7 @@ Each build starts by launching three clean virtual machines (one for each R vers
 * Installs all the PEcAn packages, recompiling documentation and installing dependencies as needed.
 * Runs package unit tests (the same ones you run locally with `make test` or `devtools::test(pkgname)`).
     - As discussed in [Unit testing](#developer-testing-unit), these tests should run quickly and test individual components in relative isolation.
-    - Any test that calls the `skip_on_ci` function will be skipped. This is useful for tests that need to run for a very long time or require resources that aren't available on Travis (e.g. specific models), but be sure to run these tests locally before pushing your code!
+    - Any test that calls the `skip_on_ci` function will be skipped. This is useful for tests that need to run for a very long time (e.g. large data product downloads) or require resources that aren't available on Travis (e.g. specific models), but be sure to run these tests locally before pushing your code!
 * Runs R package checks (the same ones you run locally with `make check` or `devtools::check(pkgname)`), skipping tests and documentation rebuild because we just did those in the previous steps.
     - Any ERROR in the check output will stop the build immediately.
     - If there are no ERRORs, any WARNINGs or NOTEs are compared against a stored historic check result in `<package>/tests/Rcheck_reference.log`.
