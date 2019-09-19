@@ -2,7 +2,7 @@
 
 # Information to connect to the BETY database
 $db_bety_type="pgsql";
-$db_bety_hostname="128.197.168.114";
+$db_bety_hostname="localhost";
 $db_bety_port=5432;
 $db_bety_username="bety";
 $db_bety_password="bety";
@@ -78,7 +78,7 @@ $hostlist=array($fqdn => array(),
                           "qstat"       => "qstat -j @JOBID@ || echo DONE",
                           "prerun"      => "module load udunits R/R-3.0.0_gnu-4.4.6",
                           "postrun"     => "sleep 60",
-                          "models"      =>
+                          "models"      => 
                               array("ED2" =>
                                         array("prerun"  => "module load hdf5"),
                                     "ED2 (r82)" =>
@@ -88,10 +88,10 @@ $hostlist=array($fqdn => array(),
                 );
 
 # Folder where PEcAn is installed
-$R_library_path="~/R/library";
+$R_library_path="/home/carya/R/library";
 
 # Location where PEcAn is installed, not really needed anymore
-$pecan_home="/fs/data3/hamzed/pecan";
+$pecan_home="/home/carya/pecan/";
 
 # Folder where the runs are stored
 $output_folder="/home/carya/output/";
