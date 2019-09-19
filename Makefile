@@ -81,32 +81,34 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 
 include Makefile.depends
 
+SETROPTIONS = "options(Ncpus = ${NCPUS}, repos = 'http://cran.rstudio.com')"
+
 clean:
 	rm -rf .install .check .test .doc
 	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools: | .install
-	+ ./scripts/time.sh "${1}" Rscript -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	+ ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')"
 	echo `date` > $@
 
 .install/roxygen2: | .install
-	+ ./scripts/time.sh "${1}" Rscript -e "if(!requireNamespace('roxygen2', quietly = TRUE)) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	+ ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('roxygen2', quietly = TRUE)) install.packages('roxygen2')"
 	echo `date` > $@
 
 .install/testthat: | .install
-	+ ./scripts/time.sh "${1}" Rscript -e "if(!requireNamespace('testthat', quietly = TRUE)) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	+ ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('testthat', quietly = TRUE)) install.packages('testthat')"
 	echo `date` > $@
 
 .install/mockery: | .install
-	+ ./scripts/time.sh "${1}" Rscript -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	+ ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery')"
 	echo `date` > $@
 
 # HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
 # When these are fixed, can go back to simple `dependencies = TRUE`
-depends_R_pkg = ./scripts/time.sh "${1}" Rscript -e " \
-	deps <- if (grepl('base/utils', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }; \
-	devtools::install_deps('$(strip $(1))', Ncpus = ${NCPUS}, dependencies = deps, upgrade=FALSE);"
-install_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS}, upgrade=FALSE);"
+depends_R_pkg = ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} \
+	-e "deps <- if (grepl('base/utils', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }" \
+	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
+install_R_pkg = ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "devtools::install('$(strip $(1))', upgrade=FALSE)"
 check_R_pkg = ./scripts/time.sh "${1}" Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::test('"$(strip $(1))"', stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 doc_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
