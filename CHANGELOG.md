@@ -18,6 +18,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - The `parse` option to `PEcAn.utils::read_web_config` had no effect when `expand` was TRUE (#2421).
 
 ### Changed
+- Stricter package checking (#2404): `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings.
 - Updated modules/rtm PROSPECT docs
 - Updated models/sipnet/R/model2netcdf.SIPNET.R to address issues in PR #2254 
 - Improved testing (#2281). Automatic Travis CI builds of PEcAn on are now run using three versions of R in parallel. This should mean fewer issues with new releases and better backwards compatibility, but note that we still only guarantee full compatibility with the current release version of R. The tested versions are:

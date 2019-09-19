@@ -22,8 +22,11 @@
 #'   (character) BETY database connection options. Default values for all of
 #'   these are pulled from `<pecan_path>/web/config.php`.
 #' @param db_bety_driver (character) BETY database connection driver (default = `"Postgres"`)
-#' @return
+#' @return A list with two entries:
+#'  * `sys`: Exit value returned by the workflow (0 for sucess).
+#'  * `outdir`: Path where the workflow results are saved
 #' @author Alexey Shiklomanov, Tony Gardella
+#' @importFrom dplyr %>% .data
 #' @export
 create_execute_test_xml <- function(model_id,
                                     met,
@@ -57,7 +60,7 @@ create_execute_test_xml <- function(model_id,
     port = db_bety_port,
     driver = db_bety_driver
   ))
-  on.exit(DBI::dbDisconnect(con), add = TRUE)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
 
   settings <- list(
     info = list(notes = "Test_Run",
@@ -67,9 +70,9 @@ create_execute_test_xml <- function(model_id,
   )
 
   #Outdir
-  model.new <- tbl(con, "models") %>%
-    filter(id == !!model_id) %>%
-    collect()
+  model.new <- dplyr::tbl(con, "models") %>%
+    dplyr::filter(.data$id == !!model_id) %>%
+    dplyr::collect()
   outdir_pre <- paste(
     model.new[["model_name"]],
     format(as.Date(start_date), "%Y-%m"),
@@ -98,9 +101,9 @@ create_execute_test_xml <- function(model_id,
   #PFT
   if (is.null(pft)){
     # Select the first PFT in the model list.
-    pft <- tbl(con, "pfts") %>%
-      filter(modeltype_id == !!model.new$modeltype_id) %>%
-      collect()
+    pft <- dplyr::tbl(con, "pfts") %>%
+      dplyr::filter(.data$modeltype_id == !!model.new$modeltype_id) %>%
+      dplyr::collect()
     pft <- pft$name[[1]]
     message("PFT is `NULL`. Defaulting to the following PFT: ",
             pft)
