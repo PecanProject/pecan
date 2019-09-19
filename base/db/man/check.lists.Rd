@@ -14,7 +14,7 @@ check.lists(x, y, filename = "species.csv")
 \item{filename}{one of "species.csv" or "cultivars.csv"}
 }
 \value{
-true if two list are the same
+true if two lists are the same
 }
 \description{
 Check two lists. Identical does not work since one can be loaded
