@@ -15,8 +15,8 @@ spline.ensemble(gi.phii, median)
 Estimate model output based on univariate splines
 }
 \details{
-Accepts output from get.gi.phii (the matrix $g(\phi_i)$) and produces
-spline estimate of $f(phi)$ for use in estimating closure term associated with
+Accepts output from get.gi.phii (the matrix \eqn{g(\phi_i)}) and produces
+spline estimate of \eqn{f(\phi)} for use in estimating closure term associated with
 spline approximation
 }
 \author{
