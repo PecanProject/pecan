@@ -22,6 +22,7 @@ install2.r -e -s -n -1\
     BayesianTools \
     binaryLogic \
     BioCro \
+    bit64 \
     car \
     coda \
     data.table \

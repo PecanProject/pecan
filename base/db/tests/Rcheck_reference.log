@@ -34,9 +34,7 @@ License components with restrictions not permitted:
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... WARNING
-'::' or ':::' import not declared from: ‘bit64’
-'loadNamespace' or 'requireNamespace' call not declared from: ‘bit64’
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
@@ -113,10 +111,9 @@ search_reference_single: no visible binding for global variable
   ‘author_given’
 search_reference_single: no visible binding for global variable
   ‘issued’
-symmetric_setdiff: no visible global function definition for ‘:=’
 workflows: no visible binding for global variable ‘workflow_id’
 Undefined global functions or variables:
-  := . as author author_family author_given citation_id collect
+  . as author author_family author_given citation_id collect
   container_id container_type created_at cultivar_id ensemble_id folder
   genus greenhouse head id issued machine_id n name name.cv name.mt
   pft_id pft_type posix read.output run_id scientificname score
