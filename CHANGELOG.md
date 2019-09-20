@@ -8,6 +8,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+
+- Fix #2424 issue with cruncep download: use netcdf subset (ncss) method instead of opendap
 - Fixed issue that prevented modellauncher from working properly #2262
 - Use explicit namespacing (`package::function`) throughout `PEcAn.meta.analysis`. Otherwise, many of these functions would fail when trying to run a meta-analysis outside of the PEcAn workflow (i.e. without having loaded the packages first) (#2351).
 - Standardize how `PEcAn.DB` tests create database connections, and make sure tests work with both the newer `Postgres` and older `PostgreSQL` drivers (#2351).
