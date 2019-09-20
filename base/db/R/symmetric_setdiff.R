@@ -53,7 +53,7 @@ symmetric_setdiff <- function(x, y, xname = "x", yname = "y",
   }
   if (simplify_types) {
     x <- dplyr::mutate_if(x, ~!is.numeric(.), as.character)
-    y <- dplyr::mutate_if(x, ~!is.numeric(.), as.character)
+    y <- dplyr::mutate_if(y, ~!is.numeric(.), as.character)
   }
   namecol <- dplyr::sym(namecol)
   xy <- dplyr::setdiff(x, y) %>%
