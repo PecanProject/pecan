@@ -147,6 +147,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
       stage$download.raw <- FALSE
       stage$local <- TRUE
     }
+  }else{
+    stage$local <- FALSE
   }
   
   PEcAn.logger::logger.debug(stage)

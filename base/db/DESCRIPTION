@@ -63,6 +63,7 @@ Suggests:
     RPostgreSQL,
     RPostgres,
     RSQLite,
+    bit64,
     data.table,
     here,
     rcrossref,
