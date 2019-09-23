@@ -54,9 +54,12 @@ set -e
 )
 
 # CHECK FOR CHANGES TO DOC/DEPENDENCIES
-if [[ `git status -s` ]]; then 
-    echo "These files were changed by the build process:";
+if [[ `git status -s` ]]; then
+    echo -e "\nThese files were changed by the build process:";
     git status -s;
     echo "Have you run devtools::check and commited any updated Roxygen outputs?";
-    exit 1; 
+    echo -e "travis_fold:start:gitdiff\nFull diff:\n";
+    git diff;
+    echo -e "travis_fold:end:gitdiff\n\n";
+    exit 1;
 fi

@@ -3,5 +3,6 @@
 export(call_MODIS)
 export(download.LandTrendr.AGB)
 export(download.NLCD)
+export(download.thredds.AGB)
 export(extract.LandTrendr.AGB)
 export(extract_NLCD)

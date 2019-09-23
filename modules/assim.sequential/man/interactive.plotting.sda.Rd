@@ -28,7 +28,8 @@ post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs,
   X, FORECAST, ANALYSIS, plot.title = NULL)
 
 post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov,
-  FORECAST, ANALYSIS, plot.title = NULL, facetg = F, readsFF = NULL)
+  FORECAST, ANALYSIS, plot.title = NULL, facetg = FALSE,
+  readsFF = NULL)
 }
 \arguments{
 \item{settings}{pecan standard settings list.}

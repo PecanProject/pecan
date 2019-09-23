@@ -17,8 +17,11 @@ This section will contain information about all models and output variables that
 | [SiPNET](#models-sipnet)| Yes | Yes | Yes| Yes |
 
 *Available in the VM* - Denotes if a model is publicly available with PEcAn.
+
 *Prescribed Inputs* - Denotes whether or not PEcAn can prescribe inputs.
-*Input Functions/Values* - Denotes whether or not PEcAn has functions to fully produce a model's Input values
+
+*Input Functions/Values* - Denotes whether or not PEcAn has functions to fully produce a model's Input values. 
+
 *Restart Function* - Denotes status of model data assimilation capabilities.
 
 

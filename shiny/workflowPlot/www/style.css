@@ -1,3 +1,18 @@
+.table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 0px;
+}
+
+.badge {
+    background-color: #4c4343;
+    font-size: 14px;
+}
+
+.alert h5{margin-top:0;color:inherit}
+
+.alert h6{margin-top:0;color:inherit}
+
 #loading-content {
     position: absolute;
     background: #ffffff;
