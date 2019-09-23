@@ -5,8 +5,8 @@
 \title{align.met}
 \usage{
 align.met(train.path, source.path, yrs.train = NULL, yrs.source = NULL,
-  n.ens = NULL, pair.mems = FALSE, mems.train = NULL, seed = Sys.Date(),
-  print.progress = FALSE)
+  n.ens = NULL, pair.mems = FALSE, mems.train = NULL,
+  seed = Sys.Date(), print.progress = FALSE)
 }
 \arguments{
 \item{train.path}{- path to the dataset to be used to downscale the data}
@@ -75,3 +75,4 @@ Other debias - Debias & Align Meteorology Datasets into continuous time series: 
 \author{
 Christy Rollinson
 }
+\concept{debias - Debias & Align Meteorology Datasets into continuous time series}

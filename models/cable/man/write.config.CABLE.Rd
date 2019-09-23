@@ -26,5 +26,5 @@ Requires a pft xml object, a list of trait values for a single model run,
 and the name of the file to create
 }
 \author{
-Rob Kooper
+Rob Kooper, Kaitlin Ragosta
 }

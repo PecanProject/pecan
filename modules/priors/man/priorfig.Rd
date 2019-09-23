@@ -4,8 +4,8 @@
 \alias{priorfig}
 \title{Prior Figure}
 \usage{
-priorfig(priordata = NA, priordensity = NA, trait = "", xlim = "auto",
-  fontsize = 18)
+priorfig(priordata = NA, priordensity = NA, trait = "",
+  xlim = "auto", fontsize = 18)
 }
 \arguments{
 \item{priordata}{observations to be plotted as points}

@@ -6,6 +6,9 @@
 \usage{
 clear.scratch(settings)
 }
+\arguments{
+\item{settings}{list of PEcAn settings. Only \code{settings$host$name} is used}
+}
 \value{
 nothing
 }

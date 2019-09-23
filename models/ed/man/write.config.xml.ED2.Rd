@@ -4,7 +4,8 @@
 \alias{write.config.xml.ED2}
 \title{Write ED2 config.xml file}
 \usage{
-write.config.xml.ED2(settings, trait.values, defaults = settings$constants)
+write.config.xml.ED2(settings, trait.values,
+  defaults = settings$constants)
 }
 \arguments{
 \item{settings}{PEcAn settings file. Settings required for this script are: model$revision, model$config.header, constants}
@@ -15,6 +16,9 @@ write.config.xml.ED2(settings, trait.values, defaults = settings$constants)
 }
 \value{
 R XML object containing full ED2 XML file
+}
+\description{
+Write ED2 config.xml file
 }
 \details{
 Refactored by Alexey Shiklomanov to allow use in PEcAn RTM module.

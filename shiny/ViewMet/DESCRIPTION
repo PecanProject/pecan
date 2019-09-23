@@ -1,0 +1,16 @@
+Type: Shiny
+Title: Plot data from CF-formatted meteorology files
+License: FreeBSD + file LICENSE
+Author: Betsy Cowdery <ecowdery@bu.edu>
+Tags: PEcAn
+Imports:
+    dplyr,
+    DT,
+    ggplot2,
+    ncdf4,
+    PEcAn.benchmark,
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.visualization,
+    plyr,
+    stringr

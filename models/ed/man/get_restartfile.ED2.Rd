@@ -14,6 +14,9 @@ get_restartfile.ED2(mod_outdir, runid, file.time)
 
 \item{file.time}{Start or end time from SDA analysis}
 }
+\description{
+Get ED history restart file path
+}
 \author{
 Alexey Shiklomanov
 }

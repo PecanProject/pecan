@@ -4,8 +4,9 @@
 \alias{run.ensemble.analysis}
 \title{run ensemble.analysis}
 \usage{
-run.ensemble.analysis(settings, plot.timeseries = NA, ensemble.id = NULL,
-  variable = NULL, start.year = NULL, end.year = NULL, ...)
+run.ensemble.analysis(settings, plot.timeseries = NA,
+  ensemble.id = NULL, variable = NULL, start.year = NULL,
+  end.year = NULL, ...)
 }
 \arguments{
 \item{plot.timeseries}{if TRUE plots a modeled timeseries of target variable(s) with CIs}

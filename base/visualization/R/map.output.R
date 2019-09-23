@@ -6,7 +6,6 @@
 #' @export
 #' @author David LeBauer
 map.output <- function(table, variable) {
-  library(ggplot2)
   if (any(table$lat < 0) | any(table$lon > 0)) {
     world <- data.table(map_data("world"))
   } else {

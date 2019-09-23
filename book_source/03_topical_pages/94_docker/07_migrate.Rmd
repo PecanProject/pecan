@@ -1,0 +1,49 @@
+## Migrating PEcAn from VM to Docker {#docker-migrate}
+
+This document assumes you have read through the [Introduction to Docker](#docker-intro) as well as [Docker quickstart](#docker-quickstart) and have docker running on the VM.
+
+This document will slowly replace each of the components with the appropriate docker images. At then end of this document you should be able to use the docker-compose command to bring up the full docker stack as if you had started with this origianally.
+
+### Running BETY as a docker container
+
+This will replace the BETY application running on the machine with a docker image. This will assume you still have the database running on the local machine and the only thing we replace is the BETY application.
+
+If you are running systemd (Ubuntu 16.04 or Centos 7) you can copy the following file to /etc/systemd/system/bety.service (replace LOCAL_SERVER=99 with your actual server). If you have postgres running on another server replace 127.0.0.1 with the actual ip address of the postgres server.
+
+```
+[Unit]
+Description=BETY container
+After=docker.service
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/docker run -t --rm --name bety --add-host=postgres:127.0.0.1 --network=host --env RAILS_RELATIVE_URL_ROOT=/bety --env LOCAL_SERVER=99 pecan/bety
+ExecStop=/usr/bin/docker stop -t 2 bety
+
+[Install]
+WantedBy=local.target
+```
+
+At this point we can enable the bety service (this only needs to be done once). First we need to tell systemd a new service is available using `systemctl daemon-reload`. Next we enable the BETY service so it will restart automatically when the machine reboots, using `systemctl enable bety`. Finally we can start the BETY service using `systemctl start bety`. At this point BETY is running as a docker container on port 8000. You can see the log messages using `journalctl -u bety`.
+
+Next we need to modify apache configuration files. The file /etc/apache2/conf-enabled/bety.conf will be replaced with the following content:
+
+```
+ProxyPass                /bety/ http://localhost:8000/bety/
+ProxyPassReverse         /bety/ http://localhost:8000/bety/
+RedirectMatch permanent ^/bety$ /bety/
+```
+
+Once this modified we can restart apache using `systemctl restart apache2`. At this point BETY is running in a container and is accessable trough the webserver at http://server/bety/.
+
+
+To upgrade to a new version of BETY you can now use the docker commands. You can use the following commands to stop BETY, pull the latest image down, migrate the database (you made a backup correct?) and start BETY again.
+
+```
+systemctl stop bety
+docker pull pecan/bety:latest
+docker run -ti --rm --add-host=postgres:127.0.0.1 --network=host --env LOCAL_SERVER=99 pecan/bety migrate
+systemctl start bety
+```
+
+Once you are satisfied with the migration of BETY you can remove the bety folder as well as any ruby binaries you have installed.

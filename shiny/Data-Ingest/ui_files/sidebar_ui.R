@@ -1,15 +1,15 @@
 sidebarMenu(
-  menuItem(
-    "Homepage",
-    tabName = "Home",
-    icon = icon("home", lib = "font-awesome")
-  ),
+ 
   menuItem(
     "Ingest Workflow",
     tabName = "ingestWorkflow",
     icon = icon("database", lib = "font-awesome")
   ),
-
+  menuItem(
+    "About",
+    tabName = "About",
+    icon = icon("info-circle", lib = "font-awesome")
+  ),
   shinyjs::hidden(
     div(id = "select_in",
       actionBttn("d1Input", label = "Import from DataONE",

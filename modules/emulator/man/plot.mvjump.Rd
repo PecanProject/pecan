@@ -9,6 +9,9 @@
 \arguments{
 \item{jmp}{}
 }
+\description{
+plot.mvjump
+}
 \author{
 Michael Dietze
 }

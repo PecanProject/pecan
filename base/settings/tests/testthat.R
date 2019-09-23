@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.utils)
+library(PEcAn.settings)
 
 PEcAn.logger::logger.setQuitOnSevere(FALSE)
 # tests are disbabled until https://github.com/PecanProject/bety/issues/180 is

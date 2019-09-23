@@ -13,19 +13,26 @@
 ##' @name jagify
 ##' @title Prepare trait data for JAGS meta-analysis
 ##' @param result input trait data
+##' @param use_ghs (Logical) If `FALSE`, exclude all greenhouse data. If `TRUE`, use all data, including greenhouse data.
 ##' @return result transformed to meet requirements of PEcAn meta-analysis model
 ##' @export
 ##' @author David LeBauer
-jagify <- function(result) {
+jagify <- function(result, use_ghs = TRUE) {
   
+
   ## Rename 'name' column from 'treatment' table to trt_id.  Remove NAs. Assign treatments.
   ## Finally, summarize the results by calculating summary statistics from experimental replicates
   r <- result[!is.na(result$mean), ]
   colnames(r)[colnames(r) == "name"] <- "trt_id"
   r <- transform.nas(r)
-  r <- assign.treatments(r)
+  
+  # exclude greenhouse data unless requested otherwise
+  if(!use_ghs){
+    r <- r[r$greenhouse != 1, ]
+  }
+  
+  r <- PEcAn.DB::assign.treatments(r)
   r <- PEcAn.utils::summarize.result(r)
-  r$greenhouse[is.na(r$greenhouse)] <- 0
   r <- subset(transform(r, 
                         stat = as.numeric(stat), 
                         n = as.numeric(n), 
@@ -46,7 +53,7 @@ jagify <- function(result) {
     r$stat[r$stat <= 0] <- NA
   }
   
-  rename_jags_columns(r)
+  PEcAn.DB::rename_jags_columns(r)
 } # jagify
 # ==================================================================================================#
 
@@ -70,7 +77,7 @@ transform.nas <- function(data) {
   data$site_id[is.na(data$site_id)] <- 0
   
   # greenhouse defaults to false (0)
-  data$greenhouse[is.na(data$greenhouse)] <- 1
+  data$greenhouse[is.na(data$greenhouse)] <- 0
   
   # number of observations defaults to 2 for statistics, 1 otherwise
   data$n[is.na(data$n)] <- 1

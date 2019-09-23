@@ -1,0 +1,16 @@
+Type: Shiny
+Title: Visualize dependencies between PEcAn packages
+License: FreeBSD + file LICENSE
+Author: Hamze Dokoohaki <hamzed@bu.edu>
+Tags: PEcAn
+#DisplayMode: Showcase
+Imports:
+    CodeDepends,
+    DependenciesGraphs,
+    dplyr,
+    ggplot2,
+    shinydashboard,
+    shinyWidgets,
+    visNetwork,
+    XML
+Remotes: datastorm-open/DependenciesGraphs

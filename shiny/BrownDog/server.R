@@ -1,8 +1,22 @@
-library(shiny)
-library(leaflet)
-library(RPostgreSQL)
-library(PEcAn.DB)
-library(PEcAn.visualization)
+## Check and load Packages
+lapply(c( "shiny",
+          "leaflet",
+          "RPostgreSQL"
+        ),function(pkg){
+          if (!(pkg %in% installed.packages()[,1])){
+                install.packages(pkg)
+                }
+                library(pkg,character.only = TRUE,quietly = TRUE)
+          }
+      )
+
+lapply(c( "PEcAn.DB",
+          "PEcAn.visualization"
+      ),function(pkg){
+        library(pkg,character.only = TRUE,quietly = TRUE)
+        }
+      )
+
 
 
 # Define server logic

@@ -14,6 +14,9 @@
 \value{
 jmp updated jump parameter
 }
+\description{
+update.jump
+}
 \author{
 Michael Dietze
 }

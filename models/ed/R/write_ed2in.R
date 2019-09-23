@@ -19,7 +19,7 @@ write_ed2in <- function(ed2in, filename, custom_header = character(), barebones 
 #' @export
 write_ed2in.ed2in <- function(ed2in, filename, custom_header = character(), barebones = FALSE) {
   tags_values_vec <- tags2char(ed2in)
-  if (barebones) {
+  if (isTRUE(barebones)) {
     write_ed2in.default(ed2in, filename, custom_header, barebones)
     return(NULL)
   }

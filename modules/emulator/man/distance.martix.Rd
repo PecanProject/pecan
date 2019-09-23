@@ -13,6 +13,9 @@ distance.matrix(x, power = 1, dim = 2)
 \value{
 d
 }
+\description{
+distance.matrix
+}
 \author{
 Michael Dietze
 }

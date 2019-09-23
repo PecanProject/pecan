@@ -4,8 +4,8 @@
 \alias{write_restart.ED2}
 \title{Write ED2 restart file from SDA results}
 \usage{
-write_restart.ED2(outdir, runid, start.time, stop.time, settings, new.state,
-  RENAME = TRUE, new.params, inputs)
+write_restart.ED2(outdir, runid, start.time, stop.time, settings,
+  new.state, RENAME = TRUE, new.params, inputs)
 }
 \arguments{
 \item{outdir}{outout directory}
@@ -28,6 +28,9 @@ write_restart.ED2(outdir, runid, start.time, stop.time, settings, new.state,
 }
 \value{
 TRUE if successful
+}
+\description{
+Write ED2 restart file from SDA results
 }
 \author{
 Alexey Shiklomanov, Istem Fer

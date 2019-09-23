@@ -11,6 +11,9 @@ check_BRR(settings_xml, con)
 
 \item{con}{database connection}
 }
+\description{
+Check whether a run has been registered as a reference run in BETY
+}
 \author{
 Betsy Cowdery
 }

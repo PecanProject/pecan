@@ -9,6 +9,9 @@ metric_R2(metric_dat, ...)
 \arguments{
 \item{metric_dat}{dataframe}
 }
+\description{
+Coefficient of Determination (R2)
+}
 \author{
 Betsy Cowdery
 }

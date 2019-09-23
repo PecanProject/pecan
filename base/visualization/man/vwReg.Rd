@@ -7,49 +7,49 @@
 vwReg(formula, data, title = "", B = 1000, shade = TRUE,
   shade.alpha = 0.1, spag = FALSE, spag.color = "darkblue",
   mweight = TRUE, show.lm = FALSE, show.median = TRUE,
-  median.col = "white", shape = 21, show.CI = FALSE, method = loess,
-  bw = FALSE, slices = 200, palette = colorRampPalette(c("#FFEDA0",
-  "#DD0000"), bias = 2)(20), ylim = NULL, quantize = "continuous",
-  add = FALSE, ...)
+  median.col = "white", shape = 21, show.CI = FALSE,
+  method = loess, bw = FALSE, slices = 200,
+  palette = colorRampPalette(c("#FFEDA0", "#DD0000"), bias = 2)(20),
+  ylim = NULL, quantize = "continuous", add = FALSE, ...)
 }
 \arguments{
 \item{B}{= number bootstrapped smoothers}
 
+\item{shade}{plot the shaded confidence region?}
+
+\item{shade.alpha}{should the CI shading fade out at the edges? (by reducing alpha; 0 = no alpha decrease, 0.1 = medium alpha decrease, 0.5 = strong alpha decrease)}
+
+\item{spag}{plot spaghetti lines?}
+
+\item{spag.color}{color of spaghetti lines}
+
+\item{mweight}{should the median smoother be visually weighted?}
+
+\item{show.lm}{should the linear regresison line be plotted?}
+
+\item{show.median}{should the median smoother be plotted?}
+
+\item{median.col}{color of the median smoother}
+
+\item{shape}{shape of points}
+
+\item{show.CI}{should the 95\% CI limits be plotted?}
+
+\item{method}{the fitting function for the spaghettis; default: loess}
+
 \item{bw}{= TRUE: define a default b&w-palette}
 
-\item{shade:}{plot the shaded confidence region?}
+\item{slices}{number of slices in x and y direction for the shaded region. Higher numbers make a smoother plot, but takes longer to draw. I wouldn'T go beyond 500}
 
-\item{shade.alpha:}{should the CI shading fade out at the edges? (by reducing alpha; 0 = no alpha decrease, 0.1 = medium alpha decrease, 0.5 = strong alpha decrease)}
+\item{palette}{provide a custom color palette for the watercolors}
 
-\item{spag:}{plot spaghetti lines?}
+\item{ylim}{restrict range of the watercoloring}
 
-\item{spag.color:}{color of spaghetti lines}
+\item{quantize}{either 'continuous', or 'SD'. In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)}
 
-\item{mweight:}{should the median smoother be visually weighted?}
+\item{add}{if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)}
 
-\item{show.lm:}{should the linear regresison line be plotted?}
-
-\item{show.CI:}{should the 95% CI limits be plotted?}
-
-\item{show.median:}{should the median smoother be plotted?}
-
-\item{median.col:}{color of the median smoother}
-
-\item{shape:}{shape of points}
-
-\item{method:}{the fitting function for the spaghettis; default: loess}
-
-\item{slices:}{number of slices in x and y direction for the shaded region. Higher numbers make a smoother plot, but takes longer to draw. I wouldn'T go beyond 500}
-
-\item{palette:}{provide a custom color palette for the watercolors}
-
-\item{ylim:}{restrict range of the watercoloring}
-
-\item{quantize:}{either 'continuous', or 'SD'. In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)}
-
-\item{add:}{if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)}
-
-\item{...:}{further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''}
+\item{...}{further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''}
 }
 \value{
 NULL plot as side effect

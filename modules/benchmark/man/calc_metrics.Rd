@@ -19,6 +19,9 @@ calc_metrics(model.calc, obvs.calc, var, metrics, ensemble.id, bm_dir)
 
 \item{bm_dir}{directory where benchmarking outputs will be saved}
 }
+\description{
+calc_metrics
+}
 \author{
 Betsy Cowdery
 }

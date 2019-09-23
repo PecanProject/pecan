@@ -65,8 +65,16 @@ load_veg <- function(new_site, start_date, end_date,
     # the first sublist can be for the metadata maybe?
     # to be handled by veg2model later
     veg_info[[1]] <- icmeta
+    if(is.null(icmeta$area)){
+      # this might not be needed for all models but let's put a warning here before it's too late
+      PEcAn.logger::logger.warn("IMPORTANT : No area info passed via metadata, 
+                                if your model needs plot area in IC calculations please provide it under 'settings$run$inputs$css$metadata$area'.")
+    }
   }else{
     veg_info[[1]] <- NULL 
+    # this might not be needed for all models but let's put a warning here before it's too late
+    PEcAn.logger::logger.warn("IMPORTANT : No area info passed via metadata, 
+                              if your model needs plot area in IC calculations please provide it under 'settings$run$inputs$css$metadata$area'.")
   }
   
   veg_info[[2]] <- cbind(obs, tmp)

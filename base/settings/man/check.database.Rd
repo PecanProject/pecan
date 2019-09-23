@@ -9,3 +9,6 @@ check.database(database)
 \arguments{
 \item{settings}{settings file}
 }
+\description{
+Check Database
+}

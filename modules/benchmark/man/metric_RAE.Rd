@@ -9,6 +9,9 @@ metric_RAE(metric_dat, ...)
 \arguments{
 \item{metric_dat}{dataframe}
 }
+\description{
+Relative Absolute Error
+}
 \author{
 Betsy Cowdery
 }

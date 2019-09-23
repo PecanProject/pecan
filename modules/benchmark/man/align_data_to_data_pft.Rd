@@ -10,18 +10,18 @@ align_data_to_data_pft(con, observation_one, observation_two,
 \arguments{
 \item{con}{database connection}
 
-\item{observation_one}{a vector of plant fucntional types, or species}
+\item{observation_one}{a vector of plant functional types, or species}
 
-\item{observation_two}{another vector of plant fucntional types, or species}
+\item{observation_two}{another vector of plant functional types, or species}
 
-\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
+\item{custom_table}{a table that either maps two pft's to one another or maps custom species codes to bety id codes.
 In the second case, must be passable to match_species_id.}
 
 \item{format_one}{The output of query.format.vars() of observation one of the form output$vars$bety_names}
 
 \item{format_two}{The output of query.format.vars() of observation two of the form output$vars$bety_names}
 
-\item{subset_are_ok}{When aligning two species lists, this allows for alignement when species lists aren't identical. 
+\item{subset_is_ok}{When aligning two species lists, this allows for alignment when species lists aren't identical.
 set to FALSE by default.}
 }
 \value{
@@ -49,6 +49,7 @@ Can align:
  and observation_two are both provided.
 }
 \examples{
+\dontrun{
 
 observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
 observation_two<-c("a", "b", "a", "a")
@@ -61,8 +62,12 @@ table<-as.data.frame(table)
 format_one<-"species_USDA_symbol"
 format_two<-"plant_functional_type"
 
-aligned<-align_data_to_data_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
-format_one = format_one, format_two = format_two, custom_table = table)
+aligned <- align_data_to_data_pft(
+ con = con,
+ observation_one = observation_one, observation_two = observation_two,
+ format_one = format_one, format_two = format_two,
+ custom_table = table)
+}
 }
 \author{
 Tempest McCabe

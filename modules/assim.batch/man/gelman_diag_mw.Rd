@@ -4,8 +4,8 @@
 \alias{gelman_diag_mw}
 \title{Calculate Gelman diagnostic on moving window}
 \usage{
-gelman_diag_mw(x, width_fraction = 0.1, width = ceiling(coda::niter(x) *
-  width_fraction), njump = 50, include.mpsrf = TRUE, ...)
+gelman_diag_mw(x, width_fraction = 0.1, width = ceiling(coda::niter(x)
+  * width_fraction), njump = 50, include.mpsrf = TRUE, ...)
 }
 \arguments{
 \item{x}{MCMC samples, of class \code{mcmc} or \code{mcmc.list}}
@@ -20,6 +20,9 @@ gelman_diag_mw(x, width_fraction = 0.1, width = ceiling(coda::niter(x) *
 }
 \value{
 Gelman Diagnostic 3D array. First dim -- mean (1) and 95% confidence (2). Second dim -- iteration
+}
+\description{
+Calculate Gelman diagnostic on moving window
 }
 \author{
 Alexey Shiklomanov

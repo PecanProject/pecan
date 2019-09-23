@@ -167,7 +167,7 @@ nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date,
       if (upscale == "hour") {
         upscale_timestep = 1/24
       }
-        dat.train <- aggregate(train_df[, names(train_df)[!names(train_df) %in% 
+        dat.train <- stats::aggregate(train_df[, names(train_df)[!names(train_df) %in% 
             c("year", "doy", "hour")]], by = train_df[time.vars], FUN = mean, 
             na.rm = FALSE)
         dat.train <- dat.train[order(dat.train$date), ]

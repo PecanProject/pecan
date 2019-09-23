@@ -36,7 +36,17 @@ ed.var <- function(varname) {
     out = list(readvar = "BROOT", 
                type = 'co', units = "kgC/plant", 
                drelated = NULL, 
-               expr    = "BROOT")                                                  
+               expr    = "BROOT")   
+  } else if(varname == "reproductive_litter_carbon_content") {
+    out = list(readvar = "BSEEDS_CO", 
+               type = 'co', units = "kgC/plant", 
+               drelated = NULL, 
+               expr    = "BSEEDS_CO") 
+  } else if(varname == "storage_carbon_content") {
+    out = list(readvar = "BSTORAGE", 
+               type = 'co', units = "kgC/plant", 
+               drelated = NULL, 
+               expr    = "BSTORAGE")
   } else if(varname == "GWBI") {
     out = list(readvar = "DDBH_DT", # this is actually rate of change in DBH, we'll calculate GWBI from it 
                type = 'co', units = "cm/yr", 

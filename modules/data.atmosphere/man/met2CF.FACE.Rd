@@ -4,8 +4,8 @@
 \alias{met2CF.FACE}
 \title{convert FACE files to CF files}
 \usage{
-met2CF.FACE(in.path, in.prefix, outfolder, start_date, end_date, input.id, site,
-  format, ...)
+met2CF.FACE(in.path, in.prefix, outfolder, start_date, end_date, input.id,
+  site, format, ...)
 }
 \description{
 convert FACE files to CF files

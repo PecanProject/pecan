@@ -5,9 +5,9 @@
 \title{Paramater Data Assimilation using emulator}
 \usage{
 pda.emulator(settings, external.data = NULL, external.priors = NULL,
-  params.id = NULL, param.names = NULL, prior.id = NULL, chain = NULL,
-  iter = NULL, adapt = NULL, adj.min = NULL, ar.target = NULL,
-  jvar = NULL, n.knot = NULL)
+  params.id = NULL, param.names = NULL, prior.id = NULL,
+  chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL,
+  ar.target = NULL, jvar = NULL, n.knot = NULL)
 }
 \arguments{
 \item{settings}{= a pecan settings list}

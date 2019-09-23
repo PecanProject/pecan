@@ -4,9 +4,9 @@
 \alias{met2model.ED2}
 \title{met2model wrapper for ED2}
 \usage{
-met2model.ED2(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
-  lat = NA, lon = NA, overwrite = FALSE, verbose = FALSE,
-  leap_year = TRUE, ...)
+met2model.ED2(in.path, in.prefix, outfolder, start_date, end_date,
+  lst = 0, lat = NA, lon = NA, overwrite = FALSE,
+  verbose = FALSE, leap_year = TRUE, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}

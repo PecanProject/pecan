@@ -49,7 +49,26 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## Subset data for processing
     sub.DALEC.output <- subset(DALEC.output, year == y)
     sub.DALEC.output.dims <- dim(sub.DALEC.output)
+
+    # ******************** Declare netCDF variables ********************#
+    start.day <- 1
+    if (y == lubridate::year(start_date)){
+      start.day <- length(as.Date(paste0(y, "-01-01")):as.Date(start_date)) 
+    } 
+    tvals <- (start.day:sub.DALEC.output.dims[1])-1
+    bounds <- array(data=NA, dim=c(length(tvals),2))
+    bounds[,1] <- tvals
+    bounds[,2] <- bounds[,1]+1
+    t   <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
+                     vals = tvals, calendar = "standard", unlim = TRUE)
+    ## ***** Need to dynamically update the UTC offset here *****
     
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    dims <- list(lon = lon, lat = lat, time = t)
+    time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
+                                      longname="history time interval endpoint dimensions",
+                                      vals = 1:2, units="")
     
     ## Output names
     # ra (autotrophic respiration, gC/m2/day);
@@ -69,7 +88,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     # cs (soil organic matter, gC/m2);
     # gpp (gross primary productivity, gC/m2/day);
     # nep (net ecosystem productivity, gC/m2/day);
-
+    
     # names(sub.DALEC.output) <- c("ra", "af", "aw", "ar", "lf", "lw", "lr", "cf", "cw", "cr", "rh1", "rh2", "d", "cl", "cs", "gpp", "nep")
     
     ## Setup outputs for netCDF file in appropriate units
@@ -97,26 +116,17 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[16]] <- output[[12]] + output[[13]]  ## TotSoilCarb
     output[[17]] <- sub.DALEC.output[, 15] * DALEC.configs[grep("SLA", DALEC.configs) + 1][[1]]  
     
-    # ******************** Declare netCDF variables ********************#
-    start.day <- 1
-    if (y == lubridate::year(start_date)){
-      start.day <- length(as.Date(paste0(y, "-01-01")):as.Date(start_date)) 
-    } 
-    t   <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
-                     vals = start.day:(start.day + (nrow(sub.DALEC.output)-1)), 
-                     calendar = "standard", unlim = TRUE)
-    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
-   
-    dims <- list(lon = lon, lat = lat, time = t)
-    ## ***** Need to dynamically update the UTC offset here *****
+    ## time_bounds
+    output[[18]] <- c(rbind(bounds[,1], bounds[,2]))
     
+    ## missing value handling
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0) 
         output[[i]] <- rep(-999, length(t$vals))
     }
     
-    
+    ## setup nc file
+    # ******************** Declar netCDF variables ********************#
     nc_var <- list()
     nc_var[[1]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
     nc_var[[2]]  <- PEcAn.utils::to_ncvar("HeteroResp", dims)
@@ -136,11 +146,13 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc_var[[15]] <- PEcAn.utils::to_ncvar("TotLivBiom", dims)
     nc_var[[16]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     nc_var[[17]] <- PEcAn.utils::to_ncvar("LAI", dims)
-
-    # ******************** Declar netCDF variables ********************#
+    nc_var[[18]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
+                                     longname = "history time interval endpoints", dim=list(time_interval,time = t), 
+                                     prec = "double")
     
     ### Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
+    ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])

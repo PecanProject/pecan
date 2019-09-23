@@ -1,9 +1,0 @@
-## Model Variables
-
-We originally used the [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) conventions. Since, We've added the PaLEON variable conventions to our standard as well. If a variable isn't in one of those two, we stick to the CF conventions.
-```{r, echo=FALSE}
-data("standard_vars", package = "PEcAn.utils")
-install.packages("DT")
-library(DT)
-datatable(standard_vars)
-```

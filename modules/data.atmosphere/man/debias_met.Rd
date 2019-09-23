@@ -5,8 +5,8 @@
 \alias{debias.met}
 \title{debias_met}
 \usage{
-debias.met(outfolder, input_met, train_met, site_id, de_method = "linear",
-  overwrite = FALSE, verbose = FALSE, ...)
+debias.met(outfolder, input_met, train_met, site_id,
+  de_method = "linear", overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{input_met}{- the source_met dataset that will be altered by the training dataset in NC format.}

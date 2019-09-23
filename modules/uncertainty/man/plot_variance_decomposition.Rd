@@ -4,8 +4,8 @@
 \alias{plot_variance_decomposition}
 \title{Variance Decomposition Plots}
 \usage{
-plot_variance_decomposition(plot.inputs, fontsize = list(title = 18, axis =
-  14))
+plot_variance_decomposition(plot.inputs, fontsize = list(title = 18, axis
+  = 14))
 }
 \arguments{
 \item{fontsize}{list specifying the font size of the titles and axes of the graph}

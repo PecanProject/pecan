@@ -1,9 +1,17 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn package for integration of ED2 model
-Version: 1.5.3
-Date: 2018-04-26
-Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
+Version: 1.7.1
+Date: 2019-09-05
+Authors@R: c(person("Mike","Dietze"),
+             person("David","LeBauer"),
+             person("Xiaohui", "Feng"),
+             person("Dan"," Wang"),
+             person("Carl", "Davidson"),
+             person("Rob","Kooper"),
+             person("Shawn", "Serbin"),
+             person("Alexey", "Shiklomanov"))
+Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
     Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -16,26 +24,29 @@ Depends:
     PEcAn.utils,
     coda
 Imports:
+    PEcAn.data.atmosphere,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
     abind (>= 1.4.5),
-    ncdf4 (>= 1.15),
-    stringr(>= 1.1.0),
-    udunits2 (>= 0.11),
-    XML (>= 3.98-1.4),
-    hdf5r,
-    tidyr,
     dplyr,
-    tibble,
+    glue,
+    hdf5r,
     lubridate,
     magrittr,
-    purrr
+    ncdf4 (>= 1.15),
+    purrr,
+    stringr(>= 1.1.0),
+    tidyr,
+    tibble,
+    udunits2 (>= 0.11),
+    XML (>= 3.98-1.4)
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.1
 Roxygen: list(markdown = TRUE)

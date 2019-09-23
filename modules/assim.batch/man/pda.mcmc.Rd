@@ -4,9 +4,9 @@
 \alias{pda.mcmc}
 \title{Paramater Data Assimilation using MCMC}
 \usage{
-pda.mcmc(settings, params.id = NULL, param.names = NULL, prior.id = NULL,
-  chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL,
-  ar.target = NULL, jvar = NULL, n.knot = NULL)
+pda.mcmc(settings, params.id = NULL, param.names = NULL,
+  prior.id = NULL, chain = NULL, iter = NULL, adapt = NULL,
+  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL)
 }
 \arguments{
 \item{settings}{= a pecan settings list}

@@ -5,7 +5,7 @@
 \title{Write ED configuration files}
 \usage{
 write.config.ED2(trait.values, settings, run.id,
-  defaults = settings$constants, check = FALSE, inputs = NULL, ...)
+  defaults = settings$constants, check = FALSE, ...)
 }
 \arguments{
 \item{trait.values}{Named list of trait values, with names corresponding to PFT}
@@ -18,8 +18,6 @@ write.config.ED2(trait.values, settings, run.id,
 
 \item{check}{Logical. If \code{TRUE}, check ED2IN validity before running and
 throw an error if anything is wrong (default = \code{FALSE})}
-
-\item{inputs}{updated input paths coming from SDA workflow, will modify ED2IN}
 }
 \value{
 configuration file and ED2IN namelist for given run
@@ -30,5 +28,5 @@ model. Requires a pft xml object, a list of trait values for a single model
 run, and the name of the file to create
 }
 \author{
-David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
+David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov, Istem Fer
 }

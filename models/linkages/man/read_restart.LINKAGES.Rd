@@ -4,8 +4,8 @@
 \alias{read_restart.LINKAGES}
 \title{read_restart.LINKAGES}
 \usage{
-read_restart.LINKAGES(outdir, runid, stop.time, settings, var.names = NULL,
-  params = NULL)
+read_restart.LINKAGES(outdir, runid, stop.time, settings,
+  var.names = NULL, params = NULL)
 }
 \arguments{
 \item{outdir}{output directory}

@@ -5,3 +5,11 @@ Author: Alexey Shiklomanov <ashiklom@bu.edu>
 AuthorUrl: http://ashiklom.github.io
 Tags: PEcAn
 #DisplayMode: Showcase
+Imports:
+	ncdf4,
+	PEcAn.all,
+	PEcAn.DB,
+	PEcAn.logger,
+	PEcAn.visualization,
+	shiny,
+	XML

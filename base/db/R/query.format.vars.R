@@ -9,7 +9,7 @@
 ##'
 query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
-  if(is.na(input.id) & is.na(format.id)){
+  if ((is.null(input.id)||is.na(input.id)) & (is.null(format.id)||is.na(format.id))){
     PEcAn.logger::logger.error("Must specify input id or format id")
   }
 
@@ -61,7 +61,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
   if(all(!is.na(var.ids))){
     # Need to subset the formats table
-    fv <- fv %>% dplyr::filter(variable_id %in% var.ids | storage_type != "")
+    fv <- fv %>% dplyr::filter(variable_id %in% !!var.ids | storage_type != "")
     if(dim(fv)[1] == 0){
       PEcAn.logger::logger.error("None of your requested variables are available")
     }
@@ -97,7 +97,6 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
     # Fill in CF vars
     # This will ultimately be useful when looking at met variables where CF != Bety
-    # met <- read.csv(system.file("/data/met.lookup.csv", package= "PEcAn.data.atmosphere"), header = T, stringsAsFactors=FALSE)
 
     #Fill in MstMIP vars
     #All PEcAn output is in MstMIP variables

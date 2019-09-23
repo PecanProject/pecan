@@ -4,8 +4,8 @@
 \alias{start_qsub}
 \title{Start qsub runs}
 \usage{
-start_qsub(run, qsub_string, rundir, host, host_rundir, host_outdir, stdout_log,
-  stderr_log, job_script, qsub_extra = NULL)
+start_qsub(run, qsub_string, rundir, host, host_rundir, host_outdir,
+  stdout_log, stderr_log, job_script, qsub_extra = NULL)
 }
 \arguments{
 \item{run}{(numeric) run ID, as an integer}

@@ -4,8 +4,11 @@
 \alias{write_ic}
 \title{write_ic}
 \usage{
-write_ic(in.path, in.name, start_date, end_date, outfolder, model, new_site,
-  pfts, source = input_veg$source, overwrite = FALSE, ...)
+write_ic(in.path, in.name, start_date, end_date, outfolder, model,
+  new_site, pfts, source = input_veg$source, overwrite = FALSE, ...)
+}
+\description{
+write_ic
 }
 \author{
 Istem Fer

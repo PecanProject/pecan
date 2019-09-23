@@ -10,6 +10,9 @@ download.PalEON_ENS(sitename, outfolder, start_date, end_date,
 \arguments{
 \item{end_date}{}
 }
+\description{
+Download PalEON met ensemble files
+}
 \author{
 Betsy Cowdery, Mike Dietze
 }

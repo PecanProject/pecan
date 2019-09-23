@@ -16,6 +16,9 @@ format_wide2long(out, format, vars_used, time.row)
 \value{
 list of updated values
 }
+\description{
+format_wide2long
+}
 \author{
 Istem Fer
 Function to convert wide format to long format

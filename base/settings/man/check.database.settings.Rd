@@ -9,3 +9,6 @@ check.database.settings(settings)
 \arguments{
 \item{settings}{settings file}
 }
+\description{
+Check Database Settings
+}

@@ -6,3 +6,6 @@
 \usage{
 get_ss(gp, xnew, pos.check)
 }
+\description{
+get_ss
+}

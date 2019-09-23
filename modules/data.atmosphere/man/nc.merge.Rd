@@ -4,8 +4,8 @@
 \alias{nc.merge}
 \title{nc.merge}
 \usage{
-nc.merge(outfolder, in.path, in.prefix, start_date, end_date, upscale = FALSE,
-  overwrite = FALSE, verbose = FALSE, ...)
+nc.merge(outfolder, in.path, in.prefix, start_date, end_date,
+  upscale = FALSE, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output will be stored}
@@ -47,3 +47,4 @@ Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
 \author{
 James Simkins, Christy Rollinson
 }
+\concept{tdm - Temporally Downscale Meteorology}

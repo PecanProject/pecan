@@ -3,4 +3,5 @@ Title: Benchmarking Report
 License: FreeBSD + file LICENSE
 Author: Betsy Cowdery ecowdery@bu.edu
 Tags: PEcAn
+Imports: shiny
 #DisplayMode: Showcase

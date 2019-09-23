@@ -24,7 +24,7 @@ sa.splinefun <- function(quantiles.input, quantiles.output) {
 #--------------------------------------------------------------------------------------------------#
 ##' Calculates the standard deviation of the variance estimate
 ##'
-##' Uses the equation \sigma^4\left(\frac{2}{n-1}+\frac{\kappa}{n}\right)
+##' Uses the equation \eqn{\sigma^4\left(\frac{2}{n-1}+\frac{\kappa}{n}\right)}{\sigma^4 (2/(n-1) + \kappa/n)}
 ##' @name sd.var
 ##' @title Standard deviation of sample variance
 ##' @param x sample

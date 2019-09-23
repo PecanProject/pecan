@@ -4,8 +4,8 @@
 \alias{met2model.BIOCRO}
 \title{Write BioCro met files}
 \usage{
-met2model.BIOCRO(in.path, in.prefix, outfolder, overwrite = FALSE, lat, lon,
-  start_date, end_date, ...)
+met2model.BIOCRO(in.path, in.prefix, outfolder, overwrite = FALSE, lat,
+  lon, start_date, end_date, ...)
 }
 \arguments{
 \item{in.path}{path on disk where CF file lives}

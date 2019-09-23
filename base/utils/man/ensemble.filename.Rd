@@ -4,8 +4,9 @@
 \alias{ensemble.filename}
 \title{Generate ensemble filenames}
 \usage{
-ensemble.filename(settings, prefix = "ensemble.samples", suffix = "Rdata",
-  all.var.yr = TRUE, ensemble.id = settings$ensemble$ensemble.id,
+ensemble.filename(settings, prefix = "ensemble.samples",
+  suffix = "Rdata", all.var.yr = TRUE,
+  ensemble.id = settings$ensemble$ensemble.id,
   variable = settings$ensemble$variable,
   start.year = settings$ensemble$start.year,
   end.year = settings$ensemble$end.year)

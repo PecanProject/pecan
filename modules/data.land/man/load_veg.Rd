@@ -4,9 +4,9 @@
 \alias{load_veg}
 \title{load_veg}
 \usage{
-load_veg(new_site, start_date, end_date, source_id, source, icmeta = NULL,
-  format_name = NULL, machine_host, dbparms, outfolder, overwrite = FALSE,
-  ...)
+load_veg(new_site, start_date, end_date, source_id, source,
+  icmeta = NULL, format_name = NULL, machine_host, dbparms, outfolder,
+  overwrite = FALSE, ...)
 }
 \description{
 Function uses load_data{benchmark} to get veg data

@@ -10,6 +10,9 @@ metric_scatter_plot(metric_dat, var, filename = NA,
 \arguments{
 \item{draw.plot}{}
 }
+\description{
+Scatter Plot
+}
 \author{
 Betsy Cowdery
 }

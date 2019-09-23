@@ -8,16 +8,23 @@ div(id = "lcl_ui",
         placeholder = "Drag and drop files here"
       ),
       DT::DTOutput("dtfiles"),
-     # verbatimTextOutput("test"),
-      hr(),
-      textInput(
-        "new_local_filename",
-        label = "Set Destination Directory (for testing only)",
-        placeholder = "Enter New Directory Name Here"
-      ),
-      actionButton(inputId = "LocalFinishButton", label = "Finish Download"),
-      hr(),
-      p("Location of Downloaded Files: (Testing Only)"),
+     fluidRow(
+       column(8),
+       column(4,
+              div(id = "nextFromLocal_div",
+                  actionBttn(inputId = "nextFromLocal", 
+                             label = "Next Step", 
+                             size = "sm", 
+                             color = "success")
+              )
+       )
+     ),
+     shinyjs::hidden(
+       div(id = "local_path_out",
+           hr(),
+      p("Location of Downloaded Files:"),
       verbatimTextOutput("LocaldbfilesPath")
+       )
+     )
     )
   )

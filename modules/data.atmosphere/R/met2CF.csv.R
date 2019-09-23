@@ -52,7 +52,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
   if (!file.exists(outfolder)) {
-    dir.create(outfolder)
+    dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   }
   
   ## set up results output to return

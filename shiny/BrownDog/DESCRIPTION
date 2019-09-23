@@ -5,3 +5,8 @@ Author: Yan Zhao <yanzhao3@illinois.edu>
 AuthorUrl: https://github.com/yan130
 Tags: PEcAn
 DisplayMode: Normal
+Imports:
+	leaflet,
+	PEcAn.DB,
+	PEcAn.visualization,
+	RPostgreSQL

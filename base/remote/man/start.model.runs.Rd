@@ -4,7 +4,8 @@
 \alias{start.model.runs}
 \title{Start selected ecosystem model runs within PEcAn workflow}
 \usage{
-\method{start}{model.runs}(settings, write = TRUE, stop.on.error = TRUE)
+\method{start}{model.runs}(settings, write = TRUE,
+  stop.on.error = TRUE)
 }
 \arguments{
 \item{settings}{pecan settings object}

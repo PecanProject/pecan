@@ -13,6 +13,9 @@ match_timestep(date.coarse, date.fine, data.fine)
 
 \item{data.fine}{matrix}
 }
+\description{
+Match time step
+}
 \author{
 Istem Fer
 }

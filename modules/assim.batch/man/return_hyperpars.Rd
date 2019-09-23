@@ -6,6 +6,9 @@
 \usage{
 return_hyperpars(assim.settings, inputs)
 }
+\description{
+return_hyperpars
+}
 \author{
 Istem Fer
 }

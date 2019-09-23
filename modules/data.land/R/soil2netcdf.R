@@ -27,7 +27,7 @@
 #' }
 soil2netcdf <- function(soil.data,new.file){
   soil.data <- as.list(soil.data)
-  
+
   ## convert soil type to parameters via look-up-table / equations
   mysoil <- PEcAn.data.land::soil_params(sand=soil.data$fraction_of_sand_in_soil,
                                          silt=soil.data$fraction_of_silt_in_soil,
@@ -54,7 +54,7 @@ soil2netcdf <- function(soil.data,new.file){
   ncvar <- list()
   good_vars <- 0
   for(n in seq_along(soil.data)){
-    if(is.null(soil.data[[n]])|is.na(soil.data[[n]])) next
+    if(all(is.null(soil.data[[n]])) | all(is.na(soil.data[[n]]))) next
     varname <- names(soil.data)[n]
     if(length(soil.data[[n]])>1){
       ## if vector, save by depth

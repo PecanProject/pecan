@@ -5,7 +5,8 @@
 \title{met2CF.csv}
 \usage{
 met2CF.csv(in.path, in.prefix, outfolder, start_date, end_date, format,
-  lat = NULL, lon = NULL, nc_verbose = FALSE, overwrite = FALSE, ...)
+  lat = NULL, lon = NULL, nc_verbose = FALSE, overwrite = FALSE,
+  ...)
 }
 \arguments{
 \item{format}{data frame or list with elements as described below
@@ -26,6 +27,9 @@ Columns with NA for bety variable name are dropped.
 Units for datetime field are the lubridate function that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).}
 
 \item{nc_verbose}{logical: run ncvar_add in verbose mode?}
+}
+\description{
+met2CF.csv
 }
 \examples{
 \dontrun{

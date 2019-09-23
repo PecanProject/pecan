@@ -12,6 +12,9 @@ gp_mle(theta, d, nugget, myY, maxval = Inf)
 \value{
 val
 }
+\description{
+gp_mle
+}
 \author{
 Michael Dietze
 }

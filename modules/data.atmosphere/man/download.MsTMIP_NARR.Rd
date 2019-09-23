@@ -4,8 +4,8 @@
 \alias{download.MsTMIP_NARR}
 \title{download.MsTMIP_NARR}
 \usage{
-download.MsTMIP_NARR(outfolder, start_date, end_date, site_id, lat.in, lon.in,
-  overwrite = FALSE, verbose = FALSE, ...)
+download.MsTMIP_NARR(outfolder, start_date, end_date, site_id, lat.in,
+  lon.in, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{start_date}{YYYY-MM-DD}

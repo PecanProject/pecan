@@ -4,7 +4,8 @@
 \alias{model.train}
 \title{model.train}
 \usage{
-model.train(dat.subset, v, n.beta, resids = resids, threshold = NULL, ...)
+model.train(dat.subset, v, n.beta, resids = resids, threshold = NULL,
+  ...)
 }
 \arguments{
 \item{dat.subset}{data.frame containing lags, next, and downscale period data}
@@ -37,3 +38,4 @@ Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
 \author{
 Christy Rollinson, James Simkins
 }
+\concept{tdm - Temporally Downscale Meteorology}

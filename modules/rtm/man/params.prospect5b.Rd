@@ -8,4 +8,7 @@
 \usage{
 params.prospect5b
 }
+\description{
+PROSPECT 5B parameters
+}
 \keyword{datasets}

@@ -16,6 +16,9 @@ sample.parameters(ne, settings, con)
 \value{
 data frame of sampled parameters from the posterior distribution
 }
+\description{
+sample parameters
+}
 \author{
 Michael Dietze \email{dietze@bu.edu}
 }

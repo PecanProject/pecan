@@ -4,7 +4,8 @@
 \alias{invert_bt}
 \title{Perform Bayesian inversion using BayesianTools package}
 \usage{
-invert_bt(observed, model, prior, custom_settings = list(), loglike = NULL)
+invert_bt(observed, model, prior, custom_settings = list(),
+  loglike = NULL)
 }
 \arguments{
 \item{observed}{Vector of observations. Ignored if \code{loglike} is not \code{NULL}.}

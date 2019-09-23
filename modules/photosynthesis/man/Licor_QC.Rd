@@ -13,6 +13,9 @@ Licor_QC(dat, curve = c("ACi", "AQ"), tol = 0.05)
 
 \item{tol}{Code automatically tries to separate ACi and AQ curves in the same dataset by detecting the 'reference' condition for light and CO2 respectively. This is the relative error around the mode in that detection.}
 }
+\description{
+Licor_QC
+}
 \author{
 Mike Dietze
 }

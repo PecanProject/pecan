@@ -6,7 +6,8 @@
 #'     * N: Effective number of leaf layers (>1)
 #'     * Cab: Leaf chlorophyll content (ug/cm2) (>0)
 #'     * (5) Car: Leaf carotenoid content (ug/cm2) (>0)
-#'     * (5B) Cbrown: Leaf brown matter content (ug/cm2) (>0)
+#'     * (D) Canth: Leaf anthocyanin content (ug/cm2) (>0)
+#'     * (5B, D) Cbrown: Leaf brown matter content (ug/cm2) (>0)
 #'     * Cw: Leaf water content (cm) (>0)
 #'     * Cm: Leaf dry matter content (ug/cm2) (>0)
 #' @param version PROSPECT version: 4, 5, or '5B'
@@ -65,6 +66,11 @@ params.prospect5 <- c("N", "Cab", "Car", "Cw", "Cm")
 #' @title PROSPECT 5B parameters
 #' @export
 params.prospect5b <- c("N", "Cab", "Car", "Cbrown", "Cw", "Cm")
+
+#' @name params.prospectd
+#' @title PROSPECT D parameters
+#' @export
+params.prospectd <- c("N", "Cab", "Car", "Canth", "Cbrown", "Cw", "Cm")
 
 #' Default settings for PROSPECT inversion
 #' @name default.settings.prospect

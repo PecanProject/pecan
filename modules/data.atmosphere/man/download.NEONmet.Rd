@@ -4,8 +4,8 @@
 \alias{download.NEONmet}
 \title{Download NEON Site Met CSV files}
 \usage{
-download.NEONmet(sitename, outfolder, start_date, end_date, overwrite = FALSE,
-  verbose = FALSE, ...)
+download.NEONmet(sitename, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{sitename}{the NEON ID of the site to be downloaded, used as file name prefix. 
