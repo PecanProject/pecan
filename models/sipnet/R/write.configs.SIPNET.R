@@ -347,6 +347,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("frozenSoilEff" %in% pft.names) {
       param[which(param[, 1] == "frozenSoilEff"), 2] <- pft.traits[which(pft.names == "frozenSoilEff")]
     }
+    # frozenSoilFolREff
+    if ("frozenSoilFolREff" %in% pft.names) {
+      param[which(param[, 1] == "frozenSoilFolREff"), 2] <- pft.traits[which(pft.names == "frozenSoilFolREff")]
+    }
     # soilWHC
     if ("soilWHC" %in% pft.names) {
       param[which(param[, 1] == "soilWHC"), 2] <- pft.traits[which(pft.names == "soilWHC")]
@@ -355,7 +359,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     # 10/31/2017 IF: these were the two assumptions used in the emulator paper in order to reduce dimensionality
     # These results in improved winter soil respiration values
     # they don't affect anything when the seasonal soil respiration functionality in SIPNET is turned-off
-    if(FALSE){
+    if(TRUE){
       # assume soil resp Q10 cold == soil resp Q10
       param[which(param[, 1] == "soilRespQ10Cold"), 2] <- param[which(param[, 1] == "soilRespQ10"), 2]
       # default SIPNET prior of baseSoilRespCold was 1/4th of baseSoilResp
@@ -368,9 +372,19 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "immedEvapFrac"), 2] <- pft.traits[which(pft.names == "immedEvapFrac")]
     }
     
+    if ("leafPoolDepth" %in% pft.names) {
+      id <- which(param[, 1] == "leafPoolDepth")
+      param[which(param[, 1] == "leafPoolDepth"), 2] <- pft.traits[which(pft.names == "leafPoolDepth")]
+    }
+    
     if ("waterRemoveFrac" %in% pft.names) {
       id <- which(param[, 1] == "waterRemoveFrac")
       param[which(param[, 1] == "waterRemoveFrac"), 2] <- pft.traits[which(pft.names == "waterRemoveFrac")]
+    }
+    
+    if ("fastFlowFrac" %in% pft.names) {
+      id <- which(param[, 1] == "fastFlowFrac")
+      param[which(param[, 1] == "fastFlowFrac"), 2] <- pft.traits[which(pft.names == "fastFlowFrac")]
     }
     
     if ("rdConst" %in% pft.names) {
