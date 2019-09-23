@@ -56,6 +56,10 @@ convert.samples.ED <- function(trait.samples) {
     # model version compatibility (rrr and rrf are the same)
     trait.samples[["root_respiration_factor"]] <- trait.samples[["root_respiration_rate"]]
   }
+
+  if ("minimum_height" %in% names(trait.samples)) {
+    trait.samples[["repro_min_h"]] <- trait.samples[["minimum_height"]]
+  }
   
   if ("Vcmax" %in% names(trait.samples)) {
     vcmax <- as.numeric(trait.samples[["Vcmax"]])
