@@ -361,7 +361,7 @@ pda.emulator.ms <- function(multi.settings) {
     mcmc.out <- parallel::parLapply(cl, seq_len(tmp.settings$assim.batch$chain), function(chain) {
       hier.mcmc(settings      = tmp.settings, 
                 gp.stack      = gp.stack, 
-                nmcmc         = 600000, 
+                nmcmc         = tmp.settings$assim.batch$iter * 3, # need to run chains longerthan indv
                 rng_orig      = rng_orig,
                 jmp0          = jump_init[[chain]], 
                 mu_site_init  = mu_site_init[[chain]],
@@ -380,15 +380,15 @@ pda.emulator.ms <- function(multi.settings) {
     current.step <- "HIERARCHICAL MCMC END"
     save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
-    # transform samples from std normal to prior quantiles
-    mcmc.out2 <- back_transform_posteriors(prior.all, prior.fn.all, prior.ind.all, mcmc.out)
+    # generate hierarhical posteriors
+    mcmc.out <- generate_hierpost(mcmc.out, rng_orig)
     
     # Collect global params in their own list and postprocess
-    mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+    mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
     # processing these just for further analysis later, but con=NULL because these samples shouldn't be used for new runs later
     tmp.settings <- pda.postprocess(tmp.settings, con = NULL, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical_mean")
     
-    mcmc.param.list <- pda.sort.params(mcmc.out2, sub.sample = "hierarchical_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
+    mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "hierarchical_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
     tmp.settings <- pda.postprocess(tmp.settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig, sffx = "_hierarchical")
     
     # Collect site-level params in their own list and postprocess

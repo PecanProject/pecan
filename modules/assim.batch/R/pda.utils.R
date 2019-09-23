@@ -827,118 +827,35 @@ load_pda_history <- function(workdir, ensemble.id, objects){
   return(alist)
 }
 
-##' Helper function that transforms the values of each parameter into N(0,1) equivalent
-##' 
-##' @param prior.list list of prior data frames, same length as number of pfts
-##' @param prior.fn.all list of expressions of d/r/q/p functions of the priors given in the prior.list
-##' @param prior.ind.all a vector of indices identifying which params are targeted, indices refer to the row numbers when prior.list sublists are rbinded
-##' @param SS.stack list of design matrices for the emulator, length = nsites, each sublist will be of length nvars
-##' @param init.list list of initial values for the targeted params, they will change when the range is normalized
-##' @param jmp.list list of hump variances, they will change when the range is normalized
-##' 
-##' @return a list of new objects that contain the normalized versions
-##' @author Istem Fer
-##' @export
-norm_transform_priors <- function(prior.list, prior.fn.all, prior.ind.all, SS.stack, init.list, jmp.list){
-  
-  # check for non-normals
-  prior.all  <- do.call("rbind", prior.list)
-  psel       <- prior.all[prior.ind.all, 1] != "norm"
-  norm.check <- all(!psel) # if all are norm do nothing
 
-  
-  if(!norm.check){
-    
-    rng <- array(NA, dim = c(length(prior.ind.all), 2, length(SS.stack)))
-    
-    # need to modify init.list and jmp.list as well
-    parnames <- names(init.list[[1]])
-    
-    prior.fn.all <- pda.define.prior.fn(prior.all) # setup prior functions again
-    
-    for(i in seq_along(SS.stack)){
-      # NOTE: there might be differences in dimensions, 
-      # some SS-matrices might have likelihood params such as bias 
-      # check for that later 
-      SS.tmp <- lapply(SS.stack[[i]], function(ss){
-        for(p in seq_along(psel)){
-          #we transform all
-          prior.quantiles <- eval(prior.fn.all$pprior[[prior.ind.all[p]]], list(q = ss[,p]))
-          stdnorm.vals    <- qnorm(prior.quantiles)
-          ss[,p] <- stdnorm.vals
-        }
-        return(ss)
-      })   
-      SS.stack[[i]] <- SS.tmp
-      rng.tmp <- apply(SS.tmp[[1]],2,range)
-      rng[,,i] <- t(rng.tmp[,-ncol(rng.tmp)])
-    }
-    
-    all_knots <- do.call("rbind", lapply(SS.stack,`[[`,1))
-    rand_ind  <- sample(seq_len(nrow(all_knots)), length(init.list))
-    
-    for(c in seq_along(init.list)){
-      init.list[[c]] <- lapply(seq_along(init.list[[c]]), function(x){
-          init.list[[c]][[x]] <- all_knots[rand_ind[c],x]
-      })
-      names(init.list[[c]]) <- parnames
-      jmp.list[[c]][psel] <- 0.1 * diff(qnorm(c(0.05, 0.95)))
-    } 
-    
-  }
-  
-  return(list(normSS = SS.stack, normF = norm.check, init = init.list, jmp = jmp.list, 
-              rng = rng, prior.all = prior.all,  prior.fn.all = prior.fn.all))
-  
-} # norm_transform_priors
-
-
-##' Helper function that transforms the samples back to their original prior distribution equivalents
+##' Helper function that generates the hierarchical posteriors
 ##' 
-##' @param prior.all a dataframe of all priors for both pfts
-##' @param prior.fn.all list of expressions of d/r/q/p functions of the priors with original parameter space
-##' @param prior.ind.all a vector of indices identifying targeted params 
-##' @param mcmc.out hierarchical MCMC outputs in standard-normal space
+##' @param mcmc.out hierarchical MCMC outputs 
+##' @param rng_orig nparam x 2 matrix, 1st and 2nd columns are the lower and upper prior limits respectively
 ##' 
 ##' @return hierarchical MCMC outputs in original parameter space
 ##' 
 ##' @author Istem Fer
 ##' @export
-back_transform_posteriors <- function(prior.all, prior.fn.all, prior.ind.all, mcmc.out){
+generate_hierpost <- function(mcmc.out, rng_orig){
   
   for(i in seq_along(mcmc.out)){
     mu_global_samp  <- mcmc.out[[i]]$mu_global_samp
-    tau_global_samp <- mcmc.out[[i]]$tau_global_samp
+    sigma_global_samp <- mcmc.out[[i]]$sigma_global_samp
     
-    iter_size <- dim(tau_global_samp)[1]
+    iter_size <- dim(sigma_global_samp)[1]
     
-    sigma_global_samp <- tau_global_samp 
-    for(si in seq_len(iter_size)){
-      sigma_global_samp[si,,] <- solve(tau_global_samp[si,,])
-    }
-    
-    # first calculate hierarchical posteriors from mu_global_samp and tau_global_samp
+    # calculate hierarchical posteriors from mu_global_samp and tau_global_samp
     hierarchical_samp <- mu_global_samp 
     for(si in seq_len(iter_size)){
-      hierarchical_samp[si,] <- mvtnorm::rmvnorm(1, mean = mu_global_samp[si,], sigma = sigma_global_samp[si,,])
-    }
-    
-    # back transform all parameter values from standard normal to the original domain
-    mu_sample_tmp <- abind::abind(array(mu_global_samp, dim = c(dim(mu_global_samp), 1)), 
-                                  array(hierarchical_samp, dim = c(dim(hierarchical_samp), 1)), along = 3)
-    for(ms in seq_len(dim(mu_sample_tmp)[3])){
-      mcmc.vals         <- mu_sample_tmp[,,ms]
-      stdnorm.quantiles <- pnorm(mcmc.vals)
-      # counter, because all cols need transforming back
-      for(ps in seq_along(prior.ind.all)){
-        prior.quantiles <- eval(prior.fn.all$qprior[[prior.ind.all[ps]]], list(p = stdnorm.quantiles[,ps]))
-        mcmc.vals[,ps] <- prior.quantiles
+      repeat{
+      proposed <- mvtnorm::rmvnorm(1, mean = mu_global_samp[si,], sigma = sigma_global_samp[si,,])
+        if(all(proposed >= rng_orig[,1] & proposed <= rng_orig[,2])) break
       }
-      mu_sample_tmp[,,ms] <- mcmc.vals
+      hierarchical_samp[si,] <- proposed
     }
-    
-    mcmc.out[[i]]$mu_global_samp     <- mu_sample_tmp[,,1]
-    mcmc.out[[i]]$hierarchical_samp  <- mu_sample_tmp[,,-1]
+
+    mcmc.out[[i]]$hierarchical_samp  <- hierarchical_samp
   }
 
   return(mcmc.out)
