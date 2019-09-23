@@ -1,0 +1,26 @@
+---
+title: "Documentation for the Visualization and Benchmarking Shiny App"
+output: 
+  html_document:
+    theme: united
+---
+
+All our plots are made with [plotly](https://plot.ly/) and [Highcharter](http://jkunst.com/highcharter/).
+
+They are interactive and packed full of features. All plotly plots have a toolbar with the following features:
+
+![](plotly_bar.png)
+
+- Download plot as a png
+- Zoom
+- Pan
+- Box select
+- Lasso select
+- Zoom in
+- Zoom out
+- Autoscale
+- Reset axes
+- Toggle spike lines
+- Show closest data on hover
+- Compare data on hover
+- Collaborate

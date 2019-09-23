@@ -8,11 +8,6 @@
 ## #-------------------------------------------------------------------------------
 context("test papply")
 
-if(FALSE) {
-  library(devtools)
-  rm(list=ls())
-  load_all()
-}
 
 # SETUP
 l <- list(aa=1, bb=2, cc=list(dd=3, ee=4))

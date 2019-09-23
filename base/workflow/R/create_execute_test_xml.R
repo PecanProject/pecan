@@ -18,12 +18,15 @@
 #'   analysis. Default = `"NPP"`
 #' @param sensitivity (logical) Whether or not to perform a sensitivity analysis
 #'   (default = `FALSE`)
-#' @param db_bety_username (character) BETY username for workflow (default = `"bety"`)
-#' @param db_bety_password (character) BETY password for workflow (default = `"bety"`)
-#' @param db_bety_hostname (character) BETY hostname for workflow (default = `"localhost"`)
-#' @param db_bety_driver (character) BETY DBI driver for workflow (default = `"Postgres"`)
-#' @return
+#' @param db_bety_username,db_bety_password,db_bety_hostname,db_bety_port
+#'   (character) BETY database connection options. Default values for all of
+#'   these are pulled from `<pecan_path>/web/config.php`.
+#' @param db_bety_driver (character) BETY database connection driver (default = `"Postgres"`)
+#' @return A list with two entries:
+#'  * `sys`: Exit value returned by the workflow (0 for sucess).
+#'  * `outdir`: Path where the workflow results are saved
 #' @author Alexey Shiklomanov, Tony Gardella
+#' @importFrom dplyr %>% .data
 #' @export
 create_execute_test_xml <- function(model_id,
                                     met,
@@ -38,16 +41,26 @@ create_execute_test_xml <- function(model_id,
                                     ensemble_size = 1,
                                     sensitivity_variable = "NPP",
                                     sensitivity = FALSE,
-                                    db_bety_username = "bety",
-                                    db_bety_password = "bety",
-                                    db_bety_hostname = "localhost",
+                                    db_bety_username = NULL,
+                                    db_bety_password = NULL,
+                                    db_bety_hostname = NULL,
+                                    db_bety_port = NULL,
                                     db_bety_driver = "Postgres") {
 
   php_file <- file.path(pecan_path, "web", "config.php")
   config.list <- PEcAn.utils::read_web_config(php_file)
-  bety <- PEcAn.DB::betyConnect(php_file)
-  con <- bety$con
-  on.exit(DBI::dbDisconnect(con), add = TRUE)
+  if (is.null(db_bety_username)) db_bety_username <- config.list$db_bety_username
+  if (is.null(db_bety_password)) db_bety_password <- config.list$db_bety_password
+  if (is.null(db_bety_hostname)) db_bety_hostname <- config.list$db_bety_hostname
+  if (is.null(db_bety_port)) db_bety_port <- config.list$db_bety_port
+  con <- PEcAn.DB::db.open(list(
+    user = db_bety_username,
+    password = db_bety_password,
+    host = db_bety_hostname,
+    port = db_bety_port,
+    driver = db_bety_driver
+  ))
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
 
   settings <- list(
     info = list(notes = "Test_Run",
@@ -57,9 +70,9 @@ create_execute_test_xml <- function(model_id,
   )
 
   #Outdir
-  model.new <- tbl(bety, "models") %>%
-    filter(id == !!model_id) %>%
-    collect()
+  model.new <- dplyr::tbl(con, "models") %>%
+    dplyr::filter(.data$id == !!model_id) %>%
+    dplyr::collect()
   outdir_pre <- paste(
     model.new[["model_name"]],
     format(as.Date(start_date), "%Y-%m"),
@@ -88,9 +101,9 @@ create_execute_test_xml <- function(model_id,
   #PFT
   if (is.null(pft)){
     # Select the first PFT in the model list.
-    pft <- tbl(bety, "pfts") %>%
-      filter(modeltype_id == !!model.new$modeltype_id) %>%
-      collect()
+    pft <- dplyr::tbl(con, "pfts") %>%
+      dplyr::filter(.data$modeltype_id == !!model.new$modeltype_id) %>%
+      dplyr::collect()
     pft <- pft$name[[1]]
     message("PFT is `NULL`. Defaulting to the following PFT: ",
             pft)
