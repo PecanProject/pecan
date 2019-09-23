@@ -35,6 +35,7 @@ Imports:
     PEcAn.utils,
     rjags,
     stats,
+    prodlim,
     udunits2 (>= 0.11),
     utils,
     XML

@@ -1064,7 +1064,7 @@ return_multi_site_objects <- function(multi.settings){
     
     }
     new_site_knots <- new_site_knots[-(1:nrow(previous_knots)),]
-    these_knots <- apply(new_site_knots, 1, function(x) row.match(x, collect_site_knots[, need_obj$prior.ind.all]) )
+    these_knots <- apply(new_site_knots, 1, function(x) prodlim::row.match(x, collect_site_knots[, need_obj$prior.ind.all]) )
     collect_site_knots <- collect_site_knots[these_knots,]
     
     ind <- 0
