@@ -125,7 +125,7 @@ checks_df <- list.dirs(output_folder, full.names = TRUE, recursive = FALSE) %>%
         "PEcAn Workflow Complete",
         raw_output
       ))
-    }else{
+    } else {
       result_table$workflow_complete <- FALSE
     }
     ##################################################
