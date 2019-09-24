@@ -73,6 +73,7 @@ create_execute_test_xml <- function(model_id,
   model.new <- dplyr::tbl(con, "models") %>%
     dplyr::filter(.data$id == !!model_id) %>%
     dplyr::collect()
+  
   outdir_pre <- paste(
     model.new[["model_name"]],
     format(as.Date(start_date), "%Y-%m"),
@@ -104,20 +105,19 @@ create_execute_test_xml <- function(model_id,
     pft <- dplyr::tbl(con, "pfts") %>%
       dplyr::filter(.data$modeltype_id == !!model.new$modeltype_id) %>%
       dplyr::collect()
+    
     pft <- pft$name[[1]]
     message("PFT is `NULL`. Defaulting to the following PFT: ",
             pft)
   }
-  if (length(pft) > 1) {
-    stop(
-      "Currently, only a single PFT is supported. ",
-      "Multiple PFTs will be implemented in a future version."
-    )
-  }
-  settings$pfts <- list(
-    pft = list(name = pft,
-               constants = list(num = 1))
-  )
+
+  ## Putting multiple PFTs separated by semicolon
+  settings$pfts <- strsplit(pft, ";")[[1]] %>%
+    purrr::map( ~ list(name = .x,
+                       constants = list(num = 1)
+                       )
+                ) %>%
+    setNames(rep("pft", length(.))) 
 
   #Meta Analysis
   settings$meta.analysis <- list(iter = 3000, random.effects = FALSE)

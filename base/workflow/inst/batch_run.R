@@ -1,12 +1,12 @@
 #!/usr/bin/env Rscript
-
-library(dplyr)
+library(tidyverse)
 library(PEcAn.workflow)
 stopifnot(
   requireNamespace("PEcAn.DB", quietly = TRUE),
   requireNamespace("PEcAn.utils", quietly = TRUE)
 )
-
+library(furrr)
+plan(multiprocess)
 ##################################################
 # Parse arguments
 argv <- commandArgs(trailingOnly = TRUE)
@@ -45,122 +45,119 @@ pecan_path <- get_arg(argv, "--pecandir", getwd())
 output_folder <- get_arg(argv, "--outdir", "batch_test_output")
 outfile <- get_arg(argv, "--outfile", "test_result_table.csv")
 ##################################################
-# Establish database connection based on config.php
-php_file <- file.path(pecan_path, "web", "config.php")
-stopifnot(file.exists(php_file))
-config.list <- PEcAn.utils::read_web_config(php_file)
-bety <- PEcAn.DB::betyConnect(php_file)
-con <- bety$con
-
 # Create outfile directory if it doesn't exist
 dir.create(dirname(outfile), recursive = TRUE, showWarnings = FALSE)
-
 input_table <- read.csv(input_table_file, stringsAsFactors = FALSE)
-result_table <- input_table %>%
-  mutate(
-    outdir = NA_character_,
-    workflow_complete = NA,
-    has_jobsh = NA,
-    model_output_raw = NA,
-    model_output_processed = NA
-  )
+#----------------------- Parallel Distribution of jobs
+seq_len(nrow(input_table)) %>%
+  furrr::future_map(function(i){
+    # Each job needs to have its own connection
+    # Establish database connection based on config.php
+    php_file <- file.path(pecan_path, "web", "config.php")
+    stopifnot(file.exists(php_file))
+    config.list <- PEcAn.utils::read_web_config(php_file)
+    bety <- PEcAn.DB::betyConnect(php_file)
+    con <- bety$con
+    
+    # Get model ID
+    table_row <- input_table[i, ]
+    model <- table_row$model
+    revision <- table_row$revision
+    message("Model: ", shQuote(model))
+    message("Revision: ", shQuote(revision))
+    
+    
+    
+    model_df <- tbl(con, "models") %>%
+      filter(model_name == !!model,
+             revision == !!revision) %>%
+      collect()
+    
+    if (nrow(model_df) == 0) {
+      message("No models found with name ", model,
+              " and revision ", revision, ".\n",
+              "Moving on to next row.")
+      next
+    } else if (nrow(model_df) > 1) {
+      print(model_df)
+      message("Multiple models found with name ", model,
+              " and revision ", revision, ".\n",
+              "Moving on to next row.")
+      next
+    } else {
+      model_id <- model_df$id
+    }
+    
+    pft <- table_row$pft
+    if (is.na(pft)) pft <- NULL
+    
+    # Run test
+    raw_result <- create_execute_test_xml(
+      model_id = model_id,
+      met = table_row$met,
+      site_id = table_row$site_id,
+      pft = pft,
+      start_date = table_row$start_date,
+      end_date = table_row$end_date,
+      dbfiles_folder = dbfiles_folder,
+      pecan_path = pecan_path,
+      user_id = user_id,
+      ensemble_size = table_row$ensemble_size,
+      sensitivity = table_row$sensitivity,
+      output_folder=output_folder
+    )
+    
+  })
 
-for (i in seq_len(nrow(input_table))) {
-  table_row <- input_table[i, ]
 
-  # Get model ID
-  model <- table_row$model
-  revision <- table_row$revision
-  message("Model: ", shQuote(model))
-  message("Revision: ", shQuote(revision))
-  model_df <- tbl(con, "models") %>%
-    filter(model_name == !!model,
-           revision == !!revision) %>%
-    collect()
-  if (nrow(model_df) == 0) {
-    message("No models found with name ", model,
-	    " and revision ", revision, ".\n",
-	    "Moving on to next row.")
-    next
-  } else if (nrow(model_df) > 1) {
-    print(model_df)
-    message("Multiple models found with name ", model,
-	    " and revision ", revision, ".\n",
-	    "Moving on to next row.")
-    next
-  } else {
-    model_id <- model_df$id
-  }
 
-  pft <- table_row$pft
-  if (is.na(pft)) pft <- NULL
-
-  # Run test
-  raw_result <- create_execute_test_xml(
-    model_id = model_id,
-    met = table_row$met,
-    site_id = table_row$site_id,
-    pft = pft,
-    start_date = table_row$start_date,
-    end_date = table_row$end_date,
-    dbfiles_folder = dbfiles_folder,
-    pecan_path = pecan_path,
-    user_id = user_id,
-    ensemble_size = table_row$ensemble_size,
-    sensitivity = table_row$sensitivity
-  )
-
-  outdir <- raw_result$outdir
-  result_table$outdir <- outdir
-
-  ##################################################
-  # Did the workflow finish?
-  ##################################################
-  raw_output <- readLines(file.path(outdir, "workflow.Rout"))
-  result_table$workflow_complete[[i]] <- any(grepl(
-    "PEcAn Workflow Complete",
-    raw_output
-  ))
-  continue <- FALSE
-  ##################################################
-  # Did we write a job.sh file?
-  ##################################################
-  out <- file.path(outdir, "out")
-  run <- file.path(outdir, "run")
-  jobsh <- list.files(run, "job\\.sh", recursive = TRUE)
-  ## pft <- file.path(outdir, "pft")
-  if (length(jobsh) > 0) {
-    result_table$has_jobsh[[i]] <- TRUE
-    continue <- TRUE
-  }
-
-  ##################################################
-  # Did the model produce any output?
-  ##################################################
-  if (continue) {
-    continue <- FALSE
+#----------- Checking the results of the runs
+checks_df<-list.dirs(output_folder, full.names = TRUE, recursive = FALSE) %>% 
+  purrr::map_dfr(function(outdir){
+    
+    result_table <-NULL
+    ##################################################
+    # Did the workflow finish?
+    ##################################################
+    if (file.exists(file.path(outdir, "workflow.Rout"))) {
+      raw_output <- readLines(file.path(outdir, "workflow.Rout"))
+      result_table$workflow_complete <- any(grepl(
+        "PEcAn Workflow Complete",
+        raw_output
+      ))
+    }else{
+      result_table$workflow_complete <- FALSE
+    }
+    ##################################################
+    # Did we write a job.sh file?
+    ##################################################
+    out <- file.path(outdir, "out")
+    run <- file.path(outdir, "run")
+    jobsh <- list.files(run, "job\\.sh", recursive = TRUE)
+    ## pft <- file.path(outdir, "pft")
+    result_table$has_jobsh <-ifelse(length(jobsh) > 0, TRUE, FALSE)
+    ##################################################
+    # Did the model produce any output?
+    ##################################################
     raw_out <- list.files(out, recursive = TRUE)
-    if (length(raw_out) > 0) {
-      result_table$model_output_raw[[i]] <- TRUE
-      continue <- TRUE
-    }
-  }
-
-  ##################################################
-  # Did PEcAn post-process the output?
-  ##################################################
-  # Files should have name `YYYY.nc`
-  if (continue) {
-    continue <- FALSE
+    result_table$model_output_raw <-ifelse(length(raw_out) > 0, TRUE, FALSE)
+    ##################################################
+    # Did PEcAn post-process the output?
+    ##################################################
+    # Files should have name `YYYY.nc`
     proc_out <- list.files(out, "[[:digit:]]{4}\\.nc", recursive = TRUE)
-    if (length(proc_out) > 0) {
-      result_table$model_output_processed[[i]] <- TRUE
-      continue <- TRUE
-    }
+    result_table$model_output_processed <-ifelse(length(proc_out) > 0, TRUE, FALSE)
+    
+    return(result_table %>% 
+             as.data.frame() %>%
+             mutate(site_id=strsplit(outdir,"_")[[1]][5])
+    )
+    
+  })
 
-    # This will continuously update the output table with the current results
-    result_table %>%
-      filter(!is.na(outdir)) %>%
-      write.csv(outfile, row.names = FALSE)
-  }
-}
+#-- Writing down the results
+input_table %>%
+  mutate(site_id= as.character(site_id)) %>%
+  left_join(checks_df,
+            by="site_id") %>%
+  write.csv(outfile, row.names = FALSE)
