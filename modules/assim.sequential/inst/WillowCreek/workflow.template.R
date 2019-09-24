@@ -8,6 +8,7 @@ library(REddyProc)
 library(tidyverse)
 library(furrr)
 library(R.utils)
+library(dynutils)
 plan(multiprocess)
 
 # ----------------------------------------------------------------------------------------------
@@ -38,6 +39,10 @@ if (is.na(args[4])){
 } else {
   restart <- args[4]
 }
+outputPath <- "/fs/data3/kzarada/ouput"
+xmlTempName <-"gefs.sipnet.template.xml"
+restart <-FALSE
+nodata <- FALSE
 setwd(outputPath)
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ sourcing the required tools -------------------------
@@ -53,7 +58,7 @@ c(
               package = "PEcAn.assim.sequential")
 ))
 #reading xml
-settings <- read.settings("/fs/data3/hamzed/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml")
+settings <- read.settings("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml")
 
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
@@ -63,8 +68,9 @@ con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 #------------------------------------------------------------------------------------------------
 #--------------------------- Finding old sims
 all.previous.sims <- list.dirs(outputPath, recursive = F)
-
-if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
+sda.start <- Sys.Date() - 14
+sda.end <- Sys.Date() 
+if (length(all.previous.sims) > 0 & !inherits(con, "try-error") & restart) {
   
   tryCatch({
     # Looking through all the old simulations and find the most recent
@@ -98,9 +104,6 @@ if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
   if (is.na(sda.start))
     sda.start <- Sys.Date() - 14
 }
-
-sda.end <- Sys.Date() 
-
 #-----------------------------------------------------------------------------------------------
 #------------------------------------------ Download met and flux ------------------------------
 #-----------------------------------------------------------------------------------------------
@@ -161,14 +164,14 @@ date <-
     by = "6 hour"
   )
 pad.prep <- obs.raw %>%
-  complete(Date = seq(
+  tidyr::complete(Date = seq(
     from = lubridate::with_tz(as.POSIXct(first(sda.end), format = "%Y-%m-%d"), tz = "UTC"),
     to = lubridate::with_tz(as.POSIXct(met.end, format = "%Y-%m-%d"), tz = "UTC"),
     by = "6 hour"
   )) %>%
   mutate(means = NA, covs = NA) %>%
   dplyr::select(Date, means, covs) %>%
-  tibble_as_list()
+  dynutils::tibble_as_list()
 
 names(pad.prep) <-date
 
@@ -338,7 +341,7 @@ if ('state.data.assimilation' %in% names(settings)) {
         interactivePlot =FALSE,
         TimeseriesPlot =TRUE,
         BiasPlot =FALSE,
-        debug =FALSE,
+        debug =TRUE,
         pause=FALSE
       )
     )
