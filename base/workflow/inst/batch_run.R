@@ -112,7 +112,7 @@ seq_len(nrow(input_table)) %>%
 
 
 #----------- Checking the results of the runs
-checks_df<-list.dirs(output_folder, full.names = TRUE, recursive = FALSE) %>% 
+checks_df <- list.dirs(output_folder, full.names = TRUE, recursive = FALSE) %>% 
   purrr::map_dfr(function(outdir){
     
     result_table <-NULL
