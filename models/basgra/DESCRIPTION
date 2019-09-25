@@ -1,0 +1,22 @@
+Package: PEcAn.BASGRA
+Type: Package
+Title: PEcAn package for integration of the ModelName model
+Version: 1.7.1
+Date: 2019-09-05
+Authors@R: c(person("Istem", "Fer))
+Author: Istem Fer
+Maintainer: Istem Fer <istem.fer@fmi.fi>
+Description: This module provides functions to link the BASGRA to PEcAn.
+Imports:
+    PEcAn.logger,
+    PEcAn.utils (>= 1.4.8)
+Suggests:
+    testthat (>= 1.0.2)
+SystemRequirements: ModelName
+OS_type: unix
+License: FreeBSD + file LICENSE
+Copyright: Authors
+LazyLoad: yes
+LazyData: FALSE
+Encoding: UTF-8
+RoxygenNote: 6.1.1
