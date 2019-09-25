@@ -3,11 +3,8 @@ library(dplyr)
 library(purrr)
 library(PEcAn.workflow)
 library(furrr)
-stopifnot(
-  requireNamespace("PEcAn.DB", quietly = TRUE),
-  requireNamespace("PEcAn.utils", quietly = TRUE)
-)
-
+library(PEcAn.DB)
+library(PEcAn.utils)
 plan(multiprocess)
 ##################################################
 # Parse arguments
@@ -37,11 +34,7 @@ get_arg <- function(argv, pattern, default_value) {
 }
 
 dbfiles_folder <- normalizePath(get_arg(argv, "--dbfiles", "~/output/dbfiles"))
-input_table_file <- get_arg(
-  argv,
-  "--table",
-  system.file("default_tests.csv", package = "PEcAn.workflow")
-)
+input_table_file <- get_arg(argv, "--table",system.file("default_tests.csv", package = "PEcAn.workflow"))
 user_id <- as.numeric(get_arg(argv, "--userid", 99000000002))
 pecan_path <- get_arg(argv, "--pecandir", getwd())
 output_folder <- get_arg(argv, "--outdir", "batch_test_output")
