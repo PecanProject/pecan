@@ -2,11 +2,12 @@
 library(dplyr)
 library(purrr)
 library(PEcAn.workflow)
+library(furrr)
 stopifnot(
   requireNamespace("PEcAn.DB", quietly = TRUE),
   requireNamespace("PEcAn.utils", quietly = TRUE)
 )
-library(furrr)
+
 plan(multiprocess)
 ##################################################
 # Parse arguments
@@ -157,14 +158,13 @@ checks_df<-file.path(output_folder, input_table$folder)%>%
     
     return(result_table %>% 
              as.data.frame() %>%
-             mutate(site_id=strsplit(outdir,"_")[[1]][5])
+             mutate(folder=basename(outdir))
     )
     
   })
 
 #-- Writing down the results
 input_table %>%
-  mutate(site_id= as.character(site_id)) %>%
   left_join(checks_df,
-            by="site_id") %>%
+            by="folder") %>%
   write.csv(outfile, row.names = FALSE)
