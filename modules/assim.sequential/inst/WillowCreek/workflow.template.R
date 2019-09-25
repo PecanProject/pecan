@@ -152,8 +152,8 @@ prep.data <- prep.data %>%
 
 
 # Finding the right end and start date
-met.start <- lubridate::floor_date(Sys.Date() - lubridate::hours(2), unit = "6 hour")
-met.end <- met.start + lubridate::days(16)
+met.start <- obs.raw$Date%>% head(1) %>% lubridate::floor_date(unit = "day")
+met.end <- lubridate::floor_date(Sys.Date() - lubridate::hours(2), unit = "6 hour") + lubridate::days(16)
 
 #pad Observed Data to match met data 
 

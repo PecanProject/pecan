@@ -319,8 +319,8 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   #Defining some colors
   ready.OBS<-NULL
   generate_colors_sda()
-  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                              function(x) { x })[2, ], use.names = FALSE)
+  #ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
+    #                          function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
   #Analysis & Forcast cleaning and STAT
@@ -428,8 +428,8 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
   #Defining some colors
   generate_colors_sda()
-  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                              function(x) { x })[2, ], use.names = FALSE)
+  #ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
+   #                           function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
 
 #rearranging the forcast and analysis data  
