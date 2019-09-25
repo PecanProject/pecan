@@ -2,6 +2,4 @@
 
 export(met2model.MODEL)
 export(model2netcdf.MODEL)
-export(read_restart.ModelName)
 export(write.config.MODEL)
-export(write_restart.ModelName)
