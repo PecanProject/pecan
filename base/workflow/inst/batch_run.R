@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript
-library(tidyverse)
+library(dplyr)
+library(purrr)
 library(PEcAn.workflow)
 stopifnot(
   requireNamespace("PEcAn.DB", quietly = TRUE),
@@ -47,7 +48,13 @@ outfile <- get_arg(argv, "--outfile", "test_result_table.csv")
 ##################################################
 # Create outfile directory if it doesn't exist
 dir.create(dirname(outfile), recursive = TRUE, showWarnings = FALSE)
-input_table <- read.csv(input_table_file, stringsAsFactors = FALSE)
+input_table <- read.csv(input_table_file, stringsAsFactors = FALSE) %>%
+  mutate(
+    folder= paste(model,
+                  format(as.Date(start_date), "%Y-%m"),
+                  format(as.Date(end_date), "%Y-%m"),
+                  met, site_id, "test_runs", sep = "_")
+  )
 #----------------------- Parallel Distribution of jobs
 seq_len(nrow(input_table)) %>%
   furrr::future_map(function(i){
@@ -112,7 +119,7 @@ seq_len(nrow(input_table)) %>%
 
 
 #----------- Checking the results of the runs
-checks_df<-list.dirs(output_folder, full.names = TRUE, recursive = FALSE) %>% 
+checks_df<-file.path(output_folder, input_table$folder)%>% 
   purrr::map_dfr(function(outdir){
     
     result_table <-NULL
