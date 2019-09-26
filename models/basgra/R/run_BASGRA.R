@@ -167,13 +167,13 @@ run_BASGRA <- function(binary_path, file_weather, run_params, start_date, end_da
   days_harvest      <- as.integer(days_harvest)
   
   # run  model
-  output <- .Fortran('BASGRA', 
+  output <- .Fortran('BASGRA',
                      run_params,
-                     matrix_weather, 
+                     matrix_weather,
                      calendar_fert,
                      calendar_Ndep,
                      days_harvest,
-                     NDAYS, 
+                     NDAYS,
                      NOUT,
                      matrix(0, NDAYS, NOUT))[[8]]
 
@@ -228,5 +228,3 @@ run_BASGRA <- function(binary_path, file_weather, run_params, start_date, end_da
   
 } # run_BASGRA
 
-#--------------------------------------------------------------------------------------------------#
-### EOF
