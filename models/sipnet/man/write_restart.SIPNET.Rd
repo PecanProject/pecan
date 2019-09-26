@@ -30,7 +30,7 @@ write_restart.SIPNET(outdir, runid, start.time, stop.time, settings,
 NONE
 }
 \description{
-Write restart files for SIPNET
+Write restart files for SIPNET. WARNING: Some variables produce illegal values < 0 and have been hardcoded to correct these values!!
 }
 \author{
 Ann Raiho \email{araiho@nd.edu}

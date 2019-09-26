@@ -21,8 +21,8 @@
 ##' @param new.params list of parameters to convert between different states 
 ##' @param inputs list of model inputs to use in write.configs.SIPNET
 ##'
-##' @description Write restart files for SIPNET
-##'
+##' @description Write restart files for SIPNET. WARNING: Some variables produce illegal values < 0 and have been hardcoded to correct these values!!
+##' 
 ##' @return NONE
 ##' @export
 write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings, new.state,
@@ -31,7 +31,11 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
   # values that will be used for updating other states deterministically depending on the SDA states
-  IC_extra <- data.frame(t(new.params$restart))
+  if (length(new.params$restart) > 0) {
+    IC_extra <- data.frame(t(new.params$restart))
+  } else{
+    IC_extra <- data.frame()
+  }  
   
   if (RENAME) {
     file.rename(file.path(outdir, runid, "sipnet.out"),
@@ -54,11 +58,16 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  #*unit.conv -> Mg/ha/yr
     names(analysis.save[[length(analysis.save)]]) <- c("NPP")
   }
+
+  if ("NEE" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$NEE
+    names(analysis.save[[length(analysis.save)]]) <- c("NEE")
+  }
   
-  if ("AbvGrndWood" %in% variables) {
-    AbvGrndWood <- udunits2::ud.convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
-    analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 
-    names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
+ if ("AbvGrndWood" %in% variables) {
+     AbvGrndWood <- udunits2::ud.convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
+     analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 	  
+     names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
     
     analysis.save[[length(analysis.save) + 1]] <- IC_extra$abvGrndWoodFrac
     names(analysis.save[[length(analysis.save)]]) <- c("abvGrndWoodFrac")
@@ -90,11 +99,11 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   
   if ("SoilMoistFrac" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac  ## unitless
-    if (new.state$SoilMoistFrac < 0 | new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
+    if (new.state$SoilMoistFrac < 0 || new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
     names(analysis.save[[length(analysis.save)]]) <- c("litterWFrac")
     
     analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac  ## unitless
-    if (new.state$SoilMoistFrac < 0 | new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
+    if (new.state$SoilMoistFrac < 0 || new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
     names(analysis.save[[length(analysis.save)]]) <- c("soilWFrac")
   }
   
@@ -104,15 +113,21 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("snow")
   }
 
+  if ("LAI" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
+    if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("LAI")
+  }
   
-  if (!is.null(analysis.save) & length(analysis.save)>0){
+  if (!is.null(analysis.save) && length(analysis.save)>0){
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
     colnames(analysis.save.mat) <- names(unlist(analysis.save))
   }else{
-    analysis.save.mat<-NULL
+    analysis.save.mat <- NULL
   }
 
-  
+  print(runid %>% as.character())
+  print(analysis.save.mat)
   do.call(write.config.SIPNET, args = list(defaults = NULL,
                                            trait.values = new.params,
                                            settings = settings,
