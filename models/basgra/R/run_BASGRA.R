@@ -1,6 +1,6 @@
 
 ##-------------------------------------------------------------------------------------------------#
-##' BASGRA wrapper function.
+##' BASGRA wrapper function. Runs and writes model outputs in PEcAn standard.
 ##'
 ##' BASGRA is written in fortran is run through R by wrapper functions written by Marcel Van Oijen.
 ##' This function makes use of those wrappers but gives control of datastream in and out of the model to PEcAn.
@@ -10,28 +10,22 @@
 ##'
 ##' @name run_BASGRA
 ##' @title run BASGRA model
-##' @param defaults list of defaults to process
-##' @param trait.samples vector of samples for a given trait
-##' @param settings list of settings from pecan settings file
-##' @param run.id id of run
-##' @return OK
+##' @param binary_path path to model binary
+##' @param file_weather path to climate file, should change when I get rid of met2model?
+##' @param file_params path to params file
+##' @param start_date start time of the simulation
+##' @param end_date end time of the simulation
+##' @param outdir where to write BASGRA output
+##' @param sitelat latitude of the site
+##' @param sitelon longitude of the site
+##' 
 ##' @export
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 
-# template.job 
-run_BASGRA('@BINARY@', '@SITE_MET@', '@RUN_PARAMS@', '@START_DATE@', '@END_DATE@', 
-           @SITE_LAT@, @SITE_LON@, ,'@OUTDIR@')
-
 run_BASGRA <- function(binary_path, file_weather, file_params, start_date, end_date, 
                        outdir, sitelat, sitelon){
-  
 
-  file_weather <- "/fs/data1/pecan.data/dbfiles/Fluxnet2015_BASGRA_site_1-523/FLX_DK-ZaH_FLUXNET2015_SUBSET_HH_2000-2014_2-3.2000-01-01.2007-12-31.txt"
-  file_params <- "/fs/data3/istfer/BASGRA_N/parameters/parameters.txt"
-  start_date <- '2000/01/01'
-  end_date <- '2007/12/31'
-  
   ############################# GENERAL INITIALISATION ########################
   # this part corresponds to initialise_BASGRA_general.R function  
   
@@ -189,24 +183,56 @@ run_BASGRA <- function(binary_path, file_weather, file_params, start_date, end_d
                      NOUT,
                      matrix(0,NDAYS,NOUT))[[8]]
 
-  head(output)
   
   ############################# WRITE OUTPUTS ###########################
   # writing model outputs already in standard format
   
   # only LAI and CropYield for now
   
-  lai <- output[,which(outputNames == "LAI")]
     
-  CropYield <- output[,which(outputNames == "YIELD")]
+  years <- seq(start_year, end_year)
+  for (y in years) {
+    
+    thisyear <- output[, which(outputNames == "year")] == y
+    
+    outlist <- list()
+    outlist[[1]] <- output[thisyear, which(outputNames == "LAI")]  # LAI in (m2 m-2)
+    
+    CropYield   <- output[thisyear, which(outputNames == "YIELD")] # (g DM m-2)
+    outlist[[2]] <- udunits2::ud.convert(CropYield, "g m-2", "kg m-2")  
+    
+    # ******************** Declare netCDF dimensions and variables ********************#
+    t <- ncdf4::ncdim_def(name = "time", 
+                          units = paste0("days since ", y, "-01-01 00:00:00"), 
+                          seq_len(PEcAn.utils::days_in_year(y)),
+                          calendar = "standard", 
+                          unlim = TRUE)
     
     
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    
+    dims <- list(lon = lon, lat = lat, time = t)
+    
+    var <- list()
+    var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
+    var[[2]] <- PEcAn.utils::to_ncvar("CropYield", dims)
+
+    # ******************** Declare netCDF variables ********************#
+    
+    ### Output netCDF data
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+    for (i in seq_along(var)) {
+      # print(i)
+      ncdf4::ncvar_put(nc, var[[i]], outlist[[i]])
+      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+    }
+    close(varfile)
+    ncdf4::nc_close(nc)
+  } # end year-loop over outputs
+  
 } # run_BASGRA
 
-################################################################################
-
-
-
-
-
-
+#--------------------------------------------------------------------------------------------------#
+### EOF
