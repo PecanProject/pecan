@@ -7,13 +7,27 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
-### Fixes
+### Fixed
+- Fix issue with cruncep download: use netcdf subset (ncss) method instead of opendap (#2424).
+- The `parse` option to `PEcAn.utils::read_web_config` had no effect when `expand` was TRUE (#2421).
+- Fixed a typo that made `PEcAn.DB::symmetric_setdiff` falsely report no differences (#2428).
+
+### Changed
+- Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
+
+## [1.7.1] - 2018-09-12
+
+### Fixed
+- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
+- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+- `PEcAn.ED2::met2model.ED2` now skips processing of years for which all output files are already present (unless `overwrite = TRUE`). This prevents a lot of unnecessary work when extending an existing ED met record.
 - Fixed issue that prevented modellauncher from working properly #2262
 - Use explicit namespacing (`package::function`) throughout `PEcAn.meta.analysis`. Otherwise, many of these functions would fail when trying to run a meta-analysis outside of the PEcAn workflow (i.e. without having loaded the packages first) (#2351).
 - Standardize how `PEcAn.DB` tests create database connections, and make sure tests work with both the newer `Postgres` and older `PostgreSQL` drivers (#2351).
 - Meta-analysis = "AUTO" now correctly skips the meta analysis if the PFT definition has not changed (#1217).
 - Replace deprecated `rlang::UQ` syntax with the recommended `!!`
 - Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+- History page would not pass the hostname parameter when showing a running workflow, this would result in the running page showing an error.
 
 ### Changed
 - Updated modules/rtm PROSPECT docs
@@ -34,10 +48,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - In `PEcAn.DB::get.trait.data`, if `trait.names` is `NULL` or missing, use the traits for which at least one prior is available among the input list of PFTs. (Previously, we were getting this from the `PEcAn.utils::trait.dictionary`, which we are trying to deprecate #1747). (#2351)
 - Cleanup and improve logging and code readability in parts of `PEcAn.DB` related to getting trait data, including replacing many manual database queries with `dplyr` calls.
 - Reorganization of PEcAn documentation in accordance with isue #2253.
-
+- SIPNET now is installed from the source code managed in git
 
 ### Added
-
+- Meta analysis functionality to not use greenhouse data.
 - Dockerize the BioCro model.
 - Added PRO4SAIL-D model, using existing 4SAIL src and coupling with PROSPECT-D Fortran code
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
@@ -55,11 +69,6 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
 - Removed package `PEcAn.data.mining` from the Make build. It can still be installed directly from R if desired, but is skipped by default because it is in early development, does not yet export any functions, and creates a dependency on the (large, often annoying to install) ImageMagick library.
 - Fully deprecate support for `MySQL` database driver. Now, only `PostgreSQL` (and, experimentally, `RPostgres`) are supported. With this, remove `RMySQL` dependency in several places.
-
-### Fixed
-- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
-- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
-- `PEcAn.ED2::met2model.ED2` now skips processing of years for which all output files are already present (unless `overwrite = TRUE`). This prevents a lot of unnecessary work when extending an existing ED met record.
 
 ## [1.7.0] - 2018-12-09
 

@@ -64,7 +64,7 @@ settings <- list() %>%
   add_pft("temperate.deciduous") %>%
   add_rabbitmq(con = con) %>%
   modifyList(list(
-    meta.analysis = list(iter = 3000, random.effects = FALSE),
+    meta.analysis = list(iter = 3000, random.effects = list(on = FALSE, use_ghs = TRUE)),
     run = list(inputs = list(met = list(source = "CRUNCEP", output = "SIPNET", method = "ncss"))),
     ensemble = list(size = 1, variable = "NPP")
   ))

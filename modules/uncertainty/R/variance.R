@@ -55,8 +55,8 @@ get.gi.phii <- function(splinefuns, trait.samples, maxn = NULL){
 
 ##' Estimate model output based on univariate splines
 ##'
-##' Accepts output from get.gi.phii (the matrix $g(\phi_i)$) and produces
-##' spline estimate of $f(phi)$ for use in estimating closure term associated with
+##' Accepts output from get.gi.phii (the matrix \eqn{g(\phi_i)}) and produces
+##' spline estimate of \eqn{f(\phi)} for use in estimating closure term associated with
 ##' spline approximation
 ##' @title Spline Ensemble
 ##' @author David LeBauer

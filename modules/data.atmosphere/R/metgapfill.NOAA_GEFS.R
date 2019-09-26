@@ -20,12 +20,12 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
   PEcAn.logger::logger.info("Starting metgapfill.NOAA_GEFS")
   
   # These are the variables cf NOAA_GEFS uses
-  cf_var_names = c("air_temperature", "air_pressure", "specific_humidity", "surface_downwelling_longwave_flux_in_air", 
-                   "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", "eastward_wind", "northward_wind")
+ # cf_var_names = c("air_temperature", "air_pressure", "specific_humidity", "surface_downwelling_longwave_flux_in_air", 
+                   #"surface_downwelling_shortwave_flux_in_air", "precipitation_flux", "eastward_wind", "northward_wind")
   
   # Variables whose gapfillings are not directly dependent on splines.
-  dependent_vars <- c("specific_humidity", "surface_downwelling_longwave_flux_in_air", "surface_downwelling_shortwave_flux_in_air",
-                      "air_pressure", "eastward_wind", "northward_wind")
+  #dependent_vars <- c("specific_humidity", "surface_downwelling_longwave_flux_in_air", "surface_downwelling_shortwave_flux_in_air",
+                     # "air_pressure", "eastward_wind", "northward_wind")
   
   
   escaped <- gsub("(\\W)", "\\\\\\1", in.prefix) # The file name may contain special characters that could mess up the regular expression.
@@ -54,6 +54,8 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
   
   flptr = ncdf4::nc_open(full.data.file)
   
+  cf_var_names = names(flptr$var)   #to deal with wind speed vs eastward vs northward
+  dependent_vars = cf_var_names[-which(cf_var_names == "air_temperature" | cf_var_names == "precipitation_flux")] #remove air temp and pres since they are gap filled differently
   # Put data into a matrix
   var <- ncdf4::ncvar_get(flptr, "air_temperature")
   allvars <- matrix(var, ncol=length(var), nrow=1)
@@ -91,6 +93,7 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
   
   fitted.data <- data.frame(air_temperature = air_temperature,
                             precipitation_flux = precipitation_flux)
+  time <-flptr$dim$time$vals
   
   # This loop does the gapfilling of the other variables, based on air_temperature and precipitation_flux.
   # It does so in the following way:
@@ -101,7 +104,7 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
   # values in the output of the prediciton function.
   # The new data is put into the data frame used to fit the next model
   for (i in 1:length(dependent_vars)) {
-    var <- allvars[i,]
+    var <- allvars[i+2,]
     if(is.na(var[1])) {
       var[1] <- mean(var, na.rm = TRUE)
     }
@@ -122,7 +125,10 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
       reg <- lm(fitted.data$eastward_wind ~.,fitted.data)
     } else if (dependent_vars[i] == "northward_wind") {
       reg <- lm(fitted.data$northward_wind ~.,fitted.data)
+    }else if (dependent_vars[i] == "wind_speed") {
+      reg <- lm(fitted.data$wind_speed ~.,fitted.data)
     }
+  
     prediction <- predict(reg, fitted.data)
     
     # Update the values in the data frame
@@ -152,7 +158,7 @@ metgapfill.NOAA_GEFS <- function(in.prefix, in.path, outfolder, start_date, end_
     # All variables should be of the same length.
     time_dim = ncdf4::ncdim_def(name="time", 
                                 paste(units="hours since", start_date), 
-                                seq(6, 6 * length(air_temperature), by = 6),
+                                time,
                                 create_dimvar = TRUE)
     lat <- ncdf4::ncvar_get(nc = flptr, varid = "latitude")
     lon <- ncdf4::ncvar_get(nc = flptr, varid = "longitude")
