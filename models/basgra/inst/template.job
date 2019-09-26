@@ -13,7 +13,8 @@ mkdir -p "@OUTDIR@"
 # see if application needs running
 if [ ! -e "@OUTDIR@/results.csv" ]; then
   cd "@RUNDIR@"
-  
+    ln -s "@SITE_MET@" weather.txt
+    
   "@BINARY@"
   STATUS=$?
   
@@ -24,15 +25,13 @@ if [ ! -e "@OUTDIR@/results.csv" ]; then
   fi
 
   # convert to MsTMIP
-  echo "require (PEcAn.MODEL)
+  echo "require (PEcAn.BASGRA)
 model2netcdf.MODEL('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
 " | R --vanilla
 fi
 
 # copy readme with specs to output
 cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
-
-# run getdata to extract right variables
 
 # host specific teardown
 @HOST_TEARDOWN@

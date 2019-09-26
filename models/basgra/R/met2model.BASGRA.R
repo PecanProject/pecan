@@ -96,7 +96,7 @@ met2model.BASGRA <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
       
       # compute daily mean, min and max
       ind <- rep(seq_len(diy), each = tstep)
-      t_dmean <- tapply(Tair_C, ind, mean, na.rm = TRUE) 
+      t_dmean <- tapply(Tair_C, ind, mean, na.rm = TRUE) # maybe round these numbers 
       t_dmax  <- tapply(Tair_C, ind, max,  na.rm = TRUE) 
       t_dmin  <- tapply(Tair_C, ind, min,  na.rm = TRUE)
       

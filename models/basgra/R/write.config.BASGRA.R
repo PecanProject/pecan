@@ -8,32 +8,23 @@
 #-------------------------------------------------------------------------------
 
 ##-------------------------------------------------------------------------------------------------#
-##' Writes a MODEL config file.
+##' Writes a BASGRA config file.
 ##'
 ##' Requires a pft xml object, a list of trait values for a single model run,
 ##' and the name of the file to create
 ##'
-##' @name write.config.MODEL
-##' @title Write MODEL configuration files
+##' @name write.config.BASGRA
+##' @title Write BASGRA configuration files
 ##' @param defaults list of defaults to process
 ##' @param trait.samples vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
-##' @return configuration file for MODEL for given run
+##' @return configuration file for BASGRA for given run
 ##' @export
-##' @author Rob Kooper
+##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
-write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
-  PEcAn.logger::logger.severe("NOT IMPLEMENTED")
-  # Please follow the PEcAn style guide:
-  # https://pecanproject.github.io/pecan-documentation/develop/coding-style.html
-  # Note that `library()` calls should _never_ appear here; instead, put
-  # packages dependencies in the DESCRIPTION file, under "Imports:".
-  # Calls to dependent packages should use a double colon, e.g.
-  #    `packageName::functionName()`.
-  # Also, `require()` should be used only when a package dependency is truly
-  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
-  
+write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
+
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
@@ -43,7 +34,7 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
     jobsh <- readLines(con = settings$model$jobtemplate, n = -1)
   } else {
-    jobsh <- readLines(con = system.file("template.job", package = "PEcAn.MODEL"), n = -1)
+    jobsh <- readLines(con = system.file("template.job", package = "PEcAn.BASGRA"), n = -1)
   }
   
   # create host specific setttings
