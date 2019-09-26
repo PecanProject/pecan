@@ -12,7 +12,7 @@
 ##' @title run BASGRA model
 ##' @param binary_path path to model binary
 ##' @param file_weather path to climate file, should change when I get rid of met2model?
-##' @param file_params path to params file
+##' @param run_params parameter vector
 ##' @param start_date start time of the simulation
 ##' @param end_date end time of the simulation
 ##' @param outdir where to write BASGRA output
@@ -23,7 +23,7 @@
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 
-run_BASGRA <- function(binary_path, file_weather, file_params, start_date, end_date, 
+run_BASGRA <- function(binary_path, file_weather, run_params, start_date, end_date, 
                        outdir, sitelat, sitelon){
 
   ############################# GENERAL INITIALISATION ########################
@@ -36,7 +36,7 @@ run_BASGRA <- function(binary_path, file_weather, file_params, start_date, end_d
   calendar_fert     <- matrix( 0, nrow=100, ncol=3 )
   calendar_Ndep     <- matrix( 0, nrow=100, ncol=3 )
   calendar_Ndep[1,] <- c(1900,  1,0)
-  calendar_Ndep[2,] <- c(2100,366,0)
+  calendar_Ndep[2,] <- c(2100, 366, 0)
   days_harvest      <- matrix( as.integer(-1), nrow=100, ncol=2 )
   
   ################################################################################
@@ -166,22 +166,16 @@ run_BASGRA <- function(binary_path, file_weather, file_params, start_date, end_d
   
   days_harvest      <- as.integer(days_harvest)
   
-  # create vector params
-  df_params      <- read.table(file_params,header=T,sep="\t",row.names=1)
-  parcol         <- 13
-  params         <- df_params[,parcol]
- 
-  
   # run  model
   output <- .Fortran('BASGRA', 
-                     params,
+                     run_params,
                      matrix_weather, 
                      calendar_fert,
                      calendar_Ndep,
                      days_harvest,
                      NDAYS, 
                      NOUT,
-                     matrix(0,NDAYS,NOUT))[[8]]
+                     matrix(0, NDAYS, NOUT))[[8]]
 
   
   ############################# WRITE OUTPUTS ###########################

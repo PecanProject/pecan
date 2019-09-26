@@ -12,10 +12,13 @@ mkdir -p "@OUTDIR@"
 
 # see if application needs running
 if [ ! -e "@OUTDIR@/results.csv" ]; then
-  cd "@RUNDIR@"
-    ln -s "@SITE_MET@" weather.txt
     
   "@BINARY@"
+    # convert to MsTMIP
+  echo "require (PEcAn.BASGRA)
+run_BASGRA('@BINARY@', '@SITE_MET@', @RUN_PARAMS@, '@START_DATE@', '@END_DATE@', '@OUTDIR@', @SITE_LAT@, @SITE_LON@)
+" | R --vanilla
+
   STATUS=$?
   
   # check the status
@@ -24,10 +27,6 @@ if [ ! -e "@OUTDIR@/results.csv" ]; then
     exit $STATUS
   fi
 
-  # convert to MsTMIP
-  echo "require (PEcAn.BASGRA)
-model2netcdf.MODEL('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
-" | R --vanilla
 fi
 
 # copy readme with specs to output

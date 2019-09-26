@@ -4,7 +4,7 @@
 \alias{run_BASGRA}
 \title{run BASGRA model}
 \usage{
-run_BASGRA(binary_path, file_weather, file_params, start_date, end_date,
+run_BASGRA(binary_path, file_weather, run_params, start_date, end_date,
   outdir, sitelat, sitelon)
 }
 \arguments{
@@ -12,7 +12,7 @@ run_BASGRA(binary_path, file_weather, file_params, start_date, end_date,
 
 \item{file_weather}{path to climate file, should change when I get rid of met2model?}
 
-\item{file_params}{path to params file}
+\item{run_params}{parameter vector}
 
 \item{start_date}{start time of the simulation}
 
