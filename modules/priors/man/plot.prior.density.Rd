@@ -4,7 +4,7 @@
 \alias{plot.prior.density}
 \title{Add Prior Density}
 \usage{
-\method{plot}{prior.density}(prior.density, base.plot = NULL,
+plot.prior.density(prior.density, base.plot = NULL,
   prior.color = "black")
 }
 \arguments{

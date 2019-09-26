@@ -4,7 +4,7 @@
 \alias{plot.densities}
 \title{Plot Trait Probability Densities}
 \usage{
-\method{plot}{densities}(density.plot.inputs, outdir, ...)
+plot.densities(density.plot.inputs, outdir, ...)
 }
 \arguments{
 \item{outdir}{directory in which to generate figure as pdf}

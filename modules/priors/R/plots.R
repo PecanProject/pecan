@@ -54,6 +54,7 @@ plot.posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' @param xlim limits for x axis
 ##' @author David LeBauer
 ##' @return plot / grob of prior distribution with data used to inform the distribution 
+##' @export
 ##' @importFrom ggplot2 ggplot aes theme_bw scale_x_continuous scale_y_continuous element_blank element_text geom_rug geom_line geom_point
 priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto", fontsize = 18) {
   if (is.data.frame(priordata)) {
