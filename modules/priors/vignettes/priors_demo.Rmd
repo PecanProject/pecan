@@ -176,7 +176,6 @@ wullschleger.data <- data.frame(Y  = wullschleger.data$corrected.vcmax,
                                 ft = wullschleger.data$functional.type,
                                 n  = wullschleger.data$neff)
 ## Summarize data by species
-library(dplyr)
 wullschleger.vcmax <- wullschleger.data %>% 
   group_by(sp) %>% 
   summarise(Y = mean(Y), 
