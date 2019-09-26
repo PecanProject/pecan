@@ -338,10 +338,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("frozenSoilEff" %in% pft.names) {
       param[which(param[, 1] == "frozenSoilEff"), 2] <- pft.traits[which(pft.names == "frozenSoilEff")]
     }
+    
     # frozenSoilFolREff
     if ("frozenSoilFolREff" %in% pft.names) {
       param[which(param[, 1] == "frozenSoilFolREff"), 2] <- pft.traits[which(pft.names == "frozenSoilFolREff")]
     }
+    
     # soilWHC
     if ("soilWHC" %in% pft.names) {
       param[which(param[, 1] == "soilWHC"), 2] <- pft.traits[which(pft.names == "soilWHC")]
@@ -358,27 +360,22 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
     
     if ("immedEvapFrac" %in% pft.names) {
-      id <- which(param[, 1] == "immedEvapFrac")
       param[which(param[, 1] == "immedEvapFrac"), 2] <- pft.traits[which(pft.names == "immedEvapFrac")]
     }
     
-    if ("leafPoolDepth" %in% pft.names) {
-      id <- which(param[, 1] == "leafPoolDepth")
-      param[which(param[, 1] == "leafPoolDepth"), 2] <- pft.traits[which(pft.names == "leafPoolDepth")]
+    if ("leafWHC" %in% pft.names) {
+      param[which(param[, 1] == "leafPoolDepth"), 2] <- pft.traits[which(pft.names == "leafWHC")]
     }
     
     if ("waterRemoveFrac" %in% pft.names) {
-      id <- which(param[, 1] == "waterRemoveFrac")
       param[which(param[, 1] == "waterRemoveFrac"), 2] <- pft.traits[which(pft.names == "waterRemoveFrac")]
     }
     
     if ("fastFlowFrac" %in% pft.names) {
-      id <- which(param[, 1] == "fastFlowFrac")
       param[which(param[, 1] == "fastFlowFrac"), 2] <- pft.traits[which(pft.names == "fastFlowFrac")]
     }
     
     if ("rdConst" %in% pft.names) {
-      id <- which(param[, 1] == "rdConst")
       param[which(param[, 1] == "rdConst"), 2] <- pft.traits[which(pft.names == "rdConst")]
     }
     ### ----- Phenology parameters GDD leaf on
