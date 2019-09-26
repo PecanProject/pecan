@@ -183,6 +183,21 @@ prep.data <- prep.data %>%
     day.data
   })
 
+# if there is infinte value then take it out
+prep.data<-prep.data %>% 
+  map(function(day.data){
+    #cheking the mean
+    nan.mean <- which(is.infinite(day.data$means) | is.nan(day.data$means) | is.na(day.data$means))
+    if ( length(nan.mean)>0 ) {
+
+      day.data$means <- day.data$means[-nan.mean]
+      day.data$covs <- day.data$covs[-nan.mean, -nan.mean] %>%
+        as.matrix() %>%
+        `colnames<-`(c(colnames(day.data$covs)[-nan.mean]))
+      }
+    day.data
+  })
+
 obs.mean <- prep.data %>% map('means') %>% setNames(names(prep.data))
 obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 
@@ -203,7 +218,7 @@ if ('state.data.assimilation' %in% names(settings)) {
     PEcAn.utils::status.start("SDA")
   PEcAn.assim.sequential::sda.enkf(
       settings,
-      restart=restart.path,
+      restart=FALSE,
       Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,
@@ -212,7 +227,7 @@ if ('state.data.assimilation' %in% names(settings)) {
         interactivePlot =FALSE,
         TimeseriesPlot =TRUE,
         BiasPlot =FALSE,
-        debug = FALSE,
+        debug =TRUE,
         pause=FALSE
       )
     )

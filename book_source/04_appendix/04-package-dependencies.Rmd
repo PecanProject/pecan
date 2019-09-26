@@ -1,69 +1,10 @@
-### Coding Style {#developer-codestyle}
+# Package Dependencies {#package-dependencies}
 
-Consistent coding style improves readability and reduces errors in
-shared code.
-
-R does not have an official style guide, but Hadley Wickham provides one that is well
-thought out and widely adopted. [Advanced R: Coding Style](http://r-pkgs.had.co.nz/style.html).
-
-Both the Wickham text and this page are derived from [Google's R Style Guide](https://google.github.io/styleguide/Rguide.xml).
-
-#### Use Roxygen2 documentation
-
-This is the standard method of documentation used in PEcAn development,
-it provides inline documentation similar to doxygen. Even trivial
-functions should be documented.
-
-See [Roxygen2](#developer-roxygen).
-
-#### Write your name at the top
-
-Any function that you create or make a meaningful contribution to should
-have your name listed after the author tag in the function documentation.
-
-#### Use testthat testing package
-
-See [Unit_Testing](#developer-testing) for instructions, and [Advanced R: Tests](http://r-pkgs.had.co.nz/tests.html).
-
-* tests provide support for documentation - they define what a function is (and is not) expected to do
-* all functions need tests to ensure basic functionality is maintained during development.
-* all bugs should have a test that reproduces the bug, and the test should pass before bug is closed
-
-
-#### Don't use shortcuts
-
-R provides many shortcuts that are useful when coding interactively, or for writing scripts. However, these can make code more difficult to read and can cause problems when written into packages.
-
-#### Function Names (`verb.noun`)
-
-Following convention established in PEcAn 0.1, we use the all lowercase with periods to separate words. They should generally have a `verb.noun` format, such as `query.traits`, `get.samples`, etc.
-
-#### File Names
-
-File names should end in `.R`, `.Rdata`, or `.rds` (as appropriate) and should be meaningful, e.g. named after the primary functions that they contain. There should be a separate file for each major high-level function to aid in identifying the contents of files in a directory.
-
-#### Use "<-" as an assignment operator
-
-Because most R code uses <- (except where = is required), we will use <-.
-`=` is reserved for function arguments
-
-#### Use Spaces
-
-* around all binary operators (`=`, `+`, `-`, `<-`, etc.).
-* after but not before a comma
-
-#### Use curly braces
-
-The option to omit curly braces is another shortcut that makes code easier to write but harder to read and more prone to error.
-
-
-#### Package Dependencies
-
-##### Executive Summary: What to usually do
+## Executive Summary: What to usually do
 
 When you're editing one PEcAn package and want to use a function from any other R package (including other PEcAn packages), the standard method is to add the other package to the `Imports:` field of your DESCRIPTION file, spell the function in fully namespaced form (`pkg::function()`) everywhere you call it, and be done. There are a few cases where this isn't enough, but they're rarer than you think. The rest of this section mostly deals with the exceptions to this rule and why not to use them when they can be avoided.
 
-##### Big Picture: What's possible to do
+## Big Picture: What's possible to do
 
 To make one PEcAn package use functionality from another R package (including other PEcAn packages), you must do at least one and up to four things in your own package.
 
@@ -75,7 +16,7 @@ To make one PEcAn package use functionality from another R package (including ot
 The advice below about each step is written specifically for PEcAn, although much of it holds for R packages in general. For more details about working with dependencies, start with Hadley Wickham's [R packages](http://r-pkgs.had.co.nz/description.html#dependencies) and treat the CRAN team's [Writing R Extensions](https://cran.r-project.org/doc/manuals/R-exts.html) as the final authority.
 
 
-##### Declaring Dependencies: Depends, Suggests, Imports
+## Declaring Dependencies: Depends, Suggests, Imports
 
 List all dependencies in the DESCRIPTION file. Every package that is used by your package's code must appear in exactly one of the sections `Depends`, `Imports`, or `Suggests`.
 
@@ -99,7 +40,7 @@ Please list packages in alphabetical order within each section. R doesn't care a
 
 	It is often tempting to move a dependency from Imports to Suggests because it is a hassle to install (large, hard to compile, no longer available from CRAN, currently broken on GitHub, etc), in the hopes that this will isolate the rest of PEcAn from the troublesome dependency. This helps for some cases, but fails for two very common ones: It does not reduce install time for CI builds, because all suggested packages need to be present when running full package checks (`R CMD check` or `devtools::check` or `make check`). It also does not prevent breakage when updating PEcAn via `make install`, because `devtools::install_deps` does not install suggested packages that are missing but does try to *upgrade* any that are already installed to the newest available version -- even if the installed version took ages to compile and would have worked just fine!
 
-##### Importing Functions: Use Roxygen
+## Importing Functions: Use Roxygen
 
 PEcAn style is to import very few functions and instead use fully namespaced function calls (`pkg::fn()`) everywhere it's practical to do so. In cases where double-colon notation would be especially burdensome, such as when importing custom binary operators like `%>%`, it's acceptable to import specific functions into the package namespace. Do this by using Roxygen comments of the form `#' @importFrom pkg function`, not by hand-editing the NAMESPACE file.
 
@@ -123,7 +64,7 @@ Please do *not* import entire package namespaces (`#' @import pkg`); it increase
 
 A special note about importing functions from the [tidyverse](https://tidyverse.org): Be sure to import from the package(s) that actually contain the functions you want to use, e.g. `Imports: dplyr, magrittr, purrr` / `@importFrom magrittr %>%` / `purrr::map(...)`, not `Imports: tidyverse` / `@importFrom tidyverse %>%` / `tidyverse::map(...)`. The package named `tidyverse` is just a interactive shortcut that loads the whole collection of constituent packages; it doesn't export any functions in its own namespace and therefore importing it into your package doesn't make them available.
 
-##### Loading Code: Don't... But Use `requireNamespace` When You Do
+## Loading Code: Don't... But Use `requireNamespace` When You Do
 
 The very short version of this section: We want to maintain clear separation between the [package's namespace](http://r-pkgs.had.co.nz/namespace.html) (which we control and want to keep predictable) and the global namespace (which the user controls, might change in ways we have no control over, and will be justifiably angry if we change it in ways they were not expecting). Therefore, avoid attaching packages to the search path (so no `Depends` and no `library()` or `require()` inside functions), and do not explicitly load other namespaces if you can help it.
 
@@ -155,7 +96,7 @@ Note that scripts in `inst/` are considered to be sample code rather than part o
 
 If you think your package needs to load or attach code for any reason, please note why in your pull request description and be prepared for questions about it during code review. If your reviewers can think of an alternate approach that avoids loading or attaching, they will likely ask you to use it even if it creates extra work for you.
 
-##### Installing dependencies: Let the machines do it
+## Installing dependencies: Let the machines do it
 
 In most cases you won't need to think about how dependencies get installed -- just declare them in your package's DESCRIPTION and the installation will be handled automatically by R and devtools during the build process. In PEcAn packages, the rare cases where this isn't enough will probably fall into one of two categories.
 
