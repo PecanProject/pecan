@@ -228,7 +228,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   #------------------------------------------------- if this is a new fresh run------------------  
   if (is.null(restart)){
     # create an ensemble id
-    if (!is.null(con) & write.to.db) {
+    if (!is.null(con) && write.to.db) {
       # write ensemble first
       ensemble.id <- PEcAn.DB::db.query(paste0(
         "INSERT INTO ensembles (runtype, workflow_id) ",
@@ -336,7 +336,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     # write configuration for each run of the ensemble
     runs <- data.frame()
     for (i in seq_len(settings$ensemble$size)) {
-      if (!is.null(con) & write.to.db) {
+      if (!is.null(con) && write.to.db) {
         paramlist <- paste("ensemble=", i, sep = "")
         # inserting this into the table and getting an id back
         run.id <- PEcAn.DB::db.query(paste0(
