@@ -215,8 +215,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     # Open connection to database so we can store all run/ensemble information
     con <-
       try(PEcAn.DB::db.open(settings$database$bety))
-    on.exit(try(PEcAn.DB::db.close(con), silent = TRUE, add = TRUE)
-    )
+    on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
     
     # If we fail to connect to DB then we set to NULL
     if (inherits(con, "try-error"))  {
