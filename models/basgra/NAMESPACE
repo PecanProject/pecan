@@ -3,3 +3,4 @@
 export(met2model.BASGRA)
 export(run_BASGRA)
 export(write.config.BASGRA)
+useDynLib(PEcAn.BASGRA)
