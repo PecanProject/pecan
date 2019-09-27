@@ -62,7 +62,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
         
         ## open netcdf
         nc <- ncdf4::nc_open(old.file)  
-        
+on.exit(ncdf4::nc_close(nc), add = TRUE)
         ## convert time to seconds
         sec <- nc$dim$time$vals
         sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
