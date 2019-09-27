@@ -30,8 +30,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
   outdir <- file.path(settings$host$outdir, run.id)
   
   # load default(!) BASGRA params
-  load(system.file("BASGRA_params.Rdata",package = "PEcAn.BASGRA"))
-  run_params <- default_params
+  run_params <- PEcAn.utils::load_local(system.file("BASGRA_params.Rdata",package = "PEcAn.BASGRA"))$default_params
   
   run_params[which(names(default_params) == "LAT")] <- as.numeric(settings$run$site$lat)
   
