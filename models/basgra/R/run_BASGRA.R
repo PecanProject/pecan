@@ -183,7 +183,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
   
   year_start  <- as.integer(start_year)
   doy_start   <- as.integer(lubridate::yday(start_date))
-  NDAYS       <- as.integer(sum(PEcAn.utils::days_in_year(start_year:end_year))) # could be partial years, change later
+  NDAYS       <- as.integer(sum(PEcAn.utils::days_in_year(seq(start_year, end_year)))) # could be partial years, change later
 
   matrix_weather <- mini_met2model_BASGRA(run_met, start_date, start_year, end_date, end_year)
   
