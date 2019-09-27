@@ -4,8 +4,6 @@ Title: PEcAn package for integration of the BASGRA model
 Version: 1.7.1
 Date: 2019-09-05
 Authors@R: c(person("Istem", "Fer", email = "istem.fer@fmi.fi", role = c("aut", "cre"))
-Author: Istem Fer
-Maintainer: Istem Fer <istem.fer@fmi.fi>
 Description: This module provides functions to link the BASGRA model to PEcAn.
 Imports:
     PEcAn.logger,
