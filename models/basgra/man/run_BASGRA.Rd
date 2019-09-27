@@ -4,13 +4,11 @@
 \alias{run_BASGRA}
 \title{run BASGRA model}
 \usage{
-run_BASGRA(binary_path, file_weather, run_params, start_date, end_date,
-  outdir, sitelat, sitelon)
+run_BASGRA(run_met, run_params, start_date, end_date, outdir, sitelat,
+  sitelon)
 }
 \arguments{
-\item{binary_path}{path to model binary}
-
-\item{file_weather}{path to climate file, should change when I get rid of met2model?}
+\item{run_met}{path to climate file, should change when I get rid of met2model?}
 
 \item{run_params}{parameter vector}
 

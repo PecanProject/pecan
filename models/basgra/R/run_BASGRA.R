@@ -10,8 +10,7 @@
 ##'
 ##' @name run_BASGRA
 ##' @title run BASGRA model
-##' @param binary_path path to model binary
-##' @param file_weather path to climate file, should change when I get rid of met2model?
+##' @param run_met path to climate file, should change when I get rid of met2model?
 ##' @param run_params parameter vector
 ##' @param start_date start time of the simulation
 ##' @param end_date end time of the simulation
@@ -24,59 +23,101 @@
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 
-run_BASGRA <- function(binary_path, file_weather, run_params, start_date, end_date, 
-                       outdir, sitelat, sitelon){
+run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitelat, sitelon){
 
-  ############################# GENERAL INITIALISATION ########################
-  # this part corresponds to initialise_BASGRA_general.R function  
+  start_date  <- as.POSIXlt(start_date, tz = "UTC")
+  end_date    <- as.POSIXlt(end_date, tz = "UTC")
+  start_year  <- lubridate::year(start_date)
+  end_year    <- lubridate::year(end_date)
   
-  calendar_fert     <- matrix( 0, nrow=100, ncol=3 )
-  calendar_Ndep     <- matrix( 0, nrow=100, ncol=3 )
-  calendar_Ndep[1,] <- c(1900,  1,0)
-  calendar_Ndep[2,] <- c(2100, 366, 0)
-  days_harvest      <- matrix( as.integer(-1), nrow=100, ncol=2 )
-  
+
+
   ################################################################################
-  ### 1. MODEL LIBRARY FILE & FUNCTION FOR RUNNING THE MODEL
-  run_model <- function(p = params,
-                        w = matrix_weather,
-                        calf = calendar_fert,
-                        calN = calendar_Ndep,                      
-                        h = days_harvest,
-                        n = NDAYS) {
-    .Fortran('BASGRA', p,w,calf,calN,h,n, NOUT,matrix(0,n,NOUT))[[8]]
-  }
-  
-  ################################################################################
-  ### 2. FUNCTIONS FOR READING WEATHER DATA
-  read_weather_Bioforsk <- function(y = year_start,
-                                    d = doy_start,
-                                    n = NDAYS,
-                                    f = file_weather) {
-    df_weather            <- read.table( f, header=TRUE )
-    row_start             <- 1
-    while( df_weather[row_start,]$YR  < y ) { row_start <- row_start+1 }
-    while( df_weather[row_start,]$doy < d ) { row_start <- row_start+1 }
-    df_weather_sim        <- df_weather[row_start:(row_start+n-1),]
-    NMAXDAYS              <- as.integer(10000)
-    NWEATHER              <- as.integer(8)
-    matrix_weather        <- matrix( 0., nrow=NMAXDAYS, ncol=NWEATHER )
-    matrix_weather[1:n,1] <- df_weather_sim$YR
-    matrix_weather[1:n,2] <- df_weather_sim$doy
-    matrix_weather[1:n,3] <- df_weather_sim$GR
-    matrix_weather[1:n,4] <- df_weather_sim$T
-    matrix_weather[1:n,5] <- df_weather_sim$T
-    matrix_weather[1:n,6] <- exp(17.27*df_weather_sim$T/(df_weather_sim$T+239)) *
-      0.6108 * df_weather_sim$RH / 100
-    matrix_weather[1:n,7] <- df_weather_sim$RAINI
-    matrix_weather[1:n,8] <- df_weather_sim$WNI   
+  ### FUNCTIONS FOR READING WEATHER DATA
+  mini_met2model_BASGRA <- function(file_path,
+                                    start_date, start_year,
+                                    end_date, end_year) {
+
+    out.list <- list()
+    
+    ctr <- 1
+    for(year in start_year:end_year) {
+      
+      diy <- PEcAn.utils::days_in_year(year)
+      
+      NWEATHER              <- as.integer(8)
+      matrix_weather        <- matrix( 0., nrow=diy, ncol=NWEATHER )
+      
+      
+      # prepare data frame for BASGRA format, daily inputs, but doesn't have to be full year
+      
+      
+      matrix_weather[ ,1] <- rep(year, diy) # year
+      matrix_weather[ ,2] <- seq_len(diy) # day of year, simple implementation for now
+      
+      old.file <- file.path(dirname(file_path), paste(basename(file_path), year, "nc", sep = "."))
+      
+      if (file.exists(old.file)) {
+        
+        ## open netcdf
+        nc <- ncdf4::nc_open(old.file)  
+        
+        ## convert time to seconds
+        sec <- nc$dim$time$vals
+        sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+        
+        dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
+        tstep <- round(86400 / dt)
+        dt <- 86400 / tstep
+        
+        ind <- rep(seq_len(diy), each = tstep)
+        
+        rad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
+        gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
+        
+        matrix_weather[ ,3]  <- tapply(gr, ind, mean, na.rm = TRUE) # irradiation (MJ m-2 d-1)
+        
+        Tair <-ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
+        Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
+        
+        t_dmean <- tapply(Tair_C, ind, mean, na.rm = TRUE) # maybe round these numbers 
+        matrix_weather[ ,4] <- t_dmean # mean temperature (degrees Celsius)
+        matrix_weather[ ,5] <- t_dmean # that's what they had in read_weather_Bioforsk
+        
+        RH <-ncdf4::ncvar_get(nc, "relative_humidity")  # %
+        RH <- tapply(RH, ind, mean, na.rm = TRUE) 
+        
+        matrix_weather[ ,6] <- exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 100
+        
+        
+        Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
+        raini <- tapply(Rain*86400, ind, mean, na.rm = TRUE) 
+        matrix_weather[ ,7] <- raini # precipitation (mm d-1)	
+        
+        U <- ncdf4::ncvar_get(nc, "eastward_wind")
+        V <- ncdf4::ncvar_get(nc, "northward_wind")
+        ws <- sqrt(U ^ 2 + V ^ 2)
+        
+        matrix_weather[ ,8] <- tapply(ws, ind, mean,  na.rm = TRUE) # mean wind speed (m s-1)			
+        
+        ncdf4::nc_close(nc)
+      } else {
+        PEcAn.logger::logger.info("File for year", year, "not found. Skipping to next year")
+        next
+      }
+      
+      out.list[[ctr]] <- matrix_weather
+      ctr <- ctr + 1
+    } # end for-loop around years
+    
+    matrix_weather <- do.call("rbind", out.list)
     return(matrix_weather)
   }
   
   
   
   ################################################################################
-  ### 3. OUTPUT VARIABLES
+  ### OUTPUT VARIABLES
   outputNames <- c(
     "Time"      , "year"     , "doy"      , "DAVTMP"    , "CLV"      , "CLVD"     ,
     "YIELD"     , "CRES"     , "CRT"      , "CST"       , "CSTUB"    , "DRYSTOR"  ,
@@ -139,17 +180,17 @@ run_BASGRA <- function(binary_path, file_weather, run_params, start_date, end_da
   ############################# SITE CONDITIONS  ########################
   # this part corresponds to  initialise_BASGRA_***.R functions  
   
-  start_date  <- as.POSIXlt(start_date, tz = "UTC")
-  end_date    <- as.POSIXlt(end_date, tz = "UTC")
-  start_year  <- lubridate::year(start_date)
-  end_year    <- lubridate::year(end_date)
-  
   year_start  <- as.integer(start_year)
   doy_start   <- as.integer(lubridate::yday(start_date))
   NDAYS       <- as.integer(sum(PEcAn.utils::days_in_year(start_year:end_year))) # could be partial years, change later
-  parcol      <- 13  
+
+  matrix_weather <- mini_met2model_BASGRA(run_met, start_date, start_year, end_date, end_year)
   
-  matrix_weather    <- read_weather_Bioforsk(year_start,doy_start,NDAYS,file_weather)
+  calendar_fert     <- matrix( 0, nrow=100, ncol=3 )
+  calendar_Ndep     <- matrix( 0, nrow=100, ncol=3 )
+  calendar_Ndep[1,] <- c(1900,  1,0)
+  calendar_Ndep[2,] <- c(2100, 366, 0)
+  days_harvest      <- matrix( as.integer(-1), nrow=100, ncol=2 )
   
   # hardcoding these for now, should be able to modify later on
   calendar_fert[1,] <- c( 2000, 115, 140*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
