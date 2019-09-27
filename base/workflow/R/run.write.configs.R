@@ -39,7 +39,9 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
           con <- PEcAn.DB::db.open(...)
           on.exit(PEcAn.DB::db.close(con), add = TRUE)
         }, error = function(e) {
-          PEcAn.logger::logger.severe("Connection requested, but failed to open with the following error: ", conditionMessage(e)
+          PEcAn.logger::logger.severe(
+            "Connection requested, but failed to open with the following error: ",
+            conditionMessage(e))
         })
           
         files <- PEcAn.DB::dbfile.check("Posterior",
