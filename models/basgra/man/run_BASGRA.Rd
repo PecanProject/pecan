@@ -8,7 +8,7 @@ run_BASGRA(run_met, run_params, start_date, end_date, outdir, sitelat,
   sitelon)
 }
 \arguments{
-\item{run_met}{path to climate file, should change when I get rid of met2model?}
+\item{run_met}{path to CF met}
 
 \item{run_params}{parameter vector}
 
