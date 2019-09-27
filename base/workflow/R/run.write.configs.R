@@ -36,7 +36,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
         
         tryCatch({
-          con <- PEcAn.DB::db.open(...)
+          con <- PEcAn.DB::db.open(settings$database$bety)
           on.exit(PEcAn.DB::db.close(con), add = TRUE)
         }, error = function(e) {
           PEcAn.logger::logger.severe(
