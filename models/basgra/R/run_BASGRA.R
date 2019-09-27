@@ -88,6 +88,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
         RH <-ncdf4::ncvar_get(nc, "relative_humidity")  # %
         RH <- tapply(RH, ind, mean, na.rm = TRUE) 
         
+        # This is vapor pressure according to BASGRA.f90#L86 and environment.f90#L49
         matrix_weather[ ,6] <- exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 100
         
         # TODO: check these
@@ -226,7 +227,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
   years <- seq(start_year, end_year)
   for (y in years) {
     
-    thisyear <- output[, which(outputNames == "year")] == y
+    thisyear <- output[ , which(outputNames == "year"] == y
     
     outlist <- list()
     outlist[[1]] <- output[thisyear, which(outputNames == "LAI")]  # LAI in (m2 m-2)
