@@ -214,14 +214,14 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   if (write.to.db) {
     # Open connection to database so we can store all run/ensemble information
     con <-
-      try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
-    on.exit(try(PEcAn.DB::db.close(con), silent = TRUE)
+      try(PEcAn.DB::db.open(settings$database$bety))
+    on.exit(try(PEcAn.DB::db.close(con), silent = TRUE, add = TRUE)
     )
     
     # If we fail to connect to DB then we set to NULL
-    if (inherits(con, "try-error"))
-    {
+    if (inherits(con, "try-error"))  {
       con <- NULL
+      PEcAn.logger::logger.warn("We were not able to successfully establish a connection with Bety ")
     }
   }
 
@@ -327,7 +327,8 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
             "The following pfts are specified for the siteid ",
             settings$run$site$id ,
             " but they are not defined as a pft in pecan.xml:",
-            site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]
+            site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))],
+            collapse = ","
           )
         )
     }

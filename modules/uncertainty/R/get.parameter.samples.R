@@ -16,8 +16,14 @@ get.parameter.samples <- function(settings,
   pft.names <- list()
   outdirs   <- list()
   ## Open database connection
-  con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
-  on.exit(try(PEcAn.DB::db.close(con), silent = TRUE))
+  con <- try(PEcAn.DB::db.open(settings$database$bety))
+  on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
+  
+  # If we fail to connect to DB then we set to NULL
+  if (inherits(con, "try-error"))  {
+    con <- NULL
+    PEcAn.logger::logger.warn("We were not able to successfully establish a connection with Bety ")
+  }
   
   for (i.pft in seq_along(pfts)) {
     pft.names[i.pft] <- settings$pfts[[i.pft]]$name
