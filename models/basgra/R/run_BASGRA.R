@@ -42,7 +42,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
     out.list <- list()
     
     ctr <- 1
-    for(year in start_year:end_year) {
+    for(year in seq(start_year, end_year)) {
       
       diy <- PEcAn.utils::days_in_year(year)
       
