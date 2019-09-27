@@ -20,6 +20,7 @@
 ##' @param sitelon longitude of the site
 ##' 
 ##' @export
+##' @useDynLib PEcAn.BASGRA
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 
@@ -29,10 +30,6 @@ run_BASGRA <- function(binary_path, file_weather, run_params, start_date, end_da
   ############################# GENERAL INITIALISATION ########################
   # this part corresponds to initialise_BASGRA_general.R function  
   
-  # load DLL
-  dyn.load(binary_path)
-  
-  ################################################################################
   calendar_fert     <- matrix( 0, nrow=100, ncol=3 )
   calendar_Ndep     <- matrix( 0, nrow=100, ncol=3 )
   calendar_Ndep[1,] <- c(1900,  1,0)
