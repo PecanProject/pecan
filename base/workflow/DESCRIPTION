@@ -33,6 +33,7 @@ Imports:
 	PEcAn.settings,
 	PEcAn.uncertainty,
 	PEcAn.utils,
+	purrr (>= 0.2.3),
 	XML
 Suggests:
 	testthat,
