@@ -227,7 +227,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
   years <- seq(start_year, end_year)
   for (y in years) {
     
-    thisyear <- output[ , which(outputNames == "year"] == y
+    thisyear <- output[ , outputNames == "year"] == y
     
     outlist <- list()
     outlist[[1]] <- output[thisyear, which(outputNames == "LAI")]  # LAI in (m2 m-2)
