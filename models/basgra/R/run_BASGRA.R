@@ -10,7 +10,7 @@
 ##'
 ##' @name run_BASGRA
 ##' @title run BASGRA model
-##' @param run_met path to climate file, should change when I get rid of met2model?
+##' @param run_met path to CF met
 ##' @param run_params parameter vector
 ##' @param start_date start time of the simulation
 ##' @param end_date end time of the simulation
@@ -31,13 +31,14 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
   end_year    <- lubridate::year(end_date)
   
 
-
   ################################################################################
   ### FUNCTIONS FOR READING WEATHER DATA
   mini_met2model_BASGRA <- function(file_path,
                                     start_date, start_year,
                                     end_date, end_year) {
 
+    # TODO: read partial years
+    
     out.list <- list()
     
     ctr <- 1
@@ -89,7 +90,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
         
         matrix_weather[ ,6] <- exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 100
         
-        
+        # TODO: check these
         Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
         raini <- tapply(Rain*86400, ind, mean, na.rm = TRUE) 
         matrix_weather[ ,7] <- raini # precipitation (mm d-1)	
@@ -117,7 +118,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
   
   
   ################################################################################
-  ### OUTPUT VARIABLES
+  ### OUTPUT VARIABLES (from BASGRA scripts)
   outputNames <- c(
     "Time"      , "year"     , "doy"      , "DAVTMP"    , "CLV"      , "CLVD"     ,
     "YIELD"     , "CRES"     , "CRT"      , "CST"       , "CSTUB"    , "DRYSTOR"  ,

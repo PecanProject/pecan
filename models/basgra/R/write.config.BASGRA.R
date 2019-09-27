@@ -44,6 +44,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     if ("c2n_fineroot" %in% pft.names) {
       run_params[which(names(default_params) == "NCR")] <- 1/pft.traits[which(pft.names == "c2n_fineroot")]
     }
+    
+    if ("extinction_coefficient" %in% pft.names) {
+      run_params[which(names(default_params) == "K")] <- pft.traits[which(pft.names == "extinction_coefficient")]
+    }
+    
   }
 
 
