@@ -37,7 +37,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
         
         tryCatch({
           con <- PEcAn.DB::db.open(...)
-          on.exit(PEcAn.DB::db.close(con)
+          on.exit(PEcAn.DB::db.close(con), add = TRUE)
         }, error = function(e) {
           PEcAn.logger::logger.severe("Connection requested, but failed to open with the following error: ", conditionMessage(e)
         })
