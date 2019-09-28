@@ -40,12 +40,24 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     pft.traits <- unlist(trait.values[[pft]])
     pft.names <- names(pft.traits)
     
+    # N-C ratio of roots (g N g-1 C)
     if ("c2n_fineroot" %in% pft.names) {
       run_params[which(names(default_params) == "NCR")] <- 1/pft.traits[which(pft.names == "c2n_fineroot")]
     }
     
+    # PAR extinction coefficient (m2 m-2)
     if ("extinction_coefficient" %in% pft.names) {
       run_params[which(names(default_params) == "K")] <- pft.traits[which(pft.names == "extinction_coefficient")]
+    }
+    
+    # Transpiration coefficient (mm d-1)
+    if ("transpiration_coefficient" %in% pft.names) {
+      run_params[which(names(default_params) == "TRANCO")] <- pft.traits[which(pft.names == "transpiration_coefficient")]
+    }
+    
+    # Temperature that kills half the plants in a day (degrees Celcius)
+    if ("plant_min_temp" %in% pft.names) {
+      run_params[which(names(default_params) == "LT50")] <- pft.traits[which(pft.names == "plant_min_temp")]
     }
     
   }
