@@ -30,9 +30,9 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
   outdir <- file.path(settings$host$outdir, run.id)
   
   # load default(!) BASGRA params
-  run_params <- PEcAn.utils::load_local(system.file("BASGRA_params.Rdata",package = "PEcAn.BASGRA"))$default_params
+  run_params <- PEcAn.utils::load_local(system.file("BASGRA_params.Rdata", package = "PEcAn.BASGRA"))$default_params
   
-  run_params[which(names(default_params) == "LAT")] <- as.numeric(settings$run$site$lat)
+  run_params[which(names(run_params) == "LAT")] <- as.numeric(settings$run$site$lat)
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
@@ -42,26 +42,26 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     
     # N-C ratio of roots (g N g-1 C)
     if ("c2n_fineroot" %in% pft.names) {
-      run_params[which(names(default_params) == "NCR")] <- 1/pft.traits[which(pft.names == "c2n_fineroot")]
+      run_params[which(names(run_params) == "NCR")] <- 1/pft.traits[which(pft.names == "c2n_fineroot")]
     }
     
     # PAR extinction coefficient (m2 m-2)
     if ("extinction_coefficient" %in% pft.names) {
-      run_params[which(names(default_params) == "K")] <- pft.traits[which(pft.names == "extinction_coefficient")]
+      run_params[which(names(run_params) == "K")] <- pft.traits[which(pft.names == "extinction_coefficient")]
     }
     
     # Transpiration coefficient (mm d-1)
     if ("transpiration_coefficient" %in% pft.names) {
-      run_params[which(names(default_params) == "TRANCO")] <- pft.traits[which(pft.names == "transpiration_coefficient")]
+      run_params[which(names(run_params) == "TRANCO")] <- pft.traits[which(pft.names == "transpiration_coefficient")]
     }
     
     # Temperature that kills half the plants in a day (degrees Celcius)
     if ("plant_min_temp" %in% pft.names) {
-      run_params[which(names(default_params) == "LT50")] <- pft.traits[which(pft.names == "plant_min_temp")]
+      run_params[which(names(run_params) == "LT50")] <- pft.traits[which(pft.names == "plant_min_temp")]
     }
     
     if ("phyllochron" %in% pft.names) {
-      run_params[which(names(default_params) == "PHY")] <- pft.traits[which(pft.names == "phyllochron")]
+      run_params[which(names(run_params) == "PHY")] <- pft.traits[which(pft.names == "phyllochron")]
     }
     
   }
