@@ -60,6 +60,10 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
       run_params[which(names(default_params) == "LT50")] <- pft.traits[which(pft.names == "plant_min_temp")]
     }
     
+    if ("phyllochron" %in% pft.names) {
+      run_params[which(names(default_params) == "PHY")] <- pft.traits[which(pft.names == "phyllochron")]
+    }
+    
   }
 
 
