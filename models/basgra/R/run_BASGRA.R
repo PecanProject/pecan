@@ -24,19 +24,19 @@
 ##-------------------------------------------------------------------------------------------------#
 
 run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitelat, sitelon){
-
+  
   start_date  <- as.POSIXlt(start_date, tz = "UTC")
   end_date    <- as.POSIXlt(end_date, tz = "UTC")
   start_year  <- lubridate::year(start_date)
   end_year    <- lubridate::year(end_date)
   
-
+  
   ################################################################################
   ### FUNCTIONS FOR READING WEATHER DATA
   mini_met2model_BASGRA <- function(file_path,
                                     start_date, start_year,
                                     end_date, end_year) {
-
+    
     # TODO: read partial years
     
     out.list <- list()
@@ -44,17 +44,18 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
     ctr <- 1
     for(year in seq(start_year, end_year)) {
       
-      diy <- PEcAn.utils::days_in_year(year)
+      simdays <- seq(lubridate::yday(start_date), lubridate::yday(end_date))
       
-      NWEATHER              <- as.integer(8)
-      matrix_weather        <- matrix( 0., nrow=diy, ncol=NWEATHER )
+      NDAYS          <- length(simdays)
+      NWEATHER       <- as.integer(8)
+      matrix_weather <- matrix( 0., nrow = NDAYS, ncol = NWEATHER )
       
       
       # prepare data frame for BASGRA format, daily inputs, but doesn't have to be full year
       
       
-      matrix_weather[ ,1] <- rep(year, diy) # year
-      matrix_weather[ ,2] <- seq_len(diy) # day of year, simple implementation for now
+      matrix_weather[ ,1] <- rep(year, NDAYS) # year
+      matrix_weather[ ,2] <- simdays
       
       old.file <- file.path(dirname(file_path), paste(basename(file_path), year, "nc", sep = "."))
       
@@ -62,7 +63,8 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
         
         ## open netcdf
         nc <- ncdf4::nc_open(old.file)  
-on.exit(ncdf4::nc_close(nc), add = TRUE)
+        on.exit(ncdf4::nc_close(nc), add = TRUE)
+        
         ## convert time to seconds
         sec <- nc$dim$time$vals
         sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
@@ -71,7 +73,7 @@ on.exit(ncdf4::nc_close(nc), add = TRUE)
         tstep <- round(86400 / dt)
         dt <- 86400 / tstep
         
-        ind <- rep(seq_len(diy), each = tstep)
+        ind <- rep(simdays, each = tstep)
         
         rad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
         gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
@@ -96,9 +98,19 @@ on.exit(ncdf4::nc_close(nc), add = TRUE)
         raini <- tapply(Rain*86400, ind, mean, na.rm = TRUE) 
         matrix_weather[ ,7] <- raini # precipitation (mm d-1)	
         
-        U <- ncdf4::ncvar_get(nc, "eastward_wind")
-        V <- ncdf4::ncvar_get(nc, "northward_wind")
-        ws <- sqrt(U ^ 2 + V ^ 2)
+        U <- try(ncdf4::ncvar_get(nc, "eastward_wind"))
+        V <- try(ncdf4::ncvar_get(nc, "northward_wind"))
+        if(is.numeric(U) & is.numeric(V)){
+          ws <- sqrt(U ^ 2 + V ^ 2)      
+        }else{
+          ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
+          if (is.numeric(ws)) {
+            PEcAn.logger::logger.info("eastward_wind and northward_wind absent; using wind_speed")
+          }else{
+            PEcAn.logger::logger.severe("No variable found to calculate wind_speed")
+          }
+        }
+        
         
         matrix_weather[ ,8] <- tapply(ws, ind, mean,  na.rm = TRUE) # mean wind speed (m s-1)			
         
@@ -184,25 +196,29 @@ on.exit(ncdf4::nc_close(nc), add = TRUE)
   
   year_start  <- as.integer(start_year)
   doy_start   <- as.integer(lubridate::yday(start_date))
-  NDAYS       <- as.integer(sum(PEcAn.utils::days_in_year(seq(start_year, end_year)))) # could be partial years, change later
-
+  
   matrix_weather <- mini_met2model_BASGRA(run_met, start_date, start_year, end_date, end_year)
+  
+  NDAYS <- as.integer(nrow(matrix_weather))
   
   calendar_fert     <- matrix( 0, nrow=100, ncol=3 )
   calendar_Ndep     <- matrix( 0, nrow=100, ncol=3 )
-  calendar_Ndep[1,] <- c(1900,  1,0)
-  calendar_Ndep[2,] <- c(2100, 366, 0)
+  #calendar_Ndep[1,] <- c(1900,  1,0)
+  #calendar_Ndep[2,] <- c(2100, 366, 0)
   days_harvest      <- matrix( as.integer(-1), nrow=100, ncol=2 )
   
   # hardcoding these for now, should be able to modify later on
-  calendar_fert[1,] <- c( 2000, 115, 140*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
-  calendar_fert[2,] <- c( 2000, 150,  80*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
+  calendar_fert[1,] <- c( 2018, 125, 140*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
+  calendar_fert[2,] <- c( 2018, 250,  80*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
   #    calendar_fert[3,] <- c( 2001, 123, 0*1000/ 10000      ) # 0 kg N ha-1 applied on day 123
   calendar_Ndep[1,] <- c( 1900,   1,  2*1000/(10000*365) ) #  2 kg N ha-1 y-1 N-deposition in 1900
   calendar_Ndep[2,] <- c( 1980, 366, 20*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 1980
   calendar_Ndep[3,] <- c( 2100, 366, 20*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 2100
-  days_harvest [1,] <- c( 2000, 150 )
-  days_harvest [2,] <- c( 2000, 216 )
+  
+  # Qvidja 2018 Harvest dates
+  days_harvest [1,] <- c( 2018, 163 )
+  days_harvest [2,] <- c( 2018, 233 )
+  days_harvest [3,] <- c( 2018, 266 )
   
   days_harvest      <- as.integer(days_harvest)
   
@@ -216,14 +232,14 @@ on.exit(ncdf4::nc_close(nc), add = TRUE)
                      NDAYS,
                      NOUT,
                      matrix(0, NDAYS, NOUT))[[8]]
-
+  
   
   ############################# WRITE OUTPUTS ###########################
   # writing model outputs already in standard format
   
   # only LAI and CropYield for now
   
-    
+  
   years <- seq(start_year, end_year)
   for (y in years) {
     
@@ -238,7 +254,7 @@ on.exit(ncdf4::nc_close(nc), add = TRUE)
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
                           units = paste0("days since ", y, "-01-01 00:00:00"), 
-                          seq_len(PEcAn.utils::days_in_year(y)),
+                          matrix_weather[matrix_weather[,1] == y, 2], # allow partial years, this info is already in matrix_weather
                           calendar = "standard", 
                           unlim = TRUE)
     
@@ -251,7 +267,7 @@ on.exit(ncdf4::nc_close(nc), add = TRUE)
     var <- list()
     var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
     var[[2]] <- PEcAn.utils::to_ncvar("CropYield", dims)
-
+    
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
