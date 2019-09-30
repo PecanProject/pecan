@@ -107,8 +107,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
-  jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
-  
   jobsh <- gsub("@RUN_PARAMS@", paste0("c(",listToArgString(run_params),")"), jobsh)
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
