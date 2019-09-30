@@ -43,6 +43,7 @@ outfile <- get_arg(argv, "--outfile", "test_result_table.csv")
 # Create outfile directory if it doesn't exist
 dir.create(dirname(outfile), recursive = TRUE, showWarnings = FALSE)
 input_table <- read.csv(input_table_file, stringsAsFactors = FALSE) %>%
+  tidyr::replace_na(list(revision = "")) %>%
   mutate(
     folder= paste(model,
                   format(as.Date(start_date), "%Y-%m"),
