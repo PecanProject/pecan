@@ -17,7 +17,17 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
     # double check making sure we have method for parameter sampling
     if (is.null(settings$ensemble$samplingspace$parameters$method)) settings$ensemble$samplingspace$parameters$method <- "uniform"
     ens.sample.method <-  settings$ensemble$samplingspace$parameters$method
-    return(PEcAn.workflow::run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
+    
+   
+    #check to see if there are posterior.files tags under pft
+    posterior.files.vec<-settings$pfts %>%
+      purrr::map(purrr::possibly('posterior.files', NA_character_)) %>%
+      purrr::modify_depth(1, function(x) {
+        ifelse(is.null(x), NA_character_, x)
+      }) %>%
+      unlist()
+    
+    return(PEcAn.workflow::run.write.configs(settings, write, ens.sample.method, posterior.files = posterior.files.vec, overwrite = overwrite))
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")
   }

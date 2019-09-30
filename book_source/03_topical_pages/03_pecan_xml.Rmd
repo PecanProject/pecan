@@ -249,6 +249,7 @@ The PEcAn system requires at least 1 plant functional type (PFT) to be specified
       <constants>
         <num>1</num>
       </constants>
+      <posterior.files>Path to a post.distns.*.Rdata or prior.distns.Rdata</posterior.files>
     </pft>
   </pfts>
 ```
@@ -256,6 +257,9 @@ The PEcAn system requires at least 1 plant functional type (PFT) to be specified
 * `name` : (required) the name of the PFT, which must *exactly* match the name in the PEcAn database.
 * `outdir`: (optional) Directory path in which PFT-specific output will be stored during meta-analysis and sensitivity analysis. If not specified (recommended), it will be written into `<outdir>/<pftname>`.
 * `contants`: (optional) this section contains information that will be written directly into the model specific configuration files. For example, some models like ED2 use PFT numbers instead of names for PFTs, and those numbers can be specified here. See documentation for model-specific code for details.
+* `posterior.files` (Optional) this tag helps to signal write.config functions to use specific posterior/prior files (such as HPDA or MA analysis) for generating samples without needing to access to the bety database.
+
+``
 
 This information is currently used by the following PEcAn workflow function:
 
