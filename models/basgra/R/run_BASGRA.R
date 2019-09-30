@@ -78,25 +78,25 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
         rad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
         gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
         
-        matrix_weather[ ,3]  <- tapply(gr, ind, mean, na.rm = TRUE) # irradiation (MJ m-2 d-1)
+        matrix_weather[ ,3]  <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
         
         Tair <-ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
         Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
         
-        t_dmean <- tapply(Tair_C, ind, mean, na.rm = TRUE) # maybe round these numbers 
+        t_dmean <- round(tapply(Tair_C, ind, mean, na.rm = TRUE), digits = 2) # maybe round these numbers 
         matrix_weather[ ,4] <- t_dmean # mean temperature (degrees Celsius)
         matrix_weather[ ,5] <- t_dmean # that's what they had in read_weather_Bioforsk
         
         RH <-ncdf4::ncvar_get(nc, "relative_humidity")  # %
-        RH <- tapply(RH, ind, mean, na.rm = TRUE) 
+        RH <- round(tapply(RH, ind, mean, na.rm = TRUE), digits = 2) 
         
         # This is vapor pressure according to BASGRA.f90#L86 and environment.f90#L49
-        matrix_weather[ ,6] <- exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 100
+        matrix_weather[ ,6] <- round(exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 100, digits = 2)
         
         # TODO: check these
         Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
         raini <- tapply(Rain*86400, ind, mean, na.rm = TRUE) 
-        matrix_weather[ ,7] <- raini # precipitation (mm d-1)	
+        matrix_weather[ ,7] <- round(raini, digits = 2) # precipitation (mm d-1)	
         
         U <- try(ncdf4::ncvar_get(nc, "eastward_wind"))
         V <- try(ncdf4::ncvar_get(nc, "northward_wind"))
@@ -112,7 +112,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
         }
         
         
-        matrix_weather[ ,8] <- tapply(ws, ind, mean,  na.rm = TRUE) # mean wind speed (m s-1)			
+        matrix_weather[ ,8] <- round(tapply(ws, ind, mean,  na.rm = TRUE), digits = 2) # mean wind speed (m s-1)			
         
         ncdf4::nc_close(nc)
       } else {
@@ -125,6 +125,17 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
     } # end for-loop around years
     
     matrix_weather <- do.call("rbind", out.list)
+    
+    #BASGRA wants the matrix_weather to be of 10000 x 8 matrix
+    NMAXDAYS <- as.integer(10000)
+    nmw <- nrow(matrix_weather)
+    if(nmw > NMAXDAYS){
+      
+    }else{
+      matrix_weather <- rbind(matrix_weather, matrix( 0., nrow = (NMAXDAYS - nmw), ncol = 8 ))
+      
+    }
+    
     return(matrix_weather)
   }
   
@@ -199,7 +210,7 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
   
   matrix_weather <- mini_met2model_BASGRA(run_met, start_date, start_year, end_date, end_year)
   
-  NDAYS <- as.integer(nrow(matrix_weather))
+  NDAYS <- as.integer(sum(matrix_weather[,1] != 0))
   
   calendar_fert     <- matrix( 0, nrow=100, ncol=3 )
   calendar_Ndep     <- matrix( 0, nrow=100, ncol=3 )
