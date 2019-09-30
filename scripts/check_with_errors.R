@@ -140,8 +140,8 @@ if (cmp$status != "+") {
         }
     }
 
-    # Each note got its own line above, so this line is redundant
-    # and also causes spurious error when an existing note is fixed
+    # This line is redundant (summarizes issues also reported individually)
+    # and creates a false positive when an existing issue is fixed
     cur_msgs <- cur_msgs[!grepl("NOTE: Undefined global functions or variables:", cur_msgs)]
 
     lines_changed <- setdiff(cur_msgs, prev_msgs)
