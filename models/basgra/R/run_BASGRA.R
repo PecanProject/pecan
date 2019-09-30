@@ -128,12 +128,14 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
     
     #BASGRA wants the matrix_weather to be of 10000 x 8 matrix
     NMAXDAYS <- as.integer(10000)
-    nmw <- nrow(matrix_weather)
+    nmw      <- nrow(matrix_weather)
     if(nmw > NMAXDAYS){
-      
+      matrix_weather <- matrix_weather[seq_len(NMAXDAYS), ]
+      PEcAn.logger::logger.info("BASGRA currently runs only", NMAXDAYS, 
+                                "simulation days. Limiting the run to the first ", NMAXDAYS, "days of the requested period.")
     }else{
+      # append zeros at the end
       matrix_weather <- rbind(matrix_weather, matrix( 0., nrow = (NMAXDAYS - nmw), ncol = 8 ))
-      
     }
     
     return(matrix_weather)
@@ -219,8 +221,8 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
   days_harvest      <- matrix( as.integer(-1), nrow=100, ncol=2 )
   
   # hardcoding these for now, should be able to modify later on
-  calendar_fert[1,] <- c( 2018, 125, 140*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
-  calendar_fert[2,] <- c( 2018, 250,  80*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
+  calendar_fert[1,] <- c( 2018, 125, 0*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
+  calendar_fert[2,] <- c( 2018, 250,  0*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
   #    calendar_fert[3,] <- c( 2001, 123, 0*1000/ 10000      ) # 0 kg N ha-1 applied on day 123
   calendar_Ndep[1,] <- c( 1900,   1,  2*1000/(10000*365) ) #  2 kg N ha-1 y-1 N-deposition in 1900
   calendar_Ndep[2,] <- c( 1980, 366, 20*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 1980
