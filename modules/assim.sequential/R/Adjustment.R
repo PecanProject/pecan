@@ -30,6 +30,7 @@ adj.ens<-function(Pf, X, mu.f, mu.a, Pa){
 
   }
   Z[is.na(Z)]<-0
+  Z[is.infinite(Z)] <- 0
   
   ## analysis
   S_a  <- svd(Pa)
@@ -45,8 +46,8 @@ adj.ens<-function(Pf, X, mu.f, mu.a, Pa){
   }
   
   
-  if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
-  if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
+  #if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
+  #if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
   
   analysis <- as.data.frame(X_a)
   
