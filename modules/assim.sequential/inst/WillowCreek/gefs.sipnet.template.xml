@@ -15,6 +15,12 @@
     <max_value>9999</max_value>
    </variable>
    <variable>
+    <variable.name>Qle</variable.name>
+    <unit>MgC/ha/yr</unit>
+    <min_value>-9999</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
     <variable.name>TotSoilCarb</variable.name>
     <unit>KgC/m^2</unit>
     <variable>
@@ -76,12 +82,12 @@
   <dbfiles>/fs/data3/kzarada/pecan.data/dbfiles/</dbfiles>
  </database>
  <pfts>
-  <pft>
-   <name>temperate.coniferous</name>
-   <name>temperate.deciduous</name>
+   <pft>
+   <name>temperate.deciduous.ALL</name>
    <constants>
     <num>1</num>
    </constants>
+   <posteriorid>1000016041</posteriorid>
   </pft>
  </pfts>
  <meta.analysis>
@@ -89,7 +95,7 @@
   <random.effects>FALSE</random.effects>
  </meta.analysis>
  <ensemble>
-  <size>10</size>
+  <size>50</size>
   <variable>NEE</variable>
   <start.year>2018</start.year>
   <end.year>2018</end.year>
