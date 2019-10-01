@@ -16,8 +16,14 @@ get.parameter.samples <- function(settings,
   pft.names <- list()
   outdirs   <- list()
   ## Open database connection
-  con <- PEcAn.DB::db.open(settings$database$bety)
-  on.exit(PEcAn.DB::db.close(con))
+  con <- try(PEcAn.DB::db.open(settings$database$bety))
+  on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
+  
+  # If we fail to connect to DB then we set to NULL
+  if (inherits(con, "try-error"))  {
+    con <- NULL
+    PEcAn.logger::logger.warn("We were not able to successfully establish a connection with Bety ")
+  }
   
   for (i.pft in seq_along(pfts)) {
     pft.names[i.pft] <- settings$pfts[[i.pft]]$name
@@ -66,7 +72,7 @@ get.parameter.samples <- function(settings,
     }
     
     ### Load trait mcmc data (if exists, either from MA or PDA)
-    if (!is.null(settings$pfts[[i]]$posteriorid)) { # first check if there are any files associated with posterior ids
+    if (!is.null(settings$pfts[[i]]$posteriorid) && !inherits(con, "try-error")) {# first check if there are any files associated with posterior ids
       files <- PEcAn.DB::dbfile.check("Posterior",
                                       settings$pfts[[i]]$posteriorid, 
                                       con, settings$host$name, return.all = TRUE)
