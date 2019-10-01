@@ -110,7 +110,15 @@ depends_R_pkg = ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} \
 	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
 install_R_pkg = ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "devtools::install('$(strip $(1))', upgrade=FALSE)"
 check_R_pkg = ./scripts/time.sh "${1}" Rscript scripts/check_with_errors.R $(strip $(1))
-test_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::test('"$(strip $(1))"', stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
+
+# Would use devtools::test(), but in devtools 2.2.1 that doesn't accept stop_on_failure=TRUE
+# To work around, we reimplement about half of test() here
+test_R_pkg = ./scripts/time.sh "${1}" Rscript \
+	-e "pkg <- devtools::as.package('$(strip $(1))')" \
+	-e "env <- devtools::load_all(pkg[['path']], quiet = TRUE)[['env']]" \
+	-e "testthat::test_dir(paste0(pkg[['path']], '/tests/testthat'), env = env," \
+	-e 		"stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
+
 doc_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
 
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .install/roxygen2 .install/testthat
