@@ -34,7 +34,7 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
 
   #Defining some colors
   generate_colors_sda()
-  t1         <- 1
+  t1 <- 1
   var.names <- var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
   
@@ -124,7 +124,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
 
   #Defining some colors
   generate_colors_sda()
-  t1         <- 1
+  t1 <- 1
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
@@ -221,7 +221,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
 
   #Defining some colors
   generate_colors_sda()
-  t1         <- 1
+  t1 <- 1
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -315,7 +315,7 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
 
 post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
 
-  t1         <- 1
+  t1<- 1
   #Defining some colors
   ready.OBS<-NULL
   generate_colors_sda()
@@ -425,7 +425,7 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
 ##' @export
 post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
 
-
+  t1 <- 1 
   #Defining some colors
   generate_colors_sda()
   #ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
@@ -561,7 +561,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
 
   #Defining some colors
-  t1         <- 1
+  t1 <- 1
   generate_colors_sda()
   varnames <- settings$state.data.assimilation$state.variable
   #just a check
