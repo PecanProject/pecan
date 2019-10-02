@@ -43,6 +43,7 @@ outputPath <- "/fs/data3/kzarada/ouput"
 xmlTempName <-"gefs.sipnet.template.xml"
 restart <-FALSE
 nodata <- FALSE
+days.obs <- 3 #how many of observed data to include -- not including today
 setwd(outputPath)
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ sourcing the required tools -------------------------
@@ -68,9 +69,7 @@ con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 #------------------------------------------------------------------------------------------------
 #--------------------------- Finding old sims
 all.previous.sims <- list.dirs(outputPath, recursive = F)
-sda.start <- Sys.Date() - 14
-sda.end <- Sys.Date() 
-if (length(all.previous.sims) > 0 & !inherits(con, "try-error") & restart) {
+if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
   
   tryCatch({
     # Looking through all the old simulations and find the most recent
@@ -88,7 +87,7 @@ if (length(all.previous.sims) > 0 & !inherits(con, "try-error") & restart) {
       ) %>% 
         mutate(ID=.x)) %>%
       mutate(started_at = as.Date(started_at)) %>%
-      arrange(desc(started_at)) %>%
+      arrange(desc(started_at), desc(ID)) %>%
       head(1)
     # pulling the date and the path to the last SDA
     restart.path <-grep(last.sim$ID, names(all.previous.sims), value = T)
@@ -96,14 +95,16 @@ if (length(all.previous.sims) > 0 & !inherits(con, "try-error") & restart) {
   },
   error = function(e) {
     restart.path <- NULL
-    sda.start <- Sys.Date() - 14
+    sda.start <- Sys.Date() - 12
     PEcAn.logger::logger.warn(paste0("There was a problem with finding the last successfull SDA.",conditionMessage(e)))
   })
   
   # if there was no older sims
   if (is.na(sda.start))
-    sda.start <- Sys.Date() - 14
+    sda.start <- Sys.Date() - 12
 }
+
+sda.end <- Sys.Date()
 #-----------------------------------------------------------------------------------------------
 #------------------------------------------ Download met and flux ------------------------------
 #-----------------------------------------------------------------------------------------------
@@ -114,7 +115,7 @@ if(!exists('prep.data'))
     sda.end,
     numvals = 100,
     vars = c("NEE", "LE"),
-    data.len = 168 # This is 7 days
+    data.len = days.obs * 24  
   ) 
 obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs
@@ -153,20 +154,20 @@ prep.data <- prep.data %>%
 
 # Finding the right end and start date
 met.start <- obs.raw$Date%>% head(1) %>% lubridate::floor_date(unit = "day")
-met.end <- lubridate::floor_date(Sys.Date() - lubridate::hours(2), unit = "6 hour") + lubridate::days(16)
+met.end <- met.start + lubridate::days(16)
 
 #pad Observed Data to match met data 
 
 date <-
   seq(
-    from = lubridate::with_tz(as.POSIXct(first(sda.end), format = "%Y-%m-%d"), tz = "UTC"),
-    to = lubridate::with_tz(as.POSIXct(met.end, format = "%Y-%m-%d"), tz = "UTC"),
+    from = lubridate::with_tz(as.POSIXct(first(sda.end), format = "%Y-%m-%d"), tz = "UTC") + lubridate::days(1),
+    to = lubridate::with_tz(as.POSIXct(met.end - lubridate::days(1), format = "%Y-%m-%d"), tz = "UTC"),
     by = "6 hour"
   )
 pad.prep <- obs.raw %>%
   tidyr::complete(Date = seq(
-    from = lubridate::with_tz(as.POSIXct(first(sda.end), format = "%Y-%m-%d"), tz = "UTC"),
-    to = lubridate::with_tz(as.POSIXct(met.end, format = "%Y-%m-%d"), tz = "UTC"),
+    from = lubridate::with_tz(as.POSIXct(first(sda.end), format = "%Y-%m-%d"), tz = "UTC") + lubridate::days(1),
+    to = lubridate::with_tz(as.POSIXct(met.end - lubridate::days(1), format = "%Y-%m-%d"), tz = "UTC"),
     by = "6 hour"
   )) %>%
   mutate(means = NA, covs = NA) %>%
@@ -216,7 +217,9 @@ obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 #-----------------------------------------------------------------------------------------------
 #Using the found dates to run - this will help to download mets
 settings$run$start.date <- as.character(met.start)
-settings$run$end.date <- as.character(met.end)
+settings$run$end.date <- as.character(last(date))
+settings$run$site$met.start <- as.character(met.start)
+settings$run$site$met.end <- as.character(met.end)
 #info
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 # --------------------------------------------------------------------------------------------------
@@ -281,36 +284,51 @@ if (nodata) {
 # @Hamze: Yes if restart == TRUE 
 if(restart == TRUE){
   if(!dir.exists("SDA")) dir.create("SDA",showWarnings = F)
-  
-  file.copy(from= file.path(restart.path, "SDA", "sda.output.Rdata"),
-            to = file.path(settings$outdir, "SDA", "sda.output.Rdata"))
-  
-  file.copy(from= file.path(restart.path, "SDA", "outconfig.Rdata"),
-            to = file.path(settings$outdir, "SDA", "outconfig.Rdata"))
- 
-#Update the SDA Output to just have last time step 
-  temp <- new.env()
+
+  #Update the SDA Output to just have last time step 
+  temp<- new.env()
   load(file.path(restart.path, "SDA", "sda.output.Rdata"), envir = temp)
   temp <- as.list(temp)
   
   
-  for(i in rev(2:length(temp$ANALYSIS))){
+  if(length(temp$ANALYSIS) > 1){
+    for(i in rev(1:(length(temp$ANALYSIS)-1))){
     temp$ANALYSIS[[i]] <- NULL
   }
  
-  for(i in rev(2:length(temp$FORECAST))){
+  for(i in rev(1:(length(temp$FORECAST)-1))){
     temp$FORECAST[[i]] <- NULL
   } 
   
   
-  for(i in rev(2:length(temp$enkf.params))){
+  for(i in rev(1:(length(temp$enkf.params)-1))){
     temp$enkf.params[[i]] <- NULL
   } 
+  }
 
   temp$t = 1 
+  
+  
+  temp1<- new.env()
+  list2env(temp, envir = temp1)
+  save(list = c("ANALYSIS", 'FORECAST', "enkf.params", "ensemble.id", "ensemble.samples", 'inputs', 'new.params', 'new.state', 'run.id', 'site.locs', 't', 'Viz.output', 'X'),
+       envir = temp1, 
+       file = file.path(settings$outdir, "SDA", "sda.output.Rdata"))  
 
-  save(list = "temp",
-        file = file.path(settings$outdir, "SDA", "sda.output.Rdata"))  
+  
+  
+  temp.out <- new.env()
+  load(file.path(restart.path, "SDA", 'outconfig.Rdata'), envir = temp.out)
+  temp.out <- as.list(temp.out)
+  temp.out$outconfig$samples <- NULL
+  
+  temp.out1 <- new.env()
+  list2env(temp.out, envir = temp.out1)
+  save(list = c('outconfig'), 
+       envir = temp.out1, 
+       file = file.path(settings$outdir, "SDA", "outconfig.Rdata"))
+
+
 
 #copy over run and out folders 
   
@@ -325,14 +343,14 @@ if(restart == TRUE){
 #--------------------------------- Run state data assimilation -------------------------------------
 # --------------------------------------------------------------------------------------------------
 
-unlink(c('run','out','SDA'), recursive = T)
+if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
 
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
     PEcAn.assim.sequential::sda.enkf(
-      settings,
-      restart=FALSE,
+      settings, 
+      restart=restart,
       Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,
@@ -341,11 +359,12 @@ if ('state.data.assimilation' %in% names(settings)) {
         interactivePlot =FALSE,
         TimeseriesPlot =TRUE,
         BiasPlot =FALSE,
-        debug =TRUE,
+        debug =FALSE,
         pause=FALSE
       )
     )
     PEcAn.utils::status.end()
   }
 }
+
   
