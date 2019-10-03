@@ -2,10 +2,10 @@
 arg <- commandArgs(trailingOnly = TRUE)
 pkg <- arg[1]
 
-log_level <- Sys.getenv('LOGLEVEL', unset = NA)
-die_level <- Sys.getenv('DIELEVEL', unset = NA)
-redocument <- as.logical(Sys.getenv('REBUILD_DOCS', unset = NA))
-runtests <- as.logical(Sys.getenv('RUN_TESTS', unset = TRUE))
+log_level <- Sys.getenv("LOGLEVEL", unset = NA)
+die_level <- Sys.getenv("DIELEVEL", unset = NA)
+redocument <- as.logical(Sys.getenv("REBUILD_DOCS", unset = NA))
+runtests <- as.logical(Sys.getenv("RUN_TESTS", unset = TRUE))
 
 old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
 if (file.exists(old_file)) {
@@ -26,36 +26,37 @@ log_notes <- log_level %in% c("note", "all")
 
 # should test se run
 if (!runtests) {
-    args <- c('--no-tests', '--timings')
+    args <- c("--no-tests", "--timings")
 } else {
-    args <- c('--timings') 
+    args <- c("--timings")
 }
 
 chk <- devtools::check(pkg, args = args, quiet = TRUE,
     error_on = die_level, document = redocument)
 
-errors <- chk[['errors']]
+errors <- chk[["errors"]]
 n_errors <- length(errors)
 if (n_errors > 0) {
-    cat(errors, '\n')
-    stop(n_errors, ' errors found in ', pkg, '.')
+    cat(errors, "\n")
+    stop(n_errors, " errors found in ", pkg, ".")
 }
 
-warns <- chk[['warnings']]
+warns <- chk[["warnings"]]
 n_warns <- length(warns)
-message(n_warns, ' warnings found in ', pkg, '.')
+message(n_warns, " warnings found in ", pkg, ".")
 if ((log_warn) && n_warns > 0) {
-    cat(warns, '\n')
+    cat(warns, "\n")
 }
 
-notes <- chk[['notes']]
+notes <- chk[["notes"]]
 n_notes <- length(notes)
-message(n_notes, ' notes found in ', pkg, '.')
+message(n_notes, " notes found in ", pkg, ".")
 if (log_notes && n_notes > 0) {
-    cat(notes, '\n')
+    cat(notes, "\n")
 }
 
 
+######
 
 # PEcAn has a lot of legacy code that issues check warnings,
 # such that it's not yet practical to break the build on every warning.
@@ -70,16 +71,7 @@ if (log_notes && n_notes > 0) {
 # then if those are OK we get fussier and check for new *instances* of existing
 # warnings (e.g. new check increases from 2 bad Rd cross-references to 3).
 
-msg_lines <- function(msg){
-    msg <- strsplit(
-        gsub("\n  ", " ", msg, fixed = TRUE), #leading double-space indicates line wrap
-        split = "\n",
-        fixed = TRUE)
-    msg <- lapply(msg, function(x)x[x != ""])
-    unlist(lapply(msg, function(x)paste(x[[1]], x[-1], sep=": ")))
-}
-
-
+###
 # To update reference files after fixing an old warning:
 # * Run check_with_errors.R to be sure the check is currently passing
 # * Delete the file you want to update
@@ -90,6 +82,7 @@ msg_lines <- function(msg){
 #    cat(chk$stdout, file = old_file)
 #    quit("no")
 # }
+###
 
 # everything beyond this point is comparing to old version
 if (!file.exists(old_file)) {
@@ -99,6 +92,17 @@ if (!file.exists(old_file)) {
 old <- rcmdcheck::parse_check(old_file)
 cmp <- rcmdcheck::compare_checks(old, chk)
 
+msg_lines <- function(msg) {
+    # leading double-space indicates wrapped line -> rejoin
+    msg <- gsub("\n  ", " ", msg, fixed = TRUE)
+
+    #split lines, delete empty ones
+    msg <- strsplit(msg, split = "\n", fixed = TRUE)
+    msg <- lapply(msg, function(x)x[x != ""])
+
+    # prepend message title (e.g. "checking Rd files ... NOTE") to each line
+    unlist(lapply(msg, function(x)paste(x[[1]], x[-1], sep = ": ")))
+}
 
 if (cmp$status != "+") {
     # rcmdcheck found new messages, so check has failed
@@ -125,21 +129,22 @@ if (cmp$status != "+") {
     prev_msgs <- gsub("[‘’]", "'", prev_msgs)
     prev_msgs <- gsub("', '", "' '", prev_msgs)
 
-    # Compression warnings report slightly different sizes on different R versions
-    # If the only difference is in the numbers, don't complain
+    # Compression warnings report slightly different sizes on different R
+    # versions. If the only difference is in the numbers, don't complain
     cmprs_msg <- grepl("significantly better compression", cur_msgs)
-    if(any(cmprs_msg)){
+    if (any(cmprs_msg)) {
         prev_cmprs_msg <- grepl("significantly better compression", prev_msgs)
         cur_cmprs_nodigit <- gsub("[0-9]", "", cur_msgs[cmprs_msg])
         prev_cmprs_nodigit <- gsub("[0-9]", "", prev_msgs[prev_cmprs_msg])
-        if(all(cur_cmprs_nodigit %in% prev_cmprs_nodigit)){
+        if (all(cur_cmprs_nodigit %in% prev_cmprs_nodigit)) {
             cur_msgs <- cur_msgs[!cmprs_msg]
         }
     }
 
     # This line is redundant (summarizes issues also reported individually)
     # and creates a false positive when an existing issue is fixed
-    cur_msgs <- cur_msgs[!grepl("NOTE: Undefined global functions or variables:", cur_msgs)]
+    cur_msgs <- cur_msgs[!grepl(
+        "NOTE: Undefined global functions or variables:", cur_msgs)]
 
     lines_changed <- setdiff(cur_msgs, prev_msgs)
     if (length(lines_changed) > 0) {
