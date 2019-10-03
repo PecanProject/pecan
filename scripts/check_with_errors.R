@@ -7,8 +7,22 @@ die_level <- Sys.getenv('DIELEVEL', unset = NA)
 redocument <- as.logical(Sys.getenv('REBUILD_DOCS', unset = NA))
 runtests <- as.logical(Sys.getenv('RUN_TESTS', unset = TRUE))
 
-# message('log_level = ', log_level)
-# message('die_level = ', die_level)
+old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
+if (file.exists(old_file)) {
+    # Package has old unfixed warnings that we should ignore by default
+    # (but if log/die level are explicitly set, respect them)
+    if (is.na(log_level)) log_level <- "warning"
+    if (is.na(die_level)) die_level <- "error"
+} else {
+    if (is.na(log_level)) log_level <- "all"
+    if (is.na(die_level)) die_level <- "note"
+}
+
+log_level <- match.arg(log_level, c("error", "warning", "note", "all"))
+die_level <- match.arg(die_level, c("never", "error", "warning", "note"))
+
+log_warn <- log_level %in% c("warning", "note", "all")
+log_notes <- log_level %in% c("note", "all")
 
 # should test se run
 if (!runtests) {
@@ -17,47 +31,26 @@ if (!runtests) {
     args <- c('--timings') 
 }
 
-valid_log_levels <- c('warn', 'all')
-if (!is.na(log_level) && !log_level %in% valid_log_levels) {
-    stop('Invalid log_level "', log_level, '". Select one of: ', 
-         paste(valid_log_levels, collapse = ', '))
-}
-
-if (!is.na(die_level) && !die_level == 'warn') {
-    stop('Invalid die_level "', die_level, 
-         '". Use either "warn" for warnings or leave blank for error.')
-}
-
-log_warn <- !is.na(log_level) && log_level %in% c('warn', 'all')
-die_warn <- !is.na(die_level) && die_level == 'warn'
-
-log_notes <- !is.na(log_level) && log_level == 'all'
-
-chk <- devtools::check(pkg, args = args, quiet = TRUE, error_on = "never", document = redocument)
+chk <- devtools::check(pkg, args = args, quiet = TRUE,
+    error_on = die_level, document = redocument)
 
 errors <- chk[['errors']]
 n_errors <- length(errors)
-
 if (n_errors > 0) {
     cat(errors, '\n')
-    stop(n_errors, ' errors found in ', pkg, '. See above for details')
+    stop(n_errors, ' errors found in ', pkg, '.')
 }
 
 warns <- chk[['warnings']]
 n_warns <- length(warns)
 message(n_warns, ' warnings found in ', pkg, '.')
-
-if ((log_warn|die_warn) && n_warns > 0) {
+if ((log_warn) && n_warns > 0) {
     cat(warns, '\n')
-    if (die_warn && n_warns > 0) {
-        stop('Killing process because ', n_warns, ' warnings found in ', pkg, '.')
-    }
 }
 
 notes <- chk[['notes']]
 n_notes <- length(notes)
 message(n_notes, ' notes found in ', pkg, '.')
-
 if (log_notes && n_notes > 0) {
     cat(notes, '\n')
 }
@@ -86,7 +79,6 @@ msg_lines <- function(msg){
     unlist(lapply(msg, function(x)paste(x[[1]], x[-1], sep=": ")))
 }
 
-old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
 
 # To update reference files after fixing an old warning:
 # * Run check_with_errors.R to be sure the check is currently passing
@@ -98,6 +90,11 @@ old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
 #    cat(chk$stdout, file = old_file)
 #    quit("no")
 # }
+
+# everything beyond this point is comparing to old version
+if (!file.exists(old_file)) {
+    quit("no")
+}
 
 old <- rcmdcheck::parse_check(old_file)
 cmp <- rcmdcheck::compare_checks(old, chk)
