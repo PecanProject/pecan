@@ -75,12 +75,14 @@ if (log_notes && n_notes > 0) {
 # To update reference files after fixing an old warning:
 # * Run check_with_errors.R to be sure the check is currently passing
 # * Delete the file you want to update
-# * Uncomment this section, run check_with_errors.R, recomment
+# * Uncomment this section
+# * run `DIELEVEL=never Rscript scripts/check_with_errors.R path/to/package`
+# * recomment this section
 # * Commit updated file
-# if (! file.exists(old_file)) {
-#    cat("No reference check file found. Saving current results as the new standard\n")
-#    cat(chk$stdout, file = old_file)
-#    quit("no")
+# if (!file.exists(old_file)) {
+#     cat("No reference check file found. Saving current results as the new standard\n")
+#     cat(chk$stdout, file = old_file)
+#     quit("no")
 # }
 ###
 
