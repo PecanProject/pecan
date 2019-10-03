@@ -11,7 +11,7 @@ old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
 if (file.exists(old_file)) {
     # Package has old unfixed warnings that we should ignore by default
     # (but if log/die level are explicitly set, respect them)
-    if (is.na(log_level)) log_level <- "warning"
+    if (is.na(log_level)) log_level <- "error"
     if (is.na(die_level)) die_level <- "error"
 } else {
     if (is.na(log_level)) log_level <- "all"
