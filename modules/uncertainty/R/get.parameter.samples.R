@@ -131,7 +131,7 @@ get.parameter.samples <- function(settings,
     PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
     for (prior in priors) {
       if (prior %in% param.names[[i]]) {
-        samples <- as.matrix(trait.mcmc[[prior]][, "beta.o"])
+        samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
       } else {
         samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num)
       }
