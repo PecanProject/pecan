@@ -4,7 +4,8 @@
 \alias{read_restart.SIPNET}
 \title{Read restart function for SDA with SIPNET}
 \usage{
-read_restart.SIPNET(outdir, runid, stop.time, settings, var.names, params)
+read_restart.SIPNET(outdir, runid, stop.time, settings, var.names, params,
+  daily = FALSE)
 }
 \arguments{
 \item{outdir}{Output directory}

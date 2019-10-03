@@ -65,7 +65,9 @@ read.output <- function(runid, outdir,
                         pft.name = NULL,
                         ncfiles = NULL,
                         verbose = FALSE,
-                        print_summary = TRUE) {
+                        print_summary = TRUE,
+                        stop.time = NULL,
+                        daily = FALSE) {
 
   ## vars in units s-1 to be converted to y-1
   ## cflux = c('GPP', 'NPP', 'NEE', 'TotalResp', 'AutoResp', 'HeteroResp', 'DOC_flux', 'Fire_flux') # kgC m-2 s-1
@@ -174,8 +176,14 @@ read.output <- function(runid, outdir,
     )
     origin_year <- 1970
   }
-  run_origin <- paste0(origin_year, "-01-01")
-
+  
+  if (daily)
+  {
+    run_origin <- format(stop.time, "%Y-%m-%d")
+  } else {
+    run_origin <- paste0(origin_year, "-01-01")
+  }
+  
   # throw warning and return `NA` if no `*.nc` files selected/availible
   nofiles <- FALSE
   if (length(ncfiles) == 0) {
@@ -232,6 +240,14 @@ read.output <- function(runid, outdir,
           next
         }
         newresult <- ncdf4::ncvar_get(nc, v, verbose = verbose)
+        
+        if (daily)
+        {
+          day_of_year = as.integer(format(as.Date(stop.time), "%j"))-1
+          keep = which(floor(nc$dim$time$vals) == day_of_year)
+          newresult = newresult[keep]
+        } 
+        
         # begin per-pft read
         # check if the variable has 'pft' as a dimension
         if ("pft" %in% sapply(nc$var[[v]]$dim, `[[`, "name")) {
@@ -284,26 +300,32 @@ read.output <- function(runid, outdir,
     }
   }
 
-  if (!dataframe) return(result)
-
-  # Check if there are variables that have multiple dimensions for
-  # example soil moisture at multiple levels. Currently we don't have
-  # a consensus how to convert these to dataframe format so they
-  # should be omitted.
-
-  for (var in names(result)) {
-    c <- dim(result[[var]])[2]
-    r <- dim(result[[var]])[1]
-    if (!is.na(c) & r > 1) {
-      PEcAn.logger::logger.warn("Variable", var, "has", r, "dimensions,
-      it cannot be loaded and will be omitted.")
-      result[[var]] <- NULL
+  if (!dataframe) 
+  {
+    return(result) 
+  } else {
+    
+    # Check if there are variables that have multiple dimensions for
+    # example soil moisture at multiple levels. Currently we don't have
+    # a consensus how to convert these to dataframe format so they
+    # should be omitted.
+    
+    for (var in names(result)) {
+      c <- dim(result[[var]])[2]
+      r <- dim(result[[var]])[1]
+      if (!is.na(c) & r > 1) {
+        PEcAn.logger::logger.warn("Variable", var, "has", r, "dimensions,
+                                  it cannot be loaded and will be omitted.")
+        result[[var]] <- NULL
+      }
     }
+    
+    model <- as.data.frame(result) # put into a data.frame
+    model[["posix"]] <- as.POSIXct(model[["posix"]], origin = run_origin, tz = "UTC")
+    model[["year"]] <- lubridate::year(model[["posix"]])
+    
+    return(model)
   }
 
-  model <- as.data.frame(result) # put into a data.frame
-  model[["posix"]] <- as.POSIXct(model[["posix"]], origin = run_origin, tz = "UTC")
-  model[["year"]] <- lubridate::year(model[["posix"]])
-
-  return(model)
+  
 } # read.output

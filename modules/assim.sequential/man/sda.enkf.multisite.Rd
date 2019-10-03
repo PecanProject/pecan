@@ -5,7 +5,7 @@
 \title{sda.enkf.multisite}
 \usage{
 sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL,
-  restart = FALSE, forceRun = TRUE, keepNC = TRUE,
+  restart = FALSE, forceRun = TRUE, keepNC = TRUE, daily = FALSE,
   control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE,
   TimeseriesPlot = FALSE, BiasPlot = FALSE, plot.title = NULL, facet.plots
   = FALSE, debug = FALSE, pause = FALSE, Profiling = FALSE,
@@ -14,7 +14,7 @@ sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL,
 \arguments{
 \item{settings}{PEcAn settings object}
 
-\item{obs.mean}{List of dataframe of observation means, named with observation datetime.}
+\item{obs.mean}{List of dataf rame of observation means, named with observation datetime.}
 
 \item{obs.cov}{List of covariance matrices of state variables , named with observation datetime.}
 

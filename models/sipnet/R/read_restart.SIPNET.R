@@ -17,7 +17,7 @@
 ##' 
 ##' @return X.vec      vector of forecasts
 ##' @export
-read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
+read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params, daily = FALSE) {
   
   prior.sla <- params[[which(!names(params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   
@@ -30,7 +30,9 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
                      outdir = file.path(outdir, runid), 
                      start.year = lubridate::year(stop.time), 
                      end.year = lubridate::year(stop.time),
-                     variables = var.names)
+                     variables = var.names,
+                     stop.time = stop.time,
+                     daily = daily)
   
   last <- length(ens[[1]])
   

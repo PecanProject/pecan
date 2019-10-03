@@ -801,12 +801,12 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   all.plots.print <-list(map.plot)
   for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
   
-  pdf("SDA/SDA.pdf",width = filew, height = fileh)
+  pdf(file.path(settings$outfolder,"SDA.pdf"), width = filew, height = fileh)
   all.plots.print %>% purrr::map(~print(.x))
   dev.off()
   
   #saving plot data
-  save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
+  save(all.plots, ready.to.plot, file = file.path(settings$outfolder, "timeseries.plot.data.Rdata"))
   
   
 }

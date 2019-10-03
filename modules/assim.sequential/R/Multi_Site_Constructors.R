@@ -179,8 +179,9 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   nsite <- length(site.ids) # number of sites
   nsite.ids.with.data <-length(site.ids.with.data) # number of sites with data
   nvariable <- length(var.names)
+  
   #This is used inside the loop below for moving between the sites when populating the big H matrix
-  nobs <- obs.t.mean %>% map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites
+  nobs <- obs.t.mean %>% map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites, and doesn't count NA variables
   nobstotal<-obs.t.mean %>% purrr::flatten() %>% length() # this gives me the total number of obs
   
   #Having the total number of obs as the row number
@@ -190,20 +191,28 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   for(i in seq_along(site.ids))
     {
     site <- site.ids[i]
-    choose <- sapply(names(obs.t.mean[[site]]), agrep, x = var.names,
-                     max = 1, USE.NAMES = FALSE) %>% unlist  
-    
+    #choose <- sapply(names(obs.t.mean[[site]])[which(!(is.na(obs.t.mean[[site]])))], agrep, x = var.names, 
+    #                 max = 1, USE.NAMES = FALSE) %>% unlist  ##names(obs.t.mean[[site]])
+    choose <- sapply(names(obs.t.mean[[site]]), agrep, x = var.names, 
+                     max = 1, USE.NAMES = FALSE) %>% unlist  ##names(obs.t.mean[[site]])
     if(is.null(choose)) next;
     
     H.this.site <- matrix(0, length(choose), nvariable)
     
     for (n in seq_along(choose))
     {
-      H.this.site[n, choose[n]] <- 1
+      for (s in site.ids)
+      {
+        if (!(is.na(obs.t.mean[[s]][n])))
+        {
+          H.this.site[n, choose[n]] <- 1
+        }
+      }
+      #H.this.site[n, choose[n]] <- 1
       #sapply(choose[n], agrep, x = seq_along(var.names), max = 1, USE.NAMES = FALSE) %>% unlist
       #H.this.site[n, choose.col] = 1
     }
-    
+    #nobs.obs <- obs.t.mean %>%  map_dbl(~length(.x)-length(which(is.na(.x)))) %>% max
     pos.row <- ((nobs*j)-(nobs-1)):(nobs*j)
     pos.col <- ((nvariable*i)-(nvariable-1)):(nvariable*i)
     

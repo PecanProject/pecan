@@ -5,7 +5,7 @@
 \title{Function to convert SIPNET model output to standard netCDF format}
 \usage{
 model2netcdf.SIPNET(outdir, sitelat, sitelon, start_date, end_date,
-  delete.raw, revision, overwrite = FALSE)
+  delete.raw, revision, overwrite = TRUE)
 }
 \arguments{
 \item{outdir}{Location of SIPNET model output}
