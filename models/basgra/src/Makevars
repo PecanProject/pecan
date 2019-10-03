@@ -30,13 +30,10 @@ OBJECTS = \
 
 all : $(SHLIB) 
 
-$(SHLIB) : $(SOURCES) 
+$(SHLIB) : $(OBJECTS) 
 
-PKG_FFLAGS = -x f95-cpp-input -fPIC -O3 -c -fdefault-real-8 $(SOURCES) 
-
-$(OBJECTS) : $(SOURCES)
-	$(F77) $(PKG_FFLAGS)
-	
+$(OBJECTS) :  $(SOURCES)
+	$(F77) -x f95-cpp-input -fPIC -O3 -c -fdefault-real-8 $(SOURCES) 
 
 clean :
 	rm -f $(OBJECTS) *.mod model/*.mod *.so *.o symbols.rds
