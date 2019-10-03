@@ -53,6 +53,8 @@ create_execute_test_xml <- function(model_id,
   if (is.null(db_bety_password)) db_bety_password <- config.list$db_bety_password
   if (is.null(db_bety_hostname)) db_bety_hostname <- config.list$db_bety_hostname
   if (is.null(db_bety_port)) db_bety_port <- config.list$db_bety_port
+  
+  #opening a connection to bety
   con <- PEcAn.DB::db.open(list(
     user = db_bety_username,
     password = db_bety_password,
@@ -151,6 +153,9 @@ create_execute_test_xml <- function(model_id,
   )
   settings$host$name <- "localhost"
 
+  
+  # Add model specific options
+  settings<-model_specific_tags(settings, model.new)
   #create file and Run
   XML::saveXML(PEcAn.settings::listToXml(settings, "pecan"),
 	       file = file.path(outdir, "pecan.xml"))
@@ -165,4 +170,27 @@ create_execute_test_xml <- function(model_id,
     sys = sys_out,
     outdir = outdir
   )
+}
+
+
+
+
+#' Title
+#'
+#' @param settings pecan xml settings
+#' @param model.info model info extracted from bety
+#'
+#' @return
+#' @export
+#'
+model_specific_tags <- function(settings, model.info){
+  
+  #some extra settings for LPJ-GUESS
+  if(model.info$model_name=="LPJ-GUESS"){
+    settings$run$inputs <- c(settings$run$inputs ,
+                              list(soil=list(id=1000000903))
+                             )
+  }
+  
+  return(settings)
 }
