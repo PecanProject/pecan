@@ -40,6 +40,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     pft.traits <- unlist(trait.values[[pft]])
     pft.names <- names(pft.traits)
     
+    # Initial value of leaf area index m2 m-2 - logged)
+    if ("ilai" %in% pft.names) {
+      run_params[which(names(run_params) == "LOG10LAII")] <- log(pft.traits[which(pft.names == "ilai")])
+    }
+    
     # N-C ratio of roots (g N g-1 C)
     if ("c2n_fineroot" %in% pft.names) {
       run_params[which(names(run_params) == "NCR")] <- 1/pft.traits[which(pft.names == "c2n_fineroot")]
@@ -62,6 +67,33 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     
     if ("phyllochron" %in% pft.names) {
       run_params[which(names(run_params) == "PHY")] <- pft.traits[which(pft.names == "phyllochron")]
+    }
+    
+    if ("leaf_width" %in% pft.names) {
+      # Leaf width on elongating tillers (m)
+      run_params[which(names(run_params) == "LFWIDG")] <- udunits2::ud.convert(pft.traits[which(pft.names == "leaf_width")], "mm", "m")
+      # Leaf width on non-elongating tillers (m)
+      run_params[which(names(run_params) == "LFWIDV")] <- run_params[which(names(run_params) == "LFWIDG")] * 0.6 # simplifying assumption
+    }
+    
+    # Initial and maximum value rooting depth (m)
+    if ("rooting_depth" %in% pft.names) {
+      run_params[which(names(run_params) == "ROOTDM")] <- pft.traits[which(pft.names == "rooting_depth")]
+    }
+    
+    # Maximum root depth growth rate (m day-1)
+    if ("root_growth_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "RRDMAX")] <- pft.traits[which(pft.names == "root_growth_rate")]
+    }
+    
+    # Rubisco content of upper leaves (g m-2 leaf)
+    if ("rubisco_content" %in% pft.names) {
+      run_params[which(names(run_params) == "RUBISC")] <- pft.traits[which(pft.names == "rubisco_content")]
+    }
+    
+    # Area of a leaf relative to a rectangle of same length and width (-)
+    if ("shape" %in% pft.names) {
+      run_params[which(names(run_params) == "SHAPE")] <- pft.traits[which(pft.names == "shape")]
     }
     
   }
