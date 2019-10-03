@@ -73,7 +73,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   sigma_global_scale   <- (cov(mu_init_samp)/sigma_global_df) 
   
   # initialize sigma_global (nparam x nparam)
-  sigma_global <-  riwish(sigma_global_df, sigma_global_scale)
+  sigma_global <-  MCMCpack::riwish(sigma_global_df, sigma_global_scale)
 
   # initialize jcov.arr (jump variances per site)
   jcov.arr <-  array(NA_real_, c(nparam, nparam, nsites))
@@ -82,7 +82,8 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   # prepare mu_site (nsite x nparam)
   mu_site_new  <- matrix(NA_real_, nrow = nsites, ncol= nparam)
   
-  mu_site_curr <- mu_site_init
+  # start
+  mu_site_curr <- matrix(rep(mu_site_init, nsites), ncol=nparam, byrow = TRUE)
   
   # values for each site will be accepted/rejected in themselves
   currSS    <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
@@ -141,7 +142,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     sigma_global_scale_gibbs <- sigma_global_scale + sum_term
     
     # update sigma
-    sigma_global   <- riwish(sigma_global_df_gibbs, sigma_global_scale_gibbs) # across-site covariance
+    sigma_global   <- MCMCpack::riwish(sigma_global_df_gibbs, sigma_global_scale_gibbs) # across-site covariance
     
     
     

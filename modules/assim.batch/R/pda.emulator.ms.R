@@ -51,7 +51,7 @@ pda.emulator.ms <- function(multi.settings) {
                               tunnel_dir = dirname(multi.settings[[1]]$host$tunnel))
     
     # Until a check function is implemented, run a predefined number of emulator rounds
-    n_rounds <- ifelse(is.null(multi.settings[[1]]$assim.batch$n_rounds), 3, as.numeric(multi.settings[[1]]$assim.batch$n_rounds))
+    n_rounds <- ifelse(is.null(multi.settings[[1]]$assim.batch$n_rounds), 5, as.numeric(multi.settings[[1]]$assim.batch$n_rounds))
     PEcAn.logger::logger.info(n_rounds, " individual PDA rounds will be run per site. Please wait.")
     repeat{
      
@@ -325,25 +325,18 @@ pda.emulator.ms <- function(multi.settings) {
     ## proposing starting points from knots
     mu_site_init <- list()
     jump_init    <- list()
-    if(nrow(SS.stack[[1]][[1]]) > nsites*tmp.settings$assim.batch$chain){
-      # sample without replacement
-      sampind <- sample(seq_len(nrow(SS.stack[[1]][[1]])), nsites*tmp.settings$assim.batch$chain)
-    }else{
-      # this would hardly happen, usually we have a lot more knots than nsites*tmp.settings$assim.batch$chain
-      # but to make this less error-prone sample with replacement if we have fewer, combinations should still be different enough
-      sampind <- sample(seq_len(nrow(SS.stack[[1]][[1]])), nsites*tmp.settings$assim.batch$chain, replace = TRUE)
-    }
-    
+
+    # sample without replacement
+    sampind <- sample(seq_len(nrow(SS.stack[[1]][[1]])), tmp.settings$assim.batch$chain)
+  
     for(i in seq_len(tmp.settings$assim.batch$chain)){
-      mu_site_init[[i]] <- SS.stack[[1]][[1]][sampind[((i-1) * nsites + 1):((i-1) * nsites + nsites)], 1:nparam]
+      mu_site_init[[i]] <- SS.stack[[1]][[1]][sampind[i], 1:nparam]
       jump_init[[i]]    <- need_obj$resume.list[[i]]$jump
     }
 
     current.step <- "HIERARCHICAL MCMC PREP"
     save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
-
- 
     
     # start the clock
     ptm.start <- proc.time()
@@ -361,7 +354,7 @@ pda.emulator.ms <- function(multi.settings) {
     mcmc.out <- parallel::parLapply(cl, seq_len(tmp.settings$assim.batch$chain), function(chain) {
       hier.mcmc(settings      = tmp.settings, 
                 gp.stack      = gp.stack, 
-                nmcmc         = tmp.settings$assim.batch$iter * 3, # need to run chains longerthan indv
+                nmcmc         = tmp.settings$assim.batch$iter * 3, # need to run chains longer than indv
                 rng_orig      = rng_orig,
                 jmp0          = jump_init[[chain]], 
                 mu_site_init  = mu_site_init[[chain]],
