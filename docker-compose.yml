@@ -4,7 +4,7 @@ services:
 
   # webserver to handle all traffic. This can use let's encrypt to generate a SSL cert.
   traefik:
-    image: traefik:latest
+    image: traefik:1.7
     command:
       - --loglevel=INFO
       - --api
