@@ -16,7 +16,7 @@
 ##' @name write.config.BASGRA
 ##' @title Write BASGRA configuration files
 ##' @param defaults list of defaults to process
-##' @param trait.samples vector of samples for a given trait
+##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
 ##' @return configuration file for BASGRA for given run
@@ -139,7 +139,10 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
-  jobsh <- gsub("@RUN_PARAMS@", paste0("c(",listToArgString(run_params),")"), jobsh)
+  jobsh <- gsub(
+    "@RUN_PARAMS@",
+    paste0("c(", PEcAn.utils::listToArgString(run_params), ")"),
+    jobsh)
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
