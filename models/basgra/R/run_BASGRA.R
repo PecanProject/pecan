@@ -230,7 +230,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
   calendar_Ndep[3,] <- c( 2100, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 2100
   
   # read in harvest days
-  h_days <- as.matrix(read.table(site_harvest, header = TRUE, sep = ","))
+  h_days <- as.matrix(utils::read.table(site_harvest, header = TRUE, sep = ","))
   days_harvest[1:nrow(h_days),] <- h_days
   days_harvest <- as.integer(days_harvest)
   
