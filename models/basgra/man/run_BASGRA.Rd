@@ -4,13 +4,15 @@
 \alias{run_BASGRA}
 \title{run BASGRA model}
 \usage{
-run_BASGRA(run_met, run_params, start_date, end_date, outdir, sitelat,
-  sitelon)
+run_BASGRA(run_met, run_params, site_harvest, start_date, end_date, outdir,
+  sitelat, sitelon)
 }
 \arguments{
 \item{run_met}{path to CF met}
 
 \item{run_params}{parameter vector}
+
+\item{site_harvest}{path to harvest file}
 
 \item{start_date}{start time of the simulation}
 

@@ -125,13 +125,16 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
   
+  
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
   
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
   jobsh <- gsub("@SITE_LON@", settings$run$site$lon, jobsh)
-  jobsh <- gsub("@SITE_MET@", settings$run$inputs$met$path, jobsh)
+  
+  jobsh <- gsub("@SITE_MET@",     settings$run$inputs$met$path,     jobsh)
+  jobsh <- gsub("@SITE_HARVEST@", settings$run$inputs$harvest$path, jobsh)
   
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
