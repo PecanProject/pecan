@@ -221,17 +221,17 @@ run_BASGRA <- function(run_met, run_params, start_date, end_date, outdir, sitela
   days_harvest      <- matrix( as.integer(-1), nrow=100, ncol=2 )
   
   # hardcoding these for now, should be able to modify later on
-  calendar_fert[1,] <- c( 2018, 125, 0*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
-  calendar_fert[2,] <- c( 2018, 250,  0*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
+  calendar_fert[1,] <- c( 2018, 125, 10*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
+  calendar_fert[2,] <- c( 2018, 250, 0*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
   #    calendar_fert[3,] <- c( 2001, 123, 0*1000/ 10000      ) # 0 kg N ha-1 applied on day 123
-  calendar_Ndep[1,] <- c( 1900,   1,  2*1000/(10000*365) ) #  2 kg N ha-1 y-1 N-deposition in 1900
-  calendar_Ndep[2,] <- c( 1980, 366, 20*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 1980
-  calendar_Ndep[3,] <- c( 2100, 366, 20*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 2100
+  calendar_Ndep[1,] <- c( 1900,   1,  0*1000/(10000*365) ) #  2 kg N ha-1 y-1 N-deposition in 1900
+  calendar_Ndep[2,] <- c( 1980, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 1980
+  calendar_Ndep[3,] <- c( 2100, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 2100
   
   # Qvidja 2018 Harvest dates
   days_harvest [1,] <- c( 2018, 163 )
-  days_harvest [2,] <- c( 2018, 233 )
-  days_harvest [3,] <- c( 2018, 266 )
+  #days_harvest [2,] <- c( 2018, 233 )
+  days_harvest [2,] <- c( 2018, 266 )
   
   days_harvest      <- as.integer(days_harvest)
   
