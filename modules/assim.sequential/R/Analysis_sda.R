@@ -177,14 +177,14 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     #where there are zero values so that 
     #mu.f is in 'tobit space' in the full model
     constants.tobit2space <<- list(N = nrow(X),
-                                 J = length(mu.f))
+                                   J = length(mu.f))
     
     data.tobit2space <<- list(y.ind = x.ind,
-                            y.censored = x.censored,
-                            mu_0 = rep(0,length(mu.f)),
-                            lambda_0 = diag(length(mu.f),length(mu.f)+1),
-                            nu_0 = 3,
-                            wts = wts)#some measure of prior obs
+                              y.censored = x.censored,
+                              mu_0 = rep(0,length(mu.f)),
+                              lambda_0 = diag(length(mu.f),length(mu.f)+1),
+                              nu_0 = 3,
+                              wts = wts)#some measure of prior obs
     
     inits.tobit2space <<- list(pf = cov(X), muf = colMeans(X))
     #set.seed(0)
@@ -263,7 +263,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
   #--- This is where the localization needs to happen - After imputing Pf
   
-
+  
   iycens <- grep("y.censored",colnames(dat.tobit2space))
   X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
   
@@ -286,16 +286,18 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     bqq    <- length(mu.f)
     aqq <- diag(length(mu.f)) * bqq #Q
   }
-
+  
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
+  # Each observed variable needs to have its own file tag under inputs
+  interval <-settings$state.data.assimilation$inputs %>%
+    purrr::map_dfr( ~ data.frame(
+      .x$'min_value' %>% as.numeric(),.x$'max_value' %>% as.numeric()
+    )) %>%
+    as.matrix()
+  
   rownames(interval) <- names(obs.mean[[t]])
-  for(i in 1:length(input.vars)){
-    interval[grep(x=rownames(interval),
-                  pattern=input.vars[i]), ] <- matrix(c(as.numeric(settings$state.data.assimilation$inputs[[i]]$min_value), #needs to be inputs because sometimes the observation is on a different scale than the state variable
-                                                        as.numeric(settings$state.data.assimilation$inputs[[i]]$max_value)),
-                                                      length(grep(x=rownames(interval),pattern=input.vars[i])),2,byrow = TRUE)
-  }
+  
   #### These vectors are used to categorize data based on censoring 
   #### from the interval matrix
   y.ind <- as.numeric(Y > interval[,1])
@@ -330,7 +332,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     X_fcomp_start <- which_fcomp[1]
     X_fcomp_end <- which_fcomp[length(which_fcomp)]
     X_fcomp_model <- grep(colnames(X),pattern = 'AGB.pft')
-  
+    
     fcomp_TRUE = TRUE
   }else{
     X_fcomp_start <- 0
@@ -379,70 +381,70 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     )
     
     dimensions.tobit <<- list(X = length(mu.f), X.mod = ncol(X),
-                            Q = c(length(mu.f),length(mu.f)),
-                            y_star = (length(y.censored)))
+                              Q = c(length(mu.f),length(mu.f)),
+                              y_star = (length(y.censored)))
     
     data.tobit <<- list(muf = as.vector(mu.f),
-                      pf = solve(Pf), 
-                      aq = aqq, bq = bqq,
-                      y.ind = y.ind,
-                      y.censored = y.censored,
-                      r = R) #precision
+                        pf = solve(Pf), 
+                        aq = aqq, bq = bqq,
+                        y.ind = y.ind,
+                        y.censored = y.censored,
+                        r = R) #precision
     
     inits.pred <<- list(q = diag(length(mu.f))*(length(mu.f)+1),
-                      X.mod = rnorm(length(mu.f),mu.f,1),
-                      X = rnorm(length(mu.f),mu.f,1),
-                      y_star = rnorm(length(y.censored),0,1))
-
-model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
-                          constants = constants.tobit, inits = inits.pred,
-                          name = 'base')
-
-model_pred$initializeInfo()
-## Adding X.mod,q,r as data for building model.
-conf <- configureMCMC(model_pred, print=TRUE)
-conf$addMonitors(c("X","X.mod","q","Q", "y_star","y.censored")) 
-## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
-
-
-if(FALSE){ ### Need this for when the state variables are on different scales like NPP and AGB
-  x.char <- paste0('X[1:',ncol(X),']')
-  conf$removeSampler(x.char)
-  propCov.means <- c(rep(1,9),1000)#signif(diag(Pf),1)#mean(unlist(lapply(obs.cov,FUN = function(x){diag(x)})))[choose]#c(rep(max(diag(Pf)),ncol(X)))#
-  if(length(propCov.means)!=ncol(X)) propCov.means <- c(propCov.means,rep(1,ncol(X)-length(Y)))
-  conf$addSampler(target =c(x.char),
-                  control <- list(propCov = diag(ncol(X))*propCov.means),
-                  type='RW_block')
-}
-
-## important!
-## this is needed for correct indexing later
-samplerNumberOffset <<- length(conf$getSamplers())
-
-for(i in 1:length(y.ind)) {
-  node <- paste0('y.censored[',i,']')
-  conf$addSampler(node, 'toggle', control=list(type='RW'))
-  ## could instead use slice samplers, or any combination thereof, e.g.:
-  ##conf$addSampler(node, 'toggle', control=list(type='slice'))
-}
-
-conf$printSamplers()
-
-## can monitor y.censored, if you wish, to verify correct behaviour
-#conf$addMonitors('y.censored')
-
-Rmcmc <<- buildMCMC(conf)
-
-Cmodel <<- compileNimble(model_pred)
-Cmcmc <<- compileNimble(Rmcmc, project = model_pred)
-
-for(i in 1:length(y.ind)) {
-  ## ironically, here we have to "toggle" the value of y.ind[i]
-  ## this specifies that when y.ind[i] = 1,
-  ## indicator variable is set to 0, which specifies *not* to sample
-  valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
-}
-
+                        X.mod = rnorm(length(mu.f),mu.f,1),
+                        X = rnorm(length(mu.f),mu.f,1),
+                        y_star = rnorm(length(y.censored),0,1))
+    
+    model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
+                              constants = constants.tobit, inits = inits.pred,
+                              name = 'base')
+    
+    model_pred$initializeInfo()
+    ## Adding X.mod,q,r as data for building model.
+    conf <- configureMCMC(model_pred, print=TRUE)
+    conf$addMonitors(c("X","X.mod","q","Q", "y_star","y.censored")) 
+    ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
+    
+    
+    if(FALSE){ ### Need this for when the state variables are on different scales like NPP and AGB
+      x.char <- paste0('X[1:',ncol(X),']')
+      conf$removeSampler(x.char)
+      propCov.means <- c(rep(1,9),1000)#signif(diag(Pf),1)#mean(unlist(lapply(obs.cov,FUN = function(x){diag(x)})))[choose]#c(rep(max(diag(Pf)),ncol(X)))#
+      if(length(propCov.means)!=ncol(X)) propCov.means <- c(propCov.means,rep(1,ncol(X)-length(Y)))
+      conf$addSampler(target =c(x.char),
+                      control <- list(propCov = diag(ncol(X))*propCov.means),
+                      type='RW_block')
+    }
+    
+    ## important!
+    ## this is needed for correct indexing later
+    samplerNumberOffset <<- length(conf$getSamplers())
+    
+    for(i in 1:length(y.ind)) {
+      node <- paste0('y.censored[',i,']')
+      conf$addSampler(node, 'toggle', control=list(type='RW'))
+      ## could instead use slice samplers, or any combination thereof, e.g.:
+      ##conf$addSampler(node, 'toggle', control=list(type='slice'))
+    }
+    
+    conf$printSamplers()
+    
+    ## can monitor y.censored, if you wish, to verify correct behaviour
+    #conf$addMonitors('y.censored')
+    
+    Rmcmc <<- buildMCMC(conf)
+    
+    Cmodel <<- compileNimble(model_pred)
+    Cmcmc <<- compileNimble(Rmcmc, project = model_pred)
+    
+    for(i in 1:length(y.ind)) {
+      ## ironically, here we have to "toggle" the value of y.ind[i]
+      ## this specifies that when y.ind[i] = 1,
+      ## indicator variable is set to 0, which specifies *not* to sample
+      valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
+    }
+    
   }else{
     Cmodel$y.ind <- y.ind
     Cmodel$y.censored <- y.censored
@@ -485,7 +487,7 @@ for(i in 1:length(y.ind)) {
     mu.a[1:9] <- colMeans(dat[, iX[1:9]] / adjusts)
     if(sum(mu.a[1:9])<=0) browser()
   }
-
+  
   ystar.a <- colMeans(dat[, iystar])
   Pa   <- cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
@@ -505,7 +507,7 @@ for(i in 1:length(y.ind)) {
   if (n < length(mu.f)) {
     n <- length(mu.f)
   }
-
+  
   V <- solve(q.bar) * n 
   
   aqq   <- V

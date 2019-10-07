@@ -97,7 +97,7 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
                purrr::map('variable.name')) %>%
     purrr::discard(is.null)
   
-  if(length(scaling.factors)==0) return(X)
+  if (length(scaling.factors) == 0)  return(X)
   
   
   Y <- seq_len(ncol(X)) %>%
