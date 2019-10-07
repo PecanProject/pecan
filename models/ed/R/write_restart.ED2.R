@@ -7,6 +7,9 @@
 write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
                               settings, new.state, RENAME = TRUE, new.params, inputs) {
   
+  var.names <- settings$state.data.assimilation$state.variables %>%
+    purrr::map('variable.name')
+  
   restart <- new.params$restart
   
   # IMPORTANT NOTE: in the future, things that are passed via "restart" list need to be confined to old states that will be used

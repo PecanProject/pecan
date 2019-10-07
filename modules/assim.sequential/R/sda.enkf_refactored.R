@@ -149,8 +149,8 @@ sda.enkf <- function(settings,
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
   #The aqq and bqq are shape parameters estimated over time for the proccess covariance. #see GEF help
-  aqq         <- list()
-  bqq         <- list()
+  aqq         <- NULL
+  bqq         <- numeric(nt + 1)
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
