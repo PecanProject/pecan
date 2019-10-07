@@ -75,3 +75,50 @@ SDA_control <-
 
 
 
+
+#' rescaling_stateVars
+#'
+#' @param settings pecan xml settings where state variables have the scaling_factor tag
+#' @param X Any Matrix with column names as variable names
+#' @description This function uses a set of scaling factors defined in the pecan XML to scale a given matrix (R or X in the case of SDA)
+#' @return
+#' @export
+#'
+rescaling_stateVars <- function(settings, X) {
+  
+  # Finding the scaling factors
+  scaling.factors <-
+    settings$state.data.assimilation$state.variables %>%
+    map('scaling_factor') %>%
+    setNames(settings$state.data.assimilation$state.variables %>%
+               map('variable.name'))
+  
+  
+  Y <- seq_len(ncol(X)) %>%
+    map_dfc(function(.x) {
+      
+      if(colnames(X)[.x] %in% names(scaling.factors))  {
+        X[, .x] * scaling.factors[[colnames(X)[.x]]] %>% as.numeric()
+      }else{
+        X[, .x]
+      }
+    }) %>%
+    as.matrix() %>%
+    `colnames<-`(colnames(X))
+  
+  try({
+    # I'm trying to give the new transform variable the attributes of the old one
+    # X for example has `site` attribute
+    
+    attr.X <- names(attributes(X)) %>%
+      discard( ~ .x %in% c("dim", "dimnames"))
+    
+    if (length(attr.X) > 0) {
+      attr(Y, attr.X) <- attr(X, attr.X)
+    }
+    
+  }, silent = TRUE)
+  
+  return(Y)
+}
+
