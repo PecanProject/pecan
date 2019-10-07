@@ -366,9 +366,7 @@ sda.enkf <- function(settings,
     #--- Reformating X
     X <- do.call(rbind, X)
     
-    FORECAST[[t]] <- X
-    mu.f <- colMeans(X)
-    Pf <- cov(X)
+
     
     if(sum(X,na.rm=T) == 0){
       logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
@@ -448,6 +446,7 @@ sda.enkf <- function(settings,
                                        obs.cov=obs.cov)
       
       #Reading back mu.f/Pf and mu.a/Pa
+      FORECAST[[t]] <- X
       #Forecast
       mu.f <- enkf.params[[t]]$mu.f
       Pf <- enkf.params[[t]]$Pf

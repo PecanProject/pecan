@@ -80,7 +80,7 @@ SDA_control <-
 #'
 #' @param settings pecan xml settings where state variables have the scaling_factor tag
 #' @param X Any Matrix with column names as variable names
-#' @description This function uses a set of scaling factors defined in the pecan XML to scale a given matrix (R or X in the case of SDA)
+#' @description This function uses a set of scaling factors defined in the pecan XML to scale a given matrix
 #' @return
 #' @export
 #'
