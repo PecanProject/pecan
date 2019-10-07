@@ -86,18 +86,18 @@ SDA_control <-
 #'
 rescaling_stateVars <- function(settings, X, multiply=TRUE) {
   
-  if(multiply){
-    FUN <- .Primitive('*')
-  }else{
-    FUN <- .Primitive('/')
-  }
+  FUN <- ifelse(multiply, .Primitive('*'), .Primitive('/'))
+    
   
   # Finding the scaling factors
   scaling.factors <-
     settings$state.data.assimilation$state.variables %>%
-    map('scaling_factor') %>%
+    purrr::map('scaling_factor') %>%
     setNames(settings$state.data.assimilation$state.variables %>%
-               map('variable.name'))
+               purrr::map('variable.name')) %>%
+    purrr::discard(is.null)
+  
+  if(length(scaling.factors)==0) return(X)
   
   
   Y <- seq_len(ncol(X)) %>%

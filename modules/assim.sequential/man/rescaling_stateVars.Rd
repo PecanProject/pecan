@@ -4,7 +4,7 @@
 \alias{rescaling_stateVars}
 \title{rescaling_stateVars}
 \usage{
-rescaling_stateVars(settings, X)
+rescaling_stateVars(settings, X, multiply = TRUE)
 }
 \arguments{
 \item{settings}{pecan xml settings where state variables have the scaling_factor tag}
