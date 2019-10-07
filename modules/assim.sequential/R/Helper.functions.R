@@ -84,7 +84,13 @@ SDA_control <-
 #' @return
 #' @export
 #'
-rescaling_stateVars <- function(settings, X) {
+rescaling_stateVars <- function(settings, X, multiply=TRUE) {
+  
+  if(multiply){
+    FUN <- .Primitive('*')
+  }else{
+    FUN <- .Primitive('/')
+  }
   
   # Finding the scaling factors
   scaling.factors <-
@@ -98,7 +104,8 @@ rescaling_stateVars <- function(settings, X) {
     map_dfc(function(.x) {
       
       if(colnames(X)[.x] %in% names(scaling.factors))  {
-        X[, .x] * scaling.factors[[colnames(X)[.x]]] %>% as.numeric()
+        # This function either multiplies or divides
+        FUN( X[, .x], scaling.factors[[colnames(X)[.x]]] %>% as.numeric())
       }else{
         X[, .x]
       }
