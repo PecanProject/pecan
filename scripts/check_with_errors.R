@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 
 arg <- commandArgs(trailingOnly = TRUE)
 pkg <- arg[1]
@@ -143,10 +144,11 @@ if (cmp$status != "+") {
         }
     }
 
-    # This line is redundant (summarizes issues also reported individually)
-    # and creates a false positive when an existing issue is fixed
+    # These lines are redundant summaries of issues also reported individually
+    # and create false positives when an existing issue is fixed
     cur_msgs <- cur_msgs[!grepl(
         "NOTE: Undefined global functions or variables:", cur_msgs)]
+    cur_msgs <- cur_msgs[!grepl("NOTE: Consider adding importFrom", cur_msgs)]
 
     lines_changed <- setdiff(cur_msgs, prev_msgs)
     if (length(lines_changed) > 0) {
