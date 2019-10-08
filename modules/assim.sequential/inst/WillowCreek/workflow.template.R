@@ -41,7 +41,7 @@ if (is.na(args[4])){
 }
 outputPath <- "/fs/data3/kzarada/ouput"
 xmlTempName <-"gefs.sipnet.template.xml"
-restart <-FALSE
+restart <-TRUE
 nodata <- FALSE
 days.obs <- 3 #how many of observed data to include -- not including today
 setwd(outputPath)
@@ -290,24 +290,32 @@ if(restart == TRUE){
   load(file.path(restart.path, "SDA", "sda.output.Rdata"), envir = temp)
   temp <- as.list(temp)
   
-  
+  #we want ANALYSIS, FORECAST, and enkf.parms to match up with how many days obs data we have
+  # +2 for days.obs since today is not included in the number. So we want to keep today and any other obs data 
   if(length(temp$ANALYSIS) > 1){
-    for(i in rev(1:(length(temp$ANALYSIS)-1))){
+    for(i in rev((days.obs + 2):length(temp$ANALYSIS))){ 
     temp$ANALYSIS[[i]] <- NULL
   }
  
-  for(i in rev(1:(length(temp$FORECAST)-1))){
+  for(i in rev((days.obs + 2):length(temp$FORECAST))){
     temp$FORECAST[[i]] <- NULL
   } 
   
   
-  for(i in rev(1:(length(temp$enkf.params)-1))){
+  for(i in rev((days.obs + 2):length(temp$enkf.params))){
     temp$enkf.params[[i]] <- NULL
   } 
   }
 
   temp$t = 1 
   
+  #change inputs path to match sampling met paths 
+  
+  for(i in 1: length(temp$inputs$ids)){
+    
+    temp$inputs$samples[i] <- settings$run$inputs$met$path[temp$inputs$ids[i]]
+    
+  }
   
   temp1<- new.env()
   list2env(temp, envir = temp1)
