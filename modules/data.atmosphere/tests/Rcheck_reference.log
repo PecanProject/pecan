@@ -16,18 +16,12 @@
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
 * checking serialization versions ... OK
-* checking whether package ‘PEcAn.data.atmosphere’ can be installed ... WARNING
-Found the following significant warnings:
-  Warning: replacing previous import ‘dplyr::last’ by ‘xts::last’ when loading ‘PEcAn.data.atmosphere’
-  Warning: replacing previous import ‘dplyr::first’ by ‘xts::first’ when loading ‘PEcAn.data.atmosphere’
-See ‘/tmp/Rtmp02RC5y/PEcAn.data.atmosphere.Rcheck/00install.out’ for details.
+* checking whether package ‘PEcAn.data.atmosphere’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... NOTE
 License components with restrictions not permitted:
   FreeBSD + file LICENSE
-Package listed in more than one of Depends, Imports, Suggests, Enhances:
-  ‘xts’
 A package should be listed in only one of these fields.
 * checking top-level files ... OK
 * checking for left-over files ... OK
