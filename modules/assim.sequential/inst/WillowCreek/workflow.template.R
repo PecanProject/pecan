@@ -122,7 +122,7 @@ prep.data<-prep.data$obs
 
 
 # if there is infinte value then take it out - here we want to remove any that just have one NA in the observed data 
-prep.data<-prep.data %>% 
+prep.data <- prep.data %>% 
   map(function(day.data){
     #cheking the mean
     nan.mean <- which(is.infinite(day.data$means) | is.nan(day.data$means) | is.na(day.data$means))
@@ -131,7 +131,7 @@ prep.data<-prep.data %>%
       day.data$means <- day.data$means[-nan.mean]
       day.data$covs <- day.data$covs[-nan.mean, -nan.mean] %>%
         as.matrix() %>%
-        `colnames<-`(c(colnames(day.data$covs)[-nan.mean]))
+        `colnames <-`(c(colnames(day.data$covs)[-nan.mean]))
     }
     day.data
   })

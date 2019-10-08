@@ -64,7 +64,8 @@ con <- bety$con #Connection to the database.  dplyr returns a list.
 
 # Identify the workflow with the proper information
 if (!is.null(start_date)) {
-  workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE start_date='", format(start_date, "%Y-%m-%d %H:%M:%S"), 
+  workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE start_date='",
+                                         format(start_date, "%Y-%m-%d %H:%M:%S"), 
                                          "' ORDER BY id"), con)
 } else {
   workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE id='", in_wid, "'"), con)
@@ -209,10 +210,18 @@ neeplot <- ggplot(needf) +
   xlim(frame_start, frame_end) +
   theme(axis.text.x=element_text(angle=60, hjust=1)) +
   scale_colour_manual(name='Legend', values=c("predicted mean"="lightskyblue1", "observed data"="firebrick4")) +
-  scale_fill_manual(name=element_blank(), values=c("Spread of data (excluding outliers)"="azure4", "95% confidence interval" = "blue3", "mean"="lightskyblue1")) +
+  scale_fill_manual(name=element_blank(), 
+                    values=c("Spread of data (excluding outliers)"="azure4", 
+                             "95% confidence interval" = "blue3", "mean"="lightskyblue1")) +
   scale_y_continuous(name="NEE (kg C m-2 s-1)", limits=c(nee_lower, nee_upper)) + 
   theme_linedraw() + 
-  theme(plot.title = element_text(hjust = 0.5, size = 16), legend.title = element_text(size = 14), legend.text = element_text(size = 12), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14)) 
+  theme(plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 14), 
+        legend.text = element_text(size = 12),
+        axis.text.x = element_text(size = 14), 
+        axis.text.y = element_text(size = 14), 
+        axis.title.x = element_text(size = 14), 
+        axis.title.y = element_text(size = 14)) 
 
 qleplot <- ggplot(qledf) +
   geom_ribbon(aes(x=Time, ymin=qlelower95, ymax=qleupper95, fill="95% confidence interval"), alpha = 0.4) +
@@ -225,7 +234,13 @@ qleplot <- ggplot(qledf) +
   scale_fill_manual(name= element_blank(), values=c("95% confidence interval" = "blue3")) +
   scale_y_discrete(name="LE (W m-2 s-1)", limits = c(qle_lower, qle_upper)) + 
   theme_linedraw() + 
-  theme(plot.title = element_text(hjust = 0.5, size = 16), legend.title = element_text(size = 14), legend.text = element_text(size = 12), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14)) 
+  theme(plot.title = element_text(hjust = 0.5, size = 16), 
+        legend.title = element_text(size = 14), 
+        legend.text = element_text(size = 12), 
+        axis.text.x = element_text(size = 14),
+        axis.text.y = element_text(size = 14), 
+        axis.title.x = element_text(size = 14), 
+        axis.title.y = element_text(size = 14)) 
 
   
 if (!dir.exists(outfolder)) {
