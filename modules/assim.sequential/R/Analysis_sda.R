@@ -291,7 +291,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
   # Each observe variable needs to have its own file tag under inputs
   interval <-settings$state.data.assimilation$inputs %>%
-    map_dfr( ~ data.frame(
+    purrr::map_dfr( ~ data.frame(
       .x$'min_value' %>% as.numeric(),.x$'max_value' %>% as.numeric()
     )) %>%
     as.matrix()

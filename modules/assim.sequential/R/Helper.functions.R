@@ -101,7 +101,7 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
   
   
   Y <- seq_len(ncol(X)) %>%
-    map_dfc(function(.x) {
+    purrr::map_dfc(function(.x) {
       
       if(colnames(X)[.x] %in% names(scaling.factors))  {
         # This function either multiplies or divides
@@ -118,7 +118,7 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
     # X for example has `site` attribute
     
     attr.X <- names(attributes(X)) %>%
-      discard( ~ .x %in% c("dim", "dimnames"))
+      purrr::discard( ~ .x %in% c("dim", "dimnames"))
     
     if (length(attr.X) > 0) {
       attr(Y, attr.X) <- attr(X, attr.X)

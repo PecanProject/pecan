@@ -217,7 +217,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   
   # copy the history file with new states and new timestamp to remote 
   # it's OK, because we backed up the original above
-  PEcAn.remote::remote.copy.to(settings$host, histfile, remote_histfile)
+  #PEcAn.remote::remote.copy.to(settings$host, histfile, remote_histfile)
   
   ##### Modify ED2IN
   ed2in_path <- file.path(rundir, runid, "ED2IN")
