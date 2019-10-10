@@ -98,135 +98,17 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   z.small <- z.matrix[,index.last.start:ncol(z.matrix)]
   years.small <- years[index.last.start:ncol(y.matrix)]
   
+  startyr<-rep(NA,nrow(z.small))
+  endyr<-rep(NA,nrow(z.small))
+  for(i in 1:nrow(z.small)){
+    startyr[i]<-which(complete.cases(z.small[i,]))[1]
+    endyr[i]<-ifelse(!is.na(which(complete.cases(z.small[i,]))[2]),which(complete.cases(z.small[i,]))[2],45)
+  }
+  startyr[1:544]<-1
+  endyr[1:544]<-45
+  sum(complete.cases(startyr))
+  
   ### covariate data
-  
-  ### RANDOM EFFECTS
-  
-  ### plot rnd effect (currently implemented at indiv level)
-  PLOT <- paste0(temp2$County, temp2$Plot) # should maybe use an underscore to avoid mistakes...but would jags choke?
-  if(!is.null(Tree2Tree)){
-    PLOT2 <- paste0(Tree2Tree$COUNTYCD, Tree2Tree$T1_PLOT)
-    PLOT <- c(PLOT, PLOT2)
-  }
-  
-  ### FIXED EFFECTS
-  
-  ### tree-level
-  ### CR, CCLCD
-  #cov.data <- cbind(temp2$CR, temp2$CCLCD)
-  #colnames(cov.data) <- c("CR", "CCLCD")## give them column names
-  ### should eventually use height ratio, or other variable that Justin says is more informative
-  
-  ### plot-level
-  ### ELEV
-  
-  ELEV <- temp2$PLOT_ELEV
-  if(!is.null(Tree2Tree)){
-    ELEV2 <- Tree2Tree$PLOT_ELEV
-    ELEV <- c(ELEV,   ELEV2)
-  }
-  if(standardize.cov==TRUE){
-    ELEV <- standardize.vector(ELEV)
-  }
-  
-  
-  ### condition-level
-  ### SICOND  
-  SICOND <- temp2$COND_SICOND
-  if(!is.null(Tree2Tree)){
-    SICOND2 <- Tree2Tree$SICOND
-    SICOND <- c(SICOND, SICOND2)
-  }
-  if(standardize.cov==TRUE){
-    SICOND <- standardize.vector(SICOND)
-  }
-  
-  ### SLOPE
-  SLOPE <- temp2$COND_SLOPE # ranges as a high as 360
-  if(!is.null(Tree2Tree)){
-    SLOPE2 <- Tree2Tree$SLOPE # max value = 78...different units??
-    SLOPE <- c(SLOPE, SLOPE2)
-  }
-  
-  ### ASPECT ### 
-  ASPECT <- temp2$COND_ASPECT
-  if(!is.null(Tree2Tree)){
-    ASPECT.2 <- Tree2Tree$ASPECT
-    ASPECT  <- c(ASPECT , ASPECT.2)
-  }
-  
-  ## STAGE VARS DERIVED FROM SLOPE & ASPECT ##
-  STAGE2 <- temp2$COND_SLOPE*cos(temp2$COND_ASPECT)
-  if(!is.null(Tree2Tree)){
-    STAGE2.2 <- Tree2Tree$SLOPE*cos(Tree2Tree$ASPECT)
-    STAGE2 <- c(STAGE2, STAGE2.2)
-  }
-  
-  STAGE3 <- temp2$COND_SLOPE*sin(temp2$COND_ASPECT)
-  if(!is.null(Tree2Tree)){
-    STAGE3.2 <- Tree2Tree$SLOPE*sin(Tree2Tree$ASPECT)
-    STAGE3 <- c(STAGE3, STAGE3.2)
-  }
-  
-  ### STDAGE
-  STDAGE <- temp2$COND_STDAGE
-  if(!is.null(Tree2Tree)){
-    STDAGE2 <- Tree2Tree$COND_STDAGE
-    STDAGE <- c(STDAGE, STDAGE)
-  }
-  
-  
-  ### SDI ## eventually should calculate <relative> SDI...observed SDI relative to maxSDI for dominant spp on plot (PIPO)
-  SDI <- temp2$SDI
-  if(!is.null(Tree2Tree)){
-    SDI2 <- Tree2Tree$SDIc
-    SDI <- c(SDI, SDI2)
-  }
-  if(standardize.cov == TRUE){
-    SDI <- standardize.vector(SDI)
-  }
-  
-  # Pull out treatment and disturbance codes
-  # Treatment = 0 ; no treatment
-  # Treatment = 10 ; Thinning
-  TRTCD1 <- temp2$COND_TRTCD1
-  if(!is.null(Tree2Tree)){
-    COND_TRTCD12 <- Tree2Tree$COND_TRTCD1
-    TRTCD1 <- c(TRTCD1, COND_TRTCD12)
-  }
-  if(standardize.cov == TRUE){
-    TRTCD1 <- standardize.vector(TRTCD1)
-  }
-  
-  # Disturbance Code 1
-  DSTRBCD1 <- temp2$COND_DSTRBCD1
-  if(!is.null(Tree2Tree)){
-    DSTRBCD12 <- Tree2Tree$COND_DSTRBCD1
-    DSTRBCD1 <- c(DSTRBCD1, DSTRBCD12)
-  }
-  
-  
-  # if more than 1 disturbance present, there will be DSTRBCD2-3:
-  # Disturbance Code 2
-  DSTRBCD2 <- temp2$COND_DSTRBCD2
-  if(!is.null(Tree2Tree)){
-    DSTRBCD22 <- Tree2Tree$COND_DSTRBCD2
-    DSTRBCD2 <- c(DSTRBCD2, DSTRBCD22)
-  }
-  
-  # Disturbance Code 3
-  DSTRBCD3 <- temp2$COND_DSTRBCD3
-  if(!is.null(Tree2Tree)){
-    DSTRBCD32 <- Tree2Tree$COND_DSTRBCD3
-    DSTRBCD3 <- c(DSTRBCD3, DSTRBCD32)
-  }
-  
-  
-  ### BA ## SDI and BA are tightly correlated, can't use both
-  cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
-                         STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, DSTRBCD2 = DSTRBCD2, DSTRBCD3 = DSTRBCD3)
-  #cov.data <- cbind(cov.data, SICOND, SDI)
-  
   
   ### plot- and year-specific covariates
   ### i.e., 36 PRISM data matrices (tree*year)...one for each month*3 variables (Tmax, Tmin, ppt)
@@ -292,13 +174,13 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   time_data$wintP.JJ <- wintP.JJ
   
   # seasonal Tmax variables
-  tmax.fallspr <- ( time_data$TMAXSep + time_data$TMAXOct + time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun)/5
+  tmax.fallspr <- (time_data$TMAXAug + time_data$TMAXSep + time_data$TMAXOct + time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul)/6
   tmax.JanA <- (time_data$TMAXJan + time_data$TMAXFeb + time_data$TMAXMar + time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul + time_data$TMAXAug)/8
   tmax.MJul <- (time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul)/3
   tmax.AprMayJun <- (time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun)/3 # "Arid Foresummer"
-  tmax.fall <- (time_data$TMAXSep + time_data$TMAXOct)/2 # "Arid post monsoon"
+  tmax.fall <- (time_data$TMAXSep + time_data$TMAXOct + time_data$TMAXNov)/3 # "Arid post monsoon"
   tmax.monsoon <- (time_data$TMAXJul + time_data$TMAXAug)/2 # "monsoon"
-  
+  tmax.wateryr <- (time_data$TMAXSep + time_data$TMAXOct + time_data$TMAXNov + time_data$TMAXDec + time_data$TMAXJan + time_data$TMAXFeb + time_data$TMAXMar + time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul + time_data$TMAXAug)/12 # Water year mean max temperature
   
   time_data$tmax.fallspr <- tmax.fallspr
   time_data$tmax.JanA <- tmax.JanA
@@ -306,9 +188,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   time_data$tmax.AprMayJun <- tmax.AprMayJun
   time_data$tmax.fall <- tmax.fall
   time_data$tmax.monsoon <- tmax.monsoon
-  
+  time_data$TMAX <- tmax.wateryr
   # save the climate/time data to a file so we can look at the raw values as well:
-  saveRDS(time_data, "/Users/kah/Documents/GrowthFusion/FIA_inc_data/PRISM_non_scaled.rds")
+  saveRDS(time_data, "/home/rstudio/pecan/FIA_inc_data/PRISM_non_scaled.rds")
   
   # standardize climate data
   if(standardize.cov == TRUE){
@@ -317,10 +199,157 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
     } 
   }
   
+  ### RANDOM EFFECTS
+  
+  ### plot rnd effect (currently implemented at indiv level)
+  PLOT <- paste0(temp2$County, temp2$Plot) # should maybe use an underscore to avoid mistakes...but would jags choke?
+  if(!is.null(Tree2Tree)){
+    PLOT2 <- paste0(Tree2Tree$COUNTYCD, Tree2Tree$T1_PLOT)
+    PLOT <- c(PLOT, PLOT2)
+  }
+  
+  ### FIXED EFFECTS
+  
+  
+  
+  ### tree-level
+  ### CR, CCLCD
+  #cov.data <- cbind(temp2$CR, temp2$CCLCD)
+  #colnames(cov.data) <- c("CR", "CCLCD")## give them column names
+  ### should eventually use height ratio, or other variable that Justin says is more informative
+  
+  
+  ### plot-level
+  ### ELEV
+  
+  ELEV <- temp2$PLOT_ELEV
+  if(!is.null(Tree2Tree)){
+    ELEV2 <- Tree2Tree$ELEV
+    ELEV <- c(ELEV,   ELEV2)
+  }
+  if(standardize.cov==TRUE){
+    ELEV <- standardize.vector(ELEV)
+  }
+  
+  
+  ### condition-level
+  ### SICOND  
+  SICOND <- temp2$COND_SICOND
+  if(!is.null(Tree2Tree)){
+    SICOND2 <- Tree2Tree$SICOND
+    SICOND <- c(SICOND, SICOND2)
+  }
+  if(standardize.cov==TRUE){
+    SICOND <- standardize.vector(SICOND)
+  }
+  
+  ### SLOPE
+  SLOPE <- temp2$COND_SLOPE # ranges as a high as 360
+  if(!is.null(Tree2Tree)){
+    SLOPE2 <- Tree2Tree$SLOPE # max value = 78...different units??
+    SLOPE <- c(SLOPE, SLOPE2)
+  }
+  
+  ### ASPECT ### 
+  ASPECT <- temp2$COND_ASPECT
+  if(!is.null(Tree2Tree)){
+    ASPECT.2 <- Tree2Tree$ASPECT
+    ASPECT  <- c(ASPECT , ASPECT.2)
+  }
+  
+  ## STAGE VARS DERIVED FROM SLOPE & ASPECT ##
+  STAGE2 <- temp2$COND_SLOPE*cos(temp2$COND_ASPECT)
+  if(!is.null(Tree2Tree)){
+    STAGE2.2 <- Tree2Tree$SLOPE*cos(Tree2Tree$ASPECT)
+    STAGE2 <- c(STAGE2, STAGE2.2)
+  }
+  
+  STAGE3 <- temp2$COND_SLOPE*sin(temp2$COND_ASPECT)
+  if(!is.null(Tree2Tree)){
+    STAGE3.2 <- Tree2Tree$SLOPE*sin(Tree2Tree$ASPECT)
+    STAGE3 <- c(STAGE3, STAGE3.2)
+  }
+  
+  ### STDAGE
+  STDAGE <- temp2$COND_STDAGE
+  if(!is.null(Tree2Tree)){
+    STDAGE2 <- Tree2Tree$STDAGE
+    STDAGE <- c(STDAGE, STDAGE2)
+  }
+  
+  
+  ### SDI ## eventually should calculate <relative> SDI...observed SDI relative to maxSDI for dominant spp on plot (PIPO)
+  SDI <- temp2$SDI
+  if(!is.null(Tree2Tree)){
+    SDI2 <- Tree2Tree$SDIc
+    SDI <- c(SDI, SDI2)
+  }
+  if(standardize.cov == TRUE){
+    SDI <- standardize.vector(SDI)
+  }
+  
+  # Pull out treatment and disturbance codes
+  # Treatment = 0 ; no treatment
+  # Treatment = 10 ; Thinning
+  TRTCD1 <- temp2$COND_TRTCD1
+  if(!is.null(Tree2Tree)){
+    COND_TRTCD12 <- Tree2Tree$TRTCD1
+    TRTCD1 <- c(TRTCD1, COND_TRTCD12)
+  }
+  if(standardize.cov == TRUE){
+    TRTCD1 <- standardize.vector(TRTCD1)
+  }
+  
+  # Disturbance Code 1
+  DSTRBCD1 <- temp2$COND_DSTRBCD1
+  if(!is.null(Tree2Tree)){
+    DSTRBCD12 <- Tree2Tree$DSTRBCD1
+    DSTRBCD1 <- c(DSTRBCD1, DSTRBCD12)
+  }
+  
+  
+  # if more than 1 disturbance present, there will be DSTRBCD2-3:
+  # Disturbance Code 2
+  DSTRBCD2 <- temp2$COND_DSTRBCD2
+  if(!is.null(Tree2Tree) & "DSTRBCD2" %in% colnames((Tree2Tree))){
+    DSTRBCD22 <- Tree2Tree$DSTRBCD2
+    DSTRBCD2 <- c(DSTRBCD2, DSTRBCD22)
+  }
+  
+  # Disturbance Code 3
+  DSTRBCD3 <- temp2$COND_DSTRBCD3
+  if(!is.null(Tree2Tree) & "DSTRBCD3" %in% colnames((Tree2Tree))){
+    DSTRBCD32 <- Tree2Tree$COND_DSTRBCD3
+    DSTRBCD3 <- c(DSTRBCD3, DSTRBCD32)
+  }
+  
+  MAP <- rowMeans(time_data$wintP.wateryr)
+  
+  if(standardize.cov==TRUE){
+    MAP <- standardize.vector(MAP)
+  }
+  
+  MAT <- rowMeans(time_data$TMAX)
+  
+  if(standardize.cov==TRUE){
+    MAT <- standardize.vector(MAT)
+  }
+  
+  
+  ### BA ## SDI and BA are tightly correlated, can't use both
+  cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
+                         STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, MAP =MAP, MAT =MAT)
+  #cov.data <- cbind(cov.data, SICOND, SDI)
+  
+  
+  
+  
   ## build data object for JAGS
   data = list(y = y.small, 
               z = z.small,
               ni = nrow(y.small), nt = ncol(y.small), 
+              nt2 = endyr, 
+              startyr = startyr, startyr2 = startyr+1, endyr = endyr,
               x_ic = 1, tau_ic = 1e-04,
               a_dbh = 16, r_dbh = 8, 
               a_inc = 0.001, r_inc = 1, 
