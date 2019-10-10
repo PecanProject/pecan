@@ -12,7 +12,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
+InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
   library(rjags)
   print(paste("start of MCMC", Sys.time()))
   
@@ -455,13 +455,13 @@ model{
     jags.out <- coda.samples(model = j.model, variable.names = vnames, n.iter = n.chunk)
     
     ## save chunk
-    ofile <- paste(model.name , model,k,"RData",sep=".")
+    ofile <- paste(output.folder, model.name , model,k,"RData",sep=".")
     print(ofile)
     save(jags.out,file=ofile)
     
     ## update restart
     if(!is.null(restart) & ((is.logical(restart) && restart) || is.mcmc.list(restart))){
-      ofile <- paste("IGF",model,"RESTART.RData",sep=".")
+      ofile <- paste(output.folder,"IGF",model,"RESTART.RData",sep=".")
       jags.final <- coda.samples(model = j.model, variable.names = c("x",out.variables), n.iter = 1)
       k_restart = k + 1  ## finished k, so would restart at k+1
       save(jags.final,k_restart,file=ofile)
