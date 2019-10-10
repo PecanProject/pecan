@@ -25,9 +25,7 @@ obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
 to ‘yes’.
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -229,4 +227,4 @@ Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking tests ...
  OK
 * DONE
-Status: 4 WARNINGs, 2 NOTEs
+Status: 4 WARNINGs, 1 NOTE

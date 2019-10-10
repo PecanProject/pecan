@@ -18,9 +18,7 @@
 * checking whether package ‘PEcAn.BASGRA’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -67,7 +65,7 @@ See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
  OK
 * DONE
 
-Status: 2 NOTEs
+Status: 1 NOTE
 See
   ‘/private/var/folders/qr/mbw8xxpd45jdv_46b27914280000gn/T/Rtmpcw7AZN/PEcAn.BASGRA.Rcheck/00check.log’
 for details.
