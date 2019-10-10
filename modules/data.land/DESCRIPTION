@@ -43,7 +43,7 @@ Suggests:
     rgdal,
     RPostgreSQL,
     testthat (>= 1.0.2),
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE

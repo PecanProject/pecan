@@ -1,6 +1,6 @@
 Type: Shiny
 Title: Expert Prior Elicitation
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Author:
 	Mike Dietze <dietze@bu.edu>,
 	Rob Kooper <kooper@illinois.edu>
