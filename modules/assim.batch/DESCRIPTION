@@ -36,6 +36,7 @@ Imports:
     rjags,
     stats,
     prodlim,
+    MCMCpack,
     udunits2 (>= 0.11),
     utils,
     XML
