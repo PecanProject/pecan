@@ -17,7 +17,7 @@ Suggests:
     testthat,
     tools,
     getPass
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

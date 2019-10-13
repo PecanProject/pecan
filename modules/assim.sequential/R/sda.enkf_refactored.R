@@ -113,7 +113,7 @@ sda.enkf <- function(settings,
                                                               start.time = start.cut, 
                                                               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3, tz="UTC"),
                                                               inputs =  settings$run$inputs$met$path[[i]],
-                                                              overwrite=F)) 
+                                                              overwrite=T)) 
     }
   }
   if (control$debug) browser()
@@ -211,7 +211,7 @@ sda.enkf <- function(settings,
                 file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda)))
     }
     
-    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + 1 #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
+    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + length(FORECAST) #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
     
   }else{
     t = 1
@@ -408,8 +408,7 @@ sda.enkf <- function(settings,
       R <- as.matrix(obs.cov[[t]][choose.cov,choose.cov])
       R[is.na(R)]<-0.1
       
-      if (control$debug)
-        browser()
+      if (control$debug) browser()
       
       # making the mapping matrix
       #TO DO: doesn't work unless it's one to one

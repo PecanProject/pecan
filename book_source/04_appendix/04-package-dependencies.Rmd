@@ -46,7 +46,7 @@ PEcAn style is to import very few functions and instead use fully namespaced fun
 
 If the import is only used in one or a few functions, use an `@importFrom` in the documentation for each function that uses it. If it is used all over the package, use a single `@importFrom` in the Roxygen documentation block for the whole package, which probably lives in a file called either `zzz.R` or `<your_package_name>-package.R`:
 
-```{r}
+```r
 #' What your package does
 #'
 #' Longer description of the package goes here.
@@ -74,7 +74,7 @@ Loading a dependency into the package namespace is undesirable because it makes 
 
 Attaching packages to the user's search path is even more problematic because it makes it hard for the user to understand *how your package will affect their own code*. Packages attached by a function stay attached after the function exits, so they can cause name collisions far downstream of the function call, potentially in code that has nothing to do with your package. And worse, since names are looked up in reverse order of package loading, it can cause behavior that differs in strange ways depending on the order of lines that look independent of each other:
 
-```{r eval = FALSE}
+```r
 library(Hmisc)
 x = ...
 y = 3

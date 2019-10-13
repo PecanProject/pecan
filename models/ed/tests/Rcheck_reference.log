@@ -26,8 +26,6 @@ to ‘yes’.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... NOTE
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
 Authors@R field gives no person with name and roles.
 Authors@R field gives no person with maintainer role, valid email
 address and non-empty name.
@@ -91,7 +89,6 @@ write.config.ED2: no visible global function definition for ‘saveXML’
 write.config.ED2: no visible global function definition for ‘db.query’
 write.config.ED2: no visible global function definition for
   ‘modifyList’
-write.config.ED2: no visible binding for global variable ‘x’
 write.config.ED2 : <anonymous>: no visible binding for global variable
   ‘x’
 write.config.xml.ED2: no visible global function definition for ‘data’
@@ -102,7 +99,7 @@ write.config.xml.ED2: no visible global function definition for
   ‘modifyList’
 Undefined global functions or variables:
   data db.query head median modifyList pftmapping read.table saveXML
-  soil unzip value_type var.names write.table x
+  soil unzip value_type var.names write.table
 Consider adding
   importFrom("stats", "median")
   importFrom("utils", "data", "head", "modifyList", "read.table",

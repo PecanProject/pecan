@@ -18,6 +18,6 @@ Imports:
 Description: Implementation of a Gaussian Process model (both likelihood and
     bayesian approaches) for kriging and model emulation.  Includes functions
     for sampling design and prediction.
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 6.1.1

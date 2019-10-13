@@ -69,7 +69,7 @@ Suggests:
     rcrossref,
     testthat (>= 2.0.0),
     tidyverse
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE

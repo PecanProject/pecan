@@ -638,32 +638,17 @@ convert.input <-
         fname <- list.files(outfolder)
       }
     }
-    
-    # settings$run$inputs$path <- outputfile 
-    # what if there is more than 1 output file?
-    rows <- length(fname)
-    result <- data.frame(file = character(rows), 
-                         host = character(rows), 
-                         mimetype = character(rows), 
-                         formatname = character(rows), 
-                         startdate = character(rows), 
-                         enddate = character(rows), 
-                         stringsAsFactors = FALSE)
-    
-    
-    
-    for (i in seq_len(rows)) {
-      old.file <- file.path(dbfile$file_path, files[i])
-      new.file <- file.path(outfolder, fname[i])
-      
-      # create array with results
-      result$file[i]       <- new.file
-      result$host[i]       <- PEcAn.remote::fqdn()
-      result$startdate[i]  <- paste(input$start_date, "00:00:00")
-      result$enddate[i]    <- paste(input$end_date, "23:59:59")
-      result$mimetype[i]   <- mimetype
-      result$formatname[i] <- formatname
-    }
+
+    result <- data.frame(
+      # contains one row for each file in fname
+      file = file.path(outfolder, fname),
+      host = PEcAn.remote::fqdn(),
+      mimetype = mimetype,
+      formatname = formatname,
+      startdate = paste(input$start_date, "00:00:00"),
+      enddate = paste(input$end_date, "23:59:59"),
+      stringsAsFactors = FALSE)
+
   } else if (conversion == "local.remote") {
     # perform conversion on local or remote host
     

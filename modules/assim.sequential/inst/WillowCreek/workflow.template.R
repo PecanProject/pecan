@@ -7,7 +7,10 @@ library(RCurl)
 library(REddyProc)
 library(tidyverse)
 library(furrr)
+library(R.utils)
+library(dynutils)
 plan(multiprocess)
+
 # ----------------------------------------------------------------------------------------------
 #------------------------------------------ That's all we need xml path and the out folder -----
 # ----------------------------------------------------------------------------------------------
@@ -30,6 +33,17 @@ if (is.na(args[3])){
 } else {
   xmlTempName <- args[3]
 }
+
+if (is.na(args[4])){
+  restart <-FALSE
+} else {
+  restart <- args[4]
+}
+outputPath <- "/fs/data3/kzarada/ouput"
+xmlTempName <-"gefs.sipnet.template.xml"
+restart <-TRUE
+nodata <- FALSE
+days.obs <- 3 #how many of observed data to include -- not including today
 setwd(outputPath)
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ sourcing the required tools -------------------------
@@ -45,9 +59,7 @@ c(
               package = "PEcAn.assim.sequential")
 ))
 #reading xml
-settings <- read.settings(system.file("WillowCreek",
-                                      xmlTempName,
-                                      package ="PEcAn.assim.sequential" ))
+settings <- read.settings("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml")
 
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
@@ -57,7 +69,6 @@ con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 #------------------------------------------------------------------------------------------------
 #--------------------------- Finding old sims
 all.previous.sims <- list.dirs(outputPath, recursive = F)
-
 if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
   
   tryCatch({
@@ -76,25 +87,24 @@ if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
       ) %>% 
         mutate(ID=.x)) %>%
       mutate(started_at = as.Date(started_at)) %>%
-      arrange(desc(started_at)) %>%
+      arrange(desc(started_at), desc(ID)) %>%
       head(1)
     # pulling the date and the path to the last SDA
     restart.path <-grep(last.sim$ID, names(all.previous.sims), value = T)
     sda.start <- last.sim$started_at
-    },
-    error = function(e) {
-      restart.path <- NULL
-      sda.start <- Sys.Date() - 14
-      PEcAn.logger::logger.warn(paste0("There was a problem with finding the last successfull SDA.",conditionMessage(e)))
-      })
-
+  },
+  error = function(e) {
+    restart.path <- NULL
+    sda.start <- Sys.Date() - 12
+    PEcAn.logger::logger.warn(paste0("There was a problem with finding the last successfull SDA.",conditionMessage(e)))
+  })
+  
   # if there was no older sims
   if (is.na(sda.start))
-    sda.start <- Sys.Date() - 14
+    sda.start <- Sys.Date() - 12
 }
 
 sda.end <- Sys.Date()
-
 #-----------------------------------------------------------------------------------------------
 #------------------------------------------ Download met and flux ------------------------------
 #-----------------------------------------------------------------------------------------------
@@ -105,23 +115,111 @@ if(!exists('prep.data'))
     sda.end,
     numvals = 100,
     vars = c("NEE", "LE"),
-    data.len = 168 # This is 7 days
+    data.len = days.obs * 24  
   ) 
 obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs
+
+
+# if there is infinte value then take it out - here we want to remove any that just have one NA in the observed data 
+prep.data <- prep.data %>% 
+  map(function(day.data){
+    #cheking the mean
+    nan.mean <- which(is.infinite(day.data$means) | is.nan(day.data$means) | is.na(day.data$means))
+    if ( length(nan.mean)>0 ) {
+      
+      day.data$means <- day.data$means[-nan.mean]
+      day.data$covs <- day.data$covs[-nan.mean, -nan.mean] %>%
+        as.matrix() %>%
+        `colnames <-`(c(colnames(day.data$covs)[-nan.mean]))
+    }
+    day.data
+  })
+
+
+# Changing LE to Qle which is what sipnet expects
+prep.data <- prep.data %>%
+  map(function(day.data) {
+    names(day.data$means)[names(day.data$means) == "LE"] <- "Qle"
+    dimnames(day.data$covs) <- dimnames(day.data$covs) %>%
+      map(function(name) {
+        name[name == "LE"] <- "Qle"
+        name
+      })
+    
+    day.data
+  })
+
+
+
+# Finding the right end and start date
+met.start <- obs.raw$Date%>% head(1) %>% lubridate::floor_date(unit = "day")
+met.end <- met.start + lubridate::days(16)
+
+#pad Observed Data to match met data 
+
+date <-
+  seq(
+    from = lubridate::with_tz(as.POSIXct(first(sda.end), format = "%Y-%m-%d"), tz = "UTC") + lubridate::days(1),
+    to = lubridate::with_tz(as.POSIXct(met.end - lubridate::days(1), format = "%Y-%m-%d"), tz = "UTC"),
+    by = "6 hour"
+  )
+pad.prep <- obs.raw %>%
+  tidyr::complete(Date = seq(
+    from = lubridate::with_tz(as.POSIXct(first(sda.end), format = "%Y-%m-%d"), tz = "UTC") + lubridate::days(1),
+    to = lubridate::with_tz(as.POSIXct(met.end - lubridate::days(1), format = "%Y-%m-%d"), tz = "UTC"),
+    by = "6 hour"
+  )) %>%
+  mutate(means = NA, covs = NA) %>%
+  dplyr::select(Date, means, covs) %>%
+  dynutils::tibble_as_list()
+
+names(pad.prep) <-date
+
+#create the data type to match the other data 
+pad.cov <- matrix(data = c(rep(NA, 4)), nrow = 2, ncol = 2, dimnames = list(c("NEE", "Qle"), c("NEE", "Qle")))
+pad.means = c(NA, NA)
+names(pad.means) <- c("NEE", "Qle")
+
+#cycle through and populate the list 
+
+pad <- pad.prep %>% 
+          map(function(day.data){
+            day.data$means <- pad.means
+            day.data$covs <- pad.cov
+            day.data
+          })
+
+
+#add onto end of prep.data list 
+
+prep.data = c(prep.data, pad)
+
+
 # This line is what makes the SDA to run daily  ***** IMPORTANT CODE OVER HERE
 prep.data<-prep.data %>%
   discard(~lubridate::hour(.x$Date)!=0)
 
-# Finding the right end and start date
-met.start <- obs.raw$Date%>% head(1) %>% lubridate::floor_date(unit = "day")
-met.end <- obs.raw$Date %>% tail(1) %>% lubridate::ceiling_date(unit = "day")
+
+obs.mean <- prep.data %>% map('means') %>% setNames(names(prep.data))
+obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
+
+
+
+
+
+
+
+
+
 #-----------------------------------------------------------------------------------------------
 #------------------------------------------ Fixing the settings --------------------------------
 #-----------------------------------------------------------------------------------------------
 #Using the found dates to run - this will help to download mets
 settings$run$start.date <- as.character(met.start)
-settings$run$end.date <- as.character(met.end)
+settings$run$end.date <- as.character(last(date))
+settings$run$site$met.start <- as.character(met.start)
+settings$run$site$met.end <- as.character(met.end)
 #info
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 # --------------------------------------------------------------------------------------------------
@@ -170,36 +268,6 @@ get.parameter.samples(settings, ens.sample.method = settings$ensemble$samplingsp
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
 settings$state.data.assimilation$start.date <-as.character(met.start)
 settings$state.data.assimilation$end.date <-as.character(met.end - lubridate::hms("06:00:00"))
-# Changing LE to Qle which is what sipnet expects
-prep.data <- prep.data %>%
-  map(function(day.data) {
-    names(day.data$means)[names(day.data$means) == "LE"] <- "Qle"
-    dimnames(day.data$covs) <- dimnames(day.data$covs) %>%
-      map(function(name) {
-        name[name == "LE"] <- "Qle"
-        name
-      })
-    
-    day.data
-  })
-
-# if there is infinte value then take it out
-prep.data<-prep.data %>% 
-  map(function(day.data){
-    #cheking the mean
-    nan.mean <- which(is.infinite(day.data$means) | is.nan(day.data$means) | is.na(day.data$means))
-    if ( length(nan.mean)>0 ) {
-
-      day.data$means <- day.data$means[-nan.mean]
-      day.data$covs <- day.data$covs[-nan.mean, -nan.mean] %>%
-        as.matrix() %>%
-        `colnames<-`(c(colnames(day.data$covs)[-nan.mean]))
-      }
-    day.data
-  })
-
-obs.mean <- prep.data %>% map('means') %>% setNames(names(prep.data))
-obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 
 if (nodata) {
   obs.mean <- obs.mean %>% map(function(x)
@@ -207,18 +275,90 @@ if (nodata) {
   obs.cov <- obs.cov %>% map(function(x)
     return(NA))
 }
+
+# --------------------------------------------------------------------------------------------------
+#--------------------------------- Restart -------------------------------------
+# --------------------------------------------------------------------------------------------------
+
+#@Hamze - should we add a if statement here for the times that we don't want to copy the path?
+# @Hamze: Yes if restart == TRUE 
+if(restart == TRUE){
+  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = F)
+
+  #Update the SDA Output to just have last time step 
+  temp<- new.env()
+  load(file.path(restart.path, "SDA", "sda.output.Rdata"), envir = temp)
+  temp <- as.list(temp)
+  
+  #we want ANALYSIS, FORECAST, and enkf.parms to match up with how many days obs data we have
+  # +2 for days.obs since today is not included in the number. So we want to keep today and any other obs data 
+  if(length(temp$ANALYSIS) > 1){
+    for(i in rev((days.obs + 2):length(temp$ANALYSIS))){ 
+    temp$ANALYSIS[[i]] <- NULL
+  }
+ 
+  for(i in rev((days.obs + 2):length(temp$FORECAST))){
+    temp$FORECAST[[i]] <- NULL
+  } 
+  
+  
+  for(i in rev((days.obs + 2):length(temp$enkf.params))){
+    temp$enkf.params[[i]] <- NULL
+  } 
+  }
+
+  temp$t = 1 
+  
+  #change inputs path to match sampling met paths 
+  
+  for(i in 1: length(temp$inputs$ids)){
+    
+    temp$inputs$samples[i] <- settings$run$inputs$met$path[temp$inputs$ids[i]]
+    
+  }
+  
+  temp1<- new.env()
+  list2env(temp, envir = temp1)
+  save(list = c("ANALYSIS", 'FORECAST', "enkf.params", "ensemble.id", "ensemble.samples", 'inputs', 'new.params', 'new.state', 'run.id', 'site.locs', 't', 'Viz.output', 'X'),
+       envir = temp1, 
+       file = file.path(settings$outdir, "SDA", "sda.output.Rdata"))  
+
+  
+  
+  temp.out <- new.env()
+  load(file.path(restart.path, "SDA", 'outconfig.Rdata'), envir = temp.out)
+  temp.out <- as.list(temp.out)
+  temp.out$outconfig$samples <- NULL
+  
+  temp.out1 <- new.env()
+  list2env(temp.out, envir = temp.out1)
+  save(list = c('outconfig'), 
+       envir = temp.out1, 
+       file = file.path(settings$outdir, "SDA", "outconfig.Rdata"))
+
+
+
+#copy over run and out folders 
+  
+  if(!dir.exists("run")) dir.create("run",showWarnings = F)
+  copyDirectory(from = file.path(restart.path, "run/"), 
+                to = file.path(settings$outdir, "run/"))
+  if(!dir.exists("out")) dir.create("out",showWarnings = F)
+  copyDirectory(from = file.path(restart.path, "out/"), 
+                to = file.path(settings$outdir, "out/"))
+} #restart == TRUE
 # --------------------------------------------------------------------------------------------------
 #--------------------------------- Run state data assimilation -------------------------------------
 # --------------------------------------------------------------------------------------------------
 
-unlink(c('run','out','SDA'), recursive = T)
+if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
 
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-  PEcAn.assim.sequential::sda.enkf(
-      settings,
-      restart=FALSE,
+    PEcAn.assim.sequential::sda.enkf(
+      settings, 
+      restart=restart,
       Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,
@@ -227,10 +367,12 @@ if ('state.data.assimilation' %in% names(settings)) {
         interactivePlot =FALSE,
         TimeseriesPlot =TRUE,
         BiasPlot =FALSE,
-        debug =TRUE,
+        debug =FALSE,
         pause=FALSE
       )
     )
     PEcAn.utils::status.end()
   }
 }
+
+  
