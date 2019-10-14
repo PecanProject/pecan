@@ -455,13 +455,13 @@ model{
     jags.out <- coda.samples(model = j.model, variable.names = vnames, n.iter = n.chunk)
     
     ## save chunk
-    ofile <- paste(output.folder, model.name , model,k,"RData",sep=".")
+    ofile <- paste0(output.folder, model.name ,".",k,".RData")
     print(ofile)
     save(jags.out,file=ofile)
     
     ## update restart
     if(!is.null(restart) & ((is.logical(restart) && restart) || is.mcmc.list(restart))){
-      ofile <- paste(output.folder,"IGF",model,"RESTART.RData",sep=".")
+      ofile <- paste0(output.folder,"IGF",".",model.name,".","RESTART.RData")
       jags.final <- coda.samples(model = j.model, variable.names = c("x",out.variables), n.iter = 1)
       k_restart = k + 1  ## finished k, so would restart at k+1
       save(jags.final,k_restart,file=ofile)
