@@ -34,7 +34,7 @@ Suggests:
     testthat (>= 1.0.2),
     PEcAn.priors
 SystemRequirements: JAGS
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8

@@ -21,8 +21,6 @@
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... NOTE
 Malformed Description field: should contain one or more complete sentences.
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
 Authors@R field gives no person with name and roles.
 Authors@R field gives no person with maintainer role, valid email
 address and non-empty name.
