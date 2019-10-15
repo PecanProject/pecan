@@ -244,12 +244,12 @@ ppt.noX2.SICOND.only <- InventoryGrowthFusion(data=data, cov.data=cov.data, time
 
 
 # linear model with DBH^2 removed for Precipitation + Temperature:
-ppt.tmax.noX2 <- InventoryGrowthFusionRestart(data=data, cov.data=cov.data, time_data=time_data,
-                                              n.iter=5000, z0=z0,
+ppt.tmax.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                              n.iter=25000, z0=z0,
                                               n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
                                               fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*tmax.fallspr[t] + X*wintP.wateryr[t] + SICOND*SDI",
                                               time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t] + tmax.fallspr + SDI*tmax.fallspr[t] + SICOND*tmax.fallspr[t] + tmax.fallspr[t]*wintP.wateryr[t]",
-                                              burnin_plot=FALSE, save.jags = "PPT.TMAXfsnoX2.l0000.txt", model.name = "PPT.TMAXfs.noX2.l0000", breakearly = FALSE)
+                                              burnin_plot=FALSE, save.jags = "PPT.TMAXfsnoX2.25000.txt", model.name = "PPT.TMAXfs.noX2.25000", breakearly = FALSE)
 
 restart.noX2.t <- load(paste0("/home/rstudio/pecan/modules/data.land/R/PPT.TMAXfs.noX2.r.l0000.0.1.RData"))
 
