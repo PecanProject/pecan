@@ -1,17 +1,27 @@
 #
-##' @title download.thredds.AGB
-##' @name  download.thredds.AGB
+##' @title download.thredds.data
+##' @name  download.thredds.data
 ##' 
-##' @param outdir Where to place output
-##' @param site_ids What locations to download data at? 
+##' @param outdir file location to place output
+##' @param site_info information about the site. i.e. site_id, latitude, longitude 
+##' @param dates character vector of start and end date for dataset as YYYYmmdd
+##' @param varid character vector of shorthand variable name. i.e. LAI
+##' @param dir_url catalog url of data from ncei.noaa.gov/thredds website
+##' @param data_url opendap url of data from ncei.noaa.gov/thredds website
 ##' @param run_parallel Logical. Download and extract files in parallel?
-##' @param ncores Optional. If run_parallel=TRUE how many cores to use?  If left as NULL will select max number -1
 ##' 
 ##' @return data.frame summarize the results of the function call
 ##' 
 ##' @examples
 ##' \dontrun{
-##' outdir <- "~/scratch/abg_data/"
+##' outdir <- directory to store downloaded data
+##' site_info <- dataframe that contains information about site_id, latitude, longitude, and site_names
+##' dates <- date range to download data. Should be a character vector with start and end date as YYYYmmdd
+##' varod <- character shorthand name of variable to download. Example: LAI for leaf area index.
+##' dir_url <- catalog url from THREDDS that is used to determine which files are available for download using OPENDAP
+##' data_url <- OpenDAP URL that actually downloads the netcdf file.
+##' run_parallel <- optional. Can be used to speed up download process if there are more than 2 cores available on computer
+##' 
 
 ##' results <- PEcAn.data.remote::download.thredds.AGB(outdir=outdir, 
 ##'            site_ids = c(676, 678, 679, 755, 767, 1000000030, 1000000145, 1000025731), 
@@ -20,84 +30,124 @@
 ##' @export
 ##' @author Bailey Morrison
 ##'
-download.thredds.AGB <- function(outdir = NULL, site_ids, run_parallel = FALSE, 
-                                    ncores = NULL) {
+download.thredds.data <- function(outdir = NULL, site_info, dates = c("19950201", "19961215"), 
+                                  varid = "LAI",
+                                  dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files", 
+                                  data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files",
+                                  run_parallel = TRUE) {
+  # require("XML")
+  # require("RCurl") 
+  require("foreach")
   
-  
-  bety <- list(user='bety', password='bety', host='localhost',
-               dbname='bety', driver='PostgreSQL',write=TRUE)
-  con <- PEcAn.DB::db.open(bety)
-  bety$con <- con
-  site_ID <- as.character(site_ids)
-  suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
-                                              ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
-                                              ids = site_ID, .con = con))
-  suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
-  suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
-  site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
-                    lon=qry_results$lon, time_zone=qry_results$time_zone)
-  
-  mylat = site_info$lat
-  mylon = site_info$lon
-  
-  # site specific URL for dataset --> these will be made to work for all THREDDS datasets in the future, but for now, just testing with
-  # this one dataset. This specific dataset only has 1 year (2005), so no temporal looping for now.
-  obs_file = "https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1221/agb_5k.nc4"
-  obs_err = "https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1221/agb_SE_5k.nc4"
-  files = c(obs_file, obs_err)
-  
-  # function to extract ncdf data from lat and lon values for value + SE URLs
-  get_data = function(i)
+  # check that dates are within the date range of the dataset
+  dates = c(as.Date(dates[1], "%Y%m%d"), as.Date(dates[2], "%Y%m%d"))
+  if (!(is.null(dir_url)))
   {
-    data = ncdf4::nc_open(files[1])
-    agb_lats = ncdf4::ncvar_get(data, "latitude")
-    agb_lons = ncdf4::ncvar_get(data, "longitude")
+    #https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files/1981/catalog.html -> link for directory files, not downloads
+    result <- RCurl::getURL(paste(dir_url, "catalog.html", sep = "/"), verbose=F,ftp.use.epsv=TRUE, dirlistonly = TRUE)
+    files = XML::getHTMLLinks(result)
     
-    agb_x = which(abs(agb_lons- mylon[i]) == min(abs(agb_lons - mylon[i])))
-    agb_y = which(abs(agb_lats- mylat[i]) == min(abs(agb_lats - mylat[i])))
-   
-    start = c(agb_x, agb_y)
-    count = c(1,1)
-    d  = ncdf4::ncvar_get(ncdf4::nc_open(files[1]), "abvgrndbiomass", start=start, count = count)
-    if (is.na(d)) d <- NA
-    sd = ncdf4::ncvar_get(ncdf4::nc_open(files[2]), "agbSE", start=start, count = count)
-    if (is.na(sd)) sd <- NA
-    date = "2005"
-    site = site_ID[i]
-    output = as.data.frame(cbind(d, sd, date, site))
-    names(output) = c("value", "sd", "date", "siteID")
-    
-    # option to save output dataset to directory for user.
-    if (!(is.null(outdir)))
+    date_year_range = unique(range(c(year(as.Date(dates[1], "%Y")), year(as.Date(dates[2], "%Y")))))
+    if (all((!(substr(files, 1, 4) %in% date_year_range))))
     {
-      write.csv(output, file = paste0(outdir, "THREDDS_", sub("^([^.]*).*", "\\1",basename(files[1])), "_site_", site, ".csv"), row.names = FALSE)
+      # give warning that dates aren't available
+      print(test)
+    }
+    
+  }
+  
+  # get list of catalog file links to determine actual dates that can be downloaded with in user range
+  links = vector()
+  for (i in 1:length(date_year_range))
+  {
+    links[i] = RCurl::getURL(paste(dir_url, date_year_range[i], "catalog.html", sep = "/"), verbose=F,ftp.use.epsv=T, dirlistonly = T)
+  }
+  
+  # get list of all dates available from year range provided
+  files = foreach(i = 1:length(links), .combine = c) %do% XML::getHTMLLinks(links[i])
+  
+  #remove files with no dates and get list of dates available.
+  index_dates = regexpr(pattern = "[0-9]{8}", files)
+  files = files[-(which(index_dates < 0))]
+  index_dates = index_dates[which(index_dates > 0)]
+  
+  # get list of files that fall within the specific date range user asks for (Ymd, not Y)
+  dates_avail = as.Date(substr(files, index_dates, index_dates+7), "%Y%m%d")
+  date_range = seq(dates[1], dates[2], by = "day")
+  get_dates =  date_range[which(date_range %in% dates_avail)]
+  
+  # only keep files that are within the true yyyymmdd date range user requested
+  files = files[foreach(i = seq_along(get_dates), .combine = c) %do% grep(files, pattern = format(get_dates[i], '%Y%m%d'))]
+  filenames = basename(files)
+  
+  # user must supply data_URL or the netcdf files cannot be downloaded through thredds. if user has supplied no data_url, the job will fail
+  # supply a warning
+  if (!(is.null(data_url)))
+  {
+    #https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files/1981/AVHRR-Land_v005_AVH15C1_NOAA-07_19810624_c20181025194251.nc.html
+    # this is what a link looks like to download threeds data.
+    urls = sort(paste(data_url, substr(dates_avail, 1, 4), filenames, sep = "/"))
+    
+    extract_nc = function(site_info, url, run_parallel)
+    {
+      require("foreach")
+      require("ncdf4")
+      
+      mylats = site_info$lat
+      mylons = site_info$lon
+      sites = site_info$site_id
+      
+      # open netcdf file and get the correct variable name based on varid parameter + var names of netcdf
+      data = ncdf4::nc_open(url)
+      vars = names(data$var)
+      var = vars[grep(vars, pattern = varid, ignore.case = T)]
+      
+      # get list of all xy coordinates in netcdf
+      lats = ncdf4::ncvar_get(data, "latitude")
+      lons = ncdf4::ncvar_get(data, "longitude")
+      
+      # find the cell that site coordinates are located in
+      dist_y = foreach(i = mylats, .combine = cbind) %do% sqrt((lats - i)^2)
+      dist_x = foreach(i = mylons, .combine = cbind) %do% sqrt((lons - i)^2)
+      y = foreach(i = 1:ncol(dist_y), .combine = c) %do% which(dist_y[,i] == min(dist_y[,i]), arr.ind = T)
+      x = foreach(i = 1:ncol(dist_x), .combine = c) %do% which(dist_x[,i] == min(dist_x[,i]), arr.ind = T)
+      
+      scale = data$var[[var]]$scaleFact
+      
+      d = as.vector(foreach(i = seq_along(x), .combine = rbind) %do% ncdf4::ncvar_get(data, var, start = c(x[i], y[i], 1), count = c(1,1,1)))
+      
+      info = as.data.frame(cbind(sites, mylons, mylats, d), stringsAsFactors = F)
+      names(info) = c("site_id", "lon", "lat", "value")
+      
+      return(info)
+    }
+    
+    
+    
+    if (run_parallel)
+    {
+      require("parallel")
+      require("doParallel")
+      ncores = parallel::detectCores(all.tests = FALSE, logical = TRUE)
+      if (ncores >= 3)
+      {
+        # failsafe in case someone has a computer with 2 nodes.
+        ncores = ncores-2
+      }
+      # THREDDS has a 10 job limit. Will fail if you try to download more than 10 values at a time
+      if (ncores >= 10)
+      {
+        ncores = 9 # went 1 less becasue it still fails sometimes
+      }
+      cl <- parallel::makeCluster(ncores, outfile="")
+      doParallel::registerDoParallel(cl)
+      output = foreach(i = urls, .combine = rbind) %dopar% extract_nc(site_info, i, run_parallel)
+      stopCluster(cl)
+    } else {
+      output = foreach(i = urls, .combine = rbind) %do% extract_nc(site_info, i, run_parallel)
     }
     
     return(output)
-  }
-  
-  ## setup parallel
-  if (run_parallel) {
-    if (!is.null(ncores)) {
-      ncores <- ncores
-    } else {
-      ncores <- parallel::detectCores() -1
-    }
-    require(doParallel)
-    PEcAn.logger::logger.info(paste0("Running in parallel with: ", ncores))
-    cl = parallel::makeCluster(ncores)
-    doParallel::registerDoParallel(cl)
-    data = foreach(i = seq_along(mylat), .combine = rbind) %dopar% get_data(i)
-    stopCluster(cl)
     
-  } else {
-    # setup sequential run
-    data = data.frame()
-    for (i in seq_along(mylat))
-    {
-      data = rbind(data, get_data(i))
-    }
   }
-  
-  return(data)
 }
