@@ -13,7 +13,7 @@
 ##' 
 
 ##' site_info <- get_site_info(xmlfile = "/data/bmorrison/sda/lai/pecan_MultiSite_SDA_LAI_AGB_8_Sites_2009.xml")
-##'            
+##'  }          
 ##' @export
 ##' @author Bailey Morrison
 ##'
@@ -73,7 +73,7 @@ get_site_info <- function(xmlfile) {
 ##' 
 
 ##' results <- download_thredds(site_info = site_info, dates = c("19950201", "19961215"), varid = "LAI", dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files", data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files", run_parallel = TRUE, outdir = NULL)
-##'            
+##' }        
 ##'            
 ##' @export
 ##' @author Bailey Morrison
@@ -191,7 +191,6 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
 ##' 
 ##' @param site_info list of information with the site_id, site_info, lat, lon, and time_zone. Derived from BETY using a PEcAn .xml settings file with site information. Can use the get_site_info function to generate this list. 
 ##' @param url a THREDDS url of a .nc file to extract data from.
-##' @param run_parallel T or F option to extra data in parallel.
 ##' 
 ##' 
 ##' @return a dataframe with the values for each date/site combination from a THREDDS file 
@@ -200,14 +199,13 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
 ##' \dontrun{
 ##' site_info <- list of information with the site_id, site_info, lat, lon, and time_zone. Derived from BETY using a PEcAn .xml settings file with site information. Can use the get_site_info function to generate this list. 
 ##' url <- url a THREDDS url of a .nc file to extract data from.
-##' run_parallel <- T or F option to extra data in parallel.
-
-##' site_info <- get_site_info(xmlfile = "/data/bmorrison/sda/lai/pecan_MultiSite_SDA_LAI_AGB_8_Sites_2009.xml")
-##'            
+##' 
+##' output <- extract_thredds_nc(site_info = site_info, url_info = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files/1995/AVHRR-Land_v005_AVH15C1_NOAA-14_19950201_c20180831220722.nc")
+##'}            
 ##' @export
 ##' @author Bailey Morrison
 ##'
-extract_thredds_nc <- function(site_info, url_info, run_parallel)
+extract_thredds_nc <- function(site_info, url_info)
 {
   #print(url)
   require("foreach")
