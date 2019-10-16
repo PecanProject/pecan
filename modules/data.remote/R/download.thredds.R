@@ -106,7 +106,7 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
     result <- RCurl::getURL(paste(dir_url, "catalog.html", sep = "/"), verbose=FALSE ,ftp.use.epsv = TRUE, dirlistonly = TRUE)
     files <- XML::getHTMLLinks(result)
     
-    date_year_range <- unique(range(c(lubridate::year(as.Date(dates[1], "%Y")), lubridate::year(as.Date(dates[2], "%Y")))))
+    date_year_range = unique(lubridate::year(dates))
     if (all((!(substr(files, 1, 4) %in% date_year_range))))
     {
       # give warning that dates aren't available
