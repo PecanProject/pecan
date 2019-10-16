@@ -72,13 +72,13 @@ get_site_info <- function(xmlfile) {
 ##' run_parallel <- optional. Can be used to speed up download process if there are more than 2 cores available on computer
 ##' 
 
-##' results <- download_thredds(outdir = NULL, site_info = site_info, dates = c("19950201", "19961215"), varid = "LAI", dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files", data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files", run_parallel = TRUE)
+##' results <- download_thredds(site_info = site_info, dates = c("19950201", "19961215"), varid = "LAI", dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files", data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files", run_parallel = TRUE, outdir = NULL)
 ##'            
 ##'            
 ##' @export
 ##' @author Bailey Morrison
 ##'
-download_thredds <- function(outdir = NULL, site_info, dates, varid, dir_url, data_url,run_parallel = TRUE) {
+download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_parallel = TRUE, outdir = NULL) {
   
   require("foreach")
   
@@ -107,7 +107,7 @@ download_thredds <- function(outdir = NULL, site_info, dates, varid, dir_url, da
   }
   
   # get list of all dates available from year range provided
-  files <- foreach(i = 1:length(links), .combine = c) %do% XML::getHTMLLinks(links[i])
+  files <- foreach::foreach(i = 1:length(links), .combine = c) %do% XML::getHTMLLinks(links[i])
   
   #remove files with no dates and get list of dates available.
   index_dates <- regexpr(pattern = "[0-9]{8}", files)
@@ -189,6 +189,11 @@ download_thredds <- function(outdir = NULL, site_info, dates, varid, dir_url, da
     } else {
       output <- foreach(i = urls, .combine = rbind) %do% extract_nc(site_info, i, run_parallel)
     }
+    
+    if (outdir)
+    {
+      write.csv(output, file = paste(outdir, "/THREDDS_", varid, "_", dates[1], "-", dates[2], ".csv", sep = ""))
+    } 
     
     return(output)
     
