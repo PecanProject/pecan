@@ -53,7 +53,7 @@ get_site_info <- function(xmlfile) {
 ##' 
 ##' @param outdir file location to place output
 ##' @param site_info list of information with the site_id, site_info, lat, lon, and time_zone. Derived from BETY using a PEcAn .xml settings file with site information. Can use the get_site_info function to generate this list. 
-##' @param dates character vector of start and end date for dataset as YYYYmmdd
+##' @param dates vector of start and end date for dataset as YYYYmmdd, YYYY-mm-dd, YYYYjjj, or date object.
 ##' @param varid character vector of shorthand variable name. i.e. LAI
 ##' @param dir_url catalog url of data from ncei.noaa.gov/thredds website
 ##' @param data_url opendap url of data from ncei.noaa.gov/thredds website
@@ -65,7 +65,7 @@ get_site_info <- function(xmlfile) {
 ##' \dontrun{
 ##' outdir <- directory to store downloaded data
 ##' site_info <- list that contains information about site_id, site_name, latitude, longitude, and time_zone
-##' dates <- date range to download data. Should be a character vector with start and end date as YYYYmmdd
+##' dates <- date range to download data. Should be a vector of start and end date for dataset as YYYYmmdd, YYYY-mm-dd, YYYYjjj, or date object.
 ##' varod <- character shorthand name of variable to download. Example: LAI for leaf area index.
 ##' dir_url <- catalog url from THREDDS that is used to determine which files are available for download using OPENDAP
 ##' data_url <- OpenDAP URL that actually downloads the netcdf file.
