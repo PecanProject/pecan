@@ -82,8 +82,24 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
   
   require("foreach")
   
-  # check that dates are within the date range of the dataset
-  dates <- c(as.Date(dates[1], "%Y%m%d"), as.Date(dates[2], "%Y%m%d"))
+  #### check that dates are within the date range of the dataset
+  
+  #first make sure dates are in date format. Correct if not.
+  if (!(lubridate::is.Date(dates))){
+    if (!(is.character(dates))) {
+      dates = as.character(dates)
+    }
+    if (length(grep(dates, pattern = "-")) > 0) {
+      dates <- c(as.Date(dates[1], "%Y-%m-%d"), as.Date(dates[2], "%Y-%m-%d"))
+    } else {
+      dates <- c(as.Date(dates[1], "%Y%m%d"), as.Date(dates[2], "%Y%m%d"))
+    }
+    # Julien Date
+    if (nchar(dates) == 7) {
+      dates <- c(as.Date(dates[1], "%Y%j"), as.Date(dates[2], "%Y%j"))
+    }
+  }
+  
   if (!(is.null(dir_url)))
   {
     #https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files/1981/catalog.html -> link for directory files, not downloads
