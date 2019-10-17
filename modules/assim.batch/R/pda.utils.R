@@ -831,13 +831,14 @@ load_pda_history <- function(workdir, ensemble.id, objects){
 ##' Helper function that generates the hierarchical posteriors
 ##' 
 ##' @param mcmc.out hierarchical MCMC outputs 
-##' @param rng_orig nparam x 2 matrix, 1st and 2nd columns are the lower and upper prior limits respectively
+##' @param prior.fn.all list of all prior functions
+##' @param prior.ind.all indices of the targeted params
 ##' 
 ##' @return hierarchical MCMC outputs in original parameter space
 ##' 
 ##' @author Istem Fer
 ##' @export
-generate_hierpost <- function(mcmc.out, rng_orig){
+generate_hierpost <- function(mcmc.out, prior.fn.all, prior.ind.all){
   
   for(i in seq_along(mcmc.out)){
     mu_global_samp  <- mcmc.out[[i]]$mu_global_samp
@@ -848,11 +849,11 @@ generate_hierpost <- function(mcmc.out, rng_orig){
     # calculate hierarchical posteriors from mu_global_samp and tau_global_samp
     hierarchical_samp <- mu_global_samp 
     for(si in seq_len(iter_size)){
-      repeat{
-      proposed <- mvtnorm::rmvnorm(1, mean = mu_global_samp[si,], sigma = sigma_global_samp[si,,])
-        if(all(proposed >= rng_orig[,1] & proposed <= rng_orig[,2])) break
-      }
-      hierarchical_samp[si,] <- proposed
+      hierarchical_samp[si,] <- tmvtnorm::rtmvnorm(1, 
+                                     mean  = mu_global_samp[si,], 
+                                     sigma = sigma_global_samp[si,,],
+                                     lower = sapply(seq_along(prior.ind.all), function(z) eval(prior.fn.all$qprior[[prior.ind.all[z]]], list(p=0.000001))),
+                                     upper = sapply(seq_along(prior.ind.all), function(z) eval(prior.fn.all$qprior[[prior.ind.all[z]]], list(p=0.999999))))
     }
 
     mcmc.out[[i]]$hierarchical_samp  <- hierarchical_samp

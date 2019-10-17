@@ -374,7 +374,7 @@ pda.emulator.ms <- function(multi.settings) {
     save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
     
     # generate hierarhical posteriors
-    mcmc.out <- generate_hierpost(mcmc.out, rng_orig)
+    mcmc.out <- generate_hierpost(mcmc.out,  prior.fn.all, prior.ind.all)
     
     # Collect global params in their own list and postprocess
     mcmc.param.list <- pda.sort.params(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, sf, n.param.orig, prior.list, prior.fn.all)
