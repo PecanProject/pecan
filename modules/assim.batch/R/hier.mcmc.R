@@ -67,7 +67,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   #
   
   # sigma_global hyperpriors
-  sigma_global_df     <- nparam + 1
+  sigma_global_df     <- nparam + 1 # test results with nparam since it is the least informative
   sigma_global_scale  <- mu_global_sigma/sigma_global_df 
   
   # initialize sigma_global (nparam x nparam)
@@ -183,23 +183,14 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     # site level M-H
     ########################################
     
-    # # propose new mu_site on standard normal domain
-    # for(ns in seq_len(nsites)){
-    #   repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
-    #     mu_site_new_stdn[ns,] <- mvtnorm::rmvnorm(1, mu_global,  sigma_global)
-    #     check.that <- (mu_site_new_stdn[ns,] > rng_stdn[, 1] & mu_site_new_stdn[ns, ] < rng_stdn[, 2])
-    #     if(all(check.that)) break
-    #   }
-    # }
-    
     # propose new site parameter vectors
-    repeat{ # make sure to stay in emulator boundaries, otherwise it confuses adaptation
-      thissite <- g %% nsites
-      if(thissite == 0) thissite <- nsites
-      proposed <- mvtnorm::rmvnorm(1, mu_site_curr[thissite,], jcov.arr[,,thissite])
-      check.that <- (proposed > rng_orig[, 1] & proposed < rng_orig[, 2])
-      if(all(check.that)) break
-    }
+    thissite <- g %% nsites
+    if(thissite == 0) thissite <- nsites
+    proposed <- tmvtnorm::rtmvnorm(1, 
+                                   mean = mu_site_curr[thissite,], 
+                                   sigma = jcov.arr[,,thissite],
+                                   lower = rng_orig[,1],
+                                   upper = rng_orig[,2])
 
     mu_site_new <- matrix(rep(proposed, nsites),ncol=nparam, byrow = TRUE)
     
@@ -211,8 +202,14 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     currLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(currSS[,v], llik.fn, currllp[[v]]))
     # use new priors for calculating prior probability
     currPrior <- dmvnorm(mu_site_curr, mu_global, sigma_global, log = TRUE)
-    #currPrior <- unlist(lapply(seq_len(nsites), function(v) mvtnorm::dmvnorm(mu_site_curr_stdn[v,], mu_global, sigma_global, log = TRUE)))
     currPost  <- currLL + currPrior
+    
+    # calculate jump probabilities
+    currHR <- sapply(seq_len(nsites), function(v) {
+      tmvtnorm::dtmvnorm(mu_site_curr[v,], mu_site_new[v,], jcov.arr[,,v],
+                         lower = rng_orig[,1],
+                         upper = rng_orig[,2], log = TRUE)
+    })
     
     # predict new SS
     newSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_new[v,], pos.check))
@@ -223,18 +220,24 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     newLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(newSS[,v], llik.fn, newllp[[v]]))
     # use new priors for calculating prior probability
     newPrior <- dmvnorm(mu_site_new, mu_global, sigma_global, log = TRUE)
-    #newPrior <- unlist(lapply(seq_len(nsites), function(v) mvtnorm::dmvnorm(mu_site_new_stdn[v,], mu_s, s_sigma[[v]], log = TRUE)))
     newPost  <- newLL + newPrior
     
-    ar <- is.accepted(currPost, newPost)
+    # calculate jump probabilities
+    newHR <- sapply(seq_len(nsites), function(v) {
+      tmvtnorm::dtmvnorm(mu_site_new[v,], mu_site_curr[v,], jcov.arr[,,v],
+                         lower = rng_orig[,1],
+                         upper = rng_orig[,2], log = TRUE)
+    })
+    
+    # Accept/reject with MH rule
+    ar <- is.accepted(currPost + currHR, newPost + newHR)
     mu_site_curr[ar, ] <- mu_site_new[ar, ]
-    #mu_site_curr_stdn[ar, ] <- mu_site_new_stdn[ar, ]
     musite.accept.count[thissite] <- musite.accept.count[thissite] + ar[thissite]
     
     
     mu_site_samp[g, , seq_len(nsites)] <- t(mu_site_curr)[,seq_len(nsites)]
     mu_global_samp[g,]       <- mu_global  # 100% acceptance for gibbs
-    sigma_global_samp[g, , ]   <- sigma_global # 100% acceptance for gibbs
+    sigma_global_samp[g, , ] <- sigma_global # 100% acceptance for gibbs
     
     if(g %% 500 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
   }
