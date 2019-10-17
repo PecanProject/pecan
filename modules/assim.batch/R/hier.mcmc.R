@@ -40,7 +40,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   #
   #      mu_global ~ MVN (mu_global_mean, mu_global_tau)
   
-  #approximate a normal dist
+  # approximate a normal dist
   mu_init_samp <- matrix(NA, ncol = nparam, nrow = 1000)
   for(ps in seq_along(prior.ind.all)){
     prior.quantiles <- eval(prior.fn.all$rprior[[prior.ind.all[ps]]], list(n = 1000))
@@ -48,13 +48,10 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   }
   
   # mean hyperprior
-  mu_global_mean <- apply(mu_init_samp, 2, mean)
-  
+  mu_global_mean  <- apply(mu_init_samp, 2, mean)
   # sigma/tau hyperprior
-  distto <- rbind(abs(mu_global_mean - rng_orig[,1]), abs(mu_global_mean - rng_orig[,2]))
-  mu_global_sigma <- diag((apply(distto, 2, min)/4)^2)
-  mu_global_tau <- solve(mu_global_sigma)
-  
+  mu_global_sigma <- cov(mu_init_samp)
+  mu_global_tau   <- solve(mu_global_sigma)
   
   ## initialize mu_global (nparam)
   mu_global <- rmvnorm(1, mu_global_mean, mu_global_sigma)
@@ -69,8 +66,9 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   #      sigma_global <- solve(tau_global)
   #
   
-  sigma_global_df   <- nparam + 1
-  sigma_global_scale   <- (cov(mu_init_samp)/sigma_global_df) 
+  # sigma_global hyperpriors
+  sigma_global_df     <- nparam + 1
+  sigma_global_scale  <- mu_global_sigma/sigma_global_df 
   
   # initialize sigma_global (nparam x nparam)
   sigma_global <-  MCMCpack::riwish(sigma_global_df, sigma_global_scale)
@@ -86,14 +84,14 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   mu_site_curr <- matrix(rep(mu_site_init, nsites), ncol=nparam, byrow = TRUE)
   
   # values for each site will be accepted/rejected in themselves
-  currSS    <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
+  currSS  <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
   # force it to be nvar x nsites matrix
-  currSS <- matrix(currSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
-  currllp   <- lapply(seq_len(nsites), function(v) PEcAn.assim.batch::pda.calc.llik.par(settings, nstack[[v]], currSS[,v]))
+  currSS  <- matrix(currSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
+  currllp <- lapply(seq_len(nsites), function(v) PEcAn.assim.batch::pda.calc.llik.par(settings, nstack[[v]], currSS[,v]))
   
   # storage
-  mu_site_samp    <-  array(NA_real_, c(nmcmc, nparam, nsites))
-  mu_global_samp  <-  matrix(NA_real_, nrow = nmcmc, ncol= nparam)
+  mu_site_samp      <-  array(NA_real_, c(nmcmc, nparam, nsites))
+  mu_global_samp    <-  matrix(NA_real_, nrow = nmcmc, ncol= nparam)
   sigma_global_samp <-  array(NA_real_, c(nmcmc, nparam, nparam))
   
   musite.accept.count    <- rep(0, nsites)
@@ -112,7 +110,8 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
       params.recent <- mu_site_samp[(g - settings$assim.batch$jump$adapt):(g - 1), , ]
       #colnames(params.recent) <- names(x0)
       settings$assim.batch$jump$adapt <- adapt_orig
-      jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], musite.accept.count[v], params.recent[seq(v,adapt_orig * nsites, by=12),,v]))
+      jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], musite.accept.count[v], 
+                                                                           params.recent[seq(v, adapt_orig * nsites, by=12), , v]))
       jcov.arr  <- abind::abind(jcov.list, along=3)
       musite.accept.count <- rep(0, nsites)  # Reset counter
       settings$assim.batch$jump$adapt <- adapt_orig * nsites
