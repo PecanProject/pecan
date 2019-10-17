@@ -258,7 +258,13 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       }
       
       ## propose new parameters
-      xnew <- tmvtnorm::rtmvnorm(1, mean =  c(xcurr), sigma = jcov, lower = rng[,1], upper = rng[,2])
+      repeat {
+        xnew <- mvrnorm(1, c(xcurr), jcov)
+        if (bounded(xnew, rng)) {
+          break
+        }
+      }
+      #xnew <- tmvtnorm::rtmvnorm(1, mean =  c(xcurr), sigma = jcov, lower = rng[,1], upper = rng[,2])
       # if(bounded(xnew,rng)){
       
       # re-predict SS
