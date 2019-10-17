@@ -406,9 +406,9 @@ model{
   
   ## JAGS initial conditions
   init   <- list()
-  #init2 <- list()
+  source("mcmc.list2initIGF.R") # use the new specific mcmc.list2initIGF.R
   if(is.mcmc.list(restart)){
-    init <- mcmc.list2init(restart)
+    init <- mcmc.list2initIGF(restart)
     nchain <- length(init)
   } else {
     nchain <- 3
