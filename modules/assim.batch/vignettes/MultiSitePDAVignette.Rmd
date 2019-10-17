@@ -1,7 +1,7 @@
 ---
 title: "Multi-site hierarchical calibration vignette"
 author: "Istem Fer"
-date: "3/2/2019"
+date: "09/23/2019"
 output: html_document
 ---
 
@@ -84,7 +84,9 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2011/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-796/AMF_US-Bar_BASE_HH_4-1.2005-01-01.2011-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-796/AMF_US-Bar_BASE_HH_4-1.2005-01-01.2011-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_0-796/IC_site_0-796.nc</path>
@@ -104,7 +106,9 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2014/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-767/AMF_US-MMS_BASE_HR_8-1.2001-01-01.2014-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-767/AMF_US-MMS_BASE_HR_8-1.2001-01-01.2014-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_0-767/IC_site_0-767.nc</path>
@@ -124,7 +128,9 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2015/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-768/AMF_US-MOz_BASE_HH_7-1.2005-01-01.2015-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-768/AMF_US-MOz_BASE_HH_7-1.2005-01-01.2015-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_0-768/IC_site_0-768.nc</path>
@@ -144,9 +150,11 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2014/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-776/AMF_US-UMB_BASE_HH_10-1.2007-01-01.2014-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-776/AMF_US-UMB_BASE_HH_10-1.2007-01-01.2014-12-31.clim</path1>
+     </path>
     </met>
-     <poolinitcond>
+    <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_0-776/IC_site_0-776.nc</path>
     </poolinitcond>
    </inputs>
@@ -164,7 +172,9 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2006/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-676/AMF_US-WCr_BASE_HH_11-1.1999-01-01.2006-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-676/AMF_US-WCr_BASE_HH_11-1.1999-01-01.2006-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_0-676/IC_site_0-676.nc</path>
@@ -184,7 +194,9 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2015/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-109/AMF_CA-TPD_BASE_HH_1-1.2013-01-01.2015-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-109/AMF_CA-TPD_BASE_HH_1-1.2013-01-01.2015-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_1-109/IC_site_1-109.nc</path>
@@ -204,7 +216,9 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2008/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-755/AMF_US-Dk2_BASE_HH_4-4.2002-01-01.2008-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-755/AMF_US-Dk2_BASE_HH_4-4.2002-01-01.2008-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_0-755/IC_site_0-755.nc</path>
@@ -214,17 +228,19 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
   <settings.8>
    <site>
     <id>1000000145</id>
-    <met.start>2008/01/01</met.start>
+    <met.start>2010/01/01</met.start>
     <met.end>2010/12/31</met.end>
     <name>Chestnut Ridge (US-ChR)</name>
     <lat>35.9311</lat>
     <lon>-84.3324</lon>
    </site>
-   <start.date>2008/01/01</start.date>
+   <start.date>2010/01/01</start.date>
    <end.date>2010/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-145/AMF_US-ChR_BASE_HH_2-1.2008-01-01.2010-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-145//AMF_US-ChR_BASE_HH_2-1.2010-01-01.2010-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_1-145/IC_site_1-145.nc</path>
@@ -244,7 +260,9 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2014/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-66/AMF_US-Slt_BASE_HH_5-1.2005-01-01.2014-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-66/AMF_US-Slt_BASE_HH_5-1.2005-01-01.2014-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_1-66/IC_site_1-66.nc</path>
@@ -264,7 +282,9 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2013/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-61/AMF_US-Oho_BASE_HH_4-1.2004-01-01.2013-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-61/AMF_US-Oho_BASE_HH_4-1.2004-01-01.2013-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_1-61/IC_site_1-61.nc</path>
@@ -284,7 +304,9 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2010/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-740/AMF_CA-Oas_BASE_HH_1-1.1997-01-01.2010-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-740/AMF_CA-Oas_BASE_HH_1-1.1997-01-01.2010-12-31.clim</path1>
+     </path>
     </met>
     <poolinitcond>
      <path>/fs/data3/istfer/HPDA/data/param.files/site_0-740/IC_site_0-740.nc</path>
@@ -304,8 +326,13 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
    <end.date>2015/12/31</end.date>
    <inputs>
     <met>
-     <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-758/AMF_US-Ha1_BASE_HR_10-1.2010-01-01.2015-12-31.clim</path>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-758/AMF_US-Ha1_BASE_HR_10-1.2010-01-01.2015-12-31.clim</path1>
+     </path>
     </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_0-758/IC_site_0-758.nc</path>
+    </poolinitcond>
    </inputs>
   </settings.12>
  </run>
@@ -314,13 +341,13 @@ When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded
 
 ## Modify ensemble analysis tags
 
-Now let's specify the ensemble `<size>` and the ensemble `<variable>` within the `<ensemble>` tag. In the paper we give an ensemble of runs with `1000` members but you can try smaller ensembles. 
+Now let's specify the ensemble `<size>` and the ensemble `<variable>` within the `<ensemble>` tag. In the paper we give an ensemble of runs with `250` members but you can try smaller ensembles. 
 
 
 Overall, your `pecan.xml` for the `<ensemble>` sections will look like this:
 ```
   <ensemble>
-    <size>1000</size>
+    <size>250</size>
     <variable>NEE</variable>
     <samplingspace>
      <parameters>

@@ -219,7 +219,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
   pcurr   <- unlist(sapply(currllp, `[[` , "par"))
   
-  xcurr <- x0
+  xcurr <- unlist(x0)
   dim   <- length(x0)
   samp  <- matrix(NA, nmcmc, dim)
   par   <- matrix(NA, nmcmc, length(pcurr), dimnames = list(NULL, names(pcurr))) # note: length(pcurr) can be 0
@@ -258,12 +258,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       }
       
       ## propose new parameters
-      repeat {
-        xnew <- MASS::mvrnorm(1, unlist(xcurr), jcov)
-        if (bounded(xnew, rng)) {
-          break
-        }
-      }
+      xnew <- tmvtnorm::rtmvnorm(1, mean =  c(xcurr), sigma = jcov, lower = rng[,1], upper = rng[,2])
       # if(bounded(xnew,rng)){
       
       # re-predict SS
@@ -274,15 +269,18 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       # don't update the currllp ( = llik.par, e.g. tau) yet
       # calculate posterior with xcurr | currllp
       ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
-      
+      HRcurr <- tmvtnorm::dtmvnorm(c(xnew), c(xcurr), jcov,
+                         lower = rng[,1], upper = rng[,2], log = TRUE)
       
       newSS  <- get_ss(gp, xnew, pos.check)
       if(all(newSS != -Inf)){
         
         newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
+        HRnew <- tmvtnorm::dtmvnorm(c(xcurr), c(xnew), jcov,
+                                     lower = rng[,1], upper = rng[,2], log = TRUE)
         
-        if (is.accepted(ycurr, ynew)) {
+        if (is.accepted(ycurr+HRcurr, ynew+HRnew)) {
           xcurr  <- xnew
           currSS <- newSS
           accept.count <- accept.count + 1

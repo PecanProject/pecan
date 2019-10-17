@@ -840,6 +840,9 @@ load_pda_history <- function(workdir, ensemble.id, objects){
 ##' @export
 generate_hierpost <- function(mcmc.out, prior.fn.all, prior.ind.all){
   
+  lower_lim <- sapply(seq_along(prior.ind.all), function(z) eval(prior.fn.all$qprior[[prior.ind.all[z]]], list(p=0.000001)))
+  upper_lim <- sapply(seq_along(prior.ind.all), function(z) eval(prior.fn.all$qprior[[prior.ind.all[z]]], list(p=0.999999)))
+  
   for(i in seq_along(mcmc.out)){
     mu_global_samp  <- mcmc.out[[i]]$mu_global_samp
     sigma_global_samp <- mcmc.out[[i]]$sigma_global_samp
@@ -852,8 +855,8 @@ generate_hierpost <- function(mcmc.out, prior.fn.all, prior.ind.all){
       hierarchical_samp[si,] <- tmvtnorm::rtmvnorm(1, 
                                      mean  = mu_global_samp[si,], 
                                      sigma = sigma_global_samp[si,,],
-                                     lower = sapply(seq_along(prior.ind.all), function(z) eval(prior.fn.all$qprior[[prior.ind.all[z]]], list(p=0.000001))),
-                                     upper = sapply(seq_along(prior.ind.all), function(z) eval(prior.fn.all$qprior[[prior.ind.all[z]]], list(p=0.999999))))
+                                     lower = lower_lim,
+                                     upper = upper_lim)
     }
 
     mcmc.out[[i]]$hierarchical_samp  <- hierarchical_samp

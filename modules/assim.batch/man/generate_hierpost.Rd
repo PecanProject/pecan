@@ -4,12 +4,14 @@
 \alias{generate_hierpost}
 \title{Helper function that generates the hierarchical posteriors}
 \usage{
-generate_hierpost(mcmc.out, rng_orig)
+generate_hierpost(mcmc.out, prior.fn.all, prior.ind.all)
 }
 \arguments{
 \item{mcmc.out}{hierarchical MCMC outputs}
 
-\item{rng_orig}{nparam x 2 matrix, 1st and 2nd columns are the lower and upper prior limits respectively}
+\item{prior.fn.all}{list of all prior functions}
+
+\item{prior.ind.all}{indices of the targeted params}
 }
 \value{
 hierarchical MCMC outputs in original parameter space

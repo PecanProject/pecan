@@ -4,7 +4,7 @@
 \alias{plot.mvjump}
 \title{plot.mvjump}
 \usage{
-\method{plot}{mvjump}(jmp)
+plot.mvjump(jmp)
 }
 \arguments{
 \item{jmp}{}

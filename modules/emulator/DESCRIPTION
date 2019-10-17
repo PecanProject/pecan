@@ -11,6 +11,7 @@ Depends:
     mlegp,
     coda (>= 0.18),
     MASS,
+    tmvtnorm,
     MCMCpack
 Imports:
     PEcAn.logger,
