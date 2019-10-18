@@ -243,6 +243,8 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
     # jmp <- mvjump(ic=diag(jmp0),rate=ar.target, nc=dim)
   }
   
+  # make sure it is positive definite, see note below
+  jcov <- lqmm::make.positive.definite(jcov, tol=1e-10)
   
   for (g in start:nmcmc) {
     
@@ -255,16 +257,15 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         # accept.count <- round(jmp@arate[(g-1)/settings$assim.batch$jump$adapt]*100)
         jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
         accept.count <- 0  # Reset counter
+        
+        # make sure precision is not going to be an issue
+        # NOTE: for very small values this is going to be an issue
+        # maybe include a scaling somewhere while building the emulator
+        jcov <- lqmm::make.positive.definite(jcov, tol=1e-10)
       }
       
       ## propose new parameters
-      repeat {
-        xnew <- mvrnorm(1, c(xcurr), jcov)
-        if (bounded(xnew, rng)) {
-          break
-        }
-      }
-      #xnew <- tmvtnorm::rtmvnorm(1, mean =  c(xcurr), sigma = jcov, lower = rng[,1], upper = rng[,2])
+      xnew <- tmvtnorm::rtmvnorm(1, mean =  c(xcurr), sigma = jcov, lower = rng[,1], upper = rng[,2])
       # if(bounded(xnew,rng)){
       
       # re-predict SS
