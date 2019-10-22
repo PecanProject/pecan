@@ -350,19 +350,24 @@ sda.enkf <- function(settings,
     }
     
     #----chaning the extension of nc files to a more specific date related name
-    purrr::walk(
-      list.files(
-        path = file.path(settings$outdir, "out"),
-        "*.nc$",
-        recursive = TRUE,
-        full.names = TRUE),
+   files <-  list.files(
+      path = file.path(settings$outdir, "out"),
+      "*.nc$",
+      recursive = TRUE,
+      full.names = TRUE)
+   files <-  files[grep(pattern = "SDA*", files, invert = TRUE)]
+    
+    
+    purrr::walk(files,
       function(.x){
         file.rename(.x ,
                     file.path(dirname(.x),
-                              paste0(gsub(" ", "", as.character(names(obs.mean)[t])),
+                              paste0("SDA_",gsub(" ", "", as.character(names(obs.mean)[t])),
                                      ".nc"))
+ 
                     )
       })
+    
     #--- Reformating X
     X <- do.call(rbind, X)
     
