@@ -24,7 +24,7 @@ Remotes:
   github::araiho/linkages_package
 SystemRequirements: LINKAGES
 OS_type: unix
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE

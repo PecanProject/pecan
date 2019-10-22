@@ -1,6 +1,6 @@
 Type: Shiny
 Title: Visualize dependencies between PEcAn packages
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Author: Hamze Dokoohaki <hamzed@bu.edu>
 Tags: PEcAn
 #DisplayMode: Showcase

@@ -34,8 +34,6 @@ to ‘yes’.
     FIA_allometry   2.7Mb
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... NOTE
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
 Authors@R field gives no person with name and roles.
 Authors@R field gives no person with maintainer role, valid email
 address and non-empty name.
