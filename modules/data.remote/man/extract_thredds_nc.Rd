@@ -4,12 +4,10 @@
 \alias{extract_thredds_nc}
 \title{extract_thredds_nc}
 \usage{
-extract_thredds_nc(site_info, url_info, run_parallel)
+extract_thredds_nc(site_info, url_info)
 }
 \arguments{
 \item{site_info}{list of information with the site_id, site_info, lat, lon, and time_zone. Derived from BETY using a PEcAn .xml settings file with site information. Can use the get_site_info function to generate this list.}
-
-\item{run_parallel}{T or F option to extra data in parallel.}
 
 \item{url}{a THREDDS url of a .nc file to extract data from.}
 }
@@ -18,6 +16,14 @@ a dataframe with the values for each date/site combination from a THREDDS file
 }
 \description{
 extract_thredds_nc
+}
+\examples{
+\dontrun{
+site_info <- list of information with the site_id, site_info, lat, lon, and time_zone. Derived from BETY using a PEcAn .xml settings file with site information. Can use the get_site_info function to generate this list. 
+url <- url a THREDDS url of a .nc file to extract data from.
+
+output <- extract_thredds_nc(site_info = site_info, url_info = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files/1995/AVHRR-Land_v005_AVH15C1_NOAA-14_19950201_c20180831220722.nc")
+}            
 }
 \author{
 Bailey Morrison

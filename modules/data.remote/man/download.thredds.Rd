@@ -29,6 +29,20 @@ data.frame summarize the results of the function call
 \description{
 download.thredds
 }
+\examples{
+\dontrun{
+outdir <- directory to store downloaded data
+site_info <- list that contains information about site_id, site_name, latitude, longitude, and time_zone
+dates <- date range to download data. Should be a vector of start and end date for dataset as YYYYmmdd, YYYY-mm-dd, YYYYjjj, or date object.
+varod <- character shorthand name of variable to download. Example: LAI for leaf area index.
+dir_url <- catalog url from THREDDS that is used to determine which files are available for download using OPENDAP
+data_url <- OpenDAP URL that actually downloads the netcdf file.
+run_parallel <- optional. Can be used to speed up download process if there are more than 2 cores available on computer
+
+results <- download_thredds(site_info = site_info, dates = c("19950201", "19961215"), varid = "LAI", dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files", data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files", run_parallel = TRUE, outdir = NULL)
+}        
+           
+}
 \author{
 Bailey Morrison
 }

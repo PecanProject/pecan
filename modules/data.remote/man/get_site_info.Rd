@@ -15,6 +15,13 @@ a list of site information derived from BETY using a pecan .xml settings file wi
 \description{
 get_site_info
 }
+\examples{
+\dontrun{
+xmlfile <- the full path to a pecan .xml settings file.
+
+site_info <- get_site_info(xmlfile = "/data/bmorrison/sda/lai/pecan_MultiSite_SDA_LAI_AGB_8_Sites_2009.xml")
+ }          
+}
 \author{
 Bailey Morrison
 }
