@@ -12,7 +12,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
+InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
   library(rjags)
   print(paste("start of MCMC", Sys.time()))
   
@@ -406,7 +406,7 @@ model{
   
   ## JAGS initial conditions
   init   <- list()
-  source("mcmc.list2initIGF.R") # use the new specific mcmc.list2initIGF.R
+  source("modules/data.land/R/mcmc.list2initIGF.R") # use the new specific mcmc.list2initIGF.R
   if(is.mcmc.list(restart)){
     init <- mcmc.list2initIGF(restart)
     nchain <- length(init)
@@ -414,7 +414,19 @@ model{
     nchain <- 3
     for (i in seq_len(nchain)) {
       y.samp <- sample(data$y, length(data$y), replace = TRUE)
-      init[[i]] <- list(x = z0, 
+      z0ragged <- z0 # lines for z0ragged come from mikes "fix" to help with tree w/no cores
+      for(j in 1:data$ni){ # 1: number of individuals
+        # this creates z0ragged, where we only have z0 for trees w/ cores during the time period of the cores &
+        # we only have z0 for trees w/out cores after the time where we have DBH measurements.
+        # this could help with model fitting
+        if(data$startyr[j]>1){
+          z0ragged[j,1:(data$startyr[j]-1)] <- NA
+        }
+        if(data$endyr[j]<data$nt){
+          z0ragged[j,(data$endyr[j]+1):data$nt] <- NA
+        }
+      }
+      init[[i]] <- list(x = z0ragged, 
                         tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
                         tau_dbh = 1, 
                         tau_inc = 1500,
@@ -446,7 +458,7 @@ model{
     
     ## determine whether to sample states
     if(as.logical(save.state) & k%%as.numeric(save.state) == 0){
-      vnames <- c("x",out.variables)   ## save x periodically
+      vnames <- c("x",out.variables)   ## save x periodically (this actually always saves x, from my experience)
     } else {
       vnames <- out.variables
     }
