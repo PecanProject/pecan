@@ -7,10 +7,10 @@
 #### including time-varying effects
 
 ### prep data files into jags objects
-setwd("/home/rstudio/pecan/")
+setwd("/home/rstudio/")
 
 ### load in the data for trees with increment cores (and 1 or 2 DBH measurements)
-AZ.PIPO <- read.delim("FIA_inc_data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
+AZ.PIPO <- read.delim("data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
 
 ### merge together three diameter columns
 AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$TREE_DIA), AZ.PIPO$SITETREE_DIA, AZ.PIPO$TREE_DIA) # combine together FIADB diameter measurements for trees and site trees
@@ -28,7 +28,7 @@ temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
 ### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
-Tree2Tree <- read.csv("FIA_inc_data/Tree2Tree.csv", stringsAsFactors = F)
+Tree2Tree <- read.csv("data/Tree2Tree.csv", stringsAsFactors = F)
 
 ### limit analysis to those trees with second DBH measurement in =< year 2015
 ### this is because as of 7/2017, the available PRISM data (KNMI) go only to Dec 2015
@@ -44,7 +44,7 @@ Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 
 
 ### read in function that creates jags objects from above data
-source("modules/data.land/R/BuildJAGSdataobject.R")
+source("pecan/modules/data.land/R/BuildJAGSdataobject.R")
 jags.stuff.nocores <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 100, trunc.yr = 1966)
 # if you don't have trees without cores, use the following line
 # or you wish to not include trees without cores
@@ -65,10 +65,8 @@ View(data$z)
 View(z0)
 
 ### read in function that makes/executes a jags model from lmer-like call of a linear model
-# note that Evans version of Dietze function comments out creation of state variable initial conditions (z0)
-# which is done in the function buildJAGSdataobject instead
-#source("InventoryGrowthFusionME.R") 
-source("InventoryGrowthFusion.R") 
+
+source("pecan/modules/data.land/R/InventoryGrowthFusion.R") 
 
 ### let's run some models!
 ## these are not good models because ppt and tmax are correlated with one another
@@ -117,6 +115,17 @@ source("InventoryGrowthFusion.R")
 #restart.data <- load("/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/.PPT.noX2.noint.5000.0.101.RData")
 
 #restart.data <- as.mcmc(restart.data)
+
+# linear model with DBH^2 removed for Precipitation and 500 cores
+ppt.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                  n.iter=40000, z0=z0,
+                                  n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
+                                  fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
+                                  time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
+                                  burnin_plot=FALSE, save.jags = "PPT.noX2.5000nocores.40000.txt", model.name = "PPT.noX2.5000nocores.40000.txt", 
+                                  output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
+
+
 
 ppt.noX2.no.int <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
                                                       n.iter=15000, z0=z0,
@@ -612,117 +621,29 @@ View(z0)
 source("InventoryGrowthFusion.R") 
 
 
-### ppt model with DBH^2 removed for 
-
-ppt.model.nocores <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                  n.iter=5000, z0=z0,
+# linear model with DBH^2 removed for Precipitation and 500 cores
+ppt.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                  n.iter=40000, z0=z0,
                                   n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
                                   fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
                                   time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
-                                  burnin_plot=FALSE, save.jags = "PPT.noX2.5000.nocores.5000.txt", model.name = "PPT.noX2.5000.nocores.5000", breakearly = FALSE)
+                                  burnin_plot=FALSE, save.jags = "PPT.noX2.5000nocores.40000.txt", model.name = "PPT.noX2.5000nocores.40000.txt", 
+                                  output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
 
 
-load("/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/PPT.noX2.5000.nocores.5000.50.RData")
-ppt.model.restart <- jags.out
+# linear model with DBH^2 removed for Precipitation + Tmax and 500 cores
+ppt.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                  n.iter=40000, z0=z0,
+                                  n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
+                                  fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
+                                  time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
+                                  burnin_plot=FALSE, save.jags = "PPT.noX2.5000nocores.40000.txt", model.name = "PPT.noX2.5000nocores.40000.txt", 
+                                  output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
 
 
-# function needed to convert MCMC list to initial conditions
-dat <- ppt.model.restart
 
 
 source("mcmc.list2initIGF.R")
-test.restart <- mcmc.list2initIGF(ppt.model.restart)
-
- fullmodelppt.r.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                           n.iter=15000, z0=z0, restart = ppt.model.restart,
-                                           n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
-                                           fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
-                                           time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
-                                           burnin_plot=FALSE, save.jags = "PPT.noX2.15000.nocores.r.5000.txt", model.name = "PPT.noX2.15000.r.nocores.5000", breakearly = FALSE)
- 
-
-### let's run some models!
-## these are not good models because ppt and tmax are correlated with one another
-#model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-#                                   n.iter=5000, random="(1|PLOT[i])",
-#                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
-#                                   time_varying = "wintP.JJ + tmax.JanA + SDI*wintP.JJ[t]",
-#                                   burnin_plot=FALSE)
-
-#model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-#                                   n.iter=5000, random="(1|PLOT[i])",
-#                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
-#                                   time_varying = "wintP.JJ + tmax.JanA + wintP.JJ[t]*tmax.JanA[t] + SDI*wintP.JJ[t]",
-#                                   burnin_plot=FALSE)
-
-model2.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                    n.iter=5000, random="(1|PLOT[i])",
-                                    fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
-                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                    burnin_plot=FALSE)
-
-model3.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                    n.iter=5000, random="(1|PLOT[i])",
-                                    fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
-                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                    burnin_plot=FALSE)
-
-model4.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                    n.iter=15000, random="(1|PLOT[i])",
-                                    fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t]",
-                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                    burnin_plot=FALSE)
-
-model5.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                    n.iter=5000, random="(1|PLOT[i])",
-                                    fixed = "~ X + X^2 + SICOND + SDI + X*wintP.JJ[t] + SICOND*SDI",
-                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                    burnin_plot=FALSE)
-
-model6.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                    n.iter=5000, random="(1|PLOT[i])",
-                                    fixed = "~ X + X^2 + SICOND + SDI + X*wintP.JJ[t]",
-                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
-                                    burnin_plot=FALSE)
-
-
-### tmax models
-fullmodeltmax.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                           n.iter=5000, random="(1|PLOT[i])",
-                                           fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
-                                           time_varying = "tmax.JanA + SDI*tmax.JanA[t] + SICOND*tmax.JanA[t]",
-                                           burnin_plot=FALSE)
-
-model8.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                    n.iter=5000, random="(1|PLOT[i])",
-                                    fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
-                                    time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                    burnin_plot=FALSE)
-
-model9.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                    n.iter=5000, random="(1|PLOT[i])",
-                                    fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
-                                    time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                    burnin_plot=FALSE)
-
-model10.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                     n.iter=5000, random="(1|PLOT[i])",
-                                     fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*tmax.JanA[t]",
-                                     time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                     burnin_plot=FALSE)
-
-model11.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                     n.iter=5000, random="(1|PLOT[i])",
-                                     fixed = "~ X + X^2 + SICOND + SDI + X*tmax.JanA[t] + SICOND*SDI",
-                                     time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                     burnin_plot=FALSE)
-
-model12.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                     n.iter=5000, n.chunk=5000, save.state=FALSE,
-                                     random="(1|PLOT[i])",
-                                     fixed = "~ X + X^2 + SICOND + SDI + X*tmax.JanA[t]",
-                                     time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
-                                     burnin_plot=FALSE)
 
 #### LONG MCMC RUN WITH TREES WITHOUT CORES
 model7.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,

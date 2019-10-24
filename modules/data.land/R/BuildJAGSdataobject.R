@@ -190,7 +190,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   time_data$tmax.monsoon <- tmax.monsoon
   time_data$TMAX <- tmax.wateryr
   # save the climate/time data to a file so we can look at the raw values as well:
-  saveRDS(time_data, paste0(getwd(),"/FIA_inc_data/PRISM_non_scaled.rds"))
+  saveRDS(time_data, "PRISM_non_scaled.rds")
   
   # standardize climate data
   if(standardize.cov == TRUE){
