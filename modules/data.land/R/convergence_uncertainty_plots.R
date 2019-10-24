@@ -12,7 +12,7 @@ library(psych)
 
 # basic function to load and plot converge of the last few saved files (last 2000 iterations)
 
-source("quick.convergence.check.R")
+source("modules/data.land/R/quick.convergence.check.R")
 
 # full PPT model noX2
 png(height = 10, width = 10, units = "in", res = 200, "/home/rstudio/pecan/IGF_outputs/PPT.full.traceplots.png")
@@ -62,6 +62,7 @@ par(mfrow =c(6,4))
 quick.convergence.check(filename.base = "PPT.TMAXfs.noX2.25000.", 
                         last.filenum = 250, 
                         file.folder =  "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/")
+                        #file.folder =  "/Users/kah/Documents/docker_pecan/pecan/IGF_PIPO_AZ_mcmc/")
 dev.off()
 
 # okay now read in the last 1000 iterations of each model and compare uncertainties + model parameters

@@ -28,7 +28,7 @@ temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
 ### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
-Tree2Tree <- read.csv("/Users/kah/Documents/GrowthFusion/FIA_inc_data/Tree2Tree.csv", stringsAsFactors = F)
+Tree2Tree <- read.csv("/home/rstudio/pecan/FIA_inc_data/Tree2Tree.csv", stringsAsFactors = F)
 
 ### limit analysis to those trees with second DBH measurement in =< year 2015
 ### this is because as of 7/2017, the available PRISM data (KNMI) go only to Dec 2015
@@ -40,11 +40,11 @@ Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 
 ### NOW go get function that makes jags objects out of the above
 ### setwd to github folder
-setwd("modules/data.land/R/")
+#setwd("modules/data.land/R/")
 
 
 ### read in function that creates jags objects from above data
-source("BuildJAGSdataobject.R")
+source("modules/data.land/R/BuildJAGSdataobject.R")
 #jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
 # if you don't have trees without cores, use the following line
 # or you wish to not include trees without cores
@@ -141,33 +141,7 @@ fullmodel.ppt.restart.out <- InventoryGrowthFusionRestart(data=data, cov.data=co
                                                           time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
                                                           burnin_plot=FALSE, save.jags = "WateryearPPT.only.l5000.txt", model.name = "WateryearPPT.only.15000", breakearly = FALSE)
 
-source("InventoryGrowthFusionNoMu.R")
-fullmodel.ppt.noMU <- InventoryGrowthFusionNoMu(data=data, cov.data=cov.data, time_data=time_data,
-                                                n.iter=15000, z0=z0,
-                                                n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
-                                                fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
-                                                time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
-                                                burnin_plot=FALSE, save.jags = "WateryearPPT.noMu.l5000.txt", model.name = "WateryearPPT.noMu.15000", breakearly = FALSE)
-
-
-restart.data <- load(paste0("/home/rstudio/pecan/modules/data.land/R/WateryearPPT.noMu.15000.0.",150,".RData"))
-
-restart.data <- as.mcmc(restart.data)
-
-fullmodel.ppt.noMU.restarted <- InventoryGrowthFusionNoMu(data=data, cov.data=cov.data, time_data=time_data,
-                                                          n.iter=15000, z0=z0,
-                                                          n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
-                                                          fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
-                                                          time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
-                                                          burnin_plot=FALSE, save.jags = "WateryearPPT.noMu.l5000.r.txt", model.name = "WateryearPPT.noMu.r.15000", breakearly = FALSE, restart = restart.data)
-
-reduced.ppt.noMU.restarted <- InventoryGrowthFusionNoMu(data=data, cov.data=cov.data, time_data=time_data,
-                                                        n.iter=15000, z0=z0,
-                                                        n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
-                                                        fixed = "~ X + X^2 + SICOND + SDI",
-                                                        time_varying = "wintP.wateryr",
-                                                        burnin_plot=FALSE, save.jags = "redWateryearPPT.noMu.l5000.r.txt", model.name = "redWateryearPPT.noMu.15000", breakearly = FALSE)
-
+source("InventoryGrowthFusion.R")
 
 # linear model with DBH^2 removed for Precipitation:
 ppt.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
@@ -179,28 +153,28 @@ ppt.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_d
 
 # ppt.noX2.restart.noMu looks like it may have better convergence....lets run it longer...like to 10000
 
-restart.noX2 <- load(paste0("/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/PPT.noX2.5000.50.RData"))
+load(paste0("/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/PPT.noX2.5000.50.RData"))
 
-restart.noX2 <- as.mcmc(restart.noX2)
+restart.noX2 <- jags.out
 
 ppt.noX2.restarted <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                                                n.iter=10000, z0=z0,
+                                                                n.iter=5000, z0=z0, restart = restart.noX2,
                                                                 n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
                                                                 fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
                                                                 time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
-                                                                burnin_plot=FALSE, save.jags = "PPT.noX2.r.10000.txt", model.name = "PPT.noX2.r.10000", breakearly = FALSE, restart = restart.noX2)
+                                                                burnin_plot=FALSE, save.jags = "PPT.noX2.test.r.5000.txt", model.name = "PPT.noX2.test.r.5000", breakearly = FALSE)
 
 
-restart.noX2.2 <- load(paste0("/home/rstudio/pecan/modules/data.land/R/PPT.noX2.noMu.r.l0000.0.",100,".RData"))
 
-restart.noX2.2 <- as.mcmc(restart.noX2.2)
 
-ppt.noX2.restart.noMu.restarted.2 <- InventoryGrowthFusionRestart(data=data, cov.data=cov.data, time_data=time_data,
-                                                                  n.iter=10000, z0=z0,
+
+ppt.noX2.restart.2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                                                  n.iter=25000, z0=z0,
+                                                                  restart = ppt.noX2.restarted,
                                                                   n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
                                                                   fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
                                                                   time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
-                                                                  burnin_plot=FALSE, save.jags = "PPT.noX2.noMu.r2.l0000.txt", model.name = "PPT.noX2.noMu.r2.l0000", breakearly = FALSE, restart = restart.noX2)
+                                                                  burnin_plot=FALSE, save.jags = "PPT.noX2.noMu.r2.25000.txt", model.name = "PPT.noX2.noMu.r2.25000", breakearly = FALSE)
 
 
 
@@ -577,7 +551,7 @@ rgl.postscript("growthsizeSI.pdf",fmt="pdf")
 
 ### load in the data for trees with increment cores (and 1 or 2 DBH measurements)
 #AZ.PIPO <- read.csv("AZ_FIA_RWL_PRISM_allinone_04192017.txt", header = T, sep = "\t", stringsAsFactors = F) ### 820 trees
-main.dir <- "/Users/kah/Documents/GrowthFusion"
+#main.dir <- "/Users/kah/Documents/GrowthFusion"
 AZ.PIPO <- read.delim("FIA_inc_data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
 
 ### merge together three diameter columns
@@ -596,7 +570,7 @@ temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
 ### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
-#Tree2Tree <- read.csv("/Users/kah/Documents/GrowthFusion/FIA_inc_data/Tree2Tree.csv", stringsAsFactors = F)
+Tree2Tree <- read.csv("/home/rstudio/pecan/FIA_inc_data/Tree2Tree.csv", stringsAsFactors = F)
 
 ### limit analysis to those trees with second DBH measurement in =< year 2015
 ### this is because as of 7/2017, the available PRISM data (KNMI) go only to Dec 2015
@@ -608,7 +582,7 @@ Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 
 ### NOW go get function that makes jags objects out of the above
 ### setwd to github folder
-setwd("/Users/kah/Documents/GrowthFusion/modules/data.land/R/")
+setwd("/home/rstudio/pecan/modules/data.land/R")
 
 
 ### read in function that creates jags objects from above data
@@ -616,7 +590,7 @@ source("BuildJAGSdataobject.R")
 #jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
 # if you don't have trees without cores, use the following line
 # or you wish to not include trees without cores
-jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
+jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 100, trunc.yr = 1966)
 data <- jags.stuff$data
 z0 <- jags.stuff$z0
 cov.data <- jags.stuff$cov.data
@@ -637,6 +611,36 @@ View(z0)
 # which is done in the function buildJAGSdataobject instead
 source("InventoryGrowthFusion.R") 
 
+
+### ppt model with DBH^2 removed for 
+
+ppt.model.nocores <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                  n.iter=5000, z0=z0,
+                                  n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
+                                  fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
+                                  time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
+                                  burnin_plot=FALSE, save.jags = "PPT.noX2.5000.nocores.5000.txt", model.name = "PPT.noX2.5000.nocores.5000", breakearly = FALSE)
+
+
+load("/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/PPT.noX2.5000.nocores.5000.50.RData")
+ppt.model.restart <- jags.out
+
+
+# function needed to convert MCMC list to initial conditions
+dat <- ppt.model.restart
+
+
+source("mcmc.list2initIGF.R")
+test.restart <- mcmc.list2initIGF(ppt.model.restart)
+
+ fullmodelppt.r.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                           n.iter=15000, z0=z0, restart = ppt.model.restart,
+                                           n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
+                                           fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
+                                           time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
+                                           burnin_plot=FALSE, save.jags = "PPT.noX2.15000.nocores.r.5000.txt", model.name = "PPT.noX2.15000.r.nocores.5000", breakearly = FALSE)
+ 
+
 ### let's run some models!
 ## these are not good models because ppt and tmax are correlated with one another
 #model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
@@ -650,13 +654,6 @@ source("InventoryGrowthFusion.R")
 #                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
 #                                   time_varying = "wintP.JJ + tmax.JanA + wintP.JJ[t]*tmax.JanA[t] + SDI*wintP.JJ[t]",
 #                                   burnin_plot=FALSE)
-
-### ppt models
-fullmodelppt.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                          n.iter=5000, random="(1|PLOT[i])",
-                                          fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
-                                          time_varying = "wintP.JJ + SDI*wintP.JJ[t] + SICOND*wintP.JJ[t]",
-                                          burnin_plot=FALSE)
 
 model2.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
                                     n.iter=5000, random="(1|PLOT[i])",
@@ -739,156 +736,4 @@ model1.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time
                                     fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
                                     time_varying = "wintP.JJ + SDI*wintP.JJ[t] + SICOND*wintP.JJ[t]",
                                     burnin_plot=FALSE)
-
-#### DIAGNOSTICS
-#### excerpted/modified from InventoryGrowthFusionDiagnostics.R (Dietze)
-# see also https://faculty.washington.edu/jmiyamot/p548/demo.04-2b.convergence.diag.pdf
-# and http://sbfnk.github.io/mfiidd/mcmc_diagnostics.html
-
-out      <- as.matrix(model.out) ### LOADS MCMC OUTPUT INTO OBJECT "OUT"
-
-
-### 12 temp and 12 precip variables
-ppt.betas <- out[,c(grep("betappt", colnames(out)))]
-par(mfrow = c(4, 3))
-for (curr.month in month.abb) {
-  curr.beta <- grep(pattern = curr.month, x = colnames(ppt.betas))
-  hist(ppt.betas[, curr.beta], main = colnames(ppt.betas)[curr.beta])
-}
-
-tmax.betas <- out[,c(grep("betatmax", colnames(out)))]
-par(mfrow = c(4, 3))
-for (curr.month in month.abb) {
-  curr.beta <- grep(pattern = curr.month, x = colnames(tmax.betas))
-  hist(tmax.betas[, curr.beta], main = colnames(tmax.betas)[curr.beta])
-}
-
-
-wintP.JJ.beta <- out[,"betawintP.JJ"]
-tmax.JanA.beta <- out[,"betatmax.JanA"]
-hist(wintP.JJ.beta, main = "winter P (Jan-Jul)")
-hist(tmax.JanA.beta, main = "tmax (Jan-Aug)")
-
-par(mfrow = c(2, 2))
-#  for (i in 1:2){ # SDI, SI
-#    hist(betas[,i], main = colnames(betas)[i])
-#  }   
-
-SDI.beta <- out[,"betaSDI"]
-SICOND.beta <- out[,"betaSICOND"]
-X.beta <- out[,"betaX"]
-X2.beta <- out[,"betaX2"]
-
-hist(SDI.beta, main = "stand density index")
-hist(SICOND.beta, main = "site index")  
-hist(X.beta, main = "tree size")
-hist(X2.beta, main = "quadratic tree size")  
-
-### interaction effects
-X.SDI.int <- out[,"betaX_SDI"]
-X.SI.int <- out[,"betaX_SICOND"]  
-X.wintP.int <- out[,"betaX_wintP.JJ"]
-SDI.wintP.int <- out[,"betaSDI_wintP.JJ"]
-SI.wintP.int <- out[,"betaSICOND_wintP.JJ"]
-SI.SDI.int <- out[,"betaSICOND_SDI"]
-hist(X.SDI.int, main = "size*stand density")
-hist(X.SI.int, main = "size*site index")
-hist(X.wintP.int, main = "size*wintP")
-hist(SDI.wintP.int, main = "SDI*wintP")
-hist(SI.wintP.int, main = "SI * wintP interaction")
-hist(SI.SDI.int, main = "SI * SDI interaction")  
-
-hist(out[,"deviance"])
-mean(out[,"deviance"])
-
-
-###############################
-#### DATA EXPLORATION
-hist(apply(z.small, 1, min, na.rm=T)) # size distribution at the time core was collected - each first DBH measurement (usually 1996)
-
-### effect of diameter on growth increment (time series)
-n=500 # number of time series to overplot at once
-x.min <- min(z0[1:n,]); x.max <- max(z0[1:n,])
-y.min <- min(y.small[1:n,], na.rm=T); y.max <- max(y.small[1:n,], na.rm=T)
-plot(z0[1,], y.small[1,], 
-     xlim=c(x.min, x.max), ylim=c(y.min, y.max),
-     xlab="diameter", ylab="growth increment", type="n")
-for (t in 1:n) {
-  lines(z0[t,], y.small[t,])
-}
-
-# one outlier in the tree-ring data (y.small)
-row.max <- apply(y.small, 1, max, na.rm=T) # find the largest diam increment across all years, each tree
-max.gi <- max(row.max)
-which(row.max == max.gi) # returns 239
-# county 5, plot 1570, subplot 4, tree 2 DBH 17.8
-
-# effect of tree size (DBH) on growth increment
-mean.growth <- rowMeans(y.small, na.rm=T)
-mean.diam <- rowMeans(z0, na.rm=T)
-plot(z0[,1], mean.growth) # starting size
-plot(mean.diam, mean.growth)
-
-### plot all years*trees, using transparency
-#plot(z0, y.small, xlim = c(-15, 70))
-pdf("C:/old_laptop/mekevans/Documents/CDrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New/SizeGrowth.pdf") 
-plot(z0, y.small, xlim = c(0, 75), main="size vs. growth", col=rgb(0,100,0,10,maxColorValue=255), pch=16)
-dev.off()
-
-### effect of site index on growth increment
-plot(SICOND, mean.growth)
-
-### effect of stand density index on growth increment
-plot(SDI, mean.growth)
-
-### relationship between ppt and tmax
-plot(colMeans(tmax.JanA), colMeans(wintP.JJ)) # across all sites (rows), region-wide climate signal
-# warmer years are associated with less precipitation
-m1 <- lm(colMeans(wintP.JJ) ~ colMeans(tmax.JanA)) # r^2 is 0.486
-cor(colMeans(tmax.JanA), colMeans(wintP.JJ)) # correlation -0.697
-
-# plot all years of data, all sites
-pdf("C:/old_laptop/mekevans/Documents/CDrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New/pptvstmax.pdf") 
-plot(tmax.JanA, wintP.JJ, main="ppt vs. tmax", col=rgb(0,100,0,10,maxColorValue=255), pch=16)
-dev.off()
-# there's another way to do this with hex binning (function hexbin)
-# see: http://www.statmethods.net/graphs/scatterplot.html
-
-# little relationship between SI and SDI
-plot(SICOND, SDI)
-m1 <- lm(SDI ~ SICOND) # r^2 is 0.005
-cor(SDI, SICOND) # correlation 0.0694
-
-# relationship between SI and tree size (DIA.T1)
-plot(SICOND, DIA.T1)
-m1 <- lm(DIA.T1 ~ SICOND) # effect of SI is significant, r^2 is 0.12
-cor(DIA.T1, SICOND) # correlation 0.351
-
-# relationship between SDI and tree size
-plot(SDI, DIA.T1)
-m1 <- lm(DIA.T1 ~ SDI) # r^2 is 0.031
-
-### correlation matrix
-mydata <- cbind(SDI, SICOND, DIA.T1)
-#rquery.cormat(mydata)# R can't find this function
-library(corrplot)
-mcor<-rcorr(as.matrix(mydata))
-corrplot(mcor$r, type="upper", order="hclust", tl.col="black", tl.srt=45)
-library(Hmisc); library(PerformanceAnalytics)
-chart.Correlation(mydata, histogram = T, pch=19)
-
-# 3D plot of growth, size, and SI or SDI
-library(scatterplot3d)
-scatterplot3d(z0[,1], SICOND, mean.growth, angle=70, pch=16, highlight.3d=TRUE,
-              type="h",) # z0[,1] is the starting size
-
-scatterplot3d(z0[,1], SDI, mean.growth, pch=16, highlight.3d=TRUE,
-              type="h",) # starting size
-
-### requires libraries car, rgl
-library(car); library(rgl)
-scatter3d(x = z0[,1], y = SICOND, z = mean.growth, fit = "smooth")
-rgl.snapshot(filename = "growthsizeSI.png")
-rgl.postscript("growthsizeSI.pdf",fmt="pdf")
-
 
