@@ -350,7 +350,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     cur_cmtnum <- as.numeric(unlist(strsplit(cur_cmtname, "CMT"))[2])
     if (cur_cmtname == cmtname) {
       # pass, evertthing ok
-      PEcAn.logger::logger.debug(paste0("AlL ok - CMTs of all the selected PFTs match."))
+      PEcAn.logger::logger.debug(paste0("All ok - CMTs of all the selected PFTs match."))
     } else {
       PEcAn.logger::logger.error(paste0("CMTs of selected PFTS do not match!!!"))
       stop()
