@@ -358,15 +358,9 @@ sda.enkf <- function(settings,
    files <-  files[grep(pattern = "SDA*", files, invert = TRUE)]
     
     
-    purrr::walk(files,
-      function(.x){
-        file.rename(.x ,
-                    file.path(dirname(.x),
-                              paste0("SDA_",gsub(" ", "", as.character(names(obs.mean)[t])),
-                                     ".nc"))
- 
-                    )
-      })
+   file.rename(files, 
+               file.path(dirname(files), 
+                  paste0("SDA_", basename(files), "_", gsub(" ", "", names(obs.mean)[t]), ".nc") ) )
     
     #--- Reformating X
     X <- do.call(rbind, X)
