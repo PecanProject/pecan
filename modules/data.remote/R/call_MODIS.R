@@ -3,9 +3,9 @@
 ##' @name call_MODIS
 ##' @title call_MODIS
 ##' @export
-##' @param outdir where the output file will be stored
+##' @param outdir where the output file will be stored. Default is NULL
 ##' @param var the simple name of the modis dataset variable (e.g. lai)
-##' @param site_info list of site info for parsing MODIS data: list(site_id, site_name, lat, lon, time_zone)
+##' @param site_info Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, lon, time_zone)
 ##' @param product_dates a character vector of the start and end date of the data in YYYYJJJ
 ##' @param run_parallel optional method to download data paralleize. Only works if more than 1 site is needed and there are >1 CPUs available.
 ##' @param ncores number of cpus to use if run_parallel is set to TRUE. If you do not know the number of CPU's available, enter NULL.
@@ -77,7 +77,6 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
       PEcAn.logger::logger.warn(bands$band)
       stop("Band selected is not avialable. Please selected from the bands listed above that correspond with the data product.")
     } 
-    
     
     #3. check that dates asked for in function parameters are fall within dates available for modis product/bands.
     if (run_parallel)
@@ -273,4 +272,5 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
   #   }
   #   
   #   return(output)}
+
 }

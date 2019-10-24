@@ -1,0 +1,190 @@
+* using log directory ‘/tmp/RtmprUKFes/PEcAn.priors.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.priors/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.priors’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.priors’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... NOTE
+Package in Depends field not imported from: ‘PEcAn.utils’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
+* checking S3 generic/method consistency ... WARNING
+plot:
+  function(x, ...)
+plot.posterior.density:
+  function(posterior.density, base.plot)
+
+plot:
+  function(x, ...)
+plot.prior.density:
+  function(prior.density, base.plot, prior.color)
+
+plot:
+  function(x, ...)
+plot.trait:
+  function(trait, prior, posterior.sample, trait.df, fontsize, x.lim,
+           y.lim, logx)
+
+See section ‘Generic functions and methods’ in the ‘Writing R
+Extensions’ manual.
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+create.density.df: no visible global function definition for
+  ‘zero.bounded.density’
+create.density.df: no visible global function definition for ‘density’
+fit.dist : <anonymous>: no visible global function definition for
+  ‘fitdistr’
+fit.dist: no visible global function definition for ‘fitdistr’
+fit.dist: no visible binding for global variable ‘AIC’
+fit.dist : <anonymous>: no visible global function definition for
+  ‘tabnum’
+fit.dist: no visible global function definition for ‘tabnum’
+plot.densities: no visible global function definition for ‘pdf’
+plot.densities: no visible global function definition for
+  ‘plot.density’
+plot.densities: no visible binding for global variable
+  ‘sensitivity.plot’
+plot.densities: no visible global function definition for ‘dev.off’
+plot.posterior.density: no visible global function definition for
+  ‘create.base.plot’
+plot.posterior.density: no visible binding for global variable ‘x’
+plot.posterior.density: no visible binding for global variable ‘y’
+plot.prior.density: no visible global function definition for
+  ‘create.base.plot’
+plot.prior.density: no visible binding for global variable ‘x’
+plot.prior.density: no visible binding for global variable ‘y’
+plot.trait: no visible global function definition for ‘trait.lookup’
+plot.trait: no visible global function definition for ‘jagify’
+plot.trait: no visible binding for '<<-' assignment to ‘x.ticks’
+plot.trait: no visible global function definition for
+  ‘create.base.plot’
+plot.trait: no visible global function definition for ‘plot_data’
+plot.trait: no visible global function definition for ‘geom_segment’
+plot.trait: no visible binding for global variable ‘x.ticks’
+plot.trait: no visible global function definition for ‘last’
+plot.trait: no visible global function definition for ‘theme’
+prior.fn: no visible global function definition for ‘qnorm’
+prior.fn: no visible global function definition for ‘qlnorm’
+prior.fn: no visible global function definition for ‘qgamma’
+prior.fn: no visible global function definition for ‘qweibull’
+prior.fn: no visible global function definition for ‘qbeta’
+priorfig: no visible global function definition for ‘trait.lookup’
+priorfig: no visible global function definition for ‘theme’
+priorfig: no visible binding for global variable ‘x’
+priorfig: no visible global function definition for ‘runif’
+priorfig: no visible binding for global variable ‘y’
+Undefined global functions or variables:
+  AIC create.base.plot density dev.off fitdistr geom_segment jagify
+  last pdf plot_data plot.density qbeta qgamma qlnorm qnorm qweibull
+  runif sensitivity.plot tabnum theme trait.lookup x x.ticks y
+  zero.bounded.density
+Consider adding
+  importFrom("grDevices", "dev.off", "pdf")
+  importFrom("stats", "AIC", "density", "qbeta", "qgamma", "qlnorm",
+             "qnorm", "qweibull", "runif")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... WARNING
+Missing link or links in documentation object 'create.density.df.Rd':
+  ‘stats::density’
+
+Missing link or links in documentation object 'prior.fn.Rd':
+  ‘DEoptim’
+
+Missing link or links in documentation object 'priorfig.Rd':
+  ‘prior.density’
+
+See section 'Cross-references' in the 'Writing R Extensions' manual.
+
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'create.density.df'
+  ‘n’ ‘...’
+
+Undocumented arguments in documentation object 'fit.dist'
+  ‘trait’ ‘n’
+
+Undocumented arguments in documentation object 'get.quantiles.from.density'
+  ‘density.df’
+Documented arguments not in \usage in documentation object 'get.quantiles.from.density':
+  ‘priordensity’
+
+Undocumented arguments in documentation object 'plot.densities'
+  ‘density.plot.inputs’ ‘...’
+Documented arguments not in \usage in documentation object 'plot.densities':
+  ‘sensitivity.results’
+
+Undocumented arguments in documentation object 'plot.trait'
+  ‘trait.df’ ‘x.lim’ ‘y.lim’ ‘logx’
+Documented arguments not in \usage in documentation object 'plot.trait':
+  ‘trait.data’
+
+Undocumented arguments in documentation object 'priorfig'
+  ‘fontsize’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... WARNING
+Argument items with no description in Rd object 'create.density.df':
+  ‘zero.bounded’
+
+Argument items with no description in Rd object 'plot.posterior.density':
+  ‘posterior.density’
+
+Argument items with no description in Rd object 'plot.prior.density':
+  ‘prior.density’
+
+Argument items with no description in Rd object 'plot.trait':
+  ‘posterior.sample’ ‘fontsize’ ‘trait.data’
+
+Argument items with no description in Rd object 'pr.samp':
+  ‘distn’ ‘parama’ ‘paramb’
+
+* checking for unstated dependencies in examples ... OK
+* checking files in ‘vignettes’ ... WARNING
+Files in the 'vignettes' directory but no files in 'inst/doc':
+  ‘priors_demo.Rmd’
+Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+Status: 5 WARNINGs, 3 NOTEs

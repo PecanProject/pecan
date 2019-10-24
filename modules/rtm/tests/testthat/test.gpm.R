@@ -1,5 +1,3 @@
-library(PEcAnRTM)
-library(testthat)
 context("Generalized plate model")
 
 data(dataSpec_prospectd)

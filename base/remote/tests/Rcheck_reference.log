@@ -1,0 +1,124 @@
+* using log directory ‘/tmp/RtmpUHZsfY/PEcAn.remote.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --as-cran’
+* checking for file ‘PEcAn.remote/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.remote’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.remote’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' import not declared from: ‘PEcAn.DB’
+* checking S3 generic/method consistency ... WARNING
+start:
+  function(x, ...)
+start.model.runs:
+  function(settings, write, stop.on.error)
+
+See section ‘Generic functions and methods’ in the ‘Writing R
+Extensions’ manual.
+
+Found the following apparent S3 methods exported but not registered:
+  start.model.runs
+See section ‘Registering S3 methods’ in the ‘Writing R Extensions’
+manual.
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+remote.copy.update: no visible global function definition for
+  ‘db.query’
+remote.copy.update: no visible binding for global variable ‘putveg.id’
+remote.copy.update: no visible binding for global variable ‘i’
+runModule.start.model.runs: no visible global function definition for
+  ‘is.MultiSettings’
+runModule.start.model.runs: no visible global function definition for
+  ‘is.Settings’
+stamp_finished: no visible global function definition for ‘db.query’
+stamp_started: no visible global function definition for ‘db.query’
+start.model.runs: no visible global function definition for
+  ‘txtProgressBar’
+start.model.runs: no visible global function definition for ‘db.open’
+start.model.runs: no visible global function definition for ‘db.close’
+start.model.runs: no visible global function definition for
+  ‘setTxtProgressBar’
+Undefined global functions or variables:
+  db.close db.open db.query i is.MultiSettings is.Settings putveg.id
+  setTxtProgressBar txtProgressBar
+Consider adding
+  importFrom("utils", "setTxtProgressBar", "txtProgressBar")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  ‘runModule.start.model.runs’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'kill.tunnel'
+  ‘settings’ ‘exe’ ‘data’
+
+Documented arguments not in \usage in documentation object 'remote.copy.update':
+  ‘stderr’
+
+Undocumented arguments in documentation object 'remote.execute.R'
+  ‘R’ ‘scratchdir’
+Documented arguments not in \usage in documentation object 'remote.execute.R':
+  ‘args’
+
+Undocumented arguments in documentation object 'remote.execute.cmd'
+  ‘cmd’
+Documented arguments not in \usage in documentation object 'remote.execute.cmd':
+  ‘command’
+
+Undocumented arguments in documentation object 'start_rabbitmq'
+  ‘folder’ ‘rabbitmq_uri’ ‘rabbitmq_queue’
+
+Undocumented arguments in documentation object 'test_remote'
+  ‘...’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ...
+ OK
+* DONE
+Status: 4 WARNINGs, 2 NOTEs

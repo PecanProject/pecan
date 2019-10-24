@@ -9,11 +9,11 @@ call_MODIS(outdir = NULL, var, site_info, product_dates,
   package_method = "MODISTools", QC_filter = FALSE, progress = FALSE)
 }
 \arguments{
-\item{outdir}{where the output file will be stored}
+\item{outdir}{where the output file will be stored. Default is NULL}
 
 \item{var}{the simple name of the modis dataset variable (e.g. lai)}
 
-\item{site_info}{list of site info for parsing MODIS data: list(site_id, site_name, lat, lon, time_zone)}
+\item{site_info}{Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, lon, time_zone)}
 
 \item{product_dates}{a character vector of the start and end date of the data in YYYYJJJ}
 

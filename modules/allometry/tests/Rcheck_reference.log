@@ -1,0 +1,135 @@
+* using log directory ‘/tmp/Rtmpe7nWQ8/PEcAn.allometry.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --as-cran’
+* checking for file ‘PEcAn.allometry/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.allometry’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.allometry’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Malformed Description field: should contain one or more complete sentences.
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... NOTE
+'library' or 'require' calls to packages already attached by Depends:
+  ‘MCMCpack’ ‘mvtnorm’ ‘tools’
+  Please remove these calls from your code.
+'library' or 'require' call to ‘PEcAn.DB’ in package code.
+  Please use :: or requireNamespace() instead.
+  See section 'Suggested packages' in the 'Writing R Extensions' manual.
+Packages in Depends field not imported from:
+  ‘MCMCpack’ ‘mvtnorm’ ‘tools’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+allom.BayesFit: no visible global function definition for
+  ‘txtProgressBar’
+allom.BayesFit: no visible global function definition for ‘runif’
+allom.BayesFit: no visible global function definition for ‘rnorm’
+allom.BayesFit: no visible global function definition for ‘rmvnorm’
+allom.BayesFit: no visible global function definition for ‘dnorm’
+allom.BayesFit: no visible global function definition for ‘rgamma’
+allom.BayesFit: no visible global function definition for ‘riwish’
+allom.BayesFit: no visible global function definition for ‘vech’
+allom.BayesFit: no visible global function definition for
+  ‘setTxtProgressBar’
+allom.BayesFit: no visible global function definition for ‘as.mcmc’
+allom.predict: no visible global function definition for ‘is.mcmc.list’
+allom.predict: no visible global function definition for ‘as.mcmc’
+allom.predict: no visible global function definition for ‘rmvnorm’
+allom.predict: no visible global function definition for ‘is’
+allom.predict: no visible global function definition for ‘rnorm’
+AllomAve: no visible global function definition for ‘as.mcmc’
+AllomAve: no visible global function definition for ‘as.mcmc.list’
+AllomAve: no visible global function definition for ‘cov’
+AllomAve: no visible global function definition for ‘pdf’
+AllomAve: no visible global function definition for ‘plot’
+AllomAve: no visible global function definition for ‘points’
+AllomAve: no visible global function definition for ‘lines’
+AllomAve: no visible global function definition for ‘legend’
+AllomAve: no visible global function definition for ‘dev.off’
+load.allom: no visible global function definition for ‘file_ext’
+load.allom: no visible binding for global variable ‘mc’
+load.allom: no visible global function definition for ‘is.mcmc.list’
+load.allom: no visible global function definition for ‘as.mcmc’
+query.allom.data: no visible global function definition for ‘db.query’
+read.allom.data: no visible global function definition for ‘read.csv’
+read.allom.data: no visible global function definition for ‘runif’
+read.allom.data: no visible global function definition for ‘var’
+Undefined global functions or variables:
+  as.mcmc as.mcmc.list cov db.query dev.off dnorm file_ext is
+  is.mcmc.list legend lines mc pdf plot points read.csv rgamma riwish
+  rmvnorm rnorm runif setTxtProgressBar txtProgressBar var vech
+Consider adding
+  importFrom("graphics", "legend", "lines", "plot", "points")
+  importFrom("grDevices", "dev.off", "pdf")
+  importFrom("methods", "is")
+  importFrom("stats", "cov", "dnorm", "rgamma", "rnorm", "runif", "var")
+  importFrom("utils", "read.csv", "setTxtProgressBar", "txtProgressBar")
+to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
+contains 'methods').
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented data sets:
+  ‘allom.components’ ‘Jenkins2004_Table9’ ‘Table3_GTR-NE-319.v2’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'allom.predict'
+  ‘single.tree’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking files in ‘vignettes’ ... WARNING
+Files in the 'vignettes' directory but no files in 'inst/doc':
+  ‘AllomVignette.Rmd’
+Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... WARNING
+'library' or 'require' call not declared from: ‘PEcAn.utils’
+* checking tests ...
+ OK
+* DONE
+Status: 4 WARNINGs, 3 NOTEs

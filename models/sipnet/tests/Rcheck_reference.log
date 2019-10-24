@@ -1,0 +1,118 @@
+* using log directory ‘/tmp/RtmpvQfkqE/PEcAn.SIPNET.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.SIPNET/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.SIPNET’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.SIPNET’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... NOTE
+Non-standard files/directories found at top level:
+  ‘Dockerfile’ ‘model_info.json’
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' imports not declared from:
+  ‘dplyr’ ‘PEcAn.data.land’
+Package in Depends field not imported from: ‘PEcAn.data.atmosphere’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+met2model.SIPNET: no visible binding for global variable ‘i’
+met2model.SIPNET: no visible global function definition for ‘convolve’
+met2model.SIPNET: no visible global function definition for
+  ‘write.table’
+model2netcdf.SIPNET: no visible global function definition for
+  ‘read.table’
+model2netcdf.SIPNET: no visible binding for global variable ‘year’
+model2netcdf.SIPNET: no visible global function definition for ‘head’
+sample.IC.SIPNET: no visible global function definition for ‘runif’
+split_inputs.SIPNET: no visible global function definition for ‘%>%’
+split_inputs.SIPNET: no visible binding for global variable ‘.’
+split_inputs.SIPNET: no visible global function definition for
+  ‘read.table’
+split_inputs.SIPNET: no visible global function definition for ‘mutate’
+split_inputs.SIPNET: no visible binding for global variable ‘V2’
+split_inputs.SIPNET: no visible binding for global variable ‘V3’
+split_inputs.SIPNET: no visible binding for global variable ‘Date’
+split_inputs.SIPNET: no visible binding for global variable ‘V4’
+split_inputs.SIPNET: no visible global function definition for ‘filter’
+split_inputs.SIPNET: no visible global function definition for
+  ‘write.table’
+write_restart.SIPNET: no visible global function definition for ‘%>%’
+write.config.SIPNET: no visible global function definition for
+  ‘read.table’
+write.config.SIPNET: no visible global function definition for ‘%>%’
+write.config.SIPNET: no visible global function definition for
+  ‘write.table’
+Undefined global functions or variables:
+  . %>% convolve Date filter head i mutate read.table runif V2 V3 V4
+  write.table year
+Consider adding
+  importFrom("stats", "convolve", "filter", "runif")
+  importFrom("utils", "head", "read.table", "write.table")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'get.model.output.SIPNET'
+  ‘settings’
+
+Undocumented arguments in documentation object 'met2model.SIPNET'
+  ‘...’
+
+Undocumented arguments in documentation object 'model2netcdf.SIPNET'
+  ‘delete.raw’
+
+Undocumented arguments in documentation object 'sample.IC.SIPNET'
+  ‘year’
+
+Undocumented arguments in documentation object 'write.config.SIPNET'
+  ‘defaults’ ‘trait.values’ ‘settings’ ‘run.id’ ‘inputs’ ‘IC’ ‘restart’
+  ‘spinup’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+Status: 2 WARNINGs, 3 NOTEs

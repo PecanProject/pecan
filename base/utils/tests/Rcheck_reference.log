@@ -1,0 +1,241 @@
+* using log directory ‘/tmp/RtmpWosl3N/PEcAn.utils.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.utils/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.utils’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.utils’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... NOTE
+Non-standard file/directory found at top level:
+  ‘scripts’
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' import not declared from: ‘PEcAn.uncertainty’
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+convert.input: no visible binding for global variable ‘settings’
+convert.input: no visible binding for global variable ‘id’
+convert.input : log_format_df: no visible binding for global variable
+  ‘.’
+get.results: no visible binding for global variable ‘trait.samples’
+get.results: no visible binding for global variable ‘runs.samples’
+get.results: no visible binding for global variable ‘sa.samples’
+grid2netcdf: no visible binding for global variable ‘years’
+grid2netcdf: no visible binding for global variable ‘yieldarray’
+mcmc.list2init: no visible binding for global variable ‘nr’
+plot_data: no visible binding for global variable ‘x’
+plot_data: no visible binding for global variable ‘y’
+plot_data: no visible binding for global variable ‘control’
+plot_data: no visible binding for global variable ‘se’
+read.ensemble.output: no visible binding for global variable
+  ‘runs.samples’
+read.output: no visible binding for global variable ‘median’
+read.sa.output: no visible binding for global variable ‘runs.samples’
+run.write.configs: no visible global function definition for
+  ‘get.parameter.samples’
+run.write.configs: no visible binding for global variable
+  ‘trait.samples’
+run.write.configs: no visible binding for global variable ‘sa.samples’
+run.write.configs: no visible binding for global variable
+  ‘ensemble.samples’
+status.check: no visible binding for global variable ‘settings’
+status.end: no visible binding for global variable ‘settings’
+status.skip: no visible binding for global variable ‘settings’
+status.start: no visible binding for global variable ‘settings’
+summarize.result: no visible binding for global variable ‘n’
+summarize.result: no visible binding for global variable ‘citation_id’
+summarize.result: no visible binding for global variable ‘site_id’
+summarize.result: no visible binding for global variable ‘trt_id’
+summarize.result: no visible binding for global variable ‘control’
+summarize.result: no visible binding for global variable ‘greenhouse’
+summarize.result: no visible binding for global variable ‘time’
+summarize.result: no visible binding for global variable ‘cultivar_id’
+summarize.result: no visible binding for global variable ‘specie_id’
+summarize.result: no visible binding for global variable ‘statname’
+transformstats: no visible binding for global variable ‘trait’
+Undefined global functions or variables:
+  . citation_id control cultivar_id ensemble.samples
+  get.parameter.samples greenhouse id median n nr runs.samples
+  sa.samples se settings site_id specie_id statname time trait
+  trait.samples trt_id x y years yieldarray
+Consider adding
+  importFrom("stats", "median", "time")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... NOTE
+Rd file 'retry.func.Rd':
+  \examples lines wider than 100 characters:
+       ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
+
+These lines will be truncated in the PDF manual.
+* checking Rd cross-references ... WARNING
+Missing link or links in documentation object 'create.base.plot.Rd':
+  ‘plot.prior.density’ ‘plot.posterior.density’
+
+Missing link or links in documentation object 'download.file.Rd':
+  ‘method’
+
+Missing link or links in documentation object 'get.results.Rd':
+  ‘read.settings’
+
+Missing link or links in documentation object 'read.output.Rd':
+  ‘[PEcAn.benchmark:align.data]{PEcAn.benchmark::align.data()}’
+
+Missing link or links in documentation object 'standard_vars.Rd':
+  ‘[udunits2]{udunits}’
+
+Missing link or links in documentation object 'write.ensemble.configs.Rd':
+  ‘write.config.ED’
+
+See section 'Cross-references' in the 'Writing R Extensions' manual.
+
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  ‘logger.error’ ‘logger.getLevel’ ‘logger.info’ ‘logger.setLevel’
+  ‘logger.setOutputFile’ ‘logger.setQuitOnSevere’ ‘logger.setWidth’
+  ‘logger.severe’ ‘logger.warn’ ‘mstmip_local’ ‘mstmip_vars’
+  ‘runModule.get.results’ ‘runModule.run.write.configs’
+  ‘trait.dictionary’
+Undocumented data sets:
+  ‘mstmip_local’ ‘mstmip_vars’ ‘trait.dictionary’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'convert.input'
+  ‘dbparms’
+
+Undocumented arguments in documentation object 'ensemble.filename'
+  ‘settings’ ‘prefix’ ‘suffix’ ‘all.var.yr’ ‘ensemble.id’ ‘variable’
+  ‘start.year’ ‘end.year’
+
+Undocumented arguments in documentation object 'full.path'
+  ‘folder’
+
+Undocumented arguments in documentation object 'get.ensemble.samples'
+  ‘...’
+
+Undocumented arguments in documentation object 'get.model.output'
+  ‘settings’
+
+Undocumented arguments in documentation object 'get.results'
+  ‘sa.ensemble.id’ ‘ens.ensemble.id’ ‘variable’ ‘start.year’ ‘end.year’
+
+Undocumented arguments in documentation object 'grid2netcdf'
+  ‘gdata’ ‘date’ ‘outfile’
+Documented arguments not in \usage in documentation object 'grid2netcdf':
+  ‘grid.data’
+
+Undocumented arguments in documentation object 'logger.debug'
+  ‘...’
+
+Undocumented arguments in documentation object 'mstmipvar'
+  ‘silent’
+
+Undocumented arguments in documentation object 'plot_data'
+  ‘color’
+
+Undocumented arguments in documentation object 'r2bugs.distributions'
+  ‘direction’
+
+Undocumented arguments in documentation object 'read.ensemble.output'
+  ‘variable’ ‘ens.run.ids’
+Documented arguments not in \usage in documentation object 'read.ensemble.output':
+  ‘variables’
+
+Undocumented arguments in documentation object 'read.sa.output'
+  ‘variable’ ‘sa.run.ids’
+Documented arguments not in \usage in documentation object 'read.sa.output':
+  ‘variables’
+
+Undocumented arguments in documentation object 'retry.func'
+  ‘isError’
+
+Undocumented arguments in documentation object 'run.write.configs'
+  ‘settings’ ‘overwrite’
+Documented arguments not in \usage in documentation object 'run.write.configs':
+  ‘model’
+
+Undocumented arguments in documentation object 'seconds_in_year'
+  ‘...’
+
+Undocumented arguments in documentation object 'sensitivity.filename'
+  ‘settings’ ‘prefix’ ‘suffix’ ‘all.var.yr’ ‘pft’ ‘ensemble.id’
+  ‘variable’ ‘start.year’ ‘end.year’
+
+Undocumented arguments in documentation object 'status.check'
+  ‘name’
+
+Undocumented arguments in documentation object 'status.end'
+  ‘status’
+
+Undocumented arguments in documentation object 'status.skip'
+  ‘name’
+
+Undocumented arguments in documentation object 'status.start'
+  ‘name’
+
+Undocumented arguments in documentation object 'write.ensemble.configs'
+  ‘model’ ‘write.to.db’
+Documented arguments not in \usage in documentation object 'write.ensemble.configs':
+  ‘write.config’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... WARNING
+Argument items with no description in Rd object 'bugs.rdist':
+  ‘n’
+
+Argument items with no description in Rd object 'get.sa.sample.list':
+  ‘env’
+
+Argument items with no description in Rd object 'grid2netcdf':
+  ‘grid.data’
+
+Argument items with no description in Rd object 'theme_border':
+  ‘type’ ‘colour’ ‘size’ ‘linetype’
+
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+Status: 5 WARNINGs, 4 NOTEs

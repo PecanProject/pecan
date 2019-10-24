@@ -2,8 +2,8 @@ Package: PEcAn.utils
 Type: Package
 Title: PEcAn functions used for ecological forecasts and
     reanalysis
-Version: 1.7.0
-Date: 2018-12-03
+Version: 1.7.1
+Date: 2019-09-05
 Authors@R: c(person("Mike","Dietze"),
              person("David","LeBauer"),
              person("Xiaohui", "Feng"),
@@ -50,7 +50,7 @@ Suggests:
     sp,
     testthat (>= 2.0.0),
     xtable
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
