@@ -18,11 +18,9 @@ import requests
 rabbitmq_uri = os.getenv('RABBITMQ_URI', 'amqp://guest:guest@localhost/%2F')
 rabbitmq_mgmt_port = os.getenv('RABBITMQ_MGMT_PORT', '15672')
 rabbitmq_mgmt_path = os.getenv('RABBITMQ_MGMT_PATH', '/')
-
-# will be filled in later
+rabbitmq_mgmt_url = os.getenv('RABBITMQ_MGMT_URL', '')
 rabbitmq_username = None
 rabbitmq_password = None
-rabbitmq_mgmt_url = None
 
 # parameters to connect to BETY database
 postgres_host = os.getenv('PGHOST', 'postgres')
@@ -53,7 +51,7 @@ class MyServer(http.server.SimpleHTTPRequestHandler):
     Handles the responses from the web server. Only response that is
     handled is a GET that will return all known models.
     """
-    def do_GET(self):        
+    def do_GET(self):
         self.path = os.path.basename(self.path)
         if self.path == '':
             self.path = '/'
@@ -90,6 +88,9 @@ def get_mgmt_queue_messages(queue):
 
     try:
         response = requests.get(rabbitmq_mgmt_url + queue, auth=(rabbitmq_username, rabbitmq_password), timeout=5)
+        if response.status_code == 404:
+            # queue does not exist, so we assume 0 messages
+            return 0
         response.raise_for_status()
         return response.json()['messages']
     except Exception:
@@ -101,6 +102,8 @@ def keep_entry(consumer):
     """
     Check to see if the last time the consumer was seen is more than timeout seconds.
     """
+    global remove_model_timout
+    
     now = datetime.datetime.now()
     delta = now - dateutil.parser.parse(consumer['last_seen'])
     return delta.total_seconds() < remove_model_timout
@@ -298,7 +301,7 @@ def rabbitmq_monitor():
     connection = pika.BlockingConnection(params)
 
     # create management url
-    if rabbitmq_mgmt_port != '':
+    if not rabbitmq_mgmt_url:
         if params.ssl_options:
             rabbitmq_mgmt_protocol = 'https://'
         else:
