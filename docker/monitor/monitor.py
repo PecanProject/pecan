@@ -25,7 +25,12 @@ rabbitmq_password = None
 rabbitmq_mgmt_url = None
 
 # parameters to connect to BETY database
-posetgres_params = os.getenv('POSTGRES_PARAM', 'host=postgres dbname=bety user=bety password=bety connect_timeout=10')
+postgres_host = os.getenv('PGHOST', 'postgres')
+postgres_port = os.getenv('PGPORT', 'postgres')
+postgres_user = os.getenv('BETYUSER', 'bety')
+postgres_password = os.getenv('BETYPASSWORD', 'bety')
+postgres_database = os.getenv('BETYDATABASE', 'bety')
+postgres_uri = None
 
 # name of host when registering the model
 pecan_fqdn = os.getenv('FQDN', 'docker')
@@ -43,16 +48,23 @@ remove_model_timout = 15 * 60
 # ----------------------------------------------------------------------
 # WEB SERVER
 # ----------------------------------------------------------------------
-class MyServer(http.server.BaseHTTPRequestHandler):
+class MyServer(http.server.SimpleHTTPRequestHandler):
     """
     Handles the responses from the web server. Only response that is
     handled is a GET that will return all known models.
     """
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(bytes(json.dumps(models), 'utf-8'))
+    def do_GET(self):        
+        self.path = os.path.basename(self.path)
+        if self.path == '':
+            self.path = '/'
+
+        if self.path.startswith('models.json'):
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(bytes(json.dumps(models), 'utf-8'))
+        else:
+            super().do_GET()
 
 
 def http_server(host_port=9999):
@@ -125,12 +137,17 @@ def insert_model(model_info):
     Insert the model info into the database. If the host, modeltype or
     model does not exist it will be inserted in the database as well.
     """
-    global posetgres_params
+    global postgres_uri, postgres_host, postgres_port, postgres_database
+    global postgres_user, postgres_password
 
-    conn = None
+    if not postgres_uri:
+        postgres_uri = "host=%s port=%s dbname=%s user=%s password=%s connect_timeout=10" % (
+            postgres_host, postgres_port, postgres_database, postgres_user, postgres_password
+        )
+
     try:
         # connect to the PostgreSQL database
-        conn = psycopg2.connect(posetgres_params)
+        conn = psycopg2.connect(postgres_uri)
 
         # make sure host exists
         cur = conn.cursor()
@@ -185,7 +202,7 @@ def insert_model(model_info):
             cur = conn.cursor()
             cur.execute('INSERT INTO models (model_name, modeltype_id, revision, created_at, updated_at) '
                         'VALUES (%s, %s, %s, now(), now()) RETURNING id',
-                        (model_info['name'], model_type_id, model_info['revision']))
+                        (model_info['name'], model_type_id, model_info['version']))
             result = cur.fetchone()
             cur.close()
             if not result:
