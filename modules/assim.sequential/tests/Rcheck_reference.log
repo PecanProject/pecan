@@ -19,9 +19,7 @@
 * checking whether package ‘PEcAn.assim.sequential’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -950,4 +948,4 @@ Extensions’ manual.
 * checking for unstated dependencies in examples ... OK
 * checking examples ... NONE
 * DONE
-Status: 4 WARNINGs, 2 NOTEs
+Status: 4 WARNINGs, 1 NOTE

@@ -50,7 +50,7 @@ Suggests:
     sp,
     testthat (>= 2.0.0),
     xtable
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8

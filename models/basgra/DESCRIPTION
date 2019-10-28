@@ -1,0 +1,22 @@
+Package: PEcAn.BASGRA
+Type: Package
+Title: PEcAn package for integration of the BASGRA model
+Version: 1.7.1
+Date: 2019-09-05
+Authors@R: c(person("Istem", "Fer", email = "istem.fer@fmi.fi", role = c("aut", "cre")))
+Description: This module provides functions to link the BASGRA model to PEcAn.
+Imports:
+    PEcAn.logger,
+    PEcAn.utils (>= 1.4.8),
+    lubridate,
+    ncdf4,
+    udunits2
+Suggests:
+    testthat (>= 1.0.2)
+OS_type: unix
+License: BSD_3_clause + file LICENSE
+Copyright: Authors
+LazyLoad: yes
+LazyData: FALSE
+Encoding: UTF-8
+RoxygenNote: 6.1.1
