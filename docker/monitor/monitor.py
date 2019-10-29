@@ -323,7 +323,7 @@ def rabbitmq_monitor():
     channel.queue_bind(exchange='models', queue=result.method.queue)
 
     # listen for messages
-    channel.basic_consume(on_message_callback=callback, queue=result.method.queue)
+    channel.basic_consume(on_message_callback=callback, queue=result.method.queue, auto_ack=True)
 
     channel.start_consuming()
 
