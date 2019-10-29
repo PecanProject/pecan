@@ -307,6 +307,13 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
     DSTRBCD1 <- c(DSTRBCD1, DSTRBCD12)
   }
   
+  # Disturbance Year
+  DSTRBYR1 <- temp2$DSTRBYR1
+  if(!is.null(Tree2Tree)){
+    DSTRBYR12 <- Tree2Tree$DSTRBYR1
+    DSTRBYR1 <- c(DSTRBYR1,DSTRBYR12)
+  }
+  
   
   # if more than 1 disturbance present, there will be DSTRBCD2-3:
   # Disturbance Code 2
@@ -316,11 +323,25 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
     DSTRBCD2 <- c(DSTRBCD2, DSTRBCD22)
   }
   
+  # Disturbance Year
+  DSTRBYR2 <- temp2$DSTRBYR2
+  if(!is.null(Tree2Tree)){
+    DSTRBYR22 <- Tree2Tree$DSTRBYR2
+    DSTRBYR2 <- c(DSTRBYR2,DSTRBYR22)
+  }
+  
   # Disturbance Code 3
   DSTRBCD3 <- temp2$COND_DSTRBCD3
   if(!is.null(Tree2Tree) & "DSTRBCD3" %in% colnames((Tree2Tree))){
     DSTRBCD32 <- Tree2Tree$COND_DSTRBCD3
     DSTRBCD3 <- c(DSTRBCD3, DSTRBCD32)
+  }
+  
+  # Disturbance Year
+  DSTRBYR3 <- temp2$DSTRBYR3
+  if(!is.null(Tree2Tree)){
+    DSTRBYR32 <- Tree2Tree$DSTRBYR3
+    DSTRBYR3 <- c(DSTRBYR3,DSTRBYR32)
   }
   
   MAP <- rowMeans(time_data$wintP.wateryr)
@@ -338,7 +359,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   
   ### BA ## SDI and BA are tightly correlated, can't use both
   cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
-                         STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, MAP =MAP, MAT =MAT)
+                         STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, DSTRBYR1 =DSTRBYR1, MAP =MAP, MAT =MAT)
   #cov.data <- cbind(cov.data, SICOND, SDI)
   
   
