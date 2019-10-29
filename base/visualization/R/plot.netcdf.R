@@ -33,7 +33,7 @@ data.fetch <- function(var, nc, fun = mean) {
   
   # aggregate the data
   data <- ncdf4::ncvar_get(nc, var)
-  val  <- aggregate(data[indices], by = aggrlist, FUN = fun)$x
+  val  <- stats::aggregate(data[indices], by = aggrlist, FUN = fun)$x
   
   # get the label
   title <- nc$var[[var]]$longname
@@ -90,33 +90,34 @@ plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
   # setup output
   if (!is.null(filename)) {
     if (tolower(filename) == "x11") {
-      x11(width = width / 96, height = height / 96)
+      grDevices::x11(width = width / 96, height = height / 96)
     } else if (tolower(stringr::str_sub(filename, -4)) == ".png") {
-      png(filename = filename, width = width, height = height)
+      grDevices::png(filename = filename, width = width, height = height)
     } else if (tolower(stringr::str_sub(filename, -4)) == ".pdf") {
-      pdf(filename = filename, width = width, height = height)
+      grDevices::pdf(file = filename, width = width, height = height)
     } else if (tolower(stringr::str_sub(filename, -4)) == ".jpg") {
+      # TODO Which package is `jpg` from? grDevices doesn't have a jpg function
       jpg(filename = filename, width = width, height = height)
     } else if (tolower(stringr::str_sub(filename, -5)) == ".tiff") {
-      tiff(filename = filename, width = width, height = height)
+      grDevices::tiff(filename = filename, width = width, height = height)
     }
   }
   
   # setup plot (needs to be done before removing of NA since that removes attr as well).
-  plot.new()
-  title(xlab = attr(xval_mean, "lbl"))
-  title(ylab = attr(yval_mean, "lbl"))
+  graphics::plot.new()
+  graphics::title(xlab = attr(xval_mean, "lbl"))
+  graphics::title(ylab = attr(yval_mean, "lbl"))
   if (xvar == "time") {
     if (is.null(year)) {
-      title(main = nc$var[[yvar]]$longname)
+      graphics::title(main = nc$var[[yvar]]$longname)
     } else {
-      title(main = paste(nc$var[[yvar]]$longname, "for", year))
+      graphics::title(main = paste(nc$var[[yvar]]$longname, "for", year))
     }
   } else {
     if (is.null(year)) {
-      title(main = paste(xvar, "VS", yvar))
+      graphics::title(main = paste(xvar, "VS", yvar))
     } else {
-      title(main = paste(xvar, "VS", yvar, "for", year))
+      graphics::title(main = paste(xvar, "VS", yvar, "for", year))
     }
   }
   # done with netcdf file
@@ -139,29 +140,35 @@ plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
   o <- order(xval_mean, yval_mean)
   
   # plot actual data
-  plot.window(xlim = c(min(xval_mean), max(xval_mean)),
+  graphics::plot.window(xlim = c(min(xval_mean), max(xval_mean)),
               ylim = c(min(yvals), max(yvals)))
-  polygon(c(xval_mean[o], rev(xval_mean[o])), 
-          c(yval_max[o], rev(yval_min[o])), 
-          col = "gray", 
-          border = "black")
-  lines(x = xval_mean[o], y = yval_mean[o], col = "red")
-  points(x = xval_mean[o], y = yval_mean[o], col = "black", pch = ".", cex = 5)
-  
+  graphics::polygon(
+    c(xval_mean[o], rev(xval_mean[o])),
+    c(yval_max[o], rev(yval_min[o])),
+    col = "gray",
+    border = "black")
+  graphics::lines(x = xval_mean[o], y = yval_mean[o], col = "red")
+  graphics::points(
+    x = xval_mean[o],
+    y = yval_mean[o],
+    col = "black",
+    pch = ".",
+    cex = 5)
+
   # legend
-  legend("bottomright", col = c(1, "gray"), lwd = c(3, 6), 
-         legend = c("mean", "min/max"), 
+  graphics::legend("bottomright", col = c(1, "gray"), lwd = c(3, 6),
+         legend = c("mean", "min/max"),
          cex = 1.5)
-  
+
   # draw axis and box
-  axis(1)
-  axis(2)
-  box()
-  
+  graphics::axis(1)
+  graphics::axis(2)
+  graphics::box()
+
   ## add PEcAn icon
   add_icon()
-  
+
   if (!is.null(filename) && (tolower(filename) != "x11")) {
-    dev.off()
+    grDevices::dev.off()
   }
 }  # plot.netcdf

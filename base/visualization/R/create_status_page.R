@@ -95,7 +95,7 @@ create_status_page <- function(config_file, file_prefix='status', delta=3600) {
     lastdump <- 0 # never dumped
     if(RCurl::url.exists(version_url)) {
       temporaryFile <- tempfile()
-      download.file(version_url, destfile = temporaryFile, quiet = TRUE)
+      utils::download.file(version_url, destfile = temporaryFile, quiet = TRUE)
       version <- scan(temporaryFile,what = "character", sep = "\t", quiet = TRUE)
       unlink(temporaryFile)
 
@@ -113,8 +113,8 @@ create_status_page <- function(config_file, file_prefix='status', delta=3600) {
         # check if the schema has been updated, if so log the event
         if ((hostname %in% nodes) && (nodes[[hostname]]['schema'] != schema)) {
           msg <- paste(Sys.time(), "SCHEMA UPDATE DETECTED ON NODE", x$sync_host_id, hostname,
-                       "FROM", nodeinfo[[hostname]]['schema'], "TO", schema)
-          write(msg, file=paste0(file_prefix, ".log"), append=TRUE)
+                       "FROM", nodes[[hostname]]['schema'], "TO", schema)
+          write(msg, file = paste0(file_prefix, ".log"), append = TRUE)
         }
       }
     }
@@ -124,7 +124,7 @@ create_status_page <- function(config_file, file_prefix='status', delta=3600) {
     sync <- list()
     if (RCurl::url.exists(log_url)) {
       temporaryFile <- tempfile()
-      download.file(log_url, destfile = temporaryFile, quiet = TRUE)
+      utils::download.file(log_url, destfile = temporaryFile, quiet = TRUE)
       log <- scan(temporaryFile,what = "character", sep = "\n", quiet = TRUE)
       unlink(temporaryFile)
 
@@ -176,30 +176,38 @@ create_status_page <- function(config_file, file_prefix='status', delta=3600) {
   save(geoinfo, schema_versions, nodes, file=paste0(file_prefix, ".RData"))
 
   ## create image
-  png(filename=paste0(file_prefix, ".png"), width=1200)
-  xlim <- extendrange(sapply(nodes, function(x) { x$lon }), f=1)
-  ylim <- extendrange(sapply(nodes, function(x) { x$lat }), f=1)
-  maps::map("world", xlim=xlim, ylim=ylim)
-  maps::map("state",add=TRUE)
+  grDevices::png(filename = paste0(file_prefix, ".png"), width = 1200)
+  xlim <- grDevices::extendrange(sapply(nodes, function(x) { x$lon }), f = 1)
+  ylim <- grDevices::extendrange(sapply(nodes, function(x) { x$lat }), f = 1)
+  maps::map("world", xlim = xlim, ylim = ylim)
+  maps::map("state", add = TRUE)
 
   # show all edges
   edgecolors <- c("green","red", "yellow")
   x <- lapply(nodes, function(x) {
     lapply(x$sync, function(y) {
-      segments((x$lon+nodes[[y$id]]$lon)/2, ( x$lat+nodes[[y$id]]$lat)/2, x$lon, x$lat, col=edgecolors[y$status+1], lwd=2)
+      graphics::segments(
+        (x$lon + nodes[[y$id]]$lon) / 2,
+        (x$lat + nodes[[y$id]]$lat) / 2,
+        x$lon,
+        x$lat,
+        col = edgecolors[y$status + 1], lwd = 2)
     })
   })
 
   # show all pecan sites
-  nodecolors <- c("green","yellow", "red")
+  nodecolors <- c("green", "yellow", "red")
   x <- lapply(nodes, function(x) {
-    points(x$lon, x$lat, col=nodecolors[x$state+1], pch=19, cex=3)
-    text(x$lon, x$lat, labels=x$sync_host_id)
+    graphics::points(
+      x$lon, x$lat,
+      col = nodecolors[x$state + 1],
+      pch = 19, cex = 3)
+    graphics::text(x$lon, x$lat, labels = x$sync_host_id)
   })
 
   # graph done
-  text(xlim[1], ylim[1], labels = Sys.time(), pos=4)
-  dev.off()
+  graphics::text(xlim[1], ylim[1], labels = Sys.time(), pos = 4)
+  grDevices::dev.off()
 
   ## create html file
   htmltable <- '<html>'

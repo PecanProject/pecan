@@ -30,6 +30,7 @@ ciEnvelope <- function(x, ylo, yhi, ...) {
     x <- sub.m[[i]]["x", ]
     ylo <- sub.m[[i]]["ylo", ]
     yhi <- sub.m[[i]]["yhi", ]
-    polygon(cbind(c(x, rev(x), x[1]), c(ylo, rev(yhi), ylo[1])), border = NA, ...)
+    graphics::polygon(
+      cbind(c(x, rev(x), x[1]), c(ylo, rev(yhi), ylo[1])), border = NA, ...)
   }
 } # ciEnvelope
