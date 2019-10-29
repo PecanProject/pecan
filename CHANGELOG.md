@@ -17,6 +17,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - BASGRA_N model basic coupling.
+- models monitoring container for Docker now shows a webpage with models it has seen
 
 ## [1.7.1] - 2018-09-12
 
