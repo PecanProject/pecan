@@ -579,7 +579,7 @@ temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
 ### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
-Tree2Tree <- read.csv("/home/rstudio/pecan/FIA_inc_data/Tree2Tree.csv", stringsAsFactors = F)
+Tree2Tree <- read.csv("FIA_inc_data/Tree2Tree.csv", stringsAsFactors = F)
 
 ### limit analysis to those trees with second DBH measurement in =< year 2015
 ### this is because as of 7/2017, the available PRISM data (KNMI) go only to Dec 2015
@@ -589,17 +589,35 @@ Tree2Tree <- Tree2Tree[Tree2Tree$T2_MEASYR<=2015,]
 Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SICOND),]
 Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 
+
+FIA.COND <- read.csv("/Users/kah/Documents/docker_pecan/pecan/FIA_inc_data/AZ_COND.csv", stringsAsFactors = F)
+Tree2Tree <- merge(FIA.COND[c("DSTRBYR1", "DSTRBYR2", "DSTRBYR3", "CN", "PLT_CN", "INVYR", "STATECD", "UNITCD", "COUNTYCD", "PLOT")], Tree2Tree, by.x = "PLT_CN", by.y = "T1_PLT_CN")
+unique(temp2$Plot) %in% unique(Tree2Tree$T1_PLOT)
+
+distrub.plot <- merge(temp2, unique(Tree2Tree[,c("T1_PLOT", "DSTRBYR1", "DSTRBYR2", "DSTRBYR3")]),  by.y = "T1_PLOT", by.x = "PlotNo", all.x = TRUE, all.y = FALSE)
+
+newtemp2 <- distrub.plot[!duplicated(distrub.plot),]
+
+#ggplot(distrub.plot, aes())
+
+# join trees to cond table
+
+# join cond table
+
 ### NOW go get function that makes jags objects out of the above
 ### setwd to github folder
 setwd("/home/rstudio/pecan/modules/data.land/R")
 
+setwd("pecan/modules/data.land/R")
 
 ### read in function that creates jags objects from above data
-source("BuildJAGSdataobject.R")
+source("modules/data.land/R/BuildJAGSdataobject.R")
 #jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
 # if you don't have trees without cores, use the following line
 # or you wish to not include trees without cores
-jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 100, trunc.yr = 1966)
+jags.stuff <- buildJAGSdataobject(newtemp2, Tree2Tree, rnd.subset = 100, trunc.yr = 1966)
+jags.stuff <- buildJAGSdataobject(newtemp2,  rnd.subset = 100, trunc.yr = 1966)
+
 data <- jags.stuff$data
 z0 <- jags.stuff$z0
 cov.data <- jags.stuff$cov.data
@@ -618,13 +636,13 @@ View(z0)
 ### read in function that makes/executes a jags model from lmer-like call of a linear model
 # note that Evans version of Dietze function comments out creation of state variable initial conditions (z0)
 # which is done in the function buildJAGSdataobject instead
-source("InventoryGrowthFusion.R") 
+source("/Users/kah/Documents/docker_pecan/pecan/modules/data.land/R/InventoryGrowthFusion.R") 
 
 
 # linear model with DBH^2 removed for Precipitation and 500 cores
 ppt.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
                                   n.iter=40000, z0=z0,
-                                  n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
+                                  n.chunk=100, save.state=TRUE, random="(1|PLOT[i])  + (1|FIRE[i])",
                                   fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
                                   time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
                                   burnin_plot=FALSE, save.jags = "PPT.noX2.5000nocores.40000.txt", model.name = "PPT.noX2.5000nocores.40000.txt", 
