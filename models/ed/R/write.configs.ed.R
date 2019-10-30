@@ -531,7 +531,9 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         vals <- modifyList(vals, converted.trait.values)
 
         ## Convert settings constants to ED units
-        converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
+        constants.to.convert <- defaults[[pft]]$constants
+        constants.to.convert$num <- NULL
+        converted.defaults <- convert.samples.ED(constants.to.convert)
 
         ## Selectively replace defaults and trait values with constants from settings
         if (!is.null(converted.defaults)){
