@@ -19,7 +19,7 @@ env:
     - PGHOST=localhost
     - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
     - _R_CHECK_LENGTH_1_CONDITION_=verbose
-    -_R_CHECK_LENGTH_1_LOGIC2_=verbose
+    - _R_CHECK_LENGTH_1_LOGIC2_=verbose
 
 matrix:
   fast_finish: true
