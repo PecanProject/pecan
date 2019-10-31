@@ -296,16 +296,11 @@ if ($browndog) {
   fwrite($fh, "  </browndog>" . PHP_EOL);
 }
 
-$pft_id=1;
 fwrite($fh, "  <pfts>" . PHP_EOL);
 foreach($pft as $p) {
 	fwrite($fh, "    <pft>" . PHP_EOL);
 	fwrite($fh, "      <name>${p}</name> " . PHP_EOL);
-	fwrite($fh, "      <constants>" . PHP_EOL);
-	fwrite($fh, "        <num>${pft_id}</num>" . PHP_EOL);
-	fwrite($fh, "      </constants>" . PHP_EOL);
 	fwrite($fh, "    </pft>" . PHP_EOL);
-	$pft_id++;
 }
 fwrite($fh, "  </pfts>" . PHP_EOL);
 
