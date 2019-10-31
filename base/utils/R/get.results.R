@@ -88,7 +88,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     # Only handling one variable at a time for now
     if (length(variables.sa) >= 1) {
       for(variable.sa in variables.sa){
-        PEcAn.logger::logger.warn(paste0("Currently performs sensitivity analysis on only one variable at a time. Using first (", 
+        PEcAn.logger::logger.warn(paste0("Currently performing sensitivity analysis on variable ", 
                                          variable.sa, ")"))
         
         # if an expression is provided, convert.expr returns names of the variables accordingly
@@ -197,7 +197,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     # Only handling one variable at a time for now
     if (length(variables.ens) >= 1) {
       for(variable.ens in variables.ens){
-        PEcAn.logger::logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
+        PEcAn.logger::logger.warn(paste0("Currently performing ensemble analysis on variable ", 
                                          variable.ens, ")"))
         
         # if an expression is provided, convert.expr returns names of the variables accordingly
