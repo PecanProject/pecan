@@ -17,10 +17,26 @@
 # TODO: Remove this when c2d4u situation improves.
 
 is_wrong_build <- function(pkgname) {
-  # Typical packageDescription(pkgname)$Built result:
+
+  # lockfile implies incomplete previous installation => delete and rebuild
+  lock_path <- file.path(.libPaths(), paste0("00LOCK-", pkgname))
+  if (any(file.exists(lock_path))) {
+    unlink(lock_path, recursive = TRUE)
+    return(TRUE)
+  }
+
+  built_str <- tryCatch(
+    packageDescription(pkgname)$Built,
+    error = function(e)e)
+  if (inherits(built_str, "error")) {
+    # In the rare case we can't read the description,
+    # assume package is broken and needs rebuilding
+    return(TRUE)
+  }
+
+  # Typical packageDescription(pkgname)$Built result: we only need chars 3-7
   # "R 3.4.4; x86_64-apple-darwin15.6.0; 2019-03-18 04:41:51 UTC; unix"
-  built_ver <- substr(packageDescription(pkgname)$Built, start = 3, stop = 7)
-  built_ver <- R_system_version(built_ver)
+  built_ver <- R_system_version(substr(built_str, start = 3, stop = 7))
   sys_ver <- getRversion()
 
   # major and minor version must match, different patch versions OK
