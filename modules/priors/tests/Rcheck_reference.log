@@ -39,25 +39,7 @@ address and non-empty name.
 Package in Depends field not imported from: ‘PEcAn.utils’
   These packages need to be imported from (in the NAMESPACE file)
   for when this namespace is loaded but not attached.
-* checking S3 generic/method consistency ... WARNING
-plot:
-  function(x, ...)
-plot.posterior.density:
-  function(posterior.density, base.plot)
-
-plot:
-  function(x, ...)
-plot.prior.density:
-  function(prior.density, base.plot, prior.color)
-
-plot:
-  function(x, ...)
-plot.trait:
-  function(trait, prior, posterior.sample, trait.df, fontsize, x.lim,
-           y.lim, logx)
-
-See section ‘Generic functions and methods’ in the ‘Writing R
-Extensions’ manual.
+* checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
