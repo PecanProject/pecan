@@ -11,12 +11,15 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fix issue with cruncep download: use netcdf subset (ncss) method instead of opendap (#2424).
 - The `parse` option to `PEcAn.utils::read_web_config` had no effect when `expand` was TRUE (#2421).
 - Fixed a typo that made `PEcAn.DB::symmetric_setdiff` falsely report no differences (#2428).
+- Fixed Priors vignette (#2439).
 
 ### Changed
+- PEcAn.priors: renamed functions that looked like S3 methods but were not: `plot.posterior.density`->`plot_posterior.density`, `plot.prior.density`->`plot_prior.density`, `plot.trait`->`plot_trait` (#2439).
 - Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
 
 ### Added
 - BASGRA_N model basic coupling.
+- PEcAn.priors now exports functions `priorfig` and `plot_densities` (#2439).
 
 ## [1.7.1] - 2018-09-12
 
@@ -31,7 +34,6 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Replace deprecated `rlang::UQ` syntax with the recommended `!!`
 - Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
 - History page would not pass the hostname parameter when showing a running workflow, this would result in the running page showing an error.
-- Fixed Priors vignette (#2439)
 
 ### Changed
 - Updated modules/rtm PROSPECT docs
