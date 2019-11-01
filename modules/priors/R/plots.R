@@ -192,7 +192,7 @@ plot_trait <- function(trait,
           axis.ticks.y = element_blank(), 
           axis.line.y = element_blank(), 
           legend.position = "none", 
-          plot_title = element_text(size = fontsize$title), 
+          plot.title = element_text(size = fontsize$title), 
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(), 
           panel.border = element_blank())
