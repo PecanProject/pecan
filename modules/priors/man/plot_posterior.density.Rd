@@ -8,9 +8,9 @@
 plot_posterior.density(posterior.density, base.plot = NULL)
 }
 \arguments{
-\item{posterior.density}{}
+\item{posterior.density}{data frame containing columns x and y}
 
-\item{base.plot}{a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided}
+\item{base.plot}{a ggplot object (grob), created by \code{\link[PEcAn.utils]{create.base.plot}} if none provided}
 }
 \value{
 plot with posterior density line added
