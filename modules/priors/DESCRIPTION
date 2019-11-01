@@ -15,6 +15,7 @@ Depends:
     PEcAn.utils
 Imports:
     PEcAn.logger,
+    PEcAn.MA,
     ggplot2,
     MASS
 Suggests:

@@ -2,7 +2,8 @@
 % Please edit documentation in R/plots.R
 \name{plot_trait}
 \alias{plot_trait}
-\title{Plot trait density}
+\alias{plot.trait}
+\title{Plot trait density and data}
 \usage{
 plot_trait(trait, prior = NULL, posterior.sample = NULL,
   trait.df = NULL, fontsize = list(title = 18, axis = 14),
@@ -15,9 +16,9 @@ plot_trait(trait, prior = NULL, posterior.sample = NULL,
 
 \item{posterior.sample}{}
 
-\item{fontsize}{}
+\item{trait.df}{}
 
-\item{trait.data}{}
+\item{fontsize, x.lim, y.lim, logx}{passed on to ggplot}
 }
 \value{
 plot (grob) object

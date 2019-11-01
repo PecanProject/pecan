@@ -2,14 +2,17 @@
 % Please edit documentation in R/plots.R
 \name{plot_densities}
 \alias{plot_densities}
-\title{Plot Trait Probability Densities}
+\alias{plot.densities}
+\title{Plot probability density and data}
 \usage{
 plot_densities(density.plot_inputs, outdir, ...)
 }
 \arguments{
+\item{density.plot_inputs}{list containing trait.samples and trait.df}
+
 \item{outdir}{directory in which to generate figure as pdf}
 
-\item{sensitivity.results}{list containing sa.samples and sa.splines}
+\item{...}{passed on to plot_density}
 }
 \value{
 outputs plots in outdir/sensitivity.analysis.pdf file
