@@ -2,7 +2,8 @@
 % Please edit documentation in R/plots.R
 \name{plot_posterior.density}
 \alias{plot_posterior.density}
-\title{Add posterior density.}
+\alias{plot.posterior.density}
+\title{Add posterior density to a plot}
 \usage{
 plot_posterior.density(posterior.density, base.plot = NULL)
 }

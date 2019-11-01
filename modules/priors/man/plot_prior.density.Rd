@@ -2,7 +2,8 @@
 % Please edit documentation in R/plots.R
 \name{plot_prior.density}
 \alias{plot_prior.density}
-\title{Add Prior Density}
+\alias{plot.prior.density}
+\title{Plots a prior density from a parameterized probability distribution}
 \usage{
 plot_prior.density(prior.density, base.plot = NULL,
   prior.color = "black")

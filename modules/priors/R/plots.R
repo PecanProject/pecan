@@ -1,15 +1,14 @@
 ##--------------------------------------------------------------------------------------------------#
 ##' Plots a prior density from a parameterized probability distribution  
 ##'
-##' @name plot_prior.density
-##' @title Add Prior Density
 ##' @param prior.density 
 ##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
 ##' @param prior.color color of line to be plotted
 ##' @return plot with prior density added
 ##' @seealso \code{\link{pr.dens}}
 ##' @author David LeBauer
-##' @export plot_prior.density
+##' @export
+##' @aliases plot.prior.density
 ##' @examples
 ##' \dontrun{
 ##' plot_prior.density(pr.dens('norm', 0, 1))
@@ -26,12 +25,11 @@ plot_prior.density <- function(prior.density, base.plot = NULL, prior.color = "b
 ##--------------------------------------------------------------------------------------------------#
 ##'  Add posterior density to a plot
 ##'
-##' @name plot_posterior.density
-##' @title Add posterior density. 
 ##' @param posterior.density 
 ##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
 ##' @return plot with posterior density line added
-##' @export plot_posterior.density
+##' @aliases plot.posterior.density
+##' @export
 ##' @importFrom ggplot2 geom_line aes
 ##' @author David LeBauer
 plot_posterior.density <- function(posterior.density, base.plot = NULL) {
