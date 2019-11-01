@@ -1,20 +1,20 @@
 # ----------------------------------------------------------------------
 #------------------------------------------ Load required libraries-----
 # ----------------------------------------------------------------------
-library(PEcAn.all)
-library(PEcAn.utils)
-library(RCurl)
-library(REddyProc)
-library(tidyverse)
-library(furrr)
-library(R.utils)
-library(dynutils)
+library("PEcAn.all")
+library("PEcAn.utils")
+library("RCurl")
+library("REddyProc")
+library("tidyverse")
+library("furrr")
+library("R.utils")
+library("dynutils")
 plan(multiprocess)
 
 # ----------------------------------------------------------------------------------------------
 #------------------------------------------ That's all we need xml path and the out folder -----
 # ----------------------------------------------------------------------------------------------
-args <- commandArgs(trailingOnly = TRUE)
+args = c("/fs/data3/kzarada/ouput", FALSE, "gefs.sipnet.template.xml", TRUE, 3)
 
 if (is.na(args[1])){
   outputPath <- "/fs/data3/kzarada/ouput"
@@ -35,15 +35,17 @@ if (is.na(args[3])){
 }
 
 if (is.na(args[4])){
-  restart <-FALSE
+  restart <-TRUE
 } else {
   restart <- args[4]
 }
-outputPath <- "/fs/data3/kzarada/ouput"
-xmlTempName <-"gefs.sipnet.template.xml"
-restart <-TRUE
-nodata <- FALSE
-days.obs <- 3 #how many of observed data to include -- not including today
+
+if (is.na(args[5])){
+  days.obs <- 3  #how many of observed data to include -- not including today
+} else {
+ days.obs <- as.numeric(args[5])
+}
+
 setwd(outputPath)
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ sourcing the required tools -------------------------
@@ -347,7 +349,7 @@ if(restart == TRUE){
   copyDirectory(from = file.path(restart.path, "out/"), 
                 to = file.path(settings$outdir, "out/"))
 } #restart == TRUE
-# --------------------------------------------------------------------------------------------------
+ # --------------------------------------------------------------------------------------------------
 #--------------------------------- Run state data assimilation -------------------------------------
 # --------------------------------------------------------------------------------------------------
 

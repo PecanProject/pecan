@@ -14,9 +14,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 - Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
+- No longer writing an arbitrary num for each PFT, this was breaking ED runs potentially.
 
 ### Added
 - BASGRA_N model basic coupling.
+- models monitoring container for Docker now shows a webpage with models it has seen
 
 ## [1.7.1] - 2018-09-12
 
