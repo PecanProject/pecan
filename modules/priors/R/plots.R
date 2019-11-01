@@ -79,7 +79,7 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
           axis.text.x = element_text(size = fontsize),
           axis.title.y = element_blank(),   ## hide y axis label
           axis.title.x = element_text(size = fontsize * 0.9), 
-          plot_title = element_text(size = fontsize * 1.1))
+          plot.title = element_text(size = fontsize * 1.1))
   
   if (is.data.frame(priordata)) {
     priordata   <- subset(priordata, subset = !is.na(x))
