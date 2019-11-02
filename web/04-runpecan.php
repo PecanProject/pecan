@@ -212,7 +212,7 @@ if (! isset($dbfiles_folder)) {
 }
 
 # setup umask so group has write as well
-umask(0002);
+umask(0000);
 
 # create the folder(s)
 if (!mkdir($folder)) {
