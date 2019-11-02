@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM alpine
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 # name to use in the machines table FQDN when registering the data files
@@ -6,12 +6,7 @@ ENV FQDN=""
 
 WORKDIR /work
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        curl \
-        postgresql-client \
-        unzip \
-    && rm -rf /var/lib/apt/lists/* \
+RUN apk --no-cache add bash curl rsync postgresql-client unzip \
     && curl -s -o sites.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/sites.tgz \
     && curl -s -o inputs.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/inputs.tgz \
     && curl -s -o cru_1901_2006.bin http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/cru_1901_2006.bin \
