@@ -2,7 +2,8 @@ FROM alpine
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 # name to use in the machines table FQDN when registering the data files
-ENV FQDN=""
+ENV FQDN="" \
+    PSQL="psql -U bety -h postgres -d bety -q -t -"
 
 WORKDIR /work
 
