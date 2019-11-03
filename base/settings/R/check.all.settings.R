@@ -228,8 +228,8 @@ check.bety.version <- function(dbcon) {
   if (last_migration_date > pecan_release_date) {
     PEcAn.logger::logger.warn(
       "Last database migration", tail(versions, n = 1),
-      "is more recent than this", pecan_release_date, "release of PEcAn."
-      ". This could result in PEcAn not working as expected.")
+      "is more recent than this", pecan_release_date, "release of PEcAn.",
+      "This could result in PEcAn not working as expected.")
   }
 }
 
