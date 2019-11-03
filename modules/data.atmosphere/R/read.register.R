@@ -8,7 +8,7 @@
 read.register <- function(register.xml, con) {
   
   register <- XML::xmlToList(XML::xmlParse(register.xml))
-  print(as.data.frame(register))
+  PEcAn.logger::logger.debug(as.data.frame(register))
   
   # check scale
   if (is.null(register$scale)) {

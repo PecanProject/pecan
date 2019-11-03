@@ -223,9 +223,13 @@ check.bety.version <- function(dbcon) {
   }
   
   # check if database is newer
-  if (tail(versions, n=1) > "20141009160121") {
-    PEcAn.logger::logger.warn("Last migration", tail(versions, n=1), "is more recent than expected 20141009160121.",
-                "This could result in PEcAn not working as expected.")
+  last_migration_date <- lubridate::ymd_hms(tail(versions, n = 1))
+  pecan_release_date <- lubridate::ymd(packageDescription("PEcAn.settings")$Date)
+  if (last_migration_date > pecan_release_date) {
+    PEcAn.logger::logger.warn(
+      "Last database migration", tail(versions, n = 1),
+      "is more recent than this", pecan_release_date, "release of PEcAn."
+      ". This could result in PEcAn not working as expected.")
   }
 }
 
