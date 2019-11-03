@@ -224,7 +224,7 @@ check.bety.version <- function(dbcon) {
   
   # check if database is newer
   last_migration_date <- lubridate::ymd_hms(tail(versions, n = 1))
-  pecan_release_date <- lubridate::ymd(packageDescription("PEcAn.settings")$Date)
+  pecan_release_date <- lubridate::ymd(utils::packageDescription("PEcAn.DB")$Date)
   if (last_migration_date > pecan_release_date) {
     PEcAn.logger::logger.warn(
       "Last database migration", tail(versions, n = 1),
