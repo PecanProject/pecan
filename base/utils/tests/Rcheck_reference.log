@@ -100,9 +100,6 @@ Rd file 'retry.func.Rd':
 
 These lines will be truncated in the PDF manual.
 * checking Rd cross-references ... WARNING
-Missing link or links in documentation object 'create.base.plot.Rd':
-  ‘plot.prior.density’ ‘plot.posterior.density’
-
 Missing link or links in documentation object 'download.file.Rd':
   ‘method’
 
