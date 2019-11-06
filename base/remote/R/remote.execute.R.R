@@ -41,7 +41,7 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
     }
     result <- try(system2(R, "--no-save","--no-restore", stdout = verbose, stderr = verbose,
                           input = input))
-    print(result)
+    PEcAn.logger::logger.debug(result)
     if (!file.exists(tmpfile)) {
       fp <- file(tmpfile, "w")
       serialize(result, fp)
@@ -52,6 +52,7 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
     result <- unserialize(fp)
     close(fp)
     file.remove(tmpfile)
+    PEcAn.logger::logger.debug(result)
     return(invisible(result))
 
   } else {
