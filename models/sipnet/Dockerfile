@@ -1,13 +1,13 @@
 # this needs to be at the top, what version are we building
 ARG IMAGE_VERSION="latest"
 
-# Some variables that can be used to set control the docker build
-ARG MODEL_VERSION=git
-
 # ----------------------------------------------------------------------
 # BUILD SIPNET BINARY
 # ----------------------------------------------------------------------
 FROM debian:stretch as sipnet-binary
+
+# Some variables that can be used to set control the docker build
+ARG MODEL_VERSION=git
 
 # install dependencies
 RUN apt-get update \
@@ -46,6 +46,9 @@ FROM pecan/models:${IMAGE_VERSION}
 # ----------------------------------------------------------------------
 # SETUP FOR SPECIFIC SIPNET VERSION
 # ----------------------------------------------------------------------
+
+# Some variables that can be used to set control the docker build
+ARG MODEL_VERSION=git
 
 # Setup model_info file
 COPY model_info.json /work/model.json
