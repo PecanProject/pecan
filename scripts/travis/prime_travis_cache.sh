@@ -4,7 +4,7 @@
 # Installs as many dependencies as it can build in 30 minutes,
 # then exits with status 0 so that Travis will cache the built packages.
 
-# Usage: 
+# Usage:
 #	* first find your Travis token and store in an env var named TRAVIS_TOKEN
 #		I looked mine up using the Travis CLI tool:
 #			travis login --org --auto
