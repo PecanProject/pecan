@@ -263,6 +263,17 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     CropYield   <- output[thisyear, which(outputNames == "YIELD")] # (g DM m-2)
     outlist[[2]] <- udunits2::ud.convert(CropYield, "g m-2", "kg m-2")  
     
+    clitt   <- output[thisyear, which(outputNames == "CLITT")] # (g C m-2)
+    outlist[[3]] <- udunits2::ud.convert(clitt, "g m-2", "kg m-2")  
+    
+    csomf   <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
+    outlist[[4]] <- udunits2::ud.convert(csomf, "g m-2", "kg m-2")  
+    
+    csoms   <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
+    outlist[[5]] <- udunits2::ud.convert(csoms, "g m-2", "kg m-2")  
+    
+    outlist[[6]] <- udunits2::ud.convert(clitt + csomf + csoms, "g m-2", "kg m-2") 
+    
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
                           units = paste0("days since ", y, "-01-01 00:00:00"), 
@@ -279,6 +290,10 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     var <- list()
     var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
     var[[2]] <- PEcAn.utils::to_ncvar("CropYield", dims)
+    var[[3]] <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
+    var[[4]] <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
+    var[[5]] <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
+    var[[6]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     
     # ******************** Declare netCDF variables ********************#
     

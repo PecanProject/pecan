@@ -40,6 +40,12 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     pft.traits <- unlist(trait.values[[pft]])
     pft.names <- names(pft.traits)
     
+    # Replace matches
+    for (mi in seq_along(pft.traits)) {
+      ind <- which(names(run_params) == pft.names[mi])
+      run_params[ind] <- pft.traits[mi]
+    }
+    
     # Initial value of leaf area index m2 m-2 - logged)
     if ("ilai" %in% pft.names) {
       run_params[which(names(run_params) == "LOG10LAII")] <- log(pft.traits[which(pft.names == "ilai")])
@@ -70,10 +76,13 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     }
     
     if ("leaf_width" %in% pft.names) {
-      # Leaf width on elongating tillers (m)
-      run_params[which(names(run_params) == "LFWIDG")] <- udunits2::ud.convert(pft.traits[which(pft.names == "leaf_width")], "mm", "m")
       # Leaf width on non-elongating tillers (m)
-      run_params[which(names(run_params) == "LFWIDV")] <- run_params[which(names(run_params) == "LFWIDG")] * 0.6 # simplifying assumption
+      run_params[which(names(run_params) == "LFWIDV")] <- udunits2::ud.convert(pft.traits[which(pft.names == "leaf_width")], "mm", "m")
+    }
+    
+    if ("generative_leaf_width" %in% pft.names) {
+      # Leaf width on elongating tillers (m)
+      run_params[which(names(run_params) == "LFWIDG")] <- udunits2::ud.convert(pft.traits[which(pft.names == "generative_leaf_width")], "mm", "m")
     }
     
     # Initial and maximum value rooting depth (m)
@@ -96,6 +105,106 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
       run_params[which(names(run_params) == "SHAPE")] <- pft.traits[which(pft.names == "shape")]
     }
     
+    # Sink strength of small elongating tillers (g C tiller-1 d-1)
+    if ("elongating_tiller_sink_strength" %in% pft.names) {
+      run_params[which(names(run_params) == "SIMAX1T")] <- pft.traits[which(pft.names == "elongating_tiller_sink_strength")]
+    }
+    
+    # Minimum value of effective temperature for leaf elongation (deg C)
+    if ("gdd_tbase" %in% pft.names) {
+      run_params[which(names(run_params) == "TBASE")] <- pft.traits[which(pft.names == "gdd_tbase")]
+    }
+    
+    # Time constant of mobilisation of reserves (day)
+    if ("tc_res" %in% pft.names) {
+      run_params[which(names(run_params) == "TCRES")] <- pft.traits[which(pft.names == "tc_res")]
+    }
+    
+    # Optimum temperature for vegetative tillers becoming generative (deg C)
+    if ("TOpt_ge" %in% pft.names) {
+      run_params[which(names(run_params) == "TOPTGE")] <- pft.traits[which(pft.names == "TOpt_ge")]
+    }
+    
+    # Growth yield per unit expended carbohydrate (g C g-1 C)
+    if ("growthYield" %in% pft.names) {
+      run_params[which(names(run_params) == "YG")] <- pft.traits[which(pft.names == "growthYield")]
+    }
+    
+    # This is IC, change later
+    # Initial value of soil water concentration (m3 m-3)
+    if ("initial_volume_fraction_of_condensed_water_in_soil" %in% pft.names) {
+      run_params[which(names(run_params) == "WCI")] <- pft.traits[which(pft.names == "initial_volume_fraction_of_condensed_water_in_soil")]
+    }
+    
+    # Water concentration at saturation (m3 m-3)
+    if ("volume_fraction_of_water_in_soil_at_saturation" %in% pft.names) {
+      run_params[which(names(run_params) == "WCST")] <- pft.traits[which(pft.names == "volume_fraction_of_water_in_soil_at_saturation")]
+    }
+    
+    # Maximum surface temperature at which hardening is possible (deg C)
+    if ("THard_max" %in% pft.names) {
+      run_params[which(names(run_params) == "THARDMX")] <- pft.traits[which(pft.names == "THard_max")]
+    }
+    
+    # Minimum relative death rate of foliage (day-1)
+    if ("min_foliage_mort_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "RDRTMIN")] <- pft.traits[which(pft.names == "min_foliage_mort_rate")]
+    }
+    
+    # This is IC, change later
+    # Initial value of litter C (g C m-2)
+    if ("litter_carbon_content" %in% pft.names) {
+      run_params[which(names(run_params) == "CLITT0")] <- 
+        udunits2::ud.convert(pft.traits[which(pft.names == "litter_carbon_content")], "kg", "g")
+    }
+    
+    # This is IC, change later
+    # Initial value of SOM (g C m-2)
+    if ("SOC" %in% pft.names) {
+      run_params[which(names(run_params) == "CSOM0")] <- 
+        udunits2::ud.convert(PEcAn.utils::misc.convert(pft.traits[which(pft.names == "SOC")], "Mg ha-1", "kg C m-2"), "kg", "g")
+    }
+    
+    # This is IC, change later
+    # Initial C-N ratio of litter (g C g-1 N)
+    if ("c2n_litter" %in% pft.names) {
+      run_params[which(names(run_params) == "CNLITT0")] <- 100*pft.traits[which(pft.names == "c2n_litter")]
+    }
+    
+    # Initial C-N ratio of fast SOM (g C g-1 N)
+    if ("c2n_fSOM" %in% pft.names) {
+      run_params[which(names(run_params) == "CNSOMF0")] <- pft.traits[which(pft.names == "c2n_fSOM")]
+    }
+    
+    # Initial C-N ratio of slow SOM (g C g-1 N)
+    if ("c2n_sSOM" %in% pft.names) {
+      run_params[which(names(run_params) == "CNSOMS0")] <- pft.traits[which(pft.names == "c2n_sSOM")]
+    }
+    
+    # Initial fraction of SOC that is fast (g C g-1 C)
+    if ("r_fSOC" %in% pft.names) {
+      run_params[which(names(run_params) == "FCSOMF0")] <- pft.traits[which(pft.names == "r_fSOC")]
+    }
+    
+    # Initial value of soil mineral N (g N m-2)
+    if ("NMIN" %in% pft.names) {
+      run_params[which(names(run_params) == "NMIN0")] <- pft.traits[which(pft.names == "NMIN")]
+    }
+    
+    # Temperature at which decomposition is maximal (deg C)
+    if ("Tdecomp_max" %in% pft.names) {
+      run_params[which(names(run_params) == "TMAXF")] <- pft.traits[which(pft.names == "Tdecomp_max")]
+    }
+    
+    # Resilience of decomposition to temperature change (deg C)
+    if ("decomp_res2Tdelta" %in% pft.names) {
+      run_params[which(names(run_params) == "TSIGMAF")] <- pft.traits[which(pft.names == "decomp_res2Tdelta")]
+    }
+    
+    # Maximum N-C ratio of shoot (g N g-1 C)
+    if ("n2c_shoot_max" %in% pft.names) {
+      run_params[which(names(run_params) == "NCSHMAX")] <- pft.traits[which(pft.names == "n2c_shoot_max")]
+    }
   }
 
 
