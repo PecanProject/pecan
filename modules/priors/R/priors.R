@@ -24,28 +24,28 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
   }
   ## warning(immediate. = TRUE)
   nostart.dists <- dists[dists %in% c("weibull", "lognormal", "gamma", "normal")]
-  a <- lapply(nostart.dists, function(x) suppressWarnings(fitdistr(trait.data, x)))
+  a <- lapply(nostart.dists, function(x) suppressWarnings(MASS::fitdistr(trait.data, x)))
   names(a) <- nostart.dists
   if ("f" %in% dists) {
     print(trait)
     if (trait == "tt") {
-      a[["f"]] <- suppressWarnings(fitdistr(trait.data, "f", 
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
                                             start = list(df1 = 100, df2 = 200)))
     } else if (trait == "sla") {
-      a[["f"]] <- suppressWarnings(fitdistr(trait.data, "f", 
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
                                             start = list(df1 = 6, df2 = 1)))
     } else if (trait == "rrr") {
-      a[["f"]] <- suppressWarnings(fitdistr(trait.data, "f", 
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
                                             start = list(df1 = 6, df2 = 1)))
     } else if (trait == "q") {
-      a[["f"]] <- suppressWarnings(fitdistr(trait.data, "f", 
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
                                             start = list(df1 = 1, df2 = 2)))
     } else {
       PEcAn.logger::logger.severe(paste(trait, "not supported!"))
     }
   }
   if ("beta" %in% dists) {
-    a[["beta"]] <- suppressWarnings(fitdistr(trait.data, "beta", 
+    a[["beta"]] <- suppressWarnings(MASS::fitdistr(trait.data, "beta", 
                                              start = list(shape1 = 2, shape2 = 1)))
   }
   aicvalues <- lapply(a, AIC)

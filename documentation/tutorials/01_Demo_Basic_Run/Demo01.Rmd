@@ -102,7 +102,7 @@ Finally, **click "Next"** to start the model run.
 
 #### Data Use Policies
 
-You will see a data policy statement if you selected a data source with a policy. Agreeing to the policy is required prior to starting the run.
+The last step before the run starts is to **read and agree** to AmeriFlux's data policy and **give a valid username**. If you don't already have an Ameriflux username, click "register here" and create one. If you selected a different data source, this step may or may not be needed: you will need to agree to a data policy if your source has one, but if it doesn't then the run will start immediately.
 
 
 #### If you get an error in your run 

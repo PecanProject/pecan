@@ -1,0 +1,7 @@
+#!/bin/bash
+
+while ! curl --silent --fail --output /dev/null --location ${BETYDBURL}; do
+   echo "Waiting for betydb"
+   sleep 2
+done
+echo "BETYDB is ready"

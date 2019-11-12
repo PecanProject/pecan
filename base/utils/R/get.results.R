@@ -76,59 +76,58 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
       end.year.sa <- NA
     }
     
-    variable.sa <- variable
-    if (is.null(variable.sa)) {
+    variables.sa <- variable
+    if (is.null(variables.sa)) {
       if ("variable" %in% names(settings$sensitivity.analysis)) {
-        variable.sa <- settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"]
+        variables.sa <- settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"]
       } else {
         PEcAn.logger::logger.severe("no variable defined for sensitivity analysis")
       }
     }
     
     # Only handling one variable at a time for now
-    if (length(variable.sa) > 1) {
-      variable.sa <- variable.sa[1]
-      PEcAn.logger::logger.warn(paste0("Currently performs sensitivity analysis on only one variable at a time. Using first (", 
-                         variable.sa, ")"))
+    if (length(variables.sa) >= 1) {
+      for(variable.sa in variables.sa){
+        PEcAn.logger::logger.warn(paste0("Currently performing sensitivity analysis on variable ", 
+                                         variable.sa, ")"))
+        
+        # if an expression is provided, convert.expr returns names of the variables accordingly
+        # if a derivation is not requested it returns the variable name as is
+        variables <- convert.expr(unlist(variable.sa))
+        variable.sa <- variables$variable.eqn
+        variable.fn <- variables$variable.drv
+        
+        for(pft.name in pft.names){
+          quantiles <- rownames(sa.samples[[pft.name]])    
+          traits <- trait.names[[pft.name]]
+          
+          # when there is variable-per pft in the outputs, check for the tag for deciding SA per pft
+          per.pft <- ifelse(!is.null(settings$sensitivity.analysis$perpft), 
+                            as.logical(settings$sensitivity.analysis$perpft), FALSE)
+          sensitivity.output[[pft.name]] <- read.sa.output(traits = traits, 
+                                                           quantiles = quantiles, 
+                                                           pecandir = outdir, 
+                                                           outdir = settings$modeloutdir, 
+                                                           pft.name = pft.name, 
+                                                           start.year = start.year.sa, 
+                                                           end.year = end.year.sa, 
+                                                           variable = variable.sa, 
+                                                           sa.run.ids = sa.run.ids,
+                                                           per.pft = per.pft)
+        }
+        
+        # Save sensitivity output
+        
+        fname <- sensitivity.filename(settings, "sensitivity.output", "Rdata", 
+                                      all.var.yr = FALSE, 
+                                      pft = NULL, 
+                                      ensemble.id = sa.ensemble.id, 
+                                      variable = variable.fn, 
+                                      start.year = start.year.sa, 
+                                      end.year = end.year.sa)
+        save(sensitivity.output, file = fname)
+      }
     }
-    
-    # if an expression is provided, convert.expr returns names of the variables accordingly
-    # if a derivation is not requested it returns the variable name as is
-    variables <- convert.expr(unlist(variable.sa))
-    variable.sa <- variables$variable.eqn
-    variable.fn <- variables$variable.drv
-    
-
-    for(pft.name in pft.names){
-      quantiles <- rownames(sa.samples[[pft.name]])    
-      traits <- trait.names[[pft.name]]
-      
-      # when there is variable-per pft in the outputs, check for the tag for deciding SA per pft
-      per.pft <- ifelse(!is.null(settings$sensitivity.analysis$perpft), 
-                        as.logical(settings$sensitivity.analysis$perpft), FALSE)
-      sensitivity.output[[pft.name]] <- read.sa.output(traits = traits, 
-                                                       quantiles = quantiles, 
-                                                       pecandir = outdir, 
-                                                       outdir = settings$modeloutdir, 
-                                                       pft.name = pft.name, 
-                                                       start.year = start.year.sa, 
-                                                       end.year = end.year.sa, 
-                                                       variable = variable.sa, 
-                                                       sa.run.ids = sa.run.ids,
-                                                       per.pft = per.pft)
-    }
-    
-    # Save sensitivity output
- 
-    fname <- sensitivity.filename(settings, "sensitivity.output", "Rdata", 
-                                  all.var.yr = FALSE, 
-                                  pft = NULL, 
-                                  ensemble.id = sa.ensemble.id, 
-                                  variable = variable.fn, 
-                                  start.year = start.year.sa, 
-                                  end.year = end.year.sa)
-    save(sensitivity.output, file = fname)
-    
   }
   
   ensemble.output <- list()
@@ -182,50 +181,51 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
       end.year.ens <- NA
     }
     
-    variable.ens <- variable
-    if (is.null(variable.ens)) {
+    variables.ens <- variable
+    if (is.null(variables.ens)) {
       if ("variable" %in% names(settings$ensemble)) {
         var <- which(names(settings$ensemble) == "variable")
         for (i in seq_along(var)) {
-          variable.ens[i] <- settings$ensemble[[var[i]]]
+          variables.ens[i] <- settings$ensemble[[var[i]]]
         }
       }
     }
     
-    if (is.null(variable.ens)) 
+    if (is.null(variables.ens)) 
       PEcAn.logger::logger.severe("No variables for ensemble analysis!")
     
     # Only handling one variable at a time for now
-    if (length(variable.ens) > 1) {
-      variable.ens <- variable.ens[1]
-      PEcAn.logger::logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
-                         variable.ens, ")"))
+    if (length(variables.ens) >= 1) {
+      for(variable.ens in variables.ens){
+        PEcAn.logger::logger.warn(paste0("Currently performing ensemble analysis on variable ", 
+                                         variable.ens, ")"))
+        
+        # if an expression is provided, convert.expr returns names of the variables accordingly
+        # if a derivation is not requested it returns the variable name as is
+        variables <- convert.expr(variable.ens)
+        variable.ens <- variables$variable.eqn
+        variable.fn <- variables$variable.drv
+        
+        ensemble.output <- PEcAn.uncertainty::read.ensemble.output(
+          settings$ensemble$size,
+          pecandir = outdir, 
+          outdir = settings$modeloutdir,
+          start.year = start.year.ens, 
+          end.year = end.year.ens, 
+          variable = variable.ens,
+          ens.run.ids = ens.run.ids
+        )
+        
+        # Save ensemble output
+        fname <- ensemble.filename(settings, "ensemble.output", "Rdata", 
+                                   all.var.yr = FALSE, 
+                                   ensemble.id = ens.ensemble.id, 
+                                   variable = variable.fn, 
+                                   start.year = start.year.ens, 
+                                   end.year = end.year.ens)
+        save(ensemble.output, file = fname)
+      }
     }
-    
-    # if an expression is provided, convert.expr returns names of the variables accordingly
-    # if a derivation is not requested it returns the variable name as is
-    variables <- convert.expr(variable.ens)
-    variable.ens <- variables$variable.eqn
-    variable.fn <- variables$variable.drv
-    
-    ensemble.output <- PEcAn.uncertainty::read.ensemble.output(
-      settings$ensemble$size,
-      pecandir = outdir, 
-      outdir = settings$modeloutdir,
-      start.year = start.year.ens, 
-      end.year = end.year.ens, 
-      variable = variable.ens,
-      ens.run.ids = ens.run.ids
-    )
-    
-    # Save ensemble output
-    fname <- ensemble.filename(settings, "ensemble.output", "Rdata", 
-                               all.var.yr = FALSE, 
-                               ensemble.id = ens.ensemble.id, 
-                               variable = variable.fn, 
-                               start.year = start.year.ens, 
-                               end.year = end.year.ens)
-    save(ensemble.output, file = fname)
   }
 } # get.results
 

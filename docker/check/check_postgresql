@@ -1,0 +1,7 @@
+#!/bin/bash
+
+while ! pg_isready -U ${PGUSER} -h ${PGHOST} -p ${PGPORT}; do
+   echo "Waiting for database"
+   sleep 2
+done
+echo "Database is ready"
