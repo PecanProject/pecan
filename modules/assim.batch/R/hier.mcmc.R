@@ -112,7 +112,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
       settings$assim.batch$jump$adapt <- adapt_orig
       jcov.list <- lapply(seq_len(nsites), function(v) pda.adjust.jumps.bs(settings, jcov.arr[,,v], musite.accept.count[v], 
                                                                            params.recent[seq(v, adapt_orig * nsites, by=12), , v]))
-      jcov.list <- lapply(jcov.list, lqmm::make.positive.definite, tol=1e-16)
+      jcov.list <- lapply(jcov.list, lqmm::make.positive.definite, tol=1e-12)
       jcov.arr  <- abind::abind(jcov.list, along=3)
       musite.accept.count <- rep(0, nsites)  # Reset counter
       settings$assim.batch$jump$adapt <- adapt_orig * nsites

@@ -244,7 +244,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   }
   
   # make sure it is positive definite, see note below
-  jcov <- lqmm::make.positive.definite(jcov, tol=1e-16)
+  jcov <- lqmm::make.positive.definite(jcov, tol=1e-12)
   
   for (g in start:nmcmc) {
     
@@ -261,7 +261,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         # make sure precision is not going to be an issue
         # NOTE: for very small values this is going to be an issue
         # maybe include a scaling somewhere while building the emulator
-        jcov <- lqmm::make.positive.definite(jcov, tol=1e-16)
+        jcov <- lqmm::make.positive.definite(jcov, tol=1e-12)
       }
       
       ## propose new parameters
