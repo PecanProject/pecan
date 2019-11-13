@@ -117,7 +117,8 @@ if(!exists('prep.data'))
     sda.end,
     numvals = 100,
     vars = c("NEE", "LE"),
-    data.len = days.obs * 24  
+    data.len = days.obs, 
+    sda.start = sda.start
   ) 
 obs.raw <-prep.data$rawobs
 prep.data<-prep.data$obs

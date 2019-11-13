@@ -31,7 +31,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 3, s
 
  #Creating NEE and LE filled output 
   gapfilled.vars.out <- gapfilled.vars %>% dplyr::select(-Flag) %>% 
-                            filter(Date >= sda.start - lubridate::days(3) & Date < sda.start)
+                            filter(Date >= (sda.start - lubridate::days(data.len)) & Date < sda.start)
 
  #Pecan Flux Uncertainty 
   processed.flux <- 3:(3+length(vars)-1) %>%
@@ -78,14 +78,15 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 3, s
    
         data.frame(Date=field_data$Date,sums)
     }) # end of map
-
+ 
+                      
  #I'm sending mixing up simulations of vars to aggregate them first and then estimate their var/cov
   outlist<-processed.flux %>%
        map2_dfc(vars, function(x, xnames) {
          names(x)[2:numvals] <- paste0(names(x)[2:numvals], xnames)
  
          x %>%
-           tail(data.len) %>%
+           filter(Date >= (sda.start - lubridate::days(data.len)) & Date < sda.start) %>%
            mutate(Interval = lubridate::round_date(Date, "6 hour")) %>%
            dplyr::select(-Date)
        }) %>%
