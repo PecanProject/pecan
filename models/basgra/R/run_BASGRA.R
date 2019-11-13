@@ -283,6 +283,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     rplantaer    <- output[thisyear, which(outputNames == "RplantAer")] # (g C m-2 d-1)
     outlist[[8]] <- udunits2::ud.convert(rplantaer, "g m-2", "kg m-2") / sec_in_day
     
+    # NEE in kgC/m2/s
     # NOTE: According to BASGRA_N documentation: LUEMXQ (used in PHOT calculation) accounts for carbon lost to maintenance respiration, 
     # but not growth respiration. So, photosynthesis rate is gross photosynthesis minus maintenance respiration
     # So this is not really GPP, but it wasn't obvious to add what to get GPP, but I jsut want NEE for now, so it's OK
@@ -313,7 +314,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     var[[6]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     var[[7]] <- PEcAn.utils::to_ncvar("SoilResp", dims)
     var[[8]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
-    var[[9]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    var[[9]] <- PEcAn.utils::to_ncvar("NEE", dims)
     
     # ******************** Declare netCDF variables ********************#
     
