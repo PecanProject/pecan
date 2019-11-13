@@ -261,24 +261,34 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     outlist <- list()
     outlist[[1]] <- output[thisyear, which(outputNames == "LAI")]  # LAI in (m2 m-2)
     
-    CropYield   <- output[thisyear, which(outputNames == "YIELD")] # (g DM m-2)
+    CropYield    <- output[thisyear, which(outputNames == "YIELD")] # (g DM m-2)
     outlist[[2]] <- udunits2::ud.convert(CropYield, "g m-2", "kg m-2")  
     
-    clitt   <- output[thisyear, which(outputNames == "CLITT")] # (g C m-2)
+    clitt        <- output[thisyear, which(outputNames == "CLITT")] # (g C m-2)
     outlist[[3]] <- udunits2::ud.convert(clitt, "g m-2", "kg m-2")  
     
-    csomf   <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
+    csomf        <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
     outlist[[4]] <- udunits2::ud.convert(csomf, "g m-2", "kg m-2")  
     
-    csoms   <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
+    csoms        <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
     outlist[[5]] <- udunits2::ud.convert(csoms, "g m-2", "kg m-2")  
     
     outlist[[6]] <- udunits2::ud.convert(clitt + csomf + csoms, "g m-2", "kg m-2") 
     
     # Soil Respiration in kgC/m2/s
-    rsoil   <- output[thisyear, which(outputNames == "Rsoil")] # (g C m-2 d-1)
+    rsoil        <- output[thisyear, which(outputNames == "Rsoil")] # (g C m-2 d-1)
     outlist[[7]] <- udunits2::ud.convert(rsoil, "g m-2", "kg m-2") / sec_in_day
     
+    # Autotrophic Respiration in kgC/m2/s
+    rplantaer    <- output[thisyear, which(outputNames == "RplantAer")] # (g C m-2 d-1)
+    outlist[[8]] <- udunits2::ud.convert(rplantaer, "g m-2", "kg m-2") / sec_in_day
+    
+    # NOTE: According to BASGRA_N documentation: LUEMXQ (used in PHOT calculation) accounts for carbon lost to maintenance respiration, 
+    # but not growth respiration. So, photosynthesis rate is gross photosynthesis minus maintenance respiration
+    # So this is not really GPP, but it wasn't obvious to add what to get GPP, but I jsut want NEE for now, so it's OK
+    phot         <- output[thisyear, which(outputNames == "PHOT")] # (g C m-2 d-1)
+    nee          <- -1.0 * (phot - (rsoil + rplantaer))
+    outlist[[9]] <- udunits2::ud.convert(nee, "g m-2", "kg m-2") / sec_in_day
     
     
     # ******************** Declare netCDF dimensions and variables ********************#
@@ -301,7 +311,9 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     var[[4]] <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
     var[[5]] <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
     var[[6]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    var[[7]] <- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = dims, missval = -999, longname = "Soil Respiration")
+    var[[7]] <- PEcAn.utils::to_ncvar("SoilResp", dims)
+    var[[8]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    var[[9]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
     
     # ******************** Declare netCDF variables ********************#
     
