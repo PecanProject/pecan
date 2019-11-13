@@ -251,7 +251,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
   # writing model outputs already in standard format
   
   # only LAI and CropYield for now
-  
+  sec_in_day <- 86400
   
   years <- seq(start_year, end_year)
   for (y in years) {
@@ -275,6 +275,12 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     
     outlist[[6]] <- udunits2::ud.convert(clitt + csomf + csoms, "g m-2", "kg m-2") 
     
+    # Soil Respiration in kgC/m2/s
+    rsoil   <- output[thisyear, which(outputNames == "Rsoil")] # (g C m-2 d-1)
+    outlist[[7]] <- udunits2::ud.convert(rsoil, "g m-2", "kg m-2") / sec_in_day
+    
+    
+    
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
                           units = paste0("days since ", y, "-01-01 00:00:00"), 
@@ -295,6 +301,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     var[[4]] <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
     var[[5]] <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
     var[[6]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    var[[7]] <- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = dims, missval = -999, longname = "Soil Respiration")
     
     # ******************** Declare netCDF variables ********************#
     
