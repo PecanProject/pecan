@@ -155,23 +155,23 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     "NELLVG"    , "RLEAF"    , "SLA"      , "TILTOT"    , "FRTILG"   , "FRTILG1"  ,
     "FRTILG2"   , "RDRT"     , "VERN"     ,
     "CLITT"      , "CSOMF", "CSOMS"   , "NLITT"       , "NSOMF",
-    "NSOMS"      , "NMIN" , "Rsoil"   , "NemissionN2O",
+    "NSOMS"      , "NMIN" , "PHOT"    , "RplantAer"   ,"Rsoil"   , "NemissionN2O",
     "NemissionNO", "Nfert", "Ndep"    , "RWA"         ,
     "NSH"        , "GNSH" , "DNSH"    , "HARVNSH"     ,  "NCSH" ,
     "NCGSH"      , "NCDSH", "NCHARVSH",
-    "fNgrowth","RGRTV","FSPOT","RESNOR","TV2TIL","NSHNOR","KNMAX","KN",    # 61:68
-    "DMLV"       , "DMST"             , "NSH_DMSH"    ,                    # 69:71
-    "Nfert_TOT"  , "YIELD_TOT"        , "DM_MAX"      ,                    # 72:74
-    "F_PROTEIN"  , "F_ASH"            ,                                    # 75:76
-    "F_WALL_DM"  , "F_WALL_DMSH"      , "F_WALL_LV"   , "F_WALL_ST",       # 77:80
-    "F_DIGEST_DM", "F_DIGEST_DMSH"    ,                                    # 81:82
-    "F_DIGEST_LV", "F_DIGEST_ST"      , "F_DIGEST_WALL",                   # 83:85
-    "RDRS"       , "Precipitation"    , "Nleaching"   , "NSHmob",          # 86:89
-    "NSHmobsoil" , "Nfixation"        , "Nupt"        , "Nmineralisation", # 90:93
-    "NSOURCE"    , "NSINK"            ,                                    # 94:95
-    "NRT"        , "NCRT"             ,                                    # 96:97
-    "rNLITT"     , "rNSOMF"           ,                                    # 98:99
-    "DAYL"                                                                 # 100
+    "fNgrowth","RGRTV","FSPOT","RESNOR","TV2TIL","NSHNOR","KNMAX","KN",    # 63:70
+    "DMLV"       , "DMST"             , "NSH_DMSH"    ,                    # 71:73
+    "Nfert_TOT"  , "YIELD_TOT"        , "DM_MAX"      ,                    # 74:76
+    "F_PROTEIN"  , "F_ASH"            ,                                    # 77:78
+    "F_WALL_DM"  , "F_WALL_DMSH"      , "F_WALL_LV"   , "F_WALL_ST",       # 79:82
+    "F_DIGEST_DM", "F_DIGEST_DMSH"    ,                                    # 83:84
+    "F_DIGEST_LV", "F_DIGEST_ST"      , "F_DIGEST_WALL",                   # 85:87
+    "RDRS"       , "Precipitation"    , "Nleaching"   , "NSHmob",          # 88:91
+    "NSHmobsoil" , "Nfixation"        , "Nupt"        , "Nmineralisation", # 92:95
+    "NSOURCE"    , "NSINK"            ,                                    # 96:97
+    "NRT"        , "NCRT"             ,                                    # 98:99
+    "rNLITT"     , "rNSOMF"           ,                                    # 100:101
+    "DAYL"                                                                 # 102
   )
   
   outputUnits <- c(
@@ -184,22 +184,23 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     "(-)"       , "(d-1)"    , "(-)"      ,                                          # 37:39
     "(g C m-2)"    , "(g C m-2)"    , "(g C m-2)"    , "(g N m-2)"    , "(g N m-2)", # 40:44
     "(g N m-2)"    , "(g N m-2)"    , "(g C m-2 d-1)", "(g N m-2 d-1)",              # 45:48
-    "(g N m-2 d-1)", "(g N m-2 d-1)", "(g N m-2 d-1)", "(-)"          ,              # 49:52
-    "(g N m-2)"    , "(g N m-2 d-1)", "(g N m-2 d-1)", "(g N m-2 d-1)", "(-)"      , # 53:57
-    "(-)"          , "(-)"          , "(-)"          ,                               # 58:60
-    "(-)", "(d-1)", "(-)", "(-)", "(d-1)", "(-)", "(m2 m-2)", "(m2 m-2)",            # 61:68
-    "(g DM m-2)"   , "(g DM m-2)"   , "(g N g-1 DM)"  ,                              # 69:71
-    "(g N m-2)"    , "(g DM m-2)"   , "(g DM m-2)"    ,                              # 72:74
-    "(g g-1 DM)"   , "(g g-1 DM)"   ,                                                # 75:76
-    "(g g-1 DM)"   , "(g g-1 DM)"   , "(g g-1 DM)"    , "(g g-1 DM)"  ,              # 77:80
-    "(-)"          , "(-)"          ,                                                # 81:82
-    "(-)"          , "(-)"          , "(-)"           ,                              # 83:85
-    "(d-1)"        , "(mm d-1)"     , "(g N m-2 d-1)" , "(g N m-2 d-1)",             # 86:89
-    "(g N m-2 d-1)", "(g N m-2 d-1)", "(g N m-2 d-1)" , "(g N m-2 d-1)",             # 90:93
-    "(g N m-2 d-1)", "(g N m-2 d-1)",                                                # 94:95
-    "(g N m-2)"    , "(g N g-1 C)"  ,                                                # 96:97
+    "(g C m-2 d-1)", "(g C m-2 d-1)",                                                # 49:50
+    "(g N m-2 d-1)", "(g N m-2 d-1)", "(g N m-2 d-1)", "(-)"          ,              # 51:54
+    "(g N m-2)"    , "(g N m-2 d-1)", "(g N m-2 d-1)", "(g N m-2 d-1)", "(-)"      , # 55:59
+    "(-)"          , "(-)"          , "(-)"          ,                               # 60:62
+    "(-)", "(d-1)", "(-)", "(-)", "(d-1)", "(-)", "(m2 m-2)", "(m2 m-2)",            # 63:70
+    "(g DM m-2)"   , "(g DM m-2)"   , "(g N g-1 DM)"  ,                              # 71:73
+    "(g N m-2)"    , "(g DM m-2)"   , "(g DM m-2)"    ,                              # 74:76
+    "(g g-1 DM)"   , "(g g-1 DM)"   ,                                                # 77:78
+    "(g g-1 DM)"   , "(g g-1 DM)"   , "(g g-1 DM)"    , "(g g-1 DM)"  ,              # 79:82
+    "(-)"          , "(-)"          ,                                                # 83:84
+    "(-)"          , "(-)"          , "(-)"           ,                              # 85:87
+    "(d-1)"        , "(mm d-1)"     , "(g N m-2 d-1)" , "(g N m-2 d-1)",             # 88:91
+    "(g N m-2 d-1)", "(g N m-2 d-1)", "(g N m-2 d-1)" , "(g N m-2 d-1)",             # 92:95
+    "(g N m-2 d-1)", "(g N m-2 d-1)",                                                # 96:97
     "(g N m-2)"    , "(g N g-1 C)"  ,                                                # 98:99
-    "(d d-1)"                                                                        # 100
+    "(g N m-2)"    , "(g N g-1 C)"  ,                                                # 100:101
+    "(d d-1)"                                                                        # 102
   )
   
   NOUT <- as.integer( length(outputNames) )
