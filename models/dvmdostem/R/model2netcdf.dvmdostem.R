@@ -164,6 +164,10 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
     #bad_px <- which(run_status < 0)
   }
 
+  # A less aggressive check here might be to see if enough of the transient
+  # and scenario runs completed to do the analysis we need...
+
+
   # Get the actual pixel coords of the cell that ran
   px <- which(run_status > 0, arr.ind = TRUE) # Returns x,y array indices
   px_X <- px[1]
