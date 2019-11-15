@@ -64,7 +64,7 @@ Suggests:
 Remotes:
     github::ropensci/geonames,
     github::ropensci/nneo
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE

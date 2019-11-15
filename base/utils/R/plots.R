@@ -184,8 +184,8 @@ iqr <- function(x) {
 ##' Creates empty ggplot object
 ##'
 ##' An empty base plot to which layers created by other functions
-##' (\code{\link{plot_data}}, \code{\link{plot.prior.density}},
-##' \code{\link{plot.posterior.density}}) can be added.
+##' (\code{\link{plot_data}}, \code{\link[PEcAn.priors]{plot_prior.density}},
+##' \code{\link[PEcAn.priors]{plot_posterior.density}}) can be added.
 ##' @name create.base.plot
 ##' @title Create Base Plot
 ##' @return empty ggplot object

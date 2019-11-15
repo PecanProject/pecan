@@ -1,11 +1,11 @@
-* using log directory ‘/tmp/RtmpVlFdqS/PEcAn.ModelName.Rcheck’
-* using R version 3.5.2 (2018-12-20)
-* using platform: x86_64-pc-linux-gnu (64-bit)
+* using log directory ‘/private/var/folders/qr/mbw8xxpd45jdv_46b27914280000gn/T/Rtmpcw7AZN/PEcAn.BASGRA.Rcheck’
+* using R version 3.4.3 (2017-11-30)
+* using platform: x86_64-apple-darwin15.6.0 (64-bit)
 * using session charset: UTF-8
-* using options ‘--no-tests --no-manual --as-cran’
-* checking for file ‘PEcAn.ModelName/DESCRIPTION’ ... OK
+* using options ‘--no-manual --as-cran’
+* checking for file ‘PEcAn.BASGRA/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.ModelName’ version ‘1.7.0’
+* this is package ‘PEcAn.BASGRA’ version ‘1.7.1’
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... OK
@@ -15,16 +15,10 @@
 * checking for hidden files and directories ... OK
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
-* checking serialization versions ... OK
-* checking whether package ‘PEcAn.ModelName’ can be installed ... OK
+* checking whether package ‘PEcAn.BASGRA’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -41,37 +35,39 @@ address and non-empty name.
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-write.config.MODEL: no visible global function definition for
-  ‘db.query’
-write.config.MODEL: no visible binding for global variable ‘startdate’
-write.config.MODEL: no visible binding for global variable ‘enddate’
-Undefined global functions or variables:
-  db.query enddate startdate
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'met2model.MODEL'
-  ‘overwrite’
-
-Undocumented arguments in documentation object 'write.config.MODEL'
-  ‘trait.values’
-Documented arguments not in \usage in documentation object 'write.config.MODEL':
-  ‘trait.samples’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
+* checking line endings in C/C++/Fortran sources/headers ... OK
+* checking line endings in Makefiles ... OK
+* checking compilation flags in Makevars ... OK
+* checking for GNU extensions in Makefiles ... OK
+* checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
+* checking compiled code ... NOTE
+File ‘PEcAn.BASGRA/libs/PEcAn.BASGRA.so’:
+  Found no calls to: ‘R_registerRoutines’, ‘R_useDynamicSymbols’
+
+It is good practice to register native routines and to disable symbol
+search.
+
+See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
 * checking examples ... NONE
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... SKIPPED
+* checking tests ...
+  Running ‘testthat.R’
+ OK
 * DONE
-Status: 1 WARNING, 2 NOTEs
+
+Status: 1 NOTE
+See
+  ‘/private/var/folders/qr/mbw8xxpd45jdv_46b27914280000gn/T/Rtmpcw7AZN/PEcAn.BASGRA.Rcheck/00check.log’
+for details.
+
+

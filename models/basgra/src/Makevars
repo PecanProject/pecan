@@ -1,0 +1,39 @@
+# PEcAn BASGRA -- Makevars
+# Author: Istem Fer, Alexey Shiklomanov
+
+PKG_LIBS = $(FLIBS) 
+
+
+SOURCES = \
+    model/parameters_site.f90 \
+    model/parameters_plant.f90 \
+    model/environment.f90 \
+    model/resources.f90 \
+    model/soil.f90 \
+    model/plant.f90 \
+    model/set_params.f90 \
+    model/BASGRA.f90 
+
+
+OBJECTS = \
+    parameters_site.o \
+    parameters_plant.o \
+    environment.o \
+    resources.o \
+    soil.o \
+    plant.o \
+    set_params.o \
+    BASGRA.o 
+    
+
+.PHONY: all clean
+
+all : $(SHLIB) 
+
+$(SHLIB) : $(OBJECTS) 
+
+$(OBJECTS) :  $(SOURCES)
+	$(F77) -x f95-cpp-input -fPIC -O3 -c -fdefault-real-8 $(SOURCES) 
+
+clean :
+	rm -f $(OBJECTS) *.mod model/*.mod *.so *.o symbols.rds
