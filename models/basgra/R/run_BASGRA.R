@@ -230,7 +230,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
   days_harvest      <- matrix( as.integer(-1), nrow=100, ncol=2 )
   
   # hardcoding these for now, should be able to modify later on
-  calendar_fert[1,] <- c( 2018, 125, 10*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
+  calendar_fert[1,] <- c( 2018, 125, 0*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
   calendar_fert[2,] <- c( 2018, 250, 0*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
   #    calendar_fert[3,] <- c( 2001, 123, 0*1000/ 10000      ) # 0 kg N ha-1 applied on day 123
   calendar_Ndep[1,] <- c( 1900,   1,  0*1000/(10000*365) ) #  2 kg N ha-1 y-1 N-deposition in 1900
