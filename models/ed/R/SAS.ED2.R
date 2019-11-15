@@ -1,26 +1,3 @@
-##' @name SAS.ED2
-##' @title Use semi-analytical solution to accellerate model spinup
-##' @author Christine Rollinson, modified from original by Jaclyn Hatala-Matthes (2/18/14)
-##'         2014 Feb: Original ED SAS solution Script at PalEON modeling HIPS sites (Matthes)
-##'         2015 Aug: Modifications for greater site flexibility & updated ED
-##'         2016 Jan: Adaptation for regional-scale runs (single-cells run independently, but executed in batches)
-##'         2018 Jul: Conversion to function, Christine Rollinson July 2018
-##'@description This functions approximates landscape equilibrium steady state for vegetation and 
-##'             soil pools using the successional trajectory of a single patch modeled with disturbance
-##'             off and the prescribed disturbance rates for runs (Xia et al. 2012 GMD 5:1259-1271). 
-##' @param dir.analy Location of ED2 analyis files; expects monthly and yearly output
-##' @param dir.histo Location of ED2 history files (for vars not in analy); expects monthly
-##' @param outdir Location to write SAS .css & .pss files
-##' @param block Number of years between patch ages
-##' @param lat site latitude; used for file naming
-##' @param lon site longitude; used for file naming
-##' @param yrs.met Number of years cycled in model spinup part 1
-##' @param treefall Value to be used for TREEFALL_DISTURBANCE_RATE in ED2IN for full runs (disturbance on)
-##' @param sm_fire Value to be used for SM_FIRE if INCLUDE_FIRE=2; defaults to 0 (fire off)
-##' @param fire_intensity Value to be used for FIRE_PARAMTER; defaults to 0 (fire off)
-##' @param slxsand Soil percent sand; used to calculate expected fire return interval
-##' @param slxclay Soil percent clay; used to calculate expected fire return interval
-##' @param sufx ED2 out file suffix; used in constructing file names(default "g01.h5) 
 ##' @param decomp_scheme Decomposition scheme specified in ED2IN
 ##' @param kh_active_depth
 ##' @param Lc Used to compute nitrogen immpobilzation factor; ED default is 0.049787 (soil_respiration.f90)
@@ -42,23 +19,180 @@
 ##' @param rh_lloyd_1 Param used for decomp schemes 1 & 4 (Lloyd & Taylor 1994); ED default = 308.56
 ##' @param rh_lloyd_2 Param used for decomp schemes 1 & 4 (Lloyd & Taylor 1994); ED default = 1/56.02
 ##' @param rh_lloyd_3 Param used for decomp schemes 1 & 4 (Lloyd & Taylor 1994); ED default = 227.15
+##' @param yrs.met Number of years cycled in model spinup part 1
+##' @param sm_fire Value to be used for SM_FIRE if INCLUDE_FIRE=2; defaults to 0 (fire off)
+##' @param fire_intensity Value to be used for FIRE_PARAMTER; defaults to 0 (fire off)
+##' @param slxsand Soil percent sand; used to calculate expected fire return interval
+##' @param slxclay Soil percent clay; used to calculate expected fire return interval
 ##' @export
 ##'
-SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, block, yrs.met=30, 
-                    treefall, sm_fire=0, fire_intensity=0, slxsand=0.33, slxclay=0.33,
-                    sufx="g01.h5", prefix,
-                    decomp_scheme=2,
-                    kh_active_depth = -0.20,
-                    decay_rate_fsc=11, decay_rate_stsc=4.5, decay_rate_ssc=0.2,
-                    Lc=0.049787, c2n_slow=10.0, c2n_structural=150.0, r_stsc=0.3, # Constants from ED
-                    rh_decay_low=0.24, rh_decay_high=0.60, 
-                    rh_low_temp=18.0+273.15, rh_high_temp=45.0+273.15,
-                    rh_decay_dry=12.0, rh_decay_wet=36.0,
-                    rh_dry_smoist=0.48, rh_wet_smoist=0.98,
-                    resp_opt_water=0.8938, resp_water_below_opt=5.0786, resp_water_above_opt=4.5139,
-                    resp_temperature_increase=0.0757,
-                    rh_lloyd_1=308.56, rh_lloyd_2=1/56.02, rh_lloyd_3=227.15
-                    ) {
+SAS.ED2.param.Args <- function(decomp_scheme=2,
+                               kh_active_depth = -0.20,
+                               decay_rate_fsc=11,
+                               decay_rate_stsc=4.5,
+                               decay_rate_ssc=0.2,
+                               Lc=0.049787,
+                               c2n_slow=10.0,
+                               c2n_structural=150.0,
+                               r_stsc=0.3, # Constants from ED
+                               rh_decay_low=0.24,
+                               rh_decay_high=0.60, 
+                               rh_low_temp=18.0+273.15,
+                               rh_high_temp=45.0+273.15,
+                               rh_decay_dry=12.0,
+                               rh_decay_wet=36.0,
+                               rh_dry_smoist=0.48,
+                               rh_wet_smoist=0.98,
+                               resp_opt_water=0.8938,
+                               resp_water_below_opt=5.0786,
+                               resp_water_above_opt=4.5139,
+                               resp_temperature_increase=0.0757,
+                               rh_lloyd_1=308.56,
+                               rh_lloyd_2=1/56.02,
+                               rh_lloyd_3=227.15,
+                               yrs.met=30, 
+                               sm_fire=0,
+                               fire_intensity=0,
+                               slxsand=0.33,
+                               slxclay=0.33) {
+  
+  return(
+    c(
+      decomp_scheme,
+      kh_active_depth,
+      decay_rate_fsc,
+      decay_rate_stsc,
+      decay_rate_ssc,
+      Lc,
+      c2n_slow,
+      c2n_structural,
+      r_stsc, # Constants from ED
+      rh_decay_low,
+      rh_decay_high, 
+      rh_low_temp,
+      rh_high_temp,
+      rh_decay_dry,
+      rh_decay_wet,
+      rh_dry_smoist,
+      rh_wet_smoist,
+      resp_opt_water,
+      resp_water_below_opt,
+      resp_water_above_opt,
+      resp_temperature_increase,
+      rh_lloyd_1,
+      rh_lloyd_2,
+      rh_lloyd_3,
+      yrs.met, 
+      sm_fire,
+      fire_intensity,
+      slxsand,
+      slxclay
+    )
+  )
+  
+}
+
+
+#Soil Moisture at saturation
+calc.slmsts <- function(slxsand, slxclay){
+  # Soil moisture at saturation [ m^3/m^3 ]
+  (50.5 - 14.2*slxsand - 3.7*slxclay) / 100.
+}
+
+calc.slpots <- function(slxsand, slxclay){
+  # Soil moisture potential at saturation [ m ]
+  -1. * (10.^(2.17 - 0.63*slxclay - 1.58*slxsand)) * 0.01
+  
+}
+calc.slbs   <- function(slxsand, slxclay){
+  # B exponent (unitless)
+  3.10 + 15.7*slxclay - 0.3*slxsand
+}
+
+calc.soilcp <- function(slmsts, slpots, slbs){         
+  # Dry soil capacity (at -3.1MPa) [ m^3/m^3 ].
+  # soil(nslcon)%soilcp  = soil(nslcon)%slmsts                                        &
+  #   *  ( soil(nslcon)%slpots / (soilcp_MPa * wdns / grav))       &
+  #   ** (1. / soil(nslcon)%slbs)
+  soilcp_MPa = -3.1
+  wdns = 1.000e3    
+  grav=9.80665
+  
+  slmsts *  (slpots / (soilcp_MPa * wdns / grav)) ^ (1./slbs)
+}
+
+# How Ed calculates the fire threshold if sm_fire < 0
+smfire.neg <- function(slmsts, slpots, smfire, slbs){
+  grav=9.80665
+  # soil(nsoil)%soilfr = soil(nsoil)%slmsts * Â ( soil(nsoil)%slpots / (sm_fire * 1000. / grav)) ** ( 1. / soil(nsoil)%slbs)
+  # soilfr = slmsts * ( slpots / (sm_fire * 1000. / grav)) ** ( 1. / slbs)
+  soilfr <- slmsts*((slpots/(smfire * 1000/9.80665))^(1/slbs))
+  
+  return(soilfr)
+}
+
+# How Ed calculates the fire threshold if sm_fire > 0
+smfire.pos <- function(slmsts, soilcp, smfire){
+  soilfr <- soilcp + smfire * (slmsts - soilcp)
+  return(soilfr)
+}
+
+
+##' @name SAS.ED2
+##' @title Use semi-analytical solution to accellerate model spinup
+##' @author Christine Rollinson, modified from original by Jaclyn Hatala-Matthes (2/18/14)
+##'         2014 Feb: Original ED SAS solution Script at PalEON modeling HIPS sites (Matthes)
+##'         2015 Aug: Modifications for greater site flexibility & updated ED
+##'         2016 Jan: Adaptation for regional-scale runs (single-cells run independently, but executed in batches)
+##'         2018 Jul: Conversion to function, Christine Rollinson July 2018
+##'@description This functions approximates landscape equilibrium steady state for vegetation and 
+##'             soil pools using the successional trajectory of a single patch modeled with disturbance
+##'             off and the prescribed disturbance rates for runs (Xia et al. 2012 GMD 5:1259-1271). 
+##' @param dir.analy Location of ED2 analyis files; expects monthly and yearly output
+##' @param dir.histo Location of ED2 history files (for vars not in analy); expects monthly
+##' @param outdir Location to write SAS .css & .pss files
+##' @param lat site latitude; used for file naming
+##' @param lon site longitude; used for file naming
+##' @param block Number of years between patch ages
+##' @param treefall Value to be used for TREEFALL_DISTURBANCE_RATE in ED2IN for full runs (disturbance on)
+##' @param sufx ED2 out file suffix; used in constructing file names(default "g01.h5) 
+##' @export
+##'
+SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, block,
+                    prefix, treefall, param.args = SAS.ED2.param.Args(), sufx =
+                      "g01.h5") {
+  
+  #--- Reading in the parameters
+  decomp_scheme <- param.args[1]
+  kh_active_depth  <-  param.args[2]
+  decay_rate_fsc <- param.args[3]
+  decay_rate_stsc <- param.args[4]
+  decay_rate_ssc <- param.args[5]
+  Lc <- param.args[6]
+  c2n_slow <- param.args[7]
+  c2n_structural <- param.args[8]
+  r_stsc <- param.args[9] # Constants from ED
+  rh_decay_low <- param.args[10]
+  rh_decay_high <- param.args[11]
+  rh_low_temp <- param.args[12]
+  rh_high_temp <- param.args[13]
+  rh_decay_dry <- param.args[14]
+  rh_decay_wet <- param.args[15]
+  rh_dry_smoist <- param.args[16]
+  rh_wet_smoist <- param.args[17]
+  resp_opt_water <- param.args[18]
+  resp_water_below_opt <- param.args[19]
+  resp_water_above_opt <- param.args[20]
+  resp_temperature_increase <- param.args[21]
+  rh_lloyd_1 <- param.args[22]
+  rh_lloyd_2 <- param.args[23]
+  rh_lloyd_3 <- param.args[24]
+  yrs.met <- param.args[25]
+  sm_fire <- param.args[26]
+  fire_intensity <- param.args[27]
+  slxsand <- param.args[28]
+  slxclay <- param.args[29]
+  
   if(!decomp_scheme %in% 0:4) stop("Invalid decomp_scheme")
   # create a directory for the initialization files
   dir.create(outdir, recursive=T, showWarnings=F)
@@ -108,14 +242,16 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, block, yrs.met=30,
 
   #---------------------------------------
   # Finding the mean soil temp & moisture
-  # NOTE:  I've been plyaing around with finding the best temp & soil moisture to initialize things
+  # NOTE:  I've been playing around with finding the best temp & soil moisture to initialize things
   #        with; if using the means from the spin met cycle work best, insert them here
   # This will also be necessary for helping update disturbance parameter
   #---------------------------------------
-  slmsts <- calc.slmsts(slxsand, slxclay)
-  slpots <- calc.slpots(slxsand, slxclay)
-  slbs   <- calc.slbs(slxsand, slxclay)
-  soilcp <- calc.soilcp(slmsts, slpots, slbs)
+  soil.obj <- PEcAn.data.land::soil_params(sand = slxsand, clay = slxclay)
+  
+  slmsts <- calc.slmsts(slxsand, slxclay) # Soil Moisture at saturation
+  slpots <- calc.slpots(slxsand, slxclay)   # Soil moisture potential at saturation [ m ]
+  slbs   <- calc.slbs(slxsand, slxclay)   # B exponent (unitless)
+  soilcp <- calc.soilcp(slmsts, slpots, slbs) # Dry soil capacity (at -3.1MPa) [ m^3/m^3 ]
   
   # Calculating Soil fire characteristics
   soilfr=0
