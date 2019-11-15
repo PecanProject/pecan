@@ -91,6 +91,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
         Tair <-ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
         Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
         
+        
+        #in BASGRA tmin and tmax is only used to calculate the average daily temperature, see environment.f90
         t_dmean <- round(tapply(Tair_C, ind, mean, na.rm = TRUE), digits = 2) # maybe round these numbers 
         matrix_weather[ ,4] <- t_dmean # mean temperature (degrees Celsius)
         matrix_weather[ ,5] <- t_dmean # that's what they had in read_weather_Bioforsk
@@ -99,7 +101,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
         RH <- round(tapply(RH, ind, mean, na.rm = TRUE), digits = 2) 
         
         # This is vapor pressure according to BASGRA.f90#L86 and environment.f90#L49
-        matrix_weather[ ,6] <- round(exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 100, digits = 2)
+        matrix_weather[ ,6] <- round(exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 10s0, digits = 2)
         
         # TODO: check these
         Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
@@ -266,38 +268,41 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     thisyear <- output[ , outputNames == "year"] == y
     
     outlist <- list()
-    outlist[[1]] <- output[thisyear, which(outputNames == "LAI")]  # LAI in (m2 m-2)
+    outlist[[1]]  <- output[thisyear, which(outputNames == "LAI")]  # LAI in (m2 m-2)
     
-    CropYield    <- output[thisyear, which(outputNames == "YIELD")] # (g DM m-2)
-    outlist[[2]] <- udunits2::ud.convert(CropYield, "g m-2", "kg m-2")  
+    CropYield     <- output[thisyear, which(outputNames == "YIELD")] # (g DM m-2)
+    outlist[[2]]  <- udunits2::ud.convert(CropYield, "g m-2", "kg m-2")  
     
-    clitt        <- output[thisyear, which(outputNames == "CLITT")] # (g C m-2)
-    outlist[[3]] <- udunits2::ud.convert(clitt, "g m-2", "kg m-2")  
+    clitt         <- output[thisyear, which(outputNames == "CLITT")] # (g C m-2)
+    outlist[[3]]  <- udunits2::ud.convert(clitt, "g m-2", "kg m-2")  
     
-    csomf        <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
-    outlist[[4]] <- udunits2::ud.convert(csomf, "g m-2", "kg m-2")  
+    csomf         <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
+    outlist[[4]]  <- udunits2::ud.convert(csomf, "g m-2", "kg m-2")  
     
-    csoms        <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
-    outlist[[5]] <- udunits2::ud.convert(csoms, "g m-2", "kg m-2")  
+    csoms         <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
+    outlist[[5]]  <- udunits2::ud.convert(csoms, "g m-2", "kg m-2")  
     
-    outlist[[6]] <- udunits2::ud.convert(clitt + csomf + csoms, "g m-2", "kg m-2") 
+    outlist[[6]]  <- udunits2::ud.convert(clitt + csomf + csoms, "g m-2", "kg m-2") 
     
     # Soil Respiration in kgC/m2/s
-    rsoil        <- output[thisyear, which(outputNames == "Rsoil")] # (g C m-2 d-1)
-    outlist[[7]] <- udunits2::ud.convert(rsoil, "g m-2", "kg m-2") / sec_in_day
+    rsoil         <- output[thisyear, which(outputNames == "Rsoil")] # (g C m-2 d-1)
+    outlist[[7]]  <- udunits2::ud.convert(rsoil, "g m-2", "kg m-2") / sec_in_day
     
     # Autotrophic Respiration in kgC/m2/s
-    rplantaer    <- output[thisyear, which(outputNames == "RplantAer")] # (g C m-2 d-1)
-    outlist[[8]] <- udunits2::ud.convert(rplantaer, "g m-2", "kg m-2") / sec_in_day
+    rplantaer     <- output[thisyear, which(outputNames == "RplantAer")] # (g C m-2 d-1)
+    outlist[[8]]  <- udunits2::ud.convert(rplantaer, "g m-2", "kg m-2") / sec_in_day
     
     # NEE in kgC/m2/s
     # NOTE: According to BASGRA_N documentation: LUEMXQ (used in PHOT calculation) accounts for carbon lost to maintenance respiration, 
     # but not growth respiration. So, photosynthesis rate is gross photosynthesis minus maintenance respiration
     # So this is not really GPP, but it wasn't obvious to add what to get GPP, but I jsut want NEE for now, so it's OK
-    phot         <- output[thisyear, which(outputNames == "PHOT")] # (g C m-2 d-1)
-    nee          <- -1.0 * (phot - (rsoil + rplantaer))
-    outlist[[9]] <- udunits2::ud.convert(nee, "g m-2", "kg m-2") / sec_in_day
+    phot          <- output[thisyear, which(outputNames == "PHOT")] # (g C m-2 d-1)
+    nee           <- -1.0 * (phot - (rsoil + rplantaer))
+    outlist[[9]]  <- udunits2::ud.convert(nee, "g m-2", "kg m-2") / sec_in_day
     
+    # Daily average temperature degC, useful diagnostic
+    tmp           <- output[thisyear, which(outputNames == "DAVTMP")]
+    outlist[[10]] <- udunits2::ud.convert(tmp, "degC", "K")
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
@@ -313,15 +318,16 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     dims <- list(lon = lon, lat = lat, time = t)
     
     var <- list()
-    var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
-    var[[2]] <- PEcAn.utils::to_ncvar("CropYield", dims)
-    var[[3]] <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
-    var[[4]] <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
-    var[[5]] <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
-    var[[6]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    var[[7]] <- PEcAn.utils::to_ncvar("SoilResp", dims)
-    var[[8]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
-    var[[9]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    var[[1]]  <- PEcAn.utils::to_ncvar("LAI", dims)
+    var[[2]]  <- PEcAn.utils::to_ncvar("CropYield", dims)
+    var[[3]]  <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
+    var[[4]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
+    var[[5]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
+    var[[6]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    var[[7]]  <- PEcAn.utils::to_ncvar("SoilResp", dims)
+    var[[8]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    var[[9]]  <- PEcAn.utils::to_ncvar("NEE", dims)
+    var[[10]] <- PEcAn.utils::to_ncvar("Tair", dims)
     
     # ******************** Declare netCDF variables ********************#
     
