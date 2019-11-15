@@ -31,7 +31,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
   start_year  <- lubridate::year(start_date)
   end_year    <- lubridate::year(end_date)
   
-  
+
   ################################################################################
   ### FUNCTIONS FOR READING WEATHER DATA
   mini_met2model_BASGRA <- function(file_path,
@@ -45,7 +45,14 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     ctr <- 1
     for(year in seq(start_year, end_year)) {
       
-      simdays <- seq(lubridate::yday(start_date), lubridate::yday(end_date))
+      if(year == start_year & year != end_year){
+        simdays <- seq(lubridate::yday(start_date), days_in_year(year))
+      }else if(year != start_year & year == end_year){
+        simdays <- seq(1, lubridate::yday(end_date))
+      }else{
+        simdays <- seq(lubridate::yday(start_date), lubridate::yday(end_date))
+      }
+      
       
       NDAYS          <- length(simdays)
       NWEATHER       <- as.integer(8)
