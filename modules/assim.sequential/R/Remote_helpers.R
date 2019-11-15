@@ -160,9 +160,29 @@ SDA_remote_launcher <-function(settingPath,
       delete = FALSE,
       stderr = FALSE
     )
+    
+    # change the pft folder inside the setting
+    
+    settings$pfts %>%
+      purrr::map('outdir') %>%
+      walk(function(pft.dir) {
+        settings <<-
+          rapply(settings, function(x)
+            ifelse(
+              x == missing.input,
+              file.path(settings$host$folder,
+                        folder_name, "pft", fdir, fname) ,
+              x
+            ),
+            how = "replace")
+      })
+    
+
+    
   } else {
     #
-    PEcAn.logger::logger.severe("You need to have either PFT folder or sample.Rdata !")
+    
+    PEcAn.logger::logger.severe("You need to have either PFT folder or samples.Rdata !")
   }
   #----------------------------------------------------------------
   # Obs
@@ -215,7 +235,8 @@ SDA_remote_launcher <-function(settingPath,
   }
 
   # see if we can find those mets on remote
-  missing.inputs <- input.paths %>% map_lgl(function(.x) {
+  missing.inputs <- input.paths %>%
+    map_lgl(function(.x) {
     out <- remote.execute.R(
       script = paste0("file.exists(\"/", .x, "\")"),
       host = my_host,
@@ -235,29 +256,47 @@ SDA_remote_launcher <-function(settingPath,
                            scratchdir = ".")
   }
   
-
+  # Do the Rsync to copy all the main dir of the inputs
+  need.copy <- input.paths[!missing.inputs]
   
-  input.paths[!missing.inputs] %>%
+  need.copy.dirs <- dirname(need.copy) %>%
+    unique() %>%
+    discard(~ .x %in% c(".", "/fs/data1/pecan.data/dbfiles" ))
+  
+  #copy over
+  remote.copy.to(
+    my_host,
+    need.copy.dirs,
+    file.path(settings$host$folder, folder_name, "inputs"),
+    delete = FALSE,
+    stderr = FALSE
+  )
+  
+  
+  need.copy%>%
     walk(function(missing.input){
-      tryCatch(
-        {
+
+       tryCatch({
+         
+         PEcAn.logger::logger.info(paste0("Trying modify the path to the following missing input :", missing.input))
+        
           path.break <- strsplit(missing.input, "/")[[1]]
           #since I'm keeping all the inputs in one folder, I have to combine site folder name with file name
-          fname <-paste0(path.break[length(path.break) - 1], "_", path.break[length(path.break)])
+          fdir <-path.break[length(path.break) - 1]
+          fdir <- ifelse(length(fdir)==0, "", fdir)
+          fname <-path.break[length(path.break)]
           
-          # copy the missing
-          remote.copy.to(
-            my_host,
-            missing.input,
-            paste0(settings$host$folder, "/", folder_name, "/inputs/", fname),
-            delete = FALSE,
-            stderr = FALSE
-          )
-          
+
           #replace the path
-          settings <<-rapply(settings, function(x) ifelse(x==missing.input,
-                                                          paste0(settings$host$folder,"/",folder_name,"/inputs/",fname) ,x),
-                             how = "replace")
+          settings <<-
+            rapply(settings, function(x)
+              ifelse(
+                x == missing.input,
+                file.path(settings$host$folder,
+                          folder_name, "inputs", fdir, fname) ,
+                x
+              ),
+              how = "replace")
           
           
         },
@@ -297,7 +336,7 @@ SDA_remote_launcher <-function(settingPath,
   remote.copy.to(
     my_host,
     file.path(save.setting.dir, basename(settingPath)),
-    settings$outdir,
+    file.path(settings$host$folder, folder_name),
     delete = FALSE,
     stderr = FALSE
   )
@@ -308,14 +347,14 @@ SDA_remote_launcher <-function(settingPath,
   remote.copy.to(
     my_host,
     system.file("RemoteLauncher", "SDA_launcher.R", package = "PEcAn.assim.sequential"),
-    settings$outdir,
+    file.path(settings$host$folder,folder_name),
     delete = FALSE,
     stderr = FALSE
   )
   
   cmd <- paste0("Rscript ",
-                settings$outdir,"/SDA_launcher.R ", # remote luncher
-                settings$outdir,"/",basename(settingPath), # path to settings
+                remote_settings$outdir,"/SDA_launcher.R ", # remote luncher
+                remote_settings$outdir, "/" ,basename(settingPath), # path to settings
                 " Obs//", basename(ObsPath)
   )
   

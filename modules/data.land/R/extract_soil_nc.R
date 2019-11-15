@@ -38,9 +38,17 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
   if ("GML" %in% rgdal::ogrDrivers()$name) {
     
     suppressMessages({
-      #disambiguateFIDs if TRUE, and FID values are not unique, they will be set to unique values 1:N for N features; problem observed in GML files
-      sarea <-rgdal::readOGR(mu.Path, disambiguateFIDs=T)
-  
+
+    #disambiguateFIDs if TRUE, and FID values are not unique, they will be set to unique values 1:N for N features; problem observed in GML files
+    #idk why but gssurgo api seems to fail for no reason, that'w why I try 3 times.
+      for(i in 1:3){
+       # try to read the polygon to get the mukey
+       sarea <-try(rgdal::readOGR(mu.Path, disambiguateFIDs=T), silent = TRUE)
+       if( class(sarea) != "try-error" ) break;
+       PEcAn.logger::logger.warn(paste0(i, " attemp was unsuccessful"))
+       Sys.sleep(1)
+     }
+
       # flipping the coordinates 
       # gdal reads the gSSUGO layers with fliped coordinateds
       for (i in seq_along(sarea@polygons)){
@@ -52,7 +60,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
       
       areasf <-sf::st_as_sf(sarea)
       # getting the site point ready
-      site = sf::st_as_sf(data.frame(long=lon, lat=lat),coords=c("long","lat"))
+      site = sf::st_as_sf(data.frame(long=lon, lat=lat), coords=c("long","lat"))
       
       #buffer the radius around site / and clip the study area based on buffer
       site_buffer = sf::st_buffer(site, (radius/111000)) # converting radius m to dgree - each degree is about 111 Km
@@ -114,7 +122,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     }) %>%
     setNames(names(soilprop.new)[1:4])
   #This ensures that I have at least one soil ensemble in case the modeling part failed
-  all.soil.ens <-c(all.soil.ens,list(soil.data.gssurgo))
+  all.soil.ens <-c(all.soil.ens, list(soil.data.gssurgo))
   
   
   # What I do here is that I put soil data into depth classes and then model each class speparatly
@@ -173,6 +181,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
       split(.$mukey)%>% 
       purrr::map(function(soiltype.sim){
         sizein <- (mukey_area$Area[ mukey_area$mukey == soiltype.sim$mukey %>% unique()])*size
+        
         1:ceiling(sizein) %>%
           purrr::map(function(x){
             soiltype.sim %>% 
