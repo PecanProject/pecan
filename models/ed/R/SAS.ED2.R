@@ -44,9 +44,9 @@
 ##' @param rh_lloyd_3 Param used for decomp schemes 1 & 4 (Lloyd & Taylor 1994); ED default = 227.15
 ##' @export
 ##'
-SAS.ED2 <- function(dir.analy, dir.histo, outdir, prefix, lat, lon, block, yrs.met=30, 
+SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, block, yrs.met=30, 
                     treefall, sm_fire=0, fire_intensity=0, slxsand=0.33, slxclay=0.33,
-                    sufx="g01.h5",
+                    sufx="g01.h5", prefix,
                     decomp_scheme=2,
                     kh_active_depth = -0.20,
                     decay_rate_fsc=11, decay_rate_stsc=4.5, decay_rate_ssc=0.2,
