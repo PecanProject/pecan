@@ -46,7 +46,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     for(year in seq(start_year, end_year)) {
       
       if(year == start_year & year != end_year){
-        simdays <- seq(lubridate::yday(start_date), days_in_year(year))
+        simdays <- seq(lubridate::yday(start_date), PEcAn.utils::days_in_year(year))
       }else if(year != start_year & year == end_year){
         simdays <- seq(1, lubridate::yday(end_date))
       }else{
