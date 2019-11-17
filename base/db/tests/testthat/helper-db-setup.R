@@ -10,22 +10,35 @@ get_db_params <- function() {
   #                                host = "localhost",
   #                                port = 5432))
   # ```
+  # OR by setting Postgres environment parameters in your shell:
+  # ```
+  # export PGHOST=localhost
+  # export PGUSER=bety
+  # [etc]
+  # ```
   option_params <- getOption("pecan.db.params")
   # Check if running on continuous integration (CI)
   # If yes, skip this test
-  is_ci <- Sys.getenv('CI') != ''
+  is_ci <- Sys.getenv("CI") != ""
   if (!is.null(option_params)) {
     return(option_params)
   } else if (is_ci) {
-    return(list(host = "localhost", user = "bety", password = "bety",
-                driver = "Postgres"))
+    return(get_postgres_envvars(
+      host = "localhost",
+      user = "bety",
+      password = "bety",
+      driver = "Postgres"))
   } else {
     if (PEcAn.remote::fqdn() == "pecan2.bu.edu") {
       return(list(host = "psql-pecan.bu.edu", driver = "PostgreSQL",
                   dbname = "bety", user = "bety", password = "bety"))
     } else {
-      return(list(host = "localhost", driver = "PostgreSQL",
-                  user = "bety", dbname = "bety", password = "bety"))
+      return(get_postgres_envvars(
+        host = "localhost",
+        driver = "PostgreSQL",
+        user = "bety",
+        dbname = "bety",
+        password = "bety"))
     }
   }
 }
