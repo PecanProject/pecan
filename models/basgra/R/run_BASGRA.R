@@ -300,9 +300,6 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     nee           <- -1.0 * (phot - (rsoil + rplantaer))
     outlist[[9]]  <- udunits2::ud.convert(nee, "g m-2", "kg m-2") / sec_in_day
     
-    # Daily average temperature degC, useful diagnostic
-    tmp           <- output[thisyear, which(outputNames == "DAVTMP")]
-    outlist[[10]] <- udunits2::ud.convert(tmp, "degC", "K")
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
@@ -327,7 +324,6 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     var[[7]]  <- PEcAn.utils::to_ncvar("SoilResp", dims)
     var[[8]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
     var[[9]]  <- PEcAn.utils::to_ncvar("NEE", dims)
-    var[[10]] <- PEcAn.utils::to_ncvar("Tair", dims)
     
     # ******************** Declare netCDF variables ********************#
     
