@@ -101,7 +101,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
         RH <- round(tapply(RH, ind, mean, na.rm = TRUE), digits = 2) 
         
         # This is vapor pressure according to BASGRA.f90#L86 and environment.f90#L49
-        matrix_weather[ ,6] <- round(exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 10s0, digits = 2)
+        matrix_weather[ ,6] <- round(exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 100, digits = 2)
         
         # TODO: check these
         Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
