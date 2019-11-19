@@ -15,7 +15,7 @@ loadPath.sitePFT <- function(settings, Path) {
   #finding the file extension.
   ext <- tools::file_ext(Path)
 
-  if (ext == "csv" | ext == "txt") {
+  if (ext == "csv" || ext == "txt") {
     # reading in the links
     links <- read.table(file.path(Path), header = T, sep = ",")
     #check to make sure the input file is what we expect it.
@@ -25,6 +25,6 @@ loadPath.sitePFT <- function(settings, Path) {
         "column number is zero or your file does not have two columns.")
     }
 
-    return(links %>% `colnames<-`(c("site", "pft")))
+    return(`colnames<-`(links, c("site", "pft")))
   }
 }

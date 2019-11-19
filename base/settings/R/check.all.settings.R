@@ -23,16 +23,18 @@ check.inputs <- function(settings) {
   dbcon <- PEcAn.DB::db.open(settings$database$bety)
   on.exit(PEcAn.DB::db.close(dbcon))
 
-  inputs <- PEcAn.DB::db.query(paste0(
-    "SELECT tag, format_id, required FROM modeltypes, modeltypes_formats ",
-    "WHERE modeltypes_formats.modeltype_id = modeltypes.id ",
-      "AND modeltypes.name='", settings$model$type, "' ",
-      "AND modeltypes_formats.input"), con=dbcon)
+  inputs <- PEcAn.DB::db.query(
+    paste0(
+      "SELECT tag, format_id, required FROM modeltypes, modeltypes_formats ",
+      "WHERE modeltypes_formats.modeltype_id = modeltypes.id ",
+        "AND modeltypes.name='", settings$model$type, "' ",
+        "AND modeltypes_formats.input"),
+    con = dbcon)
 
   # check list of inputs
   allinputs <- names(settings$run$inputs)
   if (nrow(inputs) > 0) {
-    for(i in 1:nrow(inputs)) {
+    for (i in 1:nrow(inputs)) {
       tag <- inputs$tag[i]
       hostname <- settings$host$name
       allinputs <- allinputs[allinputs != tag]
@@ -49,15 +51,15 @@ check.inputs <- function(settings) {
 
       # check if <id> exists
       if ("id" %in% names(settings$run$inputs[[tag]])) {
-        id <- settings$run$inputs[[tag]][['id']]
+        id <- settings$run$inputs[[tag]][["id"]]
         file <- PEcAn.DB::dbfile.file("Input", id, dbcon, hostname)
         if (is.na(file)) {
           PEcAn.logger::logger.error(
             "No file found for", tag, " and id", id, "on host", hostname)
         } else {
-          if (is.null(settings$run$inputs[[tag]][['path']])) {
-            settings$run$inputs[[tag]]['path'] <- file
-          } else if (file != settings$run$inputs[[tag]][['path']]) {
+          if (is.null(settings$run$inputs[[tag]][["path"]])) {
+            settings$run$inputs[[tag]]["path"] <- file
+          } else if (file != settings$run$inputs[[tag]][["path"]]) {
             PEcAn.logger::logger.warn(
               "Input file and id do not match for ", tag)
           }
@@ -65,37 +67,37 @@ check.inputs <- function(settings) {
       } else if ("path" %in% names(settings$run$inputs[[tag]])) {
         # can we find the file so we can set the tag.id
         id <- PEcAn.DB::dbfile.id(
-          'Input',
-          settings$run$inputs[[tag]][['path']],
+          "Input",
+          settings$run$inputs[[tag]][["path"]],
           dbcon,
           hostname)
         if (!is.na(id)) {
-          settings$run$inputs[[tag]][['id']] <- id
+          settings$run$inputs[[tag]][["id"]] <- id
         }
       }
-      PEcAn.logger::logger.info("path",settings$run$inputs[[tag]][['path']])
+      PEcAn.logger::logger.info("path", settings$run$inputs[[tag]][["path"]])
       # check to see if format is right type
       if ("id" %in% names(settings$run$inputs[[tag]])) {
         formats <- PEcAn.DB::db.query(
           paste0(
             "SELECT format_id FROM inputs WHERE id=",
-            settings$run$inputs[[tag]][['id']]),
+            settings$run$inputs[[tag]][["id"]]),
           con = dbcon)
         if (nrow(formats) >= 1) {
-          if (formats[1, 'format_id'] != inputs$format_id[i]) {
+          if (formats[1, "format_id"] != inputs$format_id[i]) {
             PEcAn.logger::logger.warn(
               "@Format of input", tag,
               "does not match specified input:",
-              formats[1, 'format_id'], inputs$format_id[i])
+              formats[1, "format_id"], inputs$format_id[i])
             # zero out path, do_conversions will need to convert specified
             # input ID to model format
-            settings$run$inputs[[tag]][['path']] <- NULL
+            settings$run$inputs[[tag]][["path"]] <- NULL
           }
         } else {
           PEcAn.logger::logger.error("Could not check format of", tag, ".")
         }
       }
-      PEcAn.logger::logger.info("path",settings$run$inputs[[tag]][['path']])
+      PEcAn.logger::logger.info("path", settings$run$inputs[[tag]][["path"]])
     }
   }
 
@@ -166,19 +168,19 @@ check.database <- function(database) {
   }
 
   ## The following hack handles *.illinois.* to *.uiuc.* aliases of ebi-forecast
-  if(!is.null(database$host)){
+  if (!is.null(database$host)) {
     forcastnames <- c("ebi-forecast.igb.uiuc.edu",
                       "ebi-forecast.igb.illinois.edu")
-    if((database$host %in% forcastnames) &
-       (Sys.info()['nodename'] %in% forcastnames)){
+    if ((database$host %in% forcastnames)
+        && (Sys.info()["nodename"] %in% forcastnames)) {
       database$host <- "localhost"
     }
-  } else if(is.null(database$host)){
+  } else if (is.null(database$host)) {
     database$host <- "localhost"
   }
 
   ## convert strings around from old format to new format
-  if(is.null(database[["user"]])){
+  if (is.null(database[["user"]])) {
     if (!is.null(database$userid)) {
       PEcAn.logger::logger.info("'userid' in database section should be 'user'")
       database$user <- database$userid
@@ -196,10 +198,10 @@ check.database <- function(database) {
   database$userid <- database$username <- NULL
 
   # fill in defaults for the database
-  if(is.null(database$password)) {
+  if (is.null(database$password)) {
     database$password <- "bety"
   }
-  if(is.null(database$dbname)) {
+  if (is.null(database$dbname)) {
     database$dbname <- "bety"
   }
 
@@ -223,9 +225,9 @@ check.database <- function(database) {
 check.bety.version <- function(dbcon) {
   versions <- PEcAn.DB::db.query(
     "SELECT version FROM schema_migrations;",
-    con=dbcon)[['version']]
+    con = dbcon)[["version"]]
 
-  # there should always be a versin 1
+  # there should always be a version 1
   if (! ("1" %in% versions)) {
     PEcAn.logger::logger.severe(
       "No version 1, how did this database get created?")
@@ -273,32 +275,32 @@ check.bety.version <- function(dbcon) {
 #' @return will return the updated settings values with defaults set.
 #' @author Rob Kooper, David LeBauer
 #' @export check.settings
-check.settings <- function(settings, force=FALSE) {
-  if(!force
-     && !is.null(settings$settings.info$checked)
-     && settings$settings.info$checked == TRUE) {
+check.settings <- function(settings, force = FALSE) {
+  if (!force
+      && !is.null(settings$settings.info$checked)
+      && settings$settings.info$checked == TRUE) {
     PEcAn.logger::logger.info("Settings have been checked already. Skipping.")
     return(invisible(settings))
   } else {
     PEcAn.logger::logger.info("Checking settings...")
   }
 
-  if(is.MultiSettings(settings)) {
+  if (is.MultiSettings(settings)) {
     return(invisible(papply(settings, check.settings, force = force)))
   }
 
-  scipen = getOption("scipen")
-  on.exit(options(scipen=scipen))
-  options(scipen=12)
+  scipen <- getOption("scipen")
+  on.exit(options(scipen = scipen))
+  options(scipen = 12)
 
 
   settings <- check.database.settings(settings)
   #checking the ensemble tag in settings
   settings <- check.ensemble.settings(settings)
 
-  if(!is.null(settings$database$bety)) {
+  if (!is.null(settings$database$bety)) {
     dbcon <- PEcAn.DB::db.open(settings$database$bety)
-    on.exit(PEcAn.DB::db.close(dbcon), add=TRUE)
+    on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
   } else {
     dbcon <- NULL
   }
@@ -321,10 +323,10 @@ check.settings <- function(settings, force=FALSE) {
       "No models will be executed!")
   }
 
-  settings <- papply(settings, check.run.settings, dbcon=dbcon)
+  settings <- papply(settings, check.run.settings, dbcon = dbcon)
 
   # check meta-analysis
-  if(!is.null(settings$meta.analysis)){
+  if (!is.null(settings$meta.analysis)) {
     if (is.null(settings$meta.analysis$iter)) {
       settings$meta.analysis$iter <- 3000
       PEcAn.logger::logger.info(
@@ -337,7 +339,7 @@ check.settings <- function(settings, force=FALSE) {
       PEcAn.logger::logger.info(
         "Setting meta.analysis random effects to ",
         settings$meta.analysis$random.effects$on)
-    } else if(!is.list(settings$meta.analysis$random.effects)){
+    } else if (!is.list(settings$meta.analysis$random.effects)) {
       # this handles the previous usage
       #  <meta.analysis>
       #    <random.effects>FALSE</random.effects>
@@ -353,7 +355,7 @@ check.settings <- function(settings, force=FALSE) {
       if (!is.null(settings$meta.analysis$random.effects$use_ghs)) {
         settings$meta.analysis$random.effects$use_ghs <- as.logical(
           settings$meta.analysis$random.effects$use_ghs)
-      }else{
+      } else {
         settings$meta.analysis$random.effects$use_ghs <- TRUE
       }
     }
@@ -363,7 +365,7 @@ check.settings <- function(settings, force=FALSE) {
         "Setting meta.analysis threshold to ", settings$meta.analysis$threshold)
     }
     if (is.null(settings$meta.analysis$update)) {
-      settings$meta.analysis$update <- 'AUTO'
+      settings$meta.analysis$update <- "AUTO"
       PEcAn.logger::logger.info(
         "Setting meta.analysis update to only update if no previous",
         "meta analysis was found")
@@ -451,13 +453,13 @@ check.settings <- function(settings, force=FALSE) {
   }
 
   # Check folder where outputs are written before adding to dbfiles
-  if(is.null(settings$database$dbfiles)) {
+  if (is.null(settings$database$dbfiles)) {
     settings$database$dbfiles <- PEcAn.utils::full.path("~/.pecan/dbfiles")
   } else {
-    if (substr(settings$database$dbfiles, 1, 1) != '/'){
+    if (substr(settings$database$dbfiles, 1, 1) != "/") {
       PEcAn.logger::logger.warn(
         "settings$database$dbfiles pathname", settings$database$dbfiles,
-        " is invalid\n",
+        "is invalid\n",
         "placing it in the home directory ",
         Sys.getenv("HOME"))
       settings$database$dbfiles <- file.path(
@@ -498,8 +500,11 @@ check.settings <- function(settings, force=FALSE) {
   # make sure remote folders are specified if need be
   if (!PEcAn.remote::is.localhost(settings$host)) {
     if (is.null(settings$host$folder)) {
-      settings$host$folder <- paste0(remote.execute.cmd("pwd", host=settings$host), "/pecan_remote")
-      PEcAn.logger::logger.info("Using ", settings$host$folder, "to store output on remote machine")      
+      settings$host$folder <- paste0(
+        remote.execute.cmd("pwd", host = settings$host),
+        "/pecan_remote")
+      PEcAn.logger::logger.info(
+        "Using ", settings$host$folder, "to store output on remote machine")
     }
     if (is.null(settings$host$rundir)) {
       settings$host$rundir <- paste0(settings$host$folder, "/@WORKFLOW@/run")
@@ -539,7 +544,7 @@ check.settings <- function(settings, force=FALSE) {
 
       # check to see if name of each pft in xml file is actually
       # a name of a pft already in database
-      if (!is.null(dbcon)) {# change to if(class(dbcon) == "PostgreSQLConnection")??
+      if (!is.null(dbcon)) { # change to if(class(dbcon) == "PostgreSQLConnection")??
         if (is.null(settings$model$type)) {
           x <- PEcAn.DB::db.query(
             paste0(
@@ -553,7 +558,7 @@ check.settings <- function(settings, force=FALSE) {
               " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'",
               " AND modeltypes.name='", settings$model$type, "'",
               " AND modeltypes.id=pfts.modeltype_id;"),
-            con=dbcon)
+            con = dbcon)
         }
         if (nrow(x) == 0) {
           PEcAn.logger::logger.severe(
@@ -603,12 +608,13 @@ check.settings <- function(settings, force=FALSE) {
 ##' @title Check Run Settings
 ##' @param settings settings file
 ##' @export check.run.settings
-check.run.settings <- function(settings, dbcon=NULL) {
-  scipen = getOption("scipen")
-  options(scipen=12)
+check.run.settings <- function(settings, dbcon = NULL) {
+  scipen <- getOption("scipen")
+  on.exit(options(scipen = scipen), add = TRUE)
+  options(scipen = 12)
 
   # check for a run settings
-  if (is.null(settings[['run']])) {
+  if (is.null(settings[["run"]])) {
     PEcAn.logger::logger.warn("No Run Settings specified")
   }
 
@@ -710,7 +716,7 @@ check.run.settings <- function(settings, dbcon=NULL) {
 
 
   # check siteid with values
-  if(!is.null(settings$run$site)){
+  if (!is.null(settings$run$site)) {
     if (is.null(settings$run$site$id)) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
@@ -733,7 +739,7 @@ check.run.settings <- function(settings, dbcon=NULL) {
           site$lon <- settings$run$site$lon
         }
       }
-      if((!is.null(settings$run$site$met))
+      if ((!is.null(settings$run$site$met))
          && settings$run$site$met == "NULL") {
         settings$run$site$met <- NULL
       }
@@ -785,8 +791,6 @@ check.run.settings <- function(settings, dbcon=NULL) {
   }
   # end site check code
 
-  options(scipen = scipen)
-
   # all done return cleaned up settings
   invisible(settings)
 }
@@ -828,7 +832,7 @@ check.model.settings <- function(settings, dbcon = NULL) {
               paste0("AND revision like '%", settings$model$revision, "%' ")),
             "ORDER BY models.updated_at"),
           con = dbcon)
-        if(nrow(model) > 1){
+        if (nrow(model) > 1) {
           PEcAn.logger::logger.warn(
             "multiple records for", settings$model$name,
             "returned; using the latest")
@@ -926,15 +930,15 @@ check.model.settings <- function(settings, dbcon = NULL) {
 ##' @title Check Workflow Settings
 ##' @param settings settings file
 ##' @export check.workflow.settings
-check.workflow.settings <- function(settings, dbcon=NULL) {
+check.workflow.settings <- function(settings, dbcon = NULL) {
   # check for workflow defaults
   fixoutdir <- FALSE
-  if(!is.null(dbcon)
-     && settings$database$bety$write
-     && ("model" %in% names(settings))) {
+  if (!is.null(dbcon)
+      && settings$database$bety$write
+      && ("model" %in% names(settings))) {
     if (!"workflow" %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-      if(is.MultiSettings(settings)) {
+      if (is.MultiSettings(settings)) {
         PEcAn.DB::db.query(
           paste0(
             "INSERT INTO workflows (",
@@ -1007,15 +1011,15 @@ check.workflow.settings <- function(settings, dbcon=NULL) {
 }
 
 
-##' @title Check Database Settings
-##' @param settings settings file
-##' @export check.database.settings
+#' @title Check Database Settings
+#' @param settings settings file
+#' @export check.database.settings
 check.database.settings <- function(settings) {
   if (!is.null(settings$database)) {
     # check all databases
     for (name in names(settings$database)) {
       if (name != "dbfiles") {
-        #'dbfiles' is kept in <database>, but isn't actually a db settings block
+        #'dbfiles' is kept in <database> but isn't actually a db settings block
         settings$database[[name]] <- check.database(settings$database[[name]])
       }
     }
@@ -1089,12 +1093,13 @@ check.ensemble.settings <- function(settings) {
       settings$ensemble$size <- 1
     }
 
-    if(is.null(settings$ensemble$start.year)) {
-      if(!is.null(settings$run$start.date)) {
-        settings$ensemble$start.year <- lubridate::year(settings$run$start.date)
+    if (is.null(settings$ensemble$start.year)) {
+      if (!is.null(settings$run$start.date)) {
+        settings$ensemble$start.year <- lubridate::year(
+          settings$run$start.date)
         PEcAn.logger::logger.info(
           "No start date passed to ensemble - using the run date (",
-                                  settings$ensemble$start.year, ").")
+          settings$ensemble$start.year, ").")
       } else if(!is.null(settings$sensitivity.analysis$start.year)) {
         settings$ensemble$start.year <- settings$sensitivity.analysis$start.year
         PEcAn.logger::logger.info(
@@ -1107,13 +1112,13 @@ check.ensemble.settings <- function(settings) {
       }
     }
 
-    if(is.null(settings$ensemble$end.year)) {
-      if(!is.null(settings$run$end.date)) {
+    if (is.null(settings$ensemble$end.year)) {
+      if (!is.null(settings$run$end.date)) {
         settings$ensemble$end.year <- lubridate::year(settings$run$end.date)
         PEcAn.logger::logger.info(
           "No end date passed to ensemble - using the run date (",
           settings$ensemble$end.year, ").")
-      } else if(!is.null(settings$sensitivity.analysis$end.year)){
+      } else if (!is.null(settings$sensitivity.analysis$end.year)) {
         settings$ensemble$end.year <- settings$sensitivity.analysis$end.year
         PEcAn.logger::logger.info(
           "No end date passed to ensemble.",

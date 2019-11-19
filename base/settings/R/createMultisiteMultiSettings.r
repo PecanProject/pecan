@@ -22,10 +22,10 @@
 #'
 #' @return A \code{MultiSettings} object with the same settings as
 #'  \code{templateSettings} but site information for the selected sites
-#' 
+#'
 #' @author Ryan Kelly
 #' @export
-#' 
+#'
 #' @example examples/examples.MultiSite.MultiSettings.r
 createSitegroupMultiSettings <- function(
     templateSettings,
@@ -49,25 +49,27 @@ createSitegroupMultiSettings <- function(
 
 
 #' @title Transform Settings into multi-site MultiSettings
-#' 
-#' @description Create a MultiSettings object containing (identical) run blocks for multiple different
-#' sites
-#' 
-#' @param templateSettings A \code{\link{Settings}} object that will be the template for the resulting
-#' MultiSettings. 
+#'
+#' @description Create a MultiSettings object containing (identical) run blocks
+#'   for multiple different sites
+#'
+#' @param templateSettings A \code{\link{Settings}} object that will be
+#'   the template for the resulting MultiSettings.
 #' @param siteIds The site IDs to be used in the resulting MultiSettings
-
-#' @details 
-#' Starts with a template settings object, and duplicates the \code{run$site} block once for each
-#' specified site ID. The resulting MultiSettings is thus identical to the input, except ready to run
-#' for each site in the vector of site IDs.
-#'   
-#' @return A \code{MultiSettings} object with the same settings as \code{templateSettings} but replicated
-#' \code{run$site} blocks, one for each specified site ID.
-#' 
+#'
+#' @details
+#' Starts with a template settings object, and duplicates the \code{run$site}
+#'   block once for each specified site ID. The resulting MultiSettings is thus
+#'   identical to the input, except ready to run for each site in the vector
+#'   of site IDs.
+#'
+#' @return A \code{MultiSettings} object with the same settings as
+#'   \code{templateSettings} but replicated \code{run$site} blocks,
+#'   one for each specified site ID.
+#'
 #' @author Ryan Kelly
 #' @export
-#' 
+#'
 #' @example examples/examples.MultiSite.MultiSettings.r
 createMultiSiteSettings <- function(templateSettings, siteIds) {
   templateSettings <- as.MultiSettings(templateSettings)
@@ -107,21 +109,21 @@ getRunSettings <- function(templateSettings, siteId) {
 
 
 #' @title Set the Output Directories of PEcAn Settings
-#' 
+#'
 #' @description  Sets the main output directory and nulls out the others
-#' 
+#'
 #' @param settings A \code{\link{Settings}} object
 #' @param outDir The desired output directory
-#' 
+#'
 #' @details
 #' Sets the main output directory (\code{settings$outdir}) to \code{outDir},
 #'   and sets numerous others (\code{settings$modeloutdir},
 #'   \code{settings$host$rundir}, \code{settings$host$outdir},
 #'   \code{settings$host$modeloutdir}) to NULL so they will revert to defaults
 #'   when \code{\link{check.settings}} is run.
-#' 
+#'
 #' @return The original \code{Settings} object with updated output directories
-#' 
+#'
 #' @author Ryan Kelly
 #' @export
 setOutDir <- function(settings, outDir) {
@@ -141,13 +143,13 @@ setOutDir <- function(settings, outDir) {
 
 
 #' @title Set the Dates of PEcAn Settings
-#' 
+#'
 #' @description Sets the run, ensemble, and sensitivity analysis dates
 #'   of PEcAn Settings
-#' 
+#'
 #' @param settings A \code{\link{Settings}} object
 #' @param startDate,endDate The desired start and end dates
-#' 
+#'
 #' @details
 #' Sets the start/end dates in \code{settings$run} to the specified dates,
 #'  and sets the corresponding years for \code{settings$ensemble} and
@@ -155,7 +157,7 @@ setOutDir <- function(settings, outDir) {
 #' Either date can be omitted to leave it unchanged.
 #'
 #' @return The original \code{Settings} object with updated dates
-#' 
+#'
 #' @author Ryan Kelly
 #' @export
 setDates <- function(settings, startDate, endDate) {

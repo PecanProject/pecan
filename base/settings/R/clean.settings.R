@@ -39,7 +39,7 @@ clean.settings <- function(
   settings$modeloutdir <- NULL
 
   # 3) remove all outdir under pft and remove poteriorid
-  for (i in 1:length(settings$pfts)) {
+  for (i in seq_along(settings$pfts)) {
     settings$pfts[i]$pft$outdir <- NULL
     settings$pfts[i]$pft$posteriorid <- NULL
   }

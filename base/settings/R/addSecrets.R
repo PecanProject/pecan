@@ -17,7 +17,7 @@
 #' @param settings settings file
 #' @return will return the updated settings values
 #' @author Rob Kooper
-##' @export addSecrets
+#' @export addSecrets
 addSecrets <- function(settings, force = FALSE) {
   if (!file.exists("~/.pecan.xml")) {
     return(invisible(settings))
