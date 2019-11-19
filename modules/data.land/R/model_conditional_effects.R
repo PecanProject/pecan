@@ -2691,8 +2691,8 @@ dev.off()
 #####################################################################################
 jags.comb <- NULL
 
-for(i in 75:100){
-  load(paste0("/home/rstudio/pecan/modules/data.land/R/PPT.noX2.noMu.r2.l0000.0.",i,".RData"))
+for(i in 90:100){
+  load(paste0("/Users/kah/Documents/docker_pecan/pecan/IGF_PIPO_AZ_mcmc/PPT.noX2.r.10000.",i,".RData"))
   new.out <- jags.out 
   if(is.null(jags.comb)){
     for(j in seq_along(new.out)){
@@ -2805,8 +2805,9 @@ cov.plots <- left_join(cov.data, PLOT.df)
 
 alpha.summary.plt <- left_join(alpha.summary, cov.plots)
 
-a <- ggplot()+geom_errorbar(data = alpha.summary.plt, aes(x= ELEV, ymin = ci.lo, ymax = ci.hi), color = "darkgrey", width = 0)+
-  geom_point(data = alpha.summary.plt, aes(x= ELEV, y =mean))+theme_bw()+ylab(expression(alpha~Plot))
+a <- ggplot()+geom_errorbar(data = alpha.summary.plt, aes(x= ELEV, ymin = ci.lo, ymax = ci.hi, color = FIRE), width = 0)+
+  geom_point(data = alpha.summary.plt, aes(x= ELEV, y =mean, color = FIRE))+theme_bw()+ylab(expression(alpha~Plot))
+
 
 b <- ggplot()+geom_errorbar(data = alpha.summary.plt, aes(x= SDI, ymin = ci.lo, ymax = ci.hi), color = "darkgrey", width = 0)+
   geom_point(data = alpha.summary.plt, aes(x= SDI, y =mean))+theme_bw()+stat_smooth(data = alpha.summary.plt, aes(x= SDI, y =mean), method = "lm")+ylab(expression(alpha~Plot))

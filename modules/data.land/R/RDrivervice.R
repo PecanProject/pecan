@@ -39,6 +39,10 @@ Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 FIA.COND <- read.csv("/Users/kah/Documents/docker_pecan/pecan/FIA_inc_data/AZ_COND.csv", stringsAsFactors = F)
 Tree2Tree <- merge(FIA.COND[c("DSTRBYR1", "DSTRBYR2", "DSTRBYR3", "CN", "PLT_CN", "INVYR", "PLOT")], Tree2Tree, by.x = "PLT_CN", by.y = "T1_PLT_CN")
 unique(temp2$Plot) %in% unique(Tree2Tree$T1_PLOT)
+incPlot.in.dbhPlot<- (unique(temp2$Plot) %in% unique(Tree2Tree$T1_PLOT) == TRUE)
+length(incPlot.in.dbhPlot[incPlot.in.dbhPlot ==TRUE])
+# 284 of 338 AZ increment plots are in the T1_PLOT id (this is the id that we use to identify plot random effects in the model, so I assume this is the PLOT id that we should use)
+# that means we are missing disturbyear from 54 plots in AZ (or 15%)
 
 distrub.plot <- merge(temp2, unique(Tree2Tree[,c("T1_PLOT", "DSTRBYR1", "DSTRBYR2", "DSTRBYR3")]),  by.y = "T1_PLOT", by.x = "PlotNo", all.x = TRUE, all.y = FALSE)
 
@@ -68,7 +72,7 @@ T2T.nodup <- Tree2Tree[!duplicated(Tree2Tree),]
 Tree2Tree.incored.plots <- Tree2Tree[paste0(Tree2Tree$COUNTYCD, Tree2Tree$PLOT) %in% paste0(newtemp2$CountyNo, newtemp2$PlotNo) ,]
 
 # looks like there are 5794 dbh measurements from plots where we also have tree cores:
-# > length(Tree2Tree.incored.plots$PLT_CN)
+ length(Tree2Tree.incored.plots$PLT_CN)
 # [1] 5794
 
 # check that we only have plot ids with tree cores
@@ -78,8 +82,7 @@ Tree2Tree.incored.plots <- Tree2Tree[paste0(Tree2Tree$COUNTYCD, Tree2Tree$PLOT) 
 jags.stuff <- buildJAGSdataobject(temp2 = newtemp2, Tree2Tree = Tree2Tree.incored.plots, rnd.subset = 100, trunc.yr = 1966)
 
 
-# 
-#jags.stuff <- buildJAGSdataobject(newtemp2,  rnd.subset = 100, trunc.yr = 1966)
+# jags.stuff <- buildJAGSdataobject(temp2,  rnd.subset = 100, trunc.yr = 1966)
 
 data <- jags.stuff$data
 z0 <- jags.stuff$z0

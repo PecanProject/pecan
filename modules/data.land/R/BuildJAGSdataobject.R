@@ -208,6 +208,13 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
     PLOT <- c(PLOT, PLOT2)
   }
   
+  TREE <- temp2$T1_TRE_CN # should maybe use an underscore to avoid mistakes...but would jags choke?
+  if(!is.null(Tree2Tree)){
+    TREE2 <- Tree2Tree$T1_TRE_CN
+    TREE <- c(TREE, TREE2)
+  }
+  
+  
   ### FIXED EFFECTS
   
   
@@ -308,6 +315,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   }
   
   # Disturbance Year
+  DSTRBYR1 <- rep(NA, length(temp2$DBH))
   DSTRBYR1 <- temp2$DSTRBYR1
   if(!is.null(Tree2Tree)){
     DSTRBYR12 <- Tree2Tree$DSTRBYR1
@@ -358,7 +366,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   
   
   ### BA ## SDI and BA are tightly correlated, can't use both
-  cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
+  cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
                          STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, DSTRBYR1 =DSTRBYR1, MAP =MAP, MAT =MAT)
   #cov.data <- cbind(cov.data, SICOND, SDI)
   
