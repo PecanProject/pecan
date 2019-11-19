@@ -165,6 +165,21 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
         udunits2::ud.convert(PEcAn.utils::misc.convert(pft.traits[which(pft.names == "SOC")], "Mg ha-1", "kg C m-2"), "kg", "g")
     }
     
+    # Residence time of slowly decomposing OM
+    if ("sOM_residence_time" %in% pft.names) {
+      run_params[which(names(run_params) == "TCSOMS")] <- pft.traits[which(pft.names == "sOM_residence_time")]
+    }
+    
+    # Residence time of fast decomposing OM
+    if ("sOM_residence_time" %in% pft.names) {
+      run_params[which(names(run_params) == "TCSOMF")] <- pft.traits[which(pft.names == "fOM_residence_time")]
+    }
+    
+    # Residence time of litter
+    if ("sOM_residence_time" %in% pft.names) {
+      run_params[which(names(run_params) == "TCLITT")] <- pft.traits[which(pft.names == "litter_residence_time")]
+    }
+    
     # This is IC, change later
     # Initial C-N ratio of litter (g C g-1 N)
     if ("c2n_litter" %in% pft.names) {
