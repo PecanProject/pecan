@@ -35,7 +35,7 @@ check.inputs <- function(settings) {
   # check list of inputs
   allinputs <- names(settings$run$inputs)
   if (nrow(inputs) > 0) {
-    for (i in 1:nrow(inputs)) {
+    for (i in seq_len(nrow(inputs))) {
       tag <- inputs$tag[i]
       hostname <- settings$host$name
       allinputs <- allinputs[allinputs != tag]
@@ -127,7 +127,6 @@ check.database <- function(database) {
   }
 
   is_postgres_like <- database$driver %in% c("PostgreSQL", "Postgres")
-  is_postgresql <- database$driver == "PostgreSQL"
 
   if (!is_postgres_like) {
     PEcAn.logger::logger.severe(
@@ -533,7 +532,7 @@ check.settings <- function(settings, force = FALSE) {
 
   # check/create the pft folders
   if (!is.null(settings$pfts) && (length(settings$pfts) > 0)) {
-    for (i in 1:length(settings$pfts)) {
+    for (i in seq_along(settings$pfts)) {
       #check if name tag within pft
       if (!"name" %in% names(settings$pfts[i]$pft)) {
         PEcAn.logger::logger.severe(
@@ -1102,7 +1101,7 @@ check.ensemble.settings <- function(settings) {
         PEcAn.logger::logger.info(
           "No start date passed to ensemble - using the run date (",
           settings$ensemble$start.year, ").")
-      } else if(!is.null(settings$sensitivity.analysis$start.year)) {
+      } else if (!is.null(settings$sensitivity.analysis$start.year)) {
         settings$ensemble$start.year <- settings$sensitivity.analysis$start.year
         PEcAn.logger::logger.info(
           "No start date passed to ensemble.",

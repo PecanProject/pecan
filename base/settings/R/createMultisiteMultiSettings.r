@@ -43,7 +43,7 @@ createSitegroupMultiSettings <- function(
     siteIds <- sample(allSites$site_id, nSite, replace = FALSE)
   }
 
-  settings <- createMultiSiteSettings(templateSettings, siteIds)
+  createMultiSiteSettings(templateSettings, siteIds)
 }
 
 
@@ -133,7 +133,7 @@ setOutDir <- function(settings, outDir) {
   settings$host$outdir <- NULL
   settings$host$modeloutdir <- NULL
 
-  for (j in 1:length(settings$pfts)) {
+  for (j in seq_along(settings$pfts)) {
     settings$pfts[[j]]$outdir <- NULL
   }
 

@@ -1,5 +1,5 @@
 #' Takes in a settings object, performs a series of checks,
-#'		fixes & updates settings and produces pecan.CHECKED.xml
+#'  fixes & updates settings and produces pecan.CHECKED.xml
 #'
 #' @title Write settings
 #' @param settings settings list
@@ -9,9 +9,9 @@
 #' @author Betsy Cowdery
 #' @export write.settings
 write.settings <- function(
-	settings,
-	outputfile,
-	outputdir = settings$outdir) {
+  settings,
+  outputfile,
+  outputdir = settings$outdir) {
   pecanfile <- file.path(outputdir, outputfile)
   if (file.exists(pecanfile)) {
     PEcAn.logger::logger.warn(

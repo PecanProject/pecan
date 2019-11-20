@@ -11,7 +11,7 @@
 #' @title Create a PEcAn Settings object
 #' @param ... objects to concatenate
 #' @return a list containing all objects in `...`,
-#' 		with class c("Settings", "SafeList", "list").
+#'   with class c("Settings", "SafeList", "list").
 #' @export
 #' @author Ryan Kelly
 Settings <- function(...) {

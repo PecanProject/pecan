@@ -181,7 +181,7 @@ listToXml.MultiSettings <- function(item, tag, collapse = TRUE) {
     tmp <- list()
     expandableItems <- list()
     for (setting in names(item)) {
-      value <- item[[setting, setAttributes = T]]
+      value <- item[[setting, setAttributes = TRUE]]
       tmp[[setting]] <- value
       if (attr(value, "settingType") == "multi") {
         expandableItems <- c(expandableItems, setting)

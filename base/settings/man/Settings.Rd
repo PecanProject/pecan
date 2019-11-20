@@ -19,7 +19,7 @@ is.Settings(x)
 }
 \value{
 a list containing all objects in `...`,
-		with class c("Settings", "SafeList", "list").
+  with class c("Settings", "SafeList", "list").
 }
 \description{
 Create a PEcAn Settings object
