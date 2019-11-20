@@ -1019,7 +1019,7 @@ check.database.settings <- function(settings) {
     # check all databases
     for (name in names(settings$database)) {
       if (name != "dbfiles") {
-        #'dbfiles' is kept in <database> but isn't actually a db settings block
+        # 'dbfiles' is kept in <database>, but isn't actually a db settings block
         settings$database[[name]] <- check.database(settings$database[[name]])
       }
     }

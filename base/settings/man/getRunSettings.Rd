@@ -7,8 +7,6 @@
 getRunSettings(templateSettings, siteId)
 }
 \arguments{
-\item{templateSettings}{}
-
 \item{siteId}{}
 }
 \description{
