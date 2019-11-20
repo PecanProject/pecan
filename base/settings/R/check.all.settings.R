@@ -809,7 +809,7 @@ check.model.settings <- function(settings, dbcon = NULL) {
             paste0(
               "SELECT models.id AS id, models.revision AS revision, ",
                 "modeltypes.name AS type",
-              "FROM models, modeltypes WHERE models.id=",
+              " FROM models, modeltypes WHERE models.id=",
               settings$model$id,
               " AND models.modeltype_id=modeltypes.id;"),
             con = dbcon)
