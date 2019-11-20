@@ -150,9 +150,9 @@ test_that("workflow id is numeric if settings$database$bety$write = FALSE", {
 
 test_that("check.settings will fail if db does not exist", {
   s <- .get.test.settings(testdir)
-  expect_true(db.exists(s$database$bety))
+  expect_true(PEcAn.DB::db.exists(s$database$bety))
   s$database$bety$dbname <- "blabla"
-  expect_false(db.exists(s$database$bety))
+  expect_false(PEcAn.DB::db.exists(s$database$bety))
 
   expect_error(check.settings(update.settings(s)))
 })
