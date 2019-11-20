@@ -135,7 +135,7 @@ update.settings <- function(settings, force = FALSE) {
         next
       } else {
         settings$run$inputs[[tag]]["id"] <- settings$run$inputs[[tagid]]
-        settings$run$inputs[[tagid]] <- null
+        settings$run$inputs[[tagid]] <- NULL
       }
     } else {
       if (!is.list(settings$run$inputs[[tag]])) {
