@@ -1,9 +1,8 @@
 Package: PEcAn.settings
 Title: PEcAn Settings package
-Authors@R: c(person("David","LeBauer"),
-             person("Rob","Kooper"))
-Maintainer: David LeBauer <dlebauer@illinois.edu>
-Author: David LeBauer, Rob Kooper
+Authors@R: c(person("David","LeBauer", role = c("aut", "cre"),
+                email = "dlebauer@illinois.edu"),
+             person("Rob","Kooper", rol="aut"))
 Version: 1.7.1
 Date: 2019-09-05
 License: BSD_3_clause + file LICENSE
