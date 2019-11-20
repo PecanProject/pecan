@@ -47,7 +47,7 @@ is.MultiSettings <- function(x) {
   if (is.character(i)) {
     if (global) {
       value <- replicate(length(x), value, simplify = FALSE)
-      x[[i, global = F]] <- value
+      x[[i, global = FALSE]] <- value
     } else {
       if (length(x) == length(value)) {
         value <- as.list(value)
@@ -165,8 +165,8 @@ printAll <- function(x) {
 }
 
 #' @export
-printAll.MultiSettings <- function(multiSettings) {
-  return(print(multiSettings, TRUE))
+printAll.MultiSettings <- function(x) {
+  return(print(x, TRUE))
 }
 
 .expandableItemsTag <- "multisettings"
