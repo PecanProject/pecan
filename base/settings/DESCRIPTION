@@ -10,7 +10,7 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Require: hdf5
-Description: Contains functions to read PEcAn settings files
+Description: Contains functions to read PEcAn settings files.
 Depends:
     methods
 Imports:
