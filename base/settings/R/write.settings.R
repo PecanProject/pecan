@@ -19,5 +19,5 @@ write.settings <- function(
         "File already exists [", pecanfile,
         "] file will be overwritten"))
   }
-  saveXML(listToXml(settings, "pecan"), file = pecanfile)
+  XML::saveXML(listToXml(settings, "pecan"), file = pecanfile)
 }

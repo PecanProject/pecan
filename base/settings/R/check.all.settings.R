@@ -253,12 +253,12 @@ check.bety.version <- function(dbcon) {
   }
 
   # check if database is newer
-  last_migration_date <- lubridate::ymd_hms(tail(versions, n = 1))
+  last_migration_date <- lubridate::ymd_hms(utils::tail(versions, n = 1))
   pecan_release_date <- lubridate::ymd(
     utils::packageDescription("PEcAn.DB")$Date)
   if (last_migration_date > pecan_release_date) {
     PEcAn.logger::logger.warn(
-      "Last database migration", tail(versions, n = 1),
+      "Last database migration", utils::tail(versions, n = 1),
       "is more recent than this", pecan_release_date, "release of PEcAn.",
       "This could result in PEcAn not working as expected.")
   }
@@ -501,7 +501,7 @@ check.settings <- function(settings, force = FALSE) {
   if (!PEcAn.remote::is.localhost(settings$host)) {
     if (is.null(settings$host$folder)) {
       settings$host$folder <- paste0(
-        remote.execute.cmd("pwd", host = settings$host),
+        PEcAn.remote::remote.execute.cmd("pwd", host = settings$host),
         "/pecan_remote")
       PEcAn.logger::logger.info(
         "Using ", settings$host$folder, "to store output on remote machine")

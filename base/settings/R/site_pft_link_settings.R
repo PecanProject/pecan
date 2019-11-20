@@ -8,7 +8,7 @@
 #' @description This function reads in a pecan setting and check for the
 #'  pft.site xml tag under run>inputs. If a path or a ID for the input is
 #'  defined then, it will be used for linking sites with the pfts.
-
+#' @importFrom purrr %>%
 site.pft.link.settings <- function(settings) {
 
   #lets see if there is the pft.site tag under run>inputs
@@ -42,7 +42,7 @@ site.pft.link.settings <- function(settings) {
      new.pfts <-  pft.l %>%
        purrr::discard(~.x %in% def.pfts) %>%
        purrr::map(~list(name = as.character(.x), constants = 1)) %>%
-       setNames(rep("pft", length(.)))
+       stats::setNames(rep("pft", length(.)))
 
 
     #add them to the list

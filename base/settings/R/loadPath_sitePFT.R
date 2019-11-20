@@ -17,7 +17,7 @@ loadPath.sitePFT <- function(settings, Path) {
 
   if (ext == "csv" || ext == "txt") {
     # reading in the links
-    links <- read.table(file.path(Path), header = T, sep = ",")
+    links <- utils::read.table(file.path(Path), header = T, sep = ",")
     #check to make sure the input file is what we expect it.
     if (nrow(links) == 0 || ncol(links) == 0 || ncol(links) != 2) {
       PEcAn.logger::logger.severe(
