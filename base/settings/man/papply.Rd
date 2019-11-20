@@ -12,10 +12,10 @@ or \code{\link[base]{list}} to operate on}
 
 \item{fn}{The function to apply to \code{settings}}
 
+\item{...}{additional arguments to \code{fn}}
+
 \item{stop.on.error}{Whether to halt execution if a single element in
 \code{settings} results in error. See Details.}
-
-\item{\code{...}}{additional arguments to \code{fn}}
 }
 \value{
 A single \code{fn} return value, or a list of such values

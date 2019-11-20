@@ -8,9 +8,6 @@ read.settings(inputfile = "pecan.xml")
 }
 \arguments{
 \item{inputfile}{the PEcAn settings file to be used.}
-
-\item{outputfile}{the name of file to which the settings will be
-written inside the outputdir. If set to null nothing is saved.}
 }
 \value{
 list of all settings as loaded from the XML file(s)

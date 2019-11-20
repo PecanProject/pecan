@@ -23,8 +23,6 @@
 #'   is passed through a higher priority method.
 #'
 #' @param inputfile the PEcAn settings file to be used.
-#' @param outputfile the name of file to which the settings will be
-#'        written inside the outputdir. If set to null nothing is saved.
 #' @return list of all settings as loaded from the XML file(s)
 #' @export read.settings
 #' @import XML

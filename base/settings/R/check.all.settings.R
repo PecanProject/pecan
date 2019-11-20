@@ -6,6 +6,7 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-----------------------------------------------------------------------------
+
 #' check to see if inputs are specified - this should be part of the model code
 #' @title Check Inputs
 #' @param settings settings file
@@ -111,9 +112,10 @@ check.inputs <- function(settings) {
 }
 
 # check database section
-##' @title Check Database
-##' @param settings settings file
-##' @export check.database
+#' @title Check Database
+#' @param database settings list to check.
+#'    You'll probably use `settings$database`
+#' @export check.database
 check.database <- function(database) {
   if (is.null(database)) return(NULL)
 
@@ -218,10 +220,10 @@ check.database <- function(database) {
   return(database)
 }
 
-# check to make sure BETY is up to date
-##' @title Check BETY Version
-##' @param settings settings file
-##' @export check.bety.version
+#' check to make sure BETY is up to date
+#' @title Check BETY Version
+#' @param dbcon database connection object
+#' @export check.bety.version
 check.bety.version <- function(dbcon) {
   versions <- PEcAn.DB::db.query(
     "SELECT version FROM schema_migrations;",
@@ -605,9 +607,9 @@ check.settings <- function(settings, force = FALSE) {
   return(invisible(settings))
 }
 
-##' @title Check Run Settings
-##' @param settings settings file
-##' @export check.run.settings
+#' @title Check Run Settings
+#' @param settings settings file
+#' @export check.run.settings
 check.run.settings <- function(settings, dbcon = NULL) {
   scipen <- getOption("scipen")
   on.exit(options(scipen = scipen), add = TRUE)
@@ -927,9 +929,9 @@ check.model.settings <- function(settings, dbcon = NULL) {
   return(settings)
 }
 
-##' @title Check Workflow Settings
-##' @param settings settings file
-##' @export check.workflow.settings
+#' @title Check Workflow Settings
+#' @param settings settings file
+#' @export check.workflow.settings
 check.workflow.settings <- function(settings, dbcon = NULL) {
   # check for workflow defaults
   fixoutdir <- FALSE
@@ -1071,9 +1073,9 @@ check.database.settings <- function(settings) {
   return(settings)
 }
 
-##' @title Check ensemble Settings
-##' @param settings settings file
-##' @export check.ensemble.settings
+#' @title Check ensemble Settings
+#' @param settings settings file
+#' @export check.ensemble.settings
 check.ensemble.settings <- function(settings) {
   # check ensemble
   if (!is.null(settings$ensemble)) {

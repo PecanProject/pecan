@@ -20,7 +20,7 @@
 #' 2) The only argument is a SafeList, in which case that argument is returned
 #'    unchanged
 #'
-#' @title Constrct SafeList Object
+#' @title Construct SafeList Object
 #' @param ... A list to upgrade to SafeList,
 #'    or elements to be added to a new SafeList
 #' @return The resulting SafeList
@@ -42,7 +42,7 @@ SafeList <- function(...) {
 
 #' @export
 #' @describeIn SafeList Coerce an object to SafeList.
-#' @param x list to coerce
+#' @param x list object to be tested or coerced
 #' @return a SafeList version of x
 as.SafeList <- function(x) {
   return(SafeList(x))
@@ -51,7 +51,6 @@ as.SafeList <- function(x) {
 
 #' @export
 #' @describeIn SafeList Test if object is already a SafeList.
-#' @param x list object to be tested
 #' @return logical
 is.SafeList <- function(x) {
   inherits(x, "SafeList")

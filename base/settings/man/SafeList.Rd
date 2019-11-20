@@ -4,7 +4,7 @@
 \alias{SafeList}
 \alias{as.SafeList}
 \alias{is.SafeList}
-\title{Constrct SafeList Object}
+\title{Construct SafeList Object}
 \usage{
 SafeList(...)
 
@@ -16,9 +16,7 @@ is.SafeList(x)
 \item{...}{A list to upgrade to SafeList,
 or elements to be added to a new SafeList}
 
-\item{x}{list to coerce}
-
-\item{x}{list object to be tested}
+\item{x}{list object to be tested or coerced}
 }
 \value{
 The resulting SafeList

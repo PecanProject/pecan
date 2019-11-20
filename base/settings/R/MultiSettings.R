@@ -1,9 +1,7 @@
 #' Create a PEcAn MultiSettings object
 #'
-#'
-#' @title Create a PEcAn MultiSettings object
-#' @param
-#' @return
+#' @param ... Settings objects to concatenate
+#' @return list with class "Multisettings"
 #' @export
 #' @author Ryan Kelly
 MultiSettings <- function(...) {
@@ -32,12 +30,14 @@ MultiSettings <- function(...) {
 
 
 #' @export
-#' @describeIn
+#' @describeIn MultiSettings coerce an existing object to MultiSettings
+#' @param x object to test or coerce
 as.MultiSettings <- function(x) {
   return(MultiSettings(x))
 }
 
 #' @export
+#' @describeIn MultiSettings test if an object is a MultiSettings
 is.MultiSettings <- function(x) {
   return(inherits(x, "MultiSettings"))
 }

@@ -8,7 +8,7 @@
 #' @param fn The function to apply to \code{settings}
 #' @param stop.on.error Whether to halt execution if a single element in
 #'   \code{settings} results in error. See Details.
-#' @param \code{...} additional arguments to \code{fn}
+#' @param ... additional arguments to \code{fn}
 #'
 #' @details
 #' \code{papply} is mainly used to call a function on each
