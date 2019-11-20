@@ -19,7 +19,7 @@ loadPath.sitePFT <- function(settings, Path) {
     # reading in the links
     links <- read.table(file.path(Path), header = T, sep = ",")
     #check to make sure the input file is what we expect it.
-    if (nrow(links) == 0 | ncol(links) == 0 | ncol(links) != 2) {
+    if (nrow(links) == 0 || ncol(links) == 0 || ncol(links) != 2) {
       PEcAn.logger::logger.severe(
         "There is a problem with reading the file. Either row number,",
         "column number is zero or your file does not have two columns.")

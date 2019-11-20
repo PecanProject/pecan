@@ -127,7 +127,7 @@ update.settings <- function(settings, force = FALSE) {
   }
 
   # inputs now have path and id under tag
-  for(tag in names(settings$run$inputs)) {
+  for (tag in names(settings$run$inputs)) {
     if (grepl(".id$", tag)) {
       tagid <- tag
       tag <- substr(tagid, 1, nchar(tagid) - 3)

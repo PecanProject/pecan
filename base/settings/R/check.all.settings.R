@@ -1151,7 +1151,7 @@ check.ensemble.settings <- function(settings) {
   # Old version of pecan xml files which they don't have a sampling space
   # or it's just sampling space and nothing inside it.
   if (is.null(settings$ensemble$samplingspace)
-      | !is.list(settings$ensemble$samplingspace)) {
+      || !is.list(settings$ensemble$samplingspace)) {
     PEcAn.logger::logger.info(
       "We are updating the ensemble tag inside the xml file.")
     # I try to put ensemble method in older versions into the parameter space -
