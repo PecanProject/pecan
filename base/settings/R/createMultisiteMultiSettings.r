@@ -83,15 +83,14 @@ createMultiSiteSettings <- function(templateSettings, siteIds) {
 }
 
 
-#' Build run MultiSettings for a list of site id's
+#' Build run MultiSettings for a single site id
 #'
-#' @param templateSettings
-#' @param siteId
+#' Processes one site from the `siteIds` argument of `createMultiSiteSettings`.
+#' You probably don't need to call it directly.
 #'
-#' @return
+#' @inheritParams createMultiSiteSettings
+#' @param siteId site to process. See `createMultiSiteSettings`
 #' @export
-#'
-#' @examples
 getRunSettings <- function(templateSettings, siteId) {
   startDate <- templateSettings$run$start.date
   endDate <- templateSettings$run$end.date
