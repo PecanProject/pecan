@@ -22,7 +22,7 @@ check.inputs <- function(settings) {
 
   # get list of inputs associated with model type
   dbcon <- PEcAn.DB::db.open(settings$database$bety)
-  on.exit(PEcAn.DB::db.close(dbcon))
+  on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
 
   inputs <- PEcAn.DB::db.query(
     paste0(
@@ -291,7 +291,7 @@ check.settings <- function(settings, force = FALSE) {
   }
 
   scipen <- getOption("scipen")
-  on.exit(options(scipen = scipen))
+  on.exit(options(scipen = scipen), add = TRUE)
   options(scipen = 12)
 
 
@@ -1057,7 +1057,7 @@ check.database.settings <- function(settings) {
 
       # Connect to database
       dbcon <- PEcAn.DB::db.open(settings$database$bety)
-      on.exit(PEcAn.DB::db.close(dbcon))
+      on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
 
       # check database version
       check.bety.version(dbcon)
