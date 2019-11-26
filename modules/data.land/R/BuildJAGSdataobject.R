@@ -366,8 +366,14 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   
   
   ### BA ## SDI and BA are tightly correlated, can't use both
-  cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
-                         STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, DSTRBYR1 =DSTRBYR1, MAP =MAP, MAT =MAT)
+  if(is.null(Tree2Tree)){
+    cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
+                           STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1,  MAP =MAP, MAT =MAT)
+    
+  }else{
+    cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
+                           STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, DSTRBYR1 =DSTRBYR1, MAP =MAP, MAT =MAT)
+  }
   #cov.data <- cbind(cov.data, SICOND, SDI)
   
   
