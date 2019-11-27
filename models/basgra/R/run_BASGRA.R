@@ -85,10 +85,14 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
         
         rad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
         gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
+        # temporary hack, not sure if it will generalize with other data products
+        # function might need a splitting arg
+        gr  <- gr[nc$dim$time$vals %in% simdays] 
         
         matrix_weather[ ,3]  <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
         
-        Tair <-ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
+        Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
+        Tair   <- Tair[nc$dim$time$vals %in% simdays]
         Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
         
         
@@ -98,6 +102,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
         matrix_weather[ ,5] <- t_dmean # that's what they had in read_weather_Bioforsk
         
         RH <-ncdf4::ncvar_get(nc, "relative_humidity")  # %
+        RH <- RH[nc$dim$time$vals %in% simdays]
         RH <- round(tapply(RH, ind, mean, na.rm = TRUE), digits = 2) 
         
         # This is vapor pressure according to BASGRA.f90#L86 and environment.f90#L49
@@ -105,15 +110,19 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
         
         # TODO: check these
         Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
+        Rain  <- Rain[nc$dim$time$vals %in% simdays]
         raini <- tapply(Rain*86400, ind, mean, na.rm = TRUE) 
         matrix_weather[ ,7] <- round(raini, digits = 2) # precipitation (mm d-1)	
         
         U <- try(ncdf4::ncvar_get(nc, "eastward_wind"))
         V <- try(ncdf4::ncvar_get(nc, "northward_wind"))
         if(is.numeric(U) & is.numeric(V)){
+          U  <- U[nc$dim$time$vals %in% simdays]
+          V  <- V[nc$dim$time$vals %in% simdays]
           ws <- sqrt(U ^ 2 + V ^ 2)      
         }else{
           ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
+          ws <- ws[nc$dim$time$vals %in% simdays]
           if (is.numeric(ws)) {
             PEcAn.logger::logger.info("eastward_wind and northward_wind absent; using wind_speed")
           }else{
