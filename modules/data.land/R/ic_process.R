@@ -48,7 +48,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               password = dbparms$bety$password)
   
   con <- bety$con
-  on.exit(db.close(con))
+  on.exit(db.close(con), add = TRUE)
   
   ## We need two types of start/end dates now
   ## i)  start/end of the run when we have no veg file to begin with (i.e. we'll be querying a DB)
