@@ -13,7 +13,7 @@ get_model_id <- function(con, name, revision, multi_action = "last") {
     "SELECT id FROM models WHERE model_name = $1 and revision = $2 ORDER BY id DESC"
   ))
   res <- DBI::dbBind(qry, list(name, revision))
-  on.exit(DBI::dbClearResult(res))
+  on.exit(DBI::dbClearResult(res), add = TRUE)
   id <- DBI::dbFetch(res)[["id"]]
   if (length(id) == 0) {
     stop("Model ", name, " with revision ", revision, " not found.")
