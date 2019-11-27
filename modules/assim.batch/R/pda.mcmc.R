@@ -38,7 +38,7 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
     if (inherits(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(PEcAn.DB::db.close(con))
+      on.exit(PEcAn.DB::db.close(con), add = TRUE)
     }
   } else {
     con <- NULL
