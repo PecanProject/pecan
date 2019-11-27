@@ -33,7 +33,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   .Deprecated("PEcAn.workflow::run.write.configs")
   
   con <- PEcAn.DB::db.open(settings$database$bety)
-  on.exit(PEcAn.DB::db.close(con))
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
