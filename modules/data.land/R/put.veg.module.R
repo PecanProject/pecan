@@ -34,7 +34,7 @@ put_veg_module <- function(getveg.id, dbparms,
                               password = dbparms$bety$password)
   
   con <- bety$con
-  on.exit(db.close(con))
+  on.exit(db.close(con), add = TRUE)
   
   # Determine IC file format name and mimetype
   model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 

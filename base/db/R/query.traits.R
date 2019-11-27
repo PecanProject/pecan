@@ -33,7 +33,7 @@ query.traits <- function(ids, priors, con = NULL,
   
   if(is.null(con)){
     con <- db.open(settings$database$bety)
-    on.exit(db.close(con))
+    on.exit(db.close(con), add = TRUE)
   }
   if(is.list(con)){
     print("query.traits")

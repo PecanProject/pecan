@@ -67,7 +67,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   utils::download.file(mask_url, maskfile)
 
   mask_nc <- ncdf4::nc_open(maskfile)
-  on.exit(ncdf4::nc_close(mask_nc))
+  on.exit(ncdf4::nc_close(mask_nc), add = TRUE)
 
   # Set search radius to up to 2 pixels (1 degree) in any direction
   mask_minlat <- lat_grid - 2

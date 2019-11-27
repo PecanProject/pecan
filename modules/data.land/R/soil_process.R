@@ -31,7 +31,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
                               user     = dbparms$bety$user, 
                               password = dbparms$bety$password)
   con <- bety$con
-  on.exit(PEcAn.DB::db.close(con))
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   # get site info
   latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)
   new.site <- data.frame(id = as.numeric(site$id), 
