@@ -66,7 +66,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   # create database connection
   if (write) {
     dbcon <- db.open(settings$database$bety)
-    on.exit(db.close(dbcon))
+    on.exit(db.close(dbcon), add = TRUE)
   } else {
     dbcon <- NULL
   }
