@@ -11,5 +11,48 @@
 write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings, new.state,
                                  RENAME = TRUE, new.params = FALSE, inputs) {
   
+  rundir    <- settings$host$rundir
+  variables <- colnames(new.state)
+  
+  settings$run$start.date <- start.time
+  settings$run$end.date   <- stop.time
+  
+  analysis.save <- list()
+  
+  if ("LAI" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
+    if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("LAI")
+  }
+  
+  if ("TotSoilCarb" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$TotSoilCarb, "kg m-2", "g m-2")  
+    if (new.state$TotSoilCarb < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("SOC")
+  }
+  
+  if (!is.null(analysis.save) && length(analysis.save) > 0){
+    analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
+    colnames(analysis.save.mat) <- names(unlist(analysis.save))
+  }else{
+    analysis.save.mat <- NULL
+  }
+  
+  PEcAn.logger::logger.info(runid)
+  PEcAn.logger::logger.info(analysis.save.mat)
+  
+  do.call(write.config.BASGRA, args = list(defaults     = NULL,
+                                           trait.values = new.params,
+                                           settings = settings,
+                                           run.id = runid,
+                                           inputs = inputs,
+                                           IC = analysis.save.mat))
+  
+  # write.config.BASGRA (defaults, trait.values, settings, run.id) 
+  
+  
+
+    
+    
   return(TRUE)
 } # write_restart.BASGRA

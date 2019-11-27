@@ -24,10 +24,6 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
   
   params$restart <- c()
   
-  #if("TotSoilCarb" %in% var.names){
-  #  # fast/slow pool fractions needed maybe extract here or in write_restart
-  #}
-  
   if ("LAI" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$LAI[last] ## m2 m-2 
     names(forecast[[length(forecast)]]) <- c("LAI")
