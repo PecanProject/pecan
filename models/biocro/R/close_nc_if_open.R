@@ -15,7 +15,7 @@ close_nc_if_open <- function(ncfile) {
   # or at least that we can't do anything else about it
   already_closed_msg <- "Error in R_nc4_close: NetCDF: Not a valid ID"
 
-  res <- capture.output(ncdf4::nc_close(ncfile))
+  res <- utils::capture.output(ncdf4::nc_close(ncfile))
   if (length(res) == 0 || res == already_closed_msg) {
     # OK, it's closed now
     return(invisible())
