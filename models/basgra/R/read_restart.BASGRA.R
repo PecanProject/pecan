@@ -43,5 +43,5 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
   X_tmp <- list(X = unlist(forecast), params = params)
   
   return(X_tmp)
+  
 } # read_restart.BASGRA
-}
