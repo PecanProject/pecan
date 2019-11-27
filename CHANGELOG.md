@@ -11,6 +11,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fix issue with cruncep download: use netcdf subset (ncss) method instead of opendap (#2424).
 - The `parse` option to `PEcAn.utils::read_web_config` had no effect when `expand` was TRUE (#2421).
 - Fixed a typo that made `PEcAn.DB::symmetric_setdiff` falsely report no differences (#2428).
+- sipnet2netcdf will now only extract the data for the year requested (#2187)
 - Fixed Priors vignette (#2439).
 - When building sipnet model would not set correct model version
 
