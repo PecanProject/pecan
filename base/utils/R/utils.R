@@ -488,7 +488,7 @@ as.sequence <- function(x, na.rm = TRUE) {
 ##' @author David LeBauer
 temp.settings <- function(settings.txt) {
   temp <- tempfile()
-  on.exit(unlink(temp))
+  on.exit(unlink(temp), add = TRUE)
   writeLines(settings.txt, con = temp)
   settings <- readLines(temp)
   return(settings)

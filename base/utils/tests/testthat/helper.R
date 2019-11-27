@@ -38,7 +38,7 @@ example_netcdf <- function(varnames, file_path) {
                  units = "kg", dim = dims, missval = NA)
   names(vars) <- varnames
   nc <- ncdf4::nc_create(filename = file_path, vars = vars)
-  on.exit(ncdf4::nc_close(nc))
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
   ncdf4::ncatt_put(nc, 0, "description", "strictly for testing")
   for (v in varnames) {
     ncdf4::ncvar_put(nc, varid = vars[[v]], vals = rnorm(n))
