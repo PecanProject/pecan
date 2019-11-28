@@ -102,28 +102,29 @@ status.skip <- function(name, file = NULL) {
 }
 
 #' @describeIn status Look up module status from file
-#' @return For `status.check`, an integer: 0 if module not run, 1 if done, -1 if error
+#' @return For `status.check`, an integer:
+#'   0 if module not run, 1 if done, -1 if error
 #' @export
 status.check <- function(name, file = NULL) {
   file <- get_status_path(file)
   if (!file.exists(file)) {
     return(0L)
   }
-  status.data <- utils::read.table(
+  status_data <- utils::read.table(
     file, row.names = 1, header = FALSE,
     sep = "\t", quote = "", fill = TRUE)
-  if (!name %in% row.names(status.data)) {
+  if (!name %in% row.names(status_data)) {
     return(0L)
   }
-  status.data[name, ]
-  if (is.na(status.data[name, 3])) {
+  status_data[name, ]
+  if (is.na(status_data[name, 3])) {
     PEcAn.logger::logger.warn("UNKNOWN STATUS FOR", name)
     return(0L)
   }
-  if (status.data[name, 3] == "DONE") {
+  if (status_data[name, 3] == "DONE") {
     return(1L)
   }
-  if (status.data[name, 3] == "ERROR") {
+  if (status_data[name, 3] == "ERROR") {
     return(-1L)
   }
   return(0L)
