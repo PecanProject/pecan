@@ -31,8 +31,16 @@
 #'
 NULL
 
-# verify user-provided output path,
-# try to find from global settings object if null
+#' Verify user-provided output path, or if null try to read it from a
+#'   `settings` object visible in the scope where status.* was called
+#' Example:
+#' ```
+#'   settings <- list(outdir = "foo")
+#'   status.start("outer")
+#'   f <- function() { settings$outdir <- "bar"; status.start("inner") }
+#'   f()
+#' ```
+#' writes "outer" to a file named `foo/STATUS` and "inner" to `bar/STATUS`.
 get_status_path <- function(file) {
   if (!is.null(file)) {
     if (dir.exists(file)) {
@@ -43,7 +51,11 @@ get_status_path <- function(file) {
       base <- basename(file)
     }
   } else {
-    dir <- get0("settings", ifnotfound = list())$outdir
+    dir <- get0(
+      x = "settings",
+      envir = parent.frame(2),
+      inherits = TRUE,
+      ifnotfound = list())$outdir
     base <- "STATUS"
   }
 
