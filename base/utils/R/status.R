@@ -31,42 +31,6 @@
 #'
 NULL
 
-#' Verify user-provided output path, or if null try to read it from a
-#'   `settings` object visible in the scope where status.* was called
-#' Example:
-#' ```
-#'   settings <- list(outdir = "foo")
-#'   status.start("outer")
-#'   f <- function() { settings$outdir <- "bar"; status.start("inner") }
-#'   f()
-#' ```
-#' writes "outer" to a file named `foo/STATUS` and "inner" to `bar/STATUS`.
-get_status_path <- function(file) {
-  if (!is.null(file)) {
-    if (dir.exists(file)) {
-      dir <- file
-      base <- "STATUS"
-    } else {
-      dir <- dirname(file)
-      base <- basename(file)
-    }
-  } else {
-    dir <- get0(
-      x = "settings",
-      envir = parent.frame(2),
-      inherits = TRUE,
-      ifnotfound = list())$outdir
-    base <- "STATUS"
-  }
-
-  if (!is.null(dir) && dir.exists(dir)) {
-    return(file.path(dir, base))
-  } else {
-    # cat treats empty path as "write to stdout"
-    return("")
-  }
-}
-
 #' @describeIn status Record module start time
 #' @export
 status.start <- function(name, file = NULL) {
@@ -128,4 +92,40 @@ status.check <- function(name, file = NULL) {
     return(-1L)
   }
   return(0L)
+}
+
+# Verify user-provided output path, or if null try to read it from a
+#   `settings` object visible in the scope where status.* was called
+# Example:
+# ```
+#   settings <- list(outdir = "foo")
+#   status.start("outer")
+#   f <- function() { settings$outdir <- "bar"; status.start("inner") }
+#   f()
+# ```
+# writes "outer" to a file named `foo/STATUS` and "inner" to `bar/STATUS`.
+get_status_path <- function(file) {
+  if (!is.null(file)) {
+    if (dir.exists(file)) {
+      dir <- file
+      base <- "STATUS"
+    } else {
+      dir <- dirname(file)
+      base <- basename(file)
+    }
+  } else {
+    dir <- get0(
+      x = "settings",
+      envir = parent.frame(2),
+      inherits = TRUE,
+      ifnotfound = list())$outdir
+    base <- "STATUS"
+  }
+
+  if (!is.null(dir) && dir.exists(dir)) {
+    return(file.path(dir, base))
+  } else {
+    # cat treats empty path as "write to stdout"
+    return("")
+  }
 }

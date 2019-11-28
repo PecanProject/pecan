@@ -23,12 +23,13 @@ e.g. "TRAIT", "MODEL", "ENSEMBLE"}
 \item{file}{path to status file.
 If NULL, taken from \code{settings} (see details)}
 
-\item{status}{one-word summary of module result, e.g. "DONE", "ERROR"}
+\item{status}{one-word summary of the module result, e.g. "DONE", "ERROR"}
 }
 \value{
 For \code{status.start}, \code{status.end}, and \code{status.skip}: NULL, invisibly
 
-For \code{status.check}, an integer: 0 if module not run, 1 if done, -1 if error
+For \code{status.check}, an integer:
+0 if module not run, 1 if done, -1 if error
 }
 \description{
 Records the progress of a PEcAn workflow by writing statuses and timestamps
