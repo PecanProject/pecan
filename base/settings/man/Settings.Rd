@@ -2,16 +2,35 @@
 % Please edit documentation in R/Settings.R
 \name{Settings}
 \alias{Settings}
+\alias{as.Settings}
+\alias{is.Settings}
 \title{Create a PEcAn Settings object}
 \usage{
 Settings(...)
+
+as.Settings(x)
+
+is.Settings(x)
 }
 \arguments{
-\item{...}{TODO}
+\item{...}{objects to concatenate}
+
+\item{x}{object to test or coerce}
+}
+\value{
+a list containing all objects in `...`,
+  with class c("Settings", "SafeList", "list").
 }
 \description{
 Create a PEcAn Settings object
 }
+\section{Functions}{
+\itemize{
+\item \code{as.Settings}: coerce an object to Settings
+
+\item \code{is.Settings}: test if object is already a Settings
+}}
+
 \author{
 Ryan Kelly
 }

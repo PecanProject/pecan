@@ -93,7 +93,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                        password = dbparms$password)
   
   con <- bety$con
-  on.exit(PEcAn.DB::db.close(con))
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)

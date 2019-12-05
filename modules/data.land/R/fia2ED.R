@@ -38,7 +38,7 @@ fia.to.psscss <- function(settings,
   
   ## connect to database
   con <- db.open(settings$database$bety)
-  on.exit(db.close(con))
+  on.exit(db.close(con), add = TRUE)
   
   # Check whether inputs exist already
   if(!overwrite) {
@@ -122,7 +122,7 @@ fia.to.psscss <- function(settings,
   
   ## connect to database
   fia.con <- db.open(settings$database$fia)
-  on.exit(db.close(fia.con), add = T)
+  on.exit(db.close(fia.con), add = TRUE)
   
   ##################
   ##              ##

@@ -8,6 +8,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixed
+- Fixed a filehandle leak in multi-year runs of PEcAn.BIOCRO::met2model.BIOCRO: It was only closing the last input file it processed (#2485).
 - Fix issue with cruncep download: use netcdf subset (ncss) method instead of opendap (#2424).
 - The `parse` option to `PEcAn.utils::read_web_config` had no effect when `expand` was TRUE (#2421).
 - Fixed a typo that made `PEcAn.DB::symmetric_setdiff` falsely report no differences (#2428).

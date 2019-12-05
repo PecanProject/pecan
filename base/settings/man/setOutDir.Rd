@@ -2,7 +2,7 @@
 % Please edit documentation in R/createMultisiteMultiSettings.r
 \name{setOutDir}
 \alias{setOutDir}
-\title{Set the Ouptu Directories of PEcAn Settings}
+\title{Set the Output Directories of PEcAn Settings}
 \usage{
 setOutDir(settings, outDir)
 }
@@ -18,10 +18,11 @@ The original \code{Settings} object with updated output directories
 Sets the main output directory and nulls out the others
 }
 \details{
-Sets the main output directory (\code{settings$outdir}) to \code{outDir}, and sets numerous others
-(\code{settings$modeloutdir}, \code{settings$host$rundir}, \code{settings$host$outdir}, 
-\code{settings$host$modeloutdir}) to NULL so they will revert to defaults when 
-\code{\link{check.settings}} is run.
+Sets the main output directory (\code{settings$outdir}) to \code{outDir},
+  and sets numerous others (\code{settings$modeloutdir},
+  \code{settings$host$rundir}, \code{settings$host$outdir},
+  \code{settings$host$modeloutdir}) to NULL so they will revert to defaults
+  when \code{\link{check.settings}} is run.
 }
 \author{
 Ryan Kelly
