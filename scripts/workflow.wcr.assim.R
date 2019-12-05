@@ -15,13 +15,13 @@ library(PEcAn.utils)
 library(RCurl)
 # make sure always to call status.end
 options(warn = 1)
-options(error = quote(
-  tryCatch(
-    expr = {
-      PEcAn.utils::status.end("ERROR")
-      PEcAn.remote::kill.tunnel(settings)},
-    finally = if (!interactive()) q())
-))
+options(error = quote({
+  try(PEcAn.utils::status.end("ERROR"))
+  try(PEcAn.remote::kill.tunnel(settings))
+  if (!interactive()) {
+    q()
+  }
+}))
 #options(warning.expression=status.end("ERROR"))
 # ----------------------------------------------------------------------
 # PEcAn Workflow
