@@ -32,12 +32,11 @@ status.skip <- function(name) {
 }
 
 options(warn = 1)
-options(error = quote({
-  status.end("ERROR")
-  if (!interactive()) {
-    q()
-  }
-}))
+options(error = quote(
+  tryCatch(
+    expr = status.end("ERROR"),
+    finally = if (!interactive()) q())
+))
 
 # options(warning.expression=status.end('ERROR'))
 
