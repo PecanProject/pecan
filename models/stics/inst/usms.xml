@@ -8,9 +8,9 @@
     <fstation>@FSTATION@</fstation>                                                           
     <fclim1>@FCLIM1@</fclim1>                                                                  
     <fclim2>@FCLIM2@</fclim2>                                                                  
-    <culturean>0</culturean>                                                                        
+    <culturean>@CULTUREAN@</culturean>                                                                        
     <nbplantes>@NBPLANTES@</nbplantes>                                                                        
-    <codesimul>0</codesimul>                                                                        
+    <codesimul>@CODESIMUL@</codesimul>                                                                        
     <plante dominance="1">                                                                          
       <fplt>@FPLT1@</fplt>                                                          
       <ftec>@FTEC1@</ftec>                                                                    
