@@ -162,16 +162,18 @@ stage.2.out <- InventoryGrowthFusion_stage2(dbh.only.data=jags.stuff.stage2$data
                                             cov.data=jags.stuff.stage2$cov.data, 
                                             time_data=jags.stuff.stage2$time_data,
                                             posterior.estimates = posterior.summary, 
+                                            informative.time = TRUE, 
+                                            informative.site = FALSE,
                                             n.iter=4000, 
                                             z0=jags.stuff.stage2$z0,
-                                            n.chunk=1000, 
+                                            n.chunk=100, 
                                             save.state=TRUE, 
                                             random="(1|PLOT[i])",
                                             fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
                                             time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
                                             burnin_plot=FALSE, 
-                                            save.jags = "test.stage2.txt", 
-                                            model.name = "test.stage2model.txt", 
+                                            save.jags = "test.stage2non_inform.site.txt", 
+                                            model.name = "test.stage2model_non_inform.site.txt", 
                                             output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
                       
 

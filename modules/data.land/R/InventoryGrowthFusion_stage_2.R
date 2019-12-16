@@ -13,7 +13,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion_stage2 <- function(dbh.only.data, posterior.estimates = NULL, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
+InventoryGrowthFusion_stage2 <- function(dbh.only.data, posterior.estimates = NULL, cov.data=NULL, time_data = NULL, informative.time = TRUE, informative.site = TRUE, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
  
  
   
@@ -252,10 +252,13 @@ model{
         ## add variables to Pformula
         Pformula <- paste(Pformula,"+",Xformula)
         
-        ## add priors
-        #Xpriors <- paste(Xpriors,"     ",myBeta,"~dnorm(0,0.001)\n")
-        Xpriors <- paste0(Xpriors,"     ",myBeta, "~dnorm(", posterior.summary[posterior.summary$parameter %in% myBeta,]$means ,",",1/(posterior.summary[posterior.summary$parameter %in% myBeta,]$var ),")", collapse="\n")
+        ## add priors, make them infomative if informative.site ==TRUE
         
+        if(informative.site == TRUE){
+          Xpriors <- paste0(Xpriors,"     ",myBeta, "~dnorm(", posterior.summary[posterior.summary$parameter %in% myBeta,]$means ,",",1/(posterior.summary[posterior.summary$parameter %in% myBeta,]$var ),")", collapse="\n")
+        }else{
+          Xpriors <- paste(Xpriors,"     ",myBeta,"~dnorm(0,0.001)\n")
+        }
         ## add to out.variables
         out.variables <- c(out.variables, myBeta)
         
@@ -290,11 +293,16 @@ model{
       data$rep <- seq_len(nrow(Xf))
     }
     ## create priors
-    Xf.priors <- paste0("     beta", Xf.names, "~dnorm(0,0.001)", collapse = "\n")
     
-    # make informative priors
-    Xf.priors <- paste0("     beta", Xf.names, "~dnorm(", posterior.summary[posterior.summary$parameter %in% paste0("beta", Xf.names),]$means ,",",1/(posterior.summary[posterior.summary$parameter %in% paste0("beta", Xf.names),]$var ),")", collapse="\n")
-    TreeDataFusionMV <- sub(pattern = "## FIXED EFFECTS BETAS", Xf.priors, TreeDataFusionMV)
+    if(informative.site == TRUE){
+      # make informative priors, if informative flag is true
+      Xf.priors <- paste0("     beta", Xf.names, "~dnorm(", posterior.summary[posterior.summary$parameter %in% paste0("beta", Xf.names),]$means ,",",1/(posterior.summary[posterior.summary$parameter %in% paste0("beta", Xf.names),]$var ),")", collapse="\n")
+    }else{
+      Xf.priors <- paste0("     beta", Xf.names, "~dnorm(0,0.001)", collapse = "\n")
+    }
+    
+    
+      TreeDataFusionMV <- sub(pattern = "## FIXED EFFECTS BETAS", Xf.priors, TreeDataFusionMV)
     ## update variables for JAGS to track
     data[["Xf"]] <- Xf
     out.variables <- c(out.variables, paste0("beta", Xf.names))
@@ -366,10 +374,19 @@ model{
                         paste0(" + ",myBeta,"*",covX[1],"*",covX[2]))
       
       ## priors
+      if(informative.time == TRUE){
+        # make informative priors, if informative flag is true
+        Xt.priors <- paste0(Xt.priors,"     ", myBeta, "~dnorm(", posterior.summary[posterior.summary$parameter %in% myBeta,]$means ,",",1/(posterior.summary[posterior.summary$parameter %in% myBeta,]$var ),")", collapse="\n")
+      }else{
+        Xt.priors <- paste0(Xt.priors,
+                              "    ",myBeta,"~dnorm(0,0.001)\n")
+      }
+      
+      
       #Xt.priors <- paste0(Xt.priors,
                         #  "    ",myBeta,"~dnorm(0,0.001)\n")
       
-      Xt.priors <- paste0(Xt.priors,"     ", myBeta, "~dnorm(", posterior.summary[posterior.summary$parameter %in% myBeta,]$means ,",",1/(posterior.summary[posterior.summary$parameter %in% myBeta,]$var ),")", collapse="\n")
+     # Xt.priors <- paste0(Xt.priors,"     ", myBeta, "~dnorm(", posterior.summary[posterior.summary$parameter %in% myBeta,]$means ,",",1/(posterior.summary[posterior.summary$parameter %in% myBeta,]$var ),")", collapse="\n")
       
       ## add to list of varibles JAGS is tracking
       out.variables <- c(out.variables, myBeta)
@@ -395,11 +412,16 @@ model{
       out.variables <- c(out.variables, paste0("beta", tvar))
     }
     ## build prior
-    Xt.priors <- paste0(Xt.priors,
-                        paste0("     beta", t_vars, "~dnorm(", posterior.summary[posterior.summary$parameter %in% paste0("beta", t_vars),]$means ,",",1/(posterior.summary[posterior.summary$parameter %in% paste0("beta", t_vars),]$var ),")", collapse="\n"))
                         
     
-   
+    if(informative.time == TRUE){
+      # make informative priors, if informative flag is true
+      Xt.priors <- paste0(Xt.priors,
+                          paste0("     beta", t_vars, "~dnorm(", posterior.summary[posterior.summary$parameter %in% paste0("beta", t_vars),]$means ,",",1/(posterior.summary[posterior.summary$parameter %in% paste0("beta", t_vars),]$var ),")", collapse="\n"))
+    }else{
+      Xt.priors <- paste0(Xt.priors,
+                          "     beta", t_vars,"~dnorm(0,0.001)\n")
+    }
     
     TreeDataFusionMV <- sub(pattern = "## TIME VARYING BETAS", Xt.priors, TreeDataFusionMV)
     
