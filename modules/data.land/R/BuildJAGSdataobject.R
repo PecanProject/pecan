@@ -1,7 +1,7 @@
 #### code to make data object for JAGS
 #### from flat file AZ PIPO database
 
-buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subset = 100, standardize.cov = TRUE){
+buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, trunc.yr = 1976, rnd.subset = 100, standardize.cov = TRUE){
   
   # helper function
   # for standardizing covariates (from K. Holsinger)
@@ -24,6 +24,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   first.start.yr <- min(temp2$DateFirst, na.rm=T) #1719
   last.DBH.yr.1 <- max(temp2$T2_MEASYR, na.rm=T) # 2010
   last.DBH.yr.2 <- 1900 # number guaranteed to be smaller than last.DBH.yr.1
+  
   if(!is.null(Tree2Tree)){
     last.DBH.yr.2 <- max(Tree2Tree$T2_MEASYR, na.rm=T) # 2015
   }
@@ -31,6 +32,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   years <- seq(first.start.yr, last.meas.yr) # 1719:2015, length = 297
   y.matrix <- matrix(data=NA, nrow=nrow(temp2), ncol=length(years)) #tree ring measurements go in y.matrix
   colnames(y.matrix) <- years
+  
   for (t in 1:nrow(temp2)) {
     width.string <- temp2$Widths[t]
     width.vector <- as.numeric(unlist(strsplit(x = width.string, split = ",")))
@@ -48,6 +50,11 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
     y.matrix.2 <- matrix(data=NA, nrow=nrow(Tree2Tree), ncol=length(years))
     
     y.matrix <- rbind(y.matrix, y.matrix.2)  
+    
+    if(stage.2 == TRUE){ # if we are extracting for the 2nd stage model use only those with dbh measurements
+      y.matrix <-  y.matrix.2
+    }
+    
   }
   
   
@@ -87,10 +94,18 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
     
     # rbind the data for the trees with (~544) and without (~14,155) cores together
     z.matrix <- rbind(z.matrix, z.matrix.2)
+    
+    
+    if(stage.2 == TRUE){ # if we are extracting for the 2nd stage model use only those with dbh measurements
+      z.matrix <-  z.matrix.2
+    }
+    
+    
   }
   
   ### convert DBH measurements to cm (multiply by 2.54)
   z.matrix <- z.matrix*2.54
+  #z.matrix.2 <- z.matrix*2.54 # only the trees without cores
   
   ### this is the line that restricts the analysis to the years trunc.yr:2015
   index.last.start <- which(years==trunc.yr) # which(years==1966) # returns 248
@@ -104,8 +119,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
     startyr[i]<-which(complete.cases(z.small[i,]))[1]
     endyr[i]<-ifelse(!is.na(which(complete.cases(z.small[i,]))[2]),which(complete.cases(z.small[i,]))[2],45)
   }
-  startyr[1:544]<-1
-  endyr[1:544]<-45
+  
+  startyr[1:nrow(y.small)]<-1
+  endyr[1:nrow(y.small)]<-45
   sum(complete.cases(startyr))
   
   ### covariate data
@@ -127,6 +143,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     PRISM.strings2 <- Tree2Tree[climate.names]
     PRISM.strings <- rbind(PRISM.strings, PRISM.strings2)
+    if(stage.2 == TRUE){
+      PRISM.strings <- PRISM.strings2
+    }
   }
   
   # which climate variables should be taken from year t and which from year t-1?
@@ -206,12 +225,19 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     PLOT2 <- paste0(Tree2Tree$COUNTYCD, Tree2Tree$T1_PLOT)
     PLOT <- c(PLOT, PLOT2)
+    if(stage.2 ==TRUE){
+      PLOT <- PLOT2
+    }
+      
   }
   
   TREE <- temp2$T1_TRE_CN # should maybe use an underscore to avoid mistakes...but would jags choke?
   if(!is.null(Tree2Tree)){
     TREE2 <- Tree2Tree$T1_TRE_CN
     TREE <- c(TREE, TREE2)
+    if(stage.2 ==TRUE){
+      TREE <- TREE2
+    }
   }
   
   
@@ -233,6 +259,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     ELEV2 <- Tree2Tree$ELEV
     ELEV <- c(ELEV,   ELEV2)
+    if(stage.2 ==TRUE){
+      ELEV <- ELEV2
+    }
   }
   if(standardize.cov==TRUE){
     ELEV <- standardize.vector(ELEV)
@@ -245,6 +274,10 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     SICOND2 <- Tree2Tree$SICOND
     SICOND <- c(SICOND, SICOND2)
+    
+    if(stage.2 ==TRUE){
+      SICOND <-  SICOND2
+    }
   }
   if(standardize.cov==TRUE){
     SICOND <- standardize.vector(SICOND)
@@ -255,6 +288,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     SLOPE2 <- Tree2Tree$SLOPE # max value = 78...different units??
     SLOPE <- c(SLOPE, SLOPE2)
+    if(stage.2 ==TRUE){
+      SLOPE <-  SLOPE2
+    }
   }
   
   ### ASPECT ### 
@@ -262,6 +298,10 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     ASPECT.2 <- Tree2Tree$ASPECT
     ASPECT  <- c(ASPECT , ASPECT.2)
+    
+    if(stage.2 ==TRUE){
+      ASPECT <-  ASPECT.2
+    }
   }
   
   ## STAGE VARS DERIVED FROM SLOPE & ASPECT ##
@@ -269,12 +309,18 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     STAGE2.2 <- Tree2Tree$SLOPE*cos(Tree2Tree$ASPECT)
     STAGE2 <- c(STAGE2, STAGE2.2)
+    if(stage.2 ==TRUE){
+      STAGE2 <-   STAGE2.2
+    }
   }
   
   STAGE3 <- temp2$COND_SLOPE*sin(temp2$COND_ASPECT)
   if(!is.null(Tree2Tree)){
     STAGE3.2 <- Tree2Tree$SLOPE*sin(Tree2Tree$ASPECT)
     STAGE3 <- c(STAGE3, STAGE3.2)
+    if(stage.2 ==TRUE){
+      STAGE3 <-   STAGE3.2
+    }
   }
   
   ### STDAGE
@@ -282,6 +328,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     STDAGE2 <- Tree2Tree$STDAGE
     STDAGE <- c(STDAGE, STDAGE2)
+    if(stage.2 ==TRUE){
+      STDAGE <-   STDAGE2
+    }
   }
   
   
@@ -290,6 +339,10 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     SDI2 <- Tree2Tree$SDIc
     SDI <- c(SDI, SDI2)
+    
+    if(stage.2 ==TRUE){
+      SDI <-   SDI2
+    }
   }
   if(standardize.cov == TRUE){
     SDI <- standardize.vector(SDI)
@@ -302,6 +355,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     COND_TRTCD12 <- Tree2Tree$TRTCD1
     TRTCD1 <- c(TRTCD1, COND_TRTCD12)
+    if(stage.2 ==TRUE){
+      TRTCD1 <-   COND_TRTCD12
+    }
   }
   if(standardize.cov == TRUE){
     TRTCD1 <- standardize.vector(TRTCD1)
@@ -312,6 +368,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     DSTRBCD12 <- Tree2Tree$DSTRBCD1
     DSTRBCD1 <- c(DSTRBCD1, DSTRBCD12)
+    if(stage.2 ==TRUE){
+      DSTRBCD1 <-    DSTRBCD12
+    }
   }
   
   # Disturbance Year
@@ -320,6 +379,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     DSTRBYR12 <- Tree2Tree$DSTRBYR1
     DSTRBYR1 <- c(DSTRBYR1,DSTRBYR12)
+    if(stage.2 ==TRUE){
+      DSTRBYR1 <-   DSTRBYR12
+    }
   }
   
   
@@ -329,6 +391,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree) & "DSTRBCD2" %in% colnames((Tree2Tree))){
     DSTRBCD22 <- Tree2Tree$DSTRBCD2
     DSTRBCD2 <- c(DSTRBCD2, DSTRBCD22)
+    if(stage.2 ==TRUE){
+      DSTRBCD2 <-   DSTRBCD22
+    }
   }
   
   # Disturbance Year
@@ -336,6 +401,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     DSTRBYR22 <- Tree2Tree$DSTRBYR2
     DSTRBYR2 <- c(DSTRBYR2,DSTRBYR22)
+    if(stage.2 ==TRUE){
+      DSTRBYR2 <-    DSTRBYR22
+    }
   }
   
   # Disturbance Code 3
@@ -343,6 +411,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree) & "DSTRBCD3" %in% colnames((Tree2Tree))){
     DSTRBCD32 <- Tree2Tree$COND_DSTRBCD3
     DSTRBCD3 <- c(DSTRBCD3, DSTRBCD32)
+    if(stage.2 ==TRUE){
+      DSTRBCD3 <-   DSTRBCD32
+    }
   }
   
   # Disturbance Year
@@ -350,6 +421,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(!is.null(Tree2Tree)){
     DSTRBYR32 <- Tree2Tree$DSTRBYR3
     DSTRBYR3 <- c(DSTRBYR3,DSTRBYR32)
+    if(stage.2 ==TRUE){
+      DSTRBYR3 <-   DSTRBYR32
+    }
   }
   
   MAP <- rowMeans(time_data$wintP.wateryr)
@@ -369,6 +443,8 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   if(is.null(Tree2Tree)){
     cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
                            STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1,  MAP =MAP, MAT =MAT)
+    
+   
     
   }else{
     cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
@@ -395,6 +471,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
   ## must define an initial (biologically-reasonable) value for DBH for MCMC chains to start at (every tree, every year)
   z0 <- matrix(data=NA, nrow=nrow(y.small), ncol=ncol(y.small))
   
+  if(stage.2 == FALSE){
   # first deal with the trees with cores
   DIA.T1 <- vector(mode="numeric", length=nrow(temp2))
   ave.ring <- vector(mode="numeric", length=nrow(temp2))
@@ -422,8 +499,10 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
     #         z0[t,1:length(temp.growth)] <- DIA.T1[t] + temp.growth2)
   }
   
+  }
   # now deal with trees without cores
   if(!is.null(Tree2Tree)){
+    if(stage.2 == FALSE){
     global.ave.inc <- mean(ave.ring) # 0.363... ~0.18 cm for average ring
     for (t in 1:nrow(Tree2Tree)) {
       # shrink tree backwards from T1 DBH, using global ave diameter increment derived from tree rings
@@ -436,6 +515,23 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
       temp.forward <- rep(global.ave.inc, times=(last.meas.yr-Tree2Tree$T1_MEASYR[t]))
       z0[(nrow(temp2)+t), (length(temp.growth2)+1):length(years.small)] <- first.DBH + cumsum(temp.forward)
     }
+    
+  }else{
+    DIA.T1 <- vector(mode="numeric", length=nrow(temp2))
+    ave.ring <- vector(mode="numeric", length=nrow(temp2))
+    global.ave.inc <- mean(ave.ring) # 0.363... ~0.18 cm for average ring
+    for (t in 1:nrow(Tree2Tree)) {
+      # shrink tree backwards from T1 DBH, using global ave diameter increment derived from tree rings
+      first.DBH <- Tree2Tree$T1_DIA[t]*2.54 # extract time 1 DBH
+      temp.growth <- rep(global.ave.inc, times=(Tree2Tree$T1_MEASYR[t]-trunc.yr))
+      temp.growth2 <- c(-rev(cumsum(rev(temp.growth))),0) # add a zero at the end of this so that z0 in MEASYR = DIA
+      z0[t,1:length(temp.growth2)] <- first.DBH + temp.growth2
+      
+      ### grow tree forward from T1_DIA to year 2015
+      temp.forward <- rep(global.ave.inc, times=(last.meas.yr-Tree2Tree$T1_MEASYR[t]))
+      z0[t, (length(temp.growth2)+1):length(years.small)] <- first.DBH + cumsum(temp.forward)
+    }
+  }
   }
   
   colnames(z0) <- years.small
@@ -444,5 +540,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subs
                       z0=z0,
                       cov.data=cov.data,
                       time_data=time_data)
+  
+  
   return(return.list)
 }

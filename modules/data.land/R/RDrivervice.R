@@ -48,7 +48,7 @@ distrub.plot <- merge(temp2, unique(Tree2Tree[,c("T1_PLOT", "DSTRBYR1", "DSTRBYR
 
 newtemp2 <- distrub.plot[!duplicated(distrub.plot),]
 
-#ggplot(distrub.plot, aes())
+
 
 # join trees to cond table
 
@@ -62,8 +62,14 @@ setwd("pecan/modules/data.land/R")
 
 ### read in function that creates jags objects from above data
 source("modules/data.land/R/BuildJAGSdataobject.R")
-#jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
-# if you don't have trees without cores, use the following line
+
+# get all the data with cores set up for stage 1
+jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
+saveRDS(jags.stuff, "FIA_inc_data/jags.data.basic.rds")
+
+
+
+
 # or you wish to not include trees without cores
 T2T.nodup <- Tree2Tree[!duplicated(Tree2Tree),]
 
@@ -78,8 +84,9 @@ Tree2Tree.incored.plots <- Tree2Tree[paste0(Tree2Tree$COUNTYCD, Tree2Tree$PLOT) 
 # check that we only have plot ids with tree cores
 #unique(paste0(Tree2Tree.incored.plots$COUNTYCD, Tree2Tree.incored.plots$PLOT)) %in% unique(paste0(newtemp2$CountyNo, newtemp2$PlotNo))
 
+jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
+saveRDS(jags.stuff, "FIA_inc_data/jags.data.basic.rds")
 
-jags.stuff <- buildJAGSdataobject(temp2 = newtemp2, Tree2Tree = Tree2Tree.incored.plots, rnd.subset = 100, trunc.yr = 1966)
 
 
 # jags.stuff <- buildJAGSdataobject(temp2,  rnd.subset = 100, trunc.yr = 1966)
@@ -105,14 +112,14 @@ View(z0)
 source("/Users/kah/Documents/docker_pecan/pecan/modules/data.land/R/InventoryGrowthFusion.R") 
 
 
-# linear model with DBH^2 removed for Precipitation and 500 cores
-ppt.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                  n.iter=40000, z0=z0,
-                                  n.chunk=100, save.state=TRUE, random="(1|PLOT[i])  + (1|FIRE[i])",
-                                  fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
-                                  time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
-                                  burnin_plot=FALSE, save.jags = "PPT.noX2.5000nocores.40000.txt", model.name = "PPT.noX2.5000nocores.40000.txt", 
-                                  output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
+# # linear model with DBH^2 removed for Precipitation and 500 cores
+# ppt.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+#                                   n.iter=40000, z0=z0,
+#                                   n.chunk=100, save.state=TRUE, random="(1|PLOT[i])  + (1|FIRE[i])",
+#                                   fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
+#                                   time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
+#                                   burnin_plot=FALSE, save.jags = "PPT.noX2.5000nocores.40000.txt", model.name = "PPT.noX2.5000nocores.40000.txt", 
+#                                   output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
 
 
 # linear model with DBH^2 removed for Precipitation + Tmax and 500 cores
@@ -123,6 +130,50 @@ ppt.noX2 <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_d
                                   time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
                                   burnin_plot=FALSE, save.jags = "PPT.noX2.5000nocores.40000.txt", model.name = "PPT.noX2.5000nocores.40000.txt", 
                                   output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
+
+
+
+
+# --------------------------------------------------------------
+
+# --------------------------------------------------------------
+# 1. get out data for the second stage (trees w/out cores)
+jags.stuff.stage2 <- buildJAGSdataobject(temp2 = newtemp2, Tree2Tree = Tree2Tree.incored.plots, stage.2 =TRUE, rnd.subset = 100, trunc.yr = 1966)
+saveRDS(jags.stuff.stage2, "FIA_inc_data/jags.data.100.stage2.rds")
+
+# 2. Read in posterior estimates of the inventory growth fusion model parameters
+posterior.ests <- readRDS("IGF_outputs/posterior_stage1/IGFPPT.noX2.tau.norm.106.8.5..rds")
+
+means <- apply(as.matrix(posterior.ests), 2, mean)
+vars <- apply(as.matrix(posterior.ests), 2, var)
+SD <- apply(as.matrix(posterior.ests), 2, sd)
+
+# generate data frame with a summary of the posterior estimates
+posterior.summary <- data.frame(means = apply(as.matrix(posterior.ests), 2, mean),
+                                vars = apply(as.matrix(posterior.ests), 2, var),
+                                SD = apply(as.matrix(posterior.ests), 2, sd))
+posterior.summary$parameter <- rownames(posterior.summary)
+
+# 3. Run InventoryGrowthFusion_stage_2.R 
+source("/Users/kah/Documents/docker_pecan/pecan/modules/data.land/R/InventoryGrowthFusion_stage_2.R") 
+
+
+stage.2.out <- InventoryGrowthFusion_stage2(dbh.only.data=jags.stuff.stage2$data, 
+                                            cov.data=jags.stuff.stage2$cov.data, 
+                                            time_data=jags.stuff.stage2$time_data,
+                                            posterior.estimates = posterior.summary, 
+                                            n.iter=4000, 
+                                            z0=jags.stuff.stage2$z0,
+                                            n.chunk=1000, 
+                                            save.state=TRUE, 
+                                            random="(1|PLOT[i])",
+                                            fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
+                                            time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
+                                            burnin_plot=FALSE, 
+                                            save.jags = "test.stage2.txt", 
+                                            model.name = "test.stage2model.txt", 
+                                            output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
+                      
 
 
 
