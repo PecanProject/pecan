@@ -69,7 +69,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     if (inherits(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(PEcAn.DB::db.close(con))
+      on.exit(PEcAn.DB::db.close(con), add = TRUE)
     }
   } else {
     con <- NULL

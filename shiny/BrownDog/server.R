@@ -34,7 +34,7 @@ server <- shinyServer(function(input, output, session) {
   output$modelSelector <- renderUI({
     bety <- betyConnect("../../web/config.php")
     con <- bety$con
-    on.exit(db.close(con))
+    on.exit(db.close(con), add = TRUE)
     models <- db.query("SELECT name FROM modeltypes;", con)
     selectInput("model", "Model", models)
   })
@@ -76,7 +76,7 @@ server <- shinyServer(function(input, output, session) {
     # get all sites name, lat and lon by sitegroups
     bety <- betyConnect("../../web/config.php")
     con <- bety$con
-    on.exit(db.close(con))
+    on.exit(db.close(con), add = TRUE)
     sites <-
       db.query(
         paste0(

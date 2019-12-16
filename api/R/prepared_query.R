@@ -64,7 +64,7 @@ prepared_query <- function(con, query, params) {
   )
   qry <- DBI::dbSendQuery(con, query)
   res <- DBI::dbBind(qry, params)
-  on.exit(DBI::dbClearResult(res))
+  on.exit(DBI::dbClearResult(res), add = TRUE)
   DBI::dbFetch(res)
 }
 
@@ -79,5 +79,5 @@ prepared_statement <- function(con, query, params) {
   )
   qry <- DBI::dbSendStatement(con, query)
   res <- DBI::dbBind(qry, params)
-  on.exit(DBI::dbClearResult(res))
+  on.exit(DBI::dbClearResult(res), add = TRUE)
 }

@@ -160,7 +160,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   
   panel.hist.dens <- function(x, ...) {
     usr <- graphics::par("usr")
-    on.exit(graphics::par(usr))
+    on.exit(graphics::par(usr), add = TRUE)
     graphics::par(usr = c(usr[1:2], 0, 1.5))
     h <- graphics::hist(x, plot = FALSE)
     breaks <- h$breaks
@@ -173,7 +173,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   # replaced by spearman
   panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
     usr <- graphics::par("usr")
-    on.exit(graphics::par(usr))
+    on.exit(graphics::par(usr), add = TRUE)
     graphics::par(usr = c(0, 1, 0, 1))
     r <- stats::cor(x, y, use = "complete.obs", method = method)
     txt <- format(c(r, 0.123456789), digits = digits)[1]
@@ -186,7 +186,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   
   plotEllipse <- function(x, y) {
     usr <- graphics::par("usr")
-    on.exit(graphics::par(usr))
+    on.exit(graphics::par(usr), add = TRUE)
     graphics::par(usr = c(usr[1:2], 0, 1.5))
     cor <- stats::cor(x, y)
     el <- ellipse::ellipse(cor)
