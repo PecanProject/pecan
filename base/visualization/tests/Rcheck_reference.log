@@ -39,10 +39,6 @@ to ‘yes’.
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking dependencies in R code ... NOTE
-'library' or 'require' calls in package code:
-  ‘grid’ ‘png’
-  Please use :: or requireNamespace() instead.
-  See section 'Suggested packages' in the 'Writing R Extensions' manual.
 Packages in Depends field not imported from:
   ‘ggplot2’ ‘raster’ ‘sp’
   These packages need to be imported from (in the NAMESPACE file)
@@ -69,11 +65,6 @@ Found the platform-specific device:
   ‘x11’
 dev.new() is the preferred way to open a new device, in the unlikely
 event one is needed.
-add_icon: no visible global function definition for ‘readPNG’
-add_icon: no visible global function definition for ‘rasterGrob’
-add_icon: no visible global function definition for ‘unit’
-add_icon: no visible global function definition for ‘grid.draw’
-add_icon: no visible global function definition for ‘textGrob’
 ciEnvelope: no visible global function definition for ‘polygon’
 create_status_page: no visible global function definition for
   ‘download.file’
