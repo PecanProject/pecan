@@ -70,8 +70,8 @@ kill.tunnel <- function() {
 # make sure always to call status.end
 options(warn = 1)
 options(error = quote({
-  status.end("ERROR")
-  kill.tunnel()
+  try(status.end("ERROR"))
+  try(kill.tunnel(settings))
   if (!interactive()) {
     q()
   }
