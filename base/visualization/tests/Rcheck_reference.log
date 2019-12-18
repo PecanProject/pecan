@@ -39,12 +39,8 @@ to ‘yes’.
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking dependencies in R code ... NOTE
-'library' or 'require' calls in package code:
-  ‘grid’ ‘png’
-  Please use :: or requireNamespace() instead.
-  See section 'Suggested packages' in the 'Writing R Extensions' manual.
 Packages in Depends field not imported from:
-  ‘data.table’ ‘ggplot2’ ‘raster’ ‘sp’
+  ‘ggplot2’ ‘raster’ ‘sp’
   These packages need to be imported from (in the NAMESPACE file)
   for when this namespace is loaded but not attached.
 * checking S3 generic/method consistency ... WARNING
@@ -69,11 +65,6 @@ Found the platform-specific device:
   ‘x11’
 dev.new() is the preferred way to open a new device, in the unlikely
 event one is needed.
-add_icon: no visible global function definition for ‘readPNG’
-add_icon: no visible global function definition for ‘rasterGrob’
-add_icon: no visible global function definition for ‘unit’
-add_icon: no visible global function definition for ‘grid.draw’
-add_icon: no visible global function definition for ‘textGrob’
 ciEnvelope: no visible global function definition for ‘polygon’
 create_status_page: no visible global function definition for
   ‘download.file’
@@ -90,7 +81,6 @@ create_status_page : <anonymous>: no visible global function definition
 create_status_page: no visible global function definition for ‘text’
 create_status_page: no visible global function definition for ‘dev.off’
 data.fetch: no visible global function definition for ‘aggregate’
-map.output: no visible global function definition for ‘data.table’
 map.output: no visible global function definition for ‘map_data’
 map.output: no visible global function definition for ‘ggplot’
 map.output: no visible global function definition for ‘geom_polygon’
@@ -156,7 +146,7 @@ vwReg: no visible global function definition for ‘geom_point’
 vwReg: no visible global function definition for ‘theme’
 Undefined global functions or variables:
   aes aes_string aggregate alpha.factor axis box colorRampPalette
-  data.table dens.scaled density dev.off download.file extendrange
+  dens.scaled density dev.off download.file extendrange
   flush.console geom_path geom_point geom_polygon geom_smooth geom_tile
   ggplot grid.draw group jpg lat legend lines LL loess loess.control
   lon long M map_data na.omit nodeinfo pdf plot.new plot.window png
