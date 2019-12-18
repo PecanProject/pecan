@@ -13,7 +13,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion_stage2 <- function(dbh.only.data, posterior.estimates = NULL, cov.data=NULL, time_data = NULL, informative.time = TRUE, informative.site = TRUE, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
+InventoryGrowthFusion_stage2 <- function(data, posterior.estimates = NULL, cov.data=NULL, time_data = NULL, informative.time = TRUE, informative.site = TRUE, informative.plot =TRUE, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
  
  
   
@@ -142,12 +142,17 @@ model{
                         paste0("+ alpha_", r_var,"[",counter,index,"]"))
       ## create random effect
       for(j in seq_along(nr)){
+        
         Reffects <- paste(Reffects,
                           paste0("for(k in 1:",nr[j],"){\n"),
                           paste0("   alpha_",r_var[j],"[k] ~ dnorm(0,tau_",r_var[j],")\n}\n"))
-      }
+        }
       ## create priors
+      if(informative.plot == FALSE){
       Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dgamma(1,0.1)\n",collapse = " "))
+      }else{
+      Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dnorm(",posterior.summary[posterior.summary$parameter %in% "tau_PLOT", ]$means ,",",posterior.summary[posterior.summary$parameter %in% "tau_PLOT", ]$vars ,")\n",collapse = " "))
+      }
       ## track
       burnin.variables <- c(burnin.variables, paste0("tau_", r_var))
       out.variables <- c(out.variables, paste0("tau_", r_var), paste0("alpha_",r_var))

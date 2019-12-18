@@ -158,12 +158,13 @@ posterior.summary$parameter <- rownames(posterior.summary)
 source("/Users/kah/Documents/docker_pecan/pecan/modules/data.land/R/InventoryGrowthFusion_stage_2.R") 
 
 
-stage.2.out <- InventoryGrowthFusion_stage2(dbh.only.data=jags.stuff.stage2$data, 
+stage.2.out <- InventoryGrowthFusion_stage2(data=jags.stuff.stage2$data, 
                                             cov.data=jags.stuff.stage2$cov.data, 
                                             time_data=jags.stuff.stage2$time_data,
                                             posterior.estimates = posterior.summary, 
                                             informative.time = TRUE, 
-                                            informative.site = FALSE,
+                                            informative.site = TRUE,
+                                            informative.plot =TRUE,
                                             n.iter=4000, 
                                             z0=jags.stuff.stage2$z0,
                                             n.chunk=100, 
@@ -178,6 +179,7 @@ stage.2.out <- InventoryGrowthFusion_stage2(dbh.only.data=jags.stuff.stage2$data
                       
 
 
+# plot posteriors and the informative priors
 
 ### read in function that makes/executes a jags model from lmer-like call of a linear model
 
