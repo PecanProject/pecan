@@ -109,6 +109,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
 
   } else if (genus %in% c("Sorghum", "Setaria")) { #annual grasses
     # Perennial Sorghum exists but is not a major crop
+    # assume these are replanted from seed each year
     # https://landinstitute.org/our-work/perennial-crops/perennial-sorghum/
     iplant <- config$pft$iPlantControl
     ## run BioGro
