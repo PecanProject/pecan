@@ -49,15 +49,16 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
      coppice.interval = 1 # i.e. harvest every year
   }
 
-  if (genus == "Saccharum") {
+  if (genus == "Saccharum") { 
+    #probably should be handled like coppice shrubs or perennial grasses
     tmp.result <- BioCro::caneGro(
       WetDat = WetDat,
       lat = lat,
       soilControl = l2n(config$pft$soilControl))
-    # Addin Rhizome an Grain to avoid error in subsequent script processing results
+    # Addin Rhizome and Grain to avoid error in subsequent script processing results
     tmp.result$Rhizome <- 0
     tmp.result$Grain <- 0
-  } else if (genus %in% c("Salix", "Populus")) {
+  } else if (genus %in% c("Salix", "Populus")) {#coppice trees / shrubs
     if (year_in_run == 1) {
       iplant <- config$pft$iPlantControl
     } else {
@@ -87,7 +88,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
       seneControl = l2n(config$pft$seneControl),
       photoControl = l2n(config$pft$photoParms))
 
-  } else if (genus %in% c("Miscanthus", "Panicum")) {
+  } else if (genus %in% c("Miscanthus", "Panicum")) {#perennial grasses
     if (year_in_run == 1) {
       iRhizome <- config$pft$iPlantControl$iRhizome
     } else {
@@ -106,14 +107,10 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
       iRhizome = as.numeric(iRhizome),
       photoControl = config$pft$photoParms)
 
-  } else if (genus %in% c("Sorghum", "Setaria")) {
-    if (year_in_run == 1) {
-      iplant <- config$pft$iPlantControl
-    } else {
-      iplant$iRhizome <- data.table::last(tmp.result$Rhizome)
-      iplant$iRoot <- data.table::last(tmp.result$Root)
-      iplant$iStem <- data.table::last(tmp.result$Stem)
-    }
+  } else if (genus %in% c("Sorghum", "Setaria")) { #annual grasses
+    # Perennial Sorghum exists but is not a major crop
+    # https://landinstitute.org/our-work/perennial-crops/perennial-sorghum/
+    iplant <- config$pft$iPlantControl
     ## run BioGro
     tmp.result <- BioCro::BioGro(
       WetDat = WetDat,
