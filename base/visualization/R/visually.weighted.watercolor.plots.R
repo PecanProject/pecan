@@ -104,7 +104,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   for (i in seq_len(B)) {
     data2 <- data[sample(nrow(data), replace = TRUE), ]
     data2 <- data2[order(data2[, IV]), ]
-    if (class(l0) == "loess") {
+    if (is.loess(l0)) {
       m1 <- method(formula, data2, control = loess.control(surface = "i", 
                                                            statistics = "a", 
                                                            trace.hat = "a"), ...)
