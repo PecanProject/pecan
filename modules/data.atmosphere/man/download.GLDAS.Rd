@@ -4,7 +4,7 @@
 \alias{download.GLDAS}
 \title{Download GLDAS data}
 \usage{
-download.GLDAS(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+download.GLDAS(outfolder, start_date, end_date, lat.in, lon.in,
   overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{

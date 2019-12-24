@@ -4,7 +4,7 @@
 \alias{download.NLDAS}
 \title{Download NLDAS met data}
 \usage{
-download.NLDAS(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+download.NLDAS(outfolder, start_date, end_date, lat.in, lon.in,
   overwrite = FALSE, verbose = FALSE, ...)
 }
 \description{

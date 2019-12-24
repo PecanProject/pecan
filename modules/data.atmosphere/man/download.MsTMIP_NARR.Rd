@@ -4,7 +4,7 @@
 \alias{download.MsTMIP_NARR}
 \title{download.MsTMIP_NARR}
 \usage{
-download.MsTMIP_NARR(outfolder, start_date, end_date, site_id, lat.in,
+download.MsTMIP_NARR(outfolder, start_date, end_date, lat.in,
   lon.in, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
