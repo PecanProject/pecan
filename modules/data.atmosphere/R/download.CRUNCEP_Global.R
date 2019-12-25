@@ -22,7 +22,7 @@
 ##' @export
 ##'
 ##' @author James Simkins, Mike Dietze, Alexey Shiklomanov
-download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
                              overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2,
                              method = "ncss", ...) {
 

@@ -9,15 +9,13 @@
 ##' @param lon decimal degrees [-180, 180]
 ##'
 ##' @author James Simkins
-download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+download.MsTMIP_NARR <- function(outfolder, start_date, end_date, lat.in, lon.in,
                                  overwrite = FALSE, verbose = FALSE, ...) {
 
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-  site_id    <- as.numeric(site_id)
-  outfolder  <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id%%1e+09))
 
   lat.in    <- as.numeric(lat.in)
   lon.in    <- as.numeric(lon.in)

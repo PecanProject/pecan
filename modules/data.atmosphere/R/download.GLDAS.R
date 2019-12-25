@@ -6,12 +6,12 @@
 ##' @param outfolder
 ##' @param start_date
 ##' @param end_date
-##' @param site_id
+##' @param site_id . Currentl Ignored
 ##' @param lat.in
 ##' @param lon.in
 ##'
 ##' @author Christy Rollinson
-download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+download.GLDAS <- function(outfolder, start_date, end_date, lat.in, lon.in,
                            overwrite = FALSE, verbose = FALSE, ...) {
 
   # Date stuff
@@ -19,9 +19,6 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-  site_id    <- as.numeric(site_id)
-  # NOTE: This is commented out in other functions. Should we ditch it here as well??
-  outfolder  <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id%%1e+09))
 
   GLDAS_start <- 1948
   if (start_year < GLDAS_start) {

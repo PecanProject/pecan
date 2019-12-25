@@ -12,17 +12,15 @@
 ##' @param ensemble_member , r1i1p1 is the only ensemble member available for this dataset, CCSM4 uses r6i1p1 instead
 ##'
 ##' @author James Simkins
-download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, model='IPSL-CM5A-LR', scenario='rcp85', ensemble_member='r1i1p1', 
+download.MACA <- function(outfolder, start_date, end_date, lat.in, lon.in, model='IPSL-CM5A-LR', scenario='rcp85', ensemble_member='r1i1p1', 
                           overwrite=FALSE, verbose=FALSE, ...){  
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-  site_id <- as.numeric(site_id)
   model <- paste0(model)
   scenario <- paste0(scenario)
   ensemble_member <- paste0(ensemble_member)
-  outfolder <- paste0(outfolder,"_site_",paste0(site_id %/% 1000000000, "-", site_id %% 1000000000))
   
   if (model == 'CCSM4'){
     ensemble_member <- 'r6i1p1'

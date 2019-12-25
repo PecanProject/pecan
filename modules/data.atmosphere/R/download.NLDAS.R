@@ -5,13 +5,13 @@
 ##' @param outfolder
 ##' @param start_date
 ##' @param end_date
-##' @param site_id
+##' @param site_id . Currently Ignored
 ##' @param lat
 ##' @param lon
 ##' @export
 ##'
 ##' @author Christy Rollinson (with help from Ankur Desai)
-download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+download.NLDAS <- function(outfolder, start_date, end_date, lat.in, lon.in,
                            overwrite = FALSE, verbose = FALSE, ...) {
 
   # Date stuff
@@ -19,8 +19,6 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-  site_id    <- as.numeric(site_id)
-  outfolder  <- paste0(outfolder, "_site_", paste0(site_id %/% 1e+09, "-", site_id %% 1e+09))
 
   NLDAS_start <- 1980
   if (start_year < NLDAS_start) {
