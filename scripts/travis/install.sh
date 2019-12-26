@@ -14,13 +14,6 @@ set -e
 
 # ROLL A FEW R PACKAGES BACK TO SPECIFIED VERSIONS
 (
-    travis_time_start "pecan_install_dbplyr" "Installing dbplyr version 1.3.0 see #2349"
-    Rscript -e 'devtools::install_version("dbplyr", version = "1.3.0", repos = "http://cran.us.r-project.org")'
-
-    # yes, this is supposed to happen automatically but... doesn't
-    Rscript -e 'install.packages("rgdal")'
-    travis_time_end
-
     travis_time_start "pecan_install_roxygen" "Installing Roxygen 6.1.1 to match comitted documentation version"
     # Later Roxygen versions produce a lot of formatting changes (mostly whitespace), so waiting to upgrade.
     # When ready we will upgrade to Roxygen 7.0, commit all changes at once,
