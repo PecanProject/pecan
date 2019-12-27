@@ -512,7 +512,7 @@ temp.settings <- function(settings.txt) {
 ##' @author David LeBauer
 tryl <- function(FUN) {
   out <- tryCatch(FUN, error = function(e) e)
-  ans <- !any(is.error(out))
+  ans <- !any(inherits(out, "error"))
   return(ans)
 } # tryl
 #--------------------------------------------------------------------------------------------------#
