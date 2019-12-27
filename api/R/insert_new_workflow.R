@@ -44,7 +44,7 @@ insert_new_workflow <- function(con,
     length(user_id) <= 1,
     length(con) == 1,
     # Must be RPostgres connection for prepared queries 
-    is.PqConnection(con)
+    inherits(con, "PqConnection")
   )
   lens <- lengths(list(site_id, model_id, start_date, end_date))
   n_workflow <- max(lens)
