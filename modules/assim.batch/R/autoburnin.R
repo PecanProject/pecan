@@ -46,7 +46,7 @@ getBurnin <- function(jags_out,
   } else {
     index <- utils::tail(which(rowSums(gbr_exceed) > 0), 1) + 1
     stopifnot(length(index) == 1,
-               inherits(("numeric", "integer"),class(index)))
+               inherits(index, c("numeric", "integer"))
     if (index > dim(GBR)[1]) {
       burnin <- NA
     } else {
