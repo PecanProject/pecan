@@ -19,7 +19,7 @@
 ##'
 ##' @title MstMIP variable
 ##' @export
-##' @param name name of variable
+##' @param name of variable
 ##' @param lat latitude if dimension requests it
 ##' @param lon longitude if dimension requests it
 ##' @param time time if dimension requests it
@@ -27,12 +27,12 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
+  nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
   dims <- list()
 
-  if (nrow(var) == 0) {
-    var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
-    if (nrow(var) == 0) {
+  if (nrow(nc_var) == 0) {
+    nc_var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
+    if (nrow(nc_var) == 0) {
       if (!silent) {
         PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
@@ -45,7 +45,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
   }
 
   for (i in 1:4) {
-    vd <- var[[paste0("dim", i)]]
+    vd <- nc_var[[paste0("dim", i)]]
     if (vd == "lon" && !is.na(lon)) {
       dims[[length(dims) + 1]] <- lon
     } else if (vd == "lat" && !is.na(lat)) {
@@ -62,9 +62,9 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
       }
     }
   }
-  ncvar <- ncdf4::ncvar_def(name, as.character(var$Units), dims, -999)
-  if (var$Long.name != "na") {
-    ncvar$longname <- as.character(var$Long.name)
+  ncvar <- ncdf4::ncvar_def(name, as.character(nc_var$Units), dims, -999)
+  if (nc_var$Long.name != "na") {
+    ncvar$longname <- as.character(nc_var$Long.name)
   }
   return(ncvar)
 } # mstimipvar
@@ -310,7 +310,7 @@ pdf.stats <- function(distn, A, B) {
     f = ifelse(B > 2,
                B/(B - 2),
                mean(stats::rf(10000, A, B))))
-  var <- switch(distn,
+  nc_var <- switch(distn,
     gamma = A/B^2,
     lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
     beta = A * B/((A + B) ^ 2 * (A + B + 1)),
@@ -324,7 +324,7 @@ pdf.stats <- function(distn, A, B) {
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
   ucl <- ci[2]
-  out <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl))
+  out <- unlist(list(mean = mean, nc_var = nc_var, lcl = lcl, ucl = ucl))
   return(out)
 } # pdf.stats
 #--------------------------------------------------------------------------------------------------#
