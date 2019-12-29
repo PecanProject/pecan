@@ -703,7 +703,7 @@ download.file <- function(url, filename, method) {
 ##' 
 ##' @export
 ##' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
-retry.func <- function(expr, isError=function(x) inherits(x,"try-error"), maxErrors=5, sleep=0) {
+retry.func <- function(expr, isError = function(x) inherits(x, "try-error"), maxErrors = 5, sleep = 0) {
   attempts = 0
   retval = try(eval(expr))
   while (isError(retval)) {
