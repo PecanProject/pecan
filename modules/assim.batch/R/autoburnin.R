@@ -33,7 +33,7 @@ getBurnin <- function(jags_out,
   } else {
     stop("Unknown method: ", method)
   }
-  if (inherits(GBR,"try-error")) {
+  if (inherits(GBR, "try-error")) {
     message("Unable to calculate Gelman diagnostic. Assuming no convergence.")
     return(1)
   }
