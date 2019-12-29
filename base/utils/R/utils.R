@@ -310,7 +310,7 @@ pdf.stats <- function(distn, A, B) {
     f = ifelse(B > 2,
                B/(B - 2),
                mean(stats::rf(10000, A, B))))
-    var <- switch(distn,
+  var <- switch(distn,
     gamma = A/B^2,
     lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
     beta = A * B/((A + B) ^ 2 * (A + B + 1)),
