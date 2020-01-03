@@ -4,7 +4,6 @@
 ##' @param outfolder Directory where results should be written
 ##' @param start_date,end_date Range of years to retrieve. Format is YYYY-MM-DD,
 ##'   but only the year portion is used and the resulting files always contain a full year of data.
-##' @param site_id numeric. Currently ignored
 ##' @param lat.in site latitude in decimal degrees
 ##' @param lon.in site longitude in decimal degrees
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
@@ -22,7 +21,7 @@
 ##' @export
 ##'
 ##' @author James Simkins, Mike Dietze, Alexey Shiklomanov
-download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
                              overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2,
                              method = "ncss", ...) {
 
