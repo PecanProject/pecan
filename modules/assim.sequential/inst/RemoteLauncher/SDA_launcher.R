@@ -35,7 +35,7 @@ unlink(c('run', 'out', 'SDA'), recursive = TRUE)
 #----------------------------------------------------------------
 # Find what sites we are running for
 #---------------------------------------------------------------
-if ("MultiSettings" %in% class(settings)) site.ids <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
+if (inherits(settings, "MultiSettings")) site.ids <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
 #----------------------------------------------------------------
 # samples should be ready if not lets make it
 #---------------------------------------------------------------

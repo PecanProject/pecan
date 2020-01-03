@@ -17,7 +17,7 @@ setwd("/fs/data3/hamzed/MultiSite_Project/SDA")
 unlink(c('run','out','SDA'),recursive = T)
 rm(list=ls())
 settings <- read.settings("pecan.SDA.4sites.xml")
-if ("MultiSettings" %in% class(settings)) site.ids <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
+if (inherits(settings, "MultiSettings")) site.ids <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
 #sample from parameters used for both sensitivity analysis and Ens
 get.parameter.samples(settings, ens.sample.method = settings$ensemble$samplingspace$parameters$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
 #----------------------------------------------------------------
