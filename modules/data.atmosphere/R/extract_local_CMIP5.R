@@ -18,7 +18,6 @@
 ##' @param in.path - path to the raw full grids
 ##' @param start_date - first day for which you want to extract met (yyyy-mm-dd)
 ##' @param end_date - last day for which you want to extract met (yyyy-mm-dd)
-##' @param site_id name to associate with extracted files
 ##' @param lat.in site latitude in decimal degrees
 ##' @param lon.in site longitude in decimal degrees
 ##' @param model which GCM to extract data from
@@ -36,7 +35,7 @@
 ##' @export
 ##' @examples
 # -----------------------------------
-extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_id, lat.in, lon.in, 
+extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 
                                 model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, no.leap=NULL,
                                 overwrite = FALSE, verbose = FALSE, ...){
   
