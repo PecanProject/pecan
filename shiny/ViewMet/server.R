@@ -149,7 +149,7 @@ server <- function(input, output, session) {
       dat <- try(load_data(data.path = rv$load.paths[i],
                            format = format, site = site, ))
       
-      if(class(dat) == "data.frame"){
+      if(inherits(dat, "data.frame")) {
         dat$met <- rv$load.paths[i] %>% dirname() %>% basename() %>%
           gsub(pattern = "\\_site_.*",replacement = "", x = .)
         data[[i]] <- dat
