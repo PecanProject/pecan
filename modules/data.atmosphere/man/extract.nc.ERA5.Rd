@@ -4,19 +4,8 @@
 \alias{extract.nc.ERA5}
 \title{ERA5_extract}
 \usage{
-extract.nc.ERA5(
-  slat,
-  slon,
-  in.path,
-  start_date,
-  end_date,
-  outfolder,
-  in.prefix,
-  newsite,
-  vars = NULL,
-  overwrite = FALSE,
-  ...
-)
+extract.nc.ERA5(slat, slon, in.path, start_date, end_date, outfolder,
+  in.prefix, newsite, vars = NULL, overwrite = FALSE, ...)
 }
 \arguments{
 \item{slat}{latitude}

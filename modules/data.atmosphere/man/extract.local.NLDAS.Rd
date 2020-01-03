@@ -4,17 +4,8 @@
 \alias{extract.local.NLDAS}
 \title{extract.local.NLDAS}
 \usage{
-extract.local.NLDAS(
-  outfolder,
-  in.path,
-  start_date,
-  end_date,
-  lat.in,
-  lon.in,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+extract.local.NLDAS(outfolder, in.path, start_date, end_date, lat.in,
+  lon.in, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output files will be stored}
@@ -50,4 +41,3 @@ Extract NLDAS meteorology for a poimt from a local download of the full grid
 \author{
 Christy Rollinson,
 }
-\concept{}

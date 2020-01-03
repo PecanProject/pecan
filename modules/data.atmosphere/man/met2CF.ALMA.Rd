@@ -4,15 +4,8 @@
 \alias{met2CF.ALMA}
 \title{met2CF.ALMA}
 \usage{
-met2CF.ALMA(
-  in.path,
-  in.prefix,
-  outfolder,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE
-)
+met2CF.ALMA(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}

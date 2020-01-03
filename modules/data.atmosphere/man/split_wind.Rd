@@ -4,15 +4,8 @@
 \alias{split_wind}
 \title{Split wind_speed into eastward_wind and northward_wind}
 \usage{
-split_wind(
-  in.path,
-  in.prefix,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+split_wind(in.path, in.prefix, start_date, end_date, overwrite = FALSE,
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{path to original data}
@@ -28,9 +21,6 @@ split_wind(
 \item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?}
 
 \item{...}{other arguments, currently ignored}
-}
-\value{
-
 }
 \description{
 Split wind_speed into eastward_wind and northward_wind

@@ -4,15 +4,8 @@
 \alias{download.NARR}
 \title{Download NARR files}
 \usage{
-download.NARR(
-  outfolder,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  method,
-  ...
-)
+download.NARR(outfolder, start_date, end_date, overwrite = FALSE,
+  verbose = FALSE, method, ...)
 }
 \arguments{
 \item{overwrite}{Overwrite existing files?  Default=FALSE}

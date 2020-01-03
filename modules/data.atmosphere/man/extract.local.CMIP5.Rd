@@ -4,22 +4,10 @@
 \alias{extract.local.CMIP5}
 \title{extract.local.CMIP5}
 \usage{
-extract.local.CMIP5(
-  outfolder,
-  in.path,
-  start_date,
-  end_date,
-  lat.in,
-  lon.in,
-  model,
-  scenario,
-  ensemble_member = "r1i1p1",
-  date.origin = NULL,
-  no.leap = NULL,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+extract.local.CMIP5(outfolder, in.path, start_date, end_date, lat.in,
+  lon.in, model, scenario, ensemble_member = "r1i1p1",
+  date.origin = NULL, no.leap = NULL, overwrite = FALSE,
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output files will be stored}
@@ -68,4 +56,3 @@ Extract NLDAS meteorology for a poimt from a local download of the full grid
 \author{
 Christy Rollinson,
 }
-\concept{}

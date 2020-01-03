@@ -4,17 +4,8 @@
 \alias{download.NLDAS}
 \title{Download NLDAS met data}
 \usage{
-download.NLDAS(
-  outfolder,
-  start_date,
-  end_date,
-  site_id,
-  lat.in,
-  lon.in,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+download.NLDAS(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \description{
 Download and convert single grid point NLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface

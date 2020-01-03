@@ -4,19 +4,9 @@
 \alias{met.process}
 \title{met.process}
 \usage{
-met.process(
-  site,
-  input_met,
-  start_date,
-  end_date,
-  model,
-  host = "localhost",
-  dbparms,
-  dir,
-  browndog = NULL,
-  spin = NULL,
-  overwrite = FALSE
-)
+met.process(site, input_met, start_date, end_date, model,
+  host = "localhost", dbparms, dir, browndog = NULL, spin = NULL,
+  overwrite = FALSE)
 }
 \arguments{
 \item{site}{Site info from settings file}

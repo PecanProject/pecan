@@ -4,17 +4,8 @@
 \alias{met2CF.ERA5}
 \title{met2cf.ERA5}
 \usage{
-met2CF.ERA5(
-  lat,
-  long,
-  start_date,
-  end_date,
-  sitename,
-  outfolder,
-  out.xts,
-  overwrite = FALSE,
-  verbose = TRUE
-)
+met2CF.ERA5(lat, long, start_date, end_date, sitename, outfolder, out.xts,
+  overwrite = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{lat}{latitude}
@@ -34,9 +25,6 @@ met2CF.ERA5(
 \item{overwrite}{Logical if files needs to be overwritten.}
 
 \item{verbose}{Logical flag defining if ouput of function be extra verbose.}
-}
-\value{
-
 }
 \description{
 met2cf.ERA5

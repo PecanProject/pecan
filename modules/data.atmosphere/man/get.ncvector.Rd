@@ -4,7 +4,8 @@
 \alias{get.ncvector}
 \title{Get time series vector from netCDF file}
 \usage{
-get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates, met.nc)
+get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates,
+  met.nc)
 }
 \arguments{
 \item{met.nc}{netcdf file with CF variable names}
