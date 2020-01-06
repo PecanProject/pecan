@@ -18,7 +18,6 @@
 ##' @param in.path - path to the raw full grids
 ##' @param start_date - first day for which you want to extract met (yyyy-mm-dd)
 ##' @param end_date - last day for which you want to extract met (yyyy-mm-dd)
-##' @param site_id name to associate with extracted files
 ##' @param lat.in site latitude in decimal degrees
 ##' @param lon.in site longitude in decimal degrees
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
@@ -27,7 +26,7 @@
 ##' @param ... Other arguments, currently ignored
 ##' @export
 # -----------------------------------
-extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, site_id, lat.in, lon.in, 
+extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 
                                 overwrite = FALSE, verbose = FALSE, ...){
 
   # Date stuff

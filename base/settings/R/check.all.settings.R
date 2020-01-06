@@ -545,7 +545,7 @@ check.settings <- function(settings, force = FALSE) {
 
       # check to see if name of each pft in xml file is actually
       # a name of a pft already in database
-      if (!is.null(dbcon)) { # change to if(class(dbcon) == "PostgreSQLConnection")??
+      if (!is.null(dbcon)) { # change to if(inherits(dbcon, "PostgreSQLConnection")) ??
         if (is.null(settings$model$type)) {
           x <- PEcAn.DB::db.query(
             paste0(
