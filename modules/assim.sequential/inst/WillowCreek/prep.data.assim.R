@@ -10,7 +10,9 @@
 ##'@return None
 ##'@export
 ##'@author Luke Dramko and K. Zarada and Hamze Dokoohaki
-prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 3, sda.start) {
+prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) {
+  
+  data.len = data.len *2 #turn hour time steps into half hour
   
   Date.vec <-NULL
 
@@ -31,7 +33,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 3, s
 
  #Creating NEE and LE filled output 
   gapfilled.vars.out <- gapfilled.vars %>% dplyr::select(-Flag) %>% 
-                            filter(Date >= sda.start - lubridate::days(3) & Date < sda.start)
+                            tail(data.len)
 
  #Pecan Flux Uncertainty 
   processed.flux <- 3:(3+length(vars)-1) %>%
