@@ -30,7 +30,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
   in.prefix  <- "FLX_FR-Gri_FLUXNET2015_SUBSET_HH_2004-2013_1-3"
   outfolder  <- "/fs/data1/pecan.data/dbfiles/Fluxnet2015_STICS_site_1-5095"
   start_date <- "2007/01/01"
-  end_date   <- "2013/12/31"
+  end_date   <- "2012/12/31"
   overwrite  <- FALSE
   
   PEcAn.logger::logger.info("START met2model.STICS")
@@ -168,21 +168,22 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       # column 13: CO2 content(ppm). 
       co2 <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
       if(is.numeric(co2)){
-        weather_df[ ,13] <- tapply(co2 * 1e6, ind, mean,  na.rm = TRUE)
+        weather_df[ ,13] <- round(tapply(co2 * 1e6, ind, mean,  na.rm = TRUE), digits = 1)
       }else{
         # default : 330 ppm
         weather_df[ ,13] <- 330
         PEcAn.logger::logger.info("mole_fraction_of_carbon_dioxide_in_air absent; using default 330 ppm")
       }
       
-        
     }else{
       PEcAn.logger::logger.severe(old.file, " does not exist.")
     }
 
+    write.table(weather_df, file = out.files.full[ctr], col.names = FALSE, row.names = FALSE)
+    ctr <- ctr + 1
     
   } ## end-loop over files
 
-  
+  return(invisible(results))
   
 } # met2model.STICS
