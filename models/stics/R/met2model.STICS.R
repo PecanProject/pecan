@@ -95,8 +95,8 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
     weather_df <- as.data.frame(matrix( -999.9, nrow = NDAYS, ncol = NWEATHER))
     
     # prepare data frame for STICS format, daily inputs, but doesn't have to be full year
-    weather_df[ ,1] <- rep(gsub(".*_STICS_site_","", outfolder), simdays) # column 1: name of weather file
-    weather_df[ ,2] <- rep(year, simdays) # column 2: year
+    weather_df[ ,1] <- rep(gsub(".*_STICS_site_","", outfolder), NDAYS) # column 1: name of weather file
+    weather_df[ ,2] <- rep(year, NDAYS) # column 2: year
     start_month <- ifelse(year == start_year, paste0(start_date), paste0(year, "/01/01"))
     end_month   <- ifelse(year == end_year,   paste0(end_date),   paste0(year, "/12/31"))
 
@@ -136,17 +136,18 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       # column 8: global radiation (MJ m-2. j-1)
       rad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
-      gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
+      gr  <- rad * 0.0864 # W m-2 to MJ m-2 d-1
       weather_df[ ,8] <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
       
-      # column 9: Penman PET (mm.j-1) OPTIONAL
+      # column 9: Penman PET (mm.j-1) OPTIONAL, leave it as -999.9 for now
       
       # column 10: rainfall (mm.j-1)
       Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
-      raini <- tapply(Rain*86400, ind, mean, na.rm = TRUE) 
+      raini <- tapply(Rain * 86400, ind, mean, na.rm = TRUE) 
       weather_df[ ,10] <- round(raini, digits = 2) # precipitation (mm d-1)	
       
-      # column 11: wind (m.s-1)
+      # column 11: wind (m.s-1) 
+      # OPTIONAL if you're not using the “Shuttleworth and Wallace” method or the “Penman calculate” method to calculate PET in the station file
       U <- try(ncdf4::ncvar_get(nc, "eastward_wind"))
       V <- try(ncdf4::ncvar_get(nc, "northward_wind"))
       if(is.numeric(U) & is.numeric(V)){
@@ -161,10 +162,19 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       }
       weather_df[ ,11] <- round(tapply(ws, ind, mean,  na.rm = TRUE), digits = 2) # mean wind speed (m s-1)
       
-      # column 12: vapour pressure (mbars) OPTIONAL
+      # column 12: vapour pressure (mbars), leave it as -999.9 for now
+      # OPTIONAL if you're not using the “Shuttleworth and Wallace” method or the “Penman calculate” method to calculate PET in the station file
       
-      # column 13: CO2 content(ppm). default : 330 ppm
-      weather_df[ ,13] <- 330
+      # column 13: CO2 content(ppm). 
+      co2 <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+      if(is.numeric(co2)){
+        weather_df[ ,13] <- tapply(co2 * 1e6, ind, mean,  na.rm = TRUE)
+      }else{
+        # default : 330 ppm
+        weather_df[ ,13] <- 330
+        PEcAn.logger::logger.info("mole_fraction_of_carbon_dioxide_in_air absent; using default 330 ppm")
+      }
+      
         
     }else{
       PEcAn.logger::logger.severe(old.file, " does not exist.")
