@@ -26,13 +26,6 @@
 met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
                             overwrite = FALSE, ...) {
   
-  in.path    <- "/fs/data1/pecan.data/dbfiles/Fluxnet2015_CF_gapfill_site_1-5095"
-  in.prefix  <- "FLX_FR-Gri_FLUXNET2015_SUBSET_HH_2004-2013_1-3"
-  outfolder  <- "/fs/data1/pecan.data/dbfiles/Fluxnet2015_STICS_site_1-5095"
-  start_date <- "2007/01/01"
-  end_date   <- "2012/12/31"
-  overwrite  <- FALSE
-  
   PEcAn.logger::logger.info("START met2model.STICS")
   
   start_date  <- as.POSIXlt(start_date, tz = "UTC")
