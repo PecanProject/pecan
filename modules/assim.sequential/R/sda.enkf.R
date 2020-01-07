@@ -22,7 +22,7 @@
 sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
   
   library(nimble)
-  
+
   ymd_hms <- lubridate::ymd_hms
   hms     <- lubridate::hms
   second  <- lubridate::second
@@ -84,11 +84,12 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
     sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
   }
   
+  
   ens.inputs <- list()
   inputs <- list()
 
   if(is.null(restart) & is.null(restart$ens.inputs)){
-    ens.inputs <- sample_met(settings, nens)
+    ens.inputs <- settings$run$inputs$met$path %>% unlist()
   }else {
     ens.inputs <- restart$ens.inputs
   }
@@ -133,7 +134,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
     if (is(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(db.close(con))
+      on.exit(db.close(con), add = TRUE)
     }
   } else {
     con <- NULL

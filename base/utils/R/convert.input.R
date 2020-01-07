@@ -63,13 +63,35 @@
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 
-convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
-                          end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
-                          format.vars, overwrite = FALSE, exact.dates = FALSE, 
-                          allow.conflicting.dates = TRUE, insert.new.file = FALSE, pattern = NULL,
-                          forecast = FALSE, ensemble = FALSE, ensemble_name = NULL, ...) {
+convert.input <-
+  function(input.id,
+           outfolder,
+           formatname,
+           mimetype,
+           site.id,
+           start_date,
+           end_date,
+           pkg,
+           fcn,
+           con = con,
+           host,
+           browndog,
+           write = TRUE,
+           format.vars,
+           overwrite = FALSE,
+           exact.dates = FALSE,
+           allow.conflicting.dates = TRUE,
+           insert.new.file = FALSE,
+           pattern = NULL,
+           forecast = FALSE,
+           ensemble = FALSE,
+           ensemble_name = NULL,
+           dbparms=NULL,
+           ...
+  ) {
+
   input.args <- list(...)
-  
+
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
@@ -199,18 +221,23 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                       verbose = TRUE,R = Rbinary, scratchdir = outfolder)
       
       successful <- FALSE
-      on.exit(if (exists("successful") && successful) {
-        PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-        PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp, 
-                                        host, user = NA, 
-                                        verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-      } else {
-        PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-        PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp, 
-                                        host, user = NA, 
-                                        verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-      }
-      )#Close on.exit
+      on.exit(
+        if (exists("successful") && successful) {
+          PEcAn.logger::logger.info(
+            "Conversion successful, with overwrite=TRUE. Deleting old files.")
+          PEcAn.remote::remote.execute.R(
+            file.deletion.commands$delete.tmp,
+            host, user = NA,
+            verbose = TRUE,  R = Rbinary, scratchdir = outfolder)
+        } else {
+          PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
+          PEcAn.remote::remote.execute.R(
+            file.deletion.commands$replace.from.tmp,
+            host, user = NA,
+            verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+        },
+        add = TRUE
+      ) # Close on.exit
     }
     
     # If all of the files for an existing ensemble exist, we'll just use those files.  Otherwise, we'll need to run the function to
@@ -230,19 +257,34 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   } else if (exact.dates) {
     
     # Find Existing input with exact dates.
-    
-    existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
-                                          mimetype = mimetype, 
-                                          formatname = formatname, 
-                                          parentid = input.id, 
-                                          startdate = start_date,
-                                          enddate = end_date, 
-                                          con = con, 
-                                          hostname = host$name, 
-                                          exact.dates = TRUE,
-                                          pattern = pattern
-                                         )
-    
+
+    #--- This is for met2model part
+    if(!is.null(input.args$dbfile.id)){
+      existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+                                                      mimetype = mimetype, 
+                                                      formatname = formatname, 
+                                                      parentid = input.id, 
+                                                      startdate = start_date,
+                                                      enddate = end_date, 
+                                                      con = con, 
+                                                      hostname = host$name, 
+                                                      exact.dates = TRUE,
+                                                      pattern = pattern
+      ) %>%
+        dplyr::filter(id==input.args$dbfile.id)
+    }else{
+      existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+                                                      mimetype = mimetype, 
+                                                      formatname = formatname, 
+                                                      parentid = input.id, 
+                                                      startdate = start_date,
+                                                      enddate = end_date, 
+                                                      con = con, 
+                                                      hostname = host$name, 
+                                                      exact.dates = TRUE,
+                                                      pattern = pattern
+      )
+      }
     
     PEcAn.logger::logger.debug("File id =", existing.dbfile$id,
                  " File name =", existing.dbfile$file_name,
@@ -282,18 +324,22 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         
         # Schedule files to be replaced or deleted on exiting the function
         successful <- FALSE
-        on.exit(if (exists("successful") && successful) {
-                PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-                PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp, 
-                                  host, user = NA, 
-                                  verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-        } else {
-                PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-                PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp, 
-                                  host, user = NA, 
-                                  verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-        }
-        )#Close on.exit
+        on.exit(
+          if (exists("successful") && successful) {
+            PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$delete.tmp,
+              host, user = NA,
+              verbose = TRUE,  R = Rbinary, scratchdir = outfolder)
+          } else {
+            PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$replace.from.tmp,
+              host, user = NA,
+              verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+          },
+          add = TRUE
+        ) # Close on.exit
       }
       
       
@@ -329,17 +375,27 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     ##-------------------------end of exact.dates chunk------------------------------------#
     
   } else {
+  
+    #existing file for ensembles takes an advantage of the pattern argument
+    if (!is.null(ensemble) && ensemble) {
+      return.all <-TRUE
+      
+    }else{
+      return.all <- FALSE
+    }
+      existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+                                                      mimetype = mimetype, 
+                                                      formatname = formatname,
+                                                      parentid = input.id,
+                                                      startdate = start_date,
+                                                      enddate = end_date, 
+                                                      con = con, 
+                                                      hostname = host$name,
+                                                      pattern = pattern,
+                                                      return.all = return.all
+      )
     
-    existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
-                                          mimetype = mimetype, 
-                                          formatname = formatname,
-                                          parentid = input.id,
-                                          startdate = start_date,
-                                          enddate = end_date, 
-                                          con = con, 
-                                          hostname = host$name,
-                                          pattern = pattern
-                                         )
+
     
     PEcAn.logger::logger.debug("File id =", existing.dbfile$id,
                  " File name =", existing.dbfile$file_name,
@@ -350,8 +406,20 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     PEcAn.logger::logger.info("end CHECK for existing input record.")
     
     if (nrow(existing.dbfile) > 0) {
+
+      if (!is.null(ensemble) && ensemble) {
+        
+        existing.input <- existing.dbfile[["container_id"]] %>%
+          unique() %>%
+          purrr::map_dfr(function(one.cont.id) {
+            PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", one.cont.id), con)
+          })
+        
+      } else{
+        existing.input <-
+          PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]), con)
+      }
       
-      existing.input <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
       
       # Convert dates to Date objects and strip all time zones
       # (DB values are timezone-free)
@@ -377,21 +445,25 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         
         # Schedule files to be replaced or deleted on exiting the function
         successful <- FALSE
-        on.exit(if (exists("successful") && successful) {
-          PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-          PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp,
-                            host, user = NA, 
-                            verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-          
-        } else {
-          
-          PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-          PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp,
-                            host, user = NA,
-                            verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-        } 
-        )#close on on.exit
-        
+        on.exit(
+          if (exists("successful") && successful) {
+            PEcAn.logger::logger.info(
+              "Conversion successful, with overwrite=TRUE. Deleting old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$delete.tmp,
+              host, user = NA,
+              verbose = TRUE,  R = Rbinary, scratchdir = outfolder)
+          } else {
+            PEcAn.logger::logger.info(
+              "Conversion failed. Replacing old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$replace.from.tmp,
+              host, user = NA,
+              verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+          },
+          add = TRUE
+        ) # close on.exit
+
       } else if ((start_date >= existing.input$start_date) &&
                  (end_date <= existing.input$end_date)) {
         
@@ -444,7 +516,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   #---------------------------------------------------------------------------------------------------------------#
   # Get machine information
-  
+
   machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
                              machine.host, "'"), con)
@@ -463,8 +535,32 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       return(NULL)
     }
     
-    dbfile <- PEcAn.DB::db.query(paste("SELECT * from dbfiles where container_id =", input.id,
-                             " and container_type = 'Input' and machine_id =", machine$id), con)
+    if(!is.null(input.args$dbfile.id)){
+      dbfile <-
+        PEcAn.DB::db.query(
+          paste(
+            "SELECT * from dbfiles where id=",input.args$dbfile.id," and container_id =",
+            input.id,
+            " and container_type = 'Input' and machine_id =",
+            machine$id
+          ),
+          con
+        )  
+    }else{
+      dbfile <-
+        PEcAn.DB::db.query(
+          paste(
+            "SELECT * from dbfiles where container_id =",
+            input.id,
+            " and container_type = 'Input' and machine_id =",
+            machine$id
+          ),
+          con
+        )  
+    }
+    
+
+    
     if (nrow(dbfile) == 0) {
       PEcAn.logger::logger.error("dbfile not found", input.id)
       return(NULL)
@@ -477,6 +573,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   #--------------------------------------------------------------------------------------------------#
   # Perform Conversion
+ 
   conversion <- "local.remote"  #default
   
   if (!is.null(browndog) && host$name == "localhost") {
@@ -554,29 +651,17 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         fname <- list.files(outfolder)
       }
     }
-    
-    # settings$run$inputs$path <- outputfile 
-    # what if there is more than 1 output file?
-    rows <- length(fname)
-    result <- data.frame(file = character(rows), 
-                         host = character(rows), 
-                         mimetype = character(rows), 
-                         formatname = character(rows), 
-                         startdate = character(rows), 
-                         enddate = character(rows), 
-                         stringsAsFactors = FALSE)
-    for (i in seq_len(rows)) {
-      old.file <- file.path(dbfile$file_path, files[i])
-      new.file <- file.path(outfolder, fname[i])
-      
-      # create array with results
-      result$file[i]       <- new.file
-      result$host[i]       <- PEcAn.remote::fqdn()
-      result$startdate[i]  <- paste(input$start_date, "00:00:00")
-      result$enddate[i]    <- paste(input$end_date, "23:59:59")
-      result$mimetype[i]   <- mimetype
-      result$formatname[i] <- formatname
-    }
+
+    result <- data.frame(
+      # contains one row for each file in fname
+      file = file.path(outfolder, fname),
+      host = PEcAn.remote::fqdn(),
+      mimetype = mimetype,
+      formatname = formatname,
+      startdate = paste(input$start_date, "00:00:00"),
+      enddate = paste(input$end_date, "23:59:59"),
+      stringsAsFactors = FALSE)
+
   } else if (conversion == "local.remote") {
     # perform conversion on local or remote host
     
@@ -587,11 +672,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     fcn.args$outfolder  <- outfolder
     fcn.args$start_date <- start_date
     fcn.args$end_date   <- end_date
+    fcn.args$dbparms   <- dbparms
     
     if (forecast && !is.null(input.id) && !is.na(input.id)) { # for downstream code adapted to handle forecast file conventions
       fcn.args$year.fragment = TRUE                           # such as met2model conversions; arguments will be extraneous otherwise.
     }
-    
+     
     arg.string <- listToArgString(fcn.args)
     
     if (!missing(format.vars)) {
@@ -601,8 +687,18 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     cmdFcn <- paste0(pkg, "::", fcn, "(", arg.string, ")")
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
-    result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
-    
+
+    result <-
+      PEcAn.remote::remote.execute.R(
+        script = cmdFcn,
+        host,
+        user = NA,
+        verbose = TRUE,
+        R = Rbinary,
+        scratchdir = outfolder
+      )
+
+
     # Wraps the result in a list.  This way, everything returned by fcn will be a list, and all of the 
     # code below can process everything as if it were a list without worrying about data types.
     if (is.data.frame(result)) {
@@ -617,10 +713,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     PEcAn.logger::logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
     PEcAn.logger::logger.severe(paste0("Unable to process data using this function:",fcn))
   }
-  
+ 
   #--------------------------------------------------------------------------------------------------#
   # Check if result has empty or missing files
-  
+
   result_sizes <- purrr::map_dfr(
     result,
     ~ dplyr::mutate(
@@ -662,6 +758,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   #---------------------------------------------------------------#
   # New arrangement of database adding code to deal with ensembles.
   if (write) {
+
     # Setup newinput.  This list will contain two variables: a vector of input IDs and a vector of DB IDs for each entry in result.
     # This list will be returned.
     newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
@@ -699,7 +796,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         }
       }
       
-      parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)
+      # If there is no ensemble then for each record there should be one parent
+      #But when you have ensembles, all of the members have one parent !!
+      if (is.numeric(ensemble)){
+        parent.id <- ifelse(is.null(input[i]), NA, input[1]$id)
+      }else{
+        parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)  
+      }
+      
+      
       
       if ("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])) {
         site.id <- input.args$newsite
@@ -713,6 +818,16 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         newinput$input.id  <- c(newinput$input.id, existing.input[[i]]$id)
         newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
       } else if (id_not_added) {
+
+      # This is to tell input.insert if we are wrting ensembles
+      # Why does it need it ? bc it checks for inputs with the same time period, site and machine
+      # and if it returns somethings it does not insert anymore, but for ensembles it needs to bypass this condition
+      if (!is.null(ensemble) | is.null(ensemble_name)){
+        ens.flag <- TRUE
+      }else{
+        ens.flag <- FALSE
+      }
+       
         new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
                                                    in.prefix = result[[i]]$dbfile.name[1], 
                                                    siteid = site.id, 
@@ -723,7 +838,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                                    parentid = parent.id,
                                                    con = con, 
                                                    hostname = machine$hostname,
-                                                   allow.conflicting.dates = allow.conflicting.dates)
+                                                   allow.conflicting.dates = allow.conflicting.dates, 
+                                                   ens=ens.flag
+                                                   )
+        
+        
         newinput$input.id <- c(newinput$input.id, new_entry$input.id)
         newinput$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
       }

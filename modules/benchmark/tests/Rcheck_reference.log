@@ -1,0 +1,371 @@
+* using log directory ‘/tmp/RtmppGOd8Z/PEcAn.benchmark.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --as-cran’
+* checking for file ‘PEcAn.benchmark/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.benchmark’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.benchmark’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'library' or 'require' calls not declared from:
+  ‘bd’ ‘dplyr’ ‘lubridate’ ‘PEcAn.utils’ ‘udunits2’
+'library' or 'require' calls in package code:
+  ‘bd’ ‘dplyr’ ‘lubridate’ ‘PEcAn.utils’ ‘udunits2’
+  Please use :: or requireNamespace() instead.
+  See section 'Suggested packages' in the 'Writing R Extensions' manual.
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+Warning: <anonymous>: ... may be used in an incorrect context: ‘Set_Bench(...)’
+
+Warning: <anonymous>: ... may be used in an incorrect context: ‘Compare_Bench(...)’
+
+add_workflow_info: no visible global function definition for
+  ‘is.MultiSettings’
+add_workflow_info: no visible global function definition for ‘papply’
+add_workflow_info: no visible binding for global variable
+  ‘add_workflow_id’
+add_workflow_info: no visible global function definition for ‘%>%’
+add_workflow_info: no visible binding for global variable ‘id’
+add_workflow_info: no visible binding for global variable ‘workflow_id’
+add_workflow_info: no visible binding for global variable ‘.’
+align_data: possible error in round(obvs.calc$posix, units =
+  coarse.unit): unused argument (units = coarse.unit)
+align_data: possible error in round(model.calc$posix, units =
+  coarse.unit): unused argument (units = coarse.unit)
+align_data: no visible global function definition for ‘%>%’
+align_data: no visible binding for global variable ‘.’
+align_data: no visible binding for global variable ‘round.posix’
+align_data: no visible global function definition for ‘one_of’
+align_data_to_data_pft: no visible global function definition for
+  ‘logger.severe’
+bm_settings2pecan_settings: no visible global function definition for
+  ‘is.MultiSettings’
+bm_settings2pecan_settings: no visible global function definition for
+  ‘papply’
+calc_benchmark: no visible global function definition for ‘%>%’
+calc_benchmark: no visible binding for global variable ‘workflow_id’
+calc_benchmark: no visible binding for global variable
+  ‘reference_run_id’
+calc_benchmark: no visible binding for global variable ‘ensemble_id’
+calc_benchmark: no visible binding for global variable ‘model_id’
+calc_benchmark: no visible global function definition for ‘db.query’
+calc_benchmark: no visible binding for global variable ‘id’
+calc_benchmark: no visible global function definition for ‘left_join’
+calc_benchmark: no visible global function definition for ‘one_of’
+calc_benchmark: no visible binding for global variable ‘benchmark_id’
+calc_benchmark: no visible global function definition for ‘read.output’
+calc_benchmark: no visible binding for global variable ‘variable_id’
+calc_benchmark: no visible binding for global variable ‘.’
+calc_benchmark: no visible binding for global variable ‘metric’
+calc_benchmark: no visible binding for global variable
+  ‘benchmarks_ensemble_id’
+calc_benchmark: no visible binding for global variable ‘metric_id’
+calc_benchmark: no visible global function definition for ‘pdf’
+calc_benchmark: no visible global function definition for ‘dev.off’
+calc_metrics: no visible global function definition for ‘tail’
+check_BRR: no visible global function definition for ‘%>%’
+check_BRR: no visible binding for global variable ‘settings’
+clean_settings_BRR: no visible global function definition for
+  ‘is.MultiSettings’
+clean_settings_BRR: no visible global function definition for
+  ‘logger.error’
+create_BRR: no visible global function definition for ‘%>%’
+create_BRR: no visible binding for global variable ‘.’
+create_BRR: no visible binding for global variable ‘id’
+define_benchmark: no visible global function definition for
+  ‘is.MultiSettings’
+define_benchmark: no visible global function definition for ‘papply’
+define_benchmark: no visible global function definition for ‘%>%’
+define_benchmark: no visible binding for global variable ‘id’
+define_benchmark: no visible binding for global variable ‘ensemble_id’
+define_benchmark: no visible global function definition for ‘left_join’
+define_benchmark: no visible binding for global variable ‘.’
+define_benchmark: no visible global function definition for
+  ‘logger.error’
+define_benchmark: no visible global function definition for
+  ‘logger.debug’
+define_benchmark: no visible global function definition for ‘pull’
+define_benchmark: no visible binding for global variable ‘input_id’
+define_benchmark: no visible binding for global variable ‘variable_id’
+define_benchmark: no visible global function definition for ‘db.query’
+define_benchmark: no visible binding for global variable ‘benchmark_id’
+define_benchmark: no visible binding for global variable
+  ‘reference_run_id’
+define_benchmark: no visible binding for global variable ‘metric_id’
+get_species_list_standard: no visible binding for global variable
+  ‘custom_table’
+get_species_list_standard: no visible global function definition for
+  ‘logger.warn’
+load_csv: no visible global function definition for ‘read.csv’
+load_csv: no visible binding for global variable ‘header’
+load_csv: no visible global function definition for ‘one_of’
+load_data: no visible global function definition for ‘get_key’
+load_data: no visible binding for global variable ‘username’
+load_data: no visible binding for global variable ‘password’
+load_data: no visible global function definition for ‘get_token’
+load_data: no visible global function definition for ‘convert_file’
+load_data: no visible binding for global variable ‘output_path’
+load_data: no visible global function definition for
+  ‘misc.are.convertible’
+load_data: no visible global function definition for ‘misc.convert’
+load_data: no visible global function definition for ‘one_of’
+load_data: no visible global function definition for ‘%>%’
+load_data: no visible binding for global variable ‘.’
+load_data: no visible binding for global variable ‘year’
+load_rds: no visible global function definition for ‘one_of’
+load_tab_separated_values: no visible global function definition for
+  ‘read.table’
+load_tab_separated_values: no visible binding for global variable
+  ‘header’
+load_tab_separated_values: no visible global function definition for
+  ‘one_of’
+load_x_netcdf: no visible global function definition for ‘str_detect’
+load_x_netcdf: no visible global function definition for
+  ‘str_split_fixed’
+load_x_netcdf: no visible global function definition for ‘%>%’
+match_timestep: no visible global function definition for ‘head’
+metric_cor: no visible global function definition for ‘cor’
+metric_Frechet: no visible global function definition for ‘logger.info’
+metric_Frechet: no visible global function definition for ‘na.omit’
+metric_lmDiag_plot: no visible global function definition for ‘lm’
+metric_lmDiag_plot: no visible global function definition for ‘aes’
+metric_lmDiag_plot: no visible binding for global variable ‘.fitted’
+metric_lmDiag_plot: no visible binding for global variable ‘.resid’
+metric_lmDiag_plot: no visible global function definition for ‘qqnorm’
+metric_lmDiag_plot: no visible binding for global variable ‘.stdresid’
+metric_lmDiag_plot: no visible global function definition for ‘qqline’
+metric_lmDiag_plot: no visible binding for global variable ‘.cooksd’
+metric_lmDiag_plot: no visible binding for global variable ‘.hat’
+metric_lmDiag_plot: no visible global function definition for ‘pdf’
+metric_lmDiag_plot: no visible global function definition for ‘plot’
+metric_lmDiag_plot: no visible global function definition for ‘dev.off’
+metric_PPMC: no visible global function definition for ‘cor’
+metric_R2: no visible global function definition for ‘lm’
+metric_RAE: no visible global function definition for ‘na.omit’
+metric_residual_plot: no visible binding for global variable ‘time’
+metric_residual_plot: no visible global function definition for ‘aes’
+metric_residual_plot: no visible binding for global variable ‘zeros’
+metric_residual_plot: no visible global function definition for ‘pdf’
+metric_residual_plot: no visible global function definition for ‘plot’
+metric_residual_plot: no visible global function definition for
+  ‘dev.off’
+metric_scatter_plot: no visible global function definition for ‘aes’
+metric_scatter_plot: no visible binding for global variable ‘model’
+metric_scatter_plot: no visible binding for global variable ‘obvs’
+metric_scatter_plot: no visible global function definition for ‘pdf’
+metric_scatter_plot: no visible global function definition for ‘plot’
+metric_scatter_plot: no visible global function definition for
+  ‘dev.off’
+metric_timeseries_plot: no visible global function definition for ‘aes’
+metric_timeseries_plot: no visible binding for global variable ‘time’
+metric_timeseries_plot: no visible binding for global variable ‘model’
+metric_timeseries_plot: no visible binding for global variable ‘obvs’
+metric_timeseries_plot: no visible global function definition for ‘pdf’
+metric_timeseries_plot: no visible global function definition for
+  ‘plot’
+metric_timeseries_plot: no visible global function definition for
+  ‘dev.off’
+pecan_bench: no visible global function definition for
+  ‘validation_check’
+pecan_bench: no visible global function definition for ‘read.table’
+pecan_bench: no visible global function definition for ‘size’
+pecan_bench: no visible binding for global variable ‘comp_value’
+pecan_bench: no visible binding for global variable
+  ‘comp_dif_uncertainty’
+pecan_bench: no visible binding for global variable
+  ‘ratio_dif_uncertainty’
+pecan_bench: no visible binding for global variable ‘ratio_dif’
+pecan_bench: no visible global function definition for ‘Set_Bench’
+pecan_bench: ... may be used in an incorrect context: ‘Set_Bench(...)’
+pecan_bench: no visible global function definition for ‘Compare_Bench’
+pecan_bench: ... may be used in an incorrect context:
+  ‘Compare_Bench(...)’
+read_settings_BRR: no visible global function definition for ‘%>%’
+read_settings_BRR: no visible binding for global variable ‘id’
+read_settings_BRR: no visible global function definition for ‘pull’
+read_settings_BRR: no visible global function definition for
+  ‘xmlToList’
+read_settings_BRR: no visible binding for global variable ‘.’
+Undefined global functions or variables:
+  . .cooksd .fitted .hat .resid .stdresid %>% add_workflow_id aes
+  benchmark_id benchmarks_ensemble_id comp_dif_uncertainty comp_value
+  Compare_Bench convert_file cor custom_table db.query dev.off
+  ensemble_id get_key get_token head header id input_id
+  is.MultiSettings left_join lm logger.debug logger.error logger.info
+  logger.severe logger.warn metric metric_id misc.are.convertible
+  misc.convert model model_id na.omit obvs one_of output_path papply
+  password pdf plot pull qqline qqnorm ratio_dif ratio_dif_uncertainty
+  read.csv read.output read.table reference_run_id round.posix
+  Set_Bench settings size str_detect str_split_fixed tail time username
+  validation_check variable_id workflow_id xmlToList year zeros
+Consider adding
+  importFrom("graphics", "plot")
+  importFrom("grDevices", "dev.off", "pdf")
+  importFrom("stats", "cor", "lm", "na.omit", "qqline", "qqnorm", "time")
+  importFrom("utils", "head", "read.csv", "read.table", "tail")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... NOTE
+Rd file 'align_by_first_observation.Rd':
+  \examples lines wider than 100 characters:
+     aligned<-align_by_first_observation(observation_one = observation_one, observation_two = observation_two,
+
+These lines will be truncated in the PDF manual.
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'align_data'
+  ‘align_method’
+
+Undocumented arguments in documentation object 'align_pft'
+  ‘comparison_type’ ‘...’
+
+Undocumented arguments in documentation object 'calc_benchmark'
+  ‘settings’ ‘start_year’ ‘end_year’
+Documented arguments not in \usage in documentation object 'calc_benchmark':
+  ‘bm.ensemble’
+
+Undocumented arguments in documentation object 'check_if_legal_table'
+  ‘table’
+Documented arguments not in \usage in documentation object 'check_if_legal_table':
+  ‘custom_table’
+
+Undocumented arguments in documentation object 'check_if_list_of_pfts'
+  ‘vars’
+Documented arguments not in \usage in documentation object 'check_if_list_of_pfts':
+  ‘observation_one’ ‘observation_two’ ‘custom_table’
+
+Undocumented arguments in documentation object 'check_if_species_list'
+  ‘vars’
+Documented arguments not in \usage in documentation object 'check_if_species_list':
+  ‘observation_one’ ‘observation_two’
+
+Undocumented arguments in documentation object 'create_BRR'
+  ‘user_id’
+
+Undocumented arguments in documentation object 'define_benchmark'
+  ‘settings’ ‘bety’
+Documented arguments not in \usage in documentation object 'define_benchmark':
+  ‘bm.settings’
+
+Undocumented arguments in documentation object 'format_wide2long'
+  ‘time.row’
+
+Undocumented arguments in documentation object 'get_species_list_standard'
+  ‘vars’
+Documented arguments not in \usage in documentation object 'get_species_list_standard':
+  ‘observation_one’ ‘observation_two’ ‘custom_table’
+
+Undocumented arguments in documentation object 'load_csv'
+  ‘vars’
+Documented arguments not in \usage in documentation object 'load_csv':
+  ‘start_year’ ‘end_year’
+
+Undocumented arguments in documentation object 'load_data'
+  ‘vars.used.index’ ‘...’
+
+Undocumented arguments in documentation object 'load_tab_separated_values'
+  ‘vars’
+Documented arguments not in \usage in documentation object 'load_tab_separated_values':
+  ‘start_year’ ‘end_year’
+
+Documented arguments not in \usage in documentation object 'load_x_netcdf':
+  ‘start_year’ ‘end_year’
+
+Undocumented arguments in documentation object 'metric_AME'
+  ‘...’
+
+Undocumented arguments in documentation object 'metric_Frechet'
+  ‘...’
+
+Undocumented arguments in documentation object 'metric_MAE'
+  ‘...’
+
+Undocumented arguments in documentation object 'metric_MSE'
+  ‘...’
+
+Undocumented arguments in documentation object 'metric_PPMC'
+  ‘...’
+
+Undocumented arguments in documentation object 'metric_R2'
+  ‘...’
+
+Undocumented arguments in documentation object 'metric_RAE'
+  ‘...’
+
+Undocumented arguments in documentation object 'metric_RMSE'
+  ‘...’
+
+Undocumented arguments in documentation object 'metric_cor'
+  ‘...’
+
+Undocumented arguments in documentation object 'metric_lmDiag_plot'
+  ‘var’ ‘filename’ ‘draw.plot’
+
+Undocumented arguments in documentation object 'metric_residual_plot'
+  ‘metric_dat’ ‘var’ ‘filename’
+
+Undocumented arguments in documentation object 'metric_scatter_plot'
+  ‘metric_dat’ ‘var’ ‘filename’
+
+Undocumented arguments in documentation object 'metric_timeseries_plot'
+  ‘metric_dat’ ‘var’ ‘filename’ ‘draw.plot’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... WARNING
+Argument items with no description in Rd object 'format_wide2long':
+  ‘vars_used’
+
+Argument items with no description in Rd object 'load_rds':
+  ‘vars’
+
+Argument items with no description in Rd object 'metric_residual_plot':
+  ‘draw.plot’
+
+Argument items with no description in Rd object 'metric_scatter_plot':
+  ‘draw.plot’
+
+* checking for unstated dependencies in examples ... OK
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ...
+ OK
+* DONE
+Status: 3 WARNINGs, 3 NOTEs

@@ -58,7 +58,7 @@ for(r in 1:nrow(try.sites)){
   site.lat <- try.sites[r, site.Latitude]
   site.lon <- try.sites[r, site.Longitude]
   search.df <- try(db.query(sprintf(radius.query.string, site.lat, site.lon, radius), con))
-  if(class(search.df) == "try-error"){
+  if(inherits(search.df, "try-error")){
     warning("Error querying database.")
     next
   }

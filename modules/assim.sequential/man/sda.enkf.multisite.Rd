@@ -4,10 +4,12 @@
 \alias{sda.enkf.multisite}
 \title{sda.enkf.multisite}
 \usage{
-sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL, restart = F,
-  control = list(trace = T, FF = F, interactivePlot = T, TimeseriesPlot =
-  T, BiasPlot = F, plot.title = NULL, facet.plots = F, debug = FALSE, pause
-  = F), ...)
+sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL,
+  restart = FALSE, forceRun = TRUE, keepNC = TRUE,
+  control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE,
+  TimeseriesPlot = FALSE, BiasPlot = FALSE, plot.title = NULL, facet.plots
+  = FALSE, debug = FALSE, pause = FALSE, Profiling = FALSE,
+  OutlierDetection = FALSE), ...)
 }
 \arguments{
 \item{settings}{PEcAn settings object}
@@ -20,6 +22,10 @@ sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL, restart = F,
 
 \item{restart}{Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.}
 
+\item{forceRun}{Used to force job.sh files that were not run for ensembles in SDA (quick fix)}
+
+\item{keepNC}{Used for debugging issues. .nc files are usually removed after each year in the out folder. This flag will keep the .nc + .nc.var files for futher investigations.}
+
 \item{control}{List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.}
 }
@@ -27,7 +33,7 @@ TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlat
 NONE
 }
 \description{
-State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
+State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter. Check out SDA_control function for more details on the control arguments.
 }
 \author{
 Michael Dietze and Ann Raiho \email{dietze@bu.edu}

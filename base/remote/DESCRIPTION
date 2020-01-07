@@ -1,8 +1,8 @@
 Package: PEcAn.remote
 Type: Package
 Title: PEcAn model execution utilities
-Version: 1.7.0
-Date: 2018-12-03
+Version: 1.7.1
+Date: 2019-09-05
 Authors@R: c(person("David","LeBauer"),
              person("Rob","Kooper"),
              person("Shawn", "Serbin"),
@@ -17,7 +17,7 @@ Suggests:
     testthat,
     tools,
     getPass
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

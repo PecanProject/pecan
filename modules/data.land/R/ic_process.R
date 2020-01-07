@@ -5,7 +5,7 @@
 ##' @param settings pecan settings list
 ##' @param dbfiles where to write files
 ##' @param overwrite whether to force ic_process to proceed
-##' @author Istem Fer
+##' @author Istem Fer, Hamze Dokoohaki
 ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   
@@ -48,7 +48,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               password = dbparms$bety$password)
   
   con <- bety$con
-  on.exit(db.close(con))
+  on.exit(db.close(con), add = TRUE)
   
   ## We need two types of start/end dates now
   ## i)  start/end of the run when we have no veg file to begin with (i.e. we'll be querying a DB)
@@ -61,6 +61,9 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     
     start_date <- settings$run$start.date
     end_date   <- settings$run$end.date
+  }else if (input$source=="BADM"){
+    settings$run$inputs[['poolinitcond']]$path <- PEcAn.data.land::BADM_IC_process(settings, dir=dir, overwrite=FALSE)
+    return(settings)
   }else{
     
    query      <- paste0("SELECT * FROM inputs where id = ", input$id)

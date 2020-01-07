@@ -1,18 +1,16 @@
-# (PART) Demos and Vignettes {-}
+## Demo 01: Basic Run PEcAn
 
-# PEcAn Hands-On Demo 01: Basic Run
-
-```{r setup, echo = FALSE,warning=FALSE}
+```{r echo = FALSE,warning=FALSE}
 library(knitr)
 opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
                fig.align = 'center', out.width = '100%')
 ```
 
-## Objective
+#### Objective
 
 We will begin by exploring a set of web-based tools that are designed to run single-site model runs. A lot of the detail about what’s going on under the hood, and all the outputs that PEcAn produces, are left to Demo 2. This demo will also demonstrate how to use PEcAn outputs in additional analyses outside of PEcAn.
 
-### PEcAn URL
+#### PEcAn URL
 
 In the following demo, **URL** is the web address of a PEcAn server and will refer to one of the following:
 
@@ -23,9 +21,7 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 *	If you followed instructions found in [Install PEcAn by hand], **URL is your server’s IP**
 
 
-## Basic Run
-
-### Start PEcAn:
+#### Start PEcAn:
 
 1. **Enter URL in your web browser**
 2. **Click “Run Models”**
@@ -35,33 +31,33 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 knitr::include_graphics('extfiles/startpecan.jpg')
 ```
 
-### Site Selection
+#### Site Selection
 
 ```{r mapmodel}
 knitr::include_graphics('extfiles/mapmodel.png')
 ```
 
-### Host
+#### Host
 
 **Select the local machine “pecan”**. Other options exist if you’ve read and followed instructions found in [Remote execution with PEcAn].
 
 
-### Mode
+#### Mode
 
 Select **SIPNET** (r136) from the available models because it is quick & simple. Reference material can be found in [Models in PEcAn]
 
 
-### Site Group
+#### Site Group
 
 To filter sites, you can **select a specific group of sites**. For this tutorial we will use **Ameriflux**.
 
 
-### Conversion: 
+#### Conversion: 
 
 **Select the conversion check box**, to show all sites that PEcAn is capable of generating model drivers for automatically. By default (unchecked), PEcAn only displays sites where model drivers already exist in the system database
 
 
-### Site:
+#### Site:
 
 **For this tutorial, type _US-NR1_ in the search box to display the Niwot Ridge Ameriflux site (US-NR1), and then click on the pin icon**. When you click on a site’s flag on the map, it will give you the name and location of the site and put that site in the “Site:” box on the left hand site, indicating your current selection. 
 
@@ -106,14 +102,14 @@ Finally, **click "Next"** to start the model run.
 
 #### Data Use Policies
 
-You will see a data policy statement if you selected a data source with a policy. Agreeing to the policy is required prior to starting the run.
+The last step before the run starts is to **read and agree** to AmeriFlux's data policy and **give a valid username**. If you don't already have an Ameriflux username, click "register here" and create one. If you selected a different data source, this step may or may not be needed: you will need to agree to a data policy if your source has one, but if it doesn't then the run will start immediately.
 
 
 #### If you get an error in your run 
 
-If you get an error in your run as part of a live demo or class activity, it is probably simplest to start over and try changing options and re-running (e.g. with a different site or PFT), as time does not permit detailed debugging. If the source of the error is not immediately obvious, you may want to take a look at the workflow.Rout to see the log of the PEcAn workflow or the logfile.txt to see the model execution output log and then refer to the [Documentation](http://pecanproject.github.io/documentation.html) or the [Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE) for help.
+If you get an error in your run as part of a live demo or class activity, it is probably simplest to start over and try changing options and re-running (e.g. with a different site or PFT), as time does not permit detailed debugging. If the source of the error is not immediately obvious, you may want to take a look at the workflow.Rout to see the log of the PEcAn workflow or the logfile.txt to see the model execution output log and then refer to the [Documentation](http://pecanproject.github.io/documentation.html) or the [Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ) for help.
 
-### Model Run Workflow
+#### Model Run Workflow
 
 ```{r execstatus}
 knitr::include_graphics('extfiles/execstatus.jpg')
@@ -191,7 +187,7 @@ knitr::include_graphics('extfiles/workflowshiny.png')
 **Return to the output window and Click on the HISTORY button. Click on any previous run in the “ID” column** to go to the current state of that run's execution -- you can always return to old runs and runs in-progress this way. The run you just did should be the more recent entry in the table. **For the next analysis, make note of the ID number from your run.** 
 
 
-## Next steps
+#### Next steps
 
 ##### Analyzing model output
 

@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon) {
+run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = TRUE) {
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, "trait.data.Rdata")) || 
       !file.exists(file.path(pft$outdir, "prior.distns.Rdata"))) {
@@ -28,6 +28,12 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
     PEcAn.logger::logger.severe("Make sure to pass in pft list from get.trait. Missing posteriorid for", pft$name)
     return(NA)
   }
+  
+  # make sure random and use_ghs is logical, and threshold is numeric
+  # when someone re-reads xml and continues from meta.analysis these can cause bugs (especially the threshold bug is very subtle)
+  random    <- as.logical(random)
+  use_ghs   <- as.logical(use_ghs)
+  threshold <- as.numeric(threshold)
   
   # get list of existing files so they get ignored saving
   old.files <- list.files(path = pft$outdir)
@@ -50,7 +56,17 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
   
   ## Convert data to format expected by pecan.ma
-  jagged.data <- lapply(trait.data, PEcAn.MA::jagify)
+  jagged.data <- lapply(trait.data, PEcAn.MA::jagify, use_ghs = use_ghs)
+  
+  if(!use_ghs){
+    # check if any data left after excluding greenhouse
+    all_trait_check <- sapply(jagged.data, nrow)
+    if(any(all_trait_check == 0)){
+      nodat <- which(all_trait_check == 0)
+      jagged.data[nodat] <- NULL
+      PEcAn.logger::logger.info("No more data left after excluding greenhouse data for the following traits:", paste(names(all_trait_check)[nodat], collapse = ", "))
+    }
+  }
 
   check_consistent <- function(data.median, prior, trait, msg_var,
                                perr = 5e-04, pwarn = 0.025) {
@@ -111,8 +127,8 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
     }
   }
   
-  ### Generate summaries and diagnostics
-  pecan.ma.summary(trait.mcmc, pft$name, pft$outdir, threshold)
+  ### Generate summaries and diagnostics, discard samples if trait failed to converge
+  trait.mcmc <- pecan.ma.summary(trait.mcmc, pft$name, pft$outdir, threshold)
   
   ### Save the meta.analysis output
   save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
@@ -155,6 +171,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' @param pfts the list of pfts to get traits for
 ##' @param iterations the number of iterations for the mcmc analysis
 ##' @param random should random effects be used?
+##' @param use_ghs do not exclude greenhouse data if TRUE
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
 ##' @param threshold Gelman-Rubin convergence diagnostic, passed on to
@@ -165,12 +182,13 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database) {
+run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database, use_ghs = TRUE) {
   # process all pfts
   dbcon <- db.open(database)
-  on.exit(db.close(dbcon))
+  on.exit(db.close(dbcon), add = TRUE)
 
-  result <- lapply(pfts, run.meta.analysis.pft, iterations, random, threshold, dbfiles, dbcon)
+  result <- lapply(pfts, run.meta.analysis.pft, iterations = iterations, random = random, 
+                   threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs)
 } # run.meta.analysis.R
 ## ==================================================================================================#
 
@@ -191,19 +209,21 @@ runModule.run.meta.analysis <- function(settings) {
                        paste(pft.names, collapse = ", ")))
     
     iterations <- settings$meta.analysis$iter
-    random     <- settings$meta.analysis$random.effects
+    random     <- settings$meta.analysis$random.effects$on
+    use_ghs    <- settings$meta.analysis$random.effects$use_ghs
     threshold  <- settings$meta.analysis$threshold
     dbfiles    <- settings$database$dbfiles
     database   <- settings$database$bety
-    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database)
-  } else if (is.Settings(settings)) {
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database, use_ghs)
+  } else if (PEcAn.settings::is.Settings(settings)) {
     pfts       <- settings$pfts
     iterations <- settings$meta.analysis$iter
-    random     <- settings$meta.analysis$random.effects
+    random     <- settings$meta.analysis$random.effects$on
+    use_ghs    <- settings$meta.analysis$random.effects$use_ghs
     threshold  <- settings$meta.analysis$threshold
     dbfiles    <- settings$database$dbfiles
     database   <- settings$database$bety
-    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database)
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database, use_ghs)
   } else {
     stop("runModule.run.meta.analysis only works with Settings or MultiSettings")
   }

@@ -1,8 +1,8 @@
 Package: PEcAn.BIOCRO
 Type: Package
 Title: PEcAn package for integration of the BioCro model
-Version: 1.7.0
-Date: 2018-12-03
+Version: 1.7.1
+Date: 2019-09-05
 Authors@R: c(person("David","LeBauer"),
              person("Christopher", "Black"),
              person("Deepak", "Jaiswal"))
@@ -30,7 +30,7 @@ Suggests:
     RPostgreSQL
 Remotes:
     github::ebimodeling/biocro
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE

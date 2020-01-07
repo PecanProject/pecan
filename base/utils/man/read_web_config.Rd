@@ -2,19 +2,34 @@
 % Please edit documentation in R/read_web_config.R
 \name{read_web_config}
 \alias{read_web_config}
-\title{read_web_config}
+\title{Read \code{config.php} file into an R list}
 \usage{
-read_web_config(php.config = "../../web/config.php")
+read_web_config(php.config = "../../web/config.php", parse = TRUE,
+  expand = TRUE)
 }
 \arguments{
-\item{php.config}{Path to \code{config.php}}
+\item{php.config}{Path to \code{config.php} file}
+
+\item{parse}{Logical. If \code{TRUE} (default), try to parse numbers and
+unquote strings.}
+
+\item{expand}{Logical. If \code{TRUE} (default), try to perform some
+variable substitutions.}
 }
 \value{
-config.list
+Named list of variable-value pairs set in \code{config.php}
 }
 \description{
-read_web_config
+Read \code{config.php} file into an R list
+}
+\examples{
+\dontrun{
+# Read Docker configuration and extract the `dbfiles` and output folders.
+docker_config <- read_web_config(file.path("..", "..", "docker", "web", "config.docker.php"))
+docker_config[["dbfiles_folder"]]
+docker_config[["output_folder"]]
+}
 }
 \author{
-Michael Dietze and Rob Kooper
+Alexey Shiklomanov, Michael Dietze, Rob Kooper
 }

@@ -4,7 +4,7 @@ services:
 
   # webserver to handle all traffic. This can use let's encrypt to generate a SSL cert.
   traefik:
-    image: traefik:latest
+    image: traefik:1.7
     command:
       - --loglevel=INFO
       - --api
@@ -157,6 +157,33 @@ services:
       - "traefik.backend=bety"
 
   # ----------------------------------------------------------------------
+  # RStudio
+  # ----------------------------------------------------------------------
+  rstudio-nginx:
+    image: pecan/rstudio-nginx:${PECAN_VERSION:-latest}
+    networks:
+      - pecan
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=rstudio"
+      - "traefik.port=80"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rstudio"
+      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
+
+  rstudio:
+    image: pecan/base:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - USER=${PECAN_RSTUDIO_USER:-carya}
+      - PASSWORD=${PECAN_RSTUDIO_PASS:-illinois}
+    entrypoint: /init
+    volumes:
+      - pecan:/data
+      - rstudio:/home
+ 
+  # ----------------------------------------------------------------------
   # PEcAn application
   # ----------------------------------------------------------------------
 
@@ -233,7 +260,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
-    image: pecan/model-sipnet-136:${PECAN_VERSION:-latest}
+    image: pecan/model-sipnet-r136:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
@@ -288,3 +315,4 @@ volumes:
   rabbitmq:
   pecan:
   portainer:
+  rstudio:

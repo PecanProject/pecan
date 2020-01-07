@@ -34,7 +34,7 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
 
   #Defining some colors
   generate_colors_sda()
-  t1         <- 1
+  t1 <- 1
   var.names <- var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
   
@@ -124,7 +124,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
 
   #Defining some colors
   generate_colors_sda()
-  t1         <- 1
+  t1 <- 1
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
@@ -221,7 +221,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
 
   #Defining some colors
   generate_colors_sda()
-  t1         <- 1
+  t1 <- 1
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -315,74 +315,85 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
 
 post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
 
-  t1         <- 1
+  t1 <- 1
   #Defining some colors
+  ready.OBS<-NULL
   generate_colors_sda()
-  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                              function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
   #Analysis & Forcast cleaning and STAT
   All.my.data <- list(FORECAST=FORECAST,ANALYSIS=ANALYSIS)
   
-  ready.FA <- c('FORECAST','ANALYSIS')%>%
-    purrr::map_df(function(listFA){
-      All.my.data[[listFA]]%>%
-        purrr::map_df(function(state.vars){
-          #finding the mean and Ci for all the state variables
-          means <- apply(state.vars,2,mean,na.rm=T)
-          CI <- apply(state.vars,2,quantile,c(0.025, 0.975),na.rm = T)
-          #putting them into a nice clean df
-          rbind(means,CI) %>% t %>%
-            as.data.frame()%>%
-            mutate(Variables=paste(colnames(state.vars)))%>%
-            tidyr::replace_na(list(0))
-          
-          
-        })%>%mutate(Type=listFA,
-                    Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length())
+  ready.FA <-
+    c("FORECAST", "ANALYSIS") %>% purrr::map_df(function(listFA) {
+      All.my.data[[listFA]] %>% purrr::map_df(function(state.vars) {
+        means <- apply(state.vars, 2, mean, na.rm = T)
+        CI <- apply(state.vars, 2, quantile, c(0.025, 0.975),
+                    na.rm = T)
+        rbind(means, CI) %>% t %>% as.data.frame() %>% mutate(Variables = paste(colnames(state.vars))) %>%
+          tidyr::replace_na(list(0))
+      }) %>% mutate(
+        Type = listFA,
+        Date = rep(
+          lubridate::ymd_hms(obs.times[t1:t], truncated = 3, tz = "EST"),
+          each = colnames((All.my.data[[listFA]])[[1]]) %>%
+            length()
         )
-      
+      )
     })
+  
   
   
   #Observed data
   #first merging mean and conv based on the day
-  ready.to.plot <- names(obs.mean)%>%
-    purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
-                 setNames(c('means','covs','Date')))%>%
-    setNames(names(obs.mean))%>%
-    purrr::map_df(function(one.day.data){
-      #CI
-      
-      purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
-                     function(sd, mean){
-                       data.frame(mean-(sd*1.96), mean+(sd*1.96))
-                       
-                     })%>%
-        mutate(Variables=names(one.day.data$means))%>%
-        `colnames<-`(c('2.5%','97.5%','Variables'))%>%
-        mutate(means=one.day.data$means%>%unlist,
-               Type="Data",
-               Date=one.day.data$Date%>%as.POSIXct())
-      
-      
-    })%>%
-    #filter(Variables %in% var.names)%>%
+  
+  tryCatch({
+      ready.OBS<- names(obs.mean)%>%
+        purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
+                     setNames(c('means','covs','Date')))%>%
+        setNames(names(obs.mean))%>%
+        purrr::map_df(function(one.day.data){
+          #CI
+          
+          purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
+                         function(sd, mean){
+                           data.frame(mean-(sd*1.96), mean+(sd*1.96))
+                           
+                         })%>%
+            mutate(Variables=names(one.day.data$means))%>%
+            `colnames<-`(c('2.5%','97.5%','Variables'))%>%
+            mutate(means=one.day.data$means%>%unlist,
+                   Type="Data",
+                   Date=one.day.data$Date%>%as.POSIXct(tz="EST"))
+          
+          
+        })
+    },
+    error = function(e) {
+      ready.OBS<-NULL
+    }
+  )
+
+  ready.to.plot <- ready.OBS %>%
     bind_rows(ready.FA)
   
-  ready.to.plot$Variables%>%unique()%>%
-    purrr::map(function(vari){
-      
-      varin<-vari
-      unit<-""
-      if (substr(vari,1,8)=="AGB.pft.") varin <- "AGB.pft"
-      #finding the unit
+  #Adding the units to the variables
+  ready.to.plot$Variable %>% unique() %>% 
+    walk(function(varin){
+      #find the unit
       unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
-      if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
-      #plotting
-      ready.to.plot%>%
-        filter(Variables==vari)%>%
+      if (length(unitp)>0) {
+        unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
+        
+        #replace it in the dataframe
+        ready.to.plot$Variable[ready.to.plot$Variable==varin] <<- paste(varin,"(",unit,")")
+      }
+      
+    })
+  
+  
+
+      p<-ready.to.plot%>%
         ggplot(aes(x=Date))+
         geom_ribbon(aes(ymin=`2.5%`,ymax=`97.5%`,fill=Type),color="black")+
         geom_line(aes(y=means, color=Type),lwd=1.02,linetype=2)+
@@ -390,35 +401,31 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
         scale_fill_manual(values = c(alphapink,alphagreen,alphablue),name="")+
         scale_color_manual(values = c(alphapink,alphagreen,alphablue),name="")+
         theme_bw(base_size = 17)+
-        labs(y=paste(vari,'(',unit,')'))+
+        facet_wrap(~Variables, scales = "free", ncol=2)+
         theme(legend.position = "top",
               strip.background = element_blank())->p
       if (!is.null(plot.title)) p <- p + labs(title=plot.title)
-      p
-    })->all.plots
+
+
   
   
-  pdf("SDA/SDA.pdf",width = 10,height = 8)
-  all.plots %>% purrr::map(~print(.x))
+  pdf("SDA/SDA.pdf", width = 14, height = 10, onefile = TRUE)
+  print(p)
   dev.off()
   
   #saving plot data
-  save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
+  save(p, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
   
   
 }
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-
 post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
 
-  
+  t1 <- 1 
   #Defining some colors
-  t1         <- 1
   generate_colors_sda()
-  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                              function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
 
 #rearranging the forcast and analysis data  
@@ -453,57 +460,104 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
         `colnames<-`(c('2.5%','97.5%','Variables'))%>%
         mutate(means=one.day.data$means%>%unlist,
                Type="Data",
-               Date=one.day.data$Date%>%as.POSIXct())
+               Date=one.day.data$Date%>%as.POSIXct(tz="UTC"))
       
       
     })#%>%
   #filter(Variables %in% var.names)
   
-  
-  
-  ready.FA$Variables%>%unique()%>%
-    purrr::map(function(vari){
-      varin<-vari
-      unit<-""
-      if (substr(vari,1,8)=="AGB.pft.") varin <- "AGB.pft"
-      #finding the unit
+  #Adding the units to the variables
+  ready.FA$Variable %>% unique() %>% 
+    walk(function(varin){
+      #find the unit
       unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
-      if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
-      #plotting
-      ready.FA%>%
-        filter(Variables==vari)%>%
+      if (length(unitp)>0) {
+        unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
+        
+        #replace it in the dataframe
+        ready.FA$Variable[ready.FA$Variable==varin] <<- paste(varin,"(",unit,")")
+      }
+      
+    })
+
+
+      p<-ready.FA%>%
+#        filter(Variables==vari)%>%
         ggplot(aes(Date,Value))+
-        geom_ribbon(aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df %>% filter(Variables==vari), color="black")+
-        geom_line(aes(y=means, color=Type),data=obs.df%>% filter(Variables==vari),lwd=1.02,linetype=2)+
+        geom_ribbon(aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df, color="black")+
+        geom_line(aes(y=means, color=Type),data=obs.df,lwd=1.02,linetype=2)+
         geom_violin(aes(x=Date,fill=Type,group=interaction(Date,Type)), position = position_dodge(width=0.9))+
         geom_jitter(aes(color=Type), position=position_jitterdodge(dodge.width=0.9))+
         scale_fill_manual(values = c(alphapink,alphagreen,alphablue))+
         scale_color_manual(values = c(alphapink,alphagreen,alphablue))+
+        facet_wrap(~Variables, scales = "free", ncol=2)+
         theme_bw(base_size = 17)+
-        labs(y=paste(vari,'(',unit,')'))+
+      #  labs(y=paste(vari,'(',unit,')'))+
         theme(legend.position = "top",
-              strip.background = element_blank())->p
+              strip.background = element_blank())
       if (!is.null(plot.title)) p <- p + labs(title=plot.title)
-      p
-    })->all.plots
+
   
-  pdf("SDA/SDA.Violin.pdf", width = 10, height = 8, onefile = TRUE)
-  all.plots %>% purrr::map(~print(.x))
+  pdf("SDA/SDA.Violin.pdf", width = 14, height = 10, onefile = TRUE)
+   print(p)
   dev.off()
   
   #saving plot data
-  save(all.plots, ready.FA, obs.df, file = file.path(settings$outdir,"SDA", "timeseries.violin.plot.data.Rdata"))
+  save(p, ready.FA, obs.df, file = file.path(settings$outdir,"SDA", "timeseries.violin.plot.data.Rdata"))
   
 }
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=F, readsFF=NULL){
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL){
+  
+  # fix obs.mean/obs.cov for multivariable plotting issues when there is NA data. When more than 1 data set is assimilated, but there are missing data
+  # for some sites/years/etc. the plotting will fail and crash the SDA because the numbers of columns are not consistent across all sublists within obs.mean
+  # or obs.cov.
+  observed_vars =  vector()
+  for (date in names(obs.mean))
+  {
+    for (site in names(obs.mean[[date]]))
+    {
+      vars = names(obs.mean[[date]][[site]])
+      observed_vars = c(observed_vars, vars)
+    }
+  }
+  observed_vars = unique(observed_vars)
+  
+  for (name in names(obs.mean))
+  {
+    data_mean = obs.mean[name]
+    data_cov = obs.cov[name]
+    sites = names(data_mean[[1]])
+    for (site in sites)
+    {
+      d_mean = data_mean[[1]][[site]]
+      d_cov = data_cov[[1]][[site]]
+      colnames = names(d_mean)
+      if (length(colnames) < length(observed_vars))
+      {
+        missing = which(!(observed_vars %in% colnames))
+        missing_mean = as.data.frame(NA)
+        colnames(missing_mean) = observed_vars[missing]
+        d_mean = cbind(d_mean, missing_mean)
+        
+        missing_cov = matrix(0, nrow = length(observed_vars), ncol = length(observed_vars))
+        diag(missing_cov) = c(diag(d_cov), NA)
+        d_cov = missing_cov
+      }
+      data_mean[[1]][[site]] = d_mean
+      data_cov[[1]][[site]] = d_cov
+    }
+    obs.mean[name] = data_mean
+    obs.cov[name] = data_cov
+  }
+  
 
   if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
 
   #Defining some colors
-  t1         <- 1
+  t1 <- 1
   generate_colors_sda()
   varnames <- settings$state.data.assimilation$state.variable
   #just a check
@@ -537,10 +591,9 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             summarise(
               Means=mean(Value, na.rm=T),
               Lower=quantile(Value,0.025, na.rm=T),
-              Upper=quantile(Value,0.975, na.rm=T))
-          
-        })%>%mutate(Type=paste0("SDA_",listFA),
-                    Date=rep(obs.times[t1:t], each=colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids)))%>% as.POSIXct()
+              Upper = quantile(Value, 0.975,  na.rm = TRUE))
+        }) %>% mutate(Type = paste0("SDA_", listFA),
+                    Date = rep(as.Date(names(FORECAST)), each = colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids))) %>% as.POSIXct()
         )
     
     })
@@ -559,15 +612,18 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
         mutate(Site=names(one.day.data$means)) %>% 
         tidyr::gather(Variable,Means,-c(Site)) %>%
         right_join(one.day.data$covs %>% 
-                     map_dfr(~ t(sqrt(diag(.x))) %>% 
+                     map_dfr(~ t(sqrt(as.numeric(diag(.x)))) %>% 
                                data.frame %>% `colnames<-`(c(obs.var.names))) %>%
                      mutate(Site=names(one.day.data$covs)) %>% 
                      tidyr::gather(Variable,Sd,-c(Site)),
                    by=c('Site','Variable')) %>%
         mutate(Upper=Means+(Sd*1.96),
                Lower=Means-(Sd*1.96))%>%
-        mutate(Type="SDA_Data",
+        # dropped the "_" from "SDA_Data"
+        mutate(Type="Data",
                Date=one.day.data$Date %>% as.POSIXct())
+        # mutate(Type="SDA_Data",
+        #        Date=one.day.data$Date %>% as.POSIXct())
       
       
     })%>% 
@@ -750,3 +806,5 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   
   
 }
+
+

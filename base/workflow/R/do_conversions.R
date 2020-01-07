@@ -21,6 +21,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   dbfiles.local <- settings$database$dbfiles
   dbfiles <- ifelse(!PEcAn.remote::is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, dbfiles.local)
   PEcAn.logger::logger.debug("do.conversion outdir",dbfiles)
+  # For each input
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
     if (is.null(input)) {
@@ -43,6 +44,11 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       }
     }
     
+    # BADM IC
+    if(input.tag == "poolinitcond" && is.null(input$path)){
+      ic.flag  <- TRUE
+    }
+    
     # IC conversion : for now for ED only, hence the css/pss/site check
     # <useic>TRUE</useic>
     if (ic.flag) {
@@ -55,6 +61,8 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       settings <- PEcAn.data.land::fia.to.psscss(settings, overwrite = overwrite.fia)
       needsave <- TRUE
     }
+    
+
     
     # soil extraction
     if(input.tag == "soil" && is.null(input$path)){

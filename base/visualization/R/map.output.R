@@ -7,9 +7,9 @@
 #' @author David LeBauer
 map.output <- function(table, variable) {
   if (any(table$lat < 0) | any(table$lon > 0)) {
-    world <- data.table(map_data("world"))
+    world <- data.table::data.table(map_data("world"))
   } else {
-    world <- data.table(map_data("usa"))
+    world <- data.table::data.table(map_data("usa"))
   }
   map <- ggplot() + 
     geom_polygon(data = world, aes(x = long, y = lat, group = group), fill = "white", color = "darkgrey") + 

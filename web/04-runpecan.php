@@ -212,7 +212,7 @@ if (! isset($dbfiles_folder)) {
 }
 
 # setup umask so group has write as well
-umask(0002);
+umask(0000);
 
 # create the folder(s)
 if (!mkdir($folder)) {
@@ -296,22 +296,20 @@ if ($browndog) {
   fwrite($fh, "  </browndog>" . PHP_EOL);
 }
 
-$pft_id=1;
 fwrite($fh, "  <pfts>" . PHP_EOL);
 foreach($pft as $p) {
 	fwrite($fh, "    <pft>" . PHP_EOL);
 	fwrite($fh, "      <name>${p}</name> " . PHP_EOL);
-	fwrite($fh, "      <constants>" . PHP_EOL);
-	fwrite($fh, "        <num>${pft_id}</num>" . PHP_EOL);
-	fwrite($fh, "      </constants>" . PHP_EOL);
 	fwrite($fh, "    </pft>" . PHP_EOL);
-	$pft_id++;
 }
 fwrite($fh, "  </pfts>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
 fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
-fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
+fwrite($fh, "    <random.effects>" . PHP_EOL);
+fwrite($fh, "     <on>FALSE</on>" . PHP_EOL);
+fwrite($fh, "     <use_ghs>TRUE</use_ghs>" . PHP_EOL);
+fwrite($fh, "    </random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 if (!empty($runs)){

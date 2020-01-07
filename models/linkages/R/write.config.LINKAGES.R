@@ -65,7 +65,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   texture <- read.csv(system.file("texture.csv", package = "PEcAn.LINKAGES"))
   
   dbcon <- db.open(settings$database$bety)
-  on.exit(db.close(dbcon))
+  on.exit(db.close(dbcon), add = TRUE)
   
   if("soil" %in% names(settings$run$inputs)){
     ## open soil file
@@ -104,8 +104,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     load(climate_file) 
   }
   
-  temp.mat <- temp.mat[which(rownames(temp.mat)%in%start.year:end.year),]
-  precip.mat <- precip.mat[which(rownames(precip.mat)%in%start.year:end.year),]
+  temp.mat <- matrix(temp.mat[which(rownames(temp.mat)%in%start.year:end.year),])
+  precip.mat <- matrix(precip.mat[which(rownames(precip.mat)%in%start.year:end.year),])
   
   basesc <- 74
   basesn <- 1.64
@@ -137,7 +137,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           }
           
           if ("SLA" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*10000
+            spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*1000
+            ## If change here need to change in write_restart as well
             }
           
           # replace defaults with traits
@@ -207,9 +208,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("CM5" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM5 <- vals$CM5
           }
-          if ("FWT" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FWT <- vals$FWT
-          }
+          
           if ("SLTA" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SLTA <- vals$SLTA
           }

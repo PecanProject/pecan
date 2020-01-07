@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 ##' Query available trait data associated with a given pft and a list of traits
 ##'
 ##' @name query.traits
@@ -30,35 +30,35 @@
 query.traits <- function(ids, priors, con = NULL,
                          update.check.only=FALSE,
                          ids_are_cultivars=FALSE){
-
+  
   if(is.null(con)){
     con <- db.open(settings$database$bety)
-    on.exit(db.close(con))
+    on.exit(db.close(con), add = TRUE)
   }
   if(is.list(con)){
     print("query.traits")
     print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   }
-
+  
   if (length(ids) == 0 || length(priors) == 0) {
     return(list())
   }
-
+  
   id_type = rlang::sym(if (ids_are_cultivars) {"cultivar_id"} else {"specie_id"})
-
+  
   traits <- (dplyr::tbl(con, "traits")
-    %>% dplyr::inner_join(dplyr::tbl(con, "variables"), by = c("variable_id" = "id"))
-    %>% dplyr::filter(
-      (!!id_type %in% ids),
-      (name %in% priors)) # TODO: use .data$name when filter supports it
-    %>% dplyr::distinct(name) # TODO: use .data$name when distinct supports it
-    %>% dplyr::collect())
-
+             %>% dplyr::inner_join(dplyr::tbl(con, "variables"), by = c("variable_id" = "id"))
+             %>% dplyr::filter(
+               (!!id_type %in% ids),
+               (name %in% !!priors)) # TODO: use .data$name when filter supports it
+             %>% dplyr::distinct(name) # TODO: use .data$name when distinct supports it
+             %>% dplyr::collect())
+  
   if (nrow(traits) == 0) {
     return(list())
   }
-
+  
   ### Grab trait data
   trait.data <- lapply(traits$name, function(trait){
     query.trait.data(
@@ -69,12 +69,6 @@ query.traits <- function(ids, priors, con = NULL,
       ids_are_cultivars = ids_are_cultivars)
   })
   names(trait.data) <- traits$name
-
+  
   return(trait.data)
 }
-#==================================================================================================#
-
-
-####################################################################################################
-### EOF.  End of R script file.
-####################################################################################################

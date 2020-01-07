@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+import os
+import pika
+import time
+
+rabbitmq_uri = os.getenv('RABBITMQ_URI', 'amqp://guest:guest@localhost/%2F')
+
+params = pika.URLParameters(rabbitmq_uri)
+while True:
+    try:
+        connection = pika.BlockingConnection(params)
+        if connection.is_open:
+            print('RabbitMQ is alive')
+            connection.close()
+            exit(0)
+    except Exception as error:
+        print('Error:', error.__class__.__name__, error)
+    time.sleep(2)
