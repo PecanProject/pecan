@@ -64,7 +64,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
   
   ctr <- 1
   
-  ## loop over files
+  ## loop over files/years
   for (year in seq(start_year, end_year)) {
     
     if (file.exists(out.files.full[ctr]) && !overwrite) {
@@ -74,8 +74,21 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     PEcAn.logger::logger.info(year)
     
-    ## handle dates
-    simdays <- seq(lubridate::yday(start_date), PEcAn.utils::days_in_year(year))
+    ## handle dates, also for partial year(s)
+    if(year == start_year & year != end_year){
+      # start year could be full or partial
+      simdays <- seq(lubridate::yday(start_date), PEcAn.utils::days_in_year(year))
+    }else if(year == end_year & year != start_year){
+      # end year could be full or partial
+      simdays <- seq(1, lubridate::yday(end_date))
+    }else if(year == end_year & year == start_year){
+      # we have one full or partial year
+      simdays <- seq(lubridate::yday(start_date), lubridate::yday(end_date))
+    }else{
+      # a full year in between
+      simdays <- seq(1, PEcAn.utils::days_in_year(year))
+    }
+    
     
     NDAYS      <- length(simdays)
     NWEATHER   <- as.integer(13)
