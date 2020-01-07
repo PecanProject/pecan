@@ -1,5 +1,11 @@
 # PEcAn BASGRA -- Makevars
-# Author: Istem Fer, Alexey Shiklomanov
+# Author: Istem Fer, Alexey Shiklomanov, Chris Black
+
+# TODO: Causes a "Non-portable flags" warning from R CMD check.
+# Fixing may require a rewrite: Source files contain preprocessor macros,
+# but flags to request preprocessing differ across Fortran compilers.
+# Here we use `-x f95-cpp-input`, which probably only works with gfortran.
+PKG_FCFLAGS = -x f95-cpp-input -fdefault-real-8
 
 PARAMS = \
     parameters_site.o \
