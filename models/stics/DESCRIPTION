@@ -1,22 +1,20 @@
-Package: PEcAn.ModelName
+Package: PEcAn.STICS
 Type: Package
-Title: PEcAn package for integration of the ModelName model
+Title: PEcAn package for integration of the STICS model
 Version: 1.7.1
 Date: 2019-09-05
 Authors@R: c(
-  person("Jane", "Doe",
-    email = "jdoe@illinois.edu",
-    role = c("aut", "cre")),
-  person("John", "Doe",
-    role = "aut"))
-Description: This module provides functions to link the (ModelName) to PEcAn.
+  person("Istem", "Fer",
+    email = "istem.fer@fmi.fi",
+    role = c("aut", "cre")))
+Description: This module provides functions to link the STICS to PEcAn.
 Imports:
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8)
 Suggests:
     testthat (>= 1.0.2)
-SystemRequirements: ModelName
+SystemRequirements: STICS
 OS_type: unix
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
