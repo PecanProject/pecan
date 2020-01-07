@@ -20,7 +20,7 @@
 ##' @param sitelon longitude of the site
 ##' 
 ##' @export
-##' @useDynLib PEcAn.BASGRA
+##' @useDynLib PEcAn.BASGRA, .registration = TRUE
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 
