@@ -4,7 +4,8 @@
 \alias{met2model.STICS}
 \title{Write STICS met files}
 \usage{
-met2model.STICS(in.path, in.prefix, outfolder, overwrite = FALSE)
+met2model.STICS(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, ...)
 }
 \arguments{
 \item{in.path}{path on disk where CF file lives}
@@ -13,10 +14,14 @@ met2model.STICS(in.path, in.prefix, outfolder, overwrite = FALSE)
 
 \item{outfolder}{location where model specific output is written.}
 
+\item{start_date}{start date of the simulation}
+
+\item{end_date}{end date of the simulation}
+
 \item{overwrite}{logical: replace output files if they already exist?}
 }
 \value{
-OK if everything was succesful.
+results
 }
 \description{
 Converts a met CF file to a model specific met file. The input
