@@ -112,6 +112,31 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   
   
+  ############################ Prepare Soils ##################################
+  
+  ## this is where we modify soil characteristics
+  
+  # read in template sols file
+  sols_xml  <- XML::xmlParse(system.file("sols.xml", package = "PEcAn.STICS"))
+  sols_list <- XML::xmlToList(sols_xml)
+  
+  sols_list$sol$.attrs[["nom"]] <- paste0("sol", defaults$pft$name)
+  
+  # DO NOTHING FOR NOW
+  
+  # write the tec file
+  saveXML(PEcAn.settings::listToXml(sols_list, "sols"), 
+          file = file.path(rundir, "sols.xml"), 
+          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+  
+  
+  
+  
+  ############################## Prepare LAI forcing ####################################
+  ## skipping for now
+  
+  
+  
   
   ############################ Prepare Technical File ##################################
   
@@ -131,8 +156,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   
   
-  ################################# Prepare USM file #######################################
-  
+  ################################ Prepare USM file ######################################
+
   # TODO: more than 1 USM and PFTs (STICS can run 2 PFTs max: main crop + intercrop)
   
   # pft name
