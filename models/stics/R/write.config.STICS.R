@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 
 ##-------------------------------------------------------------------------------------------------#
-##' Writes a MODEL config file.
+##' Writes STICS configurations.
 ##'
 ##' Requires a pft xml object, a list of trait values for a single model run,
 ##' and the name of the file to create
@@ -24,19 +24,46 @@
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 write.config.STICS <- function(defaults, trait.values, settings, run.id) {
-  PEcAn.logger::logger.severe("NOT IMPLEMENTED")
-  # Please follow the PEcAn style guide:
-  # https://pecanproject.github.io/pecan-documentation/develop/coding-style.html
-  # Note that `library()` calls should _never_ appear here; instead, put
-  # packages dependencies in the DESCRIPTION file, under "Imports:".
-  # Calls to dependent packages should use a double colon, e.g.
-  #    `packageName::functionName()`.
-  # Also, `require()` should be used only when a package dependency is truly
-  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
+  
+  
+
+  
+  # read in template plt file, has all the formalisms
+  plt_xml  <- XML::xmlParse(system.file("crop_plt.xml", package = "PEcAn.STICS"))
+  plt_list <- XML::xmlToList(plt_xml)
+  
+  # go over each formalism and replace params following the order in crop_plt
+  # for now I vary only one parameter under roots.
+  
+  # plant name and group
+  # effect of atmospheric CO2 concentration
+  # phasic development
+  # emergence and starting
+  # leaves
+  # radiation interception
+  # shoot biomass growth
+  # partitioning of biomass in organs
+  # yield formation
+  
+  # roots
+  plt_list[[10]]
+
+  # frost
+  # water
+  # nitrogen
+  # correspondance code BBCH
+  # cultivar parameters
+  
+  data_dir <- "/fs/data3/istfer/STICS/example/"
+  stics_path <- "/fs/data3/istfer/STICS/bin/stics_modulo"
+  obs <- SticsRFiles::read_obs_to_list(data_dir)
+  stics_options_no_par <- SticsOnR::stics_wrapper_options(stics_path = stics_path, data_dir = data_dir, time_display = TRUE)
+  res <- SticsOnR::stics_wrapper(model_options =  stics_options_no_par, sit_var_dates_mask = obv)
+  
   
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
