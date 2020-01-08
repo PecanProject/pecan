@@ -33,27 +33,55 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   plt_xml  <- XML::xmlParse(system.file("crop_plt.xml", package = "PEcAn.STICS"))
   plt_list <- XML::xmlToList(plt_xml)
   
-  # go over each formalism and replace params following the order in crop_plt
-  # for now I vary only one parameter under roots.
   
-  # plant name and group
-  # effect of atmospheric CO2 concentration
-  # phasic development
-  # emergence and starting
-  # leaves
-  # radiation interception
-  # shoot biomass growth
-  # partitioning of biomass in organs
-  # yield formation
+  for (pft in seq_along(trait.values)) {
+    
+    pft.traits <- unlist(trait.values[[pft]])
+    pft.names  <- names(pft.traits)
+    
+    # go over each formalism and replace params following the order in crop_plt
+    # for now I vary only one parameter under roots.
+    
+    # plant name and group
+    # effect of atmospheric CO2 concentration
+    # phasic development
+    # emergence and starting
+    # leaves
+    # radiation interception
+    # shoot biomass growth
+    # partitioning of biomass in organs
+    # yield formation
+    
+    # roots
+    
+    # specific root length (cm g-1)
+    # plt_list[[10]][[6]][[2]][[4]] position
+    if ("SRL" %in% pft.names) {
+      srl_val  <- udunits2::ud.convert(pft.traits[which(pft.names == "SRL")], "m", "cm")
+      plt_list <- plt_list %>% modify_depth(-1, ~if(all(.x == "@longsperac@")) srl_val else .x)
+      
+    }
+    
+    # frost
+    # water
+    # nitrogen
+    # correspondance code BBCH
+    # cultivar parameters
+    
+    # write back
+    if(names(trait.values)[pft] != "env"){
+      
+      saveXML(PEcAn.settings::listToXml(plt_list, "fichierplt"), 
+              file = file.path(rundir, paste0(names(trait.values)[pft], "_plt.xml")), 
+              prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+      
+    }
+    
+  } # pft-loop ends
   
-  # roots
-  plt_list[[10]]
 
-  # frost
-  # water
-  # nitrogen
-  # correspondance code BBCH
-  # cultivar parameters
+  
+
   
   data_dir <- "/fs/data3/istfer/STICS/example/"
   stics_path <- "/fs/data3/istfer/STICS/bin/stics_modulo"
