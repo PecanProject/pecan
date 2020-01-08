@@ -29,6 +29,13 @@ set -e
         Rscript -e 'devtools::install_version("MCMCpack", version = "1.4-4", repos = "http://cran.us.r-project.org")'
         travis_time_end
     fi
+
+    travis_time_start "pecan_install_ncdf4.helpers" "Installing ncdf4.helpers from CRAN archive (#2509)"
+    # ncdf4.helpers was removed from CRAN after years of no maintenence,
+    # so installing last archived version until we can remove the dependency.
+    # Remove this when issue #2509 is closed
+    Rscript -e 'devtools::install_version("ncdf4.helpers", version = "0.3-3", repos = "http://cran.us.r-project.org")'
+    travis_time_end
 )
 
 # INSTALLING SIPNET
