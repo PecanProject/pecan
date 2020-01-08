@@ -130,6 +130,28 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
   
   
+  ######################### Prepare Weather Station File ###############################
+  
+  ## this is where we modify more initial conditions and site characteristics
+  
+  # read in template sta file
+  sta_xml  <- XML::xmlParse(system.file("pecan_sta.xml", package = "PEcAn.STICS"))
+  sta_list <- XML::xmlToList(sta_xml)
+  
+  # change latitute
+  sta_list[[1]][[3]]$text <- settings$run$site$lat
+  
+  # DO NOTHING ELSE FOR NOW
+  
+  # Should these be prepared by met2model.STICS?
+  
+  # write the sta file
+  saveXML(PEcAn.settings::listToXml(sta_list, "fichiersta"), 
+          file = file.path(rundir, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml")), 
+          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+  
+
+  
   
   
   ############################## Prepare LAI forcing ####################################
@@ -176,7 +198,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   usm_list$usm$nomsol <- paste0("sol", defaults$pft$name)
   
   # name of the weather station file
-  # usm_list$usm$fstation <- 
+  usm_list$usm$fstation <- paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml")
   
   # name of the first climate file
   # usm_list$usm$fclim1 <- 
