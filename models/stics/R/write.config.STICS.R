@@ -27,21 +27,25 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # find out where to write run/ouput
   rundir  <- file.path(settings$host$rundir, run.id)
-  datadir <- file.path(settings$host$rundir, run.id, "data")
+  datadir <- file.path(settings$host$rundir, run.id, "data") # do I need this?
   outdir  <- file.path(settings$host$outdir, run.id)
   
   ## create datadir
   dir.create(datadir)
   
-  # read in template USM (Unit of SiMulation) file
+  # read in template USM (Unit of SiMulation) file, has the master settings, file names etc.
   # TODO: more than one usm
   usm_xml  <- XML::xmlParse(system.file("usms.xml", package = "PEcAn.STICS"))
   usm_list <- XML::xmlToList(usm_xml)
   
+  
+  ################################# Prepare Plant File #######################################
+  
+  ## this is where we overwrite model parameters
+  
   # read in template plt file, has all the formalisms
   plt_xml  <- XML::xmlParse(system.file("crop_plt.xml", package = "PEcAn.STICS"))
   plt_list <- XML::xmlToList(plt_xml)
-  
   
   for (pft in seq_along(trait.values)) {
     
@@ -89,7 +93,23 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   } # pft-loop ends
   
   
-  ################################### Prepare USM #########################################
+  ############################ Prepare Initialization File ##################################
+  
+  ## this is where we overwrite model initial conditions
+  
+  # read in template ini file
+  ini_xml  <- XML::xmlParse(system.file("pecan_ini.xml", package = "PEcAn.STICS"))
+  ini_list <- XML::xmlToList(ini_xml)
+  
+  # DO NOTHING FOR NOW
+  
+  # write the ini file
+  saveXML(PEcAn.settings::listToXml(ini_list, "initialisations"), 
+          file = file.path(rundir, paste0(defaults$pft$name, "_ini.xml")), 
+          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+  
+  
+  ################################# Prepare USM file #######################################
   
   # TODO: more than 1 USM and PFTs (STICS can run 2 PFTs max: main crop + intercrop)
   
