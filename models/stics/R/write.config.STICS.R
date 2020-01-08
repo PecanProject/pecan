@@ -29,9 +29,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
   
-  
-
-  
   # read in template plt file, has all the formalisms
   plt_xml  <- XML::xmlParse(system.file("crop_plt.xml", package = "PEcAn.STICS"))
   plt_list <- XML::xmlToList(plt_xml)
