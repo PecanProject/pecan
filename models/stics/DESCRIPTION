@@ -13,7 +13,8 @@ Imports:
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8),
     SticsOnR,
-    SticsRFiles
+    SticsRFiles,
+    SticsOptimizR
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: STICS

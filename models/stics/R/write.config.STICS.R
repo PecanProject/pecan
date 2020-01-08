@@ -26,8 +26,17 @@
 write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # find out where to write run/ouput
-  rundir <- file.path(settings$host$rundir, run.id)
-  outdir <- file.path(settings$host$outdir, run.id)
+  rundir  <- file.path(settings$host$rundir, run.id)
+  datadir <- file.path(settings$host$rundir, run.id, "data")
+  outdir  <- file.path(settings$host$outdir, run.id)
+  
+  ## create datadir
+  dir.create(datadir)
+  
+  # read in template USM (Unit of SiMulation) file
+  # TODO: more than one usm
+  usm_xml  <- XML::xmlParse(system.file("usms.xml", package = "PEcAn.STICS"))
+  usm_list <- XML::xmlToList(usm_xml)
   
   # read in template plt file, has all the formalisms
   plt_xml  <- XML::xmlParse(system.file("crop_plt.xml", package = "PEcAn.STICS"))
@@ -72,22 +81,81 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if(names(trait.values)[pft] != "env"){
       
       saveXML(PEcAn.settings::listToXml(plt_list, "fichierplt"), 
-              file = file.path(rundir, paste0(names(trait.values)[pft], "_plt.xml")), 
+              file = file.path(datadir, paste0(names(trait.values)[pft], "_plt.xml")), 
               prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
       
     }
     
   } # pft-loop ends
   
-
   
-
+  ################################### Prepare USM #########################################
+  
+  # TODO: more than 1 USM and PFTs (STICS can run 2 PFTs max: main crop + intercrop)
+  
+  # pft name
+  usm_list$usm$.attrs[["nom"]] <- defaults$pft$name
+  
+  # beginning day of the simulation (julian.d)
+  usm_list$usm$datedebut <- lubridate::yday(settings$run$start.date)
+  
+  # end day of the simulation (julian.d)
+  usm_list$usm$datefin <- lubridate::yday(settings$run$end.date)
+  
+  # name of the initialization file
+  usm_list$usm$finit <- paste0(defaults$pft$name, "_ini.xml")
+  
+  # name of the soil in the sols.xml file
+  usm_list$usm$nomsol <- paste0("sol", defaults$pft$name)
+  
+  # name of the weather station file
+  # usm_list$usm$fstation <- 
+  
+  # name of the first climate file
+  # usm_list$usm$fclim1 <- 
+  
+  # name of the second climate file
+  # usm_list$usm$fclim2 <- 
+  
+  # number of calendar years involved in the crop cycle
+  # 1 = 1 year e.g. for spring crops, 0 = two years, e.g. for winter crops
+  usm_list$usm$culturean <- trait.values$timothy$crop_cycle
+  
+  # number of simulated plants (sole crop=1; intercropping=2)
+  usm_list$usm$nbplantes <- 1 # hardcode for now
+  
+  # Type of LAI simulation 
+  # 0 = culture (LAI calculated by the model), 1 = feuille (LAI forced)
+  usm_list$usm$codesimul <- 0 # hardcode for now
+  
+  # name of the plant file for main plant 
+  usm_list[[1]][[11]]$fplt <- paste0(defaults$pft$name, "_plt.xml")
+  
+  # name of the technical file for main plant
+  usm_list[[1]][[11]]$ftec <- paste0(defaults$pft$name, "_tec.xml")
+  
+  # name of the LAI forcing file for main plant (null if none)
+  usm_list[[1]][[11]]$flai <- "null" # hardcode for now
+  
+  # name of the plant file for associated plant (intercropping)
+  usm_list[[1]][[12]]$fplt <- "null" # hardcode for now
+  
+  # name of the technical file for associated plant (intercropping)
+  usm_list[[1]][[12]]$ftec <- "null" # hardcode for now
+  
+  # name of the LAI forcing file for associated plant (intercropping) (null if none)
+  usm_list[[1]][[12]]$flai <- "null" # hardcode for now
+  
+  # write USMs
+  saveXML(PEcAn.settings::listToXml(usm_list, "usms"), 
+          file = file.path(rundir, "usms.xml"), 
+          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+  
   
   data_dir <- "/fs/data3/istfer/STICS/example/"
   stics_path <- "/fs/data3/istfer/STICS/bin/stics_modulo"
-  obs <- SticsRFiles::read_obs_to_list(data_dir)
   stics_options_no_par <- SticsOnR::stics_wrapper_options(stics_path = stics_path, data_dir = data_dir, time_display = TRUE)
-  res <- SticsOnR::stics_wrapper(model_options =  stics_options_no_par, sit_var_dates_mask = obv)
+  res <- SticsOnR::stics_wrapper(model_options =  stics_options_no_par, sit_var_dates_mask = NULL)
   
   
   #-----------------------------------------------------------------------
