@@ -93,6 +93,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   } # pft-loop ends
   
   
+  
+  
   ############################ Prepare Initialization File ##################################
   
   ## this is where we overwrite model initial conditions
@@ -107,6 +109,26 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   saveXML(PEcAn.settings::listToXml(ini_list, "initialisations"), 
           file = file.path(rundir, paste0(defaults$pft$name, "_ini.xml")), 
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+  
+  
+  
+  
+  ############################ Prepare Technical File ##################################
+  
+  ## this is where we modify management practices
+  
+  # read in template tec file
+  tec_xml  <- XML::xmlParse(system.file("pecan_tec.xml", package = "PEcAn.STICS"))
+  tec_list <- XML::xmlToList(tec_xml)
+  
+  # DO NOTHING FOR NOW
+  
+  # write the tec file
+  saveXML(PEcAn.settings::listToXml(tec_list, "fichiertec"), 
+          file = file.path(rundir, paste0(defaults$pft$name, "_tec.xml")), 
+          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+  
+  
   
   
   ################################# Prepare USM file #######################################
