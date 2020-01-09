@@ -11,10 +11,11 @@ exec &> "@OUTDIR@/logfile.txt"
 mkdir -p "@OUTDIR@"
 
 # see if application needs running
-if [ ! -e "@OUTDIR@/results.csv" ]; then
-  cd "@RUNDIR@"
+if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
   
-  "@BINARY@"
+  "@CMD_GENERATE@"
+  "@CMD_RUN@"
+  
   STATUS=$?
   
   # check the status
@@ -24,8 +25,8 @@ if [ ! -e "@OUTDIR@/results.csv" ]; then
   fi
 
   # convert to MsTMIP
-  echo "require (PEcAn.MODEL)
-model2netcdf.MODEL('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+  echo "library (PEcAn.STICS)
+model2netcdf.STICS('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
 " | R --vanilla
 fi
 

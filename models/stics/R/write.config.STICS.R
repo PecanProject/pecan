@@ -33,10 +33,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   ## create plant dir
   dir.create(pltdir)
   
-  ## copy over config files
-  file.copy(system.file("param_gen.xml", package = "PEcAn.STICS"), cfgdir)
-  file.copy(system.file("param_newform.xml", package = "PEcAn.STICS"), cfgdir)
-  
   # read in template USM (Unit of SiMulation) file, has the master settings, file names etc.
   # TODO: more than one usm
   usm_xml  <- XML::xmlParse(system.file("usms.xml", package = "PEcAn.STICS"))
@@ -260,12 +256,14 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
 
   # stics path
   stics_path <- "/fs/data3/istfer/STICS"
+  # stics_path <- settings$model$binary
   
   # generate STICS input files using JavaStics
   jexe <- file.path(stics_path, "JavaSticsCmd.exe")
-  cmd_generate <- paste("java -jar", jexe,"--generate-txt", rundir, defaults$pft$name)
-  system(cmd_generate, intern = T)
   
+  usm_name <- defaults$pft$name
+  
+  cmd_generate <- paste("java -jar", jexe,"--generate-txt", rundir, usm_name)
   
   # copy *.mod files
   mod_files <- c(file.path(stics_path, "example", "var.mod"),
@@ -273,7 +271,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
                  file.path(stics_path, "example", "prof.mod"))
   file.copy(mod_files, rundir)
   
-  cmd_run <- paste("java -jar", jexe,"--run", rundir, defaults$pft$name)
+  cmd_run <- paste("java -jar", jexe,"--run", rundir, usm_name)
   
 
 
@@ -308,7 +306,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
   jobsh <- gsub("@SITE_LON@", settings$run$site$lon, jobsh)
-  jobsh <- gsub("@SITE_MET@", settings$run$site$met, jobsh)
   
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
@@ -316,7 +313,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
-  jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
+  jobsh <- gsub("@MODFILE@", paste0("mod_s", usm_name, ".sti"), jobsh)
+  
+  jobsh <- gsub("@CMD_GENERATE@", cmd_generate, jobsh)
+  jobsh <- gsub("@CMD_RUN@", cmd_run, jobsh)
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
