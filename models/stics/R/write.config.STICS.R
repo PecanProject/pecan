@@ -27,11 +27,15 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # find out where to write run/ouput
   rundir  <- file.path(settings$host$rundir, run.id)
-  datadir <- file.path(settings$host$rundir, run.id, "data") # do I need this?
+  pltdir  <- file.path(settings$host$rundir, run.id, "plant")
   outdir  <- file.path(settings$host$outdir, run.id)
   
-  ## create datadir
-  dir.create(datadir)
+  ## create plant dir
+  dir.create(pltdir)
+  
+  ## copy over config files
+  file.copy(system.file("param_gen.xml", package = "PEcAn.STICS"), cfgdir)
+  file.copy(system.file("param_newform.xml", package = "PEcAn.STICS"), cfgdir)
   
   # read in template USM (Unit of SiMulation) file, has the master settings, file names etc.
   # TODO: more than one usm
@@ -71,7 +75,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # plt_list[[10]][[6]][[2]][[4]] position
     if ("SRL" %in% pft.names) {
       srl_val  <- udunits2::ud.convert(pft.traits[which(pft.names == "SRL")], "m", "cm")
-      plt_list <- plt_list %>% modify_depth(-1, ~if(all(.x == "@longsperac@")) srl_val else .x)
+      plt_list <- plt_list %>% purrr::modify_depth(-1, ~if(all(.x == "@longsperac@")) srl_val else .x)
       
     }
     
@@ -85,7 +89,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if(names(trait.values)[pft] != "env"){
       
       saveXML(PEcAn.settings::listToXml(plt_list, "fichierplt"), 
-              file = file.path(datadir, paste0(names(trait.values)[pft], "_plt.xml")), 
+              file = file.path(pltdir, paste0(names(trait.values)[pft], "_plt.xml")), 
               prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
       
     }
@@ -244,12 +248,35 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
   
   
-  data_dir <- "/fs/data3/istfer/STICS/example/"
-  stics_path <- "/fs/data3/istfer/STICS/bin/stics_modulo"
-  stics_options_no_par <- SticsOnR::stics_wrapper_options(stics_path = stics_path, data_dir = data_dir, time_display = TRUE)
-  res <- SticsOnR::stics_wrapper(model_options =  stics_options_no_par, sit_var_dates_mask = NULL)
+  ################################ Prepare Run ######################################
+  
+  # symlink climate files
+  met_path <- settings$run$inputs$met$path
+  for(clim in seq(lubridate::year(settings$run$start.date), lubridate::year(settings$run$end.date))){
+    met_file  <- gsub(paste0(lubridate::year(settings$run$start.date), ".climate"), paste0(clim, ".climate"), met_path)
+    clim_file <- paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", clim)
+    file.symlink(met_file, clim_file)
+  }
+
+  # stics path
+  stics_path <- "/fs/data3/istfer/STICS"
+  
+  # generate STICS input files using JavaStics
+  jexe <- file.path(stics_path, "JavaSticsCmd.exe")
+  cmd_generate <- paste("java -jar", jexe,"--generate-txt", rundir, defaults$pft$name)
+  system(cmd_generate, intern = T)
   
   
+  # copy *.mod files
+  mod_files <- c(file.path(stics_path, "example", "var.mod"),
+                 file.path(stics_path, "example", "rap.mod"),
+                 file.path(stics_path, "example", "prof.mod"))
+  file.copy(mod_files, rundir)
+  
+  cmd_run <- paste("java -jar", jexe,"--run", rundir, defaults$pft$name)
+  
+
+
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
