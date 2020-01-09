@@ -3,7 +3,6 @@ lapply(c( "shiny",
           "ggplot2",
           "stringr",
           "ncdf4",
-          "ncdf4.helpers",
           "DT",
           "plyr",
           "dplyr"),function(pkg){
