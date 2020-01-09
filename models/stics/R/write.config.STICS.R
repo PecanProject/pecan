@@ -250,8 +250,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   met_path <- settings$run$inputs$met$path
   for(clim in seq(lubridate::year(settings$run$start.date), lubridate::year(settings$run$end.date))){
     met_file  <- gsub(paste0(lubridate::year(settings$run$start.date), ".climate"), paste0(clim, ".climate"), met_path)
-    clim_file <- paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", clim)
-    file.symlink(clim_file, met_file)
+    clim_file <- file.path(rundir, paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", clim))
+    file.symlink(met_file, clim_file)
   }
 
   # stics path
