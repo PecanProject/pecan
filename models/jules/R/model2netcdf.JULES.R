@@ -78,7 +78,7 @@ model2netcdf.JULES <- function(outdir) {
         ncdf4::nc_close(nc)
         nc <- ncdf4::nc_open(fname, write = TRUE)
         # Check did the variable get deleted 
-        if(!(var %in% names(nc[['var']]))){
+        if (!(var %in% names(nc[["var"]]))) {
           PEcAn.logger::logger.debug(var, "successfully removed from", fname)
         }
         dim = list(time = nc$dim$time, x = nc$dim$x, y = nc$dim$y)
