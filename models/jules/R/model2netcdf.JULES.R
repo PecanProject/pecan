@@ -32,7 +32,7 @@ model2netcdf.JULES <- function(outdir) {
                 row.names = TRUE,
                 quote = FALSE)
     
-    vars <- names(nc[['var']])
+    vars <- names(nc[["var"]])
     # Check that frac is reported
     if("frac_grid" %in% vars){
       frac <- ncdf4::ncvar_get(nc, "frac_grid")
