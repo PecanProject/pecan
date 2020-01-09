@@ -16,6 +16,9 @@ if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
   @CMD_GENERATE@
   @CMD_RUN@
   
+  # copy log
+  mv "@RUNDIR@/stics_errors.log" "@OUTDIR@"
+  
   STATUS=$?
   
   # check the status
@@ -23,6 +26,9 @@ if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
     echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
     exit $STATUS
   fi
+
+  # copy output
+  mv "@RUNDIR@/*.sti" "@OUTDIR@"
 
   # convert to MsTMIP
   echo "library (PEcAn.STICS)
