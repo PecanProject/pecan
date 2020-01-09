@@ -13,8 +13,8 @@ mkdir -p "@OUTDIR@"
 # see if application needs running
 if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
   
-  "@CMD_GENERATE@"
-  "@CMD_RUN@"
+  @CMD_GENERATE@
+  @CMD_RUN@
   
   STATUS=$?
   

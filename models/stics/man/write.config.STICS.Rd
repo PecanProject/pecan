@@ -19,7 +19,7 @@ write.config.STICS(defaults, trait.values, settings, run.id)
 configuration file for STICS for given run
 }
 \description{
-Writes a MODEL config file.
+Writes STICS configurations.
 }
 \details{
 Requires a pft xml object, a list of trait values for a single model run,
