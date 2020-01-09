@@ -188,8 +188,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # beginning day of the simulation (julian.d)
   usm_list$usm$datedebut <- lubridate::yday(settings$run$start.date)
   
-  # end day of the simulation (julian.d)
-  usm_list$usm$datefin <- lubridate::yday(settings$run$end.date)
+  # end day of the simulation (julian.d) (at the end of consecutive years, i.e. can be greater than 366)
+  dseq <- seq(lubridate::as_date(settings$run$start.date), lubridate::as_date(settings$run$end.date), by = "day")
+  usm_list$usm$datefin <- usm_list$usm$datedebut + length(dseq) - 1
+  
   
   # name of the initialization file
   usm_list$usm$finit <- paste0(defaults$pft$name, "_ini.xml")
@@ -201,10 +203,11 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   usm_list$usm$fstation <- paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml")
   
   # name of the first climate file
-  # usm_list$usm$fclim1 <- 
+  usm_list$usm$fclim1 <- paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", lubridate::year(settings$run$start.date))
   
-  # name of the second climate file
-  # usm_list$usm$fclim2 <- 
+  
+  # name of the last climate file
+  usm_list$usm$fclim2 <- paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", lubridate::year(settings$run$end.date))
   
   # number of calendar years involved in the crop cycle
   # 1 = 1 year e.g. for spring crops, 0 = two years, e.g. for winter crops
