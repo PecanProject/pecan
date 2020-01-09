@@ -251,7 +251,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   for(clim in seq(lubridate::year(settings$run$start.date), lubridate::year(settings$run$end.date))){
     met_file  <- gsub(paste0(lubridate::year(settings$run$start.date), ".climate"), paste0(clim, ".climate"), met_path)
     clim_file <- paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", clim)
-    file.symlink(met_file, clim_file)
+    file.symlink(clim_file, met_file)
   }
 
   # stics path
@@ -321,43 +321,5 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
-  #-----------------------------------------------------------------------
-  ### Edit a templated config file for runs
-  if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
-    config.text <- readLines(con = settings$model$config, n = -1)
-  } else {
-    filename <- system.file(settings$model$config, package = "PEcAn.MODEL")
-    if (filename == "") {
-      if (!is.null(settings$model$revision)) {
-        filename <- system.file(paste0("config.", settings$model$revision), package = "PEcAn.STICS")
-      } else {
-        model <- PEcAn.DB::db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
-        filename <- system.file(paste0("config.r", model$revision), package = "PEcAn.STICS")
-      }
-    }
-    if (filename == "") {
-      PEcAn.logger::logger.severe("Could not find config template")
-    }
-    PEcAn.logger::logger.info("Using", filename, "as template")
-    config.text <- readLines(con = filename, n = -1)
-  }
-  
-  config.text <- gsub("@SITE_LAT@", settings$run$site$lat, config.text)
-  config.text <- gsub("@SITE_LON@", settings$run$site$lon, config.text)
-  config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
-  config.text <- gsub("@MET_START@", settings$run$site$met.start, config.text)
-  config.text <- gsub("@MET_END@", settings$run$site$met.end, config.text)
-  config.text <- gsub("@START_MONTH@", format(settings$run$start.date, "%m"), config.text)
-  config.text <- gsub("@START_DAY@", format(settings$run$start.date, "%d"), config.text)
-  config.text <- gsub("@START_YEAR@", format(settings$run$start.date, "%Y"), config.text)
-  config.text <- gsub("@END_MONTH@", format(settings$run$end.date, "%m"), config.text)
-  config.text <- gsub("@END_DAY@", format(settings$run$end.date, "%d"), config.text)
-  config.text <- gsub("@END_YEAR@", format(settings$run$end.date, "%Y"), config.text)
-  config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
-  config.text <- gsub("@ENSNAME@", run.id, config.text)
-  config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
-  
-  #-----------------------------------------------------------------------
-  config.file.name <- paste0("CONFIG.", run.id, ".txt")
-  writeLines(config.text, con = paste(outdir, config.file.name, sep = ""))
+
 } # write.config.STICS
