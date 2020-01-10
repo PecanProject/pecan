@@ -29,18 +29,21 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   rundir  <- file.path(settings$host$rundir, run.id)
   pltdir  <- file.path(settings$host$rundir, run.id, "plant")
   cfgdir  <- file.path(settings$host$rundir, run.id, "config")
+  bindir  <- file.path(settings$host$rundir, run.id, "bin")
   outdir  <- file.path(settings$host$outdir, run.id)
   
-  ## create plant and config dirs
+  
+  ## create plant, config and bin dirs
   dir.create(pltdir)
   dir.create(cfgdir)
+  dir.create(bindir)
   
   # write preferences
   prf_xml  <- XML::xmlParse(system.file("preferences.xml", package = "PEcAn.STICS"))
   prf_list <- XML::xmlToList(prf_xml)
   prf_list$entry$text <- rundir
   
-  saveXML(PEcAn.settings::listToXml(prf_list, "properties"), 
+  XML::saveXML(PEcAn.settings::listToXml(prf_list, "properties"), 
           file = file.path(cfgdir, "preferences.xml"), 
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">\n')
   
@@ -95,7 +98,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # write back
     if(names(trait.values)[pft] != "env"){
       
-      saveXML(PEcAn.settings::listToXml(plt_list, "fichierplt"), 
+      XML::saveXML(PEcAn.settings::listToXml(plt_list, "fichierplt"), 
               file = file.path(pltdir, paste0(names(trait.values)[pft], "_plt.xml")), 
               prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
       
@@ -117,7 +120,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # DO NOTHING FOR NOW
   
   # write the ini file
-  saveXML(PEcAn.settings::listToXml(ini_list, "initialisations"), 
+  XML::saveXML(PEcAn.settings::listToXml(ini_list, "initialisations"), 
           file = file.path(rundir, paste0(defaults$pft$name, "_ini.xml")), 
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
   
@@ -136,7 +139,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # DO NOTHING FOR NOW
   
   # write the tec file
-  saveXML(PEcAn.settings::listToXml(sols_list, "sols"), 
+  XML::saveXML(PEcAn.settings::listToXml(sols_list, "sols"), 
           file = file.path(rundir, "sols.xml"), 
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
   
@@ -157,7 +160,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # Should these be prepared by met2model.STICS?
   
   # write the sta file
-  saveXML(PEcAn.settings::listToXml(sta_list, "fichiersta"), 
+  XML::saveXML(PEcAn.settings::listToXml(sta_list, "fichiersta"), 
           file = file.path(rundir, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml")), 
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
   
@@ -182,7 +185,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # DO NOTHING FOR NOW
   
   # write the tec file
-  saveXML(PEcAn.settings::listToXml(tec_list, "fichiertec"), 
+  XML::saveXML(PEcAn.settings::listToXml(tec_list, "fichiertec"), 
           file = file.path(rundir, paste0(defaults$pft$name, "_tec.xml")), 
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
   
@@ -250,7 +253,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   usm_list[[1]][[12]]$flai <- "null" # hardcode for now
   
   # write USMs
-  saveXML(PEcAn.settings::listToXml(usm_list, "usms"), 
+  XML::saveXML(PEcAn.settings::listToXml(usm_list, "usms"), 
           file = file.path(rundir, "usms.xml"), 
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
   
@@ -266,11 +269,14 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   }
 
   # stics path
-  stics_path <- "/fs/data3/istfer/STICS" # temporary
-  # stics_path <- settings$model$binary
+  stics_path <- settings$model$binary
+  
+  # symlink to binary
+  file.symlink(stics_path, bindir)
   
   ## copy files to config
-  file.copy(c(file.path(stics_path, "config", "param_gen.xml"), file.path(stics_path, "config", "param_newform.xml")), rundir)
+  file.copy(c(file.path(gsub("bin","config", dirname(stics_path)), "param_gen.xml"), 
+              file.path(gsub("bin","config", dirname(stics_path)), "param_newform.xml")), rundir)
   
   # generate STICS input files using JavaStics
   jexe <- file.path(stics_path, "JavaSticsCmd.exe")
@@ -280,9 +286,9 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   cmd_generate <- paste("java -jar", jexe,"--generate-txt", rundir, usm_name)
   
   # copy *.mod files
-  mod_files <- c(file.path(stics_path, "example", "var.mod"),
-                 file.path(stics_path, "example", "rap.mod"),
-                 file.path(stics_path, "example", "prof.mod"))
+  mod_files <- c(file.path(gsub("bin","example", dirname(stics_path)), "var.mod"),
+                 gsub("bin","example", dirname(stics_path)), "rap.mod"),
+                 gsub("bin","example", dirname(stics_path)), "prof.mod"))
   file.copy(mod_files, rundir)
   
   cmd_run <- paste("java -jar", jexe,"--run", rundir, usm_name)

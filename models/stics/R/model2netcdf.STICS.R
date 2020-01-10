@@ -23,13 +23,7 @@
 ##' @author Istem Fer
 model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, overwrite = FALSE) {
 
-  outdir <- '/fs/data2/output//PEcAn_1000011869/out/1002786414'
-  sitelat <- 48.8442
-  sitelon <- 1.9519
-  start_date <- '2007/01/01'
-  end_date <- '2012/12/31'
-  
-  
+
   ### Read in model output in STICS format
   out_files <- list.files(outdir)
   
@@ -42,10 +36,10 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
   # get all years that we want data from
   year_seq <- seq(lubridate::year(start_date), lubridate::year(end_date))
   
-  # check that specified years and output years match
-  if (!all(year_seq %in% simulation_years)) {
-    PEcAn.logger::logger.severe("Years selected for model run and STICS output years do not match ")
-  }
+  # check that specified years and output years match: turning this off for now
+  # if (!all(year_seq %in% simulation_years)) {
+  #  PEcAn.logger::logger.severe("Years selected for model run and STICS output years do not match ")
+  #}
   
   # determine time step?
   
