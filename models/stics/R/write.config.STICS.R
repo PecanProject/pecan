@@ -25,6 +25,9 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
+  ## simulation days, used later
+  dseq <- seq(lubridate::as_date(settings$run$start.date), lubridate::as_date(settings$run$end.date), by = "day")
+  
   # find out where to write run/ouput
   rundir  <- file.path(settings$host$rundir, run.id)
   pltdir  <- file.path(settings$host$rundir, run.id, "plant")
@@ -182,7 +185,55 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   tec_xml  <- XML::xmlParse(system.file("pecan_tec.xml", package = "PEcAn.STICS"))
   tec_list <- XML::xmlToList(tec_xml)
   
-  # DO NOTHING FOR NOW
+  # If harvest file is given, use given dates 
+  # this will need  more complicated checks and file formats
+  if(!is.null(settings$run$inputs$harvest)){
+    
+    h_days <- as.matrix(utils::read.table(settings$run$inputs$harvest$path, header = TRUE, sep = ","))
+    
+    # probably should use nicer list manipulation techniques, but these template files are static for now
+    # save last list to add at the end
+    attr_sublist <- tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[4]] 
+    tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[4]] <- NULL
+    
+    list_no <- 2
+    
+    for(hrow in seq_len(nrow(h_days))){
+      
+     
+     harvest_list <- tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[2]] # refreshing the "template"
+     intervention_names <- names(tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[2]])
+     
+     # If given harvest date is within simulation days
+     if(as.Date(h_days[hrow, 2], origin = paste0(h_days[hrow, 1], "-01-01")) %in% dseq){
+       
+       # STICS needs cutting days in cumulative julian days 
+       # e.g. first cutting day of the first simulation year can be 163 (2018-06-13)
+       # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
+       # the following code should give that
+       harvest_list$colonne$text <- which(dseq == as.Date(h_days[hrow, 2], origin = paste0(h_days[hrow, 1], "-01-01"))) + lubridate::yday(dseq[1]) - 2
+       
+       tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[list_no]] <- harvest_list
+       
+       list_no <- list_no + 1
+     }
+     
+    }
+    
+    # this means we have prescribed more than 2 cutting days
+    if(list_no > 4){
+      names(tec_list[[8]][[1]][[1]][[2]][[2]][[1]])[3:(list_no-1)] <- "intervention"
+      
+      #add the last sublist back
+      attr_sublist["nb_interventions"] <- list_no - 2
+      tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[".attrs"]] <- attr_sublist
+     
+    }
+    
+
+  }
+  
+  # OTHERWISE DO NOTHING FOR NOW
   
   # write the tec file
   XML::saveXML(PEcAn.settings::listToXml(tec_list, "fichiertec"), 
@@ -203,9 +254,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   usm_list$usm$datedebut <- lubridate::yday(settings$run$start.date)
   
   # end day of the simulation (julian.d) (at the end of consecutive years, i.e. can be greater than 366)
-  dseq <- seq(lubridate::as_date(settings$run$start.date), lubridate::as_date(settings$run$end.date), by = "day")
   usm_list$usm$datefin <- usm_list$usm$datedebut + length(dseq) - 1
-  
   
   # name of the initialization file
   usm_list$usm$finit <- paste0(defaults$pft$name, "_ini.xml")
