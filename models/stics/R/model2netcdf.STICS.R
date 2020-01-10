@@ -29,17 +29,16 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
   
   stics_out_file <- file.path(outdir, out_files[grepl("mod_s.*", out_files)])
   stics_output   <- read.table(stics_out_file, header = T, sep = ";")
-  output_names   <- colnames(stics_output)
   
   simulation_years <- unique(stics_output$ian)
   
   # get all years that we want data from
   year_seq <- seq(lubridate::year(start_date), lubridate::year(end_date))
   
-  # check that specified years and output years match: turning this off for now
-  # if (!all(year_seq %in% simulation_years)) {
-  #  PEcAn.logger::logger.severe("Years selected for model run and STICS output years do not match ")
-  #}
+  # check that specified years and output years match
+  if (!all(year_seq %in% simulation_years)) {
+    PEcAn.logger::logger.severe("Years selected for model run and STICS output years do not match ")
+  }
   
   # determine time step?
   
@@ -49,10 +48,10 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
       next
     }
     
-    thisyear <- stics_output[ , output_names == "ian"] == y
+    thisyear <- stics_output[ , "ian"] == y
     
     outlist <- list()
-    outlist[[1]] <- stics_output[thisyear, which(output_names == "lai.n.")]  # LAI in (m2 m-2)
+    outlist[[1]] <- stics_output[thisyear, "lai.n."]  # LAI in (m2 m-2)
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
