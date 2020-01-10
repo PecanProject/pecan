@@ -22,6 +22,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
 - No longer writing an arbitrary num for each PFT, this was breaking ED runs potentially.
 - The pecan/data container has no longer hardcoded path for postgres
+- PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
 
 ### Added
 - BASGRA_N model basic coupling.

@@ -140,7 +140,9 @@ server <- function(input, output, session) {
       
       site = query.site(con = bety$con, siteid)
       
-      vars_in_file <- ncdf4::nc_open(rv$load.paths[i]) %>% names(.[["var"]])
+      current_nc <- ncdf4::nc_open(rv$load.paths[i])
+      vars_in_file <- names(current_nc[["var"]])
+      ncdf4::nc_close(current_nc)
       format = query.format.vars(bety, inputid, formatid)
       format$vars <- format$vars %>% filter(input_name %in% vars_in_file)
       
