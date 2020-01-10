@@ -28,10 +28,21 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # find out where to write run/ouput
   rundir  <- file.path(settings$host$rundir, run.id)
   pltdir  <- file.path(settings$host$rundir, run.id, "plant")
+  cfgdir  <- file.path(settings$host$rundir, run.id, "config")
   outdir  <- file.path(settings$host$outdir, run.id)
   
-  ## create plant dir
+  ## create plant and config dirs
   dir.create(pltdir)
+  dir.create(cfgdir)
+  
+  # write preferences
+  prf_xml  <- XML::xmlParse(system.file("preferences.xml", package = "PEcAn.STICS"))
+  prf_list <- XML::xmlToList(prf_xml)
+  prf_list$entry$text <- rundir
+  
+  saveXML(PEcAn.settings::listToXml(prf_list, "properties"), 
+          file = file.path(cfgdir, "preferences.xml"), 
+          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">\n')
   
   # read in template USM (Unit of SiMulation) file, has the master settings, file names etc.
   # TODO: more than one usm
@@ -255,8 +266,11 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   }
 
   # stics path
-  stics_path <- "/fs/data3/istfer/STICS"
+  stics_path <- "/fs/data3/istfer/STICS" # temporary
   # stics_path <- settings$model$binary
+  
+  ## copy files to config
+  file.copy(c(file.path(stics_path, "config", "param_gen.xml"), file.path(stics_path, "config", "param_newform.xml")), rundir)
   
   # generate STICS input files using JavaStics
   jexe <- file.path(stics_path, "JavaSticsCmd.exe")
