@@ -15,6 +15,7 @@ This section will contain information about all models and output variables that
 | [MAESPA](#models-maespa)| Yes | Yes | No | No |
 | [PRELES](#models-preles) | Yes | Yes | Partially | No |
 | [SiPNET](#models-sipnet)| Yes | Yes | Yes| Yes |
+| [STICS](#models-stics)| Yes | Yes | No| No |
 
 *Available in the VM* - Denotes if a model is publicly available with PEcAn.
 
