@@ -70,7 +70,6 @@ install2.r -e -s -n -1\
     MODISTools \
     mvtnorm \
     ncdf4 \
-    ncdf4.helpers \
     nimble \
     nneo \
     parallel \

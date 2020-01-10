@@ -48,7 +48,7 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
                           interval = "prediction", single.tree = FALSE) {
   library(tools)
   
-  if (class(object) == "character") {
+  if (is.character(object)) {
     object <- load.allom(object)
   }
   

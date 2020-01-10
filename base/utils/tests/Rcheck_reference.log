@@ -68,10 +68,6 @@ run.write.configs: no visible binding for global variable
 run.write.configs: no visible binding for global variable ‘sa.samples’
 run.write.configs: no visible binding for global variable
   ‘ensemble.samples’
-status.check: no visible binding for global variable ‘settings’
-status.end: no visible binding for global variable ‘settings’
-status.skip: no visible binding for global variable ‘settings’
-status.start: no visible binding for global variable ‘settings’
 summarize.result: no visible binding for global variable ‘n’
 summarize.result: no visible binding for global variable ‘citation_id’
 summarize.result: no visible binding for global variable ‘site_id’
@@ -191,18 +187,6 @@ Undocumented arguments in documentation object 'seconds_in_year'
 Undocumented arguments in documentation object 'sensitivity.filename'
   ‘settings’ ‘prefix’ ‘suffix’ ‘all.var.yr’ ‘pft’ ‘ensemble.id’
   ‘variable’ ‘start.year’ ‘end.year’
-
-Undocumented arguments in documentation object 'status.check'
-  ‘name’
-
-Undocumented arguments in documentation object 'status.end'
-  ‘status’
-
-Undocumented arguments in documentation object 'status.skip'
-  ‘name’
-
-Undocumented arguments in documentation object 'status.start'
-  ‘name’
 
 Undocumented arguments in documentation object 'write.ensemble.configs'
   ‘model’ ‘write.to.db’

@@ -44,11 +44,11 @@ The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have
 
 ## Publications
 
-* LeBauer, D.S., D. Wang, K. Richter, C. Davidson, and M.C. Dietze (2013). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs. [doi:10.1890/12-0137.1](http://dx.doi.org/10.1890/12-0137.1)
-* Wang, D, D.S. LeBauer, and M.C. Dietze (2013). Predicting yields of short-rotation hybrid poplar (Populus spp.) for the contiguous US through model-data synthesis. Ecological Applications [doi:10.1890/12-0854.1](http://dx.doi.org/10.1890/12-0854.1)
-* Dietze, M.C., D.S LeBauer, and R. Kooper (2013). On improving the communication between models and data. Plant, Cell, & Environment [doi:10.1111/pce.12043](http://dx.doi.org/10.1111/pce.12043)
+* LeBauer, D.S., D. Wang, K. Richter, C. Davidson, and M.C. Dietze (2013). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs. [doi:10.1890/12-0137.1](https://doi.org/10.1890/12-0137.1)
+* Wang, D, D.S. LeBauer, and M.C. Dietze (2013). Predicting yields of short-rotation hybrid poplar (Populus spp.) for the contiguous US through model-data synthesis. Ecological Applications [doi:10.1890/12-0854.1](https://doi.org/10.1890/12-0854.1)
+* Dietze, M.C., D.S LeBauer, and R. Kooper (2013). On improving the communication between models and data. Plant, Cell, & Environment [doi:10.1111/pce.12043](https://doi.org/10.1111/pce.12043)
 * Dietze, Michael C., Shawn P. Serbin, Carl Davidson, Ankur R. Desai, Xiaohui Feng, Ryan Kelly, Rob Kooper et al. "A quantitative assessment of a terrestrial biosphere model's data needs across North American biomes." Journal of Geophysical Research: Biogeosciences 119, no. 3 (2014): 286-300.
-* Viskari, Toni, Brady Hardiman, Ankur R. Desai, and Michael C. Dietze. "Model-data assimilation of multiple phenological observations to constrain and predict leaf area index." (2015) [doi:10.1890/14-0497.1](http://dx.doi.org/10.1890/14-0497.1)
+* Viskari, Toni, Brady Hardiman, Ankur R. Desai, and Michael C. Dietze. "Model-data assimilation of multiple phenological observations to constrain and predict leaf area index." (2015) [doi:10.1890/14-0497.1](https://doi.org/10.1890/14-0497.1)
 * Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. 2016 "Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion" Remote Sensing of the Environment 183: 226-238
 * LeBauer, David, Rob Kooper, Patrick Mulrooney, Scott Rohde, Dan Wang, Stephen P. Long, and Michael C. Dietze. "BETYdb: a yield, trait, and ecosystem service database applied to second‐generation bioenergy feedstock production." GCB Bioenergy (2017).
 

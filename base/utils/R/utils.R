@@ -19,7 +19,7 @@
 ##'
 ##' @title MstMIP variable
 ##' @export
-##' @param name name of variable
+##' @param name of variable
 ##' @param lat latitude if dimension requests it
 ##' @param lon longitude if dimension requests it
 ##' @param time time if dimension requests it
@@ -27,12 +27,12 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
+  nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
   dims <- list()
 
-  if (nrow(var) == 0) {
-    var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
-    if (nrow(var) == 0) {
+  if (nrow(nc_var) == 0) {
+    nc_var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
+    if (nrow(nc_var) == 0) {
       if (!silent) {
         PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
@@ -45,7 +45,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
   }
 
   for (i in 1:4) {
-    vd <- var[[paste0("dim", i)]]
+    vd <- nc_var[[paste0("dim", i)]]
     if (vd == "lon" && !is.na(lon)) {
       dims[[length(dims) + 1]] <- lon
     } else if (vd == "lat" && !is.na(lat)) {
@@ -62,9 +62,9 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
       }
     }
   }
-  ncvar <- ncdf4::ncvar_def(name, as.character(var$Units), dims, -999)
-  if (var$Long.name != "na") {
-    ncvar$longname <- as.character(var$Long.name)
+  ncvar <- ncdf4::ncvar_def(name, as.character(nc_var$Units), dims, -999)
+  if (nc_var$Long.name != "na") {
+    ncvar$longname <- as.character(nc_var$Long.name)
   }
   return(ncvar)
 } # mstimipvar
@@ -319,7 +319,7 @@ pdf.stats <- function(distn, A, B) {
     norm = B ^ 2,
     f = ifelse(B > 4,
                2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
-               var(stats::rf(1e+05, A, B))))
+               stats::var(stats::rf(1e+05, A, B))))
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
@@ -512,7 +512,7 @@ temp.settings <- function(settings.txt) {
 ##' @author David LeBauer
 tryl <- function(FUN) {
   out <- tryCatch(FUN, error = function(e) e)
-  ans <- !any(class(out) == "error")
+  ans <- !inherits(out, "error")
   return(ans)
 } # tryl
 #--------------------------------------------------------------------------------------------------#
@@ -703,7 +703,7 @@ download.file <- function(url, filename, method) {
 ##' 
 ##' @export
 ##' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
-retry.func <- function(expr, isError=function(x) "try-error" %in% class(x), maxErrors=5, sleep=0) {
+retry.func <- function(expr, isError = function(x) inherits(x, "try-error"), maxErrors = 5, sleep = 0) {
   attempts = 0
   retval = try(eval(expr))
   while (isError(retval)) {

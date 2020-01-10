@@ -7,19 +7,27 @@
 ##' @author Mike Dietze
 ##' 
 add_icon <- function(id = NULL, x = 0, y = 0) {
-  library(png)
-  library(grid)
-  icon <- readPNG(system.file("favicon.png", package = "PEcAn.visualization"))
+
+  # png and grid are both in Suggests; need to check if available before using
+  if (!requireNamespace("png", quietly = TRUE)
+      || !requireNamespace("grid", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "PEcAn.visualization::add_icon needs packages 'png' and 'grid'")
+    return(NULL)
+  }
+
+  icon <- png::readPNG(
+    system.file("favicon.png", package = "PEcAn.visualization"))
   dims <- dim(icon)
-  logo <- rasterGrob(icon, unit(x, "npc"), 
-                     unit(y, "npc"), 
-                     unit(dims[1], "points"),
-                     unit(dims[2], "points"), 
+  logo <- grid::rasterGrob(icon, grid::unit(x, "npc"),
+                     grid::unit(y, "npc"),
+                     grid::unit(dims[1], "points"),
+                     grid::unit(dims[2], "points"),
                      just = c("left", "bottom"))
-  grid.draw(logo)
-  
-  lab <- textGrob(label = paste("PEcAn", id),
-                  x = unit(x, "npc") + unit(dims[1], "points"), 
-                  y = unit(y, "npc"), just = c("left", "bottom"))
-  grid.draw(lab)
+  grid::grid.draw(logo)
+
+  lab <- grid::textGrob(label = paste("PEcAn", id),
+                  x = grid::unit(x, "npc") + grid::unit(dims[1], "points"),
+                  y = grid::unit(y, "npc"), just = c("left", "bottom"))
+  grid::grid.draw(lab)
 }  # add_icon
