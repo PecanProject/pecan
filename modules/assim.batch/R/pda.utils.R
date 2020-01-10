@@ -1117,6 +1117,7 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   cat("#$ -V\n", file = local_sub_file, append = TRUE)
   # parse queue from settings$host$qsub
   cat(paste0("#$ -q '", gsub( " .*$", "", sub(".*-q ", "", settings$host$qsub)), "'\n"), file = local_sub_file, append = TRUE) 
+  cat(paste0("#$ -l h_rt=", gsub( " .*$", "", sub(".*h_rt=", "", settings$host$qsub)), "\n"), file = local_sub_file, append = TRUE) 
   cat(paste0("#$ -N emulator_s", site,"\n"), file = local_sub_file, append = TRUE)
   cat(paste0("#$ -pe omp ", length(settings$assim.batch$inputs), "\n"), file = local_sub_file, append = TRUE)
   cat(paste0("#cd ", remote_dir, "\n"), file = local_sub_file, append = TRUE)
