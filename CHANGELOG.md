@@ -24,7 +24,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - The pecan/data container has no longer hardcoded path for postgres
 
 ### Added
-- BASGRA_N model basic coupling.
+- Basic coupling for models BASGRA_N and STICS.
 - PEcAn.priors now exports functions `priorfig` and `plot_densities` (#2439).
 - Models monitoring container for Docker now shows a webpage with models it has seen
 - Added small container to check if certain services are up, used as initi container for kubernetes
