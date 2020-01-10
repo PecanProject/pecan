@@ -1,7 +1,12 @@
 #' @title List only files in a directory
-#' 
+#'
+#' Mostly useful when `recursive` and `full.names` are both FALSE:
+#'   The current implementation sets `full.names` internally, and for recursive
+#'   listings `list.files(..., include.dirs = FALSE)` is equivalent and faster.
+#'
 #' @author Alexey Shiklomanov
-#' @inheritParams base::list.files
+#' @param path directory to list
+#' @param ... arguments passed on to base::list.files
 #' @export
 list.files.nodir <- function(path, ...) {
     allfiles <- list.files(path, ...)
