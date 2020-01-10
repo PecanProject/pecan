@@ -279,7 +279,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
               file.path(gsub("bin","config", dirname(stics_path)), "param_newform.xml")), rundir)
   
   # generate STICS input files using JavaStics
-  jexe <- file.path(stics_path, "JavaSticsCmd.exe")
+  jexe <- file.path(gsub("bin","", dirname(stics_path)), "JavaSticsCmd.exe")
   
   usm_name <- defaults$pft$name
   
@@ -287,8 +287,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # copy *.mod files
   mod_files <- c(file.path(gsub("bin","example", dirname(stics_path)), "var.mod"),
-                 gsub("bin","example", dirname(stics_path)), "rap.mod"),
-                 gsub("bin","example", dirname(stics_path)), "prof.mod"))
+                 file.path(gsub("bin","example", dirname(stics_path)), "rap.mod"),
+                 file.path(gsub("bin","example", dirname(stics_path)), "prof.mod"))
   file.copy(mod_files, rundir)
   
   cmd_run <- paste("java -jar", jexe,"--run", rundir, usm_name)
