@@ -3,7 +3,7 @@
 #' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 #' 
 #' @param settings  PEcAn settings object
-#' @param obs.mean  List of dataframe of observation means, named with observation datetime.
+#' @param obs.mean  List of dataf rame of observation means, named with observation datetime.
 #' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
 #' @param Q         Process covariance matrix given if there is no data to estimate it.
 #' @param restart   Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.
@@ -28,6 +28,7 @@ sda.enkf.multisite <- function(settings,
                                restart = FALSE, 
                                forceRun = TRUE, 
                                keepNC = TRUE,
+                               daily = FALSE,
                                control=list(trace = TRUE,
                                             FF = FALSE,
                                             interactivePlot = FALSE,
@@ -46,6 +47,34 @@ sda.enkf.multisite <- function(settings,
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
+  
+  ### if user wants a different outdir than /SDA, edit the xml to output where you want it.
+  if (!(is.null(outfolder)))
+  {
+    xml = XML::xmlParse(unlist(settings$xml.file))
+    nodeSet = XML::xpathApply(xml,"//rundir/text()")
+    sapply(nodeSet,function(G){
+      text = file.path(outfolder, "run")
+      XML::xmlValue(G) = text
+    })
+    
+    nodeSet = XML::xpathApply(xml,"//modeloutdir/text()")
+    sapply(nodeSet,function(G){
+      text = file.path(outfolder, "out")
+      XML::xmlValue(G) = text
+    })
+    
+    nodeSet = XML::xpathApply(xml,"//outdir/text()")
+    replaceNodes(nodeSet[[3]], file.path(outfolder, "out"))
+    #replaceNodes(nodeSet[[1]], outfolder)
+    
+    
+    XML::saveXML(xml, file = file.path(getwd(),settings$xml.file))
+    settings = PEcAn.settings::prepare.settings(read.settings(unlist(settings$xml.file)))
+  } else {
+    outfolder = settings$outdir
+  }
+  settings$outfolder = outfolder
   adjustment <- settings$state.data.assimilation$adjustment
   model      <- settings$model$type
   write      <- settings$database$bety$write
@@ -74,7 +103,7 @@ sda.enkf.multisite <- function(settings,
   enkf.params <- list()
   restart.list <- NULL
   aqq         <- NULL
-
+  
   #q.bar        <- NULL #default process covariance matrix
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
@@ -83,6 +112,7 @@ sda.enkf.multisite <- function(settings,
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
                           as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
   rownames(state.interval) <- var.names
+  
   #------------------------------Multi - site specific - settings
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
@@ -118,7 +148,7 @@ sda.enkf.multisite <- function(settings,
   obs.mean <- obs.mean[sapply(year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
   obs.cov <- obs.cov[sapply(year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
   # dir address based on the end date
-  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = FALSE)
+  if(!dir.exists(outfolder)) dir.create(outfolder,showWarnings = FALSE)
   #--get model specific functions
   do.call("library", list(paste0("PEcAn.", model)))
   my.write_restart <- paste0("write_restart.", model)
@@ -161,27 +191,28 @@ sda.enkf.multisite <- function(settings,
   if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
   bqq         <- numeric(nt + 1)
   
-
+  
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###----   
   if (restart){
     
-    if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
-    load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+    if(!file.exists(file.path(outfolder, "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
+    load(file.path(settings$outdir,"sda.output.Rdata"))
     
     #this is where the old simulation will be moved to
     old.dir <- lubridate::year(names(FORECAST)) %>% tail(1)
     #--- Updating the nt and etc
-    if(!dir.exists(file.path(settings$outdir,"SDA",old.dir))) dir.create(file.path(settings$outdir,"SDA",old.dir))
+    if(!dir.exists(file.path(settings$outdir,old.dir))) dir.create(file.path(settings$outdir,old.dir))
     # finding/moving files to it's end year dir
-    files.last.sda <- list.files(file.path(settings$outdir,"SDA"))
+    files.last.sda <- list.files(file.path(settings$outdir))
     #copying
-    file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
-              file.path(file.path(settings$outdir,"SDA"),paste0(old.dir,"/",files.last.sda))
+    file.copy(file.path(file.path(settings$outdir),files.last.sda),
+              file.path(file.path(settings$outdir),paste0(old.dir,"/",files.last.sda))
     )
     params<-new.params
     sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
+    
     
     X <-FORECAST[[length(FORECAST)]]
     
@@ -225,7 +256,7 @@ sda.enkf.multisite <- function(settings,
   
   
   ###-------------------------------------------------------------------###
-
+  
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###----
@@ -253,7 +284,7 @@ sda.enkf.multisite <- function(settings,
       parent_ids = NULL 
     )
   }) 
- 
+  
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###---- 
@@ -336,7 +367,7 @@ sda.enkf.multisite <- function(settings,
           # Loading the model package - this is required bc of the furrr
           library(paste0("PEcAn.",model), character.only = TRUE)
           # wrtting configs for each settings - this does not make a difference with the old code
-          write.ensemble.configs(
+          PEcAn.uncertainty::write.ensemble.configs(
             defaults = settings$pfts,
             ensemble.samples = ensemble.samples,
             settings = settings,
@@ -355,24 +386,19 @@ sda.enkf.multisite <- function(settings,
       #-------------------------------------------- RUN
       tic(paste0("Running models for cycle = ", t))
       if (control$debug) browser()
-      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+      PEcAn.remote::start.model.runs(settings, settings$database$bety$write) 
+      
       
       # this is the option to force job.sh files that are randomly not being run by the SDA
-      if (forceRun)
+      if (forceRun & t > 1)
       {
-        # quick fix for job.sh files not getting run
-        folders <- list.files(path = paste0(settings$outdir, "/SDA/out"), include.dirs = TRUE, full.names = TRUE)
+        folders <- list.files(path = settings$modeloutdir, include.dirs = TRUE, full.names = TRUE)
+        folders_short = list.files(path = settings$modeloutdir)
         for (i in seq_along(folders))
         {
-          files <- list.files(path = folders[i], pattern = ".nc")
-          remove <- grep(files, pattern = '.nc.var')
-          if (length(remove) > 0)
+          if (!(file.exists(file.path(folders[i],paste0("sipnet.", restart.list[[1]]$start.time, ".out")))))
           {
-            files <- files[-remove]
-          }
-          if (!(paste0(obs.year, '.nc') %in% files))
-          {
-            bad <- paste0("job.sh file not run for this .nc file ", folders[i], "/", obs.year, ".nc")
+            bad <- paste0("job.sh file not run for this .nc file ", folders_short[i], "/", obs.t)
             PEcAn.logger::logger.warn(paste0("WARNING: ", bad))
             file <- paste0(gsub("out", "run", folders[i]), "/", "job.sh")
             system(paste0("sh ", file))
@@ -383,6 +409,7 @@ sda.enkf.multisite <- function(settings,
       
       tic(paste0("Preparing for Analysis for cycle = ", t))
       #------------------------------------------- Reading the output
+      
       if (control$debug) browser()
       #--- Reading just the first run when we have all years and for VIS
       
@@ -402,7 +429,8 @@ sda.enkf.multisite <- function(settings,
                                            stop.time =  stop.date,
                                            settings = settings,
                                            var.names = var.names,
-                                           params = new.params[[i]]
+                                           params = new.params[[i]],
+                                           daily = daily
                                          )
                   )
                   
@@ -435,7 +463,8 @@ sda.enkf.multisite <- function(settings,
                                      stop.time = obs.times[t],
                                      settings = settings,
                                      var.names = var.names,
-                                     params = new.params[[i]]
+                                     params = new.params[[i]],
+                                     daily = daily
                                    )
             )
             
@@ -623,7 +652,7 @@ sda.enkf.multisite <- function(settings,
            enkf.params,
            new.state, new.params,params.list,
            out.configs, ensemble.samples, inputs, Viz.output,
-           file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+           file = file.path(settings$outfolder, "sda.output.Rdata"))
       
       tic(paste0("Visulization for cycle = ", t))
       
@@ -631,7 +660,7 @@ sda.enkf.multisite <- function(settings,
       
       if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
       #Saving the profiling result
-      if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
+      if (control$Profiling) alltocs(file.path(settings$outfolder, "Profiling.csv"))
       
     # },error = function(e) {
     #   # If it breaks at some steps then I lose all the info on the other variables that worked fine up to the step before the break
@@ -650,19 +679,19 @@ sda.enkf.multisite <- function(settings,
     # remove files as SDA runs
     if (!(keepNC))
     {
-      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+      unlink(list.files(settings$outfolder, "*.nc", recursive = TRUE, full.names = TRUE))
     } 
     # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
     if (keepNC && t == 1)
     {
-      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+      unlink(list.files(settings$outfolder, "*.nc", recursive = TRUE, full.names = TRUE))
     }
     
   } ### end loop over time
   #output list of job.sh files that were force run
   if (forceRun)
   {
-    write.csv(bad_run, file = paste0(getwd(), "/SDA/job_files_force_run.csv"))
+    write.csv(bad_run, file = paste0(settings$outfolder, "_job_files_force_run.csv"))
   }
   
 } # sda.enkf
