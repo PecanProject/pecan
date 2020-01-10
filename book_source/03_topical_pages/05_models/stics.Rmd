@@ -27,8 +27,7 @@ STICS is configured using different XML files located in two fixed directories: 
 
 **Installation notes**
 
-The software (JavaStics interface and STICS model) is available for download after a registration procedure (see
-procedure at http://www6.paca.inra.fr/stics_eng/ Download). It is usable in the Windows, linux and Mac OS
-environments.
+The software (JavaStics interface and STICS model) is available for download after a registration procedure (see procedure at http://www6.paca.inra.fr/stics_eng/ Download). 
+
 
 **VM**
