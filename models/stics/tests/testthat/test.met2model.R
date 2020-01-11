@@ -5,7 +5,6 @@ setup(dir.create(outfolder, showWarnings = FALSE))
 teardown(unlink(outfolder, recursive = TRUE))
 
 test_that("Met conversion runs without error", {
-  skip("This is a template test that will not run. To run it, remove this `skip` call.")
   nc_path <- system.file("test-data", "CRUNCEP.2000.nc",
                          package = "PEcAn.utils")
   in.path <- dirname(nc_path)
