@@ -11,7 +11,8 @@ Description: This module provides functions to link the STICS to PEcAn.
 Imports:
     PEcAn.DB,
     PEcAn.logger,
-    PEcAn.utils (>= 1.4.8)
+    PEcAn.utils (>= 1.4.8),
+    dplyr
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: STICS
