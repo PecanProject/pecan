@@ -19,6 +19,8 @@ met2model.STICS(in.path, in.prefix, outfolder, start_date, end_date,
 \item{end_date}{end date of the simulation}
 
 \item{overwrite}{logical: replace output files if they already exist?}
+
+\item{...}{other arguments passed to function}
 }
 \value{
 results

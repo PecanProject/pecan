@@ -17,6 +17,8 @@ model2netcdf.STICS(outdir, sitelat, sitelon, start_date, end_date,
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
+
+\item{overwrite}{Whether or not to overwrite existing output files}
 }
 \description{
 Convert STICS output into the NACP Intercomparison format (ALMA using netCDF)

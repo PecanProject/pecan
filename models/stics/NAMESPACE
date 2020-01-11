@@ -3,3 +3,4 @@
 export(met2model.STICS)
 export(model2netcdf.STICS)
 export(write.config.STICS)
+importFrom(dplyr,"%>%")
