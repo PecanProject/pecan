@@ -15,6 +15,7 @@ This section will contain information about all models and output variables that
 | [MAESPA](#models-maespa)| Yes | Yes | No | No |
 | [PRELES](#models-preles) | Yes | Yes | Partially | No |
 | [SiPNET](#models-sipnet)| Yes | Yes | Yes| Yes |
+| [STICS](#models-stics)| Yes | Yes | No | No |
 
 *Available in the VM* - Denotes if a model is publicly available with PEcAn.
 
@@ -30,4 +31,3 @@ This section will contain information about all models and output variables that
 PEcAn converts all model outputs to a single [Output Standards]. This standard evolved out of MsTMIP project, which is itself based on NACP, LBA, and other model-intercomparison projects. This standard was expanded for the PalEON MIP and the needs of the PEcAn modeling community to support variables not in these standards.
 
 _Model developers_: do not add variables to your PEcAn output without first adding them to the PEcAn standard table! Also, do not create new variables equivalent to existing variables but just with different names or units. 
-
