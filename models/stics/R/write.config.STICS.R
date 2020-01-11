@@ -19,6 +19,7 @@
 ##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
+##' @importFrom dplyr "%>%"
 ##' @return configuration file for STICS for given run
 ##' @export
 ##' @author Istem Fer

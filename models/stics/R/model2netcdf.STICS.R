@@ -18,6 +18,7 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
+##' @param overwrite Whether or not to overwrite existing output files 
 ##' @export
 ##'
 ##' @author Istem Fer
@@ -28,7 +29,7 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
   out_files <- list.files(outdir)
   
   stics_out_file <- file.path(outdir, out_files[grepl("mod_s.*", out_files)])
-  stics_output   <- read.table(stics_out_file, header = T, sep = ";")
+  stics_output   <- utils::read.table(stics_out_file, header = T, sep = ";")
   
   simulation_years <- unique(stics_output$ian)
   

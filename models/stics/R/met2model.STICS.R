@@ -19,6 +19,7 @@
 ##' @param start_date start date of the simulation
 ##' @param end_date end date of the simulation
 ##' @param overwrite logical: replace output files if they already exist?
+##' @param ... other arguments passed to function
 ##' @return results 
 ##' @export
 ##' @author Istem Fer
@@ -172,7 +173,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       PEcAn.logger::logger.severe(old.file, " does not exist.")
     }
 
-    write.table(weather_df, file = out.files.full[ctr], col.names = FALSE, row.names = FALSE)
+    utils::write.table(weather_df, file = out.files.full[ctr], col.names = FALSE, row.names = FALSE)
     ctr <- ctr + 1
     
   } ## end-loop over files
