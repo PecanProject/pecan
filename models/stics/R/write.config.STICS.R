@@ -176,7 +176,21 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   ## skipping for now
   
   
+  ############################## Param gen / newform ####################################
   
+  ## DO NOTHING
+  gen_xml  <- XML::xmlParse(system.file("param_gen.xml", package = "PEcAn.STICS"))
+  gen_list <- XML::xmlToList(gen_xml)
+  XML::saveXML(PEcAn.settings::listToXml(gen_list, "fichierpar"), 
+               file = file.path(rundir, "param_gen.xml"), 
+               prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+  
+  newf_xml  <- XML::xmlParse(system.file("param_newform.xml", package = "PEcAn.STICS"))
+  newf_list <- XML::xmlToList(newf_xml)
+  XML::saveXML(PEcAn.settings::listToXml(newf_list, "fichierparamgen"), 
+               file = file.path(rundir, "param_newform.xml"), 
+               prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+
   
   ############################ Prepare Technical File ##################################
   
@@ -323,10 +337,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # symlink to binary
   file.symlink(stics_path, bindir)
-  
-  ## copy files to config
-  file.copy(c(file.path(gsub("bin","config", dirname(stics_path)), "param_gen.xml"), 
-              file.path(gsub("bin","config", dirname(stics_path)), "param_newform.xml")), rundir)
   
   # generate STICS input files using JavaStics
   jexe <- file.path(gsub("bin","", dirname(stics_path)), "JavaSticsCmd.exe")
