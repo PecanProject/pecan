@@ -98,18 +98,30 @@ SatVapPres <- function(T) {
 
 ##' Calculate RH from temperature and dewpoint
 ##'
-##' Based on equation 12 ( in Lawrence 2005, The Relationship between
+##' Based on equation 12 in Lawrence 2005, The Relationship between
 ##' Relative Humidity and the Dewpoint Temperature in Moist Air
-##' A Simple Conversion and Applications.)
+##' A Simple Conversion and Applications. BAMS
+##' https://doi.org/10.1175/BAMS-86-2-225
+##' R = 461.5 K-1 kg-1 gas constant H2O
+##' L enthalpy of vaporization 
+##' linear dependence on T (p 226, following eq 9)
+##' 
 ##' @title get RH
-##' @param T temperature
-##' @param Td dewpoint
-##' @return numeric vector
+##' @param T air temperature, Kelvin
+##' @param Td dewpoint, Kelvin
+##' @return Relative Humidity numeric vector
 ##' @export
 ##' @author David LeBauer
 get.rh <- function(T, Td) {
-  arg <- -L / (Rw * T * Td) * (T - Td)
-  return(100 * exp(-L / (Rw * T * Td) * (T - Td)))
+  if(Td >= T){
+    rh <- 100
+  } else {
+    Rw <- 461.5 # gas constant for water vapor, J K-1 kg-1
+    L <- 2.501e6 + (T-273.15) * (-2430) 
+    arg <- -L / (Rw * T * Td) * (T - Td)
+    rh <- 100 * exp(arg)
+  }
+  return(rh)
 } # get.rh
 
 ##' Convert raster to lat, lon, var
