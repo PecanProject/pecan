@@ -36,11 +36,14 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   bindir  <- file.path(settings$host$rundir, run.id, "bin")
   outdir  <- file.path(settings$host$outdir, run.id)
   
+  ## make sure rundir and outdir exist
+  dir.create(rundir, showWarnings = FALSE, recursive = TRUE)
+  dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   
   ## create plant, config and bin dirs
-  dir.create(pltdir)
-  dir.create(cfgdir)
-  dir.create(bindir)
+  dir.create(pltdir, showWarnings = FALSE, recursive = TRUE)
+  dir.create(cfgdir, showWarnings = FALSE, recursive = TRUE)
+  dir.create(bindir, showWarnings = FALSE, recursive = TRUE)
   
   # write preferences
   prf_xml  <- XML::xmlParse(system.file("preferences.xml", package = "PEcAn.STICS"))

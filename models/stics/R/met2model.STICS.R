@@ -53,7 +53,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
   
   ## check to see if the outfolder is defined, if not create directory for output
   if (!file.exists(outfolder)) {
-    dir.create(outfolder)
+    dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   }
   
   ctr <- 1
