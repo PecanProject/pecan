@@ -9,9 +9,16 @@ Authors@R: c(
     role = c("aut", "cre")))
 Description: This module provides functions to link the STICS to PEcAn.
 Imports:
+    PEcAn.settings,
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8),
+    PEcAn.remote,
+    lubridate,
+    ncdf4,
+    purrr,
+    XML,
+    udunits2,
     dplyr
 Suggests:
     testthat (>= 1.0.2)
