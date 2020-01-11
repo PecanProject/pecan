@@ -89,7 +89,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
     weather_df <- as.data.frame(matrix( -999.9, nrow = NDAYS, ncol = NWEATHER))
     
     # prepare data frame for STICS format, daily inputs, but doesn't have to be full year
-    weather_df[ ,1] <- rep(gsub(".*_STICS_site_","", outfolder), NDAYS) # column 1: name of weather file
+    weather_df[ ,1] <- rep(gsub(".*_STICS_site_", "", outfolder), NDAYS) # column 1: name of weather file
     weather_df[ ,2] <- rep(year, NDAYS) # column 2: year
     start_month <- ifelse(year == start_year, paste0(start_date), paste0(year, "/01/01"))
     end_month   <- ifelse(year == end_year,   paste0(end_date),   paste0(year, "/12/31"))
