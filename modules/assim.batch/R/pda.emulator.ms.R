@@ -78,7 +78,7 @@ pda.emulator.ms <- function(multi.settings) {
       repeat{
         PEcAn.logger::logger.info("Multi-site calibration running. Please wait.")
         Sys.sleep(300)
-        check_all_sites <- sapply(emulator_jobs, qsub_run_finished,  multi.settings[[1]]$host, multi.settings[[1]]$host$qstat)
+        check_all_sites <- sapply(emulator_jobs, PEcAn.remote::qsub_run_finished,  multi.settings[[1]]$host, multi.settings[[1]]$host$qstat)
         if(all(check_all_sites)) break
       }
       
@@ -148,11 +148,11 @@ pda.emulator.ms <- function(multi.settings) {
 
   ## Open database connection
   if (multi.settings$database$bety$write) {
-    con <- try(db.open(multi.settings$database$bety), silent = TRUE)
+    con <- try(PEcAn.DB::db.open(multi.settings$database$bety), silent = TRUE)
     if (is(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(db.close(con))
+      on.exit(PEcAn.DB::db.close(con))
     }
   } else {
     con <- NULL
@@ -196,7 +196,7 @@ pda.emulator.ms <- function(multi.settings) {
     dcores <- parallel::detectCores() - 1
     ncores <- min(max(dcores, 1), multi.settings[[1]]$assim.batch$chain)
      
-    logger.setOutputFile(file.path(multi.settings$outdir, "pda.log"))
+    PEcAn.logger::logger.setOutputFile(file.path(multi.settings$outdir, "pda.log"))
      
     cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(multi.settings$outdir, "pda.log"))
     
@@ -224,7 +224,7 @@ pda.emulator.ms <- function(multi.settings) {
     
     # Stop the clock
     ptm.finish <- proc.time() - ptm.start
-    logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
+    PEcAn.logger::logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
     
     current.step <- "END OF JOINT MCMC"
     save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)
@@ -345,7 +345,7 @@ pda.emulator.ms <- function(multi.settings) {
     dcores <- parallel::detectCores() - 1
     ncores <- min(max(dcores, 1), tmp.settings$assim.batch$chain)
      
-    logger.setOutputFile(file.path(tmp.settings$outdir, "pda.log"))
+    lPEcAn.logger::ogger.setOutputFile(file.path(tmp.settings$outdir, "pda.log"))
     
     cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(tmp.settings$outdir, "pda.log"))
     
@@ -368,7 +368,7 @@ pda.emulator.ms <- function(multi.settings) {
     
     # Stop the clock
     ptm.finish <- proc.time() - ptm.start
-    logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
+    PEcAn.logger::logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(tmp.settings$assim.batch$iter), " iterations."))
     
     current.step <- "HIERARCHICAL MCMC END"
     save(list = ls(all.names = TRUE),envir=environment(),file=hbc.restart.file)

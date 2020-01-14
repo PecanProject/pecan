@@ -70,7 +70,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   # mean hyperprior
   mu_global_mean  <- apply(mu_init_samp, 2, mean)
   # sigma/tau hyperprior
-  mu_global_sigma <- cov(mu_init_samp)
+  mu_global_sigma <- stats::cov(mu_init_samp)
   mu_global_tau   <- solve(mu_global_sigma)
   
   ## initialize mu_global (nparam)
@@ -216,11 +216,11 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     mu_site_new <- matrix(rep(proposed, nsites),ncol=nparam, byrow = TRUE)
     
     # re-predict current SS
-    currSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
+    currSS <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
     currSS <- matrix(currSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
     
     # calculate posterior
-    currLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(currSS[,v], llik.fn, currllp[[v]]))
+    currLL    <- sapply(seq_len(nsites), function(v) PEcAn.assim.batch::pda.calc.llik(currSS[,v], llik.fn, currllp[[v]]))
     # use new priors for calculating prior probability
     currPrior <- mvtnorm::dmvnorm(mu_site_curr, mu_global, sigma_global, log = TRUE)
     currPost  <- currLL + currPrior
@@ -233,12 +233,12 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     })
     
     # predict new SS
-    newSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_new[v,], pos.check))
+    newSS <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_new[v,], pos.check))
     newSS <- matrix(newSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
     
     # calculate posterior
-    newllp   <- lapply(seq_len(nsites), function(v) pda.calc.llik.par(settings, nstack[[v]], newSS[,v]))
-    newLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(newSS[,v], llik.fn, newllp[[v]]))
+    newllp   <- lapply(seq_len(nsites), function(v) PEcAn.assim.batch::pda.calc.llik.par(settings, nstack[[v]], newSS[,v]))
+    newLL    <- sapply(seq_len(nsites), function(v) PEcAn.assim.batch::pda.calc.llik(newSS[,v], llik.fn, newllp[[v]]))
     # use new priors for calculating prior probability
     newPrior <- mvtnorm::dmvnorm(mu_site_new, mu_global, sigma_global, log = TRUE)
     newPost  <- newLL + newPrior
@@ -251,7 +251,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     })
     
     # Accept/reject with MH rule
-    ar <- is.accepted(currPost + currHR, newPost + newHR)
+    ar <- PEcAn.emulator::is.accepted(currPost + currHR, newPost + newHR)
     mu_site_curr[ar, ] <- mu_site_new[ar, ]
     musite.accept.count[thissite] <- musite.accept.count[thissite] + ar[thissite]
     
