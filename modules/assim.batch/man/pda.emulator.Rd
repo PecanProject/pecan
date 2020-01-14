@@ -50,7 +50,7 @@ pda.emulator(settings, external.data = NULL, external.priors = NULL,
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions
- are saved as files and db records.
+are saved as files and db records.
 }
 \description{
 Paramater Data Assimilation using emulator

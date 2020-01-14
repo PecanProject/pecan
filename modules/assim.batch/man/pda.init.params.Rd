@@ -17,8 +17,8 @@ pda.init.params(settings, chain, pname, n.param.all)
 }
 \value{
 A list containing 'start' and 'finish' counters for MCMC, as well as the params
-        table, which is an empty matrix concatenated to any param samples from a previous
-        PDA run, if provided.
+table, which is an empty matrix concatenated to any param samples from a previous
+PDA run, if provided.
 }
 \description{
 Initialise Parameter Matrix for PDA

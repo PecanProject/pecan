@@ -220,7 +220,7 @@ Extensions’ manual.
 * checking for unstated dependencies in examples ... OK
 * checking files in ‘vignettes’ ... WARNING
 Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘AssimBatchVignette.html’, ‘AssimBatchVignette.Rmd’, ‘MultiSitePDAVignette.Rmd’
+  ‘AssimBatchVignette.html’, ‘AssimBatchVignette.Rmd’,   ‘MultiSitePDAVignette.Rmd’
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ...

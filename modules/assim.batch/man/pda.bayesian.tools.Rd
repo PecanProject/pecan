@@ -33,7 +33,7 @@ pda.bayesian.tools(settings, params.id = NULL, param.names = NULL,
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions
- are saved as files and db records.
+are saved as files and db records.
 }
 \description{
 Paramater Data Assimilation using BayesianTools R Package

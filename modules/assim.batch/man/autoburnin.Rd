@@ -9,10 +9,10 @@ autoburnin(jags_out, return.burnin = FALSE, ...)
 \arguments{
 \item{jags_out}{JAGS output}
 
-\item{return.burnin}{Logical. If `TRUE`, return burnin value in addition to 
+\item{return.burnin}{Logical. If \code{TRUE}, return burnin value in addition to
 samples (as list). Default = FALSE.}
 
-\item{...}{Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 
+\item{...}{Additional arguments for \code{getBurnin}, \code{gelman_diag_mw},
 and \code{gelman.diag}.}
 }
 \description{
