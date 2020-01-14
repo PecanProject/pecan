@@ -133,6 +133,8 @@ pda.emulator.ms <- function(multi.settings) {
   
   resume.list <- vector("list", multi.settings[[1]]$assim.batch$chain)
   
+  SS <- NULL # will be loaded from history objects next loop,  but R CMD check can't see that
+  
   # collect GPs and SSs
   for(s in seq_along(multi.settings)){
     

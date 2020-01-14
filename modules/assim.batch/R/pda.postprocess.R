@@ -312,7 +312,7 @@ pda.sort.params <- function(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, 
     sc <- 1
     for (i in seq_along(prior.ind.all.ns)) {
       sf.check <- prior.all.rownames[prior.ind.all.ns][i]
-      idx <- grep(sf.check, rownames(prior.all)[prior.ind.all])
+      idx <- grep(sf.check, rownames(prior.all)[prior.ind.all.ns]) ## it used to be prior.ind.all, check if this was a typo
       if(any(grepl(sf.check, sf))){
         
         m[, i] <- eval(prior.fn.all$qprior[prior.ind.all.ns][[i]],

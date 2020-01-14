@@ -1079,7 +1079,7 @@ return_multi_site_objects <- function(multi.settings){
       sampled_knots <- sample_MCMC(file.path(settings$outdir, basename(settings$assim.batch$mcmc.path)), 
                                    n.param.orig, prior.ind.orig, 
                                    as.numeric(settings$assim.batch$n.knot), external_knots,
-                                   prior.list, prior.fn, sf, NULL)
+                                   prior_list, prior.fn, sf, NULL)
       collect_site_knots[[i]] <- do.call("cbind", sampled_knots$knots.params.temp)
     }
     
