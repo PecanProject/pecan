@@ -4,8 +4,8 @@ Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.7.1
 Date: 2019-09-05
 Authors@R: c(person("Mike","Dietze", role = c("aut", "cre"), email = "dietze@bu.edu"),
-             person("Istem","Fer"),
-             person("Ryan", "Kelly"))
+             person("Istem","Fer", role = "aut"),
+             person("Ryan", "Kelly", role = "aut"))
 Author: Mike Dietze, Istem Fer, Ryan Kelly
 Maintainer: Istem Fer <istem.fer@fmi.fi>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
