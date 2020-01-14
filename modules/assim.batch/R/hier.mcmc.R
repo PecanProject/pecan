@@ -54,7 +54,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   mu_global_tau   <- solve(mu_global_sigma)
   
   ## initialize mu_global (nparam)
-  mu_global <- rmvnorm(1, mu_global_mean, mu_global_sigma)
+  mu_global <- mvtnorm::rmvnorm(1, mu_global_mean, mu_global_sigma)
   
   
   ######  (hierarchical) global tau priors
@@ -202,7 +202,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     # calculate posterior
     currLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(currSS[,v], llik.fn, currllp[[v]]))
     # use new priors for calculating prior probability
-    currPrior <- dmvnorm(mu_site_curr, mu_global, sigma_global, log = TRUE)
+    currPrior <- mvtnorm::dmvnorm(mu_site_curr, mu_global, sigma_global, log = TRUE)
     currPost  <- currLL + currPrior
     
     # calculate jump probabilities
@@ -220,7 +220,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     newllp   <- lapply(seq_len(nsites), function(v) pda.calc.llik.par(settings, nstack[[v]], newSS[,v]))
     newLL    <- sapply(seq_len(nsites), function(v) pda.calc.llik(newSS[,v], llik.fn, newllp[[v]]))
     # use new priors for calculating prior probability
-    newPrior <- dmvnorm(mu_site_new, mu_global, sigma_global, log = TRUE)
+    newPrior <- mvtnorm::dmvnorm(mu_site_new, mu_global, sigma_global, log = TRUE)
     newPost  <- newLL + newPrior
     
     # calculate jump probabilities
