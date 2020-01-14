@@ -4,7 +4,7 @@
 \alias{update.mvjump}
 \title{update.mvjump}
 \usage{
-update.mvjump(jmp, chain)
+\method{update}{mvjump}(jmp, chain)
 }
 \description{
 update.mvjump

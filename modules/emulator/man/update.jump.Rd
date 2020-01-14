@@ -4,7 +4,7 @@
 \alias{update.jump}
 \title{update.jump}
 \usage{
-update.jump(jmp, chain)
+\method{update}{jump}(jmp, chain)
 }
 \arguments{
 \item{jmp}{jump parameter}

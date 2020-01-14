@@ -179,20 +179,21 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @title mcmc.GP
 ##' @export
 ##'
-##' @param gp
-##' @param x0 
-##' @param nmcmc
-##' @param rng
+##' @param gp Gaussian Process
+##' @param x0 initial values
+##' @param nmcmc number of iterations
+##' @param rng range of knots
 ##' @param format lin = lnlike fcn, log = log(lnlike)
 ##' @param mix each = jump each dim. independently, joint = jump all at once 
-##' @param splinefcns
-##' @param jmp0
-##' @param ar.target
-##' @param priors
+##' @param splinefcns spline functions, not used
+##' @param jmp0 initial jump variances
+##' @param ar.target acceptance rate target
+##' @param settings PEcAn settings list
+##' @param priors prior list
 ##' @param run.block is this a new run or making the previous chain longer
 ##' @param n.of.obs number of observations
 ##' @param llik.fn list that contains likelihood functions
-##' @param hyper.pars 
+##' @param hyper.pars hyper parameters
 ##' @param resume.list list of needed info if we are running the chain longer
 ##' 
 ##' @author Michael Dietze
