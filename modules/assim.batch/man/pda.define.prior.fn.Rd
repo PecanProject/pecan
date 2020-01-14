@@ -7,7 +7,7 @@
 pda.define.prior.fn(prior)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{prior}{prior dataframe}
 }
 \value{
 List of prior functions containing dprior, rprior, qprior, dmvprior, rmvprior.

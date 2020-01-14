@@ -1,10 +1,22 @@
 ##' Paramater Data Assimilation using emulator
 ##'
 ##' @title Paramater Data Assimilation using emulator
-##' @param settings = a pecan settings list
-##' @param external.data = list of inputs
-##' @param external.priors = list or priors
-##' @param  external.knots = list of knots
+##' @param settings  a pecan settings list
+##' @param external.data  list of external inputs
+##' @param external.priors  list of external priors
+##' @param  external.knots  list of external knots
+##' @param external.formats bety formats used when function is used without a DB connection, e.g. remote
+##' @param params.id id of pars
+##' @param param.names names of pars
+##' @param prior.id ids of priors
+##' @param chain how many chains
+##' @param iter how many iterations
+##' @param adapt adaptation intervals
+##' @param adj.min to be used in adjustment
+##' @param ar.target acceptance rate target
+##' @param jvar jump variance
+##' @param n.knot number of knots requested
+##' @param run.round another round or not
 ##'
 ##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
 ##'  are saved as files and db records.

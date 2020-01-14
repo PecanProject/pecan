@@ -12,13 +12,37 @@ pda.emulator(settings, external.data = NULL, external.priors = NULL,
   remote = FALSE)
 }
 \arguments{
-\item{settings}{= a pecan settings list}
+\item{settings}{a pecan settings list}
 
-\item{external.data}{= list of inputs}
+\item{external.data}{list of external inputs}
 
-\item{external.priors}{= list or priors}
+\item{external.priors}{list of external priors}
 
-\item{external.knots}{= list of knots}
+\item{external.knots}{list of external knots}
+
+\item{external.formats}{bety formats used when function is used without a DB connection, e.g. remote}
+
+\item{params.id}{id of pars}
+
+\item{param.names}{names of pars}
+
+\item{prior.id}{ids of priors}
+
+\item{chain}{how many chains}
+
+\item{iter}{how many iterations}
+
+\item{adapt}{adaptation intervals}
+
+\item{adj.min}{to be used in adjustment}
+
+\item{ar.target}{acceptance rate target}
+
+\item{jvar}{jump variance}
+
+\item{n.knot}{number of knots requested}
+
+\item{run.round}{another round or not}
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions

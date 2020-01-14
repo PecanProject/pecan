@@ -189,6 +189,11 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @param jmp0
 ##' @param ar.target
 ##' @param priors
+##' @param run.block is this a new run or making the previous chain longer
+##' @param n.of.obs number of observations
+##' @param llik.fn list that contains likelihood functions
+##' @param hyper.pars 
+##' @param resume.list list of needed info if we are running the chain longer
 ##' 
 ##' @author Michael Dietze
 mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 

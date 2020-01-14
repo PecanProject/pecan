@@ -33,6 +33,8 @@ assim.batch <- function(settings) {
 } # assim.batch
 
 
+##' Run Batch module
+##' @param settings a PEcAn settings list
 ##' @export
 runModule.assim.batch <- function(settings) {
   if (is.MultiSettings(settings)) {
@@ -53,7 +55,18 @@ runModule.assim.batch <- function(settings) {
 ##' Set PDA Settings
 ##'
 ##' @title Set PDA Settings
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings a PEcAn settings list
+##' @param params.id id of pars
+##' @param param.names names of pars
+##' @param prior.id ids of priors
+##' @param chain how many chains
+##' @param iter how many iterations
+##' @param adapt adaptation intervals
+##' @param adj.min to be used in adjustment
+##' @param ar.target acceptance rate target
+##' @param jvar jump variance
+##' @param n.knot number of knots requested
+##' @param run.round another round or not
 ##'
 ##' @return An updated settings list
 ##'
@@ -222,7 +235,9 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
 ##' Load Priors for Paramater Data Assimilation
 ##'
 ##' @title Load Priors for Paramater Data Assimilation
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings a PEcAn settings list
+##' @param con database connection
+##' @param extension.check check if this is another round or longer run
 ##'
 ##' @return A previously-generated posterior distribution, to be used as the prior for PDA.
 ##'
@@ -340,7 +355,9 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
 ##' Create PDA Ensemble
 ##'
 ##' @title Create ensemble record for PDA ensemble
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings a PEcAn settings list
+##' @param con DB connection
+##' @param workflow.id workflow ID
 ##'
 ##' @return Ensemble ID of the created ensemble
 ##'
@@ -372,7 +389,7 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
 ##' Define PDA Prior Functions
 ##'
 ##' @title Define PDA Prior Functions
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param prior prior dataframe
 ##'
 ##' @return List of prior functions containing dprior, rprior, qprior, dmvprior, rmvprior.
 ##'         Each of these is a list with one distribution function per parameter.
@@ -422,7 +439,10 @@ pda.define.prior.fn <- function(prior) {
 ##' Initialise Parameter Matrix for PDA
 ##'
 ##' @title Initialise Parameter Matrix for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings a PEcAn settings list
+##' @param chain number of chain
+##' @param pname parameter name
+##' @param n.param.all number of all params
 ##'
 ##' @return A list containing 'start' and 'finish' counters for MCMC, as well as the params
 ##'         table, which is an empty matrix concatenated to any param samples from a previous
@@ -460,7 +480,13 @@ pda.init.params <- function(settings, chain, pname, n.param.all) {
 ##' Initialise Model Runs for PDA
 ##'
 ##' @title Initialise Model Runs for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings a PEcAn settings list
+##' @param con DB connection
+##' @param my.write.config model write config fcn name
+##' @param workflow.id workflow ID
+##' @param params parameters of the run
+##' @param n number of runs
+##' @param run.names names of runs
 ##'
 ##' @return Vector of run IDs for all model runs that were set up (including write.configs)
 ##'
@@ -549,7 +575,10 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
 ##' Adjust PDA MCMC jump size
 ##'
 ##' @title Adjust PDA MCMC jump size
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings a PEcAn settings list
+##' @param jmp.list list of jump variances
+##' @param accept.rate acceptance rate
+##' @param pnames parameter names
 ##'
 ##' @return A PEcAn settings list updated to reflect adjusted jump distributions
 ##'
@@ -577,7 +606,10 @@ pda.adjust.jumps <- function(settings, jmp.list, accept.rate, pnames = NULL) {
 ##' Adjust PDA blcok MCMC jump size
 ##'
 ##' @title Adjust PDA block MCMC jump size
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings a PEcAn settings list
+##' @param jcov jump covariance matrix
+##' @param accept.count aceeptance count
+##' @param params.recent parameters accepted since previous adjustment
 ##'
 ##' @return A PEcAn settings list updated to reflect adjusted jump distributions
 ##'
@@ -622,7 +654,13 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 ##' Generate Parameter Knots for PDA Emulator
 ##'
 ##' @title Generate Parameter Knots for PDA Emulator
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param n.knot number of knots
+##' @param sf scaling factor
+##' @param prob.sf values for sf
+##' @param n.param.all number of all params
+##' @param prior.ind indices of targeted parameters in the prior dataframe
+##' @param prior.fn list of prior functions
+##' @param pname name of parameters
 ##'
 ##' @return A list of probabilities and parameter values, with one row for each knot in the emulator.
 ##'
@@ -660,6 +698,10 @@ pda.generate.knots <- function(n.knot, sf, probs.sf, n.param.all, prior.ind, pri
 
 ##' Generate scaling factor knots for PDA Emulator
 ##'
+##' @param n.knot number of knots
+##' @param sf scaling factor
+##' @param prior.list list of prior dataframes
+##' 
 ##' @author Istem Fer
 ##' @export
 pda.generate.sf <- function(n.knot, sf, prior.list){
@@ -770,6 +812,10 @@ return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, ru
 
 
 ##' @title return_hyperpars
+##' 
+##' @param assim.settings PEcAn settings list
+##' @param inputs inputs list
+##' 
 ##' @author Istem Fer
 ##' @export
 return_hyperpars <- function(assim.settings, inputs){
@@ -960,10 +1006,12 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   
 }
 
-# This is a helper function partly uses pda.emulator code
+
 # It returns couple of objects that are to be passed externally to the pda.emulator for multi-site runs
 # These objects either require DB connection or should be common across sites
 # This function does require DB connection
+##' This is a helper function partly uses pda.emulator code
+##' @param multi.settings PEcAn multi settings object
 ##' @export
 return_multi_site_objects <- function(multi.settings){
   
@@ -1087,7 +1135,10 @@ return_multi_site_objects <- function(multi.settings){
 }
 
 
-# helper function for submitting remote pda runs
+##' helper function for submitting remote pda runs
+##' @param settings PEcAn settings list
+##' @param site site number (which site)
+##' @param multi_site_objects information needed for remote runs
 ##' @export
 prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   
@@ -1197,9 +1248,12 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   
 }
 
-# helper function for syncing remote pda runs
-# this function resembles remote.copy.from but we don't want to sync everything back
-# if register==TRUE, the last files returned will be registered to the DB
+##' helper function for syncing remote pda runs
+##' this function resembles remote.copy.from but we don't want to sync everything back
+##' 
+##' @param multi.settigns PEcAn multi settings
+##' @param ensembleidlist ensemble id list for remote runs
+##' @param register if register==TRUE, the last files returned will be registered to the DB, TO BE DONE
 ##' @export
 sync_pda_remote <- function(multi.settings, ensembleidlist, register = FALSE){
   

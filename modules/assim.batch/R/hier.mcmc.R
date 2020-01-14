@@ -1,3 +1,23 @@
+##' Hierarchical MCMC
+##'
+##' @title Hierarchical MCMC using emulator
+##' @param settings  a pecan settings list
+##' @param gp.stack list of GPs
+##' @param nstack list of number of observations, currently not used
+##' @param nmcmc number of MCMC iterations
+##' @param rng_orig range of knots
+##' @param jmp0 initial jump vars
+##' @param mu_site_init initial parameter values per site
+##' @param nparam number of parameters
+##' @param nsites number of sites
+##' @param prior.fn.all list of prior functions
+##' @param prior.ind.all indices of targeted parameters
+##'
+##'
+##' @author Istem Fer
+##' @export
+##' 
+
 ########### hierarchical MCMC function with Gibbs ##############
 
 

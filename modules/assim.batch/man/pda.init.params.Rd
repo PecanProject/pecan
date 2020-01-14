@@ -7,7 +7,13 @@
 pda.init.params(settings, chain, pname, n.param.all)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{settings}{a PEcAn settings list}
+
+\item{chain}{number of chain}
+
+\item{pname}{parameter name}
+
+\item{n.param.all}{number of all params}
 }
 \value{
 A list containing 'start' and 'finish' counters for MCMC, as well as the params

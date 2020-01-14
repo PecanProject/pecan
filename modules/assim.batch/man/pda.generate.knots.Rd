@@ -8,7 +8,19 @@ pda.generate.knots(n.knot, sf, probs.sf, n.param.all, prior.ind, prior.fn,
   pname)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{n.knot}{number of knots}
+
+\item{sf}{scaling factor}
+
+\item{n.param.all}{number of all params}
+
+\item{prior.ind}{indices of targeted parameters in the prior dataframe}
+
+\item{prior.fn}{list of prior functions}
+
+\item{pname}{name of parameters}
+
+\item{prob.sf}{values for sf}
 }
 \value{
 A list of probabilities and parameter values, with one row for each knot in the emulator.
