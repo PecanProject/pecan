@@ -6,6 +6,7 @@
 #' @param width Width of moving window. Default is niter(x)*width_fraction
 #' @param njump Number of windows to calculate over
 #' @param include.mpsrf Whether to calculate multivariate PSRF and include in output (default = FALSE).
+#' @param ... additional arguments
 #' @return Gelman Diagnostic 3D array. First dim -- mean (1) and 95% confidence (2). Second dim -- iteration
 #' @export
 gelman_diag_mw <- function(x,

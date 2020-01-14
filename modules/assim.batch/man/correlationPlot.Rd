@@ -15,6 +15,8 @@ correlationPlot(mat, density = "smooth", thin = "auto",
 \item{thin}{thinning of the matrix to make things faster. Default is to thin to 5000}
 
 \item{method}{method for calculating correlations}
+
+\item{whichParameters}{all params or some}
 }
 \description{
 numeric matrix or data.frame

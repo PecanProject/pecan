@@ -10,6 +10,26 @@ pda.bayesian.tools(settings, params.id = NULL, param.names = NULL,
 }
 \arguments{
 \item{settings}{= a pecan settings list}
+
+\item{params.id}{id of pars}
+
+\item{param.names}{names of pars}
+
+\item{prior.id}{ids of priors}
+
+\item{chain}{how many chains}
+
+\item{iter}{how many iterations}
+
+\item{adapt}{adaptation intervals}
+
+\item{adj.min}{to be used in adjustment}
+
+\item{ar.target}{acceptance rate target}
+
+\item{jvar}{jump variance}
+
+\item{n.knot}{number of knots requested}
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions
@@ -19,7 +39,5 @@ nothing. Diagnostic plots, MCMC samples, and posterior distributions
 Paramater Data Assimilation using BayesianTools R Package
 }
 \author{
-Mike Dietze
-
-Istem Fer, Ryan Kelly
+Istem Fer
 }

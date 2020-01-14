@@ -8,6 +8,25 @@ pda.sort.params(mcmc.out, sub.sample = "mu_global_samp", ns = NULL,
   prior.all, prior.ind.all.ns, sf = NULL, n.param.orig, prior.list,
   prior.fn.all)
 }
+\arguments{
+\item{mcmc.out}{MCMC samples}
+
+\item{sub.sample}{which subsample to return}
+
+\item{ns}{site number}
+
+\item{prior.all}{prior dataframe}
+
+\item{prior.ind.all.ns}{indices of targeted parameters on the prior.all dataframe}
+
+\item{sf}{scaling factor if used}
+
+\item{n.param.orig}{original indices of parameters on the prior.list}
+
+\item{prior.list}{list of prior dataframes}
+
+\item{prior.fn.all}{prior functions}
+}
 \description{
 Function to sort Hierarchical MCMC samples
 }

@@ -17,6 +17,8 @@ gelman_diag_mw(x, width_fraction = 0.1, width = ceiling(coda::niter(x)
 \item{njump}{Number of windows to calculate over}
 
 \item{include.mpsrf}{Whether to calculate multivariate PSRF and include in output (default = FALSE).}
+
+\item{...}{additional arguments}
 }
 \value{
 Gelman Diagnostic 3D array. First dim -- mean (1) and 95% confidence (2). Second dim -- iteration

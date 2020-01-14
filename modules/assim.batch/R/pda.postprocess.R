@@ -1,7 +1,13 @@
 ##' Postprocessing for PDA Results
 ##'
 ##' @title Postprocessing for PDA Results
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings PEcAn settings list
+##' @param con DB connection
+##' @param mcmc.param.list output of PDA MCMC
+##' @param pname parameter names
+##' @param prior prior list
+##' @param prior.ind indices of targeted parameters
+##' @param sffx suffix to the output files, e.g. "hierarchical"
 ##'
 ##' @return PEcAn settings list, updated with <params.id> pointing to the new params file.
 ##'
@@ -127,7 +133,11 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
 ##' Plot PDA Parameter Diagnostics
 ##'
 ##' @title Plot PDA Parameter Diagnostics
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings PEcAn settings list
+##' @param mcmc.param.list MCMC param list to be sorted
+##' @param prior.ind indices of the targeted parameters
+##' @param par.file.name output file name
+##' @param sffx suffix to the output file names
 ##'
 ##' @return Nothing. Plot is generated and saved to PDF.
 ##'
@@ -239,6 +249,9 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
 
 
 ##' Function to write posterior distributions of the scaling factors
+##' @param sf.samp.list scaling factor MCMC samples
+##' @param sf.prior scaling factor prior 
+##' @param sf.samp.filename scaling factor posterior output file name
 ##' @export
 write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
   
@@ -268,6 +281,15 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
 
 
 ##' Function to sort Hierarchical MCMC samples
+##' @param mcmc.out MCMC samples
+##' @param sub.sample which subsample to return
+##' @param ns site number
+##' @param prior.all prior dataframe
+##' @param prior.ind.all.ns indices of targeted parameters on the prior.all dataframe
+##' @param sf scaling factor if used
+##' @param n.param.orig original indices of parameters on the prior.list
+##' @param prior.list list of prior dataframes
+##' @param prior.fn.all prior functions
 ##' @export
 pda.sort.params <- function(mcmc.out, sub.sample = "mu_global_samp", ns = NULL, prior.all, prior.ind.all.ns, 
                             sf = NULL, n.param.orig, prior.list, prior.fn.all){

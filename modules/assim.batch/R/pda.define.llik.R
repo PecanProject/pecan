@@ -1,7 +1,7 @@
 ##' Define PDA Likelihood Functions
 ##'
 ##' @title Define PDA Likelihood Functions
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings PEcAn settings list
 ##'
 ##' @return List of likelihood functions, one for each dataset to be assimilated against.
 ##'
@@ -44,6 +44,7 @@ pda.define.llik.fn <- function(settings) {
 ##'
 ##' @title Calculate sufficient statistics
 ##' @param settings list
+##' @param con DB connection
 ##' @param model_out list
 ##' @param inputs list
 ##' @param bias.terms matrix
@@ -158,7 +159,9 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
 ##' Calculate Likelihoods for PDA
 ##'
 ##' @title Calculate Likelihoods for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param pda.errors calculated errors
+##' @param llik.fn list of likelihood fcns
+##' @param llik.par parameters to be passed llik functions
 ##'
 ##' @return Total log likelihood (i.e., sum of log likelihoods for each dataset)
 ##'

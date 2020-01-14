@@ -8,7 +8,19 @@ pda.postprocess(settings, con, mcmc.param.list, pname, prior, prior.ind,
   sffx = NULL)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{settings}{PEcAn settings list}
+
+\item{con}{DB connection}
+
+\item{mcmc.param.list}{output of PDA MCMC}
+
+\item{pname}{parameter names}
+
+\item{prior}{prior list}
+
+\item{prior.ind}{indices of targeted parameters}
+
+\item{sffx}{suffix to the output files, e.g. "hierarchical"}
 }
 \value{
 PEcAn settings list, updated with <params.id> pointing to the new params file.
