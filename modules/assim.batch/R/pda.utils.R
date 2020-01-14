@@ -1222,10 +1222,10 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   #cheating. needs to be done after extracting all paths
   host_info <- settings$host
   
-  remote.execute.cmd(host_info, paste0("mkdir -p ", remote_dir,"/pft"))
+  PEcAn.remote::remote.execute.cmd(host_info, paste0("mkdir -p ", remote_dir,"/pft"))
   for(i in seq_along(settings$pfts)){
     settings$pfts[[i]]$outdir <- file.path(remote_dir, "pft", basename(settings$pfts[[i]]$outdir))
-    remote.execute.cmd(host_info, paste0("mkdir -p ", settings$pfts[[i]]$outdir))
+    PEcAn.remote::remote.execute.cmd(host_info, paste0("mkdir -p ", settings$pfts[[i]]$outdir))
   }
   
   settings$host$name   <- "localhost"
@@ -1238,10 +1238,10 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
   save(multi_site_objects, file = local_object_file)
   
   ######## copy to remote
-  remote.execute.cmd(host_info, paste0("mkdir -p ", remote_dir))
-  remote.copy.to(host_info, local_sub_file, remote_sub_file)
-  remote.copy.to(host_info, local_script_file, remote_script_file)
-  remote.copy.to(host_info, local_object_file, remote_object_file)
+  PEcAn.remote::remote.execute.cmd(host_info, paste0("mkdir -p ", remote_dir))
+  PEcAn.remote::remote.copy.to(host_info, local_sub_file, remote_sub_file)
+  PEcAn.remote::remote.copy.to(host_info, local_script_file, remote_script_file)
+  PEcAn.remote::remote.copy.to(host_info, local_object_file, remote_object_file)
 
   
   return(remote_sub_file)
