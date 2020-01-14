@@ -5,7 +5,7 @@
 \title{Hierarchical MCMC using emulator}
 \usage{
 hier.mcmc(settings, gp.stack, nstack = NULL, nmcmc, rng_orig, jmp0,
-  mu_site_init, nparam, nsites, prior.fn.all, prior.ind.all)
+  mu_site_init, nparam, nsites, llik.fn, prior.fn.all, prior.ind.all)
 }
 \arguments{
 \item{settings}{a pecan settings list}
@@ -25,6 +25,8 @@ hier.mcmc(settings, gp.stack, nstack = NULL, nmcmc, rng_orig, jmp0,
 \item{nparam}{number of parameters}
 
 \item{nsites}{number of sites}
+
+\item{llik.fn}{list of likelihood functions}
 
 \item{prior.fn.all}{list of prior functions}
 

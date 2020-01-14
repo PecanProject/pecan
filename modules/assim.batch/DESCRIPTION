@@ -15,6 +15,7 @@ Imports:
     BayesianTools,
     coda (>= 0.18),
     MASS,
+    methods,
     mlegp,
     dplyr,
     ellipse,

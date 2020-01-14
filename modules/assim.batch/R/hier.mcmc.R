@@ -10,6 +10,7 @@
 ##' @param mu_site_init initial parameter values per site
 ##' @param nparam number of parameters
 ##' @param nsites number of sites
+##' @param llik.fn list of likelihood functions
 ##' @param prior.fn.all list of prior functions
 ##' @param prior.ind.all indices of targeted parameters
 ##'
@@ -22,7 +23,7 @@
 
 
 hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
-                     jmp0, mu_site_init, nparam, nsites, prior.fn.all, prior.ind.all){
+                     jmp0, mu_site_init, nparam, nsites, llik.fn, prior.fn.all, prior.ind.all){
   
   pos.check <- sapply(settings$assim.batch$inputs, `[[`, "ss.positive")
   

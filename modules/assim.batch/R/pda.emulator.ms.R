@@ -149,7 +149,7 @@ pda.emulator.ms <- function(multi.settings) {
   ## Open database connection
   if (multi.settings$database$bety$write) {
     con <- try(PEcAn.DB::db.open(multi.settings$database$bety), silent = TRUE)
-    if (is(con, "try-error")) {
+    if (methods::is(con, "try-error")) {
       con <- NULL
     } else {
       on.exit(PEcAn.DB::db.close(con))
@@ -345,7 +345,7 @@ pda.emulator.ms <- function(multi.settings) {
     dcores <- parallel::detectCores() - 1
     ncores <- min(max(dcores, 1), tmp.settings$assim.batch$chain)
      
-    lPEcAn.logger::ogger.setOutputFile(file.path(tmp.settings$outdir, "pda.log"))
+    PEcAn.logger::logger.setOutputFile(file.path(tmp.settings$outdir, "pda.log"))
     
     cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(tmp.settings$outdir, "pda.log"))
     
@@ -360,6 +360,7 @@ pda.emulator.ms <- function(multi.settings) {
                 mu_site_init  = mu_site_init[[chain]],
                 nparam        = length(prior.ind.all), 
                 nsites        = nsites, 
+                llik.fn       = llik.fn,
                 prior.fn.all  = prior.fn.all, 
                 prior.ind.all = prior.ind.all)
     })
