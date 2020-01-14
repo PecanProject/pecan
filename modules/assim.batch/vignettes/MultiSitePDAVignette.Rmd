@@ -2,7 +2,11 @@
 title: "Multi-site hierarchical calibration vignette"
 author: "Istem Fer"
 date: "09/23/2019"
-output: html_document
+output: html_vignette
+vignette: >
+  %\VignetteIndexEntry{Multi-site hierarchical calibration vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
