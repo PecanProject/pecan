@@ -151,7 +151,7 @@ model{
       if(informative.plot == FALSE){
         Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dgamma(1,0.1)\n",collapse = " "))
       }else{
-        Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dnorm(",posterior.summary[posterior.summary$parameter %in% "tau_PLOT", ]$means ,",",posterior.summary[posterior.summary$parameter %in% "tau_PLOT", ]$vars ,")\n",collapse = " "))
+        Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dnorm(",posterior.summary[posterior.summary$parameter %in% "tau_PLOT", ]$means ,",", (1/posterior.summary[posterior.summary$parameter %in% "tau_PLOT", ]$vars) ,")\n",collapse = " "))
       }
       ## track
       burnin.variables <- c(burnin.variables, paste0("tau_", r_var))
