@@ -47,7 +47,9 @@
 * checking for unstated dependencies in examples ... OK
 * checking line endings in C/C++/Fortran sources/headers ... OK
 * checking line endings in Makefiles ... OK
-* checking compilation flags in Makevars ... OK
+* checking compilation flags in Makevars ... WARNING
+Non-portable flags in variable 'PKG_FCFLAGS':
+  -x -fdefault-real-8
 * checking for GNU extensions in Makefiles ... OK
 * checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
 * checking compiled code ... NOTE

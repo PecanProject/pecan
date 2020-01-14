@@ -125,7 +125,7 @@ db.query <- function(query, con = NULL, params = NULL, values = NULL) {
       PEcAn.logger::logger.severe("No parameters or connection specified")
     }
     con <- db.open(params)
-    on.exit(db.close(con))
+    on.exit(db.close(con), add = TRUE)
   }
   if (.db.utils$showquery) {
     PEcAn.logger::logger.debug(query)
@@ -318,7 +318,7 @@ db.exists <- function(params, write = TRUE, table = NA) {
   if (is.null(con)) {
     return(invisible(FALSE))
   } else {
-    on.exit(db.close(con))
+    on.exit(db.close(con), add = TRUE)
   }
 
   #check table's privilege about read and write permission

@@ -24,7 +24,7 @@ query.data <- function(trait, spstr, extra.columns = 'ST_X(ST_CENTROID(sites.geo
   if (is.null(con)) {
     PEcAn.logger::logger.error("No open database connection passed in.")
     con <- db.open(settings$database$bety)
-    on.exit(db.close(con))
+    on.exit(db.close(con), add = TRUE)
   }
   id_type = if (ids_are_cultivars) {"cultivar_id"} else {"specie_id"}
   

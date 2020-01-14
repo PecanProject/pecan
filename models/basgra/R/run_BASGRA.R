@@ -276,19 +276,19 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     
     dims <- list(lon = lon, lat = lat, time = t)
     
-    var <- list()
-    var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
-    var[[2]] <- PEcAn.utils::to_ncvar("CropYield", dims)
+    nc_var <- list()
+    nc_var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[2]] <- PEcAn.utils::to_ncvar("CropYield", dims)
     
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
+    for (i in seq_along(nc_var)) {
       # print(i)
-      ncdf4::ncvar_put(nc, var[[i]], outlist[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+      ncdf4::ncvar_put(nc, nc_var[[i]], outlist[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)

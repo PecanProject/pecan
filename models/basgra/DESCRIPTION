@@ -14,6 +14,7 @@ Imports:
 Suggests:
     testthat (>= 1.0.2)
 OS_type: unix
+SystemRequirements: GNU Fortran
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes

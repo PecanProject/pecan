@@ -8,7 +8,7 @@ mstmipvar(name, lat = NA, lon = NA, time = NA, nsoil = NA,
   silent = FALSE)
 }
 \arguments{
-\item{name}{name of variable}
+\item{name}{of variable}
 
 \item{lat}{latitude if dimension requests it}
 

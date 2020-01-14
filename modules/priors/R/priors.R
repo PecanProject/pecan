@@ -19,7 +19,7 @@
 fit.dist <- function(trait.data, trait = colnames(trait.data), 
                      dists = c("weibull", "lognormal", "gamma"), n = NULL) {
   
-  if (class(trait.data) == "data.frame") {
+  if (inherits(trait.data, "data.frame")) {
     trait.data <- trait.data[, 1]
   }
   ## warning(immediate. = TRUE)
