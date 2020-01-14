@@ -46,6 +46,7 @@ pda.define.llik.fn <- function(settings) {
 ##' @param settings list
 ##' @param con DB connection
 ##' @param model_out list
+##' @param run.id run ID
 ##' @param inputs list
 ##' @param bias.terms matrix
 ##'

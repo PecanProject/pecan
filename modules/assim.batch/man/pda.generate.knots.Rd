@@ -12,6 +12,8 @@ pda.generate.knots(n.knot, sf, probs.sf, n.param.all, prior.ind, prior.fn,
 
 \item{sf}{scaling factor}
 
+\item{probs.sf}{values for sf}
+
 \item{n.param.all}{number of all params}
 
 \item{prior.ind}{indices of targeted parameters in the prior dataframe}
@@ -19,8 +21,6 @@ pda.generate.knots(n.knot, sf, probs.sf, n.param.all, prior.ind, prior.fn,
 \item{prior.fn}{list of prior functions}
 
 \item{pname}{name of parameters}
-
-\item{prob.sf}{values for sf}
 }
 \value{
 A list of probabilities and parameter values, with one row for each knot in the emulator.

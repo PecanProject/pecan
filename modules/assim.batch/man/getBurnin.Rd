@@ -18,6 +18,8 @@ interval for Gelman Diagnostic. If FALSE, use the point estimate.}
 \item{method}{Character string indicating method. Options are 
 "moving.window" (default) or "gelman.plot".}
 
+\item{plotfile}{path}
+
 \item{...}{Other parameters to methods}
 }
 \description{

@@ -8,7 +8,15 @@ pda.get.model.output(settings, run.id, bety, inputs,
   external.formats = NULL)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{settings}{PEcAn settings list}
+
+\item{run.id}{run ID}
+
+\item{bety}{bety list}
+
+\item{inputs}{inputs list}
+
+\item{external.formats}{format list}
 }
 \value{
 A list containing model outputs extracted to correspond to each observational

@@ -1,7 +1,11 @@
 ##' Get Model Output for PDA
 ##'
 ##' @title Get Model Output for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings PEcAn settings list
+##' @param run.id run ID
+##' @param bety bety list
+##' @param inputs inputs list
+##' @param external.formats format list
 ##'
 ##' @return A list containing model outputs extracted to correspond to each observational
 ##'         dataset being used for PDA. 

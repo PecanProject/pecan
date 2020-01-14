@@ -7,6 +7,7 @@
 #' "moving.window" (default) or "gelman.plot".
 #' @param use.confidence Logical. If TRUE (default), use 95% confidence 
 #' interval for Gelman Diagnostic. If FALSE, use the point estimate.
+#' @param plotfile path
 #' @param ... Other parameters to methods
 #' 
 #' @details 

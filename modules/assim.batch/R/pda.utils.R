@@ -37,14 +37,14 @@ assim.batch <- function(settings) {
 ##' @param settings a PEcAn settings list
 ##' @export
 runModule.assim.batch <- function(settings) {
-  if (is.MultiSettings(settings)) {
+  if (PEcAn.settings::is.MultiSettings(settings)) {
     pda.method <- unique(sapply(settings$assim.batch,`[[`, "method"))
     if(pda.method == "emulator.ms"){
       return(pda.emulator.ms(settings))
     }else{
-      return(papply(settings, runModule.assim.batch))
+      return(PEcAn.settings::papply(settings, runModule.assim.batch))
     }
-  } else if (is.Settings(settings)) {
+  } else if (PEcAn.settings::is.Settings(settings)) {
     return(assim.batch(settings))
   } else {
     stop("runModule.assim.batch only works with Settings or MultiSettings")
@@ -656,7 +656,7 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 ##' @title Generate Parameter Knots for PDA Emulator
 ##' @param n.knot number of knots
 ##' @param sf scaling factor
-##' @param prob.sf values for sf
+##' @param probs.sf values for sf
 ##' @param n.param.all number of all params
 ##' @param prior.ind indices of targeted parameters in the prior dataframe
 ##' @param prior.fn list of prior functions
@@ -1103,8 +1103,8 @@ return_multi_site_objects <- function(multi.settings){
     repeat{
       n <- dim(new_site_knots)[1]
       if(n == as.numeric(settings$assim.batch$n.knot) + nrow(previous_knots)) break
-      foo <- combn(seq_len(n), 2)
-      dr <- dist(new_site_knots)
+      foo <- utils::combn(seq_len(n), 2)
+      dr <- stats::dist(new_site_knots)
       if(all(foo[, which.min(dr)] %in% 1:nrow(previous_knots))){
         new_site_knots <- new_site_knots[-foo[, which.min(dr)],]
         previous_knots <- previous_knots[-foo[, which.min(dr)],]
@@ -1251,7 +1251,7 @@ prepare_pda_remote <- function(settings, site = 1, multi_site_objects){
 ##' helper function for syncing remote pda runs
 ##' this function resembles remote.copy.from but we don't want to sync everything back
 ##' 
-##' @param multi.settigns PEcAn multi settings
+##' @param multi.settings PEcAn multi settings
 ##' @param ensembleidlist ensemble id list for remote runs
 ##' @param register if register==TRUE, the last files returned will be registered to the DB, TO BE DONE
 ##' @export
@@ -1271,7 +1271,7 @@ sync_pda_remote <- function(multi.settings, ensembleidlist, register = FALSE){
   
   # update multi.settings
   for(ms in seq_along(multi.settings)){
-    tmp_settings  <- read.settings(paste0(multi.settings[[ms]]$outdir,"/pecan.pda", 
+    tmp_settings  <- PEcAn.settings::read.settings(paste0(multi.settings[[ms]]$outdir,"/pecan.pda", 
                                           ensembleidlist[[ms]],".xml"))
     multi.settings[[ms]]$assim.batch <- tmp_settings$assim.batch
     multi.settings[[ms]]$pfts <- tmp_settings$pfts

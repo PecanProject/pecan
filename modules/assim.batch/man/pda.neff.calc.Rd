@@ -8,6 +8,8 @@ pda.neff.calc(inputs, recalculate = FALSE)
 }
 \arguments{
 \item{inputs}{list}
+
+\item{recalculate}{repeat neff calculation or not}
 }
 \value{
 inputs list, updated inputs with n_eff

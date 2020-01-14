@@ -8,11 +8,11 @@ this function resembles remote.copy.from but we don't want to sync everything ba
 sync_pda_remote(multi.settings, ensembleidlist, register = FALSE)
 }
 \arguments{
+\item{multi.settings}{PEcAn multi settings}
+
 \item{ensembleidlist}{ensemble id list for remote runs}
 
 \item{register}{if register==TRUE, the last files returned will be registered to the DB, TO BE DONE}
-
-\item{multi.settigns}{PEcAn multi settings}
 }
 \description{
 helper function for syncing remote pda runs

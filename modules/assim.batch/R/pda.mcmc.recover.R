@@ -1,12 +1,22 @@
 ##' Clean up a failed PDA run
 ##'
 ##' @title Clean up a failed PDA run
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings PEcAn param list
+##' @param params.id id of pars
+##' @param param.names names of pars
+##' @param prior.id ids of priors
+##' @param chain how many chains
+##' @param iter how many iterations
+##' @param adapt adaptation intervals
+##' @param adj.min to be used in adjustment
+##' @param ar.target acceptance rate target
+##' @param jvar jump variance
+##' @param n.knot number of knots requested
+##' @param burnin burnin
 ##'
 ##' @return An updated settings list
 ##'
 ##' @author Ryan Kelly
-##' @export
 
 # This is just a quick kludgey version, that relies on temporary files to recover a failed pda.mcmc() call. It writes all outputs based on whatever runs were done, and returns the same updated settings list that would have been returned if the run completed. So, recover like this:
 #

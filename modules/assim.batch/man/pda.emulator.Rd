@@ -22,6 +22,8 @@ pda.emulator(settings, external.data = NULL, external.priors = NULL,
 
 \item{external.formats}{bety formats used when function is used without a DB connection, e.g. remote}
 
+\item{ensemble.id}{ensemble IDs}
+
 \item{params.id}{id of pars}
 
 \item{param.names}{names of pars}
@@ -42,7 +44,9 @@ pda.emulator(settings, external.data = NULL, external.priors = NULL,
 
 \item{n.knot}{number of knots requested}
 
-\item{run.round}{another round or not}
+\item{individual}{logical, if TRUE it becomes a site-level PDA}
+
+\item{remote}{logical, if TRUE runs are submitted to remote and objects prepared accordingly}
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions

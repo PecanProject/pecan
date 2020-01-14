@@ -4,6 +4,17 @@
 ##'
 ##' @title Paramater Data Assimilation using MCMC
 ##' @param settings = a pecan settings list
+##' @param params.id id of pars
+##' @param param.names names of pars
+##' @param prior.id ids of priors
+##' @param chain how many chains
+##' @param iter how many iterations
+##' @param adapt adaptation intervals
+##' @param adj.min to be used in adjustment
+##' @param ar.target acceptance rate target
+##' @param jvar jump variance
+##' @param n.knot number of knots requested
+##'
 ##'
 ##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
 ##'  are saved as files and db records.
