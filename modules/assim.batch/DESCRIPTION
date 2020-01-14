@@ -3,7 +3,7 @@ Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.7.1
 Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"),
+Authors@R: c(person("Mike","Dietze", role = c("aut", "cre"), email = "dietze@bu.edu"),
              person("Istem","Fer"),
              person("Ryan", "Kelly"))
 Author: Mike Dietze, Istem Fer, Ryan Kelly
@@ -57,4 +57,3 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 6.1.1
-Roxygen: list(markdown = TRUE)
