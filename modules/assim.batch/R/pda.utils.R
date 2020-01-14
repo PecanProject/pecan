@@ -453,12 +453,14 @@ pda.define.prior.fn <- function(prior) {
 pda.init.params <- function(settings, chain, pname, n.param.all) {
   ## Load params from previous run, if provided.
   if (!is.null(settings$assim.batch$extension)) {
+    mcmc.list <- NULL # will be loaded in the next line
     load(settings$assim.batch$mcmc.path)  # loads params
     params <- mcmc.list[[chain]]
     start  <- nrow(params) + 1
     finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
     params <- rbind(params, matrix(NA, finish - start + 1, n.param.all))
     if(!is.null(settings$assim.batch$llpar.path)){ # load llik params
+      llpar.list <- NULL # will be loaded in the next line
       load(settings$assim.batch$llpar.path)
       llpars <- llpar.list[[chain]]
     } else {
@@ -800,6 +802,7 @@ return.bias <- function(settings, isbias, model.out, inputs, prior.list.bias, ru
 
   # if this is another round, use the first priors
   if(run.round){
+    prior.list <- NULL # will be loaded in the next line
     load(prev.bias)
     prior.list.bias <- prior.list
     # TODO: implementation for multiple bias params, this requires multiple changes int he PDA workflow
@@ -932,6 +935,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   
   PEcAn.logger::logger.info("Sampling from previous round's MCMC")
   
+  mcmc.samp.list <- NULL # will be loaded in the next line
   load(mcmc_path)
   
   mcmc.param.list <- params.subset <- list()
@@ -943,7 +947,7 @@ sample_MCMC <- function(mcmc_path, n.param.orig, prior.ind.orig, n.post.knots, k
   
   burnins <- rep(NA, length(mcmc.param.list))
   for (i in seq_along(mcmc.param.list)) {
-    params.subset[[i]] <- coda::as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
+    params.subset[[i]] <- coda::as.mcmc.list(lapply(mcmc.param.list[[i]], coda::mcmc))
     
     burnin     <- getBurnin(params.subset[[i]], method = "gelman.plot")
     burnins[i] <- max(burnin, na.rm = TRUE)

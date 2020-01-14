@@ -255,7 +255,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
 ##' @export
 write_sf_posterior <- function(sf.samp.list, sf.prior, sf.samp.filename){
   
-  sf.samp <- coda::as.mcmc.list(lapply(sf.samp.list, mcmc))
+  sf.samp <- coda::as.mcmc.list(lapply(sf.samp.list, coda::mcmc))
   
   # saving this before discarding burnin, because in resampling we want to keep the samples together
   save(sf.samp, file = sf.samp.filename)
