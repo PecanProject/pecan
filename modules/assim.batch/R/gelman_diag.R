@@ -66,7 +66,8 @@ gelman_diag_mw <- function(x,
 #' @title Calculate Gelman Diagnostic using coda::gelman.plot
 #' 
 #' @author Alexey Shiklomanov
-#' @inheritParams x
+#' @param x MCMC samples
+#' @param ... additional arguments 
 #' @description Calculates Gelman diagnostic cumulatively. This is a much 
 #' more conservative approach than the moving-window method.
 #' @export
