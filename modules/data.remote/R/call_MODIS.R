@@ -22,7 +22,7 @@
 ##' \dontrun{
 ##' test_modistools <- call_MODIS(outdir = NULL, var = "lai", site_info = site_info, product_dates = c("2001150", "2001365"), run_parallel = TRUE,  ncores = NULL, product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
 ##' }
-##' 
+##' @importFrom foreach %do% %dopar%
 ##' @author Bailey Morrison
 ##'
 call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parallel = FALSE, ncores = NULL, product, band,  package_method = "MODISTools", QC_filter = FALSE, progress = FALSE) {
@@ -91,7 +91,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
 
   # check if user asked for dates for data, if not, download all dates
   if (is.null(product_dates)) {
-    dates <- sort(unique(foreach(i = seq_along(nrow(site_coords)), .combine = c) %do% 
+    dates <- sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) %do% 
                            MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date))
     #dates = as.Date(as.character(substr(dates, 2, nchar(dates))), format = "%Y%j")
   } else {
@@ -113,8 +113,10 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
     # if start and end dates fall completely outside of available modis_dates:
     if ((start_date < modis_dates[1] & end_date < modis_dates[1]) | start_date > modis_dates[length(modis_dates)] & end_date > modis_dates[length(modis_dates)])
     {
-      PEcAn.logger::logger.warn(start)
-      stop("Start and end date are not within MODIS data product date range. Please choose another date.")
+      PEcAn.logger::logger.severe(
+        "Start and end date (", start_date, ", ", end_date,
+        ") are not within MODIS data product date range (", modis_dates[1], ", ", modis_dates(length(modis_dates)),
+        "). Please choose another date.")
     }
        
     # if start and end dates are larger than the available range, but part or full range:
@@ -221,7 +223,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
   # unregister cores since parallel process is done
   if (run_parallel)
   {
-    stopCluster(cl)
+    parallel::stopCluster(cl)
   }
   
   # break dataoutput up by site and save out chunks
