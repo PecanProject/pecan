@@ -223,7 +223,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
   # unregister cores since parallel process is done
   if (run_parallel)
   {
-    stopCluster(cl)
+    parallel::stopCluster(cl)
   }
   
   # break dataoutput up by site and save out chunks
