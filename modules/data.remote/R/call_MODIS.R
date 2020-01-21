@@ -91,7 +91,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
 
   # check if user asked for dates for data, if not, download all dates
   if (is.null(product_dates)) {
-    dates <- sort(unique(foreach(i = seq_along(nrow(site_coords)), .combine = c) %do% 
+    dates <- sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) %do% 
                            MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date))
     #dates = as.Date(as.character(substr(dates, 2, nchar(dates))), format = "%Y%j")
   } else {
