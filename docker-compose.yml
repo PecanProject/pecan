@@ -260,7 +260,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
-    image: pecan/model-sipnet-136:${PECAN_VERSION:-latest}
+    image: pecan/model-sipnet-r136:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan

@@ -74,15 +74,11 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   num_years <- length(unique(sipnet_output$year))
   simulation_years <- unique(sipnet_output$year)
   
-  # quick consistency check
+  # get all years that we want data from
   year_seq <- seq(lubridate::year(start_date), lubridate::year(end_date))
-  if (length(year_seq) != num_years) {
-    PEcAn.logger::logger.severe("Date range specified in model2netcdf.SIPNET() function call and 
-                                total number of years in SIPNET output are not equal")
-  }
 
   # check that specified years and output years match
-  if (!all(simulation_years %in% year_seq)) {
+  if (!all(year_seq %in% simulation_years)) {
     PEcAn.logger::logger.severe("Years selected for model run and SIPNET output years do not match ")
   }
 
@@ -99,7 +95,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   timestep.s <- 86400 / out_day
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
-  for (y in simulation_years) {
+  for (y in year_seq) {
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
       next
     }

@@ -101,7 +101,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     if (inherits(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(PEcAn.DB::db.close(con))
+      on.exit(PEcAn.DB::db.close(con), add = TRUE)
     }
   } else {
     con <- NULL

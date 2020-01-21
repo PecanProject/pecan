@@ -20,7 +20,7 @@ check.convergence <- function(jags_out,
     stop("Input needs to be of class 'mcmc.list'")
   }
   gd <- try(coda::gelman.diag(jags_out, ...))
-  if (class(gd) == "try-error") {
+  if (inherits(gd, "try-error")) {
     warning("Could not calculate Gelman diag. Assuming no convergence.")
     converged <- FALSE
     diagnostics <- NULL

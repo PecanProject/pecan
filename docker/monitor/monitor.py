@@ -18,14 +18,17 @@ import requests
 rabbitmq_uri = os.getenv('RABBITMQ_URI', 'amqp://guest:guest@localhost/%2F')
 rabbitmq_mgmt_port = os.getenv('RABBITMQ_MGMT_PORT', '15672')
 rabbitmq_mgmt_path = os.getenv('RABBITMQ_MGMT_PATH', '/')
-
-# will be filled in later
+rabbitmq_mgmt_url = os.getenv('RABBITMQ_MGMT_URL', '')
 rabbitmq_username = None
 rabbitmq_password = None
-rabbitmq_mgmt_url = None
 
 # parameters to connect to BETY database
-posetgres_params = os.getenv('POSTGRES_PARAM', 'host=postgres dbname=bety user=bety password=bety connect_timeout=10')
+postgres_host = os.getenv('PGHOST', 'postgres')
+postgres_port = os.getenv('PGPORT', 'postgres')
+postgres_user = os.getenv('BETYUSER', 'bety')
+postgres_password = os.getenv('BETYPASSWORD', 'bety')
+postgres_database = os.getenv('BETYDATABASE', 'bety')
+postgres_uri = None
 
 # name of host when registering the model
 pecan_fqdn = os.getenv('FQDN', 'docker')
@@ -43,16 +46,23 @@ remove_model_timout = 15 * 60
 # ----------------------------------------------------------------------
 # WEB SERVER
 # ----------------------------------------------------------------------
-class MyServer(http.server.BaseHTTPRequestHandler):
+class MyServer(http.server.SimpleHTTPRequestHandler):
     """
     Handles the responses from the web server. Only response that is
     handled is a GET that will return all known models.
     """
     def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(bytes(json.dumps(models), 'utf-8'))
+        self.path = os.path.basename(self.path)
+        if self.path == '':
+            self.path = '/'
+
+        if self.path.startswith('models.json'):
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(bytes(json.dumps(models), 'utf-8'))
+        else:
+            super().do_GET()
 
 
 def http_server(host_port=9999):
@@ -78,6 +88,9 @@ def get_mgmt_queue_messages(queue):
 
     try:
         response = requests.get(rabbitmq_mgmt_url + queue, auth=(rabbitmq_username, rabbitmq_password), timeout=5)
+        if response.status_code == 404:
+            # queue does not exist, so we assume 0 messages
+            return 0
         response.raise_for_status()
         return response.json()['messages']
     except Exception:
@@ -89,6 +102,8 @@ def keep_entry(consumer):
     """
     Check to see if the last time the consumer was seen is more than timeout seconds.
     """
+    global remove_model_timout
+    
     now = datetime.datetime.now()
     delta = now - dateutil.parser.parse(consumer['last_seen'])
     return delta.total_seconds() < remove_model_timout
@@ -125,12 +140,17 @@ def insert_model(model_info):
     Insert the model info into the database. If the host, modeltype or
     model does not exist it will be inserted in the database as well.
     """
-    global posetgres_params
+    global postgres_uri, postgres_host, postgres_port, postgres_database
+    global postgres_user, postgres_password
 
-    conn = None
+    if not postgres_uri:
+        postgres_uri = "host=%s port=%s dbname=%s user=%s password=%s connect_timeout=10" % (
+            postgres_host, postgres_port, postgres_database, postgres_user, postgres_password
+        )
+
     try:
         # connect to the PostgreSQL database
-        conn = psycopg2.connect(posetgres_params)
+        conn = psycopg2.connect(postgres_uri)
 
         # make sure host exists
         cur = conn.cursor()
@@ -185,7 +205,7 @@ def insert_model(model_info):
             cur = conn.cursor()
             cur.execute('INSERT INTO models (model_name, modeltype_id, revision, created_at, updated_at) '
                         'VALUES (%s, %s, %s, now(), now()) RETURNING id',
-                        (model_info['name'], model_type_id, model_info['revision']))
+                        (model_info['name'], model_type_id, model_info['version']))
             result = cur.fetchone()
             cur.close()
             if not result:
@@ -281,7 +301,7 @@ def rabbitmq_monitor():
     connection = pika.BlockingConnection(params)
 
     # create management url
-    if rabbitmq_mgmt_port != '':
+    if not rabbitmq_mgmt_url:
         if params.ssl_options:
             rabbitmq_mgmt_protocol = 'https://'
         else:
@@ -303,7 +323,7 @@ def rabbitmq_monitor():
     channel.queue_bind(exchange='models', queue=result.method.queue)
 
     # listen for messages
-    channel.basic_consume(on_message_callback=callback, queue=result.method.queue)
+    channel.basic_consume(on_message_callback=callback, queue=result.method.queue, auto_ack=True)
 
     channel.start_consuming()
 

@@ -15,7 +15,9 @@ Depends:
     PEcAn.utils
 Imports:
     PEcAn.logger,
-    ggplot2
+    PEcAn.MA,
+    ggplot2,
+    MASS
 Suggests:
     testthat
 Encoding: UTF-8

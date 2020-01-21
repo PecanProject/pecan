@@ -10,15 +10,6 @@ set -e
     travis_time_end
 )
 
-# INSTALL SPECIFIC DBPLYR AND LATEST RGDAL
-(
-    travis_time_start "pecan_install_dbplyr" "Installing dbplyr version 1.3.0 see #2349"
-    # fix for #2349
-    Rscript -e 'devtools::install_version("dbplyr", version = "1.3.0", repos = "http://cran.us.r-project.org")'
-    Rscript -e 'install.packages("rgdal")' # yes, this is supposed to happen automatically but... doesn't
-    travis_time_end
-)  
-
 # COMPILE PECAN
 (
     travis_time_start "pecan_make_all" "Compiling PEcAn"

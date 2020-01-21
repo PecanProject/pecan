@@ -1,0 +1,33 @@
+### STICS {#models-stics}
+
+| Model Information ||
+| -- | -- |
+| Home Page | https://www6.paca.inrae.fr/stics/ |
+| Source Code | |
+| License |  |
+| Authors | |
+| PEcAn Integration | Istem Fer |
+
+**Introduction**
+
+STICS (Simulateur mulTIdisciplinaire pour les Cultures Standard) is a crop model that has been developed since 1996 at INRA (French National Institute for Agronomic Research) in collaboration with other research (CIRAD, Irstea, Ecole des Mines de Paris, ESA, LSCE) or professional (ARVALIS, Terres Inovia, CTIFL, ITV, ITB, Agrotransferts, etc.) and teaching institutes or organizations.
+
+
+**PEcAn configuration file additions**
+
+Should list the model specific additions to the PEcAn file here
+
+**Model specific input files**
+
+List of inputs required by model, such as met, etc.
+
+**Model configuration files**
+
+STICS is configured using different XML files located in two fixed directories: config, plant and user defined workspace(s) directorie(s). A java app called JavaStics allows users to generate these files.
+
+**Installation notes**
+
+The software (JavaStics interface and STICS model) is available for download after a registration procedure (see procedure at http://www6.paca.inra.fr/stics_eng/ Download). 
+
+
+**VM**

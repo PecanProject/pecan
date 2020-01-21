@@ -75,7 +75,7 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
 
   PEcAn.logger::logger.info("Writing tables to SQLite database...")
   con <- DBI::dbConnect(RSQLite::SQLite(), sqlite_file)
-  on.exit(DBI::dbDisconnect(con))
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
   PEcAn.logger::logger.info("Writing values table...")
   DBI::dbWriteTable(con, "values", data_values)
   PEcAn.logger::logger.info("Writing traits table...")
