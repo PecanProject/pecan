@@ -20,7 +20,9 @@
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(outdir = NULL, var = "lai", site_info = site_info, product_dates = c("2001150", "2001365"), run_parallel = TRUE,  ncores = NULL, product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
+##' test_modistools <- call_MODIS(outdir = NULL, var = "lai", site_info = site_info, 
+##' product_dates = c("2001150", "2001365"), run_parallel = TRUE,  ncores = NULL, 
+##' product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
 ##' }
 ##' @importFrom foreach %do% %dopar%
 ##' @author Bailey Morrison
@@ -28,6 +30,7 @@
 call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parallel = FALSE, ncores = NULL, product, band,  package_method = "MODISTools", QC_filter = FALSE, progress = FALSE) {
   
   # makes the query search for 1 pixel and not for rasters chunks for now. Will be changed when we provide raster output support.
+  `%dopar%` <- foreach::`%dopar%`
   size <- 0
   
   site_coords <- data.frame(site_info$lon, site_info$lat)
@@ -81,8 +84,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
     #3. check that dates asked for in function parameters are fall within dates available for modis product/bands.
     if (run_parallel)
     {
-      modis_dates <- as.numeric(substr(sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) %dopar% 
-                                                     MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date)), 2, 8))
+      modis_dates <- as.numeric(substr(sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) %dopar% MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date)), 2, 8))
     } else {
       modis_dates <- as.numeric(substr(sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) %do% 
                                                      MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date)), 2, 8))
@@ -141,7 +143,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
 
   if (run_parallel)
   {
-    dat <- foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
+    dat <- foreach::foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
       MODISTools::mt_subset(lat = site_coords$lat[i],lon = site_coords$lon[i],
                             product = product,
                             band = band,
@@ -184,7 +186,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
     
     if (run_parallel) 
     {
-      qc <- foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
+      qc <- foreach::foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
         MODISTools::mt_subset(lat = site_coords$lat[i],lon = site_coords$lon[i],
                               product = product,
                               band = qc_band,
