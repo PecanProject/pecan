@@ -13,25 +13,33 @@ call_MODIS(outdir = NULL, var, site_info, product_dates,
 
 \item{var}{the simple name of the modis dataset variable (e.g. lai)}
 
-\item{site_info}{Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, lon, time_zone)}
+\item{site_info}{Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, 
+lon, time_zone)}
 
 \item{product_dates}{a character vector of the start and end date of the data in YYYYJJJ}
 
-\item{run_parallel}{optional method to download data paralleize. Only works if more than 1 site is needed and there are >1 CPUs available.}
+\item{run_parallel}{optional method to download data paralleize. Only works if more than 1 
+site is needed and there are >1 CPUs available.}
 
-\item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the number of CPU's available, enter NULL.}
+\item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the 
+number of CPU's available, enter NULL.}
 
 \item{product}{string value for MODIS product number}
 
 \item{band}{string value for which measurement to extract}
 
-\item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)}
+\item{package_method}{string value to inform function of which package method to use to download 
+modis data. Either "MODISTools" or "reticulate" (optional)}
 
-\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False. Only MODISTools option.}
+\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good 
+(as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this 
+parameter to work. Default is False. Only MODISTools option.}
 
-\item{progress}{TRUE reports the download progress bar of the dataset, FALSE omits the download progress bar. Default is TRUE. Only MODISTools option.
+\item{progress}{TRUE reports the download progress bar of the dataset, FALSE omits the download 
+progress bar. Default is TRUE. Only MODISTools option.
 
-Requires Python3 for reticulate method option. There are a number of required python libraries. sudo -H pip install numpy suds netCDF4 json
+Requires Python3 for reticulate method option. There are a number of required python libraries. 
+sudo -H pip install numpy suds netCDF4 json
 depends on the MODISTools package version 1.1.0}
 }
 \description{

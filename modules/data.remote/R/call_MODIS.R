@@ -5,17 +5,25 @@
 ##' @export
 ##' @param outdir where the output file will be stored. Default is NULL
 ##' @param var the simple name of the modis dataset variable (e.g. lai)
-##' @param site_info Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, lon, time_zone)
+##' @param site_info Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, 
+##' lon, time_zone)
 ##' @param product_dates a character vector of the start and end date of the data in YYYYJJJ
-##' @param run_parallel optional method to download data paralleize. Only works if more than 1 site is needed and there are >1 CPUs available.
-##' @param ncores number of cpus to use if run_parallel is set to TRUE. If you do not know the number of CPU's available, enter NULL.
+##' @param run_parallel optional method to download data paralleize. Only works if more than 1 
+##' site is needed and there are >1 CPUs available.
+##' @param ncores number of cpus to use if run_parallel is set to TRUE. If you do not know the 
+##' number of CPU's available, enter NULL.
 ##' @param product string value for MODIS product number
 ##' @param band   string value for which measurement to extract
-##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
-##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False. Only MODISTools option.
-##' @param progress TRUE reports the download progress bar of the dataset, FALSE omits the download progress bar. Default is TRUE. Only MODISTools option.
+##' @param package_method string value to inform function of which package method to use to download 
+##' modis data. Either "MODISTools" or "reticulate" (optional)
+##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good 
+##' (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this 
+##' parameter to work. Default is False. Only MODISTools option.
+##' @param progress TRUE reports the download progress bar of the dataset, FALSE omits the download 
+##' progress bar. Default is TRUE. Only MODISTools option.
 ##' 
-##' Requires Python3 for reticulate method option. There are a number of required python libraries. sudo -H pip install numpy suds netCDF4 json
+##' Requires Python3 for reticulate method option. There are a number of required python libraries. 
+##' sudo -H pip install numpy suds netCDF4 json
 ##' depends on the MODISTools package version 1.1.0
 ##' 
 ##' @examples
@@ -27,7 +35,15 @@
 ##' @importFrom foreach %do% %dopar%
 ##' @author Bailey Morrison
 ##'
-call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parallel = FALSE, ncores = NULL, product, band,  package_method = "MODISTools", QC_filter = FALSE, progress = FALSE) {
+call_MODIS <- function(outdir = NULL,  
+                       var, site_info, 
+                       product_dates, 
+                       run_parallel = FALSE, 
+                       ncores = NULL, 
+                       product, band,  
+                       package_method = "MODISTools", 
+                       QC_filter = FALSE, 
+                       progress = FALSE) {
   
   # makes the query search for 1 pixel and not for rasters chunks for now. Will be changed when we provide raster output support.
   `%dopar%` <- foreach::`%dopar%`
@@ -84,7 +100,8 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
     #3. check that dates asked for in function parameters are fall within dates available for modis product/bands.
     if (run_parallel)
     {
-      modis_dates <- as.numeric(substr(sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) %dopar% MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date)), 2, 8))
+      modis_dates <- as.numeric(substr(sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) 
+                                                   %dopar% MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date)), 2, 8))
     } else {
       modis_dates <- as.numeric(substr(sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) %do% 
                                                      MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date)), 2, 8))
