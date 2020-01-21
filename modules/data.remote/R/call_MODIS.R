@@ -113,7 +113,6 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
     # if start and end dates fall completely outside of available modis_dates:
     if ((start_date < modis_dates[1] & end_date < modis_dates[1]) | start_date > modis_dates[length(modis_dates)] & end_date > modis_dates[length(modis_dates)])
     {
-      PEcAn.logger::logger.warn(start)
       stop("Start and end date are not within MODIS data product date range. Please choose another date.")
     }
        
