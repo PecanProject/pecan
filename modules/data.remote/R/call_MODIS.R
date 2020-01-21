@@ -20,7 +20,7 @@
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(var = "lai", site_info = site_info, product_dates = c("2001150", "2001365"), run_parallel = TRUE,  product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
+##' test_modistools <- call_MODIS(outdir = NULL, var = "lai", site_info = site_info, product_dates = c("2001150", "2001365"), run_parallel = TRUE,  ncores = NULL, product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
 ##' }
 ##' 
 ##' @author Bailey Morrison
@@ -33,7 +33,7 @@ call_MODIS <- function(outdir = NULL,  var, site_info, product_dates, run_parall
   site_coords <- data.frame(site_info$lon, site_info$lat)
   names(site_coords) <- c("lon","lat")
   
-  require(doParallel)
+  #require(doParallel)
   # set up CPUS for parallel runs.
   if (is.null(ncores)) {
     total_cores <- parallel::detectCores(all.tests = FALSE, logical = TRUE)
