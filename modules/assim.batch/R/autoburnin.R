@@ -33,7 +33,7 @@ getBurnin <- function(jags_out,
   } else {
     stop("Unknown method: ", method)
   }
-  if (class(GBR) == "try-error") {
+  if (inherits(GBR, "try-error")) {
     message("Unable to calculate Gelman diagnostic. Assuming no convergence.")
     return(1)
   }
@@ -46,7 +46,7 @@ getBurnin <- function(jags_out,
   } else {
     index <- utils::tail(which(rowSums(gbr_exceed) > 0), 1) + 1
     stopifnot(length(index) == 1,
-              class(index) %in% c("numeric", "integer"))
+               inherits(index, c("numeric", "integer")))
     if (index > dim(GBR)[1]) {
       burnin <- NA
     } else {

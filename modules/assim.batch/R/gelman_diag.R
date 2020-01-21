@@ -15,7 +15,7 @@ gelman_diag_mw <- function(x,
                            include.mpsrf = TRUE,
                            ...) {
 
-  stopifnot(class(x) %in% c("mcmc", "mcmc.list"))
+  stopifnot(inherits(x, c("mcmc", "mcmc.list")))
   stopifnot(width %% 1 == 0)
   stopifnot(njump %% 1 == 0)
   startx <- stats::start(x)

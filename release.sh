@@ -111,7 +111,7 @@ else
 fi
 
 # push all images
-for image in ${OLDEST} $( docker image ls pecan/*:${IMAGE_VERSION} --filter "since=${OLDEST}:${IMAGE_VERSION}" --format "{{ .Repository }}" ); do
+for image in pecan/check ${OLDEST} $( docker image ls pecan/*:${IMAGE_VERSION} --filter "since=${OLDEST}:${IMAGE_VERSION}" --format "{{ .Repository }}" ); do
     for v in ${TAGS}; do
         if [ "$v" != "${IMAGE_VERSION}" -o "$SERVER" != "" ]; then
             ${DEBUG} docker tag ${image}:${IMAGE_VERSION} ${SERVER}${image}:${v}

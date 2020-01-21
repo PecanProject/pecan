@@ -8,15 +8,29 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixed
+
+- fixed and added tests for `get.rh` function in PEcAn.data.atmosphere 
+- Invalid .zenodo.json that broke automatic archiving on Zenodo ([b56ef53](https://github.com/PecanProject/pecan/commit/b56ef53888d73904c893b9e8c8cfaeedd7b1edbe))
+- Fixed a filehandle leak in multi-year runs of PEcAn.BIOCRO::met2model.BIOCRO: It was only closing the last input file it processed (#2485).
 - Fix issue with cruncep download: use netcdf subset (ncss) method instead of opendap (#2424).
 - The `parse` option to `PEcAn.utils::read_web_config` had no effect when `expand` was TRUE (#2421).
 - Fixed a typo that made `PEcAn.DB::symmetric_setdiff` falsely report no differences (#2428).
+- sipnet2netcdf will now only extract the data for the year requested (#2187)
+- Fixed Priors vignette (#2439).
+- When building sipnet model would not set correct model version
 
 ### Changed
+- PEcAn.priors: renamed functions that looked like S3 methods but were not: `plot.posterior.density`->`plot_posterior.density`, `plot.prior.density`->`plot_prior.density`, `plot.trait`->`plot_trait` (#2439).
 - Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
+- No longer writing an arbitrary num for each PFT, this was breaking ED runs potentially.
+- The pecan/data container has no longer hardcoded path for postgres
+- PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
 
 ### Added
-- BASGRA_N model basic coupling.
+- Basic coupling for models BASGRA_N and STICS.
+- PEcAn.priors now exports functions `priorfig` and `plot_densities` (#2439).
+- Models monitoring container for Docker now shows a webpage with models it has seen
+- Added small container to check if certain services are up, used as initi container for kubernetes
 
 ## [1.7.1] - 2018-09-12
 

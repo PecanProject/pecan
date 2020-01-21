@@ -4,7 +4,7 @@
 \alias{retry.func}
 \title{retry.func}
 \usage{
-retry.func(expr, isError = function(x) "try-error" \%in\% class(x),
+retry.func(expr, isError = function(x) inherits(x, "try-error"),
   maxErrors = 5, sleep = 0)
 }
 \arguments{

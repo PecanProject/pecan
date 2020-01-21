@@ -4,8 +4,8 @@
 \alias{extract.local.NLDAS}
 \title{extract.local.NLDAS}
 \usage{
-extract.local.NLDAS(outfolder, in.path, start_date, end_date, site_id,
-  lat.in, lon.in, overwrite = FALSE, verbose = FALSE, ...)
+extract.local.NLDAS(outfolder, in.path, start_date, end_date, lat.in,
+  lon.in, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output files will be stored}
@@ -15,8 +15,6 @@ extract.local.NLDAS(outfolder, in.path, start_date, end_date, site_id,
 \item{start_date}{- first day for which you want to extract met (yyyy-mm-dd)}
 
 \item{end_date}{- last day for which you want to extract met (yyyy-mm-dd)}
-
-\item{site_id}{name to associate with extracted files}
 
 \item{lat.in}{site latitude in decimal degrees}
 
