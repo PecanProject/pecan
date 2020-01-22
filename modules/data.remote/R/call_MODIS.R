@@ -28,9 +28,7 @@
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(outdir = NULL, var = "lai", site_info = site_info, 
-##' product_dates = c("2001150", "2001365"), run_parallel = TRUE,  ncores = NULL, 
-##' product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
+##' test_modistools <- call_MODIS(outdir = NULL, var = "lai", site_info = site_info, product_dates = c("2001150", "2001365"), run_parallel = TRUE,  ncores = NULL, product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
 ##' }
 ##' @importFrom foreach %do% %dopar%
 ##' @author Bailey Morrison
