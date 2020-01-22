@@ -28,7 +28,24 @@
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(outdir = NULL, var = "lai", site_info = site_info, product_dates = c("2001150", "2001365"), run_parallel = TRUE,  ncores = NULL, product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
+##' site_info <- list(
+##'   site_id = 1,
+##'   site_name = "test",
+##'   lat = 44,
+##'   lon = 90,
+##'   time_zone = "UTC")
+##' test_modistools <- call_MODIS(
+##'   outdir = NULL,
+##'   var = "lai",
+##'   site_info = site_info,
+##'   product_dates = c("2001150", "2001365"),
+##'   run_parallel = TRUE,
+##'   ncores = NULL,
+##'   product = "MOD15A2H",
+##'   band = "Lai_500m",
+##'   package_method = "MODISTools",
+##'   QC_filter = TRUE,
+##'   progress = FALSE)
 ##' }
 ##' @importFrom foreach %do% %dopar%
 ##' @author Bailey Morrison
@@ -44,13 +61,11 @@ call_MODIS <- function(outdir = NULL,
                        progress = FALSE) {
   
   # makes the query search for 1 pixel and not for rasters chunks for now. Will be changed when we provide raster output support.
-  `%dopar%` <- foreach::`%dopar%`
-  size <- 0
+ size <- 0
   
   site_coords <- data.frame(site_info$lon, site_info$lat)
   names(site_coords) <- c("lon","lat")
   
-  #require(doParallel)
   # set up CPUS for parallel runs.
   if (is.null(ncores)) {
     total_cores <- parallel::detectCores(all.tests = FALSE, logical = TRUE)

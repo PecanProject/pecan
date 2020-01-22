@@ -47,7 +47,25 @@ Get MODIS data by date and location
 }
 \examples{
 \dontrun{
-test_modistools <- call_MODIS(outdir = NULL, var = "lai", site_info = site_info, product_dates = c("2001150", "2001365"), run_parallel = TRUE,  ncores = NULL, product = "MOD15A2H", band = "Lai_500m", package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
+site_info <- list(
+  site_id = 1,
+  site_name = "test",
+  lat = 44,
+  lon = 90,
+  time_zone = "UTC")
+test_modistools <- call_MODIS(
+  outdir = NULL,
+  var = "lai",
+  site_info = site_info,
+  product_dates = c("2001150", "2001365"),
+  run_parallel = TRUE,
+  ncores = NULL,
+  product = "MOD15A2H",
+  band = "Lai_500m",
+  package_method = "MODISTools",
+  QC_filter = TRUE,
+  progress = FALSE)
+
 }
 }
 \author{
