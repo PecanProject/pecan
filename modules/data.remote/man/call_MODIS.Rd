@@ -65,7 +65,6 @@ test_modistools <- call_MODIS(
   package_method = "MODISTools",
   QC_filter = TRUE,
   progress = FALSE)
-
 }
 }
 \author{
