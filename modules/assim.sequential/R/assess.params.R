@@ -14,7 +14,7 @@
 ##' 
 
 
-assessParams <- function(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL){  
+assessParams <- function(dat, Xt, wts = NULL, mu_f_TRUE = NULL, P_f_TRUE = NULL){  
   #mu_f_TRUE and P_f_TRUE used for simulation
 
   
@@ -24,8 +24,39 @@ assessParams <- function(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL){
   
   imuf   <- grep("muf", colnames(dat))
   muf <- colMeans(dat[, imuf])
-  mufT <- apply(Xt,2,mean)
-  PfT <- cov(Xt)
+  iPf   <- grep("pf", colnames(dat))
+  Pf <- solve(matrix(colMeans(dat[, iPf]),ncol(Xt),ncol(Xt)))
+  #--- This is where the localization needs to happen - After imputing Pf
+  
+  if(is.null(wts)){
+    mufT <- apply(Xt,2,mean)
+    PfT <- cov(Xt)
+  }else{
+    mufT <- apply(Xt,2,weighted.mean,wts)
+    PfT <- cov.wt(Xt,wts)$cov
+  }
+  
+  eigen_save <- matrix(NA,nrow=nrow(dat),ncol=ncol(Xt))
+  for(rr in 1:nrow(dat)) {
+    eigen_save[rr,] <- eigen(solve(matrix(dat[rr, iPf],ncol(Xt),ncol(Xt))))$values
+  }
+  
+  
+  par(mfrow=c(2,3))
+  apply(eigen_save,2,plot,typ='l',main='Eigen Value')
+  for(i in seq(1,length(iPf),7)){
+    plot(dat[,iPf[i]],typ='l',main='Variance of Pf')
+  }
+  for(i in 1:length(muf)){
+    plot(dat[,imuf[i]],typ='l',main=paste('muf',i))
+    abline(h=mufT[i],col='red')
+  }
+  
+  Xt_use <- Xt
+  rownames(Xt_use)<-colnames(Xt_use) <- NULL
+  
+  corrplot::corrplot(cov2cor((PfT)),main='correlation T')
+  corrplot::corrplot(cov2cor(cov(Xt_use)),main='correlation estimate')
   
   mufCI <- apply(dat[,imuf],2,quantile,c(0.025,0.975))
   mufTCI <- apply(Xt,2,quantile,c(0.025,0.975))
@@ -56,8 +87,8 @@ assessParams <- function(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL){
   
   #cor(dat[,1:6])
   
-  iPf   <- grep("pf", colnames(dat))
-  Pf <- matrix(colMeans(dat[, iPf]),ncol(Xt),ncol(Xt))
+  #iPf   <- grep("pf", colnames(dat))
+  #Pf <- matrix(colMeans(dat[, iPf]),ncol(Xt),ncol(Xt))
   
   PfCI <- apply(dat[,iPf],2,quantile,c(0.025,0.975))
 
