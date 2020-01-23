@@ -18,6 +18,8 @@ env:
     - MAKEFLAGS="-j2"
     - PGHOST=localhost
     - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
+    - _R_CHECK_LENGTH_1_CONDITION_=true
+    - _R_CHECK_LENGTH_1_LOGIC2_=true
 
 matrix:
   fast_finish: true
@@ -42,7 +44,6 @@ addons:
       - curl
       - gdal-bin
       - jags
-      - libcurl4-openssl-dev
       - libgdal-dev
       - libgl1-mesa-dev
       - libglu1-mesa-dev
@@ -51,6 +52,7 @@ addons:
       - liblapack-dev
       - libnetcdf-dev
       - libproj-dev
+      - librdf0-dev
       - libudunits2-dev
       - netcdf-bin
       - pandoc

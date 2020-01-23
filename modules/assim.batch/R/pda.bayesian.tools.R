@@ -40,7 +40,7 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     if (inherits(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(PEcAn.DB::db.close(con))
+      on.exit(PEcAn.DB::db.close(con), add = TRUE)
     }
   } else {
     con <- NULL

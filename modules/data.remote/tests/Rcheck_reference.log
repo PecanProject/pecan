@@ -1,0 +1,114 @@
+* using log directory ‘/tmp/RtmpYVm4R4/PEcAn.data.remote.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.data.remote/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.data.remote’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.data.remote’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' imports not declared from:
+  ‘DBI’ ‘doParallel’ ‘foreach’ ‘glue’ ‘lubridate’ ‘ncdf4’ ‘PEcAn.DB’
+  ‘PEcAn.utils’ ‘purrr’ ‘raster’ ‘RCurl’ ‘sp’
+'library' or 'require' calls not declared from:
+  ‘doParallel’ ‘PEcAn.DB’ ‘raster’
+'library' or 'require' calls in package code:
+  ‘doParallel’ ‘PEcAn.DB’ ‘raster’ ‘rgdal’
+  Please use :: or requireNamespace() instead.
+  See section 'Suggested packages' in the 'Writing R Extensions' manual.
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+call_MODIS: no visible global function definition for ‘write.csv’
+call_MODIS: no visible global function definition for
+  ‘extract_modis_data’
+download.LandTrendr.AGB: no visible binding for global variable ‘k’
+download.NLCD: no visible global function definition for ‘dbfile.check’
+download.NLCD: no visible global function definition for ‘db.query’
+download.NLCD: no visible global function definition for
+  ‘download.file’
+download.NLCD: no visible global function definition for
+  ‘dbfile.insert’
+download.thredds.AGB : get_data: no visible global function definition
+  for ‘write.csv’
+download.thredds.AGB: no visible global function definition for
+  ‘%dopar%’
+download.thredds.AGB: no visible global function definition for
+  ‘foreach’
+download.thredds.AGB: no visible global function definition for
+  ‘stopCluster’
+extract_NLCD: no visible global function definition for ‘dbfile.check’
+extract_NLCD: no visible global function definition for ‘db.query’
+extract_NLCD: no visible global function definition for ‘raster’
+extract_NLCD: no visible global function definition for ‘SpatialPoints’
+extract_NLCD: no visible global function definition for ‘CRS’
+extract_NLCD: no visible global function definition for ‘spTransform’
+extract_NLCD: no visible global function definition for ‘crs’
+extract_NLCD: no visible global function definition for ‘extract’
+Undefined global functions or variables:
+  %dopar% crs CRS db.query dbfile.check dbfile.insert download.file
+  extract extract_modis_data foreach k raster SpatialPoints spTransform
+  stopCluster write.csv
+Consider adding
+  importFrom("utils", "download.file", "write.csv")
+to your NAMESPACE file.
+* checking Rd files ... WARNING
+checkRd: (7) extract.LandTrendr.AGB.Rd:33-55: Tag \dontrun not recognized
+* checking Rd metadata ... OK
+* checking Rd line widths ... NOTE
+Rd file 'call_MODIS.Rd':
+  \examples lines wider than 100 characters:
+     test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -1 ... [TRUNCATED]
+     test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -1 ... [TRUNCATED]
+
+These lines will be truncated in the PDF manual.
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'extract.LandTrendr.AGB'
+  ‘...’
+
+Undocumented arguments in documentation object 'extract_NLCD'
+  ‘year’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... OK
+* DONE
+Status: 3 WARNINGs, 3 NOTEs

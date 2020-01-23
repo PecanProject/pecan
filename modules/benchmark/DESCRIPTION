@@ -1,8 +1,8 @@
 Package: PEcAn.benchmark
 Type: Package
 Title: PEcAn functions used for benchmarking
-Version: 1.7.0
-Date: 2018-12-03
+Version: 1.7.1
+Date: 2019-09-05
 Authors@R: c(person("Mike","Dietze"),
              person("David","LeBauer"),
              person("Rob","Kooper"),
@@ -34,7 +34,7 @@ Imports:
     zoo
 Suggests:
     testthat (>= 2.0.0)
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE

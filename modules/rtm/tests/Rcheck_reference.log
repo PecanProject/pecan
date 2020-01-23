@@ -1,0 +1,260 @@
+* using log directory ‘/tmp/RtmpPkD9Bk/PEcAnRTM.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAnRTM/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAnRTM’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAnRTM’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+Unexported object imported by a ':::' call: ‘stats:::C_acf’
+  See the note in ?`:::` about the use of this operator.
+  Including base/recommended package(s):
+  ‘stats’
+* checking S3 generic/method consistency ... WARNING
+neff:
+  function(x, ...)
+neff.default:
+  function(x, lag.max, min_rho)
+
+print:
+  function(x, ...)
+print.spectra:
+  function(spectra, n, ...)
+
+plot:
+  function(x, ...)
+plot.spectra:
+  function(spectra, type, ...)
+
+str:
+  function(object, ...)
+str.spectra:
+  function(spectra, ...)
+
+See section ‘Generic functions and methods’ in the ‘Writing R
+Extensions’ manual.
+* checking replacement functions ... WARNING
+  ‘[[<-.spectra’
+The argument of a replacement function which corresponds to the right
+hand side must be named ‘value’.
+* checking foreign function calls ... WARNING
+Foreign function call to a base package:
+  .Call(stats:::C_acf, ...)
+Packages should not make .C/.Call/.External/.Fortran calls to a base
+package. They are not part of the API, for use only by R itself and
+subject to change without notice.
+* checking R code for possible problems ... NOTE
+defparam: no visible global function definition for ‘data’
+dtnorm: no visible global function definition for ‘dnorm’
+dtnorm: no visible global function definition for ‘pnorm’
+EDR: no visible global function definition for ‘data’
+EDR: no visible binding for global variable ‘pftmapping’
+generate.noise: no visible global function definition for ‘dnorm’
+generate.noise: no visible global function definition for ‘median’
+generate.noise: no visible global function definition for ‘rnorm’
+generate.rsr.all: no visible global function definition for ‘data’
+generate.rsr.all: no visible binding for global variable
+  ‘raw.sensor.data’
+generate.rsr.all: no visible binding for global variable
+  ‘fwhm.aviris.ng’
+generate.rsr.all: no visible binding for global variable
+  ‘fwhm.aviris.classic’
+generate.rsr.all: no visible binding for global variable
+  ‘fwhm.hyperion’
+generate.rsr.all: no visible binding for global variable
+  ‘bandwidth.chrisproba’
+get.EDR.output: no visible global function definition for ‘read.table’
+interpolate.rsr: no visible global function definition for ‘splinefun’
+invert_bt: no visible global function definition for ‘modifyList’
+invert_bt: no visible binding for global variable ‘sampler’
+invert.custom: no visible global function definition for
+  ‘txtProgressBar’
+invert.custom: no visible global function definition for
+  ‘setTxtProgressBar’
+invert.custom: no visible binding for global variable ‘sd’
+invert.custom: no visible global function definition for ‘cor’
+invert.custom: no visible global function definition for ‘runif’
+invert.custom: no visible global function definition for ‘rgamma’
+plot.spectra: no visible global function definition for ‘plot’
+print.spectra: no visible global function definition for ‘head’
+print.spectra: no visible global function definition for ‘tail’
+priorfunc.prospect : prior: no visible global function definition for
+  ‘dlnorm’
+process_output: no visible global function definition for ‘window’
+process.licor.rsr: no visible global function definition for ‘read.csv’
+process.licor.rsr: no visible global function definition for
+  ‘complete.cases’
+prospect_bt_prior: no visible global function definition for
+  ‘modifyList’
+read.rsr.folder: no visible global function definition for ‘read.csv’
+resample.default: no visible global function definition for ‘approxfun’
+resample.default: no visible global function definition for ‘splinefun’
+rsr.from.fwhm: no visible global function definition for ‘qnorm’
+rsr.from.fwhm: no visible binding for global variable ‘dnorm’
+rtnorm: no visible global function definition for ‘rnorm’
+rtnorm: no visible global function definition for ‘qnorm’
+rtnorm: no visible global function definition for ‘runif’
+rtnorm: no visible global function definition for ‘pnorm’
+spectral.response: no visible binding for global variable ‘sensor.rsr’
+summary_simple: no visible binding for global variable ‘sd’
+summary_simple: no visible binding for global variable ‘quantile’
+summary_simple: no visible binding for global variable ‘median’
+Undefined global functions or variables:
+  approxfun bandwidth.chrisproba complete.cases cor data dlnorm dnorm
+  fwhm.aviris.classic fwhm.aviris.ng fwhm.hyperion head median
+  modifyList pftmapping plot pnorm qnorm quantile raw.sensor.data
+  read.csv read.table rgamma rnorm runif sampler sd sensor.rsr
+  setTxtProgressBar splinefun tail txtProgressBar window
+Consider adding
+  importFrom("graphics", "plot")
+  importFrom("stats", "approxfun", "complete.cases", "cor", "dlnorm",
+             "dnorm", "median", "pnorm", "qnorm", "quantile", "rgamma",
+             "rnorm", "runif", "sd", "splinefun", "window")
+  importFrom("utils", "data", "head", "modifyList", "read.csv",
+             "read.table", "setTxtProgressBar", "tail", "txtProgressBar")
+to your NAMESPACE file.
+
+Found the following calls to data() loading into the global environment:
+File ‘PEcAnRTM/R/defparam.R’:
+  data(model.list)
+File ‘PEcAnRTM/R/edr.wrapper.R’:
+  data(pftmapping, package = "PEcAn.ED2")
+File ‘PEcAnRTM/R/generate-rsr.R’:
+  data(raw.sensor.data)
+See section ‘Good practice’ in ‘?data’.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented data sets:
+  ‘dataSpec_prospectd’ ‘model.list’ ‘bandwidth.chrisproba’
+  ‘fwhm.aviris.classic’ ‘fwhm.aviris.ng’ ‘fwhm.hyperion’ ‘rsr.avhrr’
+  ‘rsr.landsat5’ ‘rsr.landsat7’ ‘rsr.landsat8’ ‘rsr.modis’ ‘rsr.viirs’
+  ‘sensor.rsr’ ‘testspec_ACRU’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... WARNING
+Codoc mismatches from documentation object '[[<-.spectra':
+[[<-.spectra
+  Code: function(spectra, wavelength, j, values)
+  Docs: function(spectra, wavelength, j, values, value)
+  Argument names in docs not in code:
+    value
+
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'EDR.preprocess.history'
+  ‘output.path’
+
+Undocumented arguments in documentation object 'bt_check_convergence'
+  ‘samples’ ‘threshold’ ‘use_CI’ ‘use_mpsrf’
+
+Undocumented arguments in documentation object 'corr_max_lag'
+  ‘nx’ ‘r’ ‘sig.level’ ‘power’ ‘...’
+
+Undocumented arguments in documentation object 'generate.rsr.all'
+  ‘path.to.licor’
+
+Undocumented arguments in documentation object 'invert.lsq'
+  ‘upper’
+Documented arguments not in \usage in documentation object 'invert.lsq':
+  ‘uppper’
+
+Undocumented arguments in documentation object 'matplot'
+  ‘...’
+
+Undocumented arguments in documentation object 'matplot.default'
+  ‘...’
+
+Undocumented arguments in documentation object 'neff'
+  ‘...’
+
+Undocumented arguments in documentation object 'plot.spectra'
+  ‘type’
+
+Undocumented arguments in documentation object 'rtm_loglike'
+  ‘nparams’ ‘model’ ‘observed’ ‘lag.max’ ‘verbose’ ‘...’
+
+Undocumented arguments in documentation object 'setup_edr'
+  ‘...’
+
+Undocumented arguments in documentation object 'str.spectra'
+  ‘...’
+
+Undocumented arguments in documentation object '[[<-.spectra'
+  ‘value’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... WARNING
+  
+  Note: significantly better compression could be obtained
+        by using R CMD build --resave-data
+                           old_size new_size compress
+  dataSpec_prospectd.RData     36Kb     22Kb       xz
+  raw.sensor.data.RData       109Kb     82Kb       xz
+  sensor.rsr.RData            2.3Mb    1.9Mb       xz
+  testspec.RData              1.2Mb    956Kb       xz
+* checking line endings in C/C++/Fortran sources/headers ... OK
+* checking line endings in Makefiles ... OK
+* checking compilation flags in Makevars ... OK
+* checking for GNU extensions in Makefiles ... OK
+* checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
+* checking pragmas in C/C++ headers and code ... OK
+* checking compilation flags used ... OK
+* checking compiled code ... NOTE
+File ‘PEcAnRTM/libs/PEcAnRTM.so’:
+  Found no calls to: ‘R_registerRoutines’, ‘R_useDynamicSymbols’
+
+It is good practice to register native routines and to disable symbol
+search.
+
+See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
+* checking files in ‘vignettes’ ... WARNING
+Files in the 'vignettes' directory but no files in 'inst/doc':
+  ‘edr.sensitivity.R’, ‘invert.edr.R’, ‘pecanrtm.vignette.Rmd’,
+    ‘test.edr.R’
+Files named as vignettes but with no recognized vignette engine:
+   ‘vignettes/pecanrtm.vignette.Rmd’
+(Is a VignetteBuilder field missing?)
+* checking examples ... OK
+* DONE
+Status: 9 WARNINGs, 3 NOTEs

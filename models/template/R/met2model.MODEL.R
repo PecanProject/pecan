@@ -16,6 +16,7 @@
 ##' @param in.path path on disk where CF file lives
 ##' @param in.prefix prefix for each file
 ##' @param outfolder location where model specific output is written.
+##' @param overwrite logical: replace output files if they already exist?
 ##' @return OK if everything was succesful.
 ##' @export
 ##' @author Rob Kooper

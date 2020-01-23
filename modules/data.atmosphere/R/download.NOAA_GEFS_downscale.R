@@ -207,17 +207,17 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   forecasts = matrix(ncol = length(noaa_data)+ 2, nrow = 0)
   colnames(forecasts) <- c(cf_var_names, "timestamp", "NOAA.member")
   
-  index = matrix(ncol = length(noaa_data), nrow = 64)
+  index = matrix(ncol = length(noaa_data), nrow = length(time))
   for(i in 1:21){
     rm(index)
-    index = matrix(ncol = length(noaa_data), nrow = 64)
+    index = matrix(ncol = length(noaa_data), nrow = length(time))
     for(j in 1:length(noaa_data)){
       index[,j] <- noaa_data[[j]][i,]
       colnames(index) <- c(cf_var_names) 
       index <- as.data.frame(index)
     }
     index$timestamp <- as.POSIXct(time)
-    index$NOAA.member <- rep(i, times = 64)
+    index$NOAA.member <- rep(i, times = length(time))
     forecasts <- rbind(forecasts, index)
   }
   

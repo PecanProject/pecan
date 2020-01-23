@@ -363,7 +363,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   if (!is.null(custom_tags)) {
     # Convert numeric tags to numeric
     # Anything that isn't converted to NA via `as.numeric` is numeric
-    custom_tags <- lapply(custom_tags,
+    custom_tags <- lapply(custom_tags, function(x)
                           tryCatch(as.numeric(x), warning = function(e) x))
     # Figure out what is a numeric vector
     # Look for a list of numbers like: "1,2,5"
@@ -537,6 +537,9 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         if (!is.null(converted.defaults)){
           vals <- modifyList(vals, converted.defaults)
         }
+        
+        ## Make sure that include_pft is set to 1
+        vals$include_pft = 1
 
         pft.xml <- PEcAn.settings::listToXml(vals, "pft")
         xml <- XML::append.xmlNode(xml, pft.xml)

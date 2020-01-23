@@ -7,7 +7,37 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
-### Fixes
+### Fixed
+
+- fixed and added tests for `get.rh` function in PEcAn.data.atmosphere 
+- Invalid .zenodo.json that broke automatic archiving on Zenodo ([b56ef53](https://github.com/PecanProject/pecan/commit/b56ef53888d73904c893b9e8c8cfaeedd7b1edbe))
+- Fixed a filehandle leak in multi-year runs of PEcAn.BIOCRO::met2model.BIOCRO: It was only closing the last input file it processed (#2485).
+- Fix issue with cruncep download: use netcdf subset (ncss) method instead of opendap (#2424).
+- The `parse` option to `PEcAn.utils::read_web_config` had no effect when `expand` was TRUE (#2421).
+- Fixed a typo that made `PEcAn.DB::symmetric_setdiff` falsely report no differences (#2428).
+- sipnet2netcdf will now only extract the data for the year requested (#2187)
+- Fixed Priors vignette (#2439).
+- When building sipnet model would not set correct model version
+
+### Changed
+- PEcAn.priors: renamed functions that looked like S3 methods but were not: `plot.posterior.density`->`plot_posterior.density`, `plot.prior.density`->`plot_prior.density`, `plot.trait`->`plot_trait` (#2439).
+- Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
+- No longer writing an arbitrary num for each PFT, this was breaking ED runs potentially.
+- The pecan/data container has no longer hardcoded path for postgres
+- PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
+
+### Added
+- Basic coupling for models BASGRA_N and STICS.
+- PEcAn.priors now exports functions `priorfig` and `plot_densities` (#2439).
+- Models monitoring container for Docker now shows a webpage with models it has seen
+- Added small container to check if certain services are up, used as initi container for kubernetes
+
+## [1.7.1] - 2018-09-12
+
+### Fixed
+- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
+- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+- `PEcAn.ED2::met2model.ED2` now skips processing of years for which all output files are already present (unless `overwrite = TRUE`). This prevents a lot of unnecessary work when extending an existing ED met record.
 - Fixed issue that prevented modellauncher from working properly #2262
 - Use explicit namespacing (`package::function`) throughout `PEcAn.meta.analysis`. Otherwise, many of these functions would fail when trying to run a meta-analysis outside of the PEcAn workflow (i.e. without having loaded the packages first) (#2351).
 - Standardize how `PEcAn.DB` tests create database connections, and make sure tests work with both the newer `Postgres` and older `PostgreSQL` drivers (#2351).
@@ -56,11 +86,6 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
 - Removed package `PEcAn.data.mining` from the Make build. It can still be installed directly from R if desired, but is skipped by default because it is in early development, does not yet export any functions, and creates a dependency on the (large, often annoying to install) ImageMagick library.
 - Fully deprecate support for `MySQL` database driver. Now, only `PostgreSQL` (and, experimentally, `RPostgres`) are supported. With this, remove `RMySQL` dependency in several places.
-
-### Fixed
-- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
-- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
-- `PEcAn.ED2::met2model.ED2` now skips processing of years for which all output files are already present (unless `overwrite = TRUE`). This prevents a lot of unnecessary work when extending an existing ED met record.
 
 ## [1.7.0] - 2018-12-09
 

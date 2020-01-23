@@ -1,0 +1,56 @@
+* using log directory ‘/tmp/Rtmp3UHCCJ/PEcAn.all.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.all/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.all’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... NOTE
+Depends: includes the non-default packages:
+  ‘PEcAn.DB’ ‘PEcAn.settings’ ‘PEcAn.MA’ ‘PEcAn.logger’ ‘PEcAn.utils’
+  ‘PEcAn.uncertainty’ ‘PEcAn.data.atmosphere’ ‘PEcAn.data.land’
+  ‘PEcAn.data.remote’ ‘PEcAn.assim.batch’ ‘PEcAn.emulator’
+  ‘PEcAn.priors’ ‘PEcAn.benchmark’ ‘PEcAn.remote’ ‘PEcAn.workflow’
+Adding so many packages to the search path is excessive and importing
+selectively is preferable.
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.all’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented data sets:
+  ‘pecan.packages’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+Status: 1 WARNING, 2 NOTEs

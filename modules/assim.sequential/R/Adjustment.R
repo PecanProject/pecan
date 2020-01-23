@@ -30,6 +30,7 @@ adj.ens<-function(Pf, X, mu.f, mu.a, Pa){
 
   }
   Z[is.na(Z)]<-0
+  Z[is.infinite(Z)] <- 0
   
   ## analysis
   S_a  <- svd(Pa)

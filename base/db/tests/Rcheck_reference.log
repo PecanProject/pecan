@@ -1,0 +1,194 @@
+* using log directory ‘/tmp/RtmpzhxcCR/PEcAn.DB.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.DB/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.DB’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.DB’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+clone_pft: no visible binding for global variable ‘name’
+clone_pft: no visible binding for global variable ‘id’
+clone_pft: no visible binding for global variable ‘created_at’
+clone_pft: no visible binding for global variable ‘updated_at’
+clone_pft: no visible binding for global variable ‘pft_id’
+db.exists: no visible binding for '<<-' assignment to ‘user.permission’
+db.exists: no visible binding for global variable ‘user.permission’
+dbfile.check: no visible binding for global variable ‘container_type’
+dbfile.check: no visible binding for global variable ‘container_id’
+dbfile.check: no visible binding for global variable ‘machine_id’
+dbfile.check: no visible binding for global variable ‘updated_at’
+dbHostInfo: no visible binding for global variable ‘sync_host_id’
+dbHostInfo: no visible binding for global variable ‘sync_start’
+dbHostInfo: no visible binding for global variable ‘sync_end’
+get_run_ids: no visible binding for global variable ‘run_id’
+get_users: no visible binding for global variable ‘id’
+get_workflow_ids: no visible binding for global variable ‘workflow_id’
+get.trait.data.pft: no visible binding for global variable ‘pft_id’
+get.trait.data.pft: no visible binding for global variable ‘created_at’
+get.trait.data.pft: no visible global function definition for ‘head’
+get.trait.data.pft: no visible binding for global variable ‘stat’
+get.trait.data.pft: no visible binding for global variable ‘trait’
+insert.format.vars: no visible binding for global variable ‘id’
+insert.format.vars: no visible binding for global variable ‘name’
+insert.format.vars: no visible global function definition for ‘collect’
+load_data_single_run: no visible global function definition for
+  ‘read.output’
+load_data_single_run: no visible binding for global variable ‘var_name’
+load_data_single_run: no visible binding for global variable ‘vals’
+load_data_single_run: no visible binding for global variable ‘posix’
+match_dbcols: no visible global function definition for ‘head’
+match_dbcols: no visible binding for global variable ‘.’
+match_dbcols: no visible binding for global variable ‘as’
+query_pfts: no visible binding for global variable ‘name’
+query.data: no visible binding for global variable ‘settings’
+query.format.vars: no visible binding for global variable ‘variable_id’
+query.format.vars: no visible binding for global variable
+  ‘storage_type’
+query.pft_cultivars: no visible binding for global variable ‘name’
+query.pft_cultivars: no visible binding for global variable ‘pft_type’
+query.pft_cultivars: no visible binding for global variable ‘name.mt’
+query.pft_cultivars: no visible binding for global variable
+  ‘cultivar_id’
+query.pft_cultivars: no visible binding for global variable ‘specie_id’
+query.pft_cultivars: no visible binding for global variable ‘genus’
+query.pft_cultivars: no visible binding for global variable ‘species’
+query.pft_cultivars: no visible binding for global variable
+  ‘scientificname’
+query.pft_cultivars: no visible binding for global variable ‘name.cv’
+query.priors: no visible binding for global variable ‘settings’
+query.traits: no visible binding for global variable ‘settings’
+query.traits: no visible binding for global variable ‘name’
+rename_jags_columns: no visible binding for global variable ‘stat’
+rename_jags_columns: no visible binding for global variable ‘n’
+rename_jags_columns: no visible binding for global variable ‘trt_id’
+rename_jags_columns: no visible binding for global variable ‘site_id’
+rename_jags_columns: no visible binding for global variable
+  ‘citation_id’
+rename_jags_columns: no visible binding for global variable
+  ‘greenhouse’
+runs: no visible binding for global variable ‘folder’
+runs: no visible binding for global variable ‘id’
+runs: no visible binding for global variable ‘ensemble_id’
+search_reference_single: no visible binding for global variable ‘score’
+search_reference_single: no visible binding for global variable
+  ‘author’
+search_reference_single: no visible binding for global variable
+  ‘author_family’
+search_reference_single: no visible binding for global variable
+  ‘author_given’
+search_reference_single: no visible binding for global variable
+  ‘issued’
+workflows: no visible binding for global variable ‘workflow_id’
+Undefined global functions or variables:
+  . as author author_family author_given citation_id collect
+  container_id container_type created_at cultivar_id ensemble_id folder
+  genus greenhouse head id issued machine_id n name name.cv name.mt
+  pft_id pft_type posix read.output run_id scientificname score
+  settings site_id specie_id species stat storage_type sync_end
+  sync_host_id sync_start trait trt_id updated_at user.permission vals
+  var_name variable_id workflow_id
+Consider adding
+  importFrom("methods", "as")
+  importFrom("utils", "head")
+to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
+contains 'methods').
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... NOTE
+Rd file 'dbfile.input.insert.Rd':
+  \examples lines wider than 100 characters:
+       dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
+
+Rd file 'insert.format.vars.Rd':
+  \examples lines wider than 100 characters:
+       insert.format.vars(con = bety$con, format_name = "LTER-HFR-103", mimetype_id = 1090, notes = "NPP from Harvard Forest.", header = FAL ... [TRUNCATED]
+
+Rd file 'query.data.Rd':
+  \usage lines wider than 90 characters:
+       extra.columns = "ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ",
+
+These lines will be truncated in the PDF manual.
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'get_workflow_ids'
+  ‘all.ids’
+
+Undocumented arguments in documentation object 'ncdays2date'
+  ‘time’ ‘unit’
+
+Undocumented arguments in documentation object 'query.data'
+  ‘store.unconverted’
+
+Undocumented arguments in documentation object 'query.file.path'
+  ‘input.id’
+Documented arguments not in \usage in documentation object 'query.file.path':
+  ‘input_id’
+
+Undocumented arguments in documentation object 'query.format.vars'
+  ‘input.id’
+Documented arguments not in \usage in documentation object 'query.format.vars':
+  ‘input_id’
+
+Undocumented arguments in documentation object 'query.site'
+  ‘site.id’
+Documented arguments not in \usage in documentation object 'query.site':
+  ‘site_id’
+
+Undocumented arguments in documentation object 'query.trait.data'
+  ‘con’ ‘update.check.only’ ‘...’
+
+Undocumented arguments in documentation object 'query_pfts'
+  ‘strict’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... WARNING
+Argument items with no description in Rd object 'query_pfts':
+  ‘modeltype’
+
+* checking for unstated dependencies in examples ... OK
+* checking files in ‘vignettes’ ... WARNING
+Files in the 'vignettes' directory but no files in 'inst/doc':
+  ‘betydb_access.Rmd’, ‘create_sites.geometry.Rmd’
+Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+Status: 4 WARNINGs, 2 NOTEs

@@ -93,7 +93,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                        password = dbparms$password)
   
   con <- bety$con
-  on.exit(PEcAn.DB::db.close(con))
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
@@ -147,6 +147,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
       stage$download.raw <- FALSE
       stage$local <- TRUE
     }
+  }else{
+    stage$local <- FALSE
   }
   
   PEcAn.logger::logger.debug(stage)
@@ -286,9 +288,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   if (stage$standardize) {
-    standardize_result = list()
+    standardize_result <- list()
     
-    for (i in 1:length(cf.id[[1]])) {
+    for (i in seq_along(cf.id[[1]])) {
 
       if (register$scale == "regional") {
         #### Site extraction
@@ -322,15 +324,15 @@ met.process <- function(site, input_met, start_date, end_date, model,
       }
       
     } # End for loop
-    ready.id = list(input.id = NULL, dbfile.id = NULL)
-    
-    for (i in 1:length(standardize_result)) {
+    ready.id <- list(input.id = NULL, dbfile.id = NULL)
+
+    for (i in seq_along(standardize_result)) {
       ready.id$input.id <- c(ready.id$input.id, standardize_result[[i]]$input.id)
       ready.id$dbfile.id <- c(ready.id$dbfile.id, standardize_result[[i]]$dbfile.id)
     }
     
   } else {
-    ready.id = input_met$id
+    ready.id <- input_met$id
   }
 
   #--------------------------------------------------------------------------------------------------#
@@ -361,14 +363,12 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     register = register,
                                     ensemble_name = i)
       }
-    
-    
-    
-    model.id = list()
-    model.file.info = list()
-    model.file = list()
-    
-    for (i in 1:length(met2model.result)) {
+
+    model.id <- list()
+    model.file.info <- list()
+    model.file <- list()
+
+    for (i in seq_along(met2model.result)) {
       model.id[[i]]  <- met2model.result[[i]]$model.id
       model.file.info[[i]] <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id[[i]]$dbfile.id), con)
       model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
@@ -381,8 +381,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
     
     input_met$id <- list()
     input_met$path <- list()
-    
-    for (i in 1:length(model.id)) {
+
+    for (i in seq_along(model.id)) {
       input_met$id[[paste0("id", i)]] <- model.id[[i]]$input.id
       input_met$path[[as.character(paste0("path", i))]] <- model.file[[i]]
     }

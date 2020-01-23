@@ -1,0 +1,123 @@
+* using log directory ‘/tmp/RtmpNKOZJQ/PEcAn.settings.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.settings/DESCRIPTION’ ... OK
+* this is package ‘PEcAn.settings’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.settings’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... NOTE
+Non-standard file/directory found at top level:
+  ‘examples’
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... NOTE
+Package in Depends field not imported from: ‘methods’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
+* checking S3 generic/method consistency ... WARNING
+listToXml:
+  function(x, ...)
+listToXml.MultiSettings:
+  function(item, tag, collapse)
+
+listToXml:
+  function(x, ...)
+listToXml.default:
+  function(item, tag)
+
+update:
+  function(object, ...)
+update.settings:
+  function(settings, force)
+
+See section ‘Generic functions and methods’ in the ‘Writing R
+Extensions’ manual.
+
+Found the following apparent S3 methods exported but not registered:
+  update.settings
+See section ‘Registering S3 methods’ in the ‘Writing R Extensions’
+manual.
+* checking replacement functions ... WARNING
+  ‘$<-.MultiSettings’ ‘[<-.MultiSettings’ ‘[[<-.MultiSettings’
+The argument of a replacement function which corresponds to the right
+hand side must be named ‘value’.
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+check.ensemble.settings: no visible binding for global variable
+  ‘startdate’
+check.ensemble.settings: no visible binding for global variable
+  ‘enddate’
+site.pft.link.settings: no visible binding for global variable ‘.’
+Undefined global functions or variables:
+  . enddate startdate
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  ‘expandMultiSettings’ ‘listToXml’ ‘printAll’ ‘settingNames’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'addSecrets'
+  ‘force’
+
+Undocumented arguments in documentation object 'check.model.settings'
+  ‘dbcon’
+
+Undocumented arguments in documentation object 'check.run.settings'
+  ‘dbcon’
+
+Undocumented arguments in documentation object 'check.settings'
+  ‘force’
+
+Undocumented arguments in documentation object 'check.workflow.settings'
+  ‘dbcon’
+
+Undocumented arguments in documentation object 'clean.settings'
+  ‘write’
+
+Undocumented arguments in documentation object 'fix.deprecated.settings'
+  ‘force’
+
+Undocumented arguments in documentation object 'update.settings'
+  ‘force’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+Status: 4 WARNINGs, 3 NOTEs

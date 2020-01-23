@@ -49,7 +49,7 @@ sda.enkf <- function(settings,
   host       <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
-  processvar <- settings$state.data.assimilation$process.variance %>% as.logical()
+  processvar <- as.logical(settings$state.data.assimilation$process.variance)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
   
@@ -59,10 +59,10 @@ sda.enkf <- function(settings,
   # Site location first col is the long second is the lat and row names are the site ids
   site.ids <- settings$run$site$id
   
-  site.locs <- data.frame(Lon=settings$run$site$lon %>% as.numeric,
-                          Lat=settings$run$site$lat %>% as.numeric) %>%
-    `colnames<-`(c("Lon","Lat")) %>%
-    `rownames<-`(site.ids)
+  site.locs <- data.frame(Lon = as.numeric(settings$run$site$lon),
+                          Lat = as.numeric(settings$run$site$lat))
+  colnames(site.locs) <- c("Lon","Lat")
+  rownames(site.locs) <- site.ids
   # start cut determines what is the best year to start spliting the met based on if we start  with a restart or not.  
   if (!is.null(restart)) {
     start.cut <-lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)-1
@@ -113,7 +113,7 @@ sda.enkf <- function(settings,
                                                               start.time = start.cut, 
                                                               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3, tz="UTC"),
                                                               inputs =  settings$run$inputs$met$path[[i]],
-                                                              overwrite=F)) 
+                                                              overwrite=T)) 
     }
   }
   if (control$debug) browser()
@@ -211,7 +211,7 @@ sda.enkf <- function(settings,
                 file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda)))
     }
     
-    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + 1 #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
+    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + length(FORECAST) #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
     
   }else{
     t = 1
@@ -350,18 +350,18 @@ sda.enkf <- function(settings,
     }
     
     #----chaning the extension of nc files to a more specific date related name
-    list.files(
+   files <-  list.files(
       path = file.path(settings$outdir, "out"),
       "*.nc$",
       recursive = TRUE,
-      full.names = TRUE
-    ) %>%
-      walk( function(.x){
+      full.names = TRUE)
+   files <-  files[grep(pattern = "SDA*", files, invert = TRUE)]
     
-        file.rename(.x , file.path(dirname(.x),
-                                   paste0(gsub(" ","",names(obs.mean)[t] %>% as.character()),".nc"))
-                    )
-      })
+    
+   file.rename(files, 
+               file.path(dirname(files), 
+                  paste0("SDA_", basename(files), "_", gsub(" ", "", names(obs.mean)[t]), ".nc") ) )
+    
     #--- Reformating X
     X <- do.call(rbind, X)
     
@@ -387,8 +387,8 @@ sda.enkf <- function(settings,
       names(input.order.cov) <- operators
       
       ### this is for pfts not sure if it's always nessecary?
-      choose <- sapply(colnames(X), agrep, x=names(obs.mean[[t]]), max=1, USE.NAMES = F) %>% unlist
-      choose.cov <- sapply(colnames(X), agrep, x=colnames(obs.cov[[t]]), max=1, USE.NAMES = F) %>% unlist
+      choose <- unlist(sapply(colnames(X), agrep, x=names(obs.mean[[t]]), max=1, USE.NAMES = F))
+      choose.cov <- unlist(sapply(colnames(X), agrep, x=colnames(obs.cov[[t]]), max=1, USE.NAMES = F))
       
       if(!any(choose)){
         choose <- unlist(input.order)
@@ -407,8 +407,7 @@ sda.enkf <- function(settings,
       R <- as.matrix(obs.cov[[t]][choose.cov,choose.cov])
       R[is.na(R)]<-0.1
       
-      if (control$debug)
-        browser()
+      if (control$debug) browser()
       
       # making the mapping matrix
       #TO DO: doesn't work unless it's one to one
