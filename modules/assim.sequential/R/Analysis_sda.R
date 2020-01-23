@@ -199,7 +199,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       tobit2space_pred <<- nimbleModel(tobit2space.model, data = data.tobit2space,
                                        constants = constants.tobit2space, inits = inits.tobit2space(),
                                        name = 'space')
-      browser()
+      
       logprob_y_tobit2space <- tobit2space_pred$calculate('y.censored')
       if(logprob_y_tobit2space < -1000000) logger.warn(paste('Log probability very low for y in tobit2space model during time',t,'. Check initial conditions.'))
       
@@ -258,7 +258,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     if(file.exists(file.path(outdir, paste0('dat.tobit2space',t,'.Rdata')))){
       load(file.path(outdir, paste0('dat.tobit2space',t,'.Rdata')))
     }else{
-      #browser()
+      
       dat.tobit2space.nchains <-
         runMCMC(
           Cmcmc_tobit2space,
@@ -284,8 +284,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       }
       print(gelman.keep.tobit2space)
       
-      #browser()
-      
       if(any(gelman.keep.tobit2space > 1.5)) logger.warn(paste('Gelman value > 1.5 for tobit2space model. Re-assess time point', t))
 
       save(dat.tobit2space, file = file.path(outdir, paste0('dat.tobit2space',t,'.Rdata')))
@@ -296,7 +294,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     try(assessParams(dat = dat.tobit2space[sample(x = 10:nrow(dat.tobit2space),size = 500,replace = F),],wts=wts, Xt = X))
     dev.off()
     
-    #browser()
     ## TO DO Add MCMC Diagnostics, how do we do it for pecan meta-analysis?
     
     ## update parameters
@@ -357,8 +354,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   names(input.order) <- operators
   data_available <- unlist(input.order)
   
-  #browser()
-  
   if(any(grep(names(data_available),pattern = 'direct'))){
     which_direct <- data_available[grep(names(data_available),pattern = 'direct')]
     X_direct_start <- which_direct[1]
@@ -372,7 +367,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   
   if(any(grep(names(data_available),pattern = 'ALR'))){
     
-    # browser()
     which_fcomp <- grep(names(data_available),pattern = 'ALR')
     X_fcomp_start <- which_fcomp[1]
     X_fcomp_end <- which_fcomp[length(which_fcomp)]
@@ -451,7 +445,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     #                   X = rnorm(length(mu.f),mu.f,1),
     #                   y_star = rnorm(length(y.censored),0,1))
     
-    #browser()
     model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
                               constants = constants.tobit, inits = inits.pred(),
                               name = 'base')
@@ -495,7 +488,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     }
     
     conf$printSamplers()
-    #browser()
     ## can monitor y.censored, if you wish, to verify correct behaviour
     #conf$addMonitors('y.censored')
     
@@ -535,7 +527,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     }
     
   }
- # browser()
+
   dat.nchains <-
     runMCMC(
       Cmcmc,
@@ -561,7 +553,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   print(gelman.keep)
   if(any(gelman.keep > 1.5,na.rm = T)) logger.warn(paste('Gelman value > 1.5 for GEF model. Re-assess time point', t))
   
-  #browser()
   try(save(gelman.keep.tobit2space,gelman.keep,file = file.path(outdir, paste0('gelman.diag',t,'.Rdata'))))
   
   dat <- do.call(rbind,dat.nchains)
@@ -576,12 +567,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   iX.mod <- grep("X.mod", colnames(dat), fixed = TRUE)
   
   mu.a <- colMeans(dat[, iX])
-  HACK = FALSE
-  if(HACK==TRUE){
-    adjusts <- sum(mu.a[1:9]) / sum(mu.f[mu.f[1:9]>0]) #+ rnorm(1, 0, sigma_biomass_process)
-    mu.a[1:9] <- colMeans(dat[, iX[1:9]] / adjusts)
-    if(sum(mu.a[1:9])<=0) browser()
-  }
   
   ystar.a <- colMeans(dat[, iystar])
   Pa   <- cov(dat[, iX])
