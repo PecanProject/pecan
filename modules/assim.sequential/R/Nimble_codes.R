@@ -39,41 +39,44 @@ load_nimble <- function(){
   
   rwtmnorm <<- nimbleFunction(
     run = function(n = integer(0), mean = double(1),
-                   cov = double(2), wt = double(0)){
+                   prec = double(2), wt = double(0)){
       returnType(double(1))
-      if(n != 1) nimPrint("rdirchmulti only allows n = 1; using n = 1.")
-      Prob <- rmnorm_chol(n, mean, chol(cov), prec_param = FALSE) * wt
+      if(n != 1) nimPrint("rwtmnorm only allows n = 1; using n = 1.")
+      Prob <- rmnorm_chol(n=1, mean, chol(prec), prec_param = TRUE) * wt
       return(Prob)
     }
   )
   
   dwtmnorm <<- nimbleFunction(
-    run = function(x = double(1), mean = double(1), cov = double(2),
-                   wt = double(0), log = integer(0)){
+    run = function(x = double(1), mean = double(1), prec = double(2),
+                   wt = double(0), log = integer(0, default=0)){
       returnType(double(0))
       
-      logProb <- dmnorm_chol(x = x, mean = mean, cholesky = chol(cov), prec_param = FALSE,log = log) * wt
+      logProb <- dmnorm_chol(x = x, mean = mean, cholesky = chol(prec), 
+                             prec_param = TRUE, log = TRUE) * wt
       
       if(log){return((logProb))} else {return((exp(logProb)))}
     }
   )
   
-  registerDistributions(list(dwtmnorm = list(BUGSdist = "dwtmnorm(mean, cov, wt)", 
-                                             types = c('value = double(1)','mean = double(1)', 'cov = double(2)', 'wt = double(0)'))))
+  registerDistributions(list(dwtmnorm = list(BUGSdist = "dwtmnorm(mean, prec, wt)", 
+                                             types = c('value = double(1)','mean = double(1)', 'prec = double(2)', 'wt = double(0)'))))
   
     #tobit2space.model------------------------------------------------------------------------------------------------
   tobit2space.model <<- nimbleCode({
+    
     for(i in 1:N){
-      y.censored[i,1:J] ~ dwtmnorm(mean = muf[1:J], cov = pf[1:J,1:J], wt = wts[i])
+      
+      y.censored[i,1:J] ~ dwtmnorm(mean = muf[1:J],
+                                   prec = pf[1:J,1:J],
+                                   wt = wts[i]) #
       for(j in 1:J){
         y.ind[i,j] ~ dinterval(y.censored[i,j], 0)
       }
     }
     
-    muf[1:J] ~ dmnorm(mean = mu_0[1:J], cov = pf[1:J,1:J])
-    
-    Sigma[1:J,1:J] <- lambda_0[1:J,1:J]/nu_0
-    pf[1:J,1:J] ~ dinvwish(S = Sigma[1:J,1:J], df = J)
+    muf[1:J] ~ dmnorm(mean = mu_0[1:J], prec = Sigma_0[1:J,1:J])
+    pf[1:J,1:J] ~ dwish(S = lambda_0[1:J,1:J], df = nu_0)
     
   })
   
@@ -102,7 +105,7 @@ load_nimble <- function(){
     }
     
     if(pft2total_TRUE){
-      y_star[X_pft2total_start] <- y_star_create_pft2total(X[X_pft2total_model_start:X_pft2total_model_end])
+      y_star[X_pft2total_start] <- sum(X[X_pft2total_model_start:X_pft2total_model_end])
     }  else{
       
     }
@@ -181,4 +184,67 @@ load_nimble <- function(){
         nested_sampler_list[[1]]$reset()
     )
   )
+  
+  
+  conj_wt_wishart_sampler <<- nimbleFunction(
+    contains = sampler_BASE,
+    setup = function(model, mvSaved, target, control) {
+      
+      targetAsScalar <- model$expandNodeNames(target, returnScalarComponents = TRUE)
+      d <- sqrt(length(targetAsScalar))
+      
+      dep_dmnorm_nodeNames <- model$getDependencies(target, self = F, includeData = T)
+      N_dep_dmnorm <- length(dep_dmnorm_nodeNames)
+      
+      dep_dmnorm_nodeSize <- d #ragged problem refered to on github?
+      
+      calcNodes <- model$getDependencies(target)
+      
+      dep_dmnorm_values <- array(0, c(N_dep_dmnorm,dep_dmnorm_nodeSize))
+      dep_dmnorm_mean <- array(0, c(N_dep_dmnorm,dep_dmnorm_nodeSize))
+      dep_dmnorm_wt <- numeric(N_dep_dmnorm)
+      
+    },
+    run = function(){
+      
+      #Find Prior Values
+      prior_R <- model$getParam(target[1], "R")
+      prior_df <- model$getParam(target[1], "df")
+      
+      #Loop over multivariate normal
+      for (iDep in 1:N_dep_dmnorm) {
+        dep_dmnorm_values[iDep, 1:dep_dmnorm_nodeSize] <<- model$getParam(dep_dmnorm_nodeNames[iDep], 
+                                                                          "value")
+        dep_dmnorm_mean[iDep, 1:dep_dmnorm_nodeSize] <<- model$getParam(dep_dmnorm_nodeNames[iDep], 
+                                                                        "mean")
+        dep_dmnorm_wt[iDep] <<- model$getParam(dep_dmnorm_nodeNames[iDep], 
+                                               "wt")
+        
+      }
+      
+      #Calculate contribution parameters for wishart based on multivariate normal
+      contribution_R <<- nimArray(0, dim = nimC(d, d))
+      contribution_df <<- 0
+      for (iDep in 1:N_dep_dmnorm) {
+        tmp_diff <<- sqrt(dep_dmnorm_wt[iDep]) * asRow(dep_dmnorm_values[iDep, 1:d] - dep_dmnorm_mean[iDep, 1:d])
+        
+        contribution_R <<- contribution_R + t(tmp_diff)%*%tmp_diff
+        
+        contribution_df <<- contribution_df + dep_dmnorm_wt[iDep]
+      }
+      
+      #Draw a new value based on prior and contribution parameters
+      newValue <- rwish_chol(1, cholesky = chol(prior_R + contribution_R), 
+                             df = prior_df + contribution_df, scale_param = 0)
+      model[[target]] <<- newValue
+      
+      #Calculate probability
+      calculate(model, calcNodes)
+      nimCopy(from = model, to = mvSaved, row = 1, nodes = calcNodes, 
+              logProb = TRUE)
+    },
+    methods = list(   reset = function () {}   )
+  )
+  
+  
 }
