@@ -18,7 +18,7 @@ set -e
     # Later Roxygen versions produce a lot of formatting changes (mostly whitespace), so waiting to upgrade.
     # When ready we will upgrade to Roxygen 7.0, commit all changes at once,
     # and make all developers update their own Roxygen installations at the same time.
-    Rscript -e 'devtools::install_version("roxygen2", version = "6.1.1", repos = "http://cran.us.r-project.org")'
+    Rscript -e 'devtools::install_version("roxygen2", version = "6.1.1", repos = "https://cloud.r-project.org")'
     travis_time_end
 
     # MCMCpack >= 1.4-5 requires R >= 3.6;
@@ -26,7 +26,7 @@ set -e
     # (but only then -- new MCMCpack version is more efficient)
     if [[ `Rscript -e 'cat(getRversion() < "3.6")'` = "TRUE" ]]; then
         travis_time_start "pecan_install_MCMCpack" "Installing MCMCpack 1.4-4 (last version compatible with R < 3.6)"
-        Rscript -e 'devtools::install_version("MCMCpack", version = "1.4-4", repos = "http://cran.us.r-project.org")'
+        Rscript -e 'devtools::install_version("MCMCpack", version = "1.4-4", repos = "https://cloud.r-project.org")'
         travis_time_end
     fi
 )
