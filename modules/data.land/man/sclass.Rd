@@ -11,6 +11,9 @@ sclass(sandfrac, clayfrac)
 
 \item{clayfrac}{}
 }
+\value{
+
+}
 \description{
 This function determines the soil class number based on the fraction of sand, clay, and silt
 }

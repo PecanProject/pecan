@@ -9,6 +9,9 @@ outlier.detector.boxplot(X)
 \arguments{
 \item{X}{A list of dataframes}
 }
+\value{
+
+}
 \description{
 This function performs a simple outlier replacement on all the columns of dataframes inside a list
 }

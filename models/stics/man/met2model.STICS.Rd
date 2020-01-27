@@ -4,8 +4,15 @@
 \alias{met2model.STICS}
 \title{Write STICS met files}
 \usage{
-met2model.STICS(in.path, in.prefix, outfolder, start_date, end_date,
-  overwrite = FALSE, ...)
+met2model.STICS(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{path on disk where CF file lives}

@@ -5,8 +5,15 @@
 \alias{plot.netcdf}
 \title{Load the tower dataset and create a plot.}
 \usage{
-plot.netcdf(datafile, yvar, xvar = "time", width = 800, height = 600,
-  filename = NULL, year = NULL)
+plot.netcdf(
+  datafile,
+  yvar,
+  xvar = "time",
+  width = 800,
+  height = 600,
+  filename = NULL,
+  year = NULL
+)
 }
 \arguments{
 \item{datafile}{the specific datafile to use.}
@@ -20,8 +27,6 @@ used.}
 can be null to use existing device, otherwise it will try and}
 
 \item{year}{the year this data is for (only used in the title).}
-
-\item{the}{width of the image generated, default is 800 pixels.}
 
 \item{the}{height of the image generated, default is 600 pixels.}
 }

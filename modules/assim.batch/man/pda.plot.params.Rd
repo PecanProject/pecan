@@ -4,8 +4,13 @@
 \alias{pda.plot.params}
 \title{Plot PDA Parameter Diagnostics}
 \usage{
-pda.plot.params(settings, mcmc.param.list, prior.ind,
-  par.file.name = NULL, sffx)
+pda.plot.params(
+  settings,
+  mcmc.param.list,
+  prior.ind,
+  par.file.name = NULL,
+  sffx
+)
 }
 \arguments{
 \item{settings}{PEcAn settings list}

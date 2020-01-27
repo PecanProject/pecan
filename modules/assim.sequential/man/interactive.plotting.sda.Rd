@@ -10,26 +10,82 @@
 \alias{post.analysis.multisite.ggplot}
 \title{Internal functions for plotting SDA outputs. Interactive, post analysis time-series and bias plots in base plotting system and ggplot}
 \usage{
-interactive.plotting.sda(settings, t, obs.times, obs.mean, obs.cov, obs, X,
-  FORECAST, ANALYSIS)
+interactive.plotting.sda(
+  settings,
+  t,
+  obs.times,
+  obs.mean,
+  obs.cov,
+  obs,
+  X,
+  FORECAST,
+  ANALYSIS
+)
 
-postana.timeser.plotting.sda(settings, t, obs.times, obs.mean, obs.cov,
-  obs, X, FORECAST, ANALYSIS)
+postana.timeser.plotting.sda(
+  settings,
+  t,
+  obs.times,
+  obs.mean,
+  obs.cov,
+  obs,
+  X,
+  FORECAST,
+  ANALYSIS
+)
 
-postana.bias.plotting.sda(settings, t, obs.times, obs.mean, obs.cov, obs,
-  X, FORECAST, ANALYSIS)
+postana.bias.plotting.sda(
+  settings,
+  t,
+  obs.times,
+  obs.mean,
+  obs.cov,
+  obs,
+  X,
+  FORECAST,
+  ANALYSIS
+)
 
 postana.bias.plotting.sda.corr(t, obs.times, X, aqq, bqq)
 
-post.analysis.ggplot(settings, t, obs.times, obs.mean, obs.cov, obs, X,
-  FORECAST, ANALYSIS, plot.title = NULL)
+post.analysis.ggplot(
+  settings,
+  t,
+  obs.times,
+  obs.mean,
+  obs.cov,
+  obs,
+  X,
+  FORECAST,
+  ANALYSIS,
+  plot.title = NULL
+)
 
-post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs,
-  X, FORECAST, ANALYSIS, plot.title = NULL)
+post.analysis.ggplot.violin(
+  settings,
+  t,
+  obs.times,
+  obs.mean,
+  obs.cov,
+  obs,
+  X,
+  FORECAST,
+  ANALYSIS,
+  plot.title = NULL
+)
 
-post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov,
-  FORECAST, ANALYSIS, plot.title = NULL, facetg = FALSE,
-  readsFF = NULL)
+post.analysis.multisite.ggplot(
+  settings,
+  t,
+  obs.times,
+  obs.mean,
+  obs.cov,
+  FORECAST,
+  ANALYSIS,
+  plot.title = NULL,
+  facetg = FALSE,
+  readsFF = NULL
+)
 }
 \arguments{
 \item{settings}{pecan standard settings list.}

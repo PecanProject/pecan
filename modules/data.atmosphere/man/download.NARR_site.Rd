@@ -4,10 +4,19 @@
 \alias{download.NARR_site}
 \title{Download NARR time series for a single site}
 \usage{
-download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
-  overwrite = FALSE, verbose = FALSE, progress = TRUE,
-  parallel = TRUE, ncores = if (parallel) parallel::detectCores() else
-  NULL, ...)
+download.NARR_site(
+  outfolder,
+  start_date,
+  end_date,
+  lat.in,
+  lon.in,
+  overwrite = FALSE,
+  verbose = FALSE,
+  progress = TRUE,
+  parallel = TRUE,
+  ncores = if (parallel) parallel::detectCores() else NULL,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{Target directory for storing output}

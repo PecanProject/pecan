@@ -9,6 +9,9 @@ soil.units(varname = NA)
 \arguments{
 \item{varname}{}
 }
+\value{
+
+}
 \description{
 Get standard units for a soil variable
 }

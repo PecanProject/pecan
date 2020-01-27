@@ -4,8 +4,14 @@
 \alias{remote.copy.update}
 \title{Copy to remote and update DB}
 \usage{
-remote.copy.update(input_id, remote_dir, local_file_path,
-  remote_file_name = NULL, host, con)
+remote.copy.update(
+  input_id,
+  remote_dir,
+  local_file_path,
+  remote_file_name = NULL,
+  host,
+  con
+)
 }
 \arguments{
 \item{input_id}{Input ID, as a numeric or character}

@@ -15,6 +15,9 @@ extract_soil_nc(in.file, outdir, lat, lon)
 
 \item{lon}{}
 }
+\value{
+
+}
 \description{
 Extract soil data
 }

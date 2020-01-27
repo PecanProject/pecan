@@ -3,7 +3,6 @@
 \docType{package}
 \name{PEcAn.DB}
 \alias{PEcAn.DB}
-\alias{PEcAn.DB-package}
 \title{Database functions for PEcAn, the Predictive Ecosystem Analyzer}
 \description{
 This package provides an interface between PEcAn and the BETY database.

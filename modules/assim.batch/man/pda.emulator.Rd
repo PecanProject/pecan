@@ -4,12 +4,26 @@
 \alias{pda.emulator}
 \title{Paramater Data Assimilation using emulator}
 \usage{
-pda.emulator(settings, external.data = NULL, external.priors = NULL,
-  external.knots = NULL, external.formats = NULL, ensemble.id = NULL,
-  params.id = NULL, param.names = NULL, prior.id = NULL,
-  chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL,
-  ar.target = NULL, jvar = NULL, n.knot = NULL, individual = TRUE,
-  remote = FALSE)
+pda.emulator(
+  settings,
+  external.data = NULL,
+  external.priors = NULL,
+  external.knots = NULL,
+  external.formats = NULL,
+  ensemble.id = NULL,
+  params.id = NULL,
+  param.names = NULL,
+  prior.id = NULL,
+  chain = NULL,
+  iter = NULL,
+  adapt = NULL,
+  adj.min = NULL,
+  ar.target = NULL,
+  jvar = NULL,
+  n.knot = NULL,
+  individual = TRUE,
+  remote = FALSE
+)
 }
 \arguments{
 \item{settings}{a pecan settings list}

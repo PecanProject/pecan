@@ -4,8 +4,7 @@
 \alias{pda.get.model.output}
 \title{Get Model Output for PDA}
 \usage{
-pda.get.model.output(settings, run.id, bety, inputs,
-  external.formats = NULL)
+pda.get.model.output(settings, run.id, bety, inputs, external.formats = NULL)
 }
 \arguments{
 \item{settings}{PEcAn settings list}

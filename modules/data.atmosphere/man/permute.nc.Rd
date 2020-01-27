@@ -4,8 +4,16 @@
 \alias{permute.nc}
 \title{permute.nc}
 \usage{
-permute.nc(in.path, in.prefix, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, ...)
+permute.nc(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}

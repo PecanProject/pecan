@@ -4,8 +4,14 @@
 \alias{symmetric_setdiff}
 \title{Symmetric set difference of two data frames}
 \usage{
-symmetric_setdiff(x, y, xname = "x", yname = "y", namecol = "source",
-  simplify_types = TRUE)
+symmetric_setdiff(
+  x,
+  y,
+  xname = "x",
+  yname = "y",
+  namecol = "source",
+  simplify_types = TRUE
+)
 }
 \arguments{
 \item{x, y}{`data.frame`s to compare}

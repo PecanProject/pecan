@@ -5,8 +5,7 @@
 \alias{plot.prior.density}
 \title{Plots a prior density from a parameterized probability distribution}
 \usage{
-plot_prior.density(prior.density, base.plot = NULL,
-  prior.color = "black")
+plot_prior.density(prior.density, base.plot = NULL, prior.color = "black")
 }
 \arguments{
 \item{prior.density}{data frame containing columns x and y}
