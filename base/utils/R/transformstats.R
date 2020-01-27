@@ -2,7 +2,7 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Transform misc. statistics to SE
 ##'
-##' Automates transformations of SD, MSE, LSD, 95\%CI, HSD, and MSD to conservative estimates of SE.
+##' Automates transformations of SD, MSE, LSD, 95%CI, HSD, and MSD to conservative estimates of SE.
 ##' @name transformstats
 ##' @title Transform Stats 
 ##' @param data data frame with mean, statistic, n, and statistic name: \code{example data <- data.frame(Y=rep(1,5), stat=rep(1,5), n=rep(4,5), statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))}
