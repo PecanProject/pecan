@@ -56,7 +56,7 @@
       <br>
         <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ" target="_blank">Chat Room</a>
       <br>
-        <a href="submitissues.php" target="_blank">Bug Report</a>
+        <a href="http://pecanproject.github.io/Report_an_issue.html" target="_blank">Bug Report</a>
       </p>
     </div>
     <div id="output">

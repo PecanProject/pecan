@@ -1,4 +1,4 @@
-# Database synchronization
+# Database synchronization {#database-sync}
 
 The database synchronization consists of 2 parts:
 - Getting the data from the remote servers to your server
