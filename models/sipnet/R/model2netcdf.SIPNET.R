@@ -184,7 +184,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     t <- ncdf4::ncdim_def(name = "time",
                    longname = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
-                   vals = round(sub_dates_cf,4),
+                   vals = sub_dates_cf,
                    calendar = "standard",
                    unlim = TRUE)
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), 

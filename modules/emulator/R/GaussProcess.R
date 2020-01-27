@@ -24,9 +24,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
   ## isotropic <- FALSE;nugget<-FALSE;method='bayes';ngibbs <- 50; burnin <- 10;thin<- 1;
   ## jump.ic<-c(1.1,0.2); prior <- 'unif'
   
-  ## check for packages
-  library(mvtnorm)
-  library(MCMCpack)
+
   ## library('dietze')
   
   if (burnin > ngibbs) {
@@ -171,7 +169,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
       if (n.unique == n) {
         M <- solve(Tinv + Sinv)
         m <- Tinv %*% (y - mu)
-        W <- rmvnorm(1, M %*% m, M)
+        W <- mvtnorm::rmvnorm(1, M %*% m, M)
         W.full <- W
       } else {
         ##method 1, draw W's individually
@@ -188,7 +186,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
         yagg   <- tapply(y - mu, x.id, sum)
         M      <- solve(id.count * diag(1 / tauv, n.unique) + Sinv)
         m      <- diag(1 / tauv, n.unique) %*% yagg
-        W      <- rmvnorm(1, M %*% m, M)
+        W      <- mvtnorm::rmvnorm(1, M %*% m, M)
         W.full <- W[x.id]
       }
     } else {
@@ -207,8 +205,8 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
         anum.p <- sum(ldinvgamma(psistar, ap, bp))
         aden.p <- sum(ldinvgamma(psi, ap, bp))
       }
-      anum.p <- try(dmvnorm(as.vector(W), rep(0, n.unique), Sstar, log = TRUE) + anum.p, TRUE)
-      aden.p <- dmvnorm(as.vector(W), rep(0, n.unique), S, log = TRUE) + aden.p
+      anum.p <- try(mvtnorm::dmvnorm(as.vector(W), rep(0, n.unique), Sstar, log = TRUE) + anum.p, TRUE)
+      aden.p <- mvtnorm::dmvnorm(as.vector(W), rep(0, n.unique), S, log = TRUE) + aden.p
       if (is.numeric(anum.p) && 
           is.finite(anum.p) && 
           exp(anum.p - aden.p) > runif(1) && 
@@ -229,8 +227,8 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
           anum.p <- sum(ldinvgamma(psistar, ap, bp))
           aden.p <- sum(ldinvgamma(psi, ap, bp))
         }
-        anum.p <- try(dmvnorm(as.vector(W), rep(0, n.unique), Sstar, log = TRUE) + anum.p, TRUE)
-        aden.p <- dmvnorm(as.vector(W), rep(0, n.unique), S, log = TRUE) + aden.p
+        anum.p <- try(mvtnorm::dmvnorm(as.vector(W), rep(0, n.unique), Sstar, log = TRUE) + anum.p, TRUE)
+        aden.p <- mvtnorm::dmvnorm(as.vector(W), rep(0, n.unique), S, log = TRUE) + aden.p
         if (is.numeric(anum.p) && 
             is.finite(anum.p) && 
             exp(anum.p - aden.p) > runif(1) && 
@@ -254,8 +252,8 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
       anum <- ldinvgamma(taustar, aw, bw)
       aden <- ldinvgamma(tauw, aw, bw)
     }
-    anum <- try(anum + dmvnorm(as.vector(W), rep(0, n.unique), Sstar, log = TRUE))
-    aden <- aden + dmvnorm(as.vector(W), rep(0, n.unique), S, log = TRUE)
+    anum <- try(anum + mvtnorm::dmvnorm(as.vector(W), rep(0, n.unique), Sstar, log = TRUE))
+    aden <- aden + mvtnorm::dmvnorm(as.vector(W), rep(0, n.unique), S, log = TRUE)
     if (is.numeric(anum) && 
         is.finite(anum) && 
         exp(anum - aden) > runif(1)) {

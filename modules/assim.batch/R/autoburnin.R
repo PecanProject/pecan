@@ -7,6 +7,7 @@
 #' "moving.window" (default) or "gelman.plot".
 #' @param use.confidence Logical. If TRUE (default), use 95% confidence 
 #' interval for Gelman Diagnostic. If FALSE, use the point estimate.
+#' @param plotfile path
 #' @param ... Other parameters to methods
 #' 
 #' @details 
@@ -68,6 +69,7 @@ getBurnin <- function(jags_out,
 #' @title Automatically calculate and apply burnin value
 #'
 #' @author Michael Dietze, Alexey Shiklomanov
+#' @param jags_out JAGS output
 #' @param return.burnin Logical. If `TRUE`, return burnin value in addition to 
 #' samples (as list). Default = FALSE.
 #' @param ... Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 

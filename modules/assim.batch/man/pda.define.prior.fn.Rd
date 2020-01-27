@@ -7,11 +7,11 @@
 pda.define.prior.fn(prior)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{prior}{prior dataframe}
 }
 \value{
 List of prior functions containing dprior, rprior, qprior, dmvprior, rmvprior.
-        Each of these is a list with one distribution function per parameter.
+Each of these is a list with one distribution function per parameter.
 }
 \description{
 Define PDA Prior Functions

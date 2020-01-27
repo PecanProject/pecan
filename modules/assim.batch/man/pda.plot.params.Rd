@@ -5,10 +5,18 @@
 \title{Plot PDA Parameter Diagnostics}
 \usage{
 pda.plot.params(settings, mcmc.param.list, prior.ind,
-  par.file.name = NULL)
+  par.file.name = NULL, sffx)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{settings}{PEcAn settings list}
+
+\item{mcmc.param.list}{MCMC param list to be sorted}
+
+\item{prior.ind}{indices of the targeted parameters}
+
+\item{par.file.name}{output file name}
+
+\item{sffx}{suffix to the output file names}
 }
 \value{
 Nothing. Plot is generated and saved to PDF.

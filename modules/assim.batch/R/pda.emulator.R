@@ -1,9 +1,24 @@
 ##' Paramater Data Assimilation using emulator
 ##'
 ##' @title Paramater Data Assimilation using emulator
-##' @param settings = a pecan settings list
-##' @param external.data = list of inputs
-##' @param external.priors = list or priors
+##' @param settings  a pecan settings list
+##' @param external.data  list of external inputs
+##' @param external.priors  list of external priors
+##' @param external.knots  list of external knots
+##' @param external.formats bety formats used when function is used without a DB connection, e.g. remote
+##' @param ensemble.id ensemble IDs
+##' @param params.id id of pars
+##' @param param.names names of pars
+##' @param prior.id ids of priors
+##' @param chain how many chains
+##' @param iter how many iterations
+##' @param adapt adaptation intervals
+##' @param adj.min to be used in adjustment
+##' @param ar.target acceptance rate target
+##' @param jvar jump variance
+##' @param n.knot number of knots requested
+##' @param individual logical, if TRUE it becomes a site-level PDA
+##' @param remote logical, if TRUE runs are submitted to remote and objects prepared accordingly
 ##'
 ##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
 ##'  are saved as files and db records.
@@ -11,17 +26,21 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
-                         params.id = NULL, param.names = NULL, prior.id = NULL, 
+pda.emulator <- function(settings, external.data = NULL, external.priors = NULL, 
+                         external.knots = NULL, external.formats = NULL,
+                         ensemble.id = NULL, params.id = NULL, param.names = NULL, prior.id = NULL, 
                          chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
-                         ar.target = NULL, jvar = NULL, n.knot = NULL) {
+                         ar.target = NULL, jvar = NULL, n.knot = NULL, 
+                         individual = TRUE, remote = FALSE) {
   
   ## this bit of code is useful for defining the variables passed to this function if you are
   ## debugging
   if (FALSE) {
-    external.data <- external.priors <- NULL
-    params.id <- param.names <- prior.id <- chain <- iter <- NULL
+    external.data <- external.priors <- external.knots <- external.formats <- NULL
+    ensemble.id <- params.id <- param.names <- prior.id <- chain <- iter <- NULL
     n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
+    individual <- TRUE
+    remote <- FALSE
   }
   
   # handle extention flags
@@ -52,6 +71,16 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
     adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, run.round)
   
+  # load inputs with neff if this is another round
+  if(!run.normal){
+    external_data_path <- file.path(settings$outdir, paste0("external.", settings$assim.batch$ensemble.id, ".Rdata"))
+    if(file.exists(external_data_path)){
+      load(external_data_path)
+      # and delete the file afterwards because it will be re-written with a new ensemble id in the end
+      file.remove(external_data_path)
+    } 
+  }
+  
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
   isbias <- which(unlist(any.mgauss) == "multipGauss")
@@ -64,7 +93,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   pass2bias <- NULL
   
   ## Open database connection
-  if (settings$database$bety$write) {
+  if (as.logical(settings$database$bety$write) & !remote) {
     con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
     if (inherits(con, "try-error")) {
       con <- NULL
@@ -75,10 +104,16 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     con <- NULL
   }
   
-  bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
-                       host = settings$database$bety$host, 
-                       user = settings$database$bety$user, 
-                       password = settings$database$bety$password)
+  if(!remote){
+    bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
+                                host = settings$database$bety$host, 
+                                user = settings$database$bety$user, 
+                                password = settings$database$bety$password)
+  }else{
+    bety     <- list()
+    bety$con <- NULL
+  }
+
   
   ## Load priors
   if(is.null(external.priors)){
@@ -93,7 +128,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   
   if(is.null(external.data)){
-    inputs <- load.pda.data(settings, bety)
+    inputs <- load.pda.data(settings, bety, external.formats)
   }else{
     inputs <- external.data
   }
@@ -134,11 +169,26 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   }
   
   ## Create an ensemble id
-  settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  if(is.null(ensemble.id)){
+    settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  }else{
+    settings$assim.batch$ensemble.id <- ensemble.id
+  }
+
   
   ## history restart
-  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
-                                                       settings$assim.batch$ensemble.id, ".Rdata"))
+  if(!remote){
+    settings_outdir  <- settings$outdir
+    pda.restart.file <- file.path(settings_outdir, paste0("history.pda",
+                                                         settings$assim.batch$ensemble.id, ".Rdata"))
+    
+  }else{
+    settings_outdir  <- dirname(settings$host$rundir)
+    settings_outdir  <- gsub(settings$assim.batch$ensemble.id, "", settings_outdir)
+    pda.restart.file <- paste0(settings_outdir, "history.pda",
+                                                         settings$assim.batch$ensemble.id, ".Rdata")
+  }
+
   current.step <- "START" 
   
   ## Set up likelihood functions
@@ -170,16 +220,23 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                                                       pname[[x]]))
   names(knots.list) <- sapply(settings$pfts,"[[",'name')
   
+  
   knots.params <- lapply(knots.list, `[[`, "params")
   # don't need anymore
   # knots.probs <- lapply(knots.list, `[[`, "probs")
+  
+  # if knots were passed externally overwrite them
+  if(!is.null(external.knots)){
+    PEcAn.logger::logger.info("Overwriting the knots list.")
+    knots.params <- external.knots
+  } 
   
   current.step <- "GENERATE KNOTS"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Run this block if this is a "round" extension
-  if (run.round) {
-    
+  if (run.round & is.null(external.knots)) {
+
     ## Propose a percentage (if not specified 90%) of the new parameter knots from the posterior of the previous run
     knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
                               as.numeric(settings$assim.batch$knot.par),
@@ -195,6 +252,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }else{
       sf.samp <- NULL
     }
+
     sampled_knots <- sample_MCMC(settings$assim.batch$mcmc.path, n.param.orig, prior.ind.orig, 
                                      n.post.knots, knots.params.temp,
                                      prior.list, prior.fn, sf, sf.samp)
@@ -234,7 +292,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
     
     ## start model runs
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    PEcAn.remote::start.model.runs(settings, (as.logical(settings$database$bety$write) & !remote))
     
     ## Retrieve model outputs and error statistics
     model.out <- list()
@@ -243,7 +301,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     ## read model outputs    
     for (i in seq_len(settings$assim.batch$n.knot)) {
-      align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
+      align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs, external.formats)
       model.out[[i]] <- align.return$model.out
       if(all(!is.na(model.out[[i]]))){
         inputs <- align.return$inputs
@@ -457,7 +515,12 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   # but then, there are other things that needs to change in the emulator workflow
   # such as the way proposed parameters are used in estimation in get_ss function
   # so punting this development until it is needed
-  rng <-  t(apply(SS[[isbias]][,-ncol(SS[[isbias]])], 2, range))
+  if(any(unlist(any.mgauss) == "multipGauss")){
+    colsel <- isbias
+  }else{ # first is as good as any
+    colsel <- 1
+  }
+  rng <-  t(apply(SS[[colsel]][,-ncol(SS[[colsel]])], 2, range))
   
   if (run.normal | run.round) {
     
@@ -471,7 +534,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                               function(x) 0.1 * diff(eval(x, list(p = c(0.05, 0.95)))))[prior.ind.all]
       jmp.list[[c]] <- sqrt(jmp.list[[c]])
       
-      init.list[[c]] <- as.list(SS[[isbias]][indx[c], -ncol(SS[[isbias]])])
+      init.list[[c]] <- as.list(SS[[colsel]][indx[c], -ncol(SS[[colsel]])])
       resume.list[[c]] <- NA
     }
   }
@@ -500,9 +563,12 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
   
-  PEcAn.logger::logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+
+  logfile_path <- file.path(settings_outdir, "pda.log")
   
-  cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
+  PEcAn.logger::logger.setOutputFile(logfile_path)
+  
+  cl <- parallel::makeCluster(ncores, type="FORK", outfile = logfile_path)
   
   ## Sample posterior from emulator
   mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
@@ -606,33 +672,41 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Save emulator, outputs files
-  settings$assim.batch$emulator.path <- file.path(settings$outdir,
+  settings$assim.batch$emulator.path <- file.path(settings_outdir,
                                                   paste0("emulator.pda", 
                                                          settings$assim.batch$ensemble.id, 
                                                          ".Rdata"))
   save(gp, file = settings$assim.batch$emulator.path)
   
-  settings$assim.batch$ss.path <- file.path(settings$outdir, 
+  settings$assim.batch$ss.path <- file.path(settings_outdir, 
                                             paste0("ss.pda", 
                                                    settings$assim.batch$ensemble.id, 
                                                    ".Rdata"))
   save(SS, file = settings$assim.batch$ss.path)
   
-  settings$assim.batch$mcmc.path <- file.path(settings$outdir, 
+  settings$assim.batch$mcmc.path <- file.path(settings_outdir, 
                                               paste0("mcmc.list.pda", 
                                                      settings$assim.batch$ensemble.id, 
                                                      ".Rdata"))
   save(mcmc.samp.list, file = settings$assim.batch$mcmc.path)
   
-  settings$assim.batch$resume.path <- file.path(settings$outdir, 
+  settings$assim.batch$resume.path <- file.path(settings_outdir, 
                                                 paste0("resume.pda", 
                                                        settings$assim.batch$ensemble.id, 
                                                        ".Rdata"))
   save(resume.list, file = settings$assim.batch$resume.path)
   
+  # save inputs list, this object has been processed for autocorrelation correction 
+  # this can take a long time depending on the data, re-load and skip in next iteration
+  external.data <- inputs
+  save(external.data, file = file.path(settings_outdir,
+                                       paste0("external.", 
+                                              settings$assim.batch$ensemble.id, 
+                                              ".Rdata")))
+  
   # save prior.list with bias term
   if(any(unlist(any.mgauss) == "multipGauss")){
-    settings$assim.batch$bias.path <- file.path(settings$outdir, 
+    settings$assim.batch$bias.path <- file.path(settings_outdir, 
                                                 paste0("bias.pda", 
                                                        settings$assim.batch$ensemble.id, 
                                                        ".Rdata"))
@@ -641,9 +715,9 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   # save sf posterior
   if(!is.null(sf)){
-    sf.post.filename <- file.path(settings$outdir, 
+    sf.post.filename <- file.path(settings_outdir, 
                              paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
-    sf.samp.filename <- file.path(settings$outdir, 
+    sf.samp.filename <- file.path(settings_outdir, 
                              paste0("samples.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
     sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.samp.filename)
@@ -678,7 +752,16 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }
   }
   
+  # I can use a counter to run pre-defined number of emulator rounds
+  if(is.null(settings$assim.batch$round_counter)){
+    settings$assim.batch$round_counter <- 1
+  }else{
+    settings$assim.batch$round_counter <- 1 +  as.numeric(settings$assim.batch$round_counter)
+  }
+
+    
   settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig)
+  
   
   ## close database connection
   if (!is.null(con)) {
@@ -688,6 +771,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   ## Output an updated settings list
   current.step <- "pda.finish"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  
   return(settings)
+
   
 }  ## end pda.emulator

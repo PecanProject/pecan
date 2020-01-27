@@ -57,6 +57,7 @@ addons:
       - netcdf-bin
       - pandoc
       - python-dev
+      - qpdf
       - tcl
       - tcl-dev
       - udunits-bin

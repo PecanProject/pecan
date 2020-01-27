@@ -53,6 +53,7 @@ install2.r -e -s -n -1\
     knitr \
     lattice \
     linkages \
+    lqmm \
     lubridate \
     Maeswrap \
     magic \
@@ -76,6 +77,7 @@ install2.r -e -s -n -1\
     plotrix \
     plyr \
     png \
+    prodlim \
     progress \
     purrr \
     pwr \
@@ -109,6 +111,7 @@ install2.r -e -s -n -1\
     tictoc \
     tidyr \
     tidyverse \
+    tmvtnorm \
     tools \
     truncnorm \
     udunits2 \
