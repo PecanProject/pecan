@@ -20,7 +20,7 @@ that keeps track of and automatically updates the workflow ID
 (that's why inserting into the table without explicitly setting a
 workflow ID is a safe and robust operation). This function is a
 wrapper around the
-\href{https://www.postgresql.org/docs/9.6/functions-sequence.html}{nextval function},
+\href{https://www.postgresql.org/docs/9.6/functions-sequence.html}{\code{nextval} function},
 which retrieves the current value of the sequence \emph{and} augments
 the sequence by 1.
 }
