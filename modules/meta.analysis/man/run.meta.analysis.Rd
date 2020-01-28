@@ -2,14 +2,7 @@
 % Please edit documentation in R/run.meta.analysis.R
 \name{run.meta.analysis}
 \alias{run.meta.analysis}
-\title{Invoke PEcAn meta.analysis
-This will use the following items from setings:
-\itemize{
-\item settings$pfts
-\item settings$database$bety
-\item settings$database$dbfiles
-\item settings$meta.analysis$update
-}}
+\title{Run meta analysis}
 \usage{
 run.meta.analysis(
   pfts,
@@ -40,11 +33,17 @@ run.meta.analysis(
 \value{
 nothing, as side effect saves \code{trait.mcmc} created by
 \code{\link{pecan.ma}} and post.distns created by
-\code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata \
+\code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata
 and post.distns.Rdata, respectively
 }
 \description{
-Run meta analysis
+This will use the following items from setings:
+\itemize{
+\item settings$pfts
+\item settings$database$bety
+\item settings$database$dbfiles
+\item settings$meta.analysis$update
+}
 }
 \author{
 Shawn Serbin, David LeBauer
