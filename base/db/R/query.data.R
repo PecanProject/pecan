@@ -20,7 +20,16 @@
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author David LeBauer, Carl Davidson
-query.data <- function(trait, spstr, extra.columns = 'ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ', con=NULL, store.unconverted=FALSE, ids_are_cultivars=FALSE, ...) {
+query.data <- function(
+              trait,
+              spstr,
+              extra.columns = paste(
+                "ST_X(ST_CENTROID(sites.geometry)) AS lon,",
+                "ST_Y(ST_CENTROID(sites.geometry)) AS lat, "),
+              con=NULL,
+              store.unconverted=FALSE,
+              ids_are_cultivars=FALSE,
+              ...) {
   if (is.null(con)) {
     PEcAn.logger::logger.error("No open database connection passed in.")
     con <- db.open(settings$database$bety)
