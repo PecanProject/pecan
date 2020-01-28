@@ -14,17 +14,6 @@ met2CF.PalEONregional(
   verbose = FALSE,
   ...
 )
-
-met2CF.PalEONregional(
-  in.path,
-  in.prefix,
-  outfolder,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}
@@ -41,11 +30,7 @@ met2CF.PalEONregional(
 }
 \description{
 Get meteorology variables from PalEON netCDF files and convert to netCDF CF format
-
-Get meteorology variables from PalEON netCDF files and convert to netCDF CF format
 }
 \author{
-Mike Dietze
-
 Mike Dietze
 }
