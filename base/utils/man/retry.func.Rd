@@ -4,8 +4,12 @@
 \alias{retry.func}
 \title{retry.func}
 \usage{
-retry.func(expr, isError = function(x) inherits(x, "try-error"),
-  maxErrors = 5, sleep = 0)
+retry.func(
+  expr,
+  isError = function(x) inherits(x, "try-error"),
+  maxErrors = 5,
+  sleep = 0
+)
 }
 \arguments{
 \item{expr}{The function to try running}

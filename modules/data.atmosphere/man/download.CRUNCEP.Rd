@@ -4,9 +4,19 @@
 \alias{download.CRUNCEP}
 \title{Download CRUNCEP data}
 \usage{
-download.CRUNCEP(outfolder, start_date, end_date, lat.in, lon.in,
-  overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2,
-  method = "ncss", ...)
+download.CRUNCEP(
+  outfolder,
+  start_date,
+  end_date,
+  lat.in,
+  lon.in,
+  overwrite = FALSE,
+  verbose = FALSE,
+  maxErrors = 10,
+  sleep = 2,
+  method = "ncss",
+  ...
+)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}

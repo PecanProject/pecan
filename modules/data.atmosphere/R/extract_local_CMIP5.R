@@ -1,11 +1,9 @@
 ##' Extract NLDAS from local download
-##' Extract NLDAS meteorology for a poimt from a local download of the full grid
-# ----------------------------------- 
+##' Extract NLDAS meteorology for a point from a local download of the full grid
+# -----------------------------------
 # Description
 # -----------------------------------
-##' @title extract.local.CMIP5
-##' @family 
-##' @author Christy Rollinson, 
+##' @author Christy Rollinson
 ##' @description This function extracts CMIP5 data from grids that have been downloaded and stored locally.
 ##'              Files are saved as a netCDF file in CF conventions at *DAILY* resolution.  Note: At this point
 ##'              in time, variables that are only available at a native monthly resolution will be repeated to

@@ -4,9 +4,20 @@
 \alias{met_temporal_downscale.Gaussian_ensemble}
 \title{met_temporal_downscale.Gaussian_ensemble}
 \usage{
-met_temporal_downscale.Gaussian_ensemble(in.path, in.prefix, outfolder,
-  input_met, train_met, overwrite = FALSE, verbose = FALSE,
-  swdn_method = "sine", n_ens = 10, w_len = 20, utc_diff = -6, ...)
+met_temporal_downscale.Gaussian_ensemble(
+  in.path,
+  in.prefix,
+  outfolder,
+  input_met,
+  train_met,
+  overwrite = FALSE,
+  verbose = FALSE,
+  swdn_method = "sine",
+  n_ens = 10,
+  w_len = 20,
+  utc_diff = -6,
+  ...
+)
 }
 \arguments{
 \item{in.path}{}

@@ -4,8 +4,11 @@
 \alias{build_cf_variables_table_url}
 \title{Construct a URL to a specific version of the CF variables table XML}
 \usage{
-build_cf_variables_table_url(version,
-  url_format_string = "http://cfconventions.org/Data/cf-standard-names/\%d/src/src-cf-standard-name-table.xml")
+build_cf_variables_table_url(
+  version,
+  url_format_string = paste0("http://cfconventions.org/",
+    "Data/cf-standard-names/\%d/src/", "src-cf-standard-name-table.xml")
+)
 }
 \arguments{
 \item{version}{CF variables table version number (integer/numeric)}

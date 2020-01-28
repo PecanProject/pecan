@@ -4,9 +4,15 @@
 \alias{pda.init.run}
 \title{Initialise Model Runs for PDA}
 \usage{
-pda.init.run(settings, con, my.write.config, workflow.id, params,
+pda.init.run(
+  settings,
+  con,
+  my.write.config,
+  workflow.id,
+  params,
   n = ifelse(is.null(dim(params)), 1, nrow(params)),
-  run.names = paste("run", 1:n, sep = "."))
+  run.names = paste("run", 1:n, sep = ".")
+)
 }
 \arguments{
 \item{settings}{a PEcAn settings list}

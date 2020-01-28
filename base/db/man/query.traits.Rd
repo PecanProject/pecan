@@ -4,8 +4,13 @@
 \alias{query.traits}
 \title{Query trait data}
 \usage{
-query.traits(ids, priors, con = NULL, update.check.only = FALSE,
-  ids_are_cultivars = FALSE)
+query.traits(
+  ids,
+  priors,
+  con = NULL,
+  update.check.only = FALSE,
+  ids_are_cultivars = FALSE
+)
 }
 \arguments{
 \item{ids}{vector of species or cultivar id's from trait database}

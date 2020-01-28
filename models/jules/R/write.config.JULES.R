@@ -595,7 +595,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
 #' @param met.regexp
 #' @param start_date
 #'
-#' @return
+#' @return a difftime object
 #' @export
 #'
 #' @examples

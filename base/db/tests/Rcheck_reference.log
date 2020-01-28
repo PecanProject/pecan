@@ -134,10 +134,6 @@ Rd file 'insert.format.vars.Rd':
   \examples lines wider than 100 characters:
        insert.format.vars(con = bety$con, format_name = "LTER-HFR-103", mimetype_id = 1090, notes = "NPP from Harvard Forest.", header = FAL ... [TRUNCATED]
 
-Rd file 'query.data.Rd':
-  \usage lines wider than 90 characters:
-       extra.columns = "ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ",
-
 These lines will be truncated in the PDF manual.
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
@@ -191,4 +187,4 @@ Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 4 WARNINGs, 2 NOTEs
+Status: 3 WARNINGs, 2 NOTEs

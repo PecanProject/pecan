@@ -159,10 +159,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 
 ##--------------------------------------------------------------------------------------------------##
 ##' Run meta analysis
-##' 
-##' @name run.meta.analysis
 ##'
-##' @title Invoke PEcAn meta.analysis
 ##' This will use the following items from setings:
 ##' - settings$pfts
 ##' - settings$database$bety
@@ -178,8 +175,8 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##'   \code{\link{pecan.ma.summary}}
 ##' @return nothing, as side effect saves \code{trait.mcmc} created by
 ##' \code{\link{pecan.ma}} and post.distns created by
-##' \code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata \
-##' and post.distns.Rdata, respectively
+##' \code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata
+##'   and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
 run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database, use_ghs = TRUE) {

@@ -4,10 +4,20 @@
 \alias{lm_ensemble_sims}
 \title{lm_ensemble_sims}
 \usage{
-lm_ensemble_sims(dat.mod, n.ens, path.model, direction.filter,
-  lags.list = NULL, lags.init = NULL, dat.train, precip.distribution,
-  force.sanity = TRUE, sanity.tries = 25, seed = Sys.time(),
-  print.progress = FALSE)
+lm_ensemble_sims(
+  dat.mod,
+  n.ens,
+  path.model,
+  direction.filter,
+  lags.list = NULL,
+  lags.init = NULL,
+  dat.train,
+  precip.distribution,
+  force.sanity = TRUE,
+  sanity.tries = 25,
+  seed = Sys.time(),
+  print.progress = FALSE
+)
 }
 \arguments{
 \item{dat.mod}{- dataframe to be predicted at the time step of the training data}
@@ -47,12 +57,15 @@ Linear Regression Ensemble Simulation
 Met downscaling function that predicts ensembles of downscaled meteorology
 }
 \seealso{
-Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{model.train}}, \code{\link{nc.merge}},
-  \code{\link{predict_subdaily_met}},
-  \code{\link{save.betas}}, \code{\link{save.model}},
-  \code{\link{subdaily_pred}},
-  \code{\link{temporal.downscale.functions}}
+Other tdm - Temporally Downscale Meteorology: 
+\code{\link{gen.subdaily.models}()},
+\code{\link{model.train}()},
+\code{\link{nc.merge}()},
+\code{\link{predict_subdaily_met}()},
+\code{\link{save.betas}()},
+\code{\link{save.model}()},
+\code{\link{subdaily_pred}()},
+\code{\link{temporal.downscale.functions}()}
 }
 \author{
 Christy Rollinson, James Simkins

@@ -252,9 +252,6 @@ to your NAMESPACE file.
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... NOTE
-Rd file 'build_cf_variables_table_url.Rd':
-  \usage lines wider than 90 characters:
-       url_format_string = "http://cfconventions.org/Data/cf-standard-names/%d/src/src-cf-standard-name-table.xml")
 
 Rd file 'download.NOAA_GEFS.Rd':
   \examples lines wider than 100 characters:

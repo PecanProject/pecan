@@ -68,8 +68,8 @@ data.fetch <- function(var, nc, fun = mean) {
 ##' @param yvar the variable to plot along the y-axis.
 ##' @param xvar the variable to plot along the x-axis, by default time is
 ##' used.
-##' @param the width of the image generated, default is 800 pixels.
-##' @param the height of the image generated, default is 600 pixels.
+##' @param width the width of the image generated, default is 800 pixels.
+##' @param height the height of the image generated, default is 600 pixels.
 ##' @param filename is the name of the file name that is geneated, this
 ##'        can be null to use existing device, otherwise it will try and
 # @' create an image based on filename, or display if x11.
