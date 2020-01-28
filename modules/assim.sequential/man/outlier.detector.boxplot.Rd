@@ -10,7 +10,8 @@ outlier.detector.boxplot(X)
 \item{X}{A list of dataframes}
 }
 \value{
-
+A list the same dimension as X, with each column of each dataframe
+  modified by replacing outlier points with the column median
 }
 \description{
 This function performs a simple outlier replacement on all the columns of dataframes inside a list

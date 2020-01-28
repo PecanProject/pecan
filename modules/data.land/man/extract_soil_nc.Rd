@@ -16,7 +16,7 @@ extract_soil_nc(in.file, outdir, lat, lon)
 \item{lon}{}
 }
 \value{
-
+path to netCDF file containing extracted data
 }
 \description{
 Extract soil data

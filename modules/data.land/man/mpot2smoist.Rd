@@ -17,7 +17,7 @@ mpot2smoist(
 \item{mysoil}{soil property list}
 }
 \value{
-
+volumetric soil water content
 }
 \description{
 Convert a matric potential to a soil moisture

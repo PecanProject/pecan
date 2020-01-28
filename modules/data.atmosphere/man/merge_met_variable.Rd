@@ -34,7 +34,7 @@ print debugging information as they run?}
 \item{...}{}
 }
 \value{
-
+Currently nothing. TODO: Return a data frame summarizing the merged files.
 }
 \description{
 Merge a new met variable from an external file (e.g. CO2) into existing met files

@@ -36,7 +36,7 @@ met2CF.ERA5(
 \item{verbose}{Logical flag defining if ouput of function be extra verbose.}
 }
 \value{
-
+list of dataframes
 }
 \description{
 met2cf.ERA5

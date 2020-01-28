@@ -2,7 +2,8 @@
 % Please edit documentation in R/extract_local_NLDAS.R
 \name{extract.local.NLDAS}
 \alias{extract.local.NLDAS}
-\title{extract.local.NLDAS}
+\title{Extract NLDAS from local download
+Extract NLDAS meteorology for a point from a local download of the full grid}
 \usage{
 extract.local.NLDAS(
   outfolder,
@@ -43,11 +44,6 @@ This function extracts NLDAS data from grids that have been downloaded and store
              These files are ready to be used in the general PEcAn workflow or fed into the downscalign 
              workflow.
 }
-\details{
-Extract NLDAS from local download
-Extract NLDAS meteorology for a poimt from a local download of the full grid
-}
 \author{
-Christy Rollinson,
+Christy Rollinson
 }
-\concept{}

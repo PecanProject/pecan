@@ -2,7 +2,8 @@
 % Please edit documentation in R/extract_local_CMIP5.R
 \name{extract.local.CMIP5}
 \alias{extract.local.CMIP5}
-\title{extract.local.CMIP5}
+\title{Extract NLDAS from local download
+Extract NLDAS meteorology for a point from a local download of the full grid}
 \usage{
 extract.local.CMIP5(
   outfolder,
@@ -61,11 +62,6 @@ This function extracts CMIP5 data from grids that have been downloaded and store
              give a pseudo-daily record (and can get dealt with in the downscaling workflow).  These files 
              are ready to be used in the general PEcAn workflow or fed into the downscaling workflow.
 }
-\details{
-Extract NLDAS from local download
-Extract NLDAS meteorology for a poimt from a local download of the full grid
-}
 \author{
-Christy Rollinson,
+Christy Rollinson
 }
-\concept{}

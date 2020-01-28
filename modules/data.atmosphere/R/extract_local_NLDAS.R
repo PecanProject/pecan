@@ -1,11 +1,9 @@
 ##' Extract NLDAS from local download
-##' Extract NLDAS meteorology for a poimt from a local download of the full grid
-# ----------------------------------- 
+##' Extract NLDAS meteorology for a point from a local download of the full grid
+# -----------------------------------
 # Description
 # -----------------------------------
-##' @title extract.local.NLDAS
-##' @family 
-##' @author Christy Rollinson, 
+##' @author Christy Rollinson
 ##' @description This function extracts NLDAS data from grids that have been downloaded and stored locally.
 ##'              Once upon a time, you could query these files directly from the internet, but now they're 
 ##'              behind a tricky authentication wall. Files are saved as a netCDF file in CF conventions. 

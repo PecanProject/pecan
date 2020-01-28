@@ -30,7 +30,7 @@ split_wind(
 \item{...}{other arguments, currently ignored}
 }
 \value{
-
+nothing. TODO: Return data frame summarizing results
 }
 \description{
 Split wind_speed into eastward_wind and northward_wind
