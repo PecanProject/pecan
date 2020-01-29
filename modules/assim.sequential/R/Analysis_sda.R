@@ -142,6 +142,13 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   aqq <- extraArg$aqq
   bqq <- extraArg$bqq
   wts <- extraArg$wts/sum(extraArg$wts)
+  if(any(is.na(wts))){
+    logger.warn(paste('We found an NA in the wts for the ensemble members. Is this what you want? For now, we will change the NA to a zero.'))
+    wts[is.na(wts)] <- 0
+  }
+  if(sum(wts==0)){
+    wts <- rep(1,nrow(X))/nrow(X)
+  }
   interval <- NULL
   t <- extraArg$t
   intervalX <- matrix(NA, ncol(X), 2)
@@ -200,7 +207,8 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                                        constants = constants.tobit2space, inits = inits.tobit2space(),
                                        name = 'space')
       
-      logprob_y_tobit2space <- tobit2space_pred$calculate('y.censored')
+      try(logprob_y_tobit2space <- tobit2space_pred$calculate('y.censored'))
+      if(is.na(logprob_y_tobit2space)) logger.warn('We cannot calculate a logprobability for your data in the tobit2space model. Check data.tobit2space variable in the global environment to make sure its what you want.')
       if(logprob_y_tobit2space < -1000000) logger.warn(paste('Log probability very low for y in tobit2space model during time',t,'. Check initial conditions.'))
       
       ## Adding X.mod,q,r as data for building model.
@@ -370,7 +378,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     which_fcomp <- grep(names(data_available),pattern = 'ALR')
     X_fcomp_start <- which_fcomp[1]
     X_fcomp_end <- which_fcomp[length(which_fcomp)]
-    X_fcomp_model <- grep(colnames(X),pattern = 'AGB.pft')
+    X_fcomp_model <- grep(colnames(X),pattern = '*.pft.*')
     
     fcomp_TRUE = TRUE
   }else{
@@ -384,7 +392,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     which_pft2total <- grep(names(data_available),pattern = 'pft2total')
     X_pft2total_start <- which_pft2total[1]
     X_pft2total_end <- which_pft2total[length(which_pft2total)]
-    X_pft2total_model <- grep(colnames(X),pattern = 'AGB.pft')
+    X_pft2total_model <- grep(colnames(X),pattern = '*.pft.*')
     pft2total_TRUE = TRUE
   }else{
     X_pft2total_start <- 0
@@ -453,14 +461,13 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     ## Adding X.mod,q,r as data for building model.
     conf <- configureMCMC(model_pred, print=TRUE,thin = 10)
     conf$addMonitors(c("X","X.mod","q","Q", "y_star","y.censored")) 
-    ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
     
     if(ncol(X) > length(y.censored)){
-      print('Adding a different sampler to non-data node to improve MCMC mixing')
+      print('Adding a different sampler to X nodes to improve MCMC mixing')
       conf$removeSampler('X')
       #consider individual slice samplers
       #conf$addSampler(paste0('X[1:12]'),'AF_slice')
-      for(ss in 1:13){
+      for(ss in 1:ncol(X)){
         conf$addSampler(paste0('X[',ss,']'),'slice')
       }
       conf$printSamplers()
@@ -469,7 +476,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     if(FALSE){ ### Need this for when the state variables are on different scales like NPP and AGB
       x.char <- paste0('X[1:',ncol(X),']')
       conf$removeSampler(x.char)
-      propCov.means <- c(rep(1,9),1000)#signif(diag(Pf),1)#mean(unlist(lapply(obs.cov,FUN = function(x){diag(x)})))[choose]#c(rep(max(diag(Pf)),ncol(X)))#
+      propCov.means <- c(rep(1,ncol(X)),1000)#signif(diag(Pf),1)#mean(unlist(lapply(obs.cov,FUN = function(x){diag(x)})))[choose]#c(rep(max(diag(Pf)),ncol(X)))#
       if(length(propCov.means)!=ncol(X)) propCov.means <- c(propCov.means,rep(1,ncol(X)-length(Y)))
       conf$addSampler(target =c(x.char),
                       control <- list(propCov = diag(ncol(X))*propCov.means),
