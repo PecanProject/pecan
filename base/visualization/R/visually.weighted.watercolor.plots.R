@@ -42,6 +42,10 @@
 ##' \url{http://www.nicebread.de/visually-weighted-watercolor-plots-new-variants-please-vote/}
 ##' 
 ##' @title PEcAn worldmap
+##'
+##' @param formula variables to plot. See examples
+##' @param data data frame containing all variables used in formula
+##' @param title passed on to ggplot
 ##' @param B = number bootstrapped smoothers
 ##' @param shade plot the shaded confidence region?
 ##' @param shade.alpha should the CI shading fade out at the edges? (by reducing alpha; 0 = no alpha decrease, 0.1 = medium alpha decrease, 0.5 = strong alpha decrease)

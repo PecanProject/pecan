@@ -32,11 +32,7 @@
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... NOTE
-Packages in Depends field not imported from:
-  ‘raster’ ‘sp’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... WARNING
 plot:
   function(x, ...)
@@ -45,11 +41,6 @@ plot.netcdf:
 
 See section ‘Generic functions and methods’ in the ‘Writing R
 Extensions’ manual.
-
-Found the following apparent S3 methods exported but not registered:
-  plot.netcdf
-See section ‘Registering S3 methods’ in the ‘Writing R Extensions’
-manual.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
@@ -57,7 +48,6 @@ map.output: no visible binding for global variable ‘long’
 map.output: no visible binding for global variable ‘lat’
 map.output: no visible binding for global variable ‘group’
 map.output: no visible binding for global variable ‘lon’
-plot.netcdf: no visible global function definition for ‘jpg’
 vwReg: no visible binding for global variable ‘x’
 vwReg: no visible binding for global variable ‘y’
 vwReg: no visible binding for global variable ‘dens.scaled’
@@ -69,7 +59,7 @@ vwReg: no visible binding for global variable ‘w3’
 vwReg: no visible binding for global variable ‘UL’
 vwReg: no visible binding for global variable ‘LL’
 Undefined global functions or variables:
-  alpha.factor dens.scaled group jpg lat LL lon long M UL value w3 x y
+  alpha.factor dens.scaled group lat LL lon long M UL value w3 x y
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -81,32 +71,7 @@ All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'ciEnvelope'
-  ‘...’
-
-Undocumented arguments in documentation object 'plot.hdf5'
-  ‘width’ ‘height’
-Duplicated \argument entries in documentation object 'plot.hdf5':
-  ‘the’
-Documented arguments not in \usage in documentation object 'plot.hdf5':
-  ‘the’
-
-Undocumented arguments in documentation object 'vwReg'
-  ‘formula’ ‘data’ ‘title’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
-S3 methods shown with full name in documentation object 'plot.hdf5':
-  ‘plot.netcdf’
-
-The \usage entries for S3 methods should use the \method markup and not
-their full name.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
@@ -123,4 +88,4 @@ vwReg 11.31    0.1  11.486
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 4 WARNINGs, 2 NOTEs
+Status: 3 WARNINGs, 1 NOTE

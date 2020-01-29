@@ -30,6 +30,12 @@ vwReg(
 )
 }
 \arguments{
+\item{formula}{variables to plot. See examples}
+
+\item{data}{data frame containing all variables used in formula}
+
+\item{title}{passed on to ggplot}
+
 \item{B}{= number bootstrapped smoothers}
 
 \item{shade}{plot the shaded confidence region?}

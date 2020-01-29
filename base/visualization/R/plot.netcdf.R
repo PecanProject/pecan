@@ -63,7 +63,6 @@ data.fetch <- function(var, nc, fun = mean) {
 ##' ED and will plot the values against one another. The default is for
 ##' the given variable to be plotted against time.
 ##'
-##' @name plot.hdf5
 ##' @param datafile the specific datafile to use.
 ##' @param yvar the variable to plot along the y-axis.
 ##' @param xvar the variable to plot along the x-axis, by default time is
@@ -72,7 +71,7 @@ data.fetch <- function(var, nc, fun = mean) {
 ##' @param height the height of the image generated, default is 600 pixels.
 ##' @param filename is the name of the file name that is geneated, this
 ##'        can be null to use existing device, otherwise it will try and
-# @' create an image based on filename, or display if x11.
+##'        create an image based on filename, or display if x11.
 ##' @param year the year this data is for (only used in the title).
 ##' @export
 ##' @author Rob Kooper
@@ -96,8 +95,7 @@ plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
     } else if (tolower(stringr::str_sub(filename, -4)) == ".pdf") {
       grDevices::pdf(file = filename, width = width, height = height)
     } else if (tolower(stringr::str_sub(filename, -4)) == ".jpg") {
-      # TODO Which package is `jpg` from? grDevices doesn't have a jpg function
-      jpg(filename = filename, width = width, height = height)
+      grDevices::jpeg(filename = filename, width = width, height = height)
     } else if (tolower(stringr::str_sub(filename, -5)) == ".tiff") {
       grDevices::tiff(filename = filename, width = width, height = height)
     }
