@@ -17,7 +17,7 @@ to initialize FORTRAN variabiles.}
 \item{fname}{Output file name. Defaults to 'yourmodname.f90'}
 }
 \description{
-Convert R list to a Fortran \code{/data/} module block
+Convert R list to a Fortran \verb{/data/} module block
 }
 \details{
 For models with large constants (e.g. absorption features in the

@@ -7,8 +7,8 @@
 load_local(file)
 }
 \arguments{
-\item{file}{a (readable binary-mode) \link{connection} or a character string
-    giving the name of the file to load (when \link{tilde expansion}
+\item{file}{a (readable binary-mode) \link[base]{connection} or a character string
+    giving the name of the file to load (when \link[base]{tilde expansion}
     is done).}
 }
 \value{

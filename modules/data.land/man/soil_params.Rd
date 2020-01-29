@@ -4,8 +4,13 @@
 \alias{soil_params}
 \title{Estimate soil parameters from texture class or sand/silt/clay}
 \usage{
-soil_params(soil_type = NULL, sand = NULL, silt = NULL,
-  clay = NULL, bulk = NULL)
+soil_params(
+  soil_type = NULL,
+  sand = NULL,
+  silt = NULL,
+  clay = NULL,
+  bulk = NULL
+)
 }
 \arguments{
 \item{soil_type}{USDA Soil Class. See Details}

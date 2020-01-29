@@ -1,5 +1,6 @@
 library(PEcAn.assim.batch)
 library(testthat)
+
 context("BayesianTools prior functions")
 
 prior_list <- list(list('normal', 'norm', 0.5, 2),

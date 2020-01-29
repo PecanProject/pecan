@@ -5,6 +5,7 @@
 ##'
 ##' @title Calculate N_eff 
 ##' @param inputs list
+##' @param recalculate repeat neff calculation or not
 ##'
 ##' @return inputs list, updated inputs with n_eff
 ##'

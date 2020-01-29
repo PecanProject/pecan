@@ -4,8 +4,7 @@
 \alias{bt_check_convergence}
 \title{Check convergence of BayesianTools output}
 \usage{
-bt_check_convergence(samples, threshold = 1.1, use_CI = TRUE,
-  use_mpsrf = TRUE)
+bt_check_convergence(samples, threshold = 1.1, use_CI = TRUE, use_mpsrf = TRUE)
 }
 \description{
 Check convergence of BayesianTools output

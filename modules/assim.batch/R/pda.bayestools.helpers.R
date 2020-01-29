@@ -146,6 +146,7 @@ pda.settings.bt <- function(settings) {
 #' @param density type of plot to do
 #' @param thin thinning of the matrix to make things faster. Default is to thin to 5000 
 #' @param method method for calculating correlations
+#' @param whichParameters all params or some
 #' @references The code for the correlation density plot originates from Hartig, F.; Dislich, C.; Wiegand, T. & Huth, A. (2014) Technical Note: Approximate Bayesian parameterization of a process-based tropical forest model. Biogeosciences, 11, 1261-1272.
 #' @export
 #' 

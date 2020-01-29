@@ -22,9 +22,7 @@ home directory
 \examples{
 \dontrun{
 download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
-}
 
-\dontrun{
 download.file("
   ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc",
   "~/pres.sfc.2000.nc")

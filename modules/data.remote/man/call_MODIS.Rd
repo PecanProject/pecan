@@ -4,40 +4,52 @@
 \alias{call_MODIS}
 \title{call_MODIS}
 \usage{
-call_MODIS(outfolder = "", start_date, end_date, lat, lon, size = 0,
-  product, band, band_qc = "", band_sd = "", siteID = NULL,
-  package_method = "MODISTools", QC_filter = FALSE, progress = TRUE)
+call_MODIS(
+  outdir = NULL,
+  var,
+  site_info,
+  product_dates,
+  run_parallel = FALSE,
+  ncores = NULL,
+  product,
+  band,
+  package_method = "MODISTools",
+  QC_filter = FALSE,
+  progress = FALSE
+)
 }
 \arguments{
-\item{outfolder}{where the output file will be stored}
+\item{outdir}{where the output file will be stored. Default is NULL}
 
-\item{start_date}{string value for beginning of date range for download in unambiguous date format (YYYYJJJ)}
+\item{var}{the simple name of the modis dataset variable (e.g. lai)}
 
-\item{end_date}{string value for end of date range for download in unambiguous date format (YYYYJJJ)}
+\item{site_info}{Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, 
+lon, time_zone)}
 
-\item{lat}{Latitude of the pixel}
+\item{product_dates}{a character vector of the start and end date of the data in YYYYJJJ}
 
-\item{lon}{Longitude of the pixel}
+\item{run_parallel}{optional method to download data paralleize. Only works if more than 1 
+site is needed and there are >1 CPUs available.}
 
-\item{size}{kmAboveBelow and kmLeftRight distance in km to be included}
+\item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the 
+number of CPU's available, enter NULL.}
 
 \item{product}{string value for MODIS product number}
 
 \item{band}{string value for which measurement to extract}
 
-\item{band_qc}{string value for which quality control band, or use "NA" if you do not know or do not need QC information (optional)}
+\item{package_method}{string value to inform function of which package method to use to download 
+modis data. Either "MODISTools" or "reticulate" (optional)}
 
-\item{band_sd}{string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)}
+\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good 
+(as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this 
+parameter to work. Default is False. Only MODISTools option.}
 
-\item{siteID}{numeric value of BETY site id value to use for output file name. Default is NULL. Only MODISTools option.}
+\item{progress}{TRUE reports the download progress bar of the dataset, FALSE omits the download 
+progress bar. Default is TRUE. Only MODISTools option.
 
-\item{package_method}{string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)}
-
-\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False. Only MODISTools option.}
-
-\item{progress}{TRUE reports the download progress bar of the dataset, FALSE omits the download progress bar. Default is TRUE. Only MODISTools option.
-
-depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
+Requires Python3 for reticulate method option. There are a number of required python libraries. 
+sudo -H pip install numpy suds netCDF4 json
 depends on the MODISTools package version 1.1.0}
 }
 \description{
@@ -45,10 +57,25 @@ Get MODIS data by date and location
 }
 \examples{
 \dontrun{
-test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools", progress = TRUE, QC_filter = FALSE)
-test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
+site_info <- list(
+  site_id = 1,
+  site_name = "test",
+  lat = 44,
+  lon = 90,
+  time_zone = "UTC")
+test_modistools <- call_MODIS(
+  outdir = NULL,
+  var = "lai",
+  site_info = site_info,
+  product_dates = c("2001150", "2001365"),
+  run_parallel = TRUE,
+  ncores = NULL,
+  product = "MOD15A2H",
+  band = "Lai_500m",
+  package_method = "MODISTools",
+  QC_filter = TRUE,
+  progress = FALSE)
 }
-
 }
 \author{
 Bailey Morrison
