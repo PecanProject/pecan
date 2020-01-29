@@ -33,14 +33,7 @@
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking dependencies in R code ... OK
-* checking S3 generic/method consistency ... WARNING
-plot:
-  function(x, ...)
-plot.netcdf:
-  function(datafile, yvar, xvar, width, height, filename, year)
-
-See section ‘Generic functions and methods’ in the ‘Writing R
-Extensions’ manual.
+* checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
@@ -88,4 +81,4 @@ vwReg 11.31    0.1  11.486
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 3 WARNINGs, 1 NOTE
+Status: 2 WARNINGs, 1 NOTE

@@ -20,6 +20,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - When building sipnet model would not set correct model version
 
 ### Changed
+- `PEcAn.visualization::plot.netcdf` was renamed to `PEcAn.visualization::plot_netcdf`, to avoid confusion with S3 plotting methods.
 - Rebuilt documentation using Roxygen 7. Readers get nicer formatting of usage sections, writers get more flexible behavior when inheriting parameters and less hassle when maintaining namespaces (#2524).
 - PEcAn.priors: renamed functions that looked like S3 methods but were not: `plot.posterior.density`->`plot_posterior.density`, `plot.prior.density`->`plot_prior.density`, `plot.trait`->`plot_trait` (#2439).
 - Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
