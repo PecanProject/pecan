@@ -19,10 +19,10 @@ vwReg(
   median.col = "white",
   shape = 21,
   show.CI = FALSE,
-  method = loess,
+  method = stats::loess,
   bw = FALSE,
   slices = 200,
-  palette = colorRampPalette(c("#FFEDA0", "#DD0000"), bias = 2)(20),
+  palette = (grDevices::colorRampPalette(c("#FFEDA0", "#DD0000"), bias = 2))(20),
   ylim = NULL,
   quantize = "continuous",
   add = FALSE,
@@ -30,6 +30,12 @@ vwReg(
 )
 }
 \arguments{
+\item{formula}{variables to plot. See examples}
+
+\item{data}{data frame containing all variables used in formula}
+
+\item{title}{passed on to ggplot}
+
 \item{B}{= number bootstrapped smoothers}
 
 \item{shade}{plot the shaded confidence region?}

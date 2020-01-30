@@ -39,3 +39,4 @@ $(call depends,models/maespa): | .install/modules/data.atmosphere .install/base/
 $(call depends,models/preles): | .install/base/utils .install/base/logger .install/modules/data.atmosphere .install/base/utils
 $(call depends,models/sipnet): | .install/modules/data.atmosphere .install/base/logger .install/base/remote .install/base/utils
 $(call depends,models/stics): | .install/base/settings .install/base/db .install/base/logger .install/base/utils .install/base/remote
+$(call depends,models/template): | .install/base/db .install/base/logger .install/base/utils
