@@ -42,6 +42,10 @@
 ##' \url{http://www.nicebread.de/visually-weighted-watercolor-plots-new-variants-please-vote/}
 ##' 
 ##' @title PEcAn worldmap
+##'
+##' @param formula variables to plot. See examples
+##' @param data data frame containing all variables used in formula
+##' @param title passed on to ggplot
 ##' @param B = number bootstrapped smoothers
 ##' @param shade plot the shaded confidence region?
 ##' @param shade.alpha should the CI shading fade out at the edges? (by reducing alpha; 0 = no alpha decrease, 0.1 = medium alpha decrease, 0.5 = strong alpha decrease)
@@ -84,15 +88,15 @@
 vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha = 0.1, 
                   spag = FALSE, spag.color = "darkblue", mweight = TRUE, show.lm = FALSE,
                   show.median = TRUE, median.col = "white", shape = 21, show.CI = FALSE, 
-                  method = loess, bw = FALSE, slices = 200, 
-                  palette = colorRampPalette(c("#FFEDA0", "#DD0000"), bias = 2)(20), 
+                  method = stats::loess, bw = FALSE, slices = 200,
+                  palette = grDevices::colorRampPalette(c("#FFEDA0", "#DD0000"), bias = 2)(20),
                   ylim = NULL, quantize = "continuous", add = FALSE, ...) {
   IV <- all.vars(formula)[2]
   DV <- all.vars(formula)[1]
-  data <- na.omit(data[order(data[, IV]), c(IV, DV)])
+  data <- stats::na.omit(data[order(data[, IV]), c(IV, DV)])
   
   if (bw) {
-    palette <- colorRampPalette(c("#EEEEEE", "#999999", "#333333"), bias = 2)(20)
+    palette <- grDevices::colorRampPalette(c("#EEEEEE", "#999999", "#333333"), bias = 2)(20)
   }
   
   print("Computing boostrapped smoothers ...")
@@ -105,20 +109,27 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
     data2 <- data[sample(nrow(data), replace = TRUE), ]
     data2 <- data2[order(data2[, IV]), ]
     if (inherits(l0, "loess")) {
-      m1 <- method(formula, data2, control = loess.control(surface = "i", 
-                                                           statistics = "a", 
-                                                           trace.hat = "a"), ...)
+      m1 <- method(
+        formula,
+        data2,
+        control = stats::loess.control(
+          surface = "i",
+          statistics = "a",
+          trace.hat = "a"),
+        ...)
     } else {
       m1 <- method(formula, data2, ...)
     }
-    l0.boot[, i] <- predict(m1, newdata = newx)
+    l0.boot[, i] <- stats::predict(m1, newdata = newx)
   }
   
   # compute median and CI limits of bootstrap
   CI.boot <- plyr::adply(l0.boot, 1, function(x) {
-    quantile(x, prob = c(0.025, 0.5, 0.975,
-                         pnorm(c(-3, -2, -1, 0, 1, 2, 3))), 
-             na.rm = TRUE)
+    stats::quantile(
+      x,
+      prob = c(0.025, 0.5, 0.975,
+               stats::pnorm(c(-3, -2, -1, 0, 1, 2, 3))),
+      na.rm = TRUE)
   })[, -1]
   colnames(CI.boot)[1:10] <- c("LL", "M", "UL", paste0("SD", 1:7))
   CI.boot$x <- newx[, 1]
@@ -137,7 +148,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   # an existing ggplot
   
   # if add == FALSE: provide the basic ggplot object
-  p0 <- ggplot(data, aes_string(x = IV, y = DV)) + theme_bw()
+  p0 <- ggplot2::ggplot(data, ggplot2::aes_string(x = IV, y = DV)) + ggplot2::theme_bw()
   
   # initialize elements with NULL (if they are defined, they are overwritten with something
   # meaningful)
@@ -147,8 +158,8 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
     quantize <- match.arg(quantize, c("continuous", "SD"))
     if (quantize == "continuous") {
       print("Computing density estimates for each vertical cut ...")
-      flush.console()
-      
+      utils::flush.console()
+
       if (is.null(ylim)) {
         min_value <- min(min(l0.boot, na.rm = TRUE), min(data[, DV], na.rm = TRUE))
         max_value <- max(max(l0.boot, na.rm = TRUE), max(data[, DV], na.rm = TRUE))
@@ -157,12 +168,12 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       
       # vertical cross-sectional density estimate
       d2 <- plyr::ddply(b2[, c("x", "value")], "x", function(df) {
-        res <- data.frame(density(df$value, 
+        res <- data.frame(stats::density(df$value,
                                   na.rm = TRUE,
                                   n = slices, 
                                   from = ylim[1], 
                                   to = ylim[2])[c("x", "y")])
-        # res <- data.frame(density(df$value, na.rm=TRUE, n=slices)[c('x', 'y')])
+        # res <- data.frame(stats::density(df$value, na.rm=TRUE, n=slices)[c('x', 'y')])
         colnames(res) <- c("y", "dens")
         return(res)
       }, .progress = "text")
@@ -173,9 +184,12 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       
       ## Tile approach
       d2$alpha.factor <- d2$dens.scaled^shade.alpha
-      gg.tiles <- list(geom_tile(data = d2, aes(x = x, y = y, fill = dens.scaled, alpha = alpha.factor)), 
-                       scale_fill_gradientn("dens.scaled", colours = palette), 
-                       scale_alpha_continuous(range = c(0.001, 1)))
+      gg.tiles <- list(
+        ggplot2::geom_tile(
+          data = d2,
+          ggplot2::aes(x = x, y = y, fill = dens.scaled, alpha = alpha.factor)),
+        ggplot2::scale_fill_gradientn("dens.scaled", colours = palette),
+        ggplot2::scale_alpha_continuous(range = c(0.001, 1)))
     }
     if (quantize == "SD") {
       ## Polygon approach
@@ -194,63 +208,67 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
         d3 <- rbind(d3, seg)
       }
       
-      gg.poly <- list(geom_polygon(data = d3, 
-                                   aes(x = x, y = value, color = NULL, fill = col, group = group)), 
-                      scale_fill_gradientn("dens.scaled", colours = palette, values = seq(-1, 3, 1)))
+      gg.poly <- list(
+        ggplot2::geom_polygon(data = d3, ggplot2::aes(x = x, y = value, color = NULL, fill = col, group = group)),
+        ggplot2::scale_fill_gradientn("dens.scaled", colours = palette, values = seq(-1, 3, 1)))
     }
   }
   
   print("Build ggplot figure ...")
-  flush.console()
+  utils::flush.console()
   
   if (spag) {
-    gg.spag <- geom_path(data = b2, 
-                         aes(x = x, y = value, group = B), 
-                         size = 0.7, 
-                         alpha = 10 / B, 
-                         color = spag.color)
+    gg.spag <- ggplot2::geom_path(
+      data = b2,
+      ggplot2::aes(x = x, y = value, group = B),
+      size = 0.7,
+      alpha = 10 / B,
+      color = spag.color)
   }
   
   if (show.median) {
     if (mweight) {
-      gg.median <- geom_path(data = CI.boot, 
-                             aes(x = x, y = M, alpha = w3 ^ 3), 
-                             size = 0.6, 
-                             linejoin = "mitre", 
-                             color = median.col)
+      gg.median <- ggplot2::geom_path(
+        data = CI.boot,
+        ggplot2::aes(x = x, y = M, alpha = w3 ^ 3),
+        size = 0.6,
+        linejoin = "mitre",
+        color = median.col)
     } else {
-      gg.median <- geom_path(data = CI.boot, 
-                             aes(x = x, y = M),
-                             size = 0.6,
-                             linejoin = "mitre", 
-                             color = median.col)
+      gg.median <- ggplot2::geom_path(
+        data = CI.boot,
+        ggplot2::aes(x = x, y = M),
+        size = 0.6,
+        linejoin = "mitre",
+        color = median.col)
     }
   }
   
   # Confidence limits
   if (show.CI) {
-    gg.CI1 <- geom_path(data = CI.boot, aes(x = x, y = UL), size = 1, color = "red")
-    gg.CI2 <- geom_path(data = CI.boot, aes(x = x, y = LL), size = 1, color = "red")
+    gg.CI1 <- ggplot2::geom_path(data = CI.boot, ggplot2::aes(x = x, y = UL), size = 1, color = "red")
+    gg.CI2 <- ggplot2::geom_path(data = CI.boot, ggplot2::aes(x = x, y = LL), size = 1, color = "red")
   }
   
   # plain linear regression line
   if (show.lm) {
-    gg.lm <- geom_smooth(method = "lm", color = "darkgreen", se = FALSE)
+    gg.lm <- ggplot2::geom_smooth(method = "lm", color = "darkgreen", se = FALSE)
   }
   
-  gg.points <- geom_point(data = data, 
-                          aes_string(x = IV, y = DV), 
-                          size = 1, 
-                          shape = shape, 
-                          fill = "white",
-                          color = "black")
+  gg.points <- ggplot2::geom_point(
+    data = data,
+    ggplot2::aes_string(x = IV, y = DV),
+    size = 1,
+    shape = shape,
+    fill = "white",
+    color = "black")
   
   if (title != "") {
-    gg.title <- theme(title = title)
+    gg.title <- ggplot2::theme(title = title)
   }
   
-  gg.elements <- list(gg.tiles, gg.poly, gg.spag, gg.median, gg.CI1, gg.CI2, 
-                      gg.lm, gg.points, gg.title, theme(legend.position = "none"))
+  gg.elements <- list(gg.tiles, gg.poly, gg.spag, gg.median, gg.CI1, gg.CI2,
+                      gg.lm, gg.points, gg.title, ggplot2::theme(legend.position = "none"))
   
   if (!add) {
     return(p0 + gg.elements)

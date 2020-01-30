@@ -16,13 +16,7 @@
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
 * checking serialization versions ... OK
-* checking whether package ‘PEcAn.visualization’ can be installed ... WARNING
-Found the following significant warnings:
-  Note: possible error in 'pdf(filename = filename, ': unused argument (filename = filename) 
-See ‘/tmp/RtmpP8kDnH/PEcAn.visualization.Rcheck/00install.out’ for details.
-Information on the location(s) of code generating the ‘Note’s can be
-obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
-to ‘yes’.
+* checking whether package ‘PEcAn.visualization’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... OK
@@ -38,132 +32,27 @@ to ‘yes’.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... NOTE
-Packages in Depends field not imported from:
-  ‘ggplot2’ ‘raster’ ‘sp’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
-* checking S3 generic/method consistency ... WARNING
-plot:
-  function(x, ...)
-plot.netcdf:
-  function(datafile, yvar, xvar, width, height, filename, year)
-
-See section ‘Generic functions and methods’ in the ‘Writing R
-Extensions’ manual.
-
-Found the following apparent S3 methods exported but not registered:
-  plot.netcdf
-See section ‘Registering S3 methods’ in the ‘Writing R Extensions’
-manual.
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-Found an obsolete/platform-specific call in the following function:
-  ‘plot.netcdf’
-Found the platform-specific device:
-  ‘x11’
-dev.new() is the preferred way to open a new device, in the unlikely
-event one is needed.
-ciEnvelope: no visible global function definition for ‘polygon’
-create_status_page: no visible global function definition for
-  ‘download.file’
-create_status_page: no visible binding for global variable ‘nodeinfo’
-create_status_page: no visible global function definition for ‘png’
-create_status_page: no visible global function definition for
-  ‘extendrange’
-create_status_page : <anonymous> : <anonymous>: no visible global
-  function definition for ‘segments’
-create_status_page : <anonymous>: no visible global function definition
-  for ‘points’
-create_status_page : <anonymous>: no visible global function definition
-  for ‘text’
-create_status_page: no visible global function definition for ‘text’
-create_status_page: no visible global function definition for ‘dev.off’
-data.fetch: no visible global function definition for ‘aggregate’
-map.output: no visible global function definition for ‘map_data’
-map.output: no visible global function definition for ‘ggplot’
-map.output: no visible global function definition for ‘geom_polygon’
-map.output: no visible global function definition for ‘aes’
 map.output: no visible binding for global variable ‘long’
 map.output: no visible binding for global variable ‘lat’
 map.output: no visible binding for global variable ‘group’
-map.output: no visible global function definition for ‘geom_point’
 map.output: no visible binding for global variable ‘lon’
-map.output: no visible global function definition for
-  ‘scale_color_gradientn’
-map.output: no visible global function definition for ‘theme_bw’
-map.output: no visible global function definition for ‘xlim’
-map.output: no visible global function definition for ‘ylim’
-plot.netcdf: no visible global function definition for ‘x11’
-plot.netcdf: no visible global function definition for ‘png’
-plot.netcdf: no visible global function definition for ‘pdf’
-plot.netcdf: no visible global function definition for ‘jpg’
-plot.netcdf: no visible global function definition for ‘tiff’
-plot.netcdf: no visible global function definition for ‘plot.new’
-plot.netcdf: no visible global function definition for ‘title’
-plot.netcdf: no visible global function definition for ‘plot.window’
-plot.netcdf: no visible global function definition for ‘polygon’
-plot.netcdf: no visible global function definition for ‘lines’
-plot.netcdf: no visible global function definition for ‘points’
-plot.netcdf: no visible global function definition for ‘legend’
-plot.netcdf: no visible global function definition for ‘axis’
-plot.netcdf: no visible global function definition for ‘box’
-plot.netcdf: no visible global function definition for ‘dev.off’
-vwReg: no visible binding for global variable ‘loess’
-vwReg: no visible global function definition for ‘colorRampPalette’
-vwReg: no visible global function definition for ‘na.omit’
-vwReg: no visible global function definition for ‘loess.control’
-vwReg: no visible global function definition for ‘predict’
-vwReg : <anonymous>: no visible global function definition for
-  ‘quantile’
-vwReg : <anonymous>: no visible global function definition for ‘pnorm’
-vwReg: no visible global function definition for ‘ggplot’
-vwReg: no visible global function definition for ‘aes_string’
-vwReg: no visible global function definition for ‘theme_bw’
-vwReg: no visible global function definition for ‘flush.console’
-vwReg : <anonymous>: no visible global function definition for
-  ‘density’
-vwReg: no visible global function definition for ‘geom_tile’
-vwReg: no visible global function definition for ‘aes’
 vwReg: no visible binding for global variable ‘x’
 vwReg: no visible binding for global variable ‘y’
 vwReg: no visible binding for global variable ‘dens.scaled’
 vwReg: no visible binding for global variable ‘alpha.factor’
-vwReg: no visible global function definition for ‘scale_fill_gradientn’
-vwReg: no visible global function definition for
-  ‘scale_alpha_continuous’
-vwReg: no visible global function definition for ‘geom_polygon’
 vwReg: no visible binding for global variable ‘value’
 vwReg: no visible binding for global variable ‘group’
-vwReg: no visible global function definition for ‘geom_path’
 vwReg: no visible binding for global variable ‘M’
 vwReg: no visible binding for global variable ‘w3’
 vwReg: no visible binding for global variable ‘UL’
 vwReg: no visible binding for global variable ‘LL’
-vwReg: no visible global function definition for ‘geom_smooth’
-vwReg: no visible global function definition for ‘geom_point’
-vwReg: no visible global function definition for ‘theme’
 Undefined global functions or variables:
-  aes aes_string aggregate alpha.factor axis box colorRampPalette
-  dens.scaled density dev.off download.file extendrange
-  flush.console geom_path geom_point geom_polygon geom_smooth geom_tile
-  ggplot grid.draw group jpg lat legend lines LL loess loess.control
-  lon long M map_data na.omit nodeinfo pdf plot.new plot.window png
-  pnorm points polygon predict quantile rasterGrob readPNG
-  scale_alpha_continuous scale_color_gradientn scale_fill_gradientn
-  segments text textGrob theme theme_bw tiff title UL unit value w3 x
-  x11 xlim y ylim
-Consider adding
-  importFrom("graphics", "axis", "box", "legend", "lines", "plot.new",
-             "plot.window", "points", "polygon", "segments", "text",
-             "title")
-  importFrom("grDevices", "colorRampPalette", "dev.off", "extendrange",
-             "pdf", "png", "tiff", "x11")
-  importFrom("stats", "aggregate", "density", "loess", "loess.control",
-             "na.omit", "pnorm", "predict", "quantile")
-  importFrom("utils", "download.file", "flush.console")
-to your NAMESPACE file.
+  alpha.factor dens.scaled group lat LL lon long M UL value w3 x y
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -175,32 +64,7 @@ All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'ciEnvelope'
-  ‘...’
-
-Undocumented arguments in documentation object 'plot.hdf5'
-  ‘width’ ‘height’
-Duplicated \argument entries in documentation object 'plot.hdf5':
-  ‘the’
-Documented arguments not in \usage in documentation object 'plot.hdf5':
-  ‘the’
-
-Undocumented arguments in documentation object 'vwReg'
-  ‘formula’ ‘data’ ‘title’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
-S3 methods shown with full name in documentation object 'plot.hdf5':
-  ‘plot.netcdf’
-
-The \usage entries for S3 methods should use the \method markup and not
-their full name.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
@@ -217,4 +81,4 @@ vwReg 11.31    0.1  11.486
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 5 WARNINGs, 2 NOTEs
+Status: 2 WARNINGs, 1 NOTE
