@@ -7,7 +7,7 @@
 query.traits(
   ids,
   priors,
-  con = NULL,
+  con,
   update.check.only = FALSE,
   ids_are_cultivars = FALSE
 )
@@ -31,10 +31,11 @@ Query available trait data associated with a given pft and a list of traits
 }
 \examples{
 \dontrun{
+con <- db.open(your_settings_here)
 species <- query.pft_species('ebifarm.c4crop')
 spstr <- vecpaste(species$id)
 trvec <- c('leafN', 'SLA')
-trait.data <- query.traits(spstr, trvec)
+trait.data <- query.traits(spstr, trvec, con)
 }
 }
 \seealso{

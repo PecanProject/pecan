@@ -23,8 +23,8 @@
 #	install: scripts/travis/cache_buildup.sh
 #	script: echo 'just caching dependencies'
 #	```
-#	- Any section you include here *completely replaces* that section in .travis.yml
-#	- All sections of .travis.yml that you *don't* override here will be run as normal
+#	- Any section you include here *replaces* that section in .travis.yml
+#	- All sections of .travis.yml you *don't* override here will run as normal
 
 # Usage via Travis API: see prime_travis_cache.sh
 
@@ -39,6 +39,12 @@ timeout ${MAX_TIME} bash -c ${CMDS}
 if [[ $? -ne 0 ]]; then
 	# Clean up any lock files left from killing install.packages
 	# (these packages will be re-freshened in the next priming round)
+	#
+	# TODO BUGBUG this assumes staged installation (R 3.6 and later)!
+	# R <= 3.5 backs up the old version to lockdir, builds new version in place
+	# 	==> killing and deleting lockfile leaves broken package.
+	# Also per-package locking is optional; check if make uses it reliably
+	#
 	find $(Rscript -e 'cat(.libPaths())') -path '*/00LOCK-*' -delete
 	echo "Still more packages to cache. Please initiate another build."
 else

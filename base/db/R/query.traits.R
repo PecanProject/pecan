@@ -21,26 +21,17 @@
 ##' @export query.traits
 ##' @examples
 ##' \dontrun{
+##' con <- db.open(your_settings_here)
 ##' species <- query.pft_species('ebifarm.c4crop')
 ##' spstr <- vecpaste(species$id)
 ##' trvec <- c('leafN', 'SLA')
-##' trait.data <- query.traits(spstr, trvec)
+##' trait.data <- query.traits(spstr, trvec, con)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.traits <- function(ids, priors, con = NULL,
-                         update.check.only=FALSE,
-                         ids_are_cultivars=FALSE){
-  
-  if(is.null(con)){
-    con <- db.open(settings$database$bety)
-    on.exit(db.close(con), add = TRUE)
-  }
-  if(is.list(con)){
-    print("query.traits")
-    print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
-    return(NULL)
-  }
-  
+query.traits <- function(ids, priors, con,
+                         update.check.only = FALSE,
+                         ids_are_cultivars = FALSE) {
+
   if (length(ids) == 0 || length(priors) == 0) {
     return(list())
   }
