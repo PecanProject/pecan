@@ -4,7 +4,8 @@
 \alias{mstmipvar}
 \title{MstMIP variable}
 \usage{
-mstmipvar(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE)
+mstmipvar(name, lat = NA, lon = NA, time = NA, nsoil = NA,
+  silent = FALSE)
 }
 \arguments{
 \item{name}{of variable}

@@ -4,20 +4,8 @@
 \alias{hier.mcmc}
 \title{Hierarchical MCMC using emulator}
 \usage{
-hier.mcmc(
-  settings,
-  gp.stack,
-  nstack = NULL,
-  nmcmc,
-  rng_orig,
-  jmp0,
-  mu_site_init,
-  nparam,
-  nsites,
-  llik.fn,
-  prior.fn.all,
-  prior.ind.all
-)
+hier.mcmc(settings, gp.stack, nstack = NULL, nmcmc, rng_orig, jmp0,
+  mu_site_init, nparam, nsites, llik.fn, prior.fn.all, prior.ind.all)
 }
 \arguments{
 \item{settings}{a pecan settings list}

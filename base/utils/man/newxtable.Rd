@@ -4,15 +4,9 @@
 \alias{newxtable}
 \title{newxtable}
 \usage{
-newxtable(
-  x,
-  environment = "table",
-  table.placement = "ht",
-  label = NULL,
-  caption = NULL,
-  caption.placement = NULL,
-  align = NULL
-)
+newxtable(x, environment = "table", table.placement = "ht",
+  label = NULL, caption = NULL, caption.placement = NULL,
+  align = NULL)
 }
 \arguments{
 \item{x}{data.frame to be converted to latex table}
@@ -28,7 +22,7 @@ Latex version of table, with percentages properly formatted
 New xtable
 }
 \details{
-utility to properly escape the '\%' sign for latex
+utility to properly escape the '%' sign for latex
 }
 \author{
 David LeBauer

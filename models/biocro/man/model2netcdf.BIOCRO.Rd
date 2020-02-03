@@ -4,7 +4,8 @@
 \alias{model2netcdf.BIOCRO}
 \title{Function to convert biocro model output to standard netCDF format}
 \usage{
-model2netcdf.BIOCRO(result, genus = NULL, outdir, lat = -9999, lon = -9999)
+model2netcdf.BIOCRO(result, genus = NULL, outdir, lat = -9999,
+  lon = -9999)
 }
 \arguments{
 \item{result}{a dataframe of model output to be converted}

@@ -4,16 +4,8 @@
 \alias{met2model.MAESPA}
 \title{met2model.MAESPA}
 \usage{
-met2model.MAESPA(
-  in.path,
-  in.prefix,
-  outfolder,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+met2model.MAESPA(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}

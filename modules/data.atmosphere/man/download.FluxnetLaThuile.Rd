@@ -4,16 +4,8 @@
 \alias{download.FluxnetLaThuile}
 \title{download.FluxnetLaThuile}
 \usage{
-download.FluxnetLaThuile(
-  sitename,
-  outfolder,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  username = "pecan",
-  ...
-)
+download.FluxnetLaThuile(sitename, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, username = "pecan", ...)
 }
 \arguments{
 \item{sitename}{the FLUXNET ID of the site to be downloaded, used as file name prefix.

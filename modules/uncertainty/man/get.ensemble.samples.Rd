@@ -4,14 +4,8 @@
 \alias{get.ensemble.samples}
 \title{Get Ensemble Samples}
 \usage{
-get.ensemble.samples(
-  ensemble.size,
-  pft.samples,
-  env.samples,
-  method = "uniform",
-  param.names = NULL,
-  ...
-)
+get.ensemble.samples(ensemble.size, pft.samples, env.samples,
+  method = "uniform", param.names = NULL, ...)
 }
 \arguments{
 \item{ensemble.size}{number of runs in model ensemble}

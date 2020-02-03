@@ -4,7 +4,8 @@
 \alias{read_E_files}
 \title{Function for reading -E- files}
 \usage{
-read_E_files(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, ...)
+read_E_files(yr, yfiles, efiles, outdir, start_date, end_date, pft_names,
+  ...)
 }
 \arguments{
 \item{yr}{the year being processed}

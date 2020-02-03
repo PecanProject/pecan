@@ -4,18 +4,9 @@
 \alias{plot_sensitivity}
 \title{Sensitivity plot}
 \usage{
-plot_sensitivity(
-  sa.sample,
-  sa.spline,
-  trait,
-  y.range = c(0, 50),
-  median.i = 4,
-  prior.sa.sample = NULL,
-  prior.sa.spline = NULL,
-  fontsize = list(title = 12, axis = 8),
-  linesize = 1,
-  dotsize = 2
-)
+plot_sensitivity(sa.sample, sa.spline, trait, y.range = c(0, 50),
+  median.i = 4, prior.sa.sample = NULL, prior.sa.spline = NULL,
+  fontsize = list(title = 12, axis = 8), linesize = 1, dotsize = 2)
 }
 \arguments{
 \item{sa.sample}{trait quantiles used in sensitivity analysis}

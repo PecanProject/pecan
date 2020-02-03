@@ -4,18 +4,9 @@
 \alias{read.output}
 \title{Read model output}
 \usage{
-read.output(
-  runid,
-  outdir,
-  start.year = NA,
-  end.year = NA,
-  variables = "GPP",
-  dataframe = FALSE,
-  pft.name = NULL,
-  ncfiles = NULL,
-  verbose = FALSE,
-  print_summary = TRUE
-)
+read.output(runid, outdir, start.year = NA, end.year = NA,
+  variables = "GPP", dataframe = FALSE, pft.name = NULL,
+  ncfiles = NULL, verbose = FALSE, print_summary = TRUE)
 }
 \arguments{
 \item{runid}{the ID distinguishing the model run. Can be omitted

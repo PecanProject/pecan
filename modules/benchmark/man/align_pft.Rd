@@ -4,17 +4,9 @@
 \alias{align_pft}
 \title{align_pft}
 \usage{
-align_pft(
-  con,
-  observation_one,
-  observation_two,
-  custom_table = NULL,
-  format_one,
-  format_two,
-  subset_is_ok = FALSE,
-  comparison_type = "data_to_data",
-  ...
-)
+align_pft(con, observation_one, observation_two, custom_table = NULL,
+  format_one, format_two, subset_is_ok = FALSE,
+  comparison_type = "data_to_data", ...)
 }
 \arguments{
 \item{con}{database connection}

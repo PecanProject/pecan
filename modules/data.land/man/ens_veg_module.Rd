@@ -4,18 +4,8 @@
 \alias{ens_veg_module}
 \title{Sampling/ensemble module}
 \usage{
-ens_veg_module(
-  getveg.id,
-  dbparms,
-  input_veg,
-  outfolder,
-  machine,
-  start_date,
-  end_date,
-  n.ensemble,
-  new_site,
-  host
-)
+ens_veg_module(getveg.id, dbparms, input_veg, outfolder, machine,
+  start_date, end_date, n.ensemble, new_site, host)
 }
 \arguments{
 \item{getveg.id}{list, input.id and dbfile.id of the IC file in intermediate pecan standard}

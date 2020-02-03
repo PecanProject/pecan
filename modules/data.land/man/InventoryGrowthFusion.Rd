@@ -4,22 +4,11 @@
 \alias{InventoryGrowthFusion}
 \title{InventoryGrowthFusion}
 \usage{
-InventoryGrowthFusion(
-  data,
-  cov.data = NULL,
-  time_data = NULL,
-  n.iter = 5000,
-  n.chunk = n.iter,
-  n.burn = min(n.chunk, 2000),
-  random = NULL,
-  fixed = NULL,
-  time_varying = NULL,
-  burnin_plot = FALSE,
-  save.jags = "IGF.txt",
-  z0 = NULL,
-  save.state = TRUE,
-  restart = NULL
-)
+InventoryGrowthFusion(data, cov.data = NULL, time_data = NULL,
+  n.iter = 5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000),
+  random = NULL, fixed = NULL, time_varying = NULL,
+  burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL,
+  save.state = TRUE, restart = NULL)
 }
 \arguments{
 \item{data}{list of data inputs}

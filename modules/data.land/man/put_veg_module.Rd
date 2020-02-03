@@ -4,22 +4,8 @@
 \alias{put_veg_module}
 \title{Match species to PFTs + veg2model module}
 \usage{
-put_veg_module(
-  getveg.id,
-  dbparms,
-  input_veg,
-  pfts,
-  outfolder,
-  n.ensemble,
-  dir,
-  machine,
-  model,
-  start_date,
-  end_date,
-  new_site,
-  host,
-  overwrite
-)
+put_veg_module(getveg.id, dbparms, input_veg, pfts, outfolder, n.ensemble,
+  dir, machine, model, start_date, end_date, new_site, host, overwrite)
 }
 \arguments{
 \item{getveg.id}{list, input.id and dbfile.id of the IC file in intermediate pecan standard}

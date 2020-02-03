@@ -4,14 +4,8 @@
 \alias{run.biocro}
 \title{Run BioCro at a point}
 \usage{
-run.biocro(
-  lat,
-  lon,
-  metpath,
-  soil.nc = NULL,
-  config = config,
-  coppice.interval = 1
-)
+run.biocro(lat, lon, metpath, soil.nc = NULL, config = config,
+  coppice.interval = 1)
 }
 \arguments{
 \item{lat}{latitude in decimal degrees}

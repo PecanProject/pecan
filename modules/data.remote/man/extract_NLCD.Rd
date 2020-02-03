@@ -4,7 +4,8 @@
 \alias{extract_NLCD}
 \title{extract.NLCD}
 \usage{
-extract_NLCD(buffer, coords, data_dir = NULL, con = NULL, year = 2011)
+extract_NLCD(buffer, coords, data_dir = NULL, con = NULL,
+  year = 2011)
 }
 \arguments{
 \item{buffer}{search radius (meters)}

@@ -4,15 +4,8 @@
 \alias{pda.generate.knots}
 \title{Generate Parameter Knots for PDA Emulator}
 \usage{
-pda.generate.knots(
-  n.knot,
-  sf,
-  probs.sf,
-  n.param.all,
-  prior.ind,
-  prior.fn,
-  pname
-)
+pda.generate.knots(n.knot, sf, probs.sf, n.param.all, prior.ind, prior.fn,
+  pname)
 }
 \arguments{
 \item{n.knot}{number of knots}

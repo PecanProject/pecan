@@ -4,17 +4,8 @@
 \alias{write_restart.LINKAGES}
 \title{write_restart.LINKAGES}
 \usage{
-write_restart.LINKAGES(
-  outdir,
-  runid,
-  start.time,
-  stop.time,
-  settings,
-  new.state,
-  RENAME = TRUE,
-  new.params,
-  inputs
-)
+write_restart.LINKAGES(outdir, runid, start.time, stop.time, settings,
+  new.state, RENAME = TRUE, new.params, inputs)
 }
 \arguments{
 \item{outdir}{output directory}

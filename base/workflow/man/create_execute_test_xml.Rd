@@ -4,26 +4,13 @@
 \alias{create_execute_test_xml}
 \title{Create a PEcAn XML file and use it to run a PEcAn workflow}
 \usage{
-create_execute_test_xml(
-  model_id,
-  met,
-  site_id,
-  start_date,
-  end_date,
-  dbfiles_folder,
-  user_id,
-  output_folder = "batch_test_output",
-  pecan_path = getwd(),
-  pft = NULL,
-  ensemble_size = 1,
-  sensitivity_variable = "NPP",
-  sensitivity = FALSE,
-  db_bety_username = NULL,
-  db_bety_password = NULL,
-  db_bety_hostname = NULL,
-  db_bety_port = NULL,
-  db_bety_driver = "Postgres"
-)
+create_execute_test_xml(model_id, met, site_id, start_date, end_date,
+  dbfiles_folder, user_id, output_folder = "batch_test_output",
+  pecan_path = getwd(), pft = NULL, ensemble_size = 1,
+  sensitivity_variable = "NPP", sensitivity = FALSE,
+  db_bety_username = NULL, db_bety_password = NULL,
+  db_bety_hostname = NULL, db_bety_port = NULL,
+  db_bety_driver = "Postgres")
 }
 \arguments{
 \item{model_id}{(numeric) Model ID (from `models` table)}

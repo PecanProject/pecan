@@ -4,13 +4,8 @@
 \alias{correlationPlot}
 \title{Flexible function to create correlation density plots}
 \usage{
-correlationPlot(
-  mat,
-  density = "smooth",
-  thin = "auto",
-  method = "pearson",
-  whichParameters = NULL
-)
+correlationPlot(mat, density = "smooth", thin = "auto",
+  method = "pearson", whichParameters = NULL)
 }
 \arguments{
 \item{mat}{matrix or data frame of variables}

@@ -4,11 +4,8 @@
 \alias{read_web_config}
 \title{Read \code{config.php} file into an R list}
 \usage{
-read_web_config(
-  php.config = "../../web/config.php",
-  parse = TRUE,
-  expand = TRUE
-)
+read_web_config(php.config = "../../web/config.php", parse = TRUE,
+  expand = TRUE)
 }
 \arguments{
 \item{php.config}{Path to \code{config.php} file}

@@ -4,19 +4,10 @@
 \alias{SDA_control}
 \title{SDA_control}
 \usage{
-SDA_control(
-  trace = TRUE,
-  ForewardForecast = FALSE,
-  interactivePlot = FALSE,
-  TimeseriesPlot = FALSE,
-  BiasPlot = FALSE,
-  plot.title = NULL,
-  facet.plots = FALSE,
-  debug = FALSE,
-  pause = FALSE,
-  Profiling = FALSE,
-  OutlierDetection = FALSE
-)
+SDA_control(trace = TRUE, ForewardForecast = FALSE,
+  interactivePlot = FALSE, TimeseriesPlot = FALSE, BiasPlot = FALSE,
+  plot.title = NULL, facet.plots = FALSE, debug = FALSE,
+  pause = FALSE, Profiling = FALSE, OutlierDetection = FALSE)
 }
 \arguments{
 \item{trace}{Logical if code should print out the progress of SDA .}

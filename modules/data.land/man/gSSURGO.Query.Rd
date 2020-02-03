@@ -4,10 +4,8 @@
 \alias{gSSURGO.Query}
 \title{This function queries the gSSURGO database for a series of map unit keys}
 \usage{
-gSSURGO.Query(
-  mukeys = 2747727,
-  fields = c("chorizon.sandtotal_r", "chorizon.silttotal_r", "chorizon.claytotal_r")
-)
+gSSURGO.Query(mukeys = 2747727, fields = c("chorizon.sandtotal_r",
+  "chorizon.silttotal_r", "chorizon.claytotal_r"))
 }
 \arguments{
 \item{mukeys}{map unit key from gssurgo}

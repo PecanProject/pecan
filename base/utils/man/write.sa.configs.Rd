@@ -4,14 +4,8 @@
 \alias{write.sa.configs}
 \title{Write sensitivity analysis config files}
 \usage{
-write.sa.configs(
-  defaults,
-  quantile.samples,
-  settings,
-  model,
-  clean = FALSE,
-  write.to.db = TRUE
-)
+write.sa.configs(defaults, quantile.samples, settings, model,
+  clean = FALSE, write.to.db = TRUE)
 }
 \arguments{
 \item{defaults}{named list with default parameter values}

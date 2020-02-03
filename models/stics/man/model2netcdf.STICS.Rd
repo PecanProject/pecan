@@ -4,14 +4,8 @@
 \alias{model2netcdf.STICS}
 \title{Code to convert STICS' output into netCDF format}
 \usage{
-model2netcdf.STICS(
-  outdir,
-  sitelat,
-  sitelon,
-  start_date,
-  end_date,
-  overwrite = FALSE
-)
+model2netcdf.STICS(outdir, sitelat, sitelon, start_date, end_date,
+  overwrite = FALSE)
 }
 \arguments{
 \item{outdir}{Location of model output}

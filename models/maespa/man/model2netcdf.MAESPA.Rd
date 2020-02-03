@@ -4,14 +4,8 @@
 \alias{model2netcdf.MAESPA}
 \title{Code to convert MAESPA's output into netCDF format}
 \usage{
-model2netcdf.MAESPA(
-  outdir,
-  sitelat,
-  sitelon,
-  start_date,
-  end_date,
-  stem_density
-)
+model2netcdf.MAESPA(outdir, sitelat, sitelon, start_date, end_date,
+  stem_density)
 }
 \arguments{
 \item{outdir}{Location of MAESPA output}

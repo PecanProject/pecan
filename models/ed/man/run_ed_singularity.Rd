@@ -4,13 +4,8 @@
 \alias{run_ed_singularity}
 \title{Run ED singularity container}
 \usage{
-run_ed_singularity(
-  img_path,
-  ed2in_path,
-  app = "ED",
-  singularity_args = NULL,
-  ...
-)
+run_ed_singularity(img_path, ed2in_path, app = "ED",
+  singularity_args = NULL, ...)
 }
 \arguments{
 \item{img_path}{Path to Singularity container (usually a \code{.simg} file)}
@@ -19,7 +14,7 @@ run_ed_singularity(
 
 \item{app}{Singularity "app" to run. Either "ED" or "EDR".}
 
-\item{singularity_args}{Additional arguments to be passed to \verb{singularity run} (before)}
+\item{singularity_args}{Additional arguments to be passed to \code{singularity run} (before)}
 
 \item{Additional}{arguments to \link[base:system2]{base::system2}}
 }

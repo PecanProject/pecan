@@ -4,17 +4,8 @@
 \alias{met2model.SIPNET}
 \title{met2model.SIPNET}
 \usage{
-met2model.SIPNET(
-  in.path,
-  in.prefix,
-  outfolder,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  year.fragment = FALSE,
-  ...
-)
+met2model.SIPNET(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}

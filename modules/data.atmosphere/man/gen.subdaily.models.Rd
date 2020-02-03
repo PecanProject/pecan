@@ -4,22 +4,11 @@
 \alias{gen.subdaily.models}
 \title{gen.subdaily.models}
 \usage{
-gen.subdaily.models(
-  outfolder,
-  path.train,
-  yrs.train,
-  direction.filter = "forward",
-  in.prefix,
-  n.beta,
-  day.window,
-  seed = Sys.time(),
-  resids = FALSE,
-  parallel = FALSE,
-  n.cores = NULL,
-  overwrite = TRUE,
-  verbose = FALSE,
-  print.progress = FALSE
-)
+gen.subdaily.models(outfolder, path.train, yrs.train,
+  direction.filter = "forward", in.prefix, n.beta, day.window,
+  seed = Sys.time(), resids = FALSE, parallel = FALSE,
+  n.cores = NULL, overwrite = TRUE, verbose = FALSE,
+  print.progress = FALSE)
 }
 \arguments{
 \item{outfolder}{- directory where models will be stored *** storage required varies by size of training dataset, but prepare for >10 GB}
@@ -69,15 +58,12 @@ Generate Subdaily Models
 Create statistical models to predict subdaily meteorology
 }
 \seealso{
-Other tdm - Temporally Downscale Meteorology: 
-\code{\link{lm_ensemble_sims}()},
-\code{\link{model.train}()},
-\code{\link{nc.merge}()},
-\code{\link{predict_subdaily_met}()},
-\code{\link{save.betas}()},
-\code{\link{save.model}()},
-\code{\link{subdaily_pred}()},
-\code{\link{temporal.downscale.functions}()}
+Other tdm - Temporally Downscale Meteorology: \code{\link{lm_ensemble_sims}},
+  \code{\link{model.train}}, \code{\link{nc.merge}},
+  \code{\link{predict_subdaily_met}},
+  \code{\link{save.betas}}, \code{\link{save.model}},
+  \code{\link{subdaily_pred}},
+  \code{\link{temporal.downscale.functions}}
 }
 \author{
 Christy Rollinson, James Simkins

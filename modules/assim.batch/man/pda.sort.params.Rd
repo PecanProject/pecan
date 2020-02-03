@@ -4,17 +4,9 @@
 \alias{pda.sort.params}
 \title{Function to sort Hierarchical MCMC samples}
 \usage{
-pda.sort.params(
-  mcmc.out,
-  sub.sample = "mu_global_samp",
-  ns = NULL,
-  prior.all,
-  prior.ind.all.ns,
-  sf = NULL,
-  n.param.orig,
-  prior.list,
-  prior.fn.all
-)
+pda.sort.params(mcmc.out, sub.sample = "mu_global_samp", ns = NULL,
+  prior.all, prior.ind.all.ns, sf = NULL, n.param.orig, prior.list,
+  prior.fn.all)
 }
 \arguments{
 \item{mcmc.out}{MCMC samples}

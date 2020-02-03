@@ -4,17 +4,8 @@
 \alias{write_restart.ModelName}
 \title{Write restart template for SDA}
 \usage{
-write_restart.ModelName(
-  outdir,
-  runid,
-  start.time,
-  stop.time,
-  settings,
-  new.state,
-  RENAME,
-  new.params,
-  inputs
-)
+write_restart.ModelName(outdir, runid, start.time, stop.time, settings,
+  new.state, RENAME, new.params, inputs)
 }
 \arguments{
 \item{outdir}{outout directory}

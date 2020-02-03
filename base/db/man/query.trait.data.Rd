@@ -4,14 +4,8 @@
 \alias{query.trait.data}
 \title{Extract trait data from database}
 \usage{
-query.trait.data(
-  trait,
-  spstr,
-  con = NULL,
-  update.check.only = FALSE,
-  ids_are_cultivars = FALSE,
-  ...
-)
+query.trait.data(trait, spstr, con = NULL, update.check.only = FALSE,
+  ids_are_cultivars = FALSE, ...)
 }
 \arguments{
 \item{trait}{is the trait name used in the database, stored in variables.name}

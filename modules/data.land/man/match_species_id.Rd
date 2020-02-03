@@ -4,13 +4,8 @@
 \alias{match_species_id}
 \title{Match BETY species ID.}
 \usage{
-match_species_id(
-  input_codes,
-  format_name = "custom",
-  bety = NULL,
-  translation_table = NULL,
-  ...
-)
+match_species_id(input_codes, format_name = "custom", bety = NULL,
+  translation_table = NULL, ...)
 }
 \arguments{
 \item{input_codes}{Character vector of species codes}

@@ -4,11 +4,8 @@
 \alias{plot_sensitivities}
 \title{Plot Sensitivities}
 \usage{
-plot_sensitivities(
-  sensitivity.plot.inputs,
-  prior.sensitivity.plot.inputs = NULL,
-  ...
-)
+plot_sensitivities(sensitivity.plot.inputs,
+  prior.sensitivity.plot.inputs = NULL, ...)
 }
 \arguments{
 \item{sensitivity.plot.inputs}{inputs}

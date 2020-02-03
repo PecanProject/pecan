@@ -4,16 +4,8 @@
 \alias{metgapfill.NOAA_GEFS}
 \title{Gapfill NOAA_GEFS weather data}
 \usage{
-metgapfill.NOAA_GEFS(
-  in.prefix,
-  in.path,
-  outfolder,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+metgapfill.NOAA_GEFS(in.prefix, in.path, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.prefix}{the met file name}

@@ -4,17 +4,12 @@
 \alias{sensitivity.filename}
 \title{Generate sensitivity analysis filenames}
 \usage{
-sensitivity.filename(
-  settings,
-  prefix = "sensitivity.samples",
-  suffix = "Rdata",
-  all.var.yr = TRUE,
-  pft = NULL,
+sensitivity.filename(settings, prefix = "sensitivity.samples",
+  suffix = "Rdata", all.var.yr = TRUE, pft = NULL,
   ensemble.id = settings$sensitivity.analysis$ensemble.id,
   variable = settings$sensitivity.analysis$variable,
   start.year = settings$sensitivity.analysis$start.year,
-  end.year = settings$sensitivity.analysis$end.year
-)
+  end.year = settings$sensitivity.analysis$end.year)
 }
 \value{
 a filename

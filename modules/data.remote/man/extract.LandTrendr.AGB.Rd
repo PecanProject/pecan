@@ -4,16 +4,9 @@
 \alias{extract.LandTrendr.AGB}
 \title{extract.LandTrendr.AGB}
 \usage{
-extract.LandTrendr.AGB(
-  site_info,
-  dataset = "median",
-  buffer = NULL,
-  fun = "mean",
-  data_dir = NULL,
-  product_dates = NULL,
-  output_file = NULL,
-  ...
-)
+extract.LandTrendr.AGB(site_info, dataset = "median", buffer = NULL,
+  fun = "mean", data_dir = NULL, product_dates = NULL,
+  output_file = NULL, ...)
 }
 \arguments{
 \item{site_info}{list of site info for parsing AGB data: list(site_id, site_name, lat, lon, time_zone)}

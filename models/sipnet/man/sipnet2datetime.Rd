@@ -4,7 +4,8 @@
 \alias{sipnet2datetime}
 \title{Convert SIPNET DOY to datetime}
 \usage{
-sipnet2datetime(sipnet_tval, base_year, base_month = 1, force_cf = FALSE)
+sipnet2datetime(sipnet_tval, base_year, base_month = 1,
+  force_cf = FALSE)
 }
 \arguments{
 \item{sipnet_tval}{vector of SIPNET DOY values}

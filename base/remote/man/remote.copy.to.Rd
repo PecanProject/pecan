@@ -4,7 +4,8 @@
 \alias{remote.copy.to}
 \title{Copy file/dir to remote server from local server}
 \usage{
-remote.copy.to(host, src, dst, options = NULL, delete = FALSE, stderr = FALSE)
+remote.copy.to(host, src, dst, options = NULL, delete = FALSE,
+  stderr = FALSE)
 }
 \arguments{
 \item{host}{host structure to execute command on}

@@ -4,13 +4,8 @@
 \alias{approx.posterior}
 \title{Approximate posterior}
 \usage{
-approx.posterior(
-  trait.mcmc,
-  priors,
-  trait.data = NULL,
-  outdir = NULL,
-  filename.flag = ""
-)
+approx.posterior(trait.mcmc, priors, trait.data = NULL, outdir = NULL,
+  filename.flag = "")
 }
 \arguments{
 \item{trait.mcmc}{meta analysis outputs}

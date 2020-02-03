@@ -16,7 +16,7 @@ dataframe with statistics transformed to SE
 Transform misc. statistics to SE
 }
 \details{
-Automates transformations of SD, MSE, LSD, 95\%CI, HSD, and MSD to conservative estimates of SE.
+Automates transformations of SD, MSE, LSD, 95%CI, HSD, and MSD to conservative estimates of SE.
 }
 \examples{
 statdf <- data.frame(Y=rep(1,5),

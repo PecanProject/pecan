@@ -4,16 +4,8 @@
 \alias{allom.predict}
 \title{allom.predict}
 \usage{
-allom.predict(
-  object,
-  dbh,
-  pft = NULL,
-  component = NULL,
-  n = NULL,
-  use = "Bg",
-  interval = "prediction",
-  single.tree = FALSE
-)
+allom.predict(object, dbh, pft = NULL, component = NULL, n = NULL,
+  use = "Bg", interval = "prediction", single.tree = FALSE)
 }
 \arguments{
 \item{object}{Allometry model object. Option includes

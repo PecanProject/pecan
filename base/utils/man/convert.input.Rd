@@ -4,32 +4,12 @@
 \alias{convert.input}
 \title{Convert between formats, reusing existing files where possible}
 \usage{
-convert.input(
-  input.id,
-  outfolder,
-  formatname,
-  mimetype,
-  site.id,
-  start_date,
-  end_date,
-  pkg,
-  fcn,
-  con = con,
-  host,
-  browndog,
-  write = TRUE,
-  format.vars,
-  overwrite = FALSE,
-  exact.dates = FALSE,
-  allow.conflicting.dates = TRUE,
-  insert.new.file = FALSE,
-  pattern = NULL,
-  forecast = FALSE,
-  ensemble = FALSE,
-  ensemble_name = NULL,
-  dbparms = NULL,
-  ...
-)
+convert.input(input.id, outfolder, formatname, mimetype, site.id,
+  start_date, end_date, pkg, fcn, con = con, host, browndog,
+  write = TRUE, format.vars, overwrite = FALSE, exact.dates = FALSE,
+  allow.conflicting.dates = TRUE, insert.new.file = FALSE,
+  pattern = NULL, forecast = FALSE, ensemble = FALSE,
+  ensemble_name = NULL, dbparms = NULL, ...)
 }
 \arguments{
 \item{input.id}{The database id of the input file of the parent of the file being processed here.  The parent will have the same data, but in a different format.}

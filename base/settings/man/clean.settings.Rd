@@ -4,7 +4,8 @@
 \alias{clean.settings}
 \title{Cleans PEcAn settings file}
 \usage{
-clean.settings(inputfile = "pecan.xml", outputfile = "pecan.xml", write = TRUE)
+clean.settings(inputfile = "pecan.xml", outputfile = "pecan.xml",
+  write = TRUE)
 }
 \arguments{
 \item{inputfile}{the PEcAn settings file to be used.}

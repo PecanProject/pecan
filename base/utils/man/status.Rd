@@ -40,7 +40,7 @@ or is skipped.
 All of these functions write to or read from a STATUS file in your run's
 output directory. If the file is not specified in the call, they will look
 for a \code{settings} object in the global environment and use
-\verb{<settings$outdir>/STATUS} if possible.
+\code{<settings$outdir>/STATUS} if possible.
 
 Since the status functions may be called inside error-handling routines,
 it's important that they not produce new errors of their own. Therefore

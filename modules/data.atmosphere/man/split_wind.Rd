@@ -4,15 +4,8 @@
 \alias{split_wind}
 \title{Split wind_speed into eastward_wind and northward_wind}
 \usage{
-split_wind(
-  in.path,
-  in.prefix,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+split_wind(in.path, in.prefix, start_date, end_date, overwrite = FALSE,
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{path to original data}

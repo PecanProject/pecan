@@ -5,44 +5,41 @@
 \alias{sda.enkf.original}
 \title{sda.enkf}
 \usage{
-sda.enkf.original(
-  settings,
-  obs.mean,
-  obs.cov,
-  IC = NULL,
-  Q = NULL,
-  adjustment = TRUE,
-  restart = NULL
-)
+sda.enkf.original(settings, obs.mean, obs.cov, IC = NULL, Q = NULL,
+  adjustment = TRUE, restart = NULL)
 
-sda.enkf(
-  settings,
-  obs.mean,
-  obs.cov,
-  Q = NULL,
-  restart = NULL,
-  control = list(trace = TRUE, interactivePlot = TRUE, TimeseriesPlot = TRUE, BiasPlot =
-    FALSE, plot.title = NULL, debug = FALSE, pause = FALSE),
-  ...
-)
+sda.enkf(settings, obs.mean, obs.cov, Q = NULL, restart = NULL,
+  control = list(trace = TRUE, interactivePlot = TRUE, TimeseriesPlot =
+  TRUE, BiasPlot = FALSE, plot.title = NULL, debug = FALSE, pause = FALSE),
+  ...)
 }
 \arguments{
+\item{settings}{PEcAn settings object}
+
+\item{obs.mean}{list of observations of the means of state variable (time X nstate)}
+
+\item{obs.cov}{list of observations of covariance matrices of state variables (time X nstate X nstate)}
+
+\item{IC}{initial conditions}
+
+\item{Q}{process covariance matrix given if there is no data to estimate it}
+
+\item{adjustment}{flag for using ensemble adjustment filter or not}
+
+\item{restart}{Used for iterative updating previous forecasts. This is a list that includes ens.inputs, the list of inputs by ensemble member, params, the parameters, and old_outdir, the output directory from the previous workflow. These three things are needed to ensure that if a new workflow is started that ensemble members keep there run-specific met and params. See Details}
+
+\item{control}{List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
+TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.}
+
 \item{settings}{PEcAn settings object}
 
 \item{obs.mean}{List of dataframe of observation means, named with observation datetime.}
 
 \item{obs.cov}{List of covariance matrices of state variables , named with observation datetime.}
 
-\item{IC}{initial conditions}
-
 \item{Q}{Process covariance matrix given if there is no data to estimate it.}
 
-\item{adjustment}{flag for using ensemble adjustment filter or not}
-
 \item{restart}{Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.}
-
-\item{control}{List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
-TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.}
 }
 \value{
 NONE

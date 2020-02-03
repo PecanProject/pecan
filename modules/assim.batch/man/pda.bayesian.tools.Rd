@@ -4,19 +4,9 @@
 \alias{pda.bayesian.tools}
 \title{Paramater Data Assimilation using BayesianTools}
 \usage{
-pda.bayesian.tools(
-  settings,
-  params.id = NULL,
-  param.names = NULL,
-  prior.id = NULL,
-  chain = NULL,
-  iter = NULL,
-  adapt = NULL,
-  adj.min = NULL,
-  ar.target = NULL,
-  jvar = NULL,
-  n.knot = NULL
-)
+pda.bayesian.tools(settings, params.id = NULL, param.names = NULL,
+  prior.id = NULL, chain = NULL, iter = NULL, adapt = NULL,
+  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL)
 }
 \arguments{
 \item{settings}{= a pecan settings list}

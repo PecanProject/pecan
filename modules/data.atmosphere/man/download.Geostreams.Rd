@@ -4,17 +4,9 @@
 \alias{download.Geostreams}
 \title{Download Geostreams data from Clowder API}
 \usage{
-download.Geostreams(
-  outfolder,
-  sitename,
-  start_date,
-  end_date,
+download.Geostreams(outfolder, sitename, start_date, end_date,
   url = "https://terraref.ncsa.illinois.edu/clowder/api/geostreams",
-  key = NULL,
-  user = NULL,
-  pass = NULL,
-  ...
-)
+  key = NULL, user = NULL, pass = NULL, ...)
 }
 \arguments{
 \item{outfolder}{directory in which to save json result. Will be created if necessary}

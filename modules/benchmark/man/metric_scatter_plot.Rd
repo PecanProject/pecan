@@ -4,12 +4,8 @@
 \alias{metric_scatter_plot}
 \title{Scatter Plot}
 \usage{
-metric_scatter_plot(
-  metric_dat,
-  var,
-  filename = NA,
-  draw.plot = is.na(filename)
-)
+metric_scatter_plot(metric_dat, var, filename = NA,
+  draw.plot = is.na(filename))
 }
 \arguments{
 \item{draw.plot}{}

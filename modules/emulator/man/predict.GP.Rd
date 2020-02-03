@@ -4,7 +4,8 @@
 \alias{predict.GP}
 \title{predict.GP}
 \usage{
-\method{predict}{GP}(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL)
+\method{predict}{GP}(gp, xpred, cI = NULL, pI = NULL,
+  splinefcns = NULL)
 }
 \arguments{
 \item{cI}{credible interval}

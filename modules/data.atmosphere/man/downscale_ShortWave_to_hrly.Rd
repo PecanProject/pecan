@@ -4,14 +4,8 @@
 \alias{downscale_ShortWave_to_hrly}
 \title{Downscale shortwave to hourly}
 \usage{
-downscale_ShortWave_to_hrly(
-  debiased,
-  time0,
-  time_end,
-  lat,
-  lon,
-  output_tz = "UTC"
-)
+downscale_ShortWave_to_hrly(debiased, time0, time_end, lat, lon,
+  output_tz = "UTC")
 }
 \arguments{
 \item{debiased, }{data frame of variables}

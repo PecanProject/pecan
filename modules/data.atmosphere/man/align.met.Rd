@@ -4,17 +4,9 @@
 \alias{align.met}
 \title{align.met}
 \usage{
-align.met(
-  train.path,
-  source.path,
-  yrs.train = NULL,
-  yrs.source = NULL,
-  n.ens = NULL,
-  pair.mems = FALSE,
-  mems.train = NULL,
-  seed = Sys.Date(),
-  print.progress = FALSE
-)
+align.met(train.path, source.path, yrs.train = NULL, yrs.source = NULL,
+  n.ens = NULL, pair.mems = FALSE, mems.train = NULL,
+  seed = Sys.Date(), print.progress = FALSE)
 }
 \arguments{
 \item{train.path}{- path to the dataset to be used to downscale the data}
@@ -78,8 +70,7 @@ Align meteorology datasets for debiasing
             an ensemnle member ID that might be used if you are specifying mems.train.
 }
 \seealso{
-Other debias - Debias & Align Meteorology Datasets into continuous time series: 
-\code{\link{debias.met.regression}()}
+Other debias - Debias & Align Meteorology Datasets into continuous time series: \code{\link{debias.met.regression}}
 }
 \author{
 Christy Rollinson

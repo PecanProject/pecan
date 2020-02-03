@@ -4,14 +4,8 @@
 \alias{burnin.thin}
 \title{Burn-in and thinning of MCMC samples}
 \usage{
-burnin.thin(
-  samples,
-  target = 5000,
-  burnin.ratio = 2,
-  auto = TRUE,
-  burnin = NULL,
-  thin = NULL
-)
+burnin.thin(samples, target = 5000, burnin.ratio = 2, auto = TRUE,
+  burnin = NULL, thin = NULL)
 }
 \arguments{
 \item{samples}{Matrix of MCMC samples}

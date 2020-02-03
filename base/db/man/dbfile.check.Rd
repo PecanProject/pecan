@@ -5,14 +5,8 @@
 \title{List files associated with a container and machine exist in
 `dbfiles` table}
 \usage{
-dbfile.check(
-  type,
-  container.id,
-  con,
-  hostname = PEcAn.remote::fqdn(),
-  machine.check = TRUE,
-  return.all = FALSE
-)
+dbfile.check(type, container.id, con, hostname = PEcAn.remote::fqdn(),
+  machine.check = TRUE, return.all = FALSE)
 }
 \arguments{
 \item{type}{The type of `dbfile`, as a character. Must be either

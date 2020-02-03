@@ -4,16 +4,10 @@
 \alias{fia.to.psscss}
 \title{fia.to.psscss}
 \usage{
-fia.to.psscss(
-  settings,
-  lat = as.numeric(settings$run$site$lat),
+fia.to.psscss(settings, lat = as.numeric(settings$run$site$lat),
   lon = as.numeric(settings$run$site$lon),
-  year = lubridate::year(settings$run$start.date),
-  gridres = 0.075,
-  min.year = year - 5,
-  max.year = year + 5,
-  overwrite = FALSE
-)
+  year = lubridate::year(settings$run$start.date), gridres = 0.075,
+  min.year = year - 5, max.year = year + 5, overwrite = FALSE)
 }
 \arguments{
 \item{create}{pss/css files based on data in the fia database}

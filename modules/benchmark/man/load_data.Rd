@@ -4,15 +4,8 @@
 \alias{load_data}
 \title{load_data}
 \usage{
-load_data(
-  data.path,
-  format,
-  start_year = NA,
-  end_year = NA,
-  site = NA,
-  vars.used.index = NULL,
-  ...
-)
+load_data(data.path, format, start_year = NA, end_year = NA,
+  site = NA, vars.used.index = NULL, ...)
 }
 \arguments{
 \item{data.path}{character}

@@ -4,15 +4,8 @@
 \alias{shp2kml}
 \title{Convert shapefile to KML}
 \usage{
-shp2kml(
-  dir,
-  ext,
-  kmz = FALSE,
-  proj4 = NULL,
-  color = NULL,
-  NameField = NULL,
-  out.dir = NULL
-)
+shp2kml(dir, ext, kmz = FALSE, proj4 = NULL, color = NULL,
+  NameField = NULL, out.dir = NULL)
 }
 \arguments{
 \item{dir}{Directory of GIS shapefiles to convert to kml/kmz}

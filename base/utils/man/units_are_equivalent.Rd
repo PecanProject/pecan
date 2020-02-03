@@ -16,7 +16,7 @@ units_are_equivalent(x, y)
 }
 \description{
 This is to allow multiple forms of the same unit to work, such as
-\code{m/s} vs. \verb{m s-1} or \code{K} and \code{Kelvin}.
+\code{m/s} vs. \code{m s-1} or \code{K} and \code{Kelvin}.
 }
 \author{
 Alexey Shiklomanov

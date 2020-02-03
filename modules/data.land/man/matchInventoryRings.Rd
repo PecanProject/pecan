@@ -4,13 +4,8 @@
 \alias{matchInventoryRings}
 \title{matchInventoryRings}
 \usage{
-matchInventoryRings(
-  trees,
-  rings,
-  extractor = "TreeCode",
-  nyears = 30,
-  coredOnly = TRUE
-)
+matchInventoryRings(trees, rings, extractor = "TreeCode", nyears = 30,
+  coredOnly = TRUE)
 }
 \description{
 matchInventoryRings

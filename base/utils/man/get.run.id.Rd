@@ -4,7 +4,8 @@
 \alias{get.run.id}
 \title{Get Run ID}
 \usage{
-get.run.id(run.type, index, trait = NULL, pft.name = NULL, site.id = NULL)
+get.run.id(run.type, index, trait = NULL, pft.name = NULL,
+  site.id = NULL)
 }
 \arguments{
 \item{run.type}{character, can be any character; currently 'SA' is used for sensitivity analysis, 'ENS' for ensemble run.}

@@ -4,15 +4,8 @@
 \alias{pda.postprocess}
 \title{Postprocessing for PDA Results}
 \usage{
-pda.postprocess(
-  settings,
-  con,
-  mcmc.param.list,
-  pname,
-  prior,
-  prior.ind,
-  sffx = NULL
-)
+pda.postprocess(settings, con, mcmc.param.list, pname, prior, prior.ind,
+  sffx = NULL)
 }
 \arguments{
 \item{settings}{PEcAn settings list}

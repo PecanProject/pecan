@@ -4,7 +4,8 @@
 \alias{prepare_ed_veg_filename}
 \title{Format file name for ED vegetation inputs}
 \usage{
-prepare_ed_veg_filename(path_prefix, suffix, latitude = NULL, longitude = NULL)
+prepare_ed_veg_filename(path_prefix, suffix, latitude = NULL,
+  longitude = NULL)
 }
 \arguments{
 \item{path_prefix}{Desired path and prefix (without latitude and longitude)}

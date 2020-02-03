@@ -4,16 +4,8 @@
 \alias{met2CF.Geostreams}
 \title{Convert geostreams JSON to CF met file}
 \usage{
-met2CF.Geostreams(
-  in.path,
-  in.prefix,
-  outfolder,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+met2CF.Geostreams(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{directory containing Geostreams JSON file(s) to be converted}

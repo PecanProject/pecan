@@ -4,18 +4,10 @@
 \alias{pecan.ma}
 \title{Trait Meta-analysis}
 \usage{
-pecan.ma(
-  trait.data,
-  prior.distns,
-  taupriors,
-  j.iter,
-  outdir,
-  random = FALSE,
-  overdispersed = TRUE,
-  logfile = file.path(outdir, "meta-analysis.log)"),
-  verbose = TRUE,
-  madata_file = file.path(outdir, "madata.Rdata")
-)
+pecan.ma(trait.data, prior.distns, taupriors, j.iter, outdir,
+  random = FALSE, overdispersed = TRUE, logfile = file.path(outdir,
+  "meta-analysis.log)"), verbose = TRUE,
+  madata_file = file.path(outdir, "madata.Rdata"))
 }
 \arguments{
 \item{trait.data}{list of \code{data.frame}s, one per trait for which

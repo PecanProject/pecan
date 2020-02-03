@@ -4,7 +4,8 @@
 \alias{rtm_loglike}
 \title{Generic log-likelihood generator for RTMs}
 \usage{
-rtm_loglike(nparams, model, observed, lag.max = NULL, verbose = TRUE, ...)
+rtm_loglike(nparams, model, observed, lag.max = NULL, verbose = TRUE,
+  ...)
 }
 \description{
 Generic log-likelihood generator for RTMs

@@ -4,24 +4,10 @@
 \alias{mcmc.GP}
 \title{mcmc.GP}
 \usage{
-mcmc.GP(
-  gp,
-  x0,
-  nmcmc,
-  rng,
-  format = "lin",
-  mix = "joint",
-  splinefcns = NULL,
-  jmp0 = 0.35 * (rng[, 2] - rng[, 1]),
-  ar.target = 0.5,
-  priors = NA,
-  settings,
-  run.block = TRUE,
-  n.of.obs,
-  llik.fn,
-  hyper.pars,
-  resume.list = NULL
-)
+mcmc.GP(gp, x0, nmcmc, rng, format = "lin", mix = "joint",
+  splinefcns = NULL, jmp0 = 0.35 * (rng[, 2] - rng[, 1]),
+  ar.target = 0.5, priors = NA, settings, run.block = TRUE, n.of.obs,
+  llik.fn, hyper.pars, resume.list = NULL)
 }
 \arguments{
 \item{gp}{Gaussian Process}

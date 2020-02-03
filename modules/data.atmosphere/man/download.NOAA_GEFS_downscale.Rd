@@ -4,17 +4,10 @@
 \alias{download.NOAA_GEFS_downscale}
 \title{Downscale NOAA GEFS Weather Data}
 \usage{
-download.NOAA_GEFS_downscale(
-  outfolder,
-  lat.in,
-  lon.in,
-  sitename,
-  start_date = Sys.time(),
-  end_date = (as.POSIXct(start_date, tz = "UTC") + lubridate::days(16)),
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+download.NOAA_GEFS_downscale(outfolder, lat.in, lon.in, sitename,
+  start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz =
+  "UTC") + lubridate::days(16)), overwrite = FALSE, verbose = FALSE,
+  ...)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}

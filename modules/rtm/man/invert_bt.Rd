@@ -4,12 +4,13 @@
 \alias{invert_bt}
 \title{Perform Bayesian inversion using BayesianTools package}
 \usage{
-invert_bt(observed, model, prior, custom_settings = list(), loglike = NULL)
+invert_bt(observed, model, prior, custom_settings = list(),
+  loglike = NULL)
 }
 \arguments{
 \item{observed}{Vector of observations. Ignored if \code{loglike} is not \code{NULL}.}
 
-\item{model}{Function called by log-likelihood. Must be \verb{function(params)}
+\item{model}{Function called by log-likelihood. Must be \code{function(params)}
 and return a vector equal to \code{length(observed)} or \code{nrow(observed)}. Ignored
 if \code{loglike} is not \code{NULL}.}
 

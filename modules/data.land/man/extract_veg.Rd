@@ -4,19 +4,9 @@
 \alias{extract_veg}
 \title{load_veg}
 \usage{
-extract_veg(
-  new_site,
-  start_date,
-  end_date,
-  source,
-  gridres,
-  format_name = NULL,
-  machine_host,
-  dbparms,
-  outfolder,
-  overwrite = FALSE,
-  ...
-)
+extract_veg(new_site, start_date, end_date, source, gridres,
+  format_name = NULL, machine_host, dbparms, outfolder,
+  overwrite = FALSE, ...)
 }
 \description{
 Function queries a DB to extract veg info downstream

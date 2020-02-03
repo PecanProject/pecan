@@ -5,16 +5,8 @@
 \alias{GEF.MultiSite}
 \title{GEF}
 \usage{
-GEF(
-  settings,
-  Forecast,
-  Observed,
-  H,
-  extraArg,
-  nitr = 50000,
-  nburnin = 10000,
-  ...
-)
+GEF(settings, Forecast, Observed, H, extraArg, nitr = 50000,
+  nburnin = 10000, ...)
 
 GEF.MultiSite(setting, Forecast, Observed, H, extraArg, ...)
 }

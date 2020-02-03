@@ -4,13 +4,8 @@
 \alias{invert.custom}
 \title{Bayesian inversion of a model}
 \usage{
-invert.custom(
-  observed,
-  invert.options,
-  quiet = FALSE,
-  return.resume = FALSE,
-  runID = NULL
-)
+invert.custom(observed, invert.options, quiet = FALSE,
+  return.resume = FALSE, runID = NULL)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of

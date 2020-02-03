@@ -4,16 +4,8 @@
 \alias{write.config.LINKAGES}
 \title{Write LINKAGES configuration files}
 \usage{
-write.config.LINKAGES(
-  defaults = NULL,
-  trait.values,
-  settings,
-  run.id,
-  restart = NULL,
-  spinup = FALSE,
-  inputs = NULL,
-  IC = NULL
-)
+write.config.LINKAGES(defaults = NULL, trait.values, settings, run.id,
+  restart = NULL, spinup = FALSE, inputs = NULL, IC = NULL)
 }
 \arguments{
 \item{defaults}{list of defaults to process}

@@ -4,20 +4,10 @@
 \alias{pda.mcmc.recover}
 \title{Clean up a failed PDA run}
 \usage{
-pda.mcmc.recover(
-  settings,
-  params.id = NULL,
-  param.names = NULL,
-  prior.id = NULL,
-  chain = NULL,
-  iter = NULL,
-  adapt = NULL,
-  adj.min = NULL,
-  ar.target = NULL,
-  jvar = NULL,
-  n.knot = NULL,
-  burnin = NULL
-)
+pda.mcmc.recover(settings, params.id = NULL, param.names = NULL,
+  prior.id = NULL, chain = NULL, iter = NULL, adapt = NULL,
+  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL,
+  burnin = NULL)
 }
 \arguments{
 \item{settings}{PEcAn param list}

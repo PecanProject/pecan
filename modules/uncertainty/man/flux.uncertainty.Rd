@@ -4,15 +4,8 @@
 \alias{flux.uncertainty}
 \title{Calculate parameters for heteroskedastic flux uncertainty}
 \usage{
-flux.uncertainty(
-  measurement,
-  QC = 0,
-  flags = TRUE,
-  bin.num = 10,
-  transform = identity,
-  minBin = 5,
-  ...
-)
+flux.uncertainty(measurement, QC = 0, flags = TRUE, bin.num = 10,
+  transform = identity, minBin = 5, ...)
 }
 \arguments{
 \item{measurement}{= flux time-series}

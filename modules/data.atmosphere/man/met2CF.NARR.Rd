@@ -4,16 +4,8 @@
 \alias{met2CF.NARR}
 \title{met2CF.NARR}
 \usage{
-met2CF.NARR(
-  in.path,
-  in.prefix,
-  outfolder,
-  start_date,
-  end_date,
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
-)
+met2CF.NARR(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{start_date}{the start date of the data to be downloaded (will only use the year part of the date)}
