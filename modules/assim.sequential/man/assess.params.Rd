@@ -12,6 +12,8 @@ assessParams(dat, Xt, wts = NULL, mu_f_TRUE = NULL, P_f_TRUE = NULL)
 
 \item{Xt}{ensemble output matrix}
 
+\item{wts}{ensemble weights}
+
 \item{mu_f_TRUE}{muf before tobit2space}
 
 \item{P_f_TRUE}{Pf before tobit2space}

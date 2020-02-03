@@ -24,9 +24,9 @@ get_ensemble_weights <- function(settings, time_do){
     ### Loading Weights                                                   ###
     ###-------------------------------------------------------------------###
     weight_file <- read.csv(settings$run$inputs$ensembleweights$path)
-    #start_date <- settings$run$inputs$ensembleweights$start.date
-    #end_date <- settings$run$inputs$ensembleweights$end.date
-    #years_get <- lubridate::year(start_date):lubridate::year(end_date) #assuming year time step... would need to change for other analyses possibly going down the load.data path?
+    start_date <- settings$run$inputs$ensembleweights$start.date
+    end_date <- settings$run$inputs$ensembleweights$end.date
+    years_get <- lubridate::year(start_date):lubridate::year(end_date) #assuming year time step... would need to change for other analyses possibly going down the load.data path?
     
     weight_file[weight_file==0] <- .00001 #hack not sure how to deal with zero weights
     
@@ -49,7 +49,7 @@ get_ensemble_weights <- function(settings, time_do){
                                                                                                     time_do[tt] &
                                                                                                     weight_file$climate_model %in% climate_names, 'weights'])) * nens
       
-      if(sum(weight_list[[tt]]) != nens) logger.warn(paste('Time',tt,'does not equal the number of ensemble members',nens))
+      if(sum(weight_list[[tt]]) != nens) PEcAn.utils::logger.warn(paste('Time',tt,'does not equal the number of ensemble members',nens))
       
       #TO DO: will need to have some way of dealing with sampling too if there are more ensemble members than weights or vice versa
       

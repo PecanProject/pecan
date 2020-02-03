@@ -121,12 +121,12 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   operators <- sapply(settings$state.data.assimilation$inputs, '[[', "operator")
   
   #Loading nimbles functions
-  PEcAn.assim.sequential:::load_nimble()
+  PEcAn.assim.sequential::load_nimble()
   
   #Forecast inputs 
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
-  Pf = cov(X) # Cov Forecast - Goes into tobit2space as initial condition but is re-estimated in tobit space
+  Pf = stats::cov(X) # Cov Forecast - Goes into tobit2space as initial condition but is re-estimated in tobit space
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   
   #Observed inputs
@@ -199,8 +199,10 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                                 wts = wts*nrow(X), #sigma x2 max Y
                                 Sigma_0 = solve(diag(1000,length(mu.f))))#some measure of prior obs
       
-      inits.tobit2space <- function() list(muf = rmnorm_chol(1,colMeans(X),chol(diag(ncol(X))*100)),
-                                  pf = rwish_chol(1,df = ncol(X)+1,cholesky = chol(solve(cov(X)))))
+      inits.tobit2space <- function() list(muf = rmnorm_chol(1,colMeans(X),
+                                                             chol(diag(ncol(X))*100)),
+                                  pf = rwish_chol(1,df = ncol(X)+1,
+                                                  cholesky = chol(solve(stats::cov(X)))))
       
       #ptm <- proc.time()
       tobit2space_pred <<- nimbleModel(tobit2space.model, data = data.tobit2space,
@@ -250,7 +252,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       Cmodel_tobit2space$y.censored <- x.censored
       
       inits.tobit2space <- function() list(muf = rmnorm_chol(1,colMeans(X),chol(diag(ncol(X))*100)),
-                                           pf = rwish_chol(1,df = ncol(X)+1,cholesky = chol(solve(cov(X)))))
+                                           pf = rwish_chol(1,df = ncol(X)+1,cholesky = chol(solve(stats::cov(X)))))
       
       Cmodel_tobit2space$setInits(inits.tobit2space())
       
@@ -283,12 +285,12 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       for(ff in seq_along(which_f)){
         mcmc.check <- list()
         
-        mcmc.check[[1]] <- mcmc(dat.tobit2space.nchains[[1]][,which_f[ff]])
-        mcmc.check[[2]] <- mcmc(dat.tobit2space.nchains[[2]][,which_f[ff]])
-        mcmc.check[[3]] <- mcmc(dat.tobit2space.nchains[[3]][,which_f[ff]])
+        mcmc.check[[1]] <- coda::mcmc(dat.tobit2space.nchains[[1]][,which_f[ff]])
+        mcmc.check[[2]] <- coda::mcmc(dat.tobit2space.nchains[[2]][,which_f[ff]])
+        mcmc.check[[3]] <- coda::mcmc(dat.tobit2space.nchains[[3]][,which_f[ff]])
         
         
-        gelman.keep.tobit2space[ff] <- try(gelman.diag(mcmc.check,transform = T)$psrf[1])
+        gelman.keep.tobit2space[ff] <- try(coda::gelman.diag(mcmc.check,transform = T)$psrf[1])
       }
       print(gelman.keep.tobit2space)
       
@@ -317,7 +319,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   }else{
     ## IDEA not sure if it's a good one
     mu.f <- apply(X,2,weighted.mean,wts)
-    Pf <- cov.wt(X,wts)$cov
+    Pf <- stats::cov.wt(X,wts)$cov
     X.new <- X
     gelman.keep.tobit2space <- NA
   }
@@ -441,25 +443,25 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     inits.pred <<-
       function()
         list(
-          q = diag(ncol(X)) * runif(1, length(mu.f), length(mu.f) + 1),
-          X.mod = rnorm(length(mu.f), mu.f, 1),
-          X = rnorm(length(mu.f), mu.f, .1),
-          y_star = rnorm(length(y.censored), 0, 1)
+          q = diag(ncol(X)) * stats::runif(1, length(mu.f), length(mu.f) + 1),
+          X.mod = stats::rnorm(length(mu.f), mu.f, 1),
+          X = stats::rnorm(length(mu.f), mu.f, .1),
+          y_star = stats::rnorm(length(y.censored), 0, 1)
         )
     
     # 
-    # inits.pred <<- list(q = diag(length(mu.f))*(length(mu.f)+1),
+    # inits.pred <- list(q = diag(length(mu.f))*(length(mu.f)+1),
     #                   X.mod = rnorm(length(mu.f),mu.f,1),
     #                   X = rnorm(length(mu.f),mu.f,1),
     #                   y_star = rnorm(length(y.censored),0,1))
     
-    model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
+    model_pred <<- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
                               constants = constants.tobit, inits = inits.pred(),
                               name = 'base')
     
     model_pred$initializeInfo()
     ## Adding X.mod,q,r as data for building model.
-    conf <- configureMCMC(model_pred, print=TRUE,thin = 10)
+    conf <<- configureMCMC(model_pred, print=TRUE,thin = 10)
     conf$addMonitors(c("X","X.mod","q","Q", "y_star","y.censored")) 
     
     if(ncol(X) > length(y.censored)){
@@ -550,12 +552,12 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   for(ff in which_f){
     mcmc.check <- list()
     
-    mcmc.check[[1]] <- mcmc(dat.nchains[[1]][,ff])
-    mcmc.check[[2]] <- mcmc(dat.nchains[[2]][,ff])
-    mcmc.check[[3]] <- mcmc(dat.nchains[[3]][,ff])
+    mcmc.check[[1]] <- coda::mcmc(dat.nchains[[1]][,ff])
+    mcmc.check[[2]] <- coda::mcmc(dat.nchains[[2]][,ff])
+    mcmc.check[[3]] <- coda::mcmc(dat.nchains[[3]][,ff])
     
     
-    gelman.keep[ff] <- try(gelman.diag(mcmc.check,transform = T)$psrf[1])
+    gelman.keep[ff] <- try(coda::gelman.diag(mcmc.check,transform = T)$psrf[1])
   }
   print(gelman.keep)
   if(any(gelman.keep > 1.5,na.rm = T)) logger.warn(paste('Gelman value > 1.5 for GEF model. Re-assess time point', t))
@@ -576,7 +578,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   mu.a <- colMeans(dat[, iX])
   
   ystar.a <- colMeans(dat[, iystar])
-  Pa   <- cov(dat[, iX])
+  Pa   <- stats::cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
   
   mq <- dat[, iq]  # Omega, Precision
@@ -604,17 +606,17 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   par(mfrow = c(2, 3))
   
   for(rr in 1:length(iX)){
-    plot(dat_save[,iX[rr]],typ = 'l',main = paste('X',rr))
+    graphics::plot(dat_save[,iX[rr]],typ = 'l',main = paste('X',rr))
     abline(h=mu.f[rr],col='blue')
   }
   
   for (rr in 1:length(iystar)) {
-    plot(dat_save[,iystar[rr]], type = 'l', main = paste('iystar',rr))
+    graphics::plot(dat_save[,iystar[rr]], type = 'l', main = paste('iystar',rr))
     abline(h=(mu.a)[rr],col='red')
   }
   
   for (rr in 1:length(iX)) {
-    plot(dat_save[,iX.mod[rr]], type = 'l', main = paste('iX.mod',rr))
+    graphics::plot(dat_save[,iX.mod[rr]], type = 'l', main = paste('iX.mod',rr))
     abline(h=mu.f[rr],col='blue')
   }
   eigen_save <- matrix(NA,nrow=nrow(dat_save),ncol=ncol(X))
