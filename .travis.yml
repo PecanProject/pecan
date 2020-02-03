@@ -8,7 +8,7 @@ r:
   - oldrel
 
 dist: xenial
-sudo: required
+os: linux
 
 env:
   global:
@@ -21,7 +21,7 @@ env:
     - _R_CHECK_LENGTH_1_CONDITION_=true
     - _R_CHECK_LENGTH_1_LOGIC2_=true
 
-matrix:
+jobs:
   fast_finish: true
   allow_failures:
     - r: devel

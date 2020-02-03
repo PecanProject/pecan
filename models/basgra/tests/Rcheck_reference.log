@@ -52,14 +52,7 @@ Non-portable flags in variable 'PKG_FCFLAGS':
   -x -fdefault-real-8
 * checking for GNU extensions in Makefiles ... OK
 * checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
-* checking compiled code ... NOTE
-File ‘PEcAn.BASGRA/libs/PEcAn.BASGRA.so’:
-  Found no calls to: ‘R_registerRoutines’, ‘R_useDynamicSymbols’
-
-It is good practice to register native routines and to disable symbol
-search.
-
-See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
+* checking compiled code ... OK
 * checking examples ... NONE
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ...
@@ -67,7 +60,7 @@ See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
  OK
 * DONE
 
-Status: 1 NOTE
+Status: 1 WARNING
 See
   ‘/private/var/folders/qr/mbw8xxpd45jdv_46b27914280000gn/T/Rtmpcw7AZN/PEcAn.BASGRA.Rcheck/00check.log’
 for details.
