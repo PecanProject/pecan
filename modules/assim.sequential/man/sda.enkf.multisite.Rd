@@ -4,12 +4,19 @@
 \alias{sda.enkf.multisite}
 \title{sda.enkf.multisite}
 \usage{
-sda.enkf.multisite(settings, obs.mean, obs.cov, Q = NULL,
-  restart = FALSE, forceRun = TRUE, keepNC = TRUE,
-  control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE,
-  TimeseriesPlot = FALSE, BiasPlot = FALSE, plot.title = NULL, facet.plots
-  = FALSE, debug = FALSE, pause = FALSE, Profiling = FALSE,
-  OutlierDetection = FALSE), ...)
+sda.enkf.multisite(
+  settings,
+  obs.mean,
+  obs.cov,
+  Q = NULL,
+  restart = FALSE,
+  forceRun = TRUE,
+  keepNC = TRUE,
+  control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE, TimeseriesPlot =
+    FALSE, BiasPlot = FALSE, plot.title = NULL, facet.plots = FALSE, debug = FALSE, pause
+    = FALSE, Profiling = FALSE, OutlierDetection = FALSE),
+  ...
+)
 }
 \arguments{
 \item{settings}{PEcAn settings object}

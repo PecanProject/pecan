@@ -4,8 +4,15 @@
 \alias{Contruct.Pf}
 \title{Contruct.Pf}
 \usage{
-Contruct.Pf(site.ids, var.names, X, localization.FUN = NULL, t = 1,
-  blocked.dis = NULL, ...)
+Contruct.Pf(
+  site.ids,
+  var.names,
+  X,
+  localization.FUN = NULL,
+  t = 1,
+  blocked.dis = NULL,
+  ...
+)
 }
 \arguments{
 \item{site.ids}{a vector name of site ids.}
