@@ -4,9 +4,19 @@
 \alias{call_MODIS}
 \title{call_MODIS}
 \usage{
-call_MODIS(outdir = NULL, var, site_info, product_dates,
-  run_parallel = FALSE, ncores = NULL, product, band,
-  package_method = "MODISTools", QC_filter = FALSE, progress = FALSE)
+call_MODIS(
+  outdir = NULL,
+  var,
+  site_info,
+  product_dates,
+  run_parallel = FALSE,
+  ncores = NULL,
+  product,
+  band,
+  package_method = "MODISTools",
+  QC_filter = FALSE,
+  progress = FALSE
+)
 }
 \arguments{
 \item{outdir}{where the output file will be stored. Default is NULL}

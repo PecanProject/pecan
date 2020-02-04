@@ -4,9 +4,16 @@
 \alias{insert.format.vars}
 \title{Insert Format and Format-Variable Records}
 \usage{
-insert.format.vars(con, format_name, mimetype_id, notes = NULL,
-  header = TRUE, skip = 0, formats_variables = NULL,
-  suppress = TRUE)
+insert.format.vars(
+  con,
+  format_name,
+  mimetype_id,
+  notes = NULL,
+  header = TRUE,
+  skip = 0,
+  formats_variables = NULL,
+  suppress = TRUE
+)
 }
 \arguments{
 \item{con}{SQL connection to BETYdb}

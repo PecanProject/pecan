@@ -4,8 +4,12 @@
 \alias{download.thredds.AGB}
 \title{download.thredds.AGB}
 \usage{
-download.thredds.AGB(outdir = NULL, site_ids, run_parallel = FALSE,
-  ncores = NULL)
+download.thredds.AGB(
+  outdir = NULL,
+  site_ids,
+  run_parallel = FALSE,
+  ncores = NULL
+)
 }
 \arguments{
 \item{outdir}{Where to place output}

@@ -4,8 +4,17 @@
 \alias{get_veg_module}
 \title{Load/extract + match species module}
 \usage{
-get_veg_module(input_veg, outfolder, start_date, end_date, dbparms,
-  new_site, host, machine_host, overwrite)
+get_veg_module(
+  input_veg,
+  outfolder,
+  start_date,
+  end_date,
+  dbparms,
+  new_site,
+  host,
+  machine_host,
+  overwrite
+)
 }
 \arguments{
 \item{input_veg}{list, this is a sublist of settings$run$inputs that has info about source, id, metadata of the requested IC file}

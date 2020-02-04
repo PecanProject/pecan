@@ -4,10 +4,20 @@
 \alias{pda.settings}
 \title{Set PDA Settings}
 \usage{
-pda.settings(settings, params.id = NULL, param.names = NULL,
-  prior.id = NULL, chain = NULL, iter = NULL, adapt = NULL,
-  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL,
-  run.round = FALSE)
+pda.settings(
+  settings,
+  params.id = NULL,
+  param.names = NULL,
+  prior.id = NULL,
+  chain = NULL,
+  iter = NULL,
+  adapt = NULL,
+  adj.min = NULL,
+  ar.target = NULL,
+  jvar = NULL,
+  n.knot = NULL,
+  run.round = FALSE
+)
 }
 \arguments{
 \item{settings}{a PEcAn settings list}

@@ -5,8 +5,15 @@
 \alias{plot.netcdf}
 \title{Load the tower dataset and create a plot.}
 \usage{
-plot_netcdf(datafile, yvar, xvar = "time", width = 800, height = 600,
-  filename = NULL, year = NULL)
+plot_netcdf(
+  datafile,
+  yvar,
+  xvar = "time",
+  width = 800,
+  height = 600,
+  filename = NULL,
+  year = NULL
+)
 }
 \arguments{
 \item{datafile}{the specific datafile to use.}

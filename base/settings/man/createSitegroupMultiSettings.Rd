@@ -4,8 +4,13 @@
 \alias{createSitegroupMultiSettings}
 \title{Create Sitegroup MultiSettings}
 \usage{
-createSitegroupMultiSettings(templateSettings, sitegroupId, nSite,
-  con = NULL, params = templateSettings$database$bety)
+createSitegroupMultiSettings(
+  templateSettings,
+  sitegroupId,
+  nSite,
+  con = NULL,
+  params = templateSettings$database$bety
+)
 }
 \arguments{
 \item{templateSettings}{A \code{\link{Settings}} object that will be the

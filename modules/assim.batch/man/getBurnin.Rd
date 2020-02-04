@@ -4,15 +4,21 @@
 \alias{getBurnin}
 \title{Calculate burnin value}
 \usage{
-getBurnin(jags_out, threshold = 1.1, use.confidence = TRUE,
-  method = "moving.window", plotfile = "/dev/null", ...)
+getBurnin(
+  jags_out,
+  threshold = 1.1,
+  use.confidence = TRUE,
+  method = "moving.window",
+  plotfile = "/dev/null",
+  ...
+)
 }
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or \code{mcmc.list} object}
 
 \item{threshold}{Maximum value of Gelman diagnostic}
 
-\item{use.confidence}{Logical. If TRUE (default), use 95% confidence
+\item{use.confidence}{Logical. If TRUE (default), use 95\% confidence
 interval for Gelman Diagnostic. If FALSE, use the point estimate.}
 
 \item{method}{Character string indicating method. Options are

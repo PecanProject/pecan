@@ -4,13 +4,30 @@
 \alias{vwReg}
 \title{PEcAn worldmap}
 \usage{
-vwReg(formula, data, title = "", B = 1000, shade = TRUE,
-  shade.alpha = 0.1, spag = FALSE, spag.color = "darkblue",
-  mweight = TRUE, show.lm = FALSE, show.median = TRUE,
-  median.col = "white", shape = 21, show.CI = FALSE,
-  method = stats::loess, bw = FALSE, slices = 200,
-  palette = (grDevices::colorRampPalette(c("#FFEDA0", "#DD0000"), bias =
-  2))(20), ylim = NULL, quantize = "continuous", add = FALSE, ...)
+vwReg(
+  formula,
+  data,
+  title = "",
+  B = 1000,
+  shade = TRUE,
+  shade.alpha = 0.1,
+  spag = FALSE,
+  spag.color = "darkblue",
+  mweight = TRUE,
+  show.lm = FALSE,
+  show.median = TRUE,
+  median.col = "white",
+  shape = 21,
+  show.CI = FALSE,
+  method = stats::loess,
+  bw = FALSE,
+  slices = 200,
+  palette = (grDevices::colorRampPalette(c("#FFEDA0", "#DD0000"), bias = 2))(20),
+  ylim = NULL,
+  quantize = "continuous",
+  add = FALSE,
+  ...
+)
 }
 \arguments{
 \item{formula}{variables to plot. See examples}

@@ -10,19 +10,19 @@ This package provides an interface between PEcAn and the BETY database.
 For usage examples, please see \code{vignette("betydb_access")}
 }
 \author{
-\strong{Maintainer}: David LeBauer \email{dlebauer@email.arizona.edu} (0000-0001-7228-053X)
+\strong{Maintainer}: David LeBauer \email{dlebauer@email.arizona.edu} (\href{https://orcid.org/0000-0001-7228-053X}{ORCID})
 
 Authors:
 \itemize{
-  \item Mike Dietze \email{dietze@bu.edu} (0000-0002-2324-2518)
-  \item Rob Kooper \email{kooper@illinois.edu} (0000-0002-5781-7287)
-  \item Shawn Serbin \email{sserbin@bnl.gov} (0000-0003-4136-8971)
-  \item Betsy Cowdery \email{ecowdery@bu.edu} (0000-0002-6538-6296)
-  \item Ankur Desai \email{desai@aos.wisc.edu} (0000-0002-5226-6041)
-  \item Istem Fer \email{istfer@bu.edu} (0000-0001-8236-303X)
-  \item Alexey Shiklomanov \email{alexey.shiklomanov@pnnl.gov} (0000-0003-4022-5979)
-  \item Tony Gardella \email{tonygard@bu.edu} (0000-0003-4380-3412)
-  \item Christopher Black \email{ckb23@psu.edu} (0000-0001-8382-298X)
+  \item Mike Dietze \email{dietze@bu.edu} (\href{https://orcid.org/0000-0002-2324-2518}{ORCID})
+  \item Rob Kooper \email{kooper@illinois.edu} (\href{https://orcid.org/0000-0002-5781-7287}{ORCID})
+  \item Shawn Serbin \email{sserbin@bnl.gov} (\href{https://orcid.org/0000-0003-4136-8971}{ORCID})
+  \item Betsy Cowdery \email{ecowdery@bu.edu} (\href{https://orcid.org/0000-0002-6538-6296}{ORCID})
+  \item Ankur Desai \email{desai@aos.wisc.edu} (\href{https://orcid.org/0000-0002-5226-6041}{ORCID})
+  \item Istem Fer \email{istfer@bu.edu} (\href{https://orcid.org/0000-0001-8236-303X}{ORCID})
+  \item Alexey Shiklomanov \email{alexey.shiklomanov@pnnl.gov} (\href{https://orcid.org/0000-0003-4022-5979}{ORCID})
+  \item Tony Gardella \email{tonygard@bu.edu} (\href{https://orcid.org/0000-0003-4380-3412}{ORCID})
+  \item Christopher Black \email{ckb23@psu.edu} (\href{https://orcid.org/0000-0001-8382-298X}{ORCID})
   \item Liam Burke
   \item Ryan Kelly
   \item Dan Wang

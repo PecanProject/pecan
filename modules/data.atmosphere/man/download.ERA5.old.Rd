@@ -4,9 +4,17 @@
 \alias{download.ERA5.old}
 \title{Download ERA 5 data}
 \usage{
-download.ERA5.old(outfolder, start_date, end_date, lat.in, lon.in,
-  product_types = "all", overwrite = FALSE, reticulate_python = NULL,
-  ...)
+download.ERA5.old(
+  outfolder,
+  start_date,
+  end_date,
+  lat.in,
+  lon.in,
+  product_types = "all",
+  overwrite = FALSE,
+  reticulate_python = NULL,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}
