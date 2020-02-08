@@ -32,6 +32,11 @@ query.traits <- function(ids, priors, con,
                          update.check.only = FALSE,
                          ids_are_cultivars = FALSE) {
 
+
+  if (!inherits(con, "DBIConnection")) {
+    PEcAn.logger::logger.severe("'con' is not a database connection")
+  }
+
   if (length(ids) == 0 || length(priors) == 0) {
     return(list())
   }
