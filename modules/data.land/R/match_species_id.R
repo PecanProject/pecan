@@ -72,14 +72,14 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                                       suffix = c('.translation_table', ''))
     }
   } else {
-    column <- formats_dict[format_name]
-    if(!is.null(bety)){
+    column <- formats_dict[[format_name]]
+    if (!is.null(bety)) {
       # query BETY for species, id, genus, and latin name
-      translation <- dplyr::tbl(bety, 'species') %>%
+      translation <- dplyr::tbl(bety, "species") %>%
         dplyr::select(bety_species_id = id, genus, species,
-                       input_code = column) %>%
+                       input_code = !!column) %>%
         dplyr::collect()
-       translation<- translation %>% dplyr::mutate(input_code = toupper(input_code)) #match_species_id is case-sensitive, to match species names in obs to translation, 'input_codes' needs to be upper-case since 'latin_names' in obs are upper-case
+      translation <- translation %>% dplyr::mutate(input_code = toupper(input_code)) #match_species_id is case-sensitive, to match species names in obs to translation, 'input_codes' needs to be upper-case since 'latin_names' in obs are upper-case
       colnames(translation) <- c('bety_species_id', 'genus', 'species',"input_codes") #semi_join requires that the column name within the tables being matched have the same name
       translation <- dplyr::semi_join(translation, as.data.frame(input_codes), by = "input_codes" )  #Keep rows in translation table that have the same 'latin_name' within obs
     }else{
