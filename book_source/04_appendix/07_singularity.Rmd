@@ -9,10 +9,45 @@ This assumes you have [singulariy](https://sylabs.io/singularity/) already insta
 This will work on a Linux machine (x86_64).
 
 First make sure you have all the data files:
+
+<details>
+<summary>bash script to install required files</summary>
 ```bash
+#!/bin/bash
+
+if [ ! -e sites ]; then
+  curl -s -o sites.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/sites.tgz
+  tar zxf sites.tgz
+  sed -i -e "s#/home/kooper/Projects/EBI#/data/sites#" sites/*/ED_MET_DRIVER_HEADER
+  rm sites.tgz
+fi
+
+if [ ! -e inputs ]; then
+  curl -s -o inputs.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/inputs.tgz
+  tar zxf inputs.tgz
+  rm inputs.tgz
+fi
+
+if [ ! -e testrun.s83 ]; then
+  curl -s -o testrun.s83.zip http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.s83.zip
+  unzip -q testrun.s83.zip
+  sed -i -e "s#/home/pecan#/data#" testrun.s83/ED2IN
+  rm testrun.s83.zip
+fi
+
+if [ ! -e ${HOME}/sites/Santarem_Km83 ]; then
+  curl -s -o Santarem_Km83.zip http://isda.ncsa.illinois.edu/~kooper/EBI/Santarem_Km83.zip
+  unzip -q -d sites Santarem_Km83.zip
+  sed -i -e "s#/home/pecan#/data#" sites/Santarem_Km83/ED_MET_DRIVER_HEADER
+  rm Santarem_Km83.zip
+fi
 ```
+</details>
 
 Next edit the ED2IN file in testrun.s83
+
+<details>
+<summary>ED2IN file</summary>
 ```
 !==========================================================================================!
 !==========================================================================================!
@@ -1430,6 +1465,7 @@ $END
 !==========================================================================================!
 !==========================================================================================!
 ```
+</details>
 
 Convert the docker image to singularity
 ```
@@ -1449,6 +1485,8 @@ Once the model is finished the outputs should be available under `testrun.s83`.
 
 The example ED2IN file is not 100% correct and will result in the following error:
 
+<details>
+<summary>output of (failed) run</summary>
 ```
 +---------------- MPI parallel info: --------------------+
 +  - Machnum  =      0
@@ -1596,3 +1634,4 @@ Specify OBSTIME_DB properly in ED namelist.
 --------------------------------------------------------------
 STOP fatal_error
 ```
+</details>
