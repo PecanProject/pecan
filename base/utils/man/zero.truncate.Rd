@@ -16,5 +16,5 @@ numeric vector with all values less than 0 set to 0
 Truncates vector at 0
 }
 \author{
-<unknown>
+unknown
 }
