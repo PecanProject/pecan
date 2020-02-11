@@ -1,8 +1,4 @@
 language: r
-r:
-  - release
-  - devel
-  - oldrel
 
 dist: xenial
 os: linux
@@ -92,6 +88,10 @@ jobs:
   include:
     - r: release
       addons: *add-c2d4u
+    - r: devel
+      addons: *add-base
+    - r: oldrel
+      addons: *add-base
   allow_failures:
     - r: devel
       addons: *add-base
