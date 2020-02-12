@@ -25,6 +25,7 @@ RUN apt-get update \
 # INSTALL DEPENDENCIES
 # ----------------------------------------------------------------------
 COPY pecan.depends /
-RUN bash /pecan.depends \
+RUN Rscript -e "install.packages(c('devtools','roxygen2'), repos = 'http://cran.rstudio.com')" \
+  && bash /pecan.depends \
   && rm -rf /tmp/*
 
