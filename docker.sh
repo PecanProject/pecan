@@ -110,6 +110,7 @@ echo "# ----------------------------------------------------------------------"
 # not building dependencies image, following command will build this
 if [ "${DEPEND}" == "build" ]; then
     ${DEBUG} docker build \
+        --pull \
         --build-arg R_VERSION=${R_VERSION} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
