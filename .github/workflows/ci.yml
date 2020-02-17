@@ -43,6 +43,8 @@ jobs:
       env:
         NCPUS: 2
         CI: true
+    - name: check for out-of-date Rd files
+      uses: infotroph/tree-is-clean@v1
 
   test:
     needs: build
