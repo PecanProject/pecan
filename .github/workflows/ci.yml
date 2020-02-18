@@ -6,7 +6,7 @@ env:
   # Would be more usual to set R_LIBS_USER, but R uses R_LIBS first if present
   # ...and it's always present here, because the rocker/tidyverse base image
   # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
-  R_LIBS: ${{ github.workspace }}/R/Library
+  R_LIBS: ~/R/library
   _R_CHECK_LENGTH_1_CONDITION_: true
   _R_CHECK_LENGTH_1_LOGIC2_: true
   # Avoid compilation check warnings that come from the system Makevars, not us
@@ -20,7 +20,7 @@ jobs:
     container: pecan/depends:latest
     steps:
     - uses: meetup/express-checkout@master #clones with depth 1; skips tags, branches, submodules
-    - run: mkdir -p $R_LIBS
+    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
     - name: cache R packages
       uses: actions/cache@v1
       with:
@@ -64,7 +64,7 @@ jobs:
         sudo apt-get install -y openssh-client postgresql-client curl
     - name: db setup
       run: scripts/setup_testing_db.sh
-    - run: mkdir -p $R_LIBS
+    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
     - name: cache R packages
       uses: actions/cache@v1
       with:
@@ -98,7 +98,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y openssh-client qpdf
-    - run: mkdir -p $R_LIBS
+    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
     - name: cache R packages
       uses: actions/cache@v1
       with:
@@ -144,7 +144,7 @@ jobs:
         make
     - name: db setup
       run: scripts/setup_testing_db.sh
-    - run: mkdir -p $R_LIBS
+    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
     - name: cache R packages
       uses: actions/cache@v1
       with:
