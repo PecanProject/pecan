@@ -14,7 +14,7 @@ env:
     - _R_CHECK_LENGTH_1_CONDITION_=true
     - _R_CHECK_LENGTH_1_LOGIC2_=true
 
-_pkgs: &apt-base
+_apt: &apt-base
   - bc
   - curl
   - gdal-bin
@@ -37,7 +37,7 @@ _pkgs: &apt-base
   - tcl-dev
   - udunits-bin
 
-_c2d4u: &apt-r
+_c2d4u: &apt-r-binaries
   - r-bioc-biocinstaller
   - r-cran-ape
   - r-cran-curl
@@ -68,35 +68,31 @@ _c2d4u: &apt-r
   - r-cran-xml2
   - r-cran-xts
 
-_addons: &add-base
-  apt:
-    sources:
-      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
-    packages:
-      - *apt-base
-
-_addons_c2d4u: &add-c2d4u
-  apt:
-    sources:
-      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
-    packages:
-      - *apt-base
-      - *apt-r
-
 jobs:
   fast_finish: true
   include:
     - r: release
-      addons: *add-c2d4u
+      addons: &addons-c2d4u
+        apt:
+          sources:
+            - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
+          packages:
+            - *apt-base
+            - *apt-r-binaries
     - r: devel
-      addons: *add-base
+      addons: &addons-base
+        apt:
+          sources:
+            - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
+          packages:
+            - *apt-base
     - r: oldrel
-      addons: *add-base
+      addons: *addons-base
   allow_failures:
     - r: devel
-      addons: *add-base
+      addons: *addons-base
     - r: oldrel
-      addons: *add-base
+      addons: *addons-base
 
 cache:
   - directories:
