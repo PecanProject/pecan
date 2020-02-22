@@ -20,7 +20,8 @@ set -e
     # It's OK to bump the Roxygen version when needed, but please coordinate
     # with the team to update all documentation at once and to get all
     # PEcAn developers to update Roxygen on their own machines to match.
-    Rscript -e 'devtools::install_version("roxygen2", version = "7.0.2", repos = "https://cloud.r-project.org")'
+    Rscript -e 'if (!requireNamespace("devtools", quietly = TRUE)) { install.packages("devtools", repos = "https://cloud.r-project.org") }' \
+        -e 'devtools::install_version("roxygen2", version = "7.0.2", repos = "https://cloud.r-project.org")'
     travis_time_end
 
     # MCMCpack >= 1.4-5 requires R >= 3.6;
