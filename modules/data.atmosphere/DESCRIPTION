@@ -19,7 +19,6 @@ Depends:
     methods
 Imports:
     abind (>= 1.4.5),
-    car,
     data.table,
     dplyr,
     geonames (> 0.998),
@@ -39,6 +38,7 @@ Imports:
     PEcAn.remote,
     PEcAn.utils,
     purrr (>= 0.2.3),
+    raster,
     RCurl,
     REddyProc,
     reshape2,
