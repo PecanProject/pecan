@@ -23,7 +23,6 @@ install2.r -e -s -n -1\
     binaryLogic \
     BioCro \
     bit64 \
-    car \
     coda \
     data.table \
     dataone \
