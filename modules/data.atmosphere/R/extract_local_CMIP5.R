@@ -92,9 +92,8 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
   vars.gcm <- c(vars.gcm.day, vars.gcm.mo)
   
   # Rewriting the dap name to get the closest variable that we have for the GCM (some only give uss stuff at sea level)
-  library(car) # having trouble gettins stuff to work otherwise
-  if(!("huss" %in% vars.gcm)) var$DAP.name <- car::recode(var$DAP.name, "'huss'='hus'")
-  if(!("ps" %in% vars.gcm  )) var$DAP.name <- car::recode(var$DAP.name, "'ps'='psl'")
+  if(!("huss" %in% vars.gcm)) levels(var$DAP.name) <- sub("huss", "hus", levels(var$DAP.name))
+  if(!("ps" %in% vars.gcm  )) levels(var$DAP.name) <- sub("ps", "psl", levels(var$DAP.name))
 
   # Making sure we're only trying to grab the variables we have (i.e. don't try sfcWind if we don't have it)
   var <- var[var$DAP.name %in% vars.gcm,]
