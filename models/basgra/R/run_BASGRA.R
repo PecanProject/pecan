@@ -20,7 +20,7 @@
 ##' @param sitelon longitude of the site
 ##' 
 ##' @export
-##' @useDynLib PEcAn.BASGRA
+##' @useDynLib PEcAn.BASGRA, .registration = TRUE
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 
@@ -323,26 +323,27 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     
     dims <- list(lon = lon, lat = lat, time = t)
     
-    var <- list()
-    var[[1]]  <- PEcAn.utils::to_ncvar("LAI", dims)
-    var[[2]]  <- PEcAn.utils::to_ncvar("CropYield", dims)
-    var[[3]]  <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
-    var[[4]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
-    var[[5]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
-    var[[6]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    var[[7]]  <- PEcAn.utils::to_ncvar("SoilResp", dims)
-    var[[8]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
-    var[[9]]  <- PEcAn.utils::to_ncvar("NEE", dims)
+    nc_var <- list()
+    nc_var[[1]]  <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[2]]  <- PEcAn.utils::to_ncvar("CropYield", dims)
+    nc_var[[3]]  <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
+    nc_var[[4]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
+    nc_var[[5]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
+    nc_var[[6]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    nc_var[[7]]  <- PEcAn.utils::to_ncvar("SoilResp", dims)
+    nc_var[[8]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    nc_var[[9]]  <- PEcAn.utils::to_ncvar("NEE", dims)
+
     
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
+    for (i in seq_along(nc_var)) {
       # print(i)
-      ncdf4::ncvar_put(nc, var[[i]], outlist[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+      ncdf4::ncvar_put(nc, nc_var[[i]], outlist[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)

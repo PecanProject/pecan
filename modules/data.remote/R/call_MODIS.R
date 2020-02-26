@@ -3,57 +3,99 @@
 ##' @name call_MODIS
 ##' @title call_MODIS
 ##' @export
-##' @param outfolder where the output file will be stored
-##' @param start_date  string value for beginning of date range for download in unambiguous date format (YYYYJJJ)
-##' @param end_date    string value for end of date range for download in unambiguous date format (YYYYJJJ)
-##' @param lat    Latitude of the pixel
-##' @param lon    Longitude of the pixel
-##' @param size   kmAboveBelow and kmLeftRight distance in km to be included
+##' @param outdir where the output file will be stored. Default is NULL
+##' @param var the simple name of the modis dataset variable (e.g. lai)
+##' @param site_info Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, 
+##' lon, time_zone)
+##' @param product_dates a character vector of the start and end date of the data in YYYYJJJ
+##' @param run_parallel optional method to download data paralleize. Only works if more than 1 
+##' site is needed and there are >1 CPUs available.
+##' @param ncores number of cpus to use if run_parallel is set to TRUE. If you do not know the 
+##' number of CPU's available, enter NULL.
 ##' @param product string value for MODIS product number
 ##' @param band   string value for which measurement to extract
-##' @param band_qc string value for which quality control band, or use "NA" if you do not know or do not need QC information (optional)
-##' @param band_sd string value for which standard deviation band, or use "NA" if you do not know or do not need StdDev information (optional)
-##' @param siteID numeric value of BETY site id value to use for output file name. Default is NULL. Only MODISTools option.
-##' @param package_method string value to inform function of which package method to use to download modis data. Either "MODISTools" or "reticulate" (optional)
-##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this parameter to work. Default is False. Only MODISTools option.
-##' @param progress TRUE reports the download progress bar of the dataset, FALSE omits the download progress bar. Default is TRUE. Only MODISTools option.
+##' @param package_method string value to inform function of which package method to use to download 
+##' modis data. Either "MODISTools" or "reticulate" (optional)
+##' @param QC_filter Converts QC values of band and keeps only data values that are excellent or good 
+##' (as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this 
+##' parameter to work. Default is False. Only MODISTools option.
+##' @param progress TRUE reports the download progress bar of the dataset, FALSE omits the download 
+##' progress bar. Default is TRUE. Only MODISTools option.
 ##' 
-##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4 json
+##' Requires Python3 for reticulate method option. There are a number of required python libraries. 
+##' sudo -H pip install numpy suds netCDF4 json
 ##' depends on the MODISTools package version 1.1.0
 ##' 
 ##' @examples
 ##' \dontrun{
-##' test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "FparLai_QC", band_sd = "LaiStdDev_500m", package_method = "MODISTools", progress = TRUE, QC_filter = FALSE)
-##' test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -123, size = 0, band_qc = "",band_sd = "", package_method = "reticulate")
+##' site_info <- list(
+##'   site_id = 1,
+##'   site_name = "test",
+##'   lat = 44,
+##'   lon = 90,
+##'   time_zone = "UTC")
+##' test_modistools <- call_MODIS(
+##'   outdir = NULL,
+##'   var = "lai",
+##'   site_info = site_info,
+##'   product_dates = c("2001150", "2001365"),
+##'   run_parallel = TRUE,
+##'   ncores = NULL,
+##'   product = "MOD15A2H",
+##'   band = "Lai_500m",
+##'   package_method = "MODISTools",
+##'   QC_filter = TRUE,
+##'   progress = FALSE)
 ##' }
-##' 
+##' @importFrom foreach %do% %dopar%
 ##' @author Bailey Morrison
 ##'
-call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0, product, band, band_qc = "", band_sd = "", siteID = NULL, package_method = "MODISTools", QC_filter = FALSE, progress = TRUE) {
+call_MODIS <- function(outdir = NULL,  
+                       var, site_info, 
+                       product_dates, 
+                       run_parallel = FALSE, 
+                       ncores = NULL, 
+                       product, band,  
+                       package_method = "MODISTools", 
+                       QC_filter = FALSE, 
+                       progress = FALSE) {
   
-  # makes the query search for 1 pixel and not for rasters for now. Will be changed when we provide raster output support.
-  size <- 0
+  # makes the query search for 1 pixel and not for rasters chunks for now. Will be changed when we provide raster output support.
+ size <- 0
   
-  # reformat start and end date if they are in YYYY/MM/DD format instead of YYYYJJJ
-  if (grepl("/", start_date) == TRUE)
+  site_coords <- data.frame(site_info$lon, site_info$lat)
+  names(site_coords) <- c("lon","lat")
+  
+  # set up CPUS for parallel runs.
+  if (is.null(ncores)) {
+    total_cores <- parallel::detectCores(all.tests = FALSE, logical = TRUE)
+    ncores <- total_cores-2
+  }
+  if (ncores > 10) # MODIS API has a 10 download limit / computer
   {
-    start_date <- as.Date(paste0(lubridate::year(start_date), sprintf("%03d",lubridate::yday(start_date))), format = "%Y%j")
+    ncores <- 10
   }
   
-  if (grepl("/", end_date) == TRUE)
-  {
-    end_date <- as.Date(paste0(lubridate::year(end_date), sprintf("%03d",lubridate::yday(end_date))), format = "%Y%j")
+  # register CPUS if run_parallel = TRUE
+  if (run_parallel){
+    if (progress){
+      cl <- parallel::makeCluster(ncores, outfile = "")
+      doParallel::registerDoParallel(cl)
+    } else {
+      cl <- parallel::makeCluster(ncores)
+      doParallel::registerDoParallel(cl)
+    }
+    
   }
-  start_date <- as.Date(start_date, format = "%Y%j")
-  end_date <- as.Date(end_date, format = "%Y%j")
   
-  
+
   #################### if package_method == MODISTools option ####################
+  
   if (package_method == "MODISTools")
   {
     #################### FUNCTION PARAMETER PRECHECKS #################### 
     #1. check that modis product is available
-    products = MODISTools::mt_products()
+    products <- MODISTools::mt_products()
     if (!(product %in% products$product))
     {
       PEcAn.logger::logger.warn(products)
@@ -69,153 +111,200 @@ call_MODIS <- function(outfolder = "", start_date, end_date, lat, lon, size = 0,
     } 
     
     #3. check that dates asked for in function parameters are fall within dates available for modis product/bands.
-    dates <- MODISTools::mt_dates(product = product, lat = lat, lon = lon)$modis_date
-    dates <- as.Date(as.character(substr(dates, 2, nchar(dates))), format = "%Y%j")
-    
-    ########## Date case 1:  user only wants one date ##########
-    if (start_date == end_date)
+    if (run_parallel)
     {
-      if (as.numeric(start_date) >= dates[1] && as.numeric(end_date) <= dates[length(dates)])
-      {
-        PEcAn.logger::logger.info("Extracting data")
+      modis_dates <- as.numeric(substr(sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) 
+                                                   %dopar% MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date)), 2, 8))
+    } else {
+      modis_dates <- as.numeric(substr(sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) %do% 
+                                                     MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date)), 2, 8))
+    }
+  
+
+  # check if user asked for dates for data, if not, download all dates
+  if (is.null(product_dates)) {
+    dates <- sort(unique(foreach::foreach(i = seq_along(nrow(site_coords)), .combine = c) %do% 
+                           MODISTools::mt_dates(product = product, lat = site_coords$lat[i], lon = site_coords$lon[i])$modis_date))
+    #dates = as.Date(as.character(substr(dates, 2, nchar(dates))), format = "%Y%j")
+  } else {
+    # if user asked for specific dates, first make sure data is available, then inform user of any missing dates in time period asked for.
+    start_date <- as.numeric(product_dates[1])
+    end_date <- as.numeric(product_dates[2])
+    
+    # if all dates are available with user defined time period:
+    if (start_date >= modis_dates[1] & end_date <= modis_dates[length(modis_dates)])
+    {
+      PEcAn.logger::logger.info("Check #2: All dates are available!")
+      
+      start_date <- modis_dates[which(modis_dates >= start_date)[1]]
+      
+      include <- which(modis_dates <= end_date)
+      end_date <- modis_dates[include[length(include)]]
+    }
+    
+    # if start and end dates fall completely outside of available modis_dates:
+    if ((start_date < modis_dates[1] & end_date < modis_dates[1]) | start_date > modis_dates[length(modis_dates)] & end_date > modis_dates[length(modis_dates)])
+    {
+      PEcAn.logger::logger.severe(
+        "Start and end date (", start_date, ", ", end_date,
+        ") are not within MODIS data product date range (", modis_dates[1], ", ", modis_dates(length(modis_dates)),
+        "). Please choose another date.")
+    }
+       
+    # if start and end dates are larger than the available range, but part or full range:
+    if ((start_date < modis_dates[1] & end_date > modis_dates[1]) | start_date < modis_dates[length(modis_dates)] & end_date > modis_dates[length(modis_dates)])
+    {
+      PEcAn.logger::logger.warn("WARNING: Dates are  partially available. Start and/or end date extend beyond modis data product availability.")
+      start_date <- modis_dates[which(modis_dates >= start_date)[1]]
+      
+      include <- which(modis_dates <= end_date)
+      end_date <- modis_dates[include[length(include)]]
+    }
+    
+    dates <- modis_dates[which(modis_dates >= start_date & modis_dates <= end_date)]
+      
+  }
+  
+  modis_dates <- as.Date(as.character(modis_dates), format = "%Y%j")
+  dates <- as.Date(as.character(dates), format = "%Y%j")
+  
+  #### Start extracting the data
+  PEcAn.logger::logger.info("Extracting data")
+
+  if (run_parallel)
+  {
+    dat <- foreach::foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
+      MODISTools::mt_subset(lat = site_coords$lat[i],lon = site_coords$lon[i],
+                            product = product,
+                            band = band,
+                            start = dates[1],
+                            end = dates[length(dates)],
+                            km_ab = size, km_lr = size,
+                            progress = progress, site_name = as.character(site_info$site_id[i]))
+  } else {
+    dat <- data.frame()
+    
+    for (i in seq_along(site_info$site_id))
+    {
+      d <- MODISTools::mt_subset(lat = site_coords$lat[i],
+                                lon = site_coords$lon[i],
+                                product = product,
+                                band = band,
+                                start = dates[1],
+                                end = dates[length(dates)],
+                                km_ab = size, km_lr = size,
+                                progress = progress)
+      dat <- rbind(dat, d)
+    }
+  }
+  
+  # clean up data outputs so there isn't extra data, format classes.
+  output <- as.data.frame(cbind(dat$modis_date, dat$calendar_date, dat$band, dat$tile, dat$site, dat$latitude, dat$longitude, dat$pixel, dat$value), stringsAsFactors = FALSE)
+  names(output) <- c("modis_date", "calendar_date", "band", "tile", "site_id", "lat", "lon", "pixels", "data")
+  
+  output[ ,5:9] <- lapply(output[ ,5:9], as.numeric)
+  
+  # scale the data + stdev to proper units
+  output$data <- output$data * (as.numeric(dat$scale))
+  output$lat <- round(output$lat, 4)
+  output$lon <- round(output$lon, 4)
+
+  # remove bad values if QC filter is on
+  if (QC_filter)
+  {
+    qc_band <- bands$band[which(grepl(var, bands$band, ignore.case = TRUE) & grepl("QC", bands$band, ignore.case = TRUE))]
+    
+    if (run_parallel) 
+    {
+      qc <- foreach::foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
+        MODISTools::mt_subset(lat = site_coords$lat[i],lon = site_coords$lon[i],
+                              product = product,
+                              band = qc_band,
+                              start = dates[1],
+                              end = dates[length(dates)],
+                              km_ab = size, km_lr = size,
+                              progress = progress)
+      } else {
+        qc <- MODISTools::mt_subset(lat = site_coords$lat[i],lon = site_coords$lon[i],
+                                    product = product,
+                                    band = qc_band,
+                                    start = dates[1],
+                                    end = dates[length(dates)],
+                                    km_ab = size, km_lr = size,
+                                    progress = progress)
         
-        start <- as.Date(start_date, "%Y%j")
-        end <- as.Date(end_date, "%Y%j")
       }
-      ########## For Date case 1: if only one date is asked for, but date is not within modis data prodate date range ##########
-      if (as.numeric(start_date) < dates[1] || as.numeric(end_date) > dates[length(dates)])
-      {
-        PEcAn.logger::logger.warn(start)
-        stop("start or end date are not within MODIS data product date range. Please choose another date.")
-      }
-    } else { 
-      ########## Date case 2: user want a range of dates ##########
-      # Best case scenario: Start and end date asked for fall with available date range of modis data product.
-      if (as.numeric(start_date) >= dates[1] && as.numeric(end_date) <= dates[length(dates)])
-      {
-        PEcAn.logger::logger.info("Check #2: All dates are available!")
-      }
-      
-      # Okay scenario: Some MODIS data is available for parameter start_date and end_date range, but either the start_date or end_date falls outside the range of availble 
-      # MODIS data dates
-      if (as.numeric(start_date) <= dates[1] && as.numeric(end_date) >= dates[1])
-      {
-        start_date = dates[1]
-        PEcAn.logger::logger.warn("WARNING: Dates are only partially available. Start date before modis data product is available.")
-      } 
-      if (as.numeric(end_date) >= dates[length(dates)] && as.numeric(start_date) <= dates[length(dates)])
-      {
-        end_date <- dates[length(dates)]
-        PEcAn.logger::logger.warn("WARNING: Dates are only partially available. End date befire modis data product is available.")
-      } 
-      
-      # Unacceptable scenario: start_date and end_date does not fall within the availa MODIS data product date range. There is no data to extract in this scenario.
-      if ((as.numeric(start_date) < dates[1] && as.numeric(end_date < dates[1])) || (as.numeric(start_date) > dates[length(dates)] && as.numeric(end_date) > dates[length(dates)]))
-      {
-        stop("No MODIS data available start_date and end_date parameterized.")
-      }
-      
-      start <- as.Date(start_date, "%Y%j")
-      end <- as.Date(end_date, "%Y%j")
-    }
     
-    PEcAn.logger::logger.info("Extracting data")
-    cat(paste("Product =", product, "\n", "Band =", band, "\n", "Date Range =", start, "-", end, "\n", "Latitude =", lat, "\n", "Longitude =", lon, sep = " "))
+    output$qc <- as.character(qc$value)
     
-    # extract main band data from api
-    dat <- MODISTools::mt_subset(lat= lat, lon = lon, product = product, band = band,
-                                 start = start_date, end = end_date, km_ab = size, km_lr = size, progress = progress)
-    
-    # extract QC data
-    if(band_qc != "")
+    #convert QC values and keep only okay values
+    for (i in seq_len(nrow(output)))
     {
-      qc <- MODISTools::mt_subset(lat = lat, lon = lon, product = product, band = band_qc,
-                                  start = start, end = end, km_ab = size, km_lr = size, progress = progress)
+      convert <- paste(binaryLogic::as.binary(as.integer(output$qc[i]), n = 8), collapse = "")
+      output$qc[i] <- substr(convert, nchar(convert) - 2, nchar(convert))
     }
-    
-    # extract stdev data
-    if(band_sd != "")
+    good <- which(output$qc %in% c("000", "001"))
+    if (length(good) > 0 || !(is.null(good)))
     {
-      sd <- MODISTools::mt_subset(lat = lat, lon = lon, product = product, band = band_sd,
-                                  start = start, end = end, km_ab = size, km_lr = size, progress = progress)
-    }
-    
-    if (band_qc == "")
-    {
-      QC <- rep("nan", nrow(dat))
+      output <- output[good, ]
     } else {
-      QC <- as.numeric(qc$value)
+      PEcAn.logger::logger.warn("All QC values are bad. No data to output with QC filter == TRUE.")
     }
-    
-    if (band_sd == "")
+  }
+  
+  # unregister cores since parallel process is done
+  if (run_parallel)
+  {
+    parallel::stopCluster(cl)
+  }
+  
+  # break dataoutput up by site and save out chunks
+  if (!(is.null(outdir)))
+  {
+    for (i in seq_along(site_info$site_id))
     {
-      SD <- rep("nan", nrow(dat))
-    } else {
-      SD <- as.numeric(sd$value) * as.numeric(sd$scale) 
-    }
-    
-    output <- as.data.frame(cbind(dat$modis_date, dat$calendar_date, dat$band, dat$tile, dat$latitude, dat$longitude, dat$pixel, dat$value, QC, SD), stringsAsFactors = FALSE)
-    names(output) <- c("modis_date", "calendar_date", "band", "tile", "lat", "lon", "pixels", "data", "qc", "sd")
-    
-    output[ ,5:10] <- lapply(output[ ,5:10], as.numeric)
-    
-    # scale the data + stdev to proper units
-    output$data <- output$data * (as.numeric(dat$scale))
-    output$sd <- output$sd * (as.numeric(dat$scale))
-    output$lat <- round(output$lat, 4)
-    output$lon <- round(output$lon, 4)
-    
-    if (QC_filter)
-    {
-      output$qc == as.character(output$qc)
-      for (i in seq_len(nrow(output)))
+      if (!(dir.exists(file.path(outdir, site_info$site_id[i]))))
       {
-        convert <- paste(binaryLogic::as.binary(as.integer(output$qc[i]), n = 8), collapse = "")
-        output$qc[i] <- substr(convert, nchar(convert) - 2, nchar(convert))
+        dir.create(file.path(outdir, site_info$site_id[i]))
       }
-      good <- which(output$qc %in% c("000", "001"))
-      if (length(good) > 0 || !(is.null(good)))
+        
+      site <- output[which(output$site_id == site_info$site_id[i]), ]
+      site$modis_date <- substr(site$modis_date, 2, length(site$modis_date))
+      
+      if (QC_filter)
       {
-        output = output[good, ]
+        fname <- paste(site_info$site_id[i], "/", product, "_", band, "_", start_date, "-", end_date, "_filtered.csv", sep = "")
       } else {
-        PEcAn.logger::logger.warn("All QC values are bad. No data to output with QC filter == TRUE.")
+        fname <- paste(site_info$site_id[i], "/", product, "_", band, "_", start_date, "-", end_date, "_unfiltered.csv", sep = "")
       }
+      fname <- file.path(outdir, fname)
+      write.csv(site, fname, row.names = FALSE)
     }
     
-    
-    if (!(outfolder == ""))
-    {
-      if (!(is.null(siteID)))
-      {
-        fname <- paste(product, "_", band, "_", siteID, "_output_", start_date, "_", end_date, ".csv", sep = "")
-      } else {
-        fname <- paste(product, "_", band, "_output_", lat, "_", lon, "_", start_date, "_", end_date, ".csv", sep = "")
-      }
-      fname <- file.path(outfolder, fname)
-      write.csv(output, fname, row.names = FALSE)
-    }
+  }
     
     return(output)
   }
   
-  
-  if (package_method == "reticulate"){
-    # load in python script
-    script.path <- file.path(system.file("extract_modis_data.py", package = "PEcAn.data.remote"))
-    reticulate::source_python(script.path)
-    
-    # extract the data
-    output <- extract_modis_data(product = product, band = band, lat = lat, lon = lon, start_date = start_date, end_date = end_date, size = size, band_qc = band_qc, band_sd = band_sd)
-    output[ ,5:10] <- lapply(output[ ,5:10], as.numeric)
-    output$lat <- round(output$lat, 4)
-    output$lon <- round(output$lon, 4)
-    
-    if (!(is.null(outfolder)))
-    {
-      fname <- paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
-      fname <- file.path(outfolder, fname)
-      write.csv(output, fname)
-    }
-    
-    return(output)}
+  ########### temporarily removed for now as python2 is being discontinued and modules are not working correctly
+  # if (package_method == "reticulate"){
+  #   # load in python script
+  #   script.path <- file.path(system.file("extract_modis_data.py", package = "PEcAn.data.remote"))
+  #   reticulate::source_python(script.path)
+  #   
+  #   # extract the data
+  #   output <- extract_modis_data(product = product, band = band, lat = lat, lon = lon, start_date = start_date, end_date = end_date, size = size, band_qc = band_qc, band_sd = band_sd)
+  #   output[ ,5:10] <- lapply(output[ ,5:10], as.numeric)
+  #   output$lat <- round(output$lat, 4)
+  #   output$lon <- round(output$lon, 4)
+  #   
+  #   if (!(is.null(outdir)))
+  #   {
+  #     fname <- paste(product, "_", band, "_", start_date, "_", end_date, "_", lat, "_", lon, ".csv", sep = "")
+  #     fname <- file.path(outdir, fname)
+  #     write.csv(output, fname)
+  #   }
+  #   
+  #   return(output)}
+
 }

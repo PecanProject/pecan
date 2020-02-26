@@ -134,7 +134,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
     if (is(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(db.close(con))
+      on.exit(db.close(con), add = TRUE)
     }
   } else {
     con <- NULL

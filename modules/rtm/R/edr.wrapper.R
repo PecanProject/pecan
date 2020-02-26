@@ -145,7 +145,7 @@ EDR <- function(img_path,
 
   oldwd <- getwd()
   setwd(output.path)
-  on.exit(setwd(oldwd))
+  on.exit(setwd(oldwd), add = TRUE)
 
   if (!is.null(img_path)) {
     ex <- PEcAn.ED2::run_ed_singularity(

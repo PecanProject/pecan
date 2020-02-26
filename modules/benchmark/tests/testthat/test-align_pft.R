@@ -1,8 +1,10 @@
 
 context("align_pft")
 
-con <- PEcAn.DB::db.open(
-  list(host = "localhost", user = "bety", password = "bety"))
+con <- PEcAn.DB::db.open(PEcAn.DB::get_postgres_envvars(
+    host = "localhost",
+    user = "bety",
+    password = "bety"))
 teardown(PEcAn.DB::db.close(con))
 
 observation_one <- c("AMCA3", "AMCA3", "AMCA3", "AMCA3")

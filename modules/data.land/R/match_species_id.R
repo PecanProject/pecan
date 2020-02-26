@@ -72,44 +72,54 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                                       suffix = c('.translation_table', ''))
     }
   } else {
-    column <- formats_dict[format_name]
-    if(!is.null(bety)){
+    column <- formats_dict[[format_name]]
+    if (!is.null(bety)) {
       # query BETY for species, id, genus, and latin name
-      translation <- dplyr::tbl(bety, 'species') %>%
+      translation <- dplyr::tbl(bety, "species") %>%
         dplyr::select(bety_species_id = id, genus, species,
-                       input_code = column) %>%
+                       input_code = !!column) %>%
         dplyr::collect()
-       translation<- translation %>% dplyr::mutate(input_code = toupper(input_code)) #match_species_id is case-sensitive, to match species names in obs to translation, 'input_codes' needs to be upper-case since 'latin_names' in obs are upper-case
-      colnames(translation) <- c('bety_species_id', 'genus', 'species',"input_codes") #semi_join requires that the column name within the tables being matched have the same name
-      translation <- dplyr::semi_join(translation, as.data.frame(input_codes), by = "input_codes" )  #Keep rows in translation table that have the same 'latin_name' within obs
+      translation <- dplyr::semi_join(
+        translation,
+        data.frame(input_code = input_codes, stringsAsFactors = FALSE),
+        by = "input_code")
     }else{
       # use traits package
-      
+
       # can call traits::betydb_query one at a time?
       # reduce the number of calls
-      translation <- data.frame(bety_species_id  = rep(NA, length(unique(input_codes))),
-                                genus            = rep(NA, length(unique(input_codes))),
-                                species          = rep(NA, length(unique(input_codes))),
-                                input_code = unique(input_codes),
-                                stringsAsFactors = FALSE)
-      for(i in 1:nrow(translation)){
-        foo <- eval(parse(text =paste0("traits::betydb_query(",
-                                       column, "='", translation$input_code[i], "', table = 'species', user = 'bety', pwd = 'bety')")))
+      translation <- data.frame(
+        bety_species_id  = rep(NA, length(unique(input_codes))),
+        genus            = rep(NA, length(unique(input_codes))),
+        species          = rep(NA, length(unique(input_codes))),
+        input_code = unique(input_codes),
+        stringsAsFactors = FALSE)
+      for (i in seq_len(nrow(translation))) {
+        foo <- eval(parse(text = paste0(
+          "traits::betydb_query(",
+          column, "='", translation$input_code[i],
+          "', table = 'species', user = 'bety', pwd = 'bety')")))
         translation$bety_species_id[i] <- foo$id
         translation$genus[i]           <- foo$genus
         translation$species[i]         <- foo$species
       }
-      
     }
-    
   }
   input_table <- data.frame(input_code = input_codes, stringsAsFactors = FALSE)
   # preserving the order is important for downstream
-  colnames(translation)<- c('bety_species_id', 'genus', 'species',"input_code") #changed 'latin_name' back to 'input_codes' to enable 'left_join' since columns being matched must have same name, also changed 'id' back to 'bety_species_id' so species id can be checked in bety database  
+  translation <- dplyr::select(
+      .data = translation,
+      "bety_species_id",
+      "genus",
+      "species",
+      "input_code",
+      dplyr::everything())
   merge_table <- dplyr::left_join(input_table, translation)
-  if(sum(is.na(merge_table$bety_species_id)) > 0){
+  if (sum(is.na(merge_table$bety_species_id)) > 0) {
     bad <- unique(merge_table$input_code[is.na(merge_table$bety_species_id)])
-    PEcAn.logger::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
+    PEcAn.logger::logger.error(
+      "Species for the following code(s) not found : ",
+      paste(bad, collapse = ", "))
   }
   return(merge_table)
 } # match_species_id

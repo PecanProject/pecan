@@ -29,7 +29,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
     {m <- BioCro::BioGro(
       WetDat = matrix(c(0,10,0,0,0,0,0,0), nrow = 1),
       day1 = 10, dayn = 10, timestep = 24);
-    class(m) == "BioGro"},
+    inherits(m, "BioGro") },
     error = function(e){FALSE})
   if (!biocro_checks_doy && min(WetDat[,"doy"])>1) {
     if (!is.null(day1)){
@@ -107,9 +107,20 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
       photoControl = config$pft$photoParms)
 
   } else if (genus %in% c("Sorghum", "Setaria")) {
+    if (year_in_run == 1) {
+      iplant <- config$pft$iPlantControl
+    } else {
+      iplant$iRhizome <- data.table::last(tmp.result$Rhizome)
+      iplant$iRoot <- data.table::last(tmp.result$Root)
+      iplant$iStem <- data.table::last(tmp.result$Stem)
+    }
     ## run BioGro
     tmp.result <- BioCro::BioGro(
       WetDat = WetDat,
+      iRhizome = as.numeric(iplant$iRhizome),
+      iRoot = as.numeric(iplant$iRoot),
+      iStem = as.numeric(iplant$iStem),
+      iLeaf = as.numeric(iplant$iLeaf), 
       day1 = day1,
       dayn = dayn,
       soilControl = l2n(config$pft$soilControl),

@@ -4,11 +4,24 @@
 \alias{predict_subdaily_met}
 \title{predict_subdaily_met}
 \usage{
-predict_subdaily_met(outfolder, in.path, in.prefix, path.train,
-  direction.filter = "forward", lm.models.base, yrs.predict = NULL,
-  ens.labs = 1:3, resids = FALSE, force.sanity = TRUE,
-  sanity.tries = 25, overwrite = FALSE, verbose = FALSE,
-  seed = format(Sys.time(), "\%m\%d"), print.progress = FALSE, ...)
+predict_subdaily_met(
+  outfolder,
+  in.path,
+  in.prefix,
+  path.train,
+  direction.filter = "forward",
+  lm.models.base,
+  yrs.predict = NULL,
+  ens.labs = 1:3,
+  resids = FALSE,
+  force.sanity = TRUE,
+  sanity.tries = 25,
+  overwrite = FALSE,
+  verbose = FALSE,
+  seed = format(Sys.time(), "\%m\%d"),
+  print.progress = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{- directory where output file will be stored}
@@ -73,12 +86,15 @@ cores.max = 12
 n.ens = 3}
 }
 \seealso{
-Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{lm_ensemble_sims}},
-  \code{\link{model.train}}, \code{\link{nc.merge}},
-  \code{\link{save.betas}}, \code{\link{save.model}},
-  \code{\link{subdaily_pred}},
-  \code{\link{temporal.downscale.functions}}
+Other tdm - Temporally Downscale Meteorology: 
+\code{\link{gen.subdaily.models}()},
+\code{\link{lm_ensemble_sims}()},
+\code{\link{model.train}()},
+\code{\link{nc.merge}()},
+\code{\link{save.betas}()},
+\code{\link{save.model}()},
+\code{\link{subdaily_pred}()},
+\code{\link{temporal.downscale.functions}()}
 }
 \author{
 Christy Rollinson, James Simkins

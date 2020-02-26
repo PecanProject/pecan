@@ -16,13 +16,7 @@
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
 * checking serialization versions ... OK
-* checking whether package ‘PEcAn.assim.batch’ can be installed ... WARNING
-Found the following significant warnings:
-  Note: possible error in 'pda.postprocess(settings, ': unused argument (burnin) 
-See ‘/tmp/RtmpNECEcU/PEcAn.assim.batch.Rcheck/00install.out’ for details.
-Information on the location(s) of code generating the ‘Note’s can be
-obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
-to ‘yes’.
+* checking whether package ‘PEcAn.assim.batch’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... OK
@@ -54,13 +48,8 @@ get.da.data.growth: no visible binding for global variable
 get.da.data.growth: no visible binding for global variable ‘sa.samples’
 get.da.data.growth : <anonymous>: no visible global function definition
   for ‘read.output.type’
-pda.init.params: no visible binding for global variable ‘mcmc.list’
-pda.init.params: no visible binding for global variable ‘llpar.list’
 pda.load.priors: no visible binding for global variable ‘post.distns’
 pda.load.priors: no visible binding for global variable ‘prior.distns’
-pda.mcmc.recover: possible error in pda.postprocess(settings, con,
-  params, pname, prior, prior.ind, burnin): unused argument (burnin)
-pda.plot.params: no visible binding for global variable ‘mcmc’
 plot.da: no visible binding for global variable ‘y’
 plot.da: no visible binding for global variable ‘ensemble.samples’
 plot.da : <anonymous>: no visible binding for global variable
@@ -68,13 +57,9 @@ plot.da : <anonymous>: no visible binding for global variable
 plot.da : <anonymous>: no visible binding for global variable
   ‘sa.samples’
 plot.da : <anonymous>: no visible binding for global variable ‘m’
-return.bias: no visible binding for global variable ‘prior.list’
-sample_MCMC: no visible binding for global variable ‘mcmc.samp.list’
-sample_MCMC: no visible binding for global variable ‘mcmc’
-write_sf_posterior: no visible binding for global variable ‘mcmc’
 Undefined global functions or variables:
-  ensemble.samples llpar.list m mcmc mcmc.list mcmc.samp.list
-  post.distns prior.distns prior.list read.output.type sa.samples y
+  ensemble.samples m post.distns prior.distns read.output.type
+  sa.samples y
 
 Found the following assignments to the global environment:
 File ‘PEcAn.assim.batch/R/pda.get.model.output.R’:
@@ -83,148 +68,15 @@ File ‘PEcAn.assim.batch/R/pda.get.model.output.R’:
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
-* checking for missing documentation entries ... WARNING
-Undocumented code objects:
-  ‘runModule.assim.batch’
-All user-level objects in a package should have documentation entries.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'correlationPlot'
-  ‘whichParameters’
-
-Undocumented arguments in documentation object 'gelman_diag_gelmanPlot'
-  ‘x’ ‘...’
-
-Undocumented arguments in documentation object 'gelman_diag_mw'
-  ‘...’
-
-Undocumented arguments in documentation object 'getBurnin'
-  ‘plotfile’
-
-Undocumented arguments in documentation object 'load.pda.data'
-  ‘bety’
-
-Undocumented arguments in documentation object 'pda.adjust.jumps'
-  ‘settings’ ‘jmp.list’ ‘accept.rate’ ‘pnames’
-Documented arguments not in \usage in documentation object 'pda.adjust.jumps':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.adjust.jumps.bs'
-  ‘settings’ ‘jcov’ ‘accept.count’ ‘params.recent’
-Documented arguments not in \usage in documentation object 'pda.adjust.jumps.bs':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.bayesian.tools'
-  ‘params.id’ ‘param.names’ ‘prior.id’ ‘chain’ ‘iter’ ‘adapt’ ‘adj.min’
-  ‘ar.target’ ‘jvar’ ‘n.knot’
-
-Undocumented arguments in documentation object 'pda.calc.error'
-  ‘con’ ‘run.id’
-
-Undocumented arguments in documentation object 'pda.calc.llik'
-  ‘pda.errors’ ‘llik.fn’ ‘llik.par’
-Documented arguments not in \usage in documentation object 'pda.calc.llik':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.create.ensemble'
-  ‘settings’ ‘con’ ‘workflow.id’
-Documented arguments not in \usage in documentation object 'pda.create.ensemble':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.define.llik.fn'
-  ‘settings’
-Documented arguments not in \usage in documentation object 'pda.define.llik.fn':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.define.prior.fn'
-  ‘prior’
-Documented arguments not in \usage in documentation object 'pda.define.prior.fn':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.emulator'
-  ‘params.id’ ‘param.names’ ‘prior.id’ ‘chain’ ‘iter’ ‘adapt’ ‘adj.min’
-  ‘ar.target’ ‘jvar’ ‘n.knot’
-
-Undocumented arguments in documentation object 'pda.generate.knots'
-  ‘n.knot’ ‘sf’ ‘probs.sf’ ‘n.param.all’ ‘prior.ind’ ‘prior.fn’ ‘pname’
-
-Undocumented arguments in documentation object 'pda.generate.sf'
-  ‘n.knot’ ‘sf’ ‘prior.list’
-
-Undocumented arguments in documentation object 'pda.get.model.output'
-  ‘settings’ ‘run.id’ ‘bety’ ‘inputs’
-Documented arguments not in \usage in documentation object 'pda.get.model.output':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.init.params'
-  ‘settings’ ‘chain’ ‘pname’ ‘n.param.all’
-
-Undocumented arguments in documentation object 'pda.init.run'
-  ‘settings’ ‘con’ ‘my.write.config’ ‘workflow.id’ ‘params’ ‘n’
-  ‘run.names’
-Documented arguments not in \usage in documentation object 'pda.init.run':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.load.priors'
-  ‘settings’ ‘con’ ‘extension.check’
-Documented arguments not in \usage in documentation object 'pda.load.priors':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.mcmc'
-  ‘params.id’ ‘param.names’ ‘prior.id’ ‘chain’ ‘iter’ ‘adapt’ ‘adj.min’
-  ‘ar.target’ ‘jvar’ ‘n.knot’
-
-Undocumented arguments in documentation object 'pda.mcmc.bs'
-  ‘params.id’ ‘param.names’ ‘prior.id’ ‘chain’ ‘iter’ ‘adapt’ ‘adj.min’
-  ‘ar.target’ ‘jvar’ ‘n.knot’
-
-Undocumented arguments in documentation object 'pda.mcmc.recover'
-  ‘settings’ ‘params.id’ ‘param.names’ ‘prior.id’ ‘chain’ ‘iter’
-  ‘adapt’ ‘adj.min’ ‘ar.target’ ‘jvar’ ‘n.knot’ ‘burnin’
-Documented arguments not in \usage in documentation object 'pda.mcmc.recover':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.neff.calc'
-  ‘recalculate’
-
-Undocumented arguments in documentation object 'pda.plot.params'
-  ‘settings’ ‘mcmc.param.list’ ‘prior.ind’ ‘par.file.name’
-Documented arguments not in \usage in documentation object 'pda.plot.params':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.postprocess'
-  ‘settings’ ‘con’ ‘mcmc.param.list’ ‘pname’ ‘prior’ ‘prior.ind’
-Documented arguments not in \usage in documentation object 'pda.postprocess':
-  ‘all’
-
-Undocumented arguments in documentation object 'pda.settings'
-  ‘settings’ ‘params.id’ ‘param.names’ ‘prior.id’ ‘chain’ ‘iter’
-  ‘adapt’ ‘adj.min’ ‘ar.target’ ‘jvar’ ‘n.knot’ ‘run.round’
-Documented arguments not in \usage in documentation object 'pda.settings':
-  ‘all’
-
-Undocumented arguments in documentation object 'return_hyperpars'
-  ‘assim.settings’ ‘inputs’
-
-Undocumented arguments in documentation object 'write_sf_posterior'
-  ‘sf.samp.list’ ‘sf.prior’ ‘sf.samp.filename’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘AssimBatchVignette.html’, ‘AssimBatchVignette.Rmd’
-Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking files in ‘vignettes’ ... OK
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ...
  OK
 * DONE
-Status: 4 WARNINGs, 1 NOTE
+Status: 1 NOTE

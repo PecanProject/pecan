@@ -1,11 +1,9 @@
 ##' Extract NLDAS from local download
-##' Extract NLDAS meteorology for a poimt from a local download of the full grid
-# ----------------------------------- 
+##' Extract NLDAS meteorology for a point from a local download of the full grid
+# -----------------------------------
 # Description
 # -----------------------------------
-##' @title extract.local.CMIP5
-##' @family 
-##' @author Christy Rollinson, 
+##' @author Christy Rollinson
 ##' @description This function extracts CMIP5 data from grids that have been downloaded and stored locally.
 ##'              Files are saved as a netCDF file in CF conventions at *DAILY* resolution.  Note: At this point
 ##'              in time, variables that are only available at a native monthly resolution will be repeated to
@@ -18,7 +16,6 @@
 ##' @param in.path - path to the raw full grids
 ##' @param start_date - first day for which you want to extract met (yyyy-mm-dd)
 ##' @param end_date - last day for which you want to extract met (yyyy-mm-dd)
-##' @param site_id name to associate with extracted files
 ##' @param lat.in site latitude in decimal degrees
 ##' @param lon.in site longitude in decimal degrees
 ##' @param model which GCM to extract data from
@@ -36,7 +33,7 @@
 ##' @export
 ##' @examples
 # -----------------------------------
-extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_id, lat.in, lon.in, 
+extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 
                                 model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, no.leap=NULL,
                                 overwrite = FALSE, verbose = FALSE, ...){
   
@@ -95,9 +92,8 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
   vars.gcm <- c(vars.gcm.day, vars.gcm.mo)
   
   # Rewriting the dap name to get the closest variable that we have for the GCM (some only give uss stuff at sea level)
-  library(car) # having trouble gettins stuff to work otherwise
-  if(!("huss" %in% vars.gcm)) var$DAP.name <- car::recode(var$DAP.name, "'huss'='hus'")
-  if(!("ps" %in% vars.gcm  )) var$DAP.name <- car::recode(var$DAP.name, "'ps'='psl'")
+  if(!("huss" %in% vars.gcm)) levels(var$DAP.name) <- sub("huss", "hus", levels(var$DAP.name))
+  if(!("ps" %in% vars.gcm  )) levels(var$DAP.name) <- sub("ps", "psl", levels(var$DAP.name))
 
   # Making sure we're only trying to grab the variables we have (i.e. don't try sfcWind if we don't have it)
   var <- var[var$DAP.name %in% vars.gcm,]

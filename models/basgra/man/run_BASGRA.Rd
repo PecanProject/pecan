@@ -4,8 +4,16 @@
 \alias{run_BASGRA}
 \title{run BASGRA model}
 \usage{
-run_BASGRA(run_met, run_params, site_harvest, start_date, end_date, outdir,
-  sitelat, sitelon)
+run_BASGRA(
+  run_met,
+  run_params,
+  site_harvest,
+  start_date,
+  end_date,
+  outdir,
+  sitelat,
+  sitelon
+)
 }
 \arguments{
 \item{run_met}{path to CF met}

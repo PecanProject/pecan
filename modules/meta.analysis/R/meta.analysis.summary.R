@@ -55,11 +55,11 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
     
     ## plots for mcmc diagnosis
     pdf(file.path(outdir, paste0("ma.summaryplots.", trait, ".pdf")))
-    
+
     for (i in maparms) {
-      plot(mcmc.object[[trait]][, i], 
+      plot(mcmc.object[[trait]][, i],
            trace = FALSE,
-           density = TRUE, 
+           density = TRUE,
            main = paste("summary plots of", i, "for", pft, trait))
       box(lwd = 2)
       plot(mcmc.object[[trait]][, i], density = FALSE)
@@ -71,7 +71,7 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
     lattice::densityplot(mcmc.object[[trait]])
     coda::acfplot(mcmc.object[[trait]])
     dev.off()
-    
+
     ## G-R diagnostics to ensure convergence
     gd            <- coda::gelman.diag(mcmc.object[[trait]])
     mpsrf         <- round(gd$mpsrf, digits = 3)
