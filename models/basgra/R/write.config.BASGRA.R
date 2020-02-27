@@ -131,6 +131,33 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "RDRTMIN")] <- pft.traits[which(pft.names == "min_foliage_mort_rate")]
     }
     
+    # Maximum N-C ratio of shoot (g N g-1 C)
+    if ("n2c_shoot_max" %in% pft.names) {
+      run_params[which(names(run_params) == "NCSHMAX")] <- pft.traits[which(pft.names == "n2c_shoot_max")]
+    }
+    
+    # Maximum refreezing rate per degree below temperature which snow melts
+    if ("max_refreezing_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "SWrf")] <- pft.traits[which(pft.names == "max_refreezing_rate")]
+    }
+    
+    # Vernalisation threshold (deg C)
+    if ("vernalization_threshold" %in% pft.names) {
+      run_params[which(names(run_params) == "TVERN")] <- pft.traits[which(pft.names == "vernalization_threshold")]
+    }
+    
+    
+    ##### Soil parameters
+    
+    # Fraction of decomposed litter becoming fast SOM
+    if ("f_litter_SOM_fast" %in% pft.names) {
+      run_params[which(names(run_params) == "FLITTSOMF")] <- pft.traits[which(pft.names == "f_litter_SOM_fast")]
+    }
+    
+    # Fraction of decomposed fast SOM
+    if ("fastOM2slowOM" %in% pft.names) {
+      run_params[which(names(run_params) == "FSOMFSOMS")] <- pft.traits[which(pft.names == "fastOM2slowOM")]
+    }
     
     # Residence time of slowly decomposing OM
     if ("sOM_residence_time" %in% pft.names) {
@@ -143,7 +170,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
     
     # Residence time of litter
-    if ("sOM_residence_time" %in% pft.names) {
+    if ("litter_residence_time" %in% pft.names) {
       run_params[which(names(run_params) == "TCLITT")] <- pft.traits[which(pft.names == "litter_residence_time")]
     }
     
@@ -157,15 +184,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "TSIGMAF")] <- pft.traits[which(pft.names == "decomp_res2Tdelta")]
     }
     
-    # Maximum N-C ratio of shoot (g N g-1 C)
-    if ("n2c_shoot_max" %in% pft.names) {
-      run_params[which(names(run_params) == "NCSHMAX")] <- pft.traits[which(pft.names == "n2c_shoot_max")]
-    }
-    
-    # Maximum refreezing rate per degree below temperature which snow melts
-    if ("max_refreezing_rate" %in% pft.names) {
-      run_params[which(names(run_params) == "SWrf")] <- pft.traits[which(pft.names == "max_refreezing_rate")]
-    }
   } #### End parameter update
 
   
