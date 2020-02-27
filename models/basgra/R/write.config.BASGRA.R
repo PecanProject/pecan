@@ -19,11 +19,12 @@
 ##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
+##' @param IC initial conditions list
 ##' @return configuration file for BASGRA for given run
 ##' @export
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
-write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
+write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = NULL) {
 
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
@@ -46,11 +47,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
       run_params[ind] <- pft.traits[mi]
     }
     
-    # Initial value of leaf area index m2 m-2 - logged)
-    if ("ilai" %in% pft.names) {
-      run_params[which(names(run_params) == "LOG10LAII")] <- log(pft.traits[which(pft.names == "ilai")])
-    }
-    
     # N-C ratio of roots (g N g-1 C)
     if ("c2n_fineroot" %in% pft.names) {
       run_params[which(names(run_params) == "NCR")] <- 1/pft.traits[which(pft.names == "c2n_fineroot")]
@@ -64,11 +60,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     # Transpiration coefficient (mm d-1)
     if ("transpiration_coefficient" %in% pft.names) {
       run_params[which(names(run_params) == "TRANCO")] <- pft.traits[which(pft.names == "transpiration_coefficient")]
-    }
-    
-    # Temperature that kills half the plants in a day (degrees Celcius)
-    if ("plant_min_temp" %in% pft.names) {
-      run_params[which(names(run_params) == "LT50")] <- pft.traits[which(pft.names == "plant_min_temp")]
     }
     
     if ("phyllochron" %in% pft.names) {
@@ -130,17 +121,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
       run_params[which(names(run_params) == "YG")] <- pft.traits[which(pft.names == "growthYield")]
     }
     
-    # This is IC, change later
-    # Initial value of soil water concentration (m3 m-3)
-    if ("initial_volume_fraction_of_condensed_water_in_soil" %in% pft.names) {
-      run_params[which(names(run_params) == "WCI")] <- pft.traits[which(pft.names == "initial_volume_fraction_of_condensed_water_in_soil")]
-    }
-    
-    # Water concentration at saturation (m3 m-3)
-    if ("volume_fraction_of_water_in_soil_at_saturation" %in% pft.names) {
-      run_params[which(names(run_params) == "WCST")] <- pft.traits[which(pft.names == "volume_fraction_of_water_in_soil_at_saturation")]
-    }
-    
     # Maximum surface temperature at which hardening is possible (deg C)
     if ("THard_max" %in% pft.names) {
       run_params[which(names(run_params) == "THARDMX")] <- pft.traits[which(pft.names == "THard_max")]
@@ -151,19 +131,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
       run_params[which(names(run_params) == "RDRTMIN")] <- pft.traits[which(pft.names == "min_foliage_mort_rate")]
     }
     
-    # This is IC, change later
-    # Initial value of litter C (g C m-2)
-    if ("litter_carbon_content" %in% pft.names) {
-      run_params[which(names(run_params) == "CLITT0")] <- 
-        udunits2::ud.convert(pft.traits[which(pft.names == "litter_carbon_content")], "kg", "g")
-    }
-    
-    # This is IC, change later
-    # Initial value of SOM (g C m-2)
-    if ("SOC" %in% pft.names) {
-      run_params[which(names(run_params) == "CSOM0")] <- 
-        udunits2::ud.convert(PEcAn.utils::misc.convert(pft.traits[which(pft.names == "SOC")], "Mg ha-1", "kg C m-2"), "kg", "g")
-    }
     
     # Residence time of slowly decomposing OM
     if ("sOM_residence_time" %in% pft.names) {
@@ -171,39 +138,13 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     }
     
     # Residence time of fast decomposing OM
-    if ("sOM_residence_time" %in% pft.names) {
-      run_params[which(names(run_params) == "TCSOMF")] <- pft.traits[which(pft.names == "fOM_residence_time")]
+    if ("fOM_residence_time" %in% pft.names) {
+      run_params[which(names(run_params) == "TCSOMF")] <- round(pft.traits[which(pft.names == "fOM_residence_time")])
     }
     
     # Residence time of litter
     if ("sOM_residence_time" %in% pft.names) {
       run_params[which(names(run_params) == "TCLITT")] <- pft.traits[which(pft.names == "litter_residence_time")]
-    }
-    
-    # This is IC, change later
-    # Initial C-N ratio of litter (g C g-1 N)
-    if ("c2n_litter" %in% pft.names) {
-      run_params[which(names(run_params) == "CNLITT0")] <- 100*pft.traits[which(pft.names == "c2n_litter")]
-    }
-    
-    # Initial C-N ratio of fast SOM (g C g-1 N)
-    if ("c2n_fSOM" %in% pft.names) {
-      run_params[which(names(run_params) == "CNSOMF0")] <- pft.traits[which(pft.names == "c2n_fSOM")]
-    }
-    
-    # Initial C-N ratio of slow SOM (g C g-1 N)
-    if ("c2n_sSOM" %in% pft.names) {
-      run_params[which(names(run_params) == "CNSOMS0")] <- pft.traits[which(pft.names == "c2n_sSOM")]
-    }
-    
-    # Initial fraction of SOC that is fast (g C g-1 C)
-    if ("r_fSOC" %in% pft.names) {
-      run_params[which(names(run_params) == "FCSOMF0")] <- pft.traits[which(pft.names == "r_fSOC")]
-    }
-    
-    # Initial value of soil mineral N (g N m-2)
-    if ("NMIN" %in% pft.names) {
-      run_params[which(names(run_params) == "NMIN0")] <- pft.traits[which(pft.names == "NMIN")]
     }
     
     # Temperature at which decomposition is maximal (deg C)
@@ -220,8 +161,98 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     if ("n2c_shoot_max" %in% pft.names) {
       run_params[which(names(run_params) == "NCSHMAX")] <- pft.traits[which(pft.names == "n2c_shoot_max")]
     }
-  }
+    
+    # Maximum refreezing rate per degree below temperature which snow melts
+    if ("max_refreezing_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "SWrf")] <- pft.traits[which(pft.names == "max_refreezing_rate")]
+    }
+  } #### End parameter update
 
+  
+  #### Update initial conditions
+  if (!is.null(IC)) {
+    
+    ic.names <- names(IC)
+    
+    # Initial value of leaf area index m2 m-2 - logged)
+    if ("ilai" %in% ic.names) {
+      run_params[which(names(run_params) == "LOG10LAII")] <- log(IC$lai)
+    }
+    
+    
+  }else if(!is.null(settings$run$inputs$poolinitcond$path)){
+    
+    IC.path <- settings$run$inputs$poolinitcond$path
+    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
+    
+    if(!is.null(IC.pools)){
+      IC.nc <- ncdf4::nc_open(IC.path)
+      
+      ## laiInit m2/m2
+      lai <- try(ncdf4::ncvar_get(IC.nc, "LAI"), silent = TRUE)
+      if (!is.na(lai) && is.numeric(lai)) {
+        run_params[which(names(run_params) == "LOG10LAII")] <- log(lai)
+      }
+      
+      # This is IC
+      # Initial value of litter C (g C m-2)
+      clitt0 <- try(ncdf4::ncvar_get(IC.nc, "litter_carbon_content"), silent = TRUE)
+      if (!is.na(clitt0) && is.numeric(clitt0)) {
+        run_params[which(names(run_params) == "CLITT0")] <- udunits2::ud.convert(clitt0, "kg", "g")
+      }
+      
+      # This is IC
+      # Initial value of SOM (g C m-2)
+      # csom0 <- try(ncdf4::ncvar_get(IC.nc, "SOC"), silent = TRUE)
+      # if (!is.na(csom0) && is.numeric(csom0)) {
+      #   run_params[which(names(run_params) == "CSOM0")] <- udunits2::ud.convert(csom0, "Mg ha-1", "kg C m-2"), "kg", "g")
+      # }
+      
+      # Initial fraction of SOC that is fast (g C g-1 C)
+      if ("r_fSOC" %in% pft.names) {
+        run_params[which(names(run_params) == "FCSOMF0")] <- pft.traits[which(pft.names == "r_fSOC")]
+      }
+      
+      # This is IC, change later
+      # Initial C-N ratio of litter (g C g-1 N)
+      if ("c2n_litter" %in% pft.names) {
+        run_params[which(names(run_params) == "CNLITT0")] <- 100*pft.traits[which(pft.names == "c2n_litter")]
+      }
+      
+      # Initial C-N ratio of fast SOM (g C g-1 N)
+      if ("c2n_fSOM" %in% pft.names) {
+        run_params[which(names(run_params) == "CNSOMF0")] <- pft.traits[which(pft.names == "c2n_fSOM")]
+      }
+      
+      # Initial C-N ratio of slow SOM (g C g-1 N)
+      if ("c2n_sSOM" %in% pft.names) {
+        run_params[which(names(run_params) == "CNSOMS0")] <- pft.traits[which(pft.names == "c2n_sSOM")]
+      }
+      
+      # Initial value of soil mineral N (g N m-2)
+      if ("NMIN" %in% pft.names) {
+        run_params[which(names(run_params) == "NMIN0")] <- pft.traits[which(pft.names == "NMIN")]
+      }
+      
+      # This is IC, change later
+      # Initial value of soil water concentration (m3 m-3)
+      if ("initial_volume_fraction_of_condensed_water_in_soil" %in% pft.names) {
+        run_params[which(names(run_params) == "WCI")] <- pft.traits[which(pft.names == "initial_volume_fraction_of_condensed_water_in_soil")]
+      }
+      
+      
+      # Water concentration at saturation (m3 m-3)
+      if ("volume_fraction_of_water_in_soil_at_saturation" %in% pft.names) {
+        run_params[which(names(run_params) == "WCST")] <- pft.traits[which(pft.names == "volume_fraction_of_water_in_soil_at_saturation")]
+      }
+      
+      # # Temperature that kills half the plants in a day (degrees Celcius)
+      # if ("plant_min_temp" %in% pft.names) {
+      #   run_params[which(names(run_params) == "LT50I")] <- pft.traits[which(pft.names == "plant_min_temp")]
+      # }
+      
+    }
+  }
 
   #-----------------------------------------------------------------------
   # write job.sh
