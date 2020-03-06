@@ -15,7 +15,7 @@
 ##'                                statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
 ##' transformstats(statdf)
 transformstats <- function(data) {
-  if (!"SE" %in% levels(data$statname)) {
+  if (is.factor(data$statname) && !"SE" %in% levels(data$statname)) {
     data$statname <- factor(data$statname, levels = c(levels(data$statname), "SE"))
   }
   ## Transformation of stats to SE transform SD to SE
