@@ -70,8 +70,8 @@ transformstats <- function(data) {
       / (stats::qt(0.975, 2 * data$n[msdi] - 2) * sqrt(2)))
     data$statname[msdi] <- "SE"
   }
-  if (FALSE %in% c("SE", "none") %in% data$statname) {
-    print(paste(trait, ": ERROR!!! data contains untransformed statistics"))
+  if (!all(data$statname %in% c("SE", "none"))) {
+    PEcAn.logger::logger.error("data contains untransformed statistics")
   }
   return(data)
 } # transformstats
