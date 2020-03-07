@@ -1,6 +1,6 @@
 name: CI
 
-on: [push]
+on: push
 
 env:
   # Would be more usual to set R_LIBS_USER, but R uses R_LIBS first if present
