@@ -59,7 +59,7 @@ jobs:
       PGHOST: postgres
       CI: true
     steps:
-    - uses: meetup/express-checkout@master
+    - uses: actions/checkout@v2
     - name: install utils
       run: |
         sudo apt-get update
