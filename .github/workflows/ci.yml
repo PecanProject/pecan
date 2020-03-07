@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     container: infotroph/pecan-depends:latest
     steps:
-    - uses: meetup/express-checkout@master #clones with depth 1; skips tags, branches, submodules
+    - uses: actions/checkout@v2 #clones with depth 1; skips tags, branches, submodules
     - run: mkdir -p "${HOME}${R_LIBS#'~'}"
     - name: cache R packages
       uses: actions/cache@v1
