@@ -241,8 +241,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
   days_harvest      <- matrix( as.integer(-1), nrow=100, ncol=2 )
   
   # hardcoding these for now, should be able to modify later on
-  calendar_fert[1,] <- c( 2018, 125, 0*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
-  calendar_fert[2,] <- c( 2018, 250, 0*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
+  calendar_fert[1,] <- c( 2018, 202, 65*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
+  calendar_fert[2,] <- c( 2018, 233, 40*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
   #    calendar_fert[3,] <- c( 2001, 123, 0*1000/ 10000      ) # 0 kg N ha-1 applied on day 123
   calendar_Ndep[1,] <- c( 1900,   1,  0*1000/(10000*365) ) #  2 kg N ha-1 y-1 N-deposition in 1900
   calendar_Ndep[2,] <- c( 1980, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 1980
@@ -304,11 +304,13 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     # NEE in kgC/m2/s
     # NOTE: According to BASGRA_N documentation: LUEMXQ (used in PHOT calculation) accounts for carbon lost to maintenance respiration, 
     # but not growth respiration. So, photosynthesis rate is gross photosynthesis minus maintenance respiration
-    # So this is not really GPP, but it wasn't obvious to add what to get GPP, but I jsut want NEE for now, so it's OK
+    # So this is not really GPP, but it wasn't obvious to add what to get GPP, but I just want NEE for now, so it's OK
     phot          <- output[thisyear, which(outputNames == "PHOT")] # (g C m-2 d-1)
     nee           <- -1.0 * (phot - (rsoil + rplantaer))
     outlist[[9]]  <- udunits2::ud.convert(nee, "g m-2", "kg m-2") / sec_in_day
     
+    # again this is not technically GPP
+    outlist[[10]]  <- udunits2::ud.convert(phot, "g m-2", "kg m-2") / sec_in_day
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
@@ -333,7 +335,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     nc_var[[7]]  <- PEcAn.utils::to_ncvar("SoilResp", dims)
     nc_var[[8]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
     nc_var[[9]]  <- PEcAn.utils::to_ncvar("NEE", dims)
-
+    nc_var[[10]]  <- PEcAn.utils::to_ncvar("GPP", dims)
     
     # ******************** Declare netCDF variables ********************#
     

@@ -47,9 +47,29 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[ind] <- pft.traits[mi]
     }
     
+    # Maximum SLA of new leaves
+    if ("SLAMAX" %in% pft.names) {
+      run_params[which(names(run_params) == "SLAMAX")] <- udunits2::ud.convert(pft.traits[which(pft.names == "SLAMAX")], "kg-1","g-1")
+    }
+    
+    # Number of elongating leaves per non-elongating tiller
+    if ("n_el2nel" %in% pft.names) {
+      run_params[which(names(run_params) == "NELLVM")] <- pft.traits[which(pft.names == "n_el2nel")]
+    }
+    
     # N-C ratio of roots (g N g-1 C)
     if ("c2n_fineroot" %in% pft.names) {
       run_params[which(names(run_params) == "NCR")] <- 1/pft.traits[which(pft.names == "c2n_fineroot")]
+    }
+    
+    # Phenological stage above which elongation and appearance of leaves on elongating tillers decreases
+    if ("phen_etil_decrease" %in% pft.names) {
+      run_params[which(names(run_params) == "PHENCR")] <- pft.traits[which(pft.names == "phen_etil_decrease")]
+    }
+    
+    # Relative death rate of leaves and non-elongating tillers due to shading when LAI is twice the threshold (LAICR)
+    if ("relative_shading_death" %in% pft.names) {
+      run_params[which(names(run_params) == "RDRSCO")] <- pft.traits[which(pft.names == "relative_shading_death")]
     }
     
     # PAR extinction coefficient (m2 m-2)
@@ -76,10 +96,10 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "LFWIDG")] <- udunits2::ud.convert(pft.traits[which(pft.names == "generative_leaf_width")], "mm", "m")
     }
     
-    # Initial and maximum value rooting depth (m)
-    if ("rooting_depth" %in% pft.names) {
-      run_params[which(names(run_params) == "ROOTDM")] <- pft.traits[which(pft.names == "rooting_depth")]
-    }
+    # # Initial and maximum value rooting depth (m)
+    # if ("rooting_depth" %in% pft.names) {
+    #   run_params[which(names(run_params) == "ROOTDM")] <- pft.traits[which(pft.names == "rooting_depth")]
+    # }
     
     # Maximum root depth growth rate (m day-1)
     if ("root_growth_rate" %in% pft.names) {
@@ -182,6 +202,51 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # Resilience of decomposition to temperature change (deg C)
     if ("decomp_res2Tdelta" %in% pft.names) {
       run_params[which(names(run_params) == "TSIGMAF")] <- pft.traits[which(pft.names == "decomp_res2Tdelta")]
+    }
+    
+    # Ratio of total to aerobic respiration
+    if ("total2RA" %in% pft.names) {
+      run_params[which(names(run_params) == "KRTOTAER")] <- pft.traits[which(pft.names == "total2RA")]
+    }
+    
+    # Day length below which phenological stage is reset to zero
+    if ("min_daylength_reset" %in% pft.names) {
+      run_params[which(names(run_params) == "DAYLB")] <- pft.traits[which(pft.names == "min_daylength_reset")]
+    }
+    
+    # Day length below which phenological development slows down
+    if ("min_daylength_slow" %in% pft.names) {
+      run_params[which(names(run_params) == "DAYLP")] <- pft.traits[which(pft.names == "min_daylength_slow")]
+    }
+    
+    # LAI above which shading induces leaf senescence
+    if ("lai_senescence" %in% pft.names) {
+      run_params[which(names(run_params) == "LAICR")] <- pft.traits[which(pft.names == "lai_senescence")]
+    }
+    
+    # Decrease in tillering with leaf area index
+    if ("lai_til_decrease" %in% pft.names) {
+      run_params[which(names(run_params) == "LAIEFT")] <- pft.traits[which(pft.names == "lai_til_decrease")]
+    }
+    
+    # Maximum ratio of tiller and leaf apearance at low leaf area index
+    if ("lai_til2leaf_max" %in% pft.names) {
+      run_params[which(names(run_params) == "LAITIL")] <- pft.traits[which(pft.names == "lai_til2leaf_max")]
+    }
+    
+    # Proportionality of leaf senescence with temperature
+    if ("leaf_senescence_temp_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "RDRTEM")] <- pft.traits[which(pft.names == "leaf_senescence_temp_rate")]
+    }
+    
+    # Maximum relative rate of tillers becoming elongating tillers
+    if ("til2etil_max_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "RGENMX")] <- pft.traits[which(pft.names == "til2etil_max_rate")]
+    }
+    
+    # Fraction of reserves in elongating tillers that is harvested
+    if ("etil_resv_harv" %in% pft.names) {
+      run_params[which(names(run_params) == "HAGERE")] <- pft.traits[which(pft.names == "etil_resv_harv")]
     }
     
   } #### End parameter update
