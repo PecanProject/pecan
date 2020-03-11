@@ -37,10 +37,9 @@ is_wrong_build <- function(pkgname) {
   # Typical packageDescription(pkgname)$Built result: we only need chars 3-7
   # "R 3.4.4; x86_64-apple-darwin15.6.0; 2019-03-18 04:41:51 UTC; unix"
   built_ver <- R_system_version(substr(built_str, start = 3, stop = 7))
-  sys_ver <- getRversion()
 
-  # major and minor version must match, different patch versions OK
-  built_ver$major != sys_ver$major || built_ver$minor != sys_ver$minor
+  # NB strict comparison: even patch level must agree
+  built_ver != getRversion()
 }
 
 all_pkgs <- installed.packages()[, 1]
