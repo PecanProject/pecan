@@ -9,14 +9,15 @@ prepare.settings(settings, force = FALSE)
 \arguments{
 \item{settings}{settings list}
 
-\item{force}{Whether to force the function to run even if it determines it has been run on 
-these settings already.}
+\item{force}{Whether to force the function to run even if it determines
+it has been run on these settings already.}
 }
 \description{
 Update, set defaults for, and otherwise prepare a PEcAn Settings object
 }
 \details{
-Performs various checks, fixes deprecated contructs, and assigns missing values where possible.
+Performs various checks, fixes deprecated contructs,
+and assigns missing values where possible.
 }
 \author{
 Ryan Kelly

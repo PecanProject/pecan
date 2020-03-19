@@ -6,17 +6,19 @@ Date: 2019-09-05
 Authors@R: c(person("Mike","Dietze"))
 Author: Michael Dietze
 Maintainer: Michael Dietze <dietze@bu.edu>
-Depends:
-    mvtnorm,
-    mlegp,
-    MCMCpack
 Imports:
     PEcAn.logger,
+    methods,
+    mvtnorm,
+    mlegp,
     coda (>= 0.18),
-    methods
+    MASS,
+    tmvtnorm,
+    lqmm,
+    MCMCpack
 Description: Implementation of a Gaussian Process model (both likelihood and
     bayesian approaches) for kriging and model emulation.  Includes functions
     for sampling design and prediction.
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

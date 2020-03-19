@@ -38,11 +38,10 @@ Use \uxxxx escapes for other characters.
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking dependencies in R code ... WARNING
-'::' or ':::' import not declared from: ‘raster’
 'library' or 'require' calls not declared from:
-  ‘car’ ‘MASS’ ‘mgcv’
+  ‘MASS’ ‘mgcv’
 'library' or 'require' calls in package code:
-  ‘car’ ‘MASS’ ‘mgcv’
+  ‘MASS’ ‘mgcv’
   Please use :: or requireNamespace() instead.
   See section 'Suggested packages' in the 'Writing R Extensions' manual.
 Package in Depends field not imported from: ‘methods’
@@ -252,9 +251,6 @@ to your NAMESPACE file.
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... NOTE
-Rd file 'build_cf_variables_table_url.Rd':
-  \usage lines wider than 90 characters:
-       url_format_string = "http://cfconventions.org/Data/cf-standard-names/%d/src/src-cf-standard-name-table.xml")
 
 Rd file 'download.NOAA_GEFS.Rd':
   \examples lines wider than 100 characters:
@@ -476,4 +472,4 @@ Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 9 WARNINGs, 2 NOTEs
+Status: 8 WARNINGs, 2 NOTEs

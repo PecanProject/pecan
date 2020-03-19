@@ -3,23 +3,30 @@ Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.7.1
 Date: 2019-09-05
-Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"), email = "dietze@bu.edu"))
+Authors@R: c(person("Mike","Dietze", role = "aut",
+                email = "dietze@bu.edu"),
+             person("Istem","Fer", role = c("aut", "cre"),
+                email = "istem.fer@fmi.fi"),
+             person("Ryan", "Kelly", role = "aut"))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
+VignetteBuilder: knitr
 Imports:
+    abind,
     BayesianTools,
     coda (>= 0.18),
+    MASS,
+    methods,
+    mlegp,
     dplyr,
     ellipse,
     graphics,
     grDevices,
     IDPmisc,
     lubridate (>= 1.6.0),
-    MASS,
-    mlegp,
     ncdf4 (>= 1.15),
     parallel,
     PEcAn.benchmark,
@@ -33,14 +40,22 @@ Imports:
     PEcAn.utils,
     rjags,
     stats,
+    prodlim,
+    MCMCpack,
+    tmvtnorm,
     udunits2 (>= 0.11),
     utils,
-    XML
+    XML,
+    lattice,
+    lqmm,
+    mvtnorm
 Suggests:
+    knitr,
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
+Roxygen: list(markdown = TRUE)

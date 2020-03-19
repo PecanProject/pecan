@@ -4,9 +4,12 @@
 \alias{thredds_dap_url}
 \title{Create a THREDDS OpenDAP access URL to a PEcAn file}
 \usage{
-thredds_dap_url(target, hostname = getOption("pecanapi.docker_hostname"),
+thredds_dap_url(
+  target,
+  hostname = getOption("pecanapi.docker_hostname"),
   port = getOption("pecanapi.docker_port"),
-  https = getOption("pecanapi.docker_https"))
+  https = getOption("pecanapi.docker_https")
+)
 }
 \arguments{
 \item{target}{Full path to target (character) relative to THREDDS

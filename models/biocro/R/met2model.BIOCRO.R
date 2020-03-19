@@ -48,7 +48,8 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
     }
 
     met.nc <- ncdf4::nc_open(ncfile)
-    on.exit(ncdf4::nc_close(met.nc))
+    on.exit(close_nc_if_open(met.nc), add = FALSE)
+      # add = FALSE because any previous file was closed at end of prev. loop
 
     dt <- mean(diff(udunits2::ud.convert(
       met.nc$dim$time$vals,
@@ -56,7 +57,6 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
       "hours since 1700-01-01 00:00:00")))
     if (dt < 1) {
       # More than one obs/hour. Write upscaled hourly file and reload.
-      on.exit()
       ncdf4::nc_close(met.nc)
 
       upscale_result <- PEcAn.data.atmosphere::upscale_met(
@@ -65,12 +65,16 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
         overwrite = overwrite)
 
       met.nc <- ncdf4::nc_open(upscale_result$file)
-      on.exit(ncdf4::nc_close(met.nc))
     }
 
     tmp.met <- PEcAn.data.atmosphere::load.cfmet(
       met.nc, lat = lat, lon = lon,
       start.date = yrstart, end.date = yrend)
+
+    # NB we need this nc_close even though on.exit is set:
+    # close here to avoid leaking filehandle at end of loop iteration,
+    # close in on.exit to avoid leaking at early function exit.
+    ncdf4::nc_close(met.nc)
 
     if (dt > 1) {
       # Data have fewer than 1 obs/hour. Need to downscale.

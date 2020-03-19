@@ -7,9 +7,14 @@ if [ -z "$FQDN" ]; then
 	FQDN=$( hostname -f )
 fi
 
+# postgres hostname
+if [ -z "$PGHOST" ]; then
+  PGHOST="localhost"
+fi
+
 # command to execute to add items to BETY database
 if [ -z "$PSQL" ]; then
-	PSQL="psql -h localhost -U bety bety -q -t -c"
+	PSQL="psql -h ${PGHOST} -U bety bety -q -t -c"
 fi
 
 # folder to data, this is assumed to be installed at the same level

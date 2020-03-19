@@ -2,13 +2,34 @@
 % Please edit documentation in R/MultiSettings.R
 \name{MultiSettings}
 \alias{MultiSettings}
+\alias{as.MultiSettings}
+\alias{is.MultiSettings}
 \title{Create a PEcAn MultiSettings object}
 \usage{
 MultiSettings(...)
+
+as.MultiSettings(x)
+
+is.MultiSettings(x)
+}
+\arguments{
+\item{...}{Settings objects to concatenate}
+
+\item{x}{object to test or coerce}
+}
+\value{
+list with class "Multisettings"
 }
 \description{
 Create a PEcAn MultiSettings object
 }
+\section{Functions}{
+\itemize{
+\item \code{as.MultiSettings}: coerce an existing object to MultiSettings
+
+\item \code{is.MultiSettings}: test if an object is a MultiSettings
+}}
+
 \author{
 Ryan Kelly
 }

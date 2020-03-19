@@ -11,9 +11,10 @@
 ##' \dontrun{
 ##' xmlfile <- the full path to a pecan .xml settings file.
 ##' 
-
-##' site_info <- get_site_info(xmlfile = "/data/bmorrison/sda/lai/pecan_MultiSite_SDA_LAI_AGB_8_Sites_2009.xml")
-##'  }          
+##' results <- PEcAn.data.remote::download.thredds.AGB(outdir=outdir, 
+##'            site_ids = c(676, 678, 679, 755, 767, 1000000030, 1000000145, 1000025731), 
+##'            run_parallel = TRUE, ncores = 8)
+##' }
 ##' @export
 ##' @author Bailey Morrison
 ##'

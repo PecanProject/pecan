@@ -10,9 +10,6 @@ fi
 # assumes pecan data folder mounted under /data
 DATADIR="/data"
 
-# assumes postgres database running container postgers
-PSQL="psql -U bety -h postgres -d bety -q -t -c"
-
 # load helper functions and set FQDN and PSQL
 . $( dirname $0 )/add.util.sh
 
@@ -22,7 +19,7 @@ echo "######################################################################"
 echo "CREATE FOLDERS"
 echo "######################################################################"
 mkdir -p /data/workflows /data/dbfiles
-chown 33 /data/workflows /data/dbfiles
+chmod 777 /data/workflows /data/dbfiles
 
 echo "######################################################################"
 echo "Adding sites"
@@ -35,7 +32,7 @@ fi
 echo "######################################################################"
 echo "Adding inputs"
 echo "######################################################################"
-if [ ! -e ${DATADIR}/inputs ]; then
+if [ ! -e ${DATADIR}/ed_inputs ]; then
   tar zxf /work/inputs.tgz
 fi
 

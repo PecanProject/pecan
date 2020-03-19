@@ -204,7 +204,7 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' @return list of two containing the median AGB values per pixel and the corresponding 
 ##' standard deviation values (uncertainties)
 ##' 
-##' ##' @examples
+##' @examples
 ##' \dontrun{
 ##' 
 ##' # Example 1 - using BETYdb site IDs to extract data

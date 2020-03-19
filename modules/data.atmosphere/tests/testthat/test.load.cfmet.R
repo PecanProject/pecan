@@ -6,11 +6,11 @@ daily_file <- "data/urbana_daily_test.nc"
 subdaily_file <- "data/urbana_subdaily_test.nc"
 
 daily.nc <- ncdf4::nc_open(daily_file)
-on.exit(ncdf4::nc_close(daily.nc))
+on.exit(ncdf4::nc_close(daily.nc), add = TRUE)
 daily.cf <- load.cfmet(met.nc = daily.nc, lat = 39.75, lon = -87.25,
                        start.date = "1951-01-02", end.date = "1951-05-31")
 subdaily.nc <- ncdf4::nc_open(subdaily_file)
-on.exit(ncdf4::nc_close(subdaily.nc), add=TRUE)
+on.exit(ncdf4::nc_close(subdaily.nc), add = TRUE)
 
 test_that("data extracted from test pecan-cf met files is valid",{
   expect_is(daily.cf, "data.frame")

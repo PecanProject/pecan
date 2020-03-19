@@ -7,8 +7,8 @@
 check.bety.version(dbcon)
 }
 \arguments{
-\item{settings}{settings file}
+\item{dbcon}{database connection object}
 }
 \description{
-Check BETY Version
+check to make sure BETY is up to date
 }

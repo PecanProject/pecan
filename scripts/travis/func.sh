@@ -41,3 +41,21 @@ function travis_time_end {
     echo -e "\e[0K\e[${_COLOR}mFunction $TRAVIS_FOLD_NAME takes $(( $TIME_ELAPSED_SECONDS / 60 )) min $(( $TIME_ELAPSED_SECONDS % 60 )) sec\e[0m"
     if [[ -n "$old_setting" ]]; then set -x; else set +x; fi
 }
+
+function check_git_clean {
+    if [[ `git status -s` ]]; then
+        echo -e "\nThese files were changed by the build process:";
+        git status -s;
+        echo -e "The two most common causes of this message:\n";
+        echo -e "    * Changed file ends with '*.Rd' or 'NAMESPACE':" \
+                        " Rerun Roxygen and commit any updated outputs\n";
+        echo -e "    * Changed file end with '*.depends':" \
+                        " Rerun './scripts/generate_dependencies.sh'" \
+                        " and commit any updated outputs\n";
+        echo -e "    * Something else: Hmm... Maybe the full diff below can help?\n";
+        echo -e "travis_fold:start:gitdiff\nFull diff:\n";
+        git diff;
+        echo -e "travis_fold:end:gitdiff\n\n";
+        exit 1;
+    fi
+}

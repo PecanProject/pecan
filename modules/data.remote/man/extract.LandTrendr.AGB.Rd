@@ -28,8 +28,11 @@ output extraction list (see return)}
 \value{
 list of two containing the median AGB values per pixel and the corresponding 
 standard deviation values (uncertainties)
-
-##' @examples
+}
+\description{
+extract.LandTrendr.AGB
+}
+\examples{
 \dontrun{
 
 # Example 1 - using BETYdb site IDs to extract data
@@ -53,9 +56,7 @@ results <- extract.LandTrendr.AGB(site_info, "median", buffer = NULL, fun = "mea
 data_dir, product_dates, output_file)
 
 }
-}
-\description{
-extract.LandTrendr.AGB
+
 }
 \author{
 Shawn Serbin, Alexey Shiklomanov
