@@ -16,6 +16,9 @@ data frame with statistics transformed to SE
 \description{
 Automates transformations of SD, MSE, LSD, 95\%CI, HSD, and MSD
 to conservative estimates of SE.
+Method details and assumptions described in
+LeBauer 2020 Transforming ANOVA and Regression statistics for Meta-analysis.
+Authorea. DOI: https://doi.org/10.22541/au.158359749.96662550
 }
 \examples{
 statdf <- data.frame(Y=rep(1,5),
