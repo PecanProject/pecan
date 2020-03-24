@@ -4,9 +4,20 @@
 \alias{lm_ensemble_sims}
 \title{lm_ensemble_sims}
 \usage{
-lm_ensemble_sims(dat.mod, n.ens, path.model, direction.filter,
-  lags.list = NULL, lags.init = NULL, dat.train, seed = Sys.time(),
-  print.progress = FALSE)
+lm_ensemble_sims(
+  dat.mod,
+  n.ens,
+  path.model,
+  direction.filter,
+  lags.list = NULL,
+  lags.init = NULL,
+  dat.train,
+  precip.distribution,
+  force.sanity = TRUE,
+  sanity.tries = 25,
+  seed = Sys.time(),
+  print.progress = FALSE
+)
 }
 \arguments{
 \item{dat.mod}{- dataframe to be predicted at the time step of the training data}
@@ -22,6 +33,13 @@ lm_ensemble_sims(dat.mod, n.ens, path.model, direction.filter,
 
 \item{dat.train}{- the training data used to fit the model; needed for night/day in 
 surface_downwelling_shortwave_flux_in_air}
+
+\item{precip.distribution}{- a list with 2 sub-lists containing the number of observations with precip in the training data per day & 
+the hour of max rain in the training data.  This will be used to help solve the "constant drizzle" problem}
+
+\item{force.sanity}{- (logical) do we force the data to meet sanity checks?}
+
+\item{sanity.tries}{- how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop}
 
 \item{seed}{- (optional) set the seed manually to allow reproducible results}
 
@@ -39,13 +57,17 @@ Linear Regression Ensemble Simulation
 Met downscaling function that predicts ensembles of downscaled meteorology
 }
 \seealso{
-Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{model.train}}, \code{\link{nc.merge}},
-  \code{\link{predict_subdaily_met}},
-  \code{\link{save.betas}}, \code{\link{save.model}},
-  \code{\link{subdaily_pred}},
-  \code{\link{temporal.downscale.functions}}
+Other tdm - Temporally Downscale Meteorology: 
+\code{\link{gen.subdaily.models}()},
+\code{\link{model.train}()},
+\code{\link{nc.merge}()},
+\code{\link{predict_subdaily_met}()},
+\code{\link{save.betas}()},
+\code{\link{save.model}()},
+\code{\link{subdaily_pred}()},
+\code{\link{temporal.downscale.functions}()}
 }
 \author{
 Christy Rollinson, James Simkins
 }
+\concept{tdm - Temporally Downscale Meteorology}

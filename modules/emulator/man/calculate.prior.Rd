@@ -6,3 +6,6 @@
 \usage{
 calculate.prior(samples, priors)
 }
+\description{
+calculate.prior
+}

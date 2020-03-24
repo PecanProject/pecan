@@ -6,11 +6,12 @@
 #' @export
 defparam <- function(modname) {
   data(model.list)
+  model.list$modname <- trimws(model.list$modname)
   p.raw   <- model.list[model.list$modname == modname, "par.default"]
-  p.split <- strsplit(p.raw, " ")
-  p.names <- sapply(p.split, function(x) gsub("=.*", "", x))
-  p.vals  <- sapply(p.split, function(x) as.numeric(gsub(".*=", "", x)))
-  p.out   <- drop(p.vals)
-  names(p.out) <- drop(p.names)
-  return(p.out)
+  p.split <- strsplit(trimws(as.character(p.raw)), " ")[[1]]
+  p.names <- lapply(p.split, function(x) gsub("=.*", "", x))
+  p.vals  <- lapply(p.split, function(x) as.numeric(gsub(".*=", "", x)))
+  p.out   <- unlist(p.vals)
+  names(p.out) <- unlist(p.names)
+  p.out
 } # defparam

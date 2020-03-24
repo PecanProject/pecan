@@ -6,3 +6,6 @@
 \usage{
 p(x, ...)
 }
+\description{
+p
+}

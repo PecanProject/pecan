@@ -13,6 +13,9 @@ mean_over_larger_timestep(date.coarse, date.fine, data.fine)
 
 \item{data.fine}{data.frame}
 }
+\description{
+Calculate benchmarking statistics
+}
 \author{
 Betsy Cowdery, Michael Dietze
 }

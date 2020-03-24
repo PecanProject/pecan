@@ -15,6 +15,9 @@ fitA(flux.data, cov.data = NULL, model = NULL)
 
 Right now the fixed effects are specified as a string using the standard R lm formula syntax, but without the LHS variable (e.g. '~ SLA + chl + SLA:chl'). The tilde is optional. For random effects, the two options right now are just 'leaf' for leaf-level random effects and NULL. 'model' has a default that sets all effects to NULL (fit one curve to all data) and n.iter=1000.}
 }
+\description{
+fitA
+}
 \author{
 Mike Dietze
 

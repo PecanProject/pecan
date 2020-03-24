@@ -4,12 +4,10 @@
 \alias{get_users}
 \title{Get data frame of users and IDs}
 \usage{
-get_users(bety, session)
+get_users(bety)
 }
 \arguments{
 \item{bety}{BETYdb connection, as opened by `betyConnect()`}
-
-\item{session}{Session object passed through Shiny}
 }
 \description{
 Get data frame of users and IDs

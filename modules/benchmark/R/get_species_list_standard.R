@@ -9,7 +9,7 @@
 #' @author Tempest McCabe
 get_species_list_standard<-function(vars){
   
-  if(any(c("species_id", "species_USDA_symbol")) %in% vars){
+  if(any(c("species_id", "species_USDA_symbol") %in% vars)){
     return("usda")
   }else if("species_name" %in% vars){
     return('latin_name')

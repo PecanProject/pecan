@@ -116,7 +116,7 @@ calculate.prior <- function(samples, priors) {
 ##' @name get_ss
 ##' @title get_ss
 ##' @export
-get_ss <- function(gp, xnew) {
+get_ss <- function(gp, xnew, pos.check) {
   
   SS <- numeric(length(gp))
   
@@ -124,7 +124,23 @@ get_ss <- function(gp, xnew) {
   
   for(igp in seq_along(gp)){
     Y <- mlegp::predict.gp(gp[[igp]], newData = X[, 1:ncol(gp[[igp]]$X), drop=FALSE], se.fit = TRUE) 
-    SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
+    
+    j <- (igp %% length(pos.check)) 
+    if(j == 0) j <- length(pos.check)
+    
+    if(pos.check[j]){
+      if(Y$fit < 0){
+        return(-Inf)
+      }
+      repeat {
+        SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
+        if (SS[igp] > 0) {
+          break
+        }
+      }
+    }else{
+      SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
+    }
   }
   return(SS)
   
@@ -163,16 +179,22 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @title mcmc.GP
 ##' @export
 ##'
-##' @param gp
-##' @param x0 
-##' @param nmcmc
-##' @param rng
+##' @param gp Gaussian Process
+##' @param x0 initial values
+##' @param nmcmc number of iterations
+##' @param rng range of knots
 ##' @param format lin = lnlike fcn, log = log(lnlike)
 ##' @param mix each = jump each dim. independently, joint = jump all at once 
-##' @param splinefcns
-##' @param jmp0
-##' @param ar.target
-##' @param priors
+##' @param splinefcns spline functions, not used
+##' @param jmp0 initial jump variances
+##' @param ar.target acceptance rate target
+##' @param settings PEcAn settings list
+##' @param priors prior list
+##' @param run.block is this a new run or making the previous chain longer
+##' @param n.of.obs number of observations
+##' @param llik.fn list that contains likelihood functions
+##' @param hyper.pars hyper parameters
+##' @param resume.list list of needed info if we are running the chain longer
 ##' 
 ##' @author Michael Dietze
 mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 
@@ -197,25 +219,16 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   }
   
   # get SS
-  if(!any(pos.check)){
-    currSS <- get_ss(gp, x0)
-  }else{
-    repeat {
-      currSS <- get_ss(gp, x0)
-      if (currSS[pos.check] > 0) {
-        break
-      }
-    }
-  }
+  currSS <- get_ss(gp, x0, pos.check)
   
   
   currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
-  LLpar  <- unlist(sapply(currllp, `[[` , "par"))
+  pcurr   <- unlist(sapply(currllp, `[[` , "par"))
   
-  xcurr <- x0
+  xcurr <- unlist(x0)
   dim   <- length(x0)
   samp  <- matrix(NA, nmcmc, dim)
-  par   <- matrix(NA, nmcmc, length(LLpar), dimnames = list(NULL, names(LLpar))) # note: length(LLpar) can be 0
+  par   <- matrix(NA, nmcmc, length(pcurr), dimnames = list(NULL, names(pcurr))) # note: length(pcurr) can be 0
   
   
   if (run.block) {
@@ -236,6 +249,8 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
     # jmp <- mvjump(ic=diag(jmp0),rate=ar.target, nc=dim)
   }
   
+  # make sure it is positive definite, see note below
+  jcov <- lqmm::make.positive.definite(jcov, tol=1e-12)
   
   for (g in start:nmcmc) {
     
@@ -248,58 +263,46 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         # accept.count <- round(jmp@arate[(g-1)/settings$assim.batch$jump$adapt]*100)
         jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
         accept.count <- 0  # Reset counter
+        
+        # make sure precision is not going to be an issue
+        # NOTE: for very small values this is going to be an issue
+        # maybe include a scaling somewhere while building the emulator
+        jcov <- lqmm::make.positive.definite(jcov, tol=1e-12)
       }
       
       ## propose new parameters
-      repeat {
-        xnew <- mvrnorm(1, unlist(xcurr), jcov)
-        if (bounded(xnew, rng)) {
-          break
-        }
-      }
+      xnew <- tmvtnorm::rtmvnorm(1, mean =  c(xcurr), sigma = jcov, lower = rng[,1], upper = rng[,2])
       # if(bounded(xnew,rng)){
       
       # re-predict SS
-      if(!any(pos.check)){
-        currSS <- get_ss(gp, xcurr)
-      }else{
-        repeat {
-          currSS <- get_ss(gp, xcurr)
-          if (currSS[pos.check] > 0) {
-            break
-          }
-        }
-      }
+      currSS <- get_ss(gp, xcurr, pos.check)
+      
       
       
       # don't update the currllp ( = llik.par, e.g. tau) yet
       # calculate posterior with xcurr | currllp
       ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
+      HRcurr <- tmvtnorm::dtmvnorm(c(xnew), c(xcurr), jcov,
+                         lower = rng[,1], upper = rng[,2], log = TRUE)
       
-      if(!any(pos.check)){
-        newSS  <- get_ss(gp, xnew)
-      }else{
-        repeat {
-          newSS  <- get_ss(gp, xnew)
-          if (newSS[pos.check] > 0) {
-            break
-          }
+      newSS  <- get_ss(gp, xnew, pos.check)
+      if(all(newSS != -Inf)){
+        
+        newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
+        ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
+        HRnew <- tmvtnorm::dtmvnorm(c(xcurr), c(xnew), jcov,
+                                     lower = rng[,1], upper = rng[,2], log = TRUE)
+        
+        if (is.accepted(ycurr+HRcurr, ynew+HRnew)) {
+          xcurr  <- xnew
+          currSS <- newSS
+          accept.count <- accept.count + 1
         }
+        
+        # now update currllp | xcurr
+        currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
+        pcurr   <- unlist(sapply(currllp, `[[` , "par"))
       }
-      
-      
-      newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
-      ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
-      
-      if (is.accepted(ycurr, ynew)) {
-        xcurr  <- xnew
-        currSS <- newSS
-        accept.count <- accept.count + 1
-      }
-      
-      # now update currllp | xcurr
-      currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
-      pcurr   <- unlist(sapply(currllp, `[[` , "par"))
       # } mix = each
     } else {
       for (i in seq_len(dim)) {
@@ -311,29 +314,13 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
           }
         }
         # if(bounded(xnew,rng)){
-        if(!any(pos.check)){
-          currSS <- get_ss(gp, xcurr)
-        }else{
-          repeat {
-            currSS <- get_ss(gp, xcurr)
-            if (currSS[pos.check] > 0) {
-              break
-            }
-          }
-        }
+        currSS <- get_ss(gp, xcurr, pos.check)
         
         ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
         
-        if(!any(pos.check)){
-          newSS  <- get_ss(gp, xnew)
-        }else{
-          repeat {
-            newSS  <- get_ss(gp, xnew)
-            if (newSS[pos.check] > 0) {
-              break
-            }
-          }
-        }
+        
+        newSS  <- get_ss(gp, xnew, pos.check)
+        
         
         newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)

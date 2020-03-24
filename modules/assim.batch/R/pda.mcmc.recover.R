@@ -1,12 +1,22 @@
 ##' Clean up a failed PDA run
 ##'
 ##' @title Clean up a failed PDA run
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings PEcAn param list
+##' @param params.id id of pars
+##' @param param.names names of pars
+##' @param prior.id ids of priors
+##' @param chain how many chains
+##' @param iter how many iterations
+##' @param adapt adaptation intervals
+##' @param adj.min to be used in adjustment
+##' @param ar.target acceptance rate target
+##' @param jvar jump variance
+##' @param n.knot number of knots requested
+##' @param burnin burnin
 ##'
 ##' @return An updated settings list
 ##'
 ##' @author Ryan Kelly
-##' @export
 
 # This is just a quick kludgey version, that relies on temporary files to recover a failed pda.mcmc() call. It writes all outputs based on whatever runs were done, and returns the same updated settings list that would have been returned if the run completed. So, recover like this:
 #
@@ -29,11 +39,11 @@ pda.mcmc.recover <- function(settings, params.id = NULL, param.names = NULL, pri
     
     ## Open database connection
     if (settings$database$bety$write) {
-      con <- try(db.open(settings$database$bety), silent = TRUE)
-      if (is(con, "try-error")) {
+      con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+      if (inherits(con, "try-error")) {
           con <- NULL
       } else {
-        on.exit(db.close(con))
+        on.exit(PEcAn.DB::db.close(con), add = TRUE)
       }
     } else {
         con <- NULL
@@ -65,7 +75,7 @@ pda.mcmc.recover <- function(settings, params.id = NULL, param.names = NULL, pri
     settings$assim.batch$ensemble.id <- as.character(max(ens.ids))
     
     ## Load up temp file to recreate params
-    params <- as.matrix(read.table(file.path(settings$outdir, "pda.mcmc.txt")))
+    params <- as.matrix(utils::read.table(file.path(settings$outdir, "pda.mcmc.txt")))
     colnames(params) <- pname
     
     ## Update iters
@@ -76,7 +86,7 @@ pda.mcmc.recover <- function(settings, params.id = NULL, param.names = NULL, pri
     
     ## close database connection
     if (!is.null(con)) {
-      db.close(con)
+      PEcAn.DB::db.close(con)
     }
       
     ## Output an updated settings list

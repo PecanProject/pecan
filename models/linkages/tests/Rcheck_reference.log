@@ -1,0 +1,161 @@
+* using log directory ‘/tmp/RtmpsZI91X/PEcAn.LINKAGES.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.LINKAGES/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.LINKAGES’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.LINKAGES’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' import not declared from: ‘PEcAn.data.land’
+'library' or 'require' call not declared from: ‘PEcAn.data.atmosphere’
+'library' or 'require' call to ‘PEcAn.utils’ which was already attached by Depends.
+  Please remove these calls from your code.
+'library' or 'require' calls in package code:
+  ‘linkages’ ‘PEcAn.data.atmosphere’
+  Please use :: or requireNamespace() instead.
+  See section 'Suggested packages' in the 'Writing R Extensions' manual.
+Package in Depends field not imported from: ‘PEcAn.utils’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+met2model.LINKAGES: no visible global function definition for
+  ‘flush.console’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘ag.biomass’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘total.soil.carbon’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘leaf.litter’
+model2netcdf.LINKAGES: no visible binding for global variable ‘area’
+model2netcdf.LINKAGES: no visible binding for global variable ‘ag.npp’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘hetero.resp’
+model2netcdf.LINKAGES: no visible binding for global variable ‘nee’
+model2netcdf.LINKAGES: no visible binding for global variable ‘et’
+model2netcdf.LINKAGES: no visible binding for global variable ‘agb.pft’
+model2netcdf.LINKAGES: no visible binding for global variable ‘f.comp’
+model2netcdf.LINKAGES: no visible binding for global variable ‘water’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘abvgroundwood.biomass’
+read_restart.LINKAGES: no visible global function definition for
+  ‘read.output’
+sample.IC.LINKAGES: no visible global function definition for ‘runif’
+write_restart.LINKAGES: no visible global function definition for
+  ‘read.csv’
+write_restart.LINKAGES: no visible global function definition for
+  ‘logger.severe’
+write_restart.LINKAGES: no visible binding for global variable
+  ‘ntrees.kill’
+write_restart.LINKAGES: no visible binding for global variable
+  ‘nogro.save’
+write_restart.LINKAGES: no visible binding for global variable
+  ‘iage.save’
+write_restart.LINKAGES: no visible binding for global variable
+  ‘dbh.save’
+write_restart.LINKAGES: no visible global function definition for
+  ‘aggregate’
+write_restart.LINKAGES: no visible global function definition for
+  ‘runif’
+write_restart.LINKAGES: no visible global function definition for
+  ‘optimize’
+write_restart.LINKAGES: no visible global function definition for
+  ‘rnorm’
+write_restart.LINKAGES: no visible global function definition for
+  ‘year’
+write.config.LINKAGES: no visible global function definition for
+  ‘read.csv’
+write.config.LINKAGES: no visible global function definition for
+  ‘db.open’
+write.config.LINKAGES: no visible global function definition for
+  ‘db.close’
+write.config.LINKAGES: no visible global function definition for
+  ‘db.query’
+Undefined global functions or variables:
+  abvgroundwood.biomass ag.biomass ag.npp agb.pft aggregate area
+  db.close db.open db.query dbh.save et f.comp flush.console
+  hetero.resp iage.save leaf.litter logger.severe nee nogro.save
+  ntrees.kill optimize read.csv read.output rnorm runif
+  total.soil.carbon water year
+Consider adding
+  importFrom("stats", "aggregate", "optimize", "rnorm", "runif")
+  importFrom("utils", "flush.console", "read.csv")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'met2model.LINKAGES'
+  ‘start_date’ ‘end_date’ ‘overwrite’ ‘verbose’ ‘...’
+
+Undocumented arguments in documentation object 'model2netcdf.LINKAGES'
+  ‘pft_names’
+
+Undocumented arguments in documentation object 'read_restart.LINKAGES'
+  ‘settings’ ‘params’
+Documented arguments not in \usage in documentation object 'read_restart.LINKAGES':
+  ‘multi.settings’
+
+Undocumented arguments in documentation object 'split_inputs.LINKAGES'
+  ‘settings’ ‘start.time’ ‘stop.time’ ‘inputs’
+
+Undocumented arguments in documentation object 'write.config.LINKAGES'
+  ‘trait.values’ ‘restart’ ‘spinup’ ‘inputs’ ‘IC’
+Documented arguments not in \usage in documentation object 'write.config.LINKAGES':
+  ‘trait.samples’
+
+Undocumented arguments in documentation object 'write_restart.LINKAGES'
+  ‘start.time’ ‘stop.time’ ‘new.params’ ‘inputs’
+Documented arguments not in \usage in documentation object 'write_restart.LINKAGES':
+  ‘trait.values’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... WARNING
+Argument items with no description in Rd object 'write_restart.LINKAGES':
+  ‘trait.values’
+
+* checking for unstated dependencies in examples ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+Status: 3 WARNINGs, 2 NOTEs

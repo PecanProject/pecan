@@ -6,9 +6,14 @@ Fitting priors to data (point estimates, all grass species in GLOPNET).
 -------------------------
 
 ### Example: Specific Leaf Area based on all grasses
+
+First we are going to set up initial values.
+
 ```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE}
 library(PEcAn.priors)
 library(DEoptim)
+library(dplyr)
+
 set.seed(1)
 iter <-10000 #jags chain and misc simulation length; 1k for test, 10k for real
 inits <- list(list(.RNG.seed = 1,
@@ -24,17 +29,32 @@ inits <- list(list(.RNG.seed = 1,
 
 ### MLE Fit to glopnet Specific Leaf Area data  
 
-fit.dist function is in `PEcAn.priors::fit.dist` (See source code: https://github.com/PecanProject/pecan/blob/master/modules/priors/R/priors.R)
+The [`PEcAn.priors::fit.dist`](https://github.com/PecanProject/pecan/blob/master/modules/priors/R/priors.R) helps to choose the best fit parameter distribution given some sample datasets.
 
 ```r
 devtools::install_github("pecanproject/pecan/modules/priors")
 ```
 
 
-```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE, cache=TRUE}
+```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE, cache=TRUE, fig.width=8}
 
 # devtools::install("pecanproject/pecan/modules/priors")
-glopnet.data <- read.csv('inst/extdata/glopnet.csv') # Wright et. al. 2004 supplementary file 
+glopnet.data <- read.csv(system.file('extdata/glopnet.csv', package = 'PEcAn.priors')) # Wright et. al. 2004 supplementary file 
+
+library(ggplot2)
+ggplot(glopnet.data, aes(color = GF)) +
+  geom_boxplot(aes(x = BIOME, y = 1000/10^log.LMA)) +
+  ylab("Specific Leaf Area") +
+  theme_bw()
+ggplot(glopnet.data %>% subset(GF == 'G'),aes(x = BIOME, y = 1000/10^log.LMA)) +
+  geom_boxplot() +
+  geom_point(alpha = 0.25) +
+  ylab("Specific Leaf Area") +
+  theme_bw()
+```
+
+
+```{r}
 glopnet.grass <- glopnet.data[which(glopnet.data$GF == 'G'), ] # GF = growth form; G=grass 
 
 ## turnover time (tt)
@@ -44,51 +64,45 @@ ttdata <- data.frame(tt = glopnet.grass$tt[!is.na(glopnet.grass$tt)])
 ##glopnet.grass$sla   <- 1000/ (0.48 * 10^glopnet.grass$log.LMA)
 glopnet.grass$sla   <- 1000/ (10^glopnet.grass$log.LMA)
 sladata <- data.frame(sla = glopnet.grass$sla[!is.na(glopnet.grass$sla)])
+```
 
+The `fit.dist` function takes a vector of point estimates (in this case 125 observations of Specific Leaf Area from GLOPNET database are stored in `sladata`.
 
-dists <- c('gamma', 'lognormal','weibull', 'f')
-fit.dist <- PEcAn.priors::fit.dist
+First, it prints out the fits of a subset of distributions (the 'f' distribution could not be fit). Second, it prints the 
+```{r}
+dists <-  c('gamma', 'lognormal','weibull', 'f')
+library(fitdistrplus)
+fit.dist(sladata, dists )
+```
+
+```{r}
+
 prior.dists <- rbind('SLA' = fit.dist(sladata, dists ), 
                      'leaf_turnover_rate' = fit.dist(ttdata, dists))
 
-slaprior <- with(prior.dists['SLA',], prior.density(distribution, a, b))
-ttprior <- with(prior.dists['leaf_turnover_rate',], prior.density(distribution, a, b))
+slaprior <- with(prior.dists['SLA',], pr.dens(distribution, a, b))
+ttprior <- with(prior.dists['leaf_turnover_rate',], pr.dens(distribution, a, b))
+```
 
+
+The `priorfig` function visualizes the chosen prior (line), with its mean and 95\%CI (dots) as well as the data used to generate the figure.
+
+```{r}
+
+prior.figures <- list()
 prior.figures[['SLA']]                <- priorfig(priordata = sladata, 
                                                   priordensity = slaprior, 
                                                   trait = 'SLA')
 prior.figures[['leaf_turnover_rate']] <- priorfig(priordata = ttdata, 
                                                   priordensity = ttprior, 
                                                   trait = 'leaf_turnover_rate')
+
+prior.figures
 ```
-The `fit.dist` function takes a vector of point estimates (in this case 125 observations of Specific Leaf Area from GLOPNET database are stored in `sladata`.
-
-First, it prints out the fits of a subset of distributions (the 'f' distribution could not be fit). Second, it prints the 
-```{r}
-dists =  c('gamma', 'lognormal','weibull', 'f')
-fit.dist(sladata, dists )
-
-```
-
-The `priorfig` function visualizes the chosen prior (line), with its mean and 95\%CI (dots) as well as the data used to generate the figure.
-
-
-
-```{r fig.width=7, fig.height=3, results='markup'}
-## priorfig(priordata = sladata, 
-##                                                  priordensity = slaprior, 
-##                                                  trait = 'SLA')
-print(prior.figures$SLA)
-```
-
 
 Fitting priors to data with uncertainty estimates (generating posterior predictive distribution of an unobserved C4 grass species based on values collected from many PFTs. 
 -------------------------
 ### Vcmax data from Wullschleger (1993)
-
-```{r}
-wullschleger.data <- read.csv('inst/extdata/wullschleger1993updated.csv')
-```
 
 
 ### Classify Wullschleger Data into Functional Types ###########
@@ -108,7 +122,9 @@ write.csv(functional.data, 'inst/extdata/wullschleger_join_usdaplants.csv')
 Picking up with the Wullschleger dataset joined to USDA Plants functional type classifications ... 
 
 ```{r pft_wullschleger}
-functional.data <- read.csv('inst/extdata/wullschleger_join_usdaplants.csv')
+
+wullschleger.data <- read.csv(system.file('extdata/wullschleger1993updated.csv', package = 'PEcAn.priors'))
+functional.data <- read.csv(system.file('extdata/wullschleger_join_usdaplants.csv', package = 'PEcAn.priors'))
 
 subshrubs <- rownames(wullschleger.data) %in% c(grep('Shrub',wullschleger.data$GrowthHabit), grep('Subshrub', wullschleger.data$GrowthHabit))
 ########## 2. Merge functional type information into Wullschleger data
@@ -160,13 +176,13 @@ wullschleger.data <- data.frame(Y  = wullschleger.data$corrected.vcmax,
                                 ft = wullschleger.data$functional.type,
                                 n  = wullschleger.data$neff)
 ## Summarize data by species
-wullschleger.vcmax <- ddply(wullschleger.data, 
-                            .(sp),
-                            summarise, 
-                            Y = mean(Y), 
-                            obs.prec = 1/sqrt(sum((1/obs.prec)^2)), 
-                            ft = mean(ft), # identity
-                            n =  sum(n)) [,-1]
+wullschleger.vcmax <- wullschleger.data %>% 
+  group_by(sp) %>% 
+  summarise(Y = mean(Y), 
+            obs.prec = 1/sqrt(sum((1/obs.prec)^2)), 
+            ft = mean(ft), # identity
+            n =  sum(n)) %>% 
+  dplyr::select(-sp)
                                         
 ```
 
@@ -223,7 +239,13 @@ all.vcmax.data <- rbind(wullschleger.vcmax,
 ##### take a look at the raw data by functional type:
 
 ```{r}
-qplot(data = all.vcmax.data, x = factor(ft), y = Y, geom = 'boxplot')
+
+ggplot(data = all.vcmax.data, aes(factor(ft), Y)) +
+  geom_boxplot() + 
+  geom_point() +
+  xlab('Plant Functional Type') +
+  ylab('Vcmax') +
+  theme_bw()
 ```
 ##### Add unobserved C4 species so JAGS calculates posterior predictive distribution
 ```{r}
@@ -254,6 +276,7 @@ writeLines(con = "vcmax.prior.bug",
              diff <- beta.ft[1] - beta.ft[2]
            }")
 
+library(rjags)
 j.model  <- jags.model(file = "vcmax.prior.bug", 
                        data = vcmax.data, 
                        n.adapt = 500, 
@@ -267,7 +290,7 @@ pi.pavi    <- data.frame(vcmax = unlist(mcmc.o[,'pi.pavi']))
 vcmax.dist <- fit.dist(pi.pavi, n = sum(!is.na(vcmax.data$Y)))
 
 prior.dists   <- rbind(prior.dists, 'Vcmax' = vcmax.dist)
-vcmax.density <- with(vcmax.dist, prior.density(distribution, a, b), xlim = c(0,50))
+vcmax.density <- with(vcmax.dist, pr.dens(distribution, a, b), xlim = c(0,50))
 
 ######### Vcmax Prior Plot
 vcmax.c4 <- all.vcmax.data$ft == 2
@@ -299,19 +322,13 @@ print(prior.figures[['Vcmax']])
 ```
 
 
-Fitting priors to expert constraint (). 
--------------------------
-### Example: Minimum temperature of Photosynthesis
-
-```{r }
-TBD
-```
+Fitting priors to expert constraint. 
 
 ## Other Examples / Approaches
 
 ### Examples
 
-* Estimating priors for the DALEC model in [models/dalec/inst/DALEC_priors.R](https://github.com/PecanProject/pecan/blob/master/models/dalec/inst/DALEC_priors.R
+* Estimating priors for the DALEC model in [models/dalec/inst/DALEC_priors.R](https://github.com/PecanProject/pecan/blob/master/models/dalec/inst/DALEC_priors.R)
 
 ### Package `rriskDistributions`
 

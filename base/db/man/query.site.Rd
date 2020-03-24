@@ -8,6 +8,11 @@ query.site(site.id, con)
 }
 \arguments{
 \item{con}{: database connection}
+
+\item{site_id}{numeric}
+}
+\description{
+Given site_id, return site table
 }
 \author{
 Betsy Cowdery

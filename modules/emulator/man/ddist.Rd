@@ -6,3 +6,6 @@
 \usage{
 ddist(x, prior)
 }
+\description{
+ddist
+}

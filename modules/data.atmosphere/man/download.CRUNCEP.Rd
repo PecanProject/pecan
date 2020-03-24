@@ -4,16 +4,25 @@
 \alias{download.CRUNCEP}
 \title{Download CRUNCEP data}
 \usage{
-download.CRUNCEP(outfolder, start_date, end_date, site_id, lat.in, lon.in,
-  overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2, ...)
+download.CRUNCEP(
+  outfolder,
+  start_date,
+  end_date,
+  lat.in,
+  lon.in,
+  overwrite = FALSE,
+  verbose = FALSE,
+  maxErrors = 10,
+  sleep = 2,
+  method = "ncss",
+  ...
+)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}
 
 \item{start_date, end_date}{Range of years to retrieve. Format is YYYY-MM-DD,
 but only the year portion is used and the resulting files always contain a full year of data.}
-
-\item{site_id}{numeric. Currently ignored}
 
 \item{lat.in}{site latitude in decimal degrees}
 
@@ -28,11 +37,18 @@ to control printing of debug info}
 
 \item{sleep}{Wait time between attempts following a THREDDS or other error}
 
+\item{method}{(string) Data access method. `opendap` (default)
+attempts to directly access files via OpenDAP. `ncss` (NetCDF
+subset) subsets the file on the server, downloads the subsetted
+file to `tempfile` and then reads it locally. `opendap` is
+faster when it works, but often fails because of server issues.
+`ncss` can be much slower, but is more reliable.}
+
 \item{...}{Other arguments, currently ignored}
 }
 \description{
 Download and convert to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
 }
 \author{
-James Simkins, Mike Dietze
+James Simkins, Mike Dietze, Alexey Shiklomanov
 }

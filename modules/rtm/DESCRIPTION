@@ -1,8 +1,11 @@
 Package: PEcAnRTM
 Type: Package
 Title: PEcAn functions used for radiative transfer modeling
-Version: 1.5.1
-Date: 2017-09-25
+Version: 1.7.1
+Date: 2019-09-05
+Authors@R: c(person("Mike","Dietze"),
+             person("Shawn", "Serbin"),
+             person("Alexey", "Shiklomanov"))
 Author: Alexey Shiklomanov, Shawn Serbin, Mike Dietze
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains functions for performing forward runs and
@@ -14,20 +17,23 @@ Imports:
     MASS,
     coda,
     lubridate (>= 1.6.0),
-    PEcAn.assim.batch
+    PEcAn.assim.batch,
+    BayesianTools
 Suggests:
     minpack.lm,
     mclust,
     PEcAn.utils,
     PEcAn.ED2,
+    XML,
     testthat (>= 1.0.2),
     knitr,
     pwr
 OS_type: unix
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+Encoding: UTF-8
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.0.1
+RoxygenNote: 7.0.2

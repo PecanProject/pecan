@@ -12,9 +12,9 @@
       <password>bety</password>
       <dbname>bety</dbname>
       <host>localhost</host>
-      <dbfiles>$HOME/.pecan/dbfiles</dbfiles>
       <driver>PostgreSQL</driver>
     </bety>
+    <dbfiles>$HOME/.pecan/dbfiles</dbfiles>
   </database>
   <meta.analysis>
     <iter>3000</iter>
@@ -27,6 +27,7 @@
   <sensitivity.analysis/>
   <model>
     <type>BIOCRO</type>
+    <revision>0.95</revision>
   </model>
   <run>
     <site>

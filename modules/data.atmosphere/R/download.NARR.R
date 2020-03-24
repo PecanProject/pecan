@@ -7,6 +7,7 @@
 ##' @param verbose Turn on verbose output? Default=FALSE
 ##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
 ##' example options(download.ftp.method="ncftpget")
+##' @importFrom magrittr %>%
 ##' 
 ##' @examples
 ##' \dontrun{
@@ -17,8 +18,6 @@
 ##'
 ##' @author Betsy Cowdery, Shawn Serbin
 download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE, method, ...) {
-  
-  library(PEcAn.utils)
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")

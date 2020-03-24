@@ -4,8 +4,16 @@
 \alias{merge_met_variable}
 \title{Merge a new met variable from an external file (e.g. CO2) into existing met files}
 \usage{
-merge_met_variable(in.path, in.prefix, start_date, end_date, merge.file,
-  overwrite = FALSE, verbose = FALSE, ...)
+merge_met_variable(
+  in.path,
+  in.prefix,
+  start_date,
+  end_date,
+  merge.file,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{path to original data}
@@ -18,11 +26,15 @@ merge_met_variable(in.path, in.prefix, start_date, end_date, merge.file,
 
 \item{merge.file}{path of file to be merged in}
 
-\item{overwrite}{}
+\item{overwrite}{logical: replace output file if it already exists?}
 
-\item{verbose}{}
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
+print debugging information as they run?}
 
 \item{...}{}
+}
+\value{
+Currently nothing. TODO: Return a data frame summarizing the merged files.
 }
 \description{
 Merge a new met variable from an external file (e.g. CO2) into existing met files

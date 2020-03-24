@@ -4,7 +4,14 @@
 \alias{write_sf_posterior}
 \title{Function to write posterior distributions of the scaling factors}
 \usage{
-write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+write_sf_posterior(sf.samp.list, sf.prior, sf.samp.filename)
+}
+\arguments{
+\item{sf.samp.list}{scaling factor MCMC samples}
+
+\item{sf.prior}{scaling factor prior}
+
+\item{sf.samp.filename}{scaling factor posterior output file name}
 }
 \description{
 Function to write posterior distributions of the scaling factors

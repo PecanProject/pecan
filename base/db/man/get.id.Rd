@@ -12,6 +12,12 @@ get.id(table, colnames, values, con, create = FALSE, dates = FALSE)
 \item{colnames}{names of one or more columns used in where clause}
 
 \item{values}{values to be queried in fields corresponding to colnames}
+
+\item{con}{database connection object,}
+
+\item{create}{logical: make a record if none found?}
+
+\item{dates}{logical: update created_at and updated_at timestamps? Used only if `create` is TRUE}
 }
 \value{
 will numeric

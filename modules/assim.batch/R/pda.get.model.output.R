@@ -1,17 +1,18 @@
 ##' Get Model Output for PDA
 ##'
 ##' @title Get Model Output for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings PEcAn settings list
+##' @param run.id run ID
+##' @param bety bety list
+##' @param inputs inputs list
+##' @param external.formats format list
 ##'
 ##' @return A list containing model outputs extracted to correspond to each observational
 ##'         dataset being used for PDA. 
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.get.model.output <- function(settings, run.id, bety, inputs) {
-  
-  library(PEcAn.benchmark)
-  library(PEcAn.utils)
+pda.get.model.output <- function(settings, run.id, bety, inputs, external.formats = NULL) {
   
   input.info <- settings$assim.batch$inputs
   
@@ -22,9 +23,9 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
   n.input <- length(inputs)
   
   for(k in 1:n.input){
-    # if there is a deriation is requested this line takes care of it 
-    variable <- lapply(input.info[[k]]$variable.name, convert.expr)
-    # convert.expr returns variable names in the data and in the model 
+    # if there is a deriation is requested this line takes care of it
+    variable <- lapply(input.info[[k]]$variable.name, PEcAn.utils::convert.expr)
+    # convert.expr returns variable names in the data and in the model
     # variable names that correspond to model outputs will be in the variable$eqn
     variable.name <- lapply(inputs[[k]]$variable.name, `[[`, "variable.eqn")
     # get the variable names, e.g. 'TotalSoil', 'Litter'
@@ -33,10 +34,13 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     # if no derivation is requested expr will be the same as variable name
     expr <- lapply(variable.name, `[[`, "expression")
     
-    format <- query.format.vars(bety = bety,
-                                input.id = settings$assim.batch$inputs[[k]]$input.id)
+    if(is.null(bety$con)){
+      format <- external.formats[[k]]
+    }else{
+      format <- PEcAn.DB::query.format.vars(bety = bety,
+                                            input.id = settings$assim.batch$inputs[[k]]$input.id)
+    }
 
-    
     for(l in seq_along(model.var)){
       
       if(length(model.var[[l]][model.var[[l]] %in% format$vars$bety_name]) != 0){
@@ -71,7 +75,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     
     
     # read model output
-    model.raw <- as.data.frame(read.output(run.id, outdir = file.path(settings$modeloutdir, run.id),
+    model.raw <- as.data.frame(PEcAn.utils::read.output(run.id, outdir = file.path(settings$modeloutdir, run.id),
                                            start.year, end.year, variables = vars))
     
     if(length(model.raw) == 0 | all(is.na(model.raw))) {   # Probably indicates model failed entirely
@@ -112,7 +116,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     # seq.POSIXt returns class "POSIXct"
     # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
     if(diff(model.secs)[1] != 0){
-      model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = diff(model.secs)[1], length.out = length(model$time))
+      model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = round(diff(model.secs)[1]), length.out = length(model$time))
     }else{
       # yearly output
       model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = "year", length.out = length(model$time))

@@ -1,13 +1,100 @@
-# Follow instructions on:
-# https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
-
 language: r
 
-# use containers
-dist: trusty
-sudo: false
+dist: xenial
+os: linux
 
-cache: 
+env:
+  global:
+    # TODO: `make -j2` interleaves output lines from simultaneous processes.
+    # Would be nice to fix by adding `-Otarget`, but not supported in Make 3.x.
+    # When Travis updates, check for Make 4 and add -O if available.
+    - MAKEFLAGS="-j2"
+    - PGHOST=localhost
+    - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
+    - _R_CHECK_LENGTH_1_CONDITION_=true
+    - _R_CHECK_LENGTH_1_LOGIC2_=true
+
+_apt: &apt-base
+  - bc
+  - curl
+  - gdal-bin
+  - jags
+  - libgdal-dev
+  - libgl1-mesa-dev
+  - libglu1-mesa-dev
+  - libgmp-dev
+  - libhdf5-dev
+  - liblapack-dev
+  - libnetcdf-dev
+  - libproj-dev
+  - librdf0-dev
+  - libudunits2-dev
+  - netcdf-bin
+  - pandoc
+  - python-dev
+  - qpdf
+  - tcl
+  - tcl-dev
+  - udunits-bin
+
+_c2d4u: &apt-r-binaries
+  - r-bioc-biocinstaller
+  - r-cran-ape
+  - r-cran-curl
+  - r-cran-data.table
+  - r-cran-devtools
+  - r-cran-dplyr
+  - r-cran-gap
+  - r-cran-ggplot2
+  - r-cran-httr
+  - r-cran-igraph
+  - r-cran-lme4
+  - r-cran-matrixstats
+  - r-cran-mcmcpack
+  - r-cran-raster
+  - r-cran-rcpp
+  - r-cran-rcurl
+  - r-cran-redland
+  - r-cran-rjags
+  - r-cran-rncl
+  - r-cran-roxygen2
+  - r-cran-rsqlite
+  # - r-cran-sf
+  - r-cran-shiny
+  - r-cran-sirt
+  - r-cran-testthat
+  - r-cran-tidyverse
+  - r-cran-xml
+  - r-cran-xml2
+  - r-cran-xts
+
+jobs:
+  fast_finish: true
+  include:
+    - r: release
+      addons: &addons-c2d4u
+        apt:
+          sources:
+            - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
+          packages:
+            - *apt-base
+            - *apt-r-binaries
+    - r: devel
+      addons: &addons-base
+        apt:
+          sources:
+            - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
+          packages:
+            - *apt-base
+    - r: oldrel
+      addons: *addons-base
+  allow_failures:
+    - r: devel
+      addons: *addons-base
+    - r: oldrel
+      addons: *addons-base
+
+cache:
   - directories:
     - .install
     - .check
@@ -15,96 +102,27 @@ cache:
     - .doc
   - packages
 
-addons:
-  postgresql: 9.6
-  apt:
-    packages:
-      - libnetcdf-dev
-      - liblapack-dev
-      - libcurl4-gnutls-dev
-      - jags
-      - libudunits2-dev
-      - python-dev 
-      - postgresql-9.6-postgis-2.3
-      - postgresql-9.6-postgis-2.3-scripts
-      - netcdf-bin
-      - bc
-      - curl
-      - udunits-bin 
-      - libgmp-dev
-      - libproj-dev
-      - pandoc
-      - tcl
-      - tcl-dev
-      # need to compile documentation
-      # BROKEN MISSING FONT
-      #- texinfo
-      #- texlive-latex-base
-      #- texlive-latex-recommended
-      #- texlive-latex-extra
-      #- texlive-fonts-recommended
-      #- texlive-fonts-extra
-
-  
-## notifications should go to gitter
+## notifications should go to slack
 notifications:
-  webhooks:
-    urls:
-      - secure: "gL81TwDOcK/32Hxxl2BcY7pioyrtyV4y1f+D/vGEpQz8mYL+M+55tUkhHJF53779XSUdQdML/gsr8JZVtApJdLIBysFU67GVYXm1s7x/b8J61CkMfDgsmposEWK4NFYHfeIRj32ioeajrQ+RKi1I6chjzYT7gLyl70gtPelRJ4s="
-    on_success: always
-    on_failure: always
-    on_start: always
+  slack:
+    # Slack token created by Chris Black, 2018-02-17
+    secure: "DHHSNmiCf71SLa/FFSqx9oOnJjJt2GHYk7NsFIBb9ZY10RvQtIPfaoNxkPjqu9HLyZWJSFtg/uNKKplEHc6W80NoXyqoTvwOxTPjMaViXaCNqsmzjjR/JaCWT/oWGXyAw0VX3S8cwuIexlKQGgZwJpIzoVOZqUrDrHI/O17kZoM="
   email:
     on_success: always
     on_failure: always
 
 ## list of services to be running
 services:
-  - postgresql
+  - docker
 
-## install sipnet and clim file
 install:
-  - pushd $HOME
-  - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
-  - tar zxf sipnet_unk.tar.gz
-  - cd sipnet_unk
-  - make
-  - popd
+  - scripts/travis/install.sh
 
 before_script:
-  - psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
-  - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
-  - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
-  - psql -U postgres < bety.sql
-  - rm bety.sql
-  - ./scripts/add.models.sh
-  - chmod +x book_source/deploy.sh
-  - chmod +x documentation/tutorials/deploy.sh
+  - scripts/travis/before_script.sh
 
 script:
-  - set -e
-  # - scripts/build.sh --no-git --tests --name travis
-  - echo 'Installing PEcAn packages'
-  - make
-  - echo 'Testing PEcAn packages'
-  - make test
-  - make document
-  - echo 'Testing Integration'
-  - ./tests/integration.sh travis
-  - if [[ `git status -s` ]]; then 
-      echo "These files were changed by the build process:";
-      git status -s;
-      echo "Have you run devtools::check and commited any updated Roxygen outputs?";
-      exit 1; 
-    fi
-  - set +e
+  - scripts/travis/script.sh
 
 after_script:
-  - echo 'Building Book'
-  - pushd book_source
-  - make
-  - popd
-  - echo 'Building Tutorials'
-  - pushd documentation/tutorials
-  - make build deploy
-  - popd
+  - scripts/travis/after_script.sh

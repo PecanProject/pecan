@@ -17,6 +17,9 @@ model2netcdf.CLM45(outdir, sitelat, sitelon, start_date, end_date)
 
 \item{end_date}{End time of the simulation}
 }
+\description{
+Code to convert CLM45 netcdf output into into CF standard
+}
 \author{
 Michael Dietze
 }

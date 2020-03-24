@@ -12,9 +12,16 @@
   -moz-border-radius: 5px 5px 0 0;
   -webkit-border-radius: 5px 5px 0 0;
   background: #141414;
-  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAxCAIAAACUDVRzAAAAA3NCSVQICAjb4U/gAAAALElEQVQImWMwMrJi+v//PxMDw3+m//8ZoPR/qBgDEhuXGLoeYswhXg8R5gAAdVpfoJ3dB5oAAAAASUVORK5CYII=) 100% 100%; 
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAxCAIAAACUDVRzAAAAA3NCSVQICAjb4U/gAAAALElEQVQImWMwMrJi+v//PxMDw3+m//8ZoPR/qBgDEhuXGLoeYswhXg8R5gAAdVpfoJ3dB5oAAAAASUVORK5CYII=)
+    100% 100%;
   background: -moz-linear-gradient(top, #32323a 0%, #141414 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #32323a), color-stop(100%, #141414));
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    color-stop(0%, #32323a),
+    color-stop(100%, #141414)
+  );
   background: -webkit-linear-gradient(top, #32323a 0%, #141414 100%);
   background: -o-linear-gradient(top, #32323a 0%, #141414 100%);
   background: -ms-linear-gradient(top, #32323a 0%, #141414 100%);
@@ -23,15 +30,22 @@
 }
 #cssmenu:after,
 #cssmenu ul:after {
-  content: '';
+  content: "";
   display: block;
   clear: both;
 }
 #cssmenu a {
   background: #141414;
-  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAxCAIAAACUDVRzAAAAA3NCSVQICAjb4U/gAAAALElEQVQImWMwMrJi+v//PxMDw3+m//8ZoPR/qBgDEhuXGLoeYswhXg8R5gAAdVpfoJ3dB5oAAAAASUVORK5CYII=) 100% 100%; 
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAxCAIAAACUDVRzAAAAA3NCSVQICAjb4U/gAAAALElEQVQImWMwMrJi+v//PxMDw3+m//8ZoPR/qBgDEhuXGLoeYswhXg8R5gAAdVpfoJ3dB5oAAAAASUVORK5CYII=)
+    100% 100%;
   background: -moz-linear-gradient(top, #32323a 0%, #141414 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #32323a), color-stop(100%, #141414));
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    color-stop(0%, #32323a),
+    color-stop(100%, #141414)
+  );
   background: -webkit-linear-gradient(top, #32323a 0%, #141414 100%);
   background: -o-linear-gradient(top, #32323a 0%, #141414 100%);
   background: -ms-linear-gradient(top, #32323a 0%, #141414 100%);
@@ -54,7 +68,7 @@
   float: left;
 }
 #cssmenu > ul > li:hover:after {
-  content: '';
+  content: "";
   display: block;
   width: 0;
   height: 0;
@@ -81,9 +95,16 @@
   -moz-box-shadow: inset 0 0 3px #000000;
   -webkit-box-shadow: inset 0 0 3px #000000;
   background: #070707;
-  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAxCAIAAACUDVRzAAAAA3NCSVQICAjb4U/gAAAALklEQVQImWNQU9Nh+v//PxMDw3+m//8ZkNj/mRgYIHxy5f//Z0BSi18e2TwS5QG4MGB54HL+mAAAAABJRU5ErkJggg==) 100% 100%; 
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAxCAIAAACUDVRzAAAAA3NCSVQICAjb4U/gAAAALklEQVQImWNQU9Nh+v//PxMDw3+m//8ZkNj/mRgYIHxy5f//Z0BSi18e2TwS5QG4MGB54HL+mAAAAABJRU5ErkJggg==)
+    100% 100%;
   background: -moz-linear-gradient(top, #26262c 0%, #070707 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #26262c), color-stop(100%, #070707));
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    color-stop(0%, #26262c),
+    color-stop(100%, #070707)
+  );
   background: -webkit-linear-gradient(top, #26262c 0%, #070707 100%);
   background: -o-linear-gradient(top, #26262c 0%, #070707 100%);
   background: -ms-linear-gradient(top, #26262c 0%, #070707 100%);
@@ -91,9 +112,16 @@
 }
 #cssmenu > ul > li:hover > a {
   background: #070707;
-  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAxCAIAAACUDVRzAAAAA3NCSVQICAjb4U/gAAAALklEQVQImWNQU9Nh+v//PxMDw3+m//8ZkNj/mRgYIHxy5f//Z0BSi18e2TwS5QG4MGB54HL+mAAAAABJRU5ErkJggg==) 100% 100%; 
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAxCAIAAACUDVRzAAAAA3NCSVQICAjb4U/gAAAALklEQVQImWNQU9Nh+v//PxMDw3+m//8ZkNj/mRgYIHxy5f//Z0BSi18e2TwS5QG4MGB54HL+mAAAAABJRU5ErkJggg==)
+    100% 100%;
   background: -moz-linear-gradient(top, #26262c 0%, #070707 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #26262c), color-stop(100%, #070707));
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    color-stop(0%, #26262c),
+    color-stop(100%, #070707)
+  );
   background: -webkit-linear-gradient(top, #26262c 0%, #070707 100%);
   background: -o-linear-gradient(top, #26262c 0%, #070707 100%);
   background: -ms-linear-gradient(top, #26262c 0%, #070707 100%);
@@ -151,39 +179,39 @@
 }
 
 #list {
-	display: table;
-	width: 100%;
+  display: table;
+  width: 100%;
 }
 #list .row {
-	display: table-row;
-	width: 100%;
+  display: table-row;
+  width: 100%;
 }
 #list .row:nth-child(even) {
-	background: #EEE;
+  background: #eee;
 }
 #list .row:nth-chard(odd) {
-	background: #FFF;
+  background: #fff;
 }
 #list .hdr {
-	background: #AAA;
-	display: table-cell;
-	text-align: left;
-	font-weight: bold;
+  background: #aaa;
+  display: table-cell;
+  text-align: left;
+  font-weight: bold;
 }
 #list .col {
-	display: table-cell;
+  display: table-cell;
 }
 #list .id {
-	width: 100px;
+  width: 100px;
 }
 
 #editor {
-	display: table;
-	width: 100%;
+  display: table;
+  width: 100%;
 }
 #editor .row {
-	display: table-row;
-	width: 100%;
+  display: table-row;
+  width: 100%;
 }
 #editor .key {
   display: table-cell;
@@ -191,11 +219,13 @@
   vertical-align: center;
 }
 #editor .val {
-	display: table-cell;
-	width: 90%;
+  display: table-cell;
+  width: 90%;
 }
 
-.val input, textarea, select {
+.val input,
+textarea,
+select {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;

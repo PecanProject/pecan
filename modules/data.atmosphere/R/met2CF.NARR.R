@@ -14,8 +14,6 @@
 met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                         overwrite = FALSE, verbose = FALSE, ...) {
   
-  library(PEcAn.utils)
-  
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   
   vars <- c("pres.sfc", "dswrf", "dlwrf", "air.2m", "shum.2m", "prate", "uwnd.10m", "vwnd.10m")

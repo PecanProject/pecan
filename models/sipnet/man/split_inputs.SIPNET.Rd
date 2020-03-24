@@ -4,10 +4,27 @@
 \alias{split_inputs.SIPNET}
 \title{split_inputs.SIPNET}
 \usage{
-split_inputs.SIPNET(settings, start.time, stop.time, inputs)
+split_inputs.SIPNET(
+  settings,
+  start.time,
+  stop.time,
+  inputs,
+  overwrite = FALSE,
+  outpath = NULL
+)
 }
 \arguments{
-\item{ens}{ensemble number. default = 1}
+\item{settings}{PEcAn settings object}
+
+\item{start.time}{start date and time for each SDA ensemble}
+
+\item{stop.time}{stop date and time for each SDA ensemble}
+
+\item{inputs}{list of model inputs to use in write.configs.SIPNET}
+
+\item{overwrite}{Default FALSE}
+
+\item{outpath}{if specified, write output to a new directory. Default NULL writes back to the directory being read}
 }
 \value{
 file split up climate file

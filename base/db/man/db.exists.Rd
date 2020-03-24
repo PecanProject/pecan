@@ -2,20 +2,21 @@
 % Please edit documentation in R/utils_db.R
 \name{db.exists}
 \alias{db.exists}
-\title{db.exists}
+\title{Test connection to database}
 \usage{
 db.exists(params, write = TRUE, table = NA)
 }
 \arguments{
 \item{params}{database connection information}
+
+\item{write}{logical: test whether we have write access?}
+
+\item{table}{name of database table to check}
 }
 \value{
 TRUE if database connection works; else FALSE
 }
 \description{
-Test connection to database
-}
-\details{
 Useful to only run tests that depend on database when a connection exists
 }
 \author{

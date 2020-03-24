@@ -2,11 +2,25 @@
 % Please edit documentation in R/extract_local_CMIP5.R
 \name{extract.local.CMIP5}
 \alias{extract.local.CMIP5}
-\title{extract.local.CMIP5}
+\title{Extract NLDAS from local download
+Extract NLDAS meteorology for a point from a local download of the full grid}
 \usage{
-extract.local.CMIP5(outfolder, in.path, start_date, end_date, site_id, lat.in,
-  lon.in, model, scenario, ensemble_member = "r1i1p1", date.origin = NULL,
-  no.leap = NULL, overwrite = FALSE, verbose = FALSE, ...)
+extract.local.CMIP5(
+  outfolder,
+  in.path,
+  start_date,
+  end_date,
+  lat.in,
+  lon.in,
+  model,
+  scenario,
+  ensemble_member = "r1i1p1",
+  date.origin = NULL,
+  no.leap = NULL,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{- directory where output files will be stored}
@@ -16,8 +30,6 @@ extract.local.CMIP5(outfolder, in.path, start_date, end_date, site_id, lat.in,
 \item{start_date}{- first day for which you want to extract met (yyyy-mm-dd)}
 
 \item{end_date}{- last day for which you want to extract met (yyyy-mm-dd)}
-
-\item{site_id}{name to associate with extracted files}
 
 \item{lat.in}{site latitude in decimal degrees}
 
@@ -50,10 +62,6 @@ This function extracts CMIP5 data from grids that have been downloaded and store
              give a pseudo-daily record (and can get dealt with in the downscaling workflow).  These files 
              are ready to be used in the general PEcAn workflow or fed into the downscaling workflow.
 }
-\details{
-Extract NLDAS from local download
-Extract NLDAS meteorology for a poimt from a local download of the full grid
-}
 \author{
-Christy Rollinson,
+Christy Rollinson
 }

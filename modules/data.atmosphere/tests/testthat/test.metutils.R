@@ -8,5 +8,27 @@ test_that("sw2par, par2ppfd, sw2ppfd are consistent ",{
 })
 
 test_that("qair2rh is consistent",{
-#    qair2rh(qair = 1, temp = 10, press = 1013.25)
+  expect_equal(qair2rh(qair = 1, temp = 10, press = 1013.25), 1)
 })
+
+test_that("get.rh RH from dewpoint",{
+  # air temp fixed at 15C
+  getrhtest <- function(T_Test, Td_test){
+    testrh <-  get.rh(T  = 273.15 + T_Test, 
+                      Td = 273.15 + Td_test)
+    return(testrh)
+  }
+  # air T = dewpoint
+  expect_equal(getrhtest(15, 15), 100)
+  # air T < dewpoint
+  expect_equal(getrhtest(15, 20), 100)
+  # air T > dewpoint
+  # compared to values at NOAA calculator
+  # https://www.wpc.ncep.noaa.gov/html/dewrh.shtml
+  expect_equal(getrhtest(15, 12.5), 85.02, tolerance = 0.2)
+  expect_equal(getrhtest(15, 4.6), 49.8, tolerance = 0.2)
+  expect_equal(getrhtest(15, 0), 35.88, tolerance = 0.2)
+  expect_equal(getrhtest(25, 10), 38.82, tolerance = 0.2)
+  expect_equal(getrhtest(0, -5), 69, tolerance = 0.2)
+})
+  

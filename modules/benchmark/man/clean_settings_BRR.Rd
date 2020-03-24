@@ -9,6 +9,9 @@ clean_settings_BRR(inputfile)
 \arguments{
 \item{inputfile}{the PEcAn settings file to be used.}
 }
+\description{
+Cleans PEcAn settings file and prepares the settings to be saved in a reference run record in BETY
+}
 \author{
 Betsy Cowdery
 }

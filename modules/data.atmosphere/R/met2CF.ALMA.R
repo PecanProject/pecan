@@ -169,7 +169,6 @@ met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end
   return(invisible(results))
 } # met2CF.PalEONregional
 
-
 ##' Get meteorology variables from PalEON netCDF files and convert to netCDF CF format
 ##'
 ##' @name met2CF.PalEON
@@ -185,10 +184,6 @@ met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end
 ##' @author Mike Dietze
 met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, lat, lon, overwrite = FALSE,
                           verbose = FALSE, ...) {
-
-  #---------------- Load libraries. -----------------------------------------------------------------#
-  library(PEcAn.utils)
-  #--------------------------------------------------------------------------------------------------#
 
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
@@ -243,33 +238,55 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     names(met) <- by.folder
     met[["time"]] <- NA
 
-    for (v in by.folder) {
-      fnames <- dir(file.path(in.path, v), full.names = TRUE)
-      for (m in 1:12) {
-        stub <- paste0(year, "_", formatC(m, width = 2, format = "d", flag = "0"))
-        sel <- grep(stub, fnames)
-        if (length(sel) == 0) {
-          PEcAn.logger::logger.severe("missing file", v, stub)
-        }
-        old.file <- fnames[sel]
-        nc1      <- ncdf4::nc_open(old.file, write = FALSE)
-        if (length(met[[v]]) <= 1) {
-          met[[v]] <- ncdf4::ncvar_get(nc = nc1, varid = v)
-        } else {
-          tmp      <- ncdf4::ncvar_get(nc = nc1, varid = v)
-          met[[v]] <- abind::abind(met[[v]], tmp)
-        }
-        if (v == by.folder[1]) {
-          if (length(met[["time"]]) <= 1) {
-            met[["time"]] <- nc1$dim[["time"]]$vals
-          } else {
-            tmp <- nc1$dim[["time"]]$vals
-            met[["time"]] <- abind::abind(met[["time"]], tmp)
+    if(FALSE){
+      for (v in by.folder) {
+        fnames <- dir(file.path(in.path, v), full.names = TRUE)
+        for (m in 1:12) {
+          stub <- paste0(formatC(m, width = 2, format = "d", flag = "0"), ".",
+                         formatC(year,width = 4,format = 'd',flag = '0'))
+          sel <- grep(stub, fnames)
+          if (length(sel) == 0) {
+            PEcAn.logger::logger.severe("missing file", v, stub)
           }
-        }
-        ncdf4::nc_close(nc1)
-      }  ## end loop over months
-    }  ## end loop over variables
+          old.file <- fnames[sel]
+          nc1      <- ncdf4::nc_open(old.file, write = FALSE)
+          if (length(met[[v]]) <= 1) {
+            met[[v]] <- ncdf4::ncvar_get(nc = nc1, varid = v)
+          } else {
+            tmp      <- ncdf4::ncvar_get(nc = nc1, varid = v)
+            met[[v]] <- abind::abind(met[[v]], tmp)
+          }
+          if (v == by.folder[1]) {
+            if (length(met[["time"]]) <= 1) {
+              met[["time"]] <- nc1$dim[["time"]]$vals
+            } else {
+              tmp <- nc1$dim[["time"]]$vals
+              met[["time"]] <- abind::abind(met[["time"]], tmp)
+            }
+          }
+          ncdf4::nc_close(nc1)
+        }  ## end loop over months
+      }  ## end loop over variables
+    }
+    
+    
+    fnames <- dir(file.path(in.path, by.folder[1]), full.names = TRUE)
+      stub <- paste0(formatC(1, width = 2, format = "d", flag = "0"), ".",
+                     formatC(year,width = 4,format = 'd',flag = '0'))
+      sel <- grep(stub, fnames)
+      if (length(sel) == 0) {
+        PEcAn.logger::logger.severe("missing file", by.folder[1], stub)
+      }
+      old.file <- fnames[sel]
+      
+      var.ids <- c('air_temperature','precipitation_flux',
+                   'surface_downwelling_shortwave_flux_in_air',
+                   'surface_downwelling_longwave_flux_in_air',
+                   'air_pressure','specific_humidity',
+                   'wind_speed')
+      for(v in var.ids){
+        met[[v]] <-  ncdf4::ncvar_get(nc = nc1, varid = v)
+      }
 
     # create new coordinate dimensions based on site location lat/lon
     nc1           <- ncdf4::nc_open(old.file)
@@ -302,11 +319,11 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ncdf4::ncvar_put(nc = nc2, varid = "longitude", vals = rep(latlon[2], tdim$len))
 
     # air_temperature
-    insertPmet(met[["tair"]], nc2 = nc2, var2 = "air_temperature", units2 = "K", dim2 = dim,
+    insertPmet(met[["air_temperature"]], nc2 = nc2, var2 = "air_temperature", units2 = "K", dim2 = dim,
                verbose = verbose)
 
     # air_pressure
-    insertPmet(met[["psurf"]], nc2 = nc2, var2 = "air_pressure", units2 = "Pa", dim2 = dim,
+    insertPmet(met[["air_pressure"]], nc2 = nc2, var2 = "air_pressure", units2 = "Pa", dim2 = dim,
                verbose = verbose)
 
     # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
@@ -314,27 +331,27 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     # x * 1e6 }, verbose=verbose)
 
     # specific_humidity
-    insertPmet(met[["qair"]], nc2 = nc2, var2 = "specific_humidity", units2 = "kg/kg", dim2 = dim,
+    insertPmet(met[["specific_humidity"]], nc2 = nc2, var2 = "specific_humidity", units2 = "kg/kg", dim2 = dim,
                verbose = verbose)
 
     # surface_downwelling_shortwave_flux_in_air
-    insertPmet(met[["swdown"]], nc2 = nc2, var2 = "surface_downwelling_shortwave_flux_in_air",
+    insertPmet(met[["surface_downwelling_shortwave_flux_in_air"]], nc2 = nc2, var2 = "surface_downwelling_shortwave_flux_in_air",
                units2 = "W m-2", dim2 = dim, verbose = verbose)
 
     # surface_downwelling_longwave_flux_in_air
-    insertPmet(met[["lwdown"]], nc2 = nc2, var2 = "surface_downwelling_longwave_flux_in_air",
+    insertPmet(met[["surface_downwelling_longwave_flux_in_air"]], nc2 = nc2, var2 = "surface_downwelling_longwave_flux_in_air",
                units2 = "W m-2", dim2 = dim, verbose = verbose)
 
     # wind_speed
-    insertPmet(met[["wind"]], nc2 = nc2, var2 = "wind_speed", units2 = "m s-1", dim2 = dim, verbose = verbose)
+    insertPmet(met[["wind_speed"]], nc2 = nc2, var2 = "wind_speed", units2 = "m s-1", dim2 = dim, verbose = verbose)
 
     # precipitation_flux
-    insertPmet(met[["precipf"]], nc2 = nc2, var2 = "precipitation_flux", units2 = "kg/m^2/s",
+    insertPmet(met[["precipitation_flux"]], nc2 = nc2, var2 = "precipitation_flux", units2 = "kg/m^2/s",
                dim2 = dim, verbose = verbose)
 
     # add global attributes from original file
     for (j in seq_along(cp.global.atts)) {
-      ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
+      ncdf4::ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
     }
 
     # done, close file
@@ -470,7 +487,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     print(latlon)
     var <- ncdf4::ncvar_def(name = "latitude", units = "degree_north", dim = (list(lat, lon, time)),
                      missval = as.numeric(-9999))
-    nc2 <- nc_create(filename = new.file, vars = var, verbose = verbose)
+    nc2 <- ncdf4::nc_create(filename = new.file, vars = var, verbose = verbose)
     ncdf4::ncvar_put(nc = nc2, varid = "latitude", vals = rep(latlon[1], tdim$len))
 
     # copy lon attribute to longitude
@@ -613,19 +630,19 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     var <- ncdf4::ncvar_def(name = "eastward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
     nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
     ncdf4::ncvar_put(nc = nc2, varid = "eastward_wind", vals = ew)
-    ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_min", attval = -max)
-    ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_max", attval = max)
+    ncdf4::ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_min", attval = -max)
+    ncdf4::ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_max", attval = max)
 
     var <- ncdf4::ncvar_def(name = "northward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
     nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
     ncdf4::ncvar_put(nc = nc2, varid = "northward_wind", vals = nw)
-    ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_min", attval = -max)
-    ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_max", attval = max)
+    ncdf4::ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_min", attval = -max)
+    ncdf4::ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_max", attval = max)
 
     # add global attributes from original file
     cp.global.atts <- ncdf4::ncatt_get(nc = nc1, varid = 0)
     for (j in seq_along(cp.global.atts)) {
-      ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
+      ncdf4::ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
     }
 
     # done, close both files

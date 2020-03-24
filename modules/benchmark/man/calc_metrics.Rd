@@ -4,10 +4,23 @@
 \alias{calc_metrics}
 \title{calc_metrics}
 \usage{
-calc_metrics(model.calc, obvs.calc, var, metrics, bm, ensemble.id, model_run)
+calc_metrics(model.calc, obvs.calc, var, metrics, ensemble.id, bm_dir)
 }
 \arguments{
-\item{model_run}{}
+\item{model.calc}{model data}
+
+\item{obvs.calc}{observational data}
+
+\item{var}{variables to be used}
+
+\item{metrics}{metrics to be used}
+
+\item{ensemble.id}{id of ensemble run}
+
+\item{bm_dir}{directory where benchmarking outputs will be saved}
+}
+\description{
+calc_metrics
 }
 \author{
 Betsy Cowdery

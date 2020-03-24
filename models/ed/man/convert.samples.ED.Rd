@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.configs.ed.R
 \name{convert.samples.ED}
 \alias{convert.samples.ED}
-\title{Convert samples for ed}
+\title{convert parameters from PEcAn database default units to ED defaults}
 \usage{
 convert.samples.ED(trait.samples)
 }
@@ -13,9 +13,6 @@ convert.samples.ED(trait.samples)
 matrix or dataframe with values transformed
 }
 \description{
-convert parameters from PEcAn database default units to ED defaults
-}
-\details{
 Performs model specific unit conversions on a a list of trait values,
 such as those provided to write.config
 }

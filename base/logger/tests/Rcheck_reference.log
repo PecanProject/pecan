@@ -1,0 +1,87 @@
+* using log directory ‘/tmp/Rtmp1Q6pph/PEcAn.logger.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --as-cran’
+* checking for file ‘PEcAn.logger/DESCRIPTION’ ... OK
+* this is package ‘PEcAn.logger’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.logger’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+logger.message: no visible global function definition for ‘dump.frames’
+logger.message: no visible binding for global variable ‘dump.log’
+logger.message: no visible global function definition for ‘tail’
+print2string: no visible global function definition for
+  ‘capture.output’
+Undefined global functions or variables:
+  capture.output dump.frames dump.log tail
+Consider adding
+  importFrom("utils", "capture.output", "dump.frames", "tail")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... NOTE
+Rd file 'severeifnot.Rd':
+  \examples lines wider than 100 characters:
+       severeifnot("I absolutely cannot deal with the fact that something is not a list.", is.list(a), is.list(b))
+
+These lines will be truncated in the PDF manual.
+* checking Rd cross-references ... WARNING
+Missing link or links in documentation object 'logger.severe.Rd':
+  ‘logger.setQuitOnSevere(FALSE)’
+
+See section 'Cross-references' in the 'Writing R Extensions' manual.
+
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'check_conditions'
+  ‘...’
+
+Undocumented arguments in documentation object 'is_definitely_true'
+  ‘x’
+
+Undocumented arguments in documentation object 'logger.getLevelNumber'
+  ‘level’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... OK
+* DONE
+Status: 2 WARNINGs, 3 NOTEs

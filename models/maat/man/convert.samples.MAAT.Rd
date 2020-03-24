@@ -4,10 +4,12 @@
 \alias{convert.samples.MAAT}
 \title{Convert samples for MAAT}
 \usage{
-convert.samples.MAAT(trait.samples)
+convert.samples.MAAT(trait.samples, runid)
 }
 \arguments{
 \item{trait.samples}{a matrix or dataframe of samples from the trait distribution}
+
+\item{runid}{optional parameter for debugging}
 }
 \value{
 matrix or dataframe with values transformed

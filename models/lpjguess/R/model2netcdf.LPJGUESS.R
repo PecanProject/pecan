@@ -88,10 +88,16 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
     output[[5]] <- nee[which(years == y), ]  # NEE in kgC/m2/s
     output[[6]] <- lai[which(years == y), ]  # LAI in m2/m2
     
+    if(lubridate::leap_year(y)){
+      month_days <- c(001, 032, 061, 092, 122, 153, 183, 214, 245, 275, 306, 336)
+    } else {
+      month_days <- c(001, 032, 060, 091, 121, 152, 182, 213, 244, 274, 305, 335)
+    }
+
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
                    units = paste0("days since ", y, "-01-01 00:00:00"), 
-                   vals = 1:12, 
+                   month_days,
                    calendar = "standard", 
                    unlim = TRUE)
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")

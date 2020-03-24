@@ -4,10 +4,21 @@
 \alias{download.FluxnetLaThuile}
 \title{download.FluxnetLaThuile}
 \usage{
-download.FluxnetLaThuile(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, username = "pecan", ...)
+download.FluxnetLaThuile(
+  sitename,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  verbose = FALSE,
+  username = "pecan",
+  ...
+)
 }
 \arguments{
+\item{sitename}{the FLUXNET ID of the site to be downloaded, used as file name prefix.
+The 'SITE_ID' field in \href{http://www.fluxdata.org/DataInfo/Dataset\%20Doc\%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}}
+
 \item{outfolder}{location on disk where outputs will be stored}
 
 \item{start_date}{the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)}

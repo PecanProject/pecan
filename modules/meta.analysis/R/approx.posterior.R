@@ -59,7 +59,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
       k   <- (1 - m)/m
       a   <- (k / ((1 + k) ^ 2 * v) - 1) / (1 + k)
       b   <- a * k
-      fit <- try(suppressWarnings(fitdistr(dat, "beta", list(shape1 = a, shape2 = b))), silent = TRUE)
+      fit <- try(suppressWarnings(MASS::fitdistr(dat, "beta", list(shape1 = a, shape2 = b))), silent = TRUE)
       
       if (do.plot) {
         x <- seq(0, 1, length = 1000)
@@ -75,17 +75,17 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
       }
       posteriors[trait, "parama"] <- fit$estimate[1]
       posteriors[trait, "paramb"] <- fit$estimate[2]
-    } else if (pdist %in% zerobound | (pdist == "unif" & pparm[1] > 0)) {
+    } else if (pdist %in% zerobound || (pdist == "unif" & pparm[1] >= 0)) {
       dist.names <- c("exp", "lnorm", "weibull", "norm")
       fit <- list()
-      fit[[1]] <- try(suppressWarnings(fitdistr(dat, "exponential")), silent = TRUE)
+      fit[[1]] <- try(suppressWarnings(MASS::fitdistr(dat, "exponential")), silent = TRUE)
       ## fit[[2]] <- fitdistr(dat,'f',list(df1=10,df2=2*mean(dat)/(max(mean(dat)-1,1))))
-      fit[[2]] <- try(suppressWarnings(fitdistr(dat, "lognormal")), silent = TRUE)
-      fit[[3]] <- try(suppressWarnings(fitdistr(dat, "weibull")), silent = TRUE)
-      fit[[4]] <- try(suppressWarnings(fitdistr(dat, "normal")), silent = TRUE)
+      fit[[2]] <- try(suppressWarnings(MASS::fitdistr(dat, "lognormal")), silent = TRUE)
+      fit[[3]] <- try(suppressWarnings(MASS::fitdistr(dat, "weibull")), silent = TRUE)
+      fit[[4]] <- try(suppressWarnings(MASS::fitdistr(dat, "normal")), silent = TRUE)
       
       if (!trait == "cuticular_cond") {
-        fit[[5]] <- try(suppressWarnings(fitdistr(dat, "gamma")), silent = TRUE)
+        fit[[5]] <- try(suppressWarnings(MASS::fitdistr(dat, "gamma")), silent = TRUE)
         dist.names <- c(dist.names, "gamma")
       }
       failfit.bool <- sapply(fit, class) == "try-error"

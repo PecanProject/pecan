@@ -1,4 +1,4 @@
-# Quick test of remote functions
+context("Quick test of remote functions")
 library(PEcAn.remote)
 library(testthat)
 

@@ -4,10 +4,13 @@
 \alias{metric_R2}
 \title{Coefficient of Determination (R2)}
 \usage{
-metric_R2(dat, ...)
+metric_R2(metric_dat, ...)
 }
 \arguments{
-\item{dat}{dataframe}
+\item{metric_dat}{dataframe}
+}
+\description{
+Coefficient of Determination (R2)
 }
 \author{
 Betsy Cowdery

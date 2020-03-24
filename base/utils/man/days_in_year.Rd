@@ -4,10 +4,12 @@
 \alias{days_in_year}
 \title{Number of days in a year}
 \usage{
-days_in_year(year)
+days_in_year(year, leap_year = TRUE)
 }
 \arguments{
 \item{year}{Numeric year (can be a vector)}
+
+\item{leap_year}{Default = TRUE. If set to FALSE will always return 365}
 }
 \value{
 integer vector, all either 365 or 366

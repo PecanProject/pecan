@@ -2,7 +2,7 @@
 % Please edit documentation in R/meta.analysis.summary.R
 \name{pecan.ma.summary}
 \alias{pecan.ma.summary}
-\title{Generate summary statitics and diagnostics for PEcAn meta.analysis}
+\title{Generate summary statistics and diagnostics for PEcAn meta.analysis}
 \usage{
 pecan.ma.summary(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE)
 }
@@ -15,10 +15,19 @@ pecan.ma.summary(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE)
 
 \item{threshold}{Gelman-Rubin convergence diagnostic (MGPRF)
 default = 1.2 following Bolker 2008 Ecological Models and Data in R}
+
+\item{gg}{produce extra diagnostic plots using the "ggmcmc" package? Caution: very slow!}
+}
+\description{
+Generate summary statistics and diagnostics for PEcAn meta.analysis
 }
 \examples{
 \dontrun{
-summary <- pecan.ma.summary(trait.mcmc,settings$pfts$pft,settings$outdir,settings$meta.analysis$threshold)
+summary <- pecan.ma.summary(
+ trait.mcmc,
+ settings$pfts$pft,
+ settings$outdir,
+ settings$meta.analysis$threshold)
 }
 }
 \author{

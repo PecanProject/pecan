@@ -18,12 +18,11 @@
 ##' @param in.prefix - prefix of model string as character (e.g. IPSL.r1i1p1.rcp85)
 ##' @param start_date - yyyy-mm-dd
 ##' @param end_date - yyyy-mm-dd
-##' @param lat.in - latitude as numeric
-##' @param lon.in - longitude as numeric
 ##' @param upscale - Upscale can either be set for FALSE (leave alone) or to the temporal resolution you want to aggregate to
 #                    options are: "year", "doy" (day of year), or "hour"
-##' @param overwrite
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists?
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+##'   functions print debugging information as they run?
 ##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
@@ -168,7 +167,7 @@ nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date,
       if (upscale == "hour") {
         upscale_timestep = 1/24
       }
-        dat.train <- aggregate(train_df[, names(train_df)[!names(train_df) %in% 
+        dat.train <- stats::aggregate(train_df[, names(train_df)[!names(train_df) %in% 
             c("year", "doy", "hour")]], by = train_df[time.vars], FUN = mean, 
             na.rm = FALSE)
         dat.train <- dat.train[order(dat.train$date), ]

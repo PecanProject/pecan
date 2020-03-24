@@ -3,7 +3,7 @@
 ##' @name download.Fluxnet2015
 ##' @title download.Fluxnet2015
 ##' @export
-##' @param site the FLUXNET ID of the site to be downloaded, used as file name prefix. 
+##' @param sitename the FLUXNET ID of the site to be downloaded, used as file name prefix. 
 ##' The 'SITE_ID' field in \href{http://fluxnet.fluxdata.org//sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
@@ -105,13 +105,13 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
   
   if (download_file_flag) {
     extract_file_flag <- TRUE
-    download.file(ftplink, output_zip_file)
+    PEcAn.utils::download.file(ftplink, output_zip_file)
     if (!file.exists(output_zip_file)) {
       PEcAn.logger::logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
     }
   }
   if (extract_file_flag) {
-    avail_file <- unzip(output_zip_file, list = TRUE)
+    avail_file <- utils::unzip(output_zip_file, list = TRUE)
     if (length(grep("HH", avail_file)) > 0) {
       file_timestep <- "HH"
     } else {
@@ -123,7 +123,7 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
         PEcAn.logger::logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
       }
     }
-    unzip(output_zip_file, outcsvname, exdir = outfolder)
+    utils::unzip(output_zip_file, outcsvname, exdir = outfolder)
     if (!file.exists(output_csv_file)) {
       PEcAn.logger::logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
     }

@@ -27,13 +27,17 @@ TDM Model Train
 Linear regression calculations for specific met variables
 }
 \seealso{
-Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{lm_ensemble_sims}}, \code{\link{nc.merge}},
-  \code{\link{predict_subdaily_met}},
-  \code{\link{save.betas}}, \code{\link{save.model}},
-  \code{\link{subdaily_pred}},
-  \code{\link{temporal.downscale.functions}}
+Other tdm - Temporally Downscale Meteorology: 
+\code{\link{gen.subdaily.models}()},
+\code{\link{lm_ensemble_sims}()},
+\code{\link{nc.merge}()},
+\code{\link{predict_subdaily_met}()},
+\code{\link{save.betas}()},
+\code{\link{save.model}()},
+\code{\link{subdaily_pred}()},
+\code{\link{temporal.downscale.functions}()}
 }
 \author{
 Christy Rollinson, James Simkins
 }
+\concept{tdm - Temporally Downscale Meteorology}

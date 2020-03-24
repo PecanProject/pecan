@@ -16,6 +16,9 @@ write.config.xml.ED2(settings, trait.values, defaults = settings$constants)
 \value{
 R XML object containing full ED2 XML file
 }
+\description{
+Write ED2 config.xml file
+}
 \details{
 Refactored by Alexey Shiklomanov to allow use in PEcAn RTM module.
 }

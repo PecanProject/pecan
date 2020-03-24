@@ -13,6 +13,16 @@
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
                       vars.used.index=NULL, ...) {
 
+  # If site = NA, check that site information is in the formats table
+  if(all(is.na(site))){
+    if(!is.null(format$site)){
+      site <- list(id = format$site, lat = format$lat, lon = format$lon, 
+                   time_zone = format$time_zone)
+    }else{
+      PEcAn.logger::logger.error("Input must have site information.")
+    }
+  }
+  
   ## load everything in format by default
   time.row <- format$time.row 
   

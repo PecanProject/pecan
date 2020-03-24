@@ -6,3 +6,6 @@
 \usage{
 get_y(SSnew, xnew, llik.fn, priors, llik.par)
 }
+\description{
+get_y
+}

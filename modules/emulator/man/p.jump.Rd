@@ -9,6 +9,9 @@
 \arguments{
 \item{jmp}{jump parameter}
 }
+\description{
+p.jump
+}
 \author{
 Michael Dietze
 }

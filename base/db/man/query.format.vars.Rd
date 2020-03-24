@@ -7,8 +7,15 @@
 query.format.vars(con, input.id = NA, format.id = NA, var.ids = NA)
 }
 \arguments{
-\item{con}{: database connection}
+\item{bety}{database connection}
+
+\item{var.ids}{optional vector of variable IDs. If provided, limits results to these variables}
+
+\item{input_id, format.id}{numeric. Defaults to format.id if both provided}
+}
+\description{
+Given input_id, return formats table and table of variables and units
 }
 \author{
-Betsy Cowdery , Ankur Desai, Istem Fer
+Betsy Cowdery, Ankur Desai, Istem Fer
 }

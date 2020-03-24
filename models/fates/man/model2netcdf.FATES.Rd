@@ -9,6 +9,9 @@ model2netcdf.FATES(outdir)
 \arguments{
 \item{outdir}{Location of FATES model output}
 }
+\description{
+Code to convert FATES netcdf output into into CF standard
+}
 \examples{
  
 \dontrun{

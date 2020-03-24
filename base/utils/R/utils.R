@@ -19,7 +19,7 @@
 ##'
 ##' @title MstMIP variable
 ##' @export
-##' @param name name of variable
+##' @param name of variable
 ##' @param lat latitude if dimension requests it
 ##' @param lon longitude if dimension requests it
 ##' @param time time if dimension requests it
@@ -27,12 +27,12 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
+  nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
   dims <- list()
 
-  if (nrow(var) == 0) {
-    var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
-    if (nrow(var) == 0) {
+  if (nrow(nc_var) == 0) {
+    nc_var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
+    if (nrow(nc_var) == 0) {
       if (!silent) {
         PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
@@ -45,7 +45,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
   }
 
   for (i in 1:4) {
-    vd <- var[[paste0("dim", i)]]
+    vd <- nc_var[[paste0("dim", i)]]
     if (vd == "lon" && !is.na(lon)) {
       dims[[length(dims) + 1]] <- lon
     } else if (vd == "lat" && !is.na(lat)) {
@@ -62,9 +62,9 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
       }
     }
   }
-  ncvar <- ncdf4::ncvar_def(name, as.character(var$Units), dims, -999)
-  if (var$Long.name != "na") {
-    ncvar$longname <- as.character(var$Long.name)
+  ncvar <- ncdf4::ncvar_def(name, as.character(nc_var$Units), dims, -999)
+  if (nc_var$Long.name != "na") {
+    ncvar$longname <- as.character(nc_var$Long.name)
   }
   return(ncvar)
 } # mstimipvar
@@ -93,7 +93,7 @@ left.pad.zeros <- function(num, digits = 5) {
 ##' @param y numeric vector
 ##' @return numeric vector with all values less than 0 set to 0
 ##' @export
-##' @author <unknown>
+##' @author unknown
 zero.truncate <- function(y) {
   y[y < 0 | is.na(y)] <- 0
   return(y)
@@ -159,74 +159,17 @@ vecpaste <- function(x) paste(paste0("'", x, "'"), collapse = ",")
 ##' ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis
 ##' @param trait name of trait being sampled (for sensitivity analysis)
 ##' @param pft.name name of PFT (value from pfts.names field in database)
+##' @param site.id optional site id .This is could be necessary for multisite write=false ensembles.
 ##' @return id representing a model run
 ##' @export
 ##' @examples
 ##' get.run.id('ENS', left.pad.zeros(1, 5))
 ##' get.run.id('SA', round(qnorm(-3),3), trait = 'Vcmax')
 ##' @author Carl Davidson, David LeBauer
-get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL) {
-  result <- paste(c(run.type, pft.name, trait, index), collapse = "-")
+get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL, site.id=NULL) {
+  result <- paste(c(run.type, pft.name, trait, index, site.id), collapse = "-")
   return(result)
 } # get.run.id
-
-
-##' @export
-listToXml <- function(x, ...) {
-  .Deprecated("PEcAn.settings::listToXml")
-  UseMethod("listToXml")
-} # listToXml
-
-
-#--------------------------------------------------------------------------------------------------#
-##' Convert List to XML
-##'
-##' DEPRECATED. Use \code{\link[PEcAn.settings:listToXml.default]{PEcAn.settings::listToXml.default}} instead.
-##' Can convert list or other object to an xml object using xmlNode
-##' @title List to XML
-##' @param item object to be converted. Despite the function name, need not actually be a list
-##' @param tag xml tag
-##' @return xmlNode
-##' @export
-##' @author David LeBauer, Carl Davidson, Rob Kooper
-listToXml.default <- function(item, tag) {
-  .Deprecated("PEcAn.settings::listToXml.default")
-
-  # just a textnode, or empty node with attributes
-  if (typeof(item) != "list") {
-    if (length(item) > 1) {
-      xml <- XML::xmlNode(tag)
-      for (name in names(item)) {
-        XML::xmlAttrs(xml)[[name]] <- item[[name]]
-      }
-      return(xml)
-    } else {
-      return(XML::xmlNode(tag, item))
-    }
-  }
-
-  # create the node
-  if (identical(names(item), c("text", ".attrs"))) {
-    # special case a node with text and attributes
-    xml <- XML::xmlNode(tag, item[["text"]])
-  } else {
-    # node with child nodes
-    xml <- XML::xmlNode(tag)
-    for (i in seq_along(item)) {
-      if (is.null(names(item)) || names(item)[i] != ".attrs") {
-        xml <- XML::append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
-      }
-    }
-  }
-
-  # add attributes to node
-  attrs <- item[[".attrs"]]
-  for (name in names(attrs)) {
-    XML::xmlAttrs(xml)[[name]] <- attrs[[name]]
-  }
-  return(xml)
-} # listToXml.default
-
 
 #--------------------------------------------------------------------------------------------------#
 ##' Zero bounded density using log density transform
@@ -238,6 +181,7 @@ listToXml.default <- function(item, tag) {
 ##' @title Zero Bounded Density
 ##' @param x data, as a numeric vector
 ##' @param bw The smoothing bandwidth to be used. See 'bw.nrd'
+##' @param n number of points to use in kernel density estimate. See \code{\link[stats]{density}}
 ##' @return data frame with back-transformed log density estimate
 ##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
@@ -257,18 +201,27 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @title Summarize Results
 ##' @param result dataframe with results of trait data query
 ##' @return result with replicate observations summarized
-##' @export
-##' @author David LeBauer
+##' @export summarize.result
+##' @usage summarize.result(result)
+##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
-  ans1 <- plyr::ddply(result[result$n == 1, ],
-                plyr::.(citation_id, site_id, trt_id, control, greenhouse,
-                  date, time, cultivar_id, specie_id),
-                plyr::summarise, n = length(n),
-                mean = mean(mean),
-                statname = ifelse(length(n) == 1, "none", "SE"),
-                stat = stats::sd(mean) / sqrt(length(n)))
-  ans2 <- result[result$n != 1, colnames(ans1)]
-  return(rbind(ans1, ans2))
+  ans1 <- result %>%
+    dplyr::filter(n == 1) %>%
+    dplyr::group_by(citation_id, site_id, trt_id,
+                    control, greenhouse, date, time,
+                    cultivar_id, specie_id) %>%
+    dplyr::summarize(
+      n = length(n),
+      mean = mean(mean),
+      statname = dplyr::if_else(length(n) == 1, "none", "SE"),
+      stat = stats::sd(mean) / sqrt(length(n))
+    ) %>%
+    dplyr::ungroup()
+  ans2 <- result %>%
+    dplyr::filter(n != 1) %>%
+    # ANS: Silence factor to character conversion warning
+    dplyr::mutate(statname = as.character(statname))
+  return(dplyr::bind_rows(ans1, ans2))
 } # summarize.result
 
 
@@ -366,7 +319,7 @@ pdf.stats <- function(distn, A, B) {
     norm = B ^ 2,
     f = ifelse(B > 4,
                2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
-               var(stats::rf(1e+05, A, B))))
+               stats::var(stats::rf(1e+05, A, B))))
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
@@ -470,6 +423,7 @@ isFALSE <- function(x) !isTRUE(x)
 ##' @author David LeBauer
 newxtable <- function(x, environment = "table", table.placement = "ht", label = NULL,
                       caption = NULL, caption.placement = NULL, align = NULL) {
+  need_packages("xtable")
   print(xtable::xtable(x, label = label, caption = caption, align = align),
         floating.environment = environment,
         table.placement = table.placement,
@@ -534,7 +488,7 @@ as.sequence <- function(x, na.rm = TRUE) {
 ##' @author David LeBauer
 temp.settings <- function(settings.txt) {
   temp <- tempfile()
-  on.exit(unlink(temp))
+  on.exit(unlink(temp), add = TRUE)
   writeLines(settings.txt, con = temp)
   settings <- readLines(temp)
   return(settings)
@@ -558,7 +512,7 @@ temp.settings <- function(settings.txt) {
 ##' @author David LeBauer
 tryl <- function(FUN) {
   out <- tryCatch(FUN, error = function(e) e)
-  ans <- !any(class(out) == "error")
+  ans <- !inherits(out, "error")
   return(ans)
 } # tryl
 #--------------------------------------------------------------------------------------------------#
@@ -598,8 +552,8 @@ load.modelpkg <- function(model) {
 ##' @author Istem Fer, Shawn Serbin
 misc.convert <- function(x, u1, u2) {
 
-  amC   <- PeriodicTable::mass("C")  # atomic mass of carbon
-  mmH2O <- sum(PeriodicTable::mass(c("H", "H", "O"))) # molar mass of H2O, g/mol
+  amC   <- 12.0107  # atomic mass of carbon
+  mmH2O <- 18.01528 # molar mass of H2O, g/mol
 
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
     val <- udunits2::ud.convert(x, "ug", "kg") * amC
@@ -695,10 +649,9 @@ convert.expr <- function(expression) {
 ##' example options(download.ftp.method="ncftpget")
 ##'
 ##' @examples
+##' \dontrun{
 ##' download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
 ##'
-##' @examples
-##' \dontrun{
 ##' download.file("
 ##'   ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc",
 ##'   "~/pres.sfc.2000.nc")
@@ -747,7 +700,7 @@ download.file <- function(url, filename, method) {
 ##' 
 ##' @export
 ##' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
-retry.func <- function(expr, isError=function(x) "try-error" %in% class(x), maxErrors=5, sleep=0) {
+retry.func <- function(expr, isError = function(x) inherits(x, "try-error"), maxErrors = 5, sleep = 0) {
   attempts = 0
   retval = try(eval(expr))
   while (isError(retval)) {

@@ -1,0 +1,43 @@
+# PEcAn BASGRA -- Makevars
+# Author: Istem Fer, Alexey Shiklomanov, Chris Black
+
+# TODO: Causes a "Non-portable flags" warning from R CMD check.
+# Fixing may require a rewrite: Source files contain preprocessor macros,
+# but flags to request preprocessing differ across Fortran compilers.
+# Here we use `-x f95-cpp-input`, which probably only works with gfortran.
+PKG_FCFLAGS = -x f95-cpp-input -fdefault-real-8
+
+PARAMS = \
+    parameters_site.o \
+    parameters_plant.o
+
+NEEDS_PARAMS = \
+    environment.o \
+    resources.o \
+    soil.o \
+    plant.o \
+    set_params.o
+
+ENVIRONMENT = environment.o
+
+NEEDS_ENVIRONMENT = plant.o BASGRA.o
+
+BASGRA = BASGRA.o init.o
+
+OBJECTS = $(PARAMS) $(NEEDS_PARAMS) $(BASGRA)
+
+
+.PHONY: all clean
+
+all : $(SHLIB) 
+
+$(SHLIB) : $(OBJECTS) 
+
+$(BASGRA) : $(NEEDS_PARAMS) $(PARAMS)
+
+$(NEEDS_PARAMS) : $(PARAMS)
+
+$(NEEDS_ENVIRONMENT): $(ENVIRONMENT)
+
+clean :
+	rm -f $(OBJECTS) *.mod *.so *.o symbols.rds

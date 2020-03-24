@@ -1,0 +1,87 @@
+* using log directory ‘/tmp/RtmpeZMF3K/PEcAn.MAAT.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.MAAT/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.MAAT’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.MAAT’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+convert.samples.MAAT: no visible binding for global variable ‘Ha.vcmax’
+convert.samples.MAAT: no visible binding for global variable ‘Hd.vcmax’
+convert.samples.MAAT: no visible binding for global variable ‘Ha.jmax’
+convert.samples.MAAT: no visible binding for global variable ‘Hd.jmax’
+convert.samples.MAAT: no visible binding for global variable
+  ‘leaf_width’
+convert.samples.MAAT: no visible binding for global variable ‘g0’
+model2netcdf.MAAT: no visible binding for global variable ‘time’
+model2netcdf.MAAT: no visible global function definition for ‘head’
+Undefined global functions or variables:
+  g0 Ha.jmax Ha.vcmax Hd.jmax Hd.vcmax head leaf_width time
+Consider adding
+  importFrom("stats", "time")
+  importFrom("utils", "head")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'met2model.MAAT'
+  ‘...’
+
+Undocumented arguments in documentation object 'write.config.MAAT'
+  ‘trait.values’
+Documented arguments not in \usage in documentation object 'write.config.MAAT':
+  ‘trait.samples’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking files in ‘vignettes’ ... WARNING
+Files in the 'vignettes' directory but no files in 'inst/doc':
+  ‘create_amerifluxLBL_drivers_for_maat.Rmd’,
+    ‘graphics/example_assimilation_rate.png’,
+    ‘running_maat_in_pecan.Rmd’
+Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking examples ... NONE
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+Status: 2 WARNINGs, 1 NOTE

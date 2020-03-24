@@ -11,6 +11,9 @@ minimize.GP(gp, rng, x0, splinefuns = NULL)
 
 \item{splinefuns}{}
 }
+\description{
+minimize.GP
+}
 \author{
 Michael Dietze
 }

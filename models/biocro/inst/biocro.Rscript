@@ -1,11 +1,5 @@
 #!/usr/bin/env Rscript
 
-# Need to explicitly load methods package, else lubridate throws obscure errors
-# See https://github.com/tidyverse/lubridate/issues/499
-# This load is only necessary when run from Rscript --
-# interactive R loads methods package by default.
-library("methods")
-
 args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]

@@ -112,13 +112,14 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
 
   if(!is.null(settings$run$inputs$poolinitcond$path)) {
     IC.path <- settings$run$inputs$poolinitcond$path
-
+    
+    #grab SLA from parameters and convert to PECAN standard
     sla <- NULL
     if("SLA" %in% names(params)){
-      sla <- udunits2::ud.convert(params[1,"SLA"], 'm2 kg-1', 'm2 g') #convert SLA to m2/kgC from m2/gC (convert.samples)
+      sla <- udunits2::ud.convert(params[1,"SLA"], 'm2 g-1', 'm2 kg-1') #convert SLA to m2/kgC from m2/gC (revert convert.samples conversion to dalec default; need standard for prepare.pools)
     } else{
       default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"), header = TRUE)
-      sla <- udunits2::ud.convert(default.param[which(default.param$cmdFlag == "SLA"),"val"], 'm2 kg-1', 'm2 g') #convert SLA to m2/kgC from m2/gC (dalec default)
+      sla <- udunits2::ud.convert(default.param[which(default.param$cmdFlag == "SLA"),"val"], 'm2 g-1', 'm2 kg-1') #convert SLA to m2/kgC from m2/gC (dalec default)
     }
 
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = sla))

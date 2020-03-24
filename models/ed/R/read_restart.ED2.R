@@ -1,6 +1,6 @@
 #' @title State data assimilation read-restart for ED2
 #'
-#' @author Alexey Shiklomanov
+#' @author Alexey Shiklomanov, Istem Fer
 #' @inheritParams PEcAn.ModelName::read_restart.ModelName
 #' @examples
 #' \dontrun{
@@ -18,81 +18,115 @@ read_restart.ED2 <- function(outdir,
                              settings, 
                              var.names, 
                              params) {
-
-    name_separator <- "."
-
-    rundir <- settings$host$rundir
-    mod_outdir <- settings$host$outdir
-
-    confxml <- get_configxml.ED2(rundir, runid)
-
-    histfile <- get_restartfile.ED2(mod_outdir, runid, stop.time)
-    if (is.null(histfile)) {
-      PEcAn.logger::logger.severe("Failed to find ED2 history restart file.")
+  
+  # depends on code run on local or remote, currently runs locally
+  rundir <- settings$rundir
+  mod_outdir <- settings$modeloutdir # is there a case this is different than outdir?
+  
+  
+  histfile <- get_restartfile.ED2(mod_outdir, runid, stop.time)
+  if (is.null(histfile)) {
+    PEcAn.logger::logger.severe("Failed to find ED2 history restart file.")
+  }
+  
+  
+  pft_names <- sapply(settings$pfts, '[[', 'name')
+  
+  
+  # var.names <- c("AbvGrndWood", "GWBI", "TotLivBiom", "leaf_carbon_content") 
+  histout <- read_S_files(sfile       = basename(histfile), 
+                          outdir      = dirname(histfile), 
+                          pft_names   = pft_names, 
+                          pecan_names = var.names)
+  
+  # unit conversions and other aggregations
+  forecast <- list()
+  
+  for (var_name in var.names) {
+    
+    # should there be a tag passed via settings to check for per pft assimilation vs totals?
+    perpft <- FALSE # for now just working with totals for HF tree-ring DA
+    
+    if (var_name == "AGB") {
+      
+      forecast_tmp                        <- switch(perpft+1, sum(histout$AGB, na.rm = TRUE), histout$AGB) # kgC/m2
+      forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2", "Mg/ha") # conv to MgC/ha 
+      names(forecast)[length(forecast)]   <- switch(perpft+1, "AGB", paste0("AGB.", pft_names))
+      
     }
-
-    nc <- ncdf4::nc_open(histfile)
-    on.exit(ncdf4::nc_close(nc))
-
-    # Identify PFTs
-    # This assumes that PFT order is the same between pecan.xml and ED's 
-    # config.xml.
-    # A better solution would set the PFT numbers in the pecan.xml, or names in 
-    # config.xml.
-    pftnums <- sapply(confxml, '[[', 'num')
-    pftnames <- sapply(settings$pfts, '[[', 'name')
-    names(pftnames) <- pftnums
-
-    #### Common variables ####
-
-    # PFT by cohort
-    pft_co <- ncdf4::ncvar_get(nc, "PFT")
-
-    # Patch area
-    patch_area <- ncdf4::ncvar_get(nc, "AREA")
-
-    # Create a patch index indicator vector
-    patch_index <- patch_cohort_index(nc)
-
-    forecast <- list()
-
-    for (var_name in var.names) {
-
-        pft_full_names <- paste("pft", pftnames,
-                                sep = name_separator)
-        names(pft_full_names) <- pftnums
-
-        ## TODO: Convert to PEcAn standard names
-        if (var_name == "AGB") {
-
-            # Cohort AGB -- kgC plant-1
-            agb_co_plant <- ncdf4::ncvar_get(nc, "AGB_CO")
-
-            # Cohort stem density -- Plant m-2
-            co_plant <- ncdf4::ncvar_get(nc, "NPLANT")
-
-            # Cohort AGB -- kgC m-2
-            agb_co <- agb_co_plant * co_plant
-
-            # Aggregate AGB by patch and PFT
-            agb_patch_pft <- tapply(agb_co, 
-                                    list("PFT" = pft_co, "patch" = patch_index), 
-                                    sum)
-
-            # AGB by PFT and area
-            agb_pft_x_area <- apply(agb_patch_pft, 1, "*", patch_area)
-            agb_pft <- colSums(agb_pft_x_area, na.rm = TRUE)
-            
-            names(agb_pft) <- pft_full_names[names(agb_pft)]
-            forecast[[var_name]] <- agb_pft
-        } else {
-            PEcAn.logger::logger.error("Variable ", var_name,
-                                      " not currently supported",
-                                      " by read.restart.ED2")
-        }
+    
+    if (var_name == "TotLivBiom") {
+      
+      forecast_tmp                        <- switch(perpft+1, sum(histout$TotLivBiom, na.rm = TRUE), histout$TotLivBiom) # kgC/m2
+      forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2", "Mg/ha") # conv to MgC/ha 
+      names(forecast)[length(forecast)]   <- switch(perpft+1, "TotLivBiom", paste0("TotLivBiom.", pft_names))
+      
     }
-
-    return(unlist(forecast))
+    
+    if (var_name == "AbvGrndWood") {
+      
+      forecast_tmp                        <- switch(perpft+1, sum(histout$AbvGrndWood, na.rm = TRUE), histout$AbvGrndWood) # kgC/m2
+      forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2", "Mg/ha") # conv to MgC/ha 
+      names(forecast)[length(forecast)]   <- switch(perpft+1, "AbvGrndWood", paste0("AbvGrndWood.", pft_names))
+      
+    }
+    
+    if (var_name == "leaf_carbon_content") {
+      
+      forecast_tmp                        <- switch(perpft+1, sum(histout$leaf_carbon_content, na.rm = TRUE), histout$leaf_carbon_content) # kgC/m2
+      forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2", "Mg/ha") # conv to MgC/ha 
+      names(forecast)[length(forecast)]   <- switch(perpft+1, "leaf_carbon_content", paste0("leaf_carbon_content.", pft_names))
+      
+    }
+    
+    if (var_name == "storage_carbon_content") {
+      
+      forecast[[length(forecast)+1]]      <- switch(perpft+1, sum(histout$storage_carbon_content, na.rm = TRUE), histout$storage_carbon_content) # kgC/m2
+      names(forecast)[length(forecast)]   <- switch(perpft+1, "storage_carbon_content", paste0("storage_carbon_content.", pft_names))
+      
+    }
+    
+    
+    if (var_name == "GWBI") {
+      
+      forecast_tmp                        <- switch(perpft+1, sum(histout$GWBI, na.rm = TRUE), histout$GWBI) # kgC/m2/yr
+      forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2/yr", "Mg/ha/yr") # conv to MgC/ha/yr 
+      names(forecast)[length(forecast)]   <- switch(perpft+1, "GWBI", paste0("GWBI.", pft_names))
+      
+    }
+    
+    if (var_name == "fast_soil_pool_carbon_content") {
+      
+      forecast[[length(forecast)+1]]      <- histout$fast_soil_pool_carbon_content # kgC/m2
+      names(forecast)[length(forecast)]   <- "fast_soil_pool_carbon_content"
+      
+    }
+    
+    if (var_name == "structural_soil_pool_carbon_content") {
+      
+      forecast[[length(forecast)+1]]      <- histout$structural_soil_pool_carbon_content # kgC/m2
+      names(forecast)[length(forecast)]   <- "structural_soil_pool_carbon_content"
+      
+    }
+    
+    
+  } # var.names loop
+  
+  restart <- list()
+  # pass certain things for write_restart to use (so that there we don't have to re-read and re-calculate stuff)
+  # IMPORTANT NOTE: in the future, these "certain things" need to be confined to old states that will be used
+  # to carry out deternimistic relationships, no other read/write restart should copy this logic
+  restart$restart  <- histout$restart
+  restart$histfile <- histfile
+  
+  params$restart <- restart
+  
+  PEcAn.logger::logger.info("Finished --", runid)
+  
+  X_tmp <- list(X = unlist(forecast), params = params)
+  
+  return(X_tmp)
+  
 } # read_restart.ED2
 
 

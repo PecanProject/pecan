@@ -33,8 +33,8 @@
 ##'                     specific hours coefficients. Must be integer because we want statistics from the same time of day
 ##'                     for each day surrounding the model day
 ##' @param seed - seed for randomization to allow for reproducible results                    
-##' @param overwrite
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists?
+##' @param verbose logical, currently ignored
 ##' @param print.progress - print progress bar? (gets passed through)
 ##' @export
 # -----------------------------------
@@ -48,8 +48,11 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     verbose = FALSE, print.progress=FALSE) {
   
     # pb.index <- 1
-    # pb <- txtProgressBar(min = 1, max = 8, style = 3)
+    # pb <- utils::txtProgressBar(min = 1, max = 8, style = 3)
     
+    # Just in case we have a capitalization or singular/plural issue 
+    if(direction.filter %in% toupper( c("backward", "backwards"))) direction.filter="backward"
+  
     # ----- 1.0 Read data & Make time stamps ---------- Load the data
     
     vars.info <- data.frame(CF.name = c("air_temperature", "precipitation_flux", "air_temperature_max", 
@@ -61,7 +64,7 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     
     # Getting a list of all the available files and then subsetting to just the ones we 
     # actually want to use
-    files.train <- dir(path.train)
+    files.train <- dir(path.train, ".nc")
     yrs.file <- strsplit(files.train, "[.]")
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
     yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
@@ -103,16 +106,16 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     # use as predictors ----------
     vars.use <- vars.info$CF.name[vars.info$CF.name %in% names(dat.train)]
     
-    train.day <- aggregate(dat.train[, c("air_temperature", "precipitation_flux", 
+    train.day <- stats::aggregate(dat.train[, c("air_temperature", "precipitation_flux", 
         "surface_downwelling_shortwave_flux_in_air", "surface_downwelling_longwave_flux_in_air", 
         "air_pressure", "specific_humidity", "wind_speed")], by = dat.train[, 
         c("year", "doy")], FUN = mean)
     names(train.day)[3:9] <- c("air_temperature_mean.day", "precipitation_flux.day", 
         "surface_downwelling_shortwave_flux_in_air.day", "surface_downwelling_longwave_flux_in_air.day", 
         "air_pressure.day", "specific_humidity.day", "wind_speed.day")
-    train.day$air_temperature_max.day <- aggregate(dat.train[, c("air_temperature")], 
+    train.day$air_temperature_max.day <- stats::aggregate(dat.train[, c("air_temperature")], 
         by = dat.train[, c("year", "doy")], FUN = max)$x
-    train.day$air_temperature_min.day <- aggregate(dat.train[, c("air_temperature")], 
+    train.day$air_temperature_min.day <- stats::aggregate(dat.train[, c("air_temperature")], 
         by = dat.train[, c("year", "doy")], FUN = min)$x
 
     dat.train <- merge(dat.train[, ], train.day, all.x = T, all.y = T)
@@ -137,9 +140,9 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     lag.day <- dat.train[dat.train$hour == lag.time, c("year", "doy", "sim.day", vars.hour)]
     names(lag.day)[4:ncol(lag.day)] <- vars.lag
     
-    lag.day$lag.air_temperature_min <- aggregate(dat.train[, c("air_temperature")], 
+    lag.day$lag.air_temperature_min <- stats::aggregate(dat.train[, c("air_temperature")], 
         by = dat.train[, c("year", "doy", "sim.day")], FUN = min)[, "x"]  # Add in a lag for the next day's min temp
-    lag.day$lag.air_temperature_max <- aggregate(dat.train[, c("air_temperature")], 
+    lag.day$lag.air_temperature_max <- stats::aggregate(dat.train[, c("air_temperature")], 
         by = dat.train[, c("year", "doy", "sim.day")], FUN = max)[, "x"]  # Add in a lag for the next day's min temp
     lag.day$sim.day <- lag.day$sim.day + met.lag  # 
     
@@ -163,7 +166,7 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     
     next.day <- dat.train[c("year", "doy", "sim.day", vars.day)]
     names(next.day)[4:ncol(next.day)] <- vars.next
-    next.day <- aggregate(next.day[, vars.next], by = next.day[, c("year", "doy", "sim.day")], FUN = mean)
+    next.day <- stats::aggregate(next.day[, vars.next], by = next.day[, c("year", "doy", "sim.day")], FUN = mean)
     next.day$sim.day <- next.day$sim.day - met.lag
     
     dat.train <- merge(dat.train, next.day[, c("sim.day", vars.next)], all.x = T)

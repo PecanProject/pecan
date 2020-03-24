@@ -7,12 +7,15 @@
 get_restartfile.ED2(mod_outdir, runid, file.time)
 }
 \arguments{
-\item{mod_outdir}{Directory where PEcAn stores ensemble outputs. Usually 
+\item{mod_outdir}{Directory where PEcAn stores ensemble outputs. Usually
 \code{<workflowID>/out}}
 
 \item{runid}{PEcAn run ID}
 
 \item{file.time}{Start or end time from SDA analysis}
+}
+\description{
+Get ED history restart file path
 }
 \author{
 Alexey Shiklomanov

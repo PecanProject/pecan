@@ -11,6 +11,9 @@
 
 \item{pI}{prediction interval}
 }
+\description{
+predict.GP
+}
 \author{
 Michael Dietze
 }

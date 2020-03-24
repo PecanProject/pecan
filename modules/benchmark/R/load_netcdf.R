@@ -34,23 +34,43 @@ load_x_netcdf <- function(data.path, format, site, vars = NULL) {
     dims <- names(nc[[i]]$dim)
     time.var <- grep(pattern = "time", dims, ignore.case = TRUE)
     time.col[[i]] <- ncdf4::ncvar_get(nc[[i]], dims[time.var])
-
+    
+    t.units <- ncdf4::ncatt_get(nc[[i]], dims[time.var])$units
+    
+    # If the unit has if of the form * since YYYY-MM-DD * with "-hour" timezone offset
+    # This is a feature of the met produced by met2CF
+    if(str_detect(t.units, "ince\\s[0-9]{4}[.-][0-9]{2}[.-][0-9]{2}.*\\s-\\d+")){
+      unit2 <- str_split_fixed(t.units,"\\s-",2)[1]
+      offset <- str_split_fixed(t.units,"\\s-",2)[2] %>% as.numeric()
+      
+      date_time <- suppressWarnings(try(lubridate::ymd((unit2))))
+      if(is.na(date_time)){
+        date_time <- suppressWarnings(try(lubridate::ymd_hms(unit2)))
+      }
+      if(is.na(date_time)){
+        PEcAn.logger::logger.error("All time formats failed to parse. No formats found.")
+      }
+      
+      t.units <- paste(str_split_fixed(t.units," since",2)[1], "since",
+                       date_time - lubridate::hms(paste(offset,":00:00")))
+    }
+    
     # for heterogenous formats try parsing ymd_hms
-    date.origin <- suppressWarnings(try(lubridate::ymd_hms(ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)))
+    date.origin <- suppressWarnings(try(lubridate::ymd_hms(t.units)))
     
     # parsing ymd
     if (is.na(date.origin)) {
-      date.origin <- lubridate::ymd(ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)
+      date.origin <- lubridate::ymd(t.units)
     }
     # throw error if can't parse time format
     if (is.na(date.origin)) {
       PEcAn.logger::logger.error("All time formats failed to parse. No formats found.")
     }
     
-
+    
     time.stamp.match <- gsub("UTC", "", date.origin)
     t.units <- gsub(paste0(" since ", time.stamp.match, ".*"), "", 
-                    ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)
+                    t.units)
     
     # need to change system TZ otherwise, lines below keeps writing in the current time zone
     Sys.setenv(TZ = 'UTC')

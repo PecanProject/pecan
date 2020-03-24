@@ -10,6 +10,8 @@
 ##' Main driver function to call the ecosystem model specific (e.g. ED, SiPNET) 
 ##' run and configuration file scripts 
 ##' 
+##' DEPRECATED: This function has been moved to the PEcAn.workflow package and will be removed from PEcAn.utils.
+##'
 ##' @name run.write.configs
 ##' @title Run model specific write configuration functions
 ##' @param model the ecosystem model to generate the configuration files for
@@ -22,15 +24,16 @@
 ##'    files within this workflow, to avoid confusion).
 ##'
 ##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
-##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
+##' @export
 run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
+  .Deprecated("PEcAn.workflow::run.write.configs")
   
   con <- PEcAn.DB::db.open(settings$database$bety)
-  on.exit(PEcAn.DB::db.close(con))
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
@@ -40,7 +43,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
         files <- PEcAn.DB::dbfile.check("Posterior",
                               settings$pfts[[i]]$posteriorid, 
-                              con, settings$host$name)
+                              con, settings$host$name, return.all = TRUE)
         pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
         if (length(pid) == 0) {
           pid <- grep("prior.distns.Rdata", files$file_name)  ## is there a prior file?
@@ -57,6 +60,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   model <- settings$model$type
   scipen <- getOption("scipen")
   options(scipen = 12)
+  #sample from parameters used for both sensitivity analysis and Ens
   get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
   
@@ -95,10 +99,6 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   if ("sensitivity.analysis" %in% names(settings)) {
     
     ### Write out SA config files
-    if (!exists("cnt")) {
-      cnt <- 0
-      assign("cnt", cnt, .GlobalEnv)
-    }
     PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
     sa.runs <- write.sa.configs(defaults = settings$pfts, 
                                 quantile.samples = sa.samples, 
@@ -151,8 +151,9 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
 } # run.write.configs
 
 
-##' @export
+#' @export
 runModule.run.write.configs <- function(settings, overwrite = TRUE) {
+  .Deprecated("PEcAn.workflow::runModule.run.write.configs")
   if (PEcAn.settings::is.MultiSettings(settings)) {
     if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
       PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
@@ -161,7 +162,9 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
     return(PEcAn.settings::papply(settings, runModule.run.write.configs, overwrite = FALSE))
   } else if (PEcAn.settings::is.Settings(settings)) {
     write <- settings$database$bety$write
-    ens.sample.method <- settings$ensemble$method
+    # double check making sure we have method for parameter sampling
+    if (is.null(settings$ensemble$samplingspace$parameters$method)) settings$ensemble$samplingspace$parameters$method <- "uniform"
+    ens.sample.method <-  settings$ensemble$samplingspace$parameters$method
     return(run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")

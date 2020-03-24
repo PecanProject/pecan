@@ -85,7 +85,7 @@ define_benchmark <- function(settings, bety){
       logger.debug(sprintf("Benchmark %.0f for input %.0f variable %.0f created", 
                            bm$id, bm$input_id, bm$variable_id))
     }else if(dim(bm)[1] >1){
-      PEcAn.utils::logger.error(sprintf("DUPLICATE records exist for input %.0f variable %.0f", 
+      PEcAn.logger::logger.error(sprintf("DUPLICATE records exist for input %.0f variable %.0f", 
                                         as.numeric(benchmark$input_id), benchmark$variable_id))
     }else{
       logger.debug(sprintf("Benchmark %.0f for input %.0f variable %.0f exists", 
@@ -103,7 +103,7 @@ define_benchmark <- function(settings, bety){
                      bm$id, bm.settings$reference_run_id)
       db.query(cmd, bety$con)
     }else if(dim(bmBRR)[1] > 1){
-      PEcAn.utils::logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
+      PEcAn.logger::logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
     }
     
     # Retrieve/create benchmarks_metrics record
@@ -117,7 +117,7 @@ define_benchmark <- function(settings, bety){
                        bm$id, metric_ids[[k]])
         db.query(cmd, bety$con)
       }else if(dim(bmmetric)[1] > 1){
-        PEcAn.utils::logger.error("Duplicate record entries in benchmarks_metrics")
+        PEcAn.logger::logger.error("Duplicate record entries in benchmarks_metrics")
       }
     } # end loop over metric ids
     

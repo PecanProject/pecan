@@ -10,7 +10,6 @@
 ##' @export
 ##' @author David LeBauer
 cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = lat, ...) {
-  library(data.table)
   ## time step
   dt_hr <- as.numeric(round(difftime(cfmet$date[2], cfmet$date[1],  units = "hours")))
 
@@ -35,7 +34,7 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = l
 
   if (dt_hr == 24) {
     if (all(c("tmax", "tmin") %in% colnames(cfmet))) {
-      setnames(cfmet, c("tmax", "tmin"), c("air_temperature_max", "air_temperature_min"))
+      data.table::setnames(cfmet, c("tmax", "tmin"), c("air_temperature_max", "air_temperature_min"))
     }
     downscaled.result <- cfmet.downscale.daily(dailymet = cfmet, output.dt = output.dt, lat = lat)
   } else if (dt_hr > 24) {
@@ -92,7 +91,7 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1) {
       hrscale <- ifelse(var %in% c("surface_downwelling_shortwave_flux_in_air", "precipitation_flux"), 
                         output.dt, 1)
 
-      f <- splinefun(as.double(subdailymet$date), (subdailymet[[var]] / hrscale), method = "monoH.FC")
+      f <- stats::splinefun(as.double(subdailymet$date), (subdailymet[[var]] / hrscale), method = "monoH.FC")
       downscaled.result[[var]] <- f(as.double(new.date$date))
       downscaled.result[[var]][downscaled.result[[var]] < 0] <- 0
       if (var == "relative_humidity") {
@@ -101,7 +100,7 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1) {
     }
   }
 
-  downscaled.result <- cbind(new.date, as.data.table(downscaled.result))
+  downscaled.result <- cbind(new.date, data.table::as.data.table(downscaled.result))
 } # cfmet.downscale.subdaily
 
 
@@ -123,10 +122,10 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
   tint <- 24/output.dt
   tseq <- 0:(23 * output.dt)/output.dt
   
-  setkeyv(dailymet, c("year", "doy"))
+  data.table::setkeyv(dailymet, c("year", "doy"))
   
   if (all(c("air_temperature_max", "air_temperature_min") %in% colnames(dailymet))) {
-    setnames(dailymet, c("air_temperature_max", "air_temperature_min"), c("tmax", "tmin"))
+    data.table::setnames(dailymet, c("air_temperature_max", "air_temperature_min"), c("tmax", "tmin"))
   }
   
   light <- dailymet[, lightME(DOY = doy, t.d = tseq, lat = lat), by = c("year", "doy")]
@@ -144,7 +143,7 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
   
   ## Relative Humidity
   RH <- dailymet[, list(RH = rep(relative_humidity, each = tint), hour = tseq), by = "year,doy"]
-  setkeyv(RH, c("year", "doy", "hour"))
+  data.table::setkeyv(RH, c("year", "doy", "hour"))
   
   # if(!'air_pressure' %in% colnames(dailymet)) air_pressure <-
   qair <- dailymet[, list(year, doy, tmin, tmax, air_pressure, air_temperature, qmin = rh2qair(rh = relative_humidity/100, 
@@ -177,7 +176,7 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
   ## Hour
   time <- dailymet[, list(hour = tseq), by = c("year", "doy")]
   
-  ans <- data.table(time, downwelling_photosynthetic_photon_flux = SolarR, air_temperature = udunits2::ud.convert(Temp, 
+  ans <- data.table::data.table(time, downwelling_photosynthetic_photon_flux = SolarR, air_temperature = udunits2::ud.convert(Temp, 
                                                                                                         "kelvin", "celsius"), relative_humidity = RH, wind = wind_speed, precipitation_flux = precip)
   return(ans)
 } # cfmet.downscale.daily

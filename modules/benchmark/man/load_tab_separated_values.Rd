@@ -17,6 +17,9 @@ load_tab_separated_values(data.path, format, site = NULL, vars = NULL)
 
 \item{end_year}{numeric}
 }
+\description{
+load_tab_separated_values
+}
 \author{
 Betsy Cowdery, Mike Dietze
 }

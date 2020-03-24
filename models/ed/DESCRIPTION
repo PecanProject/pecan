@@ -1,10 +1,18 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn package for integration of ED2 model
-Version: 1.5.1
-Date: 2017-09-25
-Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
-    Davidson, Rob Kooper, Shawn Serbin
+Version: 1.7.1
+Date: 2019-09-05
+Authors@R: c(person("Mike","Dietze"),
+             person("David","LeBauer"),
+             person("Xiaohui", "Feng"),
+             person("Dan"," Wang"),
+             person("Carl", "Davidson"),
+             person("Rob","Kooper"),
+             person("Shawn", "Serbin"),
+             person("Alexey", "Shiklomanov"))
+Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
+    Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
@@ -16,23 +24,29 @@ Depends:
     PEcAn.utils,
     coda
 Imports:
+    PEcAn.data.atmosphere,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
     abind (>= 1.4.5),
+    dplyr,
+    glue,
+    hdf5r,
+    lubridate,
+    magrittr,
     ncdf4 (>= 1.15),
+    purrr,
     stringr(>= 1.1.0),
+    tidyr,
+    tibble,
     udunits2 (>= 0.11),
-    XML (>= 3.98-1.4),
-    BiocInstaller,
-    rhdf5
+    XML (>= 3.98-1.4)
 Suggests:
     testthat (>= 1.0.2)
-Remotes:
-    github::bioconductor-mirror/biocinstaller@release-3.4,
-    github::bioconductor-mirror/rhdf5@release-3.4
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 7.0.2
+Roxygen: list(markdown = TRUE)
