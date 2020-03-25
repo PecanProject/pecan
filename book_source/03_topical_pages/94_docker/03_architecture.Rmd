@@ -251,7 +251,7 @@ Our configuration is as follows:
 yaml::write_yaml(dc_yaml$services["bety"], stdout())
 ```
 
-The BETY container Dockerfile is located in the root directory of the [BETY GitHub repository](https://github.com/pecan/bety) ([direct link](https://github.com/PecanProject/bety/blob/master/Dockerfile)).
+The BETY container Dockerfile is located in the root directory of the [BETY GitHub repository](https://github.com/PecanProject/bety) ([direct link](https://github.com/PecanProject/bety/blob/master/Dockerfile)).
 
 ### `docs` {#pecan-dc-docs}
 
