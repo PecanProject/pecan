@@ -274,7 +274,7 @@ Our configuration is as follows:
 yaml::write_yaml(dc_yaml$services["web"], stdout())
 ```
 
-Its Dockerfile ships with the PEcAn source code, in [`docker/base/Dockerfile.web`](https://github.com/PecanProject/pecan/blob/develop/docker/base/Dockerfile.web).
+Its Dockerfile ships with the PEcAn source code, in [`docker/web/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/web/Dockerfile).
 
 In terms of [actively developing PEcAn using Docker](#pecan-docker-develop), this is the service to modify when making changes to the web interface (i.e. PHP, HTML, and JavaScript code located in the PEcAn `web` directory).
 
@@ -289,9 +289,9 @@ Our configuration is as follows:
 yaml::write_yaml(dc_yaml$services["executor"], stdout())
 ```
 
-Its Dockerfile is ships with the PEcAn source code, in [`docker/base/Dockerfile.executor`](https://github.com/PecanProject/pecan/blob/develop/docker/base/Dockerfile.executor).
-Its image is built on top of the `pecan/base` image ([`docker/base/Dockerfile.base`](https://github.com/PecanProject/pecan/blob/develop/docker/base/Dockerfile.base)), which contains the actual PEcAn source.
-To facilitate caching, the `pecan/base` image is itself built on top of the `pecan/depends` image ([`docker/base/Dockerfile.depends`](https://github.com/PecanProject/pecan/blob/develop/docker/base/Dockerfile.depends)), a large image that contains an R installation and PEcAn's many system and R package dependencies (which usually take ~30 minutes or longer to install from scratch).
+Its Dockerfile is ships with the PEcAn source code, in [`docker/executor/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/executor/Dockerfile).
+Its image is built on top of the `pecan/base` image ([`docker/base/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/base/Dockerfile)), which contains the actual PEcAn source.
+To facilitate caching, the `pecan/base` image is itself built on top of the `pecan/depends` image ([`docker/depends/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/depends/Dockerfile)), a large image that contains an R installation and PEcAn's many system and R package dependencies (which usually take ~30 minutes or longer to install from scratch).
 
 In terms of [actively developing PEcAn using Docker](#pecan-docker-develop), this is the service to modify when making changes to the PEcAn R source code.
 Note that, unlike changes to the `web` image's PHP code, changes to the R source code do not immediately propagate to the PEcAn container; instead, you have to re-compile the code by running `make` inside the container.
@@ -317,5 +317,5 @@ In general, their configuration should be similar to the following configuration
 yaml::write_yaml(dc_yaml$services["sipnet"], stdout())
 ```
 
-The PEcAn source contains Dockerfiles for ED2 ([`docker/models/Dockerfile.ed2`](https://github.com/PecanProject/pecan/blob/develop/docker/models/Dockerfile.ed2)) and SIPNET ([`docker/models/Dockerfile.sipnet`](https://github.com/PecanProject/pecan/blob/develop/docker/models/Dockerfile.sipnet)) that can serve as references.
+The PEcAn source contains Dockerfiles for ED2 ([`models/ed/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/models/ed/Dockerfile.)) and SIPNET ([`models/sipnet/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/models/sipnet/Dockerfile)) that can serve as references.
 For additional tips on constructing a Dockerfile for your model, see [Dockerfiles for Models](#model-docker).
