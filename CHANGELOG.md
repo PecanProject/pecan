@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 
+- PEcAn.utils::tranformstats() assumed the statistic names column of its input was a factor. It now accepts character too, and returns the same class given as input (#2545).
 - fixed and added tests for `get.rh` function in PEcAn.data.atmosphere 
 - Invalid .zenodo.json that broke automatic archiving on Zenodo ([b56ef53](https://github.com/PecanProject/pecan/commit/b56ef53888d73904c893b9e8c8cfaeedd7b1edbe))
 - Fixed a filehandle leak in multi-year runs of PEcAn.BIOCRO::met2model.BIOCRO: It was only closing the last input file it processed (#2485).
