@@ -20,8 +20,8 @@
 #' dplyr::tbl(irisdb, "iris")
 insert_table <- function(values, table, con, coerce_col_class = TRUE, drop = TRUE) {
   values_fixed <- match_dbcols(values, table, con, coerce_col_class, drop = TRUE)
-  insert_query <- build_insert_query(values_fixed, table, .con = con)
-  db.query(insert_query, con)
+
+  DBI::dbAppendTable(con, table, values_fixed)
 }
 
 #' Match column names and classes between local and SQL table
@@ -90,23 +90,4 @@ match_colnames <- function(values, table, con) {
   table_cols <- dplyr::tbl_vars(tbl_db)
   values_cols <- colnames(values)
   intersect(values_cols, table_cols)
-}
-
-#' Build query to insert R data frame into SQL table
-#'
-#' @inheritParams insert_table
-#' @inheritParams glue::glue_sql
-build_insert_query <- function(values, table, .con) {
-  value_list <- purrr::map(seq_len(nrow(values)), ~as.list(values[.x, ]))
-
-  insert_list <- value_list %>%
-    purrr::map(unname) %>%
-    purrr::map(dbplyr::escape, con = .con) %>%
-    purrr::map(dbplyr::sql_vector, con = .con)
-
-  glue::glue_sql(
-    "INSERT INTO {`table`} ({`colnames(values)`*}) ",
-    "VALUES {insert_list*}",
-    .con = .con
-  )
 }

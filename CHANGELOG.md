@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 
+- PEcAn.utils::tranformstats() assumed the statistic names column of its input was a factor. It now accepts character too, and returns the same class given as input (#2545).
 - fixed and added tests for `get.rh` function in PEcAn.data.atmosphere 
 - Invalid .zenodo.json that broke automatic archiving on Zenodo ([b56ef53](https://github.com/PecanProject/pecan/commit/b56ef53888d73904c893b9e8c8cfaeedd7b1edbe))
 - Fixed a filehandle leak in multi-year runs of PEcAn.BIOCRO::met2model.BIOCRO: It was only closing the last input file it processed (#2485).
@@ -21,6 +22,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Update pecan/depends docker image to have latest Roxygen and devtools.
 
 ### Changed
+- `PEcAn.DB::insert_table` now uses `DBI::dbAppendTable` internally instead of manually constructed SQL (#2552).
 - Rebuilt documentation using Roxygen 7. Readers get nicer formatting of usage sections, writers get more flexible behavior when inheriting parameters and less hassle when maintaining namespaces (#2524).
 - Renamed functions that looked like S3 methods but were not:
     * PEcAn.priors: `plot.posterior.density`->`plot_posterior.density`, `plot.prior.density`->`plot_prior.density`, `plot.trait`->`plot_trait` (#2439).
@@ -36,6 +38,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Models monitoring container for Docker now shows a webpage with models it has seen
 - Added small container to check if certain services are up, used as initi container for kubernetes
 - Documentation how to run ED using singularity
+- PEcAn.DB gains new function `get_postgres_envvars`, which tries to look up connection parameters from Postgres environment variables (if they are set) and return them as a list ready to be passed to `db.open`. It should be especially useful when writing tests that need to run on systems with many different database configurations (#2541).
 
 ## [1.7.1] - 2018-09-12
 

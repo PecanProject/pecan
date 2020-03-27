@@ -11,7 +11,7 @@ This will work on a Linux machine (x86_64).
 First make sure you have all the data files:
 
 <details>
-<summary>bash script to install required files</summary>
+<summary>bash script to install required files (click to expand)</summary>
 ```bash
 #!/bin/bash
 
@@ -47,7 +47,7 @@ fi
 Next edit the ED2IN file in testrun.s83
 
 <details>
-<summary>ED2IN file</summary>
+<summary>ED2IN file (click to expand)</summary>
 ```
 !==========================================================================================!
 !==========================================================================================!
@@ -1486,7 +1486,7 @@ Once the model is finished the outputs should be available under `testrun.s83`.
 The example ED2IN file is not 100% correct and will result in the following error:
 
 <details>
-<summary>output of (failed) run</summary>
+<summary>output of (failed) run (click to expand)</summary>
 ```
 +---------------- MPI parallel info: --------------------+
 +  - Machnum  =      0
