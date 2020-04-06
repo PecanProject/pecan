@@ -47,12 +47,14 @@ if ("sitegroup" %in% names(settings)) {
   if (is.null(settings$sitegroup$nSite)) {
     settings <- PEcAn.settings::createSitegroupMultiSettings(
       settings,
-      sitegroupId = settings$sitegroup$id)
+      sitegroupId = settings$sitegroup$id
+    )
   } else {
     settings <- PEcAn.settings::createSitegroupMultiSettings(
       settings,
       sitegroupId = settings$sitegroup$id,
-      nSite = settings$sitegroup$nSite)
+      nSite = settings$sitegroup$nSite
+    )
   }
   # zero out so don't expand a second time if re-reading
   settings$sitegroup <- NULL
@@ -68,7 +70,7 @@ PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
 # start from scratch if no continue is passed in
 status_file <- file.path(settings$outdir, "STATUS")
 if (length(which(commandArgs() == "--continue")) == 0
-    && file.exists(status_file)) {
+&& file.exists(status_file)) {
   file.remove(status_file)
 }
 
@@ -81,11 +83,13 @@ if (PEcAn.utils::status.check("TRAIT") == 0) {
   settings <- PEcAn.workflow::runModule.get.trait.data(settings)
   PEcAn.settings::write.settings(
     settings,
-    outputfile = "pecan.TRAIT.xml")
+    outputfile = "pecan.TRAIT.xml"
+  )
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, "pecan.TRAIT.xml"))) {
   settings <- PEcAn.settings::read.settings(
-    file.path(settings$outdir, "pecan.TRAIT.xml"))
+    file.path(settings$outdir, "pecan.TRAIT.xml")
+  )
 }
 
 
@@ -106,13 +110,14 @@ if (PEcAn.utils::status.check("CONFIG") == 0) {
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, "pecan.CONFIGS.xml"))) {
   settings <- PEcAn.settings::read.settings(
-    file.path(settings$outdir, "pecan.CONFIGS.xml"))
+    file.path(settings$outdir, "pecan.CONFIGS.xml")
+  )
 }
 
 if ((length(which(commandArgs() == "--advanced")) != 0)
-    && (PEcAn.utils::status.check("ADVANCED") == 0)) {
+&& (PEcAn.utils::status.check("ADVANCED") == 0)) {
   PEcAn.utils::status.start("ADVANCED")
-  q();
+  q()
 }
 
 # Start ecosystem model runs
@@ -131,7 +136,7 @@ if (PEcAn.utils::status.check("OUTPUT") == 0) {
 
 # Run ensemble analysis on model output.
 if ("ensemble" %in% names(settings)
-    && PEcAn.utils::status.check("ENSEMBLE") == 0) {
+&& PEcAn.utils::status.check("ENSEMBLE") == 0) {
   PEcAn.utils::status.start("ENSEMBLE")
   runModule.run.ensemble.analysis(settings, TRUE)
   PEcAn.utils::status.end()
@@ -139,7 +144,7 @@ if ("ensemble" %in% names(settings)
 
 # Run sensitivity analysis and variance decomposition on model output
 if ("sensitivity.analysis" %in% names(settings)
-    && PEcAn.utils::status.check("SENSITIVITY") == 0) {
+&& PEcAn.utils::status.check("SENSITIVITY") == 0) {
   PEcAn.utils::status.start("SENSITIVITY")
   runModule.run.sensitivity.analysis(settings)
   PEcAn.utils::status.end()
@@ -165,7 +170,7 @@ if ("state.data.assimilation" %in% names(settings)) {
 
 # Run benchmarking
 if ("benchmarking" %in% names(settings)
-    && "benchmark" %in% names(settings$benchmarking)) {
+&& "benchmark" %in% names(settings$benchmarking)) {
   PEcAn.utils::status.start("BENCHMARKING")
   results <- papply(settings, function(x) calc_benchmark(x, bety))
   PEcAn.utils::status.end()
@@ -175,17 +180,22 @@ if ("benchmarking" %in% names(settings)
 if (PEcAn.utils::status.check("FINISHED") == 0) {
   PEcAn.utils::status.start("FINISHED")
   PEcAn.remote::kill.tunnel(settings)
-  db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=",
-                 settings$workflow$id, "AND finished_at IS NULL"),
-           params = settings$database$bety)
+  db.query(paste(
+    "UPDATE workflows SET finished_at=NOW() WHERE id=",
+    settings$workflow$id, "AND finished_at IS NULL"
+  ),
+  params = settings$database$bety
+  )
 
   # Send email if configured
   if (!is.null(settings$email)
-      && !is.null(settings$email$to)
-      && (settings$email$to != "")) {
-    sendmail(settings$email$from, settings$email$to,
-             paste0("Workflow has finished executing at ", base::date()),
-             paste0("You can find the results on ", settings$email$url))
+  && !is.null(settings$email$to)
+  && (settings$email$to != "")) {
+    sendmail(
+      settings$email$from, settings$email$to,
+      paste0("Workflow has finished executing at ", base::date()),
+      paste0("You can find the results on ", settings$email$url)
+    )
   }
   PEcAn.utils::status.end()
 }
