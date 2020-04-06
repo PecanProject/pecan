@@ -1,11 +1,11 @@
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Copyright (c) 2012 University of Illinois, NCSA.
 ## All rights reserved. This program and the accompanying materials
 ## are made available under the terms of the
 ## University of Illinois/NCSA Open Source License
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' Checks for and attempts to fix deprecated settings structure
 #'
 #' @title Fix Deprecated Settings
@@ -15,10 +15,11 @@
 #' @export fix.deprecated.settings
 fix.deprecated.settings <- function(settings, force = FALSE) {
   if (!force
-      && !is.null(settings$settings.info$deprecated.settings.fixed)
-      && settings$settings.info$deprecated.settings.fixed == TRUE) {
+  && !is.null(settings$settings.info$deprecated.settings.fixed)
+  && settings$settings.info$deprecated.settings.fixed == TRUE) {
     PEcAn.logger::logger.info(
-      "Deprecated settings have been fixed already. Skipping.")
+      "Deprecated settings have been fixed already. Skipping."
+    )
     return(invisible(settings))
   } else {
     PEcAn.logger::logger.info("Fixing deprecated settings...")
@@ -33,11 +34,13 @@ fix.deprecated.settings <- function(settings, force = FALSE) {
     if (!is.null(settings$model$jobtemplate)) {
       PEcAn.logger::logger.severe(
         "You have both deprecated settings$run$jobtemplate",
-        "and settings$model$jobtemplate. Use latter only.")
+        "and settings$model$jobtemplate. Use latter only."
+      )
     }
     PEcAn.logger::logger.info(
       "settings$run$jobtemplate is deprecated.",
-      "use settings$model$jobtemplate instead")
+      "use settings$model$jobtemplate instead"
+    )
     settings$model$jobtemplate <- settings$run$jobtemplate
     settings$run$jobtemplate <- NULL
   }
@@ -47,11 +50,13 @@ fix.deprecated.settings <- function(settings, force = FALSE) {
     if (!is.null(settings$database$dbfiles)) {
       PEcAn.logger::logger.severe(
         "You have both deprecated settings$run$dbfiles",
-        "and settings$database$dbfiles. Use latter only.")
+        "and settings$database$dbfiles. Use latter only."
+      )
     }
     PEcAn.logger::logger.info(
       "settings$run$dbfiles is deprecated.",
-      "use settings$database$dbfiles instead")
+      "use settings$database$dbfiles instead"
+    )
     settings$database$dbfiles <- settings$run$dbfiles
     settings$run$dbfiles <- NULL
   }
@@ -61,10 +66,12 @@ fix.deprecated.settings <- function(settings, force = FALSE) {
     if (!is.null(settings$host)) {
       PEcAn.logger::logger.severe(
         "You have both deprecated settings$run$host and settings$host.",
-        "Use latter only.")
+        "Use latter only."
+      )
     }
     PEcAn.logger::logger.info(
-      "settings$run$host is deprecated. use settings$host instead")
+      "settings$run$host is deprecated. use settings$host instead"
+    )
     settings$host <- settings$run$host
     settings$run$host <- NULL
   }

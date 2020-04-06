@@ -1,7 +1,7 @@
 #' Connect to bety using current PEcAn configuration
 #' @param php.config Path to `config.php`
 #' @export
-#' 
+#'
 betyConnect <- function(php.config = "../../web/config.php") {
   ## Read PHP config file for webserver
 
@@ -10,11 +10,13 @@ betyConnect <- function(php.config = "../../web/config.php") {
   ## Database connection
   # TODO: The latest version of dplyr/dbplyr works with standard DBI-based
   # objects, so we should replace this with a standard `db.open` call.
-  dplyr::src_postgres(dbname = config.list$db_bety_database,
-               host = config.list$db_bety_hostname,
-               user = config.list$db_bety_username,
-               password = config.list$db_bety_password)
-}  # betyConnect
+  dplyr::src_postgres(
+    dbname = config.list$db_bety_database,
+    host = config.list$db_bety_hostname,
+    user = config.list$db_bety_username,
+    password = config.list$db_bety_password
+  )
+} # betyConnect
 
 
 #' Convert number to scientific notation pretty expression
@@ -32,7 +34,7 @@ fancy_scientific <- function(l) {
   l <- gsub("0e\\+00", "0", l)
   # return this as an expression
   return(parse(text = l))
-}  # fancy_scientific
+} # fancy_scientific
 
 
 #' Count rows of a data frame
@@ -40,17 +42,17 @@ fancy_scientific <- function(l) {
 #' @export
 dplyr.count <- function(df) {
   return(dplyr::collect(dplyr::tally(df))[["n"]])
-}  # dplyr.count
+} # dplyr.count
 
 
 #' Convert netcdf number of days to date
 #' @export
 ncdays2date <- function(time, unit) {
-  date    <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
-  days    <- udunits2::ud.convert(time, unit, paste("days since ", date))
+  date <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
+  days <- udunits2::ud.convert(time, unit, paste("days since ", date))
   seconds <- udunits2::ud.convert(days, "days", "seconds")
   return(as.POSIXct.numeric(seconds, origin = date, tz = "UTC"))
-}  # ncdays2date
+} # ncdays2date
 
 
 #' Database host information
@@ -68,15 +70,19 @@ dbHostInfo <- function(bety) {
     dplyr::select(sync_start, sync_end)
 
   if (is.na(nrow(machine)) || nrow(machine) == 0) {
-    return(list(hostid = hostid,
-                start = 1e+09 * hostid,
-                end = 1e+09 * (hostid + 1) - 1))
+    return(list(
+      hostid = hostid,
+      start = 1e+09 * hostid,
+      end = 1e+09 * (hostid + 1) - 1
+    ))
   } else {
-    return(list(hostid = hostid,
-                start = machine$sync_start,
-                end = machine$sync_end))
+    return(list(
+      hostid = hostid,
+      start = machine$sync_start,
+      end = machine$sync_end
+    ))
   }
-}  # dbHostInfo
+} # dbHostInfo
 
 
 #' list of workflows that exist
@@ -86,15 +92,17 @@ dbHostInfo <- function(bety) {
 workflows <- function(bety, ensemble = FALSE) {
   hostinfo <- dbHostInfo(bety)
   if (ensemble) {
-    query <- paste("SELECT ensembles.id AS ensemble_id, ensembles.workflow_id, workflows.folder",
-                   "FROM ensembles, workflows WHERE runtype = 'ensemble'")
+    query <- paste(
+      "SELECT ensembles.id AS ensemble_id, ensembles.workflow_id, workflows.folder",
+      "FROM ensembles, workflows WHERE runtype = 'ensemble'"
+    )
   } else {
     query <- "SELECT id AS workflow_id, folder FROM workflows"
   }
   dplyr::tbl(bety, dbplyr::sql(query)) %>%
     dplyr::filter(workflow_id >= !!hostinfo$start & workflow_id <= !!hostinfo$end) %>%
     return()
-}  # workflows
+} # workflows
 
 
 #' Get single workflow by workflow_id
@@ -104,7 +112,7 @@ workflows <- function(bety, ensemble = FALSE) {
 workflow <- function(bety, workflow_id) {
   workflows(bety) %>%
     dplyr::filter(workflow_id == !!workflow_id)
-}  # workflow
+} # workflow
 
 
 #' Get table of runs corresponding to a workflow
@@ -122,7 +130,7 @@ runs <- function(bety, workflow_id) {
     dplyr::inner_join(Ensembles, by = "ensemble_id")
   dplyr::select(Runs, -workflow_id, -ensemble_id) %>%
     return()
-}  # runs
+} # runs
 
 
 #' Get vector of workflow IDs
@@ -142,7 +150,7 @@ get_workflow_ids <- function(bety, query, all.ids = FALSE) {
       sort(decreasing = TRUE)
   }
   return(ids)
-}  # get_workflow_ids
+} # get_workflow_ids
 
 #' Get data frame of users and IDs
 #' @inheritParams dbHostInfo
@@ -153,7 +161,7 @@ get_users <- function(bety) {
   out <- dplyr::tbl(bety, dbplyr::sql(query)) %>%
     dplyr::filter(id >= hostinfo$start & id <= hostinfo$end)
   return(out)
-}  # get_workflow_ids
+} # get_workflow_ids
 
 
 #' Get vector of run IDs for a given workflow ID
@@ -169,7 +177,7 @@ get_run_ids <- function(bety, workflow_id) {
     }
   }
   return(run_ids)
-}  # get_run_ids
+} # get_run_ids
 
 
 #' Get vector of variable names for a particular workflow and run ID
@@ -201,11 +209,11 @@ get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
       var_names <- "No variables found"
     }
     if (remove_pool) {
-      var_names <- var_names[!grepl("pool", var_names, ignore.case = TRUE)]  ## Ignore 'poolnames' and 'carbon pools' variables
+      var_names <- var_names[!grepl("pool", var_names, ignore.case = TRUE)] ## Ignore 'poolnames' and 'carbon pools' variables
     }
   }
   return(var_names)
-}  # get_var_names
+} # get_var_names
 
 #' Get vector of variable names for a particular workflow and run ID
 #' @inheritParams get_var_names
@@ -217,7 +225,7 @@ var_names_all <- function(bety, workflow_id, run_id) {
   # Get variables for a particular workflow and run id
   var_names <- get_var_names(bety, workflow_id, run_id)
   # Remove variables which should not be shown to the user
-  removeVarNames <- c('Year','FracJulianDay')
+  removeVarNames <- c("Year", "FracJulianDay")
   var_names <- var_names[!var_names %in% removeVarNames]
   return(var_names)
 } # var_names_all
@@ -239,29 +247,28 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
   # Use the function 'var_names_all' to get all variables
   var_names <- var_names_all(bety, workflow_id, run_id)
   # lat/lon often cause trouble (like with JULES) but aren't needed for this basic plotting
-  var_names <- setdiff(var_names, c("lat", "latitude", "lon", "longitude")) 
-  outputfolder <- file.path(workflow$folder, 'out', run_id)
+  var_names <- setdiff(var_names, c("lat", "latitude", "lon", "longitude"))
+  outputfolder <- file.path(workflow$folder, "out", run_id)
   out <- read.output(runid = run_id, outdir = outputfolder, variables = var_names, dataframe = TRUE)
   ncfile <- list.files(path = outputfolder, pattern = "\\.nc$", full.names = TRUE)[1]
   nc <- ncdf4::nc_open(ncfile)
-  
+
   globalDF <- tidyr::gather(out, key = var_name, value = vals, names(out)[names(out) != "posix"]) %>%
     dplyr::rename(dates = posix)
   globalDF$workflow_id <- workflow_id
   globalDF$run_id <- run_id
   globalDF$xlab <- "Time"
-  globalDF$ylab <- unlist(sapply(globalDF$var_name, function(x){
-    if(!is.null(nc$var[[x]]$units)){
+  globalDF$ylab <- unlist(sapply(globalDF$var_name, function(x) {
+    if (!is.null(nc$var[[x]]$units)) {
       return(nc$var[[x]]$units)
-    }else{
+    } else {
       return("")
     }
-  } ))
-  globalDF$title <- unlist(lapply(globalDF$var_name, function(x){
+  }))
+  globalDF$title <- unlist(lapply(globalDF$var_name, function(x) {
     long_name <- names(which(var_names == x))
     ifelse(length(long_name) > 0, long_name, x)
-  }
-  ))
+  }))
 
   return(globalDF)
-} #load_data_single_run
+} # load_data_single_run

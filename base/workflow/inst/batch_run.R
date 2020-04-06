@@ -74,19 +74,25 @@ for (i in seq_len(nrow(input_table))) {
   message("Model: ", shQuote(model))
   message("Revision: ", shQuote(revision))
   model_df <- tbl(con, "models") %>%
-    filter(model_name == !!model,
-           revision == !!revision) %>%
+    filter(
+      model_name == !!model,
+      revision == !!revision
+    ) %>%
     collect()
   if (nrow(model_df) == 0) {
-    message("No models found with name ", model,
-	    " and revision ", revision, ".\n",
-	    "Moving on to next row.")
+    message(
+      "No models found with name ", model,
+      " and revision ", revision, ".\n",
+      "Moving on to next row."
+    )
     next
   } else if (nrow(model_df) > 1) {
     print(model_df)
-    message("Multiple models found with name ", model,
-	    " and revision ", revision, ".\n",
-	    "Moving on to next row.")
+    message(
+      "Multiple models found with name ", model,
+      " and revision ", revision, ".\n",
+      "Moving on to next row."
+    )
     next
   } else {
     model_id <- model_df$id

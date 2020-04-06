@@ -14,8 +14,8 @@
 #' @export
 #' @examples
 #' \dontrun{
-#'   host <- list(name='geo.bu.edu', user='kooper', tunnel='/tmp/geo.tunnel')
-#'   print(remote.execute.cmd(host, 'ls', c('-l', '/'), stderr=TRUE))
+#' host <- list(name = "geo.bu.edu", user = "kooper", tunnel = "/tmp/geo.tunnel")
+#' print(remote.execute.cmd(host, "ls", c("-l", "/"), stderr = TRUE))
 #' }
 remote.execute.cmd <- function(host, cmd, args = character(), stderr = FALSE) {
   if (is.character(host)) {
@@ -23,7 +23,7 @@ remote.execute.cmd <- function(host, cmd, args = character(), stderr = FALSE) {
   }
 
   if (is.localhost(host)) {
-    PEcAn.logger::logger.debug(paste(c(cmd, args), collapse = ' '))
+    PEcAn.logger::logger.debug(paste(c(cmd, args), collapse = " "))
     system2(cmd, args, stdout = TRUE, stderr = as.logical(stderr))
   } else {
     remote <- host$name

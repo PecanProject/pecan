@@ -13,7 +13,7 @@
 ##'
 ##' @details If neither `con` nor `...` are provided, this will try to
 ##'   connect to BETY using a `settings` object in the current
-##'   environment. 
+##'   environment.
 ##'
 ##' @param pft ID number of the PFT in the database
 ##' @param trstr String of traits to query priors for. If passed as a
@@ -31,13 +31,12 @@
 ##'   con <- db.open(...)
 ##'   query.priors("ebifarm.pavi", c("SLA", "Vcmax", "leaf_width"), con = con)
 ##' }
-query.priors <- function(pft, trstr = NULL, con = NULL, ...){
-
+query.priors <- function(pft, trstr = NULL, con = NULL, ...) {
   if (inherits(pft, "integer64")) {
     # Convert to character with correct representation
     pft <- format(pft, scientific = FALSE)
   }
-  
+
   if (is.null(con)) {
     params <- list(...)
     if (!length(params)) {
@@ -58,11 +57,12 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 
   query.text <- paste(
     "SELECT variables.name, distn, parama, paramb, n",
-      "FROM priors",
-      "JOIN variables ON priors.variable_id = variables.id",
-      "JOIN pfts_priors ON pfts_priors.prior_id = priors.id",
-      "JOIN pfts ON pfts.id = pfts_priors.pft_id",
-      "WHERE pfts.id = ", format(pft, scientific = FALSE))
+    "FROM priors",
+    "JOIN variables ON priors.variable_id = variables.id",
+    "JOIN pfts_priors ON pfts_priors.prior_id = priors.id",
+    "JOIN pfts ON pfts.id = pfts_priors.pft_id",
+    "WHERE pfts.id = ", format(pft, scientific = FALSE)
+  )
 
   if (!is.null(trstr) && trstr != "''") {
     if (length(trstr) > 1) {
@@ -79,14 +79,14 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
   priors <- db.query(query = query.text, con = con)
 
 
-  if(nrow(priors) <= 0){
+  if (nrow(priors) <= 0) {
     warning(paste("No priors found for pft(s): ", pft))
-    priors <- priors[, which(colnames(priors)!='name')]
+    priors <- priors[, which(colnames(priors) != "name")]
     return(priors)
   }
   else {
     rownames(priors) <- priors$name
-    priors <- priors[, which(colnames(priors)!='name')]
+    priors <- priors[, which(colnames(priors) != "name")]
     return(priors)
   }
 }
@@ -98,7 +98,7 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 #'   BETY `pfts` table). You cannot pass both this and `pft_ids`.
 #' @param traits Character vector of trait names (`name` column of
 #'   BETY `traits` table). If `NULL` (default), return information for
-#'   all traits available for that PFT. 
+#'   all traits available for that PFT.
 #' @param pft_ids Numeric vector of PFT IDs (`id` column of BETY
 #'   `pfts` table). You cannot pass both this and `pft_names`.
 #' @param expand (Logical) If `TRUE` (default), search every trait-PFT
@@ -111,40 +111,48 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 #'   PFTs and traits.
 #' @examples
 #' \dontrun{
-#'   con <- db.open(...)
+#' con <- db.open(...)
 #'
-#'   # No trait provided, so return all available traits
-#'   pdat <- query_priors(
-#'     c("temperate.Early_Hardwood", "temperate.North_Mid_Hardwood",
-#'       "temperate.Late_Hardwood"),
-#'     con = con
-#'   )
+#' # No trait provided, so return all available traits
+#' pdat <- query_priors(
+#'   c(
+#'     "temperate.Early_Hardwood", "temperate.North_Mid_Hardwood",
+#'     "temperate.Late_Hardwood"
+#'   ),
+#'   con = con
+#' )
 #'
-#'   # Traits provided, so restrict to only those traits. Note that
-#'   # because `expand = TRUE`, this will search for these traits for
-#'   # every PFT.
-#'   pdat2 <- query_priors(
-#'     c("Optics.Temperate_Early_Hardwood",
-#'       "Optics.Temperate_Mid_Hardwood",
-#'       "Optics.Temperate_Late_Hardwood"),
-#'     c("leaf_reflect_vis", "leaf_reflect_nir"),
-#'     con = con
-#'   )
+#' # Traits provided, so restrict to only those traits. Note that
+#' # because `expand = TRUE`, this will search for these traits for
+#' # every PFT.
+#' pdat2 <- query_priors(
+#'   c(
+#'     "Optics.Temperate_Early_Hardwood",
+#'     "Optics.Temperate_Mid_Hardwood",
+#'     "Optics.Temperate_Late_Hardwood"
+#'   ),
+#'   c("leaf_reflect_vis", "leaf_reflect_nir"),
+#'   con = con
+#' )
 #'
-#'   # With `expand = FALSE`, search the first trait for the first PFT,
-#'   # the second trait for the second PFT, etc. Note that this means
-#'   # PFT and trait input vectors must be the same length.
-#'   pdat2 <- query_priors(
-#'     c("Optics.Temperate_Early_Hardwood",
-#'       "Optics.Temperate_Early_Hardwood",
-#'       "Optics.Temperate_Mid_Hardwood",
-#'       "Optics.Temperate_Late_Hardwood"),
-#'     c("leaf_reflect_vis",
-#'       "leaf_reflect_nir",
-#'       "leaf_reflect_vis",
-#'       "leaf_reflect_nir"),
-#'     con = con
-#'   )
+#' # With `expand = FALSE`, search the first trait for the first PFT,
+#' # the second trait for the second PFT, etc. Note that this means
+#' # PFT and trait input vectors must be the same length.
+#' pdat2 <- query_priors(
+#'   c(
+#'     "Optics.Temperate_Early_Hardwood",
+#'     "Optics.Temperate_Early_Hardwood",
+#'     "Optics.Temperate_Mid_Hardwood",
+#'     "Optics.Temperate_Late_Hardwood"
+#'   ),
+#'   c(
+#'     "leaf_reflect_vis",
+#'     "leaf_reflect_nir",
+#'     "leaf_reflect_vis",
+#'     "leaf_reflect_nir"
+#'   ),
+#'   con = con
+#' )
 #' }
 #' @export
 query_priors <- function(pft_names = NULL, traits = NULL, pft_ids = NULL,
@@ -153,7 +161,7 @@ query_priors <- function(pft_names = NULL, traits = NULL, pft_ids = NULL,
     PEcAn.logger::logger.severe(
       "Provide either `pft_names` or `pft_ids`, not both."
     )
-  } 
+  }
   if (is.null(pft_names)) {
     # Assume PFT ID
     where_stmt <- "WHERE pfts.id = $1"

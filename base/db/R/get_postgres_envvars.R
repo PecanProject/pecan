@@ -19,24 +19,24 @@
 #' @return list of connection parameters suitable for passing on to `db.open`
 #'
 #' @examples
-#'  host <- Sys.getenv("PGHOST") # to restore environment after demo
+#' host <- Sys.getenv("PGHOST") # to restore environment after demo
 #'
-#'  Sys.unsetenv("PGHOST")
-#'  get_postgres_envvars()$host # NULL
-#'  get_postgres_envvars(host = "default", port = 5432)$host # "default"
-
-#'  # defaults are ignored for a variable that exists
-#'  Sys.setenv(PGHOST = "localhost")
-#'  get_postgres_envvars()$host # "localhost"
-#'  get_postgres_envvars(host = "postgres")$host # still "localhost"
+#' Sys.unsetenv("PGHOST")
+#' get_postgres_envvars()$host # NULL
+#' get_postgres_envvars(host = "default", port = 5432)$host # "default"
 #'
-#'  # To override a set variable, edit the returned list before using it
-#'  con_parms <- get_postgres_envvars()
-#'  con_parms$host # "localhost"
-#'  con_parms$host <- "postgres"
-#'  # db.open(con_parms)
+#' # defaults are ignored for a variable that exists
+#' Sys.setenv(PGHOST = "localhost")
+#' get_postgres_envvars()$host # "localhost"
+#' get_postgres_envvars(host = "postgres")$host # still "localhost"
 #'
-#'  Sys.setenv(PGHOST = host)
+#' # To override a set variable, edit the returned list before using it
+#' con_parms <- get_postgres_envvars()
+#' con_parms$host # "localhost"
+#' con_parms$host <- "postgres"
+#' # db.open(con_parms)
+#'
+#' Sys.setenv(PGHOST = host)
 #' @export
 get_postgres_envvars <- function(...) {
   pg_vars <- list(
@@ -62,7 +62,8 @@ get_postgres_envvars <- function(...) {
     gsslib = "PGGSSLIB",
     connect_timeout = "PGCONNECT_TIMEOUT",
     client_encoding = "PGCLIENTENCODING",
-    target_session_attrs = "PGTARGETSESSIONATTRS")
+    target_session_attrs = "PGTARGETSESSIONATTRS"
+  )
 
   vals <- Sys.getenv(pg_vars)
   names(vals) <- names(pg_vars)

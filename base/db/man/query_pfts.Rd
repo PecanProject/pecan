@@ -10,8 +10,6 @@ query_pfts(dbcon, pft_names, modeltype = NULL, strict = FALSE)
 \item{dbcon}{Database connection object}
 
 \item{pft_names}{Character vector of PFT names}
-
-\item{modeltype}{}
 }
 \value{
 `data.frame` containing PFT ID (`id`), type (`pft_type`),

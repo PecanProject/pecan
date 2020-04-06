@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##--------------------------------------------------------------------------------------------------#
+## --------------------------------------------------------------------------------------------------#
 ##' Check two lists. Identical does not work since one can be loaded
 ##' from the database and the other from a CSV file.
 ##'
@@ -23,10 +23,10 @@ check.lists <- function(x, y, filename = "species.csv") {
   if (nrow(x) != nrow(y)) {
     return(FALSE)
   }
-  if(filename == "species.csv"){
-    cols <- c('id', 'genus', 'species', 'scientificname')
+  if (filename == "species.csv") {
+    cols <- c("id", "genus", "species", "scientificname")
   } else if (filename == "cultivars.csv") {
-    cols <- c('id', 'specie_id', 'species_name', 'cultivar_name')
+    cols <- c("id", "specie_id", "species_name", "cultivar_name")
   } else {
     return(FALSE)
   }

@@ -1,19 +1,19 @@
 ## Copyright 2012 Felix Schönbrodt
 ## All rights reserved.
-## 
+##
 ## FreeBSD License
-## 
+##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are
 ## met:
-## 
+##
 ## 1. Redistributions of source code must retain the above copyright
 ## notice, this list of conditions and the following disclaimer.
-##       
+##
 ## 2. Redistributions in binary form must reproduce the above copyright
 ## notice, this list of conditions and the following disclaimer in the
 ## documentation and/or other materials provided with the distribution.
-##       
+##
 ## THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER `AS IS'' AND ANY
 ## EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 ## IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -25,7 +25,7 @@
 ## LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 ## NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ## SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-## 
+##
 ## The views and conclusions contained in the software and documentation
 ## are those of the authors and should not be interpreted as representing
 ## official policies, either expressed or implied, of the copyright
@@ -36,11 +36,11 @@
 ## 0.1.1: changed license to FreeBSD; re-established compability to ggplot2 (new version 0.9.2)
 
 ##' Visually weighted regression / Watercolor plots
-##' 
+##'
 ##' Idea: Solomon Hsiang, with additional ideas from many blog commenters
 ##' Details: \url{http://www.nicebread.de/visually-weighted-regression-in-r-a-la-solomon-hsiang/}
 ##' \url{http://www.nicebread.de/visually-weighted-watercolor-plots-new-variants-please-vote/}
-##' 
+##'
 ##' @title PEcAn worldmap
 ##'
 ##' @param formula variables to plot. See examples
@@ -71,7 +71,7 @@
 ##' @examples
 ##' # build a demo data set
 ##' set.seed(1)
-##' x <- rnorm(200, 0.8, 1.2) 
+##' x <- rnorm(200, 0.8, 1.2)
 ##' e <- rnorm(200, 0, 3)*(abs(x)^1.5 + .5) + rnorm(200, 0, 4)
 ##' e2 <- rnorm(200, 0, 5)*(abs(x)^1.5 + .8) + rnorm(200, 0, 5)
 ##' y <- 8*x - x^3 + e
@@ -81,29 +81,29 @@
 ##' p2 <- vwReg(y2~x, df, add=TRUE, spag=TRUE, shade=FALSE, spag.color='red', shape=3)
 ##' p3 <- p1 + p2
 ##' p3
-##' 
+##'
 ##' y <- x + x^2 + runif(200, 0, 0.4)
 ##' vwReg(y ~ x, df, method=lm)
 ##' vwReg(y ~ x + I(x^2), df, method=lm)
-vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha = 0.1, 
+vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha = 0.1,
                   spag = FALSE, spag.color = "darkblue", mweight = TRUE, show.lm = FALSE,
-                  show.median = TRUE, median.col = "white", shape = 21, show.CI = FALSE, 
+                  show.median = TRUE, median.col = "white", shape = 21, show.CI = FALSE,
                   method = stats::loess, bw = FALSE, slices = 200,
                   palette = grDevices::colorRampPalette(c("#FFEDA0", "#DD0000"), bias = 2)(20),
                   ylim = NULL, quantize = "continuous", add = FALSE, ...) {
   IV <- all.vars(formula)[2]
   DV <- all.vars(formula)[1]
   data <- stats::na.omit(data[order(data[, IV]), c(IV, DV)])
-  
+
   if (bw) {
     palette <- grDevices::colorRampPalette(c("#EEEEEE", "#999999", "#333333"), bias = 2)(20)
   }
-  
+
   print("Computing boostrapped smoothers ...")
   newx <- data.frame(seq(min(data[, IV]), max(data[, IV]), length = slices))
   colnames(newx) <- IV
   l0.boot <- matrix(NA, nrow = nrow(newx), ncol = B)
-  
+
   l0 <- method(formula, data)
   for (i in seq_len(B)) {
     data2 <- data[sample(nrow(data), replace = TRUE), ]
@@ -115,45 +115,51 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
         control = stats::loess.control(
           surface = "i",
           statistics = "a",
-          trace.hat = "a"),
-        ...)
+          trace.hat = "a"
+        ),
+        ...
+      )
     } else {
       m1 <- method(formula, data2, ...)
     }
     l0.boot[, i] <- stats::predict(m1, newdata = newx)
   }
-  
+
   # compute median and CI limits of bootstrap
   CI.boot <- plyr::adply(l0.boot, 1, function(x) {
     stats::quantile(
       x,
-      prob = c(0.025, 0.5, 0.975,
-               stats::pnorm(c(-3, -2, -1, 0, 1, 2, 3))),
-      na.rm = TRUE)
+      prob = c(
+        0.025, 0.5, 0.975,
+        stats::pnorm(c(-3, -2, -1, 0, 1, 2, 3))
+      ),
+      na.rm = TRUE
+    )
   })[, -1]
   colnames(CI.boot)[1:10] <- c("LL", "M", "UL", paste0("SD", 1:7))
   CI.boot$x <- newx[, 1]
   CI.boot$width <- CI.boot$UL - CI.boot$LL
-  
+
   # scale the CI width to the range 0 to 1 and flip it (bigger numbers = narrower CI)
   CI.boot$w2 <- (CI.boot$width - min(CI.boot$width))
   CI.boot$w3 <- 1 - (CI.boot$w2 / max(CI.boot$w2))
-  
+
   # convert bootstrapped spaghettis to long format
   b2 <- reshape2::melt(l0.boot)
   b2$x <- newx[, 1]
   colnames(b2) <- c("index", "B", "value", "x")
-  
+
   # Construct ggplot All plot elements are constructed as a list, so they can be added to
   # an existing ggplot
-  
+
   # if add == FALSE: provide the basic ggplot object
-  p0 <- ggplot2::ggplot(data, ggplot2::aes_string(x = IV, y = DV)) + ggplot2::theme_bw()
-  
+  p0 <- ggplot2::ggplot(data, ggplot2::aes_string(x = IV, y = DV)) +
+    ggplot2::theme_bw()
+
   # initialize elements with NULL (if they are defined, they are overwritten with something
   # meaningful)
   gg.tiles <- gg.poly <- gg.spag <- gg.median <- gg.CI1 <- gg.CI2 <- gg.lm <- gg.points <- gg.title <- NULL
-  
+
   if (shade) {
     quantize <- match.arg(quantize, c("continuous", "SD"))
     if (quantize == "continuous") {
@@ -165,35 +171,38 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
         max_value <- max(max(l0.boot, na.rm = TRUE), max(data[, DV], na.rm = TRUE))
         ylim <- c(min_value, max_value)
       }
-      
+
       # vertical cross-sectional density estimate
       d2 <- plyr::ddply(b2[, c("x", "value")], "x", function(df) {
         res <- data.frame(stats::density(df$value,
-                                  na.rm = TRUE,
-                                  n = slices, 
-                                  from = ylim[1], 
-                                  to = ylim[2])[c("x", "y")])
+          na.rm = TRUE,
+          n = slices,
+          from = ylim[1],
+          to = ylim[2]
+        )[c("x", "y")])
         # res <- data.frame(stats::density(df$value, na.rm=TRUE, n=slices)[c('x', 'y')])
         colnames(res) <- c("y", "dens")
         return(res)
       }, .progress = "text")
-      
+
       maxdens <- max(d2$dens)
       mindens <- min(d2$dens)
       d2$dens.scaled <- (d2$dens - mindens) / maxdens
-      
+
       ## Tile approach
       d2$alpha.factor <- d2$dens.scaled^shade.alpha
       gg.tiles <- list(
         ggplot2::geom_tile(
           data = d2,
-          ggplot2::aes(x = x, y = y, fill = dens.scaled, alpha = alpha.factor)),
+          ggplot2::aes(x = x, y = y, fill = dens.scaled, alpha = alpha.factor)
+        ),
         ggplot2::scale_fill_gradientn("dens.scaled", colours = palette),
-        ggplot2::scale_alpha_continuous(range = c(0.001, 1)))
+        ggplot2::scale_alpha_continuous(range = c(0.001, 1))
+      )
     }
     if (quantize == "SD") {
       ## Polygon approach
-      
+
       SDs <- reshape2::melt(CI.boot[, c("x", paste0("SD", 1:7))], id.vars = "x")
       count <- 0
       d3 <- data.frame()
@@ -207,72 +216,79 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
         count <- count + 1
         d3 <- rbind(d3, seg)
       }
-      
+
       gg.poly <- list(
         ggplot2::geom_polygon(data = d3, ggplot2::aes(x = x, y = value, color = NULL, fill = col, group = group)),
-        ggplot2::scale_fill_gradientn("dens.scaled", colours = palette, values = seq(-1, 3, 1)))
+        ggplot2::scale_fill_gradientn("dens.scaled", colours = palette, values = seq(-1, 3, 1))
+      )
     }
   }
-  
+
   print("Build ggplot figure ...")
   utils::flush.console()
-  
+
   if (spag) {
     gg.spag <- ggplot2::geom_path(
       data = b2,
       ggplot2::aes(x = x, y = value, group = B),
       size = 0.7,
       alpha = 10 / B,
-      color = spag.color)
+      color = spag.color
+    )
   }
-  
+
   if (show.median) {
     if (mweight) {
       gg.median <- ggplot2::geom_path(
         data = CI.boot,
-        ggplot2::aes(x = x, y = M, alpha = w3 ^ 3),
+        ggplot2::aes(x = x, y = M, alpha = w3^3),
         size = 0.6,
         linejoin = "mitre",
-        color = median.col)
+        color = median.col
+      )
     } else {
       gg.median <- ggplot2::geom_path(
         data = CI.boot,
         ggplot2::aes(x = x, y = M),
         size = 0.6,
         linejoin = "mitre",
-        color = median.col)
+        color = median.col
+      )
     }
   }
-  
+
   # Confidence limits
   if (show.CI) {
     gg.CI1 <- ggplot2::geom_path(data = CI.boot, ggplot2::aes(x = x, y = UL), size = 1, color = "red")
     gg.CI2 <- ggplot2::geom_path(data = CI.boot, ggplot2::aes(x = x, y = LL), size = 1, color = "red")
   }
-  
+
   # plain linear regression line
   if (show.lm) {
     gg.lm <- ggplot2::geom_smooth(method = "lm", color = "darkgreen", se = FALSE)
   }
-  
+
   gg.points <- ggplot2::geom_point(
     data = data,
     ggplot2::aes_string(x = IV, y = DV),
     size = 1,
     shape = shape,
     fill = "white",
-    color = "black")
-  
+    color = "black"
+  )
+
   if (title != "") {
     gg.title <- ggplot2::theme(title = title)
   }
-  
-  gg.elements <- list(gg.tiles, gg.poly, gg.spag, gg.median, gg.CI1, gg.CI2,
-                      gg.lm, gg.points, gg.title, ggplot2::theme(legend.position = "none"))
-  
+
+  gg.elements <- list(
+    gg.tiles, gg.poly, gg.spag, gg.median, gg.CI1, gg.CI2,
+    gg.lm, gg.points, gg.title, ggplot2::theme(legend.position = "none")
+  )
+
   if (!add) {
     return(p0 + gg.elements)
   } else {
     return(gg.elements)
   }
-}  # vwReg
+} # vwReg

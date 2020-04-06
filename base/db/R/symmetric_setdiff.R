@@ -20,18 +20,24 @@
 #'   (`xname`) or y (`yname`)
 #' @export
 #' @examples
-#' xdf <- data.frame(a = c("a", "b", "c"),
-#'                   b = c(1, 2, 3),
-#'                   stringsAsFactors = FALSE)
-#' ydf <- data.frame(a = c("a", "b", "d"),
-#'                   b = c(1, 2.5, 3),
-#'                   stringsAsFactors = FALSE)
+#' xdf <- data.frame(
+#'   a = c("a", "b", "c"),
+#'   b = c(1, 2, 3),
+#'   stringsAsFactors = FALSE
+#' )
+#' ydf <- data.frame(
+#'   a = c("a", "b", "d"),
+#'   b = c(1, 2.5, 3),
+#'   stringsAsFactors = FALSE
+#' )
 #' symmetric_setdiff(xdf, ydf)
 symmetric_setdiff <- function(x, y, xname = "x", yname = "y",
                               namecol = "source", simplify_types = TRUE) {
-  stopifnot(is.data.frame(x), is.data.frame(y),
-            is.character(xname), is.character(yname),
-            length(xname) == 1, length(yname) == 1)
+  stopifnot(
+    is.data.frame(x), is.data.frame(y),
+    is.character(xname), is.character(yname),
+    length(xname) == 1, length(yname) == 1
+  )
   is_i64 <- c(
     vapply(x, inherits, logical(1), what = "integer64"),
     vapply(y, inherits, logical(1), what = "integer64")
@@ -52,8 +58,8 @@ symmetric_setdiff <- function(x, y, xname = "x", yname = "y",
     }
   }
   if (simplify_types) {
-    x <- dplyr::mutate_if(x, ~!is.numeric(.), as.character)
-    y <- dplyr::mutate_if(y, ~!is.numeric(.), as.character)
+    x <- dplyr::mutate_if(x, ~ !is.numeric(.), as.character)
+    y <- dplyr::mutate_if(y, ~ !is.numeric(.), as.character)
   }
   namecol <- dplyr::sym(namecol)
   xy <- dplyr::setdiff(x, y) %>%

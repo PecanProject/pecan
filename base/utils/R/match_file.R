@@ -1,10 +1,10 @@
 #' Match a file
 #'
-#' Return a list of files given a full prefix and optional suffix. Optionally, 
-#' confirm that the right number of files are returned. If the wrong number of 
+#' Return a list of files given a full prefix and optional suffix. Optionally,
+#' confirm that the right number of files are returned. If the wrong number of
 #' files is returned, throw an error.
 #'
-#' If `path_prefix` points to a directory, then all files inside that directory 
+#' If `path_prefix` points to a directory, then all files inside that directory
 #' that match the suffix (if provided) are returned.
 #' @param path_prefix Full path and file prefix
 #' @param suffix File suffix, as character (default = `NULL`)

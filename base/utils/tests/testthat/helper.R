@@ -3,15 +3,18 @@ times_to_netcdf <- function(times, timeunit, outdir, filename) {
   dims <- list(time = ncdf4::ncdim_def(
     name = "time",
     units = timeunit,
-    vals = times))
+    vals = times
+  ))
   vars <- list(Y = ncdf4::ncvar_def(
     name = "Y",
-    units  = "kg",
+    units = "kg",
     dim = dims,
-    missval = NA))
+    missval = NA
+  ))
   nc <- ncdf4::nc_create(
     filename = file.path(outdir, filename),
-    vars = vars)
+    vars = vars
+  )
   ncdf4::ncatt_put(nc, 0, "description", "strictly for testing")
   ncdf4::ncvar_put(nc, varid = vars[["Y"]], vals = rnorm(length(times)))
   ncdf4::nc_close(nc)
@@ -35,7 +38,8 @@ example_netcdf <- function(varnames, file_path) {
     vals = seq_len(n) - 1
   ))
   vars <- lapply(varnames, ncdf4::ncvar_def,
-                 units = "kg", dim = dims, missval = NA)
+    units = "kg", dim = dims, missval = NA
+  )
   names(vars) <- varnames
   nc <- ncdf4::nc_create(filename = file_path, vars = vars)
   on.exit(ncdf4::nc_close(nc), add = TRUE)

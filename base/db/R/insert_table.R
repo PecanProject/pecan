@@ -1,13 +1,13 @@
 #' Insert R data frame into SQL database
 #'
-#' First, subset to matching columns. Then, make sure the local and SQL column 
-#' classes match, coercing local to SQL as necessary (or throwing an error). 
-#' Then, build an SQL string for the insert statement. Finally, insert into the 
+#' First, subset to matching columns. Then, make sure the local and SQL column
+#' classes match, coercing local to SQL as necessary (or throwing an error).
+#' Then, build an SQL string for the insert statement. Finally, insert into the
 #' database.
 #'
 #' @param values `data.frame` of values to write to SQL database
 #' @param table Name of target SQL table, as character
-#' @param coerce_col_class logical, whether or not to coerce local data columns 
+#' @param coerce_col_class logical, whether or not to coerce local data columns
 #' to SQL classes. Default = `TRUE.`
 #' @param drop logical. If `TRUE` (default), drop columns not found in SQL table.
 #' @inheritParams db.query
@@ -15,8 +15,8 @@
 #' @export
 #' @examples
 #' irisdb <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-#' dplyr::copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
-#' insert_table(iris[-1,], "iris", irisdb)
+#' dplyr::copy_to(irisdb, iris[1, ], name = "iris", overwrite = TRUE)
+#' insert_table(iris[-1, ], "iris", irisdb)
 #' dplyr::tbl(irisdb, "iris")
 insert_table <- function(values, table, con, coerce_col_class = TRUE, drop = TRUE) {
   values_fixed <- match_dbcols(values, table, con, coerce_col_class, drop = TRUE)
@@ -42,7 +42,9 @@ match_dbcols <- function(values, table, con, coerce_col_class = TRUE, drop = TRU
   )
   values_sub <- values[, use_cols]
   # Load one row to get column types
-  sql_row <- dplyr::tbl(con, table) %>% head(1) %>% dplyr::collect()
+  sql_row <- dplyr::tbl(con, table) %>%
+    head(1) %>%
+    dplyr::collect()
   sql_types <- purrr::map(sql_row, class) %>%
     purrr::map_chr(1) %>%
     .[use_cols]

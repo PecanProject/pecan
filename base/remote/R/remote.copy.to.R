@@ -14,8 +14,8 @@
 #' @export
 #' @examples
 #' \dontrun{
-#'   host <- list(name='geo.bu.edu', user='kooper', tunnel='/tmp/geo.tunnel')
-#'   remote.copy.to(host, '/tmp/kooper', '/tmp/kooper', delete=TRUE)
+#' host <- list(name = "geo.bu.edu", user = "kooper", tunnel = "/tmp/geo.tunnel")
+#' remote.copy.to(host, "/tmp/kooper", "/tmp/kooper", delete = TRUE)
 #' }
 remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stderr = FALSE) {
   args <- c("-a", "-q", options)
@@ -38,7 +38,8 @@ remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stder
         PEcAn.logger::logger.severe("Could not find tunnel", tunnel)
       }
       args <- c(args, "-e", paste0("ssh -o ControlPath=\"", tunnel, "\"",
-                                   collapse = ""))
+        collapse = ""
+      ))
       args <- c(args, src, paste0(hostname, ":", dst))
     } else if (!is.null(host$user)) {
       args <- c(args, src, paste0(host$user, "@", hostname, ":", dst))

@@ -20,7 +20,7 @@ db_merge_into(values, table, con, by = NULL, drop = FALSE, ...)
 \item{...}{
   Arguments passed on to \code{\link[=insert_table]{insert_table}}
   \describe{
-    \item{\code{coerce_col_class}}{logical, whether or not to coerce local data columns 
+    \item{\code{coerce_col_class}}{logical, whether or not to coerce local data columns
 to SQL classes. Default = `TRUE.`}
   }}
 }
@@ -32,7 +32,7 @@ Merge local data frame into SQL table
 }
 \examples{
 irisdb <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-dplyr::copy_to(irisdb, iris[1:10,], name = "iris", overwrite = TRUE)
-db_merge_into(iris[1:12,], "iris", irisdb)
+dplyr::copy_to(irisdb, iris[1:10, ], name = "iris", overwrite = TRUE)
+db_merge_into(iris[1:12, ], "iris", irisdb)
 dplyr::tbl(irisdb, "iris") \%>\% dplyr::count()
 }

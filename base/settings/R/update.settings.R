@@ -1,11 +1,11 @@
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Copyright (c) 2012 University of Illinois, NCSA.
 ## All rights reserved. This program and the accompanying materials
 ## are made available under the terms of the
 ## University of Illinois/NCSA Open Source License
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' Updates a pecan.xml file to match new layout. This will take care of the
 #' conversion to the latest pecan.xml file.
 #'
@@ -18,9 +18,10 @@
 
 update.settings <- function(settings, force = FALSE) {
   if (!force && !is.null(settings$settings.info$settings.updated)
-      && settings$settings.info$settings.updated == TRUE) {
+  && settings$settings.info$settings.updated == TRUE) {
     PEcAn.logger::logger.info(
-      "Deprecated settings have been fixed already. Skipping.")
+      "Deprecated settings have been fixed already. Skipping."
+    )
     return(invisible(settings))
   } else {
     PEcAn.logger::logger.info("Fixing deprecated settings...")
@@ -37,13 +38,15 @@ update.settings <- function(settings, force = FALSE) {
     if (!is.null(settings$database$dbname)) {
       if (!is.null(settings$database$bety)) {
         PEcAn.logger::logger.severe(
-          "Please remove dbname etc from database configuration.")
+          "Please remove dbname etc from database configuration."
+        )
       }
 
       PEcAn.logger::logger.info(
         "Database tag has changed, please use <database><bety> to store",
         "information about accessing the BETY database. See also",
-        "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+        "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access."
+      )
 
       bety <- list()
       for (name in names(settings$database)) {
@@ -57,7 +60,8 @@ update.settings <- function(settings, force = FALSE) {
       PEcAn.logger::logger.warn(
         "<bety><write> is now part of the database settings. For more",
         "information about the database settings see",
-        "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+        "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access."
+      )
       if (is.null(settings$database$bety$write)) {
         settings$database$bety$write <- settings$bety$write
         settings$bety$write <- NULL
@@ -71,17 +75,20 @@ update.settings <- function(settings, force = FALSE) {
     if (!is.null(settings$model$type)) {
       if (settings$model$model_type != settings$model$type) {
         PEcAn.logger::logger.severe(
-          "Please remove model_type from model configuration.")
+          "Please remove model_type from model configuration."
+        )
       } else {
         PEcAn.logger::logger.info(
-          "Please remove model_type from model configuration.")
+          "Please remove model_type from model configuration."
+        )
       }
     }
 
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <model><type> to specify",
       "type of model. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
+      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup."
+    )
     settings$model$type <- settings$model$model_type
     settings$model$model_type <- NULL
   }
@@ -89,17 +96,20 @@ update.settings <- function(settings, force = FALSE) {
     if (!is.null(settings$model$type)) {
       if (settings$model$name != settings$model$type) {
         PEcAn.logger::logger.severe(
-          "Please remove name from model configuration.")
+          "Please remove name from model configuration."
+        )
       } else {
         PEcAn.logger::logger.info(
-          "Please remove name from model configuration.")
+          "Please remove name from model configuration."
+        )
       }
     }
 
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <model><type> to specify",
       "type of model. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
+      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup."
+    )
     settings$model$type <- settings$model$name
     settings$model$name <- NULL
   }
@@ -109,10 +119,12 @@ update.settings <- function(settings, force = FALSE) {
     if (!is.null(settings$run$inputs$met)) {
       if (settings$run$site$met != settings$run$inputs$met) {
         PEcAn.logger::logger.severe(
-          "Please remove met from model configuration.")
+          "Please remove met from model configuration."
+        )
       } else {
         PEcAn.logger::logger.info(
-          "Please remove met from model configuration.")
+          "Please remove met from model configuration."
+        )
       }
     }
     if (is.null(settings$run$inputs)) {
@@ -121,7 +133,8 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><met> to specify",
       "met file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup."
+    )
     settings$run$inputs$met$path <- settings$run$site$met
     settings$run$site$met <- NULL
   }
@@ -147,12 +160,14 @@ update.settings <- function(settings, force = FALSE) {
       if (tagid %in% names(settings$run$inputs)) {
         if ("id" %in% names(settings$run$inputs[[tag]])) {
           if (settings$run$inputs[[tagid]]
-              != settings$run$inputs[[tag]][["id"]]) {
+          != settings$run$inputs[[tag]][["id"]]) {
             PEcAn.logger::logger.severe(
-              "Please remove", tagid, "from inputs configuration.")
+              "Please remove", tagid, "from inputs configuration."
+            )
           } else {
             PEcAn.logger::logger.info(
-              "Please remove", tagid, "from inputs configuration.")
+              "Please remove", tagid, "from inputs configuration."
+            )
           }
           settings$run$inputs[[tagid]] <- NULL
         } else {
@@ -168,10 +183,12 @@ update.settings <- function(settings, force = FALSE) {
     if (!is.null(settings$run$inputs$veg)) {
       if (settings$model$veg != settings$run$inputs$veg) {
         PEcAn.logger::logger.severe(
-          "Please remove veg from model configuration.")
+          "Please remove veg from model configuration."
+        )
       } else {
         PEcAn.logger::logger.info(
-          "Please remove veg from model configuration.")
+          "Please remove veg from model configuration."
+        )
       }
     }
     if (is.null(settings$run$inputs)) {
@@ -180,7 +197,8 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><veg> to specify",
       "veg file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup."
+    )
     settings$run$inputs$veg <- settings$model$veg
     settings$model$veg <- NULL
   }
@@ -188,10 +206,12 @@ update.settings <- function(settings, force = FALSE) {
     if (!is.null(settings$run$inputs$soil)) {
       if (settings$model$soil != settings$run$inputs$soil) {
         PEcAn.logger::logger.severe(
-          "Please remove soil from model configuration.")
+          "Please remove soil from model configuration."
+        )
       } else {
         PEcAn.logger::logger.info(
-          "Please remove soil from model configuration.")
+          "Please remove soil from model configuration."
+        )
       }
     }
     if (is.null(settings$run$inputs)) {
@@ -200,14 +220,16 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><soil> to specify",
       "soil file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup."
+    )
     settings$run$inputs$soil <- settings$model$soil
     settings$model$soil <- NULL
   }
   if (!is.null(settings$model$psscss)) {
     if (!is.null(settings$run$inputs$pss)) {
       PEcAn.logger::logger.info(
-        "Please remove psscss from model configuration.")
+        "Please remove psscss from model configuration."
+      )
     }
     if (is.null(settings$run$inputs)) {
       settings$run$inputs <- list()
@@ -215,7 +237,8 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><pss/css/site> to specify",
       "pss/css/site file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup."
+    )
     settings$run$inputs$pss <- file.path(settings$model$psscss, "foo.pss")
     settings$run$inputs$css <- file.path(settings$model$psscss, "foo.css")
     settings$run$inputs$site <- file.path(settings$model$psscss, "foo.site")
@@ -224,7 +247,8 @@ update.settings <- function(settings, force = FALSE) {
   if (!is.null(settings$model$inputs)) {
     if (!is.null(settings$run$inputs$inputs)) {
       PEcAn.logger::logger.info(
-        "Please remove inputs from model configuration.")
+        "Please remove inputs from model configuration."
+      )
     }
     if (is.null(settings$run$inputs)) {
       settings$run$inputs <- list()
@@ -232,7 +256,8 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><lu/thsums> to specify",
       "lu/thsums file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup."
+    )
     settings$run$inputs$lu <- file.path(settings$model$inputs, "glu")
     settings$run$inputs$thsums <- settings$model$inputs
     settings$model$soil <- NULL

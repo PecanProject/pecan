@@ -38,7 +38,8 @@ status.start <- function(name, file = NULL) {
   cat(
     paste(name, format(Sys.time(), "%F %T"), sep = "\t"),
     file = file,
-    append = TRUE)
+    append = TRUE
+  )
 }
 
 #' @describeIn status Record module completion time and status
@@ -48,7 +49,8 @@ status.end <- function(status = "DONE", file = NULL) {
   cat(
     paste("", format(Sys.time(), "%F %T"), status, "\n", sep = "\t"),
     file = file,
-    append = TRUE)
+    append = TRUE
+  )
 }
 
 #' @describeIn status Record that module was skipped
@@ -60,9 +62,12 @@ status.skip <- function(name, file = NULL) {
       name,
       format(Sys.time(), "%F %T"), "",
       format(Sys.time(), "%F %T"),
-      "SKIPPED", "\n", sep = "\t"),
+      "SKIPPED", "\n",
+      sep = "\t"
+    ),
     file = file,
-    append = TRUE)
+    append = TRUE
+  )
 }
 
 #' @describeIn status Look up module status from file
@@ -75,8 +80,10 @@ status.check <- function(name, file = NULL) {
     return(0L)
   }
   status_data <- utils::read.table(
-    file, row.names = 1, header = FALSE,
-    sep = "\t", quote = "", fill = TRUE)
+    file,
+    row.names = 1, header = FALSE,
+    sep = "\t", quote = "", fill = TRUE
+  )
   if (!name %in% row.names(status_data)) {
     return(0L)
   }
@@ -118,7 +125,8 @@ get_status_path <- function(file) {
       x = "settings",
       envir = parent.frame(2),
       inherits = TRUE,
-      ifnotfound = list())$outdir
+      ifnotfound = list()
+    )$outdir
     base <- "STATUS"
   }
 

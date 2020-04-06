@@ -22,6 +22,6 @@
 #'  \item{dim1,dim2,dim3,dim4}{Dimensions across which is this variable allowed to vary.
 #'    Dimension names are themselves standard vars and must be present in the table with category "Dimension"}
 #'  \item{Description}{Further details. For composite measures, list the variables it is calculated from}
-#'}
+#' }
 #'
 "standard_vars"

@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -26,15 +26,15 @@ data.fetch <- function(var, nc, fun = mean) {
     attr(val, "lbl") <- nc$dim$time$units
     return(val)
   }
-  
+
   # some precomputations
-  indices  <- 0:length(nc$dim[["time"]]$vals)
+  indices <- 0:length(nc$dim[["time"]]$vals)
   aggrlist <- list(floor(nc$dim[["time"]]$vals))
-  
+
   # aggregate the data
   data <- ncdf4::ncvar_get(nc, var)
-  val  <- stats::aggregate(data[indices], by = aggrlist, FUN = fun)$x
-  
+  val <- stats::aggregate(data[indices], by = aggrlist, FUN = fun)$x
+
   # get the label
   title <- nc$var[[var]]$longname
   units <- nc$var[[var]]$units
@@ -47,10 +47,10 @@ data.fetch <- function(var, nc, fun = mean) {
   } else {
     attr(val, "lbl") <- paste(title, "in", units)
   }
-  
+
   # done
   return(val)
-}  # data.fetch
+} # data.fetch
 
 # ----------------------------------------------------------------------
 # MAIN FUNCTIONS
@@ -81,13 +81,13 @@ plot_netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
                         filename = NULL, year = NULL) {
   # open netcdf file
   nc <- ncdf4::nc_open(datafile)
-  
+
   # compute variables
   xval_mean <- data.fetch(xvar, nc, mean)
   yval_mean <- data.fetch(yvar, nc, mean)
-  yval_max  <- data.fetch(yvar, nc, max)
-  yval_min  <- data.fetch(yvar, nc, min)
-  
+  yval_max <- data.fetch(yvar, nc, max)
+  yval_min <- data.fetch(yvar, nc, min)
+
   # setup output
   if (!is.null(filename)) {
     if (tolower(filename) == "x11") {
@@ -102,7 +102,7 @@ plot_netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
       grDevices::tiff(filename = filename, width = width, height = height)
     }
   }
-  
+
   # setup plot (needs to be done before removing of NA since that removes attr as well).
   graphics::plot.new()
   graphics::title(xlab = attr(xval_mean, "lbl"))
@@ -122,12 +122,14 @@ plot_netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
   }
   # done with netcdf file
   ncdf4::nc_close(nc)
-  
+
   # remove all NA's
-  removeme <- unique(c(which(is.na(yval_min)), 
-                       which(is.na(xval_mean)), 
-                       which(is.na(yval_mean)), 
-                       which(is.na(yval_max))))
+  removeme <- unique(c(
+    which(is.na(yval_min)),
+    which(is.na(xval_mean)),
+    which(is.na(yval_mean)),
+    which(is.na(yval_max))
+  ))
   if (length(removeme) > 0) {
     xval_mean <- xval_mean[-removeme]
     yval_mean <- yval_mean[-removeme]
@@ -135,30 +137,36 @@ plot_netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
     yval_min <- yval_min[-removeme]
   }
   yvals <- c(yval_max, yval_min)
-  
+
   # order data based on x values
   o <- order(xval_mean, yval_mean)
-  
+
   # plot actual data
-  graphics::plot.window(xlim = c(min(xval_mean), max(xval_mean)),
-              ylim = c(min(yvals), max(yvals)))
+  graphics::plot.window(
+    xlim = c(min(xval_mean), max(xval_mean)),
+    ylim = c(min(yvals), max(yvals))
+  )
   graphics::polygon(
     c(xval_mean[o], rev(xval_mean[o])),
     c(yval_max[o], rev(yval_min[o])),
     col = "gray",
-    border = "black")
+    border = "black"
+  )
   graphics::lines(x = xval_mean[o], y = yval_mean[o], col = "red")
   graphics::points(
     x = xval_mean[o],
     y = yval_mean[o],
     col = "black",
     pch = ".",
-    cex = 5)
+    cex = 5
+  )
 
   # legend
-  graphics::legend("bottomright", col = c(1, "gray"), lwd = c(3, 6),
-         legend = c("mean", "min/max"),
-         cex = 1.5)
+  graphics::legend("bottomright",
+    col = c(1, "gray"), lwd = c(3, 6),
+    legend = c("mean", "min/max"),
+    cex = 1.5
+  )
 
   # draw axis and box
   graphics::axis(1)
@@ -171,4 +179,4 @@ plot_netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
   if (!is.null(filename) && (tolower(filename) != "x11")) {
     grDevices::dev.off()
   }
-}  # plot_netcdf
+} # plot_netcdf

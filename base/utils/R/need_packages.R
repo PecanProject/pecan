@@ -8,7 +8,7 @@
 #' @examples
 #' # Only need ::: because package isn't exported.
 #' # Inside a package, just call `need_packages`
-#' PEcAn.utils:::need_packages("stats", "methods") # Always works 
+#' PEcAn.utils:::need_packages("stats", "methods") # Always works
 #' try(PEcAn.utils:::need_packages("notapackage"))
 need_packages <- function(...) {
   pkgs <- unlist(list(...), recursive = TRUE)

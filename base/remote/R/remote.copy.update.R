@@ -10,11 +10,10 @@
 #'
 #' @author Istem Fer
 #' @export
-remote.copy.update <- function(input_id, remote_dir, local_file_path, remote_file_name = NULL, host, con){
-
+remote.copy.update <- function(input_id, remote_dir, local_file_path, remote_file_name = NULL, host, con) {
   PEcAn.remote::remote.execute.cmd(host, "mkdir", c("-p", remote_dir))
 
-  if(is.null(remote_file_name)){
+  if (is.null(remote_file_name)) {
     remote_file_name <- basename(local_file_path)
   }
 
@@ -23,13 +22,14 @@ remote.copy.update <- function(input_id, remote_dir, local_file_path, remote_fil
   remote.copy.to(host, local_file_path, remote_file_path)
 
   type <- db.query(paste("SELECT container_type from dbfiles where container_id =", putveg.id[[i]]), con)
-  
+
   # update DB record
-  remote_id <- PEcAn.DB::dbfile.insert(in.path = remote_dir, in.prefix = remote_file_name,
-                type = unique(type), id = input_id$input.id,
-                con = con, hostname = host$name)
+  remote_id <- PEcAn.DB::dbfile.insert(
+    in.path = remote_dir, in.prefix = remote_file_name,
+    type = unique(type), id = input_id$input.id,
+    con = con, hostname = host$name
+  )
 
 
   return(remote_id)
-
 } # remote.copy.update

@@ -18,12 +18,13 @@
 read_web_config <- function(php.config = "../../web/config.php",
                             parse = TRUE,
                             expand = TRUE) {
-
   config <- readLines(php.config)
-  config <- config[grep("^\\$", config)]  ## find lines that begin with $ (variables)
+  config <- config[grep("^\\$", config)] ## find lines that begin with $ (variables)
 
-  rxp <- paste0("^\\$([[:graph:]]+?)[[:space:]]*",
-                "=[[:space:]]*(.*?);?(?:[[:space:]]*//+.*)?$")
+  rxp <- paste0(
+    "^\\$([[:graph:]]+?)[[:space:]]*",
+    "=[[:space:]]*(.*?);?(?:[[:space:]]*//+.*)?$"
+  )
   rxp_matches <- regexec(rxp, config, perl = TRUE)
   results <- regmatches(config, rxp_matches)
   list_names <- vapply(results, `[[`, character(1), 2, USE.NAMES = FALSE)
@@ -34,7 +35,8 @@ read_web_config <- function(php.config = "../../web/config.php",
   if (parse) {
     # Remove surrounding quotes
     config_list <- lapply(config_list, gsub,
-                          pattern = "\"(.*?)\"", replacement = "\\1")
+      pattern = "\"(.*?)\"", replacement = "\\1"
+    )
 
     # Try to convert numbers to numeric
     config_list <- lapply(
@@ -47,8 +49,9 @@ read_web_config <- function(php.config = "../../web/config.php",
     # Replace $output_folder with its value, and concatenate strings
     chr <- vapply(config_list, is.character, logical(1))
     config_list[chr] <- lapply(config_list[chr], gsub,
-                          pattern = "\\$output_folder *\\. *",
-                          replacement = config_list[["output_folder"]])
+      pattern = "\\$output_folder *\\. *",
+      replacement = config_list[["output_folder"]]
+    )
   }
   config_list
 }

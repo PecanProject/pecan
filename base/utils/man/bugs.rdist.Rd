@@ -14,8 +14,6 @@ bugs.rdist(
 \item{prior}{dataframe with distribution name and parameters}
 
 \item{n.iter}{number of samples, output will have n.iter/4 samples}
-
-\item{n}{}
 }
 \value{
 vector of samples

@@ -11,20 +11,20 @@ test_that(
       dplyr::mutate(
         Species = as.character(Species)
       )
-    dplyr::copy_to(irisdb, iris[1,], "iris", overwrite = TRUE)
+    dplyr::copy_to(irisdb, iris[1, ], "iris", overwrite = TRUE)
     # Add extra column to see if it's successfully ignored
     iris2 <- dplyr::mutate(iris, extracol = seq_len(nrow(iris)))
-    iris_insert <- iris2[2:10,]
+    iris_insert <- iris2[2:10, ]
     .insert <- insert_table(iris_insert, "iris", irisdb)
     test_that(
       "Subset of iris was inserted into database",
       {
         iris_insert_test <- dplyr::tbl(irisdb, "iris") %>% dplyr::collect()
-        expect_equal(iris[1:10,], iris_insert_test)
+        expect_equal(iris[1:10, ], iris_insert_test)
       }
     )
 
-    iris_merge <- iris2[5:12,]
+    iris_merge <- iris2[5:12, ]
     out_merge <- db_merge_into(iris_merge, "iris", irisdb) %>%
       dplyr::collect()
     iris_merge_nrow <- dplyr::tbl(irisdb, "iris") %>%
@@ -33,7 +33,7 @@ test_that(
     test_that(
       "Only subset of iris data were merged",
       {
-        expect_equal(out_merge, iris2[5:12,])
+        expect_equal(out_merge, iris2[5:12, ])
         out_merge2 <- db_merge_into(iris_merge, "iris", irisdb) %>%
           dplyr::collect()
         expect_equal(out_merge, out_merge2)
@@ -46,4 +46,5 @@ test_that(
         expect_true("extracol" %in% colnames(out_merge))
       }
     )
-  })
+  }
+)

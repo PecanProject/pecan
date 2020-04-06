@@ -28,13 +28,14 @@
 #'
 #' @example examples/examples.MultiSite.MultiSettings.r
 createSitegroupMultiSettings <- function(
-    templateSettings,
-    sitegroupId,
-    nSite,
-    con = NULL,
-    params = templateSettings$database$bety) {
+                                         templateSettings,
+                                         sitegroupId,
+                                         nSite,
+                                         con = NULL,
+                                         params = templateSettings$database$bety) {
   query <- paste(
-    "SELECT site_id FROM sitegroups_sites WHERE sitegroup_id =", sitegroupId)
+    "SELECT site_id FROM sitegroups_sites WHERE sitegroup_id =", sitegroupId
+  )
   allSites <- PEcAn.DB::db.query(query, con = con, params = params)
 
   if (missing(nSite)) {
@@ -76,7 +77,8 @@ createMultiSiteSettings <- function(templateSettings, siteIds) {
   runSettings <- lapply(
     siteIds,
     getRunSettings,
-    templateSettings = templateSettings)
+    templateSettings = templateSettings
+  )
 
   templateSettings[["run", global = FALSE]] <- runSettings
   return(templateSettings)
@@ -99,7 +101,8 @@ getRunSettings <- function(templateSettings, siteId) {
     site = list(
       id = siteId,
       met.start = startDate,
-      met.end = endDate),
+      met.end = endDate
+    ),
     start.date = startDate,
     end.date = endDate,
     inputs = inputs

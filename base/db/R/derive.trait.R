@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##--------------------------------------------------------------------------------------------------#
+## --------------------------------------------------------------------------------------------------#
 ##'
 ##' Performs an arithmetic function, FUN, over a series of traits and returns
 ##' the result as a derived trait.
@@ -30,17 +30,19 @@
 ##' @examples
 ##' input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 ##' derive.trait(FUN = identity, input = input, var.name = 'x')
-derive.trait <- function(FUN, ..., input = list(...), var.name = NA, sample.size = 10^6){
-  if(any(lapply(input, nrow) > 1)){
+derive.trait <- function(FUN, ..., input = list(...), var.name = NA, sample.size = 10^6) {
+  if (any(lapply(input, nrow) > 1)) {
     return(NULL)
   }
-  input.samples  <- lapply(input, take.samples, sample.size=sample.size)
+  input.samples <- lapply(input, take.samples, sample.size = sample.size)
   output.samples <- do.call(FUN, input.samples)
-  output         <- input[[1]]
-  output$mean    <- mean(output.samples)
-  output$stat    <- ifelse(length(output.samples) > 1, stats::sd(output.samples), NA)
-  output$n       <- min(sapply(input, function(trait){trait$n}))
-  output$vname   <- ifelse(is.na(var.name), output$vname, var.name)
+  output <- input[[1]]
+  output$mean <- mean(output.samples)
+  output$stat <- ifelse(length(output.samples) > 1, stats::sd(output.samples), NA)
+  output$n <- min(sapply(input, function(trait) {
+    trait$n
+  }))
+  output$vname <- ifelse(is.na(var.name), output$vname, var.name)
   return(output)
 }
-##==================================================================================================#
+## ==================================================================================================#

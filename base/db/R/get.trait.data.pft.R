@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##--------------------------------------------------------------------------------------------------#
+## --------------------------------------------------------------------------------------------------#
 ##' Get trait data from the database for a single PFT
 ##'
 ##' @details `pft` should be a list containing at least `name` and `outdir`, and optionally `posteriorid` and `constants`. BEWARE: All existing files in `outir` will be deleted!
@@ -22,70 +22,71 @@
 ##' @export
 get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
                                forceupdate = FALSE) {
-  
+
   # Create directory if necessary
   if (!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive = TRUE)) {
     PEcAn.logger::logger.error(paste0("Couldn't create PFT output directory: ", pft$outdir))
   }
-  
+
   ## Remove old files.  Clean up.
   old.files <- list.files(path = pft$outdir, full.names = TRUE, include.dirs = FALSE)
   file.remove(old.files)
-  
+
   # find appropriate pft
   pftres <- query_pfts(dbcon, pft[["name"]], modeltype)
   pfttype <- pftres[["pft_type"]]
   pftid <- pftres[["id"]]
-  
+
   if (nrow(pftres) > 1) {
     PEcAn.logger::logger.severe(
       "Multiple PFTs named", pft[["name"]], "found,",
       "with ids", PEcAn.utils::vecpaste(pftres[["id"]]), ".",
-      "Specify modeltype to fix this.")
+      "Specify modeltype to fix this."
+    )
   }
-  
+
   if (nrow(pftres) == 0) {
     PEcAn.logger::logger.severe("Could not find pft", pft[["name"]])
     return(NA)
   }
-  
+
   # get the member species/cultivars, we need to check if anything changed
   if (pfttype == "plant") {
-    pft_member_filename = "species.csv"
+    pft_member_filename <- "species.csv"
     pft_members <- PEcAn.DB::query.pft_species(pft$name, modeltype, dbcon)
   } else if (pfttype == "cultivar") {
-    pft_member_filename = "cultivars.csv"
+    pft_member_filename <- "cultivars.csv"
     pft_members <- PEcAn.DB::query.pft_cultivars(pft$name, modeltype, dbcon)
   } else {
     PEcAn.logger::logger.severe("Unknown pft type! Expected 'plant' or 'cultivar', got", pfttype)
   }
-  
+
   # ANS: Need to do this conversion for the check against existing
   # membership later on. Otherwise, `NA` from the CSV is interpreted
   # as different from `""` returned here, even though they are really
   # the same thing.
   pft_members <- pft_members %>%
-    dplyr::mutate_if(is.character, ~dplyr::na_if(., ""))
-  
+    dplyr::mutate_if(is.character, ~ dplyr::na_if(., ""))
+
   # get the priors
   prior.distns <- PEcAn.DB::query.priors(pft = pftid, trstr = PEcAn.utils::vecpaste(trait.names), con = dbcon)
-  prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
+  prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)), ]
   traits <- rownames(prior.distns)
-  
+
   # get the trait data (don't bother sampling derived traits until after update check)
-  trait.data.check <- PEcAn.DB::query.traits(ids = pft_members$id, priors = traits, con = dbcon, update.check.only = TRUE, ids_are_cultivars = (pfttype=="cultivar"))
+  trait.data.check <- PEcAn.DB::query.traits(ids = pft_members$id, priors = traits, con = dbcon, update.check.only = TRUE, ids_are_cultivars = (pfttype == "cultivar"))
   traits <- names(trait.data.check)
-  
+
   # Set forceupdate FALSE if it's a string (backwards compatible with 'AUTO' flag used in the past)
   if (!is.logical(forceupdate)) {
     forceupdate <- FALSE
   }
-  
+
   # check to see if we need to update
   if (!forceupdate) {
     if (is.null(pft$posteriorid)) {
       recent_posterior <- dplyr::tbl(dbcon, "posteriors") %>%
-        dplyr::filter(pft_id == !!pftid) %>% 
+        dplyr::filter(pft_id == !!pftid) %>%
         dplyr::collect()
       if (length(recent_posterior) > 0) {
         pft$posteriorid <- dplyr::tbl(dbcon, "posteriors") %>%
@@ -95,11 +96,13 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
           dplyr::pull(id)
       } else {
         PEcAn.logger::logger.info("No previous posterior found. Forcing update")
-      } 
+      }
     }
     if (!is.null(pft$posteriorid)) {
-      files <- dbfile.check(type = "Posterior", container.id = pft$posteriorid, con = dbcon,
-                            return.all = TRUE)
+      files <- dbfile.check(
+        type = "Posterior", container.id = pft$posteriorid, con = dbcon,
+        return.all = TRUE
+      )
       need_files <- c(
         trait_data = "trait.data.Rdata",
         priors = "prior.distns.Rdata",
@@ -161,7 +164,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
             )
             foundallfiles <- FALSE
           }
-          
+
           # Check if priors have changed
           PEcAn.logger::logger.debug("Checking if priors have changed")
           existing_prior <- PEcAn.utils::load_local(need_paths[["priors"]])[["prior.distns"]]
@@ -178,7 +181,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
             )
             foundallfiles <- FALSE
           }
-          
+
           # Check if trait data have changed
           PEcAn.logger::logger.debug("Checking if trait data have changed")
           existing_trait_data <- PEcAn.utils::load_local(
@@ -211,32 +214,34 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
             }
           }
         }
-        
-        
+
+
         if (foundallfiles) {
           PEcAn.logger::logger.info(
             "Reusing existing files from posterior", pft$posteriorid,
             "for PFT", shQuote(pft$name)
           )
           for (id in seq_len(nrow(files))) {
-            file.copy(from = file.path(files[[id, "file_path"]], files[[id, "file_name"]]),
-                      to = file.path(pft$outdir, files[[id, "file_name"]]))
+            file.copy(
+              from = file.path(files[[id, "file_path"]], files[[id, "file_name"]]),
+              to = file.path(pft$outdir, files[[id, "file_name"]])
+            )
           }
-          
+
           done <- TRUE
-          
+
           # May need to symlink the generic post.distns.Rdata to a specific post.distns.*.Rdata file.
           if (length(list.files(pft$outdir, "post.distns.Rdata")) == 0) {
             all.files <- list.files(pft$outdir)
             post.distn.file <- all.files[grep("post\\.distns\\..*\\.Rdata", all.files)]
-            if (length(post.distn.file) > 1)
+            if (length(post.distn.file) > 1) {
               PEcAn.logger::logger.severe(
                 "get.trait.data.pft() doesn't know how to ",
                 "handle multiple `post.distns.*.Rdata` files.",
                 "Found the following files: ",
                 paste(shQuote(post.distn.file), collapse = ", ")
               )
-            else if (length(post.distn.file) == 1) {
+            } else if (length(post.distn.file) == 1) {
               # Found exactly one post.distns.*.Rdata file. Use it.
               link_input <- file.path(pft[["outdir"]], post.distn.file)
               link_target <- file.path(pft[["outdir"]], "post.distns.Rdata")
@@ -256,23 +261,27 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
               done <- FALSE
             }
           }
-          if (done) return(pft)
+          if (done) {
+            return(pft)
+          }
         }
       }
     }
   }
-  
+
   # get the trait data (including sampling of derived traits, if any)
-  trait.data <- query.traits(pft_members$id, traits, con = dbcon,
-                             update.check.only = FALSE,
-                             ids_are_cultivars = (pfttype == "cultivar"))
+  trait.data <- query.traits(pft_members$id, traits,
+    con = dbcon,
+    update.check.only = FALSE,
+    ids_are_cultivars = (pfttype == "cultivar")
+  )
   traits <- names(trait.data)
-  
+
   if (length(trait.data) > 0) {
     trait_counts <- trait.data %>%
       dplyr::bind_rows(.id = "trait") %>%
       dplyr::count(trait)
-    
+
     PEcAn.logger::logger.info(
       "\n Number of observations per trait for PFT ", shQuote(pft[["name"]]), ":\n",
       PEcAn.logger::print2string(trait_counts, n = Inf),
@@ -284,39 +293,44 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
       format(pft_members[["id"]], scientific = FALSE)
     )
   }
-  
+
   # get list of existing files so they get ignored saving
   old.files <- list.files(path = pft$outdir)
-  
+
   # create a new posterior
   now <- format(x = Sys.time(), format = "%Y-%m-%d %H:%M:%S")
-  db.query(paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) ",
-                  "VALUES (", pftid, ", '", now, "', '", now, "')"),
-           con = dbcon)
+  db.query(paste0(
+    "INSERT INTO posteriors (pft_id, created_at, updated_at) ",
+    "VALUES (", pftid, ", '", now, "', '", now, "')"
+  ),
+  con = dbcon
+  )
   pft$posteriorid <- dplyr::tbl(dbcon, "posteriors") %>%
     dplyr::filter(pft_id == !!pftid, created_at == !!now) %>%
     dplyr::pull(id)
-  
+
   # create path where to store files
   pathname <- file.path(dbfiles, "posterior", pft$posteriorid)
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
-  
+
   ## 1. get species/cultivar list based on pft
   utils::write.csv(pft_members, file.path(pft$outdir, pft_member_filename),
-                   row.names = FALSE)
-  
+    row.names = FALSE
+  )
+
   ## save priors
   save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
   utils::write.csv(prior.distns, file.path(pft$outdir, "prior.distns.csv"),
-                   row.names = TRUE)
-  
+    row.names = TRUE
+  )
+
   ## 3. display info to the console
   PEcAn.logger::logger.info(
     "\n Summary of prior distributions for PFT ", shQuote(pft$name), ":\n",
     PEcAn.logger::print2string(prior.distns),
     wrap = FALSE
   )
-  
+
   ## traits = variables with prior distributions for this pft
   trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
   save(trait.data, file = trait.data.file)
@@ -325,7 +339,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
     file.path(pft$outdir, "trait.data.csv"),
     row.names = FALSE
   )
-  
+
   ### save and store in database all results except those that were there already
   store_files_all <- list.files(path = pft[["outdir"]])
   store_files <- setdiff(store_files_all, old.files)
@@ -341,10 +355,12 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   for (file in store_files) {
     filename <- file.path(pathname, file)
     file.copy(file.path(pft$outdir, file), filename)
-    dbfile.insert(in.path = pathname, in.prefix = file,
-                  type = "Posterior", id = pft[["posteriorid"]],
-                  con = dbcon)
+    dbfile.insert(
+      in.path = pathname, in.prefix = file,
+      type = "Posterior", id = pft[["posteriorid"]],
+      con = dbcon
+    )
   }
-  
+
   return(pft)
 }

@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -11,7 +11,7 @@
 ##'
 ##' Reads the output of a single model run
 ##'
-##' Generic function to convert model output from model-specific format to 
+##' Generic function to convert model output from model-specific format to
 ##' a common PEcAn format. This function uses MsTMIP variables except that units of
 ##'  (kg m-2 d-1)  are converted to kg ha-1 y-1. Currently this function converts
 ##' Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
@@ -236,7 +236,7 @@ read.output <- function(runid, outdir,
         # check if the variable has 'pft' as a dimension
         if ("pft" %in% sapply(nc$var[[v]]$dim, `[[`, "name")) {
           # means there are PFT specific outputs we want
-          # the variable *PFT* in standard netcdfs has *pft* dimension, 
+          # the variable *PFT* in standard netcdfs has *pft* dimension,
           # numbers as values, and full pft names as an attribute
           # parse pft names and match the requested
           pft.string <- ncdf4::ncatt_get(nc, "PFT", verbose = verbose)
@@ -245,7 +245,7 @@ read.output <- function(runid, outdir,
           # there might be other cases that are not covered here
           dim.check <- length(dim(newresult))
           if (any(pft.ind)) { # means pft.name passed, we want to read pft-specific outputs
-            if (dim.check == 1){
+            if (dim.check == 1) {
               newresult <- newresult[pft.ind]
             } else {
               newresult <- newresult[, pft.ind]
@@ -253,14 +253,14 @@ read.output <- function(runid, outdir,
           } else {
             # means this variable is available as per-pft, so written as such to standard ncdf files
             # but we still want to read as total
-            if (dim.check == 1){
+            if (dim.check == 1) {
               newresult <- sum(newresult)
             } else {
               newresult <- apply(newresult, 1, sum)
             }
           }
         } # end of per-pft read
-        
+
         # Dropping attempt to provide more sensible units because of graph unit errors,
         # issue #792
         # if (v %in% c(cflux, wflux)) {
@@ -284,7 +284,9 @@ read.output <- function(runid, outdir,
     }
   }
 
-  if (!dataframe) return(result)
+  if (!dataframe) {
+    return(result)
+  }
 
   # Check if there are variables that have multiple dimensions for
   # example soil moisture at multiple levels. Currently we don't have

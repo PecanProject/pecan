@@ -22,7 +22,7 @@ set the outdir to be 'pecan' for the next run.
 }
 \examples{
 \dontrun{
-clean.settings('output/PEcAn_1/pecan.xml', 'pecan.xml')
+clean.settings("output/PEcAn_1/pecan.xml", "pecan.xml")
 }
 }
 \author{

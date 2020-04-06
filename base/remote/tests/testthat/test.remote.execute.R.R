@@ -14,4 +14,3 @@ result <- remote.execute.R(script = code, host = host)
 test_that("Remote execute R works as expected", {
   expect_identical(result, eval(parse(text = code)))
 })
-

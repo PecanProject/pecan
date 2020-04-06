@@ -1,14 +1,14 @@
 #' Logger message if conditions are not met
 #'
-#' Similar to [base::stopifnot], but allows you to use a custom message and 
+#' Similar to [base::stopifnot], but allows you to use a custom message and
 #' logger level. If all conditions are `TRUE`, silently exit.
 #'
-#' Conditions can be vectorized, or can return non-logical values.The 
-#' underlying function automatically applies `isTRUE(all(.))` to the 
+#' Conditions can be vectorized, or can return non-logical values.The
+#' underlying function automatically applies `isTRUE(all(.))` to the
 #' conditions.
 #'
 #' @param msg Logger message to write, as a single character string.
-#' @param ... Conditions to evaluate 
+#' @param ... Conditions to evaluate
 #' @return Invisibly, `TRUE` if conditions are met, `FALSE` otherwise
 #' @examples
 #' a <- 1:5

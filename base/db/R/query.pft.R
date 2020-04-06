@@ -25,27 +25,31 @@
 query.pft_species <- function(pft, modeltype = NULL, con) {
   # create pft subquery
   if (is.null(modeltype)) {
-    query <- paste0("select species.id, species.genus, species.species, species.scientificname",
-                    " from species, pfts, pfts_species",
-                    " where species.id=pfts_species.specie_id",
-                    " and pfts.id=pfts_species.pft_id",
-                    " and pfts.pft_type='plant'",
-                    " and pfts.name='", pft, "'")
+    query <- paste0(
+      "select species.id, species.genus, species.species, species.scientificname",
+      " from species, pfts, pfts_species",
+      " where species.id=pfts_species.specie_id",
+      " and pfts.id=pfts_species.pft_id",
+      " and pfts.pft_type='plant'",
+      " and pfts.name='", pft, "'"
+    )
   } else {
-    query <- paste0("select species.id, species.genus, species.species, species.scientificname",
-                    " from species, pfts, pfts_species, modeltypes",
-                    " where species.id=pfts_species.specie_id",
-                    " and pfts.id=pfts_species.pft_id",
-                    " and pfts.pft_type='plant'",
-                    " and pfts.name='", pft, "'",
-                    " and pfts.modeltype_id=modeltypes.id",
-                    " and modeltypes.name='", modeltype, "'")
+    query <- paste0(
+      "select species.id, species.genus, species.species, species.scientificname",
+      " from species, pfts, pfts_species, modeltypes",
+      " where species.id=pfts_species.specie_id",
+      " and pfts.id=pfts_species.pft_id",
+      " and pfts.pft_type='plant'",
+      " and pfts.name='", pft, "'",
+      " and pfts.modeltype_id=modeltypes.id",
+      " and modeltypes.name='", modeltype, "'"
+    )
   }
 
   species <- db.query(query = query, con = con)
   invisible(species)
 }
-#==================================================================================================#
+# ==================================================================================================#
 
 ##' Select cultivars associated with a PFT
 ##'
@@ -63,39 +67,43 @@ query.pft_species <- function(pft, modeltype = NULL, con) {
 ##'   and the species it comes from
 ##' @export
 query.pft_cultivars <- function(pft, modeltype = NULL, con) {
-
   pft_tbl <- (dplyr::tbl(con, "pfts")
-    %>% dplyr::filter(name == !!pft, pft_type == "cultivar"))
+  %>% dplyr::filter(name == !!pft, pft_type == "cultivar"))
 
   if (!is.null(modeltype)) {
     pft_tbl <- (pft_tbl
-      %>% dplyr::inner_join(
+    %>% dplyr::inner_join(
         dplyr::tbl(con, "modeltypes"),
         by = c("modeltype_id" = "id"),
-        suffix = c("", ".mt"))
+        suffix = c("", ".mt")
+      )
       %>% dplyr::filter(name.mt == !!modeltype))
   }
 
   (pft_tbl
-    %>% dplyr::inner_join(
+  %>% dplyr::inner_join(
       dplyr::tbl(con, "cultivars_pfts"),
       by = c("id" = "pft_id"),
-      suffix = c("", ".cvpft"))
+      suffix = c("", ".cvpft")
+    )
     %>% dplyr::inner_join(
       dplyr::tbl(con, "cultivars"),
       by = c("cultivar_id" = "id"),
-      suffix = c("", ".cv"))
+      suffix = c("", ".cv")
+    )
     %>% dplyr::inner_join(
       dplyr::tbl(con, "species"),
-      by=c("specie_id" = "id"),
-      suffix=c("", ".sp"))
+      by = c("specie_id" = "id"),
+      suffix = c("", ".sp")
+    )
     %>% dplyr::select(
       id = cultivar_id,
       specie_id,
       genus,
       species,
       scientificname,
-      cultivar = name.cv)
+      cultivar = name.cv
+    )
     %>% dplyr::collect())
 }
 

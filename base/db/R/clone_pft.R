@@ -2,8 +2,8 @@
 ##'
 ##' Creates a new pft that is a duplicate of an existing pft,
 ##' including relationships with priors, species, and cultivars (if any) of the existing pft.
-##' This function mimics the 'clone pft' button in the PFTs record view page in the 
-##' BETYdb web interface for PFTs that aggregate >=1 species, but adds the ability to 
+##' This function mimics the 'clone pft' button in the PFTs record view page in the
+##' BETYdb web interface for PFTs that aggregate >=1 species, but adds the ability to
 ##' clone the cultivar associations.
 ##'
 ##' @param parent.pft.name name of PFT to duplicate
@@ -21,8 +21,7 @@
 clone_pft <- function(parent.pft.name,
                       new.pft.name,
                       new.pft.definition,
-                      settings){
-
+                      settings) {
   if (new.pft.name == parent.pft.name) {
     PEcAn.logger::logger.severe("new.pft.name must not be the same as parent.pft.name")
   }
@@ -35,7 +34,7 @@ clone_pft <- function(parent.pft.name,
   on.exit(db.close(con), add = TRUE)
 
   parent.pft <- (dplyr::tbl(con, "pfts")
-    %>% dplyr::filter(name == !!parent.pft.name)
+  %>% dplyr::filter(name == !!parent.pft.name)
     %>% dplyr::collect())
 
   if (nrow(parent.pft) == 0) {
@@ -43,11 +42,12 @@ clone_pft <- function(parent.pft.name,
   }
 
   new.pft <- (parent.pft
-    %>% dplyr::select(-id, -created_at, -updated_at)
+  %>% dplyr::select(-id, -created_at, -updated_at)
     %>% dplyr::mutate(
       name = !!new.pft.name,
       definition = !!new.pft.definition,
-      parent_id = !!parent.pft$id))
+      parent_id = !!parent.pft$id
+    ))
 
   ## create new pft
   DBI::dbWriteTable(
@@ -55,10 +55,11 @@ clone_pft <- function(parent.pft.name,
     name = "pfts",
     value = as.data.frame(new.pft),
     append = TRUE,
-    row.names = FALSE)
+    row.names = FALSE
+  )
 
   new.pft$id <- (dplyr::tbl(con, "pfts")
-    %>% dplyr::filter(name == !!new.pft.name)
+  %>% dplyr::filter(name == !!new.pft.name)
     %>% dplyr::pull(id))
 
 
@@ -72,33 +73,35 @@ clone_pft <- function(parent.pft.name,
     member_tbl <- "pfts_species"
   }
   new_members <- (dplyr::tbl(con, member_tbl)
-    %>% dplyr::filter(pft_id == !!parent.pft$id)
+  %>% dplyr::filter(pft_id == !!parent.pft$id)
     %>% dplyr::mutate(pft_id = !!new.pft$id)
     %>% dplyr::distinct()
     %>% dplyr::collect())
 
-  if(nrow(new_members) > 0){
+  if (nrow(new_members) > 0) {
     DBI::dbWriteTable(
       conn = con,
       name = member_tbl,
       value = as.data.frame(new_members),
       append = TRUE,
-      row.names = FALSE)
+      row.names = FALSE
+    )
   }
 
   new_priors <- (dplyr::tbl(con, "pfts_priors")
-    %>% dplyr::filter(pft_id == !!parent.pft$id)
+  %>% dplyr::filter(pft_id == !!parent.pft$id)
     %>% dplyr::mutate(pft_id = !!new.pft$id)
     %>% dplyr::distinct()
     %>% dplyr::collect())
 
-  if(nrow(new_priors) > 0){
+  if (nrow(new_priors) > 0) {
     DBI::dbWriteTable(
       conn = con,
       name = "pfts_priors",
       value = as.data.frame(new_priors),
       append = TRUE,
-      row.names = FALSE)
+      row.names = FALSE
+    )
   }
 
   return(new.pft$id)

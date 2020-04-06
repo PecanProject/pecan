@@ -11,15 +11,6 @@ theme_border(
   linetype = 1
 )
 }
-\arguments{
-\item{type}{}
-
-\item{colour}{}
-
-\item{size}{}
-
-\item{linetype}{}
-}
 \value{
 adds borders to ggplot as a side effect
 }

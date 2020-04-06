@@ -34,11 +34,15 @@ isn't numeric to character, to facilitate comparison.}
 Symmetric set difference of two data frames
 }
 \examples{
-xdf <- data.frame(a = c("a", "b", "c"),
-                  b = c(1, 2, 3),
-                  stringsAsFactors = FALSE)
-ydf <- data.frame(a = c("a", "b", "d"),
-                  b = c(1, 2.5, 3),
-                  stringsAsFactors = FALSE)
+xdf <- data.frame(
+  a = c("a", "b", "c"),
+  b = c(1, 2, 3),
+  stringsAsFactors = FALSE
+)
+ydf <- data.frame(
+  a = c("a", "b", "d"),
+  b = c(1, 2.5, 3),
+  stringsAsFactors = FALSE
+)
 symmetric_setdiff(xdf, ydf)
 }

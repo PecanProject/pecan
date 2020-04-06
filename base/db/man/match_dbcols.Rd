@@ -13,7 +13,7 @@ match_dbcols(values, table, con, coerce_col_class = TRUE, drop = TRUE)
 
 \item{con}{Database connection object}
 
-\item{coerce_col_class}{logical, whether or not to coerce local data columns 
+\item{coerce_col_class}{logical, whether or not to coerce local data columns
 to SQL classes. Default = `TRUE.`}
 
 \item{drop}{logical. If `TRUE` (default), drop columns not found in SQL table.}

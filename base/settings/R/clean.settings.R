@@ -1,11 +1,11 @@
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Copyright (c) 2012 University of Illinois, NCSA.
 ## All rights reserved. This program and the accompanying materials
 ## are made available under the terms of the
 ## University of Illinois/NCSA Open Source License
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 
 #' Cleans PEcAn settings file
 #'
@@ -20,12 +20,12 @@
 #' @author Rob Kooper
 #' @examples
 #' \dontrun{
-#' clean.settings('output/PEcAn_1/pecan.xml', 'pecan.xml')
+#' clean.settings("output/PEcAn_1/pecan.xml", "pecan.xml")
 #' }
 clean.settings <- function(
-    inputfile = "pecan.xml",
-    outputfile = "pecan.xml",
-    write = TRUE) {
+                           inputfile = "pecan.xml",
+                           outputfile = "pecan.xml",
+                           write = TRUE) {
   if (is.null(inputfile) || !file.exists(inputfile)) {
     PEcAn.logger::logger.severe("Could not find input file.")
   }

@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##--------------------------------------------------------------------------------------------------#
+## --------------------------------------------------------------------------------------------------#
 ##' Extract trait data from database
 ##'
 ##' Extracts data from database for a given trait and set of species,
@@ -28,115 +28,128 @@
 ##' query.trait.data("Vcmax", "938", con = con)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE, ids_are_cultivars = FALSE, ...){
-  
-  if(is.list(con)){
+query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE, ids_are_cultivars = FALSE, ...) {
+  if (is.list(con)) {
     PEcAn.logger::logger.warn("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   }
-  
+
   # print trait info
-  if(!update.check.only) {
+  if (!update.check.only) {
     PEcAn.logger::logger.info("---------------------------------------------------------")
     PEcAn.logger::logger.info(trait)
   }
-  
+
   ### Query the data from the database for trait X.
   data <- query.data(trait = trait, spstr = spstr, con = con, store.unconverted = TRUE, ids_are_cultivars = ids_are_cultivars)
-  
+
   ### Query associated covariates from database for trait X.
   covariates <- query.covariates(trait.ids = data$id, con = con)
-  canopy.layer.covs <- covariates[covariates$name == 'canopy_layer', ]
-  
+  canopy.layer.covs <- covariates[covariates$name == "canopy_layer", ]
+
   ### Set small sample size for derived traits if update-checking only. Otherwise use default.
-  if(update.check.only) {
+  if (update.check.only) {
     sample.size <- 10
   } else {
-    sample.size <- 10^6  ## Same default as derive.trait(), derive.traits(), and take.samples()
+    sample.size <- 10^6 ## Same default as derive.trait(), derive.traits(), and take.samples()
   }
-  
-  if(trait == 'Vcmax') {
+
+  if (trait == "Vcmax") {
     #########################   VCMAX   ############################
     ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('leafT', 'airT','T'))
-    
+    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c("leafT", "airT", "T"))
+
     ### Keep only top of canopy/sunlit leaf samples based on covariate.
-    if(nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data = data, covariates = canopy.layer.covs)
-    
+    if (nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data = data, covariates = canopy.layer.covs)
+
     ## select only summer data for Panicum virgatum
-    ##TODO fix following hack to select only summer data
-    if (spstr == "'938'"){
-      data <- subset(data, subset = data$month %in% c(0,5,6,7))
+    ## TODO fix following hack to select only summer data
+    if (spstr == "'938'") {
+      data <- subset(data, subset = data$month %in% c(0, 5, 6, 7))
     }
-    
-  } else if (trait == 'SLA') {
+  } else if (trait == "SLA") {
     #########################    SLA    ############################
     ## convert LMA to SLA
-    data <- rbind(data,
-                  derive.traits(function(lma){1/lma},
-                                query.data('LMA', spstr, con=con, store.unconverted=TRUE,
-                                           ids_are_cultivars=ids_are_cultivars),
-                                sample.size=sample.size))
-    
+    data <- rbind(
+      data,
+      derive.traits(function(lma) {
+        1 / lma
+      },
+      query.data("LMA", spstr,
+        con = con, store.unconverted = TRUE,
+        ids_are_cultivars = ids_are_cultivars
+      ),
+      sample.size = sample.size
+      )
+    )
+
     ### Keep only top of canopy/sunlit leaf samples based on covariate.
-    if(nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data = data, covariates = canopy.layer.covs)
-    
+    if (nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data = data, covariates = canopy.layer.covs)
+
     ## select only summer data for Panicum virgatum
-    ##TODO fix following hack to select only summer data
-    if (spstr == "'938'"){
-      data <- subset(data, subset = data$month %in% c(0,5,6,7,8,NA))
+    ## TODO fix following hack to select only summer data
+    if (spstr == "'938'") {
+      data <- subset(data, subset = data$month %in% c(0, 5, 6, 7, 8, NA))
     }
-    
-  } else if (trait == 'leaf_turnover_rate'){
+  } else if (trait == "leaf_turnover_rate") {
     #########################    LEAF TURNOVER    ############################
     ## convert Longevity to Turnover
-    data <- rbind(data,
-                  derive.traits(function(leaf.longevity){ 1 / leaf.longevity },
-                                query.data('Leaf Longevity', spstr, con = con, store.unconverted = TRUE,
-                                           ids_are_cultivars = ids_are_cultivars),
-                                sample.size = sample.size))
-    
-  } else if (trait == 'root_respiration_rate') {
+    data <- rbind(
+      data,
+      derive.traits(function(leaf.longevity) {
+        1 / leaf.longevity
+      },
+      query.data("Leaf Longevity", spstr,
+        con = con, store.unconverted = TRUE,
+        ids_are_cultivars = ids_are_cultivars
+      ),
+      sample.size = sample.size
+      )
+    )
+  } else if (trait == "root_respiration_rate") {
     #########################  ROOT RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert root respiration at measurement temp
     ## to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('rootT', 'airT','soilT'))
-    
-  } else if (trait == 'leaf_respiration_rate_m2') {
+    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c("rootT", "airT", "soilT"))
+  } else if (trait == "leaf_respiration_rate_m2") {
     #########################  LEAF RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert leaf respiration at measurement temp
     ## to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('leafT', 'airT','T'))
-    
-  } else if (trait == 'stem_respiration_rate') {
+    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c("leafT", "airT", "T"))
+  } else if (trait == "stem_respiration_rate") {
     #########################  STEM RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert stem respiration at measurement temp
     ## to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('stemT', 'airT','T'))
-    
-  } else if (trait == 'c2n_leaf') {
+    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c("stemT", "airT", "T"))
+  } else if (trait == "c2n_leaf") {
     #########################  LEAF C:N   ############################
-    
-    data <- rbind(data,
-                  derive.traits(function(leafN){ 48 / leafN },
-                                query.data('leafN', spstr, con = con, store.unconverted = TRUE,
-                                           ids_are_cultivars = ids_are_cultivars),
-                                sample.size = sample.size))
-    
-  } else if (trait == 'fineroot2leaf') {
+
+    data <- rbind(
+      data,
+      derive.traits(function(leafN) {
+        48 / leafN
+      },
+      query.data("leafN", spstr,
+        con = con, store.unconverted = TRUE,
+        ids_are_cultivars = ids_are_cultivars
+      ),
+      sample.size = sample.size
+      )
+    )
+  } else if (trait == "fineroot2leaf") {
     #########################  FINE ROOT ALLOCATION  ############################
     ## FRC_LC is the ratio of fine root carbon to leaf carbon
-    data <- rbind(data, query.data(trait = 'FRC_LC', spstr = spstr, con = con, store.unconverted = TRUE, ids_are_cultivars = ids_are_cultivars))
+    data <- rbind(data, query.data(trait = "FRC_LC", spstr = spstr, con = con, store.unconverted = TRUE, ids_are_cultivars = ids_are_cultivars))
   }
   result <- data
-  
+
   ## if result is empty, stop run
-  
+
   if (nrow(result) == 0) {
     return(NA)
     warning(paste("there is no data for", trait))
   } else {
-    
+
     ## Do we really want to print each trait table?? Seems like a lot of
     ## info to send to console.  Maybe just print summary stats?
     ## print(result)

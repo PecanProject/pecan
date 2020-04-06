@@ -9,15 +9,17 @@
 #' @author Betsy Cowdery
 #' @export write.settings
 write.settings <- function(
-  settings,
-  outputfile,
-  outputdir = settings$outdir) {
+                           settings,
+                           outputfile,
+                           outputdir = settings$outdir) {
   pecanfile <- file.path(outputdir, outputfile)
   if (file.exists(pecanfile)) {
     PEcAn.logger::logger.warn(
       paste(
         "File already exists [", pecanfile,
-        "] file will be overwritten"))
+        "] file will be overwritten"
+      )
+    )
   }
   XML::saveXML(listToXml(settings, "pecan"), file = pecanfile)
 }

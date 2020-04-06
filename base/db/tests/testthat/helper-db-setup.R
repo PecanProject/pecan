@@ -27,18 +27,22 @@ get_db_params <- function() {
       host = "localhost",
       user = "bety",
       password = "bety",
-      driver = "Postgres"))
+      driver = "Postgres"
+    ))
   } else {
     if (PEcAn.remote::fqdn() == "pecan2.bu.edu") {
-      return(list(host = "psql-pecan.bu.edu", driver = "PostgreSQL",
-                  dbname = "bety", user = "bety", password = "bety"))
+      return(list(
+        host = "psql-pecan.bu.edu", driver = "PostgreSQL",
+        dbname = "bety", user = "bety", password = "bety"
+      ))
     } else {
       return(get_postgres_envvars(
         host = "localhost",
         driver = "PostgreSQL",
         user = "bety",
         dbname = "bety",
-        password = "bety"))
+        password = "bety"
+      ))
     }
   }
 }
@@ -47,10 +51,13 @@ check_db_test <- function() {
   con <- tryCatch(
     db.open(params = get_db_params()),
     error = function(e) {
-      message("Failed to open connection with the following error:\n",
-              conditionMessage(e))
+      message(
+        "Failed to open connection with the following error:\n",
+        conditionMessage(e)
+      )
       return(NULL)
-    })
+    }
+  )
 
   if (is.null(con)) {
     testthat::skip("Can't get a valid test connection right now. Skipping test. ")

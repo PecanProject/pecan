@@ -56,20 +56,24 @@ test_that("MultiSettings extracts work as expected", {
   expect_equal(multiSettings[["a"]], 1)
   expect_equivalent(
     multiSettings[["a", collapse = FALSE]],
-    replicate(3, 1, FALSE))
+    replicate(3, 1, FALSE)
+  )
 
   # Can't collapse because not equal
   expect_equivalent(multiSettings$b, list(s1$b, s2$b, s3$b))
   expect_equivalent(multiSettings[["b"]], list(s1$b, s2$b, s3$b))
   expect_equivalent(
     multiSettings[["b", collapse = FALSE]],
-    list(s1$b, s2$b, s3$b))
+    list(s1$b, s2$b, s3$b)
+  )
 
   # Can't collapse because not shared by all
   expect_equivalent(multiSettings$c, list(s1$c, s2$c, s3$c))
   expect_equivalent(multiSettings[["c"]], list(s1$c, s2$c, s3$c))
-  expect_equivalent(multiSettings[["c", collapse = FALSE]],
-    list(s1$c, s2$c, s3$c))
+  expect_equivalent(
+    multiSettings[["c", collapse = FALSE]],
+    list(s1$c, s2$c, s3$c)
+  )
 
   # Explicitly prohibited to prevent confusion
   expect_error(multiSettings["a"])
@@ -154,7 +158,8 @@ test_that("Assigning NULL by name removes setting from each Setting", {
 test_that("Assigning non-globally applies values sequentially to Settings", {
   multiSettings <- expected <- multiSettingsTemplate
   expect_silent(
-    multiSettings[["x", global = FALSE]] <- seq_along(multiSettings))
+    multiSettings[["x", global = FALSE]] <- seq_along(multiSettings)
+  )
   for (i in seq_along(multiSettings)) {
     expected[[i]]$x <- i
     expect_identical(multiSettings[[i]], expected[[i]])
@@ -231,9 +236,11 @@ test_that("Assigning non-globally works as expected for a values list containing
 test_that("Assigning non-globally by name throws error for length mismatch", {
   multiSettings <- multiSettingsTemplate
   expect_error(
-    multiSettings[["x", global = FALSE]] <- rep(1, length(multiSettings) - 1))
+    multiSettings[["x", global = FALSE]] <- rep(1, length(multiSettings) - 1)
+  )
   expect_error(
-    multiSettings[["x", global = FALSE]] <- rep(1, length(multiSettings) + 1))
+    multiSettings[["x", global = FALSE]] <- rep(1, length(multiSettings) + 1)
+  )
 })
 
 test_that("Assigning non-globally to a single-element MultiSettings expands it to match length of value", {

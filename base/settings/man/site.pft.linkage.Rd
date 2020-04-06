@@ -27,17 +27,17 @@ This function creates the required tags inside pecan.xml
 }
 \examples{
 \dontrun{
-#setting up the Look up tables
-site.pft.links <-tribble(
- ~site, ~pft,
- "1000025731", "temperate.broadleaf.deciduous1",
- "1000025731", "temperate.needleleaf.evergreen",
- "1000000048", "temperate.broadleaf.deciduous2",
- "772", "temperate.broadleaf.deciduous3",
- "763", "temperate.broadleaf.deciduous4"
+# setting up the Look up tables
+site.pft.links <- tribble(
+  ~site, ~pft,
+  "1000025731", "temperate.broadleaf.deciduous1",
+  "1000025731", "temperate.needleleaf.evergreen",
+  "1000000048", "temperate.broadleaf.deciduous2",
+  "772", "temperate.broadleaf.deciduous3",
+  "763", "temperate.broadleaf.deciduous4"
 )
 
 # sending a multi- setting xml file to the function
-site.pft.linkage(settings,site.pft.links)
+site.pft.linkage(settings, site.pft.links)
 }
 }

@@ -6,9 +6,6 @@
 \usage{
 grid2netcdf(gdata, date = "9999-09-09", outfile = "out.nc")
 }
-\arguments{
-\item{grid.data}{}
-}
 \value{
 writes netCDF file
 }

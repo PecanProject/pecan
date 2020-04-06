@@ -48,7 +48,8 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
     for (i in seq_along(settings)) {
       PEcAn.logger::logger.debug(
         "papply executing ", deparse(substitute(fn)),
-        "on element ", i, " of ", length(settings), ".")
+        "on element ", i, " of ", length(settings), "."
+      )
 
       result.i <- try(fn(settings[[i]], ...), silent = TRUE)
 
@@ -68,18 +69,21 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
           PEcAn.logger::logger.error(
             "papply threw an error for element ", i, " of ", length(settings),
             ", and is aborting since stop.on.error=TRUE. Message was: '",
-            as.character(result.i), "'")
+            as.character(result.i), "'"
+          )
           stop()
         } else {
           warning.message.i <- paste0(
             "papply threw an error for element ", i, " of ", length(settings),
             ", but is continuing since stop.on.error=FALSE",
             " (there will be no results for this element, however).",
-            " Message was: '", as.character(result.i), "'")
+            " Message was: '", as.character(result.i), "'"
+          )
           PEcAn.logger::logger.warn(warning.message.i)
           errors <- c(
             errors,
-            paste0("Element ", i, ": '", as.character(result.i), "'"))
+            paste0("Element ", i, ": '", as.character(result.i), "'")
+          )
         }
       }
     }
@@ -92,7 +96,8 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
       PEcAn.logger::logger.warn(
         "papply encountered errors for ", length(errors), " elements, ",
         "but continued since stop.on.error=FALSE.",
-        paste(errors, collapse = "; "))
+        paste(errors, collapse = "; ")
+      )
     }
 
     return(result)
@@ -103,6 +108,7 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
     return(fn(as.Settings(settings), ...))
   } else {
     PEcAn.logger::logger.severe(
-      "The function", fn, "requires input of type MultiSettings or Settings")
+      "The function", fn, "requires input of type MultiSettings or Settings"
+    )
   }
 } # papply

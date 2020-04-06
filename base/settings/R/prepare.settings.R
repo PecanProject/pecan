@@ -12,7 +12,6 @@
 #' @export prepare.settings
 #'
 prepare.settings <- function(settings, force = FALSE) {
-
   if (is.MultiSettings(settings)) {
     return(invisible(papply(settings, prepare.settings, force = force)))
   }
