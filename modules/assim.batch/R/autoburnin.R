@@ -1,28 +1,28 @@
 #' @title Calculate burnin value
-#' 
+#'
 #' @description Automatically detect burnin based on one of several methods.
 #' @param jags_out List of MCMC sample matrices or `mcmc.list` object
 #' @param threshold Maximum value of Gelman diagnostic
-#' @param method Character string indicating method. Options are 
+#' @param method Character string indicating method. Options are
 #' "moving.window" (default) or "gelman.plot".
-#' @param use.confidence Logical. If TRUE (default), use 95% confidence 
+#' @param use.confidence Logical. If TRUE (default), use 95% confidence
 #' interval for Gelman Diagnostic. If FALSE, use the point estimate.
 #' @param plotfile path
 #' @param ... Other parameters to methods
-#' 
-#' @details 
+#'
+#' @details
 #' See "gelman_diag_mw" and "gelman_diag_gelmanPlot"
-#' 
+#'
 #' @examples
-#'      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
-#'      z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
-#'      z <- coda::mcmc.list(z1, z2)
-#'      burnin <- getBurnin(z, threshold = 1.05)
+#' z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
+#' z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
+#' z <- coda::mcmc.list(z1, z2)
+#' burnin <- getBurnin(z, threshold = 1.05)
 #' @author Alexey Shiklomanov, Michael Dietze
 #' @export
 
 getBurnin <- function(jags_out,
-                      threshold = 1.1, 
+                      threshold = 1.1,
                       use.confidence = TRUE,
                       method = "moving.window",
                       plotfile = "/dev/null",
@@ -43,11 +43,13 @@ getBurnin <- function(jags_out,
   gbr_exceed <- gbr_values > threshold
   if (all(!gbr_exceed)) {
     # Chains converged instantly -- no burnin required
-    burnin <- 2     # This isn't 1 to allow testing for convergence with `burnin == 1`
+    burnin <- 2 # This isn't 1 to allow testing for convergence with `burnin == 1`
   } else {
     index <- utils::tail(which(rowSums(gbr_exceed) > 0), 1) + 1
-    stopifnot(length(index) == 1,
-               inherits(index, c("numeric", "integer")))
+    stopifnot(
+      length(index) == 1,
+      inherits(index, c("numeric", "integer"))
+    )
     if (index > dim(GBR)[1]) {
       burnin <- NA
     } else {
@@ -70,16 +72,16 @@ getBurnin <- function(jags_out,
 #'
 #' @author Michael Dietze, Alexey Shiklomanov
 #' @param jags_out JAGS output
-#' @param return.burnin Logical. If `TRUE`, return burnin value in addition to 
+#' @param return.burnin Logical. If `TRUE`, return burnin value in addition to
 #' samples (as list). Default = FALSE.
-#' @param ... Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 
+#' @param ... Additional arguments for \code{getBurnin}, \code{gelman_diag_mw},
 #' and \code{gelman.diag}.
 #' @inheritParams getBurnin
 #' @examples
-#'      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
-#'      z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
-#'      z <- coda::mcmc.list(z1, z2)
-#'      z_burned <- autoburnin(z)
+#' z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
+#' z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
+#' z <- coda::mcmc.list(z1, z2)
+#' z_burned <- autoburnin(z)
 #' @export
 autoburnin <- function(jags_out, return.burnin = FALSE, ...) {
   burnin <- getBurnin(jags_out, ...)
@@ -88,8 +90,10 @@ autoburnin <- function(jags_out, return.burnin = FALSE, ...) {
   } else if (burnin > 1) {
     samples <- stats::window(jags_out, start = burnin)
   } else {
-    stop("Bad return value for burnin: \n",
-         burnin)
+    stop(
+      "Bad return value for burnin: \n",
+      burnin
+    )
   }
   if (return.burnin) {
     out <- list(samples = samples, burnin = burnin)

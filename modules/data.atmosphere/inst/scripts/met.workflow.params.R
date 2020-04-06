@@ -1,13 +1,13 @@
 # Database setup
-driver   <- "PostgreSQL"
-user     <- "bety"
-dbname   <- "bety"
+driver <- "PostgreSQL"
+user <- "bety"
+dbname <- "bety"
 password <- "bety"
-host     <-  "psql-pecan.bu.edu"
+host <- "psql-pecan.bu.edu"
 
 #######################################################
-# Choose data set. 
-# Current choices: 
+# Choose data set.
+# Current choices:
 # NARR
 # Ameriflux
 # FACE_RHIN
@@ -19,17 +19,17 @@ fcn.data <- "NARR"
 
 username <- ""
 raw.host <- "geo.bu.edu"
-dir      <- "/projectnb/dietzelab/pecan.data/input/"
+dir <- "/projectnb/dietzelab/pecan.data/input/"
 
 # Set start and end dates (when possible otherwise NA)
 
-start_year <- 1979 
-end_year   <- 2013
+start_year <- 1979
+end_year <- 2013
 
 # Download raw data? If not, specify raw.id
 # NARR raw.id on geo = 285
 
-raw    <- FALSE
+raw <- FALSE
 raw.id <- 285
 
 # Set site id number when possible (not possible for NARR)
@@ -43,13 +43,13 @@ raw.id <- 285
 # Change to CF standards? If not, specify cf.id
 # NARR cf.id on geo = 288
 
-cf    <- FALSE
+cf <- FALSE
 cf.id <- 288
 
 # Permute data? If not, specify perm.id
 # NARR perm.id on geo = 1000000023
 
-perm    <- FALSE
+perm <- FALSE
 perm.id <- 1000000023
 
 # Select extraction site

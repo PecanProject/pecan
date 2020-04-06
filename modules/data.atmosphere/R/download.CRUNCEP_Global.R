@@ -24,7 +24,6 @@
 download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
                              overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2,
                              method = "ncss", ...) {
-
   if (is.null(method)) method <- "ncss"
   if (!method %in% c("opendap", "ncss")) {
     PEcAn.logger::logger.severe(glue::glue(
@@ -41,9 +40,11 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
   CRUNCEP_start <- 1901
   CRUNCEP_end <- 2010
   if (start_year < CRUNCEP_start | end_year > CRUNCEP_end) {
-    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the CRUNCEP range (%d:%d)',
-                                        start_year, end_year,
-                                        CRUNCEP_start, CRUNCEP_end))
+    PEcAn.logger::logger.severe(sprintf(
+      "Input year range (%d:%d) exceeds the CRUNCEP range (%d:%d)",
+      start_year, end_year,
+      CRUNCEP_start, CRUNCEP_end
+    ))
   }
 
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
@@ -86,7 +87,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
   mask_dist <- (lon.in - mask_grid[, 1])^2 + (lat.in - mask_grid[, 2])^2
   # Order by increasing distance (closest first)
   mask_order <- order(mask_dist)
-  mask_igrido <- mask_igrid[mask_order,]
+  mask_igrido <- mask_igrid[mask_order, ]
   on_land <- as.logical(mask_values[mask_igrido])
   if (!any(on_land)) {
     PEcAn.logger::logger.severe(glue::glue(
@@ -119,14 +120,16 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
 
   ylist <- seq(start_year, end_year, by = 1)
   rows <- length(ylist)
-  results <- data.frame(file = character(rows),
-                        host = character(rows),
-                        mimetype = character(rows),
-                        formatname = character(rows),
-                        startdate = character(rows),
-                        enddate = character(rows),
-                        dbfile.name = "CRUNCEP",
-                        stringsAsFactors = FALSE)
+  results <- data.frame(
+    file = character(rows),
+    host = character(rows),
+    mimetype = character(rows),
+    formatname = character(rows),
+    startdate = character(rows),
+    enddate = character(rows),
+    dbfile.name = "CRUNCEP",
+    stringsAsFactors = FALSE
+  )
 
   var <- tibble::tribble(
     ~DAP.name, ~CF.name, ~units,
@@ -153,7 +156,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
     results$formatname[i] <- "CF Meteorology"
 
     if (file.exists(loc.file) && !isTRUE(overwrite)) {
-     PEcAn.logger::logger.error("File already exists. Skipping to next year")
+      PEcAn.logger::logger.error("File already exists. Skipping to next year")
       next
     }
 
@@ -162,9 +165,11 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
 
-    days_elapsed <- (1:ntime) * 6/24 - 3/24 # data are 6-hourly, with timestamp at center of interval
-    time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", year, "-01-01T00:00:00Z"),
-                             vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE)
+    days_elapsed <- (1:ntime) * 6 / 24 - 3 / 24 # data are 6-hourly, with timestamp at center of interval
+    time <- ncdf4::ncdim_def(
+      name = "time", units = paste0("days since ", year, "-01-01T00:00:00Z"),
+      vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE
+    )
 
     dim <- list(lat, lon, time)
 
@@ -185,7 +190,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
       url <- sprintf(dap_base, current_var, year)
       PEcAn.logger::logger.info("Attempting to access file at: ", url)
       if (method == "opendap") {
-        dap <- PEcAn.utils::retry.func(ncdf4::nc_open(url, verbose=verbose), maxErrors=maxErrors, sleep=sleep)
+        dap <- PEcAn.utils::retry.func(ncdf4::nc_open(url, verbose = verbose), maxErrors = maxErrors, sleep = sleep)
       } else if (method == "ncss") {
         ncss_query <- glue::glue(
           url, "?",
@@ -208,15 +213,19 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
 
       # confirm that timestamps match
       if (dap$dim$time$len != ntime) {
-        PEcAn.logger::logger.severe("Expected", ntime, "observations, but", url,  "contained", dap$dim$time$len)
+        PEcAn.logger::logger.severe("Expected", ntime, "observations, but", url, "contained", dap$dim$time$len)
       }
-      dap_time <- udunits2::ud.convert(dap$dim$time$vals,
-                                       dap$dim$time$units,
-                                       time$units)
-      if (!isTRUE(all.equal(dap_time, time$vals))){
-        PEcAn.logger::logger.severe("Timestamp mismatch.",
-                                    "Expected", min(time$vals), '..', max(time$vals), time$units,
-                                    "but got", min(dap_time), "..", max(dap_time))
+      dap_time <- udunits2::ud.convert(
+        dap$dim$time$vals,
+        dap$dim$time$units,
+        time$units
+      )
+      if (!isTRUE(all.equal(dap_time, time$vals))) {
+        PEcAn.logger::logger.severe(
+          "Timestamp mismatch.",
+          "Expected", min(time$vals), "..", max(time$vals), time$units,
+          "but got", min(dap_time), "..", max(dap_time)
+        )
       }
 
       dat.list[[j]] <- PEcAn.utils::retry.func(
@@ -226,13 +235,16 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
           c(lon_grid, lat_grid, 1),
           c(1, 1, ntime)
         ),
-        maxErrors=maxErrors, sleep=sleep)
+        maxErrors = maxErrors, sleep = sleep
+      )
 
-      var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]),
-                                        units = as.character(var$units[j]),
-                                        dim = dim,
-                                        missval = -999,
-                                        verbose = verbose)
+      var.list[[j]] <- ncdf4::ncvar_def(
+        name = as.character(var$CF.name[j]),
+        units = as.character(var$units[j]),
+        dim = dim,
+        missval = -999,
+        verbose = verbose
+      )
       ncdf4::nc_close(dap)
     }
     ## change units of precip to kg/m2/s instead of 6 hour accumulated precip

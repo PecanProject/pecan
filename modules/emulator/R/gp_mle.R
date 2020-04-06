@@ -7,19 +7,19 @@
 ##' @param nugget
 ##' @param myY
 ##' @param maxval
-##' 
+##'
 ##' @return val
-##' 
+##'
 ##' @author Michael Dietze
 gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
-  
+
   ## get parms
-  mu   <- theta[1]
+  mu <- theta[1]
   tauw <- theta[2]
   if (tauw <= 0) {
     return(maxval)
   }
-  i    <- 3
+  i <- 3
   tauv <- 0
   if (tauv < 0) {
     return(maxval)
@@ -36,9 +36,9 @@ gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
     return(maxval)
   }
   n <- length(myY)
-  
+
   S <- calcSpatialCov(d, phi, tauw)
-  
+
   val <- try(-sum(dmvnorm(myY, rep(mu, n), S + diag(tauv, n), log = TRUE)))
   if (!is.numeric(val)) {
     return(maxval)
@@ -54,11 +54,11 @@ gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
 
 
 ##' zero mean version
-##' @title gp_mle2 
+##' @title gp_mle2
 ##' @export
-##' 
+##'
 gp_mle2 <- function(theta, d, nugget, myY, maxval = Inf) {
-  
+
   ## get parms
   tauw <- theta[1]
   if (tauw <= 0) {
@@ -81,9 +81,9 @@ gp_mle2 <- function(theta, d, nugget, myY, maxval = Inf) {
     return(maxval)
   }
   n <- length(myY)
-  
+
   S <- calcSpatialCov(d, phi, tauw)
-  
+
   val <- try(-sum(dmvnorm(myY, rep(0, n), S + diag(tauv, n), log = TRUE)))
   if (!is.numeric(val)) {
     return(maxval)

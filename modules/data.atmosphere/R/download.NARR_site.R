@@ -8,15 +8,14 @@
 #' @param overwrite Overwrite existing files?  Default=FALSE
 #' @param verbose Turn on verbose output? Default=FALSE
 #' @param parallel Download in parallel? Default = TRUE
-#' @param ncores Number of cores for parallel download. Default is 
+#' @param ncores Number of cores for parallel download. Default is
 #' `parallel::detectCores()`
 #'
 #' @examples
-#' 
+#'
 #' \dontrun{
 #' download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 #' }
-#' 
 #'
 #' @export
 #'
@@ -30,7 +29,6 @@ download.NARR_site <- function(outfolder,
                                parallel = TRUE,
                                ncores = if (parallel) parallel::detectCores() else NULL,
                                ...) {
-
   if (verbose) PEcAn.logger::logger.info("Downloading NARR data")
   narr_data <- get_NARR_thredds(
     start_date, end_date, lat.in, lon.in,
@@ -86,8 +84,8 @@ download.NARR_site <- function(outfolder,
 #' @param file Full path to target file
 #' @param lat_nc `ncdim` object for latitude
 #' @param lon_nc `ncdim` object for longitude
-#' @param verbose 
-#' @return List of NetCDF variables in data. Creates NetCDF file containing 
+#' @param verbose
+#' @return List of NetCDF variables in data. Creates NetCDF file containing
 #' data as a side effect
 prepare_narr_year <- function(dat, file, lat_nc, lon_nc, verbose = FALSE) {
   starttime <- min(dat$datetime)
@@ -110,14 +108,14 @@ prepare_narr_year <- function(dat, file, lat_nc, lon_nc, verbose = FALSE) {
   )
   nc <- ncdf4::nc_create(file, ncvar_list, verbose = verbose)
   on.exit(ncdf4::nc_close(nc), add = TRUE)
-  purrr::iwalk(nc_values, ~ncdf4::ncvar_put(nc, .y, .x, verbose = verbose))
+  purrr::iwalk(nc_values, ~ ncdf4::ncvar_put(nc, .y, .x, verbose = verbose))
   invisible(ncvar_list)
 }
 
 #' Create `ncvar` object from variable name
 #'
 #' @param variable CF variable name
-#' @param dims List of NetCDF dimension objects (passed to 
+#' @param dims List of NetCDF dimension objects (passed to
 #' `ncdf4::ncvar_def(..., dim)`)
 #' @return `ncvar` object (from `ncvar_def`)
 col2ncvar <- function(variable, dims) {
@@ -136,9 +134,9 @@ col2ncvar <- function(variable, dims) {
 #' @param end_date End date for meteorology
 #' @param lat.in Latitude coordinate
 #' @param lon.in Longitude coordinate
-#' @param progress Whether or not to show a progress bar (default = `TRUE`).  
+#' @param progress Whether or not to show a progress bar (default = `TRUE`).
 #' Requires the `progress` package to be installed.
-#' @param drop_outside Whether or not to drop dates outside of `start_date` to 
+#' @param drop_outside Whether or not to drop dates outside of `start_date` to
 #' `end_date` range (default = `TRUE`).
 #' @inheritParams download.NARR_site
 #' @return `tibble` containing time series of NARR data for the given site
@@ -154,9 +152,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
                              progress = TRUE,
                              drop_outside = TRUE,
                              parallel = TRUE,
-                             ncores = 1
-                             ) {
-
+                             ncores = 1) {
   PEcAn.logger::severeifnot(
     length(start_date) == 1,
     msg = paste("Start date must be a scalar, but has length", length(start_date))
@@ -214,11 +210,12 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
 
   if (parallel) {
     if (!requireNamespace("parallel", quietly = TRUE)
-        || !requireNamespace("doParallel", quietly = TRUE)) {
+    || !requireNamespace("doParallel", quietly = TRUE)) {
       PEcAn.logger::logger.severe(
         "Could not find all packages needed for simultaneous NARR downloads. ",
         "Either run `install.packages(c(\"parallel\", \"doParallel\"))`, ",
-        "or call get_NARR_thredds with `parallel = FALSE`.")
+        "or call get_NARR_thredds with `parallel = FALSE`."
+      )
     }
 
     # Load in parallel
@@ -234,7 +231,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
         .packages = c("PEcAn.data.atmosphere", "magrittr"),
         .export = c("get_narr_url", "robustly")
       ),
-        robustly(get_narr_url)(url, xy = xy, flx = flx)
+      robustly(get_narr_url)(url, xy = xy, flx = flx)
     )
     flx_data_raw <- dplyr::filter(get_dfs, flx)
     sfc_data_raw <- dplyr::filter(get_dfs, !flx)
@@ -304,11 +301,11 @@ post_process <- function(dat) {
 
 #' Generate NARR url from a vector of dates
 #'
-#' Figures out file names for the given dates, based on NARR's convoluted and 
+#' Figures out file names for the given dates, based on NARR's convoluted and
 #' inconsistent naming scheme.
 #'
 #' @param dates Vector of dates for which to generate URL
-#' @param flx (Logical) If `TRUE`, format for `flx` variables. Otherwise, 
+#' @param flx (Logical) If `TRUE`, format for `flx` variables. Otherwise,
 #' format for `sfc` variables. See [narr_flx_vars].
 #' @author Alexey Shiklomanov
 generate_narr_url <- function(dates, flx) {
@@ -445,28 +442,28 @@ narr_all_vars <- dplyr::bind_rows(narr_flx_vars, narr_sfc_vars)
 #'
 #' @inheritParams read_narr_var
 #' @inheritParams get_NARR_thredds
-#' @return Vector length 2 containing NARR `x` and `y` indices, which can be 
+#' @return Vector length 2 containing NARR `x` and `y` indices, which can be
 #' used in `ncdf4::ncvar_get` `start` argument.
 #' @author Alexey Shiklomanov
 latlon2narr <- function(nc, lat.in, lon.in) {
   narr_x <- ncdf4::ncvar_get(nc, "x")
   narr_y <- ncdf4::ncvar_get(nc, "y")
   ptrans <- latlon2lcc(lat.in, lon.in)
-  x_ind <- which.min((ptrans$x - narr_x) ^ 2)
-  y_ind <- which.min((ptrans$y - narr_y) ^ 2)
+  x_ind <- which.min((ptrans$x - narr_x)^2)
+  y_ind <- which.min((ptrans$y - narr_y)^2)
   c(x = x_ind, y = y_ind)
 }
 
-#' Convert latitude and longitude to x-y coordinates (in km) in Lambert 
+#' Convert latitude and longitude to x-y coordinates (in km) in Lambert
 #' conformal conic projection (used by NARR)
 #'
 #' @inheritParams get_NARR_thredds
-#' @return `sp::SpatialPoints` object containing transformed x and y 
+#' @return `sp::SpatialPoints` object containing transformed x and y
 #' coordinates, in km, which should match NARR coordinates
 #' @importFrom rgdal checkCRSArgs
-  # ^not used directly here, but needed by sp::CRS.
-  # sp lists rgdal in Suggests rather than Imports,
-  # so importing it here to ensure it's available at run time
+# ^not used directly here, but needed by sp::CRS.
+# sp lists rgdal in Suggests rather than Imports,
+# so importing it here to ensure it's available at run time
 #' @author Alexey Shiklomanov
 #' @export
 latlon2lcc <- function(lat.in, lon.in) {

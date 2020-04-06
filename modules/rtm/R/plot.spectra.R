@@ -5,9 +5,11 @@
 #' @export
 plot.spectra <- function(spectra, type = "l", ...) {
   if (ncol(spectra) > 1) {
-    warning("Multiple columns in spectra.",
-            "Only plotting first column.",
-            "You may want `matplot`.")
+    warning(
+      "Multiple columns in spectra.",
+      "Only plotting first column.",
+      "You may want `matplot`."
+    )
   }
   wavelength <- wavelengths(spectra)
   value <- spectra[, 1]

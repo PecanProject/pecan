@@ -2,7 +2,7 @@
 ##' @title Frechet Distance
 ##' @export
 ##' @param metric_dat dataframe
-##' 
+##'
 ##' @author Betsy Cowdery
 
 metric_Frechet <- function(metric_dat, ...) {

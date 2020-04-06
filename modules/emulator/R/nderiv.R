@@ -1,7 +1,7 @@
 ##' @name nderiv
 ##' @title nderiv
 ##' @export
-##' 
+##'
 ##' @return der
 ##'
 ##' @author Michael Dietze
@@ -17,7 +17,7 @@ nderiv <- function(x, y) {
     return(der)
   }
   for (i in 2:(n - 1)) {
-    der[i] <- (y[i + 1] - y[i - 1])/(x[i + 1] - x[i - 1])
+    der[i] <- (y[i + 1] - y[i - 1]) / (x[i + 1] - x[i - 1])
   }
   return(der)
 } # nderiv

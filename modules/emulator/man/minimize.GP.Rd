@@ -7,8 +7,6 @@
 minimize.GP(gp, rng, x0, splinefuns = NULL)
 }
 \arguments{
-\item{x0}{}
-
 \item{splinefuns}{}
 }
 \description{

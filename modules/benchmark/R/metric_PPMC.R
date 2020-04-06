@@ -2,7 +2,7 @@
 ##' @title Pearson Product Moment Correlation
 ##' @export
 ##' @param metric_dat dataframe
-##' 
+##'
 ##' @author Betsy Cowdery
 
 metric_PPMC <- function(metric_dat, ...) {

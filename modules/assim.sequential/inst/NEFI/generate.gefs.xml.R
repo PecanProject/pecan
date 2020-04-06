@@ -1,34 +1,36 @@
 ## Some global environment variables
-.wd <- getwd() # Set this to whatever you want the working directory to be.  If this is run off a cron job, 
-               # you probably do not want the working directory to be cron's working directory, which is what getwd will return.
+.wd <- getwd() # Set this to whatever you want the working directory to be.  If this is run off a cron job,
+# you probably do not want the working directory to be cron's working directory, which is what getwd will return.
 
 
 ##'
 ##' Rounds a date to the previous 6 hours (0:00, 6:00, 12:00, or 18:00).
-##' 
+##'
 ##' @author Luke Dramko
 round.to.six.hours <- function(date = Sys.time() - lubridate::hours(2)) {
   if (is.character(date)) {
-    date <- as.POSIXct(date, tz="UTC")
+    date <- as.POSIXct(date, tz = "UTC")
   }
-  forecast_hour = (lubridate::hour(date) %/% 6) * 6 #Integer division by 6 followed by re-multiplication acts like a "floor function" for multiples of 6
-  forecast_hour = sprintf("%04d", forecast_hour * 100)
-  date = as.POSIXct(paste0(lubridate::year(date), "-", lubridate::month(date), "-", lubridate::day(date), " ", 
-                                 substring(forecast_hour, 1,2), ":00:00"), tz="UTC")
-  
+  forecast_hour <- (lubridate::hour(date) %/% 6) * 6 # Integer division by 6 followed by re-multiplication acts like a "floor function" for multiples of 6
+  forecast_hour <- sprintf("%04d", forecast_hour * 100)
+  date <- as.POSIXct(paste0(
+    lubridate::year(date), "-", lubridate::month(date), "-", lubridate::day(date), " ",
+    substring(forecast_hour, 1, 2), ":00:00"
+  ), tz = "UTC")
+
   return(date)
 }
 
 
 ##'
-##'This script sets up the xml for, and runs PEcAn for the following settings:
+##' This script sets up the xml for, and runs PEcAn for the following settings:
 ##'
-##'NOAA_GEFS data
-##'Start date: current date/time
-##'End date: 16 days in the future
-##'model: SIPNET
+##' NOAA_GEFS data
+##' Start date: current date/time
+##' End date: 16 days in the future
+##' model: SIPNET
 ##'
-##'@author Luke Dramko
+##' @author Luke Dramko
 
 # Settings file (including path) is passed in on the command line.
 args <- commandArgs(trailingOnly = TRUE)
@@ -50,24 +52,28 @@ settings <- PEcAn.settings::read.settings(args[1])
 xmloutdir <- regmatches(args[1], regexpr("(~|\\./)?(/)?([^/]*/)*", args[1])) # extract xmloutdir from args[1]
 filename <- basename(args[1]) # Extract file name from args[1]
 
-if(xmloutdir == "") {xmloutdir <- "."}
+if (xmloutdir == "") {
+  xmloutdir <- "."
+}
 
-dbparms = list()
-dbparms$dbname = "bety"
-dbparms$host = "128.197.168.114"
-dbparms$user = "bety"
-dbparms$password = "bety"
+dbparms <- list()
+dbparms$dbname <- "bety"
+dbparms$host <- "128.197.168.114"
+dbparms$user <- "bety"
+dbparms$password <- "bety"
 
-#Connection code copied and pasted from met.process
-bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
-                            host     = dbparms$host, 
-                            user     = dbparms$user, 
-                            password = dbparms$password)
+# Connection code copied and pasted from met.process
+bety <- dplyr::src_postgres(
+  dbname = dbparms$dbname,
+  host = dbparms$host,
+  user = dbparms$user,
+  password = dbparms$password
+)
 
-con <- bety$con #Connection to the database.  dplyr returns a list.
+con <- bety$con # Connection to the database.  dplyr returns a list.
 if (is.null(con)) {
   print("Database connection failed.")
-  quit("no", status=12)
+  quit("no", status = 12)
 }
 
 # Set the run dates
@@ -81,8 +87,8 @@ end_date <- start_date + lubridate::days(16)
 settings$run$start.date <- as.character(start_date)
 settings$run$end.date <- as.character(end_date)
 
-#settings$ensemble$start.year <- start_date
-#settings$ensemble$end.year <- end_date
+# settings$ensemble$start.year <- start_date
+# settings$ensemble$end.year <- end_date
 
 # Update the time of the run
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
@@ -97,19 +103,21 @@ settings$ensemble$end.year <- as.character(end_date, "%Y")
 
 # Create new workflow ID and register it with the database
 hostname <- PEcAn.remote::fqdn()
-query <- paste0("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date,", 
-                "end_date, params, advanced_edit) ", 
-                "values (", settings$run$site$id, ", ", settings$model$id, ", ", "''", ", '', '", hostname, "', '",
-                format(start_date, "%Y/%m/%d %H:%M:%S"), "', '", format(end_date, "%Y/%m/%d %H:%M:%S"), "', ", "''", ", ", "true) RETURNING id")
+query <- paste0(
+  "INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date,",
+  "end_date, params, advanced_edit) ",
+  "values (", settings$run$site$id, ", ", settings$model$id, ", ", "''", ", '', '", hostname, "', '",
+  format(start_date, "%Y/%m/%d %H:%M:%S"), "', '", format(end_date, "%Y/%m/%d %H:%M:%S"), "', ", "''", ", ", "true) RETURNING id"
+)
 workflowid <- PEcAn.DB::db.query(query, con = con)
 workflowid <- as.character(unlist(workflowid))
 
 settings$workflow$id <- workflowid
 
-#The outdirectory is specific to a particular workflow
+# The outdirectory is specific to a particular workflow
 outdir <- settings$outdir
 if (substr(outdir, nchar(outdir), nchar(outdir)) == "/") {
-  outdir <- substr(outdir, 1, nchar(outdir) -1 )
+  outdir <- substr(outdir, 1, nchar(outdir) - 1)
 }
 
 basedir <- regmatches(outdir, regexpr("(~|\\./)?(/)?([^/]*/)*", outdir))
@@ -119,7 +127,7 @@ settings$outdir <- outdir
 # Create the output directory.  PEcAn does not do this for you.  It's normally the job of the
 # web interface's php code.
 if (!dir.exists(outdir)) {
-  dir.create(outdir, recursive=TRUE, showWarnings = FALSE)
+  dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 }
 
 
@@ -130,4 +138,3 @@ PEcAn.DB::db.close(con)
 
 # Write out the file with updated settings
 PEcAn.settings::write.settings(settings, outputfile = filename, outputdir = xmloutdir)
-

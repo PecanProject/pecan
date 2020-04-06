@@ -30,6 +30,6 @@ load_data
 }
 \author{
 Betsy Cowdery, Istem Fer, Joshua Mantooth
-Generic function to convert input files containing observational data to 
+Generic function to convert input files containing observational data to
 a common PEcAn format.
 }

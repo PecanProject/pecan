@@ -1,7 +1,7 @@
 ##' Acceptance rate
 ##'
 ##' @name arate
-##' @title arate 
+##' @title arate
 ##' @export
 ##'
 ##' @author Michael Dietze

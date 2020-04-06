@@ -21,10 +21,6 @@ plot_trait(
 
 \item{prior}{named distribution with parameters}
 
-\item{posterior.sample}{}
-
-\item{trait.df}{}
-
 \item{fontsize, x.lim, y.lim, logx}{passed on to ggplot}
 }
 \value{

@@ -18,7 +18,7 @@
 #'      * tto: Observer zenith angle
 #'      * psi: Sun-sensor azimuth angle
 #'      * psoil: Fraction of soil moisture
-#' @return Spectra matrix (see [spectra()]) (2101 x 4) of reflectance factors 
+#' @return Spectra matrix (see [spectra()]) (2101 x 4) of reflectance factors
 #' for wavelengths 400 to 2500nm:
 #'      * bi-hemispherical reflectance (rddt)
 #'      * hemispherical directional (rsdt)
@@ -27,18 +27,20 @@
 #' @export
 pro4sail <- function(param) {
   plist <- as.list(param)
-  nw    <- 2101
+  nw <- 2101
   plist$rddt <- numeric(nw)
   plist$rsdt <- numeric(nw)
   plist$rdot <- numeric(nw)
   plist$rsot <- numeric(nw)
-  inlist     <- c("pro4sail", plist)
+  inlist <- c("pro4sail", plist)
   outlist <- do.call(.Fortran, inlist)
-  lo      <- length(outlist)
-  refl    <- do.call(cbind, outlist[(lo - 3):lo])
+  lo <- length(outlist)
+  refl <- do.call(cbind, outlist[(lo - 3):lo])
   reflspec <- spectra(refl, 400:2500)
-  colnames(reflspec) <- c("bi-hemispherical", "hemispherical_directional",
-                          "directional_hemispherical", "bi-directional")
+  colnames(reflspec) <- c(
+    "bi-hemispherical", "hemispherical_directional",
+    "directional_hemispherical", "bi-directional"
+  )
   reflspec
 } # pro4sail
 
@@ -64,7 +66,7 @@ pro4sail <- function(param) {
 #'      * tto: Observer zenith angle
 #'      * psi: Sun-sensor azimuth angle
 #'      * psoil: Fraction of soil moisture
-#' @return Spectra matrix (see [spectra()]) (2101 x 4) of reflectance factors 
+#' @return Spectra matrix (see [spectra()]) (2101 x 4) of reflectance factors
 #' for wavelengths 400 to 2500nm:
 #'      * bi-hemispherical reflectance (rddt)
 #'      * hemispherical directional (rsdt)
@@ -73,17 +75,19 @@ pro4sail <- function(param) {
 #' @export
 pro4saild <- function(param) {
   plist <- as.list(param)
-  nw    <- 2101
+  nw <- 2101
   plist$rddt <- numeric(nw)
   plist$rsdt <- numeric(nw)
   plist$rdot <- numeric(nw)
   plist$rsot <- numeric(nw)
-  inlist     <- c("pro4saild", plist)
+  inlist <- c("pro4saild", plist)
   outlist <- do.call(.Fortran, inlist)
-  lo      <- length(outlist)
-  refl    <- do.call(cbind, outlist[(lo - 3):lo])
+  lo <- length(outlist)
+  refl <- do.call(cbind, outlist[(lo - 3):lo])
   reflspec <- spectra(refl, 400:2500)
-  colnames(reflspec) <- c("bi-hemispherical", "hemispherical_directional",
-                        "directional_hemispherical", "bi-directional")
+  colnames(reflspec) <- c(
+    "bi-hemispherical", "hemispherical_directional",
+    "directional_hemispherical", "bi-directional"
+  )
   reflspec
 } # pro4saild

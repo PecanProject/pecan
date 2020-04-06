@@ -40,12 +40,12 @@ still being worked on, set to FALSE}
 }
 \description{
 This function contains the functions that do the heavy lifting in gen.subdaily.models()
-             and predict.subdaily.workflow(). Individual variable functions actually generate the models 
-             and betas from the dat.train_file and save them in the output file. save.model() and 
-             save.betas() are helper functions that save the linear regression model output to a 
-             specific location. In the future, we should only save the data that we actually use from the 
+             and predict.subdaily.workflow(). Individual variable functions actually generate the models
+             and betas from the dat.train_file and save them in the output file. save.model() and
+             save.betas() are helper functions that save the linear regression model output to a
+             specific location. In the future, we should only save the data that we actually use from the
              linear regression model because this is a large file. predict.met() is called from
-             predict.subdaily.workflow() and references the linear regression model output to 
+             predict.subdaily.workflow() and references the linear regression model output to
              predict the ensemble data.
 }
 \details{

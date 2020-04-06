@@ -11,7 +11,7 @@ check_if_legal_table(table, observation_one, observation_two)
 
 \item{observation_two}{anouther vector of plant functional types, or species}
 
-\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
+\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes.
 In the second case, must be passable to match_species_id.}
 }
 \value{

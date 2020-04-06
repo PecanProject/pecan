@@ -16,17 +16,19 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
 
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "UTC")
-  end_date   <- as.POSIXlt(end_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
-  end_year   <- lubridate::year(end_date)
-  site_id    <- as.numeric(site_id)
-  outfolder  <- paste0(outfolder, "_site_", paste0(site_id %/% 1e+09, "-", site_id %% 1e+09))
+  end_year <- lubridate::year(end_date)
+  site_id <- as.numeric(site_id)
+  outfolder <- paste0(outfolder, "_site_", paste0(site_id %/% 1e+09, "-", site_id %% 1e+09))
 
   NLDAS_start <- 1980
   if (start_year < NLDAS_start) {
-    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the NLDAS range (%d:present)',
-                                       start_year, end_year,
-                                       NLDAS_start))
+    PEcAn.logger::logger.severe(sprintf(
+      "Input year range (%d:%d) exceeds the NLDAS range (%d:present)",
+      start_year, end_year,
+      NLDAS_start
+    ))
   }
 
   lat.in <- as.numeric(lat.in)
@@ -36,23 +38,31 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
 
   ylist <- seq(start_year, end_year, by = 1)
   rows <- length(ylist)
-  results <- data.frame(file = character(rows),
-                        host = character(rows),
-                        mimetype = character(rows),
-                        formatname = character(rows),
-                        startdate = character(rows),
-                        enddate = character(rows),
-                        dbfile.name = "NLDAS",
-                        stringsAsFactors = FALSE)
+  results <- data.frame(
+    file = character(rows),
+    host = character(rows),
+    mimetype = character(rows),
+    formatname = character(rows),
+    startdate = character(rows),
+    enddate = character(rows),
+    dbfile.name = "NLDAS",
+    stringsAsFactors = FALSE
+  )
 
-  var <- data.frame(DAP.name = c("N2-m_above_ground_Temperature", "LW_radiation_flux_downwards_surface",
-                                 "Pressure", "SW_radiation_flux_downwards_surface", "N10-m_above_ground_Zonal_wind_speed",
-                                 "N10-m_above_ground_Meridional_wind_speed", "N2-m_above_ground_Specific_humidity", "Precipitation_hourly_total"),
-                    DAP.dim = c(2, 1, 1, 1, 2, 2, 2, 1),
-                    CF.name = c("air_temperature", "surface_downwelling_longwave_flux_in_air",
-                                "air_pressure", "surface_downwelling_shortwave_flux_in_air", "eastward_wind", "northward_wind",
-                                "specific_humidity", "precipitation_flux"),
-                    units = c("Kelvin", "W/m2", "Pascal", "W/m2", "m/s", "m/s", "g/g", "kg/m2/s"))
+  var <- data.frame(
+    DAP.name = c(
+      "N2-m_above_ground_Temperature", "LW_radiation_flux_downwards_surface",
+      "Pressure", "SW_radiation_flux_downwards_surface", "N10-m_above_ground_Zonal_wind_speed",
+      "N10-m_above_ground_Meridional_wind_speed", "N2-m_above_ground_Specific_humidity", "Precipitation_hourly_total"
+    ),
+    DAP.dim = c(2, 1, 1, 1, 2, 2, 2, 1),
+    CF.name = c(
+      "air_temperature", "surface_downwelling_longwave_flux_in_air",
+      "air_pressure", "surface_downwelling_shortwave_flux_in_air", "eastward_wind", "northward_wind",
+      "specific_humidity", "precipitation_flux"
+    ),
+    units = c("Kelvin", "W/m2", "Pascal", "W/m2", "m/s", "m/s", "g/g", "kg/m2/s")
+  )
   time.stamps <- seq(0, 2300, by = 100)
   for (i in seq_len(rows)) {
     year <- ylist[i]
@@ -68,29 +78,31 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
       # Now we need to check whether we're ending on the right day
       day2 <- lubridate::yday(end_date)
       days.use <- day1:day2
-      nday <- length(days.use)  # Update nday
+      nday <- length(days.use) # Update nday
     } else if (i == 1) {
       # If this is the first of many years, we only need to worry about the start date
       day1 <- lubridate::yday(start_date)
       days.use <- day1:nday
-      nday <- length(days.use)  # Update nday
+      nday <- length(days.use) # Update nday
     } else if (i == rows) {
       # If this is the last of many years, we only need to worry about the start date
       day2 <- lubridate::yday(end_date)
       days.use <- 1:day2
-      nday <- length(days.use)  # Update nday
+      nday <- length(days.use) # Update nday
     }
-    ntime <- nday * 24  # leap year or not;time slice (hourly)
+    ntime <- nday * 24 # leap year or not;time slice (hourly)
 
     loc.file <- file.path(outfolder, paste("NLDAS", year, "nc", sep = "."))
 
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-    time <- ncdf4::ncdim_def(name = "time", units = "sec",
-                      vals = seq((min(days.use) + 1 - 1 / 24) * 24 * 360, (max(days.use) + 1 - 1/24) * 24 * 360, length.out = ntime),
-                      create_dimvar = TRUE,
-                      unlim = TRUE)
+    time <- ncdf4::ncdim_def(
+      name = "time", units = "sec",
+      vals = seq((min(days.use) + 1 - 1 / 24) * 24 * 360, (max(days.use) + 1 - 1 / 24) * 24 * 360, length.out = ntime),
+      create_dimvar = TRUE,
+      unlim = TRUE
+    )
     dim <- list(lat, lon, time)
 
     var.list <- list()
@@ -98,12 +110,14 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
 
     # Defining our dimensions up front
     for (j in 1:nrow(var)) {
-      var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]),
-                                 units = as.character(var$units[j]),
-                                 dim = dim,
-                                 missval = -999,
-                                 verbose = verbose)
-      dat.list[[j]] <- array(NA, dim = c(length(lat.in), length(lon.in), ntime))  # Go ahead and make the arrays
+      var.list[[j]] <- ncdf4::ncvar_def(
+        name = as.character(var$CF.name[j]),
+        units = as.character(var$units[j]),
+        dim = dim,
+        missval = -999,
+        verbose = verbose
+      )
+      dat.list[[j]] <- array(NA, dim = c(length(lat.in), length(lon.in), ntime)) # Go ahead and make the arrays
     }
     names(var.list) <- names(dat.list) <- var$CF.name
 
@@ -115,17 +129,23 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
       doy <- stringr::str_pad(days.use[j], 3, pad = "0")
       for (h in seq_along(time.stamps)) {
         hr <- stringr::str_pad(time.stamps[h], 4, pad = "0")
-        dap_file <- paste0(dap_base, "/", year, "/", doy, "/", "NLDAS_FORA0125_H.A", year,
-                           mo.now, day.mo, ".", hr, ".002.grb.ascii?")
+        dap_file <- paste0(
+          dap_base, "/", year, "/", doy, "/", "NLDAS_FORA0125_H.A", year,
+          mo.now, day.mo, ".", hr, ".002.grb.ascii?"
+        )
 
         # Query lat/lon
         latlon <- RCurl::getURL(paste0(dap_file, "lat[0:1:223],lon[0:1:463]"))
         lat.ind <- gregexpr("lat", latlon)
         lon.ind <- gregexpr("lon", latlon)
-        lats <- as.vector(utils::read.table(con <- textConnection(substr(latlon, lat.ind[[1]][3],
-                                                                  lon.ind[[1]][3] - 1)), sep = ",", fileEncoding = "\n", skip = 1))
-        lons <- as.vector(utils::read.table(con <- textConnection(substr(latlon, lon.ind[[1]][3],
-                                                                  nchar(latlon))), sep = ",", fileEncoding = "\n", skip = 1))
+        lats <- as.vector(utils::read.table(con <- textConnection(substr(
+          latlon, lat.ind[[1]][3],
+          lon.ind[[1]][3] - 1
+        )), sep = ",", fileEncoding = "\n", skip = 1))
+        lons <- as.vector(utils::read.table(con <- textConnection(substr(
+          latlon, lon.ind[[1]][3],
+          nchar(latlon)
+        )), sep = ",", fileEncoding = "\n", skip = 1))
 
         lat.use <- which(lats - 0.125 / 2 <= lat.in & lats + 0.125 / 2 >= lat.in)
         lon.use <- which(lons - 0.125 / 2 <= lon.in & lons + 0.125 / 2 >= lon.in)
@@ -138,21 +158,25 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
             time.string <- paste0(time.string, "[0:1:0]")
           }
           dap_query <- paste(dap_query,
-                             paste0(var$DAP.name[v], time.string, "[", lat.use, "][", lon.use, "]"), sep = ",")
+            paste0(var$DAP.name[v], time.string, "[", lat.use, "][", lon.use, "]"),
+            sep = ","
+          )
         }
         dap_query <- substr(dap_query, 2, nchar(dap_query))
 
         dap.out <- RCurl::getURL(paste0(dap_file, dap_query))
         for (v in seq_len(nrow(var))) {
           var.now <- var$DAP.name[v]
-          ind.1   <- gregexpr(paste(var.now, var.now, sep = "."), dap.out)
-          end.1   <- gregexpr(paste(var.now, "time", sep = "."), dap.out)
+          ind.1 <- gregexpr(paste(var.now, var.now, sep = "."), dap.out)
+          end.1 <- gregexpr(paste(var.now, "time", sep = "."), dap.out)
           dat.list[[v]][, , j * 24 - 24 + h] <-
-            utils::read.delim(con <- textConnection(substr(dap.out,
-                                                    ind.1[[1]][1], end.1[[1]][2])), sep = ",", fileEncoding = "\n")[1, 1]
-        }  # end variable loop
-      }  # end hour
-    }  # end day
+            utils::read.delim(con <- textConnection(substr(
+              dap.out,
+              ind.1[[1]][1], end.1[[1]][2]
+            )), sep = ",", fileEncoding = "\n")[1, 1]
+        } # end variable loop
+      } # end hour
+    } # end day
     ## change units of precip to kg/m2/s instead of hour accumulated precip
     dat.list[["precipitation_flux"]] <- dat.list[["precipitation_flux"]] / 3600
 

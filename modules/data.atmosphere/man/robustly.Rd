@@ -25,11 +25,11 @@ Adverb to try calling a function `n` times before giving up
 rlog <- robustly(log, timeout = 0.3)
 try(rlog("fail"))
 \dontrun{
- nc_openr <- robustly(ncdf4::nc_open, n = 10, timeout = 0.5)
- nc <- nc_openr(url)
- # ...or just call the function directly
- nc <- robustly(ncdf4::nc_open, n = 20)(url)
- # Useful in `purrr` maps
- many_vars <- purrr::map(varnames, robustly(ncdf4::ncvar_get), nc = nc)
+nc_openr <- robustly(ncdf4::nc_open, n = 10, timeout = 0.5)
+nc <- nc_openr(url)
+# ...or just call the function directly
+nc <- robustly(ncdf4::nc_open, n = 20)(url)
+# Useful in `purrr` maps
+many_vars <- purrr::map(varnames, robustly(ncdf4::ncvar_get), nc = nc)
 }
 }

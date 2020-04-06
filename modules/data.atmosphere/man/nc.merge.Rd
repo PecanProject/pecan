@@ -37,7 +37,7 @@ functions print debugging information as they run?}
 \description{
 This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function
              parses multiple netCDF files into one central training data file called 'dat.train_file'. This netCDF
-             file will be used to generate the subdaily models in the next step of the workflow, generate.subdaily.models(). 
+             file will be used to generate the subdaily models in the next step of the workflow, generate.subdaily.models().
              It is also called in tdm_predict_subdaily_met which is the final step of the tdm workflow.
 }
 \details{

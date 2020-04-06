@@ -23,14 +23,14 @@ align_pft(
 
 \item{observation_two}{anouther vector of plant fucntional types, or species}
 
-\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
+\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes.
 In the second case, must be passable to match_species_id.}
 
 \item{format_one}{The output of query.format.vars() of observation one of the form output$vars$bety_names}
 
 \item{format_two}{The output of query.format.vars() of observation two of the form output$vars$bety_names}
 
-\item{subset_is_ok}{When aligning two species lists, this allows for alignement when species lists aren't identical. 
+\item{subset_is_ok}{When aligning two species lists, this allows for alignement when species lists aren't identical.
 set to FALSE by default.}
 }
 \value{
@@ -47,14 +47,14 @@ align_pft
 }
 \details{
 Aligns vectors of Plant Fucntional Typed and species.
-Can align: 
+Can align:
 - two vectors of plant fucntional types (pft's) if a custom map is provided
 - a list of species (usda, fia, or latin_name format) to a plant fucntional type
 - a list of species in a custom format, with a table mapping it to bety_species_id's
 
- Will return a list of what was originally provided, bety_speceis_codes if possible, 
+ Will return a list of what was originally provided, bety_speceis_codes if possible,
  and an aligned output. Becuase some alignement is order-sensitive, alignment based on observation_one
- and observation_two are both provided. 
+ and observation_two are both provided.
 
 \code{comparison_type} can be one of the following:
 \describe{
@@ -68,20 +68,22 @@ Can align:
 
 
 #------------ A species to PFT alignment -----------
-observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
-observation_two<-c("a", "b", "a", "a") #
+observation_one <- c("AMCA3", "AMCA3", "AMCA3", "AMCA3")
+observation_two <- c("a", "b", "a", "a") #
 
-format_one<-"species_USDA_symbol"
-format_two<-"plant_funtional_type"
+format_one <- "species_USDA_symbol"
+format_two <- "plant_funtional_type"
 
-table<-list()
-table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
-table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
-table<-as.data.frame(table)
+table <- list()
+table$plant_functional_type_one <- c("AMCA3", "AMCA3", "ARHY", "ARHY")
+table$plant_functional_type_two <- c("a", "a", "b", "b") # PFT groupings
+table <- as.data.frame(table)
 
 
-aligned<-align_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
-format_one = format_one, format_two = format_two, custom_table = table)
+aligned <- align_pft(
+  con = con, observation_one = observation_one, observation_two = observation_two,
+  format_one = format_one, format_two = format_two, custom_table = table
+)
 }
 
 }

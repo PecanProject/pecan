@@ -14,19 +14,19 @@
 #' @param parallel.output Filename (or '' for stdout) for printing parallel
 #' outputs. Use with caution. Default = `'/dev/null'`.
 #' @inheritParams invert.custom
-#' 
+#'
 #' @details
 #' Parameters specific to `invert.auto` are described here.
 #' For the remaining parameters, see [invert.custom()].
-#' 
+#'
 #' * `model` -- The model to be inverted. This should be an R function that
 #' takes \code{params} as input and returns one column of \code{observed}
 #' (nrows should be the same). Constants should be implicitly included here.
 #'
 #' * `nchains` -- Number of independent chains.
-#' 
+#'
 #' * `inits.function` -- Function for generating initial conditions.
-#' 
+#'
 #' * `ngibbs.max` -- Maximum number of total iterations (per chain). DEFAULT = 5e6
 #'
 #' * `ngibbs.min` -- Minimum number of total iterations (per chain). DEFAULT = 5000.
@@ -52,11 +52,10 @@
 invert.auto <- function(observed, invert.options,
                         return.samples = TRUE,
                         save.samples = NULL,
-                        quiet=FALSE,
-                        parallel=TRUE,
-                        parallel.cores=NULL,
-                        parallel.output = '/dev/null') {
-
+                        quiet = FALSE,
+                        parallel = TRUE,
+                        parallel.cores = NULL,
+                        parallel.output = "/dev/null") {
   if (parallel == TRUE) {
     testForPackage("parallel")
   } else {
@@ -66,26 +65,34 @@ invert.auto <- function(observed, invert.options,
   ngibbs.max <- invert.options$ngibbs.max
   if (is.null(ngibbs.max)) {
     ngibbs.max <- 1e6
-    message("ngibbs.max not provided. ",
-            "Setting default to ", ngibbs.max)
+    message(
+      "ngibbs.max not provided. ",
+      "Setting default to ", ngibbs.max
+    )
   }
   ngibbs.min <- invert.options$ngibbs.min
   if (is.null(ngibbs.min)) {
     ngibbs.min <- 5000
-    message("ngibbs.min not provided. ",
-            "Setting default to ", ngibbs.min)
+    message(
+      "ngibbs.min not provided. ",
+      "Setting default to ", ngibbs.min
+    )
   }
   ngibbs.step <- invert.options$ngibbs.step
   if (is.null(ngibbs.step)) {
     ngibbs.step <- 1000
-    message("ngibbs.step not provided. ",
-            "Setting default to ", ngibbs.step)
+    message(
+      "ngibbs.step not provided. ",
+      "Setting default to ", ngibbs.step
+    )
   }
   nchains <- invert.options$nchains
   if (is.null(nchains)) {
     nchains <- 3
-    message("nchains not provided. ",
-            "Setting default to ", nchains)
+    message(
+      "nchains not provided. ",
+      "Setting default to ", nchains
+    )
   }
   inits.function <- invert.options$inits.function
   if (is.null(inits.function)) {
@@ -93,8 +100,10 @@ invert.auto <- function(observed, invert.options,
   }
   if (is.null(invert.options$do.lsq)) {
     invert.options$do.lsq <- FALSE
-    message("do.lsq not provided. ",
-            "Setting default to ", invert.options$do.lsq)
+    message(
+      "do.lsq not provided. ",
+      "Setting default to ", invert.options$do.lsq
+    )
   }
   if (invert.options$do.lsq) {
     testForPackage("minpack.lm")
@@ -102,20 +111,26 @@ invert.auto <- function(observed, invert.options,
   iter_conv_check <- invert.options$iter_conv_check
   if (is.null(iter_conv_check)) {
     iter_conv_check <- 15000
-    message("iter_conv_check not provided. ",
-            "Setting default to ", iter_conv_check)
+    message(
+      "iter_conv_check not provided. ",
+      "Setting default to ", iter_conv_check
+    )
   }
   threshold <- invert.options$threshold
   if (is.null(threshold)) {
     threshold <- 1.1
-    message("threshold not provided. ",
-            "Setting default to ", threshold)
+    message(
+      "threshold not provided. ",
+      "Setting default to ", threshold
+    )
   }
   calculate.burnin <- invert.options$calculate.burnin
   if (is.null(calculate.burnin)) {
     calculate.burnin <- TRUE
-    message("calculate.burnin not provided. ",
-            "Setting default to ", calculate.burnin)
+    message(
+      "calculate.burnin not provided. ",
+      "Setting default to ", calculate.burnin
+    )
   }
 
   # Set up cluster for parallel execution
@@ -128,9 +143,13 @@ invert.auto <- function(observed, invert.options,
       if (!is.numeric(parallel.cores) | parallel.cores %% 1 != 0) {
         stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
       } else if (parallel.cores > maxcores) {
-        warning(sprintf("Requested %1$d cores but only %2$d cores available. ",
-                        parallel.cores, maxcores),
-                "Using only available cores.")
+        warning(
+          sprintf(
+            "Requested %1$d cores but only %2$d cores available. ",
+            parallel.cores, maxcores
+          ),
+          "Using only available cores."
+        )
         parallel.cores <- maxcores
       }
     }
@@ -141,28 +160,34 @@ invert.auto <- function(observed, invert.options,
     # Otherwise, chains may start on same seed and end up identical.
     parallel::clusterSetRNGStream(cl)
 
-    message(sprintf("Running %d chains in parallel. ", nchains),
-            "Progress bar unavailable")
+    message(
+      sprintf("Running %d chains in parallel. ", nchains),
+      "Progress bar unavailable"
+    )
   }
 
   # Create inversion function to be passed to parLapply
   invert.function <- function(x) {
     invert.options$inits <- x$inits
     invert.options$resume <- x$resume
-    samps <- invert.custom(observed = observed,
-                           invert.options = invert.options,
-                           quiet = quiet,
-                           return.resume = TRUE,
-                           runID = x$runID)
+    samps <- invert.custom(
+      observed = observed,
+      invert.options = invert.options,
+      quiet = quiet,
+      return.resume = TRUE,
+      runID = x$runID
+    )
     return(samps)
   }
 
   runID_list <- seq_len(nchains)
   inputs <- list()
   for (i in seq_len(nchains)) {
-    inputs[[i]] <- list(runID = runID_list[i],
-                        inits = inits.function(),
-                        resume = NULL)
+    inputs[[i]] <- list(
+      runID = runID_list[i],
+      inits = inits.function(),
+      resume = NULL
+    )
   }
 
   # Do initialization step if provided
@@ -190,52 +215,62 @@ invert.auto <- function(observed, invert.options,
     }
   }
 
-  resume <- lapply(output.list, '[[', 'resume')
-  out <- process_output(output.list = output.list,
-                        iter_conv_check = iter_conv_check,
-                        save.samples = save.samples,
-                        threshold = threshold,
-                        calculate.burnin = calculate.burnin)
+  resume <- lapply(output.list, "[[", "resume")
+  out <- process_output(
+    output.list = output.list,
+    iter_conv_check = iter_conv_check,
+    save.samples = save.samples,
+    threshold = threshold,
+    calculate.burnin = calculate.burnin
+  )
 
   # Loop until convergence (skipped if finished == TRUE)
   invert.options$ngibbs <- ngibbs.step
   while (!out$finished & i.ngibbs < ngibbs.max) {
     if (!quiet) {
-      message(sprintf("Running iterations %d to %d", i.ngibbs,
-                      i.ngibbs + ngibbs.step))
+      message(sprintf(
+        "Running iterations %d to %d", i.ngibbs,
+        i.ngibbs + ngibbs.step
+      ))
     }
     inits <- lapply(out$samples, getLastRow)
     inputs <- list()
     for (i in seq_len(nchains)) {
-      inputs[[i]] <- list(runID = runID_list[i],
-                          inits = inits[[i]],
-                          resume = resume[[i]])
+      inputs[[i]] <- list(
+        runID = runID_list[i],
+        inits = inits[[i]],
+        resume = resume[[i]]
+      )
     }
     if (parallel) {
       output.list <- parallel::parLapply(cl, inputs, invert.function)
     } else {
       output.list <- list()
       for (i in seq_along(inputs)) {
-        message(sprintf('Running chain %d of %d', i, nchains))
+        message(sprintf("Running chain %d of %d", i, nchains))
         output.list[[i]] <- invert.function(inputs[[i]])
       }
     }
     i.ngibbs <- i.ngibbs + ngibbs.step
-    resume <- lapply(output.list, '[[', 'resume')
-    out <- process_output(output.list = output.list,
-                          prev_out = out,
-                          iter_conv_check = iter_conv_check,
-                          save.samples = save.samples,
-                          threshold = threshold,
-                          calculate.burnin = calculate.burnin)
+    resume <- lapply(output.list, "[[", "resume")
+    out <- process_output(
+      output.list = output.list,
+      prev_out = out,
+      iter_conv_check = iter_conv_check,
+      save.samples = save.samples,
+      threshold = threshold,
+      calculate.burnin = calculate.burnin
+    )
   }
 
   if (i.ngibbs > ngibbs.max & !out$finished) {
-    warning("Convergence was not achieved, and max iterations exceeded. ",
-            "Returning results as 'NA'.")
+    warning(
+      "Convergence was not achieved, and max iterations exceeded. ",
+      "Returning results as 'NA'."
+    )
   }
   if (!return.samples) {
-    out$samples <- c('Samples not returned' = NA)
+    out$samples <- c("Samples not returned" = NA)
   }
   return(out)
 } # invert.auto
@@ -265,7 +300,6 @@ process_output <- function(output.list,
                            save.samples,
                            threshold,
                            calculate.burnin) {
-
   samples.current <- lapply(output.list, "[[", "results")
   deviance_list.current <- lapply(output.list, "[[", "deviance")
   n_eff_list.current <- lapply(output.list, "[[", "n_eff")
@@ -280,9 +314,12 @@ process_output <- function(output.list,
   } else {
     out$samples <- combineChains(prev_out$samples, samples.current)
     out$deviance_list <- mapply(c, prev_out$deviance_list,
-                                deviance_list.current, SIMPLIFY = F)
+      deviance_list.current,
+      SIMPLIFY = F
+    )
     out$n_eff_list <- mapply(c, prev_out$n_eff_list, n_eff_list.current,
-                             SIMPLIFY = F)
+      SIMPLIFY = F
+    )
   }
   rm(prev_out)
 
@@ -291,11 +328,12 @@ process_output <- function(output.list,
   }
 
   out$nsamp <- coda::niter(out$samples)
-  nburn <- min(floor(out$nsamp/2), iter_conv_check)
+  nburn <- min(floor(out$nsamp / 2), iter_conv_check)
   burned_samples <- window(out$samples, start = nburn)
   check_initial <- check.convergence(burned_samples,
-                                     threshold = threshold,
-                                     autoburnin = FALSE)
+    threshold = threshold,
+    autoburnin = FALSE
+  )
   if (check_initial$error) {
     warning("Could not calculate Gelman diag. Assuming no convergence.")
     out$finished <- FALSE
@@ -309,11 +347,13 @@ process_output <- function(output.list,
     message("Passed initial convergence check.")
   }
   if (calculate.burnin) {
-    burn <- PEcAn.assim.batch::autoburnin(out$samples, return.burnin = TRUE, method = 'gelman.plot')
+    burn <- PEcAn.assim.batch::autoburnin(out$samples, return.burnin = TRUE, method = "gelman.plot")
     out$burnin <- burn$burnin
     if (out$burnin == 1) {
-      message("Robust convergence check in autoburnin failed. ",
-              "Resuming sampling.")
+      message(
+        "Robust convergence check in autoburnin failed. ",
+        "Resuming sampling."
+      )
       out$finished <- FALSE
       return(out)
     } else {
@@ -321,8 +361,10 @@ process_output <- function(output.list,
       out$results <- summary_simple(do.call(rbind, burn$samples))
     }
   } else {
-    message("Skipping robust convergece check (autoburnin) because ",
-            "calculate.burnin == FALSE.")
+    message(
+      "Skipping robust convergece check (autoburnin) because ",
+      "calculate.burnin == FALSE."
+    )
     out$burnin <- nburn
     out$results <- summary_simple(do.call(rbind, burned_samples))
   }

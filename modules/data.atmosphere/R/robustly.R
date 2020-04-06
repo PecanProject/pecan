@@ -9,12 +9,12 @@
 #' rlog <- robustly(log, timeout = 0.3)
 #' try(rlog("fail"))
 #' \dontrun{
-#'  nc_openr <- robustly(ncdf4::nc_open, n = 10, timeout = 0.5)
-#'  nc <- nc_openr(url)
-#'  # ...or just call the function directly
-#'  nc <- robustly(ncdf4::nc_open, n = 20)(url)
-#'  # Useful in `purrr` maps
-#'  many_vars <- purrr::map(varnames, robustly(ncdf4::ncvar_get), nc = nc)
+#' nc_openr <- robustly(ncdf4::nc_open, n = 10, timeout = 0.5)
+#' nc <- nc_openr(url)
+#' # ...or just call the function directly
+#' nc <- robustly(ncdf4::nc_open, n = 20)(url)
+#' # Useful in `purrr` maps
+#' many_vars <- purrr::map(varnames, robustly(ncdf4::ncvar_get), nc = nc)
 #' }
 #' @export
 robustly <- function(.f, n = 10, timeout = 0.2, silent = TRUE) {
@@ -23,7 +23,9 @@ robustly <- function(.f, n = 10, timeout = 0.2, silent = TRUE) {
     attempt <- 1
     while (attempt <= n) {
       result <- try(.f(...), silent = silent)
-      if (!inherits(result, "try-error")) return(result)
+      if (!inherits(result, "try-error")) {
+        return(result)
+      }
       attempt <- attempt + 1
       if (!silent) PEcAn.logger::logger.info("Trying attempt ", attempt, " of ", n)
     }

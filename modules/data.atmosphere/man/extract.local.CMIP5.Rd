@@ -42,11 +42,11 @@ extract.local.CMIP5(
 \item{ensemble_member}{which CMIP5 experiment ensemble member}
 
 \item{date.origin}{(optional) specify the date of origin for timestamps in the files being read.
-If NULL defaults to 1850 for historical simulations (except MPI-ESM-P) and 
+If NULL defaults to 1850 for historical simulations (except MPI-ESM-P) and
 850 for p1000 simulations (plus MPI-ESM-P historical).  Format: YYYY-MM-DD}
 
 \item{no.leap}{(optional, logical) if you know your GCM of interest is missing leap year, you can specify it here.
-otherwise the code will automatically determine if leap year is missing and if it should be 
+otherwise the code will automatically determine if leap year is missing and if it should be
 added in.}
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
@@ -59,7 +59,7 @@ added in.}
 This function extracts CMIP5 data from grids that have been downloaded and stored locally.
              Files are saved as a netCDF file in CF conventions at *DAILY* resolution.  Note: At this point
              in time, variables that are only available at a native monthly resolution will be repeated to
-             give a pseudo-daily record (and can get dealt with in the downscaling workflow).  These files 
+             give a pseudo-daily record (and can get dealt with in the downscaling workflow).  These files
              are ready to be used in the general PEcAn workflow or fed into the downscaling workflow.
 }
 \author{

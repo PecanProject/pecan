@@ -1,8 +1,8 @@
 ## Truncated normal distribution functions
 
 #' Random sampling from one-sided truncated normal distribution
-#' 
-#' @details Draws a random number and, if it doesn't fall within the 
+#'
+#' @details Draws a random number and, if it doesn't fall within the
 #'      specified range, resample using an adjusted Normal CDF. This isn't
 #'      performed immediately because CDF sampling calls three functions --
 #'      qnorm, runif, and pnorm--and therefore is much less efficient than a
@@ -25,7 +25,7 @@ rtnorm <- function(mu, sd, MIN) {
 
 
 #' Truncated normal distribution density
-#' 
+#'
 #' Calculates the log density of a univariate truncated normal variable
 #' @author Alexey Shiklomanov
 #' @param x A random variable
@@ -36,8 +36,8 @@ rtnorm <- function(mu, sd, MIN) {
 #' @export
 dtnorm <- function(x, mu, sd, MIN) {
   if (x < MIN) {
-    return(-1e+15) 
+    return(-1e+15)
   } else {
     return(dnorm(x, mu, sd, 1) - log(1 - pnorm(MIN, mu, sd, 1, 0)))
-  } 
+  }
 } # dtnorm

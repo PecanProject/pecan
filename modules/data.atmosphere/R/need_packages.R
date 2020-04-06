@@ -6,7 +6,7 @@
 #' @return `pkgs`, invisibly
 #' @author Alexey Shiklomanov
 #' @examples
-#' PEcAn.data.atmosphere:::need_packages("stats", "methods") # Always works 
+#' PEcAn.data.atmosphere:::need_packages("stats", "methods") # Always works
 #' try(PEcAn.data.atmosphere:::need_packages("notapackage"))
 need_packages <- function(...) {
   pkgs <- unlist(list(...), recursive = TRUE)

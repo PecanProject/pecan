@@ -15,7 +15,7 @@ download.NEONmet(
 )
 }
 \arguments{
-\item{sitename}{the NEON ID of the site to be downloaded, used as file name prefix. 
+\item{sitename}{the NEON ID of the site to be downloaded, used as file name prefix.
 The 4-letter SITE code  in \href{http://www.neonscience.org/science-design/field-sites/list}{list of NEON sites}}
 
 \item{outfolder}{location on disk where outputs will be stored}

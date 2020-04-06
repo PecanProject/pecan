@@ -34,7 +34,7 @@ list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID fo
 }
 \description{
 Writes config files for use in meta-analysis and returns a list of run ids.
-Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
+Given a pft.xml object, a list of lists as supplied by get.sa.samples,
 a name to distinguish the output files, and the directory to place the files.
 }
 \details{

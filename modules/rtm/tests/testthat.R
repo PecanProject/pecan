@@ -2,5 +2,5 @@
 library(testthat)
 library(PEcAnRTM)
 
-options(warn=1)
+options(warn = 1)
 test_check("PEcAnRTM")

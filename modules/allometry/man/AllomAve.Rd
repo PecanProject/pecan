@@ -49,25 +49,24 @@ nested list of parameter summary statistics
 \description{
 allometery wrapper function that handles loading and subsetting the data,
  fitting the Bayesian models, and generating diagnostic figures. Set up to loop over
-  multiple PFTs and components. 
+  multiple PFTs and components.
   Writes raw MCMC and PDF of diagnositcs to file and returns table of summary stats.
 }
 \details{
-There are two usages of this function. 
+There are two usages of this function.
 When running 'online' (connected to the PEcAn database), pass the database connection, con, and the pfts subsection of the PEcAn settings.
 When running 'stand alone' pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
 }
 \examples{
 
-if(FALSE){
-  pfts = list(FAGR = data.frame(spcd=531,acronym='FAGR'))
-  allom.stats = AllomAve(pfts,ngibbs=500)
+if (FALSE) {
+  pfts <- list(FAGR = data.frame(spcd = 531, acronym = "FAGR"))
+  allom.stats <- AllomAve(pfts, ngibbs = 500)
 
   ## example of a PFT with multiple species (late hardwood)
   ## note that if you're just using Jenkins the acronym column is optional
-  pfts = list(LH = data.frame(spcd = c(531,318),acronym=c('FAGR','ACSA3')))
+  pfts <- list(LH = data.frame(spcd = c(531, 318), acronym = c("FAGR", "ACSA3")))
 }
-
 }
 \author{
 Michael Dietze

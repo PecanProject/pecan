@@ -12,8 +12,10 @@ site.lst <- function(site.id, con) {
   if (!is.na(time.zone) && !is.na(as.character(time.zone))) {
     lst <- PEcAn.utils::timezone_hour(time.zone)
   } else {
-    site <- PEcAn.DB::db.query(paste("SELECT ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat",
-      "FROM sites WHERE id =", site.id), con)
+    site <- PEcAn.DB::db.query(paste(
+      "SELECT ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat",
+      "FROM sites WHERE id =", site.id
+    ), con)
     if (is.null(getOption("geonamesUsername"))) {
       options(geonamesUsername = "carya")
     }

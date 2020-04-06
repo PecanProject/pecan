@@ -7,12 +7,6 @@
 pr.samp(distn, parama, paramb, n)
 }
 \arguments{
-\item{distn}{}
-
-\item{parama}{}
-
-\item{paramb}{}
-
 \item{n}{number of samples to return}
 }
 \value{

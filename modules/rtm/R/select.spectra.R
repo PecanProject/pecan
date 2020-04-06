@@ -17,7 +17,7 @@
 }
 
 #' Select spectra by wavelength
-#' 
+#'
 #' @inheritParams [.spectra
 #' @param wavelength Wavelength vector to select
 #' @export
@@ -38,4 +38,3 @@
   spectra[i, j] <- values
   spectra
 }
-

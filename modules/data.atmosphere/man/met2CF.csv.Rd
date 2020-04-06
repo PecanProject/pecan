@@ -33,7 +33,7 @@ format is output from db/R/query.format.vars, and should have:
   format$na.strings = list of missing values to convert to NA, such as -9999
   format$skip = lines to skip excluding header
   format$vars$column_number = Column number in CSV file (optional, will use header name first)
-Columns with NA for bety variable name are dropped. 
+Columns with NA for bety variable name are dropped.
 Units for datetime field are the lubridate function that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).}
 
 \item{nc_verbose}{logical: run ncvar_add in verbose mode?}
@@ -51,7 +51,7 @@ start_date <- lubridate::ymd_hm('200401010000')
 end_date <- lubridate::ymd_hm('200412312330')
 file<-PEcAn.data.atmosphere::download.Fluxnet2015('US-WCr','~/',start_date,end_date)
 in.path <- '~/'
-in.prefix <- file$dbfile.name 
+in.prefix <- file$dbfile.name
 outfolder <- '~/'
 format.id <- 5000000001
 format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)

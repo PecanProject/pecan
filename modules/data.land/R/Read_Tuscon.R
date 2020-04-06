@@ -7,9 +7,9 @@ Clean_Tucson <- function(file) {
   split <- strsplit(lines, " ")
   tags <- NULL
   decade <- NULL
-  
+
   for (i in seq_along(split)) {
-    tags[i]   <- split[[i]][1]
+    tags[i] <- split[[i]][1]
     decade[i] <- split[[i]][2]
   }
   utags <- unique(tags)
@@ -17,7 +17,7 @@ Clean_Tucson <- function(file) {
   if (file.exists(newfile)) {
     file.remove(newfile)
   }
-  
+
   for (tag in utags) {
     rows <- rev(which(tags == tag))
     keep <- 1
@@ -28,8 +28,8 @@ Clean_Tucson <- function(file) {
         break
       }
     }
-    keep   <- min(keep, length(rows))
-    rows   <- rev(rows[1:keep])
+    keep <- min(keep, length(rows))
+    rows <- rev(rows[1:keep])
     append <- file.exists(newfile)
     write(lines[rows], newfile, append = append)
   }
@@ -39,13 +39,12 @@ Clean_Tucson <- function(file) {
 ##' @title Read_Tucson
 ##' @name Read_Tucson
 ##' @export
-##' @description wrapper around read.tucson that loads a whole directory of tree ring files 
-##' and calls a 'clean' function that removes redundant records 
+##' @description wrapper around read.tucson that loads a whole directory of tree ring files
+##' and calls a 'clean' function that removes redundant records
 ##' (WinDendro can sometimes create duplicate records when editing)
 Read_Tucson <- function(folder) {
-  
   library(dplR)
-  
+
   filenames <- dir(folder, pattern = "TXT", full.names = TRUE)
   filenames <- c(filenames, dir(folder, pattern = "rwl", full.names = TRUE))
   filenames <- c(filenames, dir(folder, pattern = "rw", full.names = TRUE))
@@ -58,7 +57,6 @@ Read_Tucson <- function(folder) {
     file <- Clean_Tucson(file)
     filedata[[file]] <- read.tucson(file, header = FALSE)
   }
-  
+
   return(filedata)
 } # Read_Tucson
-

@@ -27,4 +27,3 @@ testForPackage <- function(pkg) {
     stop("Package", pkg, "required but not installed")
   }
 }
-

@@ -26,8 +26,8 @@ parms
 Prior fitting function for optimization
 }
 \details{
-This function is used within \code{\link{DEoptim}} to parameterize a distribution to the 
-central tendency and confidence interval of a parameter. 
+This function is used within \code{\link{DEoptim}} to parameterize a distribution to the
+central tendency and confidence interval of a parameter.
 This function is not very robust; currently it needs to be tweaked when distributions
 require starting values (e.g. beta, f)
 }

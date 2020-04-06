@@ -13,25 +13,30 @@
 #' expect_log(cat("Hello", file = stderr()), "Hello")
 #' # Only messages on stderr are recognized
 #' expect_failure(expect_log("Hello", "Hello"))
-#'
-expect_log <- function(object, regexp, ...){
-	qobj <- rlang::enquo(object)
-	msg <- capture.output(
-		{val <- rlang::eval_tidy(qobj)},
-		type = "message")
-	label = rlang::expr_label(rlang::get_expr(qobj))
+expect_log <- function(object, regexp, ...) {
+  qobj <- rlang::enquo(object)
+  msg <- capture.output(
+    {
+      val <- rlang::eval_tidy(qobj)
+    },
+    type = "message"
+  )
+  label <- rlang::expr_label(rlang::get_expr(qobj))
 
-	expect(
-		length(msg) > 0,
-		sprintf("%s did not produce any log messages", label))
-	msg = paste(msg, collapse = "\n")
-	expect(
-		grepl(regexp, msg,  ...),
-		sprintf(
-			"%s does not match %s.\nActual value: \"%s\"",
-			label,
-			encodeString(regexp, quote = "\""),
-			encodeString(msg)))
+  expect(
+    length(msg) > 0,
+    sprintf("%s did not produce any log messages", label)
+  )
+  msg <- paste(msg, collapse = "\n")
+  expect(
+    grepl(regexp, msg, ...),
+    sprintf(
+      "%s does not match %s.\nActual value: \"%s\"",
+      label,
+      encodeString(regexp, quote = "\""),
+      encodeString(msg)
+    )
+  )
 
-	invisible(val)
+  invisible(val)
 }

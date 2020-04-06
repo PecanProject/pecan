@@ -1,7 +1,6 @@
 # helper function to copy variables and attributes from one nc file to another. This will do
 # conversion of the variables as well as on the min/max values
 copyvals <- function(nc1, var1, nc2, var2, dim2, units2 = NA, conv = NULL, missval = -6999, verbose = FALSE) {
-
   vals <- ncdf4::ncvar_get(nc = nc1, varid = var1)
   vals[vals == -6999 | vals == -9999] <- NA
   if (!is.null(conv)) {
@@ -53,7 +52,7 @@ getLatLon <- function(nc1) {
       return(c(as.numeric(lat$value), as.numeric(lon$value)))
     }
   }
- PEcAn.logger::logger.severe("Could not get site location for file.")
+  PEcAn.logger::logger.severe("Could not get site location for file.")
 } # getLatLon
 
 
@@ -77,36 +76,38 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
 
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
-  end_year   <- lubridate::year(end_date)
+  end_year <- lubridate::year(end_date)
 
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
 
   rows <- end_year - start_year + 1
-  results <- data.frame(file = character(rows),
-                        host = character(rows),
-                        mimetype = character(rows),
-                        formatname = character(rows),
-                        startdate = character(rows),
-                        enddate = character(rows),
-                        dbfile.name = in.prefix,
-                        stringsAsFactors = FALSE)
+  results <- data.frame(
+    file = character(rows),
+    host = character(rows),
+    mimetype = character(rows),
+    formatname = character(rows),
+    startdate = character(rows),
+    enddate = character(rows),
+    dbfile.name = in.prefix,
+    stringsAsFactors = FALSE
+  )
   for (year in start_year:end_year) {
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
     new.file <- file.path(outfolder, paste(in.prefix, year, "nc", sep = "."))
 
     # create array with results
     row <- year - start_year + 1
-    results$file[row]       <- new.file
-    results$host[row]       <- PEcAn.remote::fqdn()
-    results$startdate[row]  <- paste0(year, "-01-01 00:00:00")
-    results$enddate[row]    <- paste0(year, "-12-31 23:59:59")
-    results$mimetype[row]   <- "application/x-netcdf"
+    results$file[row] <- new.file
+    results$host[row] <- PEcAn.remote::fqdn()
+    results$startdate[row] <- paste0(year, "-01-01 00:00:00")
+    results$enddate[row] <- paste0(year, "-12-31 23:59:59")
+    results$mimetype[row] <- "application/x-netcdf"
     results$formatname[row] <- "CF"
 
     if (file.exists(new.file) && !overwrite) {
-     PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
       next
     }
 
@@ -124,10 +125,10 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     tdimunit <- unlist(strsplit(tdim$units, " "))
     tdimtz <- substr(tdimunit[length(tdimunit)], 1, 1)
     if ((tdimtz == "+") || (tdimtz == "-")) {
-      lst <- tdimunit[length(tdimunit)]  #already in definition, leave it alone
+      lst <- tdimunit[length(tdimunit)] # already in definition, leave it alone
     } else {
       if (is.null(getOption("geonamesUsername"))) {
-        options(geonamesUsername = "carya")  #login to geoname server
+        options(geonamesUsername = "carya") # login to geoname server
       }
       lst <- geonames::GNtimezone(latlon[1], latlon[2], radius = 0)$gmtOffset
       if (lst >= 0) {
@@ -140,8 +141,10 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
 
     lat <- ncdf4::ncdim_def(name = "latitude", units = "", vals = 1:1, create_dimvar = FALSE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "", vals = 1:1, create_dimvar = FALSE)
-    time <- ncdf4::ncdim_def(name = "time", units = tdim$units, vals = tdim$vals,
-                      create_dimvar = TRUE, unlim = TRUE)
+    time <- ncdf4::ncdim_def(
+      name = "time", units = tdim$units, vals = tdim$vals,
+      create_dimvar = TRUE, unlim = TRUE
+    )
     dim <- list(lat, lon, time)
 
     # copy lat attribute to latitude
@@ -167,100 +170,140 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     # this conversion needs to come before others to reinitialize dimension used by copyvals (lat/lon/time)
     rh <- ncdf4::ncvar_get(nc = nc1, varid = "RH")
     rh[rh == -6999 | rh == -9999] <- NA
-    rh <- rh/100
+    rh <- rh / 100
     ta <- ncdf4::ncvar_get(nc = nc1, varid = "TA")
     ta[ta == -6999 | ta == -9999] <- NA
     ta <- udunits2::ud.convert(ta, "degC", "K")
     sh <- rh2qair(rh = rh, T = ta)
-    var <- ncdf4::ncvar_def(name = "specific_humidity", units = "kg/kg", dim = dim,
-                     missval = -6999, verbose = verbose)
+    var <- ncdf4::ncvar_def(
+      name = "specific_humidity", units = "kg/kg", dim = dim,
+      missval = -6999, verbose = verbose
+    )
     nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
     ncdf4::ncvar_put(nc = nc2, varid = "specific_humidity", vals = sh)
 
     # convert TA to air_temperature
-    copyvals(nc1 = nc1, var1 = "TA", nc2 = nc2,
-             var2 = "air_temperature", units2 = "K",
-             dim2 = dim, conv = function(x) { udunits2::ud.convert(x, "degC", "K") },
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "TA", nc2 = nc2,
+      var2 = "air_temperature", units2 = "K",
+      dim2 = dim, conv = function(x) {
+        udunits2::ud.convert(x, "degC", "K")
+      },
+      verbose = verbose
+    )
 
     # convert PRESS to air_pressure
-    copyvals(nc1 = nc1, var1 = "PRESS", nc2 = nc2,
-             var2 = "air_pressure", units2 = "Pa",
-             dim2 = dim,
-             conv = function(x) { udunits2::ud.convert(x, "kPa", "Pa") },
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "PRESS", nc2 = nc2,
+      var2 = "air_pressure", units2 = "Pa",
+      dim2 = dim,
+      conv = function(x) {
+        udunits2::ud.convert(x, "kPa", "Pa")
+      },
+      verbose = verbose
+    )
 
     # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
-    copyvals(nc1 = nc1, var1 = "CO2", nc2 = nc2,
-             var2 = "mole_fraction_of_carbon_dioxide_in_air",
-             units2 = "mole/mole",
-             dim2 = dim,
-             conv = function(x) { udunits2::ud.convert(x, "ppm", "mol/mol") },
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "CO2", nc2 = nc2,
+      var2 = "mole_fraction_of_carbon_dioxide_in_air",
+      units2 = "mole/mole",
+      dim2 = dim,
+      conv = function(x) {
+        udunits2::ud.convert(x, "ppm", "mol/mol")
+      },
+      verbose = verbose
+    )
 
     # convert TS1 to soil_temperature
-    copyvals(nc1 = nc1, var1 = "TS1", nc2 = nc2,
-             var2 = "soil_temperature", units2 = "K",
-             dim2 = dim,
-             conv = function(x) { udunits2::ud.convert(x, "degC", "K") },
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "TS1", nc2 = nc2,
+      var2 = "soil_temperature", units2 = "K",
+      dim2 = dim,
+      conv = function(x) {
+        udunits2::ud.convert(x, "degC", "K")
+      },
+      verbose = verbose
+    )
 
     # copy RH to relative_humidity
-    copyvals(nc1 = nc1, var1 = "RH", nc2 = nc2,
-             var2 = "relative_humidity", dim2 = dim,
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "RH", nc2 = nc2,
+      var2 = "relative_humidity", dim2 = dim,
+      verbose = verbose
+    )
 
     # convert VPD to water_vapor_saturation_deficit HACK : conversion will make all values < 0 to be
     # NA
-    copyvals(nc1 = nc1, var1 = "VPD", nc2 = nc2,
-             var2 = "water_vapor_saturation_deficit", units2 = "Pa",
-             dim2 = dim,
-             conv = function(x) { ifelse(x < 0, NA, udunits2::ud.convert(x, "kPa", "Pa")) },
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "VPD", nc2 = nc2,
+      var2 = "water_vapor_saturation_deficit", units2 = "Pa",
+      dim2 = dim,
+      conv = function(x) {
+        ifelse(x < 0, NA, udunits2::ud.convert(x, "kPa", "Pa"))
+      },
+      verbose = verbose
+    )
 
     # copy Rg to surface_downwelling_shortwave_flux_in_air
-    copyvals(nc1 = nc1, var1 = "Rg", nc2 = nc2,
-             var2 = "surface_downwelling_shortwave_flux_in_air",
-             dim2 = dim,
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "Rg", nc2 = nc2,
+      var2 = "surface_downwelling_shortwave_flux_in_air",
+      dim2 = dim,
+      verbose = verbose
+    )
 
     # copy Rgl to surface_downwelling_longwave_flux_in_air
-    copyvals(nc1 = nc1, var1 = "Rgl", nc2 = nc2,
-             var2 = "surface_downwelling_longwave_flux_in_air",
-             dim2 = dim,
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "Rgl", nc2 = nc2,
+      var2 = "surface_downwelling_longwave_flux_in_air",
+      dim2 = dim,
+      verbose = verbose
+    )
 
     # convert PAR to surface_downwelling_photosynthetic_photon_flux_in_air
-    copyvals(nc1 = nc1, var1 = "PAR", nc2 = nc2,
-             var2 = "surface_downwelling_photosynthetic_photon_flux_in_air", units2 = "mol m-2 s-1",
-             dim2 = dim,
-             conv = function(x) { udunits2::ud.convert(x, "umol m-2 s-1", "mol m-2 s-1") },
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "PAR", nc2 = nc2,
+      var2 = "surface_downwelling_photosynthetic_photon_flux_in_air", units2 = "mol m-2 s-1",
+      dim2 = dim,
+      conv = function(x) {
+        udunits2::ud.convert(x, "umol m-2 s-1", "mol m-2 s-1")
+      },
+      verbose = verbose
+    )
 
     # copy WD to wind_direction (not official CF)
-    copyvals(nc1 = nc1, var1 = "WD", nc2 = nc2,
-             var2 = "wind_direction", dim2 = dim,
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "WD", nc2 = nc2,
+      var2 = "wind_direction", dim2 = dim,
+      verbose = verbose
+    )
 
     # copy WS to wind_speed
-    copyvals(nc1 = nc1, var1 = "WS", nc2 = nc2,
-             var2 = "wind_speed", dim2 = dim,
-             verbose = verbose)
+    copyvals(
+      nc1 = nc1, var1 = "WS", nc2 = nc2,
+      var2 = "wind_speed", dim2 = dim,
+      verbose = verbose
+    )
 
     # convert PREC to precipitation_flux
     t <- tdim$vals
-    min <- 0.02083 / 30  # 0.02083 time = 30 minutes
-    timestep <- round(x = mean(diff(t)) / min, digits = 1)  # round to nearest 0.1 minute
-    copyvals(nc1 = nc1, var1 = "PREC", nc2 = nc2,
-             var2 = "precipitation_flux", units2 = "kg/m^2/s",
-             dim2 = dim,
-             conv = function(x) { x / timestep / 60 },
-             verbose = verbose)
+    min <- 0.02083 / 30 # 0.02083 time = 30 minutes
+    timestep <- round(x = mean(diff(t)) / min, digits = 1) # round to nearest 0.1 minute
+    copyvals(
+      nc1 = nc1, var1 = "PREC", nc2 = nc2,
+      var2 = "precipitation_flux", units2 = "kg/m^2/s",
+      dim2 = dim,
+      conv = function(x) {
+        x / timestep / 60
+      },
+      verbose = verbose
+    )
 
     # convert wind speed and wind direction to eastward_wind and northward_wind
-    wd <- ncdf4::ncvar_get(nc = nc1, varid = "WD")  #wind direction
+    wd <- ncdf4::ncvar_get(nc = nc1, varid = "WD") # wind direction
     wd[wd == -6999 | wd == -9999] <- NA
-    ws <- ncdf4::ncvar_get(nc = nc1, varid = "WS")  #wind speed
+    ws <- ncdf4::ncvar_get(nc = nc1, varid = "WS") # wind speed
     ws[ws == -6999 | ws == -9999] <- NA
     ew <- ws * cos(wd * (pi / 180))
     nw <- ws * sin(wd * (pi / 180))
@@ -287,7 +330,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     # done, close both files
     ncdf4::nc_close(nc1)
     ncdf4::nc_close(nc2)
-  }  ## end loop over years
+  } ## end loop over years
 
   return(invisible(results))
 } # met2CF.Ameriflux

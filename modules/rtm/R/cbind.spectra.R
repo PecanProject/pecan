@@ -1,6 +1,6 @@
 #' Combine spectra by wavelength
 #'
-#' @param ... Spectra to combine 
+#' @param ... Spectra to combine
 #' @export
 cbind.spectra <- function(...) {
   dots <- list(...)

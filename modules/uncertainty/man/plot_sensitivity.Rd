@@ -24,8 +24,6 @@ plot_sensitivity(
 
 \item{trait}{trait name for title}
 
-\item{y.range}{}
-
 \item{median.i}{index of median value in sa.sample; \code{median.i == which(as.numeric(rownames(sa.sample)) == 50) }}
 
 \item{prior.sa.sample}{similar to sa.sample, but for prior distribution. If given, plots sensitivity for prior run}

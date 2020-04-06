@@ -42,8 +42,8 @@ updated start date
 Spin-up meteorology
 }
 \details{
-spin.met works by creating symbolic links to the sampled met file, 
-rather than copying the whole file. Be aware that the internal dates in 
+spin.met works by creating symbolic links to the sampled met file,
+rather than copying the whole file. Be aware that the internal dates in
 those files are not modified. Right now this is designed to be called within
 met2model.[MODEL] before the met is processed (it's designed to work with annual CF
 files not model-specific files) for example with models that process met
@@ -51,18 +51,18 @@ into one large file
 }
 \examples{
 start_date <- "0850-01-01 00:00:00"
-end_date   <- "2010-12-31 23:59:59"
-nyear      <- 10
-nsample    <- 50
-resample   <- TRUE
-
+end_date <- "2010-12-31 23:59:59"
+nyear <- 10
+nsample <- 50
+resample <- TRUE
 \dontrun{
-if(!is.null(spin)){
-   ## if spinning up, extend processed met by resampling or cycling met
-   start_date <- PEcAn.data.atmosphere::spin.met(
-     in.path, in.prefix,
-     start_date, end_date,
-     nyear, nsample, resample)
+if (!is.null(spin)) {
+  ## if spinning up, extend processed met by resampling or cycling met
+  start_date <- PEcAn.data.atmosphere::spin.met(
+    in.path, in.prefix,
+    start_date, end_date,
+    nyear, nsample, resample
+  )
 }
 }
 }

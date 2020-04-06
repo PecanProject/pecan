@@ -24,6 +24,8 @@ If for example met was a parent and it's sampling method resulted in choosing th
 parent_ids to this function.
 }
 \examples{
-\dontrun{input.ens.gen(settings,"met","sampling")}
+\dontrun{
+input.ens.gen(settings, "met", "sampling")
+}
 
 }

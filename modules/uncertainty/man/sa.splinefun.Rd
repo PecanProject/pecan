@@ -6,11 +6,6 @@
 \usage{
 sa.splinefun(quantiles.input, quantiles.output)
 }
-\arguments{
-\item{quantiles.input}{}
-
-\item{quantiles.output}{}
-}
 \value{
 function
 }

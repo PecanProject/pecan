@@ -6,18 +6,18 @@
 
 library("ggplot2")
 
-args = commandArgs(trailingOnly = TRUE)
-outfolder = "./graphs"  # Where output graphs are put
+args <- commandArgs(trailingOnly = TRUE)
+outfolder <- "./graphs" # Where output graphs are put
 
 # These variables control the start and end dates of the x axis.
-frame_start <- as.POSIXct('2018-09-11 00:00')
-frame_end <- as.POSIXct('2018-10-06 00:00')
+frame_start <- as.POSIXct("2018-09-11 00:00")
+frame_end <- as.POSIXct("2018-10-06 00:00")
 
 # These variables control the start and end dates of the y axis
-nee_upper = 1e-06
-nee_lower = -1e-06
-qle_upper = 350
-qle_lower = -50
+nee_upper <- 1e-06
+nee_lower <- -1e-06
+qle_upper <- 350
+qle_lower <- -50
 
 
 if (is.na(args[1])) {
@@ -26,9 +26,11 @@ if (is.na(args[1])) {
 }
 
 # Validate date
-start_date <- tryCatch(as.POSIXct(args[1]), error = function(e) {NULL} )
+start_date <- tryCatch(as.POSIXct(args[1]), error = function(e) {
+  NULL
+})
 
-in_wid = 0
+in_wid <- 0
 if (is.null(start_date)) {
   in_wid <- as.integer(args[1])
 }
@@ -38,35 +40,39 @@ if (is.na(in_wid)) {
   quit("no")
 }
 
-graph_for = "NEE"
+graph_for <- "NEE"
 if (!is.na(args[2]) && args[2] == "LE") {
-  graph_for = "LE"
+  graph_for <- "LE"
 } else if (!is.na(args[2]) && args[2] == "NEE") {
-  graph_for = "NEE"
+  graph_for <- "NEE"
 } else {
   print("Invalid second argument, must be NEE or LE.  Defaulting to NEE.")
 }
 
 # Set up database connection
-dbparms = list()
-dbparms$dbname = "bety"
-dbparms$host = "128.197.168.114"
-dbparms$user = "bety"
-dbparms$password = "bety"
+dbparms <- list()
+dbparms$dbname <- "bety"
+dbparms$host <- "128.197.168.114"
+dbparms$user <- "bety"
+dbparms$password <- "bety"
 
-#Connection code copied and pasted from met.process
-bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
-                            host     = dbparms$host, 
-                            user     = dbparms$user, 
-                            password = dbparms$password)
+# Connection code copied and pasted from met.process
+bety <- dplyr::src_postgres(
+  dbname = dbparms$dbname,
+  host = dbparms$host,
+  user = dbparms$user,
+  password = dbparms$password
+)
 
-con <- bety$con #Connection to the database.  dplyr returns a list.
+con <- bety$con # Connection to the database.  dplyr returns a list.
 
 # Identify the workflow with the proper information
 if (!is.null(start_date)) {
-  workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE start_date='",
-                                         format(start_date, "%Y-%m-%d %H:%M:%S"), 
-                                         "' ORDER BY id"), con)
+  workflows <- PEcAn.DB::db.query(paste0(
+    "SELECT * FROM workflows WHERE start_date='",
+    format(start_date, "%Y-%m-%d %H:%M:%S"),
+    "' ORDER BY id"
+  ), con)
 } else {
   workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE id='", in_wid, "'"), con)
 }
@@ -80,7 +86,7 @@ if (nrow(workflows) == 0) {
 
 if (nrow(workflows) > 1) {
   print("Multiple workflows found: Using the latest")
-  workflow <- workflows[nrow(workflows),]
+  workflow <- workflows[nrow(workflows), ]
 } else {
   workflow <- workflows
 }
@@ -88,7 +94,7 @@ if (nrow(workflows) > 1) {
 print(paste0("Using workflow ", workflow$id))
 
 wid <- workflow$id
-pecan_out_dir <- paste0("/fs/data3/kzarada/output/PEcAn_", wid, "/out");
+pecan_out_dir <- paste0("/fs/data3/kzarada/output/PEcAn_", wid, "/out")
 pecan_out_dirs <- list.dirs(path = pecan_out_dir)
 
 if (is.na(pecan_out_dirs[1])) {
@@ -96,30 +102,29 @@ if (is.na(pecan_out_dirs[1])) {
   quit("no")
 }
 
-neemat <- matrix(1:64, nrow=1, ncol=64) # Proxy row, will be deleted later.
-qlemat <- matrix(1:64, nrow=1, ncol=64) # Proxy row, will be deleted later.
+neemat <- matrix(1:64, nrow = 1, ncol = 64) # Proxy row, will be deleted later.
+qlemat <- matrix(1:64, nrow = 1, ncol = 64) # Proxy row, will be deleted later.
 
-num_results <- 0;
-
+num_results <- 0
 for (i in 2:length(pecan_out_dirs)) {
   datafile <- file.path(pecan_out_dirs[i], format(workflow$start_date, "%Y.nc"))
   if (!file.exists(datafile)) {
     print(paste0("File ", datafile, " does not exist."))
     next
   }
-  
+
   num_results <- num_results + 1
-  
-  #open netcdf file
-  ncptr <- ncdf4::nc_open(datafile);
-  
+
+  # open netcdf file
+  ncptr <- ncdf4::nc_open(datafile)
+
   # Attach data to matricies
   nee <- ncdf4::ncvar_get(ncptr, "NEE")
   neemat <- rbind(neemat, nee)
-  
+
   qle <- ncdf4::ncvar_get(ncptr, "Qle")
   qlemat <- rbind(qlemat, qle)
-  
+
   # Close netcdf file
   ncdf4::nc_close(ncptr)
 }
@@ -132,26 +137,26 @@ if (num_results == 0) {
 }
 
 # Strip away proxy rows
-neemat <- neemat[-1,]
-qlemat <- qlemat[-1,]
+neemat <- neemat[-1, ]
+qlemat <- qlemat[-1, ]
 
 # Time
-Time <- seq(frame_start, frame_end, by="6 hours")
+Time <- seq(frame_start, frame_end, by = "6 hours")
 Time <- Time[-1] # The start date is not included in the forecast
 
 # Caluclate means
 neemins <- NULL
 neemaxes <- NULL
 
-quantiles <- apply(neemat,2,quantile,c(0.025,0.5,0.975), na.rm=TRUE)
-neelower95 <- quantiles[1,]
-neemeans <- quantiles[2,]
-neeupper95 <- quantiles[3,]
+quantiles <- apply(neemat, 2, quantile, c(0.025, 0.5, 0.975), na.rm = TRUE)
+neelower95 <- quantiles[1, ]
+neemeans <- quantiles[2, ]
+neeupper95 <- quantiles[3, ]
 
-quantiles <- apply(qlemat,2,quantile,c(0.025,0.5,0.975), na.rm=TRUE)
-qlelower95 <- quantiles[1,]
-qlemeans <- quantiles[2,]
-qleupper95 <- quantiles[3,]
+quantiles <- apply(qlemat, 2, quantile, c(0.025, 0.5, 0.975), na.rm = TRUE)
+qlelower95 <- quantiles[1, ]
+qlemeans <- quantiles[2, ]
+qleupper95 <- quantiles[3, ]
 
 # Grab real data as.POSIXct(workflow$end_date)
 real_data <- PEcAn.data.atmosphere::download.US_WCr(frame_start, as.POSIXct(workflow$end_date), timestep = 6)
@@ -161,7 +166,7 @@ real_qle <- real_data$qle
 
 # Pad data with NA's to appropriately position the forecast in the graph. (For the forecast data)
 # Pad NA's at the front
-numNAs = lubridate::as.duration(lubridate::interval(frame_start, as.POSIXct(workflow$start_date)))
+numNAs <- lubridate::as.duration(lubridate::interval(frame_start, as.POSIXct(workflow$start_date)))
 numNAs <- udunits2::ud.convert(numNAs, "s", "h") / 6
 if (floor(numNAs) != numNAs) {
   print("Time scale incorrect.")
@@ -178,7 +183,7 @@ for (i in seq_len(numNAs)) {
 }
 
 # Pad NA's at the end
-numNAs = lubridate::as.duration(lubridate::interval(as.POSIXct(workflow$end_date), frame_end))
+numNAs <- lubridate::as.duration(lubridate::interval(as.POSIXct(workflow$end_date), frame_end))
 numNAs <- udunits2::ud.convert(numNAs, "s", "h") / 6
 
 if (floor(numNAs) != numNAs) {
@@ -201,48 +206,56 @@ needf <- data.frame(Time = Time, lower = neelower95, means = neemeans, upper = n
 qledf <- data.frame(Time = Time, lower = qlelower95, means = qlemeans, upper = qleupper95, real_qle = real_qle)
 
 # Create better plots
-neeplot <- ggplot(needf) + 
+neeplot <- ggplot(needf) +
   # geom_ribbon(aes(x=time, ymin=neemins, ymax=neemaxes, fill="Spread of data (excluding outliers)"), alpha = 0.7) +
-  geom_ribbon(aes(x = Time, ymin=neelower95, ymax=neeupper95, fill="95% confidence interval"), alpha = 0.4) + 
-  geom_line(aes(x=Time, y=neemeans, color="predicted mean"), size = 1) +
-  geom_line(aes(x=Time, y=real_nee, color="observed data"), size = 1) +
+  geom_ribbon(aes(x = Time, ymin = neelower95, ymax = neeupper95, fill = "95% confidence interval"), alpha = 0.4) +
+  geom_line(aes(x = Time, y = neemeans, color = "predicted mean"), size = 1) +
+  geom_line(aes(x = Time, y = real_nee, color = "observed data"), size = 1) +
   ggtitle(paste0("Net Ecosystem Exchange for ", workflow$start_date, " to ", workflow$end_date, ", Willow Creek, Wisconson")) +
   xlim(frame_start, frame_end) +
-  theme(axis.text.x=element_text(angle=60, hjust=1)) +
-  scale_colour_manual(name='Legend', values=c("predicted mean"="lightskyblue1", "observed data"="firebrick4")) +
-  scale_fill_manual(name=element_blank(), 
-                    values=c("Spread of data (excluding outliers)"="azure4", 
-                             "95% confidence interval" = "blue3", "mean"="lightskyblue1")) +
-  scale_y_continuous(name="NEE (kg C m-2 s-1)", limits=c(nee_lower, nee_upper)) + 
-  theme_linedraw() + 
-  theme(plot.title = element_text(hjust = 0.5, size = 16),
-        legend.title = element_text(size = 14), 
-        legend.text = element_text(size = 12),
-        axis.text.x = element_text(size = 14), 
-        axis.text.y = element_text(size = 14), 
-        axis.title.x = element_text(size = 14), 
-        axis.title.y = element_text(size = 14)) 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  scale_colour_manual(name = "Legend", values = c("predicted mean" = "lightskyblue1", "observed data" = "firebrick4")) +
+  scale_fill_manual(
+    name = element_blank(),
+    values = c(
+      "Spread of data (excluding outliers)" = "azure4",
+      "95% confidence interval" = "blue3", "mean" = "lightskyblue1"
+    )
+  ) +
+  scale_y_continuous(name = "NEE (kg C m-2 s-1)", limits = c(nee_lower, nee_upper)) +
+  theme_linedraw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    legend.title = element_text(size = 14),
+    legend.text = element_text(size = 12),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14)
+  )
 
 qleplot <- ggplot(qledf) +
-  geom_ribbon(aes(x=Time, ymin=qlelower95, ymax=qleupper95, fill="95% confidence interval"), alpha = 0.4) +
-  geom_line(aes(x=Time, y=qlemeans, color="mean"), size = 1) +
-  geom_point(aes(x=Time, y=real_qle, color="observed data"), size = 1) +
-  ggtitle(paste0("Latent Energy for ", workflow$start_date, " to ", workflow$end_date, ", Summary of All Ensembles")) + 
+  geom_ribbon(aes(x = Time, ymin = qlelower95, ymax = qleupper95, fill = "95% confidence interval"), alpha = 0.4) +
+  geom_line(aes(x = Time, y = qlemeans, color = "mean"), size = 1) +
+  geom_point(aes(x = Time, y = real_qle, color = "observed data"), size = 1) +
+  ggtitle(paste0("Latent Energy for ", workflow$start_date, " to ", workflow$end_date, ", Summary of All Ensembles")) +
   xlim(frame_start, frame_end) +
-  theme(axis.text.x=element_text(angle=60, hjust=1)) +
-  scale_color_manual(name='Legend', values=c("mean"="lightskyblue1", "observed data"="firebrick4")) + 
-  scale_fill_manual(name= element_blank(), values=c("95% confidence interval" = "blue3")) +
-  scale_y_discrete(name="LE (W m-2 s-1)", limits = c(qle_lower, qle_upper)) + 
-  theme_linedraw() + 
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
-        legend.title = element_text(size = 14), 
-        legend.text = element_text(size = 12), 
-        axis.text.x = element_text(size = 14),
-        axis.text.y = element_text(size = 14), 
-        axis.title.x = element_text(size = 14), 
-        axis.title.y = element_text(size = 14)) 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  scale_color_manual(name = "Legend", values = c("mean" = "lightskyblue1", "observed data" = "firebrick4")) +
+  scale_fill_manual(name = element_blank(), values = c("95% confidence interval" = "blue3")) +
+  scale_y_discrete(name = "LE (W m-2 s-1)", limits = c(qle_lower, qle_upper)) +
+  theme_linedraw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    legend.title = element_text(size = 14),
+    legend.text = element_text(size = 12),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14)
+  )
 
-  
+
 if (!dir.exists(outfolder)) {
   dir.create(outfolder, recursive = TRUE)
 }

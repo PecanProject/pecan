@@ -7,7 +7,7 @@
 check_if_species_list(vars, custom_table = NULL)
 }
 \arguments{
-\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
+\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes.
 In the second case, must be passable to match_species_id.}
 
 \item{observation_one}{a vector of plant functional types, or species}

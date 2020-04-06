@@ -35,7 +35,7 @@ download.NARR_site(
 
 \item{parallel}{Download in parallel? Default = TRUE}
 
-\item{ncores}{Number of cores for parallel download. Default is 
+\item{ncores}{Number of cores for parallel download. Default is
 `parallel::detectCores()`}
 }
 \description{
@@ -46,7 +46,6 @@ Download NARR time series for a single site
 \dontrun{
 download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 }
-
 
 }
 \author{

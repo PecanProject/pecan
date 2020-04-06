@@ -16,12 +16,12 @@ a dataframe with 7 columns of Site, Variable, Date, Organ, AGB, soil_organic_car
 }
 \description{
 This function returns a dataframe of plant biomass, root and soil carbon for a set of lat and long coordinates.
-This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-regions. 
+This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-regions.
 If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 All the variables are also converted to kg/m^2.
 }
 \examples{
 \dontrun{
-  badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
+badm_test <- Read.IC.info.BADM(45.805925, -90.07961)
 }
 }

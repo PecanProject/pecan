@@ -18,7 +18,7 @@ Calculates the excess kurtosis of a vector
 \details{
 Note that this calculates the 'excess kurtosis', which is defined as kurtosis - 3.
 This statistic is used in the calculation of the standard deviation of sample variance
-in the function \code{\link{sd.var}}.  
+in the function \code{\link{sd.var}}.
 Additional details
 }
 \references{

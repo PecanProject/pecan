@@ -7,10 +7,12 @@ teardown(unlink(tmpdir, recursive = TRUE))
 test_that("GFDL server is reachable", {
   skip_on_travis()
 
-  test_url <- paste0("http://nomads.gfdl.noaa.gov:9192/opendap/",
-                     "CMIP5/output1/NOAA-GFDL/GFDL-CM3/rcp45/3hr/",
-                     "atmos/3hr/r1i1p1/v20110601/tas/",
-                     "tas_3hr_GFDL-CM3_rcp45_r1i1p1_2006010100-2010123123.nc")
+  test_url <- paste0(
+    "http://nomads.gfdl.noaa.gov:9192/opendap/",
+    "CMIP5/output1/NOAA-GFDL/GFDL-CM3/rcp45/3hr/",
+    "atmos/3hr/r1i1p1/v20110601/tas/",
+    "tas_3hr_GFDL-CM3_rcp45_r1i1p1_2006010100-2010123123.nc"
+  )
   test_nc <- tryCatch(
     ncdf4::nc_open(test_url, suppress_dimvals = TRUE),
     error = function(e) {
@@ -45,7 +47,7 @@ test_that("GFDL server is reachable", {
 
     expect_equal(cf$dim$latitude$len, 1)
     expect_equal(cf$dim$longitude$len, 1)
-    expect_equal(cf$dim$time$len, 365*(24/3)) # one year at 3-hr interval, leap days ignored
+    expect_equal(cf$dim$time$len, 365 * (24 / 3)) # one year at 3-hr interval, leap days ignored
     expect_equal(cf$nvar, 8)
 
     # Expect that overwrite argument is respected
@@ -57,7 +59,9 @@ test_that("GFDL server is reachable", {
         site_id = 753,
         lat.in = 40,
         lon.in = -88,
-        overwrite = FALSE),
-      "already exists. Skipping")
+        overwrite = FALSE
+      ),
+      "already exists. Skipping"
+    )
   })
 })

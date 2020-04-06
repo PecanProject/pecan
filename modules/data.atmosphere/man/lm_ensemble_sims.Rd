@@ -31,10 +31,10 @@ lm_ensemble_sims(
 
 \item{lags.init}{- a data frame of initialization parameters to match the data in dat.mod}
 
-\item{dat.train}{- the training data used to fit the model; needed for night/day in 
+\item{dat.train}{- the training data used to fit the model; needed for night/day in
 surface_downwelling_shortwave_flux_in_air}
 
-\item{precip.distribution}{- a list with 2 sub-lists containing the number of observations with precip in the training data per day & 
+\item{precip.distribution}{- a list with 2 sub-lists containing the number of observations with precip in the training data per day &
 the hour of max rain in the training data.  This will be used to help solve the "constant drizzle" problem}
 
 \item{force.sanity}{- (logical) do we force the data to meet sanity checks?}

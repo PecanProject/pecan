@@ -1,7 +1,7 @@
-##-------------------------------------------------------------------------------
+## -------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -10,15 +10,14 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Fit a distribution to data
 ##'
-##' @title Fit distribution to data  
+##' @title Fit distribution to data
 ##' @param trait.data data for distribution
 ##' @param dists list of distribution names
 ##' @return best fit distribution
 ##' @export
 ##' @author David LeBauer
-fit.dist <- function(trait.data, trait = colnames(trait.data), 
+fit.dist <- function(trait.data, trait = colnames(trait.data),
                      dists = c("weibull", "lognormal", "gamma"), n = NULL) {
-  
   if (inherits(trait.data, "data.frame")) {
     trait.data <- trait.data[, 1]
   }
@@ -29,24 +28,29 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
   if ("f" %in% dists) {
     print(trait)
     if (trait == "tt") {
-      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
-                                            start = list(df1 = 100, df2 = 200)))
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f",
+        start = list(df1 = 100, df2 = 200)
+      ))
     } else if (trait == "sla") {
-      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
-                                            start = list(df1 = 6, df2 = 1)))
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f",
+        start = list(df1 = 6, df2 = 1)
+      ))
     } else if (trait == "rrr") {
-      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
-                                            start = list(df1 = 6, df2 = 1)))
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f",
+        start = list(df1 = 6, df2 = 1)
+      ))
     } else if (trait == "q") {
-      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
-                                            start = list(df1 = 1, df2 = 2)))
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f",
+        start = list(df1 = 1, df2 = 2)
+      ))
     } else {
       PEcAn.logger::logger.severe(paste(trait, "not supported!"))
     }
   }
   if ("beta" %in% dists) {
-    a[["beta"]] <- suppressWarnings(MASS::fitdistr(trait.data, "beta", 
-                                             start = list(shape1 = 2, shape2 = 1)))
+    a[["beta"]] <- suppressWarnings(MASS::fitdistr(trait.data, "beta",
+      start = list(shape1 = 2, shape2 = 1)
+    ))
   }
   aicvalues <- lapply(a, AIC)
   result <- t(sapply(dists, function(x) cbind(t(tabnum(a[[x]]$estimate)), signif(aicvalues[[x]]))))
@@ -54,27 +58,29 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
   print(result)
   bestfitdist <- names(which.min(aicvalues))
   parms <- tabnum(a[[bestfitdist]]$estimate)
-  dist  <- ifelse(bestfitdist == "normal", "norm", bestfitdist)
-  return(data.frame(distribution = dist,
-                    a = as.numeric(parms[1]),
-                    b = as.numeric(parms[2]), 
-                    n = ifelse(is.null(n), length(trait.data), n)))
+  dist <- ifelse(bestfitdist == "normal", "norm", bestfitdist)
+  return(data.frame(
+    distribution = dist,
+    a = as.numeric(parms[1]),
+    b = as.numeric(parms[2]),
+    n = ifelse(is.null(n), length(trait.data), n)
+  ))
 } # fit.dist
 
 
 #--------------------------------------------------------------------------------------------------#
 ##' Prior fitting function for optimization
 ##'
-##' This function is used within \code{\link{DEoptim}} to parameterize a distribution to the 
-##' central tendency and confidence interval of a parameter. 
+##' This function is used within \code{\link{DEoptim}} to parameterize a distribution to the
+##' central tendency and confidence interval of a parameter.
 ##' This function is not very robust; currently it needs to be tweaked when distributions
 ##' require starting values (e.g. beta, f)
-##' @title prior.fn 
+##' @title prior.fn
 ##' @param parms target for optimization
-##' @param x vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency 
+##' @param x vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency
 ##' @param alpha quantile at which lcl/ucl are estimated (e.g. for a 95\% CI, alpha = 0.5)
-##' @param distn named distribution, one of 'lnorm', 'gamma', 'weibull', 'beta'; support for other distributions not currently implemented 
-##' @param central.tendency one of 'mode', 'median', and 'mean' 
+##' @param distn named distribution, one of 'lnorm', 'gamma', 'weibull', 'beta'; support for other distributions not currently implemented
+##' @param central.tendency one of 'mode', 'median', and 'mean'
 ##' @param trait name of trait, can be used for exceptions (currently used for trait == 'q')
 ##' @export
 ##' @return parms
@@ -130,7 +136,7 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
     if (is.null(central.tendency)) {
       ct <- x[3]
     } else if (central.tendency == "median") {
-      ct <- parms[2] * log(2) ^ (1 / parms[1])
+      ct <- parms[2] * log(2)^(1 / parms[1])
     } else if (central.tendency == "mean") {
       ct <- parms[2] * gamma(1 + 1 / parms[2])
     } else if (central.tendency == "mode") {
@@ -154,9 +160,9 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
     } else if (central.tendency == "mean") {
       ct <- a / (a + b)
     } else if (central.tendency == "median") {
-      ct <- qbeta(0.5, a, b)  ## median
+      ct <- qbeta(0.5, a, b) ## median
     } else if (central.tendency == "mode") {
-      ct <- ifelse(a > 1 & b > 1, (a - 1) / (a + b - 2), 0)  ## mode
+      ct <- ifelse(a > 1 & b > 1, (a - 1) / (a + b - 2), 0) ## mode
     }
   }
   return(sum(abs(c(lcl, ucl, ct) - x)))
@@ -166,10 +172,10 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
 #--------------------------------------------------------------------------------------------------#
 ##' Take n random samples from prior
 ##'
-##' @title Sample from prior 
-##' @param distn 
-##' @param parama 
-##' @param paramb 
+##' @title Sample from prior
+##' @param distn
+##' @param parama
+##' @param paramb
 ##' @param n number of samples to return
 ##' @return vector with n random samples from prior
 ##' @export
@@ -203,7 +209,7 @@ get.sample <- function(prior, n) {
 #--------------------------------------------------------------------------------------------------#
 ##' Calculates density at n points across the range of a parameter
 ##'
-##' For a distribution and parameters, return the density for values ranging from alpha to 1-alpha 
+##' For a distribution and parameters, return the density for values ranging from alpha to 1-alpha
 ##' @title Calculate densities
 ##' @param distn distribution
 ##' @param parama parameter
@@ -216,23 +222,29 @@ get.sample <- function(prior, n) {
 pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
   alpha <- ifelse(alpha < 0.5, alpha, 1 - alpha)
   n <- ifelse(alpha == 0.5, 1, n)
-  range.x <- do.call(paste("q", distn, sep = ""), 
-                     list(c(alpha, 1 - alpha), parama, paramb))
+  range.x <- do.call(
+    paste("q", distn, sep = ""),
+    list(c(alpha, 1 - alpha), parama, paramb)
+  )
   seq.x <- seq(from = range.x[1], to = range.x[2], length.out = n)
-  dens.df <- data.frame(x = seq.x, 
-                        y = do.call(paste("d", distn, sep = ""), 
-                                    list(seq.x, parama, paramb)))
+  dens.df <- data.frame(
+    x = seq.x,
+    y = do.call(
+      paste("d", distn, sep = ""),
+      list(seq.x, parama, paramb)
+    )
+  )
   return(dens.df)
 } # pr.dens
 
 
-##--------------------------------------------------------------------------------------------------#
-##' Returns a data frame from \link{stats::density} function 
+## --------------------------------------------------------------------------------------------------#
+##' Returns a data frame from \link{stats::density} function
 ##'
 ##' @name create.density.df
 ##' @title Create Density Data Frame from Sample
 ##' @param samps a vector of samples from a distribution
-##' @param zero.bounded 
+##' @param zero.bounded
 ##' @param distribution list with elements distn, parama, paramb,
 ##' e.g. \code{list('norm', 0, 1)}
 ##' @author David LeBauer
@@ -243,7 +255,7 @@ pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
 ##' plot(prior.df)
 ##' samp.df <- create.density.df(samps = rnorm(100))
 ##' lines(samp.df)
-create.density.df <- function(samps = NULL, zero.bounded = FALSE, distribution = NULL, 
+create.density.df <- function(samps = NULL, zero.bounded = FALSE, distribution = NULL,
                               n = 1000, ...) {
   samp.exists <- !is.null(samps)
   dist.exists <- !is.null(distribution)
@@ -261,7 +273,7 @@ create.density.df <- function(samps = NULL, zero.bounded = FALSE, distribution =
     }
     density.df <- with(new.density, data.frame(x = x, y = y))
   }
-  
+
   if (dist.exists) {
     density.df <- do.call(pr.dens, c(distribution[1:3]))
   }

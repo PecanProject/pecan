@@ -15,8 +15,6 @@ create.density.df(
 \arguments{
 \item{samps}{a vector of samples from a distribution}
 
-\item{zero.bounded}{}
-
 \item{distribution}{list with elements distn, parama, paramb,
 e.g. \code{list('norm', 0, 1)}}
 }

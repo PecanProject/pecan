@@ -1,7 +1,7 @@
 #' Spectra S3 class
 #'
 #' @param spectra Vector (`length = length(wavelengths)`) or matrix (`ncol = length(wavelengths)`)
-#' @param wavelengths Wavelengths of spectra. 
+#' @param wavelengths Wavelengths of spectra.
 #' @export
 spectra <- function(spectra, wavelengths = 400:2500) {
   if (!is.matrix(spectra)) {
@@ -26,4 +26,3 @@ is_spectra <- function(spectra) inherits(spectra, "spectra")
 #' @param spectra Object of class `spectra`
 #' @export
 wavelengths <- function(spectra) attr(spectra, "wavelengths")
-

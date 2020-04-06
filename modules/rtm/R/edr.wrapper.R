@@ -56,7 +56,6 @@ EDR <- function(img_path,
                 stderr = TRUE,
                 verbose_error = TRUE,
                 ...) {
-
   ed2in_path <- normalizePath(ed2in_path, mustWork = TRUE)
 
   # Write ED2 config.xml file
@@ -69,17 +68,21 @@ EDR <- function(img_path,
 
   new.config.path <- file.path(output.path, "config.xml")
   PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
-  XML::saveXML(xml, file = new.config.path, indent=TRUE, prefix = PREFIX_XML)
+  XML::saveXML(xml, file = new.config.path, indent = TRUE, prefix = PREFIX_XML)
 
   # Generate input files
   files_list <- file.path(
     output.path,
-    c("lengths.dat",
+    c(
+      "lengths.dat",
       "reflect_par.dat", "reflect_nir.dat",
-      "trans_par.dat", "trans_nir.dat")
+      "trans_par.dat", "trans_nir.dat"
+    )
   )
-  names(files_list) <- c("lengths", "reflect_par", "reflect_nir",
-                         "trans_par", "trans_nir")
+  names(files_list) <- c(
+    "lengths", "reflect_par", "reflect_nir",
+    "trans_par", "trans_nir"
+  )
   file.create(files_list)
 
   write_dat <- function(value, file) {
@@ -117,15 +120,19 @@ EDR <- function(img_path,
 
   # Multi-PFT settings
   if (length(spectra_list) != length(trait.values)) {
-    stop("Spectral data and trait.values do not have same length. ",
-         "Spectral data length: ", length(spectra_list),
-         "trait.values length: ", length(trait.values))
+    stop(
+      "Spectral data and trait.values do not have same length. ",
+      "Spectral data length: ", length(spectra_list),
+      "trait.values length: ", length(trait.values)
+    )
   }
   pft_names <- names(trait.values)
   if (any(!names(spectra_list) %in% pft_names)) {
-    stop("Spectral data and trait.values do not have same PFT names. ",
-         "Spectral data names: ", names(spectra_list),
-         "trait.values names: ", pft_names)
+    stop(
+      "Spectral data and trait.values do not have same PFT names. ",
+      "Spectral data names: ", names(spectra_list),
+      "trait.values names: ", pft_names
+    )
   }
   data(pftmapping, package = "PEcAn.ED2")
   npft <- length(pft_names)
@@ -177,7 +184,7 @@ EDR <- function(img_path,
   # Analyze output
   albedo <- get.EDR.output(output.path)
   # Optionally, clean up all generated files
-  if(clean) {
+  if (clean) {
     delete.files <- file.remove(files_list)
     # NOTE that currently, not all files are deleted (e.g. history file, copied ED2IN)
     if (!delete.files) {
@@ -215,13 +222,15 @@ EDR.preprocess.history <- function(history.path, output.path, datetime, history.
   )
 
   # Extract date and time
-  day          <- strftime(datetime, "%d", tz = "UTC")
-  month        <- strftime(datetime, "%m", tz = "UTC")
-  year         <- strftime(datetime, "%Y", tz = "UTC")
+  day <- strftime(datetime, "%d", tz = "UTC")
+  month <- strftime(datetime, "%m", tz = "UTC")
+  year <- strftime(datetime, "%Y", tz = "UTC")
   time.history <- strftime(datetime, "%H%M%S", tz = "UTC")
   # Locate history file
-  history.search <- sprintf("%1$s-S-%2$s-%3$s-%4$s",
-                            history.prefix, year, month, day)
+  history.search <- sprintf(
+    "%1$s-S-%2$s-%3$s-%4$s",
+    history.prefix, year, month, day
+  )
   history.name <- list.files(history.path, history.search)
   history.full.path <- file.path(history.path, history.name)
   if (length(history.name) > 1) {
@@ -231,7 +240,7 @@ EDR.preprocess.history <- function(history.path, output.path, datetime, history.
     stop("No history files found")
   }
   # Copy and rename history file
-  history.new.name <- gsub('([[:digit:]]{6})', time.history, history.name)
+  history.new.name <- gsub("([[:digit:]]{6})", time.history, history.name)
   history.new.path <- file.path(output.path, history.new.name)
   history.copy <- file.copy(history.full.path, history.new.path, overwrite = FALSE)
   if (!history.copy) {

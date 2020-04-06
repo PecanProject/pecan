@@ -8,10 +8,12 @@ tmpdir <- tempfile()
 setup(dir.create(tmpdir, showWarnings = FALSE))
 teardown(unlink(tmpdir, recursive = TRUE))
 
-sc_result <- upscale_met(outfolder = tmpdir,
-                         input_met = "data/urbana_subdaily_test.nc",
-                         resolution = 6/24,
-                         overwrite = TRUE)
+sc_result <- upscale_met(
+  outfolder = tmpdir,
+  input_met = "data/urbana_subdaily_test.nc",
+  resolution = 6 / 24,
+  overwrite = TRUE
+)
 
 scaled <- ncdf4::nc_open(sc_result$file)
 stime <- scaled$dim$time
@@ -23,16 +25,17 @@ test_that("output is scaled correctly", {
   sc_dt_hours <- udunits2::ud.convert(
     sc_dt,
     stime$units,
-    sub("^.* since", "hours since", stime$units))
+    sub("^.* since", "hours since", stime$units)
+  )
   expect_equal(sc_dt_hours, 6)
 
   # change in file length should be proportional to change in timestep,
-  # but allow truncation of incomplete timesteps at end of output 
-  expect_lt(stime$len*sc_dt - otime$len*orig_dt, sc_dt)
+  # but allow truncation of incomplete timesteps at end of output
+  expect_lt(stime$len * sc_dt - otime$len * orig_dt, sc_dt)
 
   # date ranges should match to within one upscaled timestep.
-  expect_lt(min(stime$vals) - min(otime$vals), sc_dt/orig_dt)
-  expect_lt(max(otime$vals) - max(stime$vals), sc_dt/orig_dt)
+  expect_lt(min(stime$vals) - min(otime$vals), sc_dt / orig_dt)
+  expect_lt(max(otime$vals) - max(stime$vals), sc_dt / orig_dt)
 })
 
 test_that("units are preserved", {

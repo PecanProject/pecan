@@ -33,7 +33,7 @@ matrix of (quasi-)random samples from trait distributions
 Get parameter values used in ensemble
 }
 \details{
-Returns a matrix of randomly or quasi-randomly sampled trait values 
+Returns a matrix of randomly or quasi-randomly sampled trait values
 to be assigned to traits over several model runs.
 given the number of model runs and a list of sample distributions for traits
 The model run is indexed first by model run, then by trait

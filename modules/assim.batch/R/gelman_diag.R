@@ -11,11 +11,10 @@
 #' @export
 gelman_diag_mw <- function(x,
                            width_fraction = 0.1,
-                           width = ceiling(coda::niter(x)*width_fraction),
+                           width = ceiling(coda::niter(x) * width_fraction),
                            njump = 50,
                            include.mpsrf = TRUE,
                            ...) {
-
   stopifnot(inherits(x, c("mcmc", "mcmc.list")))
   stopifnot(width %% 1 == 0)
   stopifnot(njump %% 1 == 0)
@@ -30,9 +29,11 @@ gelman_diag_mw <- function(x,
     stop("End index vector has length 0")
   }
   if (length(a) != length(b)) {
-    stop("Start and end index vector length mismatch.\n",
-         "Start length = ", length(a), "\n",
-         "End length = ", length(b))
+    stop(
+      "Start and end index vector length mismatch.\n",
+      "Start length = ", length(a), "\n",
+      "End length = ", length(b)
+    )
   }
   n_row <- length(a)
   n_col <- coda::nvar(x) + 2
@@ -47,28 +48,29 @@ gelman_diag_mw <- function(x,
   }
   gdmat <- array(numeric(), c(n_row, n_col, 2))
   dimnames(gdmat)[[2]] <- col_names
-  gdmat[,1,] <- a
-  gdmat[,2,] <- b
+  gdmat[, 1, ] <- a
+  gdmat[, 2, ] <- b
   for (i in seq_len(n_row)) {
-    xsub <- stats::window(x, start=a[i], end=b[i])
-    gd_raw <- coda::gelman.diag(xsub, 
-                                autoburnin=FALSE,
-                                multivariate = include.mpsrf)
+    xsub <- stats::window(x, start = a[i], end = b[i])
+    gd_raw <- coda::gelman.diag(xsub,
+      autoburnin = FALSE,
+      multivariate = include.mpsrf
+    )
     gd <- gd_raw$psrf
     if (include.mpsrf) {
       gd <- rbind(gd, "mpsrf" = rep(gd_raw$mpsrf, 2))
     }
     gdmat[i, -(1:2), ] <- gd
   }
-  return (gdmat)
+  return(gdmat)
 } # gelman_diag_mw
 
 #' @title Calculate Gelman Diagnostic using coda::gelman.plot
-#' 
+#'
 #' @author Alexey Shiklomanov
 #' @param x MCMC samples
-#' @param ... additional arguments 
-#' @description Calculates Gelman diagnostic cumulatively. This is a much 
+#' @param ... additional arguments
+#' @description Calculates Gelman diagnostic cumulatively. This is a much
 #' more conservative approach than the moving-window method.
 #' @export
 gelman_diag_gelmanPlot <- function(x, ...) {
@@ -77,9 +79,8 @@ gelman_diag_gelmanPlot <- function(x, ...) {
   grDevices::dev.off()
   GBR <- array(numeric(), dim(GBR_raw$shrink) + c(0, 2, 0))
   dimnames(GBR)[[2]] <- c("Start", "End", dimnames(GBR_raw$shrink)[[2]])
-  GBR[,-(1:2),] <- GBR_raw$shrink
+  GBR[, -(1:2), ] <- GBR_raw$shrink
   GBR[, 2, ] <- GBR_raw$last.iter
   GBR[, 1, 1] <- GBR[, 1, 2] <- c(1, GBR[-nrow(GBR), 2, 1] + 1)
   return(GBR)
 }
-

@@ -26,17 +26,15 @@ gen.subdaily.models(
 
 \item{path.train}{- path to CF/PEcAn style training data where each year is in a separate file.}
 
-\item{yrs.train}{- which years of the training data should be used for to generate the model for 
+\item{yrs.train}{- which years of the training data should be used for to generate the model for
 the subdaily cycle.  If NULL, will default to all years}
 
 \item{direction.filter}{- Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
 (PalEON will go backward, anybody interested in the future will go forward)}
 
-\item{in.prefix}{}
-
 \item{n.beta}{- number of betas to save from linear regression model}
 
-\item{day.window}{- integer specifying number of days around the day being modeled you want to use data from for that 
+\item{day.window}{- integer specifying number of days around the day being modeled you want to use data from for that
 specific hours coefficients. Must be integer because we want statistics from the same time of day
 for each day surrounding the model day}
 

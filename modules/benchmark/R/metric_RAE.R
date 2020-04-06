@@ -2,7 +2,7 @@
 ##' @title Relative Absolute Error
 ##' @export
 ##' @param metric_dat dataframe
-##' 
+##'
 ##' @author Betsy Cowdery
 
 metric_RAE <- function(metric_dat, ...) {
@@ -10,5 +10,5 @@ metric_RAE <- function(metric_dat, ...) {
   metric_dat <- na.omit(metric_dat)
   numer <- mean(abs(metric_dat$obvs - metric_dat$model))
   denom <- mean(abs(metric_dat$obvs - mean(metric_dat$obvs)))
-  return(numer/denom)
+  return(numer / denom)
 } # metric_RAE

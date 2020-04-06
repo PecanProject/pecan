@@ -6,11 +6,6 @@
 \usage{
 get.sensitivity(trait.samples, sa.splinefun)
 }
-\arguments{
-\item{trait.samples}{}
-
-\item{sa.splinefun}{}
-}
 \value{
 numeric estimate of model sensitivity to parameter
 }

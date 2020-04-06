@@ -22,7 +22,7 @@ shp2kml(
 
 \item{kmz}{TRUE/FALSE. Option to write out file as a compressed kml. Requires zip utility}
 
-\item{proj4}{OPTIONAL. Define output proj4 projection string.  If set, input vector will be 
+\item{proj4}{OPTIONAL. Define output proj4 projection string.  If set, input vector will be
 reprojected to desired projection.  Not yet implemented.}
 
 \item{color}{OPTIONAL. Fill color for output kml/kmz file}

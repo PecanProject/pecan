@@ -7,8 +7,6 @@
 p.point.in.prior(point, prior)
 }
 \arguments{
-\item{point}{}
-
 \item{prior}{list of distn, parama, paramb}
 }
 \value{

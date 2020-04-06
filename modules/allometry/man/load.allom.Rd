@@ -22,9 +22,8 @@ loads allom files
 \examples{
 
 \dontrun{
-  object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
-  allom.mcmc = load.allom(object)
-  
+object <- "~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/"
+allom.mcmc <- load.allom(object)
 }
 
 }

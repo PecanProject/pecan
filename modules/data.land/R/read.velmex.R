@@ -1,7 +1,6 @@
 ## read velmex non-tuscon files
 
 read.velmex <- function(folder) {
-  
   filenames <- dir(folder, pattern = ".txt$", full.names = TRUE)
   filedata <- list()
   for (file in filenames) {
@@ -13,6 +12,6 @@ read.velmex <- function(folder) {
     filedata[[basename(file)]] <- c(0, dat[1:(notes[1] - 1), 2])
   }
   # names(filedata) <- basename(filenames)
-  
+
   return(filedata)
 } # read.velmex

@@ -1,5 +1,5 @@
 ##' @name calcSpatialCov
-##' @title calcSpatialCov 
+##' @title calcSpatialCov
 ##' @export
 ##'
 ##' @author Michael Dietze

@@ -15,6 +15,6 @@ EPA_ecoregion_finder(Lat, Lon)
 a dataframe with codes corresponding to level1 and level2 codes as two columns
 }
 \description{
-This function is designed to find the level1 and level2 code ecoregions for a given lat and long. 
+This function is designed to find the level1 and level2 code ecoregions for a given lat and long.
 You can learn more about ecoregions here: \link{https://www.epa.gov/eco-research/ecoregions}.
 }

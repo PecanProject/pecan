@@ -1,5 +1,5 @@
 #' Print method for spectra S3 class
-#' 
+#'
 #' @inheritParams wavelengths
 #' @param n Max number of rows to print (show first `n/2` and last `n/2` rows)
 #' @param ... Additional arguments to `print`

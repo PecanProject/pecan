@@ -19,7 +19,7 @@ flux.uncertainty(
 
 \item{QC}{= quality control flag time series (0 = best)}
 
-\item{flags}{= additional flags on flux filtering of PAIRS (length = 1/2 that of the 
+\item{flags}{= additional flags on flux filtering of PAIRS (length = 1/2 that of the
 time series, TRUE = use).}
 
 \item{bin.num}{= number of bins (default = 10)}

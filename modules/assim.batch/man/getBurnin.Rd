@@ -35,10 +35,10 @@ Automatically detect burnin based on one of several methods.
 See "gelman_diag_mw" and "gelman_diag_gelmanPlot"
 }
 \examples{
-     z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
-     z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
-     z <- coda::mcmc.list(z1, z2)
-     burnin <- getBurnin(z, threshold = 1.05)
+z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
+z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
+z <- coda::mcmc.list(z1, z2)
+burnin <- getBurnin(z, threshold = 1.05)
 }
 \author{
 Alexey Shiklomanov, Michael Dietze

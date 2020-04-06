@@ -4,7 +4,7 @@ qcsolar <- function(x) ifelse(x < 0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]),
 qcwind <- function(x) ifelse(abs(x) > 102, mean(abs(x[x < 102])), x)
 qcprecip <- function(x) ifelse(x > 0.005 | x < 0, mean(x[x < 0.005 & x > 0]), x)
 qcrh <- function(x) {
-  return(ifelse(x > 100 | x < 0, mean(x[x < 100 & x > 0]), x))  # using logical range (0-100) rather than 'valid range (-25-125)'
+  return(ifelse(x > 100 | x < 0, mean(x[x < 100 & x > 0]), x)) # using logical range (0-100) rather than 'valid range (-25-125)'
 } # qcrh
 
 qcshum <- function(x) {
@@ -69,7 +69,7 @@ get.vpd <- function(rh, temp) {
   ## calculate saturation vapor pressure
   es <- get.es(temp)
   ## calculate vapor pressure deficit
-  return(((100 - rh)/100) * es)
+  return(((100 - rh) / 100) * es)
 } # get.vpd
 
 ##' Calculate saturation vapor pressure
@@ -83,16 +83,16 @@ get.vpd <- function(rh, temp) {
 ##' temp <- -30:30
 ##' plot(temp, get.es(temp))
 get.es <- function(temp) {
-  return(6.11 * exp((2500000/461) * (1/273 - 1/(273 + temp))))
+  return(6.11 * exp((2500000 / 461) * (1 / 273 - 1 / (273 + temp))))
 } # get.es
 
 ## TODO: merge SatVapPress with get.es; add option to choose method
 SatVapPres <- function(T) {
   # /estimates saturation vapor pressure (kPa) Goff-Gratch 1946 /input: T = absolute temperature
-  T_st <- 373.15  ##steam temperature (K)
-  e_st <- 1013.25  ##/saturation vapor pressure at steam temp (hPa)
-  return(0.1 * exp(-7.90298 * (T_st/T - 1) + 5.02808 * log(T_st/T) - 1.3816e-07 * (10^(11.344 * (1 - T/T_st)) -
-    1) + 0.0081328 * (10^(-3.49149 * (T_st/T - 1)) - 1) + log(e_st)))
+  T_st <- 373.15 ## steam temperature (K)
+  e_st <- 1013.25 ## /saturation vapor pressure at steam temp (hPa)
+  return(0.1 * exp(-7.90298 * (T_st / T - 1) + 5.02808 * log(T_st / T) - 1.3816e-07 * (10^(11.344 * (1 - T / T_st)) -
+    1) + 0.0081328 * (10^(-3.49149 * (T_st / T - 1)) - 1) + log(e_st)))
 } # SatVapPres
 
 
@@ -103,9 +103,9 @@ SatVapPres <- function(T) {
 ##' A Simple Conversion and Applications. BAMS
 ##' https://doi.org/10.1175/BAMS-86-2-225
 ##' R = 461.5 K-1 kg-1 gas constant H2O
-##' L enthalpy of vaporization 
+##' L enthalpy of vaporization
 ##' linear dependence on T (p 226, following eq 9)
-##' 
+##'
 ##' @title get RH
 ##' @param T air temperature, Kelvin
 ##' @param Td dewpoint, Kelvin
@@ -113,11 +113,11 @@ SatVapPres <- function(T) {
 ##' @export
 ##' @author David LeBauer
 get.rh <- function(T, Td) {
-  if(Td >= T){
+  if (Td >= T) {
     rh <- 100
   } else {
     Rw <- 461.5 # gas constant for water vapor, J K-1 kg-1
-    L <- 2.501e6 + (T-273.15) * (-2430) 
+    L <- 2.501e6 + (T - 273.15) * (-2430)
     arg <- -L / (Rw * T * Td) * (T - Td)
     rh <- 100 * exp(arg)
   }
@@ -157,7 +157,7 @@ wide2long <- function(data.wide, lat, lon, var) {
 ##' @return PPFD (umol / m2 / s)
 ##' @author David LeBauer
 par2ppfd <- function(watts) {
-  ppfd <- watts/(2.35 * 10^5)
+  ppfd <- watts / (2.35 * 10^5)
   return(udunits2::ud.convert(ppfd, "mol ", "umol"))
 } # par2ppfd
 
@@ -222,7 +222,7 @@ solarMJ2ppfd <- function(solarMJ) {
 ##' @export
 ##' @author Mike Dietze
 exner <- function(pres) {
-  return(1004 * pres ^ (287 / 1004))
+  return(1004 * pres^(287 / 1004))
 } # exner
 
 ##' estimate air density from pressure, temperature, and humidity
@@ -245,5 +245,5 @@ AirDens <- function(pres, T, rv) {
 ##' @return lV   latent heat of vaporization (J kg-1)
 get.lv <- function(airtemp = 268.6465) {
   airtemp_C <- udunits2::ud.convert(airtemp, "K", "degC")
-  return((94.21 * (365 - airtemp_C) ^ 0.31249) * 4.183 * 1000)
+  return((94.21 * (365 - airtemp_C)^0.31249) * 4.183 * 1000)
 } # get.lv

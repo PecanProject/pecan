@@ -10,11 +10,13 @@ test_that("download works and returns a valid CF file", {
 
   PEcAn.logger::logger.setLevel("WARN")
 
-  result <- download.CRUNCEP(outfolder = tmpdir,
-                             start_date = "2000-01-01",
-                             end_date = "2000-12-31",
-                             lat.in = 40,
-                             lon.in = -88)
+  result <- download.CRUNCEP(
+    outfolder = tmpdir,
+    start_date = "2000-01-01",
+    end_date = "2000-12-31",
+    lat.in = 40,
+    lon.in = -88
+  )
   cf <- ncdf4::nc_open(result$file)
   cf_units <- cf$dim$time$units
   ncdf4::nc_close(cf)
@@ -29,6 +31,8 @@ test_that("download works and returns a valid CF file", {
       end_date = "2000-12-31",
       lat.in = 40,
       lon.in = -88,
-      overwrite = FALSE),
-    "already exists. Skipping")
+      overwrite = FALSE
+    ),
+    "already exists. Skipping"
+  )
 })

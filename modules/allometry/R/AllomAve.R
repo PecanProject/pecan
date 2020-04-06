@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -29,36 +29,35 @@
 #' @export
 #' @description allometery wrapper function that handles loading and subsetting the data,
 #'  fitting the Bayesian models, and generating diagnostic figures. Set up to loop over
-#'   multiple PFTs and components. 
+#'   multiple PFTs and components.
 #'   Writes raw MCMC and PDF of diagnositcs to file and returns table of summary stats.
-#'   
-#' @details There are two usages of this function. 
+#'
+#' @details There are two usages of this function.
 #' When running 'online' (connected to the PEcAn database), pass the database connection, con, and the pfts subsection of the PEcAn settings.
 #' When running 'stand alone' pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
-#' 
-#' @examples 
-#' 
-#' if(FALSE){
-#'   pfts = list(FAGR = data.frame(spcd=531,acronym='FAGR'))
-#'   allom.stats = AllomAve(pfts,ngibbs=500)
-#' 
+#'
+#' @examples
+#'
+#' if (FALSE) {
+#'   pfts <- list(FAGR = data.frame(spcd = 531, acronym = "FAGR"))
+#'   allom.stats <- AllomAve(pfts, ngibbs = 500)
+#'
 #'   ## example of a PFT with multiple species (late hardwood)
 #'   ## note that if you're just using Jenkins the acronym column is optional
-#'   pfts = list(LH = data.frame(spcd = c(531,318),acronym=c('FAGR','ACSA3')))
+#'   pfts <- list(LH = data.frame(spcd = c(531, 318), acronym = c("FAGR", "ACSA3")))
 #' }
-#' 
 #' @author Michael Dietze
-#' 
+#'
 #' @export
-#' 
-AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NULL, 
-                     parm = system.file("data/Table3_GTR-NE-319.v2.csv", package = "PEcAn.allometry"), 
+#'
+AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NULL,
+                     parm = system.file("data/Table3_GTR-NE-319.v2.csv", package = "PEcAn.allometry"),
                      ngibbs = 5000, nchain = 3, dmin = 0.1, dmax = 500) {
   ## common components:
   ## 6=stem (Bs), 18 = leaf (Bl)
-  ## 40 = height (Ht)		
-  ## 41 = rooting depth (Rd)		
-  ## 42 = Rooting volume (Vol)		
+  ## 40 = height (Ht)
+  ## 41 = rooting depth (Rd)
+  ## 42 = Rooting volume (Vol)
   ## 43 = Canopy Area
 
   nested.range <- function(obs) {
@@ -70,25 +69,25 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
     }
     return(t(w))
   } # nested.range
-  
+
   if (is.null(outdir)) {
     outdir <- getwd()
   }
   print(c("writing output to", outdir))
-  
+
   sel <- floor(seq(ngibbs * 0.25, ngibbs, length = min(ngibbs * 0.75, 5000)))
-  
+
   allom.stats <- list()
-  
-  ########## BAYESIAN VERSION ############### 
+
+  ########## BAYESIAN VERSION ###############
   for (ipft in seq_along(pfts)) { # loop over PFTs
     pft <- pfts[[ipft]]
     pft.name <- names(pfts)[ipft]
     allom.stats[[pft.name]] <- list()
-    
+
     for (component in components) {
       print(c(pft, component))
-      
+
       ## load data
       if (!is.null(con)) {
         ### If running within PEcAn, grab the data from the database
@@ -97,12 +96,12 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
       } else {
         allom <- read.allom.data(pft, component, field, parm)
       }
-      
+
       if (is.null(allom) | (is.null(allom$parm) & is.null(allom$field))) {
         next
       }
-      
-      mc  <- list()
+
+      mc <- list()
       obs <- list()
       for (i in seq_len(nchain)) {
         if (component == 40) {
@@ -114,56 +113,59 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
         obs[[i]] <- allom.out[["obs"]]
       }
       mc <- as.mcmc.list(mc)
-      
+
       ## Model Selection
-      D    <- as.array(mc)[, "D", ]
-      pD   <- mean(D) - min(D)
-      DIC  <- mean(D) + pD
-      
-      Dg   <- as.array(mc)[, "Dg", ]
-      pDg  <- mean(Dg) - min(Dg)
+      D <- as.array(mc)[, "D", ]
+      pD <- mean(D) - min(D)
+      DIC <- mean(D) + pD
+
+      Dg <- as.array(mc)[, "Dg", ]
+      pDg <- mean(Dg) - min(Dg)
       DICg <- mean(Dg) + pDg
-      
+
       ## Save MCMC objects (Pass to MCMC diagnostics module)
       outfile <- file.path(outdir, paste("Allom", pft.name, component, "Rdata", sep = "."))
       print(c("saving MCMC output to", outfile))
       save(mc, DIC, DICg, pD, pDg, obs, allom, file = outfile)
-      
+
       allom.stats[[pft.name]][[component]] <- summary(mc)
       allom.stats[[pft.name]][[component]]$cov <- cov(as.matrix(mc))
-      
+
       ## Save Posterior information (Pass to update.posterior module)
       if (FALSE) {
-        
+
       }
-      
+
       ## Analysis/visualization
       pdffile <- file.path(outdir, paste("Allom", pft.name, component, "MCMC", "pdf", sep = "."))
       print(c("saving diagnostic graphs to", pdffile))
       pdf(pdffile)
-      
-      ## specifying which rows were used in the fit & should be graphed; 
+
+      ## specifying which rows were used in the fit & should be graphed;
       ## note, this requires removing equations whose n is 0
       n <- nu(allom[["parm"]]$n)
       rng.raw <- cbind(nu(allom$parm$Xmin), nu(allom$parm$Xmax))
       n.mod <- n
-      
+
       for (i in seq_along(n)) {
         tmp.seq <- seq(rng.raw[i, 1], rng.raw[i, 2], length.out = 100)
-        n.mod[i] <- round(n[i] * length(tmp.seq[tmp.seq > dmin & tmp.seq < dmax]) / length(tmp.seq), 
-                          digits = 0)
+        n.mod[i] <- round(n[i] * length(tmp.seq[tmp.seq > dmin & tmp.seq < dmax]) / length(tmp.seq),
+          digits = 0
+        )
       }
-      
+
       ntally <- which(nu(allom[["parm"]][, "Xmax"]) >= dmin &
-                        nu(allom[["parm"]][, "Xmin"]) <= dmax)
+        nu(allom[["parm"]][, "Xmin"]) <= dmax)
       if (is.null(ntally)) {
         ntally <- 0
       }
-      
-      ### scatter plot 
+
+      ### scatter plot
       rng <- nested.range(obs)
-      plot(1, 1, type = "n", log = "xy", xlim = rng[, "x"], # xlim=c(0.1,1000),ylim=c(0.0001,100000),
-           ylim = rng[, "y"], xlab = "DBH (cm)", ylab = "Biomass (kg)")
+      plot(1, 1,
+        type = "n", log = "xy", xlim = rng[, "x"], # xlim=c(0.1,1000),ylim=c(0.0001,100000),
+        ylim = rng[, "y"], xlab = "DBH (cm)", ylab = "Biomass (kg)"
+      )
       # pseudodata
       for (i in seq_len(nchain)) {
         for (j in seq_along(obs[[i]])) {
@@ -171,48 +173,48 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
         }
       }
       # naive prediction
-      dseq <- seq(dmin, dmax, length = 100)  ## diameter sequence
+      dseq <- seq(dmin, dmax, length = 100) ## diameter sequence
       beta <- allom.stats[[pft.name]][[component]]$statistics[, "Mean"]
-      y.0  <- exp(beta["mu0"] + beta["mu1"] * log(dseq))
-      y.g  <- exp(beta["Bg0"] + beta["Bg1"] * log(dseq))
-      y.o  <- predict.allom.orig(dseq, allom$parm[ntally, ])
+      y.0 <- exp(beta["mu0"] + beta["mu1"] * log(dseq))
+      y.g <- exp(beta["Bg0"] + beta["Bg1"] * log(dseq))
+      y.o <- predict.allom.orig(dseq, allom$parm[ntally, ])
       lines(dseq, y.0, lwd = 2, col = 1)
       lines(dseq, y.g, lwd = 2, col = 2)
       for (i in seq_len(nrow(y.o))) {
         lines(dseq, y.o[i, ], col = i + 2)
       }
-      legend("topleft", legend = c("Hier", "global", paste("allom", ntally)), 
-             lwd = c(2, 2, rep(1, nrow(y.o))), col = 1:(2 + nrow(y.o)))
-      
+      legend("topleft",
+        legend = c("Hier", "global", paste("allom", ntally)),
+        lwd = c(2, 2, rep(1, nrow(y.o))), col = 1:(2 + nrow(y.o))
+      )
+
       ### MCMC diagnostics
       plot(mc)
       dev.off()
-      
+
       ## DIC statistics
       print(c("DIC", DIC, "pD", pD))
       print(c("DICg", DICg, "pDg", pDg))
-      
-    }  ## end component loop
-  }  ## end PFT loop
+    } ## end component loop
+  } ## end PFT loop
   return(allom.stats)
 } # AllomAve
 
 predict.allom.orig <- function(x, parm) {
-  
   out <- matrix(NA, nrow(parm), length(x))
-  
-  eqn   <- nu(parm$eqn)
-  a     <- nu(parm$a)
-  b     <- nu(parm$b)
-  c     <- nu(parm$c)
-  d     <- nu(parm$d)
-  e     <- nu(parm$e)
-  Xcor  <- nu(parm$Xcor)
-  Ycor  <- nu(parm$Ycor)
+
+  eqn <- nu(parm$eqn)
+  a <- nu(parm$a)
+  b <- nu(parm$b)
+  c <- nu(parm$c)
+  d <- nu(parm$d)
+  e <- nu(parm$e)
+  Xcor <- nu(parm$Xcor)
+  Ycor <- nu(parm$Ycor)
   Xtype <- as.character(parm$Xtype)
-  
+
   for (i in seq_len(nrow(parm))) {
-    
+
     # X-unit conversion
     if (!is.na(Xcor[i])) {
       x <- Xcor[i] * x
@@ -221,10 +223,10 @@ predict.allom.orig <- function(x, parm) {
         ## convert to sq inches
         x <- x * x / (2.54 * 2.54)
       } else {
-        x <- x * x * pi / 4  ## convert to cm Basal Area
+        x <- x * x * pi / 4 ## convert to cm Basal Area
       }
     }
-    
+
     if (eqn[i] == 1) {
       if (b[i] == 0 & c[i] > 0) {
         b[i] <- 1
@@ -232,7 +234,7 @@ predict.allom.orig <- function(x, parm) {
       if (c[i] == 0 & b[i] > 0) {
         c[i] <- 1
       }
-      y <- 10 ^ (a[i] + b[i] * c[i] * log10(x))
+      y <- 10^(a[i] + b[i] * c[i] * log10(x))
     } else if (eqn[i] == 2) {
       if (is.na(d[i]) | d[i] == 0) {
         d[i] <- 1
@@ -246,25 +248,25 @@ predict.allom.orig <- function(x, parm) {
       }
       y <- a[i] + b[i] * x + c[i] * x^d[i]
     } else if (eqn[i] == 5) {
-      y <- a[i] + b[i] * x + c[i] * x^2 + d[i] * x ^ 3
+      y <- a[i] + b[i] * x + c[i] * x^2 + d[i] * x^3
     } else if (eqn[i] == 6) {
       y <- a[i] * (exp(b[i] + (c[i] * log(x)) + d[i] * x))
     } else if (eqn[i] == 7) {
-      y <- a[i] + ((b[i] * (x ^ c[i]))/((x ^ c[i]) + d[i]))
+      y <- a[i] + ((b[i] * (x^c[i])) / ((x^c[i]) + d[i]))
     } else if (eqn[i] == 8) {
-      y <- 10 ^ (a[i] + b[i] * log10(x))
+      y <- 10^(a[i] + b[i] * log10(x))
     } else if (eqn[i] == 9) {
       y <- exp(log(a[i]) + b[i] * log(x))
     } else if (eqn[i] == 10) {
       y <- exp(a[i] + b[i] * log(x))
     } else if (eqn[i] == 11) {
       if (is.na(b[i])) {
-        b[i] <- 0 
+        b[i] <- 0
       }
-      y <- a[i] * x ^ (b[i])
+      y <- a[i] * x^(b[i])
     }
     out[i, ] <- y * Ycor[i]
   }
-  
+
   return(out)
 } # predict.allom.orig

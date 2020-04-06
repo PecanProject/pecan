@@ -8,22 +8,21 @@
 #'   modified by replacing outlier points with the column median
 #' @export
 #'
-outlier.detector.boxplot<-function(X) {
-  X <- X  %>% 
-    map(function(X.tmp){
-      #X.tmp is all the state variables for each element of the list (site)
+outlier.detector.boxplot <- function(X) {
+  X <- X %>%
+    map(function(X.tmp) {
+      # X.tmp is all the state variables for each element of the list (site)
       X.tmp %>%
-        map_dfc(function(col.tmp){
-          #naive way of finding the outlier - 3 * IQR
+        map_dfc(function(col.tmp) {
+          # naive way of finding the outlier - 3 * IQR
           OutVals <- boxplot(col.tmp, plot = FALSE)$out
           # if I make this NA then it would stay NA for ever.
-          #bc adjustment uses X to and comes up with new analysis
+          # bc adjustment uses X to and comes up with new analysis
           col.tmp[which((col.tmp %in% OutVals))] <- median(col.tmp, na.rm = TRUE)
           col.tmp
         })
-      
     })
-  
+
   return(X)
 }
 
@@ -56,8 +55,7 @@ SDA_control <-
            debug = FALSE,
            pause = FALSE,
            Profiling = FALSE,
-           OutlierDetection=FALSE) {
-    
+           OutlierDetection = FALSE) {
     return(
       list(
         trace = trace,
@@ -73,6 +71,3 @@ SDA_control <-
       )
     )
   }
-
-
-

@@ -20,10 +20,6 @@ merge_met_variable(
 
 \item{in.prefix}{prefix of original data}
 
-\item{start_date}{}
-
-\item{end_date}{}
-
 \item{merge.file}{path of file to be merged in}
 
 \item{overwrite}{logical: replace output file if it already exists?}
@@ -40,23 +36,23 @@ Currently nothing. TODO: Return a data frame summarizing the merged files.
 Merge a new met variable from an external file (e.g. CO2) into existing met files
 }
 \details{
-Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
-Currently unit and name checking only implemented for CO2. 
+Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record.
+Currently unit and name checking only implemented for CO2.
 Currently does not yet support merge data that has lat/lon
 New variable only has time dimension and thus MIGHT break downstream code....
 }
 \examples{
 \dontrun{
-in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
-in.prefix  <- ""
-outfolder  <- "~/paleon/metTest/"
+in.path <- "~/paleon/PalEONregional_CF_site_1-24047/"
+in.prefix <- ""
+outfolder <- "~/paleon/metTest/"
 merge.file <- "~/paleon/paleon_monthly_co2.nc"
 start_date <- "0850-01-01"
-end_date   <- "2010-12-31"
-overwrite  <- FALSE
-verbose    <- TRUE
+end_date <- "2010-12-31"
+overwrite <- FALSE
+verbose <- TRUE
 
-merge_met_variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
-PEcAn.DALEC::met2model.DALEC(in.path,in.prefix,outfolder,start_date,end_date)
+merge_met_variable(in.path, in.prefix, start_date, end_date, merge.file, overwrite, verbose)
+PEcAn.DALEC::met2model.DALEC(in.path, in.prefix, outfolder, start_date, end_date)
 }
 }

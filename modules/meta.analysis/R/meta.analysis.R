@@ -48,12 +48,12 @@
 ##'   values = list(pft))[[1]]
 ##'   traits <- c("SLA", "Vcmax")
 ##'   trait_string <- paste(shQuote(traits), collapse = ",")
-##'   
+##'
 ##'   # Load traits and priors from BETY
 ##'   species <- PEcAn.DB::query.pft_species(pft, con = con)
 ##'   trait.data <- PEcAn.DB::query.traits(species[["id"]], c("SLA", "Vcmax"), con = con)
 ##'   prior.distns <- PEcAn.DB::query.priors(pft_id, trait_string, con = con)
-##'   
+##'
 ##'   # Pre-process data
 ##'   jagged.data <- lapply(trait.data, PEcAn.MA::jagify)
 ##'   taupriors <- list(tauA = 0.01,
@@ -69,31 +69,31 @@ pecan.ma <- function(trait.data, prior.distns,
                      logfile = file.path(outdir, "meta-analysis.log)"),
                      verbose = TRUE,
                      madata_file = file.path(outdir, "madata.Rdata")) {
-
   if (!is.null(madata_file)) {
     madata <- list()
   }
   ## Meta-analysis for each trait
-  mcmc.object <- list()  #  initialize output list of mcmc objects for each trait
+  mcmc.object <- list() #  initialize output list of mcmc objects for each trait
   mcmc.mat <- list()
 
   ## Set inputs for jags.model()
   j.chains <- 4
-  j.iter   <- as.numeric(j.iter)  # Added by SPS 08.27.2013. issue #1803
+  j.iter <- as.numeric(j.iter) # Added by SPS 08.27.2013. issue #1803
   ## log the mcmc chain parameters
   if (!is.null(logfile)) {
     sink(file = file.path(outdir, "meta-analysis.log"), split = TRUE)
     on.exit(sink(NULL), add = TRUE)
   }
   if (verbose) {
-    cat(paste0("Each meta-analysis will be run with: \n", j.iter,
-               " total iterations,\n", j.chains,
-               " chains, \n", "a burnin of ", j.iter / 2, " samples,\n",
-               ", \nthus the total number of samples will be ", j.chains * (j.iter / 2), "\n"))
+    cat(paste0(
+      "Each meta-analysis will be run with: \n", j.iter,
+      " total iterations,\n", j.chains,
+      " chains, \n", "a burnin of ", j.iter / 2, " samples,\n",
+      ", \nthus the total number of samples will be ", j.chains * (j.iter / 2), "\n"
+    ))
   }
 
   for (trait.name in names(trait.data)) {
-
     prior <- prior.distns[trait.name, c("distn", "parama", "paramb", "n")]
 
     if (verbose) {
@@ -103,8 +103,8 @@ pecan.ma <- function(trait.data, prior.distns,
       writeLines(paste("------------------------------------------------"))
     }
     data <- trait.data[[trait.name]]
-    data <- data[, which(!colnames(data) %in% c("cite", "trait_id", "se"))]  ## remove citation and other unneeded columns
-    data <- data[order(data[["site"]], data[["trt"]]), ]  # not sure why, but required for JAGS model
+    data <- data[, which(!colnames(data) %in% c("cite", "trait_id", "se"))] ## remove citation and other unneeded columns
+    data <- data[order(data[["site"]], data[["trt"]]), ] # not sure why, but required for JAGS model
 
     ## check for excess missing data
 
@@ -113,28 +113,32 @@ pecan.ma <- function(trait.data, prior.distns,
         writeLines("NO ERROR STATS PROVIDED, DROPPING RANDOM EFFECTS")
       }
       data$site <- rep(1, nrow(data))
-      data$trt  <- rep(0, nrow(data))
+      data$trt <- rep(0, nrow(data))
     }
 
     if (!random) {
       data[["site"]] <- rep(1, nrow(data))
-      data[["trt"]]  <- rep(0, nrow(data))
+      data[["trt"]] <- rep(0, nrow(data))
     }
 
     # print out some data summaries to check
     if (verbose) {
-      writeLines(paste0("prior for ", trait.name, "
+      writeLines(paste0(
+        "prior for ", trait.name, "
                      (using R parameterization):\n", prior$distn,
-                     "(", prior$parama, ", ", prior$paramb, ")"))
-      writeLines(paste("data max:", max(data$Y, na.rm = TRUE),
-                       "\ndata min:", min(data$Y, na.rm = TRUE),
-                       "\nmean:", signif(mean(data$Y, na.rm = TRUE), 3),
-                       "\nn:", length(data$Y)))
+        "(", prior$parama, ", ", prior$paramb, ")"
+      ))
+      writeLines(paste(
+        "data max:", max(data$Y, na.rm = TRUE),
+        "\ndata min:", min(data$Y, na.rm = TRUE),
+        "\nmean:", signif(mean(data$Y, na.rm = TRUE), 3),
+        "\nn:", length(data$Y)
+      ))
       writeLines("stem plot of data points")
       writeLines(paste(stem(data$Y)))
       if (any(!is.na(data$obs.prec)) && all(!is.infinite(data$obs.prec))) {
         writeLines("stem plot of obs.prec:")
-        writeLines(paste(stem(data[["obs.prec"]] ^ 2)))
+        writeLines(paste(stem(data[["obs.prec"]]^2)))
       } else {
         writeLines(paste("no estimates of SD for", trait.name))
       }
@@ -143,7 +147,7 @@ pecan.ma <- function(trait.data, prior.distns,
     if (!is.null(madata)) {
       madata[[trait.name]] <- data
     }
-    jag.model.file <- file.path(outdir, paste0(trait.name, ".model.bug"))  # file to store model
+    jag.model.file <- file.path(outdir, paste0(trait.name, ".model.bug")) # file to store model
 
     ## run the meta-analysis in JAGS
 
@@ -161,7 +165,7 @@ pecan.ma <- function(trait.data, prior.distns,
     if (verbose) {
       print(summary(jags.out))
     }
-    
+
     jags.out.trunc <- window(jags.out, start = j.iter / 2)
 
     mcmc.object[[trait.name]] <- jags.out.trunc

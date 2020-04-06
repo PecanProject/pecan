@@ -10,8 +10,6 @@ format_wide2long(out, format, vars_used, time.row)
 \item{out}{wide format data}
 
 \item{format}{as returned by query.format.vars}
-
-\item{vars_used}{}
 }
 \value{
 list of updated values

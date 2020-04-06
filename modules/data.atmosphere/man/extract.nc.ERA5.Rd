@@ -50,9 +50,9 @@ For the list of variables check out the documentation at \link{https://confluenc
 }
 \examples{
 \dontrun{
-point.data <- ERA5_extract(sslat=40, slon=-120, years=c(1990:1995), vars=NULL)
+point.data <- ERA5_extract(sslat = 40, slon = -120, years = c(1990:1995), vars = NULL)
 
- purrr::map(~xts::apply.daily(.x, mean))
-
+#  point.data \%>\%
+purrr::map(~ xts::apply.daily(.x, mean))
 }
 }

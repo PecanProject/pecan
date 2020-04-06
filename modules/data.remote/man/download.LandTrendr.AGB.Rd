@@ -22,7 +22,7 @@ download.LandTrendr.AGB(
 
 \item{product_dates}{What data product dates to download}
 
-\item{product_version}{Optional. LandTrend AGB is provided with two versions, 
+\item{product_version}{Optional. LandTrend AGB is provided with two versions,
 v0 and v1 (latest version)}
 
 \item{con}{Optional database connection. If specified then the code will check to see}
@@ -46,12 +46,12 @@ product_dates <- c(1990, 1991, 1995)  # using discontinous, or specific years
 product_dates2 <- seq(1992, 1995, 1)  # using a date sequence for selection of years
 product_version = "v1"
 
-results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
-           product_dates = product_dates, 
+results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir,
+           product_dates = product_dates,
            product_version = product_version)
 
-results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
-           product_dates = product_dates2, 
+results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir,
+           product_dates = product_dates2,
            product_version = product_version)
 }
 

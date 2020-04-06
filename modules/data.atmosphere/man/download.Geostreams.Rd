@@ -57,10 +57,12 @@ If using `~/.pecan.clowder.xml`, it must be a valid PEcAn-formatted XML settings
 }
 \examples{
 \dontrun{
- download.Geostreams(outfolder = "~/output/dbfiles/Clowder_EF",
-                     sitename = "UIUC Energy Farm - CEN",
-                     start_date = "2016-01-01", end_date="2016-12-31",
-                     key="verysecret")
+download.Geostreams(
+  outfolder = "~/output/dbfiles/Clowder_EF",
+  sitename = "UIUC Energy Farm - CEN",
+  start_date = "2016-01-01", end_date = "2016-12-31",
+  key = "verysecret"
+)
 }
 }
 \author{

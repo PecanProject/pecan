@@ -12,7 +12,7 @@ plot_variance_decomposition(
 \arguments{
 \item{fontsize}{list specifying the font size of the titles and axes of the graph}
 
-\item{...}{Output from any number of sensitivity analyses. Output must be of the form 
+\item{...}{Output from any number of sensitivity analyses. Output must be of the form
 given by sensitivity.results$variance.decomposition.output in model output}
 
 \item{all.plot.inputs}{Optional argument allowing output from sensitivity analyses to be specified in a list}

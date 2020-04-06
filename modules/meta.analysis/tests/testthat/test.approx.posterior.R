@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -12,9 +12,13 @@ load("data/trait.mcmc.RData")
 load("data/prior.distns.RData")
 
 test_that("test data are as expected", {
-  expect_equal(names(trait.mcmc),
-               c("quantum_efficiency", "leaf_respiration_rate_m2",
-                 "stomatal_slope.BB", "SLA", "Vcmax"))
+  expect_equal(
+    names(trait.mcmc),
+    c(
+      "quantum_efficiency", "leaf_respiration_rate_m2",
+      "stomatal_slope.BB", "SLA", "Vcmax"
+    )
+  )
   expect_is(trait.mcmc, "list")
   expect_is(trait.mcmc[[1]], "mcmc.list")
   expect_is(prior.distns, "data.frame")
