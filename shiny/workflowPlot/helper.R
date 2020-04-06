@@ -1,25 +1,25 @@
 # Helper function which checks and downloads required packages
-checkAndDownload<-function(packageNames) {
-  for(packageName in packageNames) {
-    if(!isInstalled(packageName)) {
-      install.packages(packageName,repos="http://lib.stat.cmu.edu/R/CRAN") 
-    } 
-    library(packageName,character.only=TRUE,quietly=TRUE,verbose=FALSE)
+checkAndDownload <- function(packageNames) {
+  for (packageName in packageNames) {
+    if (!isInstalled(packageName)) {
+      install.packages(packageName, repos = "http://lib.stat.cmu.edu/R/CRAN")
+    }
+    library(packageName, character.only = TRUE, quietly = TRUE, verbose = FALSE)
   }
 }
-isInstalled <- function(mypkg){
-  is.element(mypkg, installed.packages()[,1])
+isInstalled <- function(mypkg) {
+  is.element(mypkg, installed.packages()[, 1])
 }
 # checkAndDownload(c('plotly','scales','dplyr'))
 
-# Stashing Code for file upload to shiny app 
+# Stashing Code for file upload to shiny app
 # Based on https://shiny.rstudio.com/gallery/file-upload.html
 
-# ui.R 
+# ui.R
 # tags$hr(),
 # fileInput('file1', 'Choose CSV File to upload data',
-#           accept=c('text/csv', 
-#                    'text/comma-separated-values,text/plain', 
+#           accept=c('text/csv',
+#                    'text/comma-separated-values,text/plain',
 #                    '.csv')),
 # checkboxInput('header', 'Header', TRUE),
 # radioButtons('sep', 'Separator',
@@ -36,7 +36,7 @@ isInstalled <- function(mypkg){
 # textInput("formatID", "Format ID for file (Default CSV)", "5000000002"),
 # actionButton("load_data", "Load External Data")
 
-# server.R 
+# server.R
 # loadExternalData <-eventReactive(input$load_data,{
 #   inFile <- input$file1
 #   if (is.null(inFile))
@@ -45,7 +45,7 @@ isInstalled <- function(mypkg){
 #  #   # paste0(nrow(externalData))
 #  #   paste0(inFile$datapath)
 #  # })
-#   externalData <- read.csv(inFile$datapath, header=input$header, sep=input$sep, 
+#   externalData <- read.csv(inFile$datapath, header=input$header, sep=input$sep,
 #                            quote=input$quote)
 #   return(externalData)
-# })  
+# })

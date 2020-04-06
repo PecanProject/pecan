@@ -6,18 +6,24 @@ tabPanel(
     wellPanel(
       selectInput("var_name_modeldata", "Variable Name", ""),
       textInput("units_modeldata", "Units",
-                placeholder = "Type units in udunits2 compatible format"),
+        placeholder = "Type units in udunits2 compatible format"
+      ),
       verbatimTextOutput("unit_text2"),
       dateRangeInput("date_range2", "Date Range", separator = " - "),
       fluidRow(
-        column(6, 
-               selectInput("agg2", "Aggregation", 
-                           choices = c("NONE", "daily", "weekly", "monthly", "quarterly", "annually"), 
-                           selected = "daily")),
-        column(6,
-               selectInput("func2", "function", 
-                           choices = c("mean", "sum"), 
-                           selected = "mean")
+        column(
+          6,
+          selectInput("agg2", "Aggregation",
+            choices = c("NONE", "daily", "weekly", "monthly", "quarterly", "annually"),
+            selected = "daily"
+          )
+        ),
+        column(
+          6,
+          selectInput("func2", "function",
+            choices = c("mean", "sum"),
+            selected = "mean"
+          )
         )
       ),
       radioButtons(
@@ -34,8 +40,10 @@ tabPanel(
         value = 0.8
       ),
       tags$hr(),
-      actionButton("ex_plot_modeldata", "Generate Plot", icon = icon("pencil-alt"),
-                   width = "100%", class="btn-primary")
+      actionButton("ex_plot_modeldata", "Generate Plot",
+        icon = icon("pencil-alt"),
+        width = "100%", class = "btn-primary"
+      )
     )
   ),
   column(

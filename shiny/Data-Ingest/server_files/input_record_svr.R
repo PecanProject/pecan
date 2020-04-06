@@ -2,10 +2,10 @@ inputsList <- list()
 dbFilesRecordList <- list()
 FormatRecordList <- list()
 ######### Select Site ###############
-updateSelectizeInput(session, "InputSiteName",  choices = sitenames, server = TRUE)
+updateSelectizeInput(session, "InputSiteName", choices = sitenames, server = TRUE)
 
 ######### Select Parent ID #################
-updateSelectizeInput(session, "InputParentName",  choices = input_names, server = TRUE)
+updateSelectizeInput(session, "InputParentName", choices = input_names, server = TRUE)
 
 ####### Select Format ##############
 updateSelectizeInput(session, "InputFormatName", choices = formats, server = TRUE)
@@ -15,15 +15,21 @@ updateSelectizeInput(session, "InputFormatName", choices = formats, server = TRU
 observeEvent(input$createInput, {
   ## siteID
   inputsList$siteName <- input$InputSiteName
-  inputsList$siteID <- sites %>% dplyr::filter(sitename %in% inputsList$siteName) %>% pull(id)
-  
+  inputsList$siteID <- sites %>%
+    dplyr::filter(sitename %in% inputsList$siteName) %>%
+    pull(id)
+
   ## ParentID
   inputsList$parentName <- input$InputParentName
-  inputsList$parentID <- inputs %>% dplyr::filter(name %in% inputsList$parentName) %>% pull(id)
-  
+  inputsList$parentID <- inputs %>%
+    dplyr::filter(name %in% inputsList$parentName) %>%
+    pull(id)
+
   ## FormatID
   inputsList$formatName <- input$InputFormatName
-  inputsList$formatID <- formats_sub %>% dplyr::filter(name %in% inputsList$formatName) %>% pull(id)
+  inputsList$formatID <- formats_sub %>%
+    dplyr::filter(name %in% inputsList$formatName) %>%
+    pull(id)
 
   ## Other Info
   inputsList$Name <- input$InputName
@@ -34,7 +40,9 @@ observeEvent(input$createInput, {
   inputsList$Timezone <- input$Timezone
   inputsList$Notes <- input$InputNotes
 
- output$summInputs <- renderPrint({print(inputsList)})
+  output$summInputs <- renderPrint({
+    print(inputsList)
+  })
 })
 
 ###################################################
@@ -45,15 +53,18 @@ observeEvent(input$createInput, {
 updateSelectizeInput(session, "InputMachineName", choices = machines, server = TRUE)
 
 observeEvent(input$createDBFilesRecord, {
-  ## MachineID 
+  ## MachineID
   dbFilesRecordList$machine <- input$InputMachineName
-  dbFilesRecordList$machineID <- machines_sub %>% dplyr::filter(hostname %in% dbFilesRecordList$machine) %>% pull(id)
-  
+  dbFilesRecordList$machineID <- machines_sub %>%
+    dplyr::filter(hostname %in% dbFilesRecordList$machine) %>%
+    pull(id)
+
   dbFilesRecordList$filePath <- input$InputFilePath
   dbFilesRecordList$fileName <- input$InputFileName
-  
-  output$dbFilesRecordOut <- renderPrint({print(dbFilesRecordList)})
-  
+
+  output$dbFilesRecordOut <- renderPrint({
+    print(dbFilesRecordList)
+  })
 })
 
 ###################################################
@@ -66,16 +77,18 @@ updateSelectizeInput(session, "MimetypeName", choices = mimetypes, server = TRUE
 observeEvent(input$createFormatRecord, {
   ## MimetypeID
   FormatRecordList$mimetypeName <- input$MimetypeName
-  FormatRecordList$mimetypeID <- mimetype_sub %>% dplyr::filter(type_string %in% FormatRecordList$mimetypeName) %>% pull(id)
-  
+  FormatRecordList$mimetypeID <- mimetype_sub %>%
+    dplyr::filter(type_string %in% FormatRecordList$mimetypeName) %>%
+    pull(id)
+
   ## Everything else
   FormatRecordList$NewMimeType <- input$NewMimeType
   FormatRecordList$NewFormatName <- input$NewFormatName
   FormatRecordList$HeaderBoolean <- input$HeaderBoolean
-  FormatRecordList$SkipLines <- input$SkipLines #This should appear only if header = TRUE
+  FormatRecordList$SkipLines <- input$SkipLines # This should appear only if header = TRUE
   FormatRecordList$FormatNotes <- input$FormatNotes
-  
-  output$FormatRecordOut <- renderPrint({print(FormatRecordList)})
-  
-})
 
+  output$FormatRecordOut <- renderPrint({
+    print(FormatRecordList)
+  })
+})

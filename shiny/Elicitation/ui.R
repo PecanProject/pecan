@@ -7,18 +7,21 @@ ui <- shinyUI(fluidPage(
 
   sidebarLayout(
     sidebarPanel(
-      textInput("user", "User", c()) ,
-      textInput("var","Variable",c()),
+      textInput("user", "User", c()),
+      textInput("var", "Variable", c()),
       textOutput("instructions"),
       textInput("paramVal", "Enter parameter value", "No Limit"),
       actionButton("Next", label = "Next"),
-      tableOutput('table')
+      tableOutput("table")
     ),
     mainPanel(
       plotOutput("outputPlot",
-                 brush = brushOpts(id = "plot_brush",
-                                   resetOnNew = TRUE),
-                 dblclick = "plot_dblclick")
+        brush = brushOpts(
+          id = "plot_brush",
+          resetOnNew = TRUE
+        ),
+        dblclick = "plot_dblclick"
+      )
     )
   )
 ))
