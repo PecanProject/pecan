@@ -1,4 +1,4 @@
-#' Build URL for output file hosted on THREDDS fileServer 
+#' Build URL for output file hosted on THREDDS fileServer
 #'
 #' @param workflow_id ID of target workflow (numeric or character)
 #' @param target Target path, relative to workflow directory (character)

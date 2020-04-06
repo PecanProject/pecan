@@ -31,6 +31,6 @@ run_dap <- function(workflow_id, target, run_id = NULL, ...) {
     "out",
     run_id,
     target
-)
+  )
   thredds_dap_url(new_target, ...)
 }

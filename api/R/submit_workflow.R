@@ -37,7 +37,7 @@ submit_workflow <- function(settings,
   settings_json <- jsonlite::toJSON(
     list(pecan_xml = settings_xml_string, folder = settings[["outdir"]]),
     auto_unbox = TRUE
-)
+  )
   bod_raw <- list(
     properties = list(delivery_mode = 2),
     routing_key = "pecan",
@@ -47,7 +47,7 @@ submit_workflow <- function(settings,
   auth <- NULL
   if (httr_auth) {
     auth <- httr::authenticate(rabbitmq_user, rabbitmq_password)
-  } 
+  }
   bod <- jsonlite::toJSON(bod_raw, auto_unbox = TRUE)
   if (is.null(rabbitmq_prefix)) {
     httpstring <- "http"
@@ -60,8 +60,10 @@ submit_workflow <- function(settings,
     auth,
     body = bod
   )
-  follow_url <- sprintf("%s/pecan/05-running.php?workflowid=%s",
-                        base_url, as.character(settings[["workflow"]][["id"]]))
+  follow_url <- sprintf(
+    "%s/pecan/05-running.php?workflowid=%s",
+    base_url, as.character(settings[["workflow"]][["id"]])
+  )
   message("Follow workflow progress from your browser at:\n", follow_url)
   httr::content(result)
 }

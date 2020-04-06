@@ -19,8 +19,10 @@ get_model_id <- function(con, name, revision, multi_action = "last") {
     stop("Model ", name, " with revision ", revision, " not found.")
   }
   if (length(id) > 1) {
-    warning("Multiple models with name ", name, " and revision ", revision, "found. ",
-            "Returning ", multi_action, " result.")
+    warning(
+      "Multiple models with name ", name, " and revision ", revision, "found. ",
+      "Returning ", multi_action, " result."
+    )
     if (multi_action == "first") {
       id <- head(id, 1)
     } else if (multi_action == "last") {

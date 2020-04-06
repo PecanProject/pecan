@@ -16,8 +16,9 @@ model_id <- get_model_id(con, "SIPNET", "136")
 all_umbs <- search_sites(con, "umbs%disturbance")
 site_id <- subset(all_umbs, !is.na(mat))[["id"]]
 workflow <- insert_new_workflow(con, site_id, model_id,
-                                start_date = "2004-01-01",
-                                end_date = "2004-12-31")
+  start_date = "2004-01-01",
+  end_date = "2004-12-31"
+)
 workflow_id <- workflow[["id"]]
 
 settings <- list() %>%

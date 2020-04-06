@@ -7,7 +7,7 @@
 #'   on the model ID in the settings object, which requires access to
 #'   the database (i.e. `con` must not be `NULL`).
 #' @param con Database connection object (default = `NULL`). Ignored
-#'   unless `model_queue` is `NULL`. 
+#'   unless `model_queue` is `NULL`.
 #' @param rabbitmq_user Username for RabbitMQ server (character,
 #'   default = option `pecanapi.rabbitmq_user`)
 #' @param rabbitmq_password Password for RabbitMQ server (character,
@@ -52,9 +52,11 @@ add_rabbitmq <- function(settings,
   }
 
   rabbitmq_settings <- list(
-    uri = sprintf("amqp://%s:%s@%s:%d/%s",
-                  rabbitmq_user, rabbitmq_password,
-                  rabbitmq_service, rabbitmq_service_port, rabbitmq_vhost),
+    uri = sprintf(
+      "amqp://%s:%s@%s:%d/%s",
+      rabbitmq_user, rabbitmq_password,
+      rabbitmq_service, rabbitmq_service_port, rabbitmq_vhost
+    ),
     queue = model_queue
   )
   new_settings <- modifyList(settings, list(host = list(rabbitmq = rabbitmq_settings)))

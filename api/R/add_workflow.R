@@ -1,4 +1,4 @@
-#' Add information from workflow data frame into settings list. 
+#' Add information from workflow data frame into settings list.
 #'
 #' @param settings Partially completed PEcAn `settings` list.
 #' @param workflow_df Workflow `data.frame`, such as that returned by
@@ -15,9 +15,11 @@ add_workflow <- function(settings, workflow_df, overwrite = FALSE) {
     outdir = workflow_df[["folder"]],
     model = list(id = workflow_df[["model_id"]]),
     run = list(
-      site = list(id = workflow_df[["site_id"]],
-                  met.start = workflow_df[["start_date"]],
-                  met.end = workflow_df[["end_date"]]),
+      site = list(
+        id = workflow_df[["site_id"]],
+        met.start = workflow_df[["start_date"]],
+        met.end = workflow_df[["end_date"]]
+      ),
       start.date = workflow_df[["start_date"]],
       end.date = workflow_df[["end_date"]]
     ),

@@ -35,15 +35,17 @@ insert_new_workflow <- function(con,
   if (is.null(notes)) notes <- ""
   if (is.null(params)) params <- ""
   if (is.null(user_id)) {
-    stop("API-based inserts into the workflows table are not allowed without a user ID. ",
-         "Either pass the user_id directly, or set it via `options(pecanapi.user_id = <myuserID>)`")
+    stop(
+      "API-based inserts into the workflows table are not allowed without a user ID. ",
+      "Either pass the user_id directly, or set it via `options(pecanapi.user_id = <myuserID>)`"
+    )
   }
   stopifnot(
-    # Must be scalar 
+    # Must be scalar
     length(folder_prefix) == 1,
     length(user_id) <= 1,
     length(con) == 1,
-    # Must be RPostgres connection for prepared queries 
+    # Must be RPostgres connection for prepared queries
     inherits(con, "PqConnection")
   )
   lens <- lengths(list(site_id, model_id, start_date, end_date))
@@ -53,7 +55,8 @@ insert_new_workflow <- function(con,
       "All inputs must be either the same length or length 1. ",
       "You provided the following: ",
       paste(sprintf("%s (%s)", c("site_id", "model_id", "start_date", "end_date"), lens),
-            collapse = ", ")
+        collapse = ", "
+      )
     )
   }
   id <- bit64::integer64()
@@ -77,9 +80,11 @@ insert_new_workflow <- function(con,
     "false)",
     "RETURNING *"
   )
-  params <- list(id, site_id, model_id, folder,
-                 hostname, start_date, end_date, params,
-                 notes, user_id)
+  params <- list(
+    id, site_id, model_id, folder,
+    hostname, start_date, end_date, params,
+    notes, user_id
+  )
   prepared_query(con, query_string, params)
 }
 

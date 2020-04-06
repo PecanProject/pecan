@@ -13,9 +13,11 @@
 #' add_pft_list(settings, sprintf("Temperate_%s_Hardwood", c("Early", "Mid", "Late")))
 #' add_pft_list(
 #'   settings,
-#'   list(list(name = "deciduous", num = 3),
-#'        list(name = "coniferous", num = 6))
-#' )  
+#'   list(
+#'     list(name = "deciduous", num = 3),
+#'     list(name = "coniferous", num = 6)
+#'   )
+#' )
 #' if (require("magrittr")) {
 #'   list() %>%
 #'     add_pft("early_hardwood") %>%
